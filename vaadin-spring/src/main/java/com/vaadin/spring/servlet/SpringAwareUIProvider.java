@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vaadin.spring.servlet;
+package com.vaadin.spring.servlet;
 
+import com.vaadin.spring.annotation.VaadinUI;
+import com.vaadin.spring.servlet.internal.AbstractSpringAwareUIProvider;
 import com.vaadin.ui.UI;
 
 import org.springframework.web.context.WebApplicationContext;
-import org.vaadin.spring.annotation.VaadinUI;
-import org.vaadin.spring.servlet.internal.AbstractSpringAwareUIProvider;
 
 /**
  * Vaadin {@link com.vaadin.server.UIProvider} that looks up UI classes from the Spring application context. The UI
- * classes must be annotated with {@link org.vaadin.spring.annotation.VaadinUI}.
+ * classes must be annotated with {@link com.vaadin.spring.annotation.VaadinUI}.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */

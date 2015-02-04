@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vaadin.spring.navigator.annotation;
+package com.vaadin.spring.navigator.annotation;
 
+import com.vaadin.spring.annotation.VaadinComponent;
+import com.vaadin.spring.navigator.SpringViewProvider;
 import com.vaadin.ui.UI;
-
-import org.vaadin.spring.annotation.VaadinComponent;
-import org.vaadin.spring.navigator.SpringViewProvider;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -30,7 +29,7 @@ import java.lang.annotation.Target;
  * <p>
  * This annotation is also a stereotype annotation, so Spring will automatically detect the annotated classes.
  * <b>However, the scope must be explicitly specified as the default singleton scope will not work!</b> You can use
- * the {@code prototype} scope or the {@link org.vaadin.spring.annotation.VaadinUIScope ui} scope.
+ * the {@code prototype} scope or the {@link com.vaadin.spring.annotation.VaadinUIScope ui} scope.
  * <p>
  * This is an example of a view that is mapped to an empty view name and is available for all UI subclasses in the application:
  *     <pre>

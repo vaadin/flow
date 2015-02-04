@@ -13,22 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vaadin.spring.annotation;
+package com.vaadin.spring.annotation;
 
-import org.springframework.context.annotation.Import;
-import org.vaadin.spring.config.VaadinConfiguration;
+import org.springframework.context.annotation.Scope;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Brings in the machinery to setup Spring + Vaadin applications.
+ * Stereotype annotation for Spring's {@code @Scope("prototype")}. Include here for convenience since many Vaadin
+ * components will be using this scope.
  *
- * @author Josh Long (josh@joshlong.com)
  * @author Petter Holmström (petter@vaadin.com)
  */
-@Target(ElementType.TYPE)
+@Scope("prototype")
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(VaadinConfiguration.class)
-public @interface EnableVaadin {
+public @interface PrototypeScope {
 }

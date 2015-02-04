@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vaadin.spring.servlet.internal;
+package com.vaadin.spring.servlet.internal;
 
 import com.vaadin.server.UIClassSelectionEvent;
 import com.vaadin.server.UICreateEvent;
 import com.vaadin.server.UIProvider;
+import com.vaadin.spring.internal.UIID;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.context.WebApplicationContext;
-import org.vaadin.spring.internal.UIID;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Base class for {@link org.vaadin.spring.servlet.SpringAwareUIProvider} and its TouchKit counterpart. Intended only for internal use by the framework.
+ * Base class for {@link com.vaadin.spring.servlet.SpringAwareUIProvider} and its TouchKit counterpart. Intended only for internal use by the framework.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */

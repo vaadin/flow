@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vaadin.spring.internal;
+package com.vaadin.spring.internal;
 
 import com.vaadin.server.UICreateEvent;
 import com.vaadin.ui.UI;

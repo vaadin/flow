@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vaadin.spring.servlet;
+package com.vaadin.spring.servlet;
 
 import com.vaadin.server.ServiceException;
 import com.vaadin.server.SessionInitEvent;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vaadin.spring.internal;
+package com.vaadin.spring.internal;
 
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.ServiceDestroyEvent;
@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * default as the scope "{@value #VAADIN_UI_SCOPE_NAME}".
  *
  * @author Petter Holmström (petter@vaadin.com)
- * @see org.vaadin.spring.annotation.VaadinUIScope
+ * @see com.vaadin.spring.annotation.VaadinUIScope
  */
 public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
 
@@ -64,7 +64,7 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
 
     /**
      * Returns the {@link BeanStoreRetrievalStrategy} to use.
-     * By default, {@link org.vaadin.spring.internal.VaadinUIScope.VaadinSessionBeanStoreRetrievalStrategy} is used.
+     * By default, {@link com.vaadin.spring.internal.VaadinUIScope.VaadinSessionBeanStoreRetrievalStrategy} is used.
      */
     public static synchronized BeanStoreRetrievalStrategy getBeanStoreRetrievalStrategy() {
         return beanStoreRetrievalStrategy;

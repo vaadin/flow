@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vaadin.spring.annotation;
+package com.vaadin.spring.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Scope;
  * @author Petter Holmström (petter@vaadin.com)
  * @author Josh Long (josh@joshlong.com)
  */
-@Scope(org.vaadin.spring.internal.VaadinUIScope.VAADIN_UI_SCOPE_NAME)
+@Scope(com.vaadin.spring.internal.VaadinUIScope.VAADIN_UI_SCOPE_NAME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vaadin.spring.navigator;
+package com.vaadin.spring.navigator;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewProvider;
+import com.vaadin.spring.navigator.annotation.VaadinView;
 import com.vaadin.ui.UI;
 
 import org.slf4j.Logger;
@@ -25,7 +26,6 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
-import org.vaadin.spring.navigator.annotation.VaadinView;
 
 import javax.annotation.PostConstruct;
 
@@ -54,7 +54,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  *         }
  *     </pre>
  *
- * View-based security can be provided by creating a Spring bean that implements the {@link org.vaadin.spring.navigator.SpringViewProvider.ViewProviderAccessDelegate} interface.
+ * View-based security can be provided by creating a Spring bean that implements the {@link com.vaadin.spring.navigator.SpringViewProvider.ViewProviderAccessDelegate} interface.
  *
  * @author Petter Holmström (petter@vaadin.com)
  * @see VaadinView

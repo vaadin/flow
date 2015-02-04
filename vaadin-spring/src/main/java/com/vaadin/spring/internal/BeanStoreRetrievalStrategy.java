@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vaadin.spring.internal;
+package com.vaadin.spring.internal;
 
 /**
- * Strategy interface for getting the {@link org.vaadin.spring.internal.BeanStore}. The strategy pattern
+ * Strategy interface for getting the {@link com.vaadin.spring.internal.BeanStore}. The strategy pattern
  * is used to make it easier to mock the scope while doing testing. For internal use only.
  *
  * @author Petter Holmström (petter@vaadin.com)

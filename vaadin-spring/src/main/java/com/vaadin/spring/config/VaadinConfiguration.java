@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vaadin.spring.config;
+package com.vaadin.spring.config;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.vaadin.spring.context.VaadinApplicationContext;
-import org.vaadin.spring.internal.VaadinUIScope;
-import org.vaadin.spring.navigator.SpringViewProvider;
+
+import com.vaadin.spring.context.VaadinApplicationContext;
+import com.vaadin.spring.internal.VaadinUIScope;
+import com.vaadin.spring.navigator.SpringViewProvider;
 
 /**
  * Spring configuration for registering the custom Vaadin scopes,
@@ -31,7 +32,7 @@ import org.vaadin.spring.navigator.SpringViewProvider;
  * @author Josh Long (josh@joshlong.com)
  * @author Petter Holmström (petter@vaadin.com)
  * @author Gert-Jan Timmer (gjr.timmer@gmail.com)
- * @see org.vaadin.spring.annotation.EnableVaadin
+ * @see com.vaadin.spring.annotation.EnableVaadin
  */
 @Configuration
 public class VaadinConfiguration implements ApplicationContextAware {
@@ -57,4 +58,5 @@ public class VaadinConfiguration implements ApplicationContextAware {
     VaadinApplicationContext vaadinApplicationContext() {
     	return new VaadinApplicationContext();
     }
+    
 }

@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vaadin.spring.annotation;
+package com.vaadin.spring.annotation;
 
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Import;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import com.vaadin.spring.config.VaadinConfiguration;
+
+import java.lang.annotation.*;
 
 /**
- * Alias for {@link org.springframework.stereotype.Component} to prevent conflicts with {@link com.vaadin.ui.Component}.
+ * Brings in the machinery to setup Spring + Vaadin applications.
  *
+ * @author Josh Long (josh@joshlong.com)
  * @author Petter Holmström (petter@vaadin.com)
  */
-@Target({java.lang.annotation.ElementType.TYPE})
-@Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Component
-public @interface VaadinComponent {
-    String value() default "";
+@Import(VaadinConfiguration.class)
+public @interface EnableVaadin {
 }
