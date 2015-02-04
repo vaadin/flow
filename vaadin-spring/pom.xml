@@ -1,0 +1,162 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.vaadin</groupId>
+	<artifactId>vaadin-spring</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
+    <name>vaadin-spring</name>
+    <description>
+        Provides Spring integration for Vaadin applications.
+    </description>
+    <url>https://github.com/vaadin/spring</url>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/vaadin/spring</url>
+        <connection>scm:git:git@github.com:vaadin/spring.git</connection>
+        <developerConnection>scm:git:git@github.com:vaadin/spring.git</developerConnection>
+    </scm>
+    
+    <developers>
+        <!-- In alphabetical order -->
+        <developer>
+            <name>AMahdy AbdElAziz</name>
+            <organization>Vaadin</organization>
+            <email>amahdy7@gmail.com</email>
+        </developer>
+        <developer>
+            <name>Chris Phillipson</name>
+            <email>fastnsilver@gmail.com</email>
+        </developer>
+        <developer>
+            <name>Henri Sara</name>
+            <organization>Vaadin</organization>
+            <email>hesara@vaadin.com</email>
+        </developer>
+        <developer>
+            <name>Josh Long</name>
+            <email>josh@joshlong.com</email>
+        </developer>
+        <developer>
+            <name>Matti Tahvonen</name>
+            <organization>Vaadin</organization>
+            <email>matti@vaadin.com</email>
+        </developer>
+        <developer>
+            <name>Nicolas Frankel</name>
+            <email>nicolas@frankel.ch</email>
+        </developer>
+        <developer>
+            <name>Peter Lehto</name>
+            <organization>Vaadin</organization>
+            <email>peter@vaadin.com</email>
+        </developer>
+        <developer>
+            <name>Petter Holmström</name>
+            <organization>Vaadin</organization>
+            <email>petter@vaadin.com</email>
+        </developer>
+    </developers>
+    
+    <properties>
+        <project.build.encoding>UTF-8</project.build.encoding>
+        <project.build.target>1.6</project.build.target>
+        <project.build.source>1.6</project.build.source>
+        <vaadin.version>7.4.0.beta3</vaadin.version>
+        <spring.version>4.1.2.RELEASE</spring.version>
+        <slf4j.version>1.7.7</slf4j.version>
+    </properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-server</artifactId>
+			<version>${vaadin.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${spring.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <encoding>${project.build.encoding}</encoding>
+                    <target>${project.build.target}</target>
+                    <source>${project.build.source}</source>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+       </plugins>
+   </build>
+
+    <repositories>
+        <repository>
+            <id>vaadin-addons</id>
+            <url>http://maven.vaadin.com/vaadin-addons</url>
+        </repository>
+
+        <!-- Add Spring repositories -->
+        <!-- (you don't need this if you are using a .RELEASE version) -->
+        <!-- <repository> <id>spring-snapshots</id> <url>http://repo.spring.io/snapshot</url> 
+            <snapshots><enabled>true</enabled></snapshots> </repository> <repository> 
+            <id>spring-milestones</id> <url>http://repo.spring.io/milestone</url> </repository> -->
+    </repositories>
+
+</project>
