@@ -10,6 +10,8 @@
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
         <version>7</version>
+        <!-- Parent POM is not in the containing directory -->
+        <relativePath></relativePath>
     </parent>
 
     <name>vaadin-spring</name>
