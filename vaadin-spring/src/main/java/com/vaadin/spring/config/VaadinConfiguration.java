@@ -26,8 +26,8 @@ import com.vaadin.spring.internal.VaadinUIScope;
 import com.vaadin.spring.navigator.SpringViewProvider;
 
 /**
- * Spring configuration for registering the custom Vaadin scopes,
- * the {@link SpringViewProvider view provider} and some other stuff.
+ * Spring configuration for registering the custom Vaadin scopes, the
+ * {@link SpringViewProvider view provider} and some other stuff.
  *
  * @author Josh Long (josh@joshlong.com)
  * @author Petter Holmström (petter@vaadin.com)
@@ -50,13 +50,14 @@ public class VaadinConfiguration implements ApplicationContextAware {
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext)
+            throws BeansException {
         this.applicationContext = applicationContext;
     }
-    
+
     @Bean
     VaadinApplicationContext vaadinApplicationContext() {
-    	return new VaadinApplicationContext();
+        return new VaadinApplicationContext();
     }
-    
+
 }

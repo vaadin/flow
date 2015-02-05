@@ -25,11 +25,13 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import javax.servlet.ServletException;
 
 /**
- * Subclass of the standard {@link com.vaadin.server.VaadinServlet Vaadin servlet} that adds a {@link SpringAwareUIProvider} to
- * every new Vaadin session.
+ * Subclass of the standard {@link com.vaadin.server.VaadinServlet Vaadin
+ * servlet} that adds a {@link SpringAwareUIProvider} to every new Vaadin
+ * session.
  * <p>
- * If you need a custom Vaadin servlet, you can either extend this servlet directly, or extend another subclass of {@link VaadinServlet}
- * and just add the UI provider.
+ * If you need a custom Vaadin servlet, you can either extend this servlet
+ * directly, or extend another subclass of {@link VaadinServlet} and just add
+ * the UI provider.
  *
  * @author Petter Holmström (petter@vaadin.com)
  * @author Josh Long (josh@joshlong.com)
@@ -45,9 +47,12 @@ public class SpringAwareVaadinServlet extends VaadinServlet {
             private static final long serialVersionUID = -6307820453486668084L;
 
             @Override
-            public void sessionInit(SessionInitEvent sessionInitEvent) throws ServiceException {
-                WebApplicationContext webApplicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
-                SpringAwareUIProvider uiProvider = new SpringAwareUIProvider(webApplicationContext);
+            public void sessionInit(SessionInitEvent sessionInitEvent)
+                    throws ServiceException {
+                WebApplicationContext webApplicationContext = WebApplicationContextUtils
+                        .getWebApplicationContext(getServletContext());
+                SpringAwareUIProvider uiProvider = new SpringAwareUIProvider(
+                        webApplicationContext);
                 sessionInitEvent.getSession().addUIProvider(uiProvider);
             }
         });

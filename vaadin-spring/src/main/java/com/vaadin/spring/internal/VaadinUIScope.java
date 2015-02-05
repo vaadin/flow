@@ -38,9 +38,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Implementation of Spring's {@link org.springframework.beans.factory.config.Scope} that binds the UIs and dependent
- * beans to the current {@link com.vaadin.server.VaadinSession} (as opposed to the current Servlet session). Registered by
- * default as the scope "{@value #VAADIN_UI_SCOPE_NAME}".
+ * Implementation of Spring's
+ * {@link org.springframework.beans.factory.config.Scope} that binds the UIs and
+ * dependent beans to the current {@link com.vaadin.server.VaadinSession} (as
+ * opposed to the current Servlet session). Registered by default as the scope "
+ * {@value #VAADIN_UI_SCOPE_NAME}".
  *
  * @author Petter Holmström (petter@vaadin.com)
  * @see com.vaadin.spring.annotation.VaadinUIScope
@@ -48,14 +50,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
 
     public static final String VAADIN_UI_SCOPE_NAME = "vaadin-ui";
-    private static final Logger LOGGER = LoggerFactory.getLogger(VaadinUIScope.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(VaadinUIScope.class);
 
     private static BeanStoreRetrievalStrategy beanStoreRetrievalStrategy = new VaadinSessionBeanStoreRetrievalStrategy();
 
     /**
      * Sets the {@link BeanStoreRetrievalStrategy} to use.
      */
-    public static synchronized void setBeanStoreRetrievalStrategy(BeanStoreRetrievalStrategy beanStoreRetrievalStrategy) {
+    public static synchronized void setBeanStoreRetrievalStrategy(
+            BeanStoreRetrievalStrategy beanStoreRetrievalStrategy) {
         if (beanStoreRetrievalStrategy == null) {
             beanStoreRetrievalStrategy = new VaadinSessionBeanStoreRetrievalStrategy();
         }
@@ -63,8 +67,9 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
     }
 
     /**
-     * Returns the {@link BeanStoreRetrievalStrategy} to use.
-     * By default, {@link com.vaadin.spring.internal.VaadinUIScope.VaadinSessionBeanStoreRetrievalStrategy} is used.
+     * Returns the {@link BeanStoreRetrievalStrategy} to use. By default,
+     * {@link com.vaadin.spring.internal.VaadinUIScope.VaadinSessionBeanStoreRetrievalStrategy}
+     * is used.
      */
     public static synchronized BeanStoreRetrievalStrategy getBeanStoreRetrievalStrategy() {
         return beanStoreRetrievalStrategy;
@@ -100,24 +105,31 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
     }
 
     @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
-        LOGGER.debug("Registering Vaadin UI scope with bean factory [{}]", configurableListableBeanFactory);
-        configurableListableBeanFactory.registerScope(VAADIN_UI_SCOPE_NAME, this);
+    public void postProcessBeanFactory(
+            ConfigurableListableBeanFactory configurableListableBeanFactory)
+            throws BeansException {
+        LOGGER.debug("Registering Vaadin UI scope with bean factory [{}]",
+                configurableListableBeanFactory);
+        configurableListableBeanFactory.registerScope(VAADIN_UI_SCOPE_NAME,
+                this);
     }
 
     /**
-     * Implementation of {@link BeanStoreRetrievalStrategy} that
-     * stores the {@link BeanStore} in the current {@link com.vaadin.server.VaadinSession}.
+     * Implementation of {@link BeanStoreRetrievalStrategy} that stores the
+     * {@link BeanStore} in the current {@link com.vaadin.server.VaadinSession}.
      */
-    public static class VaadinSessionBeanStoreRetrievalStrategy implements BeanStoreRetrievalStrategy {
+    public static class VaadinSessionBeanStoreRetrievalStrategy implements
+            BeanStoreRetrievalStrategy {
 
         private VaadinSession getVaadinSession() {
             VaadinSession current = VaadinSession.getCurrent();
             if (current == null) {
-                throw new IllegalStateException("No VaadinSession bound to current thread");
+                throw new IllegalStateException(
+                        "No VaadinSession bound to current thread");
             }
             if (current.getState() != VaadinSession.State.OPEN) {
-                throw new IllegalStateException("Current VaadinSession is not open");
+                throw new IllegalStateException(
+                        "Current VaadinSession is not open");
             }
             return current;
         }
@@ -142,7 +154,10 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
                 return new UIID(currentUI);
             } else {
                 UIID currentIdentifier = CurrentInstance.get(UIID.class);
-                Assert.notNull(currentIdentifier, String.format("Found no valid %s instance!", UIID.class.getName()));
+                Assert.notNull(
+                        currentIdentifier,
+                        String.format("Found no valid %s instance!",
+                                UIID.class.getName()));
                 return currentIdentifier;
             }
         }
@@ -158,11 +173,13 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
         }
     }
 
-    static class UIStore implements SessionDestroyListener, ServiceDestroyListener, Serializable {
+    static class UIStore implements SessionDestroyListener,
+            ServiceDestroyListener, Serializable {
 
         private static final long serialVersionUID = -2964924681534104416L;
 
-        private static final Logger LOGGER = LoggerFactory.getLogger(UIStore.class);
+        private static final Logger LOGGER = LoggerFactory
+                .getLogger(UIStore.class);
 
         private final Map<UIID, BeanStore> beanStoreMap = new ConcurrentHashMap<UIID, BeanStore>();
         private final VaadinSession session;
@@ -179,13 +196,14 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
         BeanStore getBeanStore(final UIID uiid) {
             BeanStore beanStore = beanStoreMap.get(uiid);
             if (beanStore == null) {
-                beanStore = new UIBeanStore(uiid, new BeanStore.DestructionCallback() {
-                    @Override
-                    public void beanStoreDestoyed(BeanStore beanStore) {
-                        removeBeanStore(uiid);
-                    }
-                    
-                });
+                beanStore = new UIBeanStore(uiid,
+                        new BeanStore.DestructionCallback() {
+                            @Override
+                            public void beanStoreDestoyed(BeanStore beanStore) {
+                                removeBeanStore(uiid);
+                            }
+
+                        });
                 LOGGER.trace("Added [{}] to [{}]", beanStore, this);
                 beanStoreMap.put(uiid, beanStore);
             }
@@ -204,33 +222,40 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
             session.setAttribute(BeanStore.class, null);
             session.getService().removeSessionDestroyListener(this);
             session.getService().removeServiceDestroyListener(this);
-            for (BeanStore beanStore : new HashSet<BeanStore>(beanStoreMap.values())) {
+            for (BeanStore beanStore : new HashSet<BeanStore>(
+                    beanStoreMap.values())) {
                 beanStore.destroy();
             }
-            Assert.isTrue(beanStoreMap.isEmpty(), "beanStore should have been emptied by the destruction callbacks");
+            Assert.isTrue(beanStoreMap.isEmpty(),
+                    "beanStore should have been emptied by the destruction callbacks");
         }
 
         @Override
         public void serviceDestroy(ServiceDestroyEvent event) {
-            LOGGER.debug("Vaadin service has been destroyed, destroying [{}]", this);
+            LOGGER.debug("Vaadin service has been destroyed, destroying [{}]",
+                    this);
             destroy();
         }
 
         @Override
         public void sessionDestroy(SessionDestroyEvent event) {
             if (event.getSession().equals(session)) {
-                LOGGER.debug("Vaadin session has been destroyed, destroying [{}]", this);
+                LOGGER.debug(
+                        "Vaadin session has been destroyed, destroying [{}]",
+                        this);
                 destroy();
             }
         }
 
         @Override
         public String toString() {
-            return String.format("%s[id=%x, sessionId=%s]", getClass().getSimpleName(), System.identityHashCode(this), sessionId);
+            return String.format("%s[id=%x, sessionId=%s]", getClass()
+                    .getSimpleName(), System.identityHashCode(this), sessionId);
         }
     }
 
-    static class UIBeanStore extends BeanStore implements ClientConnector.DetachListener {
+    static class UIBeanStore extends BeanStore implements
+            ClientConnector.DetachListener {
 
         UIBeanStore(UIID uuid, DestructionCallback destructionCallback) {
             super(uuid.toString(), destructionCallback);
@@ -247,7 +272,8 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
 
         @Override
         public void detach(ClientConnector.DetachEvent event) {
-            LOGGER.debug("UI [{}] has been detached, destroying [{}]", event.getSource(), this);
+            LOGGER.debug("UI [{}] has been detached, destroying [{}]",
+                    event.getSource(), this);
             destroy();
         }
     }

@@ -24,7 +24,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Class for storing beans in the different Vaadin scopes. For internal use only.
+ * Class for storing beans in the different Vaadin scopes. For internal use
+ * only.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */
@@ -32,7 +33,8 @@ public class BeanStore implements Serializable {
 
     private static final long serialVersionUID = 7625347916717427098L;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BeanStore.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(BeanStore.class);
 
     private final Map<String, Object> objectMap = new ConcurrentHashMap<String, Object>();
 
@@ -53,13 +55,13 @@ public class BeanStore implements Serializable {
         this(name, null);
     }
 
-
     public Object get(String s, ObjectFactory<?> objectFactory) {
         LOGGER.trace("Getting bean with name [{}] from [{}]", s, this);
         Object bean = objectMap.get(s);
         if (bean == null) {
             bean = create(s, objectFactory);
-            LOGGER.trace("Added bean [{}] with name [{}] to [{}]", bean, s, this);
+            LOGGER.trace("Added bean [{}] with name [{}] to [{}]", bean, s,
+                    this);
             objectMap.put(s, bean);
         }
         return bean;
@@ -68,7 +70,9 @@ public class BeanStore implements Serializable {
     protected Object create(String s, ObjectFactory<?> objectFactory) {
         final Object bean = objectFactory.getObject();
         if (!(bean instanceof Serializable)) {
-            LOGGER.warn("Storing non-serializable bean [{}] with name [{}] in [{}]", bean, s, this);
+            LOGGER.warn(
+                    "Storing non-serializable bean [{}] with name [{}] in [{}]",
+                    bean, s, this);
         }
         return bean;
     }
@@ -79,7 +83,9 @@ public class BeanStore implements Serializable {
     }
 
     public void registerDestructionCallback(String s, Runnable runnable) {
-        LOGGER.trace("Registering destruction callback for bean with name [{}] in [{}]", s, this);
+        LOGGER.trace(
+                "Registering destruction callback for bean with name [{}] in [{}]",
+                s, this);
         destructionCallbacks.put(s, runnable);
     }
 
@@ -105,11 +111,13 @@ public class BeanStore implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("%s[id=%x, name=%s]", getClass().getSimpleName(), System.identityHashCode(this), name);
+        return String.format("%s[id=%x, name=%s]", getClass().getSimpleName(),
+                System.identityHashCode(this), name);
     }
 
     /**
-     * Callback interface for receiving notifications about a {@link com.vaadin.spring.internal.BeanStore} being destroyed.
+     * Callback interface for receiving notifications about a
+     * {@link com.vaadin.spring.internal.BeanStore} being destroyed.
      */
     public static interface DestructionCallback extends Serializable {
 

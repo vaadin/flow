@@ -24,13 +24,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Stereotype annotation for Spring's {@code @Scope("prototype")}. Include here for convenience since many Vaadin
- * components will be using this scope.
+ * Stereotype annotation for Spring's {@code @Scope("prototype")}. Include here
+ * for convenience since many Vaadin components will be using this scope.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */
 @Scope("prototype")
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface PrototypeScope {

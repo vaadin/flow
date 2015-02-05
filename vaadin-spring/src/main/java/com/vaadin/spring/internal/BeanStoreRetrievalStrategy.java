@@ -16,8 +16,9 @@
 package com.vaadin.spring.internal;
 
 /**
- * Strategy interface for getting the {@link com.vaadin.spring.internal.BeanStore}. The strategy pattern
- * is used to make it easier to mock the scope while doing testing. For internal use only.
+ * Strategy interface for getting the
+ * {@link com.vaadin.spring.internal.BeanStore}. The strategy pattern is used to
+ * make it easier to mock the scope while doing testing. For internal use only.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */

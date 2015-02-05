@@ -22,8 +22,9 @@ import com.vaadin.ui.UI;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * Vaadin {@link com.vaadin.server.UIProvider} that looks up UI classes from the Spring application context. The UI
- * classes must be annotated with {@link com.vaadin.spring.annotation.VaadinUI}.
+ * Vaadin {@link com.vaadin.server.UIProvider} that looks up UI classes from the
+ * Spring application context. The UI classes must be annotated with
+ * {@link com.vaadin.spring.annotation.VaadinUI}.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */
@@ -39,17 +40,23 @@ public class SpringAwareUIProvider extends AbstractSpringAwareUIProvider {
     @SuppressWarnings("unchecked")
     protected void detectUIs() {
         logger.info("Checking the application context for Vaadin UIs");
-        final String[] uiBeanNames = getWebApplicationContext().getBeanNamesForAnnotation(VaadinUI.class);
+        final String[] uiBeanNames = getWebApplicationContext()
+                .getBeanNamesForAnnotation(VaadinUI.class);
         for (String uiBeanName : uiBeanNames) {
             Class<?> beanType = getWebApplicationContext().getType(uiBeanName);
             if (UI.class.isAssignableFrom(beanType)) {
                 logger.info("Found Vaadin UI [{}]", beanType.getCanonicalName());
-                final String path = getWebApplicationContext().findAnnotationOnBean(uiBeanName, VaadinUI.class).path();
+                final String path = getWebApplicationContext()
+                        .findAnnotationOnBean(uiBeanName, VaadinUI.class)
+                        .path();
                 Class<? extends UI> existingBeanType = getUIByPath(path);
                 if (existingBeanType != null) {
-                    throw new IllegalStateException(String.format("[%s] is already mapped to the path [%s]", existingBeanType.getCanonicalName(), path));
+                    throw new IllegalStateException(String.format(
+                            "[%s] is already mapped to the path [%s]",
+                            existingBeanType.getCanonicalName(), path));
                 }
-                logger.debug("Mapping Vaadin UI [{}] to path [{}]", beanType.getCanonicalName(), path);
+                logger.debug("Mapping Vaadin UI [{}] to path [{}]",
+                        beanType.getCanonicalName(), path);
                 mapPathToUI(path, (Class<? extends UI>) beanType);
             }
         }

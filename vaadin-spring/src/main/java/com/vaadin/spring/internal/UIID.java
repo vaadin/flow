@@ -31,7 +31,7 @@ import java.io.Serializable;
 public class UIID implements Serializable {
 
     private static final long serialVersionUID = -999655298640370601L;
-    
+
     private final int uiId;
 
     public UIID(UICreateEvent createEvent) {
@@ -50,8 +50,10 @@ public class UIID implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         final UIID that = (UIID) o;
 

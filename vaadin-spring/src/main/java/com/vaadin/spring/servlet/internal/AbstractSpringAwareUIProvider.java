@@ -30,20 +30,22 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Base class for {@link com.vaadin.spring.servlet.SpringAwareUIProvider} and its TouchKit counterpart. Intended only for internal use by the framework.
+ * Base class for {@link com.vaadin.spring.servlet.SpringAwareUIProvider} and
+ * its TouchKit counterpart. Intended only for internal use by the framework.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */
 public abstract class AbstractSpringAwareUIProvider extends UIProvider {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     private static final long serialVersionUID = -6195911893325385491L;
     private final WebApplicationContext webApplicationContext;
     private final Map<String, Class<? extends UI>> pathToUIMap = new ConcurrentHashMap<String, Class<? extends UI>>();
     private final Map<String, Class<? extends UI>> wildcardPathToUIMap = new ConcurrentHashMap<String, Class<? extends UI>>();
 
-    public AbstractSpringAwareUIProvider(WebApplicationContext webApplicationContext) {
+    public AbstractSpringAwareUIProvider(
+            WebApplicationContext webApplicationContext) {
         this.webApplicationContext = webApplicationContext;
         detectUIs();
         if (pathToUIMap.isEmpty()) {
@@ -54,12 +56,15 @@ public abstract class AbstractSpringAwareUIProvider extends UIProvider {
     protected abstract void detectUIs();
 
     @Override
-    public Class<? extends UI> getUIClass(UIClassSelectionEvent uiClassSelectionEvent) {
-        final String path = extractUIPathFromPathInfo(uiClassSelectionEvent.getRequest().getPathInfo());
+    public Class<? extends UI> getUIClass(
+            UIClassSelectionEvent uiClassSelectionEvent) {
+        final String path = extractUIPathFromPathInfo(uiClassSelectionEvent
+                .getRequest().getPathInfo());
         if (pathToUIMap.containsKey(path))
             return pathToUIMap.get(path);
 
-        for (Map.Entry<String, Class<? extends UI>> entry : wildcardPathToUIMap.entrySet()) {
+        for (Map.Entry<String, Class<? extends UI>> entry : wildcardPathToUIMap
+                .entrySet()) {
             if (path.startsWith(entry.getKey()))
                 return entry.getValue();
         }
@@ -89,7 +94,8 @@ public abstract class AbstractSpringAwareUIProvider extends UIProvider {
 
     protected void mapPathToUI(String path, Class<? extends UI> uiClass) {
         if (path.endsWith("/*"))
-            wildcardPathToUIMap.put(path.substring(0, path.length() - 2), uiClass);
+            wildcardPathToUIMap.put(path.substring(0, path.length() - 2),
+                    uiClass);
         else
             pathToUIMap.put(path, uiClass);
     }
@@ -104,7 +110,9 @@ public abstract class AbstractSpringAwareUIProvider extends UIProvider {
         final UIID identifier = new UIID(event);
         CurrentInstance.set(key, identifier);
         try {
-            logger.debug("Creating a new UI bean of class [{}] with identifier [{}]", event.getUIClass().getCanonicalName(), identifier);
+            logger.debug(
+                    "Creating a new UI bean of class [{}] with identifier [{}]",
+                    event.getUIClass().getCanonicalName(), identifier);
             return webApplicationContext.getBean(event.getUIClass());
         } finally {
             CurrentInstance.set(key, null);
