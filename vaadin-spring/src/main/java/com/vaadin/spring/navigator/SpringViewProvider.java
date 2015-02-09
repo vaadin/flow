@@ -15,10 +15,12 @@
  */
 package com.vaadin.spring.navigator;
 
-import com.vaadin.navigator.View;
-import com.vaadin.navigator.ViewProvider;
-import com.vaadin.spring.navigator.annotation.VaadinView;
-import com.vaadin.ui.UI;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,27 +29,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
-
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewProvider;
+import com.vaadin.spring.navigator.annotation.SpringView;
+import com.vaadin.ui.UI;
 
 /**
  * A Vaadin {@link ViewProvider} that fetches the views from the Spring
  * application context. The views must implement the {@link View} interface and
- * be annotated with the {@link VaadinView} annotation.
+ * be annotated with the {@link SpringView} annotation.
  * <p/>
  * Use like this:
- * 
+ *
  * <pre>
  * &#064;SpringUI
  * public class MyUI extends UI {
- * 
+ *
  *     &#064;Autowired
  *     SpringViewProvider viewProvider;
- * 
+ *
  *     protected void init(VaadinRequest vaadinRequest) {
  *         Navigator navigator = new Navigator(this, this);
  *         navigator.addProvider(viewProvider);
@@ -63,7 +63,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * interface.
  *
  * @author Petter Holmström (petter@vaadin.com)
- * @see VaadinView
+ * @see SpringView
  */
 public class SpringViewProvider implements ViewProvider {
 
@@ -86,20 +86,20 @@ public class SpringViewProvider implements ViewProvider {
 
     @PostConstruct
     void init() {
-        logger.info("Looking up VaadinViews");
+        logger.info("Looking up SpringViews");
         int count = 0;
         final String[] viewBeanNames = applicationContext
-                .getBeanNamesForAnnotation(VaadinView.class);
+                .getBeanNamesForAnnotation(SpringView.class);
         for (String beanName : viewBeanNames) {
             final Class<?> type = applicationContext.getType(beanName);
             if (View.class.isAssignableFrom(type)) {
-                final VaadinView annotation = applicationContext
-                        .findAnnotationOnBean(beanName, VaadinView.class);
+                final SpringView annotation = applicationContext
+                        .findAnnotationOnBean(beanName, SpringView.class);
                 final String viewName = annotation.name();
-                logger.debug("Found VaadinView bean [{}] with view name [{}]",
+                logger.debug("Found SpringView bean [{}] with view name [{}]",
                         beanName, viewName);
                 if (applicationContext.isSingleton(beanName)) {
-                    throw new IllegalStateException("VaadinView bean ["
+                    throw new IllegalStateException("SpringView bean ["
                             + beanName + "] must not be a singleton");
                 }
                 Set<String> beanNames = viewNameToBeanNamesMap.get(viewName);
@@ -112,11 +112,11 @@ public class SpringViewProvider implements ViewProvider {
             }
         }
         if (count == 0) {
-            logger.warn("No VaadinViews found");
+            logger.warn("No SpringViews found");
         } else if (count == 1) {
-            logger.info("1 VaadinView found");
+            logger.info("1 SpringView found");
         } else {
-            logger.info("{} VaadinViews found", count);
+            logger.info("{} SpringViews found", count);
         }
     }
 
@@ -166,11 +166,11 @@ public class SpringViewProvider implements ViewProvider {
                     "bean did not implement View interface");
 
             final UI currentUI = UI.getCurrent();
-            final VaadinView annotation = applicationContext
-                    .findAnnotationOnBean(beanName, VaadinView.class);
+            final SpringView annotation = applicationContext
+                    .findAnnotationOnBean(beanName, SpringView.class);
 
             Assert.notNull(annotation,
-                    "class did not have a VaadinView annotation");
+                    "class did not have a SpringView annotation");
 
             final Map<String, ViewProviderAccessDelegate> accessDelegates = applicationContext
                     .getBeansOfType(ViewProviderAccessDelegate.class);

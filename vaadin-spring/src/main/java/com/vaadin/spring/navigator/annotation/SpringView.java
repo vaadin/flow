@@ -37,7 +37,7 @@ import java.lang.annotation.Target;
  * available for all UI subclasses in the application:
  * 
  * <pre>
- * &#064;VaadinView(name = &quot;&quot;)
+ * &#064;SpringView(name = &quot;&quot;)
  * &#064;UIScope
  * public class MyDefaultView extends CustomComponent implements View {
  *     // ...
@@ -48,7 +48,7 @@ import java.lang.annotation.Target;
  * subclass:
  * 
  * <pre>
- * &#064;VaadinView(name = &quot;myView&quot;, ui = MyUI.class)
+ * &#064;SpringView(name = &quot;myView&quot;, ui = MyUI.class)
  * &#064;UIScope
  * public class MyView extends CustomComponent implements View {
  *     // ...
@@ -61,7 +61,7 @@ import java.lang.annotation.Target;
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @Documented
 @VaadinComponent
-public @interface VaadinView {
+public @interface SpringView {
 
     /**
      * The name of the view. This is the name that is to be passed to the
