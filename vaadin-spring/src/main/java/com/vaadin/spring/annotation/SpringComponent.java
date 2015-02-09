@@ -31,6 +31,6 @@ import java.lang.annotation.Target;
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @Documented
 @Component
-public @interface VaadinComponent {
+public @interface SpringComponent {
     String value() default "";
 }

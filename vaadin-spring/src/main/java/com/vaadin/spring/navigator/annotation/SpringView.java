@@ -15,7 +15,7 @@
  */
 package com.vaadin.spring.navigator.annotation;
 
-import com.vaadin.spring.annotation.VaadinComponent;
+import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.navigator.SpringViewProvider;
 import com.vaadin.ui.UI;
 
@@ -60,7 +60,7 @@ import java.lang.annotation.Target;
 @Target({ java.lang.annotation.ElementType.TYPE })
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @Documented
-@VaadinComponent
+@SpringComponent
 public @interface SpringView {
 
     /**
