@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  * automatically detected and configured by Spring. Use it like this:
  * 
  * <pre>
- * &#064;VaadinUI
+ * &#064;SpringUI
  * public class MyRootUI extends UI {
  *     // ...
  * }
@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * are having multiple UI subclasses in your application):
  * 
  * <pre>
- * &#064;VaadinUI(path = &quot;/myPath&quot;)
+ * &#064;SpringUI(path = &quot;/myPath&quot;)
  * public class MyUI extends UI {
  *     // ...
  * }
@@ -50,7 +50,7 @@ import java.lang.annotation.Target;
 @Documented
 @VaadinComponent
 @VaadinUIScope
-public @interface VaadinUI {
+public @interface SpringUI {
 
     /**
      * The path to which the UI will be bound. For example, a value of

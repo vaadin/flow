@@ -15,7 +15,7 @@
  */
 package com.vaadin.spring.servlet;
 
-import com.vaadin.spring.annotation.VaadinUI;
+import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.servlet.internal.AbstractSpringAwareUIProvider;
 import com.vaadin.ui.UI;
 
@@ -24,7 +24,7 @@ import org.springframework.web.context.WebApplicationContext;
 /**
  * Vaadin {@link com.vaadin.server.UIProvider} that looks up UI classes from the
  * Spring application context. The UI classes must be annotated with
- * {@link com.vaadin.spring.annotation.VaadinUI}.
+ * {@link com.vaadin.spring.annotation.SpringUI}.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */
@@ -41,13 +41,13 @@ public class SpringAwareUIProvider extends AbstractSpringAwareUIProvider {
     protected void detectUIs() {
         logger.info("Checking the application context for Vaadin UIs");
         final String[] uiBeanNames = getWebApplicationContext()
-                .getBeanNamesForAnnotation(VaadinUI.class);
+                .getBeanNamesForAnnotation(SpringUI.class);
         for (String uiBeanName : uiBeanNames) {
             Class<?> beanType = getWebApplicationContext().getType(uiBeanName);
             if (UI.class.isAssignableFrom(beanType)) {
                 logger.info("Found Vaadin UI [{}]", beanType.getCanonicalName());
                 final String path = getWebApplicationContext()
-                        .findAnnotationOnBean(uiBeanName, VaadinUI.class)
+                        .findAnnotationOnBean(uiBeanName, SpringUI.class)
                         .path();
                 Class<? extends UI> existingBeanType = getUIByPath(path);
                 if (existingBeanType != null) {

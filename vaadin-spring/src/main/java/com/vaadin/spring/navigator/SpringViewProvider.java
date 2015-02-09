@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * Use like this:
  * 
  * <pre>
- * &#064;VaadinUI
+ * &#064;SpringUI
  * public class MyUI extends UI {
  * 
  *     &#064;Autowired
