@@ -21,7 +21,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.vaadin.spring.context.VaadinApplicationContext;
 import com.vaadin.spring.internal.VaadinUIScope;
 import com.vaadin.spring.navigator.SpringViewProvider;
 
@@ -53,11 +52,6 @@ public class VaadinConfiguration implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext)
             throws BeansException {
         this.applicationContext = applicationContext;
-    }
-
-    @Bean
-    VaadinApplicationContext vaadinApplicationContext() {
-        return new VaadinApplicationContext();
     }
 
 }
