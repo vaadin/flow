@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -70,6 +71,18 @@ public class BeanStoreTest {
     }
 
     @Test
+    public void testGetSameInstance() {
+
+        // First time should at most create the factory once
+        beanStore.get(beanName1, objFactory1);
+
+        // Make sure it will not be created more than once
+        beanStore.get(beanName1, objFactory1);
+
+        verify(objFactory1, atMost(1)).getObject();
+    }
+
+    @Test
     public void testRemoveBean() {
         // Make sure to create a new bean if not already there
         beanStore.get(beanName1, objFactory1);
@@ -97,6 +110,18 @@ public class BeanStoreTest {
 
         // Make sure destroy() ran the registered destructionCallback once
         verify(destructionCallback).run();
+    }
+
+    @Test
+    public void testDestroyClearStore() {
+
+        // Make sure to create a new bean if not already there
+        beanStore.get(beanName1, objFactory1);
+
+        beanStore.destroy();
+
+        // The bean should not be there anymore
+        assertNull(beanStore.remove(beanName1));
     }
 
     @Test
