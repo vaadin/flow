@@ -157,7 +157,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <addClasspath>true</addClasspath>
+                            <addClasspath>false</addClasspath>
                             <!-- Implementation-Title and Implementation-Version come from the
                                 POM by default -->
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
