@@ -22,24 +22,24 @@ import java.lang.annotation.Target;
 /**
  * Annotation to be put on {@link com.vaadin.ui.UI}-subclasses that are to be
  * automatically detected and configured by Spring. Use it like this:
- * 
+ *
  * <pre>
  * &#064;SpringUI
  * public class MyRootUI extends UI {
  *     // ...
  * }
  * </pre>
- * 
+ *
  * Or like this, if you want to map your UI to another URL (for example if you
  * are having multiple UI subclasses in your application):
- * 
+ *
  * <pre>
- * &#064;SpringUI(path = &quot;/myPath&quot;)
+ * &#064;SpringUI(&quot;/myPath&quot;)
  * public class MyUI extends UI {
  *     // ...
  * }
  * </pre>
- * 
+ *
  * The annotated UI will automatically be placed in the {@link VaadinUIScope},
  * so there is no need to add that annotation explicitly.
  *
@@ -60,5 +60,5 @@ public @interface SpringUI {
      * application, there must not be multiple UI sub classes with the same
      * path.
      */
-    String path() default "";
+    String value() default "";
 }

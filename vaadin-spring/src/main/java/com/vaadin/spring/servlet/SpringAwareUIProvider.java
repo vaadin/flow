@@ -15,11 +15,11 @@
  */
 package com.vaadin.spring.servlet;
 
+import org.springframework.web.context.WebApplicationContext;
+
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.servlet.internal.AbstractSpringAwareUIProvider;
 import com.vaadin.ui.UI;
-
-import org.springframework.web.context.WebApplicationContext;
 
 /**
  * Vaadin {@link com.vaadin.server.UIProvider} that looks up UI classes from the
@@ -48,7 +48,7 @@ public class SpringAwareUIProvider extends AbstractSpringAwareUIProvider {
                 logger.info("Found Vaadin UI [{}]", beanType.getCanonicalName());
                 final String path = getWebApplicationContext()
                         .findAnnotationOnBean(uiBeanName, SpringUI.class)
-                        .path();
+                        .value();
                 Class<? extends UI> existingBeanType = getUIByPath(path);
                 if (existingBeanType != null) {
                     throw new IllegalStateException(String.format(
