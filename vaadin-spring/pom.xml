@@ -84,7 +84,7 @@
         <project.build.target>1.6</project.build.target>
         <project.build.source>1.6</project.build.source>
         <vaadin.version>7.4.0.beta3</vaadin.version>
-        <spring.version>4.1.2.RELEASE</spring.version>
+        <spring.version>4.1.3.RELEASE</spring.version>
         <slf4j.version>1.7.7</slf4j.version>
 
         <!-- ZIP Manifest fields -->
