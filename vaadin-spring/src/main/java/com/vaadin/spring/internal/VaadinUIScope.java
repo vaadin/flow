@@ -15,14 +15,11 @@
  */
 package com.vaadin.spring.internal;
 
-import com.vaadin.server.ClientConnector;
-import com.vaadin.server.ServiceDestroyEvent;
-import com.vaadin.server.ServiceDestroyListener;
-import com.vaadin.server.SessionDestroyEvent;
-import com.vaadin.server.SessionDestroyListener;
-import com.vaadin.server.VaadinSession;
-import com.vaadin.ui.UI;
-import com.vaadin.util.CurrentInstance;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -32,10 +29,14 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.Scope;
 import org.springframework.util.Assert;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import com.vaadin.server.ClientConnector;
+import com.vaadin.server.ServiceDestroyEvent;
+import com.vaadin.server.ServiceDestroyListener;
+import com.vaadin.server.SessionDestroyEvent;
+import com.vaadin.server.SessionDestroyListener;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.UI;
+import com.vaadin.util.CurrentInstance;
 
 /**
  * Implementation of Spring's
@@ -107,7 +108,7 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
     @Override
     public void postProcessBeanFactory(
             ConfigurableListableBeanFactory configurableListableBeanFactory)
-            throws BeansException {
+                    throws BeansException {
         LOGGER.debug("Registering Vaadin UI scope with bean factory [{}]",
                 configurableListableBeanFactory);
         configurableListableBeanFactory.registerScope(VAADIN_UI_SCOPE_NAME,
@@ -119,7 +120,7 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
      * {@link BeanStore} in the current {@link com.vaadin.server.VaadinSession}.
      */
     public static class VaadinSessionBeanStoreRetrievalStrategy implements
-            BeanStoreRetrievalStrategy {
+    BeanStoreRetrievalStrategy {
 
         private VaadinSession getVaadinSession() {
             VaadinSession current = VaadinSession.getCurrent();
@@ -174,7 +175,7 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
     }
 
     static class UIStore implements SessionDestroyListener,
-            ServiceDestroyListener, Serializable {
+    ServiceDestroyListener, Serializable {
 
         private static final long serialVersionUID = -2964924681534104416L;
 
@@ -186,7 +187,7 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
         private final String sessionId;
 
         UIStore(VaadinSession session) {
-            this.sessionId = session.getSession().getId();
+            sessionId = session.getSession().getId();
             this.session = session;
             this.session.getService().addSessionDestroyListener(this);
             this.session.getService().addServiceDestroyListener(this);
@@ -198,12 +199,12 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
             if (beanStore == null) {
                 beanStore = new UIBeanStore(uiid,
                         new BeanStore.DestructionCallback() {
-                            @Override
-                            public void beanStoreDestoyed(BeanStore beanStore) {
-                                removeBeanStore(uiid);
-                            }
+                    @Override
+                    public void beanStoreDestroyed(BeanStore beanStore) {
+                        removeBeanStore(uiid);
+                    }
 
-                        });
+                });
                 LOGGER.trace("Added [{}] to [{}]", beanStore, this);
                 beanStoreMap.put(uiid, beanStore);
             }
@@ -255,7 +256,7 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
     }
 
     static class UIBeanStore extends BeanStore implements
-            ClientConnector.DetachListener {
+    ClientConnector.DetachListener {
 
         UIBeanStore(UIID uuid, DestructionCallback destructionCallback) {
             super(uuid.toString(), destructionCallback);

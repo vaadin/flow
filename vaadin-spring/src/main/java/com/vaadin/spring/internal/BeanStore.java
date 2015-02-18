@@ -15,13 +15,13 @@
  */
 package com.vaadin.spring.internal;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectFactory;
-
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectFactory;
 
 /**
  * Class for storing beans in the different Vaadin scopes. For internal use
@@ -102,7 +102,7 @@ public class BeanStore implements Serializable {
             destructionCallbacks.clear();
             objectMap.clear();
             if (destructionCallback != null) {
-                destructionCallback.beanStoreDestoyed(this);
+                destructionCallback.beanStoreDestroyed(this);
             }
         } finally {
             destroyed = true;
@@ -121,7 +121,7 @@ public class BeanStore implements Serializable {
      */
     public static interface DestructionCallback extends Serializable {
 
-        void beanStoreDestoyed(BeanStore beanStore);
+        void beanStoreDestroyed(BeanStore beanStore);
 
     }
 }
