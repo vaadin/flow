@@ -97,12 +97,21 @@ public class BeanStore implements Serializable {
         try {
             LOGGER.debug("Destroying [{}]", this);
             for (Runnable destructionCallback : destructionCallbacks.values()) {
-                destructionCallback.run();
+                try {
+                    destructionCallback.run();
+                } catch (Exception e) {
+                    LOGGER.error("BeanStore destruction callback failed", e);
+                }
             }
             destructionCallbacks.clear();
             objectMap.clear();
             if (destructionCallback != null) {
-                destructionCallback.beanStoreDestroyed(this);
+                try {
+                    destructionCallback.beanStoreDestroyed(this);
+                } catch (Exception e) {
+                    LOGGER.error("BeanStore final destruction callback failed",
+                            e);
+                }
             }
         } finally {
             destroyed = true;

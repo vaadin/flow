@@ -16,6 +16,7 @@
 package com.vaadin.spring.config;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +24,9 @@ import org.springframework.context.annotation.Configuration;
 
 import com.vaadin.spring.internal.VaadinUIScope;
 import com.vaadin.spring.navigator.SpringViewProvider;
+import com.vaadin.spring.navigator.internal.DefaultViewCache;
+import com.vaadin.spring.navigator.internal.VaadinViewScope;
+import com.vaadin.spring.navigator.internal.ViewCache;
 
 /**
  * Spring configuration for registering the custom Vaadin scopes, the
@@ -44,8 +48,20 @@ public class VaadinConfiguration implements ApplicationContextAware {
     }
 
     @Bean
+    static VaadinViewScope vaadinViewScope() {
+        return new VaadinViewScope();
+    }
+
+    @Bean
     SpringViewProvider viewProvider() {
-        return new SpringViewProvider(applicationContext);
+        return new SpringViewProvider(applicationContext,
+                (BeanDefinitionRegistry) applicationContext);
+    }
+
+    @Bean
+    @com.vaadin.spring.annotation.VaadinUIScope
+    ViewCache viewCache() {
+        return new DefaultViewCache();
     }
 
     @Override

@@ -108,7 +108,7 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
     @Override
     public void postProcessBeanFactory(
             ConfigurableListableBeanFactory configurableListableBeanFactory)
-                    throws BeansException {
+            throws BeansException {
         LOGGER.debug("Registering Vaadin UI scope with bean factory [{}]",
                 configurableListableBeanFactory);
         configurableListableBeanFactory.registerScope(VAADIN_UI_SCOPE_NAME,
@@ -120,7 +120,7 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
      * {@link BeanStore} in the current {@link com.vaadin.server.VaadinSession}.
      */
     public static class VaadinSessionBeanStoreRetrievalStrategy implements
-    BeanStoreRetrievalStrategy {
+            BeanStoreRetrievalStrategy {
 
         private VaadinSession getVaadinSession() {
             VaadinSession current = VaadinSession.getCurrent();
@@ -175,7 +175,7 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
     }
 
     static class UIStore implements SessionDestroyListener,
-    ServiceDestroyListener, Serializable {
+            ServiceDestroyListener, Serializable {
 
         private static final long serialVersionUID = -2964924681534104416L;
 
@@ -199,12 +199,14 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
             if (beanStore == null) {
                 beanStore = new UIBeanStore(uiid,
                         new BeanStore.DestructionCallback() {
-                    @Override
-                    public void beanStoreDestroyed(BeanStore beanStore) {
-                        removeBeanStore(uiid);
-                    }
+                            private static final long serialVersionUID = 2829542503960939412L;
 
-                });
+                            @Override
+                            public void beanStoreDestroyed(BeanStore beanStore) {
+                                removeBeanStore(uiid);
+                            }
+
+                        });
                 LOGGER.trace("Added [{}] to [{}]", beanStore, this);
                 beanStoreMap.put(uiid, beanStore);
             }
@@ -256,7 +258,9 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
     }
 
     static class UIBeanStore extends BeanStore implements
-    ClientConnector.DetachListener {
+            ClientConnector.DetachListener {
+
+        private static final long serialVersionUID = 8775528615443492292L;
 
         UIBeanStore(UIID uuid, DestructionCallback destructionCallback) {
             super(uuid.toString(), destructionCallback);
