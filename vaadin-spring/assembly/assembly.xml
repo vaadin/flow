@@ -19,6 +19,7 @@
         <fileSet>
             <directory>.</directory>
             <includes>
+                <include>README.txt</include>
                 <include>license-*.txt</include>
                 <include>licensing.txt</include>
             </includes>
