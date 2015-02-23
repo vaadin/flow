@@ -33,6 +33,7 @@ import org.springframework.util.Assert;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewProvider;
+import com.vaadin.spring.internal.Conventions;
 import com.vaadin.spring.navigator.annotation.SpringView;
 import com.vaadin.spring.navigator.internal.VaadinViewScope;
 import com.vaadin.spring.navigator.internal.ViewCache;
@@ -135,7 +136,8 @@ public class SpringViewProvider implements ViewProvider {
             if (View.class.isAssignableFrom(type)) {
                 final SpringView annotation = applicationContext
                         .findAnnotationOnBean(beanName, SpringView.class);
-                final String viewName = annotation.name();
+                final String viewName = getViewNameFromAnnotation(type,
+                        annotation);
                 LOGGER.debug("Found SpringView bean [{}] with view name [{}]",
                         beanName, viewName);
                 if (applicationContext.isSingleton(beanName)) {
@@ -158,6 +160,11 @@ public class SpringViewProvider implements ViewProvider {
         } else {
             LOGGER.info("{} SpringViews found", count);
         }
+    }
+
+    protected String getViewNameFromAnnotation(Class<?> beanClass,
+            SpringView annotation) {
+        return Conventions.deriveMappingForView(beanClass, annotation);
     }
 
     @Override
@@ -215,14 +222,16 @@ public class SpringViewProvider implements ViewProvider {
             if (annotation.ui().length == 0) {
                 LOGGER.trace(
                         "View class [{}] with view name [{}] is available for all UI subclasses",
-                        type.getCanonicalName(), annotation.name());
+                        type.getCanonicalName(),
+                        getViewNameFromAnnotation(type, annotation));
             } else {
                 Class<? extends UI> validUI = getValidUIClass(currentUI,
                         annotation.ui());
                 if (validUI != null) {
                     LOGGER.trace(
                             "View class [%s] with view name [{}] is available for UI subclass [{}]",
-                            type.getCanonicalName(), annotation.name(),
+                            type.getCanonicalName(),
+                            getViewNameFromAnnotation(type, annotation),
                             validUI.getCanonicalName());
                 } else {
                     return false;

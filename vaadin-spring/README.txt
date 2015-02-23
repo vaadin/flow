@@ -18,7 +18,9 @@ As the naming of packages and some annotations have changed, the following renam
 * org.vaadin.spring -> com.vaadin.spring (for the annotations and classes included in Vaadin Spring)
 * @VaadinUI -> @SpringUI("")
   * Note that an empty string or "/" should now be used as the parameter for the root UI!
+  * The automatic mapping of @SpringUI without parameters can be overridden - see SpringAwareUIProvider for details. 
 * @VaadinView -> @SpringView
+  * The parameter "name" is changed to "value".
 
 Note also that the ui parameter of @VaadinView now also covers the subclasses of the listed UI classes.
 

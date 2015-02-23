@@ -55,6 +55,7 @@ import com.vaadin.ui.UI;
  * </pre>
  *
  * @author Petter Holmström (petter@vaadin.com)
+ * @author Henri Sara (hesara@vaadin.com)
  */
 @Target({ java.lang.annotation.ElementType.TYPE })
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
@@ -69,9 +70,20 @@ public @interface SpringView {
      * can be multiple views with the same name as long as they belong to
      * separate UI subclasses.
      *
+     * If the default value {@link #USE_CONVENTIONS} is used, the name of the
+     * view is derived from the class name so that e.g. UserDetailView becomes
+     * "user-detail". Although auto-generated view names are supported, using
+     * explicit naming of views is strongly recommended.
+     *
      * @see #ui()
      */
-    String name();
+    String value() default USE_CONVENTIONS;
+
+    /**
+     * USE_CONVENTIONS is treated as a special case that will cause the
+     * automatic View mapping to occur.
+     */
+    public static final String USE_CONVENTIONS = "USE CONVENTIONS";
 
     /**
      * By default, the view will be available for all UI subclasses in the

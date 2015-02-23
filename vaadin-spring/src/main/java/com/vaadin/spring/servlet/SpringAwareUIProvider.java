@@ -18,6 +18,7 @@ package com.vaadin.spring.servlet;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.spring.annotation.SpringUI;
+import com.vaadin.spring.internal.Conventions;
 import com.vaadin.spring.servlet.internal.AbstractSpringAwareUIProvider;
 import com.vaadin.ui.UI;
 
@@ -46,9 +47,9 @@ public class SpringAwareUIProvider extends AbstractSpringAwareUIProvider {
             Class<?> beanType = getWebApplicationContext().getType(uiBeanName);
             if (UI.class.isAssignableFrom(beanType)) {
                 logger.info("Found Vaadin UI [{}]", beanType.getCanonicalName());
-                final String path = getWebApplicationContext()
-                        .findAnnotationOnBean(uiBeanName, SpringUI.class)
-                        .value();
+                SpringUI annotation = getWebApplicationContext()
+                        .findAnnotationOnBean(uiBeanName, SpringUI.class);
+                final String path = deriveMappingForUI(beanType, annotation);
                 Class<? extends UI> existingBeanType = getUIByPath(path);
                 if (existingBeanType != null) {
                     throw new IllegalStateException(String.format(
@@ -60,6 +61,28 @@ public class SpringAwareUIProvider extends AbstractSpringAwareUIProvider {
                 mapPathToUI(path, (Class<? extends UI>) beanType);
             }
         }
+    }
+
+    /**
+     * Derive the name (path) for a UI based on its class name and annotation
+     * parameters.
+     *
+     * If a path is given as a parameter for the annotation, it is used. An
+     * empty string maps to the root context. If the special (default) value
+     * {@link SpringUI#USE_CONVENTIONS} is used, the path is generated from the
+     * UI class name.
+     *
+     * This method can be overridden to disable the conventions based mapping
+     * and map the default value to the root context.
+     *
+     * @param beanType
+     *            class of the UI bean
+     * @param annotation
+     *            the {@link SpringUI} annotation of the UI bean
+     * @return path to map the UI to
+     */
+    protected String deriveMappingForUI(Class<?> beanType, SpringUI annotation) {
+        return Conventions.deriveMappingForUI(beanType, annotation);
     }
 
 }
