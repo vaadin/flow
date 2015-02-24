@@ -16,7 +16,9 @@
 package com.vaadin.spring.config;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
@@ -38,9 +40,11 @@ import com.vaadin.spring.navigator.internal.ViewCache;
  * @see com.vaadin.spring.annotation.EnableVaadin
  */
 @Configuration
-public class VaadinConfiguration implements ApplicationContextAware {
+public class VaadinConfiguration implements ApplicationContextAware,
+        BeanDefinitionRegistryPostProcessor {
 
     private ApplicationContext applicationContext;
+    private BeanDefinitionRegistry beanDefinitionRegistry;
 
     @Bean
     static VaadinUIScope vaadinUIScope() {
@@ -55,7 +59,7 @@ public class VaadinConfiguration implements ApplicationContextAware {
     @Bean
     SpringViewProvider viewProvider() {
         return new SpringViewProvider(applicationContext,
-                (BeanDefinitionRegistry) applicationContext);
+                beanDefinitionRegistry);
     }
 
     @Bean
@@ -68,6 +72,18 @@ public class VaadinConfiguration implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext)
             throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    @Override
+    public void postProcessBeanDefinitionRegistry(
+            BeanDefinitionRegistry registry) throws BeansException {
+        beanDefinitionRegistry = registry;
+    }
+
+    @Override
+    public void postProcessBeanFactory(
+            ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        // NOP
     }
 
 }
