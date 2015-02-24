@@ -49,10 +49,10 @@ import com.vaadin.ui.UI;
  * <pre>
  * &#064;SpringUI
  * public class MyUI extends UI {
- *
+ * 
  *     &#064;Autowired
  *     SpringViewProvider viewProvider;
- *
+ * 
  *     protected void init(VaadinRequest vaadinRequest) {
  *         Navigator navigator = new Navigator(this, this);
  *         navigator.addProvider(viewProvider);
@@ -63,9 +63,8 @@ import com.vaadin.ui.UI;
  * </pre>
  *
  * View-based security can be provided by creating a Spring bean that implements
- * the
- * {@link com.vaadin.spring.navigator.SpringViewProvider.ViewProviderAccessDelegate}
- * interface. It is also possible to set an 'Access Denied' view by using
+ * the {@link com.vaadin.spring.navigator.ViewProviderAccessDelegate} interface.
+ * It is also possible to set an 'Access Denied' view by using
  * {@link #setAccessDeniedViewClass(Class)}.
  *
  * @author Petter Holmström (petter@vaadin.com)
@@ -100,9 +99,8 @@ public class SpringViewProvider implements ViewProvider {
     /**
      * Returns the class of the access denied view. If set, a bean of this type
      * will be fetched from the application context and showed to the user when
-     * a
-     * {@link com.vaadin.spring.navigator.SpringViewProvider.ViewProviderAccessDelegate}
-     * denies access to a view.
+     * a {@link com.vaadin.spring.navigator.ViewProviderAccessDelegate} denies
+     * access to a view.
      *
      * @return the access denied view class, or {@code null} if not set.
      */
@@ -113,9 +111,8 @@ public class SpringViewProvider implements ViewProvider {
     /**
      * Sets the class of the access denied view. If set, a bean of this type
      * will be fetched from the application context and showed to the user when
-     * a
-     * {@link com.vaadin.spring.navigator.SpringViewProvider.ViewProviderAccessDelegate}
-     * denies access to a view.
+     * a {@link com.vaadin.spring.navigator.ViewProviderAccessDelegate} denies
+     * access to a view.
      *
      * @param accessDeniedViewClass
      *            the access denied view class, may be {@code null}.
@@ -242,7 +239,7 @@ public class SpringViewProvider implements ViewProvider {
                     .getBeansOfType(ViewProviderAccessDelegate.class);
             for (ViewProviderAccessDelegate accessDelegate : accessDelegates
                     .values()) {
-                if (!accessDelegate.isAccessGranted(beanName, currentUI)) {
+                if (!accessDelegate.isAccessGranted(currentUI, beanName)) {
                     LOGGER.debug(
                             "Access delegate [{}] denied access to view class [{}]",
                             accessDelegate, type.getCanonicalName());
@@ -311,7 +308,7 @@ public class SpringViewProvider implements ViewProvider {
 
     private View getViewFromApplicationContextAndCheckAccess(String beanName) {
         final View view = (View) applicationContext.getBean(beanName);
-        if (isAccessGrantedToViewInstance(view)) {
+        if (isAccessGrantedToViewInstance(beanName, view)) {
             return view;
         } else {
             return null;
@@ -332,7 +329,7 @@ public class SpringViewProvider implements ViewProvider {
                 .getBeansOfType(ViewProviderAccessDelegate.class);
         for (ViewProviderAccessDelegate accessDelegate : accessDelegates
                 .values()) {
-            if (!accessDelegate.isAccessGranted(beanName, currentUI)) {
+            if (!accessDelegate.isAccessGranted(currentUI, beanName)) {
                 LOGGER.debug(
                         "Access delegate [{}] denied access to view with bean name [{}]",
                         accessDelegate, beanName);
@@ -342,55 +339,18 @@ public class SpringViewProvider implements ViewProvider {
         return true;
     }
 
-    private boolean isAccessGrantedToViewInstance(View view) {
+    private boolean isAccessGrantedToViewInstance(String beanName, View view) {
         final UI currentUI = UI.getCurrent();
         final Map<String, ViewProviderAccessDelegate> accessDelegates = applicationContext
                 .getBeansOfType(ViewProviderAccessDelegate.class);
         for (ViewProviderAccessDelegate accessDelegate : accessDelegates
                 .values()) {
-            if (!accessDelegate.isAccessGranted(view, currentUI)) {
+            if (!accessDelegate.isAccessGranted(currentUI, beanName, view)) {
                 LOGGER.debug("Access delegate [{}] denied access to view [{}]",
                         accessDelegate, view);
                 return false;
             }
         }
         return true;
-    }
-
-    /**
-     * Interface to be implemented by Spring beans that will be consulted before
-     * the Spring View provider provides a view. If any of the view providers
-     * deny access, the view provider will act like no such view ever existed,
-     * or show an
-     * {@link com.vaadin.spring.navigator.SpringViewProvider#setAccessDeniedViewClass(Class)
-     * access denied view}.
-     */
-    public interface ViewProviderAccessDelegate {
-
-        /**
-         * Checks if the current user has access to the specified view and UI.
-         *
-         * @param beanName
-         *            the bean name of the view, never {@code null}.
-         * @param ui
-         *            the UI, never {@code null}.
-         * @return true if access is granted, false if access is denied.
-         */
-        boolean isAccessGranted(String beanName, UI ui);
-
-        /**
-         * Checks if the current user has access to the specified view instance
-         * and UI. This method is invoked after
-         * {@link #isAccessGranted(String, com.vaadin.ui.UI)}, when the view
-         * instance has already been created, but before it has been returned by
-         * the view provider.
-         *
-         * @param view
-         *            the view instance, never {@code null}.
-         * @param ui
-         *            the UI, never {@code null}.
-         * @return true if access is granted, false if access is denied.
-         */
-        boolean isAccessGranted(View view, UI ui);
     }
 }
