@@ -24,6 +24,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.vaadin.spring.internal.VaadinSessionScope;
 import com.vaadin.spring.internal.VaadinUIScope;
 import com.vaadin.spring.navigator.SpringViewProvider;
 import com.vaadin.spring.navigator.internal.DefaultViewCache;
@@ -45,6 +46,11 @@ public class VaadinConfiguration implements ApplicationContextAware,
 
     private ApplicationContext applicationContext;
     private BeanDefinitionRegistry beanDefinitionRegistry;
+
+    @Bean
+    static VaadinSessionScope vaadinSessionScope() {
+        return new VaadinSessionScope();
+    }
 
     @Bean
     static VaadinUIScope vaadinUIScope() {

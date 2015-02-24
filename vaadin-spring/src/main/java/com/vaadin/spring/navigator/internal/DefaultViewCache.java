@@ -29,6 +29,7 @@ import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.spring.internal.BeanStore;
+import com.vaadin.spring.internal.SessionLockingBeanStore;
 import com.vaadin.ui.UI;
 
 /**
@@ -147,13 +148,13 @@ public class DefaultViewCache implements ViewCache {
             beanStore = new ViewBeanStore(ui, viewName,
                     new BeanStore.DestructionCallback() {
 
-                        private static final long serialVersionUID = 5580606280246825742L;
+                private static final long serialVersionUID = 5580606280246825742L;
 
-                        @Override
-                        public void beanStoreDestroyed(BeanStore beanStore) {
-                            beanStores.remove(viewName);
-                        }
-                    });
+                @Override
+                public void beanStoreDestroyed(BeanStore beanStore) {
+                    beanStores.remove(viewName);
+                }
+            });
             beanStores.put(viewName, beanStore);
         }
         return beanStore;
@@ -175,7 +176,8 @@ public class DefaultViewCache implements ViewCache {
         return beanStore;
     }
 
-    class ViewBeanStore extends BeanStore implements ViewChangeListener {
+    class ViewBeanStore extends SessionLockingBeanStore implements
+    ViewChangeListener {
 
         private static final long serialVersionUID = -7655740852919880134L;
 
@@ -184,7 +186,8 @@ public class DefaultViewCache implements ViewCache {
 
         ViewBeanStore(UI ui, String viewName,
                 DestructionCallback destructionCallback) {
-            super(ui.getId() + ":" + viewName, destructionCallback);
+            super(ui.getSession(), ui.getId() + ":" + viewName,
+                    destructionCallback);
             this.viewName = viewName;
             navigator = ui.getNavigator();
             if (navigator == null) {
