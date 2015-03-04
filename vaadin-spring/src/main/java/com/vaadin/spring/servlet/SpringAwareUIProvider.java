@@ -49,7 +49,13 @@ public class SpringAwareUIProvider extends AbstractSpringAwareUIProvider {
                 logger.info("Found Vaadin UI [{}]", beanType.getCanonicalName());
                 SpringUI annotation = getWebApplicationContext()
                         .findAnnotationOnBean(uiBeanName, SpringUI.class);
-                final String path = deriveMappingForUI(beanType, annotation);
+                final String path;
+                String tempPath = deriveMappingForUI(beanType, annotation);
+                if (tempPath.length() > 0 && !tempPath.startsWith("/")) {
+                    path = "/".concat(tempPath);
+                } else {
+                    path = tempPath;
+                }
                 Class<? extends UI> existingBeanType = getUIByPath(path);
                 if (existingBeanType != null) {
                     throw new IllegalStateException(String.format(
