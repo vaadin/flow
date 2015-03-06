@@ -15,19 +15,19 @@
  */
 package com.vaadin.spring.servlet.internal;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.context.WebApplicationContext;
+
 import com.vaadin.server.UIClassSelectionEvent;
 import com.vaadin.server.UICreateEvent;
 import com.vaadin.server.UIProvider;
 import com.vaadin.spring.internal.UIID;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Base class for {@link com.vaadin.spring.servlet.SpringAwareUIProvider} and
@@ -46,6 +46,10 @@ public abstract class AbstractSpringAwareUIProvider extends UIProvider {
 
     public AbstractSpringAwareUIProvider(
             WebApplicationContext webApplicationContext) {
+        if (webApplicationContext == null) {
+            throw new IllegalStateException(
+                    "Spring WebApplicationContext not initialized for UI provider. Use e.g. ContextLoaderListener to initialize it.");
+        }
         this.webApplicationContext = webApplicationContext;
         detectUIs();
         if (pathToUIMap.isEmpty()) {
@@ -60,13 +64,15 @@ public abstract class AbstractSpringAwareUIProvider extends UIProvider {
             UIClassSelectionEvent uiClassSelectionEvent) {
         final String path = extractUIPathFromPathInfo(uiClassSelectionEvent
                 .getRequest().getPathInfo());
-        if (pathToUIMap.containsKey(path))
+        if (pathToUIMap.containsKey(path)) {
             return pathToUIMap.get(path);
+        }
 
         for (Map.Entry<String, Class<? extends UI>> entry : wildcardPathToUIMap
                 .entrySet()) {
-            if (path.startsWith(entry.getKey()))
+            if (path.startsWith(entry.getKey())) {
                 return entry.getValue();
+            }
         }
 
         return null;
@@ -93,11 +99,12 @@ public abstract class AbstractSpringAwareUIProvider extends UIProvider {
     }
 
     protected void mapPathToUI(String path, Class<? extends UI> uiClass) {
-        if (path.endsWith("/*"))
+        if (path.endsWith("/*")) {
             wildcardPathToUIMap.put(path.substring(0, path.length() - 2),
                     uiClass);
-        else
+        } else {
             pathToUIMap.put(path, uiClass);
+        }
     }
 
     protected Class<? extends UI> getUIByPath(String path) {
