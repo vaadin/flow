@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.spring.servlet.internal;
+package com.vaadin.spring.server.internal;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,7 +30,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
 /**
- * Base class for {@link com.vaadin.spring.servlet.SpringUIProvider} and
+ * Base class for {@link com.vaadin.spring.server.SpringUIProvider} and
  * its TouchKit counterpart. Intended only for internal use by the framework.
  *
  * @author Petter Holmström (petter@vaadin.com)

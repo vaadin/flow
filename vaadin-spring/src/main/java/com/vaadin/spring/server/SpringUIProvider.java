@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.spring.servlet;
+package com.vaadin.spring.server;
 
 import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.internal.Conventions;
-import com.vaadin.spring.servlet.internal.AbstractSpringUIProvider;
+import com.vaadin.spring.server.internal.AbstractSpringUIProvider;
 import com.vaadin.ui.UI;
 
 /**

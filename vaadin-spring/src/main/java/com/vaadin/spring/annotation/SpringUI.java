@@ -19,7 +19,7 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import com.vaadin.spring.servlet.SpringUIProvider;
+import com.vaadin.spring.server.SpringUIProvider;
 
 /**
  * Annotation to be put on {@link com.vaadin.ui.UI}-subclasses that are to be
