@@ -21,7 +21,7 @@ import org.springframework.beans.factory.BeanFactory;
  * Strategy interface for getting the
  * {@link com.vaadin.spring.internal.ViewCache}. The strategy pattern
  * is used to make it easier to mock the
- * {@link com.vaadin.spring.internal.VaadinViewScope view scope} while
+ * {@link com.vaadin.spring.internal.ViewScopeImpl view scope} while
  * doing testing. For internal use only.
  *
  * @author Petter Holmström (petter@vaadin.com)

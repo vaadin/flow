@@ -23,6 +23,8 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Scope;
 
+import com.vaadin.spring.internal.ViewScopeImpl;
+
 /**
  * Stereotype annotation for Spring's {@code @Scope("vaadin-view)}. The
  * lifecycle of a bean in this scope starts when a user navigates to a view that
@@ -30,11 +32,11 @@ import org.springframework.context.annotation.Scope;
  * Vaadin UI itself is destroyed). Please note that the
  * {@link com.vaadin.navigator.View class} itself must also be in this scope. In
  * other words, it is <b>not</b> possible to use view scoped beans inside a
- * prototype or {@link com.vaadin.spring.internal.VaadinUIScope UI} scoped view.
+ * prototype or {@link com.vaadin.spring.annotation.UIScope UI} scoped view.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */
-@Scope(com.vaadin.spring.internal.VaadinViewScope.VAADIN_VIEW_SCOPE_NAME)
+@Scope(ViewScopeImpl.VAADIN_VIEW_SCOPE_NAME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

@@ -35,7 +35,7 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewProvider;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.spring.internal.Conventions;
-import com.vaadin.spring.internal.VaadinViewScope;
+import com.vaadin.spring.internal.ViewScopeImpl;
 import com.vaadin.spring.internal.ViewCache;
 import com.vaadin.ui.UI;
 
@@ -283,10 +283,10 @@ public class SpringViewProvider implements ViewProvider {
             final BeanDefinition beanDefinition = beanDefinitionRegistry
                     .getBeanDefinition(beanName);
             if (beanDefinition.getScope().equals(
-                    VaadinViewScope.VAADIN_VIEW_SCOPE_NAME)) {
+                    ViewScopeImpl.VAADIN_VIEW_SCOPE_NAME)) {
                 LOGGER.trace("View [{}] is view scoped, activating scope",
                         viewName);
-                final ViewCache viewCache = VaadinViewScope
+                final ViewCache viewCache = ViewScopeImpl
                         .getViewCacheRetrievalStrategy().getViewCache(
                                 applicationContext);
                 viewCache.creatingView(viewName);

@@ -37,10 +37,10 @@ import org.springframework.util.Assert;
  * @author Henri Sara (hesara@vaadin.com)
  * @see com.vaadin.spring.annotation.ViewScope
  */
-public class VaadinViewScope implements Scope, BeanFactoryPostProcessor {
+public class ViewScopeImpl implements Scope, BeanFactoryPostProcessor {
 
     private static final Logger LOGGER = LoggerFactory
-            .getLogger(VaadinViewScope.class);
+            .getLogger(ViewScopeImpl.class);
 
     public static final String VAADIN_VIEW_SCOPE_NAME = "vaadin-view";
 
@@ -58,14 +58,14 @@ public class VaadinViewScope implements Scope, BeanFactoryPostProcessor {
         if (viewCacheRetrievalStrategy == null) {
             viewCacheRetrievalStrategy = new BeanFactoryContextViewCacheRetrievalStrategy();
         }
-        VaadinViewScope.viewCacheRetrievalStrategy = viewCacheRetrievalStrategy;
+        ViewScopeImpl.viewCacheRetrievalStrategy = viewCacheRetrievalStrategy;
     }
 
     /**
      * Returns the
      * {@link com.vaadin.spring.internal.ViewCacheRetrievalStrategy}
      * to use. By default,
-     * {@link com.vaadin.spring.internal.VaadinViewScope.BeanFactoryContextViewCacheRetrievalStrategy}
+     * {@link com.vaadin.spring.internal.ViewScopeImpl.BeanFactoryContextViewCacheRetrievalStrategy}
      * is used.
      */
     public static synchronized ViewCacheRetrievalStrategy getViewCacheRetrievalStrategy() {

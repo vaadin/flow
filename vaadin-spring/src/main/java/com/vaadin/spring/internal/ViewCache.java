@@ -24,7 +24,7 @@ import com.vaadin.navigator.View;
  * {@link com.vaadin.navigator.View view} and its corresponding
  * {@link com.vaadin.spring.internal.BeanStore}. It is also responsible for
  * cleaning up views that have gone out of scope. Used as a delegate by
- * {@link com.vaadin.spring.internal.VaadinViewScope}. For internal
+ * {@link com.vaadin.spring.internal.ViewScopeImpl}. For internal
  * use only.
  *
  * @author Petter Holmström (petter@vaadin.com)

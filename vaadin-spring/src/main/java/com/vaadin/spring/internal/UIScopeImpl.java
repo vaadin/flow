@@ -48,11 +48,11 @@ import com.vaadin.util.CurrentInstance;
  * @author Petter Holmström (petter@vaadin.com)
  * @see com.vaadin.spring.annotation.UIScope
  */
-public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
+public class UIScopeImpl implements Scope, BeanFactoryPostProcessor {
 
     public static final String VAADIN_UI_SCOPE_NAME = "vaadin-ui";
     private static final Logger LOGGER = LoggerFactory
-            .getLogger(VaadinUIScope.class);
+            .getLogger(UIScopeImpl.class);
 
     private static BeanStoreRetrievalStrategy beanStoreRetrievalStrategy = new VaadinSessionBeanStoreRetrievalStrategy();
 
@@ -64,12 +64,12 @@ public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
         if (beanStoreRetrievalStrategy == null) {
             beanStoreRetrievalStrategy = new VaadinSessionBeanStoreRetrievalStrategy();
         }
-        VaadinUIScope.beanStoreRetrievalStrategy = beanStoreRetrievalStrategy;
+        UIScopeImpl.beanStoreRetrievalStrategy = beanStoreRetrievalStrategy;
     }
 
     /**
      * Returns the {@link BeanStoreRetrievalStrategy} to use. By default,
-     * {@link com.vaadin.spring.internal.VaadinUIScope.VaadinSessionBeanStoreRetrievalStrategy}
+     * {@link com.vaadin.spring.internal.UIScopeImpl.VaadinSessionBeanStoreRetrievalStrategy}
      * is used.
      */
     public static synchronized BeanStoreRetrievalStrategy getBeanStoreRetrievalStrategy() {

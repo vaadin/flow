@@ -23,13 +23,15 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Scope;
 
+import com.vaadin.spring.internal.UIScopeImpl;
+
 /**
  * Stereotype annotation for Spring's {@code @Scope("vaadin-ui")}.
  *
  * @author Petter Holmström (petter@vaadin.com)
  * @author Josh Long (josh@joshlong.com)
  */
-@Scope(com.vaadin.spring.internal.VaadinUIScope.VAADIN_UI_SCOPE_NAME)
+@Scope(UIScopeImpl.VAADIN_UI_SCOPE_NAME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
