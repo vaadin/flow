@@ -17,7 +17,7 @@ package com.vaadin.spring.annotation;
 
 import org.springframework.context.annotation.Import;
 
-import com.vaadin.spring.config.VaadinConfiguration;
+import com.vaadin.spring.VaadinConfiguration;
 
 import java.lang.annotation.*;
 

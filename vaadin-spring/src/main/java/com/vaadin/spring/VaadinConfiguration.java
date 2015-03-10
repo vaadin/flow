@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.spring.config;
+package com.vaadin.spring;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -24,25 +24,29 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.vaadin.spring.annotation.EnableVaadin;
 import com.vaadin.spring.internal.DefaultViewCache;
-import com.vaadin.spring.internal.VaadinSessionScope;
 import com.vaadin.spring.internal.UIScopeImpl;
-import com.vaadin.spring.internal.ViewScopeImpl;
+import com.vaadin.spring.internal.VaadinSessionScope;
 import com.vaadin.spring.internal.ViewCache;
+import com.vaadin.spring.internal.ViewScopeImpl;
 import com.vaadin.spring.navigator.SpringViewProvider;
 
 /**
  * Spring configuration for registering the custom Vaadin scopes, the
  * {@link SpringViewProvider view provider} and some other stuff.
  *
+ * Instead of using this class directly, it is recommended to add the
+ * {@link EnableVaadin} annotation to a configuration class to automatically
+ * import {@link VaadinConfiguration}.
+ *
  * @author Josh Long (josh@joshlong.com)
  * @author Petter Holmström (petter@vaadin.com)
  * @author Gert-Jan Timmer (gjr.timmer@gmail.com)
- * @see com.vaadin.spring.annotation.EnableVaadin
  */
 @Configuration
 public class VaadinConfiguration implements ApplicationContextAware,
-        BeanDefinitionRegistryPostProcessor {
+BeanDefinitionRegistryPostProcessor {
 
     private ApplicationContext applicationContext;
     private BeanDefinitionRegistry beanDefinitionRegistry;
