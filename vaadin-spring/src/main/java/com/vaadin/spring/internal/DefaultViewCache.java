@@ -31,9 +31,8 @@ import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.UI;
 
 /**
- * Default implementation of
- * {@link com.vaadin.spring.internal.vaadin.spring.navigator.internal.ViewCache}. For internal use
- * only.
+ * Default implementation of {@link com.vaadin.spring.internal.ViewCache}. For
+ * internal use only.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */
@@ -146,13 +145,13 @@ public class DefaultViewCache implements ViewCache {
             beanStore = new ViewBeanStore(ui, viewName,
                     new BeanStore.DestructionCallback() {
 
-                private static final long serialVersionUID = 5580606280246825742L;
+                        private static final long serialVersionUID = 5580606280246825742L;
 
-                @Override
-                public void beanStoreDestroyed(BeanStore beanStore) {
-                    beanStores.remove(viewName);
-                }
-            });
+                        @Override
+                        public void beanStoreDestroyed(BeanStore beanStore) {
+                            beanStores.remove(viewName);
+                        }
+                    });
             beanStores.put(viewName, beanStore);
         }
         return beanStore;
@@ -175,7 +174,7 @@ public class DefaultViewCache implements ViewCache {
     }
 
     class ViewBeanStore extends SessionLockingBeanStore implements
-    ViewChangeListener {
+            ViewChangeListener {
 
         private static final long serialVersionUID = -7655740852919880134L;
 
