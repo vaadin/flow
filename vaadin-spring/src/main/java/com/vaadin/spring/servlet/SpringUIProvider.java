@@ -19,7 +19,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.internal.Conventions;
-import com.vaadin.spring.servlet.internal.AbstractSpringAwareUIProvider;
+import com.vaadin.spring.servlet.internal.AbstractSpringUIProvider;
 import com.vaadin.ui.UI;
 
 /**
@@ -29,11 +29,11 @@ import com.vaadin.ui.UI;
  *
  * @author Petter Holmström (petter@vaadin.com)
  */
-public class SpringAwareUIProvider extends AbstractSpringAwareUIProvider {
+public class SpringUIProvider extends AbstractSpringUIProvider {
 
     private static final long serialVersionUID = 6954428459733726004L;
 
-    public SpringAwareUIProvider(WebApplicationContext webApplicationContext) {
+    public SpringUIProvider(WebApplicationContext webApplicationContext) {
         super(webApplicationContext);
     }
 

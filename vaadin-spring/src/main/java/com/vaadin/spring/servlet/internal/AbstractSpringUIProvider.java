@@ -30,12 +30,12 @@ import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
 /**
- * Base class for {@link com.vaadin.spring.servlet.SpringAwareUIProvider} and
+ * Base class for {@link com.vaadin.spring.servlet.SpringUIProvider} and
  * its TouchKit counterpart. Intended only for internal use by the framework.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */
-public abstract class AbstractSpringAwareUIProvider extends UIProvider {
+public abstract class AbstractSpringUIProvider extends UIProvider {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -44,7 +44,7 @@ public abstract class AbstractSpringAwareUIProvider extends UIProvider {
     private final Map<String, Class<? extends UI>> pathToUIMap = new ConcurrentHashMap<String, Class<? extends UI>>();
     private final Map<String, Class<? extends UI>> wildcardPathToUIMap = new ConcurrentHashMap<String, Class<? extends UI>>();
 
-    public AbstractSpringAwareUIProvider(
+    public AbstractSpringUIProvider(
             WebApplicationContext webApplicationContext) {
         if (webApplicationContext == null) {
             throw new IllegalStateException(

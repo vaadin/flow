@@ -19,7 +19,7 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import com.vaadin.spring.servlet.SpringAwareUIProvider;
+import com.vaadin.spring.servlet.SpringUIProvider;
 
 /**
  * Annotation to be put on {@link com.vaadin.ui.UI}-subclasses that are to be
@@ -67,7 +67,7 @@ public @interface SpringUI {
      * SampleApplicationUI will be bound to "/sample-application".
      *
      * To override the default behavior, see
-     * {@link SpringAwareUIProvider#deriveMappingForUI()}.
+     * {@link SpringUIProvider#deriveMappingForUI()}.
      */
     String value() default USE_CONVENTIONS;
 

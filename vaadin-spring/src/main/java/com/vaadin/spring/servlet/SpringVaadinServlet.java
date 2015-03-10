@@ -33,7 +33,7 @@ import com.vaadin.server.VaadinSession;
 
 /**
  * Subclass of the standard {@link com.vaadin.server.VaadinServlet Vaadin
- * servlet} that adds a {@link SpringAwareUIProvider} to every new Vaadin
+ * servlet} that adds a {@link SpringUIProvider} to every new Vaadin
  * session.
  * <p>
  * If you need a custom Vaadin servlet, you can either extend this servlet
@@ -43,7 +43,7 @@ import com.vaadin.server.VaadinSession;
  * @author Petter Holmström (petter@vaadin.com)
  * @author Josh Long (josh@joshlong.com)
  */
-public class SpringAwareVaadinServlet extends VaadinServlet {
+public class SpringVaadinServlet extends VaadinServlet {
 
     private static final long serialVersionUID = 5371983676318947478L;
 
@@ -75,7 +75,7 @@ public class SpringAwareVaadinServlet extends VaadinServlet {
                 }
 
                 // add Spring UI provider
-                SpringAwareUIProvider uiProvider = new SpringAwareUIProvider(
+                SpringUIProvider uiProvider = new SpringUIProvider(
                         webApplicationContext);
                 session.addUIProvider(uiProvider);
             }
