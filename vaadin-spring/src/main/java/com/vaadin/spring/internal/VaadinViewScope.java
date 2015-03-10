@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.spring.navigator.internal;
+package com.vaadin.spring.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public class VaadinViewScope implements Scope, BeanFactoryPostProcessor {
 
     /**
      * Sets the
-     * {@link com.vaadin.spring.navigator.internal.ViewCacheRetrievalStrategy}
+     * {@link com.vaadin.spring.internal.ViewCacheRetrievalStrategy}
      * to use.
      */
     public static synchronized void setViewCacheRetrievalStrategy(
@@ -63,9 +63,9 @@ public class VaadinViewScope implements Scope, BeanFactoryPostProcessor {
 
     /**
      * Returns the
-     * {@link com.vaadin.spring.navigator.internal.ViewCacheRetrievalStrategy}
+     * {@link com.vaadin.spring.internal.ViewCacheRetrievalStrategy}
      * to use. By default,
-     * {@link com.vaadin.spring.navigator.internal.VaadinViewScope.BeanFactoryContextViewCacheRetrievalStrategy}
+     * {@link com.vaadin.spring.internal.VaadinViewScope.BeanFactoryContextViewCacheRetrievalStrategy}
      * is used.
      */
     public static synchronized ViewCacheRetrievalStrategy getViewCacheRetrievalStrategy() {
@@ -120,8 +120,8 @@ public class VaadinViewScope implements Scope, BeanFactoryPostProcessor {
 
     /**
      * Implementation of
-     * {@link com.vaadin.spring.navigator.internal.ViewCacheRetrievalStrategy}
-     * that fetches the {@link com.vaadin.spring.navigator.internal.ViewCache}
+     * {@link com.vaadin.spring.internal.ViewCacheRetrievalStrategy}
+     * that fetches the {@link com.vaadin.spring.internal.ViewCache}
      * instance from the provided bean factory.
      */
     public static class BeanFactoryContextViewCacheRetrievalStrategy implements

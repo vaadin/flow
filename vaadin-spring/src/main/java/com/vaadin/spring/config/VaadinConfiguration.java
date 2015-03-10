@@ -24,12 +24,12 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.vaadin.spring.internal.DefaultViewCache;
 import com.vaadin.spring.internal.VaadinSessionScope;
 import com.vaadin.spring.internal.VaadinUIScope;
+import com.vaadin.spring.internal.VaadinViewScope;
+import com.vaadin.spring.internal.ViewCache;
 import com.vaadin.spring.navigator.SpringViewProvider;
-import com.vaadin.spring.navigator.internal.DefaultViewCache;
-import com.vaadin.spring.navigator.internal.VaadinViewScope;
-import com.vaadin.spring.navigator.internal.ViewCache;
 
 /**
  * Spring configuration for registering the custom Vaadin scopes, the

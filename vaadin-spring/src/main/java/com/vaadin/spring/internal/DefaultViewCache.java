@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.spring.navigator.internal;
+package com.vaadin.spring.internal;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,13 +28,11 @@ import org.springframework.util.Assert;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.spring.internal.BeanStore;
-import com.vaadin.spring.internal.SessionLockingBeanStore;
 import com.vaadin.ui.UI;
 
 /**
  * Default implementation of
- * {@link org.vaadin.spring.navigator.internal.ViewCache}. For internal use
+ * {@link com.vaadin.spring.internal.vaadin.spring.navigator.internal.ViewCache}. For internal use
  * only.
  *
  * @author Petter Holmström (petter@vaadin.com)

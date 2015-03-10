@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.spring.navigator.internal;
+package com.vaadin.spring.internal;
 
 import org.springframework.beans.factory.BeanFactory;
 
 /**
  * Strategy interface for getting the
- * {@link com.vaadin.spring.navigator.internal.ViewCache}. The strategy pattern
+ * {@link com.vaadin.spring.internal.ViewCache}. The strategy pattern
  * is used to make it easier to mock the
- * {@link com.vaadin.spring.navigator.internal.VaadinViewScope view scope} while
+ * {@link com.vaadin.spring.internal.VaadinViewScope view scope} while
  * doing testing. For internal use only.
  *
  * @author Petter Holmström (petter@vaadin.com)

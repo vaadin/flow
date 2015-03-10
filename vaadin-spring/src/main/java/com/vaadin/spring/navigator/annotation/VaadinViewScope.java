@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Scope;
  *
  * @author Petter Holmström (petter@vaadin.com)
  */
-@Scope(com.vaadin.spring.navigator.internal.VaadinViewScope.VAADIN_VIEW_SCOPE_NAME)
+@Scope(com.vaadin.spring.internal.VaadinViewScope.VAADIN_VIEW_SCOPE_NAME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

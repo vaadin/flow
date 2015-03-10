@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.spring.navigator.internal;
+package com.vaadin.spring.internal;
 
 import java.io.Serializable;
 
 import com.vaadin.navigator.View;
-import com.vaadin.spring.internal.BeanStore;
 
 /**
  * A view cache is used to keep track of the currently active
  * {@link com.vaadin.navigator.View view} and its corresponding
  * {@link com.vaadin.spring.internal.BeanStore}. It is also responsible for
  * cleaning up views that have gone out of scope. Used as a delegate by
- * {@link com.vaadin.spring.navigator.internal.VaadinViewScope}. For internal
+ * {@link com.vaadin.spring.internal.VaadinViewScope}. For internal
  * use only.
  *
  * @author Petter Holmström (petter@vaadin.com)
