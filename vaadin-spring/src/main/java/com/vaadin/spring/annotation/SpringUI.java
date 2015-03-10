@@ -42,7 +42,7 @@ import com.vaadin.spring.servlet.SpringAwareUIProvider;
  * }
  * </pre>
  *
- * The annotated UI will automatically be placed in the {@link VaadinUIScope},
+ * The annotated UI will automatically be placed in the {@link UIScope},
  * so there is no need to add that annotation explicitly.
  *
  * @author Petter Holmström (petter@vaadin.com)
@@ -51,7 +51,7 @@ import com.vaadin.spring.servlet.SpringAwareUIProvider;
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @Documented
 @SpringComponent
-@VaadinUIScope
+@UIScope
 public @interface SpringUI {
 
     /**

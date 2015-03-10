@@ -46,7 +46,7 @@ import com.vaadin.util.CurrentInstance;
  * {@value #VAADIN_UI_SCOPE_NAME}".
  *
  * @author Petter Holmström (petter@vaadin.com)
- * @see com.vaadin.spring.annotation.VaadinUIScope
+ * @see com.vaadin.spring.annotation.UIScope
  */
 public class VaadinUIScope implements Scope, BeanFactoryPostProcessor {
 

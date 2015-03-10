@@ -69,7 +69,7 @@ public class VaadinConfiguration implements ApplicationContextAware,
     }
 
     @Bean
-    @com.vaadin.spring.annotation.VaadinUIScope
+    @com.vaadin.spring.annotation.UIScope
     ViewCache viewCache() {
         return new DefaultViewCache();
     }
