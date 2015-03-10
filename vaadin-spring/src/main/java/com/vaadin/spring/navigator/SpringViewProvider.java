@@ -35,8 +35,8 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewProvider;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.spring.internal.Conventions;
-import com.vaadin.spring.internal.ViewScopeImpl;
 import com.vaadin.spring.internal.ViewCache;
+import com.vaadin.spring.internal.ViewScopeImpl;
 import com.vaadin.ui.UI;
 
 /**
@@ -49,10 +49,10 @@ import com.vaadin.ui.UI;
  * <pre>
  * &#064;SpringUI
  * public class MyUI extends UI {
- * 
+ *
  *     &#064;Autowired
  *     SpringViewProvider viewProvider;
- * 
+ *
  *     protected void init(VaadinRequest vaadinRequest) {
  *         Navigator navigator = new Navigator(this, this);
  *         navigator.addProvider(viewProvider);
@@ -148,6 +148,11 @@ public class SpringViewProvider implements ViewProvider {
                 }
                 beanNames.add(beanName);
                 count++;
+            } else {
+                LOGGER.error("The view bean [{}] does not implement View",
+                        beanName);
+                throw new IllegalStateException("SpringView bean [" + beanName
+                        + "] must implement View");
             }
         }
         if (count == 0) {
