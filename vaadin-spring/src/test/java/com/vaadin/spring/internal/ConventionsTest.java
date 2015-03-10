@@ -21,7 +21,7 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.spring.navigator.annotation.SpringView;
+import com.vaadin.spring.annotation.SpringView;
 
 /**
  */

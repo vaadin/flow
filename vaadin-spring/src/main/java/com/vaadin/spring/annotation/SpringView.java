@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.spring.navigator.annotation;
+package com.vaadin.spring.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.navigator.SpringViewProvider;
 import com.vaadin.ui.UI;
 
@@ -29,7 +28,7 @@ import com.vaadin.ui.UI;
  * <p>
  * This annotation is also a stereotype annotation, so Spring will automatically
  * detect the annotated classes. By default, this annotation also puts the view
- * into the {@link com.vaadin.spring.navigator.annotation.VaadinViewScope view
+ * into the {@link com.vaadin.spring.annotation.VaadinViewScope view
  * scope}. You can override this by using another scope annotation, such as
  * {@link com.vaadin.spring.annotation.VaadinUIScope the UI scope}, on your view
  * class. <b>However, the singleton scope will not work!</b>

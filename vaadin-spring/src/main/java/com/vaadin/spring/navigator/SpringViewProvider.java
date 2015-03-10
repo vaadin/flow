@@ -33,10 +33,10 @@ import org.springframework.util.Assert;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewProvider;
+import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.spring.internal.Conventions;
 import com.vaadin.spring.internal.VaadinViewScope;
 import com.vaadin.spring.internal.ViewCache;
-import com.vaadin.spring.navigator.annotation.SpringView;
 import com.vaadin.ui.UI;
 
 /**

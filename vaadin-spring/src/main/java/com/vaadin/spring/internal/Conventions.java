@@ -18,7 +18,7 @@ package com.vaadin.spring.internal;
 import org.springframework.util.ClassUtils;
 
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.spring.navigator.annotation.SpringView;
+import com.vaadin.spring.annotation.SpringView;
 
 /**
  * Internal utility class for deriving automatic mappings for view and UI names.

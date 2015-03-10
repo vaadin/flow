@@ -35,7 +35,7 @@ import org.springframework.util.Assert;
  *
  * @author Petter Holmström (petter@vaadin.com)
  * @author Henri Sara (hesara@vaadin.com)
- * @see com.vaadin.spring.navigator.annotation.VaadinViewScope
+ * @see com.vaadin.spring.annotation.VaadinViewScope
  */
 public class VaadinViewScope implements Scope, BeanFactoryPostProcessor {
 
