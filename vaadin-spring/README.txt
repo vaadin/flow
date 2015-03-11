@@ -9,18 +9,37 @@ See the tutorial at https://vaadin.com/wiki/-/wiki/Main/Vaadin+Spring .
 
 See also the companion add-on Vaadin Spring Boot.
 
+Changes in 1.0.0.beta1
+----
+
+There are several API changes in Vaadin Spring 1.0.0.beta1 compared to earlier alpha versions.
+These aim for a stable API, and include:
+
+API renames:
+* The parameter name for @SpringUI is "path"
+* The parameter name for @SpringView is "name"
+* VaadinUIScope -> UIScope
+* VaadinViewScope -> ViewScope
+* Some annotations and classes have moved to new packages
+* com.vaadin.spring.servlet.SpringAwareUIProvider -> com.vaadin.spring.server.SpringUIProvider
+* com.vaadin.spring.servlet.SpringAwareVaadinServlet -> com.vaadin.spring.server.SpringVaadinServlet
+
+Other changes:
+* The default mapping for @SpringUI is the context root and there is no convention based auto-generation of the path
+* It is possible to omit the leading slash in @SpringUI path mapping
+* Added @VaadinSessionScope
+* ViewProviderAccessDelegate has been split to ViewAccessControl and ViewInstanceAccessControl
+* Using @SpringView on a class not implementing View stops view scanning
+
 Migrating from vaadin4spring
 ----
 Vaadin Spring contains a subset of the functionality of the add-on vaadin4spring.
-The community add-on vaadin4spring can still be used for the functionality not present in Vaadin Spring.
+The community add-on vaadin4spring will be updated to extend Vaadin Spring to provide additional functionality not present in Vaadin Spring.
 
 As the naming of packages and some annotations have changed, the following renames and import updates are typically required for migration:
 * org.vaadin.spring -> com.vaadin.spring (for the annotations and classes included in Vaadin Spring)
-* @VaadinUI -> @SpringUI("")
-  * Note that an empty string or "/" should now be used as the parameter for the root UI!
-  * The automatic mapping of @SpringUI without parameters can be overridden - see SpringAwareUIProvider for details. 
+* @VaadinUI -> @SpringUI
 * @VaadinView -> @SpringView
-  * The parameter "name" is changed to "value".
 
 Note also that the ui parameter of @VaadinView now also covers the subclasses of the listed UI classes.
 
