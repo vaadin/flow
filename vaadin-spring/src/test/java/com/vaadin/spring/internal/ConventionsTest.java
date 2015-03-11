@@ -36,7 +36,7 @@ public class ConventionsTest {
     public static class SimpleViewWithoutViewName {
     }
 
-    @SpringView("simpleview")
+    @SpringView(name = "simpleview")
     public static class SimpleViewWithViewName {
     }
 

@@ -33,8 +33,8 @@ public final class Conventions {
     public static String deriveMappingForView(Class<?> beanClass,
             SpringView annotation) {
         if (annotation != null
-                && !SpringView.USE_CONVENTIONS.equals(annotation.value())) {
-            return annotation.value();
+                && !SpringView.USE_CONVENTIONS.equals(annotation.name())) {
+            return annotation.name();
         } else {
             // derive mapping from classname
             // do not use proxy class names

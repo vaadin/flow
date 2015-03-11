@@ -28,8 +28,8 @@ import com.vaadin.ui.UI;
  * <p>
  * This annotation is also a stereotype annotation, so Spring will automatically
  * detect the annotated classes. By default, this annotation also puts the view
- * into the {@link com.vaadin.spring.annotation.ViewScope view
- * scope}. You can override this by using another scope annotation, such as
+ * into the {@link com.vaadin.spring.annotation.ViewScope view scope}. You can
+ * override this by using another scope annotation, such as
  * {@link com.vaadin.spring.annotation.UIScope the UI scope}, on your view
  * class. <b>However, the singleton scope will not work!</b>
  * <p>
@@ -76,7 +76,7 @@ public @interface SpringView {
      *
      * @see #ui()
      */
-    String value() default USE_CONVENTIONS;
+    String name() default USE_CONVENTIONS;
 
     /**
      * USE_CONVENTIONS is treated as a special case that will cause the
