@@ -15,17 +15,25 @@
  */
 package com.vaadin.spring.annotation;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import com.vaadin.spring.VaadinConfiguration;
 
-import java.lang.annotation.*;
-
 /**
- * Brings in the machinery to setup Spring + Vaadin applications.
+ * Brings in the machinery to setup Spring + Vaadin applications. This
+ * annotation should be added on a {@link Configuration} class of the
+ * application to automatically import {@link VaadinConfiguration}.
  *
  * @author Josh Long (josh@joshlong.com)
  * @author Petter Holmström (petter@vaadin.com)
+ * @author Henri Sara (hesara@vaadin.com)
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
