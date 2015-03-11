@@ -17,11 +17,14 @@ package com.vaadin.spring.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.After;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.ui.UI;
 
@@ -53,7 +56,12 @@ public class UUIDTest {
         UI ui = mock(UI.class);
         when(ui.getUIId()).thenReturn(expected_id);
         UIID uiid = new UIID(ui);
-        verify(ui);
+        verify(ui, atLeast(1)).getUIId();
         assertEquals(new UIID(expected_id), uiid);
+    }
+
+    @After
+    public void validate() {
+        Mockito.validateMockitoUsage();
     }
 }

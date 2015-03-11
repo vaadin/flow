@@ -24,10 +24,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 
 import com.vaadin.server.VaadinService;
@@ -234,4 +236,9 @@ public class VaadinUIScopeTest {
     }
 
     // TODO: Tests for UIStore and UIBeanStore
+
+    @After
+    public void validate() {
+        Mockito.validateMockitoUsage();
+    }
 }

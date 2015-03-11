@@ -24,8 +24,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 
 public class BeanStoreTest {
@@ -128,5 +130,10 @@ public class BeanStoreTest {
     public void testToStringConsistent() {
         // Make sure the format is always the same
         assertEquals(beanStore.toString(), beanStore.toString());
+    }
+
+    @After
+    public void validate() {
+        Mockito.validateMockitoUsage();
     }
 }
