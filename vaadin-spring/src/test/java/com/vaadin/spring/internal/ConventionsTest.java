@@ -20,7 +20,6 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.SpringView;
 
 /**
@@ -28,22 +27,6 @@ import com.vaadin.spring.annotation.SpringView;
 public class ConventionsTest {
 
     // static test classes
-
-    @SpringUI("/mypath")
-    public static class AnnotationUI {
-    }
-
-    @SpringUI(SpringUI.USE_CONVENTIONS)
-    public static class ConventionUI {
-    }
-
-    @SpringUI
-    public static class DefaultUI {
-    }
-
-    @SpringUI("")
-    public static class RootUI {
-    }
 
     @SpringView
     public static class SimpleView {
@@ -78,39 +61,6 @@ public class ConventionsTest {
         String expected = "simple";
         String actual = deriveMappingForView(SimpleView.class);
         assertThat(actual, is(expected));
-    }
-
-    @Test
-    public void extractUIPathUsingConvention() {
-        String expected = "/convention";
-        String actual = deriveMappingForUI(ConventionUI.class);
-        assertThat(actual, is(expected));
-    }
-
-    @Test
-    public void extractUIPathUsingAnnotation() {
-        String expected = "/mypath";
-        String actual = deriveMappingForUI(AnnotationUI.class);
-        assertThat(actual, is(expected));
-    }
-
-    @Test
-    public void extractRootUIPathUsingAnnotation() {
-        String expected = "";
-        String actual = deriveMappingForUI(RootUI.class);
-        assertThat(actual, is(expected));
-    }
-
-    @Test
-    public void extractDefaultUIPathUsingConvention() {
-        String expected = "/default";
-        String actual = deriveMappingForUI(DefaultUI.class);
-        assertThat(actual, is(expected));
-    }
-
-    public String deriveMappingForUI(Class<?> beanClass) {
-        SpringUI annotation = beanClass.getAnnotation(SpringUI.class);
-        return Conventions.deriveMappingForUI(beanClass, annotation);
     }
 
     public String deriveMappingForView(Class<?> beanClass) {

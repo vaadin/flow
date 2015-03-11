@@ -26,7 +26,6 @@ import com.vaadin.server.UIClassSelectionEvent;
 import com.vaadin.server.UICreateEvent;
 import com.vaadin.server.UIProvider;
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.spring.internal.Conventions;
 import com.vaadin.spring.internal.UIID;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
@@ -70,10 +69,8 @@ public class SpringUIProvider extends UIProvider {
             Class<?> beanType = getWebApplicationContext().getType(uiBeanName);
             if (UI.class.isAssignableFrom(beanType)) {
                 logger.info("Found Vaadin UI [{}]", beanType.getCanonicalName());
-                SpringUI annotation = getWebApplicationContext()
-                        .findAnnotationOnBean(uiBeanName, SpringUI.class);
                 final String path;
-                String tempPath = deriveMappingForUI(beanType, annotation);
+                String tempPath = deriveMappingForUI(uiBeanName);
                 if (tempPath.length() > 0 && !tempPath.startsWith("/")) {
                     path = "/".concat(tempPath);
                 } else {
@@ -93,25 +90,19 @@ public class SpringUIProvider extends UIProvider {
     }
 
     /**
-     * Derive the name (path) for a UI based on its class name and annotation
-     * parameters.
+     * Derive the name (path) for a UI based on its annotation parameters.
      *
      * If a path is given as a parameter for the annotation, it is used. An
-     * empty string maps to the root context. If the special (default) value
-     * {@link SpringUI#USE_CONVENTIONS} is used, the path is generated from the
-     * UI class name.
+     * empty string maps to the root context.
      *
-     * This method can be overridden to disable the conventions based mapping
-     * and map the default value to the root context.
-     *
-     * @param beanType
-     *            class of the UI bean
-     * @param annotation
-     *            the {@link SpringUI} annotation of the UI bean
+     * @param uiBeanName
+     *            name of the UI bean
      * @return path to map the UI to
      */
-    protected String deriveMappingForUI(Class<?> beanType, SpringUI annotation) {
-        return Conventions.deriveMappingForUI(beanType, annotation);
+    protected String deriveMappingForUI(String uiBeanName) {
+        SpringUI annotation = getWebApplicationContext().findAnnotationOnBean(
+                uiBeanName, SpringUI.class);
+        return annotation.path();
     }
 
     @Override

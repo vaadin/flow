@@ -17,11 +17,10 @@ package com.vaadin.spring.internal;
 
 import org.springframework.util.ClassUtils;
 
-import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.SpringView;
 
 /**
- * Internal utility class for deriving automatic mappings for view and UI names.
+ * Internal utility class for deriving automatic mappings for view names.
  *
  * @author Henri Sara (hesara@vaadin.com)
  */
@@ -29,20 +28,6 @@ public final class Conventions {
 
     private Conventions() {
         // utility class, no instances of this class should be created
-    }
-
-    public static String deriveMappingForUI(Class<?> beanClass,
-            SpringUI annotation) {
-        String mapping = annotation.value();
-        if (!SpringUI.USE_CONVENTIONS.equals(mapping)) {
-            return mapping;
-        } else {
-            // derive mapping from classname
-            // do not use proxy class names
-            Class<?> realBeanClass = ClassUtils.getUserClass(beanClass);
-            mapping = realBeanClass.getSimpleName().replaceFirst("UI$", "");
-            return "/" + upperCamelToLowerHyphen(mapping);
-        }
     }
 
     public static String deriveMappingForView(Class<?> beanClass,

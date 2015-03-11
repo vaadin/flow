@@ -19,14 +19,12 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import com.vaadin.spring.server.SpringUIProvider;
-
 /**
  * Annotation to be put on {@link com.vaadin.ui.UI}-subclasses that are to be
  * automatically detected and configured by Spring. Use it like this:
  *
  * <pre>
- * &#064;SpringUI(name = &quot;&quot;)
+ * &#064;SpringUI
  * public class MyRootUI extends UI {
  *     // ...
  * }
@@ -36,14 +34,14 @@ import com.vaadin.spring.server.SpringUIProvider;
  * are having multiple UI subclasses in your application):
  *
  * <pre>
- * &#064;SpringUI(&quot;/myPath&quot;)
+ * &#064;SpringUI(path = &quot;/myPath&quot;)
  * public class MyUI extends UI {
  *     // ...
  * }
  * </pre>
  *
- * The annotated UI will automatically be placed in the {@link UIScope},
- * so there is no need to add that annotation explicitly.
+ * The annotated UI will automatically be placed in the {@link UIScope}, so
+ * there is no need to add that annotation explicitly.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */
@@ -57,24 +55,11 @@ public @interface SpringUI {
     /**
      * The path to which the UI will be bound. For example, a value of
      * {@code "/myUI"} would be mapped to
-     * {@code "/myContextPath/myVaadinServletPath/myUI"}. An empty string will
-     * map the UI to the root of the servlet. Within a web application, there
-     * must not be multiple UI sub classes with the same path.
-     *
-     * By default, and if the special value {@link #USE_CONVENTIONS} is used,
-     * the mapping is derived from the simple name of the class. A class
-     * WelcomeVaadin is going to be bound to "/welcome-vaadin" uri. A class
-     * SampleApplicationUI will be bound to "/sample-application".
-     *
-     * To override the default behavior, see
-     * {@link SpringUIProvider#deriveMappingForUI()}.
+     * {@code "/myContextPath/myVaadinServletPath/myUI"}. An empty string
+     * (default) will map the UI to the root of the servlet. Within a web
+     * application, there must not be multiple UI sub classes with the same
+     * path.
      */
-    String value() default USE_CONVENTIONS;
-
-    /**
-     * USE_CONVENTIONS is treated as a special case that will cause the
-     * automatic UI mapping to occur.
-     */
-    public final static String USE_CONVENTIONS = "USE CONVENTIONS";
+    String path() default "";
 
 }
