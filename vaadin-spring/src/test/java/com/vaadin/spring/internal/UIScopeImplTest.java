@@ -39,14 +39,14 @@ import com.vaadin.spring.internal.UIScopeImpl.UIStore;
 import com.vaadin.spring.internal.UIScopeImpl.VaadinSessionBeanStoreRetrievalStrategy;
 import com.vaadin.util.CurrentInstance;
 
-public class VaadinUIScopeTest {
+public class UIScopeImplTest {
 
     private static final String TEST_BEAN_NAME = "TestBean";
     private static final String TEST_SESSION_ID = "TestSessionID";
     private static final int TEST_UIID = 123;
     private static final String TEST_CONVERSATION_ID = "TestConversationID";
 
-    private UIScopeImpl vaadinUIScope;
+    private UIScopeImpl uiScopeImpl;
     private Object bean = new Object();
     private ObjectFactory<Object> objFactory;
 
@@ -70,7 +70,7 @@ public class VaadinUIScopeTest {
         when(vaadinBSRetrieval.getConversationId()).thenReturn(
                 TEST_CONVERSATION_ID);
 
-        vaadinUIScope = new UIScopeImpl();
+        uiScopeImpl = new UIScopeImpl();
         UIScopeImpl.setBeanStoreRetrievalStrategy(vaadinBSRetrieval);
     }
 
@@ -92,7 +92,7 @@ public class VaadinUIScopeTest {
 
     @Test
     public void testGet() {
-        Object ret = vaadinUIScope.get(TEST_BEAN_NAME, objFactory);
+        Object ret = uiScopeImpl.get(TEST_BEAN_NAME, objFactory);
 
         assertSame(bean, ret);
 
@@ -101,8 +101,8 @@ public class VaadinUIScopeTest {
 
     @Test
     public void testRemove() {
-        Object ret1 = vaadinUIScope.get(TEST_BEAN_NAME, objFactory);
-        Object ret = vaadinUIScope.remove(TEST_BEAN_NAME);
+        Object ret1 = uiScopeImpl.get(TEST_BEAN_NAME, objFactory);
+        Object ret = uiScopeImpl.remove(TEST_BEAN_NAME);
 
         assertSame(bean, ret);
 
@@ -113,19 +113,19 @@ public class VaadinUIScopeTest {
     public void testRegisterDestructionCallback() {
         String s = "CallBack";
         Runnable runnable = mock(Runnable.class);
-        vaadinUIScope.registerDestructionCallback(s, runnable);
+        uiScopeImpl.registerDestructionCallback(s, runnable);
 
         verify(beanStore).registerDestructionCallback(s, runnable);
     }
 
     @Test
     public void testResolveContextualObject() {
-        assertNull(vaadinUIScope.resolveContextualObject("SomeString"));
+        assertNull(uiScopeImpl.resolveContextualObject("SomeString"));
     }
 
     @Test
     public void testGetConversationId() {
-        String ret = vaadinUIScope.getConversationId();
+        String ret = uiScopeImpl.getConversationId();
 
         assertSame(TEST_CONVERSATION_ID, ret);
 
