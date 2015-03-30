@@ -1,17 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.vaadin</groupId>
     <artifactId>vaadin-spring</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>com.vaadin</groupId>
-        <artifactId>vaadin-parent</artifactId>
-        <version>1.0.0</version>
-        <!-- Parent POM is not in the containing directory -->
-        <relativePath></relativePath>
+        <artifactId>vaadin-spring-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
 
     <name>vaadin-spring</name>
@@ -20,80 +16,8 @@
     </description>
     <url>https://github.com/vaadin/spring</url>
 
-    <organization>
-        <name>Vaadin Ltd</name>
-        <url>http://vaadin.com</url>
-    </organization>
-
-    <licenses>
-        <license>
-            <name>Apache License 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-        </license>
-    </licenses>
-
-    <scm>
-        <url>https://github.com/vaadin/spring</url>
-        <connection>scm:git:git@github.com:vaadin/spring.git</connection>
-        <developerConnection>scm:git:git@github.com:vaadin/spring.git</developerConnection>
-    </scm>
-
-    <developers>
-        <!-- In alphabetical order -->
-        <developer>
-            <name>AMahdy AbdElAziz</name>
-            <organization>Vaadin</organization>
-            <email>amahdy7@gmail.com</email>
-        </developer>
-        <developer>
-            <name>Chris Phillipson</name>
-            <email>fastnsilver@gmail.com</email>
-        </developer>
-        <developer>
-            <name>Henri Sara</name>
-            <organization>Vaadin</organization>
-            <email>hesara@vaadin.com</email>
-        </developer>
-        <developer>
-            <name>Josh Long</name>
-            <email>josh@joshlong.com</email>
-        </developer>
-        <developer>
-            <name>Matti Tahvonen</name>
-            <organization>Vaadin</organization>
-            <email>matti@vaadin.com</email>
-        </developer>
-        <developer>
-            <name>Nicolas Frankel</name>
-            <email>nicolas@frankel.ch</email>
-        </developer>
-        <developer>
-            <name>Peter Lehto</name>
-            <organization>Vaadin</organization>
-            <email>peter@vaadin.com</email>
-        </developer>
-        <developer>
-            <name>Petter Holmström</name>
-            <organization>Vaadin</organization>
-            <email>petter@vaadin.com</email>
-        </developer>
-    </developers>
-
     <properties>
-        <project.build.encoding>UTF-8</project.build.encoding>
-        <project.build.target>1.6</project.build.target>
-        <project.build.source>1.6</project.build.source>
-        <vaadin.version>7.4.0</vaadin.version>
-        <spring.version>4.1.4.RELEASE</spring.version>
-        <slf4j.version>1.7.7</slf4j.version>
-
-        <!-- ZIP Manifest fields -->
-        <Implementation-Version>${project.version}</Implementation-Version>
-        <!-- Must not change this because of the Directory -->
         <Implementation-Title>Vaadin Spring</Implementation-Title>
-        <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
-        <Vaadin-License-Title>Apache License 2.0</Vaadin-License-Title>
-        <Vaadin-Addon>vaadin-spring-${project.version}.jar</Vaadin-Addon>
     </properties>
 
     <dependencies>
@@ -142,16 +66,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <encoding>${project.build.encoding}</encoding>
-                    <target>${project.build.target}</target>
-                    <source>${project.build.source}</source>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3.1</version>
                 <configuration>
@@ -177,181 +91,7 @@
                     </includes>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.14</version>
-                <configuration>
-                    <enableRulesSummary>false</enableRulesSummary>
-                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                    <configLocation>checkstyle/vaadin-checkstyle.xml</configLocation>
-                    <violationSeverity>error</violationSeverity>
-                    <headerLocation>checkstyle/header</headerLocation>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>validate</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
-        <pluginManagement>
-            <plugins>
-                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-                <plugin>
-                    <groupId>org.eclipse.m2e</groupId>
-                    <artifactId>lifecycle-mapping</artifactId>
-                    <version>1.0.0</version>
-                    <configuration>
-                        <lifecycleMappingMetadata>
-                            <pluginExecutions>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>
-                                            org.apache.maven.plugins
-                                        </groupId>
-                                        <artifactId>
-                                            maven-checkstyle-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [2.14,)
-                                        </versionRange>
-                                        <goals>
-                                            <goal>check</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore></ignore>
-                                    </action>
-                                </pluginExecution>
-                            </pluginExecutions>
-                        </lifecycleMappingMetadata>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
-
-    <repositories>
-        <repository>
-            <id>vaadin-addons</id>
-            <url>http://maven.vaadin.com/vaadin-addons</url>
-        </repository>
-
-        <!-- Add Spring repositories -->
-        <!-- (you don't need this if you are using a .RELEASE version) -->
-        <!-- <repository> <id>spring-snapshots</id> <url>http://repo.spring.io/snapshot</url> 
-            <snapshots><enabled>true</enabled></snapshots> </repository> <repository> 
-            <id>spring-milestones</id> <url>http://repo.spring.io/milestone</url> </repository> -->
-    </repositories>
-    
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>2.2.1</version>
-                        <configuration>
-                            <excludeResources>true</excludeResources>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9</version>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>properties-maven-plugin</artifactId>
-                        <version>1.0-alpha-2</version>
-                        <executions>
-                            <execution>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>read-project-properties</goal>
-                                </goals>
-                                <configuration>
-                                    <files>
-                                        <file>${gpg.passphrase.file}</file>
-                                    </files>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.4</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>2.5</version>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <version>2.2.1</version>
-                        <configuration>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <descriptors>
-                                <descriptor>assembly/assembly.xml</descriptor>
-                            </descriptors>
-                            <attach>false</attach>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <phase>install</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-    
-    <distributionManagement>
-        <snapshotRepository>
-            <id>vaadin-snapshots</id>
-            <name>Vaadin snapshot repository</name>
-            <url>https://oss.sonatype.org/content/repositories/vaadin-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-    
+    </build>    
 
 </project>
