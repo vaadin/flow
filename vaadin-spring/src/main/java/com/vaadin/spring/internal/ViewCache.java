@@ -24,8 +24,7 @@ import com.vaadin.navigator.View;
  * {@link com.vaadin.navigator.View view} and its corresponding
  * {@link com.vaadin.spring.internal.BeanStore}. It is also responsible for
  * cleaning up views that have gone out of scope. Used as a delegate by
- * {@link com.vaadin.spring.internal.ViewScopeImpl}. For internal
- * use only.
+ * {@link com.vaadin.spring.internal.ViewScopeImpl}. For internal use only.
  *
  * @author Petter Holmström (petter@vaadin.com)
  */
@@ -37,7 +36,7 @@ public interface ViewCache extends Serializable {
      *
      * @param viewName
      *            the name of the view (not the name of the Spring bean).
-     * @see com.vaadin.spring.navigator.annotation.VaadinView#name()
+     * @see com.vaadin.spring.annotation.SpringView#name()
      */
     void creatingView(String viewName);
 
@@ -50,7 +49,7 @@ public interface ViewCache extends Serializable {
      * @param viewInstance
      *            the created view instance, or {@code null} if the instance
      *            could not be created for some reason.
-     * @see com.vaadin.spring.navigator.annotation.VaadinView#name()
+     * @see com.vaadin.spring.annotation.SpringView#name()
      */
     void viewCreated(String viewName, View viewInstance);
 

@@ -42,9 +42,9 @@ public interface ViewInstanceAccessControl {
     /**
      * Checks if the current user has access to the specified view instance and
      * UI. This method is invoked after
-     * {@link #isAccessGranted(com.vaadin.ui.UI, String)}, when the view
-     * instance has already been created, but before it has been returned by the
-     * view provider.
+     * {@link ViewAccessControl#isAccessGranted(com.vaadin.ui.UI, String)}, when
+     * the view instance has already been created, but before it has been
+     * returned by the view provider.
      *
      * @param ui
      *            the UI, never {@code null}.

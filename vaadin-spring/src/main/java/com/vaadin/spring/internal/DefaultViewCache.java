@@ -54,8 +54,7 @@ public class DefaultViewCache implements ViewCache {
      * view scoped view is about to be created.
      *
      * @param viewName
-     *            the
-     *            {@link com.vaadin.spring.navigator.annotation.VaadinView#name()
+     *            the {@link com.vaadin.spring.annotation.SpringView#name()
      *            name} of the view (not the bean name).
      */
     @Override
@@ -70,8 +69,7 @@ public class DefaultViewCache implements ViewCache {
      * view scoped view has been created.
      *
      * @param viewName
-     *            the
-     *            {@link com.vaadin.spring.navigator.annotation.VaadinView#name()
+     *            the {@link com.vaadin.spring.annotation.SpringView#name()
      *            name} of the view (not the bean name).
      * @param viewInstance
      *            the created view instance, or {@code null} if the view could
@@ -145,13 +143,13 @@ public class DefaultViewCache implements ViewCache {
             beanStore = new ViewBeanStore(ui, viewName,
                     new BeanStore.DestructionCallback() {
 
-                        private static final long serialVersionUID = 5580606280246825742L;
+                private static final long serialVersionUID = 5580606280246825742L;
 
-                        @Override
-                        public void beanStoreDestroyed(BeanStore beanStore) {
-                            beanStores.remove(viewName);
-                        }
-                    });
+                @Override
+                public void beanStoreDestroyed(BeanStore beanStore) {
+                    beanStores.remove(viewName);
+                }
+            });
             beanStores.put(viewName, beanStore);
         }
         return beanStore;
@@ -174,7 +172,7 @@ public class DefaultViewCache implements ViewCache {
     }
 
     class ViewBeanStore extends SessionLockingBeanStore implements
-            ViewChangeListener {
+    ViewChangeListener {
 
         private static final long serialVersionUID = -7655740852919880134L;
 
