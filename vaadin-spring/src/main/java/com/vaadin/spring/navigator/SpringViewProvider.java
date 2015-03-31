@@ -51,10 +51,10 @@ import com.vaadin.ui.UI;
  * <pre>
  * &#064;SpringUI
  * public class MyUI extends UI {
- * 
+ *
  *     &#064;Autowired
  *     SpringViewProvider viewProvider;
- * 
+ *
  *     protected void init(VaadinRequest vaadinRequest) {
  *         Navigator navigator = new Navigator(this, this);
  *         navigator.addProvider(viewProvider);
@@ -206,7 +206,10 @@ public class SpringViewProvider implements ViewProvider {
         if (beanNames != null) {
             for (String beanName : beanNames) {
                 if (isViewBeanNameValidForCurrentUI(beanName)) {
-                    return true;
+                    // if we have an access denied view, this is checked by
+                    // getView()
+                    return getAccessDeniedView() != null
+                            || isAccessGrantedToBeanName(beanName);
                 }
             }
         }
@@ -242,17 +245,6 @@ public class SpringViewProvider implements ViewProvider {
                             getViewNameFromAnnotation(type, annotation),
                             validUI.getCanonicalName());
                 } else {
-                    return false;
-                }
-            }
-
-            final Map<String, ViewAccessControl> accessDelegates = applicationContext
-                    .getBeansOfType(ViewAccessControl.class);
-            for (ViewAccessControl accessDelegate : accessDelegates.values()) {
-                if (!accessDelegate.isAccessGranted(currentUI, beanName)) {
-                    LOGGER.debug(
-                            "Access delegate [{}] denied access to view class [{}]",
-                            accessDelegate, type.getCanonicalName());
                     return false;
                 }
             }
