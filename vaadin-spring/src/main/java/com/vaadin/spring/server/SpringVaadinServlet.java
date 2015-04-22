@@ -19,22 +19,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import com.vaadin.server.DefaultUIProvider;
+import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.ServiceException;
 import com.vaadin.server.SessionInitEvent;
 import com.vaadin.server.SessionInitListener;
 import com.vaadin.server.UIProvider;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.server.VaadinServletRequest;
+import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
 
 /**
  * Subclass of the standard {@link com.vaadin.server.VaadinServlet Vaadin
- * servlet} that adds a {@link SpringUIProvider} to every new Vaadin
- * session.
+ * servlet} that adds a {@link SpringUIProvider} to every new Vaadin session and
+ * allows the use of a custom service URL on the bootstrap page.
  * <p>
  * If you need a custom Vaadin servlet, you can either extend this servlet
  * directly, or extend another subclass of {@link VaadinServlet} and just add
@@ -46,6 +50,8 @@ import com.vaadin.server.VaadinSession;
 public class SpringVaadinServlet extends VaadinServlet {
 
     private static final long serialVersionUID = 5371983676318947478L;
+
+    private String serviceUrl = null;
 
     @Override
     protected void servletInitialized() throws ServletException {
@@ -80,6 +86,46 @@ public class SpringVaadinServlet extends VaadinServlet {
                 session.addUIProvider(uiProvider);
             }
         });
+    }
+
+    /**
+     * Return the service URL (URL for all client-server communication) to use
+     * if customized, null for the default service URL.
+     *
+     * @return service URL or null to use the default
+     */
+    public String getServiceUrl() {
+        return serviceUrl;
+    }
+
+    /**
+     * Set the service URL (URL for all client-server communication) to use,
+     * null to use the default service URL. The service URL must be set before
+     * servlet service instances are created, i.e. before the servlet is placed
+     * into service by the servlet container.
+     *
+     * @param serviceUrl
+     *            to use or null for default
+     */
+    public void setServiceUrl(String serviceUrl) {
+        this.serviceUrl = serviceUrl;
+    }
+
+    @Override
+    protected VaadinServletService createServletService(
+            DeploymentConfiguration deploymentConfiguration)
+                    throws ServiceException {
+        // this is needed when using a custom service URL
+        SpringVaadinServletService service = new SpringVaadinServletService(
+                this, deploymentConfiguration, getServiceUrl());
+        service.init();
+        return service;
+    }
+
+    @Override
+    protected VaadinServletRequest createVaadinRequest(
+            HttpServletRequest request) {
+        return new SpringVaadinServletRequest(request, getService());
     }
 
 }

@@ -25,6 +25,7 @@ import org.springframework.web.context.WebApplicationContext;
 import com.vaadin.server.UIClassSelectionEvent;
 import com.vaadin.server.UICreateEvent;
 import com.vaadin.server.UIProvider;
+import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.internal.UIID;
 import com.vaadin.ui.UI;
@@ -108,8 +109,8 @@ public class SpringUIProvider extends UIProvider {
     @Override
     public Class<? extends UI> getUIClass(
             UIClassSelectionEvent uiClassSelectionEvent) {
-        final String path = extractUIPathFromPathInfo(uiClassSelectionEvent
-                .getRequest().getPathInfo());
+        final String path = extractUIPathFromRequest(uiClassSelectionEvent
+                .getRequest());
         if (pathToUIMap.containsKey(path)) {
             return pathToUIMap.get(path);
         }
@@ -124,7 +125,8 @@ public class SpringUIProvider extends UIProvider {
         return null;
     }
 
-    private String extractUIPathFromPathInfo(String pathInfo) {
+    private String extractUIPathFromRequest(VaadinRequest request) {
+        String pathInfo = request.getPathInfo();
         if (pathInfo != null && pathInfo.length() > 1) {
             String path = pathInfo;
             final int indexOfBang = path.indexOf('!');
