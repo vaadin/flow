@@ -43,6 +43,15 @@ import com.vaadin.server.VaadinSession;
  * If you need a custom Vaadin servlet, you can either extend this servlet
  * directly, or extend another subclass of {@link VaadinServlet} and just add
  * the UI provider.
+ * <p>
+ * This servlet also implements a hack to get around the behavior of Spring
+ * ServletForwardingController/ServletWrappingController. Those controllers
+ * return null as the pathInfo of requests forwarded to the Vaadin servlet, and
+ * use the mapping as the servlet path whereas with Vaadin the mapping typically
+ * corresponds to a UI, not a virtual servlet. Thus, there is an option to clear
+ * the servlet path in requests and compute pathInfo accordingly. This is used
+ * by Vaadin Spring Boot to make it easier to use Vaadin and Spring MVC
+ * applications together in the same global "namespace".
  *
  * @author Petter Holmström (petter@vaadin.com)
  * @author Josh Long (josh@joshlong.com)
@@ -52,6 +61,8 @@ public class SpringVaadinServlet extends VaadinServlet {
     private static final long serialVersionUID = 5371983676318947478L;
 
     private String serviceUrl = null;
+
+    private boolean clearServletPath = false;
 
     @Override
     protected void servletInitialized() throws ServletException {
@@ -111,10 +122,39 @@ public class SpringVaadinServlet extends VaadinServlet {
         this.serviceUrl = serviceUrl;
     }
 
+    /**
+     * Return true if always forcing the servlet path to be the empty string,
+     * false otherwise.
+     *
+     * This API might change in future versions.
+     *
+     * @see SpringVaadinServlet
+     *
+     * @return true if clearing the servlet path
+     */
+    public boolean isClearServletPath() {
+        return clearServletPath;
+    }
+
+    /**
+     * Make the servlet use empty string as the servlet path (needed when using
+     * ServletForwardingController). See the class level javadoc for
+     * {@link SpringVaadinServlet} for more information.
+     *
+     * This API might change in future versions.
+     *
+     * @param clearServletPath
+     *            true to use empty servlet path and have the full path as
+     *            pathInfo, false not to remap the servlet path
+     */
+    public void setClearServletPath(boolean clearServletPath) {
+        this.clearServletPath = clearServletPath;
+    }
+
     @Override
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-                    throws ServiceException {
+            throws ServiceException {
         // this is needed when using a custom service URL
         SpringVaadinServletService service = new SpringVaadinServletService(
                 this, deploymentConfiguration, getServiceUrl());
@@ -125,7 +165,8 @@ public class SpringVaadinServlet extends VaadinServlet {
     @Override
     protected VaadinServletRequest createVaadinRequest(
             HttpServletRequest request) {
-        return new SpringVaadinServletRequest(request, getService());
+        return new SpringVaadinServletRequest(request, getService(),
+                isClearServletPath());
     }
 
 }

@@ -28,22 +28,44 @@ import com.vaadin.server.VaadinServletService;
  */
 public class SpringVaadinServletRequest extends VaadinServletRequest {
 
+    private UrlPathHelper urlPathHelper = new UrlPathHelper();
+    private boolean clearServletPath;
+
     /**
      * Construct a Spring servlet request
      *
      * @param request
      * @param vaadinService
+     * @param clearServletPath
+     *            true to use empty string as the servlet path (needed when
+     *            using ServletForwardingController for bootstrap page
+     *            requests), false to use the normal servlet path - for more
+     *            information on this hack, see {@link SpringVaadinServlet}
      */
     public SpringVaadinServletRequest(HttpServletRequest request,
-            VaadinServletService vaadinService) {
+            VaadinServletService vaadinService, boolean clearServletPath) {
         super(request, vaadinService);
+        this.clearServletPath = clearServletPath;
+    }
+
+    @Override
+    public String getServletPath() {
+        if (clearServletPath) {
+            // the path where a ServletForwardingController is registered is not
+            // a real servlet path
+            return "";
+        } else {
+            return super.getServletPath();
+        }
     }
 
     @Override
     public String getPathInfo() {
         String pathInfo = super.getPathInfo();
         if (pathInfo == null) {
-            pathInfo = new UrlPathHelper().getPathWithinApplication(this);
+            // this uses getServletPath() and should work both with and without
+            // clearServletPath
+            pathInfo = urlPathHelper.getPathWithinServletMapping(this);
         }
         return pathInfo;
     }
