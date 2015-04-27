@@ -39,7 +39,8 @@ public class SpringVaadinServletService extends VaadinServletService {
      * @param servlet
      * @param deploymentConfiguration
      * @param serviceUrl
-     *            custom service URL to use or null for default
+     *            custom service URL to use (relative to context path, starting
+     *            with a slash) or null for default
      * @throws ServiceException
      */
     public SpringVaadinServletService(VaadinServlet servlet,
@@ -61,7 +62,8 @@ public class SpringVaadinServletService extends VaadinServletService {
                     handlers.set(i, new ServletBootstrapHandler() {
                         @Override
                         protected String getServiceUrl(BootstrapContext context) {
-                            return serviceUrl;
+                            return context.getRequest().getContextPath()
+                                    + serviceUrl;
                         }
                     });
                 }

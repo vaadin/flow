@@ -60,7 +60,7 @@ public class SpringVaadinServlet extends VaadinServlet {
 
     private static final long serialVersionUID = 5371983676318947478L;
 
-    private String serviceUrl = null;
+    private String serviceUrlPath = null;
 
     private boolean clearServletPath = false;
 
@@ -100,26 +100,31 @@ public class SpringVaadinServlet extends VaadinServlet {
     }
 
     /**
-     * Return the service URL (URL for all client-server communication) to use
-     * if customized, null for the default service URL.
+     * Return the path of the service URL (URL for all client-server
+     * communication) relative to the context path. A value of null means that
+     * the default service path of Vaadin should be used. The path should start
+     * with a slash.
      *
-     * @return service URL or null to use the default
+     * @return service URL path relative to context path (starting with slash)
+     *         or null to use the default
      */
-    public String getServiceUrl() {
-        return serviceUrl;
+    public String getServiceUrlPath() {
+        return serviceUrlPath;
     }
 
     /**
-     * Set the service URL (URL for all client-server communication) to use,
-     * null to use the default service URL. The service URL must be set before
-     * servlet service instances are created, i.e. before the servlet is placed
-     * into service by the servlet container.
+     * Set the path of the service URL (URL for all client-server communication)
+     * to use, relative to the context path. The value null means that the
+     * default service URL of Vaadin should be used. The service URL path must
+     * be set before servlet service instances are created, i.e. before the
+     * servlet is placed into service by the servlet container.
      *
-     * @param serviceUrl
-     *            to use or null for default
+     * @param serviceUrlPath
+     *            service URL path relative to the context path (starting with a
+     *            slash) or null for default
      */
-    public void setServiceUrl(String serviceUrl) {
-        this.serviceUrl = serviceUrl;
+    public void setServiceUrlPath(String serviceUrlPath) {
+        this.serviceUrlPath = serviceUrlPath;
     }
 
     /**
@@ -154,10 +159,10 @@ public class SpringVaadinServlet extends VaadinServlet {
     @Override
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-            throws ServiceException {
+                    throws ServiceException {
         // this is needed when using a custom service URL
         SpringVaadinServletService service = new SpringVaadinServletService(
-                this, deploymentConfiguration, getServiceUrl());
+                this, deploymentConfiguration, getServiceUrlPath());
         service.init();
         return service;
     }
