@@ -62,8 +62,6 @@ public class SpringVaadinServlet extends VaadinServlet {
 
     private String serviceUrlPath = null;
 
-    private boolean clearServletPath = false;
-
     @Override
     protected void servletInitialized() throws ServletException {
         getService().addSessionInitListener(new SessionInitListener() {
@@ -127,39 +125,10 @@ public class SpringVaadinServlet extends VaadinServlet {
         this.serviceUrlPath = serviceUrlPath;
     }
 
-    /**
-     * Return true if always forcing the servlet path to be the empty string,
-     * false otherwise.
-     *
-     * This API might change in future versions.
-     *
-     * @see SpringVaadinServlet
-     *
-     * @return true if clearing the servlet path
-     */
-    public boolean isClearServletPath() {
-        return clearServletPath;
-    }
-
-    /**
-     * Make the servlet use empty string as the servlet path (needed when using
-     * ServletForwardingController). See the class level javadoc for
-     * {@link SpringVaadinServlet} for more information.
-     *
-     * This API might change in future versions.
-     *
-     * @param clearServletPath
-     *            true to use empty servlet path and have the full path as
-     *            pathInfo, false not to remap the servlet path
-     */
-    public void setClearServletPath(boolean clearServletPath) {
-        this.clearServletPath = clearServletPath;
-    }
-
     @Override
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-                    throws ServiceException {
+            throws ServiceException {
         // this is needed when using a custom service URL
         SpringVaadinServletService service = new SpringVaadinServletService(
                 this, deploymentConfiguration, getServiceUrlPath());
@@ -170,8 +139,11 @@ public class SpringVaadinServlet extends VaadinServlet {
     @Override
     protected VaadinServletRequest createVaadinRequest(
             HttpServletRequest request) {
-        return new SpringVaadinServletRequest(request, getService(),
-                isClearServletPath());
+        if (serviceUrlPath != null) {
+            return new SpringVaadinServletRequest(request, getService(), true);
+        } else {
+            return new VaadinServletRequest(request, getService());
+        }
     }
 
 }
