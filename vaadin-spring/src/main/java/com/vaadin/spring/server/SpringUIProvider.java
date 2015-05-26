@@ -75,7 +75,8 @@ public class SpringUIProvider extends UIProvider {
                 if (tempPath.length() > 0 && !tempPath.startsWith("/")) {
                     path = "/".concat(tempPath);
                 } else {
-                    path = tempPath;
+                    // remove terminal slash from mapping
+                    path = tempPath.replaceAll("/$", "");
                 }
                 Class<? extends UI> existingBeanType = getUIByPath(path);
                 if (existingBeanType != null) {
