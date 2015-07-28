@@ -1,0 +1,22 @@
+@mixin base-link($primaryStyleName : v-link) {
+
+.#{$primaryStyleName} {
+	white-space: nowrap;	
+}
+.#{$primaryStyleName} a {
+	vertical-align: middle;
+	text-decoration: none;
+}
+.#{$primaryStyleName} span {
+	text-decoration: underline;
+	vertical-align: middle;
+}
+.v-disabled a {
+	cursor: default;
+}
+.#{$primaryStyleName} img {
+	vertical-align: middle;
+	border:none;
+}
+
+}

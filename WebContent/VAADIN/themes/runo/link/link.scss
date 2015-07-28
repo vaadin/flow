@@ -1,0 +1,7 @@
+@mixin runo-link($primaryStyleName : v-link) {
+
+.#{$primaryStyleName} a {
+	color: #464f52;
+}
+
+}
