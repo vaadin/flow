@@ -870,10 +870,7 @@ public class GridColumnHidingTest extends GridBasicClientFeaturesTest {
         selectMenuPath("Component", "Columns", "Column 0", "Hidable");
         getSidebarOpenButton().click();
         verifySidebarOpened();
-        // Click somewhere far from Grid.
-        new Actions(getDriver())
-                .moveToElement(findElement(By.className("v-app")), 600, 600)
-                .click().perform();
+        findElement(By.className("v-app")).click();
         verifySidebarClosed();
     }
 

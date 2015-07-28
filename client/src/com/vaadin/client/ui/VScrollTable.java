@@ -2616,7 +2616,8 @@ public class VScrollTable extends FlowPanel implements HasWidgets,
         @Override
         public void run() {
 
-            if (client.hasActiveRequest() || navKeyDown) {
+            if (client.getServerCommunicationHandler().hasActiveRequest()
+                    || navKeyDown) {
                 // if client connection is busy, don't bother loading it more
                 VConsole.log("Postponed rowfetch");
                 schedule(250);
@@ -3628,12 +3629,6 @@ public class VScrollTable extends FlowPanel implements HasWidgets,
                     }
                 } else {
                     c.setText(caption);
-                    if (BrowserInfo.get().isIE10()) {
-                        // IE10 can some times define min-height to include
-                        // padding when setting the text...
-                        // See https://dev.vaadin.com/ticket/15169
-                        WidgetUtil.forceIERedraw(c.getElement());
-                    }
                 }
 
                 c.setSorted(false);

@@ -37,6 +37,31 @@ public interface GridServerRpc extends ServerRpc {
             boolean userOriginated);
 
     /**
+     * Informs the server that the editor was opened (fresh) on a certain row
+     * 
+     * @param rowKey
+     *            a key identifying item the editor was opened on
+     */
+    void editorOpen(String rowKey);
+
+    /**
+     * Informs the server that the editor was reopened (without closing it in
+     * between) on another row
+     * 
+     * @param rowKey
+     *            a key identifying item the editor was opened on
+     */
+    void editorMove(String rowKey);
+
+    /**
+     * Informs the server that the editor was closed
+     * 
+     * @param rowKey
+     *            a key identifying item the editor was opened on
+     */
+    void editorClose(String rowKey);
+
+    /**
      * Informs the server that an item has been clicked in Grid.
      * 
      * @param rowKey
@@ -59,6 +84,23 @@ public interface GridServerRpc extends ServerRpc {
      */
     void columnsReordered(List<String> newColumnOrder,
             List<String> oldColumnOrder);
+
+    /**
+     * This is a trigger for Grid to send whatever has changed regarding the
+     * details components.
+     * <p>
+     * The components can't be sent eagerly, since they are generated as a side
+     * effect in
+     * {@link com.vaadin.data.RpcDataProviderExtension#beforeClientResponse(boolean)}
+     * , and that is too late to change the hierarchy. So we need this
+     * round-trip to work around that limitation.
+     * 
+     * @since 7.5.0
+     * @param fetchId
+     *            an unique identifier for the request
+     * @see com.vaadin.ui.Grid#setDetailsVisible(Object, boolean)
+     */
+    void sendDetailsComponents(int fetchId);
 
     /**
      * Informs the server that the column's visibility has been changed.
