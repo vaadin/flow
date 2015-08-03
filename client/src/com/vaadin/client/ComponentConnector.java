@@ -43,8 +43,6 @@ public interface ComponentConnector extends ServerConnector {
      */
     public Widget getWidget();
 
-    public LayoutManager getLayoutManager();
-
     /**
      * Returns <code>true</code> if the width of this paintable is currently
      * undefined. If the width is undefined, the actual width of the paintable

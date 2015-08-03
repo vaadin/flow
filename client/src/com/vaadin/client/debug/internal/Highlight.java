@@ -27,7 +27,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.ServerConnector;
-import com.vaadin.client.ui.VWindow;
 
 /**
  * Highlights a widget in the UI by overlaying a semi-transparent colored div.
@@ -200,7 +199,6 @@ public class Highlight {
             RootPanel.getBodyElement().appendChild(highlight);
 
             style.setPosition(Position.ABSOLUTE);
-            style.setZIndex(VWindow.Z_INDEX + 1000);
             style.setBackgroundColor(color);
             style.setOpacity(DEFAULT_OPACITY);
             if (BrowserInfo.get().isIE()) {

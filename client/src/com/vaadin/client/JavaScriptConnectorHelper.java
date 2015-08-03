@@ -31,8 +31,6 @@ import com.vaadin.client.communication.JavaScriptMethodInvocation;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.communication.StateChangeEvent.StateChangeHandler;
-import com.vaadin.client.ui.layout.ElementResizeEvent;
-import com.vaadin.client.ui.layout.ElementResizeListener;
 import com.vaadin.shared.JavaScriptConnectorState;
 import com.vaadin.shared.communication.MethodInvocation;
 
@@ -47,7 +45,6 @@ public class JavaScriptConnectorHelper {
 
     private final Map<String, JavaScriptObject> rpcObjects = new HashMap<String, JavaScriptObject>();
     private final Map<String, Set<String>> rpcMethods = new HashMap<String, Set<String>>();
-    private final Map<Element, Map<JavaScriptObject, ElementResizeListener>> resizeListeners = new HashMap<Element, Map<JavaScriptObject, ElementResizeListener>>();
 
     private JavaScriptObject connectorWrapper;
     private int tag;
@@ -64,8 +61,8 @@ public class JavaScriptConnectorHelper {
     /**
      * The id of the previous response for which state changes have been
      * processed. If this is the same as the
-     * {@link ApplicationConnection#getLastSeenServerSyncId()}, it means that the
-     * state change has already been handled and should not be done again.
+     * {@link ApplicationConnection#getLastSeenServerSyncId()}, it means that
+     * the state change has already been handled and should not be done again.
      */
     private int processedResponseId = -1;
 
@@ -93,7 +90,8 @@ public class JavaScriptConnectorHelper {
     }
 
     private void processStateChanges() {
-        int lastResponseId = connector.getConnection().getLastSeenServerSyncId();
+        int lastResponseId = connector.getConnection()
+                .getLastSeenServerSyncId();
         if (processedResponseId == lastResponseId) {
             return;
         }
@@ -242,70 +240,8 @@ public class JavaScriptConnectorHelper {
             'translateVaadinUri': $entry(function(uri) {
                 return c.@com.vaadin.client.ApplicationConnection::translateVaadinUri(Ljava/lang/String;)(uri);
             }),
-            'addResizeListener': function(element, resizeListener) {
-                if (!element || element.nodeType != 1) throw "element must be defined";
-                if (typeof resizeListener != "function") throw "resizeListener must be defined";
-                $entry(h.@com.vaadin.client.JavaScriptConnectorHelper::addResizeListener(*)).call(h, element, resizeListener);
-            },
-            'removeResizeListener': function(element, resizeListener) {
-                if (!element || element.nodeType != 1) throw "element must be defined";
-                if (typeof resizeListener != "function") throw "resizeListener must be defined";
-                $entry(h.@com.vaadin.client.JavaScriptConnectorHelper::removeResizeListener(*)).call(h, element, resizeListener);
-            }
         };
     }-*/;
-
-    // Called from JSNI to add a listener
-    private void addResizeListener(Element element,
-            final JavaScriptObject callbackFunction) {
-        Map<JavaScriptObject, ElementResizeListener> elementListeners = resizeListeners
-                .get(element);
-        if (elementListeners == null) {
-            elementListeners = new HashMap<JavaScriptObject, ElementResizeListener>();
-            resizeListeners.put(element, elementListeners);
-        }
-
-        ElementResizeListener listener = elementListeners.get(callbackFunction);
-        if (listener == null) {
-            LayoutManager layoutManager = LayoutManager.get(connector
-                    .getConnection());
-            listener = new ElementResizeListener() {
-                @Override
-                public void onElementResize(ElementResizeEvent e) {
-                    invokeElementResizeCallback(e.getElement(),
-                            callbackFunction);
-                }
-            };
-            layoutManager.addElementResizeListener(element, listener);
-            elementListeners.put(callbackFunction, listener);
-        }
-    }
-
-    private static native void invokeElementResizeCallback(Element element,
-            JavaScriptObject callbackFunction)
-    /*-{
-        // Call with a simple event object and 'this' pointing to the global scope
-        callbackFunction.call($wnd, {'element': element});
-    }-*/;
-
-    // Called from JSNI to remove a listener
-    private void removeResizeListener(Element element,
-            JavaScriptObject callbackFunction) {
-        Map<JavaScriptObject, ElementResizeListener> listenerMap = resizeListeners
-                .get(element);
-        if (listenerMap == null) {
-            return;
-        }
-
-        ElementResizeListener listener = listenerMap.remove(callbackFunction);
-        if (listener != null) {
-            LayoutManager.get(connector.getConnection())
-                    .removeElementResizeListener(element, listener);
-            if (listenerMap.isEmpty()) {
-                resizeListeners.remove(element);
-            }
-        }
-    }
 
     private native void attachRpcMethod(JavaScriptObject rpc, String iface,
             String method)
@@ -477,20 +413,6 @@ public class JavaScriptConnectorHelper {
 
     public void onUnregister() {
         invokeIfPresent(connectorWrapper, "onUnregister");
-
-        if (!resizeListeners.isEmpty()) {
-            LayoutManager layoutManager = LayoutManager.get(connector
-                    .getConnection());
-            for (Entry<Element, Map<JavaScriptObject, ElementResizeListener>> entry : resizeListeners
-                    .entrySet()) {
-                Element element = entry.getKey();
-                for (ElementResizeListener listener : entry.getValue().values()) {
-                    layoutManager
-                            .removeElementResizeListener(element, listener);
-                }
-            }
-            resizeListeners.clear();
-        }
     }
 
     private static native void invokeIfPresent(

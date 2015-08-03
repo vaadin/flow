@@ -15,9 +15,7 @@
  */
 package com.vaadin.client.ui.ui;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Scheduler;
@@ -72,8 +70,6 @@ import com.vaadin.client.ui.ShortcutActionHandler;
 import com.vaadin.client.ui.VNotification;
 import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.VUI;
-import com.vaadin.client.ui.layout.MayScrollChildren;
-import com.vaadin.client.ui.window.WindowConnector;
 import com.vaadin.server.Page.Styles;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.MouseEventDetails;
@@ -96,7 +92,7 @@ import com.vaadin.ui.UI;
 
 @Connect(value = UI.class, loadStyle = LoadStyle.EAGER)
 public class UIConnector extends AbstractSingleComponentContainerConnector
-        implements Paintable, MayScrollChildren {
+        implements Paintable {
 
     private HandlerRegistration childStateChangeHandlerRegistration;
 
@@ -552,11 +548,6 @@ public class UIConnector extends AbstractSingleComponentContainerConnector
     private Timer pollTimer = null;
 
     @Override
-    public void updateCaption(ComponentConnector component) {
-        // NOP The main view never draws caption for its layout
-    }
-
-    @Override
     public VUI getWidget() {
         return (VUI) super.getWidget();
     }
@@ -566,11 +557,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector
         ComponentConnector connector = super.getContent();
         // VWindow (WindowConnector is its connector)is also a child component
         // but it's never a content widget
-        if (connector instanceof WindowConnector) {
-            return null;
-        } else {
-            return connector;
-        }
+        return connector;
     }
 
     protected void onChildSizeChange() {
@@ -591,35 +578,6 @@ public class UIConnector extends AbstractSingleComponentContainerConnector
         } else {
             childStyle.clearPosition();
         }
-    }
-
-    /**
-     * Checks if the given sub window is a child of this UI Connector
-     * 
-     * @deprecated Should be replaced by a more generic mechanism for getting
-     *             non-ComponentConnector children
-     * @param wc
-     * @return
-     */
-    @Deprecated
-    public boolean hasSubWindow(WindowConnector wc) {
-        return getChildComponents().contains(wc);
-    }
-
-    /**
-     * Return an iterator for current subwindows. This method is meant for
-     * testing purposes only.
-     * 
-     * @return
-     */
-    public List<WindowConnector> getSubWindows() {
-        ArrayList<WindowConnector> windows = new ArrayList<WindowConnector>();
-        for (ComponentConnector child : getChildComponents()) {
-            if (child instanceof WindowConnector) {
-                windows.add((WindowConnector) child);
-            }
-        }
-        return windows;
     }
 
     @Override
@@ -650,10 +608,8 @@ public class UIConnector extends AbstractSingleComponentContainerConnector
         ComponentConnector newChild = getContent();
 
         for (ComponentConnector c : event.getOldChildren()) {
-            if (!(c instanceof WindowConnector)) {
-                oldChild = c;
-                break;
-            }
+            oldChild = c;
+            break;
         }
 
         if (oldChild != newChild) {
@@ -673,19 +629,6 @@ public class UIConnector extends AbstractSingleComponentContainerConnector
             }
         }
 
-        for (ComponentConnector c : getChildComponents()) {
-            if (c instanceof WindowConnector) {
-                WindowConnector wc = (WindowConnector) c;
-                wc.setWindowOrderAndPosition();
-            }
-        }
-
-        // Close removed sub windows
-        for (ComponentConnector c : event.getOldChildren()) {
-            if (c.getParent() != this && c instanceof WindowConnector) {
-                ((WindowConnector) c).getWidget().hide();
-            }
-        }
     }
 
     @Override
@@ -793,15 +736,6 @@ public class UIConnector extends AbstractSingleComponentContainerConnector
                     new MethodInvocation(getConnectorId(), UIServerRpc.class
                             .getName(), "poll"));
         }
-    }
-
-    /**
-     * Invokes the layout analyzer on the server
-     * 
-     * @since 7.1
-     */
-    public void analyzeLayouts() {
-        getRpcProxy(DebugWindowServerRpc.class).analyzeLayouts();
     }
 
     /**
@@ -1032,7 +966,6 @@ public class UIConnector extends AbstractSingleComponentContainerConnector
         String newThemeBase = getConnection().translateVaadinUri("theme://");
         replaceThemeAttribute(oldThemeBase, newThemeBase);
 
-        getLayoutManager().forceLayout();
     }
 
     /**

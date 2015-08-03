@@ -16,6 +16,7 @@
 
 package com.vaadin.client;
 
+import java.awt.LayoutManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -37,7 +38,6 @@ import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -58,7 +58,6 @@ import com.vaadin.client.ui.AbstractConnector;
 import com.vaadin.client.ui.FontIcon;
 import com.vaadin.client.ui.Icon;
 import com.vaadin.client.ui.ImageIcon;
-import com.vaadin.client.ui.VContextMenu;
 import com.vaadin.client.ui.VNotification;
 import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.ui.UIConnector;
@@ -123,16 +122,12 @@ public class ApplicationConnection implements HasHandlers {
 
     private WidgetSet widgetSet;
 
-    private VContextMenu contextMenu = null;
-
     private final UIConnector uIConnector;
 
     protected boolean cssLoaded = false;
 
     /** Parameters for this application connection loaded from the web-page */
     private ApplicationConfiguration configuration;
-
-    private final LayoutManager layoutManager;
 
     private final RpcManager rpcManager;
 
@@ -357,8 +352,6 @@ public class ApplicationConnection implements HasHandlers {
                 ConnectorBundleLoader.EAGER_BUNDLE_NAME, null);
         uIConnector = GWT.create(UIConnector.class);
         rpcManager = GWT.create(RpcManager.class);
-        layoutManager = GWT.create(LayoutManager.class);
-        layoutManager.setConnection(this);
         tooltip = GWT.create(VTooltip.class);
         loadingIndicator = GWT.create(VLoadingIndicator.class);
         loadingIndicator.setConnection(this);
@@ -482,7 +475,7 @@ public class ApplicationConnection implements HasHandlers {
                 return vi;
             }
         }
-
+    
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::getServerMessageHandler();
             var pd = [
@@ -493,7 +486,7 @@ public class ApplicationConnection implements HasHandlers {
             pd[pd.length] = smh.@com.vaadin.client.communication.ServerMessageHandler::bootstrapTime;
             return pd;
         });
-
+    
         client.getElementByPath = $entry(function(id) {
             return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getElementByPath(Ljava/lang/String;)(id);
         });
@@ -510,7 +503,7 @@ public class ApplicationConnection implements HasHandlers {
             return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getPathForElement(Lcom/google/gwt/dom/client/Element;)(element);
         });
         client.initializing = false;
-
+    
         $wnd.vaadin.clients[TTAppId] = client;
     }-*/;
 
@@ -557,16 +550,6 @@ public class ApplicationConnection implements HasHandlers {
     		}
     		app.@com.vaadin.client.ApplicationConnection::sendPendingVariableChanges()();
     	});
-    	var oldForceLayout;
-    	if ($wnd.vaadin.forceLayout) {
-    		oldForceLayout = $wnd.vaadin.forceLayout;
-    	}
-    	$wnd.vaadin.forceLayout = $entry(function() {
-    		if (oldForceLayout) {
-    			oldForceLayout();
-    		}
-    		app.@com.vaadin.client.ApplicationConnection::forceLayout()();
-    	});
     }-*/;
 
     /**
@@ -607,17 +590,6 @@ public class ApplicationConnection implements HasHandlers {
         }
     }
     }-*/;
-
-    /**
-     * Requests an analyze of layouts, to find inconsistencies. Exclusively used
-     * for debugging during development.
-     * 
-     * @deprecated as of 7.1. Replaced by {@link UIConnector#analyzeLayouts()}
-     */
-    @Deprecated
-    public void analyzeLayouts() {
-        getUIConnector().analyzeLayouts();
-    }
 
     /**
      * Sends a request to the server to print details to console that will help
@@ -1137,9 +1109,8 @@ public class ApplicationConnection implements HasHandlers {
     public void forceLayout() {
         Duration duration = new Duration();
 
-        layoutManager.forceLayout();
-
-        getLogger().info("forceLayout in " + duration.elapsedMillis() + " ms");
+        getLogger().info(
+                "noop forceLayout in " + duration.elapsedMillis() + " ms");
     }
 
     /**
@@ -1247,21 +1218,6 @@ public class ApplicationConnection implements HasHandlers {
      */
     public void setResource(String name, String resource) {
         resourcesMap.put(name, resource);
-    }
-
-    /**
-     * Singleton method to get instance of app's context menu.
-     * 
-     * @return VContextMenu object
-     */
-    public VContextMenu getContextMenu() {
-        if (contextMenu == null) {
-            contextMenu = new VContextMenu();
-            contextMenu.setOwner(uIConnector.getWidget());
-            DOM.setElementProperty(contextMenu.getElement(), "id",
-                    "PID_VAADIN_CM");
-        }
-        return contextMenu;
     }
 
     /**
@@ -1456,10 +1412,6 @@ public class ApplicationConnection implements HasHandlers {
 
         return hasEventListeners(getConnectorMap().getConnector(widget),
                 eventIdentifier);
-    }
-
-    LayoutManager getLayoutManager() {
-        return layoutManager;
     }
 
     /**

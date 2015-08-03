@@ -16,7 +16,6 @@
 package com.vaadin.tests.widgetset.client;
 
 import com.vaadin.client.ApplicationConnection;
-import com.vaadin.tests.widgetset.server.csrf.ui.CsrfTokenDisabled;
 
 /**
  * Mock ApplicationConnection for several issues where we need to hack it.

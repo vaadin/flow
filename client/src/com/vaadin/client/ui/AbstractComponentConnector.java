@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.ui;
 
+import java.awt.LayoutManager;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
@@ -22,8 +24,6 @@ import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.ComponentConnector;
-import com.vaadin.client.HasComponentsConnector;
-import com.vaadin.client.LayoutManager;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ServerConnector;
 import com.vaadin.client.StyleConstants;
@@ -38,7 +38,6 @@ import com.vaadin.client.metadata.TypeData;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.AbstractComponentState;
 import com.vaadin.shared.ComponentConstants;
-import com.vaadin.shared.Connector;
 import com.vaadin.shared.ui.ComponentStateUtil;
 import com.vaadin.shared.ui.TabIndexState;
 
@@ -207,9 +206,7 @@ public abstract class AbstractComponentConnector extends AbstractConnector
         // make sure the caption has or has not v-disabled style
         if (delegateCaptionHandling()) {
             ServerConnector parent = getParent();
-            if (parent instanceof HasComponentsConnector) {
-                ((HasComponentsConnector) parent).updateCaption(this);
-            } else if (parent == null && !(this instanceof UIConnector)) {
+            if (parent == null && !(this instanceof UIConnector)) {
                 VConsole.error("Parent of connector "
                         + Util.getConnectorString(this)
                         + " is null. This is typically an indication of a broken component hierarchy");
@@ -238,24 +235,6 @@ public abstract class AbstractComponentConnector extends AbstractConnector
      */
     protected void updateComponentSize(String newWidth, String newHeight) {
         Profiler.enter("AbstractComponentConnector.updateComponentSize");
-
-        // Parent should be updated if either dimension changed between relative
-        // and non-relative
-        if (newWidth.endsWith("%") != lastKnownWidth.endsWith("%")) {
-            Connector parent = getParent();
-            if (parent instanceof ManagedLayout) {
-                getLayoutManager().setNeedsHorizontalLayout(
-                        (ManagedLayout) parent);
-            }
-        }
-
-        if (newHeight.endsWith("%") != lastKnownHeight.endsWith("%")) {
-            Connector parent = getParent();
-            if (parent instanceof ManagedLayout) {
-                getLayoutManager().setNeedsVerticalLayout(
-                        (ManagedLayout) parent);
-            }
-        }
 
         lastKnownWidth = newWidth;
         lastKnownHeight = newHeight;
@@ -442,11 +421,6 @@ public abstract class AbstractComponentConnector extends AbstractConnector
     @Deprecated
     public boolean isReadOnly() {
         return getState().readOnly;
-    }
-
-    @Override
-    public LayoutManager getLayoutManager() {
-        return LayoutManager.get(getConnection());
     }
 
     @Override

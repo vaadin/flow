@@ -17,11 +17,16 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 
 public class ComputedStyle {
 
     protected final JavaScriptObject computedStyle;
     private final Element elem;
+
+    public ComputedStyle(Widget w) {
+        this(w.getElement());
+    }
 
     /**
      * Gets this element's computed style object which can be used to gather
@@ -78,7 +83,7 @@ public class ComputedStyle {
             if(borderStyle == "none")
                 return "0px";
         }
-
+    
         if(cs.getPropertyValue) {
         
             // Convert name to dashed format
@@ -89,10 +94,10 @@ public class ComputedStyle {
         
             var ret = cs[name];
             var style = elem.style;
-
+    
             // From the awesome hack by Dean Edwards
             // http://erik.eae.net/archives/2007/07/27/18.54.15/#comment-102291
-
+    
             // If we're not dealing with a regular pixel number
             // but a number that has a weird ending, we need to convert it to pixels
                 if ( !/^\d+(px)?$/i.test( ret ) && /^\d/.test( ret ) ) {
@@ -124,7 +129,7 @@ public class ComputedStyle {
         } else if (name == "height" && ret == "auto") {
             ret = elem.clientHeight + "px";
         }
-
+    
         return ret;
         
     }-*/;
@@ -155,10 +160,10 @@ public class ComputedStyle {
      *            the property to retrieve
      * @return the double value of the property
      */
-    public final int getDoubleProperty(String name) {
+    public final double getDoubleProperty(String name) {
         Profiler.enter("ComputedStyle.getDoubleProperty");
         String value = getProperty(name);
-        int result = parseDoubleNative(value);
+        double result = parseDoubleNative(value);
         Profiler.leave("ComputedStyle.getDoubleProperty");
         return result;
     }
@@ -275,9 +280,19 @@ public class ComputedStyle {
      * @return the value from the string before any non-numeric characters or
      *         NaN if the value cannot be parsed as a number
      */
-    private static native int parseDoubleNative(final String value)
+    private static native double parseDoubleNative(final String value)
     /*-{
         return parseFloat(value);
     }-*/;
 
+    public double getOuterWidth() {
+        double padding = getDoubleProperty("paddingRight")
+                + getDoubleProperty("paddingLeft");
+        double margin = getDoubleProperty("marginRight")
+                + getDoubleProperty("marginLeft");
+        double border = getDoubleProperty("borderRightWidth")
+                + getDoubleProperty("borderLeftWidth");
+
+        return getWidth() + padding + margin + border;
+    }
 }

@@ -54,14 +54,11 @@ public class HierarchySection implements Section {
     private final ConnectorInfoPanel infoPanel = new ConnectorInfoPanel();
     private final HierarchyPanel hierarchyPanel = new HierarchyPanel();
     private final OptimizedWidgetsetPanel widgetsetPanel = new OptimizedWidgetsetPanel();
-    private final AnalyzeLayoutsPanel analyzeLayoutsPanel = new AnalyzeLayoutsPanel();
 
     private final FlowPanel controls = new FlowPanel();
 
     private final Button find = new DebugButton(Icon.HIGHLIGHT,
             "Select a component on the page to inspect it");
-    private final Button analyze = new DebugButton(Icon.ANALYZE,
-            "Check layouts for potential problems");
     private final Button generateWS = new DebugButton(Icon.OPTIMIZE,
             "Show used connectors and how to optimize widgetset");
     private final Button showHierarchy = new DebugButton(Icon.HIERARCHY,
@@ -148,16 +145,6 @@ public class HierarchySection implements Section {
             }
         });
 
-        controls.add(analyze);
-        analyze.setStylePrimaryName(VDebugWindow.STYLENAME_BUTTON);
-        analyze.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                stopFind();
-                analyzeLayouts();
-            }
-        });
-
         controls.add(generateWS);
         generateWS.setStylePrimaryName(VDebugWindow.STYLENAME_BUTTON);
         generateWS.addClickHandler(new ClickHandler() {
@@ -185,13 +172,6 @@ public class HierarchySection implements Section {
             }
         });
 
-        analyzeLayoutsPanel.addListener(new SelectConnectorListener() {
-            @Override
-            public void select(ServerConnector connector, Element element) {
-                printState(connector, true);
-            }
-        });
-
         content.setStylePrimaryName(VDebugWindow.STYLENAME + "-hierarchy");
 
         initializeHelpPanel();
@@ -201,8 +181,7 @@ public class HierarchySection implements Section {
     private void initializeHelpPanel() {
         HTML info = new HTML(showHierarchy.getHTML() + " "
                 + showHierarchy.getTitle() + "<br/>" + find.getHTML() + " "
-                + find.getTitle() + "<br/>" + analyze.getHTML() + " "
-                + analyze.getTitle() + "<br/>" + generateWS.getHTML() + " "
+                + find.getTitle() + "<br/>" + generateWS.getHTML() + " "
                 + generateWS.getTitle() + "<br/>" + generateDesign.getHTML()
                 + " " + generateDesign.getTitle() + "<br/>");
         info.setStyleName(VDebugWindow.STYLENAME + "-info");
@@ -245,15 +224,9 @@ public class HierarchySection implements Section {
         content.setWidget(widgetsetPanel);
     }
 
-    private void analyzeLayouts() {
-        analyzeLayoutsPanel.update();
-        content.setWidget(analyzeLayoutsPanel);
-    }
-
     @Override
     public void meta(ApplicationConnection ac, ValueMap meta) {
-        // show the results of analyzeLayouts
-        analyzeLayoutsPanel.meta(ac, meta);
+        // NOP
     }
 
     @Override

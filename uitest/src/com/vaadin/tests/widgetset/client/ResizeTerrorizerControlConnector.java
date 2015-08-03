@@ -34,7 +34,6 @@ import com.google.gwt.user.client.ui.IntegerBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.vaadin.client.ui.AbstractComponentConnector;
-import com.vaadin.client.ui.PostLayoutListener;
 import com.vaadin.shared.AbstractComponentState;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.annotations.DelegateToWidget;
@@ -43,7 +42,7 @@ import com.vaadin.tests.util.ResizeTerrorizer;
 
 @Connect(ResizeTerrorizer.ResizeTerrorizerControl.class)
 public class ResizeTerrorizerControlConnector extends
-        AbstractComponentConnector implements PostLayoutListener {
+        AbstractComponentConnector {
 
     public static class ResizeTerorrizerState extends AbstractComponentState {
         public Connector target;
@@ -250,23 +249,6 @@ public class ResizeTerrorizerControlConnector extends
     @Override
     protected ResizeTerrorizerControlPanel createWidget() {
         return new ResizeTerrorizerControlPanel();
-    }
-
-    @Override
-    public void postLayout() {
-        if (getWidget().startWidth.getValue() == null) {
-            int width = getTarget().getWidget().getElement().getOffsetWidth();
-            getWidget().startWidth.setValue(width);
-            getWidget().endWidth
-                    .setValue(width + getState().defaultWidthOffset);
-        }
-
-        if (getWidget().startHeight.getValue() == null) {
-            int height = getTarget().getWidget().getElement().getOffsetHeight();
-            getWidget().startHeight.setValue(height);
-            getWidget().endHeight.setValue(height
-                    + getState().defaultHeightOffset);
-        }
     }
 
 }

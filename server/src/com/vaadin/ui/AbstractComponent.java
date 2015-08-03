@@ -37,7 +37,6 @@ import com.vaadin.event.ConnectorActionManager;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.AbstractClientConnector;
 import com.vaadin.server.AbstractErrorMessage.ContentMode;
-import com.vaadin.server.ComponentSizeValidator;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.server.ErrorMessage.ErrorLevel;
 import com.vaadin.server.Extension;
@@ -748,23 +747,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
     @Override
     public void beforeClientResponse(boolean initial) {
         super.beforeClientResponse(initial);
-        // TODO This logic should be on the client side and the state should
-        // simply be a data object with "width" and "height".
-        if (getHeight() >= 0
-                && (getHeightUnits() != Unit.PERCENTAGE || ComponentSizeValidator
-                        .parentCanDefineHeight(this))) {
-            getState().height = "" + getCSSHeight();
-        } else {
-            getState().height = "";
-        }
-
-        if (getWidth() >= 0
-                && (getWidthUnits() != Unit.PERCENTAGE || ComponentSizeValidator
-                        .parentCanDefineWidth(this))) {
-            getState().width = "" + getCSSWidth();
-        } else {
-            getState().width = "";
-        }
 
         ErrorMessage error = getErrorMessage();
         if (null != error) {

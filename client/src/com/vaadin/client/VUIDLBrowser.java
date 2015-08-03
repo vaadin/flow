@@ -36,7 +36,6 @@ import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.ui.UnknownComponentConnector;
-import com.vaadin.client.ui.VWindow;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -339,7 +338,6 @@ public class VUIDLBrowser extends SimpleTree {
     static {
         Style style = highlight.getStyle();
         style.setPosition(Position.ABSOLUTE);
-        style.setZIndex(VWindow.Z_INDEX + 1000);
         style.setBackgroundColor("red");
         style.setOpacity(0.2);
         if (BrowserInfo.get().isIE()) {

@@ -21,7 +21,6 @@ import java.util.Iterator;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.vaadin.server.ComponentSizeValidator;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.declarative.DesignContext;
@@ -190,93 +189,6 @@ public abstract class AbstractSingleComponentContainer extends
             throw new IllegalArgumentException(
                     "Content is already attached to another parent");
         }
-    }
-
-    // the setHeight()/setWidth() methods duplicated and simplified from
-    // AbstractComponentContainer
-
-    @Override
-    public void setWidth(float width, Unit unit) {
-        /*
-         * child tree repaints may be needed, due to our fall back support for
-         * invalid relative sizes
-         */
-        boolean dirtyChild = false;
-        boolean childrenMayBecomeUndefined = false;
-        if (getWidth() == SIZE_UNDEFINED && width != SIZE_UNDEFINED) {
-            // children currently in invalid state may need repaint
-            dirtyChild = getInvalidSizedChild(false);
-        } else if ((width == SIZE_UNDEFINED && getWidth() != SIZE_UNDEFINED)
-                || (unit == Unit.PERCENTAGE
-                        && getWidthUnits() != Unit.PERCENTAGE && !ComponentSizeValidator
-                            .parentCanDefineWidth(this))) {
-            /*
-             * relative width children may get to invalid state if width becomes
-             * invalid. Width may also become invalid if units become percentage
-             * due to the fallback support
-             */
-            childrenMayBecomeUndefined = true;
-            dirtyChild = getInvalidSizedChild(false);
-        }
-        super.setWidth(width, unit);
-        repaintChangedChildTree(dirtyChild, childrenMayBecomeUndefined, false);
-    }
-
-    private void repaintChangedChildTree(boolean invalidChild,
-            boolean childrenMayBecomeUndefined, boolean vertical) {
-        if (getContent() == null) {
-            return;
-        }
-        boolean needRepaint = false;
-        if (childrenMayBecomeUndefined) {
-            // if became invalid now
-            needRepaint = !invalidChild && getInvalidSizedChild(vertical);
-        } else if (invalidChild) {
-            // if not still invalid
-            needRepaint = !getInvalidSizedChild(vertical);
-        }
-        if (needRepaint) {
-            getContent().markAsDirtyRecursive();
-        }
-    }
-
-    private boolean getInvalidSizedChild(final boolean vertical) {
-        Component content = getContent();
-        if (content == null) {
-            return false;
-        }
-        if (vertical) {
-            return !ComponentSizeValidator.checkHeights(content);
-        } else {
-            return !ComponentSizeValidator.checkWidths(content);
-        }
-    }
-
-    @Override
-    public void setHeight(float height, Unit unit) {
-        /*
-         * child tree repaints may be needed, due to our fall back support for
-         * invalid relative sizes
-         */
-        boolean dirtyChild = false;
-        boolean childrenMayBecomeUndefined = false;
-        if (getHeight() == SIZE_UNDEFINED && height != SIZE_UNDEFINED) {
-            // children currently in invalid state may need repaint
-            dirtyChild = getInvalidSizedChild(true);
-        } else if ((height == SIZE_UNDEFINED && getHeight() != SIZE_UNDEFINED)
-                || (unit == Unit.PERCENTAGE
-                        && getHeightUnits() != Unit.PERCENTAGE && !ComponentSizeValidator
-                            .parentCanDefineHeight(this))) {
-            /*
-             * relative height children may get to invalid state if height
-             * becomes invalid. Height may also become invalid if units become
-             * percentage due to the fallback support.
-             */
-            childrenMayBecomeUndefined = true;
-            dirtyChild = getInvalidSizedChild(true);
-        }
-        super.setHeight(height, unit);
-        repaintChangedChildTree(dirtyChild, childrenMayBecomeUndefined, true);
     }
 
     /*

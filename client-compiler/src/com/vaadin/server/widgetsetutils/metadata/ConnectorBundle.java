@@ -45,7 +45,6 @@ import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.ServerConnector;
 import com.vaadin.client.communication.JSONSerializer;
-import com.vaadin.client.connectors.AbstractRendererConnector;
 import com.vaadin.client.metadata.TypeDataStore.MethodAttribute;
 import com.vaadin.client.ui.UnknownComponentConnector;
 import com.vaadin.shared.communication.ClientRpc;
@@ -476,11 +475,6 @@ public class ConnectorBundle {
         return isConnected(type) && isType(type, ComponentConnector.class);
     }
 
-    public static boolean isConnectedRendererConnector(JClassType type) {
-        return isConnected(type)
-                && isType(type, AbstractRendererConnector.class);
-    }
-
     private static boolean isInterfaceType(JClassType type, Class<?> class1) {
         return type.isInterface() != null && isType(type, class1);
     }
@@ -626,6 +620,7 @@ public class ConnectorBundle {
     }
 
     private static Set<Class<?>> frameworkHandledTypes = new LinkedHashSet<Class<?>>();
+
     {
         frameworkHandledTypes.add(String.class);
         frameworkHandledTypes.add(Boolean.class);

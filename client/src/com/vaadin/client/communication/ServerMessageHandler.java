@@ -28,7 +28,6 @@ import java.util.logging.Logger;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -46,15 +45,10 @@ import com.vaadin.client.ConnectorMap;
 import com.vaadin.client.FastStringSet;
 import com.vaadin.client.HasComponentsConnector;
 import com.vaadin.client.JsArrayObject;
-import com.vaadin.client.LayoutManager;
 import com.vaadin.client.LocaleService;
-import com.vaadin.client.Paintable;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ServerConnector;
-import com.vaadin.client.UIDL;
 import com.vaadin.client.Util;
-import com.vaadin.client.VCaption;
-import com.vaadin.client.VConsole;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.extensions.AbstractExtensionConnector;
@@ -66,7 +60,6 @@ import com.vaadin.client.ui.AbstractConnector;
 import com.vaadin.client.ui.VNotification;
 import com.vaadin.client.ui.dd.VDragAndDropManager;
 import com.vaadin.client.ui.ui.UIConnector;
-import com.vaadin.client.ui.window.WindowConnector;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.communication.MethodInvocation;
 import com.vaadin.shared.communication.SharedState;
@@ -122,7 +115,9 @@ public class ServerMessageHandler {
      */
     private Set<Object> responseHandlingLocks = new HashSet<Object>();
 
-    /** Contains all UIDL messages received while response handling is suspended */
+    /**
+     * Contains all UIDL messages received while response handling is suspended
+     */
     private List<PendingUIDLMessage> pendingUIDLMessages = new ArrayList<PendingUIDLMessage>();
 
     // will hold the CSRF token once received
@@ -491,16 +486,10 @@ public class ServerMessageHandler {
                 // Fire hierarchy change events
                 sendHierarchyChangeEvents(connectorHierarchyUpdateResult.events);
 
-                updateCaptions(pendingStateChangeEvents,
-                        connectorHierarchyUpdateResult.parentChangedIds);
-
                 delegateToWidget(pendingStateChangeEvents);
 
                 // Fire state change events.
                 sendStateChangeEvents(pendingStateChangeEvents);
-
-                // Update of legacy (UIDL) style connectors
-                updateVaadin6StyleConnectors(json);
 
                 // Handle any RPC invocations done on the server side
                 handleRpcInvocations(json);
@@ -520,23 +509,10 @@ public class ServerMessageHandler {
 
                 updatingState = false;
 
-                if (!onlyNoLayoutUpdates) {
-                    Profiler.enter("Layout processing");
-                    try {
-                        LayoutManager layoutManager = getLayoutManager();
-                        layoutManager.setEverythingNeedsMeasure();
-                        layoutManager.layoutNow();
-                    } catch (final Throwable e) {
-                        getLogger().log(Level.SEVERE,
-                                "Error processing layouts", e);
-                    }
-                    Profiler.leave("Layout processing");
-                }
-
                 if (ApplicationConfiguration.isDebugMode()) {
                     Profiler.enter("Dumping state changes to the console");
                     getLogger().info(" * Dumping state changes to the console");
-                    VConsole.dirUIDL(json, connection);
+                    // VConsole.dirUIDL(json, connection);
                     Profiler.leave("Dumping state changes to the console");
                 }
 
@@ -617,54 +593,6 @@ public class ServerMessageHandler {
                 // Unregister all the old connectors that have now been removed
                 unregisterRemovedConnectors(connectorHierarchyUpdateResult.detachedConnectorIds);
 
-                getLayoutManager().cleanMeasuredSizes();
-            }
-
-            private void updateCaptions(
-                    JsArrayObject<StateChangeEvent> pendingStateChangeEvents,
-                    FastStringSet parentChangedIds) {
-                Profiler.enter("updateCaptions");
-
-                /*
-                 * Find all components that might need a caption update based on
-                 * pending state and hierarchy changes
-                 */
-                FastStringSet needsCaptionUpdate = FastStringSet.create();
-                needsCaptionUpdate.addAll(parentChangedIds);
-
-                // Find components with potentially changed caption state
-                int size = pendingStateChangeEvents.size();
-                for (int i = 0; i < size; i++) {
-                    StateChangeEvent event = pendingStateChangeEvents.get(i);
-                    if (VCaption.mightChange(event)) {
-                        ServerConnector connector = event.getConnector();
-                        needsCaptionUpdate.add(connector.getConnectorId());
-                    }
-                }
-
-                ConnectorMap connectorMap = getConnectorMap();
-
-                // Update captions for all suitable candidates
-                JsArrayString dump = needsCaptionUpdate.dump();
-                int needsUpdateLength = dump.length();
-                for (int i = 0; i < needsUpdateLength; i++) {
-                    String childId = dump.get(i);
-                    ServerConnector child = connectorMap.getConnector(childId);
-
-                    if (child instanceof ComponentConnector
-                            && ((ComponentConnector) child)
-                                    .delegateCaptionHandling()) {
-                        ServerConnector parent = child.getParent();
-                        if (parent instanceof HasComponentsConnector) {
-                            Profiler.enter("HasComponentsConnector.updateCaption");
-                            ((HasComponentsConnector) parent)
-                                    .updateCaption((ComponentConnector) child);
-                            Profiler.leave("HasComponentsConnector.updateCaption");
-                        }
-                    }
-                }
-
-                Profiler.leave("updateCaptions");
             }
 
             private void delegateToWidget(
@@ -790,10 +718,6 @@ public class ServerMessageHandler {
                         }
                     } else if (c == getUIConnector()) {
                         // UIConnector for this connection, ignore
-                    } else if (c instanceof WindowConnector
-                            && getUIConnector().hasSubWindow(
-                                    (WindowConnector) c)) {
-                        // Sub window attached to this UIConnector, ignore
                     } else {
                         // The connector has been detached from the
                         // hierarchy but was not unregistered.
@@ -897,64 +821,6 @@ public class ServerMessageHandler {
                 return createdConnectors;
             }
 
-            private void updateVaadin6StyleConnectors(ValueMap json) {
-                Profiler.enter("updateVaadin6StyleConnectors");
-
-                JsArray<ValueMap> changes = json.getJSValueMapArray("changes");
-                int length = changes.length();
-
-                // Must always do layout if there's even a single legacy update
-                if (length != 0) {
-                    onlyNoLayoutUpdates = false;
-                }
-
-                getLogger()
-                        .info(" * Passing UIDL to Vaadin 6 style connectors");
-                // update paintables
-                for (int i = 0; i < length; i++) {
-                    try {
-                        final UIDL change = changes.get(i).cast();
-                        final UIDL uidl = change.getChildUIDL(0);
-                        String connectorId = uidl.getId();
-
-                        final ComponentConnector legacyConnector = (ComponentConnector) getConnectorMap()
-                                .getConnector(connectorId);
-                        if (legacyConnector instanceof Paintable) {
-                            String key = null;
-                            if (Profiler.isEnabled()) {
-                                key = "updateFromUIDL for "
-                                        + legacyConnector.getClass()
-                                                .getSimpleName();
-                                Profiler.enter(key);
-                            }
-
-                            ((Paintable) legacyConnector).updateFromUIDL(uidl,
-                                    connection);
-
-                            if (Profiler.isEnabled()) {
-                                Profiler.leave(key);
-                            }
-                        } else if (legacyConnector == null) {
-                            getLogger()
-                                    .severe("Received update for "
-                                            + uidl.getTag()
-                                            + ", but there is no such paintable ("
-                                            + connectorId + ") rendered.");
-                        } else {
-                            getLogger()
-                                    .severe("Server sent Vaadin 6 style updates for "
-                                            + Util.getConnectorString(legacyConnector)
-                                            + " but this is not a Vaadin 6 Paintable");
-                        }
-
-                    } catch (final Throwable e) {
-                        getLogger().log(Level.SEVERE, "Error handling UIDL", e);
-                    }
-                }
-
-                Profiler.leave("updateVaadin6StyleConnectors");
-            }
-
             private void sendHierarchyChangeEvents(
                     JsArrayObject<ConnectorHierarchyChangeEvent> events) {
                 int eventCount = events.size();
@@ -1033,14 +899,15 @@ public class ServerMessageHandler {
 
                             JavaScriptObject jso = states
                                     .getJavaScriptObject(connectorId);
-                            JsonObject stateJson = Util.jso2json(jso);
 
                             if (connector instanceof HasJavaScriptConnectorHelper) {
                                 ((HasJavaScriptConnectorHelper) connector)
                                         .getJavascriptConnectorHelper()
                                         .setNativeState(jso);
+                                continue;
                             }
 
+                            JsonObject stateJson = Util.jso2json(jso);
                             SharedState state = connector.getState();
                             Type stateType = new Type(state.getClass()
                                     .getName(), null);
@@ -1208,9 +1075,10 @@ public class ServerMessageHandler {
                         Profiler.enter("updateConnectorHierarchy handle HasComponentsConnector");
 
                         if (parentConnector instanceof HasComponentsConnector) {
-                            HasComponentsConnector ccc = (HasComponentsConnector) parentConnector;
+                            HasComponentsConnector ccc = ((HasComponentsConnector) parentConnector);
                             List<ComponentConnector> oldComponents = ccc
                                     .getChildComponents();
+
                             if (!Util.collectionsEquals(oldComponents,
                                     newComponents)) {
                                 // Fire change event if the hierarchy has
@@ -1674,10 +1542,6 @@ public class ServerMessageHandler {
      */
     public boolean isInitialUidlHandled() {
         return bootstrapTime != 0;
-    }
-
-    private LayoutManager getLayoutManager() {
-        return LayoutManager.get(connection);
     }
 
     private ConnectorMap getConnectorMap() {

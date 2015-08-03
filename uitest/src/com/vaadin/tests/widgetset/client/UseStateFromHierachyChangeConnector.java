@@ -17,7 +17,6 @@
 package com.vaadin.tests.widgetset.client;
 
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.ConnectorHierarchyChangeEvent;
 import com.vaadin.client.ui.AbstractSingleComponentContainerConnector;
 import com.vaadin.shared.Connector;
@@ -36,11 +35,6 @@ public class UseStateFromHierachyChangeConnector extends
     @Override
     public UseStateFromHierachyChangeConnectorState getState() {
         return (UseStateFromHierachyChangeConnectorState) super.getState();
-    }
-
-    @Override
-    public void updateCaption(ComponentConnector connector) {
-        // Caption not supported
     }
 
     @Override

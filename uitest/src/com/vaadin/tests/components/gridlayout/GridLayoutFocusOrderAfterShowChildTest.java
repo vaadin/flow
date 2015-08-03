@@ -30,59 +30,59 @@ import com.vaadin.tests.tb3.MultiBrowserTest;
 public class GridLayoutFocusOrderAfterShowChildTest extends MultiBrowserTest {
 
     @Test
-    public void showComponentBreaksFocusOrderFirst()
-            throws IOException, Exception {
+    public void showComponentBreaksFocusOrderFirst() throws IOException,
+            Exception {
         openTestURL();
 
         GridLayoutElement grid = $(GridLayoutElement.class).id("grid");
 
         $(ButtonElement.class).first().click();
 
-        Assert.assertEquals("First",
-                grid.$(LabelElement.class).first().getText());
+        Assert.assertEquals("First", grid.$(LabelElement.class).first()
+                .getText());
         grid.$(TextFieldElement.class).first().focus();
 
         grid.$(TextFieldElement.class).first().sendKeys(Keys.TAB);
 
-        Assert.assertEquals("t2",
-                driver.switchTo().activeElement().getAttribute("id"));
+        Assert.assertEquals("t2", driver.switchTo().activeElement()
+                .getAttribute("id"));
     }
 
     @Test
-    public void showComponentBreaksFocusOrderMiddle()
-            throws IOException, Exception {
+    public void showComponentBreaksFocusOrderMiddle() throws IOException,
+            Exception {
         openTestURL();
 
         GridLayoutElement grid = $(GridLayoutElement.class).id("grid");
 
         $(ButtonElement.class).get(1).click();
 
-        Assert.assertEquals("Third",
-                grid.$(LabelElement.class).get(1).getText());
+        Assert.assertEquals("Third", grid.$(LabelElement.class).get(1)
+                .getText());
         grid.$(TextFieldElement.class).first().focus();
 
         grid.$(TextFieldElement.class).first().sendKeys(Keys.TAB);
 
-        Assert.assertEquals("t3",
-                driver.switchTo().activeElement().getAttribute("id"));
+        Assert.assertEquals("t3", driver.switchTo().activeElement()
+                .getAttribute("id"));
     }
 
     @Test
-    public void showComponentBreaksFocusOrderLast()
-            throws IOException, Exception {
+    public void showComponentBreaksFocusOrderLast() throws IOException,
+            Exception {
         openTestURL();
 
         GridLayoutElement grid = $(GridLayoutElement.class).id("grid");
 
         $(ButtonElement.class).get(2).click();
 
-        Assert.assertEquals("Fifth",
-                grid.$(LabelElement.class).get(2).getText());
+        Assert.assertEquals("Fifth", grid.$(LabelElement.class).get(2)
+                .getText());
         grid.$(TextFieldElement.class).get(1).focus();
 
         grid.$(TextFieldElement.class).get(1).sendKeys(Keys.TAB);
 
-        Assert.assertEquals("t5",
-                driver.switchTo().activeElement().getAttribute("id"));
+        Assert.assertEquals("t5", driver.switchTo().activeElement()
+                .getAttribute("id"));
     }
 }

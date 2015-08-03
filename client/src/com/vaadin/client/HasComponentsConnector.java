@@ -30,21 +30,6 @@ import com.vaadin.ui.HasComponents;
 public interface HasComponentsConnector extends ServerConnector {
 
     /**
-     * Update child components caption, description and error message.
-     * 
-     * <p>
-     * Each component is responsible for maintaining its caption, description
-     * and error message. In most cases components doesn't want to do that and
-     * those elements reside outside of the component. Because of this layouts
-     * must provide service for it's childen to show those elements for them.
-     * </p>
-     * 
-     * @param connector
-     *            Child component for which service is requested.
-     */
-    void updateCaption(ComponentConnector connector);
-
-    /**
      * Returns the children for this connector.
      * <p>
      * The children for this connector are defined as all {@link HasComponents}s

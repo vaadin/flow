@@ -42,10 +42,9 @@ import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.ConnectorMap;
 import com.vaadin.client.Focusable;
-import com.vaadin.client.LayoutManager;
 import com.vaadin.client.Profiler;
-import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.VConsole;
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.ui.ShortcutActionHandler.ShortcutActionHandlerOwner;
 import com.vaadin.client.ui.TouchScrollDelegate.TouchScrollHandler;
 import com.vaadin.client.ui.ui.UIConnector;
@@ -261,15 +260,11 @@ public class VUI extends SimplePanel implements ResizeHandler,
         if (windowWidth != newWindowWidth) {
             windowWidth = newWindowWidth;
             changed = true;
-            connector.getLayoutManager().reportOuterWidth(connector,
-                    newWindowWidth);
             VConsole.log("New window width: " + windowWidth);
         }
         if (windowHeight != newWindowHeight) {
             windowHeight = newWindowHeight;
             changed = true;
-            connector.getLayoutManager().reportOuterHeight(connector,
-                    newWindowHeight);
             VConsole.log("New window height: " + windowHeight);
         }
         Element parentElement = getElement().getParentElement();
@@ -308,12 +303,6 @@ public class VUI extends SimplePanel implements ResizeHandler,
 
             sendClientResized();
 
-            LayoutManager layoutManager = connector.getLayoutManager();
-            if (layoutManager.isLayoutRunning()) {
-                layoutManager.layoutLater();
-            } else {
-                layoutManager.layoutNow();
-            }
         }
     }
 
@@ -428,7 +417,6 @@ public class VUI extends SimplePanel implements ResizeHandler,
         // cause some odd issues. Should be replaced with a decent solution, see
         // also related BeforeShortcutActionListener interface. Same interface
         // might be usable here.
-        VTextField.flushChangesFromFocusedTextField();
     }
 
     private native static void loadAppIdListFromDOM(ArrayList<String> list)

@@ -64,7 +64,6 @@ import com.vaadin.server.widgetsetutils.metadata.ConnectorInitVisitor;
 import com.vaadin.server.widgetsetutils.metadata.GeneratedSerializer;
 import com.vaadin.server.widgetsetutils.metadata.OnStateChangeVisitor;
 import com.vaadin.server.widgetsetutils.metadata.Property;
-import com.vaadin.server.widgetsetutils.metadata.RendererVisitor;
 import com.vaadin.server.widgetsetutils.metadata.ServerRpcVisitor;
 import com.vaadin.server.widgetsetutils.metadata.StateInitVisitor;
 import com.vaadin.server.widgetsetutils.metadata.TypeVisitor;
@@ -656,7 +655,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
             for (Property property : entry.getValue()) {
                 w.println(
                         "store.setDelegateToWidget(%s, \"%s\", \"%s\");",
-                        getClassLiteralString(beanType),// property.getBeanType()),
+                        getClassLiteralString(beanType), // property.getBeanType()),
                         property.getName(),
                         property.getAnnotation(DelegateToWidget.class).value());
             }
@@ -1262,9 +1261,8 @@ public class ConnectorBundleLoaderFactory extends Generator {
             throws NotFoundException {
         List<TypeVisitor> visitors = Arrays.<TypeVisitor> asList(
                 new ConnectorInitVisitor(), new StateInitVisitor(),
-                new WidgetInitVisitor(), new RendererVisitor(),
-                new ClientRpcVisitor(), new ServerRpcVisitor(),
-                new OnStateChangeVisitor());
+                new WidgetInitVisitor(), new ClientRpcVisitor(),
+                new ServerRpcVisitor(), new OnStateChangeVisitor());
         for (TypeVisitor typeVisitor : visitors) {
             typeVisitor.init(oracle);
         }

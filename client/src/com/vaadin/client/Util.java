@@ -31,7 +31,6 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyEvent;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.RenderInformation.FloatSize;
 import com.vaadin.client.ui.VOverlay;
@@ -94,37 +93,6 @@ public class Util {
     public static com.google.gwt.user.client.Element getElementFromPoint(
             int clientX, int clientY) {
         return DOM.asOld(WidgetUtil.getElementFromPoint(clientX, clientY));
-    }
-
-    /**
-     * This helper method can be called if components size have been changed
-     * outside rendering phase. It notifies components parent about the size
-     * change so it can react.
-     * 
-     * When using this method, developer should consider if size changes could
-     * be notified lazily. If lazy flag is true, method will save widget and
-     * wait for a moment until it notifies parents in chunks. This may vastly
-     * optimize layout in various situation. Example: if component have a lot of
-     * images their onload events may fire "layout phase" many times in a short
-     * period.
-     * 
-     * @param widget
-     * @param lazy
-     *            run componentSizeUpdated lazyly
-     * 
-     * @deprecated As of 7.0, use
-     *             {@link LayoutManager#setNeedsMeasure(ComponentConnector)}
-     *             instead
-     */
-    @Deprecated
-    public static void notifyParentOfSizeChange(Widget widget, boolean lazy) {
-        ComponentConnector connector = findConnectorFor(widget);
-        if (connector != null) {
-            connector.getLayoutManager().setNeedsMeasure(connector);
-            if (!lazy) {
-                connector.getLayoutManager().layoutNow();
-            }
-        }
     }
 
     public static ComponentConnector findConnectorFor(Widget widget) {
@@ -420,11 +388,6 @@ public class Util {
         return SharedUtil.equals(a, b);
     }
 
-    public static void updateRelativeChildrenAndSendSizeUpdateEvent(
-            ApplicationConnection client, HasWidgets container, Widget widget) {
-        notifyParentOfSizeChange(widget, false);
-    }
-
     /**
      * Gets the border-box width for the given element, i.e. element width +
      * border + padding. Always rounds up to nearest integer.
@@ -563,14 +526,6 @@ public class Util {
 
             ComponentConnector connector = ConnectorMap.get(client)
                     .getConnector(browseElement);
-
-            if (connector == null) {
-                String ownerPid = VCaption.getCaptionOwnerPid(browseElement);
-                if (ownerPid != null) {
-                    connector = (ComponentConnector) ConnectorMap.get(client)
-                            .getConnector(ownerPid);
-                }
-            }
 
             if (connector != null) {
                 // check that inside the rootElement

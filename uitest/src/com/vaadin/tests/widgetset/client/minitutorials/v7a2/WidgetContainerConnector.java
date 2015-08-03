@@ -27,7 +27,4 @@ public class WidgetContainerConnector extends
         return (VWidgetContainer) super.getWidget();
     }
 
-    @Override
-    public void updateCaption(ComponentConnector connector) {
-    }
 }

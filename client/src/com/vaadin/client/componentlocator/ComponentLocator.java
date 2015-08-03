@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.componentlocator;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -35,7 +34,7 @@ import com.vaadin.client.ApplicationConnection;
  */
 public class ComponentLocator {
 
-    private final List<LocatorStrategy> locatorStrategies;
+    private final VaadinFinderLocatorStrategy strategy;
 
     /**
      * Reference to ApplicationConnection instance.
@@ -51,8 +50,7 @@ public class ComponentLocator {
      */
     public ComponentLocator(ApplicationConnection client) {
         this.client = client;
-        locatorStrategies = Arrays.asList(new VaadinFinderLocatorStrategy(
-                client), new LegacyLocatorStrategy(client));
+        strategy = new VaadinFinderLocatorStrategy(client);
     }
 
     /**
@@ -78,11 +76,9 @@ public class ComponentLocator {
     @Deprecated
     public String getPathForElement(
             com.google.gwt.user.client.Element targetElement) {
-        for (LocatorStrategy strategy : locatorStrategies) {
-            String path = strategy.getPathForElement(targetElement);
-            if (null != path) {
-                return path;
-            }
+        String path = strategy.getPathForElement(targetElement);
+        if (null != path) {
+            return path;
         }
         return null;
     }
@@ -125,12 +121,10 @@ public class ComponentLocator {
      *         could not be located.
      */
     public com.google.gwt.user.client.Element getElementByPath(String path) {
-        for (LocatorStrategy strategy : locatorStrategies) {
-            if (strategy.validatePath(path)) {
-                Element element = strategy.getElementByPath(path);
-                if (null != element) {
-                    return DOM.asOld(element);
-                }
+        if (strategy.validatePath(path)) {
+            Element element = strategy.getElementByPath(path);
+            if (null != element) {
+                return DOM.asOld(element);
             }
         }
         return null;
@@ -148,15 +142,13 @@ public class ComponentLocator {
      */
     public JsArray<Element> getElementsByPath(String path) {
         JsArray<Element> jsElements = JavaScriptObject.createArray().cast();
-        for (LocatorStrategy strategy : locatorStrategies) {
-            if (strategy.validatePath(path)) {
-                List<Element> elements = strategy.getElementsByPath(path);
-                if (elements.size() > 0) {
-                    for (Element e : elements) {
-                        jsElements.push(e);
-                    }
-                    return jsElements;
+        if (strategy.validatePath(path)) {
+            List<Element> elements = strategy.getElementsByPath(path);
+            if (elements.size() > 0) {
+                for (Element e : elements) {
+                    jsElements.push(e);
                 }
+                return jsElements;
             }
         }
         return jsElements;
@@ -179,16 +171,14 @@ public class ComponentLocator {
     public JsArray<Element> getElementsByPathStartingAt(String path,
             Element root) {
         JsArray<Element> jsElements = JavaScriptObject.createArray().cast();
-        for (LocatorStrategy strategy : locatorStrategies) {
-            if (strategy.validatePath(path)) {
-                List<Element> elements = strategy.getElementsByPathStartingAt(
-                        path, root);
-                if (elements.size() > 0) {
-                    for (Element e : elements) {
-                        jsElements.push(e);
-                    }
-                    return jsElements;
+        if (strategy.validatePath(path)) {
+            List<Element> elements = strategy.getElementsByPathStartingAt(path,
+                    root);
+            if (elements.size() > 0) {
+                for (Element e : elements) {
+                    jsElements.push(e);
                 }
+                return jsElements;
             }
         }
         return jsElements;
@@ -211,13 +201,10 @@ public class ComponentLocator {
      */
     public com.google.gwt.user.client.Element getElementByPathStartingAt(
             String path, Element root) {
-        for (LocatorStrategy strategy : locatorStrategies) {
-            if (strategy.validatePath(path)) {
-                Element element = strategy.getElementByPathStartingAt(path,
-                        root);
-                if (null != element) {
-                    return DOM.asOld(element);
-                }
+        if (strategy.validatePath(path)) {
+            Element element = strategy.getElementByPathStartingAt(path, root);
+            if (null != element) {
+                return DOM.asOld(element);
             }
         }
         return null;
@@ -242,11 +229,6 @@ public class ComponentLocator {
      * @return true if passes path validation with LegacyLocatorStrategy
      */
     public boolean isValidForLegacyLocator(String path) {
-        for (LocatorStrategy ls : locatorStrategies) {
-            if (ls instanceof LegacyLocatorStrategy) {
-                return ls.validatePath(path);
-            }
-        }
         return false;
     }
 
