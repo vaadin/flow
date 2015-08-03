@@ -32,7 +32,7 @@ public class AbsoluteLayoutResizing extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Absolute layout should correctly dynamically resize itself";
     }
 

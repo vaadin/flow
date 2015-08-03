@@ -40,7 +40,7 @@ public class TableModifcationsWhenScrolledRight extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Scroll right and then click \"Add row\". The table will scroll back left and the headers should also.";
     }
 

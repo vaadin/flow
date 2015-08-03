@@ -14,7 +14,7 @@ public class DisabledButtons extends TestBase {
     private String CAPTION = "Caption";
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The disabled buttons should be identical to the enabled buttons but grayed out.";
     }
 

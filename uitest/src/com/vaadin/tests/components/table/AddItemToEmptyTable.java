@@ -95,7 +95,7 @@ public class AddItemToEmptyTable extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Adding an item to a Table should work independent of column width settings...";
     }
 

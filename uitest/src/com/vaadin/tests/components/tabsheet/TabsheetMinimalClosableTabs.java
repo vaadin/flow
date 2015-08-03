@@ -33,7 +33,7 @@ public class TabsheetMinimalClosableTabs extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Minimal theme should also show the close button in all browsers";
     }
 

@@ -7,7 +7,7 @@ import com.vaadin.ui.TextField;
 public class OrderedLayoutCSSCompatibility extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "This test is to make sure that spacing/margins in OrderedLayout is still backwards compatible";
     }
 

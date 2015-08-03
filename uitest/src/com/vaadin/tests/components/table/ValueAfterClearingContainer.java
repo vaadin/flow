@@ -142,7 +142,7 @@ public class ValueAfterClearingContainer extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Table value should be cleared when the selected item is removed from the container.";
     }
 

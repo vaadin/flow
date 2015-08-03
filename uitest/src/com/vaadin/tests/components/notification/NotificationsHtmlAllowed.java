@@ -35,7 +35,7 @@ public class NotificationsHtmlAllowed extends TestBase implements ClickListener 
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test case for htmlAllowed in notifications";
     }
 

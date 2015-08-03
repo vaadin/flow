@@ -82,7 +82,7 @@ public class ChangeDataSourcePageLengthZero extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Changing the data source should update the height of a TreeTable with pagelength zero";
     }
 

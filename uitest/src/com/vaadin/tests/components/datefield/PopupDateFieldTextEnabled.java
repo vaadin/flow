@@ -32,7 +32,7 @@ public class PopupDateFieldTextEnabled extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "tests whether or not enabling text field in the component works";
     }
 

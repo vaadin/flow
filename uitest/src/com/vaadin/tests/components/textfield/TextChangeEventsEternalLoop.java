@@ -21,7 +21,7 @@ public class TextChangeEventsEternalLoop extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Moving current text to value in text change listener should not cause eternal loop.";
     }
 

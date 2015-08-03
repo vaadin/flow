@@ -31,7 +31,7 @@ public class UncollapsedCollumnWidth extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Uncollapsing col2 after resizing col1 should set a reasonable width for col2. Additionally, the width of the header and the cell content should be the same.";
     }
 

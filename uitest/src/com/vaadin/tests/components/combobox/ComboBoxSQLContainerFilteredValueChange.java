@@ -62,7 +62,7 @@ public class ComboBoxSQLContainerFilteredValueChange extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Selecting the first filtered item should change the value of the label under the ComboBox to 'Selected: 1'.";
     }
 

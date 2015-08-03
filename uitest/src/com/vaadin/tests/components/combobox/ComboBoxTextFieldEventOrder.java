@@ -29,7 +29,7 @@ public class ComboBoxTextFieldEventOrder extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Entering a text in a TextField and then clicking on the button in a ComboBox should cause the TextField value change to be sent first and the ComboBox filtering afterwards. Failure to do so will cause errors if the value change listener modifies the ComboBox";
     }
 

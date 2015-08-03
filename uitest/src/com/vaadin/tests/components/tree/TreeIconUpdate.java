@@ -61,7 +61,7 @@ public class TreeIconUpdate extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Click the button to change the icon. The tree should be updated";
     }
 

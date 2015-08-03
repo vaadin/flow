@@ -23,12 +23,6 @@ import java.util.Collection;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 
-import com.vaadin.event.Action;
-import com.vaadin.event.FieldEvents.FocusAndBlurServerRpcImpl;
-import com.vaadin.event.ShortcutAction;
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.event.ShortcutAction.ModifierKey;
-import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.button.ButtonServerRpc;
@@ -44,8 +38,7 @@ import com.vaadin.util.ReflectTools;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class Button extends AbstractFocusable implements
-        Action.ShortcutNotifier {
+public class Button extends AbstractFocusable {
 
     private ButtonServerRpc rpc = new ButtonServerRpc() {
 
@@ -377,101 +370,6 @@ public class Button extends AbstractFocusable implements
         fireEvent(new Button.ClickEvent(this, details));
     }
 
-    /*
-     * Actions
-     */
-
-    protected ClickShortcut clickShortcut;
-
-    /**
-     * Makes it possible to invoke a click on this button by pressing the given
-     * {@link KeyCode} and (optional) {@link ModifierKey}s.<br/>
-     * The shortcut is global (bound to the containing Window).
-     * 
-     * @param keyCode
-     *            the keycode for invoking the shortcut
-     * @param modifiers
-     *            the (optional) modifiers for invoking the shortcut, null for
-     *            none
-     */
-    public void setClickShortcut(int keyCode, int... modifiers) {
-        if (clickShortcut != null) {
-            removeShortcutListener(clickShortcut);
-        }
-        clickShortcut = new ClickShortcut(this, keyCode, modifiers);
-        addShortcutListener(clickShortcut);
-        getState().clickShortcutKeyCode = clickShortcut.getKeyCode();
-    }
-
-    /**
-     * Removes the keyboard shortcut previously set with
-     * {@link #setClickShortcut(int, int...)}.
-     */
-    public void removeClickShortcut() {
-        if (clickShortcut != null) {
-            removeShortcutListener(clickShortcut);
-            clickShortcut = null;
-            getState().clickShortcutKeyCode = 0;
-        }
-    }
-
-    /**
-     * A {@link ShortcutListener} specifically made to define a keyboard
-     * shortcut that invokes a click on the given button.
-     * 
-     */
-    public static class ClickShortcut extends ShortcutListener {
-        protected Button button;
-
-        /**
-         * Creates a keyboard shortcut for clicking the given button using the
-         * shorthand notation defined in {@link ShortcutAction}.
-         * 
-         * @param button
-         *            to be clicked when the shortcut is invoked
-         * @param shorthandCaption
-         *            the caption with shortcut keycode and modifiers indicated
-         */
-        public ClickShortcut(Button button, String shorthandCaption) {
-            super(shorthandCaption);
-            this.button = button;
-        }
-
-        /**
-         * Creates a keyboard shortcut for clicking the given button using the
-         * given {@link KeyCode} and {@link ModifierKey}s.
-         * 
-         * @param button
-         *            to be clicked when the shortcut is invoked
-         * @param keyCode
-         *            KeyCode to react to
-         * @param modifiers
-         *            optional modifiers for shortcut
-         */
-        public ClickShortcut(Button button, int keyCode, int... modifiers) {
-            super(null, keyCode, modifiers);
-            this.button = button;
-        }
-
-        /**
-         * Creates a keyboard shortcut for clicking the given button using the
-         * given {@link KeyCode}.
-         * 
-         * @param button
-         *            to be clicked when the shortcut is invoked
-         * @param keyCode
-         *            KeyCode to react to
-         */
-        public ClickShortcut(Button button, int keyCode) {
-            this(button, keyCode, null);
-        }
-
-        @Override
-        public void handleAction(Object sender, Object target) {
-            button.click();
-        }
-    }
-
     /**
      * Determines if a button is automatically disabled when clicked. See
      * {@link #setDisableOnClick(boolean)} for details.
@@ -585,13 +483,6 @@ public class Button extends AbstractFocusable implements
             setIconAlternateText(DesignAttributeHandler.readAttribute(
                     "icon-alt", attr, String.class));
         }
-        // click-shortcut
-        removeClickShortcut();
-        ShortcutAction action = DesignAttributeHandler.readAttribute(
-                "click-shortcut", attr, ShortcutAction.class);
-        if (action != null) {
-            setClickShortcut(action.getKeyCode(), action.getModifiers());
-        }
     }
 
     /*
@@ -635,10 +526,5 @@ public class Button extends AbstractFocusable implements
         DesignAttributeHandler.writeAttribute("icon-alt", attr,
                 getIconAlternateText(), def.getIconAlternateText(),
                 String.class);
-        // click-shortcut
-        if (clickShortcut != null) {
-            DesignAttributeHandler.writeAttribute("click-shortcut", attr,
-                    clickShortcut, null, ShortcutAction.class);
-        }
     }
 }

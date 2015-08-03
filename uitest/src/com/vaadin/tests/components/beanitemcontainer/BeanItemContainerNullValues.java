@@ -10,7 +10,7 @@ public class BeanItemContainerNullValues extends TestBase {
     private Table table;
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Null values should be sorted first (ascending sort) in a BeanItemContainer. Sort the 'country' column to see that the empty values come first.";
     }
 

@@ -38,7 +38,7 @@ public class HeaderUpdateWhenNoRows extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The header should be updated when toggling column header mode";
     }
 

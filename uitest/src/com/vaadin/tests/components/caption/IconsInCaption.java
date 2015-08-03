@@ -127,7 +127,7 @@ public class IconsInCaption extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test for comparing rendering speed of icons in a caption and in an Embedded component in different component containers.";
     }
 

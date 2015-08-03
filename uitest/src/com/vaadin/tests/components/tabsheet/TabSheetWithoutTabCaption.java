@@ -7,7 +7,7 @@ import com.vaadin.ui.TabSheet;
 public class TabSheetWithoutTabCaption extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "There should be a tabsheet with one tab visible. The tab has no caption and contains a label saying 'Tab contents'.";
     }
 

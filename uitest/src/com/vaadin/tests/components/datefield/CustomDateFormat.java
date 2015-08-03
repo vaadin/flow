@@ -30,7 +30,7 @@ public class CustomDateFormat extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Month name should be visible in text box if format pattern includes it";
     }
 

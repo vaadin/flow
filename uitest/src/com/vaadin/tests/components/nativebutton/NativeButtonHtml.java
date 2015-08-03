@@ -30,7 +30,7 @@ public class NativeButtonHtml extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Verify that NativeButton HTML rendering works";
     }
 

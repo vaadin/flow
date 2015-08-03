@@ -8,7 +8,7 @@ import com.vaadin.ui.VerticalLayout;
 public class ReplaceComponentNPE extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Clicking 'ReplaceComponent' should replace the 'Button' button with a VericalLayout, and move the button inside the verticalLayout. Visually this can be seen by the added margins of the VerticalLayout.";
     }
 

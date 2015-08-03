@@ -3,17 +3,17 @@ package com.vaadin.tests.components.datefield;
 import java.util.Date;
 import java.util.Locale;
 
+import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.tests.components.AbstractTestCase;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.GridLayout;
-import com.vaadin.ui.LegacyWindow;
 
 public class DateFieldPopupOffScreen extends AbstractTestCase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test for the popup position from a DateField. The popup should always be on-screen even if the DateField is close the the edge of the browser.";
     }
 
@@ -23,9 +23,7 @@ public class DateFieldPopupOffScreen extends AbstractTestCase {
     }
 
     @Override
-    public void init() {
-        LegacyWindow mainWindow = new LegacyWindow(getClass().getName());
-
+    public void init(VaadinRequest r) {
         GridLayout mainLayout = new GridLayout(3, 3);
         mainLayout.setSizeFull();
 
@@ -51,8 +49,7 @@ public class DateFieldPopupOffScreen extends AbstractTestCase {
         mainLayout.addComponent(df, 1, 2);
         mainLayout.setComponentAlignment(df, Alignment.BOTTOM_CENTER);
 
-        mainWindow.setContent(mainLayout);
-        setMainWindow(mainWindow);
+        setContent(mainLayout);
     }
 
     private DateField createDateField() {

@@ -83,7 +83,7 @@ public class TestItemSorter extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test that uses a custom ItemSorter to allow sorting Property types that do not implement Comparable";
     }
 

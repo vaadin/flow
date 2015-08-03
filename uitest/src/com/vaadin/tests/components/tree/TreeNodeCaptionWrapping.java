@@ -7,7 +7,7 @@ import com.vaadin.ui.Tree;
 public class TreeNodeCaptionWrapping extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The text should not wrap to the following line but instead be cut off when there is too little horizontal space.";
     }
 

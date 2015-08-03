@@ -11,7 +11,7 @@ import com.vaadin.ui.RichTextArea;
 public class RichTextAreaEmptyString extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test the value of a rich text area. Visually empty area should return \"\"";
     }
 

@@ -50,7 +50,7 @@ public class MultiSelectWithNotIdentityEqualIds extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Multiselection should work with container that uses ids that are equal, but not necessary identical. With bug an infinit loop is caused.";
     }
 

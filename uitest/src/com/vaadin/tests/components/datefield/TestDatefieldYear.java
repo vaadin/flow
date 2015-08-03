@@ -9,7 +9,7 @@ import com.vaadin.ui.DateField;
 public class TestDatefieldYear extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A popup with resolution year or month should update the textfield when browsing. The value displayed in the textfield should always be the same as the popup shows.";
     }
 

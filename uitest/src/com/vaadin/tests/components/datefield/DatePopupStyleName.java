@@ -22,7 +22,7 @@ public class DatePopupStyleName extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The DateField is given a style name 'test', but that style isn't applied on the calendar popup element.";
     }
 

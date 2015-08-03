@@ -58,7 +58,7 @@ public class ImageClicks extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Each click on the dynamically generated image should update the image and add another black square";
     }
 

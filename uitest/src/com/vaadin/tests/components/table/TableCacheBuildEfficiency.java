@@ -11,7 +11,7 @@ import com.vaadin.ui.Table;
 public class TableCacheBuildEfficiency extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "On each add, row property values should be queried only once (one log row for first addition).";
     }
 

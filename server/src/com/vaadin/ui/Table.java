@@ -30,7 +30,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,23 +43,12 @@ import com.vaadin.data.util.ContainerOrderedWrapper;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.ConverterUtil;
-import com.vaadin.event.Action;
-import com.vaadin.event.Action.Handler;
 import com.vaadin.event.DataBoundTransferable;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.event.ItemClickEvent.ItemClickListener;
 import com.vaadin.event.ItemClickEvent.ItemClickNotifier;
 import com.vaadin.event.MouseEvents.ClickEvent;
-import com.vaadin.event.dd.DragAndDropEvent;
-import com.vaadin.event.dd.DragSource;
-import com.vaadin.event.dd.DropHandler;
-import com.vaadin.event.dd.DropTarget;
-import com.vaadin.event.dd.acceptcriteria.ServerSideCriterion;
 import com.vaadin.server.KeyMapper;
-import com.vaadin.server.LegacyCommunicationManager;
-import com.vaadin.server.LegacyPaint;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.MultiSelectMode;
@@ -92,9 +80,8 @@ import com.vaadin.ui.declarative.DesignException;
  * @since 3.0
  */
 @SuppressWarnings({ "deprecation" })
-public class Table extends AbstractSelect implements Action.Container,
-        Container.Ordered, Container.Sortable, ItemClickNotifier, DragSource,
-        DropTarget, HasComponents {
+public class Table extends AbstractSelect implements Container.Ordered,
+        Container.Sortable, ItemClickNotifier, HasComponents {
 
     private transient Logger logger = null;
 
@@ -483,16 +470,6 @@ public class Table extends AbstractSelect implements Action.Container,
     private HashSet<Component> visibleComponents = null;
 
     /**
-     * List of action handlers.
-     */
-    private LinkedList<Handler> actionHandlers = null;
-
-    /**
-     * Action mapper.
-     */
-    private KeyMapper<Action> actionMapper = null;
-
-    /**
      * Table cell editor factory.
      */
     private TableFieldFactory fieldFactory = DefaultFieldFactory.get();
@@ -560,8 +537,6 @@ public class Table extends AbstractSelect implements Action.Container,
     private double cacheRate = CACHE_RATE_DEFAULT;
 
     private TableDragMode dragMode = TableDragMode.NONE;
-
-    private DropHandler dropHandler;
 
     private MultiSelectMode multiSelectMode = MultiSelectMode.DEFAULT;
 
@@ -2898,208 +2873,6 @@ public class Table extends AbstractSelect implements Action.Container,
     /* Component basics */
 
     /**
-     * Invoked when the value of a variable has changed.
-     * 
-     * @see com.vaadin.ui.Select#changeVariables(java.lang.Object,
-     *      java.util.Map)
-     */
-
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-
-        boolean clientNeedsContentRefresh = false;
-
-        handleClickEvent(variables);
-
-        handleColumnResizeEvent(variables);
-
-        handleColumnWidthUpdates(variables);
-
-        disableContentRefreshing();
-
-        if (!isSelectable() && variables.containsKey("selected")) {
-            // Not-selectable is a special case, AbstractSelect does not support
-            // TODO could be optimized.
-            variables = new HashMap<String, Object>(variables);
-            variables.remove("selected");
-        }
-
-        /*
-         * The AbstractSelect cannot handle the multiselection properly, instead
-         * we handle it ourself
-         */
-        else if (isSelectable() && isMultiSelect()
-                && variables.containsKey("selected")
-                && multiSelectMode == MultiSelectMode.DEFAULT) {
-            handleSelectedItems(variables);
-            variables = new HashMap<String, Object>(variables);
-            variables.remove("selected");
-        }
-
-        super.changeVariables(source, variables);
-
-        // Client might update the pagelength if Table height is fixed
-        if (variables.containsKey("pagelength")) {
-            // Sets pageLength directly to avoid repaint that setter causes
-            pageLength = (Integer) variables.get("pagelength");
-        }
-
-        // Page start index
-        if (variables.containsKey("firstvisible")) {
-            final Integer value = (Integer) variables.get("firstvisible");
-            if (value != null) {
-                setCurrentPageFirstItemIndex(value.intValue(), false);
-            }
-        }
-
-        // Sets requested firstrow and rows for the next paint
-        if (variables.containsKey("reqfirstrow")
-                || variables.containsKey("reqrows")) {
-
-            try {
-                firstToBeRenderedInClient = ((Integer) variables
-                        .get("firstToBeRendered")).intValue();
-                lastToBeRenderedInClient = ((Integer) variables
-                        .get("lastToBeRendered")).intValue();
-            } catch (Exception e) {
-                // FIXME: Handle exception
-                getLogger().log(Level.FINER,
-                        "Could not parse the first and/or last rows.", e);
-            }
-
-            // respect suggested rows only if table is not otherwise updated
-            // (row caches emptied by other event)
-            if (!containerChangeToBeRendered) {
-                Integer value = (Integer) variables.get("reqfirstrow");
-                if (value != null) {
-                    reqFirstRowToPaint = value.intValue();
-                }
-
-                value = (Integer) variables.get("reqrows");
-                if (value != null) {
-                    reqRowsToPaint = value.intValue();
-                    int size = size();
-                    // sanity check
-
-                    if (reqFirstRowToPaint >= size) {
-                        reqFirstRowToPaint = size;
-                    }
-
-                    if (reqFirstRowToPaint + reqRowsToPaint > size) {
-                        reqRowsToPaint = size - reqFirstRowToPaint;
-                    }
-                }
-            }
-            if (getLogger().isLoggable(Level.FINEST)) {
-                getLogger().log(
-                        Level.FINEST,
-                        "Client wants rows {0}-{1}",
-                        new Object[] { reqFirstRowToPaint,
-                                (reqFirstRowToPaint + reqRowsToPaint - 1) });
-            }
-            clientNeedsContentRefresh = true;
-        }
-
-        if (isSortEnabled()) {
-            // Sorting
-            boolean doSort = false;
-            if (variables.containsKey("sortcolumn")) {
-                final String colId = (String) variables.get("sortcolumn");
-                if (colId != null && !"".equals(colId) && !"null".equals(colId)) {
-                    final Object id = columnIdMap.get(colId);
-                    setSortContainerPropertyId(id, false);
-                    doSort = true;
-                }
-            }
-            if (variables.containsKey("sortascending")) {
-                final boolean state = ((Boolean) variables.get("sortascending"))
-                        .booleanValue();
-                if (state != sortAscending) {
-                    setSortAscending(state, false);
-                    doSort = true;
-                }
-            }
-            if (doSort) {
-                this.sort();
-                resetPageBuffer();
-            }
-        }
-
-        // Dynamic column hide/show and order
-        // Update visible columns
-        if (isColumnCollapsingAllowed()) {
-            if (variables.containsKey("collapsedcolumns")) {
-                try {
-                    final Object[] ids = (Object[]) variables
-                            .get("collapsedcolumns");
-                    Set<Object> idSet = new HashSet<Object>();
-                    for (Object id : ids) {
-                        idSet.add(columnIdMap.get(id.toString()));
-                    }
-                    for (final Iterator<Object> it = visibleColumns.iterator(); it
-                            .hasNext();) {
-                        Object propertyId = it.next();
-                        if (isColumnCollapsed(propertyId)) {
-                            if (!idSet.contains(propertyId)) {
-                                setColumnCollapsed(propertyId, false);
-                            }
-                        } else if (idSet.contains(propertyId)) {
-                            setColumnCollapsed(propertyId, true);
-                        }
-                    }
-                } catch (final Exception e) {
-                    // FIXME: Handle exception
-                    getLogger().log(Level.FINER,
-                            "Could not determine column collapsing state", e);
-                }
-                clientNeedsContentRefresh = true;
-            }
-        }
-        if (isColumnReorderingAllowed()) {
-            if (variables.containsKey("columnorder")) {
-                try {
-                    final Object[] ids = (Object[]) variables
-                            .get("columnorder");
-                    // need a real Object[], ids can be a String[]
-                    final Object[] idsTemp = new Object[ids.length];
-                    for (int i = 0; i < ids.length; i++) {
-                        idsTemp[i] = columnIdMap.get(ids[i].toString());
-                    }
-                    setColumnOrder(idsTemp);
-                    if (hasListeners(ColumnReorderEvent.class)) {
-                        fireEvent(new ColumnReorderEvent(this));
-                    }
-                } catch (final Exception e) {
-                    // FIXME: Handle exception
-                    getLogger().log(Level.FINER,
-                            "Could not determine column reordering state", e);
-                }
-                clientNeedsContentRefresh = true;
-            }
-        }
-
-        enableContentRefreshing(clientNeedsContentRefresh);
-
-        // Actions
-        if (variables.containsKey("action")) {
-            final StringTokenizer st = new StringTokenizer(
-                    (String) variables.get("action"), ",");
-            if (st.countTokens() == 2) {
-                final Object itemId = itemIdMapper.get(st.nextToken());
-                final Action action = actionMapper.get(st.nextToken());
-
-                if (action != null && (itemId == null || containsId(itemId))
-                        && actionHandlers != null) {
-                    for (Handler ah : actionHandlers) {
-                        ah.handleAction(action, this, itemId);
-                    }
-                }
-            }
-        }
-
-    }
-
-    /**
      * Handles click event
      * 
      * @param variables
@@ -3254,171 +3027,12 @@ public class Table extends AbstractSelect implements Action.Container,
      * terminal.PaintTarget)
      */
 
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        isBeingPainted = true;
-        try {
-            doPaintContent(target);
-        } finally {
-            isBeingPainted = false;
-        }
-    }
-
-    private void doPaintContent(PaintTarget target) throws PaintException {
-        /*
-         * Body actions - Actions which has the target null and can be invoked
-         * by right clicking on the table body.
-         */
-        final Set<Action> actionSet = findAndPaintBodyActions(target);
-
-        final Object[][] cells = getVisibleCells();
-        int rows = findNumRowsToPaint(target, cells);
-
-        int total = size();
-        if (shouldHideNullSelectionItem()) {
-            total--;
-            rows--;
-        }
-
-        // Table attributes
-        paintTableAttributes(target, rows, total);
-
-        paintVisibleColumnOrder(target);
-
-        // Rows
-        if (isPartialRowUpdate() && painted && !target.isFullRepaint()) {
-            paintPartialRowUpdate(target, actionSet);
-        } else if (target.isFullRepaint() || isRowCacheInvalidated()) {
-            paintRows(target, cells, actionSet);
-            setRowCacheInvalidated(false);
-        }
-
-        /*
-         * Send the page buffer indexes to ensure that the client side stays in
-         * sync. Otherwise we _might_ have the situation where the client side
-         * discards too few or too many rows, causing out of sync issues.
-         */
-        int pageBufferLastIndex = pageBufferFirstIndex
-                + pageBuffer[CELL_ITEMID].length - 1;
-        target.addAttribute(TableConstants.ATTRIBUTE_PAGEBUFFER_FIRST,
-                pageBufferFirstIndex);
-        target.addAttribute(TableConstants.ATTRIBUTE_PAGEBUFFER_LAST,
-                pageBufferLastIndex);
-
-        paintSorting(target);
-
-        resetVariablesAndPageBuffer(target);
-
-        // Actions
-        paintActions(target, actionSet);
-
-        paintColumnOrder(target);
-
-        // Available columns
-        paintAvailableColumns(target);
-
-        paintVisibleColumns(target);
-
-        if (keyMapperReset) {
-            keyMapperReset = false;
-            target.addAttribute(TableConstants.ATTRIBUTE_KEY_MAPPER_RESET, true);
-        }
-
-        if (dropHandler != null) {
-            dropHandler.getAcceptCriterion().paint(target);
-        }
-
-        painted = true;
-    }
-
     private void setRowCacheInvalidated(boolean invalidated) {
         rowCacheInvalidated = invalidated;
     }
 
     protected boolean isRowCacheInvalidated() {
         return rowCacheInvalidated;
-    }
-
-    private void paintPartialRowUpdate(PaintTarget target, Set<Action> actionSet)
-            throws PaintException {
-        paintPartialRowUpdates(target, actionSet);
-        paintPartialRowAdditions(target, actionSet);
-    }
-
-    private void paintPartialRowUpdates(PaintTarget target,
-            Set<Action> actionSet) throws PaintException {
-        final boolean[] iscomponent = findCellsWithComponents();
-
-        int firstIx = getFirstUpdatedItemIndex();
-        int count = getUpdatedRowCount();
-
-        target.startTag("urows");
-        target.addAttribute("firsturowix", firstIx);
-        target.addAttribute("numurows", count);
-
-        // Partial row updates bypass the normal caching mechanism.
-        Object[][] cells = getVisibleCellsUpdateCacheRows(firstIx, count);
-        for (int indexInRowbuffer = 0; indexInRowbuffer < count; indexInRowbuffer++) {
-            final Object itemId = cells[CELL_ITEMID][indexInRowbuffer];
-
-            if (shouldHideNullSelectionItem()) {
-                // Remove null selection item if null selection is not allowed
-                continue;
-            }
-
-            paintRow(target, cells, isEditable(), actionSet, iscomponent,
-                    indexInRowbuffer, itemId);
-        }
-        target.endTag("urows");
-        maybeThrowCacheUpdateExceptions();
-    }
-
-    private void paintPartialRowAdditions(PaintTarget target,
-            Set<Action> actionSet) throws PaintException {
-        final boolean[] iscomponent = findCellsWithComponents();
-
-        int firstIx = getFirstAddedItemIndex();
-        int count = getAddedRowCount();
-
-        target.startTag("prows");
-
-        if (!shouldHideAddedRows()) {
-            getLogger().log(Level.FINEST,
-                    "Paint rows for add. Index: {0}, count: {1}.",
-                    new Object[] { firstIx, count });
-
-            // Partial row additions bypass the normal caching mechanism.
-            Object[][] cells = getVisibleCellsInsertIntoCache(firstIx, count);
-            if (cells[0].length < count) {
-                // delete the rows below, since they will fall beyond the cache
-                // page.
-                target.addAttribute("delbelow", true);
-                count = cells[0].length;
-            }
-
-            for (int indexInRowbuffer = 0; indexInRowbuffer < count; indexInRowbuffer++) {
-                final Object itemId = cells[CELL_ITEMID][indexInRowbuffer];
-                if (shouldHideNullSelectionItem()) {
-                    // Remove null selection item if null selection is not
-                    // allowed
-                    continue;
-                }
-
-                paintRow(target, cells, isEditable(), actionSet, iscomponent,
-                        indexInRowbuffer, itemId);
-            }
-        } else {
-            getLogger().log(Level.FINEST,
-                    "Paint rows for remove. Index: {0}, count: {1}.",
-                    new Object[] { firstIx, count });
-            removeRowsFromCacheAndFillBottom(firstIx, count);
-            target.addAttribute("hide", true);
-        }
-
-        target.addAttribute("firstprowix", firstIx);
-        target.addAttribute("numprows", count);
-        target.endTag("prows");
-        maybeThrowCacheUpdateExceptions();
     }
 
     /**
@@ -3502,209 +3116,8 @@ public class Table extends AbstractSelect implements Action.Container,
         return 0;
     }
 
-    private void paintTableAttributes(PaintTarget target, int rows, int total)
-            throws PaintException {
-        paintTabIndex(target);
-        paintDragMode(target);
-        paintSelectMode(target);
-
-        if (cacheRate != CACHE_RATE_DEFAULT) {
-            target.addAttribute("cr", cacheRate);
-        }
-
-        target.addAttribute("cols", getVisibleColumns().length);
-        target.addAttribute("rows", rows);
-
-        target.addAttribute("firstrow",
-                (reqFirstRowToPaint >= 0 ? reqFirstRowToPaint
-                        : firstToBeRenderedInClient));
-        target.addAttribute("totalrows", total);
-        if (getPageLength() != 0) {
-            target.addAttribute("pagelength", getPageLength());
-        }
-        if (areColumnHeadersEnabled()) {
-            target.addAttribute("colheaders", true);
-        }
-        if (rowHeadersAreEnabled()) {
-            target.addAttribute("rowheaders", true);
-        }
-
-        target.addAttribute("colfooters", columnFootersVisible);
-
-        // The cursors are only shown on pageable table
-        if (getCurrentPageFirstItemIndex() != 0 || getPageLength() > 0) {
-            target.addVariable(this, "firstvisible",
-                    getCurrentPageFirstItemIndex());
-            target.addVariable(this, "firstvisibleonlastpage",
-                    currentPageFirstItemIndexOnLastPage);
-        }
-    }
-
-    /**
-     * Resets and paints "to be painted next" variables. Also reset pageBuffer
-     */
-    private void resetVariablesAndPageBuffer(PaintTarget target)
-            throws PaintException {
-        reqFirstRowToPaint = -1;
-        reqRowsToPaint = -1;
-        containerChangeToBeRendered = false;
-        target.addVariable(this, "reqrows", reqRowsToPaint);
-        target.addVariable(this, "reqfirstrow", reqFirstRowToPaint);
-    }
-
     private boolean areColumnHeadersEnabled() {
         return getColumnHeaderMode() != ColumnHeaderMode.HIDDEN;
-    }
-
-    private void paintVisibleColumns(PaintTarget target) throws PaintException {
-        target.startTag("visiblecolumns");
-        if (rowHeadersAreEnabled()) {
-            target.startTag("column");
-            target.addAttribute("cid", ROW_HEADER_COLUMN_KEY);
-            paintColumnWidth(target, ROW_HEADER_FAKE_PROPERTY_ID);
-            paintColumnExpandRatio(target, ROW_HEADER_FAKE_PROPERTY_ID);
-            target.endTag("column");
-        }
-        final Collection<?> sortables = getSortableContainerPropertyIds();
-        for (Object colId : visibleColumns) {
-            if (colId != null) {
-                target.startTag("column");
-                target.addAttribute("cid", columnIdMap.key(colId));
-                final String head = getColumnHeader(colId);
-                target.addAttribute("caption", (head != null ? head : ""));
-                final String foot = getColumnFooter(colId);
-                target.addAttribute("fcaption", (foot != null ? foot : ""));
-                if (isColumnCollapsed(colId)) {
-                    target.addAttribute("collapsed", true);
-                }
-                if (areColumnHeadersEnabled()) {
-                    if (getColumnIcon(colId) != null) {
-                        target.addAttribute("icon", getColumnIcon(colId));
-                    }
-                    if (sortables.contains(colId)) {
-                        target.addAttribute("sortable", true);
-                    }
-                }
-                if (!Align.LEFT.equals(getColumnAlignment(colId))) {
-                    target.addAttribute("align", getColumnAlignment(colId)
-                            .toString());
-                }
-                paintColumnWidth(target, colId);
-                paintColumnExpandRatio(target, colId);
-                target.endTag("column");
-            }
-        }
-        target.endTag("visiblecolumns");
-    }
-
-    private void paintAvailableColumns(PaintTarget target)
-            throws PaintException {
-        if (columnCollapsingAllowed) {
-            final HashSet<Object> collapsedCols = new HashSet<Object>();
-            for (Object colId : visibleColumns) {
-                if (isColumnCollapsed(colId)) {
-                    collapsedCols.add(colId);
-                }
-            }
-            final String[] collapsedKeys = new String[collapsedCols.size()];
-            int nextColumn = 0;
-            for (Object colId : visibleColumns) {
-                if (isColumnCollapsed(colId)) {
-                    collapsedKeys[nextColumn++] = columnIdMap.key(colId);
-                }
-            }
-            target.addVariable(this, "collapsedcolumns", collapsedKeys);
-
-            final String[] noncollapsibleKeys = new String[noncollapsibleColumns
-                    .size()];
-            nextColumn = 0;
-            for (Object colId : noncollapsibleColumns) {
-                noncollapsibleKeys[nextColumn++] = columnIdMap.key(colId);
-            }
-            target.addVariable(this, "noncollapsiblecolumns",
-                    noncollapsibleKeys);
-        }
-
-    }
-
-    private void paintActions(PaintTarget target, final Set<Action> actionSet)
-            throws PaintException {
-        if (!actionSet.isEmpty()) {
-            target.addVariable(this, "action", "");
-            target.startTag("actions");
-            for (Action a : actionSet) {
-                target.startTag("action");
-                if (a.getCaption() != null) {
-                    target.addAttribute("caption", a.getCaption());
-                }
-                if (a.getIcon() != null) {
-                    target.addAttribute("icon", a.getIcon());
-                }
-                target.addAttribute("key", actionMapper.key(a));
-                target.endTag("action");
-            }
-            target.endTag("actions");
-        }
-    }
-
-    private void paintColumnOrder(PaintTarget target) throws PaintException {
-        if (columnReorderingAllowed) {
-            final String[] colorder = new String[visibleColumns.size()];
-            int i = 0;
-            for (Object colId : visibleColumns) {
-                colorder[i++] = columnIdMap.key(colId);
-            }
-            target.addVariable(this, "columnorder", colorder);
-        }
-    }
-
-    private void paintSorting(PaintTarget target) throws PaintException {
-        // Sorting
-        if (getContainerDataSource() instanceof Container.Sortable) {
-            target.addVariable(this, "sortcolumn",
-                    columnIdMap.key(sortContainerPropertyId));
-            target.addVariable(this, "sortascending", sortAscending);
-        }
-    }
-
-    private void paintRows(PaintTarget target, final Object[][] cells,
-            final Set<Action> actionSet) throws PaintException {
-        final boolean[] iscomponent = findCellsWithComponents();
-
-        target.startTag("rows");
-        // cells array contains all that are supposed to be visible on client,
-        // but we'll start from the one requested by client
-        int start = 0;
-        if (reqFirstRowToPaint != -1 && firstToBeRenderedInClient != -1) {
-            start = reqFirstRowToPaint - firstToBeRenderedInClient;
-        }
-        int end = cells[0].length;
-        if (reqRowsToPaint != -1) {
-            end = start + reqRowsToPaint;
-        }
-        // sanity check
-        if (lastToBeRenderedInClient != -1 && lastToBeRenderedInClient < end) {
-            end = lastToBeRenderedInClient + 1;
-        }
-        if (start > cells[CELL_ITEMID].length || start < 0) {
-            start = 0;
-        }
-        if (end > cells[CELL_ITEMID].length) {
-            end = cells[CELL_ITEMID].length;
-        }
-
-        for (int indexInRowbuffer = start; indexInRowbuffer < end; indexInRowbuffer++) {
-            final Object itemId = cells[CELL_ITEMID][indexInRowbuffer];
-
-            if (shouldHideNullSelectionItem()) {
-                // Remove null selection item if null selection is not allowed
-                continue;
-            }
-
-            paintRow(target, cells, isEditable(), actionSet, iscomponent,
-                    indexInRowbuffer, itemId);
-        }
-        target.endTag("rows");
     }
 
     private boolean[] findCellsWithComponents() {
@@ -3722,79 +3135,9 @@ public class Table extends AbstractSelect implements Action.Container,
         return isComponent;
     }
 
-    private void paintVisibleColumnOrder(PaintTarget target) {
-        // Visible column order
-        final ArrayList<String> visibleColOrder = new ArrayList<String>();
-        for (Object columnId : visibleColumns) {
-            if (!isColumnCollapsed(columnId)) {
-                visibleColOrder.add(columnIdMap.key(columnId));
-            }
-        }
-        target.addAttribute("vcolorder", visibleColOrder.toArray());
-    }
-
-    private Set<Action> findAndPaintBodyActions(PaintTarget target) {
-        Set<Action> actionSet = new LinkedHashSet<Action>();
-        if (actionHandlers != null) {
-            final ArrayList<String> keys = new ArrayList<String>();
-            for (Handler ah : actionHandlers) {
-                // Getting actions for the null item, which in this case means
-                // the body item
-                final Action[] actions = ah.getActions(null, this);
-                if (actions != null) {
-                    for (Action action : actions) {
-                        actionSet.add(action);
-                        keys.add(actionMapper.key(action));
-                    }
-                }
-            }
-            target.addAttribute("alb", keys.toArray());
-        }
-        return actionSet;
-    }
-
     private boolean shouldHideNullSelectionItem() {
         return !isNullSelectionAllowed() && getNullSelectionItemId() != null
                 && containsId(getNullSelectionItemId());
-    }
-
-    private int findNumRowsToPaint(PaintTarget target, final Object[][] cells)
-            throws PaintException {
-        int rows;
-        if (reqRowsToPaint >= 0) {
-            rows = reqRowsToPaint;
-        } else {
-            rows = cells[0].length;
-            if (alwaysRecalculateColumnWidths) {
-                // TODO experimental feature for now: tell the client to
-                // recalculate column widths.
-                // We'll only do this for paints that do not originate from
-                // table scroll/cache requests (i.e when reqRowsToPaint<0)
-                target.addAttribute("recalcWidths", true);
-            }
-        }
-        return rows;
-    }
-
-    private void paintSelectMode(PaintTarget target) throws PaintException {
-        if (multiSelectMode != MultiSelectMode.DEFAULT) {
-            target.addAttribute("multiselectmode", multiSelectMode.ordinal());
-        }
-        if (isSelectable()) {
-            target.addAttribute("selectmode", (isMultiSelect() ? "multi"
-                    : "single"));
-        } else {
-            target.addAttribute("selectmode", "none");
-        }
-        if (!isNullSelectionAllowed()) {
-            target.addAttribute("nsa", false);
-        }
-
-        // selection support
-        // The select variable is only enabled if selectable
-        if (isSelectable()) {
-            target.addVariable(this, "selected", findSelectedKeys());
-        }
     }
 
     private String[] findSelectedKeys() {
@@ -3820,33 +3163,6 @@ public class Table extends AbstractSelect implements Action.Container,
         return selectedKeys.toArray(new String[selectedKeys.size()]);
     }
 
-    private void paintDragMode(PaintTarget target) throws PaintException {
-        if (dragMode != TableDragMode.NONE) {
-            target.addAttribute("dragmode", dragMode.ordinal());
-        }
-    }
-
-    private void paintTabIndex(PaintTarget target) throws PaintException {
-        // The tab ordering number
-        if (getTabIndex() > 0) {
-            target.addAttribute("tabindex", getTabIndex());
-        }
-    }
-
-    private void paintColumnWidth(PaintTarget target, final Object columnId)
-            throws PaintException {
-        if (columnWidths.containsKey(columnId)) {
-            target.addAttribute("width", getColumnWidth(columnId));
-        }
-    }
-
-    private void paintColumnExpandRatio(PaintTarget target,
-            final Object columnId) throws PaintException {
-        if (columnExpandRatios.containsKey(columnId)) {
-            target.addAttribute("er", getColumnExpandRatio(columnId));
-        }
-    }
-
     /**
      * Checks whether row headers are visible.
      * 
@@ -3855,171 +3171,6 @@ public class Table extends AbstractSelect implements Action.Container,
      */
     protected boolean rowHeadersAreEnabled() {
         return getRowHeaderMode() != RowHeaderMode.HIDDEN;
-    }
-
-    private void paintRow(PaintTarget target, final Object[][] cells,
-            final boolean iseditable, final Set<Action> actionSet,
-            final boolean[] iscomponent, int indexInRowbuffer,
-            final Object itemId) throws PaintException {
-        target.startTag("tr");
-
-        paintRowAttributes(target, cells, actionSet, indexInRowbuffer, itemId);
-
-        // cells
-        int currentColumn = 0;
-        for (final Iterator<Object> it = visibleColumns.iterator(); it
-                .hasNext(); currentColumn++) {
-            final Object columnId = it.next();
-            if (columnId == null || isColumnCollapsed(columnId)) {
-                continue;
-            }
-            /*
-             * For each cell, if a cellStyleGenerator is specified, get the
-             * specific style for the cell. If there is any, add it to the
-             * target.
-             */
-            if (cellStyleGenerator != null) {
-                String cellStyle = cellStyleGenerator.getStyle(this, itemId,
-                        columnId);
-                if (cellStyle != null && !cellStyle.equals("")) {
-                    target.addAttribute("style-" + columnIdMap.key(columnId),
-                            cellStyle);
-                }
-            }
-
-            if ((iscomponent[currentColumn] || iseditable || cells[CELL_GENERATED_ROW][indexInRowbuffer] != null)
-                    && Component.class.isInstance(cells[CELL_FIRSTCOL
-                            + currentColumn][indexInRowbuffer])) {
-                final Component c = (Component) cells[CELL_FIRSTCOL
-                        + currentColumn][indexInRowbuffer];
-                if (c == null
-                        || !LegacyCommunicationManager
-                                .isComponentVisibleToClient(c)) {
-                    target.addText("");
-                } else {
-                    LegacyPaint.paint(c, target);
-                }
-            } else {
-                target.addText((String) cells[CELL_FIRSTCOL + currentColumn][indexInRowbuffer]);
-            }
-            paintCellTooltips(target, itemId, columnId);
-        }
-
-        target.endTag("tr");
-    }
-
-    private void paintCellTooltips(PaintTarget target, Object itemId,
-            Object columnId) throws PaintException {
-        if (itemDescriptionGenerator != null) {
-            String itemDescription = itemDescriptionGenerator
-                    .generateDescription(this, itemId, columnId);
-            if (itemDescription != null && !itemDescription.equals("")) {
-                target.addAttribute("descr-" + columnIdMap.key(columnId),
-                        itemDescription);
-            }
-        }
-    }
-
-    private void paintRowTooltips(PaintTarget target, Object itemId)
-            throws PaintException {
-        if (itemDescriptionGenerator != null) {
-            String rowDescription = itemDescriptionGenerator
-                    .generateDescription(this, itemId, null);
-            if (rowDescription != null && !rowDescription.equals("")) {
-                target.addAttribute("rowdescr", rowDescription);
-            }
-        }
-    }
-
-    private void paintRowAttributes(PaintTarget target, final Object[][] cells,
-            final Set<Action> actionSet, int indexInRowbuffer,
-            final Object itemId) throws PaintException {
-        // tr attributes
-
-        paintRowIcon(target, cells, indexInRowbuffer);
-        paintRowHeader(target, cells, indexInRowbuffer);
-        paintGeneratedRowInfo(target, cells, indexInRowbuffer);
-        target.addAttribute("key",
-                Integer.parseInt(cells[CELL_KEY][indexInRowbuffer].toString()));
-
-        if (isSelected(itemId)) {
-            target.addAttribute("selected", true);
-        }
-
-        // Actions
-        if (actionHandlers != null) {
-            final ArrayList<String> keys = new ArrayList<String>();
-            for (Handler ah : actionHandlers) {
-                final Action[] aa = ah.getActions(itemId, this);
-                if (aa != null) {
-                    for (int ai = 0; ai < aa.length; ai++) {
-                        final String key = actionMapper.key(aa[ai]);
-                        actionSet.add(aa[ai]);
-                        keys.add(key);
-                    }
-                }
-            }
-            target.addAttribute("al", keys.toArray());
-        }
-
-        /*
-         * For each row, if a cellStyleGenerator is specified, get the specific
-         * style for the cell, using null as propertyId. If there is any, add it
-         * to the target.
-         */
-        if (cellStyleGenerator != null) {
-            String rowStyle = cellStyleGenerator.getStyle(this, itemId, null);
-            if (rowStyle != null && !rowStyle.equals("")) {
-                target.addAttribute("rowstyle", rowStyle);
-            }
-        }
-
-        paintRowTooltips(target, itemId);
-
-        paintRowAttributes(target, itemId);
-    }
-
-    private void paintGeneratedRowInfo(PaintTarget target, Object[][] cells,
-            int indexInRowBuffer) throws PaintException {
-        GeneratedRow generatedRow = (GeneratedRow) cells[CELL_GENERATED_ROW][indexInRowBuffer];
-        if (generatedRow != null) {
-            target.addAttribute("gen_html", generatedRow.isHtmlContentAllowed());
-            target.addAttribute("gen_span", generatedRow.isSpanColumns());
-            target.addAttribute("gen_widget",
-                    generatedRow.getValue() instanceof Component);
-        }
-    }
-
-    protected void paintRowHeader(PaintTarget target, Object[][] cells,
-            int indexInRowbuffer) throws PaintException {
-        if (rowHeadersAreEnabled()) {
-            if (cells[CELL_HEADER][indexInRowbuffer] != null) {
-                target.addAttribute("caption",
-                        (String) cells[CELL_HEADER][indexInRowbuffer]);
-            }
-        }
-
-    }
-
-    protected void paintRowIcon(PaintTarget target, final Object[][] cells,
-            int indexInRowbuffer) throws PaintException {
-        if (rowHeadersAreEnabled()
-                && cells[CELL_ICON][indexInRowbuffer] != null) {
-            target.addAttribute("icon",
-                    (Resource) cells[CELL_ICON][indexInRowbuffer]);
-        }
-    }
-
-    /**
-     * A method where extended Table implementations may add their custom
-     * attributes for rows.
-     * 
-     * @param target
-     * @param itemId
-     */
-    protected void paintRowAttributes(PaintTarget target, Object itemId)
-            throws PaintException {
-
     }
 
     /**
@@ -4126,73 +3277,6 @@ public class Table extends AbstractSelect implements Action.Container,
                     getLocale());
         }
         return (null != value) ? value.toString() : "";
-    }
-
-    /* Action container */
-
-    /**
-     * Registers a new action handler for this container
-     * 
-     * @see com.vaadin.event.Action.Container#addActionHandler(Action.Handler)
-     */
-
-    @Override
-    public void addActionHandler(Action.Handler actionHandler) {
-
-        if (actionHandler != null) {
-
-            if (actionHandlers == null) {
-                actionHandlers = new LinkedList<Handler>();
-                actionMapper = new KeyMapper<Action>();
-            }
-
-            if (!actionHandlers.contains(actionHandler)) {
-                actionHandlers.add(actionHandler);
-                // Assures the visual refresh. No need to reset the page buffer
-                // before as the content has not changed, only the action
-                // handlers.
-                refreshRenderedCells();
-            }
-
-        }
-    }
-
-    /**
-     * Removes a previously registered action handler for the contents of this
-     * container.
-     * 
-     * @see com.vaadin.event.Action.Container#removeActionHandler(Action.Handler)
-     */
-
-    @Override
-    public void removeActionHandler(Action.Handler actionHandler) {
-
-        if (actionHandlers != null && actionHandlers.contains(actionHandler)) {
-
-            actionHandlers.remove(actionHandler);
-
-            if (actionHandlers.isEmpty()) {
-                actionHandlers = null;
-                actionMapper = null;
-            }
-
-            // Assures the visual refresh. No need to reset the page buffer
-            // before as the content has not changed, only the action
-            // handlers.
-            refreshRenderedCells();
-        }
-    }
-
-    /**
-     * Removes all action handlers
-     */
-    public void removeAllActionHandlers() {
-        actionHandlers = null;
-        actionMapper = null;
-        // Assures the visual refresh. No need to reset the page buffer
-        // before as the content has not changed, only the action
-        // handlers.
-        refreshRenderedCells();
     }
 
     /* Property value change listening support */
@@ -5163,27 +4247,6 @@ public class Table extends AbstractSelect implements Action.Container,
 
     }
 
-    @Override
-    public TableTransferable getTransferable(Map<String, Object> rawVariables) {
-        TableTransferable transferable = new TableTransferable(rawVariables);
-        return transferable;
-    }
-
-    @Override
-    public DropHandler getDropHandler() {
-        return dropHandler;
-    }
-
-    public void setDropHandler(DropHandler dropHandler) {
-        this.dropHandler = dropHandler;
-    }
-
-    @Override
-    public AbstractSelectTargetDetails translateDropTargetDetails(
-            Map<String, Object> clientVariables) {
-        return new AbstractSelectTargetDetails(clientVariables);
-    }
-
     /**
      * Sets the behavior of how the multi-select mode should behave when the
      * table is both selectable and in multi-select mode.
@@ -5207,96 +4270,6 @@ public class Table extends AbstractSelect implements Action.Container,
      */
     public MultiSelectMode getMultiSelectMode() {
         return multiSelectMode;
-    }
-
-    /**
-     * Lazy loading accept criterion for Table. Accepted target rows are loaded
-     * from server once per drag and drop operation. Developer must override one
-     * method that decides on which rows the currently dragged data can be
-     * dropped.
-     * 
-     * <p>
-     * Initially pretty much no data is sent to client. On first required
-     * criterion check (per drag request) the client side data structure is
-     * initialized from server and no subsequent requests requests are needed
-     * during that drag and drop operation.
-     */
-    public static abstract class TableDropCriterion extends ServerSideCriterion {
-
-        private Table table;
-
-        private Set<Object> allowedItemIds;
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * com.vaadin.event.dd.acceptcriteria.ServerSideCriterion#getIdentifier
-         * ()
-         */
-
-        @Override
-        protected String getIdentifier() {
-            return TableDropCriterion.class.getCanonicalName();
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * com.vaadin.event.dd.acceptcriteria.AcceptCriterion#accepts(com.vaadin
-         * .event.dd.DragAndDropEvent)
-         */
-        @Override
-        @SuppressWarnings("unchecked")
-        public boolean accept(DragAndDropEvent dragEvent) {
-            AbstractSelectTargetDetails dropTargetData = (AbstractSelectTargetDetails) dragEvent
-                    .getTargetDetails();
-            table = (Table) dragEvent.getTargetDetails().getTarget();
-            Collection<?> visibleItemIds = table.getVisibleItemIds();
-            allowedItemIds = getAllowedItemIds(dragEvent, table,
-                    (Collection<Object>) visibleItemIds);
-
-            return allowedItemIds.contains(dropTargetData.getItemIdOver());
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * com.vaadin.event.dd.acceptcriteria.AcceptCriterion#paintResponse(
-         * com.vaadin.server.PaintTarget)
-         */
-
-        @Override
-        public void paintResponse(PaintTarget target) throws PaintException {
-            /*
-             * send allowed nodes to client so subsequent requests can be
-             * avoided
-             */
-            Object[] array = allowedItemIds.toArray();
-            for (int i = 0; i < array.length; i++) {
-                String key = table.itemIdMapper.key(array[i]);
-                array[i] = key;
-            }
-            target.addAttribute("allowedIds", array);
-        }
-
-        /**
-         * @param dragEvent
-         * @param table
-         *            the table for which the allowed item identifiers are
-         *            defined
-         * @param visibleItemIds
-         *            the list of currently rendered item identifiers, accepted
-         *            item id's need to be detected only for these visible items
-         * @return the set of identifiers for items on which the dragEvent will
-         *         be accepted
-         */
-        protected abstract Set<Object> getAllowedItemIds(
-                DragAndDropEvent dragEvent, Table table,
-                Collection<Object> visibleItemIds);
-
     }
 
     /**

@@ -13,7 +13,7 @@ public class TableVisibleColumnsUpdate extends TestBase {
     private Table table;
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Columns should change between p1,p2,p3 and p1,p4,p3";
     }
 

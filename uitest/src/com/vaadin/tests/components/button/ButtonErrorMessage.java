@@ -20,7 +20,7 @@ public class ButtonErrorMessage extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Click the button for an exception. The exception should not contain any extra ',' characters";
     }
 

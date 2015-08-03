@@ -19,7 +19,7 @@ public class PreventTabChange extends TestBase implements
     private Label tab3;
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests prevention of selecting certain tabs. Selecting the tabs in order (1-2-3-1) should work, while selecting out of order should cause the current tab to remain selected. The selected tab will actually first be changed (by the client) and then changed back (on the server response).";
     }
 

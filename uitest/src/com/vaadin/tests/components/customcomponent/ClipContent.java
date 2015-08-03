@@ -47,7 +47,7 @@ public class ClipContent extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The text in CustomComponent should be clipped if it has size defined.";
     }
 

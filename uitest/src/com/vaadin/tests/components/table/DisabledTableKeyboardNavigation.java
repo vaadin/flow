@@ -26,7 +26,7 @@ public class DisabledTableKeyboardNavigation extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Once should not be able to focus or use a disabled table";
     }
 

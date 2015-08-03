@@ -37,7 +37,7 @@ public class TreeKeyboardNavigationValidators extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Keyboard navigation should still work in a tree with validators.";
     }
 

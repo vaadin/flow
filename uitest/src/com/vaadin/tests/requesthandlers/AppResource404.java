@@ -30,7 +30,7 @@ public class AppResource404 extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Accessing the URL of a resource that has been removed or the URL following the resource URL pattern but not currently mapped to a resource should give a 404 error message";
     }
 

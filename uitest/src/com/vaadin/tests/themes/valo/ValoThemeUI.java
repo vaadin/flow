@@ -29,8 +29,6 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.data.util.IndexedContainer;
-import com.vaadin.event.Action;
-import com.vaadin.event.Action.Handler;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
@@ -52,7 +50,6 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.ui.NativeSelect;
-import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
 
@@ -91,10 +88,6 @@ public class ValoThemeUI extends UI {
         if (request.getParameter("test") != null) {
             testMode = true;
 
-            if (browserCantRenderFontsConsistently()) {
-                getPage().getStyles().add(
-                        ".v-app.v-app.v-app {font-family: Sans-Serif;}");
-            }
         }
 
         if (getPage().getWebBrowser().isIE()
@@ -125,16 +118,13 @@ public class ValoThemeUI extends UI {
         navigator.addView("menubars", MenuBars.class);
         navigator.addView("panels", Panels.class);
         navigator.addView("trees", Trees.class);
-        navigator.addView("tables", Tables.class);
         navigator.addView("splitpanels", SplitPanels.class);
         navigator.addView("tabs", Tabsheets.class);
         navigator.addView("accordions", Accordions.class);
         navigator.addView("colorpickers", ColorPickers.class);
         navigator.addView("selects", NativeSelects.class);
-        navigator.addView("calendar", CalendarTest.class);
         navigator.addView("forms", Forms.class);
         navigator.addView("popupviews", PopupViews.class);
-        navigator.addView("dragging", Dragging.class);
 
         String f = Page.getCurrent().getUriFragment();
         if (f == null || f.equals("")) {
@@ -365,28 +355,6 @@ public class ValoThemeUI extends UI {
             }
         });
         return ns;
-    }
-
-    static Handler actionHandler = new Handler() {
-        private final Action ACTION_ONE = new Action("Action One");
-        private final Action ACTION_TWO = new Action("Action Two");
-        private final Action ACTION_THREE = new Action("Action Three");
-        private final Action[] ACTIONS = new Action[] { ACTION_ONE, ACTION_TWO,
-                ACTION_THREE };
-
-        @Override
-        public void handleAction(Action action, Object sender, Object target) {
-            Notification.show(action.getCaption());
-        }
-
-        @Override
-        public Action[] getActions(Object target, Object sender) {
-            return ACTIONS;
-        }
-    };
-
-    static Handler getActionHandler() {
-        return actionHandler;
     }
 
     static final String CAPTION_PROPERTY = "caption";

@@ -16,7 +16,7 @@ public class IE6Cursor extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tabbing from the first field to the second should clear the second textfield and show the normal, blinking cursor in the field";
     }
 

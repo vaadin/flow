@@ -32,9 +32,9 @@ import java.util.logging.Logger;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.ClientConnector;
-import com.vaadin.server.JsonPaintTarget;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.LegacyCommunicationManager.ClientCache;
+import com.vaadin.server.PaintException;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
@@ -44,6 +44,8 @@ import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonException;
+import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 /**
@@ -55,6 +57,8 @@ import elemental.json.impl.JsonUtil;
  * @since 7.1
  */
 public class UidlWriter implements Serializable {
+
+    private final Set<Class<? extends ClientConnector>> usedClientConnectors = new HashSet<Class<? extends ClientConnector>>();
 
     /**
      * Writes a JSON object containing all pending changes to the given UI.
@@ -137,15 +141,6 @@ public class UidlWriter implements Serializable {
                     .getLastProcessedClientToServerId() + 1;
             writer.write("\"" + ApplicationConstants.CLIENT_TO_SERVER_ID
                     + "\": " + nextClientToServerMessageId + ", ");
-            writer.write("\"changes\" : ");
-
-            JsonPaintTarget paintTarget = new JsonPaintTarget(manager, writer,
-                    !repaintAll);
-
-            new LegacyUidlWriter().write(ui, writer, paintTarget);
-
-            paintTarget.close();
-            writer.write(", "); // close changes
 
             // send shared state to client
 
@@ -168,7 +163,23 @@ public class UidlWriter implements Serializable {
             // widget mapping
 
             writer.write("\"types\":");
-            new ConnectorTypeWriter().write(ui, writer, paintTarget);
+            Collection<ClientConnector> dirtyVisibleConnectors = ui
+                    .getConnectorTracker().getDirtyVisibleConnectors();
+
+            JsonObject connectorTypes = Json.createObject();
+            for (ClientConnector connector : dirtyVisibleConnectors) {
+                String connectorType = getTag(connector, manager);
+                try {
+                    connectorTypes.put(connector.getConnectorId(),
+                            connectorType);
+                } catch (JsonException e) {
+                    throw new PaintException(
+                            "Failed to send connector type for connector "
+                                    + connector.getConnectorId() + ": "
+                                    + e.getMessage(), e);
+                }
+            }
+            writer.write(JsonUtil.stringify(connectorTypes));
             writer.write(", "); // close states
 
             // Send update hierarchy information to the client.
@@ -203,10 +214,7 @@ public class UidlWriter implements Serializable {
             writer.write(", ");
 
             writer.write("\"resources\" : ");
-            new ResourceWriter().write(ui, writer, paintTarget);
 
-            Collection<Class<? extends ClientConnector>> usedClientConnectors = paintTarget
-                    .getUsedClientConnectors();
             boolean typeMappingsOpen = false;
 
             List<Class<? extends ClientConnector>> newConnectorTypes = new ArrayList<Class<? extends ClientConnector>>();
@@ -319,8 +327,6 @@ public class UidlWriter implements Serializable {
                         + JsonUtil.stringify(toJsonArray(styleDependencies)));
             }
 
-            session.getDragAndDropService().printJSONResponse(writer);
-
             for (ClientConnector connector : processedConnectors) {
                 uiConnectorTracker.markClientSideInitialized(connector);
             }
@@ -353,6 +359,29 @@ public class UidlWriter implements Serializable {
         writer.write(String.format(", \"timings\":[%d, %d]", ui.getSession()
                 .getCumulativeRequestDuration(), ui.getSession()
                 .getLastRequestDuration()));
+    }
+
+    @SuppressWarnings("unchecked")
+    public String getTag(ClientConnector clientConnector,
+            LegacyCommunicationManager manager) {
+        Class<? extends ClientConnector> clientConnectorClass = clientConnector
+                .getClass();
+        while (clientConnectorClass.isAnonymousClass()) {
+            clientConnectorClass = (Class<? extends ClientConnector>) clientConnectorClass
+                    .getSuperclass();
+        }
+        Class<?> clazz = clientConnectorClass;
+        while (!usedClientConnectors.contains(clazz)
+                && clazz.getSuperclass() != null
+                && ClientConnector.class.isAssignableFrom(clazz)) {
+            usedClientConnectors.add((Class<? extends ClientConnector>) clazz);
+            clazz = clazz.getSuperclass();
+        }
+        return manager.getTagForType(clientConnectorClass);
+    }
+
+    public Collection<Class<? extends ClientConnector>> getUsedClientConnectors() {
+        return usedClientConnectors;
     }
 
     private static final Logger getLogger() {

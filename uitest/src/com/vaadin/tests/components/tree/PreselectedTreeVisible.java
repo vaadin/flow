@@ -24,7 +24,7 @@ public class PreselectedTreeVisible extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tree should be visible when a item has been selected.";
     }
 

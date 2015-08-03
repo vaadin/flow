@@ -47,7 +47,7 @@ public class AbsoluteLayoutCorrectPositioningOfHiddenField extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "AbsoluteLayout should reposition invisible components when set to visible";
     }
 

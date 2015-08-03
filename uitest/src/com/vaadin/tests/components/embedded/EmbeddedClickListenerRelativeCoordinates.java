@@ -31,7 +31,7 @@ public class EmbeddedClickListenerRelativeCoordinates extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Click the image to get coordinates relative to the top-left corder of the embedded image.";
     }
 

@@ -64,7 +64,7 @@ public class TabsheetScrolling extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Two tabsheets, upper has fixed width, lower has dynamic width. Every other tab in both tabsheets are hidden (even numbered tabs). Scrolling the upper tab sheet should never display a hidden tab. Hiding a tab in the upper tabsheet should not affect scrolling. Hiding a tab in the lower tabsheet should make the tabsheet width change (auto wide).";
     }
 

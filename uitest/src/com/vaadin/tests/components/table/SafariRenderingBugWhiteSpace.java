@@ -56,7 +56,7 @@ public class SafariRenderingBugWhiteSpace extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "White space between header an content should not appear, when selecting and de-selecting first row";
     }
 

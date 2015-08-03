@@ -98,7 +98,7 @@ public class ComboPushTiming extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "When an update is received while the popup is open, the suggestion popup blurs away";
     }
 

@@ -93,7 +93,7 @@ public class ComboBoxDataSourceChange extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A test for combobox and its container changes.";
     }
 

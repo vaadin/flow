@@ -64,7 +64,7 @@ public class TreeScrollingOnSelection extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Selecting an item in the tree inside the Panel should not cause the panel scroll position to change.";
     }
 

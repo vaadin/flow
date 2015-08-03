@@ -32,7 +32,7 @@ public class HorizontalLayoutVerticalAlign extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Vertical alignments should be top-middle-bottom";
     }
 

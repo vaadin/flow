@@ -12,7 +12,7 @@ import com.vaadin.ui.VerticalLayout;
 public class CustomComponentwithUndefinedSize extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A custom component with no size definition should not prevent scrollbars from being shown when its contents is larger than its parent";
     }
 

@@ -8,7 +8,7 @@ import com.vaadin.ui.NativeButton;
 public class ButtonsAndIcons extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The first button has text and an icon, the second only text and the third only an icon.";
     }
 

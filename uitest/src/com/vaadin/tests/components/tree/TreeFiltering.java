@@ -122,7 +122,7 @@ public class TreeFiltering extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Filtering in a tree should work as expected. Roots and their children which match the filter should be shown. Other nodes should be hidden";
     }
 

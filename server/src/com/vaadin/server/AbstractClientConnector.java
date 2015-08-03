@@ -42,7 +42,6 @@ import com.vaadin.shared.ui.ComponentStateUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Component.Event;
 import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.LegacyComponent;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;

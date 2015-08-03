@@ -27,7 +27,7 @@ public class AbsoluteLayoutWrapperStyles extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Absolutelayout wrapper should get child stylenames";
     }
 

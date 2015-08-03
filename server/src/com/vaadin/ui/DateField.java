@@ -18,10 +18,8 @@ package com.vaadin.ui;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.logging.Logger;
@@ -38,9 +36,6 @@ import com.vaadin.event.FieldEvents.BlurEvent;
 import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.FieldEvents.FocusEvent;
 import com.vaadin.event.FieldEvents.FocusListener;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
-import com.vaadin.shared.ui.datefield.DateFieldConstants;
 import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.shared.ui.datefield.TextualDateFieldState;
 import com.vaadin.ui.declarative.DesignAttributeHandler;
@@ -66,7 +61,7 @@ import com.vaadin.ui.declarative.DesignContext;
  */
 @SuppressWarnings("serial")
 public class DateField extends AbstractField<Date> implements
-        FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, LegacyComponent {
+        FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 
     /**
      * Resolution identifier: seconds.
@@ -241,55 +236,6 @@ public class DateField extends AbstractField<Date> implements
     }
 
     /* Component basic features */
-
-    /*
-     * Paints this component. Don't add a JavaDoc comment here, we use the
-     * default documentation from implemented interface.
-     */
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-
-        // Adds the locale as attribute
-        final Locale l = getLocale();
-        if (l != null) {
-            target.addAttribute("locale", l.toString());
-        }
-
-        if (getDateFormat() != null) {
-            target.addAttribute("format", dateFormat);
-        }
-
-        if (!isLenient()) {
-            target.addAttribute("strict", true);
-        }
-
-        target.addAttribute(DateFieldConstants.ATTR_WEEK_NUMBERS,
-                isShowISOWeekNumbers());
-        target.addAttribute("parsable", uiHasValidDateString);
-        /*
-         * TODO communicate back the invalid date string? E.g. returning back to
-         * app or refresh.
-         */
-
-        // Gets the calendar
-        final Calendar calendar = getCalendar();
-        final Date currentDate = getValue();
-
-        // Only paint variables for the resolution and up, e.g. Resolution DAY
-        // paints DAY,MONTH,YEAR
-        for (Resolution res : Resolution
-                .getResolutionsHigherOrEqualTo(resolution)) {
-            int value = -1;
-            if (currentDate != null) {
-                value = calendar.get(res.getCalendarField());
-                if (res == Resolution.MONTH) {
-                    // Calendar month is zero based
-                    value++;
-                }
-            }
-            target.addVariable(this, variableNameForResolution.get(res), value);
-        }
-    }
 
     @Override
     protected boolean shouldHideErrors() {
@@ -470,171 +416,6 @@ public class DateField extends AbstractField<Date> implements
     }
 
     /*
-     * Invoked when a variable of the component changes. Don't add a JavaDoc
-     * comment here, we use the default documentation from implemented
-     * interface.
-     */
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-
-        if (!isReadOnly()
-                && (variables.containsKey("year")
-                        || variables.containsKey("month")
-                        || variables.containsKey("day")
-                        || variables.containsKey("hour")
-                        || variables.containsKey("min")
-                        || variables.containsKey("sec")
-                        || variables.containsKey("msec") || variables
-                            .containsKey("dateString"))) {
-
-            // Old and new dates
-            final Date oldDate = getValue();
-            Date newDate = null;
-
-            // this enables analyzing invalid input on the server
-            final String newDateString = (String) variables.get("dateString");
-            dateString = newDateString;
-
-            // Gets the new date in parts
-            boolean hasChanges = false;
-            Map<Resolution, Integer> calendarFieldChanges = new HashMap<Resolution, Integer>();
-
-            for (Resolution r : Resolution
-                    .getResolutionsHigherOrEqualTo(resolution)) {
-                // Only handle what the client is allowed to send. The same
-                // resolutions that are painted
-                String variableName = variableNameForResolution.get(r);
-
-                if (variables.containsKey(variableName)) {
-                    Integer value = (Integer) variables.get(variableName);
-                    if (r == Resolution.MONTH) {
-                        // Calendar MONTH is zero based
-                        value--;
-                    }
-                    if (value >= 0) {
-                        hasChanges = true;
-                        calendarFieldChanges.put(r, value);
-                    }
-                }
-            }
-
-            // If no new variable values were received, use the previous value
-            if (!hasChanges) {
-                newDate = null;
-            } else {
-                // Clone the calendar for date operation
-                final Calendar cal = getCalendar();
-
-                // Update the value based on the received info
-                // Must set in this order to avoid invalid dates (or wrong
-                // dates if lenient is true) in calendar
-                for (int r = Resolution.YEAR.ordinal(); r >= 0; r--) {
-                    Resolution res = Resolution.values()[r];
-                    if (calendarFieldChanges.containsKey(res)) {
-
-                        // Field resolution should be included. Others are
-                        // skipped so that client can not make unexpected
-                        // changes (e.g. day change even though resolution is
-                        // year).
-                        Integer newValue = calendarFieldChanges.get(res);
-                        cal.set(res.getCalendarField(), newValue);
-                    }
-                }
-                newDate = cal.getTime();
-            }
-
-            if (newDate == null && dateString != null && !"".equals(dateString)) {
-                try {
-                    Date parsedDate = handleUnparsableDateString(dateString);
-                    setValue(parsedDate, true);
-
-                    /*
-                     * Ensure the value is sent to the client if the value is
-                     * set to the same as the previous (#4304). Does not repaint
-                     * if handleUnparsableDateString throws an exception. In
-                     * this case the invalid text remains in the DateField.
-                     */
-                    markAsDirty();
-                } catch (Converter.ConversionException e) {
-
-                    /*
-                     * Datefield now contains some text that could't be parsed
-                     * into date. ValueChangeEvent is fired after the value is
-                     * changed and the flags are set
-                     */
-                    if (oldDate != null) {
-                        /*
-                         * Set the logic value to null without firing the
-                         * ValueChangeEvent
-                         */
-                        preventValueChangeEvent = true;
-                        try {
-                            setValue(null);
-                        } finally {
-                            preventValueChangeEvent = false;
-                        }
-
-                        /*
-                         * Reset the dateString (overridden to null by setValue)
-                         */
-                        dateString = newDateString;
-                    }
-
-                    /*
-                     * Saves the localized message of parse error. This can be
-                     * overridden in handleUnparsableDateString. The message
-                     * will later be used to show a validation error.
-                     */
-                    currentParseErrorMessage = e.getLocalizedMessage();
-
-                    /*
-                     * The value of the DateField should be null if an invalid
-                     * value has been given. Not using setValue() since we do
-                     * not want to cause the client side value to change.
-                     */
-                    uiHasValidDateString = false;
-
-                    /*
-                     * If value was changed fire the ValueChangeEvent
-                     */
-                    if (oldDate != null) {
-                        fireValueChange(false);
-                    }
-
-                    /*
-                     * Because of our custom implementation of isValid(), that
-                     * also checks the parsingSucceeded flag, we must also
-                     * notify the form (if this is used in one) that the
-                     * validity of this field has changed.
-                     * 
-                     * Normally fields validity doesn't change without value
-                     * change and form depends on this implementation detail.
-                     */
-                    notifyFormOfValidityChange();
-                    markAsDirty();
-                }
-            } else if (newDate != oldDate
-                    && (newDate == null || !newDate.equals(oldDate))) {
-                setValue(newDate, true); // Don't require a repaint, client
-                // updates itself
-            } else if (!uiHasValidDateString) { // oldDate ==
-                                                // newDate == null
-                // Empty value set, previously contained unparsable date string,
-                // clear related internal fields
-                setValue(null);
-            }
-        }
-
-        if (variables.containsKey(FocusEvent.EVENT_ID)) {
-            fireEvent(new FocusEvent(this));
-        }
-
-        if (variables.containsKey(BlurEvent.EVENT_ID)) {
-            fireEvent(new BlurEvent(this));
-        }
-    }
-
-    /*
      * only fires the event if preventValueChangeEvent flag is false
      */
     @Override
@@ -711,44 +492,11 @@ public class DateField extends AbstractField<Date> implements
              * value change event, but feels like at least as bad solution as
              * this.
              */
-            notifyFormOfValidityChange();
             markAsDirty();
             return;
         }
 
         super.setValue(newValue, repaintIsNotNeeded);
-    }
-
-    /**
-     * Detects if this field is used in a Form (logically) and if so, notifies
-     * it (by repainting it) that the validity of this field might have changed.
-     */
-    private void notifyFormOfValidityChange() {
-        Component parenOfDateField = getParent();
-        boolean formFound = false;
-        while (parenOfDateField != null || formFound) {
-            if (parenOfDateField instanceof Form) {
-                Form f = (Form) parenOfDateField;
-                Collection<?> visibleItemProperties = f.getItemPropertyIds();
-                for (Object fieldId : visibleItemProperties) {
-                    Field<?> field = f.getField(fieldId);
-                    if (equals(field)) {
-                        /*
-                         * this datefield is logically in a form. Do the same
-                         * thing as form does in its value change listener that
-                         * it registers to all fields.
-                         */
-                        f.markAsDirty();
-                        formFound = true;
-                        break;
-                    }
-                }
-            }
-            if (formFound) {
-                break;
-            }
-            parenOfDateField = parenOfDateField.getParent();
-        }
     }
 
     @Override

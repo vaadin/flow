@@ -8,7 +8,7 @@ import com.vaadin.ui.TextField;
 public class TableLastRowMissing extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The table below should display 3 rows. Each with a textfield containing the row number.";
     }
 

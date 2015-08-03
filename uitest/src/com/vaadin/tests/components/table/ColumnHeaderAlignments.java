@@ -83,7 +83,7 @@ public class ColumnHeaderAlignments extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Aligned column headers should have style names telling the alignment";
     }
 

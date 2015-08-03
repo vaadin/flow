@@ -8,7 +8,7 @@ import com.vaadin.ui.Label;
 public class LargeCaptionIcon extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The icon should be completely visible on both initial load and after subsequent refreshes.";
     }
 

@@ -43,7 +43,7 @@ public class TabGetAndReplaceComponent extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The tab should have a reference to the component it holds";
     }
 

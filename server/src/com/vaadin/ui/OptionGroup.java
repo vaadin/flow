@@ -18,7 +18,6 @@ package com.vaadin.ui;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.jsoup.nodes.Element;
@@ -29,9 +28,6 @@ import com.vaadin.event.FieldEvents.BlurEvent;
 import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.FieldEvents.FocusEvent;
 import com.vaadin.event.FieldEvents.FocusListener;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
-import com.vaadin.shared.ui.optiongroup.OptionGroupConstants;
 import com.vaadin.ui.declarative.DesignContext;
 
 /**
@@ -58,37 +54,6 @@ public class OptionGroup extends AbstractSelect implements
 
     public OptionGroup(String caption) {
         super(caption);
-    }
-
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        target.addAttribute("type", "optiongroup");
-        if (isHtmlContentAllowed()) {
-            target.addAttribute(OptionGroupConstants.HTML_CONTENT_ALLOWED, true);
-        }
-        super.paintContent(target);
-    }
-
-    @Override
-    protected void paintItem(PaintTarget target, Object itemId)
-            throws PaintException {
-        super.paintItem(target, itemId);
-        if (!isItemEnabled(itemId)) {
-            target.addAttribute(OptionGroupConstants.ATTRIBUTE_OPTION_DISABLED,
-                    true);
-        }
-    }
-
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        super.changeVariables(source, variables);
-
-        if (variables.containsKey(FocusEvent.EVENT_ID)) {
-            fireEvent(new FocusEvent(this));
-        }
-        if (variables.containsKey(BlurEvent.EVENT_ID)) {
-            fireEvent(new BlurEvent(this));
-        }
     }
 
     @Override

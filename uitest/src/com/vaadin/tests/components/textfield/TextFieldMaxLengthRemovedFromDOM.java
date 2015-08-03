@@ -26,7 +26,7 @@ public class TextFieldMaxLengthRemovedFromDOM extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Maxlength attribute should not dissappear from the DOM when I focus the text field.";
     }
 

@@ -36,7 +36,7 @@ public class EmbeddedWithNullSource extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Image without a source causes a client-side NPE";
     }
 

@@ -97,7 +97,7 @@ public class HierarchicalContainerSorting extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The two trees contain the same data, one uses IndexedContainer, one uses HierarchicalContainer. Both should be sorted, both the root nodes and the children.";
     }
 

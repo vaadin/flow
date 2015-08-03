@@ -135,7 +135,7 @@ public class MovingComponentsWhileOldParentInvisible extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Client side layouts can easily have a bug where its internal data structures gets messed up when child components from it are moved forth and back when it is invisible (registered, but renders are ignored until becomes visible again). Things are especially easy to mess up when the layout uses wrapper widget over each component (like VOrderedLayout and VGridLayout does). This tests Vertical (Ordered), Grid and CssLayout.";
     }
 

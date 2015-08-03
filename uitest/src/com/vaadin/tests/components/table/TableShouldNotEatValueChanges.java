@@ -49,7 +49,7 @@ public class TableShouldNotEatValueChanges extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "When selecting something from table or clicking on item, table should never eat value change from other components.";
     }
 

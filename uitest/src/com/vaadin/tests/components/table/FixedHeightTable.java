@@ -28,7 +28,7 @@ public class FixedHeightTable extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The table contains 16 (1-16) rows which all should be visible";
     }
 

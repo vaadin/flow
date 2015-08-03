@@ -39,7 +39,7 @@ public class LinkToPercentage extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests using links with percentage signs in the address";
     }
 

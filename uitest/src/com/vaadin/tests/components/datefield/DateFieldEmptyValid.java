@@ -137,7 +137,7 @@ public class DateFieldEmptyValid extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests the isEmpty() and isValid() functionality of a DateField. The field is required and has no other validators."
                 + "IsEmpty() should return true when the field is truly empty i.e. contains no text, no matter how the field has been made empty. If the field contains any text, isEmpty() should return false."
                 + "IsValid() should in this case return true if the field is not empty and vice versa.";

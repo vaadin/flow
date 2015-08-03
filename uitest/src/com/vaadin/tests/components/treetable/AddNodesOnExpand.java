@@ -47,7 +47,7 @@ public class AddNodesOnExpand extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Expanding a node and then collapsing it should not cause scrollbars to appear";
     }
 

@@ -86,7 +86,7 @@ public class LayoutClickListenerTest extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Layout click listeners should provide access to the deepest nested component clicked - click anywhere in the layout.";
     }
 

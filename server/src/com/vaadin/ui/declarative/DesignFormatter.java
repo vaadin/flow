@@ -32,13 +32,11 @@ import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.StringToBigDecimalConverter;
 import com.vaadin.data.util.converter.StringToDoubleConverter;
 import com.vaadin.data.util.converter.StringToFloatConverter;
-import com.vaadin.event.ShortcutAction;
 import com.vaadin.server.Resource;
 import com.vaadin.ui.declarative.converters.DesignDateConverter;
 import com.vaadin.ui.declarative.converters.DesignEnumConverter;
 import com.vaadin.ui.declarative.converters.DesignObjectConverter;
 import com.vaadin.ui.declarative.converters.DesignResourceConverter;
-import com.vaadin.ui.declarative.converters.DesignShortcutActionConverter;
 import com.vaadin.ui.declarative.converters.DesignTimeZoneConverter;
 import com.vaadin.ui.declarative.converters.DesignToStringConverter;
 
@@ -194,8 +192,6 @@ public class DesignFormatter implements Serializable {
         converterMap.put(char.class, charConverter);
 
         converterMap.put(Date.class, new DesignDateConverter());
-        converterMap.put(ShortcutAction.class,
-                new DesignShortcutActionConverter());
         converterMap.put(Resource.class, new DesignResourceConverter());
         converterMap.put(TimeZone.class, new DesignTimeZoneConverter());
     }

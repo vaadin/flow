@@ -40,7 +40,7 @@ public class OrderedLayoutSlotStyleNames extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Vertical/HorizontalLayout slots should get child dependant name";
     }
 

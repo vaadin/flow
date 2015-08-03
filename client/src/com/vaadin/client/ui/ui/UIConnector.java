@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dev.cfg.Styles;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.HeadElement;
@@ -34,30 +35,23 @@ import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.ConnectorHierarchyChangeEvent;
-import com.vaadin.client.Focusable;
-import com.vaadin.client.Paintable;
 import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.ServerConnector;
 import com.vaadin.client.UIDL;
-import com.vaadin.client.Util;
 import com.vaadin.client.VConsole;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.annotations.OnStateChange;
@@ -66,16 +60,12 @@ import com.vaadin.client.communication.StateChangeEvent.StateChangeHandler;
 import com.vaadin.client.ui.AbstractConnector;
 import com.vaadin.client.ui.AbstractSingleComponentContainerConnector;
 import com.vaadin.client.ui.ClickEventHandler;
-import com.vaadin.client.ui.ShortcutActionHandler;
-import com.vaadin.client.ui.VNotification;
 import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.VUI;
-import com.vaadin.server.Page.Styles;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.MethodInvocation;
-import com.vaadin.shared.ui.ComponentStateUtil;
 import com.vaadin.shared.ui.Connect;
 import com.vaadin.shared.ui.Connect.LoadStyle;
 import com.vaadin.shared.ui.ui.DebugWindowClientRpc;
@@ -84,15 +74,13 @@ import com.vaadin.shared.ui.ui.PageClientRpc;
 import com.vaadin.shared.ui.ui.PageState;
 import com.vaadin.shared.ui.ui.ScrollClientRpc;
 import com.vaadin.shared.ui.ui.UIClientRpc;
-import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
 import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.UI;
 
 @Connect(value = UI.class, loadStyle = LoadStyle.EAGER)
-public class UIConnector extends AbstractSingleComponentContainerConnector
-        implements Paintable {
+public class UIConnector extends AbstractSingleComponentContainerConnector {
 
     private HandlerRegistration childStateChangeHandlerRegistration;
 
@@ -198,212 +186,6 @@ public class UIConnector extends AbstractSingleComponentContainerConnector
     /*-{
         $wnd.open(url, name);
      }-*/;
-
-    @Override
-    public void updateFromUIDL(final UIDL uidl, ApplicationConnection client) {
-        getWidget().id = getConnectorId();
-        boolean firstPaint = getWidget().connection == null;
-        getWidget().connection = client;
-
-        getWidget().immediate = getState().immediate;
-        getWidget().resizeLazy = uidl.hasAttribute(UIConstants.RESIZE_LAZY);
-        // this also implicitly removes old styles
-        String styles = "";
-        styles += getWidget().getStylePrimaryName() + " ";
-        if (ComponentStateUtil.hasStyles(getState())) {
-            for (String style : getState().styles) {
-                styles += style + " ";
-            }
-        }
-        if (!client.getConfiguration().isStandalone()) {
-            styles += getWidget().getStylePrimaryName() + "-embedded";
-        }
-        getWidget().setStyleName(styles.trim());
-
-        getWidget().makeScrollable();
-
-        clickEventHandler.handleEventHandlerRegistration();
-
-        // Process children
-        int childIndex = 0;
-
-        // Open URL:s
-        boolean isClosed = false; // was this window closed?
-        while (childIndex < uidl.getChildCount()
-                && "open".equals(uidl.getChildUIDL(childIndex).getTag())) {
-            final UIDL open = uidl.getChildUIDL(childIndex);
-            final String url = client.translateVaadinUri(open
-                    .getStringAttribute("src"));
-            final String target = open.getStringAttribute("name");
-            if (target == null) {
-                // source will be opened to this browser window, but we may have
-                // to finish rendering this window in case this is a download
-                // (and window stays open).
-                Scheduler.get().scheduleDeferred(new Command() {
-                    @Override
-                    public void execute() {
-                        VUI.goTo(url);
-                    }
-                });
-            } else if ("_self".equals(target)) {
-                // This window is closing (for sure). Only other opens are
-                // relevant in this change. See #3558, #2144
-                isClosed = true;
-                VUI.goTo(url);
-            } else {
-                String options;
-                boolean alwaysAsPopup = true;
-                if (open.hasAttribute("popup")) {
-                    alwaysAsPopup = open.getBooleanAttribute("popup");
-                }
-                if (alwaysAsPopup) {
-                    if (open.hasAttribute("border")) {
-                        if (open.getStringAttribute("border").equals("minimal")) {
-                            options = "menubar=yes,location=no,status=no";
-                        } else {
-                            options = "menubar=no,location=no,status=no";
-                        }
-
-                    } else {
-                        options = "resizable=yes,menubar=yes,toolbar=yes,directories=yes,location=yes,scrollbars=yes,status=yes";
-                    }
-
-                    if (open.hasAttribute("width")) {
-                        int w = open.getIntAttribute("width");
-                        options += ",width=" + w;
-                    }
-                    if (open.hasAttribute("height")) {
-                        int h = open.getIntAttribute("height");
-                        options += ",height=" + h;
-                    }
-
-                    Window.open(url, target, options);
-                } else {
-                    open(url, target);
-                }
-            }
-            childIndex++;
-        }
-        if (isClosed) {
-            // We're navigating away, so stop the application.
-            client.setApplicationRunning(false);
-            return;
-        }
-
-        // Handle other UIDL children
-        UIDL childUidl;
-        while ((childUidl = uidl.getChildUIDL(childIndex++)) != null) {
-            String tag = childUidl.getTag().intern();
-            if (tag == "actions") {
-                if (getWidget().actionHandler == null) {
-                    getWidget().actionHandler = new ShortcutActionHandler(
-                            getWidget().id, client);
-                }
-                getWidget().actionHandler.updateActionMap(childUidl);
-            } else if (tag == "notifications") {
-                for (final Iterator<?> it = childUidl.getChildIterator(); it
-                        .hasNext();) {
-                    final UIDL notification = (UIDL) it.next();
-                    VNotification.showNotification(client, notification);
-                }
-            } else if (tag == "css-injections") {
-                injectCSS(childUidl);
-            }
-        }
-
-        if (uidl.hasAttribute("focused")) {
-            // set focused component when render phase is finished
-            Scheduler.get().scheduleDeferred(new Command() {
-                @Override
-                public void execute() {
-                    ComponentConnector connector = (ComponentConnector) uidl
-                            .getPaintableAttribute("focused", getConnection());
-
-                    if (connector == null) {
-                        // Do not try to focus invisible components which not
-                        // present in UIDL
-                        return;
-                    }
-
-                    final Widget toBeFocused = connector.getWidget();
-                    /*
-                     * Two types of Widgets can be focused, either implementing
-                     * GWT Focusable of a thinner Vaadin specific Focusable
-                     * interface.
-                     */
-                    if (toBeFocused instanceof com.google.gwt.user.client.ui.Focusable) {
-                        final com.google.gwt.user.client.ui.Focusable toBeFocusedWidget = (com.google.gwt.user.client.ui.Focusable) toBeFocused;
-                        toBeFocusedWidget.setFocus(true);
-                    } else if (toBeFocused instanceof Focusable) {
-                        ((Focusable) toBeFocused).focus();
-                    } else {
-                        getLogger()
-                                .severe("Server is trying to set focus to the widget of connector "
-                                        + Util.getConnectorString(connector)
-                                        + " but it is not focusable. The widget should implement either "
-                                        + com.google.gwt.user.client.ui.Focusable.class
-                                                .getName()
-                                        + " or "
-                                        + Focusable.class.getName());
-                    }
-                }
-            });
-        }
-
-        // Add window listeners on first paint, to prevent premature
-        // variablechanges
-        if (firstPaint) {
-            Window.addWindowClosingHandler(getWidget());
-            Window.addResizeHandler(getWidget());
-        }
-
-        if (uidl.hasAttribute("scrollTo")) {
-            final ComponentConnector connector = (ComponentConnector) uidl
-                    .getPaintableAttribute("scrollTo", getConnection());
-            scrollIntoView(connector);
-        }
-
-        if (uidl.hasAttribute(UIConstants.LOCATION_VARIABLE)) {
-            String location = uidl
-                    .getStringAttribute(UIConstants.LOCATION_VARIABLE);
-            String newFragment;
-
-            int fragmentIndex = location.indexOf('#');
-            if (fragmentIndex >= 0) {
-                // Decode fragment to avoid double encoding (#10769)
-                newFragment = URL.decodePathSegment(location
-                        .substring(fragmentIndex + 1));
-
-                if (newFragment.isEmpty()
-                        && Location.getHref().indexOf('#') == -1) {
-                    // Ensure there is a trailing # even though History and
-                    // Location.getHash() treat null and "" the same way.
-                    Location.assign(Location.getHref() + "#");
-                }
-            } else {
-                // No fragment in server-side location, but can't completely
-                // remove the browser fragment since that would reload the page
-                newFragment = "";
-            }
-
-            getWidget().currentFragment = newFragment;
-
-            if (!newFragment.equals(History.getToken())) {
-                History.newItem(newFragment, true);
-            }
-        }
-
-        if (firstPaint) {
-            // Queue the initial window size to be sent with the following
-            // request.
-            Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-                @Override
-                public void execute() {
-                    getWidget().sendClientResized();
-                }
-            });
-        }
-    }
 
     /**
      * Reads CSS strings and resources injected by {@link Styles#inject} from

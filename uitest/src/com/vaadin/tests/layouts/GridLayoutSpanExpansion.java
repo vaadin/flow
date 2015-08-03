@@ -55,7 +55,7 @@ public class GridLayoutSpanExpansion extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "In the two first examples, the 1 and the 2 should be close to each other because of the expansion ratios. In the final example, there should be little extra space in the left column, much extra space in the middle and some extra space to the right";
     }
 

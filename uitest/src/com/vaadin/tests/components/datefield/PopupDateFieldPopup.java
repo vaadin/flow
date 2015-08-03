@@ -29,7 +29,7 @@ public class PopupDateFieldPopup extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Changing the minute, second and millisecond parts should also result in an update of the PopupDateField popup contents.";
     }
 

@@ -201,7 +201,7 @@ public class CustomDateFormats extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test that DateField renders custom date formats the same way as SimpleDateFormat formats them";
     }
 

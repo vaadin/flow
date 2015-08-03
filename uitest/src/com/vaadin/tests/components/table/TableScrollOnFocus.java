@@ -34,7 +34,7 @@ public class TableScrollOnFocus extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The table scrolls up 2 pages after loosing and regaining the focus!</b><p>"
                 + "Drag scrollbar to top then to the bottom of the table.<br>"
                 + "Click somewhere beside the table to take away the focus,<br>"

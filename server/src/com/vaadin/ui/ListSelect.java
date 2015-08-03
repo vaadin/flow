@@ -19,8 +19,6 @@ package com.vaadin.ui;
 import java.util.Collection;
 
 import com.vaadin.data.Container;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 
 /**
  * This is a simple list select without, for instance, support for new items,
@@ -110,17 +108,4 @@ public class ListSelect extends AbstractSelect {
         }
     }
 
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        target.addAttribute("type", "list");
-        // Adds the number of columns
-        if (columns != 0) {
-            target.addAttribute("cols", columns);
-        }
-        // Adds the number of rows
-        if (rows != 0) {
-            target.addAttribute("rows", rows);
-        }
-        super.paintContent(target);
-    }
 }

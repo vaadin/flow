@@ -117,7 +117,7 @@ public class ProgrammaticSelect extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Programmatically selecting an item should not cause a complete repaint";
     }
 

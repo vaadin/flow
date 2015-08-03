@@ -36,8 +36,6 @@ import org.jsoup.select.Elements;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.LayoutEvents.LayoutClickNotifier;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
@@ -75,7 +73,7 @@ import com.vaadin.ui.declarative.DesignContext;
 @SuppressWarnings("serial")
 public class GridLayout extends AbstractLayout implements
         Layout.AlignmentHandler, Layout.SpacingHandler, Layout.MarginHandler,
-        LayoutClickNotifier, LegacyComponent {
+        LayoutClickNotifier {
 
     private GridLayoutServerRpc rpc = new GridLayoutServerRpc() {
 
@@ -444,75 +442,6 @@ public class GridLayout extends AbstractLayout implements
     @Override
     public int getComponentCount() {
         return components.size();
-    }
-
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        // TODO Remove once LegacyComponent is no longer implemented
-    }
-
-    /**
-     * Paints the contents of this component.
-     * 
-     * @param target
-     *            the Paint Event.
-     * @throws PaintException
-     *             if the paint operation failed.
-     */
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        final Integer[] columnExpandRatioArray = new Integer[getColumns()];
-        final Integer[] rowExpandRatioArray = new Integer[getRows()];
-
-        int realColExpandRatioSum = 0;
-        float colSum = getExpandRatioSum(columnExpandRatio);
-        if (colSum == 0) {
-            // no columns has been expanded, all cols have same expand
-            // rate
-            float equalSize = 1 / (float) getColumns();
-            int myRatio = Math.round(equalSize * 1000);
-            for (int i = 0; i < getColumns(); i++) {
-                columnExpandRatioArray[i] = myRatio;
-            }
-            realColExpandRatioSum = myRatio * getColumns();
-        } else {
-            for (int i = 0; i < getColumns(); i++) {
-                int myRatio = Math
-                        .round((getColumnExpandRatio(i) / colSum) * 1000);
-                columnExpandRatioArray[i] = myRatio;
-                realColExpandRatioSum += myRatio;
-            }
-        }
-
-        int realRowExpandRatioSum = 0;
-        float rowSum = getExpandRatioSum(rowExpandRatio);
-        if (rowSum == 0) {
-            // no rows have been expanded
-            float equalSize = 1 / (float) getRows();
-            int myRatio = Math.round(equalSize * 1000);
-            for (int i = 0; i < getRows(); i++) {
-                rowExpandRatioArray[i] = myRatio;
-            }
-            realRowExpandRatioSum = myRatio * getRows();
-        } else {
-            for (int cury = 0; cury < getRows(); cury++) {
-                int myRatio = Math
-                        .round((getRowExpandRatio(cury) / rowSum) * 1000);
-                rowExpandRatioArray[cury] = myRatio;
-                realRowExpandRatioSum += myRatio;
-            }
-        }
-
-        // correct possible rounding error
-        if (rowExpandRatioArray.length > 0) {
-            rowExpandRatioArray[0] -= realRowExpandRatioSum - 1000;
-        }
-        if (columnExpandRatioArray.length > 0) {
-            columnExpandRatioArray[0] -= realColExpandRatioSum - 1000;
-        }
-        target.addAttribute("colExpand", columnExpandRatioArray);
-        target.addAttribute("rowExpand", rowExpandRatioArray);
-
     }
 
     private float getExpandRatioSum(Map<Integer, Float> ratioMap) {

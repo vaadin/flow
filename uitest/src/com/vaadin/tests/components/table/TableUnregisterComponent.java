@@ -92,7 +92,7 @@ public class TableUnregisterComponent extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Table.uncollapseColumn (triggered by collapsing column or disabling editable mode) should only unregister property data sources that have been added by the table.";
     }
 

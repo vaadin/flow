@@ -34,7 +34,7 @@ public class TableRepaintWhenMadeVisibile extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A Table should be rendered correctly when made visible again after being initially rendered invisible. Click 'hide', refresh the application and then click 'show'";
     }
 

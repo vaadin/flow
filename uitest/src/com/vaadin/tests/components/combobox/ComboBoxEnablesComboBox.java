@@ -38,7 +38,7 @@ public class ComboBoxEnablesComboBox extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Selecting an item in the first combobox enables the second.";
     }
 

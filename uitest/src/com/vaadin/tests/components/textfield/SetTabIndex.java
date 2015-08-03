@@ -43,7 +43,7 @@ public class SetTabIndex extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "One should be able to set the TabIndex";
     }
 

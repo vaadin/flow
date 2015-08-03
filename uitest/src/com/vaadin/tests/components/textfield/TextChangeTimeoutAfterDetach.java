@@ -38,7 +38,7 @@ public class TextChangeTimeoutAfterDetach extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The textfield has a TextChangeTimout of 1 second. Edit the field and immidietly detach the field and you will cause an \"Out Of Sync\" error.";
     }
 

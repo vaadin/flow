@@ -28,7 +28,7 @@ public class CtrlShiftMultiselect extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Improve Table multiselect to use Ctrl and Shift for selection";
     }
 

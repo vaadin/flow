@@ -10,7 +10,7 @@ import com.vaadin.ui.themes.BaseTheme;
 public class TableRowHeight3 extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "All rows should be visible and the table height should match the height of the rows (no vertical scrollbar)";
     }
 

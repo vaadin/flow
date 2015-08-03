@@ -22,7 +22,7 @@ public class NarrowPopupDateFieldInTable extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Simple test to ensure a narrow PopupDateField can be used in a Table.";
     }
 

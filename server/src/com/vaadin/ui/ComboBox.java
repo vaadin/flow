@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.util.filter.SimpleStringFilter;
@@ -30,10 +29,6 @@ import com.vaadin.event.FieldEvents.BlurEvent;
 import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.FieldEvents.FocusEvent;
 import com.vaadin.event.FieldEvents.FocusListener;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
-import com.vaadin.server.Resource;
-import com.vaadin.shared.ui.combobox.ComboBoxConstants;
 import com.vaadin.shared.ui.combobox.FilteringMode;
 
 /**
@@ -154,161 +149,6 @@ public class ComboBox extends AbstractSelect implements
     private boolean isFilteringNeeded() {
         return filterstring != null && filterstring.length() > 0
                 && filteringMode != FilteringMode.OFF;
-    }
-
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        isPainting = true;
-        try {
-            if (inputPrompt != null) {
-                target.addAttribute(ComboBoxConstants.ATTR_INPUTPROMPT,
-                        inputPrompt);
-            }
-
-            if (!textInputAllowed) {
-                target.addAttribute(ComboBoxConstants.ATTR_NO_TEXT_INPUT, true);
-            }
-
-            // clear caption change listeners
-            getCaptionChangeListener().clear();
-
-            // The tab ordering number
-            if (getTabIndex() != 0) {
-                target.addAttribute("tabindex", getTabIndex());
-            }
-
-            // If the field is modified, but not committed, set modified
-            // attribute
-            if (isModified()) {
-                target.addAttribute("modified", true);
-            }
-
-            if (isNewItemsAllowed()) {
-                target.addAttribute("allownewitem", true);
-            }
-
-            boolean needNullSelectOption = false;
-            if (isNullSelectionAllowed()) {
-                target.addAttribute("nullselect", true);
-                needNullSelectOption = (getNullSelectionItemId() == null);
-                if (!needNullSelectOption) {
-                    target.addAttribute("nullselectitem", true);
-                }
-            }
-
-            // Constructs selected keys array
-            String[] selectedKeys = new String[(getValue() == null
-                    && getNullSelectionItemId() == null ? 0 : 1)];
-
-            target.addAttribute("pagelength", pageLength);
-
-            target.addAttribute("filteringmode", getFilteringMode().toString());
-
-            // Paints the options and create array of selected id keys
-            int keyIndex = 0;
-
-            target.startTag("options");
-
-            if (currentPage < 0) {
-                optionRequest = false;
-                currentPage = 0;
-                filterstring = "";
-            }
-
-            boolean nullFilteredOut = isFilteringNeeded();
-            // null option is needed and not filtered out, even if not on
-            // current
-            // page
-            boolean nullOptionVisible = needNullSelectOption
-                    && !nullFilteredOut;
-
-            // first try if using container filters is possible
-            List<?> options = getOptionsWithFilter(nullOptionVisible);
-            if (null == options) {
-                // not able to use container filters, perform explicit in-memory
-                // filtering
-                options = getFilteredOptions();
-                filteredSize = options.size();
-                options = sanitetizeList(options, nullOptionVisible);
-            }
-
-            final boolean paintNullSelection = needNullSelectOption
-                    && currentPage == 0 && !nullFilteredOut;
-
-            if (paintNullSelection) {
-                target.startTag("so");
-                target.addAttribute("caption", "");
-                target.addAttribute("key", "");
-                target.endTag("so");
-            }
-
-            final Iterator<?> i = options.iterator();
-            // Paints the available selection options from data source
-
-            while (i.hasNext()) {
-
-                final Object id = i.next();
-
-                if (!isNullSelectionAllowed() && id != null
-                        && id.equals(getNullSelectionItemId())
-                        && !isSelected(id)) {
-                    continue;
-                }
-
-                // Gets the option attribute values
-                final String key = itemIdMapper.key(id);
-                final String caption = getItemCaption(id);
-                final Resource icon = getItemIcon(id);
-                getCaptionChangeListener().addNotifierForItem(id);
-
-                // Paints the option
-                target.startTag("so");
-                if (icon != null) {
-                    target.addAttribute("icon", icon);
-                }
-                target.addAttribute("caption", caption);
-                if (id != null && id.equals(getNullSelectionItemId())) {
-                    target.addAttribute("nullselection", true);
-                }
-                target.addAttribute("key", key);
-                if (keyIndex < selectedKeys.length && isSelected(id)) {
-                    // at most one item can be selected at a time
-                    selectedKeys[keyIndex++] = key;
-                }
-                target.endTag("so");
-            }
-            target.endTag("options");
-
-            target.addAttribute("totalitems", size()
-                    + (needNullSelectOption ? 1 : 0));
-            if (filteredSize > 0 || nullOptionVisible) {
-                target.addAttribute("totalMatches", filteredSize
-                        + (nullOptionVisible ? 1 : 0));
-            }
-
-            // Paint variables
-            target.addVariable(this, "selected", selectedKeys);
-            if (getValue() != null && selectedKeys[0] == null) {
-                // not always available, e.g. scrollToSelectedIndex=false
-                // Give the caption for selected item still, not to make it look
-                // like there is no selection at all
-                target.addAttribute("selectedCaption",
-                        getItemCaption(getValue()));
-            }
-            if (isNewItemsAllowed()) {
-                target.addVariable(this, "newitem", "");
-            }
-
-            target.addVariable(this, "filter", filterstring);
-            target.addVariable(this, "page", currentPage);
-
-            currentPage = -1; // current page is always set by client
-
-            optionRequest = true;
-        } finally {
-            isPainting = false;
-        }
-
     }
 
     /**
@@ -647,69 +487,6 @@ public class ComboBox extends AbstractSelect implements
         }
 
         return filteredOptions;
-    }
-
-    /**
-     * Invoked when the value of a variable has changed.
-     * 
-     * @see com.vaadin.ui.AbstractComponent#changeVariables(java.lang.Object,
-     *      java.util.Map)
-     */
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        // Not calling super.changeVariables due the history of select
-        // component hierarchy
-
-        // Selection change
-        if (variables.containsKey("selected")) {
-            final String[] ka = (String[]) variables.get("selected");
-
-            // Single select mode
-            if (ka.length == 0) {
-
-                // Allows deselection only if the deselected item is visible
-                final Object current = getValue();
-                final Collection<?> visible = getVisibleItemIds();
-                if (visible != null && visible.contains(current)) {
-                    setValue(null, true);
-                }
-            } else {
-                final Object id = itemIdMapper.get(ka[0]);
-                if (id != null && id.equals(getNullSelectionItemId())) {
-                    setValue(null, true);
-                } else {
-                    setValue(id, true);
-                }
-            }
-        }
-
-        String newFilter;
-        if ((newFilter = (String) variables.get("filter")) != null) {
-            // this is a filter request
-            currentPage = ((Integer) variables.get("page")).intValue();
-            filterstring = newFilter;
-            if (filterstring != null) {
-                filterstring = filterstring.toLowerCase(getLocale());
-            }
-            requestRepaint();
-        } else if (isNewItemsAllowed()) {
-            // New option entered (and it is allowed)
-            final String newitem = (String) variables.get("newitem");
-            if (newitem != null && newitem.length() > 0) {
-                getNewItemHandler().addNewItem(newitem);
-                // rebuild list
-                filterstring = null;
-                prevfilterstring = null;
-            }
-        }
-
-        if (variables.containsKey(FocusEvent.EVENT_ID)) {
-            fireEvent(new FocusEvent(this));
-        }
-        if (variables.containsKey(BlurEvent.EVENT_ID)) {
-            fireEvent(new BlurEvent(this));
-        }
-
     }
 
     @Override

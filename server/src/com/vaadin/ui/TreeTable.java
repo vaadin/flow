@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
@@ -37,10 +36,6 @@ import com.vaadin.data.Container.ItemSetChangeEvent;
 import com.vaadin.data.util.ContainerHierarchicalWrapper;
 import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.data.util.HierarchicalContainerOrderedWrapper;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
-import com.vaadin.server.Resource;
-import com.vaadin.shared.ui.treetable.TreeTableConstants;
 import com.vaadin.ui.Tree.CollapseEvent;
 import com.vaadin.ui.Tree.CollapseListener;
 import com.vaadin.ui.Tree.ExpandEvent;
@@ -391,62 +386,11 @@ public class TreeTable extends Table implements Hierarchical {
     }
 
     @Override
-    protected void paintRowAttributes(PaintTarget target, Object itemId)
-            throws PaintException {
-        super.paintRowAttributes(target, itemId);
-        target.addAttribute("depth", getContainerStrategy().getDepth(itemId));
-        if (getContainerDataSource().areChildrenAllowed(itemId)) {
-            target.addAttribute("ca", true);
-            target.addAttribute("open",
-                    getContainerStrategy().isNodeOpen(itemId));
-        }
-    }
-
-    @Override
-    protected void paintRowIcon(PaintTarget target, Object[][] cells,
-            int indexInRowbuffer) throws PaintException {
-        // always paint if present (in parent only if row headers visible)
-        if (getRowHeaderMode() == ROW_HEADER_MODE_HIDDEN) {
-            Resource itemIcon = getItemIcon(cells[CELL_ITEMID][indexInRowbuffer]);
-            if (itemIcon != null) {
-                target.addAttribute("icon", itemIcon);
-            }
-        } else if (cells[CELL_ICON][indexInRowbuffer] != null) {
-            target.addAttribute("icon",
-                    (Resource) cells[CELL_ICON][indexInRowbuffer]);
-        }
-    }
-
-    @Override
     protected boolean rowHeadersAreEnabled() {
         if (getRowHeaderMode() == RowHeaderMode.ICON_ONLY) {
             return false;
         }
         return super.rowHeadersAreEnabled();
-    }
-
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        super.changeVariables(source, variables);
-
-        if (variables.containsKey("toggleCollapsed")) {
-            String object = (String) variables.get("toggleCollapsed");
-            Object itemId = itemIdMapper.get(object);
-            toggledItemId = itemId;
-            toggleChildVisibility(itemId, false);
-            if (variables.containsKey("selectCollapsed")) {
-                // ensure collapsed is selected unless opened with selection
-                // head
-                if (isSelectable()) {
-                    select(itemId);
-                }
-            }
-        } else if (variables.containsKey("focusParent")) {
-            String key = (String) variables.get("focusParent");
-            Object refId = itemIdMapper.get(key);
-            Object itemId = getParent(refId);
-            focusParent(itemId);
-        }
     }
 
     private void focusParent(Object itemId) {
@@ -482,34 +426,6 @@ public class TreeTable extends Table implements Hierarchical {
             clearFocusedRowPending = true;
         }
         markAsDirty();
-    }
-
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        if (focusedRowId != null) {
-            target.addAttribute("focusedRow", itemIdMapper.key(focusedRowId));
-            focusedRowId = null;
-        } else if (clearFocusedRowPending) {
-            // Must still inform the client that the focusParent request has
-            // been processed
-            target.addAttribute("clearFocusPending", true);
-            clearFocusedRowPending = false;
-        }
-        target.addAttribute("animate", animationsEnabled);
-        if (hierarchyColumnId != null) {
-            Object[] visibleColumns2 = getVisibleColumns();
-            for (int i = 0; i < visibleColumns2.length; i++) {
-                Object object = visibleColumns2[i];
-                if (hierarchyColumnId.equals(object)) {
-                    target.addAttribute(
-                            TreeTableConstants.ATTRIBUTE_HIERARCHY_COLUMN_INDEX,
-                            i);
-                    break;
-                }
-            }
-        }
-        super.paintContent(target);
-        toggledItemId = null;
     }
 
     /*

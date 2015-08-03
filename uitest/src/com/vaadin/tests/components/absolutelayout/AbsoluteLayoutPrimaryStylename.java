@@ -33,7 +33,7 @@ public class AbsoluteLayoutPrimaryStylename extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Absolutelayout should handle setting primary stylename both initially and dynamically";
     }
 

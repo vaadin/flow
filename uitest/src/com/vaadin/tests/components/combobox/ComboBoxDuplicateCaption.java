@@ -56,7 +56,7 @@ public class ComboBoxDuplicateCaption extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "VFilterSelects with duplicate item captions should not try to do a select (exact match search) for onBlur if not waitingForFilteringResponse";
     }
 

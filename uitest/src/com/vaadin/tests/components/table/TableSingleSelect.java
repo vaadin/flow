@@ -43,7 +43,7 @@ public class TableSingleSelect extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Table in single-select mode with null selection allowed. Tests that single select does not select multiple items, selects and deselects properly.";
     }
 

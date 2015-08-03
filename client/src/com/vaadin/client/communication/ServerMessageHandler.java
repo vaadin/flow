@@ -58,7 +58,6 @@ import com.vaadin.client.metadata.Type;
 import com.vaadin.client.metadata.TypeData;
 import com.vaadin.client.ui.AbstractConnector;
 import com.vaadin.client.ui.VNotification;
-import com.vaadin.client.ui.dd.VDragAndDropManager;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.communication.MethodInvocation;
@@ -493,12 +492,6 @@ public class ServerMessageHandler {
 
                 // Handle any RPC invocations done on the server side
                 handleRpcInvocations(json);
-
-                if (json.containsKey("dd")) {
-                    // response contains data for drag and drop service
-                    VDragAndDropManager.get().handleServerResponse(
-                            json.getValueMap("dd"));
-                }
 
                 unregisterRemovedConnectors(connectorHierarchyUpdateResult.detachedConnectorIds);
 

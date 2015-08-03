@@ -41,8 +41,6 @@ import javax.servlet.http.HttpSession;
 import com.vaadin.launcher.CustomDeploymentConfiguration.Conf;
 import com.vaadin.server.DefaultDeploymentConfiguration;
 import com.vaadin.server.DeploymentConfiguration;
-import com.vaadin.server.LegacyApplication;
-import com.vaadin.server.LegacyVaadinServlet;
 import com.vaadin.server.ServiceException;
 import com.vaadin.server.SessionInitEvent;
 import com.vaadin.server.SessionInitListener;
@@ -62,7 +60,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
 @SuppressWarnings("serial")
-public class ApplicationRunnerServlet extends LegacyVaadinServlet {
+public class ApplicationRunnerServlet extends VaadinServlet {
 
     public static String CUSTOM_SYSTEM_MESSAGES_PROPERTY = "custom-"
             + SystemMessages.class.getName();
@@ -146,22 +144,6 @@ public class ApplicationRunnerServlet extends LegacyVaadinServlet {
         return new URL(path);
     }
 
-    @Override
-    protected Class<? extends LegacyApplication> getApplicationClass()
-            throws ClassNotFoundException {
-        return getClassToRun().asSubclass(LegacyApplication.class);
-    }
-
-    @Override
-    protected boolean shouldCreateApplication(HttpServletRequest request)
-            throws ServletException {
-        try {
-            return LegacyApplication.class.isAssignableFrom(getClassToRun());
-        } catch (ClassNotFoundException e) {
-            throw new ServletException(e);
-        }
-    }
-
     protected void onVaadinSessionStarted(VaadinRequest request,
             VaadinSession session) throws ServiceException {
         try {
@@ -169,8 +151,6 @@ public class ApplicationRunnerServlet extends LegacyVaadinServlet {
             if (UI.class.isAssignableFrom(classToRun)) {
                 session.addUIProvider(new ApplicationRunnerUIProvider(
                         classToRun));
-            } else if (LegacyApplication.class.isAssignableFrom(classToRun)) {
-                // Avoid using own UIProvider for legacy Application
             } else if (UIProvider.class.isAssignableFrom(classToRun)) {
                 session.addUIProvider((UIProvider) classToRun.newInstance());
             } else {

@@ -51,7 +51,7 @@ public class ModifyContainerProperty extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Clicking on \"Add container property\" adds a property to the container and sets it visible. The table should then show a \"three\" column in addition to the others. Clicking on \"Remove container property\" should remove column \"two\" from the table.";
     }
 

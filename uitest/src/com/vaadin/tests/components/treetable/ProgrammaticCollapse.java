@@ -63,7 +63,7 @@ public class ProgrammaticCollapse extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Using setCollapsed(...) after the treetable has been rendered should update the UI";
     }
 

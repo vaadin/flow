@@ -16,7 +16,7 @@ public class TooltipTests extends TestBase {
     private Label label;
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Generic tooltip handling tests";
     }
 

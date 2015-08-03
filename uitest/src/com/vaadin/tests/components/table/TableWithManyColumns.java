@@ -30,7 +30,7 @@ public class TableWithManyColumns extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The footer, header and content cells should be as wide, even when the Table contains many columns";
     }
 

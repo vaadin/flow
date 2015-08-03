@@ -38,7 +38,7 @@ public class AddNonRenderedRow extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Adding a row to the table should work even when the added rows are not visible.";
     }
 

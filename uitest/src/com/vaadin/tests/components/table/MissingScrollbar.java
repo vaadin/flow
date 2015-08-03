@@ -18,7 +18,7 @@ public class MissingScrollbar extends TestBase {
     private IndexedContainer container2;
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Increasing the number of items to more than is displayed at once should show the scrollbar.";
     }
 

@@ -8,8 +8,6 @@ import java.util.List;
 import com.vaadin.data.Container;
 import com.vaadin.data.Container.Hierarchical;
 import com.vaadin.data.util.HierarchicalContainer;
-import com.vaadin.event.Action;
-import com.vaadin.event.Action.Handler;
 import com.vaadin.shared.ui.MultiSelectMode;
 import com.vaadin.tests.components.select.AbstractSelectTestCase;
 import com.vaadin.ui.Tree;
@@ -80,30 +78,6 @@ public class Trees extends AbstractSelectTestCase<Tree> implements
 
     };
 
-    private Command<Tree, ContextMenu> contextMenuCommand = new Command<Tree, ContextMenu>() {
-
-        @Override
-        public void execute(Tree c, final ContextMenu value, Object data) {
-            c.removeAllActionHandlers();
-            if (value != null) {
-                c.addActionHandler(new Handler() {
-
-                    @Override
-                    public void handleAction(Action action, Object sender,
-                            Object target) {
-                        log("Action " + action.getCaption() + " performed on "
-                                + target);
-                    }
-
-                    @Override
-                    public Action[] getActions(Object target, Object sender) {
-                        return value.getActions(target, sender);
-                    }
-                });
-            }
-        }
-    };
-
     @Override
     protected Class<Tree> getTestClass() {
         return Tree.class;
@@ -122,26 +96,7 @@ public class Trees extends AbstractSelectTestCase<Tree> implements
 
         createListeners(CATEGORY_LISTENERS);
         createItemStyleGenerator(CATEGORY_FEATURES);
-        createContextMenuAction(CATEGORY_FEATURES);
-        // TODO: DropHandler
-        // TODO: DragMode
-        // TODO: ActionHandler
 
-    }
-
-    private void createContextMenuAction(String category) {
-        LinkedHashMap<String, ContextMenu> options = new LinkedHashMap<String, ContextMenu>();
-        options.put("None", null);
-        options.put("Item without icon", new ContextMenu("No icon", null));
-        ContextMenu cm = new ContextMenu();
-        cm.addItem("Caption only", null);
-        cm.addItem("Has icon", ICON_16_USER_PNG_UNCACHEABLE);
-        options.put("With and without icon", cm);
-        options.put("Only one large icon", new ContextMenu("Icon",
-                ICON_64_EMAIL_REPLY_PNG_UNCACHEABLE));
-
-        createSelectAction("Context menu", category, options, "None",
-                contextMenuCommand, true);
     }
 
     private void createItemStyleGenerator(String category) {

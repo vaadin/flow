@@ -36,7 +36,7 @@ public class OddEvenRowStyling extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Odd/even row styling should not change when scrolling";
     }
 

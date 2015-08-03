@@ -12,7 +12,7 @@ public class FormLayoutWithInvisibleComponent extends TestBase {
     private TextArea messages;
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "There is an initial invisible text field below the checkbox. Checking the checkbox should show the field as a textarea (40x10) and also show its caption(\"Messages visible\") and a required error (*).";
     }
 

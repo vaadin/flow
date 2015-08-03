@@ -44,7 +44,7 @@ public class TextChangeEventsWithNonImmediateValueChange extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Type a, pause for a second, type ENTER,  type a. Text field should not forget the last textchange event right after valuechange (enter)."
                 + "<br />Then press backspace. The text field should send a text change event even though the text in the field is the same as the field's value";
     }

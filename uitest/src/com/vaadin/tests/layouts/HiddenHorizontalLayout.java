@@ -11,7 +11,7 @@ import com.vaadin.ui.VerticalLayout;
 public class HiddenHorizontalLayout extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test to verify that toggling layout visibility works properly.";
     }
 

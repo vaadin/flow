@@ -33,7 +33,7 @@ public class CustomComponentSizeUpdate extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Click the button to reduce the size of the parent. The button should be resized to fit the parent.";
     }
 

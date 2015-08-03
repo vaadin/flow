@@ -19,7 +19,7 @@ import com.vaadin.ui.Embedded;
 
 public class EmbeddedImageRefresh extends TestBase {
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests if requestRepaint() makes the browser reload a dynamic resource.";
     }
 

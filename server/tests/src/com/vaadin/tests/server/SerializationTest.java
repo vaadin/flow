@@ -15,7 +15,6 @@ import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.data.util.MethodProperty;
 import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.ui.Form;
 
 public class SerializationTest extends TestCase {
 
@@ -24,18 +23,6 @@ public class SerializationTest extends TestCase {
         validator.validate("aaa");
         RegexpValidator validator2 = serializeAndDeserialize(validator);
         validator2.validate("aaa");
-    }
-
-    public void testForm() throws Exception {
-        Form f = new Form();
-        String propertyId = "My property";
-        f.addItemProperty(propertyId, new MethodProperty<Object>(new Data(),
-                "dummyGetterAndSetter"));
-        f.replaceWithSelect(propertyId, new Object[] { "a", "b", null },
-                new String[] { "Item a", "ITem b", "Null item" });
-
-        serializeAndDeserialize(f);
-
     }
 
     public void testIndedexContainerItemIds() throws Exception {

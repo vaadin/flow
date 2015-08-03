@@ -50,7 +50,7 @@ public class DateFieldMinResolution extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "When the time controls are visible the time should be directed directly to the textfield";
     }
 

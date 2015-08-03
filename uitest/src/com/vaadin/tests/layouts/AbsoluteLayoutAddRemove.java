@@ -10,7 +10,7 @@ import com.vaadin.ui.Layout;
 public class AbsoluteLayoutAddRemove extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests that addComponent() and removeComponent() works";
     }
 

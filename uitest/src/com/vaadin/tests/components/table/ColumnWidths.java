@@ -9,7 +9,7 @@ import com.vaadin.ui.Table;
 public class ColumnWidths extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "On window resize undefined "
                 + "columns (by server or user (dragged)) columns "
                 + "must consume the excess space. Space is divided "

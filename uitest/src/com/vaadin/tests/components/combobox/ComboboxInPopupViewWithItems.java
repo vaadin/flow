@@ -18,7 +18,7 @@ public class ComboboxInPopupViewWithItems extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Combobox popup should be in the correct place even when it is located inside a PopupView";
     }
 

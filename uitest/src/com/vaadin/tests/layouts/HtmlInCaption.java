@@ -25,7 +25,6 @@ import com.vaadin.ui.ColorPicker;
 import com.vaadin.ui.ColorPickerArea;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Form;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Link;
@@ -106,7 +105,6 @@ public class HtmlInCaption extends AbstractTestUI {
         createComponent(components, Panel.class);
         createComponent(components, ColorPicker.class);
         createComponent(components, ColorPickerArea.class);
-        createComponent(components, Form.class);
 
     }
 

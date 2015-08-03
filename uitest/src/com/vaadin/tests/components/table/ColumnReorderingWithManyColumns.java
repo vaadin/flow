@@ -37,7 +37,7 @@ public class ColumnReorderingWithManyColumns extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "When reordering columns via drag'n'drop, the drop marker is drawn too far to the right.";
     }
 

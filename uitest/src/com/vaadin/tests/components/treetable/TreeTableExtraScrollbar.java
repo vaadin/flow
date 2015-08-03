@@ -12,7 +12,7 @@ import com.vaadin.ui.TreeTable;
 public class TreeTableExtraScrollbar extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Vertical scrollbar should not cause a horizontal scrollbar"
                 + " if there is more excess space than vertical scrollbar needs.";
     }

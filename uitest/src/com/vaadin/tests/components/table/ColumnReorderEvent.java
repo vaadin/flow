@@ -41,7 +41,7 @@ public class ColumnReorderEvent extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test ColumnReorderEvents";
     }
 

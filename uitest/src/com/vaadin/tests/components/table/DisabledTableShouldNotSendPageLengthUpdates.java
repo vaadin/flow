@@ -34,7 +34,7 @@ public class DisabledTableShouldNotSendPageLengthUpdates extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A disabled table should not send pageLength updates causing 'Warning: Ignoring variable change for disabled component class com.vaadin.ui.Table' warnings in the server logs";
     }
 

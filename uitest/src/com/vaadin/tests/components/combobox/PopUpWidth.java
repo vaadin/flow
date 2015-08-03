@@ -31,7 +31,7 @@ public class PopUpWidth extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Check that width of popup or combobox does not change when paging.";
     }
 

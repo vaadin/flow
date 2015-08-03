@@ -22,7 +22,7 @@ public class TestLayoutPerformance extends TestBase {
     private VerticalLayout testarea = new VerticalLayout();
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test app to test simple rendering to various layouts.";
     }
 

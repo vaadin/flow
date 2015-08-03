@@ -31,8 +31,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.URL;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -45,17 +43,15 @@ import com.vaadin.client.Focusable;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.VConsole;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.ui.ShortcutActionHandler.ShortcutActionHandlerOwner;
 import com.vaadin.client.ui.TouchScrollDelegate.TouchScrollHandler;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.ui.ui.UIConstants;
 
 /**
  * 
  */
 public class VUI extends SimplePanel implements ResizeHandler,
-        Window.ClosingHandler, ShortcutActionHandlerOwner, Focusable,
+        Window.ClosingHandler, Focusable,
         com.google.gwt.user.client.ui.Focusable, HasResizeHandlers,
         HasScrollHandlers {
 
@@ -63,9 +59,6 @@ public class VUI extends SimplePanel implements ResizeHandler,
 
     /** For internal use only. May be removed or replaced in the future. */
     public String id;
-
-    /** For internal use only. May be removed or replaced in the future. */
-    public ShortcutActionHandler actionHandler;
 
     /*
      * Last known window size used to detect whether VView should be layouted
@@ -145,8 +138,7 @@ public class VUI extends SimplePanel implements ResizeHandler,
 
                 currentFragment = newFragment;
                 connection.flushActiveConnector();
-                connection.updateVariable(id, UIConstants.LOCATION_VARIABLE,
-                        location, true);
+                // FIXME
             }
         }
     };
@@ -339,16 +331,6 @@ public class VUI extends SimplePanel implements ResizeHandler,
         return isEmbedded();
     }
 
-    @Override
-    public void onBrowserEvent(Event event) {
-        super.onBrowserEvent(event);
-        int type = DOM.eventGetType(event);
-        if (type == Event.ONKEYDOWN && actionHandler != null) {
-            actionHandler.handleKeyboardEvent(event);
-            return;
-        }
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -427,11 +409,6 @@ public class VUI extends SimplePanel implements ResizeHandler,
             list.@java.util.Collection::add(Ljava/lang/Object;)(j);
          }
      }-*/;
-
-    @Override
-    public ShortcutActionHandler getShortcutActionHandler() {
-        return actionHandler;
-    }
 
     @Override
     public void focus() {

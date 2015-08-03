@@ -6,7 +6,7 @@ import com.vaadin.ui.TextField;
 public class MultipleDebugIds extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "An exception should be thrown if the same debugId is assigned to several components";
     }
 

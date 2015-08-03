@@ -17,7 +17,7 @@ public class ListSelectAllowNewItem extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "ListSelect with allowNewItems turned on";
     }
 

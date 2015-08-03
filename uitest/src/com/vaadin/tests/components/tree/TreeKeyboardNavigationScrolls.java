@@ -54,7 +54,7 @@ public class TreeKeyboardNavigationScrolls extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The tree scrolls right if the focused node is too wide when navigating with the keyboard";
     }
 

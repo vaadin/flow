@@ -32,7 +32,7 @@ public class CustomComponentGrowingContent extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The width of the custom component should increase when its content grows";
     }
 

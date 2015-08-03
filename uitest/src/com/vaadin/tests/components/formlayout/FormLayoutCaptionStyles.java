@@ -44,7 +44,7 @@ public class FormLayoutCaptionStyles extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The component style should be copied to the caption element. Changing the component style should update the caption style also";
     }
 

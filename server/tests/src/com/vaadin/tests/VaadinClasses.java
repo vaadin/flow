@@ -21,7 +21,6 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CustomComponent;
-import com.vaadin.ui.DragAndDropWrapper;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.LoginForm;
@@ -104,7 +103,6 @@ public class VaadinClasses {
         List<Class<? extends ComponentContainer>> classes = getComponentContainers();
         classes.remove(PopupView.class);
         classes.remove(CustomComponent.class);
-        classes.remove(DragAndDropWrapper.class);
         classes.remove(CustomComponent.class);
         classes.remove(LoginForm.class);
         classes.remove(UI.class);

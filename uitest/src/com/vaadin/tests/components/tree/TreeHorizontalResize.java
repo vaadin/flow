@@ -42,7 +42,7 @@ public class TreeHorizontalResize extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The Tree should be properly resized horizontally when collapsing/expanding nodes. The height is fixed to 500px.";
     }
 

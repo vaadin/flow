@@ -8,8 +8,6 @@ import com.vaadin.ui.AbsoluteLayout;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.GridLayout;
-import com.vaadin.ui.HasComponents.ComponentAttachEvent;
-import com.vaadin.ui.HasComponents.ComponentAttachListener;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.OptionGroup;
@@ -47,7 +45,7 @@ public class LayoutAttachListenerInfo extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "When pressing the attach button a Label with the value \"X\" "
                 + "should get added to the selected layout and a notification of the position"
                 + " of the component should be visible";
@@ -71,8 +69,7 @@ public class LayoutAttachListenerInfo extends TestBase {
                 AbsoluteLayout.ComponentPosition position = layout
                         .getPosition(event.getAttachedComponent());
 
-                getMainWindow().showNotification(
-                        "Attached to " + position.getCSSString(),
+                showNotification("Attached to " + position.getCSSString(),
                         Notification.TYPE_ERROR_MESSAGE);
             }
         });
@@ -97,7 +94,7 @@ public class LayoutAttachListenerInfo extends TestBase {
             @Override
             public void componentAttachedToContainer(ComponentAttachEvent event) {
                 VerticalLayout layout = (VerticalLayout) event.getContainer();
-                getMainWindow().showNotification(
+                showNotification(
                         "Attached to index "
                                 + layout.getComponentIndex(event
                                         .getAttachedComponent()),
@@ -129,10 +126,8 @@ public class LayoutAttachListenerInfo extends TestBase {
                 GridLayout layout = (GridLayout) event.getContainer();
                 GridLayout.Area area = layout.getComponentArea(event
                         .getAttachedComponent());
-                getMainWindow().showNotification(
-                        "Attached to " + area.getColumn1() + ","
-                                + area.getRow1(),
-                        Notification.TYPE_ERROR_MESSAGE);
+                showNotification("Attached to " + area.getColumn1() + ","
+                        + area.getRow1(), Notification.TYPE_ERROR_MESSAGE);
             }
         });
 

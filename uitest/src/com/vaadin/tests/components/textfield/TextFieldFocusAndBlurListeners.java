@@ -15,7 +15,7 @@ public class TextFieldFocusAndBlurListeners extends TestBase implements
     private Log log = new Log(5).setNumberLogRows(false);
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests the focus and blur functionality of TextField";
     }
 

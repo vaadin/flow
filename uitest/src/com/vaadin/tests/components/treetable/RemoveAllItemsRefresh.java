@@ -92,7 +92,7 @@ public class RemoveAllItemsRefresh extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Removing all items from a treetable should refresh the component";
     }
 

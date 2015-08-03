@@ -36,7 +36,7 @@ public class PanelConcurrentModificationException extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Modifying Panel content causes Internal Error (ConcurrentModificationException)";
     }
 

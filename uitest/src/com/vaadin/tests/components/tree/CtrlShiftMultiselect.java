@@ -56,7 +56,7 @@ public class CtrlShiftMultiselect extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Add ctlr+shift multi selection in Tree";
     }
 

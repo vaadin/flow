@@ -41,7 +41,7 @@ public class Notifications extends TestBase implements ClickListener {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Generic test case for notifications";
     }
 

@@ -27,7 +27,7 @@ public class HiddenTabSheetBrowserResize extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "TabSheet content disappears if browser window resized when the TabSheet is hidden";
     }
 

@@ -7,7 +7,7 @@ import com.vaadin.ui.Embedded;
 public class EmbeddedFlash extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The embedded flash should have the movie parameter set to \"someRandomValue\" and an allowFullScreen parameter set to \"true\".";
     }
 

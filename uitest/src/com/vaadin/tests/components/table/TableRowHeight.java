@@ -12,7 +12,7 @@ import com.vaadin.ui.Table.ColumnGenerator;
 public class TableRowHeight extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "This test case contains 5 tables in various configurations. All tables have a pageLength of "
                 + PAGELENGTH
                 + " and thus should show as many rows without any scrollbars (height is undefined for all tables).";

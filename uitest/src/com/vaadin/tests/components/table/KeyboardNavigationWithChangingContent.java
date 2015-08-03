@@ -52,7 +52,7 @@ public class KeyboardNavigationWithChangingContent extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         // TODO Auto-generated method stub
         return "Table keyboard navigation does not work after the contents in table is changed";
     }

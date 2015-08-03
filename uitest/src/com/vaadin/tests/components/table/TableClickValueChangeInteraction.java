@@ -31,7 +31,7 @@ public class TableClickValueChangeInteraction extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Table selection breaks if ItemClickListener requests repaint";
     }
 

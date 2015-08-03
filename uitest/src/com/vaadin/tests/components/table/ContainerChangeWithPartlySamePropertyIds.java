@@ -17,7 +17,7 @@ public class ContainerChangeWithPartlySamePropertyIds extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The client side Table component messes up its internal "
                 + "data structures (in header and footer) if the container changes and it has partly"
                 + " the same properties (but in different order) than the old container.";

@@ -17,7 +17,6 @@
 package com.vaadin.tests;
 
 import java.util.Date;
-import java.util.Map;
 
 import com.vaadin.server.UserError;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -27,7 +26,6 @@ import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
@@ -55,23 +53,6 @@ public class PerformanceTestBasicComponentRendering extends CustomComponent {
         main.addComponent(result);
 
         testContainer = new VerticalLayout();
-
-        final Table t = TestForTablesInitialColumnWidthLogicRendering
-                .getTestTable(5, 200);
-
-        Table t2 = new Table("Test Table with 199 rows rendered initially") {
-            @Override
-            public void changeVariables(Object source,
-                    Map<String, Object> variables) {
-                super.changeVariables(source, variables);
-                // end timing on cache row request
-                endTest();
-            }
-        };
-        t2.setPageLength(199); // render almost all rows at once
-        t2.setContainerDataSource(t.getContainerDataSource());
-
-        testContainer.addComponent(t2);
 
         for (int i = 0; i < INITIAL_COMPONENTS; i++) {
             ComboBox cb = new ComboBox("Combobox " + i);

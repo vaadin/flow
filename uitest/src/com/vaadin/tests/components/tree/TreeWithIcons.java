@@ -57,7 +57,7 @@ public class TreeWithIcons extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A tree with icons should resize itself correctly so the nodes are not cut either horizontally or vertically.";
     }
 

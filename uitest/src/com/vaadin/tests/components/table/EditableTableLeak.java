@@ -138,7 +138,7 @@ public class EditableTableLeak extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Table leaks memory while scrolling/selecting when in editable mode";
     }
 

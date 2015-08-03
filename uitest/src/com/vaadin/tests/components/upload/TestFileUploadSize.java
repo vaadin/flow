@@ -77,7 +77,7 @@ public class TestFileUploadSize extends TestBase implements Receiver {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Multibyte characters in filenames should not cause the upload size to be computed incorrectly";
     }
 

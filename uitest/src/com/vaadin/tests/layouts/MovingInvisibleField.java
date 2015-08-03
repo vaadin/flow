@@ -46,7 +46,7 @@ public class MovingInvisibleField extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Above and below the button is a VerticalLayout. Initially the first one contains two components: a visiable and an invisible TextField. Click the button to move the TextFields to the second layout, both should be moved but only the visible rendered.";
     }
 

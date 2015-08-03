@@ -11,7 +11,7 @@ import com.vaadin.ui.Table;
 public class RowAdditionTest extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Adding a row should refresh client area only if newly added row is in the rendered area.";
     }
 

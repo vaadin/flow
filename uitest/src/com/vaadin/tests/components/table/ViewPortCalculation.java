@@ -18,7 +18,7 @@ public class ViewPortCalculation extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Table rows that are too far down (but still visible) don't get focus after refreshRowCache/select (double-click)."
                 + "<br> Double-clicking on the seventh (or any further) row of causes focus to jump to the first row.";
     }

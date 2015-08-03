@@ -10,7 +10,7 @@ import com.vaadin.ui.Table;
 public class NotselectablePaintSelections extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Table should paint selections even if it's not selectable.";
     }
 

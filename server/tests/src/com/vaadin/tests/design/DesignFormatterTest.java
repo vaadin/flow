@@ -22,17 +22,12 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.TimeZone;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.data.util.converter.Converter.ConversionException;
-import com.vaadin.event.ShortcutAction;
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.event.ShortcutAction.ModifierKey;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
 import com.vaadin.server.FontAwesome;
@@ -41,7 +36,6 @@ import com.vaadin.server.GenericFontIcon;
 import com.vaadin.server.Resource;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.declarative.DesignFormatter;
 
 /**
@@ -67,10 +61,9 @@ public class DesignFormatterTest {
                 byte.class, short.class, int.class, long.class, float.class,
                 double.class, Boolean.class, Character.class, Byte.class,
                 Short.class, Integer.class, Long.class, Float.class,
-                Double.class, BigDecimal.class, String.class,
-                ShortcutAction.class, Date.class, FileResource.class,
-                ExternalResource.class, ThemeResource.class, Resource.class,
-                TimeZone.class }) {
+                Double.class, BigDecimal.class, String.class, Date.class,
+                FileResource.class, ExternalResource.class,
+                ThemeResource.class, Resource.class, TimeZone.class }) {
             assertTrue("not supported " + type.getSimpleName(),
                     formatter.canConvert(type));
         }
@@ -199,47 +192,6 @@ public class DesignFormatterTest {
     }
 
     @Test
-    public void testShortcutActions() {
-        ShortcutAction action = new ShortcutAction("&^d");
-        String formatted = formatter.format(action);
-        // note the space here - it separates key combination from caption
-        assertEquals("alt-ctrl-d d", formatted);
-
-        ShortcutAction result = formatter
-                .parse(formatted, ShortcutAction.class);
-        assertTrue(equals(action, result));
-    }
-
-    @Test
-    public void testShortcutActionNoCaption() {
-        ShortcutAction action = new ShortcutAction(null, KeyCode.D, new int[] {
-                ModifierKey.ALT, ModifierKey.CTRL });
-        String formatted = formatter.format(action);
-        assertEquals("alt-ctrl-d", formatted);
-
-        ShortcutAction result = formatter
-                .parse(formatted, ShortcutAction.class);
-        assertTrue(equals(action, result));
-    }
-
-    @Test
-    public void testInvalidShortcutAction() {
-        assertInvalidShortcut("-");
-        assertInvalidShortcut("foo");
-        assertInvalidShortcut("atl-ctrl");
-        assertInvalidShortcut("-a");
-    }
-
-    protected void assertInvalidShortcut(String shortcut) {
-        try {
-            formatter.parse(shortcut, ShortcutAction.class);
-            Assert.fail("Invalid shortcut '" + shortcut + "' should throw");
-        } catch (ConversionException e) {
-            // expected
-        }
-    }
-
-    @Test
     public void testTimeZone() {
         TimeZone zone = TimeZone.getTimeZone("GMT+2");
         String formatted = formatter.format(zone);
@@ -342,33 +294,4 @@ public class DesignFormatterTest {
 
     }
 
-    /**
-     * A static method to allow comparison two different actions.
-     * 
-     * @param act
-     *            One action to compare.
-     * @param other
-     *            Second action to compare.
-     * @return <b>true</b> when both actions are the same (caption, icon, and
-     *         key combination).
-     */
-    public static final boolean equals(ShortcutAction act, ShortcutAction other) {
-        if (SharedUtil.equals(other.getCaption(), act.getCaption())
-                && SharedUtil.equals(other.getIcon(), act.getIcon())
-                && act.getKeyCode() == other.getKeyCode()
-                && act.getModifiers().length == other.getModifiers().length) {
-            HashSet<Integer> thisSet = new HashSet<Integer>(
-                    act.getModifiers().length);
-            // this is a bit tricky comparison, but there is no nice way of
-            // making int[] into a Set
-            for (int mod : act.getModifiers()) {
-                thisSet.add(mod);
-            }
-            for (int mod : other.getModifiers()) {
-                thisSet.remove(mod);
-            }
-            return thisSet.isEmpty();
-        }
-        return false;
-    }
 }

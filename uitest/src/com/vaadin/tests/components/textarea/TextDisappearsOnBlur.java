@@ -17,7 +17,7 @@ public class TextDisappearsOnBlur extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Text disappears from TextArea in IE 6-8 when focus changes";
     }
 

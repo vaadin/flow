@@ -28,7 +28,7 @@ public class EmbeddedInCustomComponent extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Two embedded images are shown below, side-by-side. The first one has a random url so it is not cached, the second one is cached.";
     }
 

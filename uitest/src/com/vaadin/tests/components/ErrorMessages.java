@@ -32,7 +32,7 @@ public class ErrorMessages extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The components all have error messages that should appear when hovering them";
     }
 

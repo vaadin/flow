@@ -84,7 +84,7 @@ public abstract class AbstractComponentDataBindingTest extends TestBase
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "";
     }
 

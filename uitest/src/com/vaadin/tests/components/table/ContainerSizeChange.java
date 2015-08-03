@@ -13,7 +13,7 @@ public class ContainerSizeChange extends TestBase {
     private MyDataSource ds;
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A table should be able to handle a decrease in the size of the container. The original container here contains 50 items and the decrease button removes 10 of these. To reproduce the problem: Click 'Decrease size' two times to reduce size to 30 and scroll to the end (50). What should happen is the table should notice the container size has decreased and show the last items which now exists in the new container.";
     }
 

@@ -56,7 +56,7 @@ public class ExpandCollapseTree extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test collapsing and expansion of tree nodes";
     }
 

@@ -11,7 +11,7 @@ public class CellStyleGeneratorTest extends TestBase {
     @Override
     protected void setup() {
         TestUtils
-                .injectCSS(getMainWindow(),
+                .injectCSS(this,
                         ".v-table-cell-content-red{background:red;}.v-table-row-blue{background:blue;}");
 
         CellStyleGenerator g = new CellStyleGenerator() {
@@ -52,7 +52,7 @@ public class CellStyleGeneratorTest extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Cell style generators should work";
     }
 

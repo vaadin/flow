@@ -31,15 +31,13 @@ import com.vaadin.event.FieldEvents.FocusNotifier;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.event.FieldEvents.TextChangeListener;
 import com.vaadin.event.FieldEvents.TextChangeNotifier;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.shared.ui.textfield.AbstractTextFieldState;
 import com.vaadin.shared.ui.textfield.TextFieldConstants;
 import com.vaadin.ui.declarative.DesignAttributeHandler;
 import com.vaadin.ui.declarative.DesignContext;
 
 public abstract class AbstractTextField extends AbstractField<String> implements
-        BlurNotifier, FocusNotifier, TextChangeNotifier, LegacyComponent {
+        BlurNotifier, FocusNotifier, TextChangeNotifier {
 
     /**
      * Null representation.
@@ -115,114 +113,6 @@ public abstract class AbstractTextField extends AbstractField<String> implements
             value = getNullRepresentation();
         }
         getState().text = value;
-    }
-
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-
-        if (selectionPosition != -1) {
-            target.addAttribute("selpos", selectionPosition);
-            target.addAttribute("sellen", selectionLength);
-            selectionPosition = -1;
-        }
-
-        if (hasListeners(TextChangeEvent.class)) {
-            target.addAttribute(TextFieldConstants.ATTR_TEXTCHANGE_EVENTMODE,
-                    getTextChangeEventMode().toString());
-            target.addAttribute(TextFieldConstants.ATTR_TEXTCHANGE_TIMEOUT,
-                    getTextChangeTimeout());
-            if (lastKnownTextContent != null) {
-                /*
-                 * The field has be repainted for some reason (e.g. caption,
-                 * size, stylename), but the value has not been changed since
-                 * the last text change event. Let the client side know about
-                 * the value the server side knows. Client side may then ignore
-                 * the actual value, depending on its state.
-                 */
-                target.addAttribute(
-                        TextFieldConstants.ATTR_NO_VALUE_CHANGE_BETWEEN_PAINTS,
-                        true);
-            }
-        }
-
-    }
-
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        changingVariables = true;
-
-        try {
-
-            // Sets the height set by the user when resize the <textarea>.
-            String newHeight = (String) variables.get("height");
-            if (newHeight != null) {
-                setHeight(newHeight);
-            }
-
-            // Sets the width set by the user when resize the <textarea>.
-            String newWidth = (String) variables.get("width");
-            if (newWidth != null) {
-                setWidth(newWidth);
-            }
-
-            if (variables.containsKey(TextFieldConstants.VAR_CURSOR)) {
-                Integer object = (Integer) variables
-                        .get(TextFieldConstants.VAR_CURSOR);
-                lastKnownCursorPosition = object.intValue();
-            }
-
-            if (variables.containsKey(TextFieldConstants.VAR_CUR_TEXT)) {
-                /*
-                 * NOTE, we might want to develop this further so that on a
-                 * value change event the whole text content don't need to be
-                 * sent from the client to server. Just "commit" the value from
-                 * currentText to the value.
-                 */
-                handleInputEventTextChange(variables);
-            }
-
-            // Sets the text
-            if (variables.containsKey("text") && !isReadOnly()) {
-
-                // Only do the setting if the string representation of the value
-                // has been updated
-                String newValue = (String) variables.get("text");
-
-                // server side check for max length
-                if (getMaxLength() != -1 && newValue.length() > getMaxLength()) {
-                    newValue = newValue.substring(0, getMaxLength());
-                }
-                final String oldValue = getValue();
-                if (newValue != null
-                        && (oldValue == null || isNullSettingAllowed())
-                        && newValue.equals(getNullRepresentation())) {
-                    newValue = null;
-                }
-                if (newValue != oldValue
-                        && (newValue == null || !newValue.equals(oldValue))) {
-                    boolean wasModified = isModified();
-                    setValue(newValue, true);
-
-                    // If the modified status changes, or if we have a
-                    // formatter, repaint is needed after all.
-                    if (wasModified != isModified()) {
-                        markAsDirty();
-                    }
-                }
-            }
-            firePendingTextChangeEvent();
-
-            if (variables.containsKey(FocusEvent.EVENT_ID)) {
-                fireEvent(new FocusEvent(this));
-            }
-            if (variables.containsKey(BlurEvent.EVENT_ID)) {
-                fireEvent(new BlurEvent(this));
-            }
-        } finally {
-            changingVariables = false;
-
-        }
-
     }
 
     @Override

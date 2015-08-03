@@ -32,7 +32,6 @@ import com.vaadin.data.util.TransactionalPropertyWrapper;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.DefaultFieldFactory;
 import com.vaadin.ui.Field;
-import com.vaadin.ui.Form;
 import com.vaadin.util.ReflectTools;
 
 /**

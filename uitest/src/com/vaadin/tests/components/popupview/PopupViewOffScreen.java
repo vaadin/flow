@@ -22,7 +22,7 @@ public class PopupViewOffScreen extends TestBase {
     private List<PopupView> popupViews = new ArrayList<PopupView>();
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A popupview should be displayed on screen. If the popup position is close to a border it should be moved so it is still on screen.";
     }
 

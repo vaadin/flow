@@ -50,7 +50,7 @@ public class AddAndRemoveTabs extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Removing all tabs and then adding new tabs should work properly and without javascript errors. All new tabs should be displayed and not only the first one";
     }
 

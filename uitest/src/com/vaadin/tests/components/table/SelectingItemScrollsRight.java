@@ -30,7 +30,7 @@ public class SelectingItemScrollsRight extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Clicking on an item that is longer than the table width should not scroll the table right";
     }
 

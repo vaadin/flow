@@ -66,7 +66,7 @@ public class ComboBoxInvalidNullSelection extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Select \"Item 3\" in the ComboBox, change the data source, focus and blur the ComboBox. The value should temporarily change to null when changing data source but not when focusing and blurring the ComboBox";
     }
 

@@ -56,7 +56,7 @@ public class ComboBoxSlowInFF extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "FF is very slow when rendering many ComboBoxes in a table";
     }
 

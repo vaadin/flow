@@ -9,7 +9,7 @@ import com.vaadin.ui.Table;
 public class ColumnExpandRatio extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Column expand ratios can be used to adjust the way "
                 + "how excess horizontal space is divided among columns.";
 

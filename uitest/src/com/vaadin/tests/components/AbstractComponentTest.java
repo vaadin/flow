@@ -20,7 +20,6 @@ import com.vaadin.server.ThemeResource;
 import com.vaadin.tests.util.Log;
 import com.vaadin.tests.util.LoremIpsum;
 import com.vaadin.ui.AbstractComponent;
-import com.vaadin.ui.Component.Focusable;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.ui.themes.BaseTheme;
@@ -746,7 +745,6 @@ public abstract class AbstractComponentTest<T extends AbstractComponent>
         super.doCommand(commandName, command, value, data);
     }
 
-    @Override
     public void error(com.vaadin.server.ErrorEvent event) {
         final Throwable throwable = DefaultErrorHandler
                 .findRelevantThrowable(event.getThrowable());

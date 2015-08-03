@@ -15,7 +15,7 @@ public class TablePageLengthUpdate extends TestBase {
     private Table table;
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "When the height is set for a table, the pagelength should be updated according to what is actually displayed. The table pagelength is initially 100 and the height is 100px. After clicking update the pageLength label should display the correct value (?).";
     }
 

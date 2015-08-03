@@ -13,7 +13,7 @@ import com.vaadin.ui.TreeTable;
 public class TreeTableExtraScrollbarWithChildren extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Arrow calculation should not cause a horizontal scrollbar"
                 + " if there is enough space for the final contents.";
     }

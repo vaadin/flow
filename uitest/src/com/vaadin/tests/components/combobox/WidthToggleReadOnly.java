@@ -36,7 +36,7 @@ public class WidthToggleReadOnly extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Check that toggling read only mode of second combobox does not change it's width.";
     }
 

@@ -7,7 +7,7 @@ import com.vaadin.ui.ComboBox;
 public class ComboBoxNavigation extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Entering e in the field and scrolling down with the arrow keys should always select the next item, also when the page changes. Scrolling back up should always select the previous item, also when changing pages.";
     }
 

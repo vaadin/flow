@@ -74,7 +74,7 @@ public class BrowserFrameIsVisible extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Embedded browser should be visible for all browsers";
     }
 

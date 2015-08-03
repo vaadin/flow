@@ -48,7 +48,7 @@ public class MoveComponentsFromAbsoluteLayoutToInnerLayout extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Click the first button to move it from an outer layout to an inner. Then click the second button to repaint the inner layout.";
     }
 

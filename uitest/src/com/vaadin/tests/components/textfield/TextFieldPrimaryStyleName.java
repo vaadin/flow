@@ -24,7 +24,7 @@ public class TextFieldPrimaryStyleName extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Textfield should support setting the primary stylename both initially and dynamically";
     }
 

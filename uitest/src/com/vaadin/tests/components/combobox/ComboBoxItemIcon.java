@@ -14,7 +14,7 @@ public class ComboBoxItemIcon extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "All items in the ComboBoxes should have icons.";
     }
 

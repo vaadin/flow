@@ -22,7 +22,7 @@ public class HiddenAndDisabledMenus extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The menu contains 4 items, 2 of which are hidden. The sub menu contains 4 items, the last one is hidden";
     }
 

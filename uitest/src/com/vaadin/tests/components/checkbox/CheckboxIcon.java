@@ -7,7 +7,7 @@ import com.vaadin.ui.CheckBox;
 public class CheckboxIcon extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The icon of a Checkbox component should have the same cursor as the text and should be clickable. The tooltip should appear when hovering the checkbox, the icon or the caption.";
     }
 

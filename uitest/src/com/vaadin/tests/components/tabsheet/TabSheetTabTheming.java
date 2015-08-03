@@ -17,7 +17,7 @@ public class TabSheetTabTheming extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Changing tabs should not cause flickering, cut text or text that moves back and forth.";
     }
 

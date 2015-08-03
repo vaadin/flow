@@ -17,7 +17,7 @@ public class TabSheetCaptions extends TestBase {
     Panel panel1;
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Updating the tabsheet tab text should not change the caption of the component. Click on the button to change the tab text. This must update the tab and not touch the Panel's caption.";
     }
 

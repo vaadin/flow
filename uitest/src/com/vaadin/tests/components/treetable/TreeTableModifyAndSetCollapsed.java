@@ -47,7 +47,7 @@ public class TreeTableModifyAndSetCollapsed extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Modifying a container and using setCollapsed on the same server round-trip should not cause any problems";
     }
 

@@ -41,7 +41,7 @@ public class TabSheetDiscardsMovedComponents extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Moving an already rendered component to a tabsheet and not immediately selecting the new tab should cause no problems";
     }
 

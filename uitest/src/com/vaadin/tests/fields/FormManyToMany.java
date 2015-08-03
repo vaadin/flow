@@ -16,7 +16,7 @@ public class FormManyToMany extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Forms which allow editing of a many-to-many mapping between users and roles";
     }
 

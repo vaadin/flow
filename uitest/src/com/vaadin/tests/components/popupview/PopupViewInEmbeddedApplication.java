@@ -17,7 +17,7 @@ public class PopupViewInEmbeddedApplication extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Clicking on the popup link should pop up the popup on top of the link,"
                 + " even though the application has been embedded inside a div.";
     }

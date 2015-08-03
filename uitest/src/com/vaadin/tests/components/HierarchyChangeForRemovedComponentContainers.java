@@ -48,7 +48,7 @@ public class HierarchyChangeForRemovedComponentContainers extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "HierarchyChange events should be triggered for removed layouts";
     }
 

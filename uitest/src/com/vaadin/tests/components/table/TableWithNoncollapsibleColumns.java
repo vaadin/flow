@@ -75,7 +75,7 @@ public class TableWithNoncollapsibleColumns extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Often a table has one column that identifies the row better than any other and it would not make sense to collapse that one. Make it possible from the server side api to disable collapsing for some properties. These properties could appear as grayed out in the collapse drop down menu.";
     }
 

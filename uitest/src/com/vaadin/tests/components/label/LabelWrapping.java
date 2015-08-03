@@ -9,7 +9,7 @@ import com.vaadin.ui.Label;
 public class LabelWrapping extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A label inside a limited HorizontalLayout should strive to be as wide as possible and only wrap when the size of the layout is reached. The label should look the same if it is rendered initially with the layout or updated later on.";
     }
 

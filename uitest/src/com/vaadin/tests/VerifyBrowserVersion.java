@@ -19,7 +19,7 @@ public class VerifyBrowserVersion extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Silly test just to get a screenshot of the browser's user agent string";
     }
 

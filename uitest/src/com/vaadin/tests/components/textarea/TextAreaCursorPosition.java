@@ -44,7 +44,7 @@ public class TextAreaCursorPosition extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Writing something in the field updates the cursor position field. The position field can also be updated using the button.";
     }
 

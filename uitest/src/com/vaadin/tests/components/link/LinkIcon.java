@@ -8,7 +8,7 @@ import com.vaadin.ui.Link;
 public class LinkIcon extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The icon of a Link component should have the same cursor as the text and should be clickable";
     }
 

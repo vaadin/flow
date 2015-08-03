@@ -51,7 +51,7 @@ public class ButtonMouseDetails extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Clicking a button should returns some additional information about the click";
     }
 

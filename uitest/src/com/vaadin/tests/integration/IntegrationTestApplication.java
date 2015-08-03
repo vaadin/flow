@@ -4,19 +4,18 @@ import com.vaadin.data.Item;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.server.ClassResource;
-import com.vaadin.server.LegacyApplication;
 import com.vaadin.server.Resource;
+import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.LegacyWindow;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
 
-public class IntegrationTestApplication extends LegacyApplication {
+public class IntegrationTestApplication extends UI {
 
     @Override
-    public void init() {
-        LegacyWindow window = new LegacyWindow("Vaadin Application");
-        setMainWindow(window);
-
+    public void init(VaadinRequest r) {
+        VerticalLayout vl = new VerticalLayout();
         final Table table = new Table();
         table.addContainerProperty("icon", Resource.class, null);
         table.setItemIconPropertyId("icon");
@@ -25,7 +24,7 @@ public class IntegrationTestApplication extends LegacyApplication {
         table.setImmediate(true);
         table.setSelectable(true);
         table.setVisibleColumns(new Object[] { "country" });
-        window.addComponent(table);
+        vl.addComponent(table);
 
         Item item = table.addItem("FI");
         item.getItemProperty("icon").setValue(new ClassResource("fi.gif"));
@@ -41,6 +40,7 @@ public class IntegrationTestApplication extends LegacyApplication {
                 selectedLabel.setValue(String.valueOf(table.getValue()));
             }
         });
-        window.addComponent(selectedLabel);
+        vl.addComponent(selectedLabel);
+        setContent(vl);
     }
 }

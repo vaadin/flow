@@ -42,7 +42,7 @@ public class RemovalOfSelectedIcon extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Clear button must remove selected icon, and comboboxes' widths must stay same.";
     }
 

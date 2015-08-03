@@ -35,7 +35,7 @@ public class TreeTableSetCollapsed extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Using setCollapsed before the treetable has initially been rendered should not cause any problems";
     }
 

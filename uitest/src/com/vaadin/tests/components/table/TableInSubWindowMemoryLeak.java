@@ -61,7 +61,7 @@ public class TableInSubWindowMemoryLeak extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "IE 8 leaks memory with a subwindow containing a Table";
     }
 

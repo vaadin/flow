@@ -34,7 +34,7 @@ public class TextFieldWithProperty extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Should work";
     }
 

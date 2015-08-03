@@ -93,7 +93,7 @@ public class TreeContainerChange extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A test for tree and its container changes. Value should be cleared on container change.";
     }
 

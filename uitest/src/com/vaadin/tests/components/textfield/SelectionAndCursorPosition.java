@@ -114,7 +114,7 @@ public class SelectionAndCursorPosition extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "For usability reasons it is often essential that developer "
                 + "can hint how to select the text in the "
                 + "field or where to set the cursor position.";

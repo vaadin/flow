@@ -134,7 +134,7 @@ public class DisableEnableCascadeStyles extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests the disable state is cascaded correctly to children components that can be disabled. The children and their captions must get the v-disabled style name.";
     }
 

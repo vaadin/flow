@@ -32,9 +32,6 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 
-import com.vaadin.event.ActionManager;
-import com.vaadin.event.ConnectorActionManager;
-import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.AbstractClientConnector;
 import com.vaadin.server.AbstractErrorMessage.ContentMode;
 import com.vaadin.server.ErrorMessage;
@@ -97,12 +94,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
     private float height = SIZE_UNDEFINED;
     private Unit widthUnit = Unit.PIXELS;
     private Unit heightUnit = Unit.PIXELS;
-
-    /**
-     * Keeps track of the Actions added to this component; the actual
-     * handling/notifying is delegated, usually to the containing window.
-     */
-    private ConnectorActionManager actionManager;
 
     private boolean visible = true;
 
@@ -669,25 +660,10 @@ public abstract class AbstractComponent extends AbstractClientConnector
         if (delayedFocus) {
             focus();
         }
-        setActionManagerViewer();
         if (locale != null) {
             getUI().getLocaleService().addLocale(locale);
         }
 
-    }
-
-    /*
-     * Detach the component from application. Don't add a JavaDoc comment here,
-     * we use the default documentation from implemented interface.
-     */
-    @Override
-    public void detach() {
-        super.detach();
-        if (actionManager != null) {
-            // Remove any existing viewer. UI cast is just to make the
-            // compiler happy
-            actionManager.setViewer((UI) null);
-        }
     }
 
     /**
@@ -1303,54 +1279,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
                     ((Focusable) def).getTabIndex(), Integer.class);
         }
 
-    }
-
-    /*
-     * Actions
-     */
-
-    /**
-     * Gets the {@link ActionManager} used to manage the
-     * {@link ShortcutListener}s added to this {@link Field}.
-     * 
-     * @return the ActionManager in use
-     */
-    protected ActionManager getActionManager() {
-        if (actionManager == null) {
-            actionManager = new ConnectorActionManager(this);
-            setActionManagerViewer();
-        }
-        return actionManager;
-    }
-
-    /**
-     * Set a viewer for the action manager to be the parent sub window (if the
-     * component is in a window) or the UI (otherwise). This is still a
-     * simplification of the real case as this should be handled by the parent
-     * VOverlay (on the client side) if the component is inside an VOverlay
-     * component.
-     */
-    private void setActionManagerViewer() {
-        if (actionManager != null && getUI() != null) {
-            // Attached and has action manager
-            Window w = findAncestor(Window.class);
-            if (w != null) {
-                actionManager.setViewer(w);
-            } else {
-                actionManager.setViewer(getUI());
-            }
-        }
-
-    }
-
-    public void addShortcutListener(ShortcutListener shortcut) {
-        getActionManager().addAction(shortcut);
-    }
-
-    public void removeShortcutListener(ShortcutListener shortcut) {
-        if (actionManager != null) {
-            actionManager.removeAction(shortcut);
-        }
     }
 
     /**

@@ -58,7 +58,7 @@ public class TableSelectPagingOff extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "No flickering (scrollbars) should happen on select";
     }
 

@@ -49,7 +49,7 @@ public class AbstractFieldDataSourceReadOnly extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Read-only status changes in data sources are not rendered immediately";
     }
 

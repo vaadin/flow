@@ -35,7 +35,7 @@ public class GridLayoutRemoveFinalRow extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Removing last row of a GridLayout throws a IllegalArgumentException";
     }
 

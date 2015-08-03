@@ -39,7 +39,7 @@ public class ColumnResizeEvent extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Table should update column size back to server";
     }
 

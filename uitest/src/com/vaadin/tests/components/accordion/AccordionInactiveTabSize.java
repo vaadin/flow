@@ -9,7 +9,7 @@ import com.vaadin.ui.TextField;
 public class AccordionInactiveTabSize extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Select the second tab and move the splitter to the right. Both the inactive and the active tab should be resized.";
     }
 

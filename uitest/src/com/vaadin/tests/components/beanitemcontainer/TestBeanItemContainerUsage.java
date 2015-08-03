@@ -10,7 +10,7 @@ import com.vaadin.ui.Table;
 public class TestBeanItemContainerUsage extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A test for the BeanItemContainer. The table should contain three persons and show their first and last names and their age.";
     }
 

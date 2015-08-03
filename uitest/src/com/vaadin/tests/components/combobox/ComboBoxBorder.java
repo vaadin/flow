@@ -31,7 +31,7 @@ public class ComboBoxBorder extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Adding a border as a result of styleName change should not break the ComboBox";
     }
 

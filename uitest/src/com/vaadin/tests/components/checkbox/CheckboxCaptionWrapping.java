@@ -8,7 +8,7 @@ import com.vaadin.ui.VerticalLayout;
 public class CheckboxCaptionWrapping extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The checkbox caption consists of 10 words which should all be shown. There should be no extra white space between the checkbox caption and the label below it.";
     }
 

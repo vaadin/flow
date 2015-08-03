@@ -23,7 +23,7 @@ public class TooManySetColumnCollapsedCalls extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Table.setColumnCollapsed is called too many times in Table.changeVariables."
                 + " Collapsing column 'P3' should only increase the counter by one.";
     }

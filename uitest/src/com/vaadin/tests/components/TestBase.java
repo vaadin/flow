@@ -1,9 +1,9 @@
 package com.vaadin.tests.components;
 
+import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.LegacyWindow;
 import com.vaadin.ui.VerticalLayout;
 
 /**
@@ -15,12 +15,12 @@ import com.vaadin.ui.VerticalLayout;
 public abstract class TestBase extends AbstractTestCase {
 
     @Override
-    public final void init() {
-        window = new LegacyWindow(getClass().getName());
-        setMainWindow(window);
-        window.getContent().setSizeFull();
+    public final void init(VaadinRequest request) {
+        VerticalLayout vl = new VerticalLayout();
+        setContent(vl);
+        vl.setSizeFull();
 
-        Label label = new Label(getDescription(), ContentMode.HTML);
+        Label label = new Label(getTestDescription(), ContentMode.HTML);
         if (label.getValue() == null || "".equals(label.getValue())) {
             // This is only an ugly hack to be screenshot compatible to be able
             // to detect real problems when introducing IE font-size/line-height
@@ -35,27 +35,14 @@ public abstract class TestBase extends AbstractTestCase {
         }
 
         label.setWidth("100%");
-        window.addComponent(label);
-
-        layout = new VerticalLayout();
-        window.addComponent(layout);
-        ((VerticalLayout) window.getContent()).setExpandRatio(layout, 1);
+        vl.addComponent(label);
+        vl.addComponent(layout);
+        vl.setExpandRatio(layout, 1);
 
         setup();
     }
 
-    private LegacyWindow window;
-
-    @Override
-    public void setMainWindow(LegacyWindow mainWindow) {
-        if (mainWindow != window) {
-            throw new IllegalStateException(
-                    "You should not set your own main window when using TestBase. If you need to use a custom Window as the main window, use AbstractTestCase instead.");
-        }
-        super.setMainWindow(mainWindow);
-    }
-
-    private VerticalLayout layout;
+    private VerticalLayout layout = new VerticalLayout();
 
     public TestBase() {
 

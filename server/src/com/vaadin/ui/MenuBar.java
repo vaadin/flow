@@ -18,20 +18,14 @@ package com.vaadin.ui;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Stack;
 
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.parser.Tag;
 
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.server.Resource;
-import com.vaadin.shared.ui.menubar.MenuBarConstants;
 import com.vaadin.shared.ui.menubar.MenuBarState;
 import com.vaadin.ui.Component.Focusable;
 import com.vaadin.ui.declarative.DesignAttributeHandler;
@@ -45,8 +39,7 @@ import com.vaadin.ui.declarative.DesignContext;
  * </p>
  */
 @SuppressWarnings("serial")
-public class MenuBar extends AbstractComponent implements LegacyComponent,
-        Focusable {
+public class MenuBar extends AbstractComponent implements Focusable {
 
     // Items of the top-level menu
     private final List<MenuItem> menuItems;
@@ -69,138 +62,6 @@ public class MenuBar extends AbstractComponent implements LegacyComponent,
     protected MenuBarState getState(boolean markAsDirty) {
         return (MenuBarState) super.getState(markAsDirty);
     }
-
-    /** Paint (serialise) the component for the client. */
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        target.addAttribute(MenuBarConstants.OPEN_ROOT_MENU_ON_HOWER,
-                openRootOnHover);
-
-        if (isHtmlContentAllowed()) {
-            target.addAttribute(MenuBarConstants.HTML_CONTENT_ALLOWED, true);
-        }
-
-        target.startTag("options");
-
-        if (getWidth() > -1) {
-            target.startTag("moreItem");
-            target.addAttribute("text", moreItem.getText());
-            if (moreItem.getIcon() != null) {
-                target.addAttribute("icon", moreItem.getIcon());
-            }
-            target.endTag("moreItem");
-        }
-
-        target.endTag("options");
-        target.startTag("items");
-
-        // This generates the tree from the contents of the menu
-        for (MenuItem item : menuItems) {
-            paintItem(target, item);
-        }
-
-        target.endTag("items");
-    }
-
-    private void paintItem(PaintTarget target, MenuItem item)
-            throws PaintException {
-        if (!item.isVisible()) {
-            return;
-        }
-
-        target.startTag("item");
-
-        target.addAttribute("id", item.getId());
-
-        if (item.getStyleName() != null) {
-            target.addAttribute(MenuBarConstants.ATTRIBUTE_ITEM_STYLE,
-                    item.getStyleName());
-        }
-
-        if (item.isSeparator()) {
-            target.addAttribute("separator", true);
-        } else {
-            target.addAttribute("text", item.getText());
-
-            Command command = item.getCommand();
-            if (command != null) {
-                target.addAttribute("command", true);
-            }
-
-            Resource icon = item.getIcon();
-            if (icon != null) {
-                target.addAttribute(MenuBarConstants.ATTRIBUTE_ITEM_ICON, icon);
-            }
-
-            if (!item.isEnabled()) {
-                target.addAttribute(MenuBarConstants.ATTRIBUTE_ITEM_DISABLED,
-                        true);
-            }
-
-            String description = item.getDescription();
-            if (description != null && description.length() > 0) {
-                target.addAttribute(
-                        MenuBarConstants.ATTRIBUTE_ITEM_DESCRIPTION,
-                        description);
-            }
-            if (item.isCheckable()) {
-                // if the "checked" attribute is present (either true or false),
-                // the item is checkable
-                target.addAttribute(MenuBarConstants.ATTRIBUTE_CHECKED,
-                        item.isChecked());
-            }
-            if (item.hasChildren()) {
-                for (MenuItem child : item.getChildren()) {
-                    paintItem(target, child);
-                }
-            }
-
-        }
-
-        target.endTag("item");
-    }
-
-    /** Deserialize changes received from client. */
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        Stack<MenuItem> items = new Stack<MenuItem>();
-        boolean found = false;
-
-        if (variables.containsKey("clickedId")) {
-
-            Integer clickedId = (Integer) variables.get("clickedId");
-            Iterator<MenuItem> itr = getItems().iterator();
-            while (itr.hasNext()) {
-                items.push(itr.next());
-            }
-
-            MenuItem tmpItem = null;
-
-            // Go through all the items in the menu
-            while (!found && !items.empty()) {
-                tmpItem = items.pop();
-                found = (clickedId.intValue() == tmpItem.getId());
-
-                if (tmpItem.hasChildren()) {
-                    itr = tmpItem.getChildren().iterator();
-                    while (itr.hasNext()) {
-                        items.push(itr.next());
-                    }
-                }
-
-            }// while
-
-            // If we got the clicked item, launch the command.
-            if (found && tmpItem.isEnabled()) {
-                if (tmpItem.isCheckable()) {
-                    tmpItem.setChecked(!tmpItem.isChecked());
-                }
-                if (null != tmpItem.getCommand()) {
-                    tmpItem.getCommand().menuSelected(tmpItem);
-                }
-            }
-        }// if
-    }// changeVariables
 
     /**
      * Constructs an empty, horizontal menu

@@ -76,7 +76,7 @@ public class DynamicallyModified extends TestBase implements
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Collaps 'Customer Project 1' will cause the first child if it to be removed. Expanding 'Custom Project 2' will cause a new child to be added. These events should be rendered correctly.";
     }
 

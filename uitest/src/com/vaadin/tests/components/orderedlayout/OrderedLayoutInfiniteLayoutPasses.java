@@ -1,7 +1,5 @@
 package com.vaadin.tests.components.orderedlayout;
 
-import com.vaadin.server.Page;
-import com.vaadin.server.Page.Styles;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -21,8 +19,8 @@ public class OrderedLayoutInfiniteLayoutPasses extends UI {
         layout.addComponent(createOpenWindowButton());
         setContent(layout);
 
-        Styles styles = Page.getCurrent().getStyles();
-        styles.add(".my-separator {background-color: lightgray; min-height:2px;max-height:2px} ");
+        // Styles styles = Page.getCurrent().getStyles();
+        // styles.add(".my-separator {background-color: lightgray; min-height:2px;max-height:2px} ");
     }
 
     private Button createOpenWindowButton() {

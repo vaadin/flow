@@ -10,7 +10,7 @@ import com.vaadin.ui.TextField;
 public class TabSheetIcons extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests rendering of a Tabsheet with fixed/dynamic width when the TabSheet contains icons";
     }
 

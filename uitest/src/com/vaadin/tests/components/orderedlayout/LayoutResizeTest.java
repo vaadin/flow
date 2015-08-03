@@ -131,7 +131,7 @@ public class LayoutResizeTest extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         // TODO Auto-generated method stub
         return null;
     }

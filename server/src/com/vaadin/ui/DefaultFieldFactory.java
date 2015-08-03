@@ -101,11 +101,6 @@ public class DefaultFieldFactory implements FormFieldFactory, TableFieldFactory 
             return null;
         }
 
-        // Item field
-        if (Item.class.isAssignableFrom(type)) {
-            return new Form();
-        }
-
         // Date field
         if (Date.class.isAssignableFrom(type)) {
             final DateField df = new DateField();

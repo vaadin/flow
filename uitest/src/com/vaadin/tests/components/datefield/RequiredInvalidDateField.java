@@ -76,7 +76,7 @@ public class RequiredInvalidDateField extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Error indicator should be shown for a DateField with an "
                 + "invalid value, also when the field is required";
     }

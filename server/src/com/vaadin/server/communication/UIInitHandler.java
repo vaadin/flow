@@ -24,7 +24,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.annotations.PreserveOnRefresh;
-import com.vaadin.server.LegacyApplicationUIProvider;
 import com.vaadin.server.SynchronizedRequestHandler;
 import com.vaadin.server.UIClassSelectionEvent;
 import com.vaadin.server.UICreateEvent;
@@ -133,18 +132,6 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
         UIProvider provider = null;
         Class<? extends UI> uiClass = null;
         for (UIProvider p : uiProviders) {
-            // Check for existing LegacyWindow
-            if (p instanceof LegacyApplicationUIProvider) {
-                LegacyApplicationUIProvider legacyProvider = (LegacyApplicationUIProvider) p;
-
-                UI existingUi = legacyProvider
-                        .getExistingUI(classSelectionEvent);
-                if (existingUi != null) {
-                    reinitUI(existingUi, request);
-                    return existingUi;
-                }
-            }
-
             uiClass = p.getUIClass(classSelectionEvent);
             if (uiClass != null) {
                 provider = p;

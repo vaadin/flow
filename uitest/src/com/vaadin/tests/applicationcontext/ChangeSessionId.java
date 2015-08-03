@@ -1,33 +1,29 @@
 package com.vaadin.tests.applicationcontext;
 
+import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
-import com.vaadin.tests.components.AbstractTestCase;
+import com.vaadin.tests.components.AbstractTestUIWithLog;
 import com.vaadin.tests.util.Log;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.LegacyWindow;
 
-public class ChangeSessionId extends AbstractTestCase {
+public class ChangeSessionId extends AbstractTestUIWithLog {
 
     private Log log = new Log(5);
     Button loginButton = new Button("Change session");
     boolean requestSessionSwitch = false;
 
     @Override
-    public void init() {
-        LegacyWindow mainWindow = new LegacyWindow("Sestest Application");
-        mainWindow.addComponent(log);
-        mainWindow.addComponent(loginButton);
-        mainWindow.addComponent(new Button("Show session id",
-                new Button.ClickListener() {
+    public void setup(VaadinRequest res) {
+        addComponent(loginButton);
+        addComponent(new Button("Show session id", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        logSessionId();
-                    }
-                }));
-        setMainWindow(mainWindow);
+            @Override
+            public void buttonClick(ClickEvent event) {
+                logSessionId();
+            }
+        }));
 
         loginButton.addClickListener(new ClickListener() {
             @Override
@@ -54,11 +50,11 @@ public class ChangeSessionId extends AbstractTestCase {
     }
 
     protected String getSessionId() {
-        return getContext().getSession().getId();
+        return getSession().getSession().getId();
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests that the session id can be changed to prevent session fixation attacks";
     }
 

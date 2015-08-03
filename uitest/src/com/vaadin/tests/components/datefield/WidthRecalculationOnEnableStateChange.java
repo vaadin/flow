@@ -35,7 +35,7 @@ public class WidthRecalculationOnEnableStateChange extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Setting the disabled state doesn't recalculate the input element width. Setting the read-only state instead recalculates the width. In both cases, the popup button is hidden using CSS.<br><br>The DateField is also given a style name 'test', but that style isn't applied on the calendar popup element.";
     }
 

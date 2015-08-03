@@ -71,7 +71,7 @@ public class OrderedLayoutComponentOrdering extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The order should be 1,3,4,2";
     }
 

@@ -16,13 +16,9 @@
 
 package com.vaadin.ui;
 
-import java.util.Map;
-
 import org.jsoup.nodes.Element;
 
 import com.vaadin.data.Property;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.ui.declarative.DesignContext;
 
 /**
@@ -32,8 +28,7 @@ import com.vaadin.ui.declarative.DesignContext;
  * {@link RichTextArea} may produce unexpected results as formatting is counted
  * into length of field.
  */
-public class RichTextArea extends AbstractField<String> implements
-        LegacyComponent {
+public class RichTextArea extends AbstractField<String> {
 
     /**
      * Null representation.
@@ -111,26 +106,6 @@ public class RichTextArea extends AbstractField<String> implements
     }
 
     @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        if (selectAll) {
-            target.addAttribute("selectAll", true);
-            selectAll = false;
-        }
-
-        // Adds the content as variable
-        String value = getValue();
-        if (value == null) {
-            value = getNullRepresentation();
-        }
-        if (value == null) {
-            throw new IllegalStateException(
-                    "Null values are not allowed if the null-representation is null");
-        }
-        target.addVariable(this, "text", value);
-
-    }
-
-    @Override
     public void setReadOnly(boolean readOnly) {
         super.setReadOnly(readOnly);
         // IE6 cannot support multi-classname selectors properly
@@ -160,36 +135,6 @@ public class RichTextArea extends AbstractField<String> implements
         selectAll = true;
         focus();
         markAsDirty();
-    }
-
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        // Sets the text
-        if (variables.containsKey("text") && !isReadOnly()) {
-
-            // Only do the setting if the string representation of the value
-            // has been updated
-            String newValue = (String) variables.get("text");
-
-            final String oldValue = getValue();
-            if (newValue != null
-                    && (oldValue == null || isNullSettingAllowed())
-                    && newValue.equals(getNullRepresentation())) {
-                newValue = null;
-            }
-            if (newValue != oldValue
-                    && (newValue == null || !newValue.equals(oldValue))) {
-                boolean wasModified = isModified();
-                setValue(newValue, true);
-
-                // If the modified status changes,
-                // repaint is needed after all.
-                if (wasModified != isModified()) {
-                    markAsDirty();
-                }
-            }
-        }
-
     }
 
     @Override

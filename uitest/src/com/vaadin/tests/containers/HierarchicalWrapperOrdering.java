@@ -117,7 +117,7 @@ public class HierarchicalWrapperOrdering extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Items should be in same order as in wrapped container after sorting.";
     }
 

@@ -139,7 +139,7 @@ public class TableReduceContainerSize extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Table throws NegativeArraySizeException if container size is reduced to less than current scroll position";
     }
 

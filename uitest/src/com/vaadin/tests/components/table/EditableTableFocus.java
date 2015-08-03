@@ -19,7 +19,7 @@ public class EditableTableFocus extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "<b>IE-Problem: TextFields in table lose their focus, no input possible</b><p>"
                 + "Try inputs in the table's textfields in the freshly started programm. For the moment all works fine.<p>"
                 + "Then scroll the table down one page or more.<br>"

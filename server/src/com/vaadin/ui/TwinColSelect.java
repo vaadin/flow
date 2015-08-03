@@ -19,9 +19,6 @@ package com.vaadin.ui;
 import java.util.Collection;
 
 import com.vaadin.data.Container;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
-import com.vaadin.shared.ui.twincolselect.TwinColSelectConstants;
 
 /**
  * Multiselect component with two lists: left side for available items and right
@@ -136,33 +133,6 @@ public class TwinColSelect extends AbstractSelect {
     public TwinColSelect(String caption, Collection<?> options) {
         super(caption, options);
         setMultiSelect(true);
-    }
-
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        target.addAttribute("type", "twincol");
-        // Adds the number of columns
-        if (columns != 0) {
-            target.addAttribute("cols", columns);
-        }
-        // Adds the number of rows
-        if (rows != 0) {
-            target.addAttribute("rows", rows);
-        }
-
-        // Right and left column captions and/or icons (if set)
-        String lc = getLeftColumnCaption();
-        String rc = getRightColumnCaption();
-        if (lc != null) {
-            target.addAttribute(TwinColSelectConstants.ATTRIBUTE_LEFT_CAPTION,
-                    lc);
-        }
-        if (rc != null) {
-            target.addAttribute(TwinColSelectConstants.ATTRIBUTE_RIGHT_CAPTION,
-                    rc);
-        }
-
-        super.paintContent(target);
     }
 
     /**

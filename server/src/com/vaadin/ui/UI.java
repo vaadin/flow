@@ -30,9 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.annotations.PreserveOnRefresh;
-import com.vaadin.event.Action;
-import com.vaadin.event.Action.Handler;
-import com.vaadin.event.ActionManager;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
 import com.vaadin.event.UIEvents.PollEvent;
@@ -45,8 +42,6 @@ import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.ErrorHandlingRunnable;
 import com.vaadin.server.LocaleService;
 import com.vaadin.server.Page;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.server.UIProvider;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
@@ -61,7 +56,6 @@ import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.DebugWindowServerRpc;
 import com.vaadin.shared.ui.ui.ScrollClientRpc;
 import com.vaadin.shared.ui.ui.UIClientRpc;
-import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
 import com.vaadin.ui.Component.Focusable;
@@ -101,8 +95,7 @@ import com.vaadin.util.CurrentInstance;
  * @since 7.0
  */
 public abstract class UI extends AbstractSingleComponentContainer implements
-        Action.Container, Action.Notifier, PollNotifier, LegacyComponent,
-        Focusable {
+        PollNotifier, Focusable {
 
     /**
      * The application to which this UI belongs
@@ -128,12 +121,6 @@ public abstract class UI extends AbstractSingleComponentContainer implements
      * @see VaadinSession#getNextUIid()
      */
     private int uiId = -1;
-
-    /**
-     * Keeps track of the Actions added to this component, and manages the
-     * painting and handling as well.
-     */
-    protected ActionManager actionManager;
 
     /** Identifies the click event */
     private ConnectorTracker connectorTracker = new ConnectorTracker(this);
@@ -316,34 +303,6 @@ public abstract class UI extends AbstractSingleComponentContainer implements
         return session;
     }
 
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        page.paintContent(target);
-
-        if (scrollIntoView != null) {
-            target.addAttribute("scrollTo", scrollIntoView);
-            scrollIntoView = null;
-        }
-
-        if (pendingFocus != null) {
-            // ensure focused component is still attached to this main window
-            if (equals(pendingFocus.getUI())
-                    || (pendingFocus.getUI() != null && equals(pendingFocus
-                            .getUI().getParent()))) {
-                target.addAttribute("focused", pendingFocus);
-            }
-            pendingFocus = null;
-        }
-
-        if (actionManager != null) {
-            actionManager.paintActions(null, target);
-        }
-
-        if (isResizeLazy()) {
-            target.addAttribute(UIConstants.RESIZE_LAZY, true);
-        }
-    }
-
     /**
      * Fire a click event to all click listeners.
      * 
@@ -354,26 +313,6 @@ public abstract class UI extends AbstractSingleComponentContainer implements
         MouseEventDetails mouseDetails = MouseEventDetails
                 .deSerialize((String) parameters.get("mouseDetails"));
         fireEvent(new ClickEvent(this, mouseDetails));
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        if (variables.containsKey(EventId.CLICK_EVENT_IDENTIFIER)) {
-            fireClick((Map<String, Object>) variables
-                    .get(EventId.CLICK_EVENT_IDENTIFIER));
-        }
-
-        // Actions
-        if (actionManager != null) {
-            actionManager.handleActions(variables, this);
-        }
-
-        if (variables.containsKey(UIConstants.LOCATION_VARIABLE)) {
-            String location = (String) variables
-                    .get(UIConstants.LOCATION_VARIABLE);
-            getPage().updateLocation(location, true);
-        }
     }
 
     /*
@@ -805,40 +744,6 @@ public abstract class UI extends AbstractSingleComponentContainer implements
 
     public int getScrollLeft() {
         return scrollLeft;
-    }
-
-    @Override
-    protected ActionManager getActionManager() {
-        if (actionManager == null) {
-            actionManager = new ActionManager(this);
-        }
-        return actionManager;
-    }
-
-    @Override
-    public <T extends Action & com.vaadin.event.Action.Listener> void addAction(
-            T action) {
-        getActionManager().addAction(action);
-    }
-
-    @Override
-    public <T extends Action & com.vaadin.event.Action.Listener> void removeAction(
-            T action) {
-        if (actionManager != null) {
-            actionManager.removeAction(action);
-        }
-    }
-
-    @Override
-    public void addActionHandler(Handler actionHandler) {
-        getActionManager().addActionHandler(actionHandler);
-    }
-
-    @Override
-    public void removeActionHandler(Handler actionHandler) {
-        if (actionManager != null) {
-            actionManager.removeActionHandler(actionHandler);
-        }
     }
 
     /**

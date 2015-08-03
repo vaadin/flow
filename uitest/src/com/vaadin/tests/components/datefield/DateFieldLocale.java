@@ -36,7 +36,7 @@ public class DateFieldLocale extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Click change locale to switch between Finnish and Chinese locale for the DateField. The date string should be updated in addition to the caption.";
     }
 

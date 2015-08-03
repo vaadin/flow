@@ -32,7 +32,7 @@ public class ComboboxPrimaryStyleNames extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Combobox should work with primary stylenames both initially and dynamically";
     }
 

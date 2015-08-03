@@ -8,7 +8,7 @@ import com.vaadin.ui.PopupView;
 public class PopupViewLabelResized extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "When clicking on the popup view on the left, its size should not change.";
     }
 

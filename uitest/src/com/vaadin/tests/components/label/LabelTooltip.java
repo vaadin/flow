@@ -39,7 +39,7 @@ public class LabelTooltip extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The lower label should have an error indicator. The upper should not.";
     }
 

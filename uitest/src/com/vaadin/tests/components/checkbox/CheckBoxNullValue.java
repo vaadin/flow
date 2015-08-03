@@ -53,7 +53,7 @@ public class CheckBoxNullValue extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "CheckBox should support null values.";
     }
 

@@ -37,7 +37,6 @@ public class CalendarState extends AbstractComponentState {
     public String now;
     public List<CalendarState.Day> days;
     public List<CalendarState.Event> events;
-    public List<CalendarState.Action> actions;
     public boolean eventCaptionAsHtml;
 
     public static class Day implements java.io.Serializable {

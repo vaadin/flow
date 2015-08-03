@@ -16,7 +16,7 @@ public class FlashIsVisible extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Flash plugin should load and be visible on all browsers";
     }
 

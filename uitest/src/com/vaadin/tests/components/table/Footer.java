@@ -110,7 +110,7 @@ public class Footer extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Table with footer";
     }
 

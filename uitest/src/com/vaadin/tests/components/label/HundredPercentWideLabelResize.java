@@ -8,7 +8,7 @@ import com.vaadin.ui.Label;
 public class HundredPercentWideLabelResize extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "100% wide label re-wrap should cause re-layout; forceLayout fixes this.";
     }
 

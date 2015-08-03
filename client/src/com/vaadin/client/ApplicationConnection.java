@@ -16,9 +16,7 @@
 
 package com.vaadin.client;
 
-import java.awt.LayoutManager;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import com.google.gwt.aria.client.LiveValue;
@@ -39,9 +37,9 @@ import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
+import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.CommunicationProblemHandler;
@@ -63,7 +61,6 @@ import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
-import com.vaadin.shared.communication.LegacyChangeVariablesInvocation;
 import com.vaadin.shared.util.SharedUtil;
 
 /**
@@ -845,304 +842,12 @@ public class ApplicationConnection implements HasHandlers {
         }
     }
 
-    private void addVariableToQueue(String connectorId, String variableName,
-            Object value, boolean immediate) {
-        boolean lastOnly = !immediate;
-        // note that type is now deduced from value
-        serverRpcQueue.add(new LegacyChangeVariablesInvocation(connectorId,
-                variableName, value), lastOnly);
-        if (immediate) {
-            serverRpcQueue.flush();
-        }
-    }
-
     /**
      * @deprecated as of 7.6, use {@link ServerRpcQueue#flush()}
      */
     @Deprecated
     public void sendPendingVariableChanges() {
         serverRpcQueue.flush();
-    }
-
-    /**
-     * Sends a new value for the given paintables given variable to the server.
-     * <p>
-     * The update is actually queued to be sent at a suitable time. If immediate
-     * is true, the update is sent as soon as possible. If immediate is false,
-     * the update will be sent along with the next immediate update.
-     * </p>
-     * 
-     * @param paintableId
-     *            the id of the paintable that owns the variable
-     * @param variableName
-     *            the name of the variable
-     * @param newValue
-     *            the new value to be sent
-     * @param immediate
-     *            true if the update is to be sent as soon as possible
-     */
-    public void updateVariable(String paintableId, String variableName,
-            ServerConnector newValue, boolean immediate) {
-        addVariableToQueue(paintableId, variableName, newValue, immediate);
-    }
-
-    /**
-     * Sends a new value for the given paintables given variable to the server.
-     * <p>
-     * The update is actually queued to be sent at a suitable time. If immediate
-     * is true, the update is sent as soon as possible. If immediate is false,
-     * the update will be sent along with the next immediate update.
-     * </p>
-     * 
-     * @param paintableId
-     *            the id of the paintable that owns the variable
-     * @param variableName
-     *            the name of the variable
-     * @param newValue
-     *            the new value to be sent
-     * @param immediate
-     *            true if the update is to be sent as soon as possible
-     */
-
-    public void updateVariable(String paintableId, String variableName,
-            String newValue, boolean immediate) {
-        addVariableToQueue(paintableId, variableName, newValue, immediate);
-    }
-
-    /**
-     * Sends a new value for the given paintables given variable to the server.
-     * <p>
-     * The update is actually queued to be sent at a suitable time. If immediate
-     * is true, the update is sent as soon as possible. If immediate is false,
-     * the update will be sent along with the next immediate update.
-     * </p>
-     * 
-     * @param paintableId
-     *            the id of the paintable that owns the variable
-     * @param variableName
-     *            the name of the variable
-     * @param newValue
-     *            the new value to be sent
-     * @param immediate
-     *            true if the update is to be sent as soon as possible
-     */
-
-    public void updateVariable(String paintableId, String variableName,
-            int newValue, boolean immediate) {
-        addVariableToQueue(paintableId, variableName, newValue, immediate);
-    }
-
-    /**
-     * Sends a new value for the given paintables given variable to the server.
-     * <p>
-     * The update is actually queued to be sent at a suitable time. If immediate
-     * is true, the update is sent as soon as possible. If immediate is false,
-     * the update will be sent along with the next immediate update.
-     * </p>
-     * 
-     * @param paintableId
-     *            the id of the paintable that owns the variable
-     * @param variableName
-     *            the name of the variable
-     * @param newValue
-     *            the new value to be sent
-     * @param immediate
-     *            true if the update is to be sent as soon as possible
-     */
-
-    public void updateVariable(String paintableId, String variableName,
-            long newValue, boolean immediate) {
-        addVariableToQueue(paintableId, variableName, newValue, immediate);
-    }
-
-    /**
-     * Sends a new value for the given paintables given variable to the server.
-     * <p>
-     * The update is actually queued to be sent at a suitable time. If immediate
-     * is true, the update is sent as soon as possible. If immediate is false,
-     * the update will be sent along with the next immediate update.
-     * </p>
-     * 
-     * @param paintableId
-     *            the id of the paintable that owns the variable
-     * @param variableName
-     *            the name of the variable
-     * @param newValue
-     *            the new value to be sent
-     * @param immediate
-     *            true if the update is to be sent as soon as possible
-     */
-
-    public void updateVariable(String paintableId, String variableName,
-            float newValue, boolean immediate) {
-        addVariableToQueue(paintableId, variableName, newValue, immediate);
-    }
-
-    /**
-     * Sends a new value for the given paintables given variable to the server.
-     * <p>
-     * The update is actually queued to be sent at a suitable time. If immediate
-     * is true, the update is sent as soon as possible. If immediate is false,
-     * the update will be sent along with the next immediate update.
-     * </p>
-     * 
-     * @param paintableId
-     *            the id of the paintable that owns the variable
-     * @param variableName
-     *            the name of the variable
-     * @param newValue
-     *            the new value to be sent
-     * @param immediate
-     *            true if the update is to be sent as soon as possible
-     */
-
-    public void updateVariable(String paintableId, String variableName,
-            double newValue, boolean immediate) {
-        addVariableToQueue(paintableId, variableName, newValue, immediate);
-    }
-
-    /**
-     * Sends a new value for the given paintables given variable to the server.
-     * <p>
-     * The update is actually queued to be sent at a suitable time. If immediate
-     * is true, the update is sent as soon as possible. If immediate is false,
-     * the update will be sent along with the next immediate update.
-     * </p>
-     * 
-     * @param paintableId
-     *            the id of the paintable that owns the variable
-     * @param variableName
-     *            the name of the variable
-     * @param newValue
-     *            the new value to be sent
-     * @param immediate
-     *            true if the update is to be sent as soon as possible
-     */
-
-    public void updateVariable(String paintableId, String variableName,
-            boolean newValue, boolean immediate) {
-        addVariableToQueue(paintableId, variableName, newValue, immediate);
-    }
-
-    /**
-     * Sends a new value for the given paintables given variable to the server.
-     * <p>
-     * The update is actually queued to be sent at a suitable time. If immediate
-     * is true, the update is sent as soon as possible. If immediate is false,
-     * the update will be sent along with the next immediate update.
-     * </p>
-     * 
-     * @param paintableId
-     *            the id of the paintable that owns the variable
-     * @param variableName
-     *            the name of the variable
-     * @param map
-     *            the new values to be sent
-     * @param immediate
-     *            true if the update is to be sent as soon as possible
-     */
-    public void updateVariable(String paintableId, String variableName,
-            Map<String, Object> map, boolean immediate) {
-        addVariableToQueue(paintableId, variableName, map, immediate);
-    }
-
-    /**
-     * Sends a new value for the given paintables given variable to the server.
-     * <p>
-     * The update is actually queued to be sent at a suitable time. If immediate
-     * is true, the update is sent as soon as possible. If immediate is false,
-     * the update will be sent along with the next immediate update.
-     * <p>
-     * A null array is sent as an empty array.
-     * 
-     * @param paintableId
-     *            the id of the paintable that owns the variable
-     * @param variableName
-     *            the name of the variable
-     * @param values
-     *            the new value to be sent
-     * @param immediate
-     *            true if the update is to be sent as soon as possible
-     */
-    public void updateVariable(String paintableId, String variableName,
-            String[] values, boolean immediate) {
-        addVariableToQueue(paintableId, variableName, values, immediate);
-    }
-
-    /**
-     * Sends a new value for the given paintables given variable to the server.
-     * <p>
-     * The update is actually queued to be sent at a suitable time. If immediate
-     * is true, the update is sent as soon as possible. If immediate is false,
-     * the update will be sent along with the next immediate update.
-     * <p>
-     * A null array is sent as an empty array.
-     * 
-     * @param paintableId
-     *            the id of the paintable that owns the variable
-     * @param variableName
-     *            the name of the variable
-     * @param values
-     *            the new value to be sent
-     * @param immediate
-     *            true if the update is to be sent as soon as possible
-     */
-    public void updateVariable(String paintableId, String variableName,
-            Object[] values, boolean immediate) {
-        addVariableToQueue(paintableId, variableName, values, immediate);
-    }
-
-    /**
-     * Does absolutely nothing. Replaced by {@link LayoutManager}.
-     * 
-     * @param container
-     * @deprecated As of 7.0, serves no purpose
-     */
-    @Deprecated
-    public void runDescendentsLayout(HasWidgets container) {
-    }
-
-    /**
-     * This will cause re-layouting of all components. Mainly used for
-     * development. Published to JavaScript.
-     */
-    public void forceLayout() {
-        Duration duration = new Duration();
-
-        getLogger().info(
-                "noop forceLayout in " + duration.elapsedMillis() + " ms");
-    }
-
-    /**
-     * Returns false
-     * 
-     * @param paintable
-     * @return false, always
-     * @deprecated As of 7.0, serves no purpose
-     */
-    @Deprecated
-    private boolean handleComponentRelativeSize(ComponentConnector paintable) {
-        return false;
-    }
-
-    /**
-     * Returns false
-     * 
-     * @param paintable
-     * @return false, always
-     * @deprecated As of 7.0, serves no purpose
-     */
-    @Deprecated
-    public boolean handleComponentRelativeSize(Widget widget) {
-        return handleComponentRelativeSize(connectorMap.getConnector(widget));
-
-    }
-
-    @Deprecated
-    public ComponentConnector getPaintable(UIDL uidl) {
-        // Non-component connectors shouldn't be painted from legacy connectors
-        return (ComponentConnector) getConnector(uidl.getId(),
-                Integer.parseInt(uidl.getTag()));
     }
 
     /**

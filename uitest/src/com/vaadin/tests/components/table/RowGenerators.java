@@ -48,7 +48,7 @@ public class RowGenerators extends TestBase implements RowGenerator {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Row generators should replace every fifth row in the table";
     }
 

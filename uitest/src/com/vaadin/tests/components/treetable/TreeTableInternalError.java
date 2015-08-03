@@ -42,7 +42,7 @@ public class TreeTableInternalError extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Internal Error when scrolling down enough that more rows are loaded (cache updated), then scrolling down just a few rows and expanding rows";
     }
 

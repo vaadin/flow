@@ -59,7 +59,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.google.gwt.thirdparty.guava.common.base.Joiner;
 import com.thoughtworks.selenium.webdriven.WebDriverBackedSelenium;
-import com.vaadin.server.LegacyApplication;
 import com.vaadin.server.UIProvider;
 import com.vaadin.testbench.TestBenchDriverProxy;
 import com.vaadin.testbench.TestBenchElement;
@@ -267,10 +266,6 @@ public abstract class AbstractTB3Test extends ParallelTest {
 
         if (isDebug()) {
             parameters.add("debug");
-        }
-
-        if (LegacyApplication.class.isAssignableFrom(uiClass)) {
-            parameters.add("restartApplication");
         }
 
         if (parameters.size() > 0) {
@@ -656,9 +651,6 @@ public abstract class AbstractTB3Test extends ParallelTest {
         if (UIProvider.class.isAssignableFrom(cls)) {
             return true;
         }
-        if (LegacyApplication.class.isAssignableFrom(cls)) {
-            return true;
-        }
 
         return false;
     }
@@ -729,8 +721,7 @@ public abstract class AbstractTB3Test extends ParallelTest {
         }
 
         if (UI.class.isAssignableFrom(uiClass)
-                || UIProvider.class.isAssignableFrom(uiClass)
-                || LegacyApplication.class.isAssignableFrom(uiClass)) {
+                || UIProvider.class.isAssignableFrom(uiClass)) {
             return runPath + "/" + uiClass.getCanonicalName();
         } else {
             throw new IllegalArgumentException(

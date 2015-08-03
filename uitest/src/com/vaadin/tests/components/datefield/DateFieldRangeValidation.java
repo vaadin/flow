@@ -131,7 +131,7 @@ public class DateFieldRangeValidation extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests the DateField range validator. The first field sets the minimum date, the second the maximum. Checkboxes control if the selected date is ok or not.";
     }
 

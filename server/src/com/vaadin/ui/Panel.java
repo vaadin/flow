@@ -17,17 +17,11 @@
 package com.vaadin.ui;
 
 import java.util.Collection;
-import java.util.Map;
 
 import org.jsoup.nodes.Element;
 
-import com.vaadin.event.Action;
-import com.vaadin.event.Action.Handler;
-import com.vaadin.event.ActionManager;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.server.Scrollable;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
@@ -44,13 +38,7 @@ import com.vaadin.ui.declarative.DesignContext;
  */
 @SuppressWarnings("serial")
 public class Panel extends AbstractSingleComponentContainer implements
-        Scrollable, Action.Notifier, Focusable, LegacyComponent {
-
-    /**
-     * Keeps track of the Actions added to this component, and manages the
-     * painting and handling as well.
-     */
-    protected ActionManager actionManager;
+        Scrollable, Focusable {
 
     private PanelServerRpc rpc = new PanelServerRpc() {
         @Override
@@ -116,56 +104,6 @@ public class Panel extends AbstractSingleComponentContainer implements
         super.setCaption(caption);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.server.LegacyComponent#paintContent(com.vaadin.server
-     * .PaintTarget)
-     */
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        if (actionManager != null) {
-            actionManager.paintActions(null, target);
-        }
-    }
-
-    /**
-     * Called when one or more variables handled by the implementing class are
-     * changed.
-     * 
-     * @see com.vaadin.server.VariableOwner#changeVariables(Object, Map)
-     */
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        // Get new size
-        final Integer newWidth = (Integer) variables.get("width");
-        final Integer newHeight = (Integer) variables.get("height");
-        if (newWidth != null && newWidth.intValue() != getWidth()) {
-            setWidth(newWidth.intValue(), UNITS_PIXELS);
-        }
-        if (newHeight != null && newHeight.intValue() != getHeight()) {
-            setHeight(newHeight.intValue(), UNITS_PIXELS);
-        }
-
-        // Scrolling
-        final Integer newScrollX = (Integer) variables.get("scrollLeft");
-        final Integer newScrollY = (Integer) variables.get("scrollTop");
-        if (newScrollX != null && newScrollX.intValue() != getScrollLeft()) {
-            // set internally, not to fire request repaint
-            getState().scrollLeft = newScrollX.intValue();
-        }
-        if (newScrollY != null && newScrollY.intValue() != getScrollTop()) {
-            // set internally, not to fire request repaint
-            getState().scrollTop = newScrollY.intValue();
-        }
-
-        // Actions
-        if (actionManager != null) {
-            actionManager.handleActions(variables, this);
-        }
-
-    }
-
     /* Scrolling functionality */
 
     /*
@@ -214,52 +152,6 @@ public class Panel extends AbstractSingleComponentContainer implements
                     "Scroll offset must be at least 0");
         }
         getState().scrollTop = scrollTop;
-    }
-
-    /*
-     * ACTIONS
-     */
-    @Override
-    protected ActionManager getActionManager() {
-        if (actionManager == null) {
-            actionManager = new ActionManager(this);
-        }
-        return actionManager;
-    }
-
-    @Override
-    public <T extends Action & com.vaadin.event.Action.Listener> void addAction(
-            T action) {
-        getActionManager().addAction(action);
-    }
-
-    @Override
-    public <T extends Action & com.vaadin.event.Action.Listener> void removeAction(
-            T action) {
-        if (actionManager != null) {
-            actionManager.removeAction(action);
-        }
-    }
-
-    @Override
-    public void addActionHandler(Handler actionHandler) {
-        getActionManager().addActionHandler(actionHandler);
-    }
-
-    @Override
-    public void removeActionHandler(Handler actionHandler) {
-        if (actionManager != null) {
-            actionManager.removeActionHandler(actionHandler);
-        }
-    }
-
-    /**
-     * Removes all action handlers
-     */
-    public void removeAllActionHandlers() {
-        if (actionManager != null) {
-            actionManager.removeAllActionHandlers();
-        }
     }
 
     /**

@@ -44,7 +44,7 @@ public class HorizontalRelativeChildren extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return null;
     }
 

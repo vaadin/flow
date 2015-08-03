@@ -22,7 +22,6 @@ import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.InlineDateField;
 import com.vaadin.ui.Panel;
-import com.vaadin.ui.TreeTable;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
@@ -67,13 +66,6 @@ public class ValoMiscTests extends UI {
                 new CheckBox("Far"), new Button("Abc"));
 
         p.setContent(col);
-
-        TreeTable table = new TreeTable();
-        table.setWidth("100%");
-        table.setContainerDataSource(ValoThemeUI.generateContainer(200, true));
-        Tables.configure(table, true, false, false, true, true, true, false,
-                true, false, false, false, false, false, false);
-        layout.addComponent(table);
 
     }
 

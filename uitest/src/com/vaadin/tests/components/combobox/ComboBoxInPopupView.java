@@ -14,7 +14,7 @@ public class ComboBoxInPopupView extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Testcase for ComboBox in PopupView. Make the window narrower than the popup: the focused (2) one wraps button to second row AND seems narrower than (1), the unfocused one (1) works as expected.";
     }
 

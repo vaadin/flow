@@ -27,7 +27,7 @@ public class ImageAltText extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test alternative text of image";
     }
 

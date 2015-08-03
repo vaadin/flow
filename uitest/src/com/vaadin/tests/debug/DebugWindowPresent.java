@@ -10,7 +10,7 @@ public class DebugWindowPresent extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The debug window should be present with &debug present in the url, but not othervise";
     }
 

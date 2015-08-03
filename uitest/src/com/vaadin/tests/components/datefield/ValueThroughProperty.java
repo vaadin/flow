@@ -64,7 +64,7 @@ public class ValueThroughProperty extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Setting a value through a property should update the"
                 + " client-side even if it contains an invalid value.";
     }

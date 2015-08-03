@@ -62,7 +62,7 @@ public class GridLayoutNPE extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "VGridLayout throws an NPE, causing client side to crash";
     }
 

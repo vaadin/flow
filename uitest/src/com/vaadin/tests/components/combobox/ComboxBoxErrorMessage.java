@@ -14,7 +14,7 @@ public class ComboxBoxErrorMessage extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The ComboBox should show an \"You must select something\" tooltip when the cursor is hovering it. Both when hovering the textfield and the dropdown button.";
     }
 

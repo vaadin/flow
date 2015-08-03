@@ -17,8 +17,6 @@ package com.vaadin.tests.server.component.button;
 
 import org.junit.Test;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.event.ShortcutAction.ModifierKey;
 import com.vaadin.tests.design.DeclarativeTestBase;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.NativeButton;
@@ -102,7 +100,6 @@ public class ButtonDeclarativeTest extends DeclarativeTestBase<Button> {
         Button b = new Button("");
         b.setTabIndex(3);
         b.setIconAlternateText("OK");
-        b.setClickShortcut(KeyCode.O, ModifierKey.CTRL, ModifierKey.SHIFT);
         testRead(design, b);
         testWrite(design, b);
     }

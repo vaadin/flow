@@ -50,7 +50,7 @@ public class CssLayoutSizeChangePropagation extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Upper part of view should become yellow on button click.";
     }
 

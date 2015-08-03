@@ -82,7 +82,7 @@ public class MultiSelectWithRemovedRow extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Multi select using shift should work after removing the currently selected row";
     }
 

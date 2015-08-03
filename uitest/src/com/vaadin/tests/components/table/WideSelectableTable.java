@@ -34,7 +34,7 @@ public class WideSelectableTable extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A wide table scrolls to the beginning when sorting a column at  the beginning when sorting a column at the end";
     }
 

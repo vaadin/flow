@@ -94,7 +94,7 @@ public class DateFieldUnparsableDate extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "DateFields in various configurations (according to caption). All handle unparsable dates differently";
     }
 

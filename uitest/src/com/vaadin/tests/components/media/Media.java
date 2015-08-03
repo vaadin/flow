@@ -81,7 +81,7 @@ public class Media extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Video and audio files should play using the HTML5 elements. "
                 + "(Movie is (c) copyright 2008, Blender Foundation / www.bigbuckbunny.org)";
     }

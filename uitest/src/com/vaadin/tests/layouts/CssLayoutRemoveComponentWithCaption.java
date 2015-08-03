@@ -30,7 +30,7 @@ public class CssLayoutRemoveComponentWithCaption extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Clicking on the button should remove the text field and add a new 'new field' text field";
     }
 

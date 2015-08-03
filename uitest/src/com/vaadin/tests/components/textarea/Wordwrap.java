@@ -49,7 +49,7 @@ public class Wordwrap extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "";
     }
 

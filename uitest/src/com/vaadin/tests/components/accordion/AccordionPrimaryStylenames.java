@@ -26,7 +26,7 @@ public class AccordionPrimaryStylenames extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Accordion should work with primary stylenames both initially and dynamically";
     }
 

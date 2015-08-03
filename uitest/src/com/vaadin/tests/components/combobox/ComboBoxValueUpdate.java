@@ -13,7 +13,7 @@ public class ComboBoxValueUpdate extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Testcase for ComboBox. Test especially edge values(of page changes) when selecting items with keyboard only.";
     }
 

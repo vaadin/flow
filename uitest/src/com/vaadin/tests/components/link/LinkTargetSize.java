@@ -8,7 +8,7 @@ import com.vaadin.ui.Link;
 public class LinkTargetSize extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "This link should open a small window w/o decorations";
     }
 

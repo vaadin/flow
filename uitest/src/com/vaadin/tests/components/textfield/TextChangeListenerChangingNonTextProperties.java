@@ -43,7 +43,7 @@ public class TextChangeListenerChangingNonTextProperties extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The color (style name) of field changes on each text change event. This should not disturb typing.";
     }
 

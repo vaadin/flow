@@ -9,7 +9,7 @@ import com.vaadin.ui.Embedded;
 
 public class EmbeddedAltText extends TestBase {
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "It should be possible to set an alternative text on an image or object.";
     }
 

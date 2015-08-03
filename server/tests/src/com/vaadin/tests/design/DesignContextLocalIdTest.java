@@ -28,7 +28,6 @@ import com.vaadin.ui.Accordion;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.CustomLayout;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
@@ -88,8 +87,8 @@ public class DesignContextLocalIdTest {
         DesignContext ctx = new DesignContext();
 
         ComponentContainer[] ctrs = { new AbsoluteLayout(), new CssLayout(),
-                new GridLayout(1, 1), new CustomLayout(),
-                new HorizontalLayout(), new VerticalLayout(), new Accordion(),
+                new GridLayout(1, 1), new HorizontalLayout(),
+                new VerticalLayout(), new Accordion(),
                 new HorizontalSplitPanel(), new TabSheet(),
                 new VerticalSplitPanel() };
 

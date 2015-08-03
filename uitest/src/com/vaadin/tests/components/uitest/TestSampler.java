@@ -9,14 +9,11 @@ import com.vaadin.tests.components.uitest.components.DatesCssTest;
 import com.vaadin.tests.components.uitest.components.EmbeddedCssTest;
 import com.vaadin.tests.components.uitest.components.FormsCssTest;
 import com.vaadin.tests.components.uitest.components.LabelsCssTest;
-import com.vaadin.tests.components.uitest.components.LayoutsCssTest;
 import com.vaadin.tests.components.uitest.components.NotificationsCssTest;
 import com.vaadin.tests.components.uitest.components.SelectsCssTest;
 import com.vaadin.tests.components.uitest.components.SlidersCssTest;
 import com.vaadin.tests.components.uitest.components.TabSheetsCssTest;
-import com.vaadin.tests.components.uitest.components.TablesCssTest;
 import com.vaadin.tests.components.uitest.components.TextFieldsCssTest;
-import com.vaadin.tests.components.uitest.components.TreeCssTest;
 import com.vaadin.tests.components.uitest.components.TreeTableCssTest;
 import com.vaadin.tests.components.uitest.components.UploadCssTest;
 import com.vaadin.tests.components.uitest.components.WindowsCssTest;
@@ -52,11 +49,8 @@ public class TestSampler extends TabSheet {
         createUploads();
         createForms();
 
-        createTables();
-        createTrees();
         createTreeTable();
 
-        createLayouts();
         createTabSheets();
         createAccordions();
 
@@ -94,23 +88,9 @@ public class TestSampler extends TabSheet {
         return grid;
     }
 
-    private void createLayouts() {
-        GridLayout grid = new LayoutsCssTest(this);
-        createComponentLayout("Layouts", grid);
-    }
-
     private void createTreeTable() {
         createComponentLayout("TreeTable");
         new TreeTableCssTest(this);
-    }
-
-    private void createTrees() {
-        createComponentLayout("Trees");
-        new TreeCssTest(this);
-    }
-
-    private void createTables() {
-        createComponentLayout("Tables", new TablesCssTest(this));
     }
 
     private void createForms() {

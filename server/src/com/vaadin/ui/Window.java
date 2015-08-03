@@ -19,10 +19,8 @@ package com.vaadin.ui;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -34,12 +32,6 @@ import com.vaadin.event.FieldEvents.FocusEvent;
 import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.event.FieldEvents.FocusNotifier;
 import com.vaadin.event.MouseEvents.ClickEvent;
-import com.vaadin.event.ShortcutAction;
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.event.ShortcutAction.ModifierKey;
-import com.vaadin.event.ShortcutListener;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.window.WindowMode;
@@ -75,8 +67,7 @@ import com.vaadin.util.ReflectTools;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class Window extends Panel implements FocusNotifier, BlurNotifier,
-        LegacyComponent {
+public class Window extends Panel implements FocusNotifier, BlurNotifier {
 
     private WindowServerRpc rpc = new WindowServerRpc() {
 
@@ -137,24 +128,6 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
     /*
      * (non-Javadoc)
      * 
-     * @see com.vaadin.ui.Panel#paintContent(com.vaadin.server.PaintTarget)
-     */
-
-    @Override
-    public synchronized void paintContent(PaintTarget target)
-            throws PaintException {
-        if (bringToFront != null) {
-            target.addAttribute("bringToFront", bringToFront.intValue());
-            bringToFront = null;
-        }
-
-        // Contents of the window panel is painted
-        super.paintContent(target);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see
      * com.vaadin.ui.AbstractComponent#setParent(com.vaadin.server.ClientConnector
      * )
@@ -167,69 +140,6 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
             throw new IllegalArgumentException(
                     "A Window can only be added to a UI using UI.addWindow(Window window)");
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.Panel#changeVariables(java.lang.Object, java.util.Map)
-     */
-
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-
-        // TODO Are these for top level windows or sub windows?
-        boolean sizeHasChanged = false;
-        // size is handled in super class, but resize events only in windows ->
-        // so detect if size change occurs before super.changeVariables()
-        if (variables.containsKey("height")
-                && (getHeightUnits() != Unit.PIXELS || (Integer) variables
-                        .get("height") != getHeight())) {
-            sizeHasChanged = true;
-        }
-        if (variables.containsKey("width")
-                && (getWidthUnits() != Unit.PIXELS || (Integer) variables
-                        .get("width") != getWidth())) {
-            sizeHasChanged = true;
-        }
-
-        super.changeVariables(source, variables);
-
-        // Positioning
-        final Integer positionx = (Integer) variables.get("positionx");
-        if (positionx != null) {
-            final int x = positionx.intValue();
-            // This is information from the client so it is already using the
-            // position. No need to repaint.
-            setPositionX(x < 0 ? -1 : x);
-        }
-        final Integer positiony = (Integer) variables.get("positiony");
-        if (positiony != null) {
-            final int y = positiony.intValue();
-            // This is information from the client so it is already using the
-            // position. No need to repaint.
-            setPositionY(y < 0 ? -1 : y);
-        }
-
-        if (isClosable()) {
-            // Closing
-            final Boolean close = (Boolean) variables.get("close");
-            if (close != null && close.booleanValue()) {
-                close();
-            }
-        }
-
-        // fire event if size has really changed
-        if (sizeHasChanged) {
-            fireResize();
-        }
-
-        if (variables.containsKey(FocusEvent.EVENT_ID)) {
-            fireEvent(new FocusEvent(this));
-        } else if (variables.containsKey(BlurEvent.EVENT_ID)) {
-            fireEvent(new BlurEvent(this));
-        }
-
     }
 
     /**
@@ -829,110 +739,6 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
     }
 
     /*
-     * Actions
-     */
-    protected CloseShortcut closeShortcut;
-
-    /**
-     * Makes is possible to close the window by pressing the given
-     * {@link KeyCode} and (optional) {@link ModifierKey}s.<br/>
-     * Note that this shortcut only reacts while the window has focus, closing
-     * itself - if you want to close a window from a UI, use
-     * {@link UI#addAction(com.vaadin.event.Action)} of the UI instead.
-     * 
-     * @param keyCode
-     *            the keycode for invoking the shortcut
-     * @param modifiers
-     *            the (optional) modifiers for invoking the shortcut, null for
-     *            none
-     */
-    public void setCloseShortcut(int keyCode, int... modifiers) {
-        if (closeShortcut != null) {
-            removeAction(closeShortcut);
-        }
-        closeShortcut = new CloseShortcut(this, keyCode, modifiers);
-        addAction(closeShortcut);
-    }
-
-    /**
-     * Removes the keyboard shortcut previously set with
-     * {@link #setCloseShortcut(int, int...)}.
-     */
-    public void removeCloseShortcut() {
-        if (closeShortcut != null) {
-            removeAction(closeShortcut);
-            closeShortcut = null;
-        }
-    }
-
-    /**
-     * A {@link ShortcutListener} specifically made to define a keyboard
-     * shortcut that closes the window.
-     * 
-     * <pre>
-     * <code>
-     *  // within the window using helper
-     *  window.setCloseShortcut(KeyCode.ESCAPE, null);
-     * 
-     *  // or globally
-     *  getUI().addAction(new Window.CloseShortcut(window, KeyCode.ESCAPE));
-     * </code>
-     * </pre>
-     * 
-     */
-    public static class CloseShortcut extends ShortcutListener {
-        protected Window window;
-
-        /**
-         * Creates a keyboard shortcut for closing the given window using the
-         * shorthand notation defined in {@link ShortcutAction}.
-         * 
-         * @param window
-         *            to be closed when the shortcut is invoked
-         * @param shorthandCaption
-         *            the caption with shortcut keycode and modifiers indicated
-         */
-        public CloseShortcut(Window window, String shorthandCaption) {
-            super(shorthandCaption);
-            this.window = window;
-        }
-
-        /**
-         * Creates a keyboard shortcut for closing the given window using the
-         * given {@link KeyCode} and {@link ModifierKey}s.
-         * 
-         * @param window
-         *            to be closed when the shortcut is invoked
-         * @param keyCode
-         *            KeyCode to react to
-         * @param modifiers
-         *            optional modifiers for shortcut
-         */
-        public CloseShortcut(Window window, int keyCode, int... modifiers) {
-            super(null, keyCode, modifiers);
-            this.window = window;
-        }
-
-        /**
-         * Creates a keyboard shortcut for closing the given window using the
-         * given {@link KeyCode}.
-         * 
-         * @param window
-         *            to be closed when the shortcut is invoked
-         * @param keyCode
-         *            KeyCode to react to
-         */
-        public CloseShortcut(Window window, int keyCode) {
-            this(window, keyCode, null);
-        }
-
-        @Override
-        public void handleAction(Object sender, Object target) {
-            window.close();
-        }
-    }
-
-    /*
      * (non-Javadoc)
      * 
      * @see
@@ -1244,12 +1050,6 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
             setPositionX(Integer.parseInt(position[0]));
             setPositionY(Integer.parseInt(position[1]));
         }
-        if (design.hasAttr("close-shortcut")) {
-            ShortcutAction shortcut = DesignAttributeHandler
-                    .readAttribute("close-shortcut", design.attributes(),
-                            ShortcutAction.class);
-            setCloseShortcut(shortcut.getKeyCode(), shortcut.getModifiers());
-        }
     }
 
     /**
@@ -1302,21 +1102,6 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
         DesignAttributeHandler.writeAttribute("position", design.attributes(),
                 getPosition(), def.getPosition(), String.class);
 
-        CloseShortcut shortcut = getCloseShortcut();
-        if (shortcut != null) {
-            // TODO What if several close shortcuts??
-
-            CloseShortcut defShortcut = def.getCloseShortcut();
-            if (defShortcut == null
-                    || shortcut.getKeyCode() != defShortcut.getKeyCode()
-                    || !Arrays.equals(shortcut.getModifiers(),
-                            defShortcut.getModifiers())) {
-                DesignAttributeHandler.writeAttribute("close-shortcut",
-                        design.attributes(), shortcut, null,
-                        CloseShortcut.class);
-            }
-        }
-
         for (Component c : getAssistiveDescription()) {
             Element child = context.createElement(c).attr(
                     ":assistive-description", "");
@@ -1326,10 +1111,6 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
 
     private String getPosition() {
         return getPositionX() + "," + getPositionY();
-    }
-
-    private CloseShortcut getCloseShortcut() {
-        return closeShortcut;
     }
 
     @Override

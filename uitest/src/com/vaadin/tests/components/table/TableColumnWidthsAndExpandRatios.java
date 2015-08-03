@@ -46,7 +46,7 @@ public class TableColumnWidthsAndExpandRatios extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Changing column width to -1 should remove any previous size measurements";
     }
 

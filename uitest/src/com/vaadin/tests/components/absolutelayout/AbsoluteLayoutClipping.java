@@ -30,7 +30,7 @@ public class AbsoluteLayoutClipping extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "An AbsoluteLayout with fixed size should clip at its borders. Nothing outside the black square should be visible.";
     }
 

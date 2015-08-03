@@ -25,7 +25,7 @@ public class ComboBoxUndefinedWidthAndIcon extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The width of the ComboBox should be fixed even though it is set to undefined width. The width should not change when changing pages in the dropdown.";
     }
 

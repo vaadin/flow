@@ -44,7 +44,7 @@ public class EmptyCaptions extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Null caption should never use space while a non-null caption always should use space.";
     }
 

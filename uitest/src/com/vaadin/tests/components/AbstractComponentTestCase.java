@@ -234,7 +234,7 @@ public abstract class AbstractComponentTestCase<T extends AbstractComponent>
     };
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Generic test case for " + getTestClass().getSimpleName();
     }
 

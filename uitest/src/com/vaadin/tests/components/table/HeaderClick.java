@@ -79,7 +79,7 @@ public class HeaderClick extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests the header click listener";
     }
 

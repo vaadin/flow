@@ -82,7 +82,7 @@ public class ProgressIndicatorInvisible extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Progress indicator does not stop polling when its parent layout is made invisible";
     }
 

@@ -56,7 +56,7 @@ public class ProgrammaticUnselectInRange extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Selecting items 1 - 3 using shift click, deselecting item 2 using the button and selecting item 5 using ctrl should keep item 2 deselected according to the server";
     }
 

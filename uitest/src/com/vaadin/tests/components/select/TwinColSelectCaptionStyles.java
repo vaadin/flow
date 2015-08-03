@@ -31,7 +31,7 @@ public class TwinColSelectCaptionStyles extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests that caption styling for TwinColSelect captions work properly. The left caption should be red and the right caption blue and larger than the left one.";
     }
 

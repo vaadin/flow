@@ -33,7 +33,7 @@ public class LargeSelectionCausesNPE extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Attempting to update table contents while selection reaches beyond cache limits causes a NPE.<br>"
                 + " Select a large amount of rows, e.g. from name2 to name262, return to the top of the table,"
                 + " then try to update the first item twice.<br>"

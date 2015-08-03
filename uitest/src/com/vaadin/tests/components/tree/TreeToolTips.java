@@ -28,7 +28,7 @@ public class TreeToolTips extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tree items should have tooltips";
     }
 

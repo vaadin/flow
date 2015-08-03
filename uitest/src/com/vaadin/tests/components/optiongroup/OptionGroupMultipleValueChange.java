@@ -10,7 +10,7 @@ import com.vaadin.ui.OptionGroup;
 public class OptionGroupMultipleValueChange extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Clicking on the description of an option should behave exactly like clicking on the radio button. No extra 'null' valuechange event should be sent";
     }
 

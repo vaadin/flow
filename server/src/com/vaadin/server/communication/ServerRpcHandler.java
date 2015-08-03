@@ -23,7 +23,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,14 +37,11 @@ import com.vaadin.server.ServerRpcManager.RpcInvocationException;
 import com.vaadin.server.ServerRpcMethodInvocation;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
-import com.vaadin.server.VariableOwner;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.Version;
-import com.vaadin.shared.communication.LegacyChangeVariablesInvocation;
 import com.vaadin.shared.communication.MethodInvocation;
 import com.vaadin.shared.communication.ServerRpc;
-import com.vaadin.shared.communication.UidlValue;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ConnectorTracker;
 import com.vaadin.ui.UI;
@@ -363,30 +359,12 @@ public class ServerRpcHandler implements Serializable {
                 }
 
                 if (!enabledConnectors.contains(connector)) {
-
-                    if (invocation instanceof LegacyChangeVariablesInvocation) {
-                        LegacyChangeVariablesInvocation legacyInvocation = (LegacyChangeVariablesInvocation) invocation;
-                        // TODO convert window close to a separate RPC call and
-                        // handle above - not a variable change
-
-                        // Handle special case where window-close is called
-                        // after the window has been removed from the
-                        // application or the application has closed
-                        Map<String, Object> changes = legacyInvocation
-                                .getVariableChanges();
-                        if (changes.size() == 1 && changes.containsKey("close")
-                                && Boolean.TRUE.equals(changes.get("close"))) {
-                            // Silently ignore this
-                            continue;
-                        }
-                    }
-
                     // Connector is disabled, log a warning and move to the next
                     getLogger().warning(
                             getIgnoredDisabledError("RPC call", connector));
                     continue;
                 }
-                // DragAndDropService has null UI
+
                 if (connector.getUI() != null && connector.getUI().isClosing()) {
                     String msg = "Ignoring RPC call for connector "
                             + connector.getClass().getName();
@@ -410,28 +388,8 @@ public class ServerRpcHandler implements Serializable {
                         manager.handleConnectorRelatedException(connector, e);
                     }
                 } else {
-
-                    // All code below is for legacy variable changes
-                    LegacyChangeVariablesInvocation legacyInvocation = (LegacyChangeVariablesInvocation) invocation;
-                    Map<String, Object> changes = legacyInvocation
-                            .getVariableChanges();
-                    try {
-                        if (connector instanceof VariableOwner) {
-                            // The source parameter is never used anywhere
-                            changeVariables(null, (VariableOwner) connector,
-                                    changes);
-                        } else {
-                            throw new IllegalStateException(
-                                    "Received legacy variable change for "
-                                            + connector.getClass().getName()
-                                            + " ("
-                                            + connector.getConnectorId()
-                                            + ") which is not a VariableOwner. The client-side connector sent these legacy varaibles: "
-                                            + changes.keySet());
-                        }
-                    } catch (Exception e) {
-                        manager.handleConnectorRelatedException(connector, e);
-                    }
+                    getLogger().warning(
+                            "Received invalid type of MethodInvocation");
                 }
             }
         } catch (JsonException e) {
@@ -513,46 +471,9 @@ public class ServerRpcHandler implements Serializable {
 
         JsonArray parametersJson = invocationJson.getArray(3);
 
-        if (LegacyChangeVariablesInvocation.isLegacyVariableChange(
-                interfaceName, methodName)) {
-            if (!(previousInvocation instanceof LegacyChangeVariablesInvocation)) {
-                previousInvocation = null;
-            }
+        return parseServerRpcInvocation(connectorId, interfaceName, methodName,
+                parametersJson, connectorTracker);
 
-            return parseLegacyChangeVariablesInvocation(connectorId,
-                    interfaceName, methodName,
-                    (LegacyChangeVariablesInvocation) previousInvocation,
-                    parametersJson, connectorTracker);
-        } else {
-            return parseServerRpcInvocation(connectorId, interfaceName,
-                    methodName, parametersJson, connectorTracker);
-        }
-
-    }
-
-    private LegacyChangeVariablesInvocation parseLegacyChangeVariablesInvocation(
-            String connectorId, String interfaceName, String methodName,
-            LegacyChangeVariablesInvocation previousInvocation,
-            JsonArray parametersJson, ConnectorTracker connectorTracker) {
-        if (parametersJson.length() != 2) {
-            throw new JsonException(
-                    "Invalid parameters in legacy change variables call. Expected 2, was "
-                            + parametersJson.length());
-        }
-        String variableName = parametersJson.getString(0);
-        UidlValue uidlValue = (UidlValue) JsonCodec.decodeInternalType(
-                UidlValue.class, true, parametersJson.get(1), connectorTracker);
-
-        Object value = uidlValue.getValue();
-
-        if (previousInvocation != null
-                && previousInvocation.getConnectorId().equals(connectorId)) {
-            previousInvocation.setVariableChange(variableName, value);
-            return null;
-        } else {
-            return new LegacyChangeVariablesInvocation(connectorId,
-                    variableName, value);
-        }
     }
 
     private ServerRpcMethodInvocation parseServerRpcInvocation(
@@ -595,11 +516,6 @@ public class ServerRpcHandler implements Serializable {
         }
         invocation.setParameters(parameters);
         return invocation;
-    }
-
-    protected void changeVariables(Object source, VariableOwner owner,
-            Map<String, Object> m) {
-        owner.changeVariables(source, m);
     }
 
     protected String getMessage(Reader reader) throws IOException {

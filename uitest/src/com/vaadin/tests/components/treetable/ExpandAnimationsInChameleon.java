@@ -114,7 +114,7 @@ public class ExpandAnimationsInChameleon extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Colors should be correct while animating expands/collapses";
     }
 

@@ -31,7 +31,7 @@ public class CssLayoutRemoveComponent extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Clicking on the button should remove one text field but other textfields and their captions should stay intact.";
     }
 

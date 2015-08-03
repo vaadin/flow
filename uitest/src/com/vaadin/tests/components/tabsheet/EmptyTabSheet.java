@@ -8,7 +8,7 @@ public class EmptyTabSheet extends TestBase {
     private TabSheet tabSheet;
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test a TabSheet without any tabs.";
     }
 

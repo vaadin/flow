@@ -53,7 +53,7 @@ public class ButtonTabIndex extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Test for tab indexes for Button and NativeButton";
     }
 

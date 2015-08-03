@@ -17,7 +17,6 @@ package com.vaadin.tests.themes.valo;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
-import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.AbstractErrorMessage;
@@ -578,7 +577,6 @@ public class CommonParts extends VerticalLayout implements View {
                 win.setClosable(false);
                 win.setResizable(false);
                 win.setContent(windowContent());
-                win.setCloseShortcut(KeyCode.ESCAPE, null);
 
                 Command optionsCommand = new Command() {
                     @Override

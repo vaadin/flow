@@ -59,7 +59,7 @@ public class DateFieldExtendedRange extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Show a few days of the preceding and following months in the datefield popup";
     }
 

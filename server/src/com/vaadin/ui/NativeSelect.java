@@ -25,8 +25,6 @@ import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.FieldEvents.FocusAndBlurServerRpcImpl;
 import com.vaadin.event.FieldEvents.FocusEvent;
 import com.vaadin.event.FieldEvents.FocusListener;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 
 /**
  * This is a simple drop-down select without, for instance, support for
@@ -107,17 +105,6 @@ public class NativeSelect extends AbstractSelect implements
     @Deprecated
     public int getColumns() {
         return columns;
-    }
-
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        target.addAttribute("type", "native");
-        // Adds the number of columns
-        if (columns != 0) {
-            target.addAttribute("cols", columns);
-        }
-
-        super.paintContent(target);
     }
 
     @Override

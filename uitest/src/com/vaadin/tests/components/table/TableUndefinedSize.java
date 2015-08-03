@@ -157,7 +157,7 @@ public class TableUndefinedSize extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "";
     }
 

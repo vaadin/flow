@@ -49,7 +49,7 @@ public class TabsheetShouldUpdateHeight extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "click with mouse first on tab 3 and then on tab 1. now click on the button 'switch to tab2'. then click on tab 3 again and the scrollbars appear";
     }
 

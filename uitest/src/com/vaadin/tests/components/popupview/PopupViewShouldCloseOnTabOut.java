@@ -11,7 +11,7 @@ import com.vaadin.ui.VerticalLayout;
 public class PopupViewShouldCloseOnTabOut extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The PopupView should close when the user moves focus away from it using the TAB key.";
     }
 

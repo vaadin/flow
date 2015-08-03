@@ -14,7 +14,7 @@ public class ClickingWhilePopupOpen extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Clicking the popup view when the popup is already open throws a client-side IllegalStateException";
     }
 

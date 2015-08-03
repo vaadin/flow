@@ -57,7 +57,7 @@ public class TableSorting extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Click the header to sort the table, then click on \"Name_10\". This should show ID: com.vaadin.tests.components.table.TableSorting$TestItem@<hex id> below the table";
     }
 

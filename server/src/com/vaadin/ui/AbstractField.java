@@ -39,9 +39,6 @@ import com.vaadin.data.util.LegacyPropertyHelper;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.data.util.converter.ConverterUtil;
-import com.vaadin.event.Action;
-import com.vaadin.event.ShortcutAction;
-import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.AbstractErrorMessage;
 import com.vaadin.server.CompositeErrorMessage;
 import com.vaadin.server.ErrorMessage;
@@ -77,7 +74,7 @@ import com.vaadin.ui.declarative.DesignContext;
 @SuppressWarnings("serial")
 public abstract class AbstractField<T> extends AbstractComponent implements
         Field<T>, Property.ReadOnlyStatusChangeListener,
-        Property.ReadOnlyStatusChangeNotifier, Action.ShortcutNotifier {
+        Property.ReadOnlyStatusChangeNotifier {
 
     /* Private members */
 
@@ -1570,62 +1567,6 @@ public abstract class AbstractField<T> extends AbstractComponent implements
      */
     protected Buffered.SourceException getCurrentBufferedSourceException() {
         return currentBufferedSourceException;
-    }
-
-    /**
-     * A ready-made {@link ShortcutListener} that focuses the given
-     * {@link Focusable} (usually a {@link Field}) when the keyboard shortcut is
-     * invoked.
-     * 
-     */
-    public static class FocusShortcut extends ShortcutListener {
-        protected Focusable focusable;
-
-        /**
-         * Creates a keyboard shortcut for focusing the given {@link Focusable}
-         * using the shorthand notation defined in {@link ShortcutAction}.
-         * 
-         * @param focusable
-         *            to focused when the shortcut is invoked
-         * @param shorthandCaption
-         *            caption with keycode and modifiers indicated
-         */
-        public FocusShortcut(Focusable focusable, String shorthandCaption) {
-            super(shorthandCaption);
-            this.focusable = focusable;
-        }
-
-        /**
-         * Creates a keyboard shortcut for focusing the given {@link Focusable}.
-         * 
-         * @param focusable
-         *            to focused when the shortcut is invoked
-         * @param keyCode
-         *            keycode that invokes the shortcut
-         * @param modifiers
-         *            modifiers required to invoke the shortcut
-         */
-        public FocusShortcut(Focusable focusable, int keyCode, int... modifiers) {
-            super(null, keyCode, modifiers);
-            this.focusable = focusable;
-        }
-
-        /**
-         * Creates a keyboard shortcut for focusing the given {@link Focusable}.
-         * 
-         * @param focusable
-         *            to focused when the shortcut is invoked
-         * @param keyCode
-         *            keycode that invokes the shortcut
-         */
-        public FocusShortcut(Focusable focusable, int keyCode) {
-            this(focusable, keyCode, null);
-        }
-
-        @Override
-        public void handleAction(Object sender, Object target) {
-            focusable.focus();
-        }
     }
 
     private void updateValueFromDataSource() {

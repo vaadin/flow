@@ -21,21 +21,17 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.EventObject;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.gwt.dev.cfg.Styles;
 import com.vaadin.event.EventRouter;
 import com.vaadin.shared.ui.BorderStyle;
 import com.vaadin.shared.ui.ui.PageClientRpc;
 import com.vaadin.shared.ui.ui.PageState;
-import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.shared.ui.ui.UIState;
 import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.JavaScript;
-import com.vaadin.ui.LegacyWindow;
-import com.vaadin.ui.Link;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
@@ -106,122 +102,6 @@ public class Page implements Serializable {
         }
     }
 
-    /**
-     * Private class for storing properties related to opening resources.
-     */
-    private class OpenResource implements Serializable {
-
-        /**
-         * The resource to open
-         */
-        private final Resource resource;
-
-        /**
-         * The name of the target window
-         */
-        private final String name;
-
-        /**
-         * The width of the target window
-         */
-        private final int width;
-
-        /**
-         * The height of the target window
-         */
-        private final int height;
-
-        /**
-         * The border style of the target window
-         */
-        private final BorderStyle border;
-
-        private final boolean tryToOpenAsPopup;
-
-        /**
-         * Creates a new open resource.
-         * 
-         * @param url
-         *            The URL to open
-         * @param name
-         *            The name of the target window
-         * @param width
-         *            The width of the target window
-         * @param height
-         *            The height of the target window
-         * @param border
-         *            The border style of the target window
-         * @param tryToOpenAsPopup
-         *            Should try to open as a pop-up
-         */
-        private OpenResource(String url, String name, int width, int height,
-                BorderStyle border, boolean tryToOpenAsPopup) {
-            this(new ExternalResource(url), name, width, height, border,
-                    tryToOpenAsPopup);
-        }
-
-        /**
-         * Creates a new open resource.
-         * 
-         * @param resource
-         *            The resource to open
-         * @param name
-         *            The name of the target window
-         * @param width
-         *            The width of the target window
-         * @param height
-         *            The height of the target window
-         * @param border
-         *            The border style of the target window
-         * @param tryToOpenAsPopup
-         *            Should try to open as a pop-up
-         */
-        private OpenResource(Resource resource, String name, int width,
-                int height, BorderStyle border, boolean tryToOpenAsPopup) {
-            this.resource = resource;
-            this.name = name;
-            this.width = width;
-            this.height = height;
-            this.border = border;
-            this.tryToOpenAsPopup = tryToOpenAsPopup;
-        }
-
-        /**
-         * Paints the open request. Should be painted inside the window.
-         * 
-         * @param target
-         *            the paint target
-         * @throws PaintException
-         *             if the paint operation fails
-         */
-        private void paintContent(PaintTarget target) throws PaintException {
-            target.startTag("open");
-            target.addAttribute("src", resource);
-            if (name != null && name.length() > 0) {
-                target.addAttribute("name", name);
-            }
-            if (!tryToOpenAsPopup) {
-                target.addAttribute("popup", tryToOpenAsPopup);
-            }
-            if (width >= 0) {
-                target.addAttribute("width", width);
-            }
-            if (height >= 0) {
-                target.addAttribute("height", height);
-            }
-            switch (border) {
-            case MINIMAL:
-                target.addAttribute("border", "minimal");
-                break;
-            case NONE:
-                target.addAttribute("border", "none");
-                break;
-            }
-
-            target.endTag("open");
-        }
-    }
-
     private static final Method BROWSER_RESIZE_METHOD = ReflectTools
             .findMethod(BrowserWindowResizeListener.class,
                     "browserWindowResized", BrowserWindowResizeEvent.class);
@@ -270,12 +150,6 @@ public class Page implements Serializable {
                     "uriFragmentChanged", UriFragmentChangedEvent.class);
 
     /**
-     * Resources to be opened automatically on next repaint. The list is
-     * automatically cleared when it has been sent to the client.
-     */
-    private final LinkedList<OpenResource> openList = new LinkedList<OpenResource>();
-
-    /**
      * A list of notifications that are waiting to be sent to the client.
      * Cleared (set to null) when the notifications have been sent.
      */
@@ -322,140 +196,6 @@ public class Page implements Serializable {
          */
         public String getUriFragment() {
             return uriFragment;
-        }
-    }
-
-    private static interface InjectedStyle extends Serializable {
-        public void paint(int id, PaintTarget target) throws PaintException;
-    }
-
-    private static class InjectedStyleString implements InjectedStyle {
-
-        private String css;
-
-        public InjectedStyleString(String css) {
-            this.css = css;
-        }
-
-        @Override
-        public void paint(int id, PaintTarget target) throws PaintException {
-            target.startTag("css-string");
-            target.addAttribute("id", id);
-            target.addText(css);
-            target.endTag("css-string");
-        }
-    }
-
-    private static class InjectedStyleResource implements InjectedStyle {
-
-        private final Resource resource;
-
-        public InjectedStyleResource(Resource resource) {
-            this.resource = resource;
-        }
-
-        @Override
-        public void paint(int id, PaintTarget target) throws PaintException {
-            target.startTag("css-resource");
-            target.addAttribute("id", id);
-            target.addAttribute("url", resource);
-            target.endTag("css-resource");
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
-            } else if (obj instanceof InjectedStyleResource) {
-                InjectedStyleResource that = (InjectedStyleResource) obj;
-                return resource.equals(that.resource);
-            } else {
-                return false;
-            }
-        }
-
-        @Override
-        public int hashCode() {
-            return resource.hashCode();
-        }
-    }
-
-    /**
-     * Contains dynamically injected styles injected in the HTML document at
-     * runtime.
-     * 
-     * @since 7.1
-     */
-    public static class Styles implements Serializable {
-
-        private LinkedHashSet<InjectedStyle> injectedStyles = new LinkedHashSet<InjectedStyle>();
-
-        private LinkedHashSet<InjectedStyle> pendingInjections = new LinkedHashSet<InjectedStyle>();
-
-        private final UI ui;
-
-        private Styles(UI ui) {
-            this.ui = ui;
-        }
-
-        /**
-         * Injects a raw CSS string into the page.
-         * 
-         * @param css
-         *            The CSS to inject
-         */
-        public void add(String css) {
-            if (css == null) {
-                throw new IllegalArgumentException(
-                        "Cannot inject null CSS string");
-            }
-
-            pendingInjections.add(new InjectedStyleString(css));
-            ui.markAsDirty();
-        }
-
-        /**
-         * Injects a CSS resource into the page
-         * 
-         * @param resource
-         *            The resource to inject.
-         */
-        public void add(Resource resource) {
-            if (resource == null) {
-                throw new IllegalArgumentException(
-                        "Cannot inject null resource");
-            }
-
-            InjectedStyleResource injection = new InjectedStyleResource(
-                    resource);
-            if (!injectedStyles.contains(injection)
-                    && pendingInjections.add(injection)) {
-                ui.markAsDirty();
-            }
-        }
-
-        private void paint(PaintTarget target) throws PaintException {
-
-            // If full repaint repaint all injections
-            if (target.isFullRepaint()) {
-                injectedStyles.addAll(pendingInjections);
-                pendingInjections = injectedStyles;
-                injectedStyles = new LinkedHashSet<InjectedStyle>();
-            }
-
-            if (!pendingInjections.isEmpty()) {
-
-                target.startTag("css-injections");
-
-                for (InjectedStyle pending : pendingInjections) {
-                    int id = injectedStyles.size();
-                    pending.paint(id, target);
-                    injectedStyles.add(pending);
-                }
-                pendingInjections.clear();
-
-                target.endTag("css-injections");
-            }
         }
     }
 
@@ -818,82 +558,6 @@ public class Page implements Serializable {
     }
 
     /**
-     * Returns that stylesheet associated with this Page. The stylesheet
-     * contains additional styles injected at runtime into the HTML document.
-     * 
-     * @since 7.1
-     */
-    public Styles getStyles() {
-
-        if (styles == null) {
-            styles = new Styles(uI);
-        }
-        return styles;
-    }
-
-    public void paintContent(PaintTarget target) throws PaintException {
-        if (!openList.isEmpty()) {
-            for (final Iterator<OpenResource> i = openList.iterator(); i
-                    .hasNext();) {
-                (i.next()).paintContent(target);
-            }
-            openList.clear();
-        }
-
-        // Paint notifications
-        if (notifications != null) {
-            target.startTag("notifications");
-            for (final Iterator<Notification> it = notifications.iterator(); it
-                    .hasNext();) {
-                final Notification n = it.next();
-                target.startTag("notification");
-                if (n.getCaption() != null) {
-                    target.addAttribute(
-                            UIConstants.ATTRIBUTE_NOTIFICATION_CAPTION,
-                            n.getCaption());
-                }
-                if (n.getDescription() != null) {
-                    target.addAttribute(
-                            UIConstants.ATTRIBUTE_NOTIFICATION_MESSAGE,
-                            n.getDescription());
-                }
-                if (n.getIcon() != null) {
-                    target.addAttribute(
-                            UIConstants.ATTRIBUTE_NOTIFICATION_ICON,
-                            n.getIcon());
-                }
-                if (!n.isHtmlContentAllowed()) {
-                    target.addAttribute(
-                            UIConstants.NOTIFICATION_HTML_CONTENT_NOT_ALLOWED,
-                            true);
-                }
-                target.addAttribute(
-                        UIConstants.ATTRIBUTE_NOTIFICATION_POSITION, n
-                                .getPosition().ordinal());
-                target.addAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_DELAY,
-                        n.getDelayMsec());
-                if (n.getStyleName() != null) {
-                    target.addAttribute(
-                            UIConstants.ATTRIBUTE_NOTIFICATION_STYLE,
-                            n.getStyleName());
-                }
-                target.endTag("notification");
-            }
-            target.endTag("notifications");
-            notifications = null;
-        }
-
-        if (location != null) {
-            target.addAttribute(UIConstants.LOCATION_VARIABLE,
-                    location.toString());
-        }
-
-        if (styles != null) {
-            styles.paint(target);
-        }
-    }
-
-    /**
      * Navigates this page to the given URI. The contents of this page in the
      * browser is replaced with whatever is returned for the given URI.
      * <p>
@@ -908,8 +572,7 @@ public class Page implements Serializable {
      *            the URI to show
      */
     public void setLocation(String uri) {
-        openList.add(new OpenResource(uri, "_self", -1, -1, BORDER_DEFAULT,
-                false));
+        // FIXME
         uI.markAsDirty();
     }
 
@@ -987,172 +650,6 @@ public class Page implements Serializable {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Opens the given url in a window with the given name. Equivalent to
-     * {@link #open(String, String, boolean) open} (url, windowName, true) .
-     * <p>
-     * The supplied {@code windowName} is used as the target name in a
-     * window.open call in the client. This means that special values such as
-     * "_blank", "_self", "_top", "_parent" have special meaning. An empty or
-     * <code>null</code> window name is also a special case.
-     * </p>
-     * <p>
-     * "", null and "_self" as {@code windowName} all causes the URL to be
-     * opened in the current window, replacing any old contents. For
-     * downloadable content you should avoid "_self" as "_self" causes the
-     * client to skip rendering of any other changes as it considers them
-     * irrelevant (the page will be replaced by the response from the URL). This
-     * can speed up the opening of a URL, but it might also put the client side
-     * into an inconsistent state if the window content is not completely
-     * replaced e.g., if the URL is downloaded instead of displayed in the
-     * browser.
-     * </p>
-     * <p>
-     * "_blank" as {@code windowName} causes the URL to always be opened in a
-     * new window or tab (depends on the browser and browser settings).
-     * </p>
-     * <p>
-     * "_top" and "_parent" as {@code windowName} works as specified by the HTML
-     * standard.
-     * </p>
-     * <p>
-     * Any other {@code windowName} will open the URL in a window with that
-     * name, either by opening a new window/tab in the browser or by replacing
-     * the contents of an existing window with that name.
-     * </p>
-     * <p>
-     * Please note that opening a popup window in this way may be blocked by the
-     * browser's popup-blocker because the new browser window is opened when
-     * processing a response from the server. To avoid this, you should instead
-     * use {@link Link} for opening the window because browsers are more
-     * forgiving when the window is opened directly from a client-side click
-     * event.
-     * </p>
-     * 
-     * @param url
-     *            the URL to open.
-     * @param windowName
-     *            the name of the window.
-     */
-    public void open(String url, String windowName) {
-        open(url, windowName, true);
-    }
-
-    /**
-     * Opens the given url in a window with the given name. Equivalent to
-     * {@link #open(String, String, boolean) open} (url, windowName, true) .
-     * <p>
-     * The supplied {@code windowName} is used as the target name in a
-     * window.open call in the client. This means that special values such as
-     * "_blank", "_self", "_top", "_parent" have special meaning. An empty or
-     * <code>null</code> window name is also a special case.
-     * </p>
-     * <p>
-     * "", null and "_self" as {@code windowName} all causes the URL to be
-     * opened in the current window, replacing any old contents. For
-     * downloadable content you should avoid "_self" as "_self" causes the
-     * client to skip rendering of any other changes as it considers them
-     * irrelevant (the page will be replaced by the response from the URL). This
-     * can speed up the opening of a URL, but it might also put the client side
-     * into an inconsistent state if the window content is not completely
-     * replaced e.g., if the URL is downloaded instead of displayed in the
-     * browser.
-     * </p>
-     * <p>
-     * "_blank" as {@code windowName} causes the URL to always be opened in a
-     * new window or tab (depends on the browser and browser settings).
-     * </p>
-     * <p>
-     * "_top" and "_parent" as {@code windowName} works as specified by the HTML
-     * standard.
-     * </p>
-     * <p>
-     * Any other {@code windowName} will open the URL in a window with that
-     * name, either by opening a new window/tab in the browser or by replacing
-     * the contents of an existing window with that name.
-     * </p>
-     * <p>
-     * Please note that opening a popup window in this way may be blocked by the
-     * browser's popup-blocker because the new browser window is opened when
-     * processing a response from the server. To avoid this, you should instead
-     * use {@link Link} for opening the window because browsers are more
-     * forgiving when the window is opened directly from a client-side click
-     * event.
-     * </p>
-     * 
-     * @param url
-     *            the URL to open.
-     * @param windowName
-     *            the name of the window.
-     * @param tryToOpenAsPopup
-     *            Whether to try to force the resource to be opened in a new
-     *            window
-     */
-    public void open(String url, String windowName, boolean tryToOpenAsPopup) {
-        openList.add(new OpenResource(url, windowName, -1, -1, BORDER_DEFAULT,
-                tryToOpenAsPopup));
-        uI.markAsDirty();
-    }
-
-    /**
-     * Opens the given URL in a window with the given size, border and name. For
-     * more information on the meaning of {@code windowName}, see
-     * {@link #open(String, String)}.
-     * <p>
-     * Please note that opening a popup window in this way may be blocked by the
-     * browser's popup-blocker because the new browser window is opened when
-     * processing a response from the server. To avoid this, you should instead
-     * use {@link Link} for opening the window because browsers are more
-     * forgiving when the window is opened directly from a client-side click
-     * event.
-     * </p>
-     * 
-     * @param url
-     *            the URL to open.
-     * @param windowName
-     *            the name of the window.
-     * @param width
-     *            the width of the window in pixels
-     * @param height
-     *            the height of the window in pixels
-     * @param border
-     *            the border style of the window.
-     */
-    public void open(String url, String windowName, int width, int height,
-            BorderStyle border) {
-        openList.add(new OpenResource(url, windowName, width, height, border,
-                true));
-        uI.markAsDirty();
-    }
-
-    /**
-     * @deprecated As of 7.0, only retained to maintain compatibility with
-     *             LegacyWindow.open methods. See documentation for
-     *             {@link LegacyWindow#open(Resource, String, int, int, BorderStyle)}
-     *             for discussion about replacing API.
-     */
-    @Deprecated
-    public void open(Resource resource, String windowName, int width,
-            int height, BorderStyle border) {
-        openList.add(new OpenResource(resource, windowName, width, height,
-                border, true));
-        uI.markAsDirty();
-    }
-
-    /**
-     * @deprecated As of 7.0, only retained to maintain compatibility with
-     *             LegacyWindow.open methods. See documentation for
-     *             {@link LegacyWindow#open(Resource, String, boolean)} for
-     *             discussion about replacing API.
-     */
-    @Deprecated
-    public void open(Resource resource, String windowName,
-            boolean tryToOpenAsPopup) {
-        openList.add(new OpenResource(resource, windowName, -1, -1,
-                BORDER_DEFAULT, tryToOpenAsPopup));
-        uI.markAsDirty();
     }
 
     /**

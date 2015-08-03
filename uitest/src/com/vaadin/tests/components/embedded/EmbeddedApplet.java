@@ -12,7 +12,7 @@ import com.vaadin.ui.Window;
 public class EmbeddedApplet extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The sub window should be shown on top of the embedded applet";
     }
 

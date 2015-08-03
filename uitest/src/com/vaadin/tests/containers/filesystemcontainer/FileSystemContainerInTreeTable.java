@@ -134,7 +134,7 @@ public class FileSystemContainerInTreeTable extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "TreeTable partial updates can only be used with a container that notifies the TreeTable of item set changes";
     }
 

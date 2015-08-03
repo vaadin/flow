@@ -20,7 +20,7 @@ import com.vaadin.ui.TableFieldFactory;
 public class PropertyValueChange extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Property value change should only update absolutely "
                 + "needed cells. Tables have common datasource. The first is "
                 + "editable, second one has data in disabled fields, the lastone "

@@ -22,12 +22,9 @@ import java.util.Map;
 
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
-import com.vaadin.shared.ui.embedded.EmbeddedConstants;
 import com.vaadin.shared.ui.embedded.EmbeddedServerRpc;
 
 /**
@@ -50,7 +47,7 @@ import com.vaadin.shared.ui.embedded.EmbeddedServerRpc;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class Embedded extends AbstractComponent implements LegacyComponent {
+public class Embedded extends AbstractComponent {
 
     /**
      * General object type.
@@ -139,59 +136,6 @@ public class Embedded extends AbstractComponent implements LegacyComponent {
     public Embedded(String caption, Resource source) {
         this(caption);
         setSource(source);
-    }
-
-    /**
-     * Invoked when the component state should be painted.
-     */
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-
-        switch (type) {
-        case TYPE_IMAGE:
-            target.addAttribute("type", "image");
-            break;
-        case TYPE_BROWSER:
-            target.addAttribute("type", "browser");
-            break;
-        default:
-            break;
-        }
-
-        if (getSource() != null) {
-            target.addAttribute("src", getSource());
-        }
-
-        if (mimeType != null && !"".equals(mimeType)) {
-            target.addAttribute("mimetype", mimeType);
-        }
-        if (classId != null && !"".equals(classId)) {
-            target.addAttribute("classid", classId);
-        }
-        if (codebase != null && !"".equals(codebase)) {
-            target.addAttribute("codebase", codebase);
-        }
-        if (codetype != null && !"".equals(codetype)) {
-            target.addAttribute("codetype", codetype);
-        }
-        if (standby != null && !"".equals(standby)) {
-            target.addAttribute("standby", standby);
-        }
-        if (archive != null && !"".equals(archive)) {
-            target.addAttribute("archive", archive);
-        }
-        if (altText != null && !"".equals(altText)) {
-            target.addAttribute(EmbeddedConstants.ALTERNATE_TEXT, altText);
-        }
-
-        // Params
-        for (final Iterator<String> i = getParameterNames(); i.hasNext();) {
-            target.startTag("embeddedparam");
-            final String key = i.next();
-            target.addAttribute("name", key);
-            target.addAttribute("value", getParameter(key));
-            target.endTag("embeddedparam");
-        }
     }
 
     /**
@@ -562,11 +506,6 @@ public class Embedded extends AbstractComponent implements LegacyComponent {
     @Deprecated
     public void removeListener(ClickListener listener) {
         removeClickListener(listener);
-    }
-
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        // TODO Remove once LegacyComponent is no longer implemented
     }
 
 }

@@ -21,12 +21,9 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.Map;
 
 import com.vaadin.server.NoInputStreamException;
 import com.vaadin.server.NoOutputStreamException;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.server.StreamVariable.StreamingProgressEvent;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.ui.upload.UploadClientRpc;
@@ -72,8 +69,7 @@ import com.vaadin.util.ReflectTools;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class Upload extends AbstractComponent implements Component.Focusable,
-        LegacyComponent {
+public class Upload extends AbstractComponent implements Component.Focusable {
 
     /**
      * Should the field be focused on next repaint?
@@ -133,62 +129,6 @@ public class Upload extends AbstractComponent implements Component.Focusable,
         this();
         setCaption(caption);
         receiver = uploadReceiver;
-    }
-
-    /**
-     * Invoked when the value of a variable has changed.
-     *
-     * @see com.vaadin.ui.AbstractComponent#changeVariables(java.lang.Object,
-     *      java.util.Map)
-     */
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        if (variables.containsKey("pollForStart")) {
-            int id = (Integer) variables.get("pollForStart");
-            if (!isUploading && id == nextid) {
-                notStarted = true;
-                markAsDirty();
-            } else {
-            }
-        }
-    }
-
-    /**
-     * Paints the content of this component.
-     *
-     * @param target
-     *            Target to paint the content on.
-     * @throws PaintException
-     *             if the paint operation failed.
-     */
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        if (notStarted) {
-            target.addAttribute("notStarted", true);
-            notStarted = false;
-            return;
-        }
-        // The field should be focused
-        if (focus) {
-            target.addAttribute("focus", true);
-        }
-
-        // The tab ordering number
-        if (tabIndex >= 0) {
-            target.addAttribute("tabindex", tabIndex);
-        }
-
-        target.addAttribute("state", isUploading);
-
-        if (buttonCaption != null) {
-            target.addAttribute("buttoncaption", buttonCaption);
-        }
-
-        target.addAttribute("nextid", nextid);
-
-        // Post file to this strean variable
-        target.addVariable(this, "action", getStreamVariable());
-
     }
 
     /**

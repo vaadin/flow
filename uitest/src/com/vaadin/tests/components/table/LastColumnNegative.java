@@ -67,7 +67,7 @@ public class LastColumnNegative extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
 
         return "Table rendering should not fail when view becomes smaller than the table width.";
     }

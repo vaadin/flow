@@ -24,7 +24,7 @@ public class SliderPrimaryStyleName extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Setting the primary stylename should work both initially and dynamically";
     }
 

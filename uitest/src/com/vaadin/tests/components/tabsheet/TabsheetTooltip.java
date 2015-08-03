@@ -9,7 +9,7 @@ import com.vaadin.ui.TabSheet.Tab;
 public class TabsheetTooltip extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The label inside the tabsheet should show a tooltip 'This is a label' and the tab should show a different tooltip 'This is a tab'";
     }
 

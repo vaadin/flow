@@ -175,7 +175,7 @@ public class TextChangeEvents2 extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Another set of simple use case/tests for TextChangeEvents";
     }
 

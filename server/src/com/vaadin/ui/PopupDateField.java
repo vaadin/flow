@@ -19,8 +19,6 @@ package com.vaadin.ui;
 import java.util.Date;
 
 import com.vaadin.data.Property;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.shared.ui.datefield.PopupDateFieldState;
 
 /**
@@ -56,15 +54,6 @@ public class PopupDateField extends DateField {
 
     public PopupDateField(String caption) {
         super(caption);
-    }
-
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        super.paintContent(target);
-
-        if (inputPrompt != null) {
-            target.addAttribute("prompt", inputPrompt);
-        }
     }
 
     /**

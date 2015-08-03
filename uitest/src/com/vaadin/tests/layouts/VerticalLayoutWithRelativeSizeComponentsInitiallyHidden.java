@@ -11,7 +11,7 @@ public class VerticalLayoutWithRelativeSizeComponentsInitiallyHidden extends
         TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Size calculations fail if expanded component is relative sized "
                 + "and initially invisible and when becoming visible at the "
                 + "same time some other component size changes.";

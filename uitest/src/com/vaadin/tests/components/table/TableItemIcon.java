@@ -14,7 +14,7 @@ public class TableItemIcon extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The items in the Table should have icons in the first column (rowheader).";
     }
 

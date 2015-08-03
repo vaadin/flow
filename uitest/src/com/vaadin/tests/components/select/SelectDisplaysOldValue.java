@@ -150,7 +150,7 @@ public class SelectDisplaysOldValue extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Select an 'master' item from the first combo box, a slave from the second, select another master and focus+blur the slave combo box and the slave combobox will show a value not in the combo box";
     }
 

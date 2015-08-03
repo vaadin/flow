@@ -7,7 +7,7 @@ import com.vaadin.ui.TextArea;
 public class VerticalScrollbarPosition extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A vertical scrollbar in a TabSheet should always be placed at the right edge";
     }
 

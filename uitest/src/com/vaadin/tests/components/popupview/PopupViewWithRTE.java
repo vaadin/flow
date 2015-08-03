@@ -10,7 +10,7 @@ import com.vaadin.ui.VerticalLayout;
 public class PopupViewWithRTE extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Rich text editor should work properly in popupview. Try to edit text below.";
     }
 

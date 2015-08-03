@@ -46,7 +46,7 @@ public class ScrollbarsInNestedTabsheets extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Nested tabsheets show unwanted scrollbars with Chameleon theme when the inner tabsheet is resized";
     }
 

@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.ui.LegacyComponent;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
@@ -138,10 +137,6 @@ public class GlobalResourceHandler implements RequestHandler {
      */
     public void register(Resource resource, ClientConnector ownerConnector) {
         if (resource instanceof ConnectorResource) {
-            if (!(ownerConnector instanceof LegacyComponent)) {
-                throw new IllegalArgumentException(
-                        "A normal ConnectorResource can only be registered for legacy components.");
-            }
             ConnectorResource connectorResource = (ConnectorResource) resource;
             if (!legacyResourceKeys.containsKey(resource)) {
                 String uri = LEGACY_TYPE + '/'

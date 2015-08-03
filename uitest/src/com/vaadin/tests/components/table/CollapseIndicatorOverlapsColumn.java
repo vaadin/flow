@@ -35,7 +35,7 @@ public class CollapseIndicatorOverlapsColumn extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The rightmost column should not be covered by the collapse indicator";
     }
 

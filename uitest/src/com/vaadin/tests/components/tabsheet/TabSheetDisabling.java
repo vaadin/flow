@@ -53,7 +53,7 @@ public class TabSheetDisabling extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Switching the tabsheet between disabled and enabled should not change which tab is selected. Disabling the open tab should select the first enabled tab.";
     }
 

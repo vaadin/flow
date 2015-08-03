@@ -9,7 +9,7 @@ import com.vaadin.ui.VerticalLayout;
 public class GridLayoutInsidePanel extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The first Panel contains a VerticalLayout, which contains a GridLayout, which contains a Label. The second panel directly contains a GridLayout, which contains a Label. Both should be rendered in the same way.";
     }
 

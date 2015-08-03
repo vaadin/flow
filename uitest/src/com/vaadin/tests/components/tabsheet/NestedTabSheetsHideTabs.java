@@ -38,7 +38,7 @@ public class NestedTabSheetsHideTabs extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Setting hideTabs(true) for a TabSheet containing another TabSheet hides the nested TabSheet's tabs as well";
     }
 

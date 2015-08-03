@@ -14,7 +14,7 @@ public class SliderKeyboardFocus extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests keyboard navigation with the slider";
     }
 

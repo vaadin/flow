@@ -33,7 +33,6 @@ import java.util.logging.Logger;
 
 import com.vaadin.server.AbstractClientConnector;
 import com.vaadin.server.ClientConnector;
-import com.vaadin.server.DragAndDropService;
 import com.vaadin.server.GlobalResourceHandler;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.StreamVariable;
@@ -267,12 +266,6 @@ public class ConnectorTracker implements Serializable {
             return null;
         } else if (connector != null) {
             return connector;
-        } else {
-            DragAndDropService service = uI.getSession()
-                    .getDragAndDropService();
-            if (connectorId.equals(service.getConnectorId())) {
-                return service;
-            }
         }
         return null;
     }

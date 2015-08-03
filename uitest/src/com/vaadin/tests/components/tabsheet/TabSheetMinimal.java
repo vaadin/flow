@@ -28,7 +28,7 @@ public class TabSheetMinimal extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Adding tabs to a 'minimal' style TabSheet work properly even if the TabSheet is initially empty";
     }
 

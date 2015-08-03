@@ -8,7 +8,7 @@ import com.vaadin.ui.VerticalLayout;
 public class RichTextAreaScrolling extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A read-only RichTextArea should be (touch) scrollable";
     }
 

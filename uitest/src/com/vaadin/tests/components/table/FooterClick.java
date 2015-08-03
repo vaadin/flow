@@ -84,7 +84,7 @@ public class FooterClick extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests the footer click handler";
     }
 

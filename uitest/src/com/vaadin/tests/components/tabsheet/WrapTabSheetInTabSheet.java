@@ -30,7 +30,7 @@ public class WrapTabSheetInTabSheet extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Click the button to add a TabSheet and move the window content into the TabSheet. Every click should wrap the contents with a new TabSheet and the contents should remain visible.";
     }
 

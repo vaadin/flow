@@ -76,7 +76,7 @@ public class ScrollCursor extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests scrolling for TextArea with different word wrapping settings. "
                 + "Sets cursor position at the beginning, middle and the end "
                 + "of text and checks textarea is scrolled.";

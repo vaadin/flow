@@ -7,7 +7,7 @@ import com.vaadin.ui.Embedded;
 public class EmbeddedTooltip extends TestBase {
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "The tooltip for an Embedded image should be visible also when hovering the image";
     }
 

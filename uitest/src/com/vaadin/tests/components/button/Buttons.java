@@ -63,7 +63,7 @@ public class Buttons extends ComponentTestCase<Button> {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A generic test for Buttons in different configurations";
     }
 

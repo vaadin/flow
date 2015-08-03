@@ -21,7 +21,6 @@ import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
-import com.vaadin.ui.LegacyWindow;
 
 public class AllComponentTooltipTest extends AbstractTestUI {
 
@@ -32,9 +31,6 @@ public class AllComponentTooltipTest extends AbstractTestUI {
         for (Class<? extends Component> cls : VaadinClasses.getComponents()) {
             try {
                 AbstractComponent c = (AbstractComponent) cls.newInstance();
-                if (c instanceof LegacyWindow) {
-                    continue;
-                }
 
                 c.setId(cls.getName());
                 c.setCaption(cls.getName());

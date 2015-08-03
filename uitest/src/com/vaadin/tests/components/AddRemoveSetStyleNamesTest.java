@@ -71,7 +71,7 @@ public class AddRemoveSetStyleNamesTest extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "If a widget has set multiple css class names, AbtractComponentConnector.getStyleNames() removes all but first one of them. This is not acceptable, because we should be able to create connector for any existing GWT component and thus we do not know it it depends on multiple css class names.";
     }
 

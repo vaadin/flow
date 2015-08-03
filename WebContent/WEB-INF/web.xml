@@ -19,9 +19,9 @@
     </context-param>
     <servlet>
         <servlet-name>Embed App 1</servlet-name>
-        <servlet-class>com.vaadin.server.LegacyVaadinServlet</servlet-class>
+        <servlet-class>com.vaadin.server.VaadinServlet</servlet-class>
         <init-param>
-            <param-name>application</param-name>
+            <param-name>UI</param-name>
             <param-value>com.vaadin.tests.components.button.Buttons</param-value>
         </init-param>
         <async-supported>true</async-supported>

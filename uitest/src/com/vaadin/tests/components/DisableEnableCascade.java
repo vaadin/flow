@@ -81,7 +81,7 @@ public class DisableEnableCascade extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tests the disable state is cascaded correctly to children. Disabling a parent should disabled its children aswell. The buttons only toggle the state of the target component.";
     }
 

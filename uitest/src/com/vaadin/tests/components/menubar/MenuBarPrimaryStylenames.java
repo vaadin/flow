@@ -38,7 +38,7 @@ public class MenuBarPrimaryStylenames extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Menubar should support primary stylenames both initially and dynamically";
     }
 

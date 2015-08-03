@@ -38,7 +38,7 @@ public class MultiClickingItemThatDetachesTable extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Clicking multiple times on an item whose listener detaches the table causes Out of Sync";
     }
 

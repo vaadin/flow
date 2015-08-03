@@ -53,7 +53,7 @@ public class TreeFocusGaining extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Tree should get focus before sending variables to server.";
     }
 

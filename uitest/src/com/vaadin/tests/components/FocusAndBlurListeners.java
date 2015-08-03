@@ -113,7 +113,7 @@ public class FocusAndBlurListeners extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Testing blur and focus listeners added in 6.2";
     }
 

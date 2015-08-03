@@ -40,8 +40,8 @@ public class ThemeChangeOnTheFly extends AbstractTestUIWithLog {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                getPage().getStyles().add(
-                        ".v-app { background: blue !important;}");
+                // getPage().getStyles().add(
+                // ".v-app { background: blue !important;}");
 
             }
         });

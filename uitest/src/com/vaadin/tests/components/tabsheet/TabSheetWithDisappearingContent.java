@@ -22,7 +22,7 @@ public class TabSheetWithDisappearingContent extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "In some browsers, when trying to close the last tab of a tabsheet an IndexOutOfBoundException happens. After that, although an other tab is visually active, no contents are shown.";
     }
 

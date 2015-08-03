@@ -29,7 +29,7 @@ public class SelectIconPlacement extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "A select with item icons pushes the caption of that item to the right to make room for the icon. It works fine in all browsers except IE8.<br/>"
                 + "Upon component render the icon and caption is on top of each others, and it corrects itself when you open the dropdown. <br/><br/>";
     }

@@ -40,7 +40,7 @@ public class ComponentsInTreeTable extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Components in TreeTable cells should be rendered inline with the expand/collapse arrow";
     }
 

@@ -104,7 +104,7 @@ public class KeyControl extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Add keyboard control to the Table";
     }
 

@@ -25,7 +25,7 @@ public class SplitPanelWithRichTextArea extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Dragging the splitter should work even if the cursor happens to move over the RichTextArea because of slow updates.";
     }
 

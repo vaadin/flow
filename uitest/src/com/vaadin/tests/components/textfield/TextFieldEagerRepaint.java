@@ -43,7 +43,7 @@ public class TextFieldEagerRepaint extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Updating the value in an EAGER TextChangeListener should send the new value to the client while updating something else (e.g. the width) should preserve the text in the field. Both fields react when the field contains anything else than lower case letters a-z";
     }
 

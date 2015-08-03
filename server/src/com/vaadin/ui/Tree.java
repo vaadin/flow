@@ -16,19 +16,17 @@
 
 package com.vaadin.ui;
 
+import java.awt.dnd.DragSource;
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.StringTokenizer;
 
 import org.jsoup.nodes.Element;
 
@@ -36,28 +34,12 @@ import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.ContainerHierarchicalWrapper;
 import com.vaadin.data.util.HierarchicalContainer;
-import com.vaadin.event.Action;
-import com.vaadin.event.Action.Handler;
 import com.vaadin.event.DataBoundTransferable;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.event.ItemClickEvent.ItemClickListener;
 import com.vaadin.event.ItemClickEvent.ItemClickNotifier;
-import com.vaadin.event.Transferable;
-import com.vaadin.event.dd.DragAndDropEvent;
-import com.vaadin.event.dd.DragSource;
-import com.vaadin.event.dd.DropHandler;
-import com.vaadin.event.dd.DropTarget;
-import com.vaadin.event.dd.TargetDetails;
-import com.vaadin.event.dd.acceptcriteria.ClientSideCriterion;
-import com.vaadin.event.dd.acceptcriteria.ServerSideCriterion;
-import com.vaadin.event.dd.acceptcriteria.TargetDetailIs;
-import com.vaadin.server.KeyMapper;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.server.Resource;
-import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.MultiSelectMode;
-import com.vaadin.shared.ui.dd.VerticalDropLocation;
 import com.vaadin.shared.ui.tree.TreeConstants;
 import com.vaadin.ui.declarative.DesignAttributeHandler;
 import com.vaadin.ui.declarative.DesignContext;
@@ -73,7 +55,7 @@ import com.vaadin.util.ReflectTools;
  */
 @SuppressWarnings({ "serial", "deprecation" })
 public class Tree extends AbstractSelect implements Container.Hierarchical,
-        Action.Container, ItemClickNotifier, DragSource, DropTarget {
+        ItemClickNotifier {
 
     /* Private members */
 
@@ -88,16 +70,6 @@ public class Tree extends AbstractSelect implements Container.Hierarchical,
      * Set of expanded nodes.
      */
     private HashSet<Object> expanded = new HashSet<Object>();
-
-    /**
-     * List of action handlers.
-     */
-    private LinkedList<Action.Handler> actionHandlers = null;
-
-    /**
-     * Action mapper.
-     */
-    private KeyMapper<Action> actionMapper = null;
 
     /**
      * Is the tree selectable on the client side.
@@ -455,93 +427,6 @@ public class Tree extends AbstractSelect implements Container.Hierarchical,
 
     /* Component API */
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractSelect#changeVariables(java.lang.Object,
-     * java.util.Map)
-     */
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-
-        if (variables.containsKey("clickedKey")) {
-            String key = (String) variables.get("clickedKey");
-
-            Object id = itemIdMapper.get(key);
-            MouseEventDetails details = MouseEventDetails
-                    .deSerialize((String) variables.get("clickEvent"));
-            Item item = getItem(id);
-            if (item != null) {
-                fireEvent(new ItemClickEvent(this, item, id, null, details));
-            }
-        }
-
-        if (!isSelectable() && variables.containsKey("selected")) {
-            // Not-selectable is a special case, AbstractSelect does not support
-            // TODO could be optimized.
-            variables = new HashMap<String, Object>(variables);
-            variables.remove("selected");
-        }
-
-        // Collapses the nodes
-        if (variables.containsKey("collapse")) {
-            final String[] keys = (String[]) variables.get("collapse");
-            for (int i = 0; i < keys.length; i++) {
-                final Object id = itemIdMapper.get(keys[i]);
-                if (id != null && isExpanded(id)) {
-                    expanded.remove(id);
-                    if (expandedItemId == id) {
-                        expandedItemId = null;
-                    }
-                    fireCollapseEvent(id);
-                }
-            }
-        }
-
-        // Expands the nodes
-        if (variables.containsKey("expand")) {
-            boolean sendChildTree = false;
-            if (variables.containsKey("requestChildTree")) {
-                sendChildTree = true;
-            }
-            final String[] keys = (String[]) variables.get("expand");
-            for (int i = 0; i < keys.length; i++) {
-                final Object id = itemIdMapper.get(keys[i]);
-                if (id != null) {
-                    expandItem(id, sendChildTree);
-                }
-            }
-        }
-
-        // AbstractSelect cannot handle multiselection so we handle
-        // it ourself
-        if (variables.containsKey("selected") && isMultiSelect()
-                && multiSelectMode == MultiSelectMode.DEFAULT) {
-            handleSelectedItems(variables);
-            variables = new HashMap<String, Object>(variables);
-            variables.remove("selected");
-        }
-
-        // Selections are handled by the select component
-        super.changeVariables(source, variables);
-
-        // Actions
-        if (variables.containsKey("action")) {
-            final StringTokenizer st = new StringTokenizer(
-                    (String) variables.get("action"), ",");
-            if (st.countTokens() == 2) {
-                final Object itemId = itemIdMapper.get(st.nextToken());
-                final Action action = actionMapper.get(st.nextToken());
-                if (action != null && (itemId == null || containsId(itemId))
-                        && actionHandlers != null) {
-                    for (Handler ah : actionHandlers) {
-                        ah.handleAction(action, this, itemId);
-                    }
-                }
-            }
-        }
-    }
-
     /**
      * Handles the selection
      * 
@@ -571,239 +456,6 @@ public class Tree extends AbstractSelect implements Container.Hierarchical,
         }
 
         setValue(s, true);
-    }
-
-    /**
-     * Paints any needed component-specific things to the given UIDL stream.
-     * 
-     * @see com.vaadin.ui.AbstractComponent#paintContent(PaintTarget)
-     */
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        initialPaint = false;
-
-        if (partialUpdate) {
-            target.addAttribute("partialUpdate", true);
-            target.addAttribute("rootKey", itemIdMapper.key(expandedItemId));
-        } else {
-            getCaptionChangeListener().clear();
-
-            // The tab ordering number
-            if (getTabIndex() > 0) {
-                target.addAttribute("tabindex", getTabIndex());
-            }
-
-            // Paint tree attributes
-            if (isSelectable()) {
-                target.addAttribute("selectmode", (isMultiSelect() ? "multi"
-                        : "single"));
-                if (isMultiSelect()) {
-                    target.addAttribute("multiselectmode",
-                            multiSelectMode.toString());
-                }
-            } else {
-                target.addAttribute("selectmode", "none");
-            }
-            if (isNewItemsAllowed()) {
-                target.addAttribute("allownewitem", true);
-            }
-
-            if (isNullSelectionAllowed()) {
-                target.addAttribute("nullselect", true);
-            }
-
-            if (dragMode != TreeDragMode.NONE) {
-                target.addAttribute("dragMode", dragMode.ordinal());
-            }
-
-        }
-
-        // Initialize variables
-        final Set<Action> actionSet = new LinkedHashSet<Action>();
-
-        // rendered selectedKeys
-        LinkedList<String> selectedKeys = new LinkedList<String>();
-
-        final LinkedList<String> expandedKeys = new LinkedList<String>();
-
-        // Iterates through hierarchical tree using a stack of iterators
-        final Stack<Iterator<?>> iteratorStack = new Stack<Iterator<?>>();
-        Collection<?> ids;
-        if (partialUpdate) {
-            ids = getChildren(expandedItemId);
-        } else {
-            ids = rootItemIds();
-        }
-
-        if (ids != null) {
-            iteratorStack.push(ids.iterator());
-        }
-
-        /*
-         * Body actions - Actions which has the target null and can be invoked
-         * by right clicking on the Tree body
-         */
-        if (actionHandlers != null) {
-            final ArrayList<String> keys = new ArrayList<String>();
-            for (Handler ah : actionHandlers) {
-
-                // Getting action for the null item, which in this case
-                // means the body item
-                final Action[] aa = ah.getActions(null, this);
-                if (aa != null) {
-                    for (int ai = 0; ai < aa.length; ai++) {
-                        final String akey = actionMapper.key(aa[ai]);
-                        actionSet.add(aa[ai]);
-                        keys.add(akey);
-                    }
-                }
-            }
-            target.addAttribute("alb", keys.toArray());
-        }
-
-        while (!iteratorStack.isEmpty()) {
-
-            // Gets the iterator for current tree level
-            final Iterator<?> i = iteratorStack.peek();
-
-            // If the level is finished, back to previous tree level
-            if (!i.hasNext()) {
-
-                // Removes used iterator from the stack
-                iteratorStack.pop();
-
-                // Closes node
-                if (!iteratorStack.isEmpty()) {
-                    target.endTag("node");
-                }
-            }
-
-            // Adds the item on current level
-            else {
-                final Object itemId = i.next();
-
-                // Starts the item / node
-                final boolean isNode = areChildrenAllowed(itemId);
-                if (isNode) {
-                    target.startTag("node");
-                } else {
-                    target.startTag("leaf");
-                }
-
-                if (itemStyleGenerator != null) {
-                    String stylename = itemStyleGenerator
-                            .getStyle(this, itemId);
-                    if (stylename != null) {
-                        target.addAttribute(TreeConstants.ATTRIBUTE_NODE_STYLE,
-                                stylename);
-                    }
-                }
-
-                if (itemDescriptionGenerator != null) {
-                    String description = itemDescriptionGenerator
-                            .generateDescription(this, itemId, null);
-                    if (description != null && !description.equals("")) {
-                        target.addAttribute("descr", description);
-                    }
-                }
-
-                // Adds the attributes
-                target.addAttribute(TreeConstants.ATTRIBUTE_NODE_CAPTION,
-                        getItemCaption(itemId));
-                final Resource icon = getItemIcon(itemId);
-                if (icon != null) {
-                    target.addAttribute(TreeConstants.ATTRIBUTE_NODE_ICON,
-                            getItemIcon(itemId));
-                    target.addAttribute(TreeConstants.ATTRIBUTE_NODE_ICON_ALT,
-                            getItemIconAlternateText(itemId));
-                }
-                final String key = itemIdMapper.key(itemId);
-                target.addAttribute("key", key);
-                if (isSelected(itemId)) {
-                    target.addAttribute("selected", true);
-                    selectedKeys.add(key);
-                }
-                if (areChildrenAllowed(itemId) && isExpanded(itemId)) {
-                    target.addAttribute("expanded", true);
-                    expandedKeys.add(key);
-                }
-
-                // Add caption change listener
-                getCaptionChangeListener().addNotifierForItem(itemId);
-
-                // Actions
-                if (actionHandlers != null) {
-                    final ArrayList<String> keys = new ArrayList<String>();
-                    final Iterator<Action.Handler> ahi = actionHandlers
-                            .iterator();
-                    while (ahi.hasNext()) {
-                        final Action[] aa = ahi.next().getActions(itemId, this);
-                        if (aa != null) {
-                            for (int ai = 0; ai < aa.length; ai++) {
-                                final String akey = actionMapper.key(aa[ai]);
-                                actionSet.add(aa[ai]);
-                                keys.add(akey);
-                            }
-                        }
-                    }
-                    target.addAttribute("al", keys.toArray());
-                }
-
-                // Adds the children if expanded, or close the tag
-                if (isExpanded(itemId) && hasChildren(itemId)
-                        && areChildrenAllowed(itemId)) {
-                    iteratorStack.push(getChildren(itemId).iterator());
-                } else {
-                    if (isNode) {
-                        target.endTag("node");
-                    } else {
-                        target.endTag("leaf");
-                    }
-                }
-            }
-        }
-
-        // Actions
-        if (!actionSet.isEmpty()) {
-            target.addVariable(this, "action", "");
-            target.startTag("actions");
-            final Iterator<Action> i = actionSet.iterator();
-            while (i.hasNext()) {
-                final Action a = i.next();
-                target.startTag("action");
-                if (a.getCaption() != null) {
-                    target.addAttribute(TreeConstants.ATTRIBUTE_ACTION_CAPTION,
-                            a.getCaption());
-                }
-                if (a.getIcon() != null) {
-                    target.addAttribute(TreeConstants.ATTRIBUTE_ACTION_ICON,
-                            a.getIcon());
-                }
-                target.addAttribute("key", actionMapper.key(a));
-                target.endTag("action");
-            }
-            target.endTag("actions");
-        }
-
-        if (partialUpdate) {
-            partialUpdate = false;
-        } else {
-            // Selected
-            target.addVariable(this, "selected",
-                    selectedKeys.toArray(new String[selectedKeys.size()]));
-
-            // Expand and collapse
-            target.addVariable(this, "expand", new String[] {});
-            target.addVariable(this, "collapse", new String[] {});
-
-            // New items
-            target.addVariable(this, "newitem", new String[] {});
-
-            if (dropHandler != null) {
-                dropHandler.getAcceptCriterion().paint(target);
-            }
-
-        }
     }
 
     /* Container.Hierarchical API */
@@ -1179,60 +831,6 @@ public class Tree extends AbstractSelect implements Container.Hierarchical,
         fireEvent(new CollapseEvent(this, itemId));
     }
 
-    /* Action container */
-
-    /**
-     * Adds an action handler.
-     * 
-     * @see com.vaadin.event.Action.Container#addActionHandler(Action.Handler)
-     */
-    @Override
-    public void addActionHandler(Action.Handler actionHandler) {
-
-        if (actionHandler != null) {
-
-            if (actionHandlers == null) {
-                actionHandlers = new LinkedList<Action.Handler>();
-                actionMapper = new KeyMapper<Action>();
-            }
-
-            if (!actionHandlers.contains(actionHandler)) {
-                actionHandlers.add(actionHandler);
-                markAsDirty();
-            }
-        }
-    }
-
-    /**
-     * Removes an action handler.
-     * 
-     * @see com.vaadin.event.Action.Container#removeActionHandler(Action.Handler)
-     */
-    @Override
-    public void removeActionHandler(Action.Handler actionHandler) {
-
-        if (actionHandlers != null && actionHandlers.contains(actionHandler)) {
-
-            actionHandlers.remove(actionHandler);
-
-            if (actionHandlers.isEmpty()) {
-                actionHandlers = null;
-                actionMapper = null;
-            }
-
-            markAsDirty();
-        }
-    }
-
-    /**
-     * Removes all action handlers
-     */
-    public void removeAllActionHandlers() {
-        actionHandlers = null;
-        actionMapper = null;
-        markAsDirty();
-    }
-
     /**
      * Gets the visible item ids.
      * 
@@ -1307,8 +905,6 @@ public class Tree extends AbstractSelect implements Container.Hierarchical,
     }
 
     private ItemStyleGenerator itemStyleGenerator;
-
-    private DropHandler dropHandler;
 
     @Override
     public void addItemClickListener(ItemClickListener listener) {
@@ -1390,111 +986,6 @@ public class Tree extends AbstractSelect implements Container.Hierarchical,
         return super.removeItem(itemId);
     }
 
-    @Override
-    public DropHandler getDropHandler() {
-        return dropHandler;
-    }
-
-    public void setDropHandler(DropHandler dropHandler) {
-        this.dropHandler = dropHandler;
-    }
-
-    /**
-     * A {@link TargetDetails} implementation with Tree specific api.
-     * 
-     * @since 6.3
-     */
-    public class TreeTargetDetails extends AbstractSelectTargetDetails {
-
-        TreeTargetDetails(Map<String, Object> rawVariables) {
-            super(rawVariables);
-        }
-
-        @Override
-        public Tree getTarget() {
-            return (Tree) super.getTarget();
-        }
-
-        /**
-         * If the event is on a node that can not have children (see
-         * {@link Tree#areChildrenAllowed(Object)}), this method returns the
-         * parent item id of the target item (see {@link #getItemIdOver()} ).
-         * The identifier of the parent node is also returned if the cursor is
-         * on the top part of node. Else this method returns the same as
-         * {@link #getItemIdOver()}.
-         * <p>
-         * In other words this method returns the identifier of the "folder"
-         * into the drag operation is targeted.
-         * <p>
-         * If the method returns null, the current target is on a root node or
-         * on other undefined area over the tree component.
-         * <p>
-         * The default Tree implementation marks the targetted tree node with
-         * CSS classnames v-tree-node-dragfolder and
-         * v-tree-node-caption-dragfolder (for the caption element).
-         */
-        public Object getItemIdInto() {
-
-            Object itemIdOver = getItemIdOver();
-            if (areChildrenAllowed(itemIdOver)
-                    && getDropLocation() == VerticalDropLocation.MIDDLE) {
-                return itemIdOver;
-            }
-            return getParent(itemIdOver);
-        }
-
-        /**
-         * If drop is targeted into "folder node" (see {@link #getItemIdInto()}
-         * ), this method returns the item id of the node after the drag was
-         * targeted. This method is useful when implementing drop into specific
-         * location (between specific nodes) in tree.
-         * 
-         * @return the id of the item after the user targets the drop or null if
-         *         "target" is a first item in node list (or the first in root
-         *         node list)
-         */
-        public Object getItemIdAfter() {
-            Object itemIdOver = getItemIdOver();
-            Object itemIdInto2 = getItemIdInto();
-            if (itemIdOver.equals(itemIdInto2)) {
-                return null;
-            }
-            VerticalDropLocation dropLocation = getDropLocation();
-            if (VerticalDropLocation.TOP == dropLocation) {
-                // if on top of the caption area, add before
-                Collection<?> children;
-                Object itemIdInto = getItemIdInto();
-                if (itemIdInto != null) {
-                    // seek the previous from child list
-                    children = getChildren(itemIdInto);
-                } else {
-                    children = rootItemIds();
-                }
-                Object ref = null;
-                for (Object object : children) {
-                    if (object.equals(itemIdOver)) {
-                        return ref;
-                    }
-                    ref = object;
-                }
-            }
-            return itemIdOver;
-        }
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.vaadin.event.dd.DropTarget#translateDropTargetDetails(java.util.Map)
-     */
-    @Override
-    public TreeTargetDetails translateDropTargetDetails(
-            Map<String, Object> clientVariables) {
-        return new TreeTargetDetails(clientVariables);
-    }
-
     /**
      * Helper API for {@link TreeDropCriterion}
      * 
@@ -1549,215 +1040,6 @@ public class Tree extends AbstractSelect implements Container.Hierarchical,
         @Override
         public Object getPropertyId() {
             return getItemCaptionPropertyId();
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.event.dd.DragSource#getTransferable(java.util.Map)
-     */
-    @Override
-    public Transferable getTransferable(Map<String, Object> payload) {
-        TreeTransferable transferable = new TreeTransferable(this, payload);
-        // updating drag source variables
-        Object object = payload.get("itemId");
-        if (object != null) {
-            transferable.setData("itemId", itemIdMapper.get((String) object));
-        }
-
-        return transferable;
-    }
-
-    /**
-     * Lazy loading accept criterion for Tree. Accepted target nodes are loaded
-     * from server once per drag and drop operation. Developer must override one
-     * method that decides accepted tree nodes for the whole Tree.
-     * 
-     * <p>
-     * Initially pretty much no data is sent to client. On first required
-     * criterion check (per drag request) the client side data structure is
-     * initialized from server and no subsequent requests requests are needed
-     * during that drag and drop operation.
-     */
-    public static abstract class TreeDropCriterion extends ServerSideCriterion {
-
-        private Tree tree;
-
-        private Set<Object> allowedItemIds;
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * com.vaadin.event.dd.acceptCriteria.ServerSideCriterion#getIdentifier
-         * ()
-         */
-        @Override
-        protected String getIdentifier() {
-            return TreeDropCriterion.class.getCanonicalName();
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * com.vaadin.event.dd.acceptCriteria.AcceptCriterion#accepts(com.vaadin
-         * .event.dd.DragAndDropEvent)
-         */
-        @Override
-        public boolean accept(DragAndDropEvent dragEvent) {
-            AbstractSelectTargetDetails dropTargetData = (AbstractSelectTargetDetails) dragEvent
-                    .getTargetDetails();
-            tree = (Tree) dragEvent.getTargetDetails().getTarget();
-            allowedItemIds = getAllowedItemIds(dragEvent, tree);
-
-            return allowedItemIds.contains(dropTargetData.getItemIdOver());
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * com.vaadin.event.dd.acceptCriteria.AcceptCriterion#paintResponse(
-         * com.vaadin.server.PaintTarget)
-         */
-        @Override
-        public void paintResponse(PaintTarget target) throws PaintException {
-            /*
-             * send allowed nodes to client so subsequent requests can be
-             * avoided
-             */
-            Object[] array = allowedItemIds.toArray();
-            for (int i = 0; i < array.length; i++) {
-                String key = tree.key(array[i]);
-                array[i] = key;
-            }
-            target.addAttribute("allowedIds", array);
-        }
-
-        protected abstract Set<Object> getAllowedItemIds(
-                DragAndDropEvent dragEvent, Tree tree);
-
-    }
-
-    /**
-     * A criterion that accepts {@link Transferable} only directly on a tree
-     * node that can have children.
-     * <p>
-     * Class is singleton, use {@link TargetItemAllowsChildren#get()} to get the
-     * instance.
-     * 
-     * @see Tree#setChildrenAllowed(Object, boolean)
-     * 
-     * @since 6.3
-     */
-    public static class TargetItemAllowsChildren extends TargetDetailIs {
-
-        private static TargetItemAllowsChildren instance = new TargetItemAllowsChildren();
-
-        public static TargetItemAllowsChildren get() {
-            return instance;
-        }
-
-        private TargetItemAllowsChildren() {
-            super("itemIdOverIsNode", Boolean.TRUE);
-        }
-
-        /*
-         * Uses enhanced server side check
-         */
-        @Override
-        public boolean accept(DragAndDropEvent dragEvent) {
-            try {
-                // must be over tree node and in the middle of it (not top or
-                // bottom
-                // part)
-                TreeTargetDetails eventDetails = (TreeTargetDetails) dragEvent
-                        .getTargetDetails();
-
-                Object itemIdOver = eventDetails.getItemIdOver();
-                if (!eventDetails.getTarget().areChildrenAllowed(itemIdOver)) {
-                    return false;
-                }
-                // return true if directly over
-                return eventDetails.getDropLocation() == VerticalDropLocation.MIDDLE;
-            } catch (Exception e) {
-                return false;
-            }
-        }
-
-    }
-
-    /**
-     * An accept criterion that checks the parent node (or parent hierarchy) for
-     * the item identifier given in constructor. If the parent is found, content
-     * is accepted. Criterion can be used to accepts drags on a specific sub
-     * tree only.
-     * <p>
-     * The root items is also consider to be valid target.
-     */
-    public class TargetInSubtree extends ClientSideCriterion {
-
-        private Object rootId;
-        private int depthToCheck = -1;
-
-        /**
-         * Constructs a criteria that accepts the drag if the targeted Item is a
-         * descendant of Item identified by given id
-         * 
-         * @param parentItemId
-         *            the item identifier of the parent node
-         */
-        public TargetInSubtree(Object parentItemId) {
-            rootId = parentItemId;
-        }
-
-        /**
-         * Constructs a criteria that accepts drops within given level below the
-         * subtree root identified by given id.
-         * 
-         * @param rootId
-         *            the item identifier to be sought for
-         * @param depthToCheck
-         *            the depth that tree is traversed upwards to seek for the
-         *            parent, -1 means that the whole structure should be
-         *            checked
-         */
-        public TargetInSubtree(Object rootId, int depthToCheck) {
-            this.rootId = rootId;
-            this.depthToCheck = depthToCheck;
-        }
-
-        @Override
-        public boolean accept(DragAndDropEvent dragEvent) {
-            try {
-                TreeTargetDetails eventDetails = (TreeTargetDetails) dragEvent
-                        .getTargetDetails();
-
-                if (eventDetails.getItemIdOver() != null) {
-                    Object itemId = eventDetails.getItemIdOver();
-                    int i = 0;
-                    while (itemId != null
-                            && (depthToCheck == -1 || i <= depthToCheck)) {
-                        if (itemId.equals(rootId)) {
-                            return true;
-                        }
-                        itemId = getParent(itemId);
-                        i++;
-                    }
-                }
-                return false;
-            } catch (Exception e) {
-                return false;
-            }
-        }
-
-        @Override
-        public void paintContent(PaintTarget target) throws PaintException {
-            super.paintContent(target);
-            target.addAttribute("depth", depthToCheck);
-            target.addAttribute("key", key(rootId));
         }
     }
 

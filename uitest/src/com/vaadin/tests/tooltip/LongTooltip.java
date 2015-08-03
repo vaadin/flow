@@ -41,7 +41,7 @@ public class LongTooltip extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "For a given cursor position the tooltip should always appear with the same size in the same position. The tooltip should also always be completely on screen and not cause any scrollbars to appear.";
     }
 

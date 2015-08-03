@@ -78,7 +78,7 @@ public class AudioTest extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Should autoplay, manipulating checkboxes should do appropriate thing, button changes file.";
     }
 

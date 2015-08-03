@@ -24,7 +24,7 @@ public class SelectableEditable extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         // TODO Auto-generated method stub
         return "It is difficult to select rows of an editable Table, especially columns with checkboxes.";
     }

@@ -38,7 +38,7 @@ public class MenuBarToolTips extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "There should be tooltips on the menubar and its items";
     }
 

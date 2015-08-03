@@ -29,7 +29,7 @@ public class NewItemsESCPress extends TestBase {
     }
 
     @Override
-    protected String getDescription() {
+    protected String getTestDescription() {
         return "Firefox flashes the previously entered value when holding the ESC-key.";
     }
 
