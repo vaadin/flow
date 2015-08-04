@@ -62,50 +62,8 @@
         </javac>
     </target>
 
-    <target name="testing-widgetset" depends="dependencies,compile">
-        <property name="module"
-            value="com.vaadin.tests.widgetset.TestingWidgetSet" />
-        <property name="style" value="OBF" />
-        <property name="localWorkers" value="6" />
-        <property name="extraParams" value="" />
-        <property name="module.output.dir" location="${result.dir}/VAADIN/widgetsets" />
-        <property name="work.dir" location="${result.dir}/work" />
-
-        <mkdir dir="${module.output.dir}" />
-
-        <echo>Compiling ${module} to ${module.output.dir}</echo>
-
-        <!-- compile the module -->
-        <java classname="com.google.gwt.dev.Compiler" classpathref="classpath.compile.dependencies"
-            failonerror="yes" fork="yes" maxmemory="512m">
-            <classpath location="src" />
-            <classpath location="${classes}" />
-            <arg value="-workDir" />
-            <arg value="${work.dir}" />
-            <arg value="-logLevel" />
-            <arg value="TRACE" />
-            <arg value="-war" />
-            <arg value="${module.output.dir}" />
-            <arg value="-style" />
-            <arg value="${style}" />
-
-            <arg value="-localWorkers" />
-            <arg value="${localWorkers}" />
-            <arg value="-strict" />
-            <arg line="${extraParams}" />
-            <arg value="${module}" />
-
-            <sysproperty key="vFailIfNotSerializable" value="true" />
-
-            <jvmarg value="-Xss8M" />
-            <jvmarg value="-XX:MaxPermSize=256M" />
-            <jvmarg value="-Djava.awt.headless=true" />
-        </java>
-
-    </target>
-
     <target name="war"
-        depends="dependencies, compile, compile-test-themes, testing-widgetset">
+        depends="dependencies, compile, compile-test-themes">
         <property name="result.dir" location="result" />
         <property name="classes" location="${result.dir}/classes" />
         <property name="WebContent.dir" location="${vaadin.basedir}/WebContent" />
