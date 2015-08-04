@@ -8,7 +8,6 @@
 
     <include file="../common.xml" as="common" />
     <include file="../build.xml" as="vaadin" />
-    <include file="../gwt-files.xml" as="gwtfiles" />
 
     <!-- global properties -->
     <property name="module.name" value="vaadin-client-compiled" />
@@ -19,8 +18,6 @@
     <property name="module.output.dir" location="${result.dir}/VAADIN/widgetsets" />
     <property name="compiled.jar"
         location="${result.dir}/lib/${module.name}-${vaadin.version}.jar" />
-    <property name="compiled-cache.jar"
-        location="${result.dir}/lib/${module.name}-cache-${vaadin.version}.jar" />
 
     <union id="jar.includes">
         <fileset dir="${result.dir}">
@@ -41,30 +38,6 @@
     </target>
 
 
-    <target name="compile-module-cache">
-        <fail unless="module"
-            message="You must give the module to compile in the 'module' parameter" />
-        <ivy:resolve log="download-only" resolveid="common"
-            conf="compile-module" />
-        <ivy:cachepath pathid="classpath.compile.widgetset"
-            conf="compile-module" />
-        <echo>Creating gwtar files for ${module} in ${gwtar.dir}</echo>
-
-        <!-- Produce gwtar files for the separate JAR -->
-        <java classname="com.google.gwt.dev.CompileModule"
-            classpathref="classpath.compile.widgetset" failonerror="yes"
-            fork="yes" maxmemory="512m">
-            <arg value="-out" />
-            <arg value="${gwtar.dir}" />
-            <arg value="-strict" />
-            <arg value="${module}" />
-
-            <jvmarg value="-Xss8M" />
-            <jvmarg value="-XX:MaxPermSize=256M" />
-            <jvmarg value="-Djava.awt.headless=true" />
-        </java>
-    </target>
-
     <target name="compile-module">
         <fail unless="module"
             message="You must give the module to compile in the 'module' parameter" />
@@ -84,7 +57,6 @@
         <!-- compile the module -->
         <java classname="com.google.gwt.dev.Compiler" classpathref="classpath.compile.widgetset"
             failonerror="yes" fork="yes" maxmemory="512m">
-            <classpath location="${compiled-cache.jar}" />
             <arg value="-workDir" />
             <arg value="${work.dir}" />
             <arg value="-logLevel" />
@@ -109,16 +81,6 @@
             <jvmarg value="-Djava.awt.headless=true" />
         </java>
 
-    </target>
-
-    <target name="client-compiled-cache.jar" depends="default-widgetset-cache">
-        <jar file="${compiled-cache.jar}" compress="true">
-            <fileset dir="${gwtar.dir}">
-                <include name="**/*.gwtar" />
-            </fileset>
-            <union refid="client-compiled-cache.gwt.includes" />
-            <fileset dir="${common.jarfiles.dir}" />
-        </jar>
     </target>
 
     <target name="jar" depends="default-widgetset">

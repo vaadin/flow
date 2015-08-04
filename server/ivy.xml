@@ -40,14 +40,10 @@
 
         <!-- Bean Validation API -->
         <dependency org="javax.validation" name="validation-api"
-            rev="1.0.0.GA" conf="build-provided,ide,test -> default" />
+            rev="1.0.0.GA" conf="build-provided,ide  -> default" />
 
         <!-- LIBRARY DEPENDENCIES (compile time) -->
         <!-- Project modules -->
-        <dependency org="com.vaadin" name="vaadin-shared"
-            rev="${vaadin.version}" conf="build,test->build">
-            <exclude type="pom" conf="test" />
-        </dependency>
         <dependency org="com.vaadin" name="vaadin-push" rev="${vaadin.version}"
             conf="build-provided,test->build">
             <exclude type="pom" conf="test" />
@@ -56,6 +52,15 @@
         <!-- Jsoup for BootstrapHandler -->
         <dependency org="org.jsoup" name="jsoup" rev="1.8.3"
             conf="build,ide,test -> default" />
+
+		<!-- JSON -->
+		<dependency org="com.google.gwt" name="gwt-elemental" rev="${gwt.version}" conf="build,ide->default">
+			<exclude module="gwt-user" />
+		</dependency>
+		
+		<!-- Grid uses ... -->
+        <dependency org="com.vaadin.external.google" name="guava"
+            rev="16.0.1.vaadin1" conf="build,ide,test->default" />
 
         <!-- TESTING DEPENDENCIES -->
 
@@ -84,6 +89,7 @@
         <!-- <dependency org="postgresql" name="postgresql" rev="9.1-901.jdbc3" 
             conf="test,ide->default" /> -->
 
+		
     </dependencies>
 
 </ivy-module>

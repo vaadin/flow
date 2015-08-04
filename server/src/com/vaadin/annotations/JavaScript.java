@@ -21,12 +21,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.server.ClientConnector;
-
 /**
- * If this annotation is present on a {@link ClientConnector} class, the
- * framework ensures the referenced JavaScript files are loaded before the init
- * method for the corresponding client-side connector is invoked.
+ * If this annotation is present on a ClientConnector class, the framework
+ * ensures the referenced JavaScript files are loaded before the init method for
+ * the corresponding client-side connector is invoked.
  * <p>
  * Absolute URLs including protocol and host are used as is on the client-side.
  * Relative URLs are mapped to APP/PUBLISHED/[url] which are by default served
