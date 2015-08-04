@@ -25,8 +25,6 @@
         <dependency org="javax.portlet" name="portlet-api"
             rev="2.0" conf="build-provided,ide -> default" />
 
-        <dependency org="javax.validation" name="validation-api"
-            rev="1.0.0.GA" conf="build,ide -> default,sources" />
         <dependency org="org.hibernate" name="hibernate-validator"
             rev="4.2.0.Final" conf="build,ide -> default" />
         <!-- Google App Engine -->

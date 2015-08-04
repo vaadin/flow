@@ -24,7 +24,6 @@ import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.google.gwt.dev.cfg.Styles;
 import com.vaadin.event.EventRouter;
 import com.vaadin.shared.ui.BorderStyle;
 import com.vaadin.shared.ui.ui.PageClientRpc;
@@ -203,8 +202,6 @@ public class Page implements Serializable {
     private int browserWindowHeight = -1;
 
     private JavaScript javaScript;
-
-    private Styles styles;
 
     /**
      * The current browser location.

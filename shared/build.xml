@@ -7,7 +7,6 @@
     </description>
     <include file="../common.xml" as="common" />
     <include file="../build.xml" as="vaadin" />
-    <include file="../gwt-files.xml" as="gwtfiles" />
 
     <!-- global properties -->
     <property name="module.name" value="vaadin-shared" />
@@ -47,7 +46,6 @@
 
     <target name="publish-local" depends="jar">
         <antcall target="common.sources.jar">
-            <reference torefid="extra.jar.includes" refid="shared.gwt.includes" />
         </antcall>
         <antcall target="common.javadoc.jar" />
 
