@@ -32,7 +32,6 @@ public class EmbeddedImageRefresh extends TestBase {
     protected void setup() {
         // Create the embedded.
         final Embedded embedded = new Embedded();
-        embedded.setDescription("Click on the grid cells to switch them.");
         addComponent(embedded);
 
         // Attach it to a resource.

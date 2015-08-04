@@ -25,7 +25,6 @@ import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.TabIndexState;
 
 public class UIState extends TabIndexState {
-    public TooltipConfigurationState tooltipConfiguration = new TooltipConfigurationState();
     public LoadingIndicatorConfigurationState loadingIndicatorConfiguration = new LoadingIndicatorConfigurationState();
     public int pollInterval = -1;
 
@@ -73,14 +72,6 @@ public class UIState extends TabIndexState {
         public int firstDelay = 300;
         public int secondDelay = 1500;
         public int thirdDelay = 5000;
-    }
-
-    public static class TooltipConfigurationState implements Serializable {
-        public int openDelay = 750;
-        public int quickOpenDelay = 100;
-        public int quickOpenTimeout = 1000;
-        public int closeTimeout = 300;
-        public int maxWidth = 500;
     }
 
     public static class NotificationTypeConfiguration implements Serializable {

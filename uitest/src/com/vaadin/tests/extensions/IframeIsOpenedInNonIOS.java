@@ -1,13 +1,14 @@
 package com.vaadin.tests.extensions;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
 import com.vaadin.server.FileDownloader;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
-
-import java.io.*;
 
 public class IframeIsOpenedInNonIOS extends AbstractTestUI {
 
@@ -39,7 +40,7 @@ public class IframeIsOpenedInNonIOS extends AbstractTestUI {
     }
 
     @Override
-    public String getDescription() {
+    public String getTestDescription() {
         return "IFrame with a file is not shown in iOS";
     }
 }

@@ -84,7 +84,6 @@ public class BrowserPopupExtensionTest extends AbstractTestUI {
                 AbstractComponent c = (AbstractComponent) cls.newInstance();
                 c.setId(cls.getName());
                 c.setCaption(cls.getName());
-                c.setDescription(URL);
                 c.setWidth("100px");
                 c.setHeight("100px");
                 hl.addComponent(c);

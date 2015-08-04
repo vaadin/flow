@@ -134,7 +134,7 @@ public class DateForm extends AbstractTestUIWithLog {
     }
 
     @Override
-    public String getDescription() {
+    public String getTestDescription() {
         return "Ensure FieldGroupFieldFactory supports Dates";
     }
 

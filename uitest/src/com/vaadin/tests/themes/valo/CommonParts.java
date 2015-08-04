@@ -19,11 +19,8 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.server.AbstractErrorMessage;
-import com.vaadin.server.ErrorMessage.ErrorLevel;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
-import com.vaadin.server.UserError;
 import com.vaadin.shared.Position;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
@@ -67,7 +64,6 @@ public class CommonParts extends VerticalLayout implements View {
         row.addComponent(loadingIndicators());
         row.addComponent(notifications(), 1, 0, 1, 2);
         row.addComponent(windows());
-        row.addComponent(tooltips());
 
     }
 
@@ -377,54 +373,6 @@ public class CommonParts extends VerticalLayout implements View {
         p.setContent(content);
 
         return p;
-    }
-
-    Panel tooltips() {
-        Panel p = new Panel("Tooltips");
-        HorizontalLayout content = new HorizontalLayout() {
-            {
-                setSpacing(true);
-                setMargin(true);
-                addStyleName("wrapping");
-
-                addComponent(new Label("Try out different tooltips/descriptions by hovering over the labels."));
-
-                Label label = new Label("Simple");
-                label.addStyleName("bold");
-                label.setDescription("Simple tooltip message");
-                addComponent(label);
-
-                label = new Label("Long");
-                label.addStyleName("bold");
-                label.setDescription("Long tooltip message. Inmensae subtilitatis, obscuris et malesuada fames. Salutantibus vitae elit libero, a pharetra augue.");
-                addComponent(label);
-
-                label = new Label("HTML tooltip");
-                label.addStyleName("bold");
-                label.setDescription("<div><h1>Ut enim ad minim veniam, quis nostrud exercitation</h1><p><span>Morbi fringilla convallis sapien, id pulvinar odio volutpat.</span> <span>Vivamus sagittis lacus vel augue laoreet rutrum faucibus.</span> <span>Donec sed odio operae, eu vulputate felis rhoncus.</span> <span>At nos hinc posthac, sitientis piros Afros.</span> <span>Tu quoque, Brute, fili mi, nihil timor populi, nihil!</span></p><p><span>Gallia est omnis divisa in partes tres, quarum.</span> <span>Praeterea iter est quasdam res quas ex communi.</span> <span>Cum ceteris in veneratione tui montes, nascetur mus.</span> <span>Quam temere in vitiis, legem sancimus haerentia.</span> <span>Idque Caesaris facere voluntate liceret: sese habere.</span></p></div>");
-                addComponent(label);
-
-                label = new Label("With an error message");
-                label.addStyleName("bold");
-                label.setDescription("Simple tooltip message");
-                label.setComponentError(new UserError("Something terrible has happened"));
-                addComponent(label);
-
-                label = new Label("With a long error message");
-                label.addStyleName("bold");
-                label.setDescription("Simple tooltip message");
-                label.setComponentError(new UserError("<h2>Contra legem facit qui id facit quod lex prohibet <span>Tityre, tu patulae recubans sub tegmine fagi  dolor.</span> <span>Tityre, tu patulae recubans sub tegmine fagi  dolor.</span> <span>Prima luce, cum quibus mons aliud  consensu ab eo.</span> <span>Quid securi etiam tamquam eu fugiat nulla pariatur.</span> <span>Fabio vel iudice vincam, sunt in culpa qui officia.</span> <span>Nihil hic munitissimus habendi senatus locus, nihil horum?</span></p><p><span>Plura mihi bona sunt, inclinet, amari petere vellent.</span> <span>Integer legentibus erat a ante historiarum dapibus.</span> <span>Quam diu etiam furor iste tuus nos eludet?</span> <span>Nec dubitamus multa iter quae et nos invenerat.</span> <span>Quisque ut dolor gravida, placerat libero vel, euismod.</span> <span>Quae vero auctorem tractata ab fiducia dicuntur.</span></h2>", AbstractErrorMessage.ContentMode.HTML, ErrorLevel.CRITICAL));
-                addComponent(label);
-
-                label = new Label("Error message only");
-                label.addStyleName("bold");
-                label.setComponentError(new UserError("Something terrible has happened"));
-                addComponent(label);
-            }
-        };
-        p.setContent(content);
-        return p;
-
     }
 
     Panel windows() {

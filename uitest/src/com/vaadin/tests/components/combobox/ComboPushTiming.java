@@ -34,7 +34,6 @@ public class ComboPushTiming extends TestBase {
         final ComboBox cb = new ComboBox("Combobox", list);
         cb.setImmediate(true);
         cb.setInputPrompt("Enter text");
-        cb.setDescription("Some Combobox");
         addComponent(cb);
 
         final ObjectProperty<String> log = new ObjectProperty<String>("");
@@ -73,6 +72,7 @@ public class ComboPushTiming extends TestBase {
 
     private void changeValue(final ComboBox cb) {
         executor.execute(new Runnable() {
+            @Override
             public void run() {
                 VaadinSession.getCurrent().lock();
                 try {

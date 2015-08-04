@@ -37,9 +37,7 @@ import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.CommunicationProblemHandler;
@@ -51,8 +49,6 @@ import com.vaadin.client.communication.ServerMessageHandler;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.componentlocator.ComponentLocator;
 import com.vaadin.client.metadata.ConnectorBundleLoader;
-import com.vaadin.client.ui.AbstractComponentConnector;
-import com.vaadin.client.ui.AbstractConnector;
 import com.vaadin.client.ui.FontIcon;
 import com.vaadin.client.ui.Icon;
 import com.vaadin.client.ui.ImageIcon;
@@ -61,7 +57,6 @@ import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
-import com.vaadin.shared.util.SharedUtil;
 
 /**
  * This is the client side communication "engine", managing client-server
@@ -78,21 +73,6 @@ import com.vaadin.shared.util.SharedUtil;
  * Entry point classes (widgetsets) define <code>onModuleLoad()</code>.
  */
 public class ApplicationConnection implements HasHandlers {
-
-    @Deprecated
-    public static final String MODIFIED_CLASSNAME = StyleConstants.MODIFIED;
-
-    @Deprecated
-    public static final String DISABLED_CLASSNAME = StyleConstants.DISABLED;
-
-    @Deprecated
-    public static final String REQUIRED_CLASSNAME = StyleConstants.REQUIRED;
-
-    @Deprecated
-    public static final String REQUIRED_CLASSNAME_EXT = StyleConstants.REQUIRED_EXT;
-
-    @Deprecated
-    public static final String ERROR_CLASSNAME_EXT = StyleConstants.ERROR_EXT;
 
     /**
      * A string that, if found in a non-JSON response to a UIDL request, will
@@ -291,8 +271,6 @@ public class ApplicationConnection implements HasHandlers {
 
     private Heartbeat heartbeat = GWT.create(Heartbeat.class);
 
-    private boolean tooltipInitialized = false;
-
     private final VaadinUriResolver uriResolver = new VaadinUriResolver() {
         @Override
         protected String getVaadinDirUrl() {
@@ -342,7 +320,6 @@ public class ApplicationConnection implements HasHandlers {
         ConnectorBundleLoader.get().loadBundle(ConnectorBundleLoader.EAGER_BUNDLE_NAME, null);
         uIConnector = GWT.create(UIConnector.class);
         rpcManager = GWT.create(RpcManager.class);
-        tooltip = GWT.create(VTooltip.class);
         loadingIndicator = GWT.create(VLoadingIndicator.class);
         loadingIndicator.setConnection(this);
         serverRpcQueue = GWT.create(ServerRpcQueue.class);
@@ -380,8 +357,6 @@ public class ApplicationConnection implements HasHandlers {
 
         uIConnector.init(cnf.getRootPanelId(), this);
 
-        tooltip.setOwner(uIConnector.getWidget());
-
         getLoadingIndicator().show();
 
         heartbeat.init(this);
@@ -413,19 +388,6 @@ public class ApplicationConnection implements HasHandlers {
             // Hack to avoid logging an error in endRequest()
             getServerCommunicationHandler().startRequest();
             getServerMessageHandler().handleMessage(jsonText);
-        }
-
-        // Tooltip can't be created earlier because the
-        // necessary fields are not setup to add it in the
-        // correct place in the DOM
-        if (!tooltipInitialized) {
-            tooltipInitialized = true;
-            ApplicationConfiguration.runWhenDependenciesLoaded(new Command() {
-                @Override
-                public void execute() {
-                    getVTooltip().initializeAssistiveTooltips();
-                }
-            });
         }
     }
 
@@ -524,7 +486,7 @@ public class ApplicationConnection implements HasHandlers {
     		if (oldSync) {
     			oldSync();
     		}
-    		app.@com.vaadin.client.ApplicationConnection::sendPendingVariableChanges()();
+    		app.@com.vaadin.client.ApplicationConnection::getServerRpcQueue()().@com.vaadin.client.communication.ServerRpcQueue::flush()();
     	});
     }-*/;
 
@@ -566,20 +528,6 @@ public class ApplicationConnection implements HasHandlers {
         }
     }
     }-*/;
-
-    /**
-     * Sends a request to the server to print details to console that will help
-     * the developer to locate the corresponding server-side connector in the
-     * source code.
-     * 
-     * @param serverConnector
-     * @deprecated as of 7.1. Replaced by
-     *             {@link UIConnector#showServerDebugInfo(ServerConnector)}
-     */
-    @Deprecated
-    void highlightConnector(ServerConnector serverConnector) {
-        getUIConnector().showServerDebugInfo(serverConnector);
-    }
 
     int cssWaits = 0;
 
@@ -728,18 +676,6 @@ public class ApplicationConnection implements HasHandlers {
         return loadingIndicator;
     }
 
-    /**
-     * Determines whether or not the loading indicator is showing.
-     * 
-     * @return true if the loading indicator is visible
-     * @deprecated As of 7.1. Use {@link #getLoadingIndicator()} and
-     *             {@link VLoadingIndicator#isVisible()}.isVisible() instead.
-     */
-    @Deprecated
-    public boolean isLoadingIndicatorVisible() {
-        return getLoadingIndicator().isVisible();
-    }
-
     public void loadStyleDependencies(JsArrayString dependencies) {
         // Assuming no reason to interpret in a defined order
         ResourceLoadListener resourceLoadListener = new ResourceLoadListener() {
@@ -809,14 +745,6 @@ public class ApplicationConnection implements HasHandlers {
                 loader.preloadResource(preloadUrl, null);
             }
         }
-    }
-
-    /**
-     * @deprecated as of 7.6, use {@link ServerRpcQueue#flush()}
-     */
-    @Deprecated
-    public void sendPendingVariableChanges() {
-        serverRpcQueue.flush();
     }
 
     /**
@@ -935,24 +863,7 @@ public class ApplicationConnection implements HasHandlers {
         return configuration.getVaadinDirUrl() + "themes/" + getUIConnector().getActiveTheme();
     }
 
-    /* Extended title handling */
-
-    private final VTooltip tooltip;
-
     private ConnectorMap connectorMap = GWT.create(ConnectorMap.class);
-
-    /**
-     * Use to notify that the given component's caption has changed; layouts may
-     * have to be recalculated.
-     * 
-     * @param component
-     *            the Paintable whose caption has changed
-     * @deprecated As of 7.0.2, has not had any effect for a long time
-     */
-    @Deprecated
-    public void captionSizeUpdated(Widget widget) {
-        // This doesn't do anything, it's just kept here for compatibility
-    }
 
     /**
      * Gets the main view
@@ -973,133 +884,8 @@ public class ApplicationConnection implements HasHandlers {
         return configuration;
     }
 
-    /**
-     * Checks if there is a registered server side listener for the event. The
-     * list of events which has server side listeners is updated automatically
-     * before the component is updated so the value is correct if called from
-     * updatedFromUIDL.
-     * 
-     * @param connector
-     *            The connector to register event listeners for
-     * @param eventIdentifier
-     *            The identifier for the event
-     * @return true if at least one listener has been registered on server side
-     *         for the event identified by eventIdentifier.
-     * @deprecated As of 7.0. Use
-     *             {@link AbstractConnector#hasEventListener(String)} instead
-     */
-    @Deprecated
-    public boolean hasEventListeners(ComponentConnector connector, String eventIdentifier) {
-        return connector.hasEventListener(eventIdentifier);
-    }
-
-    /**
-     * Adds the get parameters to the uri and returns the new uri that contains
-     * the parameters.
-     * 
-     * @param uri
-     *            The uri to which the parameters should be added.
-     * @param extraParams
-     *            One or more parameters in the format "a=b" or "c=d&e=f". An
-     *            empty string is allowed but will not modify the url.
-     * @return The modified URI with the get parameters in extraParams added.
-     * @deprecated Use {@link SharedUtil#addGetParameters(String,String)}
-     *             instead
-     */
-    @Deprecated
-    public static String addGetParameters(String uri, String extraParams) {
-        return SharedUtil.addGetParameters(uri, extraParams);
-    }
-
     ConnectorMap getConnectorMap() {
         return connectorMap;
-    }
-
-    /**
-     * @deprecated As of 7.0. No longer serves any purpose.
-     */
-    @Deprecated
-    public void unregisterPaintable(ServerConnector p) {
-        getLogger().info("unregisterPaintable (unnecessarily) called for " + Util.getConnectorString(p));
-    }
-
-    /**
-     * Get VTooltip instance related to application connection
-     * 
-     * @return VTooltip instance
-     */
-    public VTooltip getVTooltip() {
-        return tooltip;
-    }
-
-    /**
-     * Method provided for backwards compatibility. Duties previously done by
-     * this method is now handled by the state change event handler in
-     * AbstractComponentConnector. The only function this method has is to
-     * return true if the UIDL is a "cached" update.
-     * 
-     * @param component
-     * @param uidl
-     * @param manageCaption
-     * @deprecated As of 7.0, no longer serves any purpose
-     * @return
-     */
-    @Deprecated
-    public boolean updateComponent(Widget component, UIDL uidl, boolean manageCaption) {
-        ComponentConnector connector = getConnectorMap().getConnector(component);
-        if (!AbstractComponentConnector.isRealUpdate(uidl)) {
-            return true;
-        }
-
-        if (!manageCaption) {
-            getLogger().warning(Util.getConnectorString(connector) + " called updateComponent with manageCaption=false. The parameter was ignored - override delegateCaption() to return false instead. It is however not recommended to use caption this way at all.");
-        }
-        return false;
-    }
-
-    /**
-     * @deprecated As of 7.0. Use
-     *             {@link AbstractComponentConnector#hasEventListener(String)}
-     *             instead
-     */
-    @Deprecated
-    public boolean hasEventListeners(Widget widget, String eventIdentifier) {
-        ComponentConnector connector = getConnectorMap().getConnector(widget);
-        if (connector == null) {
-            /*
-             * No connector will exist in cases where Vaadin widgets have been
-             * re-used without implementing server<->client communication.
-             */
-            return false;
-        }
-
-        return hasEventListeners(getConnectorMap().getConnector(widget), eventIdentifier);
-    }
-
-    /**
-     * Schedules a heartbeat request to occur after the configured heartbeat
-     * interval elapses if the interval is a positive number. Otherwise, does
-     * nothing.
-     * 
-     * @deprecated as of 7.2, use {@link Heartbeat#schedule()} instead
-     */
-    @Deprecated
-    protected void scheduleHeartbeat() {
-        heartbeat.schedule();
-    }
-
-    /**
-     * Sends a heartbeat request to the server.
-     * <p>
-     * Heartbeat requests are used to inform the server that the client-side is
-     * still alive. If the client page is closed or the connection lost, the
-     * server will eventually close the inactive UI.
-     * 
-     * @deprecated as of 7.2, use {@link Heartbeat#send()} instead
-     */
-    @Deprecated
-    protected void sendHeartbeat() {
-        heartbeat.send();
     }
 
     public void handleCommunicationError(String details, int statusCode) {

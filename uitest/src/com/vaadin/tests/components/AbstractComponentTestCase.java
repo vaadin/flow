@@ -145,13 +145,6 @@ public abstract class AbstractComponentTestCase<T extends AbstractComponent> ext
 
     };
 
-    protected Command<T, String> descriptionCommand = new Command<T, String>() {
-        @Override
-        public void execute(T c, String value, Object data) {
-            c.setDescription(value);
-        }
-    };
-
     protected Command<T, Boolean> readonlyCommand = new Command<T, Boolean>() {
 
         @Override

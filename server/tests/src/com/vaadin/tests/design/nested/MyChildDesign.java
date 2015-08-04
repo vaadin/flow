@@ -32,6 +32,6 @@ public class MyChildDesign extends HorizontalLayout {
 
     public MyChildDesign() {
         Design.read(this);
-        childLabel.setDescription("added in constructor");
+        childLabel.setStyleName("added-in-constructor");
     }
 }

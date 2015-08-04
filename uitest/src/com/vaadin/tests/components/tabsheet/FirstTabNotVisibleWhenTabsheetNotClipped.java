@@ -1,11 +1,16 @@
 package com.vaadin.tests.components.tabsheet;
 
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.tests.components.AbstractTestUI;
-import com.vaadin.ui.*;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.tests.components.AbstractTestUI;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Layout;
+import com.vaadin.ui.TabSheet;
+import com.vaadin.ui.VerticalLayout;
 
 public class FirstTabNotVisibleWhenTabsheetNotClipped extends AbstractTestUI {
 
@@ -123,7 +128,7 @@ public class FirstTabNotVisibleWhenTabsheetNotClipped extends AbstractTestUI {
     }
 
     @Override
-    public String getDescription() {
+    public String getTestDescription() {
         return "TabSheet should display re-shown tab if there's room for it";
     }
 }

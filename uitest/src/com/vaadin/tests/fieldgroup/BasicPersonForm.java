@@ -176,7 +176,7 @@ public class BasicPersonForm extends AbstractTestUIWithLog {
     }
 
     @Override
-    public String getDescription() {
+    public String getTestDescription() {
         return "Basic Person Form";
     }
 

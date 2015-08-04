@@ -37,7 +37,7 @@ public class ThemeChangeFavicon extends AbstractTestUI {
     }
 
     @Override
-    public String getDescription() {
+    public String getTestDescription() {
         return "UI for testing that the favicon changes when changing themes";
     }
 

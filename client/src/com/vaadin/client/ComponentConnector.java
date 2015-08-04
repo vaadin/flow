@@ -16,7 +16,6 @@
 
 package com.vaadin.client;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.shared.AbstractComponentState;
 
@@ -114,35 +113,6 @@ public interface ComponentConnector extends ServerConnector {
      *            true if the widget should be enabled, false otherwise
      */
     public void setWidgetEnabled(boolean widgetEnabled);
-
-    /**
-     * Gets the tooltip info for the given element.
-     * <p>
-     * When overriding this method, {@link #hasTooltip()} should also be
-     * overridden to return <code>true</code> in all situations where this
-     * method might return a non-empty result.
-     * </p>
-     * 
-     * @param element
-     *            The element to lookup a tooltip for
-     * @return The tooltip for the element or null if no tooltip is defined for
-     *         this element.
-     */
-    public TooltipInfo getTooltipInfo(Element element);
-
-    /**
-     * Check whether there might be a tooltip for this component. The framework
-     * will only add event listeners for automatically handling tooltips (using
-     * {@link #getTooltipInfo(Element)}) if this method returns true.
-     * <p>
-     * This is only done to optimize performance, so in cases where the status
-     * is not known, it's safer to return <code>true</code> so that there will
-     * be a tooltip handler even though it might not be needed in all cases.
-     * 
-     * @return <code>true</code> if some part of the component might have a
-     *         tooltip, otherwise <code>false</code>
-     */
-    public boolean hasTooltip();
 
     /**
      * Called for the active (focused) connector when a situation occurs that

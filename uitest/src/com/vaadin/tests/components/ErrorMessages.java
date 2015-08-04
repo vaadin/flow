@@ -25,7 +25,6 @@ public class ErrorMessages extends TestBase {
         addComponent(tf);
 
         ComboBox cb = new ComboBox("ComboBox with description and UserError");
-        cb.setDescription("This is a combobox");
         cb.setComponentError(new UserError("This is a failure"));
         addComponent(cb);
 

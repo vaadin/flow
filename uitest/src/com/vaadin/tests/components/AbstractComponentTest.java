@@ -222,7 +222,6 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         createLocaleSelect(CATEGORY_STATE);
         createErrorMessageSelect(CATEGORY_DECORATIONS);
 
-        createDescriptionSelect(CATEGORY_DECORATIONS);
         createCaptionSelect(CATEGORY_DECORATIONS);
         createIconSelect(CATEGORY_DECORATIONS);
 
@@ -319,17 +318,6 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         options.put("Long", TEXT_LONG);
         options.put("Very long", TEXT_VERY_LONG);
         createSelectAction("Error message", category, options, "-", errorMessageCommand);
-
-    }
-
-    private void createDescriptionSelect(String category) {
-        LinkedHashMap<String, String> options = new LinkedHashMap<String, String>();
-        options.put("-", null);
-        options.put(TEXT_SHORT, TEXT_SHORT);
-        options.put("Medium", TEXT_MEDIUM);
-        options.put("Long", TEXT_LONG);
-        options.put("Very long", TEXT_VERY_LONG);
-        createSelectAction("Description / tooltip", category, options, "-", descriptionCommand);
 
     }
 

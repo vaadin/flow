@@ -17,7 +17,6 @@ package com.vaadin.buildhelpers;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -104,37 +103,6 @@ public class CompileTheme {
 
         System.out.println("Compiled CSS to " + stylesCssName + " (" + filteredScss.length() + " bytes)");
 
-        createSprites(themeFolder, themeName);
-        File oldCss = new File(stylesCssName);
-        File newCss = new File(stylesCssDir + variant + "-sprite.css");
-
-        if (newCss.exists()) {
-            // Theme contained sprites. Renamed "styles-sprite.css" ->
-            // "styles.css"
-            oldCss.delete();
-
-            boolean ok = newCss.renameTo(oldCss);
-            if (!ok) {
-                throw new RuntimeException("Rename " + newCss + " -> " + oldCss + " failed");
-            }
-        }
-
     }
 
-    private static void createSprites(String themeFolder, String themeName) throws FileNotFoundException, IOException {
-        try {
-            // Try loading the class separately from using it to avoid
-            // hiding other classpath issues
-            Class<?> smartSpritesClass = org.carrot2.labs.smartsprites.SmartSprites.class;
-        } catch (NoClassDefFoundError e) {
-            System.err.println("Could not find smartsprites. No sprites were generated. The theme should still work.");
-            return;
-        }
-
-        String[] parameters = new String[] { "--sprite-png-depth", "AUTO", "--css-file-suffix", "-sprite", "--css-file-encoding", "UTF-8", "--root-dir-path", themeFolder + File.separator + themeName, "--log-level", "WARN" };
-
-        org.carrot2.labs.smartsprites.SmartSprites.main(parameters);
-        System.out.println("Generated sprites");
-
-    }
 }

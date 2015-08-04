@@ -13,7 +13,7 @@ public class MenuBarNavigation extends AbstractTestUIWithLog implements Command 
     private MenuItem export;
 
     @Override
-    public String getDescription() {
+    public String getTestDescription() {
         return "Test case for mouse and keyboard navigation in MenuBar";
     }
 

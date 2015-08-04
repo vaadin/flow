@@ -28,7 +28,6 @@ public class ComboFocusBlurEvents extends TestBase {
         ComboBox cb = new ComboBox("Combobox", list);
         cb.setImmediate(true);
         cb.setInputPrompt("Enter text");
-        cb.setDescription("Some Combobox");
         addComponent(cb);
 
         final ObjectProperty<String> log = new ObjectProperty<String>("");

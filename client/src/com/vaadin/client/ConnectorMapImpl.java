@@ -20,13 +20,13 @@ import java.util.Collection;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
-final class ComponentDetailMap extends JavaScriptObject {
+final class ConnectorMapImpl extends JavaScriptObject {
 
-    protected ComponentDetailMap() {
+    protected ConnectorMapImpl() {
     }
 
-    static ComponentDetailMap create() {
-        return (ComponentDetailMap) JavaScriptObject.createObject();
+    static ConnectorMapImpl create() {
+        return (ConnectorMapImpl) JavaScriptObject.createObject();
     }
 
     boolean isEmpty() {
@@ -38,12 +38,12 @@ final class ComponentDetailMap extends JavaScriptObject {
         return this.hasOwnProperty(key);
     }-*/;
 
-    final native ComponentDetail get(String key)
+    final native ServerConnector get(String key)
     /*-{
         return this[key];
     }-*/;
 
-    final native void put(String id, ComponentDetail value)
+    final native void put(String id, ServerConnector value)
     /*-{
         this[id] = value;
     }-*/;
@@ -71,7 +71,7 @@ final class ComponentDetailMap extends JavaScriptObject {
         }
     }-*/;
 
-    private final native void fillWithValues(Collection<ComponentDetail> list)
+    private final native void fillWithValues(Collection<ServerConnector> list)
     /*-{
         for(var key in this) {
             // $entry not needed as function is not exported
@@ -79,13 +79,13 @@ final class ComponentDetailMap extends JavaScriptObject {
         }
     }-*/;
 
-    final Collection<ComponentDetail> values() {
-        ArrayList<ComponentDetail> list = new ArrayList<ComponentDetail>();
+    final Collection<ServerConnector> values() {
+        ArrayList<ServerConnector> list = new ArrayList<ServerConnector>();
         fillWithValues(list);
         return list;
     }
 
-    public native JsArrayObject<ComponentDetail> valuesAsJsArray()
+    public native JsArrayObject<ServerConnector> valuesAsJsArray()
     /*-{
         var result = [];
         for(var key in this) {

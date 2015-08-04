@@ -16,10 +16,8 @@
 package com.vaadin.client;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.logging.Logger;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
@@ -30,8 +28,7 @@ public class ConnectorMap {
         return applicationConnection.getConnectorMap();
     }
 
-    @Deprecated
-    private final ComponentDetailMap idToComponentDetail = ComponentDetailMap.create();
+    private final ConnectorMapImpl connectors = ConnectorMapImpl.create();
 
     /**
      * Returns a {@link ServerConnector} by its id
@@ -42,12 +39,7 @@ public class ConnectorMap {
      *         registered
      */
     public ServerConnector getConnector(String connectorId) {
-        ComponentDetail componentDetail = idToComponentDetail.get(connectorId);
-        if (componentDetail == null) {
-            return null;
-        } else {
-            return componentDetail.getConnector();
-        }
+        return connectors.get(connectorId);
     }
 
     /**
@@ -97,14 +89,14 @@ public class ConnectorMap {
      *         otherwise
      */
     public boolean hasConnector(String connectorId) {
-        return idToComponentDetail.containsKey(connectorId);
+        return connectors.containsKey(connectorId);
     }
 
     /**
      * Removes all registered connectors
      */
     public void clear() {
-        idToComponentDetail.clear();
+        connectors.clear();
     }
 
     /**
@@ -121,9 +113,7 @@ public class ConnectorMap {
 
     public void registerConnector(String id, ServerConnector connector) {
         Profiler.enter("ConnectorMap.registerConnector");
-        ComponentDetail componentDetail = GWT.create(ComponentDetail.class);
-        idToComponentDetail.put(id, componentDetail);
-        componentDetail.setConnector(connector);
+        connectors.put(id, connector);
         if (connector instanceof ComponentConnector) {
             ComponentConnector pw = (ComponentConnector) connector;
             Widget widget = pw.getWidget();
@@ -188,7 +178,7 @@ public class ConnectorMap {
 
         String connectorId = connector.getConnectorId();
 
-        idToComponentDetail.remove(connectorId);
+        connectors.remove(connectorId);
         connector.onUnregister();
 
         for (ServerConnector child : connector.getChildren()) {
@@ -245,41 +235,12 @@ public class ConnectorMap {
         return result;
     }
 
-    @Deprecated
-    private ComponentDetail getComponentDetail(ComponentConnector componentConnector) {
-        return idToComponentDetail.get(componentConnector.getConnectorId());
-    }
-
     public int size() {
-        return idToComponentDetail.size();
-    }
-
-    /**
-     * @return
-     * 
-     * @deprecated As of 7.0.1, use {@link #getConnectorsAsJsArray()} for
-     *             improved performance.
-     */
-    @Deprecated
-    public Collection<? extends ServerConnector> getConnectors() {
-        Collection<ComponentDetail> values = idToComponentDetail.values();
-        ArrayList<ServerConnector> arrayList = new ArrayList<ServerConnector>(values.size());
-        for (ComponentDetail componentDetail : values) {
-            arrayList.add(componentDetail.getConnector());
-        }
-        return arrayList;
+        return connectors.size();
     }
 
     public JsArrayObject<ServerConnector> getConnectorsAsJsArray() {
-        JsArrayObject<ComponentDetail> componentDetails = idToComponentDetail.valuesAsJsArray();
-        JsArrayObject<ServerConnector> connectors = JavaScriptObject.createArray().cast();
-
-        int size = componentDetails.size();
-        for (int i = 0; i < size; i++) {
-            connectors.add(componentDetails.get(i).getConnector());
-        }
-
-        return connectors;
+        return connectors.valuesAsJsArray();
     }
 
     /**

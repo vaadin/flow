@@ -26,7 +26,6 @@ import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.NativeSelect;
-import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
 @Theme("tests-components")
@@ -43,7 +42,6 @@ public class BoxLayoutTest extends AbstractTestUI {
     protected NativeSelect componentHeight;
     protected NativeSelect componentCaption;
     protected NativeSelect componentIcon;
-    protected TextField componentDescription;
     protected CheckBox componentError;
     protected CheckBox componentRequired;
 
@@ -328,17 +326,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         });
         component.addComponent(componentIcon);
 
-        componentDescription = new TextField("Description");
-        componentDescription.setImmediate(true);
-        componentDescription.setEnabled(false);
-        componentDescription.addListener(new ValueChangeListener() {
-            @Override
-            public void valueChange(ValueChangeEvent event) {
-                target.setDescription(componentDescription.getValue());
-            }
-        });
-        component.addComponent(componentDescription);
-
         componentError = new CheckBox("Error");
         componentError.setImmediate(true);
         componentError.setEnabled(false);
@@ -400,7 +387,6 @@ public class BoxLayoutTest extends AbstractTestUI {
                 componentHeight.setEnabled(target != null);
                 componentCaption.setEnabled(target != null);
                 componentIcon.setEnabled(target != null);
-                componentDescription.setEnabled(target != null);
                 componentError.setEnabled(target != null);
                 componentRequired.setEnabled(target != null && target instanceof AbstractField);
                 align.setEnabled(target != null);
@@ -426,7 +412,6 @@ public class BoxLayoutTest extends AbstractTestUI {
                     } else {
                         componentIcon.select(null);
                     }
-                    componentDescription.setValue(target.getDescription());
                     componentError.setValue(target.getComponentError() != null);
                     if (target instanceof AbstractField) {
                         componentRequired.setValue(((AbstractField<?>) target).isRequired());

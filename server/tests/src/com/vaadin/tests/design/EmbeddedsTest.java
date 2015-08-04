@@ -52,7 +52,6 @@ public class EmbeddedsTest {
             ae.setAlternateText("some alternate text");
             ae.setCaption("some <b>caption</b>");
             ae.setCaptionAsHtml(true);
-            ae.setDescription("some description");
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             Design.write(ae, bos);
             AbstractEmbedded result = (AbstractEmbedded) Design.read(new ByteArrayInputStream(bos.toByteArray()));
@@ -60,7 +59,6 @@ public class EmbeddedsTest {
             assertEquals(ae.getAlternateText(), result.getAlternateText());
             assertEquals(ae.getCaption(), result.getCaption());
             assertEquals(ae.isCaptionAsHtml(), result.isCaptionAsHtml());
-            assertEquals(ae.getDescription(), result.getDescription());
         }
     }
 
@@ -71,7 +69,6 @@ public class EmbeddedsTest {
         ae.setAlternateText("some alternate text");
         ae.setCaption("some <b>caption</b>");
         ae.setCaptionAsHtml(true);
-        ae.setDescription("some description");
         ae.setCodebase("codebase");
         ae.setArchive("archive");
         ae.setCodetype("codetype");
@@ -85,7 +82,6 @@ public class EmbeddedsTest {
         assertEquals(ae.getAlternateText(), result.getAlternateText());
         assertEquals(ae.getCaption(), result.getCaption());
         assertEquals(ae.isCaptionAsHtml(), result.isCaptionAsHtml());
-        assertEquals(ae.getDescription(), result.getDescription());
         assertEquals(ae.getCodebase(), result.getCodebase());
         assertEquals(ae.getArchive(), result.getArchive());
         assertEquals(ae.getCodetype(), result.getCodetype());

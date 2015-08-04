@@ -63,7 +63,6 @@ public class ConnectorInfoPanel extends FlowPanel {
 
             html += getRowHTML("Widget", component.getWidget().getClass().getSimpleName());
             html += getRowHTML("Caption", componentState.caption);
-            html += getRowHTML("Description", componentState.description);
             html += getRowHTML("Width", componentState.width + " (actual: " + component.getWidget().getOffsetWidth() + "px)");
             html += getRowHTML("Height", componentState.height + " (actual: " + component.getWidget().getOffsetHeight() + "px)");
         }

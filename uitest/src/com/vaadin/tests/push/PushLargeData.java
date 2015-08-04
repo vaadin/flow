@@ -22,6 +22,7 @@ package com.vaadin.tests.push;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.vaadin.server.UserError;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUIWithLog;
 import com.vaadin.tests.util.LoremIpsum;
@@ -128,9 +129,9 @@ public abstract class PushLargeData extends AbstractTestUIWithLog {
                     @Override
                     public void run() {
                         PushLargeData ui = (PushLargeData) UI.getCurrent();
-                        // Using description as it is not rendered to the DOM
+                        // Using error as it is not rendered to the DOM
                         // immediately
-                        ui.getDataLabel().setDescription(System.currentTimeMillis() + ": " + data);
+                        ui.getDataLabel().setComponentError(new UserError(System.currentTimeMillis() + ": " + data));
                         ui.log("Package " + idx + " pushed");
                     }
                 });

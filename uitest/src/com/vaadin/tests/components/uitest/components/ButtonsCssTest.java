@@ -31,7 +31,6 @@ public class ButtonsCssTest extends GridLayout {
         addComponent(b);
 
         b = new Button("Button with tooltip");
-        b.setDescription("The tooltip");
         b.setId("button" + debugIdCounter++);
         addComponent(b);
 

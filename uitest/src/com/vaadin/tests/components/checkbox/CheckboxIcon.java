@@ -21,7 +21,6 @@ public class CheckboxIcon extends TestBase {
     protected void setup() {
         CheckBox checkbox = new CheckBox("A checkbox");
         checkbox.setIcon(new ThemeResource("../runo/icons/32/calendar.png"));
-        checkbox.setDescription("Tooltip for checkbox");
 
         addComponent(checkbox);
     }

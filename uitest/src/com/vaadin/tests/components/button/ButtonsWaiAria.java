@@ -22,7 +22,6 @@ public class ButtonsWaiAria extends ComponentTestCase<Button> {
 
         l = createButton("Icon Button, empty alt", nat);
         l.setIcon(ICON_16_USER_PNG_CACHEABLE);
-        l.setDescription("Empty alt text");
         addTestComponent(l);
 
         l = createButton("Icon Button with alt", nat);
@@ -30,11 +29,9 @@ public class ButtonsWaiAria extends ComponentTestCase<Button> {
         addTestComponent(l);
 
         l = createButton("Tooltip Button", nat);
-        l.setDescription("Tooltip");
         addTestComponent(l);
 
         l = createButton("Another tooltip", nat);
-        l.setDescription("Another");
         addTestComponent(l);
     }
 

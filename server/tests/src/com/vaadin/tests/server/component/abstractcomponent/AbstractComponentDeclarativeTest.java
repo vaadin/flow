@@ -73,7 +73,6 @@ public class AbstractComponentDeclarativeTest extends DeclarativeTestBase<Abstra
         component.setPrimaryStyleName("test-style");
         component.setCaption("test-caption");
         component.setLocale(new Locale("fi", "FI"));
-        component.setDescription("test-description");
         component.setComponentError(new UserError("<div>test-error</div>", com.vaadin.server.AbstractErrorMessage.ContentMode.HTML, ErrorLevel.ERROR));
         component.setImmediate(true);
         testRead(design, component);

@@ -45,7 +45,6 @@ public class MenuBarFocus extends AbstractTestUI {
 
     private MenuBar buildMenu() {
         final MenuBar bar = new MenuBar();
-        bar.setDescription("Root Menu");
 
         Command command = new Command() {
 

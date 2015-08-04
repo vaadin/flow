@@ -31,7 +31,6 @@ public class ComboSelectedValueBeyondTheFirstDropdownPage extends AbstractTestUI
 
     private ComboBox getComboBox(final Label value) {
         final ComboBox combobox = new ComboBox("MyCaption");
-        combobox.setDescription("ComboBox with more than 10 elements in it's dropdown list.");
 
         combobox.setImmediate(true);
 

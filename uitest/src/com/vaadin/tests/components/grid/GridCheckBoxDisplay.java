@@ -55,7 +55,7 @@ public class GridCheckBoxDisplay extends AbstractTestUI {
     }
 
     @Override
-    public String getDescription() {
+    public String getTestDescription() {
         return "Verify that checkbox state is correct for all items in editor";
     }
 

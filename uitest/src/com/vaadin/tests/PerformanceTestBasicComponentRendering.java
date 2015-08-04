@@ -62,7 +62,6 @@ public class PerformanceTestBasicComponentRendering extends CustomComponent {
             testContainer.addComponent(cb);
 
             TextField tf = new TextField("TextField " + i);
-            tf.setDescription("DESC SDKJSDF");
             tf.setComponentError(new UserError("dsfjklsdf"));
             testContainer.addComponent(tf);
 

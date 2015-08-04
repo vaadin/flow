@@ -134,7 +134,6 @@ public class FileDownloaderUI extends AbstractTestUIWithLog {
 
                 c.setId(cls.getName() + caption.replace(" ", ""));
                 c.setCaption(cls.getName());
-                c.setDescription(resource.getMIMEType() + " / " + resource.getClass());
                 c.setWidth("100px");
                 c.setHeight("100px");
 

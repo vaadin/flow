@@ -167,6 +167,7 @@ public class ReconnectingCommunicationProblemHandler implements CommunicationPro
         }
     }
 
+    @SuppressWarnings("unused")
     private void debug(String msg) {
         if (false) {
             getLogger().warning(msg);

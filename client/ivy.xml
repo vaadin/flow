@@ -37,6 +37,8 @@
 		<!-- gwt-user dependencies -->
 		<dependency org="com.google.gwt" name="gwt-user" rev="${gwt.version}"
 			conf="build-provided,ide->default" />
+		<dependency org="com.google.gwt" name="gwt-elemental" rev="${gwt.version}"
+			conf="build-provided,ide->default" />
 		<!-- Needed because of generators -->
 		<dependency org="com.google.gwt" name="gwt-dev" rev="${gwt.version}"
 			conf="build-provided,ide->default" />

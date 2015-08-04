@@ -117,7 +117,7 @@ public class VUIDLBrowser extends SimpleTree {
             ServerConnector connector = getConnector();
 
             if (connector != null && event != null) {
-                connector.getConnection().highlightConnector(connector);
+                connector.getConnection().getUIConnector().showServerDebugInfo(connector);
             }
 
             // For connectors that do not have a widget, highlight the widget of

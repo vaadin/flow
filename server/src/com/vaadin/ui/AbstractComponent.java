@@ -504,32 +504,6 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
     }
 
     /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.Component#getDescription()
-     */
-    @Override
-    public String getDescription() {
-        return getState(false).description;
-    }
-
-    /**
-     * Sets the component's description. See {@link #getDescription()} for more
-     * information on what the description is. This method will trigger a
-     * {@link RepaintRequestEvent}.
-     * 
-     * The description is displayed as HTML in tooltips or directly in certain
-     * components so care should be taken to avoid creating the possibility for
-     * HTML injection and possibly XSS vulnerabilities.
-     * 
-     * @param description
-     *            the new description string for the component.
-     */
-    public void setDescription(String description) {
-        getState().description = description;
-    }
-
-    /*
      * Gets the component's parent component. Don't add a JavaDoc comment here,
      * we use the default documentation from implemented interface.
      */

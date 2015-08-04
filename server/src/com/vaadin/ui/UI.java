@@ -199,7 +199,6 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
 
     private boolean closing = false;
 
-    private TooltipConfiguration tooltipConfiguration = new TooltipConfigurationImpl(this);
     private PushConfiguration pushConfiguration = new PushConfigurationImpl(this);
     private ReconnectDialogConfiguration reconnectDialogConfiguration = new ReconnectDialogConfigurationImpl(this);
 
@@ -1307,15 +1306,6 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
     }
 
     /**
-     * Retrieves the object used for configuring tooltips.
-     * 
-     * @return The instance used for tooltip configuration
-     */
-    public TooltipConfiguration getTooltipConfiguration() {
-        return tooltipConfiguration;
-    }
-
-    /**
      * Retrieves the object used for configuring notifications.
      * 
      * @return The instance used for notification configuration
@@ -1487,8 +1477,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
     }
 
     /**
-     * Get the label that is added to the container element, where tooltip,
-     * notification and dialogs are added to.
+     * Get the label that is added to the container element, where notification
+     * and dialogs are added to.
      * 
      * @return the label of the container
      */
@@ -1497,7 +1487,7 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
     }
 
     /**
-     * Sets the label that is added to the container element, where tooltip,
+     * Sets the label that is added to the container element, where
      * notifications and dialogs are added to.
      * <p>
      * This is helpful for users of assistive devices, as this element is

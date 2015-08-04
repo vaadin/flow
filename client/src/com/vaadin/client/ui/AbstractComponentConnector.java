@@ -19,7 +19,6 @@ import java.awt.LayoutManager;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
@@ -27,8 +26,6 @@ import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ServerConnector;
 import com.vaadin.client.StyleConstants;
-import com.vaadin.client.TooltipInfo;
-import com.vaadin.client.UIDL;
 import com.vaadin.client.Util;
 import com.vaadin.client.VConsole;
 import com.vaadin.client.communication.StateChangeEvent;
@@ -44,11 +41,6 @@ import com.vaadin.shared.ui.TabIndexState;
 public abstract class AbstractComponentConnector extends AbstractConnector implements ComponentConnector {
 
     private Widget widget;
-
-    private String lastKnownWidth = "";
-    private String lastKnownHeight = "";
-
-    private boolean tooltipListenersAttached = false;
 
     /**
      * The style names from getState().getStyles() which are currently applied
@@ -108,11 +100,6 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
         return widget;
     }
 
-    @Deprecated
-    public static boolean isRealUpdate(UIDL uidl) {
-        return !uidl.hasAttribute("cached");
-    }
-
     @Override
     public AbstractComponentState getState() {
         return (AbstractComponentState) super.getState();
@@ -170,17 +157,6 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
         updateComponentSize();
         Profiler.leave("AbstractComponentConnector.onStateChanged updateComponentSize");
 
-        Profiler.enter("AbstractComponentContainer.onStateChanged check tooltip");
-        if (!tooltipListenersAttached && hasTooltip()) {
-            /*
-             * Add event handlers for tooltips if they are needed but have not
-             * yet been added.
-             */
-            tooltipListenersAttached = true;
-            getConnection().getVTooltip().connectHandlersToWidget(getWidget());
-        }
-        Profiler.leave("AbstractComponentContainer.onStateChanged check tooltip");
-
         Profiler.leave("AbstractComponentConnector.onStateChanged");
     }
 
@@ -223,9 +199,6 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
      */
     protected void updateComponentSize(String newWidth, String newHeight) {
         Profiler.enter("AbstractComponentConnector.updateComponentSize");
-
-        lastKnownWidth = newWidth;
-        lastKnownHeight = newHeight;
 
         // Set defined sizes
         Widget widget = getWidget();
@@ -422,24 +395,6 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
         if (getWidget() != null && getWidget().isAttached()) {
             getWidget().removeFromParent();
             VConsole.error("Widget is still attached to the DOM after the connector (" + Util.getConnectorString(this) + ") has been unregistered. Widget was removed.");
-        }
-    }
-
-    @Override
-    public TooltipInfo getTooltipInfo(Element element) {
-        return new TooltipInfo(getState().description, getState().errorMessage);
-    }
-
-    @Override
-    public boolean hasTooltip() {
-        // Normally, there is a tooltip if description or errorMessage is set
-        AbstractComponentState state = getState();
-        if (state.description != null && !state.description.equals("")) {
-            return true;
-        } else if (state.errorMessage != null && !state.errorMessage.equals("")) {
-            return true;
-        } else {
-            return false;
         }
     }
 

@@ -398,16 +398,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
 
     }
 
-    @Override
-    public boolean hasTooltip() {
-        /*
-         * Always return true so there's always top level tooltip handler that
-         * takes care of hiding tooltips whenever the mouse is moved somewhere
-         * else.
-         */
-        return true;
-    }
-
     /**
      * Tries to scroll the viewport so that the given connector is in view.
      * 
@@ -431,14 +421,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
     @Override
     public void onStateChanged(StateChangeEvent stateChangeEvent) {
         super.onStateChanged(stateChangeEvent);
-        if (stateChangeEvent.hasPropertyChanged("tooltipConfiguration")) {
-            getConnection().getVTooltip().setCloseTimeout(getState().tooltipConfiguration.closeTimeout);
-            getConnection().getVTooltip().setOpenDelay(getState().tooltipConfiguration.openDelay);
-            getConnection().getVTooltip().setQuickOpenDelay(getState().tooltipConfiguration.quickOpenDelay);
-            getConnection().getVTooltip().setQuickOpenTimeout(getState().tooltipConfiguration.quickOpenTimeout);
-            getConnection().getVTooltip().setMaxWidth(getState().tooltipConfiguration.maxWidth);
-        }
-
         if (stateChangeEvent.hasPropertyChanged("loadingIndicatorConfiguration")) {
             getConnection().getLoadingIndicator().setFirstDelay(getState().loadingIndicatorConfiguration.firstDelay);
             getConnection().getLoadingIndicator().setSecondDelay(getState().loadingIndicatorConfiguration.secondDelay);

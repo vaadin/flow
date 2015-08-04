@@ -46,7 +46,7 @@ public class FilteringTurkishLocale extends AbstractTestUI {
     }
 
     @Override
-    public String getDescription() {
+    public String getTestDescription() {
         return "When the Turkish locale is used," + " filtering for 'i' should show the option with a dot" + " while filtering for 'ı' should show the option witout a dot";
     }
 

@@ -38,7 +38,6 @@ public class TableQueryWithNonUniqueFirstPrimaryKey extends AbstractTestUI {
             myContainer.addContainerFilter(new Equal("PFX", "C"));
 
             final ComboBox myCombo = new ComboBox("MyCaption");
-            myCombo.setDescription("Description");
             myCombo.setContainerDataSource(myContainer);
             myCombo.setItemCaptionPropertyId("MYFIELD");
             myCombo.setFilteringMode(FilteringMode.CONTAINS);

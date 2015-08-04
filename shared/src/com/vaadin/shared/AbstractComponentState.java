@@ -34,8 +34,6 @@ public class AbstractComponentState extends SharedState {
     public boolean readOnly = false;
     @NoLayout
     public boolean immediate = false;
-    @NoLayout
-    public String description = "";
     // Note: for the caption, there is a difference between null and an empty
     // string!
     public String caption = null;

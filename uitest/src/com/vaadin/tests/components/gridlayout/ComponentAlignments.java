@@ -55,7 +55,7 @@ public class ComponentAlignments extends AbstractTestUI {
     }
 
     @Override
-    public String getDescription() {
+    public String getTestDescription() {
         return "TOP_CENTER and TOP_RIGHT alignments should work in VerticalLayout";
     }
 
