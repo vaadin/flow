@@ -20,11 +20,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Objects;
 
 import org.junit.Test;
 
 import com.vaadin.server.ExternalResource;
-import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.AbstractEmbedded;
 import com.vaadin.ui.BrowserFrame;
 import com.vaadin.ui.Embedded;
@@ -42,7 +42,7 @@ import com.vaadin.ui.declarative.Design;
 public class EmbeddedsTest {
 
     public static final boolean equals(ExternalResource obj, ExternalResource other) {
-        return SharedUtil.equals(obj.getURL(), other.getURL()) && SharedUtil.equals(obj.getMIMEType(), other.getMIMEType());
+        return Objects.equals(obj.getURL(), other.getURL()) && Objects.equals(obj.getMIMEType(), other.getMIMEType());
     }
 
     @Test

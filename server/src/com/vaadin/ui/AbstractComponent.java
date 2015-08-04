@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -46,7 +47,6 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.AbstractComponentState;
 import com.vaadin.shared.ComponentConstants;
 import com.vaadin.shared.ui.ComponentStateUtil;
-import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.Field.ValueChangeEvent;
 import com.vaadin.ui.declarative.DesignAttributeHandler;
 import com.vaadin.ui.declarative.DesignContext;
@@ -1236,7 +1236,7 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         // handle component error
         String errorMsg = getComponentError() != null ? getComponentError().getFormattedHtmlMessage() : null;
         String defErrorMsg = def.getComponentError() != null ? def.getComponentError().getFormattedHtmlMessage() : null;
-        if (!SharedUtil.equals(errorMsg, defErrorMsg)) {
+        if (!Objects.equals(errorMsg, defErrorMsg)) {
             attr.put("error", errorMsg);
         }
         // handle tab index

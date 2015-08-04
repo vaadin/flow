@@ -17,6 +17,7 @@ package com.vaadin.client.ui.ui;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Scheduler;
@@ -78,7 +79,6 @@ import com.vaadin.shared.ui.ui.ScrollClientRpc;
 import com.vaadin.shared.ui.ui.UIClientRpc;
 import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
-import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.UI;
 
 @Connect(value = UI.class, loadStyle = LoadStyle.EAGER)
@@ -524,7 +524,7 @@ public class UIConnector extends AbstractHasComponentsConnector {
         final String oldThemeUrl = getThemeUrl(oldTheme);
         final String newThemeUrl = getThemeUrl(newTheme);
 
-        if (SharedUtil.equals(oldTheme, newTheme)) {
+        if (Objects.equals(oldTheme, newTheme)) {
             // This should only happen on the initial load when activeTheme has
             // been updated in init.
 

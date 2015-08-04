@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +38,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 
 import com.vaadin.data.util.converter.Converter;
-import com.vaadin.shared.util.SharedUtil;
 
 /**
  * Default attribute handler implementation used when parsing designs to
@@ -192,7 +192,7 @@ public class DesignAttributeHandler implements Serializable {
                 Object value = getter.invoke(component);
                 Object defaultValue = getter.invoke(defaultInstance);
                 // if the values are not equal, write the data
-                if (!SharedUtil.equals(value, defaultValue)) {
+                if (!Objects.equals(value, defaultValue)) {
                     String attributeValue = toAttributeValue(getter.getReturnType(), value);
                     attr.put(attribute, attributeValue);
                 }
@@ -221,7 +221,7 @@ public class DesignAttributeHandler implements Serializable {
         if (!getFormatter().canConvert(inputType)) {
             throw new IllegalArgumentException("input type: " + inputType.getName() + " not supported");
         }
-        if (!SharedUtil.equals(value, defaultValue)) {
+        if (!Objects.equals(value, defaultValue)) {
             String attributeValue = toAttributeValue(inputType, value);
             attributes.put(attribute, attributeValue);
         }

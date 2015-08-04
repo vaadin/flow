@@ -19,8 +19,8 @@ package com.vaadin.server;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Objects;
 
-import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.util.FileTypeResolver;
 
 /**
@@ -220,7 +220,7 @@ public class StreamResource implements ConnectorResource {
             return true;
         } else if (obj instanceof StreamResource) {
             StreamResource that = (StreamResource) obj;
-            return SharedUtil.equals(getStreamSource(), that.getStreamSource()) && SharedUtil.equals(MIMEType, that.MIMEType) && SharedUtil.equals(getFilename(), that.getFilename()) && getBufferSize() == that.getBufferSize() && getCacheTime() == that.getCacheTime();
+            return Objects.equals(getStreamSource(), that.getStreamSource()) && Objects.equals(MIMEType, that.MIMEType) && Objects.equals(getFilename(), that.getFilename()) && getBufferSize() == that.getBufferSize() && getCacheTime() == that.getCacheTime();
         } else {
             return false;
         }

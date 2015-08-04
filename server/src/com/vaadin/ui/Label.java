@@ -19,6 +19,7 @@ package com.vaadin.ui;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.jsoup.nodes.Element;
 
@@ -29,7 +30,6 @@ import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.ConverterUtil;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.shared.ui.label.LabelState;
-import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.declarative.DesignContext;
 
 /**
@@ -204,7 +204,7 @@ public class Label extends AbstractComponent implements Property<String>, Proper
 
             LabelState state = getState(false);
             String oldTextValue = state.text;
-            if (!SharedUtil.equals(oldTextValue, newStringValue)) {
+            if (!Objects.equals(oldTextValue, newStringValue)) {
                 getState().text = newStringValue;
                 fireValueChange();
             }
@@ -405,7 +405,7 @@ public class Label extends AbstractComponent implements Property<String>, Proper
     private void updateValueFromDataSource() {
         // Update the internal value from the data source
         String newConvertedValue = getDataSourceValue();
-        if (!SharedUtil.equals(newConvertedValue, getState(false).text)) {
+        if (!Objects.equals(newConvertedValue, getState(false).text)) {
             getState().text = newConvertedValue;
             fireValueChange();
         }

@@ -17,6 +17,7 @@
 package com.vaadin.client.debug.internal;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 
 import com.google.gwt.core.client.GWT;
@@ -30,7 +31,6 @@ import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ValueMap;
 import com.vaadin.shared.Version;
-import com.vaadin.shared.util.SharedUtil;
 
 /**
  * Information section of the debug window
@@ -223,10 +223,10 @@ public class InfoSection implements Section {
      * @return true if target equals one of the references, false otherwise
      */
     private boolean equalsEither(String target, String reference1, String reference2) {
-        if (SharedUtil.equals(target, reference1)) {
+        if (Objects.equals(target, reference1)) {
             return true;
         }
-        if (SharedUtil.equals(target, reference2)) {
+        if (Objects.equals(target, reference2)) {
             return true;
         }
 

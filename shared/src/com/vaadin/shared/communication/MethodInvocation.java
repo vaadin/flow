@@ -18,8 +18,7 @@ package com.vaadin.shared.communication;
 
 import java.io.Serializable;
 import java.util.Arrays;
-
-import com.vaadin.shared.util.SharedUtil;
+import java.util.Objects;
 
 /**
  * Information needed by the framework to send an RPC method invocation from the
@@ -90,19 +89,19 @@ public class MethodInvocation implements Serializable {
             return false;
         }
         MethodInvocation other = (MethodInvocation) obj;
-        if (!SharedUtil.equals(getConnectorId(), other.getConnectorId())) {
+        if (!Objects.equals(getConnectorId(), other.getConnectorId())) {
             return false;
         }
 
-        if (!SharedUtil.equals(getInterfaceName(), other.getInterfaceName())) {
+        if (!Objects.equals(getInterfaceName(), other.getInterfaceName())) {
             return false;
         }
 
-        if (!SharedUtil.equals(getMethodName(), other.getMethodName())) {
+        if (!Objects.equals(getMethodName(), other.getMethodName())) {
             return false;
         }
 
-        if (!SharedUtil.equals(getParameters(), other.getParameters())) {
+        if (!Objects.equals(getParameters(), other.getParameters())) {
             return false;
         }
 

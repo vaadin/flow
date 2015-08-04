@@ -354,8 +354,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier, SortNo
         protected void populateWithEnumData(AbstractSelect select, Class<? extends Enum> enumClass) {
             // Use enums directly and the EnumToStringConverter to be consistent
             // with what is shown in the Grid
-            @SuppressWarnings("unchecked")
-            EnumSet<?> enumSet = EnumSet.allOf(enumClass);
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+            EnumSet enumSet = EnumSet.allOf(enumClass);
             for (Object r : enumSet) {
                 select.addItem(r);
             }

@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import org.jsoup.nodes.Attributes;
@@ -43,7 +44,6 @@ import com.vaadin.server.AbstractErrorMessage;
 import com.vaadin.server.CompositeErrorMessage;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.shared.AbstractFieldState;
-import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.declarative.DesignAttributeHandler;
 import com.vaadin.ui.declarative.DesignContext;
 
@@ -454,7 +454,7 @@ public abstract class AbstractField<T> extends AbstractComponent implements Fiel
      */
     protected void setValue(T newFieldValue, boolean repaintIsNotNeeded) throws Property.ReadOnlyException, Converter.ConversionException, InvalidValueException {
 
-        if (!SharedUtil.equals(newFieldValue, getInternalValue())) {
+        if (!Objects.equals(newFieldValue, getInternalValue())) {
 
             // Read only fields can not be changed
             if (isReadOnly()) {
@@ -462,7 +462,7 @@ public abstract class AbstractField<T> extends AbstractComponent implements Fiel
             }
             try {
                 T doubleConvertedFieldValue = convertFromModel(convertToModel(newFieldValue));
-                if (!SharedUtil.equals(newFieldValue, doubleConvertedFieldValue)) {
+                if (!Objects.equals(newFieldValue, doubleConvertedFieldValue)) {
                     newFieldValue = doubleConvertedFieldValue;
                     repaintIsNotNeeded = false;
                 }
@@ -537,7 +537,7 @@ public abstract class AbstractField<T> extends AbstractComponent implements Fiel
 
     @Deprecated
     static boolean equals(Object value1, Object value2) {
-        return SharedUtil.equals(value1, value2);
+        return Objects.equals(value1, value2);
     }
 
     /* External data source */
@@ -1210,7 +1210,7 @@ public abstract class AbstractField<T> extends AbstractComponent implements Fiel
     public void valueChange(Property.ValueChangeEvent event) {
         if (!isBuffered()) {
             if (committingValueToDataSource) {
-                boolean propertyNotifiesOfTheBufferedValue = SharedUtil.equals(event.getProperty().getValue(), getInternalValue());
+                boolean propertyNotifiesOfTheBufferedValue = Objects.equals(event.getProperty().getValue(), getInternalValue());
                 if (!propertyNotifiesOfTheBufferedValue) {
                     /*
                      * Property (or chained property like PropertyFormatter) now
@@ -1326,14 +1326,14 @@ public abstract class AbstractField<T> extends AbstractComponent implements Fiel
     }
 
     private void localeMightHaveChanged() {
-        if (!SharedUtil.equals(valueLocale, getLocale())) {
+        if (!Objects.equals(valueLocale, getLocale())) {
             // The locale HAS actually changed
 
             if (dataSource != null && !isModified()) {
                 // When we have a data source and the internal value is directly
                 // read from that we want to update the value
                 T newInternalValue = convertFromModel(getPropertyDataSource().getValue());
-                if (!SharedUtil.equals(newInternalValue, getInternalValue())) {
+                if (!Objects.equals(newInternalValue, getInternalValue())) {
                     setInternalValue(newInternalValue);
                     fireValueChange(false);
                 }
@@ -1348,7 +1348,7 @@ public abstract class AbstractField<T> extends AbstractComponent implements Fiel
                  */
                 Object convertedValue = convertToModel(getInternalValue(), valueLocale);
                 T newinternalValue = convertFromModel(convertedValue);
-                if (!SharedUtil.equals(getInternalValue(), newinternalValue)) {
+                if (!Objects.equals(getInternalValue(), newinternalValue)) {
                     setInternalValue(newinternalValue);
                     fireValueChange(false);
                 }
@@ -1541,7 +1541,7 @@ public abstract class AbstractField<T> extends AbstractComponent implements Fiel
             setModified(false);
 
             // If the new value differs from the previous one
-            if (!SharedUtil.equals(newFieldValue, getInternalValue())) {
+            if (!Objects.equals(newFieldValue, getInternalValue())) {
                 setInternalValue(newFieldValue);
                 fireValueChange(false);
             } else if (wasModified) {

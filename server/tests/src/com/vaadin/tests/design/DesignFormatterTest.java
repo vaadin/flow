@@ -125,8 +125,10 @@ public class DesignFormatterTest {
     public void testFloatingPoint() {
         float f = 123.4567f;
         assertEquals("123.457", formatter.format(f));
-        assertEquals(f, formatter.parse("123.4567", float.class), 1e-4);
-        assertEquals(f, formatter.parse("123.4567", Float.class), 1e-4);
+        Float r = formatter.parse("123.4567", float.class);
+        assertEquals(f, r, 1e-4);
+        r = formatter.parse("123.4567", Float.class);
+        assertEquals(f, r, 1e-4);
 
         double d = 123456789.123456789;
         assertEquals("123456789.123", formatter.format(d));

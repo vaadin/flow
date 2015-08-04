@@ -25,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import com.google.gwt.thirdparty.guava.common.collect.BiMap;
@@ -49,7 +50,6 @@ import com.vaadin.shared.ui.grid.DetailsConnectorChange;
 import com.vaadin.shared.ui.grid.GridClientRpc;
 import com.vaadin.shared.ui.grid.GridState;
 import com.vaadin.shared.ui.grid.Range;
-import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.Column;
@@ -698,7 +698,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
         private boolean assertItemIdHasNotMovedAndNothingIsOverwritten(Object itemId, Integer newRowIndex) {
 
             Integer oldRowIndex = emptyDetails.get(itemId);
-            if (!SharedUtil.equals(oldRowIndex, newRowIndex)) {
+            if (!Objects.equals(oldRowIndex, newRowIndex)) {
 
                 assert !emptyDetails.containsKey(itemId) : "Unexpected " + "change of empty details row index for itemId " + itemId + " from " + oldRowIndex + " to " + newRowIndex;
 
@@ -777,7 +777,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
                     unattachedComponents.remove(component);
                 }
 
-                if (!SharedUtil.equals(oldIndex, newIndex)) {
+                if (!Objects.equals(oldIndex, newIndex)) {
                     changes.add(new DetailsConnectorChange(component, oldIndex, newIndex, emptyDetails.containsKey(component)));
                 }
             }

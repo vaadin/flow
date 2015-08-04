@@ -26,24 +26,6 @@ import java.util.Locale;
  *
  */
 public class SharedUtil implements Serializable {
-    /**
-     * Checks if a and b are equals using {@link #equals(Object)}. Handles null
-     * values as well. Does not ensure that objects are of the same type.
-     * Assumes that the first object's equals method handle equals properly.
-     *
-     * @param o1
-     *            The first value to compare
-     * @param o2
-     *            The second value to compare
-     * @return true if the objects are equal, false otherwise
-     */
-    public static boolean equals(Object o1, Object o2) {
-        if (o1 == null) {
-            return o2 == null;
-        }
-
-        return o1.equals(o2);
-    }
 
     /**
      * Trims trailing slashes (if any) from a string.

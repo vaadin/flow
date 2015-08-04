@@ -23,13 +23,13 @@ import java.net.URISyntaxException;
 import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import com.vaadin.event.EventRouter;
 import com.vaadin.shared.ui.BorderStyle;
 import com.vaadin.shared.ui.ui.PageClientRpc;
 import com.vaadin.shared.ui.ui.PageState;
 import com.vaadin.shared.ui.ui.UIState;
-import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.JavaScript;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
@@ -617,7 +617,7 @@ public class Page implements Serializable {
             String oldUriFragment = this.location.getFragment();
             this.location = new URI(location);
             String newUriFragment = this.location.getFragment();
-            if (fireEvents && !SharedUtil.equals(oldUriFragment, newUriFragment)) {
+            if (fireEvents && !Objects.equals(oldUriFragment, newUriFragment)) {
                 fireEvent(new UriFragmentChangedEvent(this, newUriFragment));
             }
         } catch (URISyntaxException e) {

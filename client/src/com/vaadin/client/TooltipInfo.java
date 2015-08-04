@@ -15,7 +15,7 @@
  */
 package com.vaadin.client;
 
-import com.vaadin.shared.util.SharedUtil;
+import java.util.Objects;
 
 public class TooltipInfo {
 
@@ -80,6 +80,6 @@ public class TooltipInfo {
     }
 
     public boolean equals(TooltipInfo other) {
-        return (other != null && SharedUtil.equals(other.title, title) && SharedUtil.equals(other.errorMessageHtml, errorMessageHtml) && other.identifier == identifier);
+        return (other != null && Objects.equals(other.title, title) && Objects.equals(other.errorMessageHtml, errorMessageHtml) && other.identifier == identifier);
     }
 }

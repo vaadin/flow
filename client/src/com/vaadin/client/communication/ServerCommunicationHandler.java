@@ -33,6 +33,7 @@ import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * ServerCommunicationHandler is responsible for communicating (sending and
@@ -157,7 +158,8 @@ public class ServerCommunicationHandler {
 
         if (extraJson != null) {
             for (String key : extraJson.keys()) {
-                payload.put(key, extraJson.get(key));
+                JsonValue value = extraJson.get(key);
+                payload.put(key, value);
             }
         }
 
