@@ -50,7 +50,6 @@ public class ButtonUpdateAltText extends AbstractTestUI {
         addComponent(btn);
 
         final CheckBox enable = new CheckBox("Enable alt text", true);
-        enable.setImmediate(true);
         enable.addValueChangeListener(new Property.ValueChangeListener() {
 
             @Override

@@ -47,7 +47,6 @@ public class SliderUpdateFromValueChange extends AbstractTestUI {
             }
 
         });
-        slider.setImmediate(true);
         slider.setWidth(200, Unit.PIXELS);
 
         addComponent(slider);

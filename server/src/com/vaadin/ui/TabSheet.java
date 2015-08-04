@@ -136,7 +136,6 @@ public class TabSheet extends AbstractComponentContainer implements Focusable, F
 
         // expand horizontally by default
         setWidth(100, UNITS_PERCENTAGE);
-        setImmediate(true);
         setCloseHandler(new CloseHandler() {
 
             @Override

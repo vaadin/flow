@@ -42,7 +42,6 @@ public class ComboBoxScrollingToPageDisabled extends ComponentTestCase<ComboBox>
 
     private ComboBox createSelect(String caption) {
         final ComboBox cb = new ComboBox();
-        cb.setImmediate(true);
         cb.addContainerProperty(CAPTION, String.class, "");
         cb.setItemCaptionPropertyId(CAPTION);
         cb.setCaption(caption);

@@ -23,7 +23,6 @@ public class PopupDateFieldPopup extends TestBase {
         PopupDateField pdf = new PopupDateField();
         pdf.setLocale(Locale.US);
         pdf.setValue(cal.getTime());
-        pdf.setImmediate(true);
         pdf.setResolution(DateField.RESOLUTION_SEC);
         addComponent(pdf);
     }

@@ -87,7 +87,7 @@ public class OptionGroupBaseSelects extends ComponentTestCase<HorizontalLayout> 
             }
         }
         select.setEnabled(enabled);
-        select.setImmediate(true);
+
         return select;
     }
 }

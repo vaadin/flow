@@ -20,7 +20,6 @@ public class ComboBoxValueUpdate extends TestBase {
     @Override
     protected void setup() {
         ComboBox select = new ComboBox("");
-        select.setImmediate(true);
         for (int i = 0; i < 100; i++) {
             select.addItem("item " + i);
         }

@@ -10,7 +10,6 @@ public class ComboboxPrimaryStyleNames extends TestBase {
     @Override
     protected void setup() {
         final ComboBox box = new ComboBox();
-        box.setImmediate(true);
         box.addContainerProperty("caption", String.class, "");
         box.setItemCaptionPropertyId("caption");
         box.setPrimaryStyleName("my-combobox");

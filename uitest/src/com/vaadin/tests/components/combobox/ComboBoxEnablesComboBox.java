@@ -12,7 +12,6 @@ public class ComboBoxEnablesComboBox extends TestBase {
     @Override
     protected void setup() {
         ComboBox cb = new ComboBox("Always enabled");
-        cb.setImmediate(true);
         populate(cb);
         cb.addListener(new ValueChangeListener() {
 
@@ -23,7 +22,6 @@ public class ComboBoxEnablesComboBox extends TestBase {
 
         });
         cb2 = new ComboBox("Initially disabled");
-        cb2.setImmediate(true);
         cb2.setEnabled(false);
         populate(cb2);
 

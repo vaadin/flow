@@ -376,7 +376,7 @@ public class OrderedLayoutCases extends AbstractTestUI {
     private static NativeSelect createSimpleSelector(String caption, ValueChangeListener listener, List<String> values, String defaultValue) {
         NativeSelect selector = new NativeSelect(caption, values);
         selector.setNullSelectionAllowed(false);
-        selector.setImmediate(true);
+
         selector.addListener(listener);
         selector.setValue(defaultValue);
         return selector;

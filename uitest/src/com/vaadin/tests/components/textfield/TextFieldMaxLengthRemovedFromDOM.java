@@ -12,7 +12,6 @@ public class TextFieldMaxLengthRemovedFromDOM extends TestBase {
         final TextField tf = new TextField();
         tf.setMaxLength(11);
         tf.setRequired(true);
-        tf.setImmediate(true);
         addComponent(tf);
 
         tf.addFocusListener(new FieldEvents.FocusListener() {

@@ -60,7 +60,6 @@ public class TestForRichTextEditor extends CustomComponent implements ValueChang
         main.addComponent(l);
 
         CheckBox b = new CheckBox("enabled");
-        b.setImmediate(true);
         b.addListener(new Property.ValueChangeListener() {
 
             @Override

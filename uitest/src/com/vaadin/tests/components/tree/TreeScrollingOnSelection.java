@@ -32,7 +32,6 @@ public class TreeScrollingOnSelection extends TestBase {
                 charLabel.setValue(event.getItemId().toString());
             }
         });
-        tree.setImmediate(true);
 
         VerticalLayout panelLayout = new VerticalLayout();
         panelLayout.setMargin(true);

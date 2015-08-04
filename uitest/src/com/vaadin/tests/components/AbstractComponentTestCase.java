@@ -89,14 +89,6 @@ public abstract class AbstractComponentTestCase<T extends AbstractComponent> ext
         }
     };
 
-    protected Command<T, Boolean> immediateCommand = new Command<T, Boolean>() {
-
-        @Override
-        public void execute(T c, Boolean immediate, Object data) {
-            c.setImmediate(immediate);
-        }
-    };
-
     protected Command<T, Boolean> errorIndicatorCommand = new Command<T, Boolean>() {
 
         @Override

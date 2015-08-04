@@ -26,7 +26,6 @@ public class FormLayoutErrorHover extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         FormLayout formLayout = new FormLayout();
         PopupDateField fromDate = new PopupDateField("Date");
-        fromDate.setImmediate(true);
         formLayout.addComponent(fromDate);
 
         addComponent(formLayout);

@@ -37,7 +37,6 @@ public class OptionGroupRetainFocusKeyboardValueChange extends AbstractTestUI {
         optiongroup.setItemCaption(1, "A");
         optiongroup.setItemCaption(2, "B");
         optiongroup.setItemCaption(3, "C");
-        optiongroup.setImmediate(true);
 
         optiongroup.addValueChangeListener(new ValueChangeListener() {
 

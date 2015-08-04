@@ -16,10 +16,10 @@ public class ComboBoxBorder extends TestBase {
 
         final ComboBox cb = new ComboBox("All errors", Arrays.asList("Error", "Error 2"));
         cb.setStyleName("ComboBoxBorder");
-        cb.setImmediate(true);
         cb.setWidth("200px"); // must have with to reproduce
 
         cb.addListener(new ValueChangeListener() {
+            @Override
             public void valueChange(ValueChangeEvent event) {
                 cb.setComponentError(new UserError("Error"));
             }

@@ -29,7 +29,6 @@ public class ComboBoxParentDisable extends AbstractTestUIWithLog {
         combo.addItem("Item 3");
         combo.addItem("Item 4");
         combo.addValueChangeListener(new MyValueChangeListener());
-        combo.setImmediate(true);
 
         Button btn1 = new Button("Click me");
         btn1.addClickListener(new Button.ClickListener() {

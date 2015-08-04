@@ -19,7 +19,6 @@ public class RemovalOfSelectedIcon extends TestBase {
         addComponent(cb2);
 
         Button btClear = new Button("Clear button");
-        btClear.setImmediate(true);
         btClear.addListener(new Button.ClickListener() {
 
             @Override
@@ -34,7 +33,6 @@ public class RemovalOfSelectedIcon extends TestBase {
 
     private ComboBox createComboBox(String caption) {
         ComboBox cb = new ComboBox(caption);
-        cb.setImmediate(true);
         cb.addItem(1);
         cb.setItemCaption(1, "icon test");
         cb.setItemIcon(1, new ThemeResource("menubar/img/checked.png"));

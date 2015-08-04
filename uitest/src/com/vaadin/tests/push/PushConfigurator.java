@@ -91,9 +91,9 @@ public class PushConfigurator extends VerticalLayout {
             fallbackTransport.addItem(t);
         }
 
-        pushMode.setImmediate(true);
-        transport.setImmediate(true);
-        fallbackTransport.setImmediate(true);
+
+
+
 
         listeners();
 

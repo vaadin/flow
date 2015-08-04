@@ -43,7 +43,6 @@ public class Wordwrap extends TestBase {
 
             }
         });
-        onoff.setImmediate(true);
 
         addComponent(onoff);
     }

@@ -68,7 +68,6 @@ public class TextFieldFocusAndBlurListeners extends TestBase implements FocusLis
 
         TextField tf4 = new TextField("TextField 4", "Has immediate valuechange listener");
         tf4.setWidth("300px");
-        tf4.setImmediate(true);
         tf4.addListener((ValueChangeListener) this);
 
         addComponent(tf4);

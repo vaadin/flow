@@ -23,14 +23,14 @@ public class RequiredInvalidDateField extends TestBase {
         // // not required
         // TextField tf1 = new TextField();
         // tf1.addValidator(textValidator);
-        // tf1.setImmediate(true);
+
         // addComponent(tf1);
         //
         // // required
         // TextField tf2 = new TextField();
         // tf2.addValidator(textValidator);
         // tf2.setRequired(true);
-        // tf2.setImmediate(true);
+
         // addComponent(tf2);
 
         Date date = new Date(2011 - 1900, 9 - 1, 1);
@@ -58,7 +58,6 @@ public class RequiredInvalidDateField extends TestBase {
         dateField1.setLocale(new Locale("fi", "FI"));
         dateField1.setResolution(DateField.RESOLUTION_DAY);
         dateField1.setId("_DF1");
-        dateField1.setImmediate(true);
         dateField1.addValidator(dateValidator);
         addComponent(dateField1);
 
@@ -69,7 +68,6 @@ public class RequiredInvalidDateField extends TestBase {
         dateField2.setResolution(DateField.RESOLUTION_DAY);
         dateField2.setId("_DF2");
         dateField2.setRequired(true);
-        dateField2.setImmediate(true);
         dateField2.addValidator(dateValidator);
         addComponent(dateField2);
     }

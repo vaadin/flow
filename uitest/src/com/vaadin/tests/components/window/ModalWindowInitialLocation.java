@@ -36,7 +36,6 @@ public class ModalWindowInitialLocation extends AbstractTestUI {
             final ListSelect listSelect = new ListSelect("Choose options");
             listSelect.setRows(4);
             listSelect.setWidth("100%");
-            listSelect.setImmediate(true);
             listSelect.setMultiSelect(true);
             listSelect.setNullSelectionAllowed(true);
             listSelect.addItem(new String("Planning"));

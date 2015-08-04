@@ -36,7 +36,6 @@ public class ComboBoxItemAddingWithFocusListener extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         cBox = new ComboBox();
         addComponent(cBox);
-        cBox.setImmediate(true);
         cBox.addItem("Foo");
         cBox.addItem("Bar");
         cBox.addFocusListener(new FocusListener() {

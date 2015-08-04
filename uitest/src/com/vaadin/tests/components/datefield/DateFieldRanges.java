@@ -12,7 +12,6 @@ import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
@@ -33,7 +32,6 @@ public class DateFieldRanges extends AbstractTestUI {
     private DateField fromRange = new DateField("Range start");
     private DateField toRange = new DateField("Range end");
     private DateField valueDF = new DateField("Value");
-    private CheckBox immediateCB = new CheckBox("Immediate");
     private Button recreate = new Button("Recreate static datefields");
     private Button clearRangeButton = new Button("Clear range");
 
@@ -59,7 +57,6 @@ public class DateFieldRanges extends AbstractTestUI {
         resoSelect.addItem(Resolution.DAY);
         resoSelect.addItem(Resolution.MONTH);
         resoSelect.addItem(Resolution.YEAR);
-        resoSelect.setImmediate(true);
         resoSelect.setValue(Resolution.DAY);
         resoSelect.addValueChangeListener(new ValueChangeListener() {
 
@@ -74,7 +71,6 @@ public class DateFieldRanges extends AbstractTestUI {
         });
 
         fromRange.setValue(null);
-        fromRange.setImmediate(true);
         fromRange.addValueChangeListener(new ValueChangeListener() {
 
             @Override
@@ -87,7 +83,6 @@ public class DateFieldRanges extends AbstractTestUI {
         });
 
         toRange.setValue(null);
-        toRange.setImmediate(true);
         toRange.addValueChangeListener(new ValueChangeListener() {
 
             @Override
@@ -100,7 +95,6 @@ public class DateFieldRanges extends AbstractTestUI {
         });
 
         valueDF.setValue(null);
-        valueDF.setImmediate(true);
         valueDF.addValueChangeListener(new ValueChangeListener() {
 
             @Override
@@ -108,19 +102,6 @@ public class DateFieldRanges extends AbstractTestUI {
 
                 inlineDynamicDateField.setValue(valueDF.getValue());
                 dynamicDateField.setValue(valueDF.getValue());
-
-            }
-        });
-
-        immediateCB.setValue(true);
-        immediateCB.setImmediate(true);
-        immediateCB.addValueChangeListener(new ValueChangeListener() {
-
-            @Override
-            public void valueChange(ValueChangeEvent event) {
-
-                inlineDynamicDateField.setImmediate(immediateCB.getValue());
-                dynamicDateField.setImmediate(immediateCB.getValue());
 
             }
         });
@@ -155,7 +136,6 @@ public class DateFieldRanges extends AbstractTestUI {
         fromRange.setId("fromRange");
         toRange.setId("toRange");
         valueDF.setId("valueDF");
-        immediateCB.setId("immediateCB");
         recreate.setId("recreate");
         clearRangeButton.setId("clearRangeButton");
         dynamicDateField.setId("dynamicDateField");
@@ -185,7 +165,6 @@ public class DateFieldRanges extends AbstractTestUI {
         hl.addComponent(fromRange);
         hl.addComponent(toRange);
         hl.addComponent(valueDF);
-        hl.addComponent(immediateCB);
         hl.addComponent(recreate);
         hl.addComponent(clearRangeButton);
         addComponent(hl);
@@ -249,13 +228,11 @@ public class DateFieldRanges extends AbstractTestUI {
         Date toVal = toRange.getValue();
         Date value = valueDF.getValue();
         Resolution r = (Resolution) resoSelect.getValue();
-        boolean immediate = immediateCB.getValue();
 
         df.setValue(value);
         df.setResolution(r);
         df.setRangeStart(fromVal);
         df.setRangeEnd(toVal);
-        df.setImmediate(immediate);
 
     }
 

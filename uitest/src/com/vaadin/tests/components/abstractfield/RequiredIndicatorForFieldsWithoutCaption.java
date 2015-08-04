@@ -26,7 +26,6 @@ public class RequiredIndicatorForFieldsWithoutCaption extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
 
         CheckBox required = new CheckBox("Fields required", true);
-        required.setImmediate(true);
         required.addValueChangeListener(new ValueChangeListener() {
 
             @Override

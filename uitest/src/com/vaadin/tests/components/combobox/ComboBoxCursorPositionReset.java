@@ -30,7 +30,6 @@ public class ComboBoxCursorPositionReset extends AbstractTestUI {
         setContent(root);
 
         ComboBox combo = new ComboBox();
-        combo.setImmediate(true);
         root.addComponent(combo);
         combo.addItem("Hello World");
         combo.addItem("Please click on the text");

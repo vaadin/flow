@@ -33,7 +33,6 @@ public class TextChangeListenerChangingNonTextProperties extends TestBase {
             }
 
         });
-        tf2.setImmediate(true);
 
         addComponent(tf2);
     }

@@ -69,7 +69,6 @@ public class JSR286Portlet extends UI {
         main.addComponent(userInfo);
 
         tf.setEnabled(false);
-        tf.setImmediate(true);
         main.addComponent(tf);
 
         portletEdit.setEnabled(false);
@@ -106,7 +105,7 @@ public class JSR286Portlet extends UI {
     }
 
     private void possiblyChangedModeOrState() {
-        VaadinPortletRequest request = (VaadinPortletRequest) VaadinPortletService.getCurrentRequest();
+        VaadinPortletRequest request = VaadinPortletService.getCurrentRequest();
 
         userAgent.setValue(getPage().getWebBrowser().getBrowserApplication());
         screenWidth.setValue(String.valueOf(getPage().getBrowserWindowWidth()));

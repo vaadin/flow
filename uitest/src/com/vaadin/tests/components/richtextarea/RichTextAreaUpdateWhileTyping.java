@@ -34,7 +34,7 @@ public class RichTextAreaUpdateWhileTyping extends AbstractTestUI {
 
         rta = new RichTextArea();
         rta.setId("rta");
-        rta.setImmediate(true);
+
         addComponent(rta);
     }
 

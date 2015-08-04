@@ -36,7 +36,6 @@ public class ReadOnlyOptionGroup extends AbstractTestUI {
         optionGroup.setNewItemsAllowed(true);
 
         final CheckBox readOnlyCheckbox = new CheckBox("read-only");
-        readOnlyCheckbox.setImmediate(true);
         readOnlyCheckbox.addValueChangeListener(new Property.ValueChangeListener() {
             @Override
             public void valueChange(Property.ValueChangeEvent event) {

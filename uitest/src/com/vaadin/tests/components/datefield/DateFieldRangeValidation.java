@@ -74,9 +74,7 @@ public class DateFieldRangeValidation extends TestBase {
         fromField.setPropertyDataSource(bi.getItemProperty("from"));
         CheckBox fromInclusive = new CheckBox("From inclusive", bi.getItemProperty("fromInclusive"));
         CheckBox toInclusive = new CheckBox("To inclusive", bi.getItemProperty("toInclusive"));
-        fromInclusive.setImmediate(true);
         fromInclusive.addListener(refreshField);
-        toInclusive.setImmediate(true);
         toInclusive.addListener(refreshField);
 
         PopupDateField toField = createDateField();
@@ -122,7 +120,6 @@ public class DateFieldRangeValidation extends TestBase {
         df.setLocale(new Locale("en", "US"));
         df.setResolution(Resolution.DAY);
         df.setBuffered(false);
-        df.setImmediate(true);
         return df;
     }
 

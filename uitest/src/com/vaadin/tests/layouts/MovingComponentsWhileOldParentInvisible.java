@@ -44,7 +44,7 @@ public class MovingComponentsWhileOldParentInvisible extends TestBase {
         };
         componentContainerSelect.setId("componentContainerSelect");
         componentContainerSelect.setWidth("300px");
-        componentContainerSelect.setImmediate(true);
+
         componentContainerSelect.setNullSelectionAllowed(false);
         // componentContainer.addContainerProperty(CAPTION, String.class, "");
         // componentContainer.addContainerProperty(CLASS, Class.class, "");

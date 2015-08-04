@@ -23,7 +23,6 @@ public class ComboBoxResetValue extends AbstractTestUI {
         final ComboBox cbNullSelectionNotAllowed = getComboBoxWithNullSelectionNotAllowed();
 
         Button b = new Button("Reset");
-        b.setImmediate(true);
         b.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
@@ -38,7 +37,6 @@ public class ComboBoxResetValue extends AbstractTestUI {
     protected ComboBox getComboBoxWithNullSelectionAllowedWithSetNullSelectionItemId() {
         ComboBox cb = new ComboBox();
         cb.setId(WITH_SET_NULL_SELECTION_ITEM_ID);
-        cb.setImmediate(true);
         cb.setNullSelectionAllowed(true);
 
         cb.addItem(EMPTY_VALUE);
@@ -52,7 +50,6 @@ public class ComboBoxResetValue extends AbstractTestUI {
     protected ComboBox getComboBoxWithNullSelectionAllowedWithoutNullSelectionItemId() {
         ComboBox cb = new ComboBox();
         cb.setId(WITHOUT_NULL_SELECTION_ITEM_ID);
-        cb.setImmediate(true);
         cb.setNullSelectionAllowed(true);
 
         cb.addItem(1);
@@ -63,7 +60,6 @@ public class ComboBoxResetValue extends AbstractTestUI {
     protected ComboBox getComboBoxWithNullSelectionNotAllowed() {
         ComboBox cb = new ComboBox();
         cb.setId(NULL_SELECTION_NOT_ALLOWED);
-        cb.setImmediate(true);
         cb.setNullSelectionAllowed(false);
 
         cb.addItem(1);

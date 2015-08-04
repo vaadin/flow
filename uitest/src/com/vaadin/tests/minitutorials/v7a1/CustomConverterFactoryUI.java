@@ -10,7 +10,7 @@ public class CustomConverterFactoryUI extends AbstractTestUI {
         getSession().setConverterFactory(new MyConverterFactory());
 
         TextField tf = new TextField("This is my double field");
-        tf.setImmediate(true);
+
         tf.setConverter(Double.class);
         addComponent(tf);
 

@@ -50,7 +50,6 @@ public class JavaScriptResizeListener extends AbstractTestUI {
         }));
         addComponent(new CheckBox("Listener active") {
             {
-                setImmediate(true);
                 addValueChangeListener(new ValueChangeListener() {
                     @Override
                     public void valueChange(Property.ValueChangeEvent event) {

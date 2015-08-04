@@ -47,7 +47,6 @@ public class BigDecimalTextField extends AbstractTestUIWithLog {
 
         FormLayout formLayout = new FormLayout();
         TextField textField = new TextField("BigDecimal field");
-        textField.setImmediate(true);
         textField.setValue("12");
         formLayout.addComponent(textField);
 

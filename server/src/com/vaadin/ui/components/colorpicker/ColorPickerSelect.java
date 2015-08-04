@@ -77,8 +77,6 @@ public class ColorPickerSelect extends CustomComponent implements ColorSelector,
         setWidth("100%");
 
         range = new ComboBox();
-        range.setImmediate(true);
-        range.setImmediate(true);
         range.setNullSelectionAllowed(false);
         range.setNewItemsAllowed(false);
         range.setWidth("100%");

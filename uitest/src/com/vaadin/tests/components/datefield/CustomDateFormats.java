@@ -26,7 +26,6 @@ public class CustomDateFormats extends TestBase {
     @Override
     protected void setup() {
         final NativeSelect s = new NativeSelect("Locale");
-        s.setImmediate(true);
         s.setNullSelectionAllowed(false);
         s.addContainerProperty(CAPTION, String.class, "");
         addLocale(Locale.FRANCE, s);
@@ -140,7 +139,6 @@ public class CustomDateFormats extends TestBase {
         df.setLocale(locale);
         df.setWidth("300px");
         df.setDateFormat(pattern);
-        df.setImmediate(true);
         String debugId = pattern.replace('/', 'X');
         // only certain characters are allowed in debug IDs
         debugId = debugId.replaceAll("[^-a-zA-Z .'_]", "X");

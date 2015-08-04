@@ -37,7 +37,7 @@ public class DateFieldChangeResolution extends AbstractTestUI {
         final DateField dateField = new PopupDateField("Enter date");
         dateField.setResolution(Resolution.YEAR);
         dateField.setId(DATEFIELD_ID);
-        dateField.setImmediate(true);
+
         addComponent(dateField);
 
         Label l = new Label("Select resolution");

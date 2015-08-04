@@ -24,7 +24,6 @@ public class ValueThroughProperty extends TestBase {
 
         final PopupDateField df = new PopupDateField(dateProperty);
         df.setLocale(new Locale("en", "US"));
-        df.setImmediate(true);
         df.setResolution(DateField.RESOLUTION_DAY);
         addComponent(df);
 

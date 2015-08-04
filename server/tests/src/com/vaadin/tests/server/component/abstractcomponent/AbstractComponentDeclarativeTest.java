@@ -15,10 +15,8 @@
  */
 package com.vaadin.tests.server.component.abstractcomponent;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.lang.reflect.Field;
-import java.nio.charset.Charset;
 import java.util.Locale;
 
 import org.jsoup.nodes.Attributes;
@@ -39,7 +37,6 @@ import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.declarative.Design;
 import com.vaadin.ui.declarative.DesignContext;
 
 /**
@@ -74,23 +71,8 @@ public class AbstractComponentDeclarativeTest extends DeclarativeTestBase<Abstra
         component.setCaption("test-caption");
         component.setLocale(new Locale("fi", "FI"));
         component.setComponentError(new UserError("<div>test-error</div>", com.vaadin.server.AbstractErrorMessage.ContentMode.HTML, ErrorLevel.ERROR));
-        component.setImmediate(true);
         testRead(design, component);
         testWrite(design, component);
-    }
-
-    @Test
-    public void testReadImmediate() {
-        // Additional tests for the immediate property, including
-        // explicit immediate values
-        String[] design = { "<v-label/>", "<v-label immediate=\"false\"/>", "<v-label immediate=\"true\"/>", "<v-label immediate=\"\"/>" };
-        Boolean[] explicitImmediate = { null, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE };
-        boolean[] immediate = { false, false, true, true };
-        for (int i = 0; i < design.length; i++) {
-            component = (AbstractComponent) Design.read(new ByteArrayInputStream(design[i].getBytes(Charset.forName("UTF-8"))));
-            assertEquals(immediate[i], component.isImmediate());
-            assertEquals(explicitImmediate[i], getExplicitImmediate(component));
-        }
     }
 
     @Test

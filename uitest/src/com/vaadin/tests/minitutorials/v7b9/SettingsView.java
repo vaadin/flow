@@ -36,7 +36,7 @@ public class SettingsView extends Panel implements View {
         Layout layout = new VerticalLayout();
 
         date = new InlineDateField("Birth date");
-        date.setImmediate(true);
+
         layout.addComponent(date);
         // pretend we have a datasource:
         date.setPropertyDataSource(new ObjectProperty<Date>(new Date()));

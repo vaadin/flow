@@ -27,7 +27,6 @@ public class ComboBoxSetNullWhenNewItemsAllowed extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         final ComboBox comboBox = new ComboBox("My ComboBox");
-        comboBox.setImmediate(true);
         comboBox.setNullSelectionAllowed(false);
         comboBox.setNewItemsAllowed(true);
         for (int i = 0; i < 10; i++) {

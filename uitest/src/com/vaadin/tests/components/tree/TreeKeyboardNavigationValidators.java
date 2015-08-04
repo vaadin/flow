@@ -17,7 +17,6 @@ public class TreeKeyboardNavigationValidators extends TestBase {
         Tree tree = new Tree();
         tree.setSizeFull();
         tree.setContainerDataSource(generateHierarchicalContainer());
-        tree.setImmediate(true);
         tree.addValidator(new AlwaysFailValidator("failed"));
         return tree;
     }

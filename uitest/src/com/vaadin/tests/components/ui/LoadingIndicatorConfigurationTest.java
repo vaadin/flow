@@ -72,7 +72,6 @@ public class LoadingIndicatorConfigurationTest extends AbstractTestUIWithLog {
         TextField tf = new TextField(caption);
         tf.setId(caption);
         tf.setConverter(Integer.class);
-        tf.setImmediate(true);
         tf.setConvertedValue(initialValue);
         return tf;
     }

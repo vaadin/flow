@@ -23,7 +23,7 @@ public class CtrlShiftMultiselect extends TestBase {
         tree.setContainerDataSource(createContainer());
         tree.setItemCaptionPropertyId("name");
         tree.setWidth("300px");
-        tree.setImmediate(true);
+
         tree.setSelectable(true);
         tree.setMultiSelect(true);
         tree.expandItemsRecursively("Item 1");

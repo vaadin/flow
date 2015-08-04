@@ -29,7 +29,6 @@ public class WidthToggleReadOnly extends TestBase {
 
     private CheckBox createReadOnlyForComboBox(ComboBox combo) {
         CheckBox readonly = new CheckBox("Second combobox is read only", new MethodProperty(combo, "readOnly"));
-        readonly.setImmediate(true);
         addComponent(readonly);
         return readonly;
     }

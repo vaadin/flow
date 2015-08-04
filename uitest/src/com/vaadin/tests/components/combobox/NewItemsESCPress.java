@@ -24,7 +24,6 @@ public class NewItemsESCPress extends TestBase {
                 box.addItem(newItemCaption);
             }
         });
-        box.setImmediate(true);
         addComponent(box);
     }
 

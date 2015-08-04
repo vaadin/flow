@@ -35,7 +35,7 @@ public class FormLayoutWithInvisibleComponent extends TestBase {
             }
 
         });
-        control.setImmediate(true);
+
         formLayout.addComponent(control);
 
         messages = new TextArea("Messages hidden");

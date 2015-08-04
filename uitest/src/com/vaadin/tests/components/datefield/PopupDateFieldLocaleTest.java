@@ -26,7 +26,7 @@ public class PopupDateFieldLocaleTest extends AbstractTestUI {
         final PopupDateField pdf = new PopupDateField();
         pdf.setLocale(Locale.ENGLISH);
         pdf.setValue(cal.getTime());
-        pdf.setImmediate(true);
+
         pdf.setResolution(DateField.RESOLUTION_SEC);
         addComponent(pdf);
 

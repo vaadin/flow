@@ -24,7 +24,6 @@ public class OptionGroupMultipleValueChange extends TestBase {
         final OptionGroup og = new OptionGroup();
         og.addItem("Clicking on the text might cause an extra valuechange event");
         og.addItem("Second option, same thing");
-        og.setImmediate(true);
         addComponent(og);
 
         final Label events = new Label("", ContentMode.PREFORMATTED);

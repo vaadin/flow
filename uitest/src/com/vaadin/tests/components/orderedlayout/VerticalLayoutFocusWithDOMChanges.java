@@ -34,8 +34,6 @@ public class VerticalLayoutFocusWithDOMChanges extends AbstractTestUI implements
         VerticalLayout content = new VerticalLayout();
         setSizeFull();
         listenedTextField.addValueChangeListener(this);
-        listenedTextField.setImmediate(true);
-        changingTextField.setImmediate(true);
         content.addComponent(dummyButton);
         content.addComponent(listenedTextField);
         content.addComponent(changingTextField);

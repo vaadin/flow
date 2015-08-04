@@ -34,7 +34,6 @@ public class ComboBoxDuplicateCaption extends TestBase {
 
         ComboBox box = new ComboBox("Duplicate captions test Box");
         box.setId("ComboBox");
-        box.setImmediate(true);
         box.addValueChangeListener(new ValueChangeListener() {
 
             @Override

@@ -40,7 +40,6 @@ public class TwinColSelects extends ComponentTestCase<TwinColSelect> {
         for (int i = 0; i < 20; i++) {
             select.addItem("" + i).getItemProperty(CAPTION).setValue("Item " + i);
         }
-        select.setImmediate(true);
         return select;
     }
 

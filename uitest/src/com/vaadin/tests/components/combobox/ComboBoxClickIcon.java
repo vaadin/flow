@@ -37,7 +37,6 @@ public class ComboBoxClickIcon extends AbstractTestUI {
         items.add("B");
         items.add("C");
         final ComboBox combo = new ComboBox();
-        combo.setImmediate(true);
         combo.setItemIcon(items.get(0), FontAwesome.ALIGN_CENTER);
         combo.setItemIcon(items.get(1), FontAwesome.ALIGN_CENTER);
         combo.setItemIcon(items.get(2), FontAwesome.ALIGN_CENTER);

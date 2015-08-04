@@ -45,7 +45,6 @@ public class GridLayoutScrollPosition extends AbstractTestUI {
         final CheckBox visibilityToggleCheckBox = new CheckBox("Hide / Show toggleable components");
         visibilityToggleCheckBox.setId("visibility-toggle");
         visibilityToggleCheckBox.setHeight("2000px");
-        visibilityToggleCheckBox.setImmediate(true);
         visibilityToggleCheckBox.setValue(false); // Initially unchecked
         gridLayout.addComponent(visibilityToggleCheckBox);
 

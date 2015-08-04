@@ -35,7 +35,6 @@ public class IconsInCaption extends TestBase {
         iconTypeSelect = new ComboBox("Icon container");
         iconTypeSelect.addItem(TYPE_EMBEDDED);
         iconTypeSelect.addItem(TYPE_CAPTION);
-        iconTypeSelect.setImmediate(true);
         iconTypeSelect.setNullSelectionAllowed(false);
         iconTypeSelect.addListener(new ValueChangeListener() {
             @Override
@@ -48,7 +47,6 @@ public class IconsInCaption extends TestBase {
         for (Class<? extends ComponentContainer> cc : VaadinClasses.getComponentContainersSupportingUnlimitedNumberOfComponents()) {
             containerSelect.addItem(cc);
         }
-        containerSelect.setImmediate(true);
         containerSelect.addListener(new ValueChangeListener() {
 
             @Override

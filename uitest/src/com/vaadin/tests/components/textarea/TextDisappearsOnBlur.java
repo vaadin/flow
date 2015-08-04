@@ -12,7 +12,6 @@ public class TextDisappearsOnBlur extends TestBase {
 
         // All three are required for the bug to manifest
         ta.setMaxLength(50);
-        ta.setImmediate(true);
         ta.setRequired(true);
     }
 

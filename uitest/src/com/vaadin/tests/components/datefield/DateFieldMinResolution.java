@@ -24,7 +24,7 @@ public class DateFieldMinResolution extends TestBase {
         df.setResolution(DateField.RESOLUTION_MIN);
         df.setDateFormat(dformat.toPattern());
         df.setValue(cal.getTime());
-        df.setImmediate(true);
+
 
         addComponent(df);
 
@@ -35,7 +35,7 @@ public class DateFieldMinResolution extends TestBase {
         idf.setResolution(DateField.RESOLUTION_MIN);
         idf.setDateFormat(dformat.toPattern());
         idf.setValue(cal.getTime());
-        idf.setImmediate(true);
+
 
         idf.addListener(new Property.ValueChangeListener() {
             @Override

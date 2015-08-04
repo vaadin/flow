@@ -11,7 +11,7 @@ public class SendMultibyteCharacters extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         TextArea textArea = new TextArea();
-        textArea.setImmediate(true);
+
 
         addComponent(textArea);
     }

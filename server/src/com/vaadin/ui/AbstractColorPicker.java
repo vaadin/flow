@@ -470,7 +470,6 @@ public abstract class AbstractColorPicker extends AbstractComponent implements C
                 window.setHistoryVisible(historyVisible);
                 window.setPreviewVisible(textfieldVisible);
 
-                window.setImmediate(true);
                 window.addCloseListener(this);
                 window.addColorChangeListener(new ColorChangeListener() {
                     @Override

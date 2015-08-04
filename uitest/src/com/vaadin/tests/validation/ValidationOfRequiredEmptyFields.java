@@ -25,7 +25,7 @@ public class ValidationOfRequiredEmptyFields extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         requiredInput = new CheckBox("Field required");
-        requiredInput.setImmediate(true);
+
         requiredInput.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -34,7 +34,7 @@ public class ValidationOfRequiredEmptyFields extends AbstractTestUI {
         });
 
         requiredErrorInput = new TextField("Required error message");
-        requiredErrorInput.setImmediate(true);
+
         requiredErrorInput.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -43,7 +43,7 @@ public class ValidationOfRequiredEmptyFields extends AbstractTestUI {
         });
 
         integerValidatorInput = new CheckBox("Integer validator");
-        integerValidatorInput.setImmediate(true);
+
         integerValidatorInput.addValueChangeListener(new ValueChangeListener() {
 
             @Override
@@ -56,7 +56,7 @@ public class ValidationOfRequiredEmptyFields extends AbstractTestUI {
             }
         });
         stringLengthValidatorInput = new CheckBox("String length validator");
-        stringLengthValidatorInput.setImmediate(true);
+
         stringLengthValidatorInput.addValueChangeListener(new ValueChangeListener() {
 
             @Override
@@ -70,7 +70,7 @@ public class ValidationOfRequiredEmptyFields extends AbstractTestUI {
         });
 
         tf = new TextField();
-        tf.setImmediate(true);
+
 
         requiredInput.setValue(false);
         requiredErrorInput.setValue("");

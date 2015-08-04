@@ -47,7 +47,6 @@ public class ComboBoxSQLContainerFilteredValueChange extends TestBase {
 
         myCombo.setItemCaptionPropertyId("MYFIELD");
         myCombo.setFilteringMode(Filtering.FILTERINGMODE_CONTAINS);
-        myCombo.setImmediate(true);
         myCombo.setWidth("100.0%");
         myCombo.setHeight("-1px");
         myCombo.addListener(new Property.ValueChangeListener() {

@@ -31,7 +31,6 @@ public class ComboboxStyleChangeWidth extends AbstractTestUIWithLog {
     @Override
     protected void setup(VaadinRequest request) {
         final ComboBox cbFoo = new ComboBox();
-        cbFoo.setImmediate(true);
         cbFoo.setSizeUndefined();
         cbFoo.addItem("A really long string that causes an inline width to be set");
 

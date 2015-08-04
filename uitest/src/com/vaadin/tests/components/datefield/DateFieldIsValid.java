@@ -29,7 +29,7 @@ public class DateFieldIsValid extends AbstractTestUIWithLog {
     @Override
     protected void setup(VaadinRequest request) {
         final DateField dateField = new DateField("Insert Date: ");
-        dateField.setImmediate(true);
+
         dateField.setDateFormat(pattern);
 
         dateField.addValueChangeListener(new ValueChangeListener() {

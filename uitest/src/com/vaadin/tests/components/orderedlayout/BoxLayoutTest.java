@@ -97,7 +97,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         header.addComponent(title);
 
         final CheckBox vertical = new CheckBox("Vertical", !horizontal);
-        vertical.setImmediate(true);
         vertical.addListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -162,7 +161,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         sizes.addAll(Arrays.asList("100px", "30em", "100%"));
 
         final NativeSelect width = new NativeSelect(null, sizes);
-        width.setImmediate(true);
         width.addListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -176,7 +174,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         layout.addComponent(width);
         layout.addComponent(new Label("&times;", ContentMode.HTML));
         final NativeSelect height = new NativeSelect(null, sizes);
-        height.setImmediate(true);
         height.addListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -196,7 +193,6 @@ public class BoxLayoutTest extends AbstractTestUI {
                 l.setMargin(margin.getValue().booleanValue());
             }
         });
-        margin.setImmediate(true);
         layout.addComponent(margin);
         layout.addComponent(margin);
 
@@ -207,7 +203,6 @@ public class BoxLayoutTest extends AbstractTestUI {
                 l.setSpacing(spacing.getValue().booleanValue());
             }
         });
-        spacing.setImmediate(true);
         layout.addComponent(spacing);
 
         // Cell controls
@@ -224,7 +219,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         for (Alignment a : alignments) {
             align.setItemCaption(a, a.getVerticalAlignment() + "-" + a.getHorizontalAlignment());
         }
-        align.setImmediate(true);
         align.setEnabled(false);
         align.setNullSelectionAllowed(false);
         align.select(Alignment.TOP_LEFT);
@@ -240,7 +234,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         cell.addComponent(align);
 
         expand = new CheckBox("Expand");
-        expand.setImmediate(true);
         expand.setEnabled(false);
         expand.addListener(new ValueChangeListener() {
             @Override
@@ -263,7 +256,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         sizes.addAll(Arrays.asList("50px", "200px", "10em", "50%", "100%"));
 
         componentWidth = new NativeSelect(null, sizes);
-        componentWidth.setImmediate(true);
         componentWidth.setEnabled(false);
         componentWidth.addListener(new ValueChangeListener() {
             @Override
@@ -282,7 +274,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         component.addComponent(new Label("&times;", ContentMode.HTML));
 
         componentHeight = new NativeSelect(null, sizes);
-        componentHeight.setImmediate(true);
         componentHeight.setEnabled(false);
         componentHeight.addListener(new ValueChangeListener() {
             @Override
@@ -297,7 +288,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         component.addComponent(componentHeight);
 
         componentCaption = new NativeSelect("Caption", Arrays.asList("Short", "Slightly Longer Caption"));
-        componentCaption.setImmediate(true);
         componentCaption.setEnabled(false);
         componentCaption.addListener(new ValueChangeListener() {
             @Override
@@ -312,7 +302,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         component.addComponent(componentCaption);
 
         componentIcon = new NativeSelect("Icon", Arrays.asList("../runo/icons/16/folder.png", "../runo/icons/32/document.png"));
-        componentIcon.setImmediate(true);
         componentIcon.setEnabled(false);
         componentIcon.addListener(new ValueChangeListener() {
             @Override
@@ -327,7 +316,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         component.addComponent(componentIcon);
 
         componentError = new CheckBox("Error");
-        componentError.setImmediate(true);
         componentError.setEnabled(false);
         componentError.addListener(new ValueChangeListener() {
             @Override
@@ -340,7 +328,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         component.addComponent(componentError);
 
         componentRequired = new CheckBox("Required");
-        componentRequired.setImmediate(true);
         componentRequired.setEnabled(false);
         componentRequired.addListener(new ValueChangeListener() {
             @Override

@@ -37,7 +37,6 @@ public class WindowMaximizeRestoreTest extends AbstractTestUI {
 
         addWindowAgain = new ComboBox("Add Window Again");
         addWindowAgain.setBuffered(false);
-        addWindowAgain.setImmediate(true);
         addWindowAgain.addValueChangeListener(new ValueChangeListener() {
 
             @Override

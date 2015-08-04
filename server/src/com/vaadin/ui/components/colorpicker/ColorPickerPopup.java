@@ -151,7 +151,6 @@ public class ColorPickerPopup extends Window implements ClickListener, ColorChan
         setContent(layout);
         setStyleName(STYLENAME);
         setResizable(false);
-        setImmediate(true);
         // Create the history
         history = new ColorPickerHistory();
         history.addColorChangeListener(this);
@@ -322,7 +321,6 @@ public class ColorPickerPopup extends Window implements ClickListener, ColorChan
 
     private Slider createRGBSlider(String caption, String styleName) {
         Slider redSlider = new Slider(caption, 0, 255);
-        redSlider.setImmediate(true);
         redSlider.setStyleName("rgb-slider");
         redSlider.setWidth("220px");
         redSlider.addStyleName(styleName);
@@ -360,7 +358,6 @@ public class ColorPickerPopup extends Window implements ClickListener, ColorChan
         hueSlider.setStyleName("hsv-slider");
         hueSlider.addStyleName("hue-slider");
         hueSlider.setWidth("220px");
-        hueSlider.setImmediate(true);
         hueSlider.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -387,7 +384,6 @@ public class ColorPickerPopup extends Window implements ClickListener, ColorChan
 
         saturationSlider.setStyleName("hsv-slider");
         saturationSlider.setWidth("220px");
-        saturationSlider.setImmediate(true);
         saturationSlider.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -404,7 +400,6 @@ public class ColorPickerPopup extends Window implements ClickListener, ColorChan
 
         valueSlider.setStyleName("hsv-slider");
         valueSlider.setWidth("220px");
-        valueSlider.setImmediate(true);
         valueSlider.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {

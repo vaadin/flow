@@ -67,7 +67,6 @@ public class Comboboxes extends ComponentTestCase<ComboBox> {
         addTestComponent(s);
 
         s = new PageLength0ComboBox();
-        s.setImmediate(true);
         s.addContainerProperty(CAPTION, String.class, "");
         s.setItemCaptionPropertyId(CAPTION);
         s.setCaption("Pagelength 0");
@@ -106,7 +105,6 @@ public class Comboboxes extends ComponentTestCase<ComboBox> {
 
     private ComboBox createSelect(String caption) {
         ComboBox cb = new ComboBox();
-        cb.setImmediate(true);
         cb.addContainerProperty(CAPTION, String.class, "");
         cb.setItemCaptionPropertyId(CAPTION);
         cb.setCaption(caption);

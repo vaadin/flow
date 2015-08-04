@@ -25,7 +25,6 @@ public class ListSelectJump extends AbstractTestUI {
         ListSelect listSelect = new ListSelect(null, list);
         listSelect.setNullSelectionAllowed(false);
         listSelect.setMultiSelect(true);
-        listSelect.setImmediate(false);
         listSelect.setRows(5);
         listSelect.setItemCaptionMode(AbstractSelect.ItemCaptionMode.ID);
         listSelect.setId("listselect");

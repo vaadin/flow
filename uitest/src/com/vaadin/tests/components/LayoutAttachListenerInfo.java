@@ -22,7 +22,6 @@ public class LayoutAttachListenerInfo extends TestBase {
 
         OptionGroup layouts = new OptionGroup("Layouts", Arrays.asList("AbsoluteLayout", "OrderedLayout", "GridLayout"));
         layouts.select("AbsoluteLayout");
-        layouts.setImmediate(true);
         layouts.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {

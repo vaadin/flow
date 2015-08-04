@@ -44,7 +44,7 @@ public class DateFieldEmptyValid extends TestBase {
         df.setRequired(true);
         df.setLocale(new Locale("fi", "FI"));
         df.setValue(new Date(100000000000L));
-        df.setImmediate(true);
+
         df.setResolution(DateField.RESOLUTION_DAY);
         df.addListener(new ValueChangeListener() {
             @Override

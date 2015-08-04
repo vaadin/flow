@@ -27,7 +27,6 @@ public class TreeKeyboardNavigationScrolls extends TestBase {
     protected void setup() {
         Tree tree = new Tree();
         tree.setContainerDataSource(generateHierarchicalContainer());
-        tree.setImmediate(true);
         tree.addValidator(new AlwaysFailValidator("failed"));
         addComponent(tree);
     }

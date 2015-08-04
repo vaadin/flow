@@ -81,7 +81,6 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
 
     protected RichTextArea createRichTextArea() {
         RichTextArea rta = new RichTextArea();
-        rta.setImmediate(true);
 
         return rta;
     }
@@ -119,7 +118,6 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
             return null;
         }
 
-        field.setImmediate(true);
         return (T) field;
     }
 
@@ -136,7 +134,6 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
         } else {
             select = new ComboBox(null);
         }
-        select.setImmediate(true);
         select.setNullSelectionAllowed(false);
 
         return select;
@@ -165,7 +162,6 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
     protected <T extends Field> T createBooleanField(Class<T> fieldType) {
         if (fieldType.isAssignableFrom(CheckBox.class)) {
             CheckBox cb = new CheckBox(null);
-            cb.setImmediate(true);
             return (T) cb;
         } else if (AbstractTextField.class.isAssignableFrom(fieldType)) {
             return (T) createAbstractTextField((Class<? extends AbstractTextField>) fieldType);
@@ -180,7 +176,6 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
         }
         try {
             T field = fieldType.newInstance();
-            field.setImmediate(true);
             return field;
         } catch (Exception e) {
             throw new BindException("Could not create a field of type " + fieldType, e);

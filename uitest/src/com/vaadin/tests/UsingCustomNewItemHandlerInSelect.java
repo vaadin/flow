@@ -41,7 +41,6 @@ public class UsingCustomNewItemHandlerInSelect extends CustomComponent {
         pl.addComponent(select);
 
         select.setCaption("Select component");
-        select.setImmediate(true);
         select.addContainerProperty("CAPTION", String.class, "");
         select.setItemCaptionMode(Select.ITEM_CAPTION_MODE_PROPERTY);
         select.setItemCaptionPropertyId("CAPTION");

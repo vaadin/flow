@@ -75,7 +75,7 @@ public class UsingBeanValidation extends UI {
         BeanItem<Person> item = new BeanItem<Person>(person);
 
         TextField firstName = new TextField("First name", item.getItemProperty("name"));
-        firstName.setImmediate(true);
+
         setContent(firstName);
 
         firstName.addValidator(new BeanValidator(Person.class, "name"));

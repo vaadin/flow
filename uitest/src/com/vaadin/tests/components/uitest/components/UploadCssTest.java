@@ -14,7 +14,6 @@ public class UploadCssTest {
 
         up = new Upload();
         up.setId("upload" + debugIdCounter++);
-        up.setImmediate(true);
         parent.addComponent(up);
     }
 }

@@ -48,7 +48,6 @@ public class AbsFieldDataSourceLocaleChangeTest {
                 return super.getFormat(locale);
             }
         });
-        tf.setImmediate(true);
         tf.setConvertedValue(10000);
         Assert.assertEquals("0000010000", tf.getValue());
 

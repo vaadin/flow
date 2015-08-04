@@ -47,7 +47,6 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.AbstractComponentState;
 import com.vaadin.shared.ComponentConstants;
 import com.vaadin.shared.ui.ComponentStateUtil;
-import com.vaadin.ui.Field.ValueChangeEvent;
 import com.vaadin.ui.declarative.DesignAttributeHandler;
 import com.vaadin.ui.declarative.DesignContext;
 import com.vaadin.util.ReflectTools;
@@ -97,8 +96,6 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
     private boolean visible = true;
 
     private HasComponents parent;
-
-    private Boolean explicitImmediateValue;
 
     protected static final String DESIGN_ATTR_PLAIN_TEXT = "plain-text";
 
@@ -420,52 +417,6 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         }
     }
 
-    /**
-     * Returns the explicitly set immediate value.
-     * 
-     * @return the explicitly set immediate value or null if
-     *         {@link #setImmediate(boolean)} has not been explicitly invoked
-     */
-    protected Boolean getExplicitImmediateValue() {
-        return explicitImmediateValue;
-    }
-
-    /**
-     * Returns the immediate mode of the component.
-     * <p>
-     * Certain operations such as adding a value change listener will set the
-     * component into immediate mode if {@link #setImmediate(boolean)} has not
-     * been explicitly called with false.
-     * 
-     * @return true if the component is in immediate mode (explicitly or
-     *         implicitly set), false if the component if not in immediate mode
-     */
-    public boolean isImmediate() {
-        if (explicitImmediateValue != null) {
-            return explicitImmediateValue;
-        } else if (hasListeners(ValueChangeEvent.class)) {
-            /*
-             * Automatic immediate for fields that developers are interested
-             * about.
-             */
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Sets the component's immediate mode to the specified status.
-     * 
-     * @param immediate
-     *            the boolean value specifying if the component should be in the
-     *            immediate mode after the call.
-     */
-    public void setImmediate(boolean immediate) {
-        explicitImmediateValue = immediate;
-        getState().immediate = immediate;
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -700,8 +651,6 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         } else {
             getState().errorMessage = null;
         }
-
-        getState().immediate = isImmediate();
     }
 
     /* General event framework */
@@ -929,10 +878,6 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
                 DesignAttributeHandler.assignValue(this, attribute, design.attr(attribute));
             }
 
-        }
-        // handle immediate
-        if (attr.hasKey("immediate")) {
-            setImmediate(DesignAttributeHandler.getFormatter().parse(attr.get("immediate"), Boolean.class));
         }
 
         // handle locale
@@ -1181,7 +1126,7 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         return l;
     }
 
-    private static final String[] customAttributes = new String[] { "width", "height", "debug-id", "error", "width-auto", "height-auto", "width-full", "height-full", "size-auto", "size-full", "immediate", "locale", "read-only", "_id" };
+    private static final String[] customAttributes = new String[] { "width", "height", "debug-id", "error", "width-auto", "height-auto", "width-full", "height-full", "size-auto", "size-full", "locale", "read-only", "_id" };
 
     /*
      * (non-Javadoc)
@@ -1196,10 +1141,6 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         // handle default attributes
         for (String attribute : getDefaultAttributes()) {
             DesignAttributeHandler.writeAttribute(this, attribute, attr, def);
-        }
-        // handle immediate
-        if (explicitImmediateValue != null) {
-            DesignAttributeHandler.writeAttribute("immediate", attr, explicitImmediateValue, def.isImmediate(), Boolean.class);
         }
         // handle locale
         if (getLocale() != null && (getParent() == null || !getLocale().equals(getParent().getLocale()))) {

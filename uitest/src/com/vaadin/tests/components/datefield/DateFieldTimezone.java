@@ -45,7 +45,6 @@ public class DateFieldTimezone extends TestBase {
             }
         };
         timezoneSelector.setValue("UTC");
-        timezoneSelector.setImmediate(true);
         timezoneSelector.setNullSelectionAllowed(true);
         timezoneSelector.setNullSelectionItemId(nullValue);
         timezoneSelector.setFilteringMode(FilteringMode.CONTAINS);
@@ -70,7 +69,6 @@ public class DateFieldTimezone extends TestBase {
         cal.set(Calendar.MILLISECOND, 0);
 
         dateField.setValue(cal.getTime());
-        dateField.setImmediate(true);
         dateField.setTimeZone(cal.getTimeZone());
         dateField.setLocale(EN);
         dateField.addListener(new Property.ValueChangeListener() {

@@ -214,7 +214,6 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
      * when overriding.
      */
     protected void createActions() {
-        createBooleanAction("Immediate", CATEGORY_STATE, true, immediateCommand);
         createBooleanAction("Enabled", CATEGORY_STATE, true, enabledCommand);
         createBooleanAction("Readonly", CATEGORY_STATE, false, readonlyCommand);
         createBooleanAction("Visible", CATEGORY_STATE, true, visibleCommand);

@@ -25,7 +25,6 @@ public class ComboBoxIdenticalItems extends AbstractTestUI {
         item.getItemProperty("caption").setValue("Two");
         select.setItemCaptionPropertyId("caption");
         select.setNullSelectionAllowed(false);
-        select.setImmediate(true);
         select.addValueChangeListener(new Property.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {

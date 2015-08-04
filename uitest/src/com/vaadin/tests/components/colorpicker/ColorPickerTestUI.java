@@ -225,7 +225,6 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
                 setPopupVisibilities();
             }
         });
-        rgbBox.setImmediate(true);
         rgbBox.setId("rgbBox");
         optLayout.addComponent(rgbBox);
 
@@ -237,7 +236,6 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
                 setPopupVisibilities();
             }
         });
-        hsvBox.setImmediate(true);
         hsvBox.setId("hsvBox");
         optLayout.addComponent(hsvBox);
 
@@ -249,7 +247,6 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
                 setPopupVisibilities();
             }
         });
-        swaBox.setImmediate(true);
         swaBox.setId("swaBox");
         optLayout.addComponent(swaBox);
 
@@ -261,7 +258,6 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
                 setPopupVisibilities();
             }
         });
-        hisBox.setImmediate(true);
         hisBox.setId("hisBox");
         optLayout.addComponent(hisBox);
 
@@ -273,7 +269,6 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
                 setPopupVisibilities();
             }
         });
-        txtBox.setImmediate(true);
         txtBox.setId("txtBox");
         optLayout.addComponent(txtBox);
 

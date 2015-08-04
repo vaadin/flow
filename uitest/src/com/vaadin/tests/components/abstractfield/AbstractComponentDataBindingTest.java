@@ -40,7 +40,6 @@ public abstract class AbstractComponentDataBindingTest extends TestBase implemen
             i.getItemProperty(CAPTION).setValue(l.getDisplayName(Locale.ENGLISH));
         }
         ((Container.Sortable) cb.getContainerDataSource()).sort(new Object[] { CAPTION }, new boolean[] { true });
-        cb.setImmediate(true);
         cb.addListener(new ValueChangeListener() {
 
             @Override
@@ -76,7 +75,6 @@ public abstract class AbstractComponentDataBindingTest extends TestBase implemen
     }
 
     protected void configureField(AbstractField<?> field) {
-        field.setImmediate(true);
         field.addListener(this);
     }
 

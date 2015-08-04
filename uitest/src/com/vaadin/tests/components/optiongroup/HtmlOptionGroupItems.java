@@ -86,7 +86,6 @@ public class HtmlOptionGroupItems extends ComponentTestCase<OptionGroup> {
 
     private OptionGroup createOptionGroup(String caption) {
         OptionGroup og = new OptionGroup(caption, cities);
-        og.setImmediate(true);
         return og;
     }
 

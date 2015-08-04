@@ -13,7 +13,6 @@ public class TreeItemClickListening extends AbstractTestUIWithLog {
     protected void setup(VaadinRequest request) {
 
         Tree tree = new Tree();
-        tree.setImmediate(true);
 
         tree.addContainerProperty("caption", String.class, "");
         for (int i = 1; i <= 2; i++) {

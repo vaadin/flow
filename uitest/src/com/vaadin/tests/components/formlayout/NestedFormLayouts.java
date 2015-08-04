@@ -62,7 +62,6 @@ public class NestedFormLayouts extends AbstractTestUI {
 
         final CheckBox spacingCheckBox = new CheckBox("Spacings", false);
         spacingCheckBox.setId("spacings");
-        spacingCheckBox.setImmediate(true);
         spacingCheckBox.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -73,7 +72,6 @@ public class NestedFormLayouts extends AbstractTestUI {
 
         final CheckBox marginCheckBox = new CheckBox("Margins", false);
         marginCheckBox.setId("margins");
-        marginCheckBox.setImmediate(true);
         marginCheckBox.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {

@@ -41,7 +41,6 @@ public class SystemMessages extends AbstractTestUI {
     @Override
     protected void setup(final VaadinRequest request) {
         final NativeSelect localeSelect = new NativeSelect("UI locale");
-        localeSelect.setImmediate(true);
         localeSelect.addItem(new Locale("en", "US"));
         localeSelect.addItem(new Locale("fi", "FI"));
         localeSelect.addItem(Locale.GERMANY);

@@ -32,8 +32,6 @@ public class ComboSelectedValueBeyondTheFirstDropdownPage extends AbstractTestUI
     private ComboBox getComboBox(final Label value) {
         final ComboBox combobox = new ComboBox("MyCaption");
 
-        combobox.setImmediate(true);
-
         for (int i = 1; i <= ITEM_COUNT; i++) {
             combobox.addItem(String.format(ITEM_NAME_TEMPLATE, i));
         }

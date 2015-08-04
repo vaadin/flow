@@ -26,7 +26,6 @@ public class SetTabIndex extends TestBase {
         addComponent(field0);
 
         final CheckBox readonly = new CheckBox("Readonly");
-        readonly.setImmediate(true);
         readonly.addListener(new Property.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {

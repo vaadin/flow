@@ -43,7 +43,6 @@ public class ComboBoxValueInput extends AbstractTestUI {
 
     private ComboBox getComboBox(String caption, boolean addNullItem, String id) {
         ComboBox cb = new ComboBox(caption);
-        cb.setImmediate(true);
         if (addNullItem) {
             cb.addItem("Null item");
             cb.setNullSelectionItemId("Null item");

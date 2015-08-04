@@ -63,7 +63,6 @@ public class TestForMultipleStyleNames extends CustomComponent implements ValueC
 
         s.setContainerDataSource(new IndexedContainer(styleNames2));
         s.addListener(this);
-        s.setImmediate(true);
         main.addComponent(s);
 
         l = new Label("Test labele");

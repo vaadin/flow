@@ -40,7 +40,7 @@ public class CreatingPreserveState extends UI {
     @Override
     public void init(VaadinRequest request) {
         TextField tf = new TextField("Instance #" + (++instanceCounter));
-        tf.setImmediate(true);
+
 
         content.addComponent(tf);
         setContent(content);

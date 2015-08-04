@@ -20,7 +20,6 @@ public class FocusListenerBreaksDropdownMenu extends TestBase {
             }
         });
 
-        comboBox.setImmediate(true);
         addComponent(comboBox);
     }
 

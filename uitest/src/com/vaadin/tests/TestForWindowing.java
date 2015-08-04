@@ -62,7 +62,6 @@ public class TestForWindowing extends CustomComponent {
                 s1.addItem("Excel sheet");
                 s1.addItem("CSV plain text");
                 s1.setValue("Excel sheet");
-                s1.setImmediate(true);
 
                 s2 = new Select();
                 s2.addItem("Separate by comma (,)");
@@ -92,7 +91,6 @@ public class TestForWindowing extends CustomComponent {
                 s.setMax(13);
                 s.setMin(12);
                 s.setResolution(2);
-                s.setImmediate(true);
                 // s.setOrientation(Slider.ORIENTATION_VERTICAL);
                 // s.setArrows(false);
 

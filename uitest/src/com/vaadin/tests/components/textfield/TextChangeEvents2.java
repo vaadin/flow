@@ -77,7 +77,7 @@ public class TextChangeEvents2 extends TestBase {
         {
             final TextField tf = new TextField("Slow label");
             tf.setTextChangeTimeout(2000);
-            tf.setImmediate(true);
+
             getLayout().addComponent(tf);
             final Label l = new Label();
             getLayout().addComponent(l);

@@ -119,7 +119,6 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
      */
     private void initDefaults() {
         setNewItemsAllowed(false);
-        setImmediate(true);
     }
 
     /**

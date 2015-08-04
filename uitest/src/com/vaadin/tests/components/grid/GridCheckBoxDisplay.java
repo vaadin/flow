@@ -42,7 +42,6 @@ public class GridCheckBoxDisplay extends AbstractTestUI {
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
 
         grid.setEditorEnabled(true);
-        grid.setImmediate(true);
 
         getLayout().addComponent(grid);
         getLayout().setExpandRatio(grid, 1);

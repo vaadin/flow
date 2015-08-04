@@ -35,7 +35,6 @@ public class TreeFocusGaining extends TestBase {
                 log.log("Tree value now:" + event.getProperty().getValue());
             }
         });
-        tree.setImmediate(true);
 
         tree = new Tree("Simple tree with itemm click listener");
         tree.addItem("Item1");
