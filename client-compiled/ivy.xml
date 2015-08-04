@@ -25,8 +25,6 @@
             rev="${vaadin.version}" conf="compile-module-> build" />
         <dependency org="com.vaadin" name="vaadin-client"
             rev="${vaadin.version}" conf="compile-module-> build" />
-        <dependency org="com.vaadin" name="vaadin-client-compiler"
-            rev="${vaadin.version}" conf="compile-module-> build" />
     </dependencies>
 
 </ivy-module>

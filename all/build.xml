@@ -58,12 +58,7 @@
                 <javadoc maxmemory="1024m" destdir="${javadoc.dir}"
                     author="true" version="true" use="true" windowtitle="${title}"
                     encoding="utf-8" stylesheetfile="javadoc.css">
-                    <packageset dir="${javadoc.temp.dir}">
-                        <!-- TODO Javadoc throws ClassCastException if this 
-                            is included (#9660) -->
-                        <exclude
-                            name="com/google/gwt/uibinder/elementparsers" />
-                    </packageset>
+                    <packageset dir="${javadoc.temp.dir}" />
                     <doctitle>&lt;h1>${title}&lt;/h1></doctitle>
                     <!-- <header><![CDATA[<script type="text/javascript" 
                         src=".html-style/style.js"></script>]]></header> -->

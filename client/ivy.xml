@@ -28,23 +28,18 @@
             rev="${vaadin.version}" conf="build,test->build">
             <exclude type="pom" conf="test" />
         </dependency>
-        <dependency org="com.vaadin" name="vaadin-server"
-            rev="${vaadin.version}" conf="build,test->build">
-            <exclude type="pom" conf="test" />
-        </dependency>
 
         <!-- gwt-user dependencies -->
-        <dependency org="org.w3c.css" name="sac" rev="1.3" />
+      <dependency org="com.google.gwt" name="gwt" rev="${gwt.version}" conf="build-provided,ide->default" />
+      <dependency org="com.google.gwt" name="gwt-dev" rev="${gwt.version}" conf="build-provided,ide->default" />
+      <dependency org="com.google.gwt" name="gwt-user" rev="${gwt.version}" conf="build-provided,ide->default" />
+      <dependency org="com.google.gwt" name="gwt-codeserver" rev="${gwt.version}" conf="build-provided,ide->default" />
+      <dependency org="com.google.gwt" name="gwt-elemental" rev="${gwt.version}" conf="build-provided,ide->default" />
 
-        <dependency org="junit" name="junit" rev="4.11"
-            conf="test->default" />
-
-        <dependency org="javax.validation" name="validation-api"
-            rev="1.0.0.GA" conf="build->default,sources" />
-
-        <!-- Testing dependencies -->
-        <dependency org="org.easymock" name="easymock" rev="3.0"
-            conf="test,ide-> default" />
+		<!-- Here because pom import does not work with Ivy. Remove when moving away from Ivy -->
+      <dependency org="org.ow2.asm" name="asm" rev="${asm.version}" conf="build-provided,ide->default" />
+      <dependency org="org.ow2.asm" name="asm-util" rev="${asm.version}" conf="build-provided,ide->default" />
+      <dependency org="org.ow2.asm" name="asm-commons" rev="${asm.version}" conf="build-provided,ide->default" />
 
     </dependencies>
 

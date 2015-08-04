@@ -1,8 +1,0 @@
-<module>
-    <!-- This GWT module defines the browser specific overrides used by Vaadin -->
-
-    <!-- Hint for WidgetSetBuilder not to automatically update the file -->
-    <!-- WS Compiler: manually edited -->
-
-
-</module>

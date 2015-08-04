@@ -13,8 +13,6 @@
     <inherits name="com.google.gwt.logging.Logging" />
     <set-property name="gwt.logging.enabled" value="TRUE" />
 
-    <inherits name="com.vaadin.VaadinBrowserSpecificOverrides" />
-
     <source path="client" />
     <source path="shared" />
 
