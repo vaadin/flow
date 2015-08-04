@@ -80,8 +80,4 @@
         <when-property-is value="ie10" name="user.agent" />
     </replace-with>
 
-    <!-- Make Sass linking available -->
-    <define-linker name="sass"
-        class="com.vaadin.sass.linker.SassLinker" />
-
 </module>
