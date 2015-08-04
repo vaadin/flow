@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.metadata;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.core.shared.GWT;
@@ -36,20 +35,6 @@ import com.vaadin.client.FastStringMap;
 import com.vaadin.client.metadata.AsyncBundleLoader.State;
 
 public abstract class ConnectorBundleLoader {
-
-    public static class CValUiInfo {
-        public final String widgetset;
-        public final String product;
-        public final String version;
-        public final String type;
-
-        public CValUiInfo(String product, String version, String widgetset, String type) {
-            this.product = product;
-            this.version = version;
-            this.widgetset = widgetset;
-            this.type = type;
-        }
-    }
 
     public static final String EAGER_BUNDLE_NAME = "__eager";
     public static final String DEFERRED_BUNDLE_NAME = "__deferred";
@@ -137,21 +122,6 @@ public abstract class ConnectorBundleLoader {
 
     public abstract void init();
 
-    protected List<CValUiInfo> cvals = new ArrayList<CValUiInfo>();
-
-    public void cval(String typeName) {
-        if (!cvals.isEmpty()) {
-            for (CValUiInfo c : cvals) {
-                String ns = c.widgetset.replaceFirst("\\.[^\\.]+$", "");
-                if (typeName.startsWith(ns)) {
-                    notice(c.product + " " + c.version);
-                    cvals.remove(c);
-                    return;
-                }
-            }
-        }
-    }
-
     private HTML notice;
 
     // Not using Vaadin notifications (#14597)
@@ -159,11 +129,13 @@ public abstract class ConnectorBundleLoader {
         if (notice == null) {
             notice = new HTML();
             notice.addClickHandler(new ClickHandler() {
+                @Override
                 public void onClick(ClickEvent event) {
                     notice.removeFromParent();
                 }
             });
             notice.addTouchStartHandler(new TouchStartHandler() {
+                @Override
                 public void onTouchStart(TouchStartEvent event) {
                     notice.removeFromParent();
                 }

@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import com.google.gwt.core.client.JsArrayString;
 import com.vaadin.client.JsArrayObject;
-import com.vaadin.client.ServerConnector;
 import com.vaadin.client.communication.JSONSerializer;
 
 public class Type {
@@ -48,11 +47,7 @@ public class Type {
 
     public Object createInstance() throws NoDataException {
         Invoker invoker = TypeDataStore.getConstructor(this);
-        Object ret = invoker.invoke(null);
-        if (ret instanceof ServerConnector) {
-            ConnectorBundleLoader.get().cval(name);
-        }
-        return ret;
+        return invoker.invoke(null);
     }
 
     public Method getMethod(String name) {
