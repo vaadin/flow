@@ -1,55 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ivysettings>
-    <!-- Default ivysettings.xml stuff -->
-    <include url="${ivy.default.settings.dir}/ivysettings-public.xml" />
-    <include url="${ivy.default.settings.dir}/ivysettings-shared.xml" />
-    <include url="${ivy.default.settings.dir}/ivysettings-local.xml" />
-    <include url="${ivy.default.settings.dir}/ivysettings-main-chain.xml" />
-    <include url="${ivy.default.settings.dir}/ivysettings-default-chain.xml" />
+	<!-- Default ivysettings.xml stuff -->
+	<include url="${ivy.default.settings.dir}/ivysettings-public.xml" />
+	<include url="${ivy.default.settings.dir}/ivysettings-shared.xml" />
+	<include url="${ivy.default.settings.dir}/ivysettings-local.xml" />
+	<include url="${ivy.default.settings.dir}/ivysettings-main-chain.xml" />
+	<include url="${ivy.default.settings.dir}/ivysettings-default-chain.xml" />
 
-    <!-- Customized stuff -->
-    <settings defaultResolver="public" />
-    <resolvers>
-        <ibiblio name="public" m2compatible="true" />
-        <ibiblio name="vaadin-addons" usepoms="true"
-            m2compatible="true" root="http://maven.vaadin.com/vaadin-addons" />
-        <filesystem name="local-maven" m2compatible="true">
-            <artifact
-                pattern="${user.home}/.m2/repository/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]" />
-        </filesystem>
-        <filesystem name="build-temp">
-            <ivy
-                pattern="${ivy.settings.dir}/result/artifacts/[revision]/[module]/ivy-[revision].xml" />
-            <artifact
-                pattern="${ivy.settings.dir}/result/artifacts/[revision]/[module]/[artifact]-[revision](-[classifier]).[ext]" />
-        </filesystem>
-    </resolvers>
-    <modules>
-        <module organisation="com.vaadin" name="vaadin-testbench"
-            resolver="vaadin-addons" />
-        <module organisation="com.vaadin" name="vaadin-testbench-core"
-            resolver="vaadin-addons" />
-        <module organisation="com.vaadin" name="vaadin-testbench-api"
-            resolver="vaadin-addons" />
-        <module organisation="com.vaadin" name="hummingbird-buildhelpers"
-            resolver="build-temp" />
-        <module organisation="com.vaadin" name="hummingbird-shared"
-            resolver="build-temp" />
-        <module organisation="com.vaadin" name="hummingbird-server"
-            resolver="build-temp" />
-        <module organisation="com.vaadin" name="hummingbird-client"
-            resolver="build-temp" />
-        <module organisation="com.vaadin" name="hummingbird-client-compiled"
-            resolver="build-temp" />
-        <module organisation="com.vaadin" name="hummingbird-themes"
-            resolver="build-temp" />
-        <module organisation="com.vaadin" name="hummingbird-push"
-            resolver="build-temp" />
-        <module organisation="com.vaadin" name="hummingbird-bom"
-            resolver="build-temp" />
-        <module organisation="com.vaadin" name="hummingbird-liferay"
-            resolver="build-temp" />
-    </modules>
+	<!-- Customized stuff -->
+	<settings defaultResolver="default" />
+	<resolvers>
+		<chain name="default">
+			<filesystem name="build-temp">
+				<ivy
+					pattern="${ivy.settings.dir}/result/artifacts/[revision]/[module]/ivy-[revision].xml" />
+				<artifact
+					pattern="${ivy.settings.dir}/result/artifacts/[revision]/[module]/[artifact]-[revision](-[classifier]).[ext]" />
+			</filesystem>
+			<filesystem name="local-maven" m2compatible="true">
+				<artifact
+					pattern="${user.home}/.m2/repository/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]" />
+			</filesystem>
+			<ibiblio name="public" m2compatible="true" />
+			<ibiblio name="vaadin-addons" usepoms="true" m2compatible="true"
+				root="http://maven.vaadin.com/vaadin-addons" />
+			<ibiblio name="google-snapshots" usepoms="true" m2compatible="true"
+				root="https://oss.sonatype.org/content/repositories/google-snapshots/" />
+		</chain>
+	</resolvers>
 
 
 </ivysettings>
