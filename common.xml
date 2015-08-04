@@ -8,7 +8,7 @@
     <dirname property="vaadin.basedir" file="${ant.file.common}" />
     <property file="${vaadin.basedir}/build.properties" />
 
-    <property name="modules.producing.jar" value="shared,server,client,client-compiled,themes,push,widgets" />
+    <property name="modules.producing.jar" value="shared,server,client,client-compiled,themes,push" />
     <property name="modules.to.publish.to.maven" value="${modules.producing.jar},bom" />
     <property name="modules.to.publish.to.download" value="${modules.to.publish.to.maven},all" />
 
