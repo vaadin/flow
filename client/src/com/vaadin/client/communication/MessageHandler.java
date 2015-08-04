@@ -285,8 +285,6 @@ public class MessageHandler {
                     json.getJSStringArray("styleDependencies"));
         }
 
-        handleUIDLDuration.logDuration(
-                " * Handling type mappings from server completed", 10);
         /*
          * Hook for e.g. TestBench to get details about server peformance
          */

@@ -17,7 +17,6 @@
 package com.vaadin.server.communication;
 
 import com.vaadin.server.BootstrapHandler;
-import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletService;
 
 public class ServletBootstrapHandler extends BootstrapHandler {
@@ -36,13 +35,4 @@ public class ServletBootstrapHandler extends BootstrapHandler {
         }
     }
 
-    @Override
-    public String getThemeName(BootstrapContext context) {
-        String themeName = context.getRequest()
-                .getParameter(VaadinServlet.URL_PARAMETER_THEME);
-        if (themeName == null) {
-            themeName = super.getThemeName(context);
-        }
-        return themeName;
-    }
 }

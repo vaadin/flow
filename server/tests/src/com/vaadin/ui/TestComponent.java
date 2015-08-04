@@ -13,15 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.ui;
 
-package com.vaadin.shared.ui.ui;
+import com.vaadin.shared.AbstractComponentState;
 
-import com.vaadin.shared.communication.ClientRpc;
+public class TestComponent extends AbstractComponent {
 
-public interface PageClientRpc extends ClientRpc {
-
-    public void reload();
-
-    public void setLocation(String uri);
-
+    @Override
+    public AbstractComponentState getState() {
+        return super.getState();
+    }
 }

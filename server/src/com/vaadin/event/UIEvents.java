@@ -18,7 +18,7 @@ package com.vaadin.event;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 
@@ -58,7 +58,7 @@ public interface UIEvents {
      * @since 7.2
      * @author Vaadin Ltd
      */
-    public static class PollEvent extends Component.Event {
+    public static class PollEvent extends ComponentEvent {
         public PollEvent(UI ui) {
             super(ui);
         }

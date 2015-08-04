@@ -27,9 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 
-import org.jsoup.nodes.Attributes;
-import org.jsoup.nodes.Element;
-
 import com.vaadin.data.Buffered;
 import com.vaadin.data.Property;
 import com.vaadin.data.Validatable;
@@ -39,16 +36,11 @@ import com.vaadin.data.util.LegacyPropertyHelper;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.data.util.converter.ConverterUtil;
-import com.vaadin.event.Action;
-import com.vaadin.event.ShortcutAction;
-import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.AbstractErrorMessage;
 import com.vaadin.server.CompositeErrorMessage;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.shared.AbstractFieldState;
 import com.vaadin.shared.util.SharedUtil;
-import com.vaadin.ui.declarative.DesignAttributeHandler;
-import com.vaadin.ui.declarative.DesignContext;
 
 /**
  * <p>
@@ -77,7 +69,7 @@ import com.vaadin.ui.declarative.DesignContext;
 @SuppressWarnings("serial")
 public abstract class AbstractField<T> extends AbstractComponent
         implements Field<T>, Property.ReadOnlyStatusChangeListener,
-        Property.ReadOnlyStatusChangeNotifier, Action.ShortcutNotifier {
+        Property.ReadOnlyStatusChangeNotifier {
 
     /* Private members */
 
@@ -168,23 +160,6 @@ public abstract class AbstractField<T> extends AbstractComponent
      */
 
     /**
-     * Returns true if the error indicator be hidden when painting the component
-     * even when there are errors.
-     * 
-     * This is a mostly internal method, but can be overridden in subclasses
-     * e.g. if the error indicator should also be shown for empty fields in some
-     * cases.
-     * 
-     * @return true to hide the error indicator, false to use the normal logic
-     *         to show it when there are errors
-     */
-    protected boolean shouldHideErrors() {
-        // getErrorMessage() can still return something else than null based on
-        // validation etc.
-        return isRequired() && isEmpty() && getComponentError() == null;
-    }
-
-    /**
      * Returns the type of the Field. The methods <code>getValue</code> and
      * <code>setValue</code> must be compatible with this type: one must be able
      * to safely cast the value returned from <code>getValue</code> to the given
@@ -202,7 +177,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      */
     @Override
     public boolean isReadOnly() {
-        return super.isReadOnly()
+        return getState().readOnly
                 || (dataSource != null && dataSource.isReadOnly());
     }
 
@@ -213,7 +188,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      */
     @Override
     public void setReadOnly(boolean readOnly) {
-        super.setReadOnly(readOnly);
+        getState().readOnly = readOnly;
         fireReadOnlyStatusChange();
     }
 
@@ -1049,10 +1024,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * Error messages shown by the fields are composites of the error message
      * thrown by the superclasses (that is the component error message),
      * validation errors and buffered source errors.
-     * 
-     * @see com.vaadin.ui.AbstractComponent#getErrorMessage()
      */
-    @Override
     public ErrorMessage getErrorMessage() {
 
         /*
@@ -1072,17 +1044,14 @@ public abstract class AbstractField<T> extends AbstractComponent
             }
         }
 
-        // Check if there are any systems errors
-        final ErrorMessage superError = super.getErrorMessage();
-
         // Return if there are no errors at all
-        if (superError == null && validationError == null
+        if (validationError == null
                 && getCurrentBufferedSourceException() == null) {
             return null;
         }
 
         // Throw combination of the error types
-        return new CompositeErrorMessage(new ErrorMessage[] { superError,
+        return new CompositeErrorMessage(new ErrorMessage[] {
                 AbstractErrorMessage
                         .getErrorMessageForException(validationError),
                 AbstractErrorMessage.getErrorMessageForException(
@@ -1197,7 +1166,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * @author Vaadin Ltd.
      * @since 3.0
      */
-    public static class ReadOnlyStatusChangeEvent extends Component.Event
+    public static class ReadOnlyStatusChangeEvent extends ComponentEvent
             implements Property.ReadOnlyStatusChangeEvent, Serializable {
 
         /**
@@ -1594,63 +1563,6 @@ public abstract class AbstractField<T> extends AbstractComponent
         return currentBufferedSourceException;
     }
 
-    /**
-     * A ready-made {@link ShortcutListener} that focuses the given
-     * {@link Focusable} (usually a {@link Field}) when the keyboard shortcut is
-     * invoked.
-     * 
-     */
-    public static class FocusShortcut extends ShortcutListener {
-        protected Focusable focusable;
-
-        /**
-         * Creates a keyboard shortcut for focusing the given {@link Focusable}
-         * using the shorthand notation defined in {@link ShortcutAction}.
-         * 
-         * @param focusable
-         *            to focused when the shortcut is invoked
-         * @param shorthandCaption
-         *            caption with keycode and modifiers indicated
-         */
-        public FocusShortcut(Focusable focusable, String shorthandCaption) {
-            super(shorthandCaption);
-            this.focusable = focusable;
-        }
-
-        /**
-         * Creates a keyboard shortcut for focusing the given {@link Focusable}.
-         * 
-         * @param focusable
-         *            to focused when the shortcut is invoked
-         * @param keyCode
-         *            keycode that invokes the shortcut
-         * @param modifiers
-         *            modifiers required to invoke the shortcut
-         */
-        public FocusShortcut(Focusable focusable, int keyCode,
-                int... modifiers) {
-            super(null, keyCode, modifiers);
-            this.focusable = focusable;
-        }
-
-        /**
-         * Creates a keyboard shortcut for focusing the given {@link Focusable}.
-         * 
-         * @param focusable
-         *            to focused when the shortcut is invoked
-         * @param keyCode
-         *            keycode that invokes the shortcut
-         */
-        public FocusShortcut(Focusable focusable, int keyCode) {
-            this(focusable, keyCode, null);
-        }
-
-        @Override
-        public void handleAction(Object sender, Object target) {
-            focusable.focus();
-        }
-    }
-
     private void updateValueFromDataSource() {
         if (dataSource != null) {
 
@@ -1724,14 +1636,6 @@ public abstract class AbstractField<T> extends AbstractComponent
         return (AbstractFieldState) super.getState(markAsDirty);
     }
 
-    @Override
-    public void beforeClientResponse(boolean initial) {
-        super.beforeClientResponse(initial);
-
-        // Hide the error indicator if needed
-        getState().hideErrors = shouldHideErrors();
-    }
-
     /**
      * Registers this as an event listener for events sent by the data source
      * (if any). Does nothing if
@@ -1766,72 +1670,6 @@ public abstract class AbstractField<T> extends AbstractComponent
             }
             isListeningToPropertyEvents = false;
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Fields are automatically set to immediate if validators have been added.
-     */
-    @Override
-    public boolean isImmediate() {
-        if (getExplicitImmediateValue() != null) {
-            return getExplicitImmediateValue();
-        }
-        // Make field immediate when there is some kind of validation present
-        // (validator or required). This will avoid the UI being in a wrong
-        // state, e.g. user entered valid data but old validation error is still
-        // shown
-        return super.isImmediate() || !getValidators().isEmpty()
-                || isRequired();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractComponent#readDesign(org.jsoup.nodes .Element,
-     * com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void readDesign(Element design, DesignContext designContext) {
-        super.readDesign(design, designContext);
-        Attributes attr = design.attributes();
-        if (design.hasAttr("readonly")) {
-            setReadOnly(DesignAttributeHandler.readAttribute("readonly", attr,
-                    Boolean.class));
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractComponent#getCustomAttributes()
-     */
-    @Override
-    protected Collection<String> getCustomAttributes() {
-        Collection<String> attributes = super.getCustomAttributes();
-        attributes.add("readonly");
-        // must be handled by subclasses
-        attributes.add("value");
-        attributes.add("converted-value");
-        return attributes;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractComponent#writeDesign(org.jsoup.nodes.Element
-     * , com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void writeDesign(Element design, DesignContext designContext) {
-        super.writeDesign(design, designContext);
-        AbstractField def = (AbstractField) designContext
-                .getDefaultInstance(this);
-        Attributes attr = design.attributes();
-        // handle readonly
-        DesignAttributeHandler.writeAttribute("readonly", attr,
-                super.isReadOnly(), def.isReadOnly(), Boolean.class);
     }
 
     private static final Logger getLogger() {

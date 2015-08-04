@@ -17,7 +17,6 @@ package com.vaadin.server;
 
 import java.io.Serializable;
 import java.util.Locale;
-import java.util.Properties;
 
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.Component;
@@ -36,28 +35,6 @@ public class ServletPortletHelper implements Serializable {
      * The default SystemMessages (read-only).
      */
     static final SystemMessages DEFAULT_SYSTEM_MESSAGES = new SystemMessages();
-
-    static Class<? extends LegacyApplication> getLegacyApplicationClass(
-            VaadinService vaadinService) throws ServiceException {
-        Properties initParameters = vaadinService.getDeploymentConfiguration()
-                .getInitParameters();
-        String applicationParameter = initParameters.getProperty("application");
-        ClassLoader classLoader = vaadinService.getClassLoader();
-
-        if (applicationParameter == null) {
-            throw new ServiceException(
-                    "No \"application\" init parameter found");
-        }
-
-        try {
-            return classLoader.loadClass(applicationParameter)
-                    .asSubclass(LegacyApplication.class);
-        } catch (final ClassNotFoundException e) {
-            throw new ServiceException(
-                    "Failed to load application class: " + applicationParameter,
-                    e);
-        }
-    }
 
     private static void verifyUIClass(String className, ClassLoader classLoader)
             throws ServiceException {

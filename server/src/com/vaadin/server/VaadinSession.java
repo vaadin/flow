@@ -52,7 +52,6 @@ import com.vaadin.data.util.converter.DefaultConverterFactory;
 import com.vaadin.event.EventRouter;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.AbstractField;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 import com.vaadin.util.ReflectTools;
@@ -238,11 +237,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final EventRouter eventRouter = new EventRouter();
 
-    private GlobalResourceHandler globalResourceHandler;
-
     protected WebBrowser browser = new WebBrowser();
-
-    private DragAndDropService dragAndDropService;
 
     private LegacyCommunicationManager communicationManager;
 
@@ -418,13 +413,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public LegacyCommunicationManager getCommunicationManager() {
         assert hasLock();
         return communicationManager;
-    }
-
-    public DragAndDropService getDragAndDropService() {
-        if (dragAndDropService == null) {
-            dragAndDropService = new DragAndDropService(this);
-        }
-        return dragAndDropService;
     }
 
     /**
@@ -873,34 +861,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         if (embedId != null && id.equals(embedIdMap.get(embedId))) {
             embedIdMap.remove(embedId);
         }
-    }
-
-    /**
-     * Gets this session's global resource handler that takes care of serving
-     * connector resources that are not served by any single connector because
-     * e.g. because they are served with strong caching or because of legacy
-     * reasons.
-     *
-     * @param createOnDemand
-     *            <code>true</code> if a resource handler should be initialized
-     *            if there is no handler associated with this
-     *            application. </code>false</code> if </code>null</code> should
-     *            be returned if there is no registered handler.
-     * @return this session's global resource handler, or <code>null</code> if
-     *         there is no handler and the createOnDemand parameter is
-     *         <code>false</code>.
-     *
-     * @since 7.0.0
-     */
-    public GlobalResourceHandler getGlobalResourceHandler(
-            boolean createOnDemand) {
-        assert hasLock();
-        if (globalResourceHandler == null && createOnDemand) {
-            globalResourceHandler = new GlobalResourceHandler();
-            addRequestHandler(globalResourceHandler);
-        }
-
-        return globalResourceHandler;
     }
 
     /**

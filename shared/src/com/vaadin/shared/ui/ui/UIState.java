@@ -16,16 +16,13 @@
 package com.vaadin.shared.ui.ui;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.TabIndexState;
 
 public class UIState extends TabIndexState {
-    public TooltipConfigurationState tooltipConfiguration = new TooltipConfigurationState();
     public LoadingIndicatorConfigurationState loadingIndicatorConfiguration = new LoadingIndicatorConfigurationState();
     public int pollInterval = -1;
 
@@ -61,23 +58,12 @@ public class UIState extends TabIndexState {
      */
     public PageState pageState = new PageState();
     /**
-     * State related to the LocaleService class.
-     */
-    public LocaleServiceState localeServiceState = new LocaleServiceState();
-    /**
      * Configuration for the push channel
      */
     public PushConfigurationState pushConfiguration = new PushConfigurationState();
-    /**
-     * Currently used theme.
-     * 
-     * @since 7.3
-     */
-    public String theme;
     public ReconnectDialogConfigurationState reconnectDialogConfiguration = new ReconnectDialogConfigurationState();
 
     {
-        primaryStyleName = "v-ui";
         // Default is 1 for legacy reasons
         tabIndex = 1;
     }
@@ -87,14 +73,6 @@ public class UIState extends TabIndexState {
         public int firstDelay = 300;
         public int secondDelay = 1500;
         public int thirdDelay = 5000;
-    }
-
-    public static class TooltipConfigurationState implements Serializable {
-        public int openDelay = 750;
-        public int quickOpenDelay = 100;
-        public int quickOpenTimeout = 1000;
-        public int closeTimeout = 300;
-        public int maxWidth = 500;
     }
 
     public static class NotificationTypeConfiguration implements Serializable {
@@ -138,25 +116,6 @@ public class UIState extends TabIndexState {
         public int reconnectInterval = 5000;
         public int dialogGracePeriod = 400;
         public boolean dialogModal = false;
-    }
-
-    public static class LocaleServiceState implements Serializable {
-        public List<LocaleData> localeData = new ArrayList<LocaleData>();
-    }
-
-    public static class LocaleData implements Serializable {
-        public String name;
-        public String[] monthNames;
-        public String[] shortMonthNames;
-        public String[] shortDayNames;
-        public String[] dayNames;
-        public int firstDayOfWeek;
-        public String dateFormat;
-        public boolean twelveHourClock;
-        public String hourMinuteDelimiter;
-        public String am;
-        public String pm;
-
     }
 
 }

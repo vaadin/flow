@@ -17,12 +17,9 @@
 package com.vaadin.shared.communication;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import com.vaadin.shared.Connector;
-import com.vaadin.shared.annotations.NoLayout;
 
 /**
  * Interface to be implemented by all shared state classes used to communicate
@@ -52,20 +49,10 @@ import com.vaadin.shared.annotations.NoLayout;
  */
 public class SharedState implements Serializable {
 
-    /**
-     * The automatically managed resources used by the connector.
-     * 
-     * @see com.vaadin.server.AbstractClientConnector#setResource(String,
-     *      com.vaadin.server.Resource)
-     * @see com.vaadin.client.ui.AbstractConnector#getResourceUrl(String)
-     */
-    public Map<String, URLReference> resources = new HashMap<String, URLReference>();
-
     public boolean enabled = true;
     /**
      * A set of event identifiers with registered listeners.
      */
-    @NoLayout
     public Set<String> registeredEventListeners = null;
 
 }

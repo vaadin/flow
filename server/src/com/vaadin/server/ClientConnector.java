@@ -15,20 +15,16 @@
  */
 package com.vaadin.server;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.List;
 
-import com.vaadin.event.ConnectorEvent;
-import com.vaadin.event.ConnectorEventListener;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.communication.MethodInvocation;
-import com.vaadin.shared.communication.SharedState;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentEventListener;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
-
-import elemental.json.JsonObject;
 
 /**
  * Interface implemented by all connectors that are capable of communicating
@@ -43,10 +39,10 @@ public interface ClientConnector extends Connector {
     /**
      * Event fired after a connector is attached to the application.
      */
-    public static class AttachEvent extends ConnectorEvent {
+    public static class AttachEvent extends ComponentEvent {
         public static final String ATTACH_EVENT_IDENTIFIER = "clientConnectorAttach";
 
-        public AttachEvent(ClientConnector source) {
+        public AttachEvent(Component source) {
             super(source);
         }
     }
@@ -55,7 +51,7 @@ public interface ClientConnector extends Connector {
      * Interface for listening {@link DetachEvent connector detach events}.
      * 
      */
-    public static interface AttachListener extends ConnectorEventListener {
+    public static interface AttachListener extends ComponentEventListener {
         public static final Method attachMethod = ReflectTools
                 .findMethod(AttachListener.class, "attach", AttachEvent.class);
 
@@ -71,10 +67,10 @@ public interface ClientConnector extends Connector {
     /**
      * Event fired before a connector is detached from the application.
      */
-    public static class DetachEvent extends ConnectorEvent {
+    public static class DetachEvent extends ComponentEvent {
         public static final String DETACH_EVENT_IDENTIFIER = "clientConnectorDetach";
 
-        public DetachEvent(ClientConnector source) {
+        public DetachEvent(Component source) {
             super(source);
         }
     }
@@ -83,7 +79,7 @@ public interface ClientConnector extends Connector {
      * Interface for listening {@link DetachEvent connector detach events}.
      * 
      */
-    public static interface DetachListener extends ConnectorEventListener {
+    public static interface DetachListener extends ComponentEventListener {
         public static final Method detachMethod = ReflectTools
                 .findMethod(DetachListener.class, "detach", DetachEvent.class);
 
@@ -147,21 +143,8 @@ public interface ClientConnector extends Connector {
      */
     public boolean isConnectorEnabled();
 
-    /**
-     * Returns the type of the shared state for this connector
-     * 
-     * @return The type of the state. Must never return null.
-     */
-    public Class<? extends SharedState> getStateType();
-
     @Override
     public ClientConnector getParent();
-
-    /**
-     * @deprecated As of 7.0, use {@link #markAsDirty()} instead
-     */
-    @Deprecated
-    public void requestRepaint();
 
     /**
      * Marks that this connector's state might have changed. When the framework
@@ -173,12 +156,6 @@ public interface ClientConnector extends Connector {
      * @since 7.0.0
      */
     public void markAsDirty();
-
-    /**
-     * @deprecated As of 7.0, use {@link #markAsDirtyRecursive()} instead
-     */
-    @Deprecated
-    public void requestRepaintAll();
 
     /**
      * Causes this connector and all connectors below it to be marked as dirty.
@@ -230,21 +207,6 @@ public interface ClientConnector extends Connector {
     public void detach();
 
     /**
-     * Get a read-only collection of all extensions attached to this connector.
-     * 
-     * @return a collection of extensions
-     */
-    public Collection<Extension> getExtensions();
-
-    /**
-     * Remove an extension from this connector.
-     * 
-     * @param extension
-     *            the extension to remove.
-     */
-    public void removeExtension(Extension extension);
-
-    /**
      * Returns the UI this connector is attached to
      * 
      * @return The UI this connector is attached to or null if it is not
@@ -267,46 +229,6 @@ public interface ClientConnector extends Connector {
      * @since 7.0
      */
     public void beforeClientResponse(boolean initial);
-
-    /**
-     * Called by the framework to encode the state to a JSONObject. This is
-     * typically done by calling the static method
-     * {@link LegacyCommunicationManager#encodeState(ClientConnector, SharedState)}
-     * .
-     * 
-     * @return a JSON object with the encoded connector state
-     */
-    public JsonObject encodeState();
-
-    /**
-     * Handle a request directed to this connector. This can be used by
-     * connectors to dynamically generate a response and it is also used
-     * internally when serving {@link ConnectorResource}s.
-     * <p>
-     * Requests to <code>/APP/connector/[ui id]/[connector id]/</code> are
-     * routed to this method with the remaining part of the requested path
-     * available in the path parameter.
-     * <p>
-     * NOTE that the session is not locked when this method is called. It is the
-     * responsibility of the connector to ensure that the session is locked
-     * while handling state or other session related data. For best performance
-     * the session should be unlocked before writing a large response to the
-     * client.
-     * </p>
-     * 
-     * @param request
-     *            the request that should be handled
-     * @param response
-     *            the response object to which the response should be written
-     * @param path
-     *            the requested relative path
-     * @return <code>true</code> if the request has been handled,
-     *         <code>false</code> if no response has been written.
-     * @throws IOException
-     *             if there is a problem generating a response.
-     */
-    public boolean handleConnectorRequest(VaadinRequest request,
-            VaadinResponse response, String path) throws IOException;
 
     /**
      * Gets the error handler for the connector.

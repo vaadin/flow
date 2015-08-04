@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.vaadin.data.sort.SortOrder;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
 
 /**
  * Event describing a change in sorting of a {@link Container}. Fired by
@@ -30,7 +31,7 @@ import com.vaadin.ui.Component;
  * @since 7.4
  * @author Vaadin Ltd
  */
-public class SortEvent extends Component.Event {
+public class SortEvent extends ComponentEvent {
 
     private final List<SortOrder> sortOrder;
     private final boolean userOriginated;

@@ -32,7 +32,7 @@ import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.AbstractProperty;
 import com.vaadin.ui.Field;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.TestField;
 
 /**
  * 
@@ -46,7 +46,7 @@ public class FieldGroupTest {
     public void setReadOnly_readOnlyAndNoDataSource_fieldIsReadOnly() {
         FieldGroup fieldGroup = new FieldGroup();
 
-        TextField field = new TextField();
+        TestField field = new TestField();
         fieldGroup.bind(field, "property");
 
         fieldGroup.setReadOnly(true);
@@ -58,7 +58,7 @@ public class FieldGroupTest {
     public void setReadOnly_writableAndNoDataSource_fieldIsWritable() {
         FieldGroup fieldGroup = new FieldGroup();
 
-        TextField field = new TextField();
+        TestField field = new TestField();
         fieldGroup.bind(field, "property");
 
         fieldGroup.setReadOnly(false);
@@ -73,15 +73,15 @@ public class FieldGroupTest {
 
         fieldGroup.setItemDataSource(new TestItem());
 
-        TextField field1 = new TextField();
+        TestField field1 = new TestField();
         field1.setRequired(true);
         fieldGroup.bind(field1, "prop1");
 
-        TextField field2 = new TextField();
+        TestField field2 = new TestField();
         field2.setRequired(true);
         fieldGroup.bind(field2, "prop2");
 
-        Set<TextField> set = new HashSet<TextField>(
+        Set<TestField> set = new HashSet<TestField>(
                 Arrays.asList(field1, field2));
 
         try {

@@ -1,6 +1,5 @@
 (function() {
 	var apps = {};
-	var themesLoaded = {};
 	var widgetsets = {};
 	
 	
@@ -18,24 +17,6 @@
     	log = console.log;
     }
 	
-	var loadTheme = function(url, version) {
-		if(!themesLoaded[url]) {
-			log("loadTheme", url, version);
-			
-			var href = url + '/styles.css';
-			if (version) {
-				href += '?v=' + version;
-			}
-			
-			var stylesheet = document.createElement('link');
-			stylesheet.setAttribute('rel', 'stylesheet');
-			stylesheet.setAttribute('type', 'text/css');
-			stylesheet.setAttribute('href', href);
-			document.getElementsByTagName('head')[0].appendChild(stylesheet);
-			themesLoaded[url] = true;
-		}		
-	};
-		
 	var isWidgetsetLoaded = function(widgetset) {
 		var className = widgetset.replace(/\./g, "_");
 		return (typeof window[className]) != "undefined";
@@ -123,12 +104,6 @@
 					params += "&v-rootId=" + rootId;
 				}
 
-				// Tell the UI what theme it is configured to use
-				var theme = getConfig('theme');
-				if (theme !== undefined) {
-					params += '&theme=' + encodeURIComponent(theme);
-				}
-				
 				params += "&v-appId=" + appId;
 				
 				var extraParams = getConfig('extraParams')
@@ -208,9 +183,6 @@
 				
 				var versionInfo = getConfig('versionInfo');
 				
-				var themeUri = vaadinDir + 'themes/' + getConfig('theme');
-				loadTheme(themeUri, versionInfo && versionInfo['vaadinVersion']);
-				
 				var widgetset = getConfig('widgetset');
 				var widgetsetUrl = getConfig('widgetsetUrl');
 				if (!widgetsetUrl) {
@@ -256,7 +228,6 @@
 		getApp: function(appId) {
 			return apps[appId];
 		},
-		loadTheme: loadTheme,
 		registerWidgetset: function(widgetset, callback) {
 			log("Widgetset registered", widgetset);
 			var ws = widgetsets[widgetset];

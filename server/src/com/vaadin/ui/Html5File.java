@@ -17,7 +17,6 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.event.dd.DropHandler;
 import com.vaadin.server.StreamVariable;
 
 /**

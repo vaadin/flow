@@ -37,8 +37,8 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.server.navigator.ClassBasedViewProviderTest.TestView;
 import com.vaadin.tests.server.navigator.ClassBasedViewProviderTest.TestView2;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.TestComponentContainer;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
 
 import junit.framework.TestCase;
 
@@ -459,7 +459,7 @@ public class NavigatorTest extends TestCase {
         TestView tv2 = EasyMock.createNiceMock(TestView.class);
         EasyMock.replay(tv1, tv2);
 
-        VerticalLayout container = new VerticalLayout();
+        TestComponentContainer container = new TestComponentContainer();
         ViewDisplay display = new Navigator.ComponentContainerViewDisplay(
                 container);
         Navigator navigator = createNavigator(new NullFragmentManager(),

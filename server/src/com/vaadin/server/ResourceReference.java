@@ -42,31 +42,6 @@ public class ResourceReference extends URLReference {
     public String getURL() {
         if (resource instanceof ExternalResource) {
             return ((ExternalResource) resource).getURL();
-        } else if (resource instanceof ConnectorResource) {
-            ConnectorResource connectorResource = (ConnectorResource) resource;
-
-            GlobalResourceHandler globalResourceHandler = connector.getUI()
-                    .getSession().getGlobalResourceHandler(false);
-            if (globalResourceHandler != null) {
-                String uri = globalResourceHandler.getUri(connector,
-                        connectorResource);
-                if (uri != null && !uri.isEmpty()) {
-                    return uri;
-                }
-            }
-
-            // app://APP/connector/[uiid]/[cid]/[key]/[filename]
-            String prefix = key;
-            String filename = connectorResource.getFilename();
-            if (filename != null && !filename.isEmpty()) {
-                prefix += '/' + filename;
-            }
-            String uri = getConnectorResourceBase(prefix, connector);
-            return uri;
-        } else if (resource instanceof ThemeResource) {
-            final String uri = ApplicationConstants.THEME_PROTOCOL_PREFIX
-                    + ((ThemeResource) resource).getResourceId();
-            return uri;
         } else if (resource instanceof FontIcon) {
             // fonticon://[font-family]/[codepoint]
             final FontIcon icon = (FontIcon) resource;
@@ -80,16 +55,6 @@ public class ResourceReference extends URLReference {
                     + resource.getClass().getName());
         }
 
-    }
-
-    private static String getConnectorResourceBase(String filename,
-            ClientConnector connector) {
-        String uri = ApplicationConstants.APP_PROTOCOL_PREFIX
-                + ApplicationConstants.APP_PATH + '/'
-                + ConnectorResource.CONNECTOR_PATH + '/'
-                + connector.getUI().getUIId() + '/' + connector.getConnectorId()
-                + '/' + encodeFileName(filename);
-        return uri;
     }
 
     public static String encodeFileName(String filename) {

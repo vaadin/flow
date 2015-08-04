@@ -23,8 +23,6 @@ import com.vaadin.data.util.sqlcontainer.query.TableQuery;
 import com.vaadin.data.util.sqlcontainer.query.ValidatingSimpleJDBCConnectionPool;
 import com.vaadin.data.util.sqlcontainer.query.generator.StatementHelper;
 import com.vaadin.data.util.sqlcontainer.query.generator.filter.QueryBuilder;
-import com.vaadin.ui.Table;
-import com.vaadin.ui.Window;
 
 public class TicketTests {
 
@@ -36,17 +34,6 @@ public class TicketTests {
                 SQLTestsConstants.dbDriver, SQLTestsConstants.dbURL,
                 SQLTestsConstants.dbUser, SQLTestsConstants.dbPwd, 2, 2);
         DataGenerator.addPeopleToDatabase(connectionPool);
-    }
-
-    @Test
-    public void ticket5867_throwsIllegalState_transactionAlreadyActive()
-            throws SQLException {
-        SQLContainer container = new SQLContainer(new FreeformQuery(
-                "SELECT * FROM people", Arrays.asList("ID"), connectionPool));
-        Table table = new Table();
-        Window w = new Window();
-        w.setContent(table);
-        table.setContainerDataSource(container);
     }
 
     @SuppressWarnings("unchecked")

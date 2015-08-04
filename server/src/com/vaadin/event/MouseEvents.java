@@ -21,6 +21,8 @@ import java.lang.reflect.Method;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.MouseEventDetails.MouseButton;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentEventListener;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -44,7 +46,7 @@ public interface MouseEvents {
      * @see ClickListener
      * @since 6.2
      */
-    public static class ClickEvent extends Component.Event {
+    public static class ClickEvent extends ComponentEvent {
         /**
          * @deprecated As of 7.0, use {@link Button#LEFT} instead.
          */
@@ -192,7 +194,7 @@ public interface MouseEvents {
      * @author Vaadin Ltd.
      * @since 6.2
      */
-    public interface ClickListener extends ConnectorEventListener {
+    public interface ClickListener extends ComponentEventListener {
 
         public static final Method clickMethod = ReflectTools
                 .findMethod(ClickListener.class, "click", ClickEvent.class);
@@ -215,7 +217,7 @@ public interface MouseEvents {
      * @author Vaadin Ltd.
      * @since 6.2
      */
-    public static class DoubleClickEvent extends Component.Event {
+    public static class DoubleClickEvent extends ComponentEvent {
 
         public DoubleClickEvent(Component source) {
             super(source);
@@ -230,7 +232,7 @@ public interface MouseEvents {
      * @author Vaadin Ltd.
      * @since 6.2
      */
-    public interface DoubleClickListener extends ConnectorEventListener {
+    public interface DoubleClickListener extends ComponentEventListener {
 
         public static final Method doubleClickMethod = ReflectTools.findMethod(
                 DoubleClickListener.class, "doubleClick",

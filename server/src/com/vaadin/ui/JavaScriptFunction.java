@@ -18,7 +18,7 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.server.AbstractJavaScriptExtension;
+import com.vaadin.annotations.JavaScript;
 
 import elemental.json.JsonArray;
 

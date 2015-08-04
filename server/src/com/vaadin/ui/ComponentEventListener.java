@@ -13,15 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.ui;
 
-package com.vaadin.shared.ui.ui;
+import java.io.Serializable;
+import java.util.EventListener;
 
-import com.vaadin.shared.communication.ClientRpc;
-
-public interface PageClientRpc extends ClientRpc {
-
-    public void reload();
-
-    public void setLocation(String uri);
+/**
+ * Common super interface for all {@link Component} event listeners
+ * 
+ * @since
+ * @author Vaadin Ltd
+ */
+public interface ComponentEventListener extends EventListener, Serializable {
 
 }

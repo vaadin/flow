@@ -16,40 +16,24 @@
 
 package com.vaadin.ui;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.annotations.PreserveOnRefresh;
-import com.vaadin.event.Action;
-import com.vaadin.event.Action.Handler;
-import com.vaadin.event.ActionManager;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
 import com.vaadin.event.UIEvents.PollEvent;
 import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
 import com.vaadin.navigator.Navigator;
-import com.vaadin.server.ClientConnector;
-import com.vaadin.server.ComponentSizeValidator;
-import com.vaadin.server.ComponentSizeValidator.InvalidLayout;
 import com.vaadin.server.DefaultErrorHandler;
 import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.ErrorHandlingRunnable;
-import com.vaadin.server.LocaleService;
 import com.vaadin.server.Page;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.server.UIProvider;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
@@ -57,20 +41,14 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.VaadinSession.State;
 import com.vaadin.server.communication.PushConnection;
-import com.vaadin.shared.Connector;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.communication.PushMode;
-import com.vaadin.shared.ui.ui.DebugWindowClientRpc;
-import com.vaadin.shared.ui.ui.DebugWindowServerRpc;
 import com.vaadin.shared.ui.ui.ScrollClientRpc;
 import com.vaadin.shared.ui.ui.UIClientRpc;
-import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
 import com.vaadin.ui.Component.Focusable;
-import com.vaadin.ui.declarative.Design;
-import com.vaadin.util.ConnectorHelper;
 import com.vaadin.util.CurrentInstance;
 
 /**
@@ -105,18 +83,12 @@ import com.vaadin.util.CurrentInstance;
  * @since 7.0
  */
 public abstract class UI extends AbstractSingleComponentContainer
-        implements Action.Container, Action.Notifier, PollNotifier,
-        LegacyComponent, Focusable {
+        implements PollNotifier, Focusable {
 
     /**
      * The application to which this UI belongs
      */
     private volatile VaadinSession session;
-
-    /**
-     * List of windows in this UI.
-     */
-    private final LinkedHashSet<Window> windows = new LinkedHashSet<Window>();
 
     /**
      * The component that should be scrolled into view after the next repaint.
@@ -132,12 +104,6 @@ public abstract class UI extends AbstractSingleComponentContainer
      * @see VaadinSession#getNextUIid()
      */
     private int uiId = -1;
-
-    /**
-     * Keeps track of the Actions added to this component, and manages the
-     * painting and handling as well.
-     */
-    protected ActionManager actionManager;
 
     private ConnectorTracker connectorTracker = new ConnectorTracker(this);
 
@@ -180,64 +146,6 @@ public abstract class UI extends AbstractSingleComponentContainer
             fireEvent(new PollEvent(UI.this));
         }
     };
-    private DebugWindowServerRpc debugRpc = new DebugWindowServerRpc() {
-        @Override
-        public void showServerDebugInfo(Connector connector) {
-            String info = ConnectorHelper
-                    .getDebugInformation((ClientConnector) connector);
-            getLogger().info(info);
-        }
-
-        @Override
-        public void analyzeLayouts() {
-            // TODO Move to client side
-            List<InvalidLayout> invalidSizes = ComponentSizeValidator
-                    .validateLayouts(UI.this);
-            StringBuilder json = new StringBuilder();
-            json.append("{\"invalidLayouts\":");
-            json.append("[");
-
-            if (invalidSizes != null) {
-                boolean first = true;
-                for (InvalidLayout invalidSize : invalidSizes) {
-                    if (!first) {
-                        json.append(",");
-                    } else {
-                        first = false;
-                    }
-                    invalidSize.reportErrors(json, System.err);
-                }
-            }
-            json.append("]}");
-            getRpcProxy(DebugWindowClientRpc.class)
-                    .reportLayoutProblems(json.toString());
-        }
-
-        @Override
-        public void showServerDesign(Connector connector) {
-            if (!(connector instanceof Component)) {
-                getLogger().severe("Tried to output declarative design for "
-                        + connector + ", which is not a component");
-                return;
-            }
-            if (connector instanceof UI) {
-                // We want to see the content of the UI, so we can add it to
-                // another UI or component container
-                connector = ((UI) connector).getContent();
-            }
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try {
-                Design.write((Component) connector, baos);
-                getLogger().info("Design for " + connector
-                        + " requested from debug window:\n"
-                        + baos.toString("UTF-8"));
-            } catch (IOException e) {
-                getLogger().log(Level.WARNING,
-                        "Error producing design for " + connector, e);
-            }
-
-        }
-    };
 
     /**
      * Timestamp keeping track of the last heartbeat of this UI. Updated to the
@@ -248,8 +156,6 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     private boolean closing = false;
 
-    private TooltipConfiguration tooltipConfiguration = new TooltipConfigurationImpl(
-            this);
     private PushConfiguration pushConfiguration = new PushConfigurationImpl(
             this);
     private ReconnectDialogConfiguration reconnectDialogConfiguration = new ReconnectDialogConfigurationImpl(
@@ -283,7 +189,6 @@ public abstract class UI extends AbstractSingleComponentContainer
      */
     public UI(Component content) {
         registerRpc(rpc);
-        registerRpc(debugRpc);
         setSizeFull();
         setContent(content);
     }
@@ -342,33 +247,6 @@ public abstract class UI extends AbstractSingleComponentContainer
         return session;
     }
 
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        page.paintContent(target);
-
-        if (scrollIntoView != null) {
-            target.addAttribute("scrollTo", scrollIntoView);
-            scrollIntoView = null;
-        }
-
-        if (pendingFocus != null) {
-            // ensure focused component is still attached to this main window
-            if (equals(pendingFocus.getUI()) || (pendingFocus.getUI() != null
-                    && equals(pendingFocus.getUI().getParent()))) {
-                target.addAttribute("focused", pendingFocus);
-            }
-            pendingFocus = null;
-        }
-
-        if (actionManager != null) {
-            actionManager.paintActions(null, target);
-        }
-
-        if (isResizeLazy()) {
-            target.addAttribute(UIConstants.RESIZE_LAZY, true);
-        }
-    }
-
     /**
      * Fire a click event to all click listeners.
      * 
@@ -379,26 +257,6 @@ public abstract class UI extends AbstractSingleComponentContainer
         MouseEventDetails mouseDetails = MouseEventDetails
                 .deSerialize((String) parameters.get("mouseDetails"));
         fireEvent(new ClickEvent(this, mouseDetails));
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        if (variables.containsKey(EventId.CLICK_EVENT_IDENTIFIER)) {
-            fireClick((Map<String, Object>) variables
-                    .get(EventId.CLICK_EVENT_IDENTIFIER));
-        }
-
-        // Actions
-        if (actionManager != null) {
-            actionManager.handleActions(variables, this);
-        }
-
-        if (variables.containsKey(UIConstants.LOCATION_VARIABLE)) {
-            String location = (String) variables
-                    .get(UIConstants.LOCATION_VARIABLE);
-            getPage().updateLocation(location, true);
-        }
     }
 
     /*
@@ -416,8 +274,6 @@ public abstract class UI extends AbstractSingleComponentContainer
             components.add(getContent());
         }
 
-        components.addAll(windows);
-
         return components.iterator();
     }
 
@@ -428,7 +284,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      */
     @Override
     public int getComponentCount() {
-        return windows.size() + (getContent() == null ? 0 : 1);
+        return (getContent() == null ? 0 : 1);
     }
 
     /**
@@ -503,79 +359,6 @@ public abstract class UI extends AbstractSingleComponentContainer
         return uiId;
     }
 
-    /**
-     * Adds a window as a subwindow inside this UI. To open a new browser window
-     * or tab, you should instead use a {@link UIProvider}.
-     * 
-     * @param window
-     * @throws IllegalArgumentException
-     *             if the window is already added to an application
-     * @throws NullPointerException
-     *             if the given <code>Window</code> is <code>null</code>.
-     */
-    public void addWindow(Window window)
-            throws IllegalArgumentException, NullPointerException {
-
-        if (window == null) {
-            throw new NullPointerException("Argument must not be null");
-        }
-
-        if (window.isAttached()) {
-            throw new IllegalArgumentException(
-                    "Window is already attached to an application.");
-        }
-
-        attachWindow(window);
-    }
-
-    /**
-     * Helper method to attach a window.
-     * 
-     * @param w
-     *            the window to add
-     */
-    private void attachWindow(Window w) {
-        windows.add(w);
-        w.setParent(this);
-        fireComponentAttachEvent(w);
-        markAsDirty();
-    }
-
-    /**
-     * Remove the given subwindow from this UI.
-     * 
-     * Since Vaadin 6.5, {@link Window.CloseListener}s are called also when
-     * explicitly removing a window by calling this method.
-     * 
-     * Since Vaadin 6.5, returns a boolean indicating if the window was removed
-     * or not.
-     * 
-     * @param window
-     *            Window to be removed.
-     * @return true if the subwindow was removed, false otherwise
-     */
-    public boolean removeWindow(Window window) {
-        if (!windows.remove(window)) {
-            // Window window is not a subwindow of this UI.
-            return false;
-        }
-        window.setParent(null);
-        markAsDirty();
-        window.fireClose();
-        fireComponentDetachEvent(window);
-
-        return true;
-    }
-
-    /**
-     * Gets all the windows added to this UI.
-     * 
-     * @return an unmodifiable collection of windows
-     */
-    public Collection<Window> getWindows() {
-        return Collections.unmodifiableCollection(windows);
-    }
-
     @Override
     public void focus() {
         super.focus();
@@ -592,9 +375,6 @@ public abstract class UI extends AbstractSingleComponentContainer
     private Navigator navigator;
 
     private PushConnection pushConnection = null;
-
-    private LocaleService localeService = new LocaleService(this,
-            getState(false).localeServiceState);
 
     private String embedId;
 
@@ -669,9 +449,6 @@ public abstract class UI extends AbstractSingleComponentContainer
         }
         this.uiId = uiId;
         this.embedId = embedId;
-
-        // Actual theme - used for finding CustomLayout templates
-        setTheme(request.getParameter("theme"));
 
         getPage().init(request);
 
@@ -832,40 +609,6 @@ public abstract class UI extends AbstractSingleComponentContainer
         return scrollLeft;
     }
 
-    @Override
-    protected ActionManager getActionManager() {
-        if (actionManager == null) {
-            actionManager = new ActionManager(this);
-        }
-        return actionManager;
-    }
-
-    @Override
-    public <T extends Action & com.vaadin.event.Action.Listener> void addAction(
-            T action) {
-        getActionManager().addAction(action);
-    }
-
-    @Override
-    public <T extends Action & com.vaadin.event.Action.Listener> void removeAction(
-            T action) {
-        if (actionManager != null) {
-            actionManager.removeAction(action);
-        }
-    }
-
-    @Override
-    public void addActionHandler(Handler actionHandler) {
-        getActionManager().addActionHandler(actionHandler);
-    }
-
-    @Override
-    public void removeActionHandler(Handler actionHandler) {
-        if (actionManager != null) {
-            actionManager.removeActionHandler(actionHandler);
-        }
-    }
-
     /**
      * Should resize operations be lazy, i.e. should there be a delay before
      * layout sizes are recalculated and resize events are sent to the server.
@@ -975,19 +718,6 @@ public abstract class UI extends AbstractSingleComponentContainer
      */
     public void setNavigator(Navigator navigator) {
         this.navigator = navigator;
-    }
-
-    /**
-     * Setting the caption of a UI is not supported. To set the title of the
-     * HTML page, use Page.setTitle
-     * 
-     * @deprecated As of 7.0, use {@link Page#setTitle(String)}
-     */
-    @Override
-    @Deprecated
-    public void setCaption(String caption) {
-        throw new UnsupportedOperationException(
-                "You can not set the title of a UI. To set the title of the HTML page, use Page.setTitle");
     }
 
     /**
@@ -1180,38 +910,6 @@ public abstract class UI extends AbstractSingleComponentContainer
     }
 
     /**
-     * Gets the theme currently in use by this UI
-     * 
-     * @return the theme name
-     */
-    public String getTheme() {
-        return getState(false).theme;
-    }
-
-    /**
-     * Sets the theme currently in use by this UI
-     * <p>
-     * Calling this method will remove the old theme (CSS file) from the
-     * application and add the new theme.
-     * <p>
-     * Note that this method is NOT SAFE to call in a portal environment or
-     * other environment where there are multiple UIs on the same page. The old
-     * CSS file will be removed even if there are other UIs on the page which
-     * are still using it.
-     * 
-     * @since 7.3
-     * @param theme
-     *            The new theme name
-     */
-    public void setTheme(String theme) {
-        if (theme == null) {
-            getState().theme = null;
-        } else {
-            getState().theme = VaadinServlet.stripSpecialChars(theme);
-        }
-    }
-
-    /**
      * Marks this UI to be {@link #detach() detached} from the session at the
      * end of the current request, or the next request if there is no current
      * request (if called from a background thread, for instance.)
@@ -1272,7 +970,6 @@ public abstract class UI extends AbstractSingleComponentContainer
     @Override
     public void attach() {
         super.attach();
-        getLocaleService().addLocale(getLocale());
     }
 
     /**
@@ -1291,22 +988,6 @@ public abstract class UI extends AbstractSingleComponentContainer
     @Override
     public void detach() {
         super.detach();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.vaadin.ui.AbstractSingleComponentContainer#setContent(com.vaadin.
-     * ui.Component)
-     */
-    @Override
-    public void setContent(Component content) {
-        if (content instanceof Window) {
-            throw new IllegalArgumentException(
-                    "A Window cannot be added using setContent. Use addWindow(Window window) instead");
-        }
-        super.setContent(content);
     }
 
     @Override
@@ -1469,15 +1150,6 @@ public abstract class UI extends AbstractSingleComponentContainer
                 }
             }
         });
-    }
-
-    /**
-     * Retrieves the object used for configuring tooltips.
-     * 
-     * @return The instance used for tooltip configuration
-     */
-    public TooltipConfiguration getTooltipConfiguration() {
-        return tooltipConfiguration;
     }
 
     /**
@@ -1677,17 +1349,6 @@ public abstract class UI extends AbstractSingleComponentContainer
      */
     public void setOverlayContainerLabel(String overlayContainerLabel) {
         getState().overlayContainerLabel = overlayContainerLabel;
-    }
-
-    /**
-     * Returns the locale service which handles transmission of Locale data to
-     * the client.
-     * 
-     * @since 7.1
-     * @return The LocaleService for this UI
-     */
-    public LocaleService getLocaleService() {
-        return localeService;
     }
 
     private static Logger getLogger() {

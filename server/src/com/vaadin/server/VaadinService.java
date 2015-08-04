@@ -19,7 +19,6 @@ package com.vaadin.server;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -48,7 +47,6 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.event.EventRouter;
 import com.vaadin.server.VaadinSession.FutureAccess;
 import com.vaadin.server.VaadinSession.State;
@@ -216,7 +214,6 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new FileUploadHandler());
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
-        handlers.add(new ConnectorResourceHandler());
 
         return handlers;
     }
@@ -236,26 +233,6 @@ public abstract class VaadinService implements Serializable {
      *         directory). Never ends with a slash (/).
      */
     public abstract String getStaticFileLocation(VaadinRequest request);
-
-    /**
-     * Gets the widgetset that is configured for this deployment, e.g. from a
-     * parameter in web.xml.
-     *
-     * @param request
-     *            the request for which a widgetset is required
-     * @return the name of the widgetset
-     */
-    public abstract String getConfiguredWidgetset(VaadinRequest request);
-
-    /**
-     * Gets the theme that is configured for this deployment, e.g. from a portal
-     * parameter or just some sensible default value.
-     *
-     * @param request
-     *            the request for which a theme is required
-     * @return the name of the theme
-     */
-    public abstract String getConfiguredTheme(VaadinRequest request);
 
     /**
      * Checks whether the UI will be rendered on its own in the browser or
@@ -1010,28 +987,6 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Check if the given UI should be associated with the
-     * <code>window.name</code> so that it can be re-used if the browser window
-     * is reloaded. This is typically determined by the UI provider which
-     * typically checks the @{@link PreserveOnRefresh} annotation but UI
-     * providers and ultimately VaadinService implementations may choose to
-     * override the defaults.
-     *
-     * @param provider
-     *            the UI provider responsible for the UI
-     * @param event
-     *            the UI create event with details about the UI
-     *
-     * @return <code>true</code> if the UI should be preserved on refresh;
-     *         <code>false</code> if a new UI instance should be initialized on
-     *         refreshed.
-     */
-    public boolean preserveUIOnRefresh(UIProvider provider,
-            UICreateEvent event) {
-        return provider.isPreservedOnRefresh(event);
-    }
-
-    /**
      * Discards the current session and creates a new session with the same
      * contents. The purpose of this is to introduce a new session key in order
      * to avoid session fixation attacks.
@@ -1090,19 +1045,6 @@ public abstract class VaadinService implements Serializable {
         }
 
     }
-
-    /**
-     * TODO PUSH Document
-     *
-     * TODO Pass UI or VaadinSession?
-     *
-     * @param uI
-     * @param themeName
-     * @param resource
-     * @return
-     */
-    public abstract InputStream getThemeResourceAsStream(UI uI,
-            String themeName, String resource);
 
     /**
      * Creates and returns a unique ID for the DIV where the UI is to be

@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -32,14 +31,15 @@ import java.util.logging.Logger;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.ClientConnector;
-import com.vaadin.server.JsonPaintTarget;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.LegacyCommunicationManager.ClientCache;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.ConnectorTracker;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -137,50 +137,7 @@ public class UidlWriter implements Serializable {
                     + "\": " + nextClientToServerMessageId + ", ");
             writer.write("\"changes\" : ");
 
-            JsonPaintTarget paintTarget = new JsonPaintTarget(manager, writer,
-                    !repaintAll);
-
-            new LegacyUidlWriter().write(ui, writer, paintTarget);
-
-            paintTarget.close();
             writer.write(", "); // close changes
-
-            // send shared state to client
-
-            // for now, send the complete state of all modified and new
-            // components
-
-            // Ideally, all this would be sent before "changes", but that causes
-            // complications with legacy components that create sub-components
-            // in their paint phase. Nevertheless, this will be processed on the
-            // client after component creation but before legacy UIDL
-            // processing.
-
-            writer.write("\"state\":");
-            Set<String> stateUpdateConnectors = new SharedStateWriter()
-                    .write(ui, writer);
-            writer.write(", "); // close states
-
-            // TODO This should be optimized. The type only needs to be
-            // sent once for each connector id + on refresh. Use the same cache
-            // as
-            // widget mapping
-
-            writer.write("\"types\":");
-            new ConnectorTypeWriter().write(ui, writer, paintTarget);
-            writer.write(", "); // close states
-
-            // Send update hierarchy information to the client.
-
-            // This could be optimized aswell to send only info if hierarchy has
-            // actually changed. Much like with the shared state. Note though
-            // that an empty hierarchy is information aswell (e.g. change from 1
-            // child to 0 children)
-
-            writer.write("\"hierarchy\":");
-            new ConnectorHierarchyWriter().write(ui, writer,
-                    stateUpdateConnectors);
-            writer.write(", "); // close hierarchy
 
             // send server to client RPC calls for components in the UI, in call
             // order
@@ -202,62 +159,16 @@ public class UidlWriter implements Serializable {
             new MetadataWriter().write(ui, writer, repaintAll, async, messages);
             writer.write(", ");
 
-            writer.write("\"resources\" : ");
-            new ResourceWriter().write(ui, writer, paintTarget);
-
-            Collection<Class<? extends ClientConnector>> usedClientConnectors = paintTarget
-                    .getUsedClientConnectors();
-            boolean typeMappingsOpen = false;
+            Set<Class<? extends Component>> usedComponents = new HashSet<Class<? extends Component>>();
+            findClientConnectors(ui, usedComponents);
 
             List<Class<? extends ClientConnector>> newConnectorTypes = new ArrayList<Class<? extends ClientConnector>>();
 
-            for (Class<? extends ClientConnector> class1 : usedClientConnectors) {
+            for (Class<? extends ClientConnector> class1 : usedComponents) {
                 if (clientCache.cache(class1)) {
                     // client does not know the mapping key for this type, send
                     // mapping to client
                     newConnectorTypes.add(class1);
-
-                    if (!typeMappingsOpen) {
-                        typeMappingsOpen = true;
-                        writer.write(", \"typeMappings\" : { ");
-                    } else {
-                        writer.write(" , ");
-                    }
-                    String canonicalName = class1.getCanonicalName();
-                    writer.write("\"");
-                    writer.write(canonicalName);
-                    writer.write("\" : ");
-                    writer.write(manager.getTagForType(class1));
-                }
-            }
-            if (typeMappingsOpen) {
-                writer.write(" }");
-            }
-
-            // TODO PUSH Refactor to TypeInheritanceWriter or something
-            boolean typeInheritanceMapOpen = false;
-            if (typeMappingsOpen) {
-                // send the whole type inheritance map if any new mappings
-                for (Class<? extends ClientConnector> class1 : usedClientConnectors) {
-                    if (!ClientConnector.class
-                            .isAssignableFrom(class1.getSuperclass())) {
-                        continue;
-                    }
-                    if (!typeInheritanceMapOpen) {
-                        typeInheritanceMapOpen = true;
-                        writer.write(", \"typeInheritanceMap\" : { ");
-                    } else {
-                        writer.write(" , ");
-                    }
-                    writer.write("\"");
-                    writer.write(manager.getTagForType(class1));
-                    writer.write("\" : ");
-                    writer.write(manager.getTagForType(
-                            (Class<? extends ClientConnector>) class1
-                                    .getSuperclass()));
-                }
-                if (typeInheritanceMapOpen) {
-                    writer.write(" }");
                 }
             }
 
@@ -319,8 +230,6 @@ public class UidlWriter implements Serializable {
                         + JsonUtil.stringify(toJsonArray(styleDependencies)));
             }
 
-            session.getDragAndDropService().printJSONResponse(writer);
-
             for (ClientConnector connector : processedConnectors) {
                 uiConnectorTracker.markClientSideInitialized(connector);
             }
@@ -333,6 +242,17 @@ public class UidlWriter implements Serializable {
             uiConnectorTracker.setWritingResponse(false);
             uiConnectorTracker.cleanConnectorMap();
         }
+    }
+
+    private void findClientConnectors(Component c,
+            Set<Class<? extends Component>> classes) {
+        classes.add(c.getClass());
+        if (c instanceof HasComponents) {
+            for (Component child : ((HasComponents) c)) {
+                findClientConnectors(child, classes);
+            }
+        }
+
     }
 
     private JsonArray toJsonArray(List<String> list) {

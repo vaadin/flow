@@ -36,10 +36,6 @@ public final class ComponentStateUtil implements Serializable {
         return state.height == null || "".equals(state.height);
     }
 
-    public static final boolean hasDescription(AbstractComponentState state) {
-        return state.description != null && !"".equals(state.description);
-    }
-
     public static final boolean hasStyles(AbstractComponentState state) {
         return state.styles != null && !state.styles.isEmpty();
     }

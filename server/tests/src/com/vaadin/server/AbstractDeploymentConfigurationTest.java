@@ -50,23 +50,6 @@ public class AbstractDeploymentConfigurationTest {
     }
 
     @Test
-    public void getWidgetset_returnsWidgetsetProviderPropertyValue() {
-        String widgetset = UUID.randomUUID().toString();
-        DeploymentConfiguration config = getConfig(
-                Constants.PARAMETER_WIDGETSET, widgetset);
-        Assert.assertEquals("Unexpected widgetset configuration option value",
-                widgetset, config.getWidgetset(null));
-    }
-
-    @Test
-    public void getWidgetset_noWidgetsetPropertyValue_returnsProvidedDefaultValue() {
-        DeploymentConfiguration config = getConfig(null, null);
-        String widgetset = UUID.randomUUID().toString();
-        Assert.assertEquals("Unexpected widgetset configuration option value",
-                widgetset, config.getWidgetset(widgetset));
-    }
-
-    @Test
     public void getResourcesPath_returnsResourcesPathPropertyValue() {
         String resources = UUID.randomUUID().toString();
         DeploymentConfiguration config = getConfig(

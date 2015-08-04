@@ -28,7 +28,6 @@ import com.vaadin.server.ClientConnector;
 import com.vaadin.server.ClientMethodInvocation;
 import com.vaadin.server.EncodeResult;
 import com.vaadin.server.JsonCodec;
-import com.vaadin.server.PaintException;
 import com.vaadin.shared.communication.ClientRpc;
 import com.vaadin.ui.UI;
 
@@ -94,7 +93,7 @@ public class ClientRpcWriter implements Serializable {
                 invocationJson.set(3, paramJson);
                 rpcCalls.set(rpcCalls.length(), invocationJson);
             } catch (JsonException e) {
-                throw new PaintException(
+                throw new IOException(
                         "Failed to serialize RPC method call parameters for connector "
                                 + invocation.getConnector().getConnectorId()
                                 + " method " + invocation.getInterfaceName()

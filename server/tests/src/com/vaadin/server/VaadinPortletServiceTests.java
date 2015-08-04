@@ -71,23 +71,6 @@ public class VaadinPortletServiceTests {
         return sut.getStaticFileLocation(request);
     }
 
-    private String getTheme() {
-        return sut.getConfiguredTheme(request);
-    }
-
-    private void mockThemeProperty(String theme) {
-        mockPortalProperty(Constants.PORTAL_PARAMETER_VAADIN_THEME, theme);
-    }
-
-    private void mockWidgetsetProperty(String widgetset) {
-        mockPortalProperty(Constants.PORTAL_PARAMETER_VAADIN_WIDGETSET,
-                widgetset);
-    }
-
-    private void mockWidgetsetConfiguration(String widgetset) {
-        when(conf.getWidgetset(null)).thenReturn(widgetset);
-    }
-
     @Test
     public void preferencesOverrideDeploymentConfiguration() {
         mockFileLocationPreference("prefs");
@@ -127,70 +110,6 @@ public class VaadinPortletServiceTests {
         String staticFileLocation = getStaticFileLocation();
 
         assertThat(staticFileLocation, is("/content"));
-    }
-
-    @Test
-    public void themeCanBeOverridden() {
-        mockThemeProperty("foobar");
-
-        String theme = getTheme();
-
-        assertThat(theme, is("foobar"));
-    }
-
-    @Test
-    public void defaultThemeIsSet() {
-        mockThemeProperty(null);
-
-        String theme = getTheme();
-
-        assertThat(theme, is(Constants.DEFAULT_THEME_NAME));
-    }
-
-    private String getWidgetset() {
-        return sut.getConfiguredWidgetset(request);
-    }
-
-    @Test
-    public void defaultWidgetsetIsSet() {
-        mockWidgetsetProperty(null);
-        mockWidgetsetConfiguration(null);
-
-        String widgetset = getWidgetset();
-
-        assertThat(widgetset, is(Constants.DEFAULT_WIDGETSET));
-    }
-
-    @Test
-    public void configurationWidgetsetOverridesProperty() {
-        mockWidgetsetProperty("foo");
-        mockWidgetsetConfiguration("bar");
-
-        String widgetset = getWidgetset();
-
-        assertThat(widgetset, is("bar"));
-    }
-
-    @Test
-    public void oldDefaultWidgetsetIsMappedToDefaultWidgetset() {
-        mockWidgetsetConfiguration(null);
-        mockWidgetsetProperty("com.vaadin.portal.gwt.PortalDefaultWidgetSet");
-
-        String widgetset = getWidgetset();
-
-        assertThat(widgetset, is(Constants.DEFAULT_WIDGETSET));
-    }
-
-    @Test
-    public void oldDefaultWidgetSetIsNotMappedToDefaultWidgetset() {
-        mockWidgetsetConfiguration(
-                "com.vaadin.portal.gwt.PortalDefaultWidgetSet");
-        mockWidgetsetProperty(null);
-
-        String widgetset = getWidgetset();
-
-        assertThat(widgetset,
-                is("com.vaadin.portal.gwt.PortalDefaultWidgetSet"));
     }
 
     @Test

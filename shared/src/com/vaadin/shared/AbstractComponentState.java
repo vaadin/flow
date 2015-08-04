@@ -18,7 +18,6 @@ package com.vaadin.shared;
 
 import java.util.List;
 
-import com.vaadin.shared.annotations.NoLayout;
 import com.vaadin.shared.communication.SharedState;
 
 /**
@@ -32,20 +31,10 @@ public class AbstractComponentState extends SharedState {
     public String height = "";
     public String width = "";
     public boolean readOnly = false;
-    @NoLayout
-    public boolean immediate = false;
-    @NoLayout
-    public String description = "";
     // Note: for the caption, there is a difference between null and an empty
     // string!
     public String caption = null;
     public List<String> styles = null;
     public String id = null;
-    public String primaryStyleName = null;
 
-    // HTML formatted error message for the component
-    // TODO this could be an object with more information, but currently the UI
-    // only uses the message
-    public String errorMessage = null;
-    public boolean captionAsHtml = false;
 }

@@ -17,14 +17,12 @@
 package com.vaadin.server;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.server.communication.PushRequestHandler;
@@ -115,18 +113,6 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public String getConfiguredWidgetset(VaadinRequest request) {
-        return getDeploymentConfiguration()
-                .getWidgetset(VaadinServlet.DEFAULT_WIDGETSET);
-    }
-
-    @Override
-    public String getConfiguredTheme(VaadinRequest request) {
-        // Use the default
-        return VaadinServlet.getDefaultTheme();
-    }
-
-    @Override
     public boolean isStandalone(VaadinRequest request) {
         return true;
     }
@@ -196,18 +182,6 @@ public class VaadinServletService extends VaadinService {
     @Override
     public String getServiceName() {
         return getServlet().getServletName();
-    }
-
-    @Override
-    public InputStream getThemeResourceAsStream(UI uI, String themeName,
-            String resource) {
-        VaadinServletService service = (VaadinServletService) uI.getSession()
-                .getService();
-        ServletContext servletContext = service.getServlet()
-                .getServletContext();
-        return servletContext
-                .getResourceAsStream("/" + VaadinServlet.THEME_DIR_PATH + '/'
-                        + themeName + "/" + resource);
     }
 
     @Override

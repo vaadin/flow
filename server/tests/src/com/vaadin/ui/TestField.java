@@ -13,15 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.ui;
 
-package com.vaadin.shared.ui.ui;
+public class TestField extends AbstractField<String> {
 
-import com.vaadin.shared.communication.ClientRpc;
+    public TestField() {
+    }
 
-public interface PageClientRpc extends ClientRpc {
+    public TestField(String value) {
+        setValue(value);
+    }
 
-    public void reload();
-
-    public void setLocation(String uri);
+    @Override
+    public Class<String> getType() {
+        return String.class;
+    }
 
 }

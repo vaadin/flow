@@ -156,10 +156,10 @@ public class BeanFieldGroup<T> extends FieldGroup {
     }
 
     @Override
-    public <T extends Field> T buildAndBind(String caption, Object propertyId,
+    public <T extends Field> T buildAndBind(Object propertyId,
             Class<T> fieldType) throws BindException {
         ensureNestedPropertyAdded(propertyId);
-        return super.buildAndBind(caption, propertyId, fieldType);
+        return super.buildAndBind(propertyId, fieldType);
     }
 
     @Override

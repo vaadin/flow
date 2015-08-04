@@ -18,68 +18,9 @@ import java.util.jar.JarEntry;
 import org.junit.Test;
 
 import com.vaadin.server.VaadinSession;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.CustomComponent;
-import com.vaadin.ui.DragAndDropWrapper;
-import com.vaadin.ui.Field;
-import com.vaadin.ui.HorizontalSplitPanel;
-import com.vaadin.ui.LoginForm;
-import com.vaadin.ui.PopupView;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalSplitPanel;
-import com.vaadin.ui.Window;
-import com.vaadin.ui.themes.BaseTheme;
 
 @SuppressWarnings("deprecation")
 public class VaadinClasses {
-
-    public static void main(String[] args) {
-        System.out.println("ComponentContainers");
-        System.out.println("===================");
-        for (Class<? extends ComponentContainer> c : getComponentContainers()) {
-            System.out.println(c.getName());
-        }
-        System.out.println();
-        System.out.println("Components");
-        System.out.println("==========");
-        for (Class<? extends Component> c : getComponents()) {
-            System.out.println(c.getName());
-        }
-        System.out.println();
-        System.out.println("Server side classes");
-        System.out.println("===================");
-        for (Class<?> c : getAllServerSideClasses()) {
-            System.out.println(c.getName());
-        }
-    }
-
-    public static List<Class<? extends Component>> getComponents() {
-        try {
-            return findClasses(Component.class, "com.vaadin.ui");
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static List<Class<? extends Field>> getFields() {
-        try {
-            return findClasses(Field.class, "com.vaadin.ui");
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static List<Class<? extends BaseTheme>> getThemeClasses() {
-        try {
-            return findClasses(BaseTheme.class, "com.vaadin.ui.themes");
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     public static List<Class<? extends Object>> getAllServerSideClasses() {
         try {
@@ -89,51 +30,6 @@ public class VaadinClasses {
             e.printStackTrace();
             return null;
         }
-    }
-
-    public static List<Class<? extends ComponentContainer>> getComponentContainers() {
-        try {
-            return findClasses(ComponentContainer.class, "com.vaadin.ui");
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static List<Class<? extends ComponentContainer>> getComponentContainersSupportingAddRemoveComponent() {
-        List<Class<? extends ComponentContainer>> classes = getComponentContainers();
-        classes.remove(PopupView.class);
-        classes.remove(CustomComponent.class);
-        classes.remove(DragAndDropWrapper.class);
-        classes.remove(CustomComponent.class);
-        classes.remove(LoginForm.class);
-        classes.remove(UI.class);
-
-        return classes;
-    }
-
-    public static List<Class<? extends ComponentContainer>> getComponentContainersSupportingUnlimitedNumberOfComponents() {
-        List<Class<? extends ComponentContainer>> classes = getComponentContainersSupportingAddRemoveComponent();
-        classes.remove(VerticalSplitPanel.class);
-        classes.remove(HorizontalSplitPanel.class);
-        classes.remove(Window.class);
-
-        return classes;
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static List<Class<?>> getBasicComponentTests() {
-        try {
-            // Given as name to avoid dependencies on testbench source folder
-            return (List) findClasses(
-                    Class.forName(
-                            "com.vaadin.tests.components.AbstractComponentTest"),
-                    "com.vaadin.tests.components");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
     }
 
     private static <T> List<Class<? extends T>> findClasses(Class<T> baseClass,

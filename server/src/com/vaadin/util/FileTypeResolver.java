@@ -23,9 +23,6 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
-
 /**
  * Utility class that can figure out mime-types and icons related to files.
  * <p>
@@ -38,12 +35,6 @@ import com.vaadin.server.ThemeResource;
  */
 @SuppressWarnings("serial")
 public class FileTypeResolver implements Serializable {
-
-    /**
-     * Default icon given if no icon is specified for a mime-type.
-     */
-    static public Resource DEFAULT_ICON = new ThemeResource(
-            "../runo/icons/16/document.png");
 
     /**
      * Default mime-type.
@@ -212,11 +203,6 @@ public class FileTypeResolver implements Serializable {
      */
     static private Hashtable<String, String> extToMIMEMap = new Hashtable<String, String>();
 
-    /**
-     * MIME type to Icon mapping.
-     */
-    static private Hashtable<String, Resource> MIMEToIconMap = new Hashtable<String, Resource>();
-
     static {
 
         // Initialize extension to MIME map
@@ -232,10 +218,6 @@ public class FileTypeResolver implements Serializable {
             }
         }
 
-        // Initialize Icons
-        ThemeResource folder = new ThemeResource("../runo/icons/16/folder.png");
-        addIcon("inode/drive", folder);
-        addIcon("inode/directory", folder);
     }
 
     /**
@@ -277,45 +259,6 @@ public class FileTypeResolver implements Serializable {
         }
 
         return DEFAULT_MIME_TYPE;
-    }
-
-    /**
-     * Gets the descriptive icon representing file, based on the filename. First
-     * the mime-type for the given filename is resolved, and then the
-     * corresponding icon is fetched from the internal icon storage. If it is
-     * not found the default icon is returned.
-     * 
-     * @param fileName
-     *            the name of the file whose icon is requested.
-     * @return the icon corresponding to the given file
-     */
-    public static Resource getIcon(String fileName) {
-        return getIconByMimeType(getMIMEType(fileName));
-    }
-
-    private static Resource getIconByMimeType(String mimeType) {
-        final Resource icon = MIMEToIconMap.get(mimeType);
-        if (icon != null) {
-            return icon;
-        }
-
-        // If nothing is known about the file-type, general file
-        // icon is used
-        return DEFAULT_ICON;
-    }
-
-    /**
-     * Gets the descriptive icon representing a file. First the mime-type for
-     * the given file name is resolved, and then the corresponding icon is
-     * fetched from the internal icon storage. If it is not found the default
-     * icon is returned.
-     * 
-     * @param file
-     *            the file whose icon is requested.
-     * @return the icon corresponding to the given file
-     */
-    public static Resource getIcon(File file) {
-        return getIconByMimeType(getMIMEType(file));
     }
 
     /**
@@ -362,19 +305,6 @@ public class FileTypeResolver implements Serializable {
     }
 
     /**
-     * Adds a icon for the given mime-type. If the mime-type also has a
-     * corresponding icon, it is replaced with the new icon.
-     * 
-     * @param MIMEType
-     *            the mime-type whose icon is to be changed.
-     * @param icon
-     *            the new icon to be associated with <code>MIMEType</code>.
-     */
-    public static void addIcon(String MIMEType, Resource icon) {
-        MIMEToIconMap.put(MIMEType, icon);
-    }
-
-    /**
      * Gets the internal file extension to mime-type mapping.
      * 
      * @return unmodifiable map containing the current file extension to
@@ -384,12 +314,4 @@ public class FileTypeResolver implements Serializable {
         return Collections.unmodifiableMap(extToMIMEMap);
     }
 
-    /**
-     * Gets the internal mime-type to icon mapping.
-     * 
-     * @return unmodifiable map containing the current mime-type to icon mapping
-     */
-    public static Map<String, Resource> getMIMETypeToIconMapping() {
-        return Collections.unmodifiableMap(MIMEToIconMap);
-    }
 }

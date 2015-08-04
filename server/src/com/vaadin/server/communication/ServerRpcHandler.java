@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,13 +33,11 @@ import com.vaadin.server.LegacyCommunicationManager.InvalidUIDLSecurityKeyExcept
 import com.vaadin.server.ServerRpcMethodInvocation;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
-import com.vaadin.server.VariableOwner;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.MethodInvocation;
 import com.vaadin.shared.communication.ServerRpc;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.ConnectorTracker;
 import com.vaadin.ui.UI;
 
@@ -367,12 +364,6 @@ public class ServerRpcHandler implements Serializable {
                         && connector.getUI().isClosing()) {
                     String msg = "Ignoring RPC call for connector "
                             + connector.getClass().getName();
-                    if (connector instanceof Component) {
-                        String caption = ((Component) connector).getCaption();
-                        if (caption != null) {
-                            msg += ", caption=" + caption;
-                        }
-                    }
                     msg += " in closed UI";
                     getLogger().warning(msg);
                     continue;
@@ -473,11 +464,6 @@ public class ServerRpcHandler implements Serializable {
         return invocation;
     }
 
-    protected void changeVariables(Object source, VariableOwner owner,
-            Map<String, Object> m) {
-        owner.changeVariables(source, m);
-    }
-
     protected String getMessage(Reader reader) throws IOException {
 
         StringBuilder sb = new StringBuilder(MAX_BUFFER_SIZE);
@@ -511,12 +497,6 @@ public class ServerRpcHandler implements Serializable {
             ClientConnector connector) {
         String msg = "Ignoring " + what + " for disabled connector "
                 + connector.getClass().getName();
-        if (connector instanceof Component) {
-            String caption = ((Component) connector).getCaption();
-            if (caption != null) {
-                msg += ", caption=" + caption;
-            }
-        }
         return msg;
     }
 }

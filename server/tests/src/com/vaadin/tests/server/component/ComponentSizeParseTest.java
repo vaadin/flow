@@ -19,19 +19,11 @@ package com.vaadin.tests.server.component;
 import org.junit.Assert;
 
 import com.vaadin.server.Sizeable.Unit;
-import com.vaadin.shared.ui.label.LabelState;
-import com.vaadin.ui.Label;
+import com.vaadin.ui.TestComponent;
 
 import junit.framework.TestCase;
 
 public class ComponentSizeParseTest extends TestCase {
-
-    private final class LabelWithPublicState extends Label {
-        @Override
-        protected LabelState getState() {
-            return super.getState();
-        }
-    }
 
     public void testAllTheUnit() {
         testUnit("10.0px", 10, Unit.PIXELS);
@@ -46,13 +38,13 @@ public class ComponentSizeParseTest extends TestCase {
     }
 
     private void testUnit(String string, int amout, Unit unit) {
-        LabelWithPublicState label = new LabelWithPublicState();
+        TestComponent label = new TestComponent();
         label.setHeight(string);
 
         Assert.assertEquals(amout, label.getHeight(), 0);
         Assert.assertEquals(unit, label.getHeightUnits());
 
-        label = new LabelWithPublicState();
+        label = new TestComponent();
 
         label.setHeight(10, unit);
         label.beforeClientResponse(true);

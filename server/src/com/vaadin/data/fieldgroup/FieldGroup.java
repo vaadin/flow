@@ -30,9 +30,7 @@ import com.vaadin.data.Property;
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.TransactionalPropertyWrapper;
 import com.vaadin.ui.AbstractField;
-import com.vaadin.ui.DefaultFieldFactory;
 import com.vaadin.ui.Field;
-import com.vaadin.ui.Form;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -69,8 +67,7 @@ public class FieldGroup implements Serializable {
     /**
      * The field factory used by builder methods.
      */
-    private FieldGroupFieldFactory fieldFactory = DefaultFieldGroupFieldFactory
-            .get();
+    private FieldGroupFieldFactory fieldFactory = null;
 
     /**
      * Constructs a field binder. Use {@link #setItemDataSource(Item)} to set a
@@ -960,18 +957,8 @@ public class FieldGroup implements Serializable {
             }
 
             if (field == null && buildFields) {
-                Caption captionAnnotation = memberField
-                        .getAnnotation(Caption.class);
-                String caption;
-                if (captionAnnotation != null) {
-                    caption = captionAnnotation.value();
-                } else {
-                    caption = DefaultFieldFactory
-                            .createCaptionByPropertyId(propertyId);
-                }
-
                 // Create the component (Field)
-                field = build(caption, propertyType, fieldType);
+                field = build(propertyType, fieldType);
 
                 // Store it in the field
                 try {
@@ -1141,27 +1128,7 @@ public class FieldGroup implements Serializable {
      * @return The created and bound field
      */
     public Field<?> buildAndBind(Object propertyId) throws BindException {
-        String caption = DefaultFieldFactory
-                .createCaptionByPropertyId(propertyId);
-        return buildAndBind(caption, propertyId);
-    }
-
-    /**
-     * Builds a field using the given caption and binds it to the given property
-     * id using the field binder.
-     * 
-     * @param caption
-     *            The caption for the field
-     * @param propertyId
-     *            The property id to bind to. Must be present in the field
-     *            finder.
-     * @throws BindException
-     *             If there is a problem while building or binding
-     * @return The created and bound field. Can be any type of {@link Field}.
-     */
-    public Field<?> buildAndBind(String caption, Object propertyId)
-            throws BindException {
-        return buildAndBind(caption, propertyId, Field.class);
+        return buildAndBind(propertyId, Field.class);
     }
 
     /**
@@ -1178,11 +1145,11 @@ public class FieldGroup implements Serializable {
      * @return The created and bound field. Can be any type of {@link Field}.
      */
 
-    public <T extends Field> T buildAndBind(String caption, Object propertyId,
+    public <T extends Field> T buildAndBind(Object propertyId,
             Class<T> fieldType) throws BindException {
         Class<?> type = getPropertyType(propertyId);
 
-        T field = build(caption, type, fieldType);
+        T field = build(type, fieldType);
         bind(field, propertyId);
 
         return field;
@@ -1206,8 +1173,8 @@ public class FieldGroup implements Serializable {
      * @throws BindException
      *             If the field could not be created
      */
-    protected <T extends Field> T build(String caption, Class<?> dataType,
-            Class<T> fieldType) throws BindException {
+    protected <T extends Field> T build(Class<?> dataType, Class<T> fieldType)
+            throws BindException {
         T field = getFieldFactory().createField(dataType, fieldType);
         if (field == null) {
             throw new BindException(
@@ -1215,7 +1182,6 @@ public class FieldGroup implements Serializable {
                             + " for editing " + dataType.getName());
         }
 
-        field.setCaption(caption);
         return field;
     }
 

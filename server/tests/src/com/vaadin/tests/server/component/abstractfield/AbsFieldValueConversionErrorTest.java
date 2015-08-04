@@ -10,7 +10,7 @@ import com.vaadin.tests.data.bean.Address;
 import com.vaadin.tests.data.bean.Country;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.TestField;
 
 import junit.framework.TestCase;
 
@@ -21,7 +21,7 @@ public class AbsFieldValueConversionErrorTest extends TestCase {
             new Address("Paula street 1", 12345, "P-town", Country.FINLAND));
 
     public void testValidateConversionErrorParameters() {
-        TextField tf = new TextField();
+        TestField tf = new TestField();
         tf.setConverter(new StringToIntegerConverter());
         tf.setPropertyDataSource(new MethodProperty<String>(paulaBean, "age"));
         tf.setConversionError("(Type: {0}) Converter exception message: {1}");
@@ -38,7 +38,7 @@ public class AbsFieldValueConversionErrorTest extends TestCase {
     }
 
     public void testConvertToModelConversionErrorParameters() {
-        TextField tf = new TextField();
+        TestField tf = new TestField();
         tf.setConverter(new StringToIntegerConverter());
         tf.setPropertyDataSource(new MethodProperty<String>(paulaBean, "age"));
         tf.setConversionError("(Type: {0}) Converter exception message: {1}");
@@ -55,7 +55,7 @@ public class AbsFieldValueConversionErrorTest extends TestCase {
     }
 
     public void testNullConversionMessages() {
-        TextField tf = new TextField();
+        TestField tf = new TestField();
         tf.setConverter(new StringToIntegerConverter());
         tf.setPropertyDataSource(new MethodProperty<String>(paulaBean, "age"));
         tf.setConversionError(null);
@@ -70,7 +70,7 @@ public class AbsFieldValueConversionErrorTest extends TestCase {
     }
 
     public void testDefaultConversionErrorMessage() {
-        TextField tf = new TextField();
+        TestField tf = new TestField();
         tf.setConverter(new StringToIntegerConverter());
         tf.setPropertyDataSource(new MethodProperty<String>(paulaBean, "age"));
         tf.setValue("abc");
