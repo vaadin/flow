@@ -11,6 +11,7 @@ import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.IntegerRangeValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.shared.ui.grid.HeightMode;
 import com.vaadin.tests.components.AbstractTestUIWithLog;
 import com.vaadin.tests.data.bean.Address;
 import com.vaadin.tests.data.bean.Country;
@@ -19,9 +20,9 @@ import com.vaadin.tests.data.bean.Sex;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Panel;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -32,7 +33,7 @@ public class BasicPersonForm extends AbstractTestUIWithLog {
     private TextArea lastName;
     private TextField email;
     private TextField age;
-    private Table sex;
+    private Grid sex;
     private TextField deceased;
 
     public class Configuration {
@@ -64,15 +65,13 @@ public class BasicPersonForm extends AbstractTestUIWithLog {
         public ConfigurationPanel() {
             super("Configuration", new VerticalLayout());
             ((VerticalLayout) getContent()).setMargin(true);
-            BeanItem<Configuration> bi = new BeanItem<BasicPersonForm.Configuration>(
-                    configuration);
+            BeanItem<Configuration> bi = new BeanItem<BasicPersonForm.Configuration>(configuration);
             FieldGroup confFieldGroup = new FieldGroup(bi);
             confFieldGroup.setItemDataSource(bi);
             confFieldGroup.setBuffered(false);
 
             for (Object propertyId : bi.getItemPropertyIds()) {
-                ((ComponentContainer) getContent()).addComponent(confFieldGroup
-                        .buildAndBind(propertyId));
+                ((ComponentContainer) getContent()).addComponent(confFieldGroup.buildAndBind(propertyId));
             }
 
         }
@@ -88,25 +87,17 @@ public class BasicPersonForm extends AbstractTestUIWithLog {
         fieldGroup.addCommitHandler(new CommitHandler() {
 
             @Override
-            public void preCommit(CommitEvent commitEvent)
-                    throws CommitException {
+            public void preCommit(CommitEvent commitEvent) throws CommitException {
                 if (configuration.preCommitFails) {
-                    throw new CommitException(
-                            "Error in preCommit because first name is "
-                                    + getPerson(commitEvent.getFieldBinder())
-                                            .getFirstName());
+                    throw new CommitException("Error in preCommit because first name is " + getPerson(commitEvent.getFieldBinder()).getFirstName());
                 }
 
             }
 
             @Override
-            public void postCommit(CommitEvent commitEvent)
-                    throws CommitException {
+            public void postCommit(CommitEvent commitEvent) throws CommitException {
                 if (configuration.postCommitFails) {
-                    throw new CommitException(
-                            "Error in postCommit because first name is "
-                                    + getPerson(commitEvent.getFieldBinder())
-                                            .getFirstName());
+                    throw new CommitException("Error in postCommit because first name is " + getPerson(commitEvent.getFieldBinder()).getFirstName());
                 }
             }
         });
@@ -138,35 +129,32 @@ public class BasicPersonForm extends AbstractTestUIWithLog {
 
             }
         });
-        Button discardButton = new Button("Discard",
-                new Button.ClickListener() {
+        Button discardButton = new Button("Discard", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        fieldGroup.discard();
-                        log("Discarded changes");
+            @Override
+            public void buttonClick(ClickEvent event) {
+                fieldGroup.discard();
+                log("Discarded changes");
 
-                    }
-                });
-        Button showBean = new Button("Show bean values",
-                new Button.ClickListener() {
+            }
+        });
+        Button showBean = new Button("Show bean values", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        log(getPerson(fieldGroup).toString());
+            @Override
+            public void buttonClick(ClickEvent event) {
+                log(getPerson(fieldGroup).toString());
 
-                    }
-                });
+            }
+        });
         addComponent(commitButton);
         addComponent(discardButton);
         addComponent(showBean);
         email.addValidator(new EmailValidator("Must be a valid address"));
-        lastName.addValidator(new StringLengthValidator("Must be min 5 chars",
-                5, null, true));
+        lastName.addValidator(new StringLengthValidator("Must be min 5 chars", 5, null, true));
 
-        age.addValidator(new IntegerRangeValidator(
-                "Must be between 0 and 150, {0} is not", 0, 150));
-        sex.setPageLength(0);
+        age.addValidator(new IntegerRangeValidator("Must be between 0 and 150, {0} is not", 0, 150));
+        sex.setHeightMode(HeightMode.ROW);
+        sex.setHeightByRows(2);
         deceased.setConverter(new StringToBooleanConverter() {
             @Override
             protected String getTrueString() {
@@ -178,8 +166,7 @@ public class BasicPersonForm extends AbstractTestUIWithLog {
                 return "NAAAAAH";
             }
         });
-        Person p = new Person("John", "Doe", "john@doe.com", 64, Sex.MALE,
-                new Address("John street", 11223, "John's town", Country.USA));
+        Person p = new Person("John", "Doe", "john@doe.com", 64, Sex.MALE, new Address("John street", 11223, "John's town", Country.USA));
         fieldGroup.setItemDataSource(new BeanItem<Person>(p));
     }
 

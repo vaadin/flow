@@ -54,9 +54,9 @@ public abstract class GridBaseLayoutTestUI extends BaseLayoutTestUI {
         layout.setSpacing(false);
         layout.setMargin(false);
 
-        final AbstractComponent c1 = getTestTable();
+        final AbstractComponent c1 = getTestGrid();
         c1.setSizeFull();
-        final AbstractComponent c2 = getTestTable();
+        final AbstractComponent c2 = getTestGrid();
         c2.setSizeFull();
 
         class SetSizeButton extends Button {
@@ -91,9 +91,7 @@ public abstract class GridBaseLayoutTestUI extends BaseLayoutTestUI {
         layout.addComponent(btn3);
         layout.addComponent(btn4);
         layout.addComponent(c1);
-        layout.addComponent(new Label(
-                "<div style='height: 1px'></div><hr /><div style='height: 1px'></div>",
-                ContentMode.HTML));
+        layout.addComponent(new Label("<div style='height: 1px'></div><hr /><div style='height: 1px'></div>", ContentMode.HTML));
         layout.addComponent(c2);
         btn2.addClickListener(new ClickListener() {
 

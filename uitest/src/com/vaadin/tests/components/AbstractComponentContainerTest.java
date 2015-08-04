@@ -7,9 +7,7 @@ import java.util.LinkedHashMap;
 import com.vaadin.ui.AbstractComponentContainer;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.HasComponents.ComponentAttachEvent;
 import com.vaadin.ui.HasComponents.ComponentAttachListener;
-import com.vaadin.ui.HasComponents.ComponentDetachEvent;
 import com.vaadin.ui.HasComponents.ComponentDetachListener;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.InlineDateField;
@@ -17,7 +15,6 @@ import com.vaadin.ui.NativeButton;
 import com.vaadin.ui.PopupDateField;
 import com.vaadin.ui.RichTextArea;
 import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalSplitPanel;
@@ -118,15 +115,6 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
         }
     };
 
-    private Command<T, ComponentSize> addTableCommand = new Command<T, ComponentSize>() {
-
-        @Override
-        public void execute(T c, ComponentSize size, Object data) {
-            Table t = createTable();
-            c.addComponent(t);
-            size.apply(t);
-        }
-    };
     private Command<T, Object> removeAllComponentsCommand = new Command<T, Object>() {
         @Override
         public void execute(T c, Object value, Object data) {
@@ -237,24 +225,11 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
         return iter.next();
     }
 
-    protected Table createTable() {
-        Table t = new Table();
-        t.addContainerProperty("property 1", String.class, "");
-        t.addContainerProperty("property 2", String.class, "");
-        t.addContainerProperty("property 3", String.class, "");
-        for (int i = 1; i < 10; i++) {
-            t.addItem(new Object[] { "row/col " + i + "/1",
-                    "row/col " + i + "/2", "row/col " + i + "/3" },
-                    String.valueOf(i));
-        }
-        return t;
-    }
-
     protected TabSheet createTabSheet() {
         TabSheet ts = new TabSheet();
-        Table t = createTable();
-        t.setSizeFull();
-        ts.addTab(t, "Size full Table", ICON_16_USER_PNG_UNCACHEABLE);
+        NativeButton b = new NativeButton("Full sized");
+        b.setSizeFull();
+        ts.addTab(b, "Size full NativeButton", ICON_16_USER_PNG_UNCACHEABLE);
         ts.addTab(new Button("A button"), "Button", null);
         return ts;
     }
@@ -297,7 +272,6 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
         addCommands.put("TextArea", addTextAreaCommand);
         addCommands.put("RichTextArea", addRichTextAreaCommand);
         addCommands.put("TabSheet", addTabSheetCommand);
-        addCommands.put("Table", addTableCommand);
         addCommands.put("InlineDateField", addInlineDateFieldCommand);
         addCommands.put("PopupDateField", addPopupDateFieldCommand);
         addCommands.put("VerticalSplitPanel", addVerticalSplitPanelCommand);

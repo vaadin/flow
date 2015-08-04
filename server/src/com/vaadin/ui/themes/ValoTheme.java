@@ -17,7 +17,6 @@ package com.vaadin.ui.themes;
 
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.Table.ColumnHeaderMode;
 
 /**
  * <p>
@@ -583,90 +582,6 @@ public class ValoTheme {
      * Borderless menu bar. Can be combined with any other MenuBar style.
      */
     public static final String MENUBAR_BORDERLESS = "borderless";
-
-    /***************************************************************************
-     * 
-     * Table and TreeTable styles
-     * 
-     **************************************************************************/
-
-    /**
-     * Remove the alternating row colors. Can be combined with any other
-     * Table/TreeTable style.
-     */
-    public static final String TABLE_NO_STRIPES = "no-stripes";
-
-    /**
-     * See {@link #TABLE_NO_STRIPES}
-     */
-    public static final String TREETABLE_NO_STRIPES = TABLE_NO_STRIPES;
-
-    /**
-     * Remove the vertical divider lines between the table columns. Can be
-     * combined with any other Table/TreeTable style.
-     */
-    public static final String TABLE_NO_VERTICAL_LINES = "no-vertical-lines";
-
-    /**
-     * See {@link #TABLE_NO_VERTICAL_LINES}
-     */
-    public static final String TREETABLE_NO_VERTICAL_LINES = TABLE_NO_VERTICAL_LINES;
-
-    /**
-     * Remove the horizontal divider lines between the table rows. Can be
-     * combined with any other Table/TreeTable style.
-     */
-    public static final String TABLE_NO_HORIZONTAL_LINES = "no-horizontal-lines";
-
-    /**
-     * See {@link #TABLE_NO_HORIZONTAL_LINES}
-     */
-    public static final String TREETABLE_NO_HORIZONTAL_LINES = TABLE_NO_HORIZONTAL_LINES;
-
-    /**
-     * Hide the table column headers (effectively the same as
-     * {@link ColumnHeaderMode#HIDDEN}). Can be combined with any other
-     * Table/TreeTable style.
-     */
-    public static final String TABLE_NO_HEADER = "no-header";
-
-    /**
-     * See {@link #TABLE_NO_HEADER}
-     */
-    public static final String TREETABLE_NO_HEADER = TABLE_NO_HEADER;
-
-    /**
-     * Remove the outer border of the table. Can be combined with any other
-     * Table/TreeTable style.
-     */
-    public static final String TABLE_BORDERLESS = "borderless";
-
-    /**
-     * See {@link #TABLE_BORDERLESS}
-     */
-    public static final String TREETABLE_BORDERLESS = TABLE_BORDERLESS;
-
-    /**
-     * Reduce the white space inside the table cells. Can be combined with any
-     * other Table/TreeTable style.
-     */
-    public static final String TABLE_COMPACT = "compact";
-
-    /**
-     * See {@link #TABLE_COMPACT}
-     */
-    public static final String TREETABLE_COMPACT = TABLE_COMPACT;
-
-    /**
-     * Small font size and reduced the white space inside the table cells. Can
-     * be combined with any other Table/TreeTable style.
-     */
-    public static final String TABLE_SMALL = "small";
-
-    /**
-     * See {@link #TABLE_SMALL}
-     */
-    public static final String TREETABLE_SMALL = TABLE_SMALL;
 
     /***************************************************************************
      * 

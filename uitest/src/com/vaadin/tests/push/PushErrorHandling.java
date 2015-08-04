@@ -15,8 +15,8 @@ import com.vaadin.shared.communication.PushMode;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Table;
 
 public class PushErrorHandling extends AbstractTestUI {
 
@@ -28,40 +28,32 @@ public class PushErrorHandling extends AbstractTestUI {
 
             @Override
             public void error(com.vaadin.server.ErrorEvent event) {
-                addComponent(new Label("An error! "
-                        + event.getThrowable().getMessage()));
-                System.err.println("An error! "
-                        + event.getThrowable().getMessage());
+                addComponent(new Label("An error! " + event.getThrowable().getMessage()));
+                System.err.println("An error! " + event.getThrowable().getMessage());
             }
         });
 
-        final Button button = new Button("Click for NPE!",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        ((String) null).length(); // Null-pointer exception
-                    }
-                });
+        final Button button = new Button("Click for NPE!", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                ((String) null).length(); // Null-pointer exception
+            }
+        });
         button.setId("npeButton");
         addComponent(button);
 
-        final Table view = new Table("testtable");
+        final Grid view = new Grid("testtable");
         view.setId("testtable");
-        view.setSelectable(true);
-        view.setMultiSelect(false);
-        view.setImmediate(true);
         view.setSizeFull();
 
         view.addItemClickListener(new ItemClickListener() {
 
             @Override
             public void itemClick(ItemClickEvent event) {
-                BeanContainer<String, AbstractInMemoryContainer> metaContainer = new BeanContainer<String, AbstractInMemoryContainer>(
-                        AbstractInMemoryContainer.class) {
+                BeanContainer<String, AbstractInMemoryContainer> metaContainer = new BeanContainer<String, AbstractInMemoryContainer>(AbstractInMemoryContainer.class) {
                     @Override
                     public Collection<String> getContainerPropertyIds() {
-                        List<String> cpropIds = new ArrayList<String>(super
-                                .getContainerPropertyIds());
+                        List<String> cpropIds = new ArrayList<String>(super.getContainerPropertyIds());
                         cpropIds.add("testid");
                         return cpropIds;
                     }
@@ -76,8 +68,8 @@ public class PushErrorHandling extends AbstractTestUI {
 
             }
         });
-        view.addContainerProperty("Column", String.class, "Click for NPE");
-        view.addItem(new Object());
+        view.addColumn("Column");
+        view.addRow("Click for NPE");
 
         addComponent(view);
 

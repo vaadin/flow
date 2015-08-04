@@ -9,7 +9,7 @@ import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
-import com.vaadin.ui.Table;
+import com.vaadin.ui.Grid;
 
 public class TestItemSorter extends TestBase {
 
@@ -17,12 +17,12 @@ public class TestItemSorter extends TestBase {
     private static final Object CHECKBOX = "CheckBox";
     private static final Object STRING = "String";
 
-    private Table table;
+    private Grid grid;
     private IndexedContainer container;
 
     @Override
     protected void setup() {
-        table = new Table("DefaultItemSorter with custom comparator");
+        grid = new Grid("DefaultItemSorter with custom comparator");
         container = createContainer();
         populateContainer(container);
         container.setItemSorter(new DefaultItemSorter(new Comparator<Object>() {
@@ -46,9 +46,9 @@ public class TestItemSorter extends TestBase {
 
             }
         }));
-        table.setContainerDataSource(container);
+        grid.setContainerDataSource(container);
 
-        addComponent(table);
+        addComponent(grid);
 
     }
 

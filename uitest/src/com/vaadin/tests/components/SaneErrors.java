@@ -1,15 +1,11 @@
 package com.vaadin.tests.components;
 
-import com.vaadin.event.ItemClickEvent;
-import com.vaadin.event.ItemClickEvent.ItemClickListener;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Table;
-import com.vaadin.ui.Table.RowHeaderMode;
 import com.vaadin.ui.VerticalLayout;
 
 public class SaneErrors extends AbstractTestUI {
@@ -26,20 +22,7 @@ public class SaneErrors extends AbstractTestUI {
 
         });
 
-        /*
-         * Errors from "legacy variable changes"
-         */
-        final Table table = new Table();
-        table.addItem("Show me my NPE!");
-        table.setRowHeaderMode(RowHeaderMode.ID);
-        table.addItemClickListener(new ItemClickListener() {
-            @Override
-            public void itemClick(ItemClickEvent event) {
-                throwError();
-            }
-        });
-
-        final VerticalLayout content = new VerticalLayout(b, table);
+        final VerticalLayout content = new VerticalLayout(b);
 
         /**
          * Button that shows reported exception for TB integration test
@@ -49,7 +32,6 @@ public class SaneErrors extends AbstractTestUI {
             @Override
             public void buttonClick(ClickEvent event) {
                 reportException(b, content);
-                reportException(table, content);
             }
 
             private void reportException(final AbstractComponent b,

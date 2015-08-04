@@ -33,7 +33,6 @@ import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.PopupDateField;
 import com.vaadin.ui.RichTextArea;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 
 /**
@@ -140,10 +139,6 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
         } else if (fieldType.isAssignableFrom(OptionGroup.class)) {
             select = new OptionGroup();
             select.setMultiSelect(false);
-        } else if (fieldType.isAssignableFrom(Table.class)) {
-            Table t = new Table();
-            t.setSelectable(true);
-            select = t;
         } else {
             select = new ComboBox(null);
         }

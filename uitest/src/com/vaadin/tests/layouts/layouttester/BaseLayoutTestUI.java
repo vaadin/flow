@@ -19,6 +19,7 @@ import com.vaadin.server.Resource;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.server.UserError;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.shared.ui.grid.HeightMode;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.AbstractComponent;
@@ -29,10 +30,10 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
@@ -45,17 +46,10 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
     protected static final String CALENDAR_32_PNG = "../runo/icons/16/calendar.png";
     protected static final String LOCK_16_PNG = "../runo/icons/16/lock.png";
     protected static final String GLOBE_16_PNG = "../runo/icons/16/globe.png";
-    public Alignment[] alignments = new Alignment[] { Alignment.TOP_CENTER,
-            Alignment.TOP_LEFT, Alignment.TOP_RIGHT, Alignment.BOTTOM_CENTER,
-            Alignment.BOTTOM_LEFT, Alignment.BOTTOM_RIGHT,
-            Alignment.MIDDLE_CENTER, Alignment.MIDDLE_LEFT,
-            Alignment.MIDDLE_RIGHT };
+    public Alignment[] alignments = new Alignment[] { Alignment.TOP_CENTER, Alignment.TOP_LEFT, Alignment.TOP_RIGHT, Alignment.BOTTOM_CENTER, Alignment.BOTTOM_LEFT, Alignment.BOTTOM_RIGHT, Alignment.MIDDLE_CENTER, Alignment.MIDDLE_LEFT, Alignment.MIDDLE_RIGHT };
 
-    public final String[] CAPTIONS = new String[] { "",
-            "VeryLongOneWordCaption",
-            "Very long caption of 50 approximately symbols aaaaaaaaaaaa aaaaaa aaa " };
-    Resource[] ICONS = new Resource[] { new ThemeResource(CALENDAR_32_PNG),
-            new ThemeResource(LOCK_16_PNG), new ThemeResource(GLOBE_16_PNG) };
+    public final String[] CAPTIONS = new String[] { "", "VeryLongOneWordCaption", "Very long caption of 50 approximately symbols aaaaaaaaaaaa aaaaaa aaa " };
+    Resource[] ICONS = new Resource[] { new ThemeResource(CALENDAR_32_PNG), new ThemeResource(LOCK_16_PNG), new ThemeResource(GLOBE_16_PNG) };
     public AbstractComponent[] components = new AbstractComponent[alignments.length];
 
     protected AbstractOrderedLayout l1;
@@ -99,8 +93,7 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
         }
     }
 
-    protected AbstractLayout createLabelsFields(
-            Class<? extends AbstractComponent> compType) {
+    protected AbstractLayout createLabelsFields(Class<? extends AbstractComponent> compType) {
         return createLabelsFields(compType, false, null);
     }
 
@@ -109,9 +102,9 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
         l2.setSpacing(false);
         l2.setMargin(false);
 
-        final AbstractComponent c1 = getTestTable();
+        final AbstractComponent c1 = getTestGrid();
         c1.setSizeFull();
-        final AbstractComponent c2 = getTestTable();
+        final AbstractComponent c2 = getTestGrid();
         c2.setSizeFull();
 
         class SetSizeButton extends Button {
@@ -146,9 +139,7 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
         l1.addComponent(btn3);
         l1.addComponent(btn4);
         l2.addComponent(c1);
-        l2.addComponent(new Label(
-                "<div style='height: 1px'></div><hr /><div style='height: 1px'></div>",
-                ContentMode.HTML));
+        l2.addComponent(new Label("<div style='height: 1px'></div><hr /><div style='height: 1px'></div>", ContentMode.HTML));
         l2.addComponent(c2);
         l2.setExpandRatio(c1, 0.5f);
         l2.setExpandRatio(c2, 0.5f);
@@ -165,18 +156,17 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
         });
     }
 
-    protected Table getTestTable() {
-        Table t = new Table();
-        t.setPageLength(5);
-        t.addContainerProperty("test", String.class, null);
-        t.addItem(new Object[] { "qwertyuiop asdfghjköäxccvbnm,m,." }, 1);
-        t.addItem(new Object[] { "YGVYTCTCTRXRXRXRX" }, 2);
-        return t;
+    protected Grid getTestGrid() {
+        Grid g = new Grid();
+        g.setHeightMode(HeightMode.ROW);
+        g.setHeightByRows(5);
+        g.addColumn("test", String.class);
+        g.addRow("qwertyuiop asdfghjköäxccvbnm,m,.");
+        g.addRow("YGVYTCTCTRXRXRXRX");
+        return g;
     }
 
-    protected AbstractLayout createLabelsFields(
-            Class<? extends AbstractComponent> compType, boolean useIcon,
-            String ErrorMessage) {
+    protected AbstractLayout createLabelsFields(Class<? extends AbstractComponent> compType, boolean useIcon, String ErrorMessage) {
         AbstractLayout mainLayout = new VerticalLayout();
         AbstractLayout curLayout = null;
         try {
@@ -217,8 +207,7 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
             if (comp instanceof TabSheet) {
                 comp.setSizeUndefined();
                 TabSheet tab = (TabSheet) comp;
-                tab.addTab(new UndefWideLabel("TAB1"), "TAB1",
-                        new ThemeResource(GLOBE_16_PNG));
+                tab.addTab(new UndefWideLabel("TAB1"), "TAB1", new ThemeResource(GLOBE_16_PNG));
                 tab.addTab(new UndefWideLabel("TAB2"), "TAB2", null);
             }
             curLayout.addComponent(comp);
@@ -250,24 +239,21 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
         return null;
     }
 
-    protected void setLayoutMeasures(AbstractOrderedLayout l1,
-            AbstractOrderedLayout l2, String w, String h) {
+    protected void setLayoutMeasures(AbstractOrderedLayout l1, AbstractOrderedLayout l2, String w, String h) {
         l1.setWidth(w);
         l1.setHeight(h);
         l2.setWidth(h);
         l2.setHeight(w);
     }
 
-    protected void setDefaultForVertical(AbstractOrderedLayout l1,
-            AbstractOrderedLayout l2) {
+    protected void setDefaultForVertical(AbstractOrderedLayout l1, AbstractOrderedLayout l2) {
         l1.setWidth("800px");
         l1.setHeight("600px");
         l2.setWidth("800px");
         l2.setHeight("600px");
     }
 
-    protected void setDefaultForHorizontal(AbstractOrderedLayout l1,
-            AbstractOrderedLayout l2) {
+    protected void setDefaultForHorizontal(AbstractOrderedLayout l1, AbstractOrderedLayout l2) {
         l1.setWidth("600px");
         l1.setHeight("600px");
         l2.setWidth("600px");

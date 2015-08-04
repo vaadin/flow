@@ -19,7 +19,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Table;
+import com.vaadin.ui.Grid;
 
 /**
  *
@@ -46,8 +46,7 @@ public class BaseLayoutExpand extends BaseLayoutTestUI {
             private float expandComp1;
             private float expandComp2;
 
-            public ExpandButton(final AbstractComponent c1,
-                    final AbstractComponent c2, float e1, float e2) {
+            public ExpandButton(final AbstractComponent c1, final AbstractComponent c2, float e1, float e2) {
                 super();
                 this.c1 = c1;
                 this.c2 = c2;
@@ -63,8 +62,8 @@ public class BaseLayoutExpand extends BaseLayoutTestUI {
                 });
             }
         }
-        Table t1 = getTestTable();
-        Table t2 = getTestTable();
+        Grid t1 = getTestGrid();
+        Grid t2 = getTestGrid();
         t1.setSizeFull();
         t2.setSizeFull();
         l2.addComponent(t1);

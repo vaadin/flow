@@ -21,8 +21,8 @@ import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.tests.design.DeclarativeTestBase;
 import com.vaadin.ui.AbstractSplitPanel;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalSplitPanel;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 
@@ -39,14 +39,14 @@ public class AbstractSplitPanelDeclarativeTest extends
     public void testWithBothChildren() {
         String design = "<v-horizontal-split-panel split-position=20.5% "
                 + "min-split-position=20% max-split-position=50px locked='' "
-                + "reversed=\"\"> <v-table /> <v-vertical-layout />"
+                + "reversed=\"\"> <v-grid /> <v-vertical-layout />"
                 + "</v-horizontal-split-panel>";
         AbstractSplitPanel sp = new HorizontalSplitPanel();
         sp.setSplitPosition(20.5f, Unit.PERCENTAGE, true);
         sp.setMinSplitPosition(20, Unit.PERCENTAGE);
         sp.setMaxSplitPosition(50, Unit.PIXELS);
         sp.setLocked(true);
-        sp.addComponent(new Table());
+        sp.addComponent(new Grid());
         sp.addComponent(new VerticalLayout());
         testRead(design, sp);
         testWrite(design, sp);
@@ -54,10 +54,10 @@ public class AbstractSplitPanelDeclarativeTest extends
 
     @Test
     public void testWithFirstChild() {
-        String design = "<v-vertical-split-panel><v-table caption=\"First slot\"/>"
+        String design = "<v-vertical-split-panel><v-grid caption=\"First slot\"/>"
                 + "</v-vertical-split-panel>";
         AbstractSplitPanel sp = new VerticalSplitPanel();
-        Table t = new Table();
+        Grid t = new Grid();
         t.setCaption("First slot");
         sp.addComponent(t);
         testRead(design, sp);

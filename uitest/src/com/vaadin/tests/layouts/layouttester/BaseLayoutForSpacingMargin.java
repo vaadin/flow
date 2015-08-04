@@ -21,8 +21,8 @@ import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Table;
 
 /**
  *
@@ -33,8 +33,7 @@ public class BaseLayoutForSpacingMargin extends BaseLayoutTestUI {
     /**
      * @param layoutClass
      */
-    public BaseLayoutForSpacingMargin(
-            Class<? extends AbstractLayout> layoutClass) {
+    public BaseLayoutForSpacingMargin(Class<? extends AbstractLayout> layoutClass) {
         super(layoutClass);
     }
 
@@ -46,17 +45,15 @@ public class BaseLayoutForSpacingMargin extends BaseLayoutTestUI {
     }
 
     private void buildLayout() {
-        Table t1 = getTestTable();
-        Table t2 = getTestTable();
+        Grid t1 = getTestGrid();
+        Grid t2 = getTestGrid();
         t1.setSizeFull();
         t2.setSizeFull();
         l2.addComponent(t1);
         l2.setMargin(false);
         l2.setSpacing(false);
         // Must add something around the hr to avoid the margins collapsing
-        l2.addComponent(new Label(
-                "<div style='height: 1px'></div><hr /><div style='height: 1px'></div>",
-                ContentMode.HTML));
+        l2.addComponent(new Label("<div style='height: 1px'></div><hr /><div style='height: 1px'></div>", ContentMode.HTML));
         l2.addComponent(t2);
         final Button btn1 = new Button("Toggle margin on/off");
         btn1.addClickListener(new ClickListener() {

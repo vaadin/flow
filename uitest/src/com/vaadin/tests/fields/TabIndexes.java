@@ -22,11 +22,9 @@ import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.PopupDateField;
 import com.vaadin.ui.RichTextArea;
 import com.vaadin.ui.Slider;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.Tree;
-import com.vaadin.ui.TreeTable;
 import com.vaadin.ui.TwinColSelect;
 
 @SuppressWarnings("rawtypes")
@@ -75,8 +73,7 @@ public class TabIndexes extends AbstractTestUIWithLog {
                 updateCaptions();
             }
         });
-        Button setTabIndexesInReverseOrder = new Button(
-                "Set tab indexes to N..1");
+        Button setTabIndexesInReverseOrder = new Button("Set tab indexes to N..1");
         setTabIndexesInReverseOrder.addClickListener(new ClickListener() {
 
             @Override
@@ -90,11 +87,6 @@ public class TabIndexes extends AbstractTestUIWithLog {
             }
         });
         fields = new ArrayList<AbstractField>();
-        Table t = new Table();
-        t.setSelectable(true);
-        t.addContainerProperty("foo", String.class, "bar");
-        t.addItem();
-        fields.add(t);
         fields.add(new ComboBox());
         fields.add(new NativeSelect());
         fields.add(new ListSelect());
@@ -105,12 +97,6 @@ public class TabIndexes extends AbstractTestUIWithLog {
         og.addItem("Item 1");
         og.addItem("Item 2");
         fields.add(og);
-        TreeTable tt = new TreeTable();
-        tt.setSelectable(true);
-        tt.addContainerProperty("foo", String.class, "bar");
-        tt.addItem();
-
-        fields.add(tt);
         Tree tree = new Tree();
         tree.addItem("Item 1");
         fields.add(tree);
@@ -124,8 +110,7 @@ public class TabIndexes extends AbstractTestUIWithLog {
 
         clearTabIndexes.click();
 
-        buttonLayout.addComponents(clearTabIndexes, setTabIndexesToOne,
-                setTabIndexesInOrder, setTabIndexesInReverseOrder);
+        buttonLayout.addComponents(clearTabIndexes, setTabIndexesToOne, setTabIndexesInOrder, setTabIndexesInReverseOrder);
 
         int fieldId = 1;
         GridLayout gl = new GridLayout(4, 4);
@@ -139,8 +124,7 @@ public class TabIndexes extends AbstractTestUIWithLog {
 
     protected void updateCaptions() {
         for (Field f : fields) {
-            f.setCaption(f.getClass().getSimpleName() + " Tab index: "
-                    + f.getTabIndex());
+            f.setCaption(f.getClass().getSimpleName() + " Tab index: " + f.getTabIndex());
         }
     }
 

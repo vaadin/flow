@@ -15,7 +15,6 @@
  */
 package com.vaadin.tests.components.tabsheet;
 
-import com.vaadin.data.Item;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
@@ -27,8 +26,6 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.PopupView;
 import com.vaadin.ui.PopupView.Content;
 import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.Table;
-import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.VerticalLayout;
 
 public class TabSheetWithHasComponent extends AbstractTestUI {
@@ -37,7 +34,6 @@ public class TabSheetWithHasComponent extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         TabSheet ts = new TabSheet();
         ts.addComponent(createPopupView(createSmallTabSheet()));
-        ts.addComponent(createTable());
         ts.addComponent(createPanel());
         ts.addComponent(new CustomComponent(new Panel(
                 "Panel in custom component", new Button("In panel"))));
@@ -71,31 +67,6 @@ public class TabSheetWithHasComponent extends AbstractTestUI {
     private Panel createPanel() {
         return new Panel("Panel containing stuff", new VerticalLayout(
                 new Label("A Label"), new Button("A button")));
-    }
-
-    private Table createTable() {
-        Table t = new Table("A table");
-        t.addContainerProperty("Column 1", String.class, "");
-        t.addContainerProperty("Column 2", Integer.class, null);
-        t.addGeneratedColumn("Generated", new ColumnGenerator() {
-
-            @Override
-            public Object generateCell(Table source, Object itemId,
-                    Object columnId) {
-                if ("Item 2".equals(itemId)) {
-                    return createPopupView(createSmallTabSheet());
-                } else {
-                    return createPopupView(createPanel());
-                }
-            }
-        });
-        t.setPageLength(5);
-        for (int i = 1; i <= 5; i++) {
-            Item item = t.addItem("Item " + i);
-            item.getItemProperty("Column 1").setValue("Item " + i + " col 1");
-            item.getItemProperty("Column 2").setValue(i);
-        }
-        return t;
     }
 
     @Override

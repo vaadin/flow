@@ -11,10 +11,10 @@ import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.util.Log;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.RichTextArea;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
@@ -27,22 +27,20 @@ public class NavigatorTest extends UI {
 
     private Navigator navi;
 
-    class ListView extends Table implements View {
+    class ListView extends Grid implements View {
 
         public ListView() {
-            addContainerProperty("name", String.class, "");
-            addContainerProperty("value", String.class, "");
+            addColumn("name", String.class);
+            addColumn("value", String.class);
         }
 
         @Override
         public void enter(ViewChangeEvent event) {
             String params = event.getParameters();
-            log.log("Navigated to ListView "
-                    + (params.isEmpty() ? "without params" : "with params "
-                            + params));
-            removeAllItems();
+            log.log("Navigated to ListView " + (params.isEmpty() ? "without params" : "with params " + params));
+            getContainerDataSource().removeAllItems();
             for (String arg : params.split(",")) {
-                addItem(arg.split("=|$", 2), arg);
+                addRow((Object[]) arg.split("=|$", 2));
             }
         }
     }
@@ -52,9 +50,7 @@ public class NavigatorTest extends UI {
         @Override
         public void enter(ViewChangeEvent event) {
             String params = event.getParameters();
-            log.log("Navigated to EditView "
-                    + (params.isEmpty() ? "without params" : "with params "
-                            + params));
+            log.log("Navigated to EditView " + (params.isEmpty() ? "without params" : "with params " + params));
             setValue("Displaying edit view with parameters " + params);
         }
     }
@@ -63,8 +59,7 @@ public class NavigatorTest extends UI {
 
         @Override
         public void enter(ViewChangeEvent event) {
-            log.log("Navigated to SpecialCharsView: " + event.getViewName()
-                    + "; fragment: " + getPage().getUriFragment());
+            log.log("Navigated to SpecialCharsView: " + event.getViewName() + "; fragment: " + getPage().getUriFragment());
             setValue(event.getViewName());
         }
 
@@ -75,9 +70,7 @@ public class NavigatorTest extends UI {
         @Override
         public void enter(ViewChangeEvent event) {
             String params = event.getParameters();
-            log.log("Navigated to DefaultView "
-                    + (params.isEmpty() ? "without params" : "with params "
-                            + params));
+            log.log("Navigated to DefaultView " + (params.isEmpty() ? "without params" : "with params " + params));
             setValue("Default view: " + event.getParameters());
         }
     }
@@ -94,8 +87,7 @@ public class NavigatorTest extends UI {
         @Override
         public void enter(ViewChangeEvent event) {
             log.log("View '" + event.getViewName() + "' not found!");
-            setValue("Tried to navigate to " + event.getViewName()
-                    + " but such a view could not be found :(");
+            setValue("Tried to navigate to " + event.getViewName() + " but such a view could not be found :(");
         }
     }
 

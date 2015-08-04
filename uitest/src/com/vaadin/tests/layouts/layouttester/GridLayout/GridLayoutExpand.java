@@ -17,7 +17,7 @@ package com.vaadin.tests.layouts.layouttester.GridLayout;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Table;
+import com.vaadin.ui.Grid;
 
 /**
  *
@@ -35,8 +35,7 @@ public class GridLayoutExpand extends GridBaseLayoutTestUI {
     private void buildLayout() {
         class ExpandButton extends Button {
 
-            public ExpandButton(final int i1, final int i2, final float e1,
-                    final float e2) {
+            public ExpandButton(final int i1, final int i2, final float e1, final float e2) {
                 super();
                 setCaption("Expand ratio: " + e1 * 100 + " /" + e2 * 100);
                 addClickListener(new ClickListener() {
@@ -48,8 +47,8 @@ public class GridLayoutExpand extends GridBaseLayoutTestUI {
                 });
             }
         }
-        Table t1 = getTestTable();
-        Table t2 = getTestTable();
+        Grid t1 = getTestGrid();
+        Grid t2 = getTestGrid();
         t1.setSizeFull();
         t2.setSizeFull();
         layout.setColumns(4);

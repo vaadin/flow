@@ -16,28 +16,27 @@
 package com.vaadin.tests.declarative;
 
 import com.vaadin.annotations.DesignRoot;
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.event.SelectionEvent;
+import com.vaadin.event.SelectionEvent.SelectionListener;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Table;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.declarative.Design;
 
 @DesignRoot
 public class PotusCrud extends VerticalLayout {
 
-    public Table potusList;
+    public Grid potusList;
     public PotusForm potusForm;
     public Button addNew;
 
     private FieldGroup fg;
 
-    private BeanItemContainer<Potus> potusContainer = new BeanItemContainer<Potus>(
-            Potus.class);
+    private BeanItemContainer<Potus> potusContainer = new BeanItemContainer<Potus>(Potus.class);
 
     public PotusCrud() {
         Design.read(this);
@@ -57,9 +56,9 @@ public class PotusCrud extends VerticalLayout {
 
     private void initTable() {
         potusList.setContainerDataSource(potusContainer);
-        potusList.addValueChangeListener(new ValueChangeListener() {
+        potusList.addSelectionListener(new SelectionListener() {
             @Override
-            public void valueChange(ValueChangeEvent event) {
+            public void select(SelectionEvent event) {
                 doEdit();
             }
         });
@@ -95,7 +94,7 @@ public class PotusCrud extends VerticalLayout {
     }
 
     protected void doDelete() {
-        potusContainer.removeItem(potusList.getValue());
+        potusContainer.removeItem(potusList.getSelectedRow());
         fg.setItemDataSource(null);
     }
 
@@ -113,8 +112,8 @@ public class PotusCrud extends VerticalLayout {
     }
 
     protected void doEdit() {
-        if (potusList.getValue() != null) {
-            fg.setItemDataSource(potusList.getItem(potusList.getValue()));
+        if (potusList.getSelectedRow() != null) {
+            fg.setItemDataSource(potusList.getContainerDataSource().getItem(potusList.getSelectedRow()));
             fg.bindMemberFields(potusForm);
         } else {
             fg.setItemDataSource(null);

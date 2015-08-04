@@ -213,8 +213,6 @@ public class UidlWriter implements Serializable {
             new MetadataWriter().write(ui, writer, repaintAll, async, messages);
             writer.write(", ");
 
-            writer.write("\"resources\" : ");
-
             boolean typeMappingsOpen = false;
 
             List<Class<? extends ClientConnector>> newConnectorTypes = new ArrayList<Class<? extends ClientConnector>>();
@@ -227,7 +225,7 @@ public class UidlWriter implements Serializable {
 
                     if (!typeMappingsOpen) {
                         typeMappingsOpen = true;
-                        writer.write(", \"typeMappings\" : { ");
+                        writer.write("\"typeMappings\" : { ");
                     } else {
                         writer.write(" , ");
                     }

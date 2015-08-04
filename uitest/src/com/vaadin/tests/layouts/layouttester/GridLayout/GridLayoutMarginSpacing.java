@@ -20,8 +20,8 @@ import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Table;
 
 /**
  *
@@ -37,8 +37,8 @@ public class GridLayoutMarginSpacing extends GridBaseLayoutTestUI {
     }
 
     private void buildLayout() {
-        Table t1 = getTestTable();
-        Table t2 = getTestTable();
+        Grid t1 = getTestGrid();
+        Grid t2 = getTestGrid();
         t1.setSizeFull();
         t2.setSizeFull();
 
@@ -66,9 +66,7 @@ public class GridLayoutMarginSpacing extends GridBaseLayoutTestUI {
         layout.setMargin(false);
         layout.setSpacing(false);
         // Must add something around the hr to avoid the margins collapsing
-        layout.addComponent(new Label(
-                "<div style='height: 1px'></div><hr /><div style='height: 1px'></div>",
-                ContentMode.HTML));
+        layout.addComponent(new Label("<div style='height: 1px'></div><hr /><div style='height: 1px'></div>", ContentMode.HTML));
         layout.addComponent(t2);
     }
 }

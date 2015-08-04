@@ -14,7 +14,6 @@ import com.vaadin.tests.components.uitest.components.SelectsCssTest;
 import com.vaadin.tests.components.uitest.components.SlidersCssTest;
 import com.vaadin.tests.components.uitest.components.TabSheetsCssTest;
 import com.vaadin.tests.components.uitest.components.TextFieldsCssTest;
-import com.vaadin.tests.components.uitest.components.TreeTableCssTest;
 import com.vaadin.tests.components.uitest.components.UploadCssTest;
 import com.vaadin.tests.components.uitest.components.WindowsCssTest;
 import com.vaadin.ui.Component;
@@ -48,8 +47,6 @@ public class TestSampler extends TabSheet {
         createSliders();
         createUploads();
         createForms();
-
-        createTreeTable();
 
         createTabSheets();
         createAccordions();
@@ -86,11 +83,6 @@ public class TestSampler extends TabSheet {
         grid.setColumns(3);
         grid.setWidth("100%");
         return grid;
-    }
-
-    private void createTreeTable() {
-        createComponentLayout("TreeTable");
-        new TreeTableCssTest(this);
     }
 
     private void createForms() {

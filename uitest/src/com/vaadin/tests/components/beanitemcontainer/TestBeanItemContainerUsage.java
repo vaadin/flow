@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.shared.ui.grid.HeightMode;
 import com.vaadin.tests.components.TestBase;
-import com.vaadin.ui.Table;
+import com.vaadin.ui.Grid;
 
 public class TestBeanItemContainerUsage extends TestBase {
 
@@ -21,8 +22,9 @@ public class TestBeanItemContainerUsage extends TestBase {
 
     @Override
     protected void setup() {
-        Table t = new Table("Table containing Persons");
-        t.setPageLength(5);
+        Grid t = new Grid("Table containing Persons");
+        t.setHeightByRows(5);
+        t.setHeightMode(HeightMode.ROW);
         t.setWidth("100%");
         List<Person> persons = new ArrayList<Person>();
         persons.add(new Person("Jones", "Birchman", 35));

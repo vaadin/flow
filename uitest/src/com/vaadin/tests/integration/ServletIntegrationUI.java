@@ -1,14 +1,12 @@
 package com.vaadin.tests.integration;
 
 import com.vaadin.annotations.DesignRoot;
-import com.vaadin.data.Item;
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.event.SelectionEvent;
+import com.vaadin.event.SelectionEvent.SelectionListener;
 import com.vaadin.server.ClassResource;
-import com.vaadin.server.Resource;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.declarative.Design;
@@ -21,31 +19,43 @@ public class ServletIntegrationUI extends UI {
         layout.setMargin(true);
         setContent(layout);
 
-        final Table table = new Table();
-        table.addContainerProperty("icon", Resource.class, null);
-        table.setItemIconPropertyId("icon");
-        table.addContainerProperty("country", String.class, null);
-        table.setRowHeaderMode(Table.RowHeaderMode.ICON_ONLY);
-        table.setImmediate(true);
-        table.setSelectable(true);
-        table.setVisibleColumns(new Object[] { "country" });
-        layout.addComponent(table);
+        final Grid grid = new Grid();
+        grid.addColumn("short", String.class);
+        // Disabled until ImageRenderer supports ClassResource
+        // grid.addColumn("icon", Resource.class);
+        grid.addColumn("country", String.class);
+        // grid.getColumn("icon").setHeaderCaption("")
+        // .setRenderer(new ImageRenderer());
 
-        Item item = table.addItem("FI");
-        item.getItemProperty("icon").setValue(new ClassResource("fi.gif"));
-        item.getItemProperty("country").setValue("Finland");
-        item = table.addItem("SE");
-        item.getItemProperty("icon").setValue(new FlagSeResource());
-        item.getItemProperty("country").setValue("Sweden");
+        layout.addComponent(grid);
+
+        // grid.addRow("FI", new ClassResource("fi.gif"), "Finland");
+        // grid.addRow("SE", new FlagSeResource(), "Sweden");
+        grid.addRow("FI", "Finland");
+        grid.addRow("SE", "Sweden");
+
+        grid.setColumns("icon", "country");
 
         final Label selectedLabel = new LabelFromDesign();
-        table.addValueChangeListener(new ValueChangeListener() {
+        grid.addSelectionListener(new SelectionListener() {
+
             @Override
-            public void valueChange(ValueChangeEvent event) {
-                selectedLabel.setValue(String.valueOf(table.getValue()));
+            public void select(SelectionEvent event) {
+                Object selectedItemId = grid.getSelectedRow();
+                String sel = "(null)";
+                if (selectedItemId != null) {
+                    sel = (String) grid.getContainerDataSource().getItem(selectedItemId).getItemProperty("short").getValue();
+                }
+                selectedLabel.setValue("Selected: " + sel);
             }
         });
         layout.addComponent(selectedLabel);
+        Label fi = new Label("The Finnish flag");
+        fi.setIcon(new ClassResource("fi.gif"));
+        layout.addComponent(fi);
+        Label se = new Label("The Swedish flag");
+        se.setIcon(new FlagSeResource());
+        layout.addComponent(se);
     }
 
     @DesignRoot

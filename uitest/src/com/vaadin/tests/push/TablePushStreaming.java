@@ -26,7 +26,7 @@ import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.ui.Transport;
 import com.vaadin.tests.components.AbstractTestUI;
-import com.vaadin.ui.Table;
+import com.vaadin.ui.Grid;
 
 /**
  * 
@@ -46,7 +46,7 @@ public class TablePushStreaming extends AbstractTestUI {
      */
     @Override
     protected void setup(VaadinRequest request) {
-        final Table t = new Table("The table");
+        final Grid t = new Grid("The table");
         t.setContainerDataSource(generateContainer(10, 10, iteration++));
         t.setSizeFull();
         Runnable r = new Runnable() {
@@ -64,9 +64,7 @@ public class TablePushStreaming extends AbstractTestUI {
 
                         @Override
                         public void run() {
-                            t.setContainerDataSource(generateContainer(
-                                    t.getVisibleColumns().length, t.size(),
-                                    iteration++));
+                            t.setContainerDataSource(generateContainer(t.getColumns().size(), t.getContainerDataSource().size(), iteration++));
                         }
 
                     });
@@ -85,7 +83,7 @@ public class TablePushStreaming extends AbstractTestUI {
      * @since
      * @return
      */
-    private Container generateContainer(int rows, int cols, int iter) {
+    private Container.Indexed generateContainer(int rows, int cols, int iter) {
         IndexedContainer ic = new IndexedContainer();
         for (int col = 1; col <= cols; col++) {
             ic.addContainerProperty("Property" + col, String.class, "");
@@ -94,8 +92,7 @@ public class TablePushStreaming extends AbstractTestUI {
         for (int row = 0; row < rows; row++) {
             Item item = ic.addItem("row" + row);
             for (int col = 1; col <= cols; col++) {
-                item.getItemProperty("Property" + col).setValue(
-                        "Row " + row + " col " + col + "(" + iter + ")");
+                item.getItemProperty("Property" + col).setValue("Row " + row + " col " + col + "(" + iter + ")");
             }
 
         }

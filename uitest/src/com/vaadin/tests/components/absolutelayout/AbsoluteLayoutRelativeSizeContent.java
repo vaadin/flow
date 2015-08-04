@@ -21,8 +21,8 @@ import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.AbsoluteLayout;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Table;
 
 /**
  * Tests how AbsoluteLayout handles relative sized contents.
@@ -58,7 +58,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
 
     /**
      * Creates an {@link AbsoluteLayout} of fixed size that contains a
-     * full-sized {@link Table} that has been forced to full size with css.
+     * full-sized {@link Grid} that has been forced to full size with css.
      * Represents the workaround given for this ticket.
      * 
      * @return the created layout
@@ -69,7 +69,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
         absoluteLayout.setHeight(200, Unit.PIXELS);
         absoluteLayout.setCaption("comparison table in full size");
 
-        Table table = new Table();
+        Grid table = new Grid();
         table.setSizeFull();
         table.setId("comparison-table");
         absoluteLayout.addComponent(table, "top:0;bottom:0;left:0;right:0;");
@@ -78,7 +78,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
 
     /**
      * Creates an {@link AbsoluteLayout} of fixed size that contains a
-     * full-sized {@link Table}.
+     * full-sized {@link Grid}.
      * 
      * @return the created layout
      */
@@ -88,7 +88,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
         absoluteLayout.setHeight(200, Unit.PIXELS);
         absoluteLayout.setCaption("full-sized table expected");
 
-        Table table = new Table();
+        Grid table = new Grid();
         table.setSizeFull();
         table.setId("full-table");
         absoluteLayout.addComponent(table);
@@ -107,7 +107,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
         absoluteLayout.setHeight(200, Unit.PIXELS);
         absoluteLayout.setCaption("half-sized table expected");
 
-        Table table = new Table();
+        Grid table = new Grid();
         table.setWidth(50, Unit.PERCENTAGE);
         table.setHeight(50, Unit.PERCENTAGE);
         table.setId("half-table");
@@ -127,13 +127,13 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
         absoluteLayout.setHeight(200, Unit.PIXELS);
         absoluteLayout.setCaption("half-sized and tiny expected");
 
-        Table table = new Table();
+        Grid table = new Grid();
         table.setWidth(50, Unit.PERCENTAGE);
         table.setHeight(50, Unit.PERCENTAGE);
         table.setId("halfwithtiny-table");
         absoluteLayout.addComponent(table);
 
-        Table tableTiny = new Table();
+        Grid tableTiny = new Grid();
         tableTiny.setWidth(50, Unit.PIXELS);
         tableTiny.setHeight(50, Unit.PIXELS);
         absoluteLayout.addComponent(tableTiny, "right:50;");
@@ -152,7 +152,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
         absoluteLayout.setId("halfinfull-layout");
         absoluteLayout.setCaption("half-sized table expected");
 
-        Table table = new Table();
+        Grid table = new Grid();
         table.setWidth(50, Unit.PERCENTAGE);
         table.setHeight(50, Unit.PERCENTAGE);
         table.setId("halfinfull-table");
