@@ -5,8 +5,7 @@ import com.vaadin.server.UserError;
 import com.vaadin.tests.components.uitest.TestSampler;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.themes.Reindeer;
-import com.vaadin.ui.themes.Runo;
+import com.vaadin.ui.themes.ValoTheme;
 
 public class TabSheetsCssTest {
 
@@ -19,23 +18,11 @@ public class TabSheetsCssTest {
         TabSheet basic = createTabSheetWith("Basic TabSheet", null);
         parent.addComponent(basic);
 
-        TabSheet bordeless = createTabSheetWith("Borderelss TabSheet", Reindeer.TABSHEET_BORDERLESS);
-        parent.addComponent(bordeless);
-
-        TabSheet bar = createTabSheetWith("A small/bar TabSheet", Reindeer.TABSHEET_SMALL);
+        TabSheet bar = createTabSheetWith("A small/bar TabSheet", ValoTheme.TABSHEET_COMPACT_TABBAR);
         parent.addComponent(bar);
 
-        TabSheet minimal = createTabSheetWith("A minimal tabsheet", Reindeer.TABSHEET_MINIMAL);
-        parent.addComponent(minimal);
-
-        TabSheet hoverClosable = createTabSheetWith("A hover-closable TabSheet", Reindeer.TABSHEET_HOVER_CLOSABLE);
-        parent.addComponent(hoverClosable);
-
-        TabSheet selectedClosable = createTabSheetWith("A selected-closable TabSheet", Reindeer.TABSHEET_SELECTED_CLOSABLE);
+        TabSheet selectedClosable = createTabSheetWith("A selected-closable TabSheet", ValoTheme.TABSHEET_ONLY_SELECTED_TAB_IS_CLOSABLE);
         parent.addComponent(selectedClosable);
-
-        TabSheet light = createTabSheetWith("A light TabSheet", Runo.TABSHEET_SMALL);
-        parent.addComponent(light);
 
     }
 

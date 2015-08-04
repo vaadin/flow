@@ -31,21 +31,6 @@
             conf="build" />
 
         <antcall target="compile-theme">
-            <param name="theme" value="base" />
-        </antcall>
-        <antcall target="compile-theme">
-            <param name="theme" value="runo" />
-        </antcall>
-        <antcall target="compile-theme">
-            <param name="theme" value="reindeer" />
-        </antcall>
-        <antcall target="compile-theme">
-            <param name="theme" value="chameleon" />
-        </antcall>
-        <antcall target="compile-theme">
-            <param name="theme" value="liferay" />
-        </antcall>
-        <antcall target="compile-theme">
             <param name="theme" value="valo" />
         </antcall>
     </target>

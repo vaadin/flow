@@ -7,7 +7,6 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.Runo;
 
 @Theme("runo")
 public class ExtraScrollbarsInTabSheet extends UI {
@@ -26,7 +25,6 @@ public class ExtraScrollbarsInTabSheet extends UI {
         tabContent.setSizeFull();
 
         Panel p = new Panel();
-        p.addStyleName(Runo.PANEL_LIGHT);
         p.setHeight("400px");
         tabContent.addComponent(p);
 

@@ -15,7 +15,6 @@
  */
 package com.vaadin.tests.components.grid;
 
-import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.tests.util.PersonContainer;
@@ -27,9 +26,7 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.Column;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.themes.Reindeer;
 
-@Theme(Reindeer.THEME_NAME)
 public class GridColumnExpand extends AbstractTestUI {
     private Grid grid;
     private Label firstInfo = new Label();

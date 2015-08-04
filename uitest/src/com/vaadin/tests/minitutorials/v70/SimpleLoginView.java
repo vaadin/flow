@@ -12,7 +12,6 @@ import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.Reindeer;
 
 public class SimpleLoginView extends CustomComponent implements View, Button.ClickListener {
 
@@ -57,7 +56,6 @@ public class SimpleLoginView extends CustomComponent implements View, Button.Cli
         VerticalLayout viewLayout = new VerticalLayout(fields);
         viewLayout.setSizeFull();
         viewLayout.setComponentAlignment(fields, Alignment.MIDDLE_CENTER);
-        viewLayout.setStyleName(Reindeer.LAYOUT_BLUE);
         setCompositionRoot(viewLayout);
     }
 

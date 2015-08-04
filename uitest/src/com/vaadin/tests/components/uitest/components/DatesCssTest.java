@@ -9,7 +9,7 @@ import com.vaadin.ui.DateField;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.InlineDateField;
 import com.vaadin.ui.PopupDateField;
-import com.vaadin.ui.themes.ChameleonTheme;
+import com.vaadin.ui.themes.ValoTheme;
 
 public class DatesCssTest extends GridLayout {
 
@@ -25,8 +25,8 @@ public class DatesCssTest extends GridLayout {
         setWidth("100%");
 
         createDateFieldWith(null, null, null);
-        createDateFieldWith("Small", ChameleonTheme.DATEFIELD_SMALL, null);
-        createDateFieldWith("Big", ChameleonTheme.DATEFIELD_BIG, null);
+        createDateFieldWith("Small", ValoTheme.DATEFIELD_SMALL, null);
+        createDateFieldWith("Big", ValoTheme.DATEFIELD_LARGE, null);
 
         DateField df = new PopupDateField("Popup date field");
         df.setId("datefield" + debugIdCounter++);
@@ -39,8 +39,8 @@ public class DatesCssTest extends GridLayout {
         addComponent(df);
 
         createDateFieldWith(null, null, "130px");
-        createDateFieldWith("Small 130px", ChameleonTheme.DATEFIELD_SMALL, "130px");
-        createDateFieldWith("Big 130px", ChameleonTheme.DATEFIELD_BIG, "130px");
+        createDateFieldWith("Small 130px", ValoTheme.DATEFIELD_SMALL, "130px");
+        createDateFieldWith("Big 130px", ValoTheme.DATEFIELD_LARGE, "130px");
 
     }
 

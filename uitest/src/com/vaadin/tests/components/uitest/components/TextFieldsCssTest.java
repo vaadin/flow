@@ -7,8 +7,7 @@ import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.RichTextArea;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
-import com.vaadin.ui.themes.ChameleonTheme;
-import com.vaadin.ui.themes.Reindeer;
+import com.vaadin.ui.themes.ValoTheme;
 
 public class TextFieldsCssTest extends GridLayout {
 
@@ -25,9 +24,8 @@ public class TextFieldsCssTest extends GridLayout {
 
         createTextFieldWith(null, null, null);
         createTextFieldWith("Input prompt", null, "Input prompt");
-        createTextFieldWith("Small", Reindeer.TEXTFIELD_SMALL, null);
-        createTextFieldWith("Big", ChameleonTheme.TEXTFIELD_BIG, null);
-        createTextFieldWith("Search", ChameleonTheme.TEXTFIELD_SEARCH, null);
+        createTextFieldWith("Small", ValoTheme.TEXTFIELD_SMALL, null);
+        createTextFieldWith("Big", ValoTheme.TEXTFIELD_LARGE, null);
 
         TextArea ta = new TextArea();
         ta.setId("textfield" + debugIdCounter++);

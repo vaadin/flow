@@ -24,7 +24,7 @@ $v-grid-details-border-top-stripe: valo-border($color: $v-grid-row-stripe-backgr
 $v-grid-details-border-bottom: $v-grid-cell-horizontal-border !default;
 $v-grid-details-border-bottom-stripe: $v-grid-cell-horizontal-border !default;
 
-@import "../../base/grid/grid";
+@import "base_grid";
 
 /**
  *

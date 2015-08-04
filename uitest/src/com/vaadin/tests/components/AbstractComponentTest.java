@@ -22,7 +22,6 @@ import com.vaadin.tests.util.LoremIpsum;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.MenuItem;
-import com.vaadin.ui.themes.BaseTheme;
 
 public abstract class AbstractComponentTest<T extends AbstractComponent> extends AbstractComponentTestCase<T> implements FocusListener, BlurListener {
 
@@ -169,7 +168,6 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
     private void createLog() {
         log = new Log(5).setNumberLogRows(true);
         log.setData(log.getCaption());
-        log.setStyleName(BaseTheme.CLIP);
         getLayout().addComponent(log, 1);
     }
 

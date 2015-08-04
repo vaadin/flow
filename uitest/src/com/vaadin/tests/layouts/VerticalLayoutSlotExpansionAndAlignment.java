@@ -6,7 +6,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.Reindeer;
+import com.vaadin.ui.themes.ValoTheme;
 
 @SuppressWarnings("serial")
 public class VerticalLayoutSlotExpansionAndAlignment extends UI {
@@ -21,18 +21,18 @@ public class VerticalLayoutSlotExpansionAndAlignment extends UI {
         HorizontalLayout header = new HorizontalLayout(new Label("HEADER"));
         header.setHeight("100px");
         header.setWidth("100%");
-        header.setStyleName(Reindeer.LAYOUT_WHITE);
+        header.setStyleName(ValoTheme.LAYOUT_CARD);
         layout.addComponent(header);
 
         HorizontalLayout content = new HorizontalLayout(new Label("CONTENT"));
         content.setSizeFull();
-        content.setStyleName(Reindeer.LAYOUT_BLUE);
+        content.setStyleName(ValoTheme.LAYOUT_CARD);
         layout.addComponent(content);
 
         HorizontalLayout footer = new HorizontalLayout(new Label("FOOTER"));
         footer.setHeight("150px");
         footer.setWidth("100%");
-        footer.setStyleName(Reindeer.LAYOUT_BLACK);
+        footer.setStyleName(ValoTheme.LAYOUT_CARD);
         layout.addComponent(footer);
 
         // This break things

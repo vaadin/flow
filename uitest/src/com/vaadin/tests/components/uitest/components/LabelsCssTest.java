@@ -5,8 +5,7 @@ import com.vaadin.tests.components.uitest.TestSampler;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.themes.ChameleonTheme;
-import com.vaadin.ui.themes.Reindeer;
+import com.vaadin.ui.themes.ValoTheme;
 
 public class LabelsCssTest extends GridLayout {
 
@@ -24,23 +23,20 @@ public class LabelsCssTest extends GridLayout {
         Label l = createLabelWith("The caption", "With caption and tooltip", null, null);
         l.setDescription("The tooltip");
 
-        createLabelWith("H1", ChameleonTheme.LABEL_H1);
-        createLabelWith("H2", ChameleonTheme.LABEL_H2);
-        createLabelWith("H3", ChameleonTheme.LABEL_H3);
-        createLabelWith("H4", ChameleonTheme.LABEL_H4);
-        createLabelWith("Big", ChameleonTheme.LABEL_BIG);
-        createLabelWith("Small", ChameleonTheme.LABEL_SMALL);
-        createLabelWith("Tiny", ChameleonTheme.LABEL_TINY);
-        createLabelWith("Color", ChameleonTheme.LABEL_COLOR);
-        createLabelWith("Warning", ChameleonTheme.LABEL_WARNING);
-        createLabelWith("Error", ChameleonTheme.LABEL_ERROR);
+        createLabelWith("H1", ValoTheme.LABEL_H1);
+        createLabelWith("H2", ValoTheme.LABEL_H2);
+        createLabelWith("H3", ValoTheme.LABEL_H3);
+        createLabelWith("H4", ValoTheme.LABEL_H4);
+        createLabelWith("Big", ValoTheme.LABEL_LARGE);
+        createLabelWith("Small", ValoTheme.LABEL_SMALL);
+        createLabelWith("Tiny", ValoTheme.LABEL_TINY);
+        createLabelWith("Color", ValoTheme.LABEL_COLORED);
+        createLabelWith("Failure", ValoTheme.LABEL_FAILURE);
         // Will break test bench as the spinner spins and it's not identical in
         // all screen shots
-        // createLabelWith("Loading", ChameleonTheme.LABEL_LOADING);
-        createLabelWith("Big", ChameleonTheme.LABEL_BIG);
-        createLabelWith("Big", ChameleonTheme.LABEL_BIG);
-
-        createLabelWith("Light", Reindeer.LABEL_SMALL);
+        // createLabelWith("Loading", ValoTheme.LABEL_LOADING);
+        createLabelWith("Big", ValoTheme.LABEL_LARGE);
+        createLabelWith("Big", ValoTheme.LABEL_LARGE);
 
     }
 

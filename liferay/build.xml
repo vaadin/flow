@@ -38,11 +38,7 @@
         </unjar>
         <unjar src="${lib.dir}/vaadin-themes.jar" dest="${work.dir}">
             <patternset>
-                <include name="VAADIN/themes/base/**/*" />
-                <include name="VAADIN/themes/chameleon/**/*" />
-                <include name="VAADIN/themes/liferay/**/*" />
-                <include name="VAADIN/themes/runo/**/*" />
-                <include name="VAADIN/themes/reindeer/**/*" />
+                <include name="VAADIN/themes/valo/**/*" />
             </patternset>
         </unjar>
         <unjar src="${lib.dir}/vaadin-push.jar" dest="${work.dir}">

@@ -9,7 +9,6 @@ import com.vaadin.tests.util.LoremIpsum;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Tree;
-import com.vaadin.ui.themes.Reindeer;
 
 public class TreeWithIcons extends TestBase {
 
@@ -42,7 +41,6 @@ public class TreeWithIcons extends TestBase {
         t.setItemIcon(first, notCachedFolderIconLarge);
 
         HorizontalLayout hlay = new HorizontalLayout();
-        hlay.setStyleName(Reindeer.LAYOUT_BLUE);
         hlay.addComponent(t);
         hlay.setWidth(-1, Sizeable.UNITS_PIXELS);
 

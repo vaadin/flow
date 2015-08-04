@@ -8,16 +8,13 @@ import org.openqa.selenium.By;
 
 import com.vaadin.testbench.elements.MenuBarElement;
 import com.vaadin.tests.tb3.MultiBrowserTest;
-import com.vaadin.ui.themes.ChameleonTheme;
-import com.vaadin.ui.themes.Reindeer;
-import com.vaadin.ui.themes.Runo;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class MenuBarTooltipTest extends MultiBrowserTest {
 
     @Test
     public void toolTipShouldBeOnTopOfMenuItem() {
-        String[] themes = new String[] { ValoTheme.THEME_NAME, Reindeer.THEME_NAME, Runo.THEME_NAME, ChameleonTheme.THEME_NAME };
+        String[] themes = new String[] { ValoTheme.THEME_NAME };
 
         for (String theme : themes) {
             assertZIndices(theme);

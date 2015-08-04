@@ -18,7 +18,7 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.Reindeer;
+import com.vaadin.ui.themes.ValoTheme;
 
 public class SettingsView extends Panel implements View {
 
@@ -70,7 +70,7 @@ public class SettingsView extends Panel implements View {
                 processPendingView();
             }
         });
-        cancel.setStyleName(Reindeer.BUTTON_LINK);
+        cancel.setStyleName(ValoTheme.BUTTON_LINK);
         layout.addComponent(cancel);
 
         // attach a listener so that we'll get asked isViewChangeAllowed?

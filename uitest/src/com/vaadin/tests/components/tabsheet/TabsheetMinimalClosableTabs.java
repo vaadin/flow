@@ -5,7 +5,6 @@ import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.Tab;
-import com.vaadin.ui.themes.Reindeer;
 
 public class TabsheetMinimalClosableTabs extends TestBase {
 
@@ -27,7 +26,6 @@ public class TabsheetMinimalClosableTabs extends TestBase {
             }
         }
 
-        ts.addStyleName(Reindeer.TABSHEET_MINIMAL);
         addComponent(ts);
     }
 

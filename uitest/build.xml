@@ -139,10 +139,6 @@
             </fileset>
             <fileset dir="${WebContent.dir}">
                 <include name="statictestfiles/**" />
-                <include name="VAADIN/themes/tests-*/**" />
-                <!-- Scss themes compiled and included above -->
-                <exclude name="VAADIN/themes/tests-valo*/**" />
-                <include name="VAADIN/themes/reindeer-tests/**" />
                 <include name="VAADIN/jquery.atmosphere.js" />
                 <include name="WEB-INF/*.xml" />
                 <include name="WEB-INF/web.xml.2.4" />

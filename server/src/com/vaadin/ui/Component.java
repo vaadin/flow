@@ -527,11 +527,6 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * TextField name = new TextField(&quot;Name&quot;);
      * name.setIcon(new ThemeResource(&quot;icons/user.png&quot;));
      * layout.addComponent(name);
-     * 
-     * // Component with an icon from another theme ('runo')
-     * Button ok = new Button(&quot;OK&quot;);
-     * ok.setIcon(new ThemeResource(&quot;../runo/icons/16/ok.png&quot;));
-     * layout.addComponent(ok);
      * </pre>
      * 
      * <p>

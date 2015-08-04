@@ -28,7 +28,6 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.Reindeer;
 
 @Theme("tests-components")
 @PreserveOnRefresh
@@ -97,7 +96,6 @@ public class BoxLayoutTest extends AbstractTestUI {
         root.addComponent(header);
 
         Label title = new Label("BoxLayout Test");
-        title.addStyleName(Reindeer.LABEL_H1);
         header.addComponent(title);
 
         final CheckBox vertical = new CheckBox("Vertical", !horizontal);

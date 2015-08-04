@@ -40,11 +40,6 @@ import com.vaadin.server.ThemeResource;
 public class FileTypeResolver implements Serializable {
 
     /**
-     * Default icon given if no icon is specified for a mime-type.
-     */
-    static public Resource DEFAULT_ICON = new ThemeResource("../runo/icons/16/document.png");
-
-    /**
      * Default mime-type.
      */
     static public String DEFAULT_MIME_TYPE = "application/octet-stream";
@@ -146,9 +141,7 @@ public class FileTypeResolver implements Serializable {
             return icon;
         }
 
-        // If nothing is known about the file-type, general file
-        // icon is used
-        return DEFAULT_ICON;
+        return null;
     }
 
     /**

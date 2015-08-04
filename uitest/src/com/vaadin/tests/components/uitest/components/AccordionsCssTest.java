@@ -5,8 +5,7 @@ import com.vaadin.server.UserError;
 import com.vaadin.tests.components.uitest.TestSampler;
 import com.vaadin.ui.Accordion;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.themes.ChameleonTheme;
-import com.vaadin.ui.themes.Runo;
+import com.vaadin.ui.themes.ValoTheme;
 
 public class AccordionsCssTest {
 
@@ -19,11 +18,8 @@ public class AccordionsCssTest {
         Accordion def = createAccordionWith("Def Accordion", null);
         parent.addComponent(def);
 
-        Accordion light = createAccordionWith("Light Accordion", Runo.ACCORDION_LIGHT);
+        Accordion light = createAccordionWith("Borderless Accordion", ValoTheme.ACCORDION_BORDERLESS);
         parent.addComponent(light);
-
-        Accordion opaque = createAccordionWith("Oppaque Accordion", ChameleonTheme.ACCORDION_OPAQUE);
-        parent.addComponent(opaque);
 
     }
 

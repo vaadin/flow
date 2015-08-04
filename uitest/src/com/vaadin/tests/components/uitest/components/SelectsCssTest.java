@@ -10,7 +10,7 @@ import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.Select;
 import com.vaadin.ui.TwinColSelect;
-import com.vaadin.ui.themes.ChameleonTheme;
+import com.vaadin.ui.themes.ValoTheme;
 
 public class SelectsCssTest extends GridLayout {
 
@@ -55,8 +55,7 @@ public class SelectsCssTest extends GridLayout {
         addComponent(ns);
 
         createComboBoxWith(null, null, null);
-        createComboBoxWith("CB Search", ChameleonTheme.COMBOBOX_SEARCH, null);
-        createComboBoxWith("SelectButton", ChameleonTheme.COMBOBOX_SELECT_BUTTON, null);
+        createComboBoxWith("SelectButton", ValoTheme.COMBOBOX_LARGE, null);
 
         ListSelect ls = new ListSelect();
         ls.setId("select" + debugIdCounter++);
@@ -75,8 +74,6 @@ public class SelectsCssTest extends GridLayout {
         addComponent(s);
 
         createComboBoxWith(null, null, "100px");
-        createComboBoxWith("CB Search", ChameleonTheme.COMBOBOX_SEARCH, "100px");
-        createComboBoxWith("SelectButton", ChameleonTheme.COMBOBOX_SELECT_BUTTON, "100px");
     }
 
     private void createComboBoxWith(String caption, String primaryStyleName, String width) {

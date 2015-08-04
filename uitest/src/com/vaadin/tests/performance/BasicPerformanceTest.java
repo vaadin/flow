@@ -15,7 +15,7 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.Reindeer;
+import com.vaadin.ui.themes.ValoTheme;
 
 public class BasicPerformanceTest extends UI {
 
@@ -55,7 +55,7 @@ public class BasicPerformanceTest extends UI {
         contentLayout.addComponent(new Label("Content lives here"));
 
         Panel contentScroller = new Panel(contentLayout);
-        contentScroller.setStyleName(Reindeer.PANEL_LIGHT);
+        contentScroller.setStyleName(ValoTheme.PANEL_BORDERLESS);
         contentScroller.setSizeFull();
 
         TextArea performanceReportArea = new TextArea();

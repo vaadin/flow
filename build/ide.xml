@@ -45,23 +45,9 @@
         <!-- threadCount is ignored unless threadsPerProcessor is 0 -->
         <parallel threadsPerProcessor="${threadsPerProcessor}" threadCount="1">
             <antcall target="compile-theme" inheritRefs="true">
-                <param name="theme" value="base" />
-            </antcall>
-            <antcall target="compile-theme" inheritRefs="true">
-                <param name="theme" value="runo" />
-            </antcall>
-            <antcall target="compile-theme" inheritRefs="true">
-                <param name="theme" value="reindeer" />
-            </antcall>
-            <antcall target="compile-theme" inheritRefs="true">
-                <param name="theme" value="chameleon" />
-            </antcall>
-            <antcall target="compile-theme" inheritRefs="true">
-                <param name="theme" value="liferay" />
-            </antcall>
-            <antcall target="compile-theme" inheritRefs="true">
                 <param name="theme" value="valo" />
             </antcall>
+<!-- Disabled during development
             <antcall target="compile-theme" inheritRefs="true">
                 <param name="theme" value="tests-valo" />
             </antcall>
@@ -89,6 +75,7 @@
             <antcall target="compile-theme" inheritRefs="true">
               <param name="theme" value="tests-valo-disabled-animations" />
             </antcall>
+-->
         </parallel>
     </target>
 

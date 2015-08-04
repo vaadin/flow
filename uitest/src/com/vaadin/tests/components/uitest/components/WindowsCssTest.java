@@ -6,9 +6,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
-import com.vaadin.ui.themes.ChameleonTheme;
-import com.vaadin.ui.themes.Reindeer;
-import com.vaadin.ui.themes.Runo;
+import com.vaadin.ui.themes.ValoTheme;
 
 public class WindowsCssTest extends VerticalLayout {
 
@@ -30,44 +28,26 @@ public class WindowsCssTest extends VerticalLayout {
             }
         });
         defWindow.setId("windButton" + debugIdCounter++);
-        Button light = new Button("Light window", new Button.ClickListener() {
+        Button topToolbar = new Button("top toolbar window", new Button.ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                createWindowWith(caption, Reindeer.WINDOW_LIGHT, styleName);
+                createWindowWith(caption, ValoTheme.WINDOW_TOP_TOOLBAR, styleName);
             }
         });
-        light.setId("windButton" + debugIdCounter++);
-        Button black = new Button("Black window", new Button.ClickListener() {
+        topToolbar.setId("windButton" + debugIdCounter++);
+        Button bottomToolbar = new Button("bottom toolbar window", new Button.ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                createWindowWith(caption, Reindeer.WINDOW_BLACK, styleName);
+                createWindowWith(caption, ValoTheme.WINDOW_BOTTOM_TOOLBAR, styleName);
             }
         });
-        black.setId("windButton" + debugIdCounter++);
-        Button dialog = new Button("Dialog window", new Button.ClickListener() {
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                createWindowWith(caption, Runo.WINDOW_DIALOG, styleName);
-            }
-        });
-        dialog.setId("windButton" + debugIdCounter++);
-        Button opaque = new Button("Opaque window", new Button.ClickListener() {
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                createWindowWith(caption, ChameleonTheme.WINDOW_OPAQUE, styleName);
-            }
-        });
-        opaque.setId("windButton" + debugIdCounter++);
+        bottomToolbar.setId("windButton" + debugIdCounter++);
 
         addComponent(defWindow);
-        addComponent(light);
-        addComponent(black);
-        addComponent(dialog);
-        addComponent(opaque);
+        addComponent(topToolbar);
+        addComponent(bottomToolbar);
 
     }
 

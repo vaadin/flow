@@ -43,13 +43,11 @@ public class ThemeChangeFaviconTest extends SingleBrowserTest {
     public void changeFavicon() throws InterruptedException {
         setDebug(true);
         openTestURL();
-        assertFavicon("reindeer");
-
-        changeTheme("valo");
         assertFavicon("valo");
 
-        changeTheme("reindeer");
-        assertFavicon("reindeer");
+        changeTheme("test-valo-flat");
+        assertFavicon("test-valo-flat");
+
     }
 
     private void changeTheme(final String theme) {
