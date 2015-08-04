@@ -16,6 +16,7 @@
 package com.vaadin.client.ui.ui;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Scheduler;
@@ -41,6 +42,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
@@ -58,7 +60,7 @@ import com.vaadin.client.annotations.OnStateChange;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.communication.StateChangeEvent.StateChangeHandler;
 import com.vaadin.client.ui.AbstractConnector;
-import com.vaadin.client.ui.AbstractSingleComponentContainerConnector;
+import com.vaadin.client.ui.AbstractHasComponentsConnector;
 import com.vaadin.client.ui.ClickEventHandler;
 import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.VUI;
@@ -80,7 +82,7 @@ import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.UI;
 
 @Connect(value = UI.class, loadStyle = LoadStyle.EAGER)
-public class UIConnector extends AbstractSingleComponentContainerConnector {
+public class UIConnector extends AbstractHasComponentsConnector {
 
     private HandlerRegistration childStateChangeHandlerRegistration;
 
@@ -317,12 +319,13 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
         return (VUI) super.getWidget();
     }
 
-    @Override
     protected ComponentConnector getContent() {
-        ComponentConnector connector = super.getContent();
-        // VWindow (WindowConnector is its connector)is also a child component
-        // but it's never a content widget
-        return connector;
+        List<ComponentConnector> children = getChildComponents();
+        if (children.isEmpty()) {
+            return null;
+        } else {
+            return children.get(0);
+        }
     }
 
     protected void onChildSizeChange() {
@@ -784,4 +787,20 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
     private static Logger getLogger() {
         return Logger.getLogger(UIConnector.class.getName());
     }
+
+    /**
+     * Returns the widget (if any) of the content of the container.
+     * 
+     * @return widget of the only/first connector of the container, null if no
+     *         content or if there is no widget for the connector
+     */
+    protected Widget getContentWidget() {
+        ComponentConnector content = getContent();
+        if (null != content) {
+            return content.getWidget();
+        } else {
+            return null;
+        }
+    }
+
 }
