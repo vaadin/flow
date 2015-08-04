@@ -16,9 +16,6 @@
 
 package com.vaadin.server;
 
-import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.Label;
-
 /**
  * A font icon is a type of icon that is made by displaying one character from a
  * specially constructed font containing icons ("icon font").
@@ -58,8 +55,7 @@ public interface FontIcon extends Resource {
 
     /**
      * Returns HTML that can be used to display the icon in places where HTML
-     * can be used, such as a {@link Label} with {@link ContentMode#HTML}.
-     * 
+     * can be used.
      * 
      * @since 7.2
      * @return HTML needed to display icon

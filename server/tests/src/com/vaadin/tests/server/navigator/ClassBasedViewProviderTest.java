@@ -19,13 +19,13 @@ package com.vaadin.tests.server.navigator;
 import com.vaadin.navigator.Navigator.ClassBasedViewProvider;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.ui.Label;
+import com.vaadin.ui.TestComponent;
 
 import junit.framework.TestCase;
 
 public class ClassBasedViewProviderTest extends TestCase {
 
-    public static class TestView extends Label implements View {
+    public static class TestView extends TestComponent implements View {
         public String parameters = null;
 
         @Override

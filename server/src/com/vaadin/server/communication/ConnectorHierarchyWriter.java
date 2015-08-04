@@ -25,7 +25,6 @@ import java.util.Set;
 import com.vaadin.server.AbstractClientConnector;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.LegacyCommunicationManager;
-import com.vaadin.server.PaintException;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.ui.UI;
@@ -82,7 +81,7 @@ public class ConnectorHierarchyWriter implements Serializable {
                 try {
                     hierarchyInfo.put(connectorId, children);
                 } catch (JsonException e) {
-                    throw new PaintException(
+                    throw new IOException(
                             "Failed to send hierarchy information about "
                                     + connectorId + " to the client: "
                                     + e.getMessage(),

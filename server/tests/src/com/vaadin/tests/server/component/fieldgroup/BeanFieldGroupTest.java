@@ -1,7 +1,5 @@
 package com.vaadin.tests.server.component.fieldgroup;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -11,8 +9,7 @@ import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.fieldgroup.PropertyId;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.ui.Field;
-import com.vaadin.ui.RichTextArea;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.TestField;
 
 public class BeanFieldGroupTest {
 
@@ -72,10 +69,10 @@ public class BeanFieldGroupTest {
 
     public static class ViewStub {
 
-        TextField basicField = new TextField();
+        TestField basicField = new TestField();
 
         @PropertyId("anotherField")
-        TextField boundWithAnnotation = new TextField();
+        TestField boundWithAnnotation = new TestField();
     }
 
     @SuppressWarnings("unchecked")
@@ -121,32 +118,6 @@ public class BeanFieldGroupTest {
         Assert.assertEquals("Foo", myBean.basicField);
         Assert.assertEquals("Foo", myBean.anotherField);
 
-    }
-
-    @Test
-    public void buildAndBindNestedProperty() {
-
-        MyBean bean = new MyBean();
-
-        BeanFieldGroup<MyBean> bfg = new BeanFieldGroup<MyBean>(MyBean.class);
-        bfg.setItemDataSource(bean);
-
-        com.vaadin.ui.Field<?> helloField = bfg.buildAndBind("Hello string",
-                "nestedBean.hello");
-        assertEquals(bean.nestedBean.hello, helloField.getValue().toString());
-    }
-
-    @Test
-    public void buildAndBindNestedRichTextAreaProperty() {
-
-        MyBean bean = new MyBean();
-
-        BeanFieldGroup<MyBean> bfg = new BeanFieldGroup<MyBean>(MyBean.class);
-        bfg.setItemDataSource(bean);
-
-        RichTextArea helloField = bfg.buildAndBind("Hello string",
-                "nestedBean.hello", RichTextArea.class);
-        assertEquals(bean.nestedBean.hello, helloField.getValue().toString());
     }
 
     @Test

@@ -10,7 +10,7 @@ import com.vaadin.tests.data.bean.Country;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.TestField;
 
 import junit.framework.TestCase;
 
@@ -85,7 +85,7 @@ public class DefaultConverterFactoryTest extends TestCase {
         VaadinSession sess = new AlwaysLockedVaadinSession(null);
         VaadinSession.setCurrent(sess);
 
-        TextField tf = new TextField();
+        TestField tf = new TestField();
         tf.setLocale(new Locale("en", "US"));
         tf.setPropertyDataSource(
                 new MethodProperty<Integer>(new FloatBean(12f, 23f), "f2"));
@@ -100,7 +100,7 @@ public class DefaultConverterFactoryTest extends TestCase {
         VaadinSession sess = new AlwaysLockedVaadinSession(null);
         VaadinSession.setCurrent(sess);
 
-        TextField tf = new TextField();
+        TestField tf = new TestField();
         tf.setLocale(new Locale("en", "US"));
         tf.setPropertyDataSource(new MethodProperty<Integer>(
                 new LongBean(12, 1982739187238L), "l2"));
@@ -114,7 +114,7 @@ public class DefaultConverterFactoryTest extends TestCase {
     public void testDefaultNumberConversion() {
         VaadinSession app = new AlwaysLockedVaadinSession(null);
         VaadinSession.setCurrent(app);
-        TextField tf = new TextField();
+        TestField tf = new TestField();
         tf.setLocale(new Locale("en", "US"));
         tf.setPropertyDataSource(
                 new MethodProperty<Integer>(paulaBean, "salary"));

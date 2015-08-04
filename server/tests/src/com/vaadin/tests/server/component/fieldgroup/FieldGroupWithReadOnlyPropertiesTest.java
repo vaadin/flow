@@ -8,12 +8,12 @@ import org.junit.Test;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.tests.data.bean.BeanWithReadOnlyField;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.TestField;
 
 public class FieldGroupWithReadOnlyPropertiesTest {
 
-    private TextField readOnlyField = new TextField();
-    private TextField writableField = new TextField();
+    private TestField readOnlyField = new TestField();
+    private TestField writableField = new TestField();
 
     @Test
     public void bindReadOnlyPropertyToFieldGroup() {

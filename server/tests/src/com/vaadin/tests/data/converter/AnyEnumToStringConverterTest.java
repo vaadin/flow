@@ -27,7 +27,7 @@ import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.ReverseConverter;
 import com.vaadin.tests.data.bean.AnotherTestEnum;
 import com.vaadin.tests.data.bean.TestEnum;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.TestField;
 
 public class AnyEnumToStringConverterTest {
 
@@ -106,7 +106,7 @@ public class AnyEnumToStringConverterTest {
 
     @Test
     public void stringToEnumWithField() {
-        TextField tf = new TextField();
+        TestField tf = new TestField();
         tf.setConverter(new ReverseConverter(converter));
         tf.setPropertyDataSource(new ObjectProperty(AnotherTestEnum.TWO));
         Assert.assertEquals(AnotherTestEnum.TWO.toString(), tf.getValue());

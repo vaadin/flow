@@ -2,7 +2,7 @@ package com.vaadin.tests.server;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.TestField;
 
 import junit.framework.TestCase;
 
@@ -11,7 +11,7 @@ public class EventRouterTest extends TestCase {
     int innerListenerCalls = 0;
 
     public void testAddInEventListener() {
-        final TextField tf = new TextField();
+        final TestField tf = new TestField();
 
         final ValueChangeListener outer = new ValueChangeListener() {
 

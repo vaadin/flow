@@ -105,20 +105,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             return bootstrapResponse.getUiClass();
         }
 
-        public String getWidgetsetName() {
-            if (widgetsetName == null) {
-                widgetsetName = getWidgetsetForUI(this);
-            }
-            return widgetsetName;
-        }
-
-        public String getThemeName() {
-            if (themeName == null) {
-                themeName = findAndEscapeThemeName(this);
-            }
-            return themeName;
-        }
-
         public PushMode getPushMode() {
             if (pushMode == null) {
                 UICreateEvent event = new UICreateEvent(getRequest(),
@@ -184,11 +170,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         protected String getVaadinDirUrl() {
             return context.getApplicationParameters()
                     .getString(ApplicationConstants.VAADIN_DIR_URL);
-        }
-
-        @Override
-        protected String getThemeUri() {
-            return getVaadinDirUrl() + "themes/" + context.getThemeName();
         }
 
         @Override
@@ -408,18 +389,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         head.appendElement("style").attr("type", "text/css")
                 .appendText("html, body {height:100%;margin:0;}");
 
-        // Add favicon links
-        String themeName = context.getThemeName();
-        if (themeName != null) {
-            String themeUri = getThemeUri(context, themeName);
-            head.appendElement("link").attr("rel", "shortcut icon")
-                    .attr("type", "image/vnd.microsoft.icon")
-                    .attr("href", themeUri + "/favicon.ico");
-            head.appendElement("link").attr("rel", "icon")
-                    .attr("type", "image/vnd.microsoft.icon")
-                    .attr("href", themeUri + "/favicon.ico");
-        }
-
         JavaScript javaScript = uiClass.getAnnotation(JavaScript.class);
         if (javaScript != null) {
             String[] resources = javaScript.value();
@@ -459,21 +428,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return null;
     }
 
-    public String getWidgetsetForUI(BootstrapContext context) {
-        VaadinRequest request = context.getRequest();
-
-        UICreateEvent event = new UICreateEvent(context.getRequest(),
-                context.getUIClass());
-        String widgetset = context.getBootstrapResponse().getUIProvider()
-                .getWidgetset(event);
-        if (widgetset == null) {
-            widgetset = request.getService().getConfiguredWidgetset(request);
-        }
-
-        widgetset = VaadinServlet.stripSpecialChars(widgetset);
-        return widgetset;
-    }
-
     /**
      * Method to write the div element into which that actual Vaadin application
      * is rendered.
@@ -502,7 +456,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         Element mainDiv = new Element(Tag.valueOf("div"), "");
         mainDiv.attr("id", context.getAppId());
         mainDiv.addClass("v-app");
-        mainDiv.addClass(context.getThemeName());
         mainDiv.addClass(context.getUIClass().getSimpleName()
                 .toLowerCase(Locale.ENGLISH));
         if (style != null && style.length() != 0) {
@@ -605,11 +558,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         JsonObject appConfig = Json.createObject();
 
-        String themeName = context.getThemeName();
-        if (themeName != null) {
-            appConfig.put("theme", themeName);
-        }
-
         // Ignore restartApplication that might be passed to UI init
         if (request.getParameter(
                 VaadinService.URL_PARAMETER_RESTART_APPLICATION) != null) {
@@ -625,7 +573,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         appConfig.put("versionInfo", versionInfo);
-        appConfig.put("widgetset", context.getWidgetsetName());
+        appConfig.put("widgetset", Constants.DEFAULT_WIDGETSET);
 
         // Use locale from session if set, else from the request
         Locale locale = ServletPortletHelper.findLocale(null,
@@ -698,57 +646,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     protected abstract String getServiceUrl(BootstrapContext context);
-
-    /**
-     * Get the URI for the application theme.
-     * 
-     * A portal-wide default theme is fetched from the portal shared resource
-     * directory (if any), other themes from the portlet.
-     * 
-     * @param context
-     * @param themeName
-     * 
-     * @return
-     */
-    public String getThemeUri(BootstrapContext context, String themeName) {
-        VaadinRequest request = context.getRequest();
-        final String staticFilePath = request.getService()
-                .getStaticFileLocation(request);
-        return staticFilePath + "/" + VaadinServlet.THEME_DIR_PATH + '/'
-                + themeName;
-    }
-
-    /**
-     * Override if required
-     * 
-     * @param context
-     * @return
-     */
-    public String getThemeName(BootstrapContext context) {
-        UICreateEvent event = new UICreateEvent(context.getRequest(),
-                context.getUIClass());
-        return context.getBootstrapResponse().getUIProvider().getTheme(event);
-    }
-
-    /**
-     * Do not override.
-     * 
-     * @param context
-     * @return
-     */
-    public String findAndEscapeThemeName(BootstrapContext context) {
-        String themeName = getThemeName(context);
-        if (themeName == null) {
-            VaadinRequest request = context.getRequest();
-            themeName = request.getService().getConfiguredTheme(request);
-        }
-
-        // XSS preventation, theme names shouldn't contain special chars anyway.
-        // The servlet denies them via url parameter.
-        themeName = VaadinServlet.stripSpecialChars(themeName);
-
-        return themeName;
-    }
 
     protected void writeError(VaadinResponse response, Throwable e)
             throws IOException {

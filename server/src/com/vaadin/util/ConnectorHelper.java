@@ -19,7 +19,6 @@ package com.vaadin.util;
 import java.util.LinkedList;
 
 import com.vaadin.server.ClientConnector;
-import com.vaadin.ui.Component;
 
 /**
  * Provides various helper methods for connectors. Meant for internal use.
@@ -44,13 +43,6 @@ public class ConnectorHelper {
         sb.append(connector.getClass().getName());
         sb.append("\nId:");
         sb.append(connector.getConnectorId());
-        if (connector instanceof Component) {
-            Component component = (Component) connector;
-            if (component.getCaption() != null) {
-                sb.append("\nCaption:");
-                sb.append(component.getCaption());
-            }
-        }
         writeHierarchyInformation(connector, sb);
         return sb.toString();
     }

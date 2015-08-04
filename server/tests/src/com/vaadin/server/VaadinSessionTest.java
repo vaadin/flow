@@ -38,7 +38,7 @@ import org.junit.Test;
 import com.vaadin.server.ClientConnector.DetachEvent;
 import com.vaadin.server.ClientConnector.DetachListener;
 import com.vaadin.server.communication.UIInitHandler;
-import com.vaadin.ui.Label;
+import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
@@ -264,7 +264,7 @@ public class VaadinSessionTest {
         }
     }
 
-    private static class SerializationTestLabel extends Label {
+    private static class SerializationTestLabel extends AbstractComponent {
         private transient VaadinSession session = VaadinSession.getCurrent();
 
         private void readObject(ObjectInputStream in)

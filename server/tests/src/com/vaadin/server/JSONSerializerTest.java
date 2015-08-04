@@ -18,12 +18,10 @@ package com.vaadin.server;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import com.vaadin.server.JsonCodec.BeanProperty;
 import com.vaadin.shared.communication.UidlValue;
-import com.vaadin.shared.ui.splitpanel.AbstractSplitPanelState;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -40,46 +38,6 @@ import junit.framework.TestCase;
  * 
  */
 public class JSONSerializerTest extends TestCase {
-    HashMap<String, AbstractSplitPanelState> stringToStateMap;
-    HashMap<AbstractSplitPanelState, String> stateToStringMap;
-
-    public void testStringToBeanMapSerialization() throws Exception {
-        Type mapType = getClass().getDeclaredField("stringToStateMap")
-                .getGenericType();
-        stringToStateMap = new HashMap<String, AbstractSplitPanelState>();
-        AbstractSplitPanelState s = new AbstractSplitPanelState();
-        AbstractSplitPanelState s2 = new AbstractSplitPanelState();
-        s.caption = "State 1";
-        s.id = "foo";
-        s2.caption = "State 2";
-        s2.id = "bar";
-        stringToStateMap.put("string - state 1", s);
-        stringToStateMap.put("String - state 2", s2);
-
-        JsonValue encodedMap = JsonCodec
-                .encode(stringToStateMap, null, mapType, null)
-                .getEncodedValue();
-
-        ensureDecodedCorrectly(stringToStateMap, encodedMap, mapType);
-    }
-
-    public void testBeanToStringMapSerialization() throws Exception {
-        Type mapType = getClass().getDeclaredField("stateToStringMap")
-                .getGenericType();
-        stateToStringMap = new HashMap<AbstractSplitPanelState, String>();
-        AbstractSplitPanelState s = new AbstractSplitPanelState();
-        AbstractSplitPanelState s2 = new AbstractSplitPanelState();
-        s.caption = "State 1";
-        s2.caption = "State 2";
-        stateToStringMap.put(s, "string - state 1");
-        stateToStringMap.put(s2, "String - state 2");
-
-        JsonValue encodedMap = JsonCodec
-                .encode(stateToStringMap, null, mapType, null)
-                .getEncodedValue();
-
-        ensureDecodedCorrectly(stateToStringMap, encodedMap, mapType);
-    }
 
     public void testNullLegacyValue() throws JsonException {
         JsonArray inputArray = Json.createArray();

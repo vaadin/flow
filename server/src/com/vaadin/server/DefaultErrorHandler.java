@@ -43,16 +43,7 @@ public class DefaultErrorHandler implements ErrorHandler {
 
         t = findRelevantThrowable(t);
 
-        // Finds the original source of the error/exception
-        AbstractComponent component = findAbstractComponent(event);
-        if (component != null) {
-            // Shows the error in AbstractComponent
-            ErrorMessage errorMessage = AbstractErrorMessage
-                    .getErrorMessageForException(t);
-            component.setComponentError(errorMessage);
-        }
-
-        // also print the error on console
+        // print the error on console
         getLogger().log(Level.SEVERE, "", t);
     }
 

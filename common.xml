@@ -6,10 +6,9 @@
     </tstamp>
 
     <dirname property="vaadin.basedir" file="${ant.file.common}" />
-    <property name="gwt.basedir" location="${vaadin.basedir}/../gwt" />
     <property file="${vaadin.basedir}/build.properties" />
 
-    <property name="modules.producing.jar" value="shared,server,client,client-compiler,client-compiled,themes,push,widgets" />
+    <property name="modules.producing.jar" value="shared,server,client,client-compiled,themes,push,widgets" />
     <property name="modules.to.publish.to.maven" value="${modules.producing.jar},bom" />
     <property name="modules.to.publish.to.download" value="${modules.to.publish.to.maven},all" />
 
@@ -85,10 +84,6 @@
                 </patternset>
             </fileset>
             <fileset dir="${common.jarfiles.dir}" />
-            <restrict>
-                <union refid="extra.jar.includes" />
-                <name name="*.java" />
-            </restrict>
         </jar>
 
     </target>
@@ -146,7 +141,6 @@
             <fileset dir="${classes}" excludes="${classes.exclude}" erroronmissingdir="false" />
             <fileset dir="${src}" excludes="${jar.exclude}" erroronmissingdir="false" />
             <fileset dir="${common.jarfiles.dir}" />
-            <union refid="extra.jar.includes" />
         </union>
 
         <jar destfile="${result.jar}" duplicate="fail" index="true">

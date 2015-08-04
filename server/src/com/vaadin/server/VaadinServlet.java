@@ -16,28 +16,21 @@
 package com.vaadin.server;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,137 +41,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.gwt.thirdparty.guava.common.base.Charsets;
-import com.google.gwt.thirdparty.guava.common.io.Files;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.VaadinServletConfiguration.InitParameterName;
-import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.server.communication.ServletUIInitHandler;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.shared.Version;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-
 @SuppressWarnings("serial")
 public class VaadinServlet extends HttpServlet implements Constants {
-
-    private class ScssCacheEntry implements Serializable {
-
-        private final String css;
-        private final List<String> sourceUris;
-        private final long timestamp;
-        private final String scssFileName;
-
-        public ScssCacheEntry(String scssFileName, String css,
-                List<String> sourceUris) {
-            this.scssFileName = scssFileName;
-            this.css = css;
-            this.sourceUris = sourceUris;
-
-            timestamp = getLastModified();
-        }
-
-        public ScssCacheEntry(JsonObject json) {
-            css = json.getString("css");
-            timestamp = Long.parseLong(json.getString("timestamp"));
-
-            sourceUris = new ArrayList<String>();
-
-            JsonArray uris = json.getArray("uris");
-            for (int i = 0; i < uris.length(); i++) {
-                sourceUris.add(uris.getString(i));
-            }
-
-            // Not set for cache entries read from disk
-            scssFileName = null;
-        }
-
-        public String asJson() {
-            JsonArray uris = Json.createArray();
-            for (String uri : sourceUris) {
-                uris.set(uris.length(), uri);
-            }
-
-            JsonObject object = Json.createObject();
-            object.put("version", Version.getFullVersion());
-            object.put("timestamp", Long.toString(timestamp));
-            object.put("uris", uris);
-            object.put("css", css);
-
-            return object.toJson();
-        }
-
-        public String getCss() {
-            return css;
-        }
-
-        private long getLastModified() {
-            long newest = 0;
-            for (String uri : sourceUris) {
-                File file = new File(uri);
-                URL resource = getService().getClassLoader().getResource(uri);
-                long lastModified = -1L;
-                if (file.exists()) {
-                    lastModified = file.lastModified();
-                } else if (resource != null
-                        && resource.getProtocol().equals("file")) {
-                    try {
-                        file = new File(resource.toURI());
-                        if (file.exists()) {
-                            lastModified = file.lastModified();
-                        }
-                    } catch (URISyntaxException e) {
-                        getLogger().log(Level.WARNING,
-                                "Could not resolve timestamp for " + resource,
-                                e);
-                    }
-                }
-                if (lastModified == -1L && resource == null) {
-                    /*
-                     * Ignore missing files found in the classpath, report
-                     * problem and abort for other files.
-                     */
-                    getLogger().log(Level.WARNING,
-                            "Could not resolve timestamp for {0}, Scss on the fly caching will be disabled",
-                            uri);
-                    // -1 means this cache entry will never be valid
-                    return -1;
-                }
-                newest = Math.max(newest, lastModified);
-            }
-
-            return newest;
-        }
-
-        public boolean isStillValid() {
-            if (timestamp == -1) {
-                /*
-                 * Don't ever bother checking anything if files used during the
-                 * compilation were gone before the cache entry was created.
-                 */
-                return false;
-            } else if (timestamp != getLastModified()) {
-                /*
-                 * Would in theory still be valid if the last modification is
-                 * before the recorded timestamp, but that would still mean that
-                 * something has changed since we last checked, so let's
-                 * invalidate in that case as well to be on the safe side.
-                 */
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        public String getScssFileName() {
-            return scssFileName;
-        }
-
-    }
 
     private VaadinServletService servletService;
 
@@ -663,28 +534,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
                     ';' }));
 
     /**
-     * Mutex for preventing to scss compilations to take place simultaneously.
-     * This is a workaround needed as the scss compiler currently is not thread
-     * safe (#10292).
-     * <p>
-     * In addition, this is also used to protect the cached compilation results.
-     */
-    private static final Object SCSS_MUTEX = new Object();
-
-    /**
-     * Global cache of scss compilation results. This map is protected from
-     * concurrent access by {@link #SCSS_MUTEX}.
-     */
-    private final Map<String, ScssCacheEntry> scssCache = new HashMap<String, ScssCacheEntry>();
-
-    /**
-     * Keeps track of whether a warning about not being able to persist cache
-     * files has already been printed. The flag is protected from concurrent
-     * access by {@link #SCSS_MUTEX}.
-     */
-    private static boolean scssCompileWarWarningEmitted = false;
-
-    /**
      * Returns the default theme. Must never return null.
      * 
      * @return
@@ -750,18 +599,12 @@ public class VaadinServlet extends HttpServlet implements Constants {
         URL resourceUrl = findResourceURL(filename, sc);
 
         if (resourceUrl == null) {
-            // File not found, if this was a css request we still look for a
-            // scss file with the same name
-            if (serveOnTheFlyCompiledScss(filename, request, response, sc)) {
-                return;
-            } else {
-                // cannot serve requested file
-                getLogger().log(Level.INFO,
-                        "Requested resource [{0}] not found from filesystem or through class loader."
-                                + " Add widgetset and/or theme JAR to your classpath or add files to WebContent/VAADIN folder.",
-                        filename);
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            }
+            // cannot serve requested file
+            getLogger().log(Level.INFO,
+                    "Requested resource [{0}] not found from filesystem or through class loader."
+                            + " Add widgetset and/or theme JAR to your classpath or add files to WebContent/VAADIN folder.",
+                    filename);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
@@ -985,131 +828,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
             resourceUrl = getService().getClassLoader().getResource(filename);
         }
         return resourceUrl;
-    }
-
-    private boolean serveOnTheFlyCompiledScss(String filename,
-            HttpServletRequest request, HttpServletResponse response,
-            ServletContext sc) throws IOException {
-        if (!filename.endsWith(".css")) {
-            return false;
-        }
-
-        String scssFilename = filename.substring(0, filename.length() - 4)
-                + ".scss";
-        URL scssUrl = findResourceURL(scssFilename, sc);
-        if (scssUrl == null) {
-            // Is a css request but no scss file was found
-            return false;
-        }
-        // security check: do not permit navigation out of the VAADIN
-        // directory
-        if (!isAllowedVAADINResourceUrl(request, scssUrl)) {
-            getLogger().log(Level.INFO,
-                    "Requested resource [{0}] not accessible in the VAADIN directory or access to it is forbidden.",
-                    filename);
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-
-            // Handled, return true so no further processing is done
-            return true;
-        }
-        if (getService().getDeploymentConfiguration().isProductionMode()) {
-            // This is not meant for production mode.
-            getLogger().log(Level.INFO,
-                    "Request for {0} not handled by sass compiler while in production mode",
-                    filename);
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            // Handled, return true so no further processing is done
-            return true;
-        }
-
-        synchronized (SCSS_MUTEX) {
-            ScssCacheEntry cacheEntry = scssCache.get(scssFilename);
-
-            if (cacheEntry == null) {
-                try {
-                    cacheEntry = loadPersistedScssCache(scssFilename, sc);
-                } catch (Exception e) {
-                    getLogger().log(Level.WARNING,
-                            "Could not read persisted scss cache", e);
-                }
-            }
-
-            if (cacheEntry == null || !cacheEntry.isStillValid()) {
-                cacheEntry = compileScssOnTheFly(filename, scssFilename, sc);
-                persistCacheEntry(cacheEntry);
-            }
-            scssCache.put(scssFilename, cacheEntry);
-
-            if (cacheEntry == null) {
-                // compilation did not produce any result, but logged a message
-                return false;
-            }
-
-            // This is for development mode only so instruct the browser to
-            // never cache it
-            response.setHeader("Cache-Control", "no-cache");
-            final String mimetype = getService().getMimeType(filename);
-            writeResponse(response, mimetype, cacheEntry.getCss());
-
-            return true;
-        }
-    }
-
-    private ScssCacheEntry loadPersistedScssCache(String scssFilename,
-            ServletContext sc) throws IOException {
-        String realFilename = sc.getRealPath(scssFilename);
-
-        File scssCacheFile = getScssCacheFile(new File(realFilename));
-        if (!scssCacheFile.exists()) {
-            return null;
-        }
-
-        String jsonString = Files.toString(scssCacheFile, Charsets.UTF_8);
-
-        JsonObject entryJson = Json.parse(jsonString);
-
-        String cacheVersion = entryJson.getString("version");
-        if (!Version.getFullVersion().equals(cacheVersion)) {
-            // Compiled for some other Vaadin version, discard cache
-            scssCacheFile.delete();
-            return null;
-        }
-
-        return new ScssCacheEntry(entryJson);
-    }
-
-    private ScssCacheEntry compileScssOnTheFly(String filename,
-            String scssFilename, ServletContext sc) throws IOException {
-        String realFilename = sc.getRealPath(scssFilename);
-        ScssStylesheet scss = ScssStylesheet.get(realFilename);
-        if (scss == null) {
-            // Not a file in the file system (WebContent directory). Use the
-            // identifier directly (VAADIN/themes/.../styles.css) so
-            // ScssStylesheet will try using the class loader.
-            if (scssFilename.startsWith("/")) {
-                scssFilename = scssFilename.substring(1);
-            }
-
-            scss = ScssStylesheet.get(scssFilename);
-        }
-
-        if (scss == null) {
-            getLogger().log(Level.WARNING,
-                    "Scss file {0} exists but ScssStylesheet was not able to find it",
-                    scssFilename);
-            return null;
-        }
-        try {
-            getLogger().log(Level.FINE, "Compiling {0} for request to {1}",
-                    new Object[] { realFilename, filename });
-            scss.compile();
-        } catch (Exception e) {
-            getLogger().log(Level.WARNING, "Scss compilation failed", e);
-            return null;
-        }
-
-        return new ScssCacheEntry(realFilename, scss.printState(),
-                scss.getSourceUris());
     }
 
     /**
@@ -1352,36 +1070,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
     public void destroy() {
         super.destroy();
         getService().destroy();
-    }
-
-    private static void persistCacheEntry(ScssCacheEntry cacheEntry) {
-        String scssFileName = cacheEntry.getScssFileName();
-        if (scssFileName == null) {
-            if (!scssCompileWarWarningEmitted) {
-                getLogger().warning(
-                        "Could not persist scss cache because no real file was found for the compiled scss file. "
-                                + "This might happen e.g. if serving the scss file directly from a .war file.");
-                scssCompileWarWarningEmitted = true;
-            }
-            return;
-        }
-
-        File scssFile = new File(scssFileName);
-        File cacheFile = getScssCacheFile(scssFile);
-
-        String cacheEntryJsonString = cacheEntry.asJson();
-
-        try {
-            Files.write(cacheEntryJsonString, cacheFile, Charsets.UTF_8);
-        } catch (IOException e) {
-            getLogger().log(Level.WARNING,
-                    "Error persisting scss cache " + cacheFile, e);
-        }
-    }
-
-    private static File getScssCacheFile(File scssFile) {
-        return new File(scssFile.getParentFile(),
-                scssFile.getName() + ".cache");
     }
 
     /**

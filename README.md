@@ -106,9 +106,7 @@ Building a package
 =====
 The distribution files can be built in two steps.
 
-1. Unpack required gwt jars into the project
-<pre><code>ant -f gwt-files.xml unpack.gwt</code></pre>
-2. Build the project by running
+1. Build the project by running
 <pre><code>ant</code></pre>
 in the project root directory (add -Dvaadin.version=1.2.3 to use a specific version number).
 

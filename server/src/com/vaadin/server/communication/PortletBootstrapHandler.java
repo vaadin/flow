@@ -68,23 +68,6 @@ public class PortletBootstrapHandler extends BootstrapHandler {
     }
 
     @Override
-    protected void appendMainScriptTagContents(BootstrapContext context,
-            StringBuilder builder) throws IOException {
-        // fixed base theme to use - all portal pages with Vaadin
-        // applications will load this exactly once
-        String portalTheme = ((VaadinPortletRequest) context.getRequest())
-                .getPortalProperty(VaadinPortlet.PORTAL_PARAMETER_VAADIN_THEME);
-        if (portalTheme != null
-                && !portalTheme.equals(context.getThemeName())) {
-            String portalThemeUri = getThemeUri(context, portalTheme);
-            // XSS safe - originates from portal properties
-            builder.append("vaadin.loadTheme('" + portalThemeUri + "');");
-        }
-
-        super.appendMainScriptTagContents(context, builder);
-    }
-
-    @Override
     protected String getMainDivStyle(BootstrapContext context) {
         VaadinService vaadinService = context.getRequest().getService();
         return vaadinService.getDeploymentConfiguration()

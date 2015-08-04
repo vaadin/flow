@@ -30,12 +30,11 @@ import java.util.logging.Logger;
 
 import com.vaadin.server.ClientConnector.ConnectorErrorEvent;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.JavaScriptConnectorState;
 import com.vaadin.shared.communication.SharedState;
+import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ConnectorTracker;
 import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.SelectiveRenderer;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;
@@ -63,9 +62,6 @@ public class LegacyCommunicationManager implements Serializable {
      */
     private final VaadinSession session;
 
-    // TODO Refactor (#11412)
-    private String requestThemeName;
-
     // TODO Refactor (#11413)
     private Map<String, Class<?>> publishedFileContexts = new HashMap<String, Class<?>>();
 
@@ -91,42 +87,11 @@ public class LegacyCommunicationManager implements Serializable {
     public static JsonObject encodeState(ClientConnector connector,
             SharedState state) {
         UI uI = connector.getUI();
-        ConnectorTracker connectorTracker = uI.getConnectorTracker();
-        Class<? extends SharedState> stateType = connector.getStateType();
-        JsonValue diffState = connectorTracker.getDiffState(connector);
-        boolean supportsDiffState = !JavaScriptConnectorState.class
-                .isAssignableFrom(stateType);
-        if (diffState == null && supportsDiffState) {
-            // Use an empty state object as reference for full
-            // repaints
-            diffState = referenceDiffStates.get(stateType);
-            if (diffState == null) {
-                diffState = createReferenceDiffStateState(stateType);
-                referenceDiffStates.put(stateType, diffState);
-            }
-        }
-        EncodeResult encodeResult = JsonCodec.encode(state, diffState,
-                stateType, uI.getConnectorTracker());
-        if (supportsDiffState) {
-            connectorTracker.setDiffState(connector,
-                    (JsonObject) encodeResult.getEncodedValue());
-        }
+        Class<? extends SharedState> stateType = ((AbstractComponent) connector)
+                .getStateType();
+        EncodeResult encodeResult = JsonCodec.encode(state, null, stateType,
+                uI.getConnectorTracker());
         return (JsonObject) encodeResult.getDiff();
-    }
-
-    private static JsonValue createReferenceDiffStateState(
-            Class<? extends SharedState> stateType) {
-        try {
-            SharedState referenceState = stateType.newInstance();
-            EncodeResult encodeResult = JsonCodec.encode(referenceState, null,
-                    stateType, null);
-            return encodeResult.getEncodedValue();
-        } catch (Exception e) {
-            getLogger().log(Level.WARNING,
-                    "Error creating reference object for state of type {0}",
-                    stateType.getName());
-            return null;
-        }
     }
 
     /**
@@ -244,12 +209,6 @@ public class LegacyCommunicationManager implements Serializable {
         }
         HasComponents parent = child.getParent();
 
-        if (parent instanceof SelectiveRenderer) {
-            if (!((SelectiveRenderer) parent).isRendered(child)) {
-                return false;
-            }
-        }
-
         if (parent != null) {
             return isComponentVisibleToClient(parent);
         } else {
@@ -261,27 +220,6 @@ public class LegacyCommunicationManager implements Serializable {
                 return false;
             }
         }
-    }
-
-    /**
-     * @deprecated As of 7.1. See #11412.
-     */
-    @Deprecated
-    public String getTheme(UI uI) {
-        String themeName = uI.getTheme();
-        String requestThemeName = getRequestTheme();
-
-        if (requestThemeName != null) {
-            themeName = requestThemeName;
-        }
-        if (themeName == null) {
-            themeName = VaadinServlet.getDefaultTheme();
-        }
-        return themeName;
-    }
-
-    private String getRequestTheme() {
-        return requestThemeName;
     }
 
     /**

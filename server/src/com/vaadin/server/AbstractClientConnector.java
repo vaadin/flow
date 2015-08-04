@@ -15,7 +15,6 @@
  */
 package com.vaadin.server;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -26,11 +25,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import com.vaadin.event.EventRouter;
@@ -39,21 +35,13 @@ import com.vaadin.shared.communication.ClientRpc;
 import com.vaadin.shared.communication.MethodInvocation;
 import com.vaadin.shared.communication.ServerRpc;
 import com.vaadin.shared.communication.SharedState;
-import com.vaadin.shared.ui.ComponentStateUtil;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Component.Event;
+import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.LegacyComponent;
 import com.vaadin.ui.UI;
 
-import elemental.json.JsonObject;
-
 /**
- * An abstract base class for ClientConnector implementations. This class
- * provides all the basic functionality required for connectors.
- * 
- * @author Vaadin Ltd
- * @since 7.0.0
+ * TODO Integrate with AbstractComponent
  */
 public abstract class AbstractClientConnector
         implements ClientConnector, MethodEventSource {
@@ -69,7 +57,6 @@ public abstract class AbstractClientConnector
      * modified.
      */
     private SharedState sharedState;
-
     private Class<? extends SharedState> stateType;
 
     /**
@@ -79,16 +66,12 @@ public abstract class AbstractClientConnector
 
     private String connectorId;
 
-    private ArrayList<Extension> extensions = new ArrayList<Extension>();
-
     /**
      * The EventRouter used for the event model.
      */
     private EventRouter eventRouter = null;
 
     private ErrorHandler errorHandler = null;
-
-    private static final ConcurrentHashMap<Class<? extends AbstractClientConnector>, Class<? extends SharedState>> stateTypeCache = new ConcurrentHashMap<Class<? extends AbstractClientConnector>, Class<? extends SharedState>>();
 
     @Override
     public void addAttachListener(AttachListener listener) {
@@ -112,20 +95,6 @@ public abstract class AbstractClientConnector
     public void removeDetachListener(DetachListener listener) {
         removeListener(DetachEvent.DETACH_EVENT_IDENTIFIER, DetachEvent.class,
                 listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, use {@link #markAsDirty()} instead. Note that you
-     *             typically do not need to call {@link #markAsDirty()} as
-     *             {@link #getState()} will mark the connector dirty and the
-     *             framework will then check what, if anything, needs to be sent
-     *             to the client. {@link LegacyComponent}s which rely on paint
-     *             might still need to call this or {@link #markAsDirty()} .
-     */
-    @Deprecated
-    @Override
-    public void requestRepaint() {
-        markAsDirty();
     }
 
     /* Documentation copied from interface */
@@ -248,7 +217,6 @@ public abstract class AbstractClientConnector
         assert getSession() == null
                 || getSession().hasLock() : buildLockAssertMessage(
                         "getState()");
-
         if (null == sharedState) {
             sharedState = createState();
         }
@@ -260,11 +228,6 @@ public abstract class AbstractClientConnector
             }
         }
         return sharedState;
-    }
-
-    @Override
-    public JsonObject encodeState() {
-        return LegacyCommunicationManager.encodeState(this, getState(false));
     }
 
     /**
@@ -294,19 +257,13 @@ public abstract class AbstractClientConnector
         }
     }
 
-    @Override
     public Class<? extends SharedState> getStateType() {
         // Lazy load because finding type can be expensive because of the
         // exceptions flying around
         if (stateType == null) {
             // Cache because we don't need to do this once per instance
-            stateType = stateTypeCache.get(this.getClass());
-            if (stateType == null) {
-                stateType = findStateType();
-                stateTypeCache.put(this.getClass(), stateType);
-            }
+            stateType = findStateType();
         }
-
         return stateType;
     }
 
@@ -405,8 +362,6 @@ public abstract class AbstractClientConnector
         // add to queue
         pendingInvocations.add(new ClientMethodInvocation(this, interfaceName,
                 method, parameters));
-        // TODO no need to do full repaint if only RPC calls
-        requestRepaint();
     }
 
     @Override
@@ -471,15 +426,6 @@ public abstract class AbstractClientConnector
         return Logger.getLogger(AbstractClientConnector.class.getName());
     }
 
-    /**
-     * @deprecated As of 7.0, use {@link #markAsDirtyRecursive()} instead
-     */
-    @Override
-    @Deprecated
-    public void requestRepaintAll() {
-        markAsDirtyRecursive();
-    }
-
     @Override
     public void markAsDirtyRecursive() {
         markAsDirty();
@@ -500,93 +446,14 @@ public abstract class AbstractClientConnector
     public static Iterable<? extends ClientConnector> getAllChildrenIterable(
             final ClientConnector connector) {
 
-        Collection<Extension> extensions = connector.getExtensions();
         boolean hasComponents = connector instanceof HasComponents;
-        boolean hasExtensions = extensions.size() > 0;
-        if (!hasComponents && !hasExtensions) {
+        if (!hasComponents) {
             // If has neither component nor extensions, return immutable empty
             // list as iterable.
             return Collections.emptyList();
         }
-        if (hasComponents && !hasExtensions) {
-            // only components
-            return (HasComponents) connector;
-        }
-        if (!hasComponents && hasExtensions) {
-            // only extensions
-            return extensions;
-        }
-
-        // combine the iterators of extensions and components to a new iterable.
-        final Iterator<Component> componentsIterator = ((HasComponents) connector)
-                .iterator();
-        final Iterator<Extension> extensionsIterator = extensions.iterator();
-        Iterable<? extends ClientConnector> combinedIterable = new Iterable<ClientConnector>() {
-
-            @Override
-            public Iterator<ClientConnector> iterator() {
-                return new Iterator<ClientConnector>() {
-
-                    @Override
-                    public boolean hasNext() {
-                        return componentsIterator.hasNext()
-                                || extensionsIterator.hasNext();
-                    }
-
-                    @Override
-                    public ClientConnector next() {
-                        if (componentsIterator.hasNext()) {
-                            return componentsIterator.next();
-                        }
-                        if (extensionsIterator.hasNext()) {
-                            return extensionsIterator.next();
-                        }
-                        throw new NoSuchElementException();
-                    }
-
-                    @Override
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-
-                };
-            }
-        };
-        return combinedIterable;
-    }
-
-    @Override
-    public Collection<Extension> getExtensions() {
-        return Collections.unmodifiableCollection(extensions);
-    }
-
-    /**
-     * Add an extension to this connector. This method is protected to allow
-     * extensions to select which targets they can extend.
-     * 
-     * @param extension
-     *            the extension to add
-     */
-    protected void addExtension(Extension extension) {
-        ClientConnector previousParent = extension.getParent();
-        if (equals(previousParent)) {
-            // Nothing to do, already attached
-            return;
-        } else if (previousParent != null) {
-            throw new IllegalStateException(
-                    "Moving an extension from one parent to another is not supported");
-        }
-
-        extensions.add(extension);
-        extension.setParent(this);
-        markAsDirty();
-    }
-
-    @Override
-    public void removeExtension(Extension extension) {
-        extension.setParent(null);
-        extensions.remove(extension);
-        markAsDirty();
+        // only components
+        return (HasComponents) connector;
     }
 
     /*
@@ -609,7 +476,7 @@ public abstract class AbstractClientConnector
             connector.attach();
         }
 
-        fireEvent(new AttachEvent(this));
+        fireEvent(new AttachEvent((Component) this));
     }
 
     /**
@@ -626,7 +493,7 @@ public abstract class AbstractClientConnector
             connector.detach();
         }
 
-        fireEvent(new DetachEvent(this));
+        fireEvent(new DetachEvent((Component) this));
 
         getUI().getConnectorTracker().unregisterConnector(this);
     }
@@ -644,68 +511,6 @@ public abstract class AbstractClientConnector
     @Override
     public void beforeClientResponse(boolean initial) {
         // Do nothing by default
-    }
-
-    @Override
-    public boolean handleConnectorRequest(VaadinRequest request,
-            VaadinResponse response, String path) throws IOException {
-        DownloadStream stream = null;
-        String[] parts = path.split("/", 2);
-        String key = parts[0];
-
-        VaadinSession session = getSession();
-        session.lock();
-        try {
-            ConnectorResource resource = (ConnectorResource) getResource(key);
-            if (resource == null) {
-                return false;
-            }
-            stream = resource.getStream();
-        } finally {
-            session.unlock();
-        }
-        stream.writeResponse(request, response);
-        return true;
-    }
-
-    /**
-     * Gets a resource defined using {@link #setResource(String, Resource)} with
-     * the corresponding key.
-     * 
-     * @param key
-     *            the string identifier of the resource
-     * @return a resource, or <code>null</code> if there's no resource
-     *         associated with the given key
-     * 
-     * @see #setResource(String, Resource)
-     */
-    protected Resource getResource(String key) {
-        return ResourceReference
-                .getResource(getState(false).resources.get(key));
-    }
-
-    /**
-     * Registers a resource with this connector using the given key. This will
-     * make the URL for retrieving the resource available to the client-side
-     * connector using
-     * {@link com.vaadin.terminal.gwt.client.ui.AbstractConnector#getResourceUrl(String)}
-     * with the same key.
-     * 
-     * @param key
-     *            the string key to associate the resource with
-     * @param resource
-     *            the resource to set, or <code>null</code> to clear a previous
-     *            association.
-     */
-    protected void setResource(String key, Resource resource) {
-        ResourceReference resourceReference = ResourceReference.create(resource,
-                this, key);
-
-        if (resourceReference == null) {
-            getState().resources.remove(key);
-        } else {
-            getState().resources.put(key, resourceReference);
-        }
     }
 
     /* Listener code starts. Should be refactored. */
@@ -747,15 +552,11 @@ public abstract class AbstractClientConnector
         }
         boolean needRepaint = !eventRouter.hasListeners(eventType);
         eventRouter.addListener(eventType, target, method);
-
-        if (needRepaint) {
-            ComponentStateUtil.addRegisteredEventListener(getState(),
-                    eventIdentifier);
-        }
     }
 
     /**
-     * Checks if the given {@link Event} type is listened for this component.
+     * Checks if the given {@link ComponentEvent} type is listened for this
+     * component.
      * 
      * @param eventType
      *            the event type to be checked
@@ -797,10 +598,6 @@ public abstract class AbstractClientConnector
             Object target) {
         if (eventRouter != null) {
             eventRouter.removeListener(eventType, target);
-            if (!eventRouter.hasListeners(eventType)) {
-                ComponentStateUtil.removeRegisteredEventListener(getState(),
-                        eventIdentifier);
-            }
         }
     }
 
@@ -857,7 +654,7 @@ public abstract class AbstractClientConnector
      * <p>
      * Note: Using this method is discouraged because it cannot be checked
      * during compilation. Use {@link #addListener(Class, Object, Method)} or
-     * {@link #addListener(com.vaadin.ui.Component.Listener)} instead.
+     * {@link #addListener(com.vaadin.ui.ComponentEventListener)} instead.
      * </p>
      * 
      * @param eventType

@@ -22,24 +22,12 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import com.vaadin.server.ClientConnector;
 import com.vaadin.server.ClientMethodInvocation;
-import com.vaadin.server.JavaScriptCallbackHelper;
-import com.vaadin.server.JsonCodec;
-import com.vaadin.ui.JavaScript.JavaScriptCallbackRpc;
 import com.vaadin.util.ReflectTools;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonValue;
-import elemental.json.impl.JsonUtil;
 import junit.framework.TestCase;
 
 public class ClientMethodSerializationTest extends TestCase {
-
-    private static final Method JAVASCRIPT_CALLBACK_METHOD = ReflectTools
-            .findMethod(JavaScriptCallbackRpc.class, "call", String.class,
-                    JsonArray.class);
 
     private static final Method BASIC_PARAMS_CALL_METHOD = ReflectTools
             .findMethod(ClientMethodSerializationTest.class,
@@ -53,28 +41,6 @@ public class ClientMethodSerializationTest extends TestCase {
     }
 
     public void noParamsMethodForTesting() {
-    }
-
-    /**
-     * Tests the {@link ClientMethodInvocation} serialization when using
-     * {@link JavaScriptCallbackHelper#invokeCallback(String, Object...)}.
-     * #12532
-     */
-    public void testClientMethodSerialization_WithJSONArray_ContentStaysSame()
-            throws Exception {
-        JsonArray originalArray = Json.createArray();
-        originalArray.set(0, "callbackParameter1");
-        originalArray.set(1, "callBackParameter2");
-        originalArray.set(2, "12345");
-        ClientMethodInvocation original = new ClientMethodInvocation(null,
-                "interfaceName", JAVASCRIPT_CALLBACK_METHOD,
-                new Object[] { "callBackMethodName", originalArray });
-
-        ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(
-                original);
-        JsonArray copyArray = (JsonArray) copy.getParameters()[1];
-        assertEquals(JsonUtil.stringify(originalArray),
-                JsonUtil.stringify(copyArray));
     }
 
     public void testClientMethodSerialization_WithBasicParams_NoChanges()
@@ -114,35 +80,6 @@ public class ClientMethodSerializationTest extends TestCase {
                     + e.getMessage());
         }
         return output;
-    }
-
-    public void testSerializeTwice() {
-        String name = "javascriptFunctionName";
-        String[] arguments = { "1", "2", "3" };
-        JsonArray args = (JsonArray) JsonCodec
-                .encode(arguments, null, Object[].class, null)
-                .getEncodedValue();
-        ClientConnector connector = null;
-
-        ClientMethodInvocation original = new ClientMethodInvocation(connector,
-                "interfaceName", JAVASCRIPT_CALLBACK_METHOD,
-                new Object[] { name, args });
-
-        ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(
-                original);
-        assertEquals(copy.getMethodName(), original.getMethodName());
-        assertEquals(copy.getParameters().length,
-                original.getParameters().length);
-        for (int i = 0; i < copy.getParameters().length; i++) {
-            Object originalParameter = original.getParameters()[i];
-            Object copyParameter = copy.getParameters()[i];
-            if (originalParameter instanceof JsonValue) {
-                assertEquals(((JsonValue) originalParameter).toJson(),
-                        ((JsonValue) copyParameter).toJson());
-            } else {
-                assertEquals(originalParameter, copyParameter);
-            }
-        }
     }
 
 }

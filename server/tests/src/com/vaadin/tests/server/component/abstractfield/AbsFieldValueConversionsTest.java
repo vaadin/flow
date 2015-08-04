@@ -16,8 +16,7 @@ import com.vaadin.tests.data.bean.Country;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
-import com.vaadin.ui.CheckBox;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.TestField;
 
 import junit.framework.TestCase;
 
@@ -34,7 +33,7 @@ public class AbsFieldValueConversionsTest extends TestCase {
     private static final char FORMATTED_SPACE = 160;
 
     public void testWithoutConversion() {
-        TextField tf = new TextField();
+        TestField tf = new TestField();
         tf.setPropertyDataSource(
                 new MethodProperty<String>(paulaBean, "firstName"));
         assertEquals("Paula", tf.getValue());
@@ -47,7 +46,7 @@ public class AbsFieldValueConversionsTest extends TestCase {
 
     public void testNonmodifiedBufferedFieldConversion() {
         VaadinSession.setCurrent(new AlwaysLockedVaadinSession(null));
-        TextField tf = new TextField("salary");
+        TestField tf = new TestField("salary");
         tf.setBuffered(true);
         tf.setLocale(new Locale("en", "US"));
         ObjectProperty<Integer> ds = new ObjectProperty<Integer>(123456789);
@@ -63,7 +62,7 @@ public class AbsFieldValueConversionsTest extends TestCase {
 
     public void testModifiedBufferedFieldConversion() {
         VaadinSession.setCurrent(new AlwaysLockedVaadinSession(null));
-        TextField tf = new TextField("salary");
+        TestField tf = new TestField("salary");
         tf.setBuffered(true);
         tf.setLocale(new Locale("en", "US"));
         ObjectProperty<Integer> ds = new ObjectProperty<Integer>(123456789);
@@ -81,7 +80,7 @@ public class AbsFieldValueConversionsTest extends TestCase {
     }
 
     public void testStringIdentityConversion() {
-        TextField tf = new TextField();
+        TestField tf = new TestField();
         tf.setConverter(new Converter<String, String>() {
 
             @Override
@@ -117,7 +116,7 @@ public class AbsFieldValueConversionsTest extends TestCase {
     }
 
     public void testIntegerStringConversion() {
-        TextField tf = new TextField();
+        TestField tf = new TestField();
 
         tf.setConverter(new StringToIntegerConverter());
         tf.setPropertyDataSource(new MethodProperty<Integer>(paulaBean, "age"));
@@ -134,7 +133,7 @@ public class AbsFieldValueConversionsTest extends TestCase {
     public void testChangeReadOnlyFieldLocale() {
         VaadinSession.setCurrent(new AlwaysLockedVaadinSession(null));
 
-        TextField tf = new TextField("salary");
+        TestField tf = new TestField("salary");
         tf.setLocale(new Locale("en", "US"));
         ObjectProperty<Integer> ds = new ObjectProperty<Integer>(123456789);
         ds.setReadOnly(true);
@@ -145,64 +144,6 @@ public class AbsFieldValueConversionsTest extends TestCase {
         assertEquals((Integer) 123456789, ds.getValue());
         assertEquals("123" + FORMATTED_SPACE + "456" + FORMATTED_SPACE + "789",
                 tf.getValue());
-    }
-
-    public void testBooleanNullConversion() {
-        CheckBox cb = new CheckBox();
-        cb.setConverter(new Converter<Boolean, Boolean>() {
-
-            @Override
-            public Boolean convertToModel(Boolean value,
-                    Class<? extends Boolean> targetType, Locale locale) {
-                // value from a CheckBox should never be null as long as it is
-                // not set to null (handled by conversion below).
-                assertNotNull(value);
-                return value;
-            }
-
-            @Override
-            public Boolean convertToPresentation(Boolean value,
-                    Class<? extends Boolean> targetType, Locale locale) {
-                // Datamodel -> field
-                if (value == null) {
-                    return false;
-                }
-
-                return value;
-            }
-
-            @Override
-            public Class<Boolean> getModelType() {
-                return Boolean.class;
-            }
-
-            @Override
-            public Class<Boolean> getPresentationType() {
-                return Boolean.class;
-            }
-
-        });
-        MethodProperty<Boolean> property = new MethodProperty<Boolean>(
-                paulaBean, "deceased");
-        cb.setPropertyDataSource(property);
-        assertEquals(Boolean.FALSE, property.getValue());
-        assertEquals(Boolean.FALSE, cb.getValue());
-        Boolean newDmValue = cb.getConverter().convertToPresentation(
-                cb.getValue(), Boolean.class, new Locale("fi", "FI"));
-        assertEquals(Boolean.FALSE, newDmValue);
-
-        // FIXME: Should be able to set to false here to cause datamodel to be
-        // set to false but the change will not be propagated to the Property
-        // (field value is already false)
-
-        cb.setValue(true);
-        assertEquals(Boolean.TRUE, cb.getValue());
-        assertEquals(Boolean.TRUE, property.getValue());
-
-        cb.setValue(false);
-        assertEquals(Boolean.FALSE, cb.getValue());
-        assertEquals(Boolean.FALSE, property.getValue());
-
     }
 
     // Now specific to Integer because StringToNumberConverter has been removed
@@ -222,7 +163,7 @@ public class AbsFieldValueConversionsTest extends TestCase {
     public void testNumberDoubleConverterChange() {
         final VaadinSession a = new AlwaysLockedVaadinSession(null);
         VaadinSession.setCurrent(a);
-        TextField tf = new TextField() {
+        TestField tf = new TestField() {
             @Override
             public VaadinSession getSession() {
                 return a;
@@ -249,7 +190,7 @@ public class AbsFieldValueConversionsTest extends TestCase {
 
     @Test
     public void testNullConverter() {
-        TextField tf = new TextField("foo");
+        TestField tf = new TestField("foo");
         tf.setConverter(new StringToIntegerConverter());
         tf.setPropertyDataSource(new ObjectProperty<Integer>(12));
         tf.setConverter((Converter) null);

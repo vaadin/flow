@@ -16,45 +16,18 @@
 
 package com.vaadin.ui;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
-import org.jsoup.nodes.Attribute;
-import org.jsoup.nodes.Attributes;
-import org.jsoup.nodes.Element;
-
-import com.vaadin.event.ActionManager;
-import com.vaadin.event.ConnectorActionManager;
-import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.AbstractClientConnector;
-import com.vaadin.server.AbstractErrorMessage.ContentMode;
-import com.vaadin.server.ComponentSizeValidator;
-import com.vaadin.server.ErrorMessage;
-import com.vaadin.server.ErrorMessage.ErrorLevel;
-import com.vaadin.server.Extension;
-import com.vaadin.server.Resource;
-import com.vaadin.server.Responsive;
 import com.vaadin.server.SizeWithUnit;
-import com.vaadin.server.Sizeable;
-import com.vaadin.server.UserError;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.AbstractComponentState;
-import com.vaadin.shared.ComponentConstants;
 import com.vaadin.shared.ui.ComponentStateUtil;
-import com.vaadin.shared.util.SharedUtil;
-import com.vaadin.ui.Field.ValueChangeEvent;
-import com.vaadin.ui.declarative.DesignAttributeHandler;
-import com.vaadin.ui.declarative.DesignContext;
-import com.vaadin.util.ReflectTools;
 
 /**
  * An abstract class that defines default implementation for the
@@ -78,11 +51,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
     private Object applicationData;
 
     /**
-     * The internal error message of the component.
-     */
-    private ErrorMessage componentError = null;
-
-    /**
      * Locale of this component.
      */
     private Locale locale;
@@ -99,17 +67,13 @@ public abstract class AbstractComponent extends AbstractClientConnector
     private Unit widthUnit = Unit.PIXELS;
     private Unit heightUnit = Unit.PIXELS;
 
-    /**
-     * Keeps track of the Actions added to this component; the actual
-     * handling/notifying is delegated, usually to the containing window.
-     */
-    private ConnectorActionManager actionManager;
-
     private boolean visible = true;
 
     private HasComponents parent;
 
     private Boolean explicitImmediateValue;
+
+    private String id;
 
     protected static final String DESIGN_ATTR_PLAIN_TEXT = "plain-text";
 
@@ -131,7 +95,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     @Override
     public void setId(String id) {
-        getState().id = id;
+        this.id = id;
     }
 
     /*
@@ -141,23 +105,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     @Override
     public String getId() {
-        return getState(false).id;
-    }
-
-    /**
-     * @deprecated As of 7.0. Use {@link #setId(String)}
-     */
-    @Deprecated
-    public void setDebugId(String id) {
-        setId(id);
-    }
-
-    /**
-     * @deprecated As of 7.0. Use {@link #getId()}
-     */
-    @Deprecated
-    public String getDebugId() {
-        return getId();
+        return id;
     }
 
     /*
@@ -198,16 +146,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
         while (tokenizer.hasMoreTokens()) {
             styles.add(tokenizer.nextToken());
         }
-    }
-
-    @Override
-    public void setPrimaryStyleName(String style) {
-        getState().primaryStyleName = style;
-    }
-
-    @Override
-    public String getPrimaryStyleName() {
-        return getState(false).primaryStyleName;
     }
 
     @Override
@@ -272,57 +210,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
     }
 
     /*
-     * Get's the component's caption. Don't add a JavaDoc comment here, we use
-     * the default documentation from implemented interface.
-     */
-    @Override
-    public String getCaption() {
-        return getState(false).caption;
-    }
-
-    /**
-     * Sets the component's caption <code>String</code>. Caption is the visible
-     * name of the component. This method will trigger a
-     * {@link RepaintRequestEvent}.
-     * 
-     * @param caption
-     *            the new caption <code>String</code> for the component.
-     */
-    @Override
-    public void setCaption(String caption) {
-        getState().caption = caption;
-    }
-
-    /**
-     * Sets whether the caption is rendered as HTML.
-     * <p>
-     * If set to true, the captions are rendered in the browser as HTML and the
-     * developer is responsible for ensuring no harmful HTML is used. If set to
-     * false, the caption is rendered in the browser as plain text.
-     * <p>
-     * The default is false, i.e. to render that caption as plain text.
-     * 
-     * @param captionAsHtml
-     *            true if the captions are rendered as HTML, false if rendered
-     *            as plain text
-     */
-    public void setCaptionAsHtml(boolean captionAsHtml) {
-        getState().captionAsHtml = captionAsHtml;
-    }
-
-    /**
-     * Checks whether captions are rendered as HTML
-     * <p>
-     * The default is false, i.e. to render that caption as plain text.
-     * 
-     * @return true if the captions are rendered as HTML, false if rendered as
-     *         plain text
-     */
-    public boolean isCaptionAsHtml() {
-        return getState(false).captionAsHtml;
-    }
-
-    /*
      * Don't add a JavaDoc comment here, we use the default documentation from
      * implemented interface.
      */
@@ -363,33 +250,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     public void setLocale(Locale locale) {
         this.locale = locale;
-
-        if (locale != null && isAttached()) {
-            getUI().getLocaleService().addLocale(locale);
-        }
-
         markAsDirty();
-    }
-
-    /*
-     * Gets the component's icon resource. Don't add a JavaDoc comment here, we
-     * use the default documentation from implemented interface.
-     */
-    @Override
-    public Resource getIcon() {
-        return getResource(ComponentConstants.ICON_RESOURCE);
-    }
-
-    /**
-     * Sets the component's icon. This method will trigger a
-     * {@link RepaintRequestEvent}.
-     * 
-     * @param icon
-     *            the icon to be shown with the component's caption.
-     */
-    @Override
-    public void setIcon(Resource icon) {
-        setResource(ComponentConstants.ICON_RESOURCE, icon);
     }
 
     /*
@@ -425,58 +286,9 @@ public abstract class AbstractComponent extends AbstractClientConnector
             return false;
         } else if (!super.isConnectorEnabled()) {
             return false;
-        } else if ((getParent() instanceof SelectiveRenderer)
-                && !((SelectiveRenderer) getParent()).isRendered(this)) {
-            return false;
         } else {
             return true;
         }
-    }
-
-    /**
-     * Returns the explicitly set immediate value.
-     * 
-     * @return the explicitly set immediate value or null if
-     *         {@link #setImmediate(boolean)} has not been explicitly invoked
-     */
-    protected Boolean getExplicitImmediateValue() {
-        return explicitImmediateValue;
-    }
-
-    /**
-     * Returns the immediate mode of the component.
-     * <p>
-     * Certain operations such as adding a value change listener will set the
-     * component into immediate mode if {@link #setImmediate(boolean)} has not
-     * been explicitly called with false.
-     * 
-     * @return true if the component is in immediate mode (explicitly or
-     *         implicitly set), false if the component if not in immediate mode
-     */
-    public boolean isImmediate() {
-        if (explicitImmediateValue != null) {
-            return explicitImmediateValue;
-        } else if (hasListeners(ValueChangeEvent.class)) {
-            /*
-             * Automatic immediate for fields that developers are interested
-             * about.
-             */
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Sets the component's immediate mode to the specified status.
-     * 
-     * @param immediate
-     *            the boolean value specifying if the component should be in the
-     *            immediate mode after the call.
-     */
-    public void setImmediate(boolean immediate) {
-        explicitImmediateValue = immediate;
-        getState().immediate = immediate;
     }
 
     /*
@@ -514,32 +326,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
             // visibility of a child component changes.
             getParent().markAsDirty();
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.Component#getDescription()
-     */
-    @Override
-    public String getDescription() {
-        return getState(false).description;
-    }
-
-    /**
-     * Sets the component's description. See {@link #getDescription()} for more
-     * information on what the description is. This method will trigger a
-     * {@link RepaintRequestEvent}.
-     * 
-     * The description is displayed as HTML in tooltips or directly in certain
-     * components so care should be taken to avoid creating the possibility for
-     * HTML injection and possibly XSS vulnerabilities.
-     * 
-     * @param description
-     *            the new description string for the component.
-     */
-    public void setDescription(String description) {
-        getState().description = description;
     }
 
     /*
@@ -602,63 +388,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
         return null;
     }
 
-    /**
-     * Gets the error message for this component.
-     * 
-     * @return ErrorMessage containing the description of the error state of the
-     *         component or null, if the component contains no errors. Extending
-     *         classes should override this method if they support other error
-     *         message types such as validation errors or buffering errors. The
-     *         returned error message contains information about all the errors.
-     */
-    public ErrorMessage getErrorMessage() {
-        return componentError;
-    }
-
-    /**
-     * Gets the component's error message.
-     * 
-     * @link Terminal.ErrorMessage#ErrorMessage(String, int)
-     * 
-     * @return the component's error message.
-     */
-    public ErrorMessage getComponentError() {
-        return componentError;
-    }
-
-    /**
-     * Sets the component's error message. The message may contain certain XML
-     * tags, for more information see
-     * 
-     * @link Component.ErrorMessage#ErrorMessage(String, int)
-     * 
-     * @param componentError
-     *            the new <code>ErrorMessage</code> of the component.
-     */
-    public void setComponentError(ErrorMessage componentError) {
-        this.componentError = componentError;
-        fireComponentErrorEvent();
-        markAsDirty();
-    }
-
-    /*
-     * Tests if the component is in read-only mode. Don't add a JavaDoc comment
-     * here, we use the default documentation from implemented interface.
-     */
-    @Override
-    public boolean isReadOnly() {
-        return getState(false).readOnly;
-    }
-
-    /*
-     * Sets the component's read-only mode. Don't add a JavaDoc comment here, we
-     * use the default documentation from implemented interface.
-     */
-    @Override
-    public void setReadOnly(boolean readOnly) {
-        getState().readOnly = readOnly;
-    }
-
     /*
      * Notify the component that it's attached to a window. Don't add a JavaDoc
      * comment here, we use the default documentation from implemented
@@ -669,25 +398,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
         super.attach();
         if (delayedFocus) {
             focus();
-        }
-        setActionManagerViewer();
-        if (locale != null) {
-            getUI().getLocaleService().addLocale(locale);
-        }
-
-    }
-
-    /*
-     * Detach the component from application. Don't add a JavaDoc comment here,
-     * we use the default documentation from implemented interface.
-     */
-    @Override
-    public void detach() {
-        super.detach();
-        if (actionManager != null) {
-            // Remove any existing viewer. UI cast is just to make the
-            // compiler happy
-            actionManager.setViewer((UI) null);
         }
     }
 
@@ -704,24 +414,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
                 delayedFocus = true;
             }
         }
-    }
-
-    /**
-     * Build CSS compatible string representation of height.
-     * 
-     * @return CSS height
-     */
-    private String getCSSHeight() {
-        return getHeight() + getHeightUnits().getSymbol();
-    }
-
-    /**
-     * Build CSS compatible string representation of width.
-     * 
-     * @return CSS width
-     */
-    private String getCSSWidth() {
-        return getWidth() + getWidthUnits().getSymbol();
     }
 
     /**
@@ -748,75 +440,9 @@ public abstract class AbstractComponent extends AbstractClientConnector
     @Override
     public void beforeClientResponse(boolean initial) {
         super.beforeClientResponse(initial);
-        // TODO This logic should be on the client side and the state should
-        // simply be a data object with "width" and "height".
-        if (getHeight() >= 0 && (getHeightUnits() != Unit.PERCENTAGE
-                || ComponentSizeValidator.parentCanDefineHeight(this))) {
-            getState().height = "" + getCSSHeight();
-        } else {
-            getState().height = "";
-        }
-
-        if (getWidth() >= 0 && (getWidthUnits() != Unit.PERCENTAGE
-                || ComponentSizeValidator.parentCanDefineWidth(this))) {
-            getState().width = "" + getCSSWidth();
-        } else {
-            getState().width = "";
-        }
-
-        ErrorMessage error = getErrorMessage();
-        if (null != error) {
-            getState().errorMessage = error.getFormattedHtmlMessage();
-        } else {
-            getState().errorMessage = null;
-        }
-
-        getState().immediate = isImmediate();
     }
-
-    /* General event framework */
-
-    private static final Method COMPONENT_EVENT_METHOD = ReflectTools
-            .findMethod(Component.Listener.class, "componentEvent",
-                    Component.Event.class);
 
     /* Component event framework */
-
-    /*
-     * Registers a new listener to listen events generated by this component.
-     * Don't add a JavaDoc comment here, we use the default documentation from
-     * implemented interface.
-     */
-    @Override
-    public void addListener(Component.Listener listener) {
-        addListener(Component.Event.class, listener, COMPONENT_EVENT_METHOD);
-    }
-
-    /*
-     * Removes a previously registered listener from this component. Don't add a
-     * JavaDoc comment here, we use the default documentation from implemented
-     * interface.
-     */
-    @Override
-    public void removeListener(Component.Listener listener) {
-        removeListener(Component.Event.class, listener, COMPONENT_EVENT_METHOD);
-    }
-
-    /**
-     * Emits the component event. It is transmitted to all registered listeners
-     * interested in such events.
-     */
-    protected void fireComponentEvent() {
-        fireEvent(new Component.Event(this));
-    }
-
-    /**
-     * Emits the component error event. It is transmitted to all registered
-     * listeners interested in such events.
-     */
-    protected void fireComponentErrorEvent() {
-        fireEvent(new Component.ErrorEvent(getComponentError(), this));
-    }
 
     /**
      * Sets the data object, that can be used for any application specific data.
@@ -986,61 +612,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.Component#readDesign(org.jsoup.nodes.Element,
-     * com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void readDesign(Element design, DesignContext designContext) {
-        Attributes attr = design.attributes();
-        // handle default attributes
-        for (String attribute : getDefaultAttributes()) {
-            if (design.hasAttr(attribute)) {
-                DesignAttributeHandler.assignValue(this, attribute,
-                        design.attr(attribute));
-            }
-
-        }
-        // handle immediate
-        if (attr.hasKey("immediate")) {
-            setImmediate(DesignAttributeHandler.getFormatter()
-                    .parse(attr.get("immediate"), Boolean.class));
-        }
-
-        // handle locale
-        if (attr.hasKey("locale")) {
-            setLocale(getLocaleFromString(attr.get("locale")));
-        }
-        // handle width and height
-        readSize(attr);
-        // handle component error
-        if (attr.hasKey("error")) {
-            UserError error = new UserError(attr.get("error"), ContentMode.HTML,
-                    ErrorLevel.ERROR);
-            setComponentError(error);
-        }
-        // Tab index when applicable
-        if (design.hasAttr("tabindex") && this instanceof Focusable) {
-            ((Focusable) this).setTabIndex(DesignAttributeHandler.readAttribute(
-                    "tabindex", design.attributes(), Integer.class));
-        }
-
-        // check for unsupported attributes
-        Set<String> supported = new HashSet<String>();
-        supported.addAll(getDefaultAttributes());
-        supported.addAll(getCustomAttributes());
-        for (Attribute a : attr) {
-            if (!a.getKey().startsWith(":")
-                    && !supported.contains(a.getKey())) {
-                getLogger()
-                        .info("Unsupported attribute found when reading from design : "
-                                + a.getKey());
-            }
-        }
-    }
-
     /**
      * Constructs a Locale corresponding to the given string. The string should
      * consist of one, two or three parts with '_' between the different parts
@@ -1067,305 +638,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
             return new Locale(parts[0], parts[1]);
         default:
             return new Locale(parts[0], parts[1], parts[2]);
-        }
-    }
-
-    /**
-     * Toggles responsiveness of this component.
-     * 
-     * @since 7.5.0
-     * @param responsive
-     *            boolean enables responsiveness, false disables
-     */
-    public void setResponsive(boolean responsive) {
-        if (responsive) {
-            // make responsive if necessary
-            if (!isResponsive()) {
-                Responsive.makeResponsive(this);
-            }
-        } else {
-            // remove responsive extensions
-            List<Extension> extensions = new ArrayList<Extension>(
-                    getExtensions());
-            for (Extension e : extensions) {
-                if (e instanceof Responsive) {
-                    removeExtension(e);
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns true if the component is responsive
-     * 
-     * @since 7.5.0
-     * @return true if the component is responsive
-     */
-    public boolean isResponsive() {
-        for (Extension e : getExtensions()) {
-            if (e instanceof Responsive) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Reads the size of this component from the given design attributes. If the
-     * attributes do not contain relevant size information, defaults is
-     * consulted.
-     * 
-     * @param attributes
-     *            the design attributes
-     * @param defaultInstance
-     *            instance of the class that has default sizing.
-     */
-    private void readSize(Attributes attributes) {
-        // read width
-        if (attributes.hasKey("width-auto") || attributes.hasKey("size-auto")) {
-            this.setWidth(null);
-        } else if (attributes.hasKey("width-full")
-                || attributes.hasKey("size-full")) {
-            this.setWidth("100%");
-        } else if (attributes.hasKey("width")) {
-            this.setWidth(attributes.get("width"));
-        }
-
-        // read height
-        if (attributes.hasKey("height-auto")
-                || attributes.hasKey("size-auto")) {
-            this.setHeight(null);
-        } else if (attributes.hasKey("height-full")
-                || attributes.hasKey("size-full")) {
-            this.setHeight("100%");
-        } else if (attributes.hasKey("height")) {
-            this.setHeight(attributes.get("height"));
-        }
-    }
-
-    /**
-     * Writes the size related attributes for the component if they differ from
-     * the defaults
-     * 
-     * @param component
-     *            the component
-     * @param attributes
-     *            the attribute map where the attribute are written
-     * @param defaultInstance
-     *            the default instance of the class for fetching the default
-     *            values
-     */
-    private void writeSize(Attributes attributes, Component defaultInstance) {
-        if (hasEqualSize(defaultInstance)) {
-            // we have default values -> ignore
-            return;
-        }
-        boolean widthFull = getWidth() == 100f
-                && getWidthUnits().equals(Sizeable.Unit.PERCENTAGE);
-        boolean heightFull = getHeight() == 100f
-                && getHeightUnits().equals(Sizeable.Unit.PERCENTAGE);
-        boolean widthAuto = getWidth() == -1;
-        boolean heightAuto = getHeight() == -1;
-
-        // first try the full shorthands
-        if (widthFull && heightFull) {
-            attributes.put("size-full", true);
-        } else if (widthAuto && heightAuto) {
-            attributes.put("size-auto", true);
-        } else {
-            // handle width
-            if (!hasEqualWidth(defaultInstance)) {
-                if (widthFull) {
-                    attributes.put("width-full", true);
-                } else if (widthAuto) {
-                    attributes.put("width-auto", true);
-                } else {
-                    String widthString = DesignAttributeHandler.getFormatter()
-                            .format(getWidth()) + getWidthUnits().getSymbol();
-                    attributes.put("width", widthString);
-
-                }
-            }
-            if (!hasEqualHeight(defaultInstance)) {
-                // handle height
-                if (heightFull) {
-                    attributes.put("height-full", true);
-                } else if (heightAuto) {
-                    attributes.put("height-auto", true);
-                } else {
-                    String heightString = DesignAttributeHandler.getFormatter()
-                            .format(getHeight()) + getHeightUnits().getSymbol();
-                    attributes.put("height", heightString);
-                }
-            }
-        }
-    }
-
-    /**
-     * Test if the given component has equal width with this instance
-     * 
-     * @param component
-     *            the component for the width comparison
-     * @return true if the widths are equal
-     */
-    private boolean hasEqualWidth(Component component) {
-        return getWidth() == component.getWidth()
-                && getWidthUnits().equals(component.getWidthUnits());
-    }
-
-    /**
-     * Test if the given component has equal height with this instance
-     * 
-     * @param component
-     *            the component for the height comparison
-     * @return true if the heights are equal
-     */
-    private boolean hasEqualHeight(Component component) {
-        return getHeight() == component.getHeight()
-                && getHeightUnits().equals(component.getHeightUnits());
-    }
-
-    /**
-     * Test if the given components has equal size with this instance
-     * 
-     * @param component
-     *            the component for the size comparison
-     * @return true if the sizes are equal
-     */
-    private boolean hasEqualSize(Component component) {
-        return hasEqualWidth(component) && hasEqualHeight(component);
-    }
-
-    /**
-     * Returns a collection of attributes that do not require custom handling
-     * when reading or writing design. These are typically attributes of some
-     * primitive type. The default implementation searches setters with
-     * primitive values
-     * 
-     * @return a collection of attributes that can be read and written using the
-     *         default approach.
-     */
-    private Collection<String> getDefaultAttributes() {
-        Collection<String> attributes = DesignAttributeHandler
-                .getSupportedAttributes(this.getClass());
-        attributes.removeAll(getCustomAttributes());
-        return attributes;
-    }
-
-    /**
-     * Returns a collection of attributes that should not be handled by the
-     * basic implementation of the {@link readDesign} and {@link writeDesign}
-     * methods. Typically these are handled in a custom way in the overridden
-     * versions of the above methods
-     * 
-     * @since 7.4
-     * 
-     * @return the collection of attributes that are not handled by the basic
-     *         implementation
-     */
-    protected Collection<String> getCustomAttributes() {
-        ArrayList<String> l = new ArrayList<String>(
-                Arrays.asList(customAttributes));
-        if (this instanceof Focusable) {
-            l.add("tab-index");
-            l.add("tabindex");
-        }
-        return l;
-    }
-
-    private static final String[] customAttributes = new String[] { "width",
-            "height", "debug-id", "error", "width-auto", "height-auto",
-            "width-full", "height-full", "size-auto", "size-full", "immediate",
-            "locale", "read-only", "_id" };
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.Component#writeDesign(org.jsoup.nodes.Element,
-     * com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void writeDesign(Element design, DesignContext designContext) {
-        AbstractComponent def = designContext.getDefaultInstance(this);
-        Attributes attr = design.attributes();
-        // handle default attributes
-        for (String attribute : getDefaultAttributes()) {
-            DesignAttributeHandler.writeAttribute(this, attribute, attr, def);
-        }
-        // handle immediate
-        if (explicitImmediateValue != null) {
-            DesignAttributeHandler.writeAttribute("immediate", attr,
-                    explicitImmediateValue, def.isImmediate(), Boolean.class);
-        }
-        // handle locale
-        if (getLocale() != null && (getParent() == null
-                || !getLocale().equals(getParent().getLocale()))) {
-            design.attr("locale", getLocale().toString());
-        }
-        // handle size
-        writeSize(attr, def);
-        // handle component error
-        String errorMsg = getComponentError() != null
-                ? getComponentError().getFormattedHtmlMessage() : null;
-        String defErrorMsg = def.getComponentError() != null
-                ? def.getComponentError().getFormattedHtmlMessage() : null;
-        if (!SharedUtil.equals(errorMsg, defErrorMsg)) {
-            attr.put("error", errorMsg);
-        }
-        // handle tab index
-        if (this instanceof Focusable) {
-            DesignAttributeHandler.writeAttribute("tabindex", attr,
-                    ((Focusable) this).getTabIndex(),
-                    ((Focusable) def).getTabIndex(), Integer.class);
-        }
-
-    }
-
-    /*
-     * Actions
-     */
-
-    /**
-     * Gets the {@link ActionManager} used to manage the
-     * {@link ShortcutListener}s added to this {@link Field}.
-     * 
-     * @return the ActionManager in use
-     */
-    protected ActionManager getActionManager() {
-        if (actionManager == null) {
-            actionManager = new ConnectorActionManager(this);
-            setActionManagerViewer();
-        }
-        return actionManager;
-    }
-
-    /**
-     * Set a viewer for the action manager to be the parent sub window (if the
-     * component is in a window) or the UI (otherwise). This is still a
-     * simplification of the real case as this should be handled by the parent
-     * VOverlay (on the client side) if the component is inside an VOverlay
-     * component.
-     */
-    private void setActionManagerViewer() {
-        if (actionManager != null && getUI() != null) {
-            // Attached and has action manager
-            Window w = findAncestor(Window.class);
-            if (w != null) {
-                actionManager.setViewer(w);
-            } else {
-                actionManager.setViewer(getUI());
-            }
-        }
-
-    }
-
-    public void addShortcutListener(ShortcutListener shortcut) {
-        getActionManager().addAction(shortcut);
-    }
-
-    public void removeShortcutListener(ShortcutListener shortcut) {
-        if (actionManager != null) {
-            actionManager.removeAction(shortcut);
         }
     }
 

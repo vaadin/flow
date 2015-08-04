@@ -19,7 +19,6 @@ package com.vaadin.server;
 import static com.vaadin.shared.util.SharedUtil.trimTrailingSlashes;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
@@ -93,13 +92,6 @@ public class VaadinPortletService extends VaadinService {
 
         String portalProperty = portletRequest.getPortalProperty(name);
         if (portalProperty != null) {
-
-            // For backwards compatibility - automatically map old portal
-            // default widget set to default widget set
-            if (name.equals(Constants.PORTAL_PARAMETER_VAADIN_WIDGETSET)) {
-                return mapDefaultWidgetset(portalProperty);
-            }
-
             return portalProperty;
         }
 
@@ -111,34 +103,6 @@ public class VaadinPortletService extends VaadinService {
 
         return deploymentConfiguration.getApplicationOrSystemProperty(name,
                 defaultValue);
-    }
-
-    @Override
-    public String getConfiguredWidgetset(VaadinRequest request) {
-
-        String widgetset = getDeploymentConfiguration().getWidgetset(null);
-
-        if (widgetset == null) {
-            widgetset = getParameter(request,
-                    Constants.PORTAL_PARAMETER_VAADIN_WIDGETSET,
-                    Constants.DEFAULT_WIDGETSET);
-        }
-
-        return widgetset;
-    }
-
-    private String mapDefaultWidgetset(String widgetset) {
-        if ("com.vaadin.portal.gwt.PortalDefaultWidgetSet".equals(widgetset)) {
-            return Constants.DEFAULT_WIDGETSET;
-        }
-
-        return widgetset;
-    }
-
-    @Override
-    public String getConfiguredTheme(VaadinRequest request) {
-        return getParameter(request, Constants.PORTAL_PARAMETER_VAADIN_THEME,
-                Constants.DEFAULT_THEME_NAME);
     }
 
     @Override
@@ -297,26 +261,6 @@ public class VaadinPortletService extends VaadinService {
     @Override
     public String getServiceName() {
         return getPortlet().getPortletName();
-    }
-
-    /**
-     * Always preserve UIs in portlets to make portlet actions work.
-     */
-    @Override
-    public boolean preserveUIOnRefresh(UIProvider provider,
-            UICreateEvent event) {
-        return true;
-    }
-
-    @Override
-    public InputStream getThemeResourceAsStream(UI uI, String themeName,
-            String resource) {
-        VaadinPortletSession session = (VaadinPortletSession) uI.getSession();
-        PortletContext portletContext = session.getPortletSession()
-                .getPortletContext();
-        return portletContext
-                .getResourceAsStream("/" + VaadinPortlet.THEME_DIR_PATH + '/'
-                        + themeName + "/" + resource);
     }
 
     @Override

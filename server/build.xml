@@ -8,7 +8,6 @@
     </description>
     <include file="../common.xml" as="common" />
     <include file="../build.xml" as="vaadin" />
-    <include file="../gwt-files.xml" as="gwtfiles" />
 
     <!-- global properties -->
     <property name="module.name" value="vaadin-server" />

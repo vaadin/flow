@@ -7,8 +7,8 @@ import org.junit.Test;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.PropertysetItem;
-import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.TestComponentContainer;
+import com.vaadin.ui.TestField;
 
 public class CaseInsensitiveBindingTest {
 
@@ -17,8 +17,8 @@ public class CaseInsensitiveBindingTest {
         PropertysetItem item = new PropertysetItem();
         item.addItemProperty("LastName", new ObjectProperty<String>("Sparrow"));
 
-        class MyForm extends FormLayout {
-            TextField lastName = new TextField("Last name");
+        class MyForm extends TestComponentContainer {
+            TestField lastName = new TestField("Last name");
 
             public MyForm() {
 
@@ -40,8 +40,8 @@ public class CaseInsensitiveBindingTest {
         PropertysetItem item = new PropertysetItem();
         item.addItemProperty("first_name", new ObjectProperty<String>("Jack"));
 
-        class MyForm extends FormLayout {
-            TextField firstName = new TextField("First name");
+        class MyForm extends TestComponentContainer {
+            TestField firstName = new TestField("First name");
 
             public MyForm() {
                 // Should bind to the first_name property
@@ -64,8 +64,8 @@ public class CaseInsensitiveBindingTest {
                 new ObjectProperty<String>("Not this"));
         item.addItemProperty("firstName", new ObjectProperty<String>("This"));
 
-        class MyForm extends FormLayout {
-            TextField firstName = new TextField("First name");
+        class MyForm extends TestComponentContainer {
+            TestField firstName = new TestField("First name");
 
             public MyForm() {
                 // should bind to the firstName property, not first_name

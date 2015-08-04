@@ -41,9 +41,9 @@ import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.Page;
 import com.vaadin.server.Page.UriFragmentChangedEvent;
 import com.vaadin.server.Page.UriFragmentChangedListener;
+import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.SingleComponentContainer;
 import com.vaadin.ui.UI;
 
@@ -72,7 +72,7 @@ public class Navigator implements Serializable {
     /**
      * Empty view component.
      */
-    public static class EmptyView extends CssLayout implements View {
+    public static class EmptyView extends AbstractComponent implements View {
         /**
          * Create minimally sized empty view.
          */

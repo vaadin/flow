@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.fieldgroup.PropertyId;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.TestField;
 
 public class ReflectToolsGetSuperFieldTest {
 
@@ -14,7 +14,7 @@ public class ReflectToolsGetSuperFieldTest {
     public void getFieldFromSuperClass() {
         class MyClass {
             @PropertyId("testProperty")
-            TextField test = new TextField("This is a test");
+            TestField test = new TestField("This is a test");
         }
         class MySubClass extends MyClass {
             // no fields here

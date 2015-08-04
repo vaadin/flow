@@ -190,16 +190,6 @@ public interface DeploymentConfiguration extends Serializable {
     public String getUIProviderClassName();
 
     /**
-     * Gets Widgetset configuration option value. {@code defaultValue} is
-     * returned if widgetset parameter is not configured.
-     * 
-     * @since 7.4
-     * 
-     * @return UI class name
-     */
-    public String getWidgetset(String defaultValue);
-
-    /**
      * Gets resources path configuration option value.
      * 
      * @since 7.4

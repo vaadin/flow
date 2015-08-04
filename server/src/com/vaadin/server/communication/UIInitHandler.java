@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.annotations.PreserveOnRefresh;
-import com.vaadin.server.LegacyApplicationUIProvider;
 import com.vaadin.server.SynchronizedRequestHandler;
 import com.vaadin.server.UIClassSelectionEvent;
 import com.vaadin.server.UICreateEvent;
@@ -134,18 +132,6 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
         UIProvider provider = null;
         Class<? extends UI> uiClass = null;
         for (UIProvider p : uiProviders) {
-            // Check for existing LegacyWindow
-            if (p instanceof LegacyApplicationUIProvider) {
-                LegacyApplicationUIProvider legacyProvider = (LegacyApplicationUIProvider) p;
-
-                UI existingUi = legacyProvider
-                        .getExistingUI(classSelectionEvent);
-                if (existingUi != null) {
-                    reinitUI(existingUi, request);
-                    return existingUi;
-                }
-            }
-
             uiClass = p.getUIClass(classSelectionEvent);
             if (uiClass != null) {
                 provider = p;
@@ -163,18 +149,6 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
 
         UI retainedUI = session.getUIByEmbedId(embedId);
         if (retainedUI != null) {
-            if (vaadinService.preserveUIOnRefresh(provider,
-                    new UICreateEvent(request, uiClass))) {
-                if (uiClass.isInstance(retainedUI)) {
-                    reinitUI(retainedUI, request);
-                    return retainedUI;
-                } else {
-                    getLogger().info("Not using the preserved UI " + embedId
-                            + " because it is of type " + retainedUI.getClass()
-                            + " but " + uiClass
-                            + " is expected for the request.");
-                }
-            }
             /*
              * Previous UI without preserve on refresh will be closed when the
              * new UI gets added to the session.
@@ -214,13 +188,6 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
         ui.doInit(request, uiId.intValue(), embedId);
 
         session.addUI(ui);
-
-        // Warn if the window can't be preserved
-        if (embedId == null
-                && vaadinService.preserveUIOnRefresh(provider, event)) {
-            getLogger().warning("There is no embed id available for UI "
-                    + uiClass + " that should be preserved.");
-        }
 
         return ui;
     }
