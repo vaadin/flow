@@ -4,7 +4,7 @@
 	xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd"
 	xmlns:m="http://ant.apache.org/ivy/maven">
 
-	<info organisation="com.vaadin" module="vaadin-client" revision="${vaadin.version}" />
+	<info organisation="com.vaadin" module="hummingbird-client" revision="${vaadin.version}" />
 
 	<configurations>
 		<conf name="build" />
@@ -24,12 +24,12 @@
 
 		<!-- LIBRARY DEPENDENCIES (compile time) -->
 		<!-- Project modules -->
-		<dependency org="com.vaadin" name="vaadin-shared" rev="${vaadin.version}"
+		<dependency org="com.vaadin" name="hummingbird-shared" rev="${vaadin.version}"
 			conf="build,test->build">
 			<exclude type="pom" conf="test" />
 		</dependency>
 		<!-- Needed for @Connect -->
-		<dependency org="com.vaadin" name="vaadin-server" rev="${vaadin.version}"
+		<dependency org="com.vaadin" name="hummingbird-server" rev="${vaadin.version}"
 			conf="build,test->build">
 			<exclude type="pom" conf="test" />
 		</dependency>

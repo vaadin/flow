@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="vaadin-push" basedir="." default="publish-local"
+<project name="hummingbird-push" basedir="." default="publish-local"
     xmlns:ivy="antlib:org.apache.ivy.ant">
     <description>
         Meta package which defines dependencies needed for push
@@ -8,7 +8,7 @@
     <include file="../build.xml" as="vaadin" />
     <include file="../common.xml" as="common" />
 
-    <property name="module.name" value="vaadin-push" />
+    <property name="module.name" value="hummingbird-push" />
     <property name="module.symbolic" value="com.vaadin.push" />
     <property name="result.dir" location="result" />
     <property name="temp.dir" location="${result.dir}/temp" />

@@ -8,7 +8,7 @@
     <include file="../common.xml" as="common" />
     <include file="../build.xml" as="vaadin" />
 
-    <property name="module.name" value="vaadin-liferay" />
+    <property name="module.name" value="hummingbird-liferay" />
     <property name="result.dir" value="result" />
     <property name="lib.dir" value="${result.dir}/lib" />
     <property name="work.dir" value="${result.dir}/work" />
@@ -31,23 +31,23 @@
     <target name="unpack" depends="fetch-jars">
         <echo>Unpacking jars into working directory</echo>
         <mkdir dir="${work.dir}" />
-        <unjar src="${lib.dir}/vaadin-client-compiled.jar" dest="${work.dir}">
+        <unjar src="${lib.dir}/hummingbird-client-compiled.jar" dest="${work.dir}">
             <patternset>
                 <include name="VAADIN/widgetsets/**/*" />
             </patternset>
         </unjar>
-        <unjar src="${lib.dir}/vaadin-themes.jar" dest="${work.dir}">
+        <unjar src="${lib.dir}/hummingbird-themes.jar" dest="${work.dir}">
             <patternset>
                 <include name="VAADIN/themes/valo/**/*" />
             </patternset>
         </unjar>
-        <unjar src="${lib.dir}/vaadin-push.jar" dest="${work.dir}">
+        <unjar src="${lib.dir}/hummingbird-push.jar" dest="${work.dir}">
             <patternset>
                 <include name="VAADIN/vaadinPush.js" />
                 <include name="VAADIN/vaadinPush.debug.js" />
             </patternset>
         </unjar>
-        <unjar src="${lib.dir}/vaadin-server.jar" dest="${work.dir}">
+        <unjar src="${lib.dir}/hummingbird-server.jar" dest="${work.dir}">
             <patternset>
                 <include name="VAADIN/vaadinBootstrap.js" />
             </patternset>

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="vaadin-bom" basedir="." default="publish-local"
+<project name="hummingbird-bom" basedir="." default="publish-local"
 	xmlns:artifact="antlib:org.apache.maven.artifact.ant" xmlns:antcontrib="antlib:net.sf.antcontrib">
     <description>
         Compiles a BOM (Bill of Materials) Maven artifact
@@ -9,7 +9,7 @@
     <include file="../build.xml" as="vaadin" />
 
     <!-- global properties -->
-    <property name="module.name" value="vaadin-bom" />
+    <property name="module.name" value="hummingbird-bom" />
     <property name="result.dir" value="result" />
 
 	<target name="bom" description="Generates a BOM (Bill of Materials) pom.xml. Either for a snapshot or a release version">
@@ -20,9 +20,9 @@
         <!-- if this wasn't already set by the condition, this is a snapshot -->
         <property name="vaadin.maven.version" value="${vaadin.version.major}.${vaadin.version.minor}-SNAPSHOT" />
 
-        <property name="bom.xml" location="${result.dir}/lib/vaadin-bom-${vaadin.version}.pom" />
+        <property name="bom.xml" location="${result.dir}/lib/hummingbird-bom-${vaadin.version}.pom" />
 
-        <copy file="vaadin-bom.pom" tofile="${bom.xml}" overwrite="true">
+        <copy file="hummingbird-bom.pom" tofile="${bom.xml}" overwrite="true">
             <filterchain>
                 <replacestring from="@vaadin.version@" to="${vaadin.maven.version}" />
             </filterchain>

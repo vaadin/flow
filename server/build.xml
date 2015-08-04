@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="vaadin-server" basedir="." default="publish-local"
+<project name="hummingbird-server" basedir="." default="publish-local"
     xmlns:ivy="antlib:org.apache.ivy.ant">
     <description>
         Compiles build helpers used when building other
@@ -10,7 +10,7 @@
     <include file="../build.xml" as="vaadin" />
 
     <!-- global properties -->
-    <property name="module.name" value="vaadin-server" />
+    <property name="module.name" value="hummingbird-server" />
     <property name="module.symbolic" value="com.vaadin.server" />
     <property name="result.dir" value="result" />
     <path id="classpath.compile.custom" />

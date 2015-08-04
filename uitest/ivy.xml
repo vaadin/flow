@@ -33,24 +33,24 @@
 
         <!-- LIBRARY DEPENDENCIES (compile time) -->
         <!-- Project modules -->
-        <dependency org="com.vaadin" name="vaadin-server"
+        <dependency org="com.vaadin" name="hummingbird-server"
             rev="${vaadin.version}" conf="build->build">
             <exclude org="javax.servlet"></exclude>
             <exclude type="pom" />
         </dependency>
-        <dependency org="com.vaadin" name="vaadin-client"
+        <dependency org="com.vaadin" name="hummingbird-client"
             rev="${vaadin.version}" conf="build->build">
             <exclude type="pom" />
         </dependency>
-        <dependency org="com.vaadin" name="vaadin-client-compiled"
+        <dependency org="com.vaadin" name="hummingbird-client-compiled"
             rev="${vaadin.version}" conf="build->build">
             <exclude type="pom" />
         </dependency>
-        <dependency org="com.vaadin" name="vaadin-themes"
+        <dependency org="com.vaadin" name="hummingbird-themes"
             rev="${vaadin.version}" conf="build->build">
             <exclude type="pom" />
         </dependency>
-        <dependency org="com.vaadin" name="vaadin-push" rev="${vaadin.version}"
+        <dependency org="com.vaadin" name="hummingbird-push" rev="${vaadin.version}"
             conf="build->build">
             <exclude org="javax.servlet"></exclude>
             <exclude type="pom" />
@@ -104,7 +104,7 @@
         <dependency org="com.vaadin" name="vaadin-sass-compiler"
             rev="${vaadin.sass.version}" conf="compile-theme->default" />
 
-        <dependency org="com.vaadin" name="vaadin-buildhelpers"
+        <dependency org="com.vaadin" name="hummingbird-buildhelpers"
             rev="${vaadin.version}" conf="compile-theme->build" />
 
         <dependency org="org.eclipse.jgit" name="org.eclipse.jgit"

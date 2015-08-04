@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="vaadin-all" basedir="." default="publish-local"
+<project name="hummingbird-all" basedir="." default="publish-local"
     xmlns:ivy="antlib:org.apache.ivy.ant" xmlns:antcontrib="antlib:net.sf.antcontrib">
     <description>
         Compiles a zip containing all jars + dependencies
@@ -9,10 +9,10 @@
     <include file="../build.xml" as="vaadin" />
 
     <!-- global properties -->
-    <property name="module.name" value="vaadin-all" />
+    <property name="module.name" value="hummingbird-all" />
     <property name="result.dir" value="result" />
     <property name="javadoc.jar"
-        location="${result.dir}/lib/vaadin-all-${vaadin.version}-javadoc.jar" />
+        location="${result.dir}/lib/hummingbird-all-${vaadin.version}-javadoc.jar" />
     <property name="temp.dir" location="${result.dir}/temp" />
     <property name="temp.deps.dir" value="${temp.dir}/lib" />
     <property name="javadoc.temp.dir" location="${result.dir}/javadoc-temp" />
@@ -27,7 +27,7 @@
         <fail unless="module" message="No 'module' parameter given" />
 
         <ivy:cachepath pathid="module.and.deps" inline="true"
-            organisation="com.vaadin" module="vaadin-${module}"
+            organisation="com.vaadin" module="hummingbird-${module}"
             revision="${vaadin.version}" />
         <copy todir="${temp.dir}" flatten="true">
             <path refid="module.and.deps" />
@@ -36,7 +36,7 @@
 
     <target name="unzip.to.javadoctemp">
         <property name="file"
-            location="${temp.dir}/vaadin-${module}-${vaadin.version}.jar" />
+            location="${temp.dir}/hummingbird-${module}-${vaadin.version}.jar" />
         <unzip src="${file}" dest="${javadoc.temp.dir}" />
     </target>
 
@@ -89,8 +89,8 @@
             and deps -->
         <move todir="${temp.deps.dir}">
             <fileset dir="${temp.dir}">
-                <exclude name="vaadin-*-${vaadin.version}.*" />
-                <exclude name="vaadin-*-${vaadin.version}-*.*" />
+                <exclude name="hummingbird-*-${vaadin.version}.*" />
+                <exclude name="hummingbird-*-${vaadin.version}-*.*" />
             </fileset>
         </move>
 

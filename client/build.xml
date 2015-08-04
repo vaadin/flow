@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="vaadin-client" basedir="." default="publish-local">
+<project name="hummingbird-client" basedir="." default="publish-local">
     <description>
         Compiles build helpers used when building other
         modules.
@@ -9,7 +9,7 @@
     <include file="../build.xml" as="vaadin" />
 
     <!-- global properties -->
-    <property name="module.name" value="vaadin-client" />
+    <property name="module.name" value="hummingbird-client" />
     <property name="module.symbolic" value="com.vaadin.client" />
     <property name="result.dir" value="result" />
 

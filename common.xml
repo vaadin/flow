@@ -215,7 +215,7 @@
             </then>
         </antcontrib:if>
 
-        <ivy:resolve inline="true" organisation="com.vaadin" module="vaadin-buildhelpers" revision="${vaadin.version}" keep="true" />
+        <ivy:resolve inline="true" organisation="com.vaadin" module="hummingbird-buildhelpers" revision="${vaadin.version}" keep="true" />
         <ivy:cachepath pathid="buildhelpers.classpath" />
 
         <!-- Generate the Export-Package attribute in the manifest -->

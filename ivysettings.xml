@@ -31,23 +31,23 @@
             resolver="vaadin-addons" />
         <module organisation="com.vaadin" name="vaadin-testbench-api"
             resolver="vaadin-addons" />
-        <module organisation="com.vaadin" name="vaadin-buildhelpers"
+        <module organisation="com.vaadin" name="hummingbird-buildhelpers"
             resolver="build-temp" />
-        <module organisation="com.vaadin" name="vaadin-shared"
+        <module organisation="com.vaadin" name="hummingbird-shared"
             resolver="build-temp" />
-        <module organisation="com.vaadin" name="vaadin-server"
+        <module organisation="com.vaadin" name="hummingbird-server"
             resolver="build-temp" />
-        <module organisation="com.vaadin" name="vaadin-client"
+        <module organisation="com.vaadin" name="hummingbird-client"
             resolver="build-temp" />
-        <module organisation="com.vaadin" name="vaadin-client-compiled"
+        <module organisation="com.vaadin" name="hummingbird-client-compiled"
             resolver="build-temp" />
-        <module organisation="com.vaadin" name="vaadin-themes"
+        <module organisation="com.vaadin" name="hummingbird-themes"
             resolver="build-temp" />
-        <module organisation="com.vaadin" name="vaadin-push"
+        <module organisation="com.vaadin" name="hummingbird-push"
             resolver="build-temp" />
-        <module organisation="com.vaadin" name="vaadin-bom"
+        <module organisation="com.vaadin" name="hummingbird-bom"
             resolver="build-temp" />
-        <module organisation="com.vaadin" name="vaadin-liferay"
+        <module organisation="com.vaadin" name="hummingbird-liferay"
             resolver="build-temp" />
     </modules>
 

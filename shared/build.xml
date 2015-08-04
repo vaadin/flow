@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="vaadin-shared" basedir="." default="publish-local"
+<project name="hummingbird-shared" basedir="." default="publish-local"
     xmlns:ivy="antlib:org.apache.ivy.ant">
     <description>
         The shared module containing classes used by both server and client.
@@ -9,7 +9,7 @@
     <include file="../build.xml" as="vaadin" />
 
     <!-- global properties -->
-    <property name="module.name" value="vaadin-shared" />
+    <property name="module.name" value="hummingbird-shared" />
     <property name="module.symbolic" value="com.vaadin.shared" />
     <property name="result.dir" location="result" />
     <property name="src.filtered" location="${result.dir}/filtered-src" />

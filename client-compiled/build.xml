@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="vaadin-client-compiled" basedir="." default="publish-local"
+<project name="hummingbird-client-compiled" basedir="." default="publish-local"
     xmlns:ivy="antlib:org.apache.ivy.ant">
     <description>
         Compiled (JS+HTML) version of client side
@@ -10,7 +10,7 @@
     <include file="../build.xml" as="vaadin" />
 
     <!-- global properties -->
-    <property name="module.name" value="vaadin-client-compiled" />
+    <property name="module.name" value="hummingbird-client-compiled" />
     <property name="module.symbolic" value="com.vaadin.client-compiled" />
     <property name="result.dir" value="result" />
     <property name="gwtar.dir" location="${result.dir}/gwtar" />

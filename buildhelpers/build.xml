@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="vaadin-buildhelpers" basedir="." default="publish-local"
+<project name="hummingbird-buildhelpers" basedir="." default="publish-local"
     xmlns:ivy="antlib:org.apache.ivy.ant">
     <description>
         Compiles build helpers used when building other
@@ -9,7 +9,7 @@
     <include file="../build.xml" as="vaadin" />
     <include file="../common.xml" as="common" />
 
-    <property name="module.name" value="vaadin-buildhelpers" />
+    <property name="module.name" value="hummingbird-buildhelpers" />
     <property name="module.symbolic" value="com.vaadin.buildhelpers" />
     <property name="result.dir" location="result" />
     <path id="classpath.compile.custom" />
