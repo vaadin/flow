@@ -105,8 +105,7 @@ public class SystemMessages implements Serializable {
      * @return "" to show no caption.
      */
     public String getSessionExpiredCaption() {
-        return (sessionExpiredNotificationEnabled ? sessionExpiredCaption
-                : null);
+        return (sessionExpiredNotificationEnabled ? sessionExpiredCaption : null);
     }
 
     /**
@@ -114,8 +113,7 @@ public class SystemMessages implements Serializable {
      *         "Take note of any unsaved data, and <u>click here</u> to continue."
      */
     public String getSessionExpiredMessage() {
-        return (sessionExpiredNotificationEnabled ? sessionExpiredMessage
-                : null);
+        return (sessionExpiredNotificationEnabled ? sessionExpiredMessage : null);
     }
 
     /**
@@ -136,8 +134,7 @@ public class SystemMessages implements Serializable {
      * @return "Communication problem"
      */
     public String getCommunicationErrorCaption() {
-        return (communicationErrorNotificationEnabled ? communicationErrorCaption
-                : null);
+        return (communicationErrorNotificationEnabled ? communicationErrorCaption : null);
     }
 
     /**
@@ -145,8 +142,7 @@ public class SystemMessages implements Serializable {
      *         "Take note of any unsaved data, and <u>click here</u> to continue."
      */
     public String getCommunicationErrorMessage() {
-        return (communicationErrorNotificationEnabled ? communicationErrorMessage
-                : null);
+        return (communicationErrorNotificationEnabled ? communicationErrorMessage : null);
     }
 
     /**
@@ -168,8 +164,7 @@ public class SystemMessages implements Serializable {
      * @return "Authentication problem"
      */
     public String getAuthenticationErrorCaption() {
-        return (authenticationErrorNotificationEnabled ? authenticationErrorCaption
-                : null);
+        return (authenticationErrorNotificationEnabled ? authenticationErrorCaption : null);
     }
 
     /**
@@ -177,8 +172,7 @@ public class SystemMessages implements Serializable {
      *         "Take note of any unsaved data, and <u>click here</u> to continue."
      */
     public String getAuthenticationErrorMessage() {
-        return (authenticationErrorNotificationEnabled ? authenticationErrorMessage
-                : null);
+        return (authenticationErrorNotificationEnabled ? authenticationErrorMessage : null);
     }
 
     /**
@@ -242,8 +236,7 @@ public class SystemMessages implements Serializable {
      * @return The caption of the "cookies disabled" message
      */
     public String getCookiesDisabledCaption() {
-        return (cookiesDisabledNotificationEnabled ? cookiesDisabledCaption
-                : null);
+        return (cookiesDisabledNotificationEnabled ? cookiesDisabledCaption : null);
     }
 
     /**
@@ -253,8 +246,7 @@ public class SystemMessages implements Serializable {
      * @return The "cookies disabled" message
      */
     public String getCookiesDisabledMessage() {
-        return (cookiesDisabledNotificationEnabled ? cookiesDisabledMessage
-                : null);
+        return (cookiesDisabledNotificationEnabled ? cookiesDisabledMessage : null);
     }
 
 }

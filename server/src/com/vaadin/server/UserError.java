@@ -64,8 +64,7 @@ public class UserError extends AbstractErrorMessage {
      * @param errorLevel
      *            the level of error.
      */
-    public UserError(String message, ContentMode contentMode,
-            ErrorLevel errorLevel) {
+    public UserError(String message, ContentMode contentMode, ErrorLevel errorLevel) {
         super(message);
         if (contentMode == null) {
             contentMode = ContentMode.TEXT;

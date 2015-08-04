@@ -39,8 +39,7 @@ public class TooltipPosition extends AbstractTestUI {
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(true);
-        layout.setHeight(UI.getCurrent().getPage().getBrowserWindowHeight(),
-                Unit.PIXELS);
+        layout.setHeight(UI.getCurrent().getPage().getBrowserWindowHeight(), Unit.PIXELS);
         addComponent(layout);
         for (int i = 0; i < NUMBER_OF_BUTTONS; i++) {
             Button button = new Button("Button");
@@ -52,8 +51,7 @@ public class TooltipPosition extends AbstractTestUI {
     private String generateTooltipText() {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < 50; i++) {
-            result.append("This is the line ").append(i)
-                    .append(" of the long tooltip text.<br>");
+            result.append("This is the line ").append(i).append(" of the long tooltip text.<br>");
         }
         return result.toString();
     }

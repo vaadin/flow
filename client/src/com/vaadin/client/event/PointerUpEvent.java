@@ -28,8 +28,7 @@ public class PointerUpEvent extends PointerEvent<PointerUpHandler> {
      * Event type for PointerUpEvent. Represents the meta-data associated with
      * this event.
      */
-    private static final Type<PointerUpHandler> TYPE = new Type<PointerUpHandler>(
-            EventType.PointerUp.getNativeEventName(), new PointerUpEvent());
+    private static final Type<PointerUpHandler> TYPE = new Type<PointerUpHandler>(EventType.PointerUp.getNativeEventName(), new PointerUpEvent());
 
     /**
      * Gets the event type associated with PointerUpEvent.

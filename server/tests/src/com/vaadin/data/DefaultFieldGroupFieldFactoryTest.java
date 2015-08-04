@@ -45,23 +45,15 @@ public class DefaultFieldGroupFieldFactoryTest {
     public void noPublicConstructor() {
         Class<DefaultFieldGroupFieldFactory> clazz = DefaultFieldGroupFieldFactory.class;
         Constructor<?>[] constructors = clazz.getConstructors();
-        Assert.assertEquals(
-                "DefaultFieldGroupFieldFactory contains public constructors",
-                0, constructors.length);
+        Assert.assertEquals("DefaultFieldGroupFieldFactory contains public constructors", 0, constructors.length);
     }
 
     @Test
     public void testSameInstance() {
-        DefaultFieldGroupFieldFactory factory1 = DefaultFieldGroupFieldFactory
-                .get();
-        DefaultFieldGroupFieldFactory factory2 = DefaultFieldGroupFieldFactory
-                .get();
-        Assert.assertTrue(
-                "DefaultFieldGroupFieldFactory.get() method returns different instances",
-                factory1 == factory2);
-        Assert.assertNotNull(
-                "DefaultFieldGroupFieldFactory.get() method returns null",
-                factory1);
+        DefaultFieldGroupFieldFactory factory1 = DefaultFieldGroupFieldFactory.get();
+        DefaultFieldGroupFieldFactory factory2 = DefaultFieldGroupFieldFactory.get();
+        Assert.assertTrue("DefaultFieldGroupFieldFactory.get() method returns different instances", factory1 == factory2);
+        Assert.assertNotNull("DefaultFieldGroupFieldFactory.get() method returns null", factory1);
     }
 
     @Test
@@ -105,8 +97,7 @@ public class DefaultFieldGroupFieldFactoryTest {
 
     @Test
     public void testEnumAnySelect() {
-        Field f = fieldFactory
-                .createField(SomeEnum.class, AbstractSelect.class);
+        Field f = fieldFactory.createField(SomeEnum.class, AbstractSelect.class);
         Assert.assertNotNull(f);
         Assert.assertEquals(ListSelect.class, f.getClass());
     }

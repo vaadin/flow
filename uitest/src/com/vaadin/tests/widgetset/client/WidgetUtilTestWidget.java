@@ -109,25 +109,18 @@ public class WidgetUtilTestWidget extends Widget {
     public void showSizes() {
         String sizes = "Measured required width x height<br/>";
 
-        sizes += "<div id='noBorderPadding'>noBorderPadding: "
-                + WidgetUtil.getRequiredWidthComputedStyle(noBorderPadding);
-        sizes += "x"
-                + WidgetUtil.getRequiredHeightComputedStyle(noBorderPadding)
-                + "</div>";
-        sizes += "<div id='border'>border: "
-                + WidgetUtil.getRequiredWidthComputedStyle(border);
+        sizes += "<div id='noBorderPadding'>noBorderPadding: " + WidgetUtil.getRequiredWidthComputedStyle(noBorderPadding);
+        sizes += "x" + WidgetUtil.getRequiredHeightComputedStyle(noBorderPadding) + "</div>";
+        sizes += "<div id='border'>border: " + WidgetUtil.getRequiredWidthComputedStyle(border);
         sizes += "x" + WidgetUtil.getRequiredHeightComputedStyle(border);
         sizes += "</div>";
 
-        sizes += "<div id='padding'>padding: "
-                + WidgetUtil.getRequiredWidthComputedStyle(padding);
+        sizes += "<div id='padding'>padding: " + WidgetUtil.getRequiredWidthComputedStyle(padding);
         sizes += "x" + WidgetUtil.getRequiredHeightComputedStyle(padding);
         sizes += "</div>";
 
-        sizes += "<div id='borderPadding'>borderPadding: "
-                + WidgetUtil.getRequiredWidthComputedStyle(borderPadding);
-        sizes += "x" + WidgetUtil.getRequiredHeightComputedStyle(borderPadding)
-                + "</div>";
+        sizes += "<div id='borderPadding'>borderPadding: " + WidgetUtil.getRequiredWidthComputedStyle(borderPadding);
+        sizes += "x" + WidgetUtil.getRequiredHeightComputedStyle(borderPadding) + "</div>";
 
         result.setInnerHTML(sizes);
 

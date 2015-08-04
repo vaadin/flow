@@ -90,14 +90,12 @@ public class Util {
      * @return the element at given coordinates
      */
     @Deprecated
-    public static com.google.gwt.user.client.Element getElementFromPoint(
-            int clientX, int clientY) {
+    public static com.google.gwt.user.client.Element getElementFromPoint(int clientX, int clientY) {
         return DOM.asOld(WidgetUtil.getElementFromPoint(clientX, clientY));
     }
 
     public static ComponentConnector findConnectorFor(Widget widget) {
-        List<ApplicationConnection> runningApplications = ApplicationConfiguration
-                .getRunningApplications();
+        List<ApplicationConnection> runningApplications = ApplicationConfiguration.getRunningApplications();
         for (ApplicationConnection applicationConnection : runningApplications) {
             ConnectorMap connectorMap = applicationConnection.getConnectorMap();
             ComponentConnector connector = connectorMap.getConnector(widget);
@@ -164,8 +162,7 @@ public class Util {
      * @return
      */
     @Deprecated
-    public static com.google.gwt.user.client.Element cloneNode(Element element,
-            boolean deep) {
+    public static com.google.gwt.user.client.Element cloneNode(Element element, boolean deep) {
         return DOM.asOld(WidgetUtil.cloneNode(element, deep));
     }
 
@@ -175,10 +172,8 @@ public class Util {
      *             instead.
      */
     @Deprecated
-    public static int measureHorizontalPaddingAndBorder(Element element,
-            int paddingGuess) {
-        return WidgetUtil.measureHorizontalPaddingAndBorder(element,
-                paddingGuess);
+    public static int measureHorizontalPaddingAndBorder(Element element, int paddingGuess) {
+        return WidgetUtil.measureHorizontalPaddingAndBorder(element, paddingGuess);
     }
 
     /**
@@ -187,10 +182,8 @@ public class Util {
      *             instead.
      */
     @Deprecated
-    public static int measureVerticalPaddingAndBorder(Element element,
-            int paddingGuess) {
-        return WidgetUtil
-                .measureVerticalPaddingAndBorder(element, paddingGuess);
+    public static int measureVerticalPaddingAndBorder(Element element, int paddingGuess) {
+        return WidgetUtil.measureVerticalPaddingAndBorder(element, paddingGuess);
     }
 
     /**
@@ -226,10 +219,8 @@ public class Util {
      *             instead.
      */
     @Deprecated
-    public static int setHeightExcludingPaddingAndBorder(Widget widget,
-            String height, int paddingBorderGuess) {
-        return WidgetUtil.setHeightExcludingPaddingAndBorder(widget, height,
-                paddingBorderGuess);
+    public static int setHeightExcludingPaddingAndBorder(Widget widget, String height, int paddingBorderGuess) {
+        return WidgetUtil.setHeightExcludingPaddingAndBorder(widget, height, paddingBorderGuess);
     }
 
     /**
@@ -238,10 +229,8 @@ public class Util {
      *             instead.
      */
     @Deprecated
-    public static int setWidthExcludingPaddingAndBorder(Widget widget,
-            String width, int paddingBorderGuess) {
-        return WidgetUtil.setWidthExcludingPaddingAndBorder(widget, width,
-                paddingBorderGuess);
+    public static int setWidthExcludingPaddingAndBorder(Widget widget, String width, int paddingBorderGuess) {
+        return WidgetUtil.setWidthExcludingPaddingAndBorder(widget, width, paddingBorderGuess);
     }
 
     /**
@@ -250,12 +239,8 @@ public class Util {
      *             instead.
      */
     @Deprecated
-    public static int setWidthExcludingPaddingAndBorder(Element element,
-            int requestedWidth, int horizontalPaddingBorderGuess,
-            boolean requestedWidthIncludesPaddingBorder) {
-        return WidgetUtil.setWidthExcludingPaddingAndBorder(element,
-                requestedWidth, horizontalPaddingBorderGuess,
-                requestedWidthIncludesPaddingBorder);
+    public static int setWidthExcludingPaddingAndBorder(Element element, int requestedWidth, int horizontalPaddingBorderGuess, boolean requestedWidthIncludesPaddingBorder) {
+        return WidgetUtil.setWidthExcludingPaddingAndBorder(element, requestedWidth, horizontalPaddingBorderGuess, requestedWidthIncludesPaddingBorder);
     }
 
     /**
@@ -264,12 +249,8 @@ public class Util {
      *             instead.
      */
     @Deprecated
-    public static int setHeightExcludingPaddingAndBorder(Element element,
-            int requestedHeight, int verticalPaddingBorderGuess,
-            boolean requestedHeightIncludesPaddingBorder) {
-        return WidgetUtil.setHeightExcludingPaddingAndBorder(element,
-                requestedHeight, verticalPaddingBorderGuess,
-                requestedHeightIncludesPaddingBorder);
+    public static int setHeightExcludingPaddingAndBorder(Element element, int requestedHeight, int verticalPaddingBorderGuess, boolean requestedHeightIncludesPaddingBorder) {
+        return WidgetUtil.setHeightExcludingPaddingAndBorder(element, requestedHeight, verticalPaddingBorderGuess, requestedHeightIncludesPaddingBorder);
     }
 
     /**
@@ -345,8 +326,7 @@ public class Util {
      * @return
      */
     public static FloatSize parseRelativeSize(AbstractComponentState state) {
-        if (ComponentStateUtil.isUndefinedHeight(state)
-                && ComponentStateUtil.isUndefinedWidth(state)) {
+        if (ComponentStateUtil.isUndefinedHeight(state) && ComponentStateUtil.isUndefinedWidth(state)) {
             return null;
         }
 
@@ -416,8 +396,7 @@ public class Util {
      * @return The border-box height for the element
      */
     @Deprecated
-    public static int getRequiredHeight(
-            com.google.gwt.dom.client.Element element) {
+    public static int getRequiredHeight(com.google.gwt.dom.client.Element element) {
         return WidgetUtil.getRequiredHeight(element);
     }
 
@@ -427,8 +406,7 @@ public class Util {
      *             instead.
      */
     @Deprecated
-    public int getRequiredWidthBoundingClientRect(
-            com.google.gwt.dom.client.Element element) {
+    public int getRequiredWidthBoundingClientRect(com.google.gwt.dom.client.Element element) {
         return WidgetUtil.getRequiredWidthBoundingClientRect(element);
     }
 
@@ -438,8 +416,7 @@ public class Util {
      *             instead.
      */
     @Deprecated
-    public static int getRequiredHeightComputedStyle(
-            com.google.gwt.dom.client.Element element) {
+    public static int getRequiredHeightComputedStyle(com.google.gwt.dom.client.Element element) {
         return WidgetUtil.getRequiredHeightComputedStyle(element);
     }
 
@@ -449,8 +426,7 @@ public class Util {
      *             instead.
      */
     @Deprecated
-    public static int getRequiredWidthComputedStyle(
-            com.google.gwt.dom.client.Element element) {
+    public static int getRequiredWidthComputedStyle(com.google.gwt.dom.client.Element element) {
         return WidgetUtil.getRequiredWidthComputedStyle(element);
     }
 
@@ -460,8 +436,7 @@ public class Util {
      *             instead.
      */
     @Deprecated
-    public static int getRequiredHeightBoundingClientRect(
-            com.google.gwt.dom.client.Element element) {
+    public static int getRequiredHeightBoundingClientRect(com.google.gwt.dom.client.Element element) {
         return WidgetUtil.getRequiredHeightBoundingClientRect(element);
     }
 
@@ -516,16 +491,14 @@ public class Util {
      * @return The VPaintableWidget which the element is a part of. Null if the
      *         element does not belong to a child.
      */
-    public static ComponentConnector getConnectorForElement(
-            ApplicationConnection client, Widget parent, Element element) {
+    public static ComponentConnector getConnectorForElement(ApplicationConnection client, Widget parent, Element element) {
 
         Element browseElement = element;
         Element rootElement = parent.getElement();
 
         while (browseElement != null && browseElement != rootElement) {
 
-            ComponentConnector connector = ConnectorMap.get(client)
-                    .getConnector(browseElement);
+            ComponentConnector connector = ConnectorMap.get(client).getConnector(browseElement);
 
             if (connector != null) {
                 // check that inside the rootElement
@@ -547,8 +520,7 @@ public class Util {
         VOverlay overlay = findWidget(element, VOverlay.class);
         if (overlay != null && overlay.getOwner() != null) {
 
-            return getConnectorForElement(client, client.getUIConnector()
-                    .getWidget(), overlay.getOwner().getElement());
+            return getConnectorForElement(client, client.getUIConnector().getWidget(), overlay.getOwner().getElement());
         } else {
             return null;
         }
@@ -574,8 +546,7 @@ public class Util {
      * @param element
      *            the element to start from
      */
-    public static ComponentConnector findPaintable(
-            ApplicationConnection client, Element element) {
+    public static ComponentConnector findPaintable(ApplicationConnection client, Element element) {
         Widget widget = Util.findWidget(element, null);
         ConnectorMap vPaintableMap = ConnectorMap.get(client);
         while (widget != null && !vPaintableMap.isConnector(widget)) {
@@ -598,8 +569,7 @@ public class Util {
      *            the Widget type to seek for
      */
     @Deprecated
-    public static <T> T findWidget(Element element,
-            Class<? extends Widget> class1) {
+    public static <T> T findWidget(Element element, Class<? extends Widget> class1) {
         return WidgetUtil.findWidget(element, class1);
     }
 
@@ -690,16 +660,12 @@ public class Util {
         return WidgetUtil.getChildElementIndex(childElement);
     }
 
-    private static void printConnectorInvocations(
-            ArrayList<MethodInvocation> invocations, String id,
-            ApplicationConnection c) {
+    private static void printConnectorInvocations(ArrayList<MethodInvocation> invocations, String id, ApplicationConnection c) {
         ServerConnector connector = ConnectorMap.get(c).getConnector(id);
         if (connector != null) {
             getLogger().info("\t" + id + " (" + connector.getClass() + ") :");
         } else {
-            getLogger().warning(
-                    "\t" + id + ": Warning: no corresponding connector for id "
-                            + id);
+            getLogger().warning("\t" + id + ": Warning: no corresponding connector for id " + id);
         }
         for (MethodInvocation invocation : invocations) {
             getLogger().info("\t\t" + getInvocationDebugString(invocation));
@@ -717,26 +683,21 @@ public class Util {
     private static String getInvocationDebugString(MethodInvocation invocation) {
         Object[] parameters = invocation.getParameters();
         String formattedParams = null;
-        if (ApplicationConstants.UPDATE_VARIABLE_METHOD.equals(invocation
-                .getMethodName()) && parameters.length == 2) {
+        if (ApplicationConstants.UPDATE_VARIABLE_METHOD.equals(invocation.getMethodName()) && parameters.length == 2) {
             // name, value
             Object value = parameters[1];
             // TODO paintables inside lists/maps get rendered as
             // components in the debug console
-            String formattedValue = value instanceof ServerConnector ? ((ServerConnector) value)
-                    .getConnectorId() : String.valueOf(value);
+            String formattedValue = value instanceof ServerConnector ? ((ServerConnector) value).getConnectorId() : String.valueOf(value);
             formattedParams = parameters[0] + " : " + formattedValue;
         }
         if (null == formattedParams) {
-            formattedParams = (null != parameters) ? Arrays
-                    .toString(parameters) : null;
+            formattedParams = (null != parameters) ? Arrays.toString(parameters) : null;
         }
-        return invocation.getInterfaceName() + "." + invocation.getMethodName()
-                + "(" + formattedParams + ")";
+        return invocation.getInterfaceName() + "." + invocation.getMethodName() + "(" + formattedParams + ")";
     }
 
-    public static void logMethodInvocations(ApplicationConnection c,
-            Collection<MethodInvocation> methodInvocations) {
+    public static void logMethodInvocations(ApplicationConnection c, Collection<MethodInvocation> methodInvocations) {
         try {
             getLogger().info("RPC invocations to be sent to the server:");
             String curId = null;
@@ -757,8 +718,7 @@ public class Util {
                 printConnectorInvocations(invocations, curId, c);
             }
         } catch (Exception e) {
-            getLogger()
-                    .log(Level.SEVERE, "Error logging method invocations", e);
+            getLogger().log(Level.SEVERE, "Error logging method invocations", e);
         }
     }
 
@@ -779,8 +739,7 @@ public class Util {
      *            The temporary value
      */
     @Deprecated
-    public static void setStyleTemporarily(Element element,
-            final String styleProperty, String tempValue) {
+    public static void setStyleTemporarily(Element element, final String styleProperty, String tempValue) {
         WidgetUtil.setStyleTemporarily(element, styleProperty, tempValue);
     }
 
@@ -813,8 +772,7 @@ public class Util {
      * @return the element at the coordinates of the event
      */
     @Deprecated
-    public static com.google.gwt.user.client.Element getElementUnderMouse(
-            NativeEvent event) {
+    public static com.google.gwt.user.client.Element getElementUnderMouse(NativeEvent event) {
         return DOM.asOld(WidgetUtil.getElementUnderMouse(event));
     }
 
@@ -887,8 +845,7 @@ public class Util {
      *             instead.
      */
     @Deprecated
-    public static void simulateClickFromTouchEvent(Event touchevent,
-            Widget widget) {
+    public static void simulateClickFromTouchEvent(Event touchevent, Widget widget) {
         WidgetUtil.simulateClickFromTouchEvent(touchevent, widget);
     }
 
@@ -990,8 +947,7 @@ public class Util {
      * @return true if the collections contain the same elements in the same
      *         order, false otherwise
      */
-    public static boolean collectionsEquals(Collection<?> collection1,
-            Collection<?> collection2) {
+    public static boolean collectionsEquals(Collection<?> collection1, Collection<?> collection2) {
         if (collection1 == null) {
             return collection2 == null;
         }
@@ -1066,8 +1022,7 @@ public class Util {
      * @since 7.3
      */
     @Deprecated
-    public static void setSelectionRange(Element elem, int pos, int length,
-            String direction) {
+    public static void setSelectionRange(Element elem, int pos, int length, String direction) {
         WidgetUtil.setSelectionRange(elem, pos, length, direction);
     }
 
@@ -1125,8 +1080,7 @@ public class Util {
      * @param jsonAsString
      * @return a JavaScript object constructed from the parse
      */
-    public native static <T extends JavaScriptObject> T parse(
-            String jsonAsString)
+    public native static <T extends JavaScriptObject> T parse(String jsonAsString)
     /*-{
         return JSON.parse(jsonAsString);
     }-*/;

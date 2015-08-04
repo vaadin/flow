@@ -34,8 +34,7 @@ import com.vaadin.ui.declarative.DesignContext;
  * Configures select to be used as an option group.
  */
 @SuppressWarnings("serial")
-public class OptionGroup extends AbstractSelect implements
-        FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
+public class OptionGroup extends AbstractSelect implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 
     private Set<Object> disabledItemIds = new HashSet<Object>();
     private boolean htmlContentAllowed = false;
@@ -58,8 +57,7 @@ public class OptionGroup extends AbstractSelect implements
 
     @Override
     public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
-                BlurListener.blurMethod);
+        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
     }
 
     /**
@@ -88,8 +86,7 @@ public class OptionGroup extends AbstractSelect implements
 
     @Override
     public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
-                FocusListener.focusMethod);
+        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
     }
 
     /**
@@ -137,8 +134,7 @@ public class OptionGroup extends AbstractSelect implements
                     }
                 }
                 for (Object itemId : newValueSet) {
-                    if (!isItemEnabled(itemId)
-                            && !currentValueSet.contains(itemId)) {
+                    if (!isItemEnabled(itemId) && !currentValueSet.contains(itemId)) {
                         markAsDirty();
                         return;
                     }
@@ -222,8 +218,7 @@ public class OptionGroup extends AbstractSelect implements
     }
 
     @Override
-    protected Object readItem(Element child, Set<String> selected,
-            DesignContext context) {
+    protected Object readItem(Element child, Set<String> selected, DesignContext context) {
         Object itemId = super.readItem(child, selected, context);
 
         if (child.hasAttr("disabled")) {
@@ -234,8 +229,7 @@ public class OptionGroup extends AbstractSelect implements
     }
 
     @Override
-    protected Element writeItem(Element design, Object itemId,
-            DesignContext context) {
+    protected Element writeItem(Element design, Object itemId, DesignContext context) {
         Element elem = super.writeItem(design, itemId, context);
 
         if (!isItemEnabled(itemId)) {

@@ -9,8 +9,7 @@ import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.tests.components.AbstractComponentTest;
 import com.vaadin.ui.Label;
 
-public class LabelTest extends AbstractComponentTest<Label> implements
-        ValueChangeListener {
+public class LabelTest extends AbstractComponentTest<Label> implements ValueChangeListener {
 
     private Command<Label, String> setValueCommand = new Command<Label, String>() {
 
@@ -81,13 +80,11 @@ public class LabelTest extends AbstractComponentTest<Label> implements
         options.put("XHTML", ContentMode.HTML);
         options.put("XML", ContentMode.XML);
 
-        createSelectAction("Content mode", category, options, "Text",
-                contentModeCommand);
+        createSelectAction("Content mode", category, options, "Text", contentModeCommand);
     }
 
     private void createValueChangeListener(String category) {
-        createBooleanAction("Value change listener", category, false,
-                valueChangeListenerCommand);
+        createBooleanAction("Value change listener", category, false, valueChangeListenerCommand);
     }
 
     @Override

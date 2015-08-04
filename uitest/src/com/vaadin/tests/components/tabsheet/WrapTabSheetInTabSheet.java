@@ -20,8 +20,7 @@ public class WrapTabSheetInTabSheet extends TestBase {
             @Override
             public void buttonClick(ClickEvent event) {
                 TabSheet tabsheet = new TabSheet();
-                ComponentContainer mainParent = (ComponentContainer) mainLayout
-                        .getParent();
+                ComponentContainer mainParent = (ComponentContainer) mainLayout.getParent();
                 mainParent.replaceComponent(mainLayout, tabsheet);
                 tabsheet.addTab(mainLayout, "Default tab");
             }

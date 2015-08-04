@@ -124,8 +124,7 @@ import com.vaadin.ui.JavaScriptFunction;
  * @since 7.0.0
  */
 public abstract class AbstractJavaScriptExtension extends AbstractExtension {
-    private JavaScriptCallbackHelper callbackHelper = new JavaScriptCallbackHelper(
-            this);
+    private JavaScriptCallbackHelper callbackHelper = new JavaScriptCallbackHelper(this);
 
     /**
      * Creates a new JavasScript extension instance without extending any
@@ -149,8 +148,7 @@ public abstract class AbstractJavaScriptExtension extends AbstractExtension {
     }
 
     @Override
-    protected <T extends ServerRpc> void registerRpc(T implementation,
-            Class<T> rpcInterfaceType) {
+    protected <T extends ServerRpc> void registerRpc(T implementation, Class<T> rpcInterfaceType) {
         super.registerRpc(implementation, rpcInterfaceType);
         callbackHelper.registerRpc(rpcInterfaceType);
     }

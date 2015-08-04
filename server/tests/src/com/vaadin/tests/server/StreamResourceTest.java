@@ -39,8 +39,7 @@ public class StreamResourceTest {
     @Test
     public void testNotEqualsWithNullFields() {
         StreamResource resource1 = new StreamResource(null, null);
-        StreamResource resource2 = new StreamResource(
-                EasyMock.createMock(StreamSource.class), "");
+        StreamResource resource2 = new StreamResource(EasyMock.createMock(StreamSource.class), "");
 
         Assert.assertNotEquals(resource1, resource2);
     }

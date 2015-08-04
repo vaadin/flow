@@ -2,26 +2,21 @@ package com.vaadin.data.util;
 
 import java.util.Collection;
 
-public class ContainerHierarchicalWrapperTest extends
-        AbstractHierarchicalContainerTestBase {
+public class ContainerHierarchicalWrapperTest extends AbstractHierarchicalContainerTestBase {
 
     public void testBasicOperations() {
-        testBasicContainerOperations(new ContainerHierarchicalWrapper(
-                new IndexedContainer()));
+        testBasicContainerOperations(new ContainerHierarchicalWrapper(new IndexedContainer()));
     }
 
     public void testHierarchicalContainer() {
-        testHierarchicalContainer(new ContainerHierarchicalWrapper(
-                new IndexedContainer()));
+        testHierarchicalContainer(new ContainerHierarchicalWrapper(new IndexedContainer()));
     }
 
     public void testRemoveSubtree() {
-        testRemoveHierarchicalWrapperSubtree(new ContainerHierarchicalWrapper(
-                new IndexedContainer()));
+        testRemoveHierarchicalWrapperSubtree(new ContainerHierarchicalWrapper(new IndexedContainer()));
     }
 
-    protected void testRemoveHierarchicalWrapperSubtree(
-            ContainerHierarchicalWrapper container) {
+    protected void testRemoveHierarchicalWrapperSubtree(ContainerHierarchicalWrapper container) {
         initializeContainer(container);
 
         // remove root item
@@ -30,9 +25,7 @@ public class ContainerHierarchicalWrapperTest extends
         int packages = 21 + 3 - 3;
         int expectedSize = sampleData.length + packages - 1;
 
-        validateContainer(container, "com", "com.vaadin.util.SerializerHelper",
-                "com.vaadin.server.ApplicationResource", "blah", true,
-                expectedSize);
+        validateContainer(container, "com", "com.vaadin.util.SerializerHelper", "com.vaadin.server.ApplicationResource", "blah", true, expectedSize);
 
         // rootItemIds
         Collection<?> rootIds = container.rootItemIds();

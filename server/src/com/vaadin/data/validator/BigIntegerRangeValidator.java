@@ -42,8 +42,7 @@ public class BigIntegerRangeValidator extends RangeValidator<BigInteger> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public BigIntegerRangeValidator(String errorMessage, BigInteger minValue,
-            BigInteger maxValue) {
+    public BigIntegerRangeValidator(String errorMessage, BigInteger minValue, BigInteger maxValue) {
         super(errorMessage, BigInteger.class, minValue, maxValue);
     }
 

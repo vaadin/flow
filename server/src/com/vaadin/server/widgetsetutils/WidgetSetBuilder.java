@@ -54,12 +54,10 @@ public class WidgetSetBuilder {
         }
     }
 
-    public static void updateWidgetSet(final String widgetset)
-            throws IOException, FileNotFoundException {
+    public static void updateWidgetSet(final String widgetset) throws IOException, FileNotFoundException {
         boolean changed = false;
 
-        Map<String, URL> availableWidgetSets = ClassPathExplorer
-                .getAvailableWidgetSets();
+        Map<String, URL> availableWidgetSets = ClassPathExplorer.getAvailableWidgetSets();
 
         URL sourceUrl = availableWidgetSets.get(widgetset);
         if (sourceUrl == null) {
@@ -67,8 +65,7 @@ public class WidgetSetBuilder {
             sourceUrl = ClassPathExplorer.getDefaultSourceDirectory();
         }
 
-        String widgetsetfilename = sourceUrl.getFile() + "/"
-                + widgetset.replace(".", "/") + ".gwt.xml";
+        String widgetsetfilename = sourceUrl.getFile() + "/" + widgetset.replace(".", "/") + ".gwt.xml";
 
         File widgetsetFile = new File(widgetsetfilename);
         if (!widgetsetFile.exists()) {
@@ -76,34 +73,14 @@ public class WidgetSetBuilder {
             File parent = widgetsetFile.getParentFile();
             if (parent != null && !parent.exists()) {
                 if (!parent.mkdirs()) {
-                    throw new IOException(
-                            "Could not create directory for the widgetset: "
-                                    + parent.getPath());
+                    throw new IOException("Could not create directory for the widgetset: " + parent.getPath());
                 }
             }
             widgetsetFile.createNewFile();
-            PrintStream printStream = new PrintStream(new FileOutputStream(
-                    widgetsetFile));
-            printStream
-                    .print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                            + "<!DOCTYPE module PUBLIC \"-//Google Inc.//DTD Google Web Toolkit 2.5.1//EN\" \"http://google-web-toolkit.googlecode.com/svn/tags/2.5.1/distro-source/core/src/gwt-module.dtd\">\n");
+            PrintStream printStream = new PrintStream(new FileOutputStream(widgetsetFile));
+            printStream.print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<!DOCTYPE module PUBLIC \"-//Google Inc.//DTD Google Web Toolkit 2.5.1//EN\" \"http://google-web-toolkit.googlecode.com/svn/tags/2.5.1/distro-source/core/src/gwt-module.dtd\">\n");
             printStream.print("<module>\n");
-            printStream
-                    .print("    <!--\n"
-                            + "     Uncomment the following to compile the widgetset for one browser only.\n\n"
-                            + "     Multiple browsers can be specified as a comma separated list. The\n"
-                            + "     supported user agents at the moment of writing were:\n"
-                            + "     ie8,ie9,gecko1_8,safari,opera\n\n"
-                            + "     The value gecko1_8 is used for Firefox and safari is used for webkit\n"
-                            + "     based browsers including Google Chrome.\n"
-                            + "    -->\n"
-                            + "    <!-- <set-property name=\"user.agent\" value=\"safari\"/> -->\n\n"
-                            + "    <!--\n"
-                            + "    To enable SuperDevMode, uncomment this line.\n\n"
-                            + "    See https://vaadin.com/wiki/-/wiki/Main/Using%20SuperDevMode for more\n"
-                            + "    information and instructions.\n"
-                            + "    -->\n"
-                            + "    <!-- <set-configuration-property name=\"devModeRedirectEnabled\" value=\"true\" /> -->\n\n");
+            printStream.print("    <!--\n" + "     Uncomment the following to compile the widgetset for one browser only.\n\n" + "     Multiple browsers can be specified as a comma separated list. The\n" + "     supported user agents at the moment of writing were:\n" + "     ie8,ie9,gecko1_8,safari,opera\n\n" + "     The value gecko1_8 is used for Firefox and safari is used for webkit\n" + "     based browsers including Google Chrome.\n" + "    -->\n" + "    <!-- <set-property name=\"user.agent\" value=\"safari\"/> -->\n\n" + "    <!--\n" + "    To enable SuperDevMode, uncomment this line.\n\n" + "    See https://vaadin.com/wiki/-/wiki/Main/Using%20SuperDevMode for more\n" + "    information and instructions.\n" + "    -->\n" + "    <!-- <set-configuration-property name=\"devModeRedirectEnabled\" value=\"true\" /> -->\n\n");
             printStream.print("\n</module>\n");
             printStream.close();
             changed = true;
@@ -140,8 +117,7 @@ public class WidgetSetBuilder {
                 commitChanges(widgetsetfilename, content);
             }
         } else {
-            System.out
-                    .println("Widgetset is manually edited. Skipping updates.");
+            System.out.println("Widgetset is manually edited. Skipping updates.");
         }
     }
 
@@ -153,21 +129,17 @@ public class WidgetSetBuilder {
         return content.replaceFirst("<inherits name=\"" + ws + "\"[^/]*/>", "");
     }
 
-    private static void commitChanges(String widgetsetfilename, String content)
-            throws IOException {
-        BufferedWriter bufferedWriter = new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(widgetsetfilename)));
+    private static void commitChanges(String widgetsetfilename, String content) throws IOException {
+        BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(widgetsetfilename)));
         bufferedWriter.write(content);
         bufferedWriter.close();
     }
 
     private static String addWidgetSet(String ws, String content) {
-        return content.replace("</module>", "\n    <inherits name=\"" + ws
-                + "\" />" + "\n</module>");
+        return content.replace("</module>", "\n    <inherits name=\"" + ws + "\" />" + "\n</module>");
     }
 
-    private static Collection<String> getCurrentInheritedWidgetsets(
-            String content) {
+    private static Collection<String> getCurrentInheritedWidgetsets(String content) {
         HashSet<String> hashSet = new HashSet<String>();
         Pattern inheritsPattern = Pattern.compile(" name=\"([^\"]*)\"");
 
@@ -202,10 +174,8 @@ public class WidgetSetBuilder {
     private static void printUsage() {
         PrintStream o = System.out;
         o.println(WidgetSetBuilder.class.getSimpleName() + " usage:");
-        o.println("    1. Set the same classpath as you will "
-                + "have for the GWT compiler.");
-        o.println("    2. Give the widgetsetname (to be created or updated)"
-                + " as first parameter");
+        o.println("    1. Set the same classpath as you will " + "have for the GWT compiler.");
+        o.println("    2. Give the widgetsetname (to be created or updated)" + " as first parameter");
         o.println();
         o.println("All found vaadin widgetsets will be inherited in given widgetset");
 

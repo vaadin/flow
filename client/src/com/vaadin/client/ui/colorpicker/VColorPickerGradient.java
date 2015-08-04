@@ -33,8 +33,7 @@ import com.vaadin.client.ui.SubPartAware;
  * @since 7.0.0
  * 
  */
-public class VColorPickerGradient extends FocusPanel implements
-        MouseDownHandler, MouseUpHandler, MouseMoveHandler, SubPartAware {
+public class VColorPickerGradient extends FocusPanel implements MouseDownHandler, MouseUpHandler, MouseMoveHandler, SubPartAware {
 
     /** Set the CSS class name to allow styling. */
     public static final String CLASSNAME = "v-colorpicker-gradient";

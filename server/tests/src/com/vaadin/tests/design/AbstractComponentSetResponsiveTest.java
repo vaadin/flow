@@ -20,8 +20,7 @@ import org.junit.Test;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Label;
 
-public class AbstractComponentSetResponsiveTest extends
-        DeclarativeTestBase<Label> {
+public class AbstractComponentSetResponsiveTest extends DeclarativeTestBase<Label> {
 
     @Test
     public void testResponsiveFlag() {

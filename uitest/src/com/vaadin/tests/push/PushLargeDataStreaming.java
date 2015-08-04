@@ -27,7 +27,6 @@ public class PushLargeDataStreaming extends PushLargeData {
     protected void setup(VaadinRequest request) {
         super.setup(request);
         getPushConfiguration().setTransport(Transport.STREAMING);
-        getPushConfiguration().setParameter(
-                PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
+        getPushConfiguration().setParameter(PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
     }
 }

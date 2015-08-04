@@ -58,16 +58,14 @@ import com.vaadin.ui.UI;
  */
 public class CurrentInstance implements Serializable {
     private static final Object NULL_OBJECT = new Object();
-    private static final CurrentInstance CURRENT_INSTANCE_NULL = new CurrentInstance(
-            NULL_OBJECT, true);
+    private static final CurrentInstance CURRENT_INSTANCE_NULL = new CurrentInstance(NULL_OBJECT, true);
 
     private final WeakReference<Object> instance;
     private final boolean inheritable;
 
     private static InheritableThreadLocal<Map<Class<?>, CurrentInstance>> instances = new InheritableThreadLocal<Map<Class<?>, CurrentInstance>>() {
         @Override
-        protected Map<Class<?>, CurrentInstance> childValue(
-                Map<Class<?>, CurrentInstance> parentValue) {
+        protected Map<Class<?>, CurrentInstance> childValue(Map<Class<?>, CurrentInstance> parentValue) {
             if (parentValue == null) {
                 return null;
             }
@@ -135,15 +133,12 @@ public class CurrentInstance implements Serializable {
     }
 
     private static void removeStaleInstances(Map<Class<?>, CurrentInstance> map) {
-        for (Iterator<Entry<Class<?>, CurrentInstance>> iterator = map
-                .entrySet().iterator(); iterator.hasNext();) {
+        for (Iterator<Entry<Class<?>, CurrentInstance>> iterator = map.entrySet().iterator(); iterator.hasNext();) {
             Entry<Class<?>, CurrentInstance> entry = iterator.next();
             Object instance = entry.getValue().instance.get();
             if (instance == null) {
                 iterator.remove();
-                getLogger().log(Level.FINE,
-                        "CurrentInstance for {0} has been garbage collected.",
-                        entry.getKey());
+                getLogger().log(Level.FINE, "CurrentInstance for {0} has been garbage collected.", entry.getKey());
             }
         }
     }
@@ -183,8 +178,7 @@ public class CurrentInstance implements Serializable {
         set(type, instance, true);
     }
 
-    private static <T> CurrentInstance set(Class<T> type, T instance,
-            boolean inheritable) {
+    private static <T> CurrentInstance set(Class<T> type, T instance, boolean inheritable) {
         Map<Class<?>, CurrentInstance> map = instances.get();
         CurrentInstance previousInstance = null;
         if (instance == null) {
@@ -203,15 +197,9 @@ public class CurrentInstance implements Serializable {
                 instances.set(map);
             }
 
-            previousInstance = map.put(type, new CurrentInstance(instance,
-                    inheritable));
+            previousInstance = map.put(type, new CurrentInstance(instance, inheritable));
             if (previousInstance != null) {
-                assert previousInstance.inheritable == inheritable : "Inheritable status mismatch for "
-                        + type
-                        + " (previous was "
-                        + previousInstance.inheritable
-                        + ", new is "
-                        + inheritable + ")";
+                assert previousInstance.inheritable == inheritable : "Inheritable status mismatch for " + type + " (previous was " + previousInstance.inheritable + ", new is " + inheritable + ")";
             }
         }
         if (previousInstance == null) {
@@ -281,8 +269,7 @@ public class CurrentInstance implements Serializable {
      *            included; <code>false</code> to get all instances.
      * @return a map containing the current instances
      */
-    public static Map<Class<?>, CurrentInstance> getInstances(
-            boolean onlyInheritable) {
+    public static Map<Class<?>, CurrentInstance> getInstances(boolean onlyInheritable) {
         Map<Class<?>, CurrentInstance> map = instances.get();
         if (map == null) {
             return Collections.emptyMap();
@@ -337,8 +324,7 @@ public class CurrentInstance implements Serializable {
      * @return A map containing the old values of the instances this method
      *         updated.
      */
-    public static Map<Class<?>, CurrentInstance> setCurrent(
-            VaadinSession session) {
+    public static Map<Class<?>, CurrentInstance> setCurrent(VaadinSession session) {
         Map<Class<?>, CurrentInstance> old = new HashMap<Class<?>, CurrentInstance>();
         old.put(VaadinSession.class, set(VaadinSession.class, session, true));
         VaadinService service = null;

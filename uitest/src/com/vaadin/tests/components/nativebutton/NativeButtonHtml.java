@@ -12,8 +12,7 @@ public class NativeButtonHtml extends TestBase {
         NativeButton b = new NativeButton("<b>Plain text button</b>");
         addComponent(b);
 
-        b = new NativeButton(
-                "<span style=\"color: red; font-weight: bold;\">HTML</span> button");
+        b = new NativeButton("<span style=\"color: red; font-weight: bold;\">HTML</span> button");
         b.setHtmlContentAllowed(true);
         addComponent(b);
 
@@ -22,8 +21,7 @@ public class NativeButtonHtml extends TestBase {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                swapButton.setHtmlContentAllowed(!swapButton
-                        .isHtmlContentAllowed());
+                swapButton.setHtmlContentAllowed(!swapButton.isHtmlContentAllowed());
             }
         });
         addComponent(swapButton);

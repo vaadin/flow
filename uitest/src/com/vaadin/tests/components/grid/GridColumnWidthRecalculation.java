@@ -37,8 +37,7 @@ public class GridColumnWidthRecalculation extends AbstractTestUI {
         grid.addColumn("Column 1");
         grid.addColumn("Column 2");
 
-        grid.addRow("Narrow",
-                "Wiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiide");
+        grid.addRow("Narrow", "Wiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiide");
         addComponent(grid);
 
         Button b = new Button("Swap content", new Button.ClickListener() {
@@ -50,16 +49,15 @@ public class GridColumnWidthRecalculation extends AbstractTestUI {
         });
         addComponent(b);
 
-        b = new Button("Swap content and recalculate columns",
-                new Button.ClickListener() {
+        b = new Button("Swap content and recalculate columns", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        swapData(grid);
-                        grid.recalculateColumnWidths();
+            @Override
+            public void buttonClick(ClickEvent event) {
+                swapData(grid);
+                grid.recalculateColumnWidths();
 
-                    }
-                });
+            }
+        });
         addComponent(b);
     }
 
@@ -68,8 +66,7 @@ public class GridColumnWidthRecalculation extends AbstractTestUI {
         Indexed dataSource = grid.getContainerDataSource();
         Object itemId = dataSource.getItemIds().iterator().next();
         Item item = dataSource.getItem(itemId);
-        ArrayList<Object> pIds = new ArrayList<Object>(
-                item.getItemPropertyIds());
+        ArrayList<Object> pIds = new ArrayList<Object>(item.getItemPropertyIds());
         for (int i = 0; i < pIds.size() / 2; i++) {
             int j = pIds.size() - 1 - i;
             Object pid1 = pIds.get(i);

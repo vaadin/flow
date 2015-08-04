@@ -229,8 +229,7 @@ public interface Container extends Serializable {
      * @throws UnsupportedOperationException
      *             if the container does not support removing individual items
      */
-    public boolean removeItem(Object itemId)
-            throws UnsupportedOperationException;
+    public boolean removeItem(Object itemId) throws UnsupportedOperationException;
 
     /**
      * Adds a new Property to all Items in the Container. The Property ID, data
@@ -250,8 +249,7 @@ public interface Container extends Serializable {
      *             if the container does not support explicitly adding container
      *             properties
      */
-    public boolean addContainerProperty(Object propertyId, Class<?> type,
-            Object defaultValue) throws UnsupportedOperationException;
+    public boolean addContainerProperty(Object propertyId, Class<?> type, Object defaultValue) throws UnsupportedOperationException;
 
     /**
      * Removes a Property specified by the given Property ID from the Container.
@@ -267,8 +265,7 @@ public interface Container extends Serializable {
      *             if the container does not support removing container
      *             properties
      */
-    public boolean removeContainerProperty(Object propertyId)
-            throws UnsupportedOperationException;
+    public boolean removeContainerProperty(Object propertyId) throws UnsupportedOperationException;
 
     /**
      * Removes all Items from the Container.
@@ -376,8 +373,7 @@ public interface Container extends Serializable {
          * @throws UnsupportedOperationException
          *             if the operation is not supported by the container
          */
-        public Object addItemAfter(Object previousItemId)
-                throws UnsupportedOperationException;
+        public Object addItemAfter(Object previousItemId) throws UnsupportedOperationException;
 
         /**
          * Adds a new item after the given item.
@@ -397,8 +393,7 @@ public interface Container extends Serializable {
          * @throws UnsupportedOperationException
          *             if the operation is not supported by the container
          */
-        public Item addItemAfter(Object previousItemId, Object newItemId)
-                throws UnsupportedOperationException;
+        public Item addItemAfter(Object previousItemId, Object newItemId) throws UnsupportedOperationException;
 
     }
 
@@ -579,8 +574,7 @@ public interface Container extends Serializable {
          * @throws UnsupportedOperationException
          *             if the operation is not supported by the container
          */
-        public Item addItemAt(int index, Object newItemId)
-                throws UnsupportedOperationException;
+        public Item addItemAt(int index, Object newItemId) throws UnsupportedOperationException;
 
         /**
          * An <code>Event</code> object specifying information about the added
@@ -711,8 +705,7 @@ public interface Container extends Serializable {
          * @return <code>true</code> if the operation succeeded,
          *         <code>false</code> if not
          */
-        public boolean setParent(Object itemId, Object newParentId)
-                throws UnsupportedOperationException;
+        public boolean setParent(Object itemId, Object newParentId) throws UnsupportedOperationException;
 
         /**
          * Tests if the Item with given ID can have children.
@@ -753,9 +746,7 @@ public interface Container extends Serializable {
          * @return <code>true</code> if the operation succeeded,
          *         <code>false</code> if not
          */
-        public boolean setChildrenAllowed(Object itemId,
-                boolean areChildrenAllowed)
-                throws UnsupportedOperationException;
+        public boolean setChildrenAllowed(Object itemId, boolean areChildrenAllowed) throws UnsupportedOperationException;
 
         /**
          * Tests if the Item specified with <code>itemId</code> is a root Item.
@@ -805,8 +796,7 @@ public interface Container extends Serializable {
          *         <code>false</code> if not
          */
         @Override
-        public boolean removeItem(Object itemId)
-                throws UnsupportedOperationException;
+        public boolean removeItem(Object itemId) throws UnsupportedOperationException;
     }
 
     /**
@@ -874,8 +864,7 @@ public interface Container extends Serializable {
          * @param onlyMatchPrefix
          *            Only match prefixes; no other matches are included.
          */
-        public void addContainerFilter(Object propertyId, String filterString,
-                boolean ignoreCase, boolean onlyMatchPrefix);
+        public void addContainerFilter(Object propertyId, String filterString, boolean ignoreCase, boolean onlyMatchPrefix);
 
         /**
          * Remove all filters from all properties.
@@ -926,8 +915,7 @@ public interface Container extends Serializable {
          * @throws UnsupportedOperationException
          *             if the filter cannot be used for in-memory filtering
          */
-        public boolean passesFilter(Object itemId, Item item)
-                throws UnsupportedOperationException;
+        public boolean passesFilter(Object itemId, Item item) throws UnsupportedOperationException;
 
         /**
          * Check if a change in the value of a property can affect the filtering
@@ -994,8 +982,7 @@ public interface Container extends Serializable {
          * @throws UnsupportedFilterException
          *             if the filter is not supported by the container
          */
-        public void addContainerFilter(Filter filter)
-                throws UnsupportedFilterException;
+        public void addContainerFilter(Filter filter) throws UnsupportedFilterException;
 
         /**
          * Removes a filter from the container.
@@ -1122,8 +1109,7 @@ public interface Container extends Serializable {
          * @param listener
          *            listener to be added
          */
-        public void addItemSetChangeListener(
-                Container.ItemSetChangeListener listener);
+        public void addItemSetChangeListener(Container.ItemSetChangeListener listener);
 
         /**
          * @deprecated As of 7.0, replaced by
@@ -1138,8 +1124,7 @@ public interface Container extends Serializable {
          * @param listener
          *            listener to be removed
          */
-        public void removeItemSetChangeListener(
-                Container.ItemSetChangeListener listener);
+        public void removeItemSetChangeListener(Container.ItemSetChangeListener listener);
 
         /**
          * @deprecated As of 7.0, replaced by
@@ -1188,8 +1173,7 @@ public interface Container extends Serializable {
          * @param event
          *            Change event.
          */
-        public void containerPropertySetChange(
-                Container.PropertySetChangeEvent event);
+        public void containerPropertySetChange(Container.PropertySetChangeEvent event);
     }
 
     /**
@@ -1224,8 +1208,7 @@ public interface Container extends Serializable {
          * @param listener
          *            The new Listener to be registered
          */
-        public void addPropertySetChangeListener(
-                Container.PropertySetChangeListener listener);
+        public void addPropertySetChangeListener(Container.PropertySetChangeListener listener);
 
         /**
          * @deprecated As of 7.0, replaced by
@@ -1240,8 +1223,7 @@ public interface Container extends Serializable {
          * @param listener
          *            Listener to be removed
          */
-        public void removePropertySetChangeListener(
-                Container.PropertySetChangeListener listener);
+        public void removePropertySetChangeListener(Container.PropertySetChangeListener listener);
 
         /**
          * @deprecated As of 7.0, replaced by

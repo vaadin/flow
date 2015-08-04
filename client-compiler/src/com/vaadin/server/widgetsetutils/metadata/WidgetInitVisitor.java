@@ -28,20 +28,16 @@ import com.vaadin.shared.annotations.DelegateToWidget;
 public class WidgetInitVisitor extends TypeVisitor {
 
     @Override
-    public void visitConnector(TreeLogger logger, JClassType type,
-            ConnectorBundle bundle) throws UnableToCompleteException {
+    public void visitConnector(TreeLogger logger, JClassType type, ConnectorBundle bundle) throws UnableToCompleteException {
         if (ConnectorBundle.isConnectedComponentConnector(type)) {
             // The class in which createWidget is implemented
-            JClassType createWidgetClass = ConnectorBundle.findInheritedMethod(
-                    type, "createWidget").getEnclosingType();
+            JClassType createWidgetClass = ConnectorBundle.findInheritedMethod(type, "createWidget").getEnclosingType();
 
-            JMethod getWidget = ConnectorBundle.findInheritedMethod(type,
-                    "getWidget");
+            JMethod getWidget = ConnectorBundle.findInheritedMethod(type, "getWidget");
             JClassType widgetType = getWidget.getReturnType().isClass();
 
             // Needs GWT constructor if createWidget is not overridden
-            if (createWidgetClass.getQualifiedSourceName().equals(
-                    AbstractComponentConnector.class.getCanonicalName())) {
+            if (createWidgetClass.getQualifiedSourceName().equals(AbstractComponentConnector.class.getCanonicalName())) {
                 bundle.setNeedsGwtConstructor(widgetType);
 
                 // Also needs widget type to find the right GWT constructor
@@ -49,38 +45,21 @@ public class WidgetInitVisitor extends TypeVisitor {
             }
 
             // Check state properties for @DelegateToWidget
-            JMethod getState = ConnectorBundle.findInheritedMethod(type,
-                    "getState");
+            JMethod getState = ConnectorBundle.findInheritedMethod(type, "getState");
             JClassType stateType = getState.getReturnType().isClass();
 
             Collection<Property> properties = bundle.getProperties(stateType);
             for (Property property : properties) {
-                DelegateToWidget delegateToWidget = property
-                        .getAnnotation(DelegateToWidget.class);
+                DelegateToWidget delegateToWidget = property.getAnnotation(DelegateToWidget.class);
                 if (delegateToWidget != null) {
                     // Generate meta data required for @DelegateToWidget
                     bundle.setNeedsDelegateToWidget(property, stateType);
 
                     // Find the delegate target method
-                    String methodName = DelegateToWidget.Helper
-                            .getDelegateTarget(property.getName(),
-                                    delegateToWidget.value());
-                    JMethod delegatedSetter = ConnectorBundle
-                            .findInheritedMethod(widgetType, methodName,
-                                    property.getPropertyType());
+                    String methodName = DelegateToWidget.Helper.getDelegateTarget(property.getName(), delegateToWidget.value());
+                    JMethod delegatedSetter = ConnectorBundle.findInheritedMethod(widgetType, methodName, property.getPropertyType());
                     if (delegatedSetter == null) {
-                        logger.log(
-                                Type.ERROR,
-                                widgetType.getName()
-                                        + "."
-                                        + methodName
-                                        + "("
-                                        + property.getPropertyType()
-                                                .getSimpleSourceName()
-                                        + ") required by @DelegateToWidget for "
-                                        + stateType.getName() + "."
-                                        + property.getName()
-                                        + " can not be found.");
+                        logger.log(Type.ERROR, widgetType.getName() + "." + methodName + "(" + property.getPropertyType().getSimpleSourceName() + ") required by @DelegateToWidget for " + stateType.getName() + "." + property.getName() + " can not be found.");
                         throw new UnableToCompleteException();
                     }
                     bundle.setNeedsInvoker(widgetType, delegatedSetter);

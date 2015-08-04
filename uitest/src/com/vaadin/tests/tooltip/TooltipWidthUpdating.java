@@ -22,8 +22,7 @@ public class TooltipWidthUpdating extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        NativeButton componentWithShortTooltip = new NativeButton(
-                "Short tooltip");
+        NativeButton componentWithShortTooltip = new NativeButton("Short tooltip");
         componentWithShortTooltip.setDescription(SHORT_TOOLTIP_TEXT);
         componentWithShortTooltip.setId("shortTooltip");
 
@@ -48,12 +47,9 @@ public class TooltipWidthUpdating extends AbstractTestUI {
 
         // some count of any components should be added before (between) buttons
         // to make defect reproducible
-        vl.addComponents(component1, component2, component2, component3,
-                component4, component5, component5, component6, component7,
-                component8);
+        vl.addComponents(component1, component2, component2, component3, component4, component5, component5, component6, component7, component8);
 
-        getLayout().addComponents(componentWithShortTooltip, vl,
-                componentWithLongTooltip);
+        getLayout().addComponents(componentWithShortTooltip, vl, componentWithLongTooltip);
     }
 
     @Override

@@ -96,8 +96,7 @@ public class GridContainerNotSortableTest {
         Grid grid = new Grid();
         grid.setContainerDataSource(notSortableDataSource);
         Column column = grid.getColumn("Foo");
-        assertFalse("Column should not be sortable initially.",
-                column.isSortable());
+        assertFalse("Column should not be sortable initially.", column.isSortable());
         column.setSortable(true);
     }
 }

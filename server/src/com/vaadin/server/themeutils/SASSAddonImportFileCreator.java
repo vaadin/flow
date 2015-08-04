@@ -47,8 +47,7 @@ public class SASSAddonImportFileCreator {
 
     private static final String ADDON_IMPORTS_FILE = "addons.scss";
 
-    private static final String ADDON_IMPORTS_FILE_TEXT = "This file is automatically managed and "
-            + "will be overwritten from time to time.";
+    private static final String ADDON_IMPORTS_FILE_TEXT = "This file is automatically managed and " + "will be overwritten from time to time.";
 
     /**
      * 
@@ -83,12 +82,10 @@ public class SASSAddonImportFileCreator {
             addonImports.createNewFile();
         }
 
-        LocationInfo info = ClassPathExplorer
-                .getAvailableWidgetSetsAndStylesheets();
+        LocationInfo info = ClassPathExplorer.getAvailableWidgetSetsAndStylesheets();
 
         try {
-            PrintStream printStream = new PrintStream(new FileOutputStream(
-                    addonImports));
+            PrintStream printStream = new PrintStream(new FileOutputStream(addonImports));
 
             printStream.println("/* " + ADDON_IMPORTS_FILE_TEXT + " */");
 
@@ -105,12 +102,10 @@ public class SASSAddonImportFileCreator {
 
                 @Override
                 public int compare(String path1, String path2) {
-                    if (path1.toLowerCase().endsWith(".css")
-                            && path2.toLowerCase().endsWith(".scss")) {
+                    if (path1.toLowerCase().endsWith(".css") && path2.toLowerCase().endsWith(".scss")) {
                         return -1;
                     }
-                    if (path1.toLowerCase().endsWith(".scss")
-                            && path2.toLowerCase().endsWith(".css")) {
+                    if (path1.toLowerCase().endsWith(".scss") && path2.toLowerCase().endsWith(".css")) {
                         return 1;
                     }
                     return 0;
@@ -119,8 +114,7 @@ public class SASSAddonImportFileCreator {
 
             List<String> mixins = new ArrayList<String>();
             for (String path : paths) {
-                mixins.addAll(addImport(printStream, path,
-                        addonThemes.get(path)));
+                mixins.addAll(addImport(printStream, path, addonThemes.get(path)));
                 printStream.println();
             }
 
@@ -136,8 +130,7 @@ public class SASSAddonImportFileCreator {
         return Logger.getLogger(SASSAddonImportFileCreator.class.getName());
     }
 
-    private static List<String> addImport(PrintStream stream, String file,
-            URL location) {
+    private static List<String> addImport(PrintStream stream, String file, URL location) {
 
         // Add import comment
         printImportComment(stream, location);
@@ -152,8 +145,7 @@ public class SASSAddonImportFileCreator {
 
             // Convention is to name the mixin after the stylesheet. Strip
             // .scss from filename
-            String mixin = file.substring(file.lastIndexOf("/") + 1,
-                    file.length() - ".scss".length());
+            String mixin = file.substring(file.lastIndexOf("/") + 1, file.length() - ".scss".length());
 
             foundMixins.add(mixin);
         }
@@ -170,8 +162,7 @@ public class SASSAddonImportFileCreator {
 
         try {
             // Try to parse path for better readability
-            path = path.substring(path.lastIndexOf(":") + 1,
-                    path.lastIndexOf("!"));
+            path = path.substring(path.lastIndexOf(":") + 1, path.lastIndexOf("!"));
 
             // Extract jar archive filename
             path = path.substring(path.lastIndexOf("/") + 1);
@@ -184,8 +175,7 @@ public class SASSAddonImportFileCreator {
         stream.println("/* Provided by " + path + " */");
     }
 
-    private static void createAddonsMixin(PrintStream stream,
-            List<String> mixins) {
+    private static void createAddonsMixin(PrintStream stream, List<String> mixins) {
 
         stream.println("/* Import and include this mixin into your project theme to include the addon themes */");
         stream.println("@mixin addons {");

@@ -70,9 +70,7 @@ public class CvalAddonstCheckerUseCasesTest {
     };
 
     enum Message {
-        AGPL("AGPL"), VALID(">.* valid"), INVALID("not valid"), NO_LICENSE(
-                "not found"), NO_VALIDATED("has not been validated"), EXPIRED(
-                "has expired"), EVALUATION("evaluation");
+        AGPL("AGPL"), VALID(">.* valid"), INVALID("not valid"), NO_LICENSE("not found"), NO_VALIDATED("has not been validated"), EXPIRED("has expired"), EVALUATION("evaluation");
 
         String msg;
 
@@ -83,47 +81,33 @@ public class CvalAddonstCheckerUseCasesTest {
 
     @Test
     public void testUseCases() throws Exception {
-        useCase(1, License.NONE, Version.AGPL, Validated.NO, Network.OFF,
-                Compile.YES, Cached.NO, Message.AGPL);
+        useCase(1, License.NONE, Version.AGPL, Validated.NO, Network.OFF, Compile.YES, Cached.NO, Message.AGPL);
 
-        useCase(2, License.NONE, Version.CVAL, Validated.NO, Network.ON,
-                Compile.NO, Cached.NO, Message.NO_LICENSE);
+        useCase(2, License.NONE, Version.CVAL, Validated.NO, Network.ON, Compile.NO, Cached.NO, Message.NO_LICENSE);
 
-        useCase(3, License.NONE, Version.CVAL, Validated.NO, Network.OFF,
-                Compile.NO, Cached.NO, Message.NO_LICENSE);
+        useCase(3, License.NONE, Version.CVAL, Validated.NO, Network.OFF, Compile.NO, Cached.NO, Message.NO_LICENSE);
 
-        useCase(4, License.EVAL, Version.CVAL, Validated.NO, Network.ON,
-                Compile.YES, Cached.YES, Message.EVALUATION);
+        useCase(4, License.EVAL, Version.CVAL, Validated.NO, Network.ON, Compile.YES, Cached.YES, Message.EVALUATION);
 
-        useCase(5, License.INVALID, Version.CVAL, Validated.NO, Network.OFF,
-                Compile.YES, Cached.NO, Message.NO_VALIDATED);
+        useCase(5, License.INVALID, Version.CVAL, Validated.NO, Network.OFF, Compile.YES, Cached.NO, Message.NO_VALIDATED);
 
-        useCase(6, License.INVALID, Version.CVAL, Validated.NO, Network.ON,
-                Compile.NO, Cached.NO, Message.INVALID);
+        useCase(6, License.INVALID, Version.CVAL, Validated.NO, Network.ON, Compile.NO, Cached.NO, Message.INVALID);
 
-        useCase(7, License.REAL, Version.CVAL, Validated.NO, Network.ON,
-                Compile.YES, Cached.YES, Message.VALID);
+        useCase(7, License.REAL, Version.CVAL, Validated.NO, Network.ON, Compile.YES, Cached.YES, Message.VALID);
 
-        useCase(8, License.REAL, Version.CVAL, Validated.NO, Network.OFF,
-                Compile.YES, Cached.NO, Message.NO_VALIDATED);
+        useCase(8, License.REAL, Version.CVAL, Validated.NO, Network.OFF, Compile.YES, Cached.NO, Message.NO_VALIDATED);
 
-        useCase(9, License.REAL, Version.CVAL, Validated.YES, Network.OFF,
-                Compile.YES, Cached.YES, Message.VALID);
+        useCase(9, License.REAL, Version.CVAL, Validated.YES, Network.OFF, Compile.YES, Cached.YES, Message.VALID);
 
-        useCase(10, License.EVAL_EXPIRED, Version.CVAL, Validated.NO,
-                Network.ON, Compile.NO, Cached.YES, Message.EXPIRED);
+        useCase(10, License.EVAL_EXPIRED, Version.CVAL, Validated.NO, Network.ON, Compile.NO, Cached.YES, Message.EXPIRED);
 
-        useCase(11, License.EVAL_EXPIRED, Version.CVAL, Validated.YES,
-                Network.OFF, Compile.NO, Cached.YES, Message.EXPIRED);
+        useCase(11, License.EVAL_EXPIRED, Version.CVAL, Validated.YES, Network.OFF, Compile.NO, Cached.YES, Message.EXPIRED);
 
-        useCase(12, License.REAL_EXPIRED, Version.CVAL, Validated.YES,
-                Network.OFF, Compile.NO, Cached.YES, Message.EXPIRED);
+        useCase(12, License.REAL_EXPIRED, Version.CVAL, Validated.YES, Network.OFF, Compile.NO, Cached.YES, Message.EXPIRED);
 
-        useCase(13, License.REAL_EXPIRED, Version.CVAL, Validated.NO,
-                Network.ON, Compile.NO, Cached.YES, Message.EXPIRED);
+        useCase(13, License.REAL_EXPIRED, Version.CVAL, Validated.NO, Network.ON, Compile.NO, Cached.YES, Message.EXPIRED);
 
-        useCase(14, License.INVALID, Version.CVAL, Validated.OLD_KEY,
-                Network.OFF, Compile.YES, Cached.NO, Message.NO_VALIDATED);
+        useCase(14, License.INVALID, Version.CVAL, Validated.OLD_KEY, Network.OFF, Compile.YES, Cached.NO, Message.NO_VALIDATED);
     }
 
     @Test
@@ -131,16 +115,12 @@ public class CvalAddonstCheckerUseCasesTest {
         addLicensedJarToClasspath("test.foo", VAADIN_CVAL);
         System.setProperty(computeLicenseName("test.foo"), VALID_KEY);
 
-        useCase(15, License.REAL, Version.CVAL, Validated.YES, Network.OFF,
-                Compile.YES, Cached.YES, Message.NO_VALIDATED);
+        useCase(15, License.REAL, Version.CVAL, Validated.YES, Network.OFF, Compile.YES, Cached.YES, Message.NO_VALIDATED);
 
-        useCase(16, License.REAL, Version.CVAL, Validated.YES, Network.ON,
-                Compile.NO, Cached.YES, Message.INVALID);
+        useCase(16, License.REAL, Version.CVAL, Validated.YES, Network.ON, Compile.NO, Cached.YES, Message.INVALID);
     }
 
-    private void useCase(int number, License lic, Version ver, Validated val,
-            Network net, Compile res, Cached cached, Message msg)
-            throws Exception {
+    private void useCase(int number, License lic, Version ver, Validated val, Network net, Compile res, Cached cached, Message msg) throws Exception {
 
         if (ver == Version.AGPL) {
             addLicensedJarToClasspath(productNameAgpl, VAADIN_AGPL);
@@ -163,10 +143,8 @@ public class CvalAddonstCheckerUseCasesTest {
         if (val == Validated.NO) {
             deleteCache(productNameCval);
         } else {
-            String type = lic == License.EVAL || lic == License.EVAL_EXPIRED ? "evaluation"
-                    : null;
-            Boolean expired = lic == License.EVAL_EXPIRED
-                    || lic == License.REAL_EXPIRED ? true : null;
+            String type = lic == License.EVAL || lic == License.EVAL_EXPIRED ? "evaluation" : null;
+            Boolean expired = lic == License.EVAL_EXPIRED || lic == License.REAL_EXPIRED ? true : null;
             String key = val == Validated.OLD_KEY ? "oldkey" : null;
             saveCache(productNameCval, key, expired, null, type);
         }
@@ -197,21 +175,16 @@ public class CvalAddonstCheckerUseCasesTest {
             restoreSystemOut();
             message = e.getMessage();
             if (res == Compile.YES) {
-                Assert.fail(testNumber + "Unexpected Exception: "
-                        + e.getMessage());
+                Assert.fail(testNumber + "Unexpected Exception: " + e.getMessage());
             }
         }
 
         // System.err.println("\n> " + testNumber + " " + lic + " " + ver + " "
         // + val + " " + net + " " + res + " " + cached + "\n" + message);
 
-        Assert.assertTrue(testNumber + "Fail:\n" + message
-                + "\nDoes not match:" + msg.msg,
-                message.matches("(?s).*" + msg.msg + ".*"));
+        Assert.assertTrue(testNumber + "Fail:\n" + message + "\nDoes not match:" + msg.msg, message.matches("(?s).*" + msg.msg + ".*"));
 
         String c = cachedPreferences(productNameCval);
-        Assert.assertTrue(testNumber + "Fail: cacheExists != "
-                + (cached == Cached.YES) + "\n  " + c,
-                (c != null) == (cached == Cached.YES));
+        Assert.assertTrue(testNumber + "Fail: cacheExists != " + (cached == Cached.YES) + "\n  " + c, (c != null) == (cached == Cached.YES));
     }
 }

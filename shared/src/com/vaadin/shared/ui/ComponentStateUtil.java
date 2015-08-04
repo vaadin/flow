@@ -57,8 +57,7 @@ public final class ComponentStateUtil implements Serializable {
      * @param eventListenerId
      *            The event identifier to remove
      */
-    public static final void removeRegisteredEventListener(SharedState state,
-            String eventIdentifier) {
+    public static final void removeRegisteredEventListener(SharedState state, String eventIdentifier) {
         if (state.registeredEventListeners == null) {
             return;
         }
@@ -74,8 +73,7 @@ public final class ComponentStateUtil implements Serializable {
      * @param eventListenerId
      *            The event identifier to add
      */
-    public static final void addRegisteredEventListener(SharedState state,
-            String eventListenerId) {
+    public static final void addRegisteredEventListener(SharedState state, String eventListenerId) {
         if (state.registeredEventListeners == null) {
             state.registeredEventListeners = new HashSet<String>();
         }

@@ -67,8 +67,7 @@ public class FieldGroupTest {
     }
 
     @Test
-    public void commit_validationFailed_allValidationFailuresAvailable()
-            throws CommitException {
+    public void commit_validationFailed_allValidationFailuresAvailable() throws CommitException {
         FieldGroup fieldGroup = new FieldGroup();
 
         fieldGroup.setItemDataSource(new TestItem());
@@ -81,25 +80,18 @@ public class FieldGroupTest {
         field2.setRequired(true);
         fieldGroup.bind(field2, "prop2");
 
-        Set<TextField> set = new HashSet<TextField>(Arrays.asList(field1,
-                field2));
+        Set<TextField> set = new HashSet<TextField>(Arrays.asList(field1, field2));
 
         try {
             fieldGroup.commit();
             Assert.fail("No commit exception is thrown");
         } catch (CommitException exception) {
-            Map<Field<?>, ? extends InvalidValueException> invalidFields = exception
-                    .getInvalidFields();
-            for (Entry<Field<?>, ? extends InvalidValueException> entry : invalidFields
-                    .entrySet()) {
+            Map<Field<?>, ? extends InvalidValueException> invalidFields = exception.getInvalidFields();
+            for (Entry<Field<?>, ? extends InvalidValueException> entry : invalidFields.entrySet()) {
                 set.remove(entry.getKey());
             }
-            Assert.assertEquals(
-                    "Some fields are not found in the invalid fields map", 0,
-                    set.size());
-            Assert.assertEquals(
-                    "Invalid value exception should be thrown for each field",
-                    2, invalidFields.size());
+            Assert.assertEquals("Some fields are not found in the invalid fields map", 0, set.size());
+            Assert.assertEquals("Invalid value exception should be thrown for each field", 2, invalidFields.size());
         }
     }
 
@@ -116,14 +108,12 @@ public class FieldGroupTest {
         }
 
         @Override
-        public boolean addItemProperty(Object id, Property property)
-                throws UnsupportedOperationException {
+        public boolean addItemProperty(Object id, Property property) throws UnsupportedOperationException {
             return false;
         }
 
         @Override
-        public boolean removeItemProperty(Object id)
-                throws UnsupportedOperationException {
+        public boolean removeItemProperty(Object id) throws UnsupportedOperationException {
             return false;
         }
 

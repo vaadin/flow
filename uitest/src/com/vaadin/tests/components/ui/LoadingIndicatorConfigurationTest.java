@@ -36,31 +36,25 @@ public class LoadingIndicatorConfigurationTest extends AbstractTestUIWithLog {
             }
         });
 
-        firstDelay = createIntegerTextField("First delay (ms)",
-                getState().loadingIndicatorConfiguration.firstDelay);
+        firstDelay = createIntegerTextField("First delay (ms)", getState().loadingIndicatorConfiguration.firstDelay);
         firstDelay.addValueChangeListener(new Property.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
-                getLoadingIndicatorConfiguration().setFirstDelay(
-                        (Integer) firstDelay.getConvertedValue());
+                getLoadingIndicatorConfiguration().setFirstDelay((Integer) firstDelay.getConvertedValue());
             }
         });
-        secondDelay = createIntegerTextField("Second delay (ms)",
-                getState().loadingIndicatorConfiguration.secondDelay);
+        secondDelay = createIntegerTextField("Second delay (ms)", getState().loadingIndicatorConfiguration.secondDelay);
         secondDelay.addValueChangeListener(new Property.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
-                getLoadingIndicatorConfiguration().setSecondDelay(
-                        (Integer) secondDelay.getConvertedValue());
+                getLoadingIndicatorConfiguration().setSecondDelay((Integer) secondDelay.getConvertedValue());
             }
         });
-        thirdDelay = createIntegerTextField("Third delay (ms)",
-                getState().loadingIndicatorConfiguration.thirdDelay);
+        thirdDelay = createIntegerTextField("Third delay (ms)", getState().loadingIndicatorConfiguration.thirdDelay);
         thirdDelay.addValueChangeListener(new Property.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
-                getLoadingIndicatorConfiguration().setThirdDelay(
-                        (Integer) thirdDelay.getConvertedValue());
+                getLoadingIndicatorConfiguration().setThirdDelay((Integer) thirdDelay.getConvertedValue());
             }
         });
 

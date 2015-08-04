@@ -45,8 +45,7 @@ public class ComboboxPageLengthZeroScrollTest extends MultiBrowserTest {
         // navigate to the next page. keyboard navigation is the preferred
         // method here since it's much easier to implement.
 
-        Actions keyNavigation = new Actions(driver).moveToElement(comboBox)
-                .click();
+        Actions keyNavigation = new Actions(driver).moveToElement(comboBox).click();
 
         for (int i = 0; i < 25; ++i) {
             keyNavigation.sendKeys(Keys.ARROW_DOWN);
@@ -57,11 +56,9 @@ public class ComboboxPageLengthZeroScrollTest extends MultiBrowserTest {
         // The broken behavior always caused a v-shadow element to have
         // height: 10px. Verify that this does no longer happen.
 
-        String cssValue = driver.findElement(By.className("v-shadow"))
-                .getCssValue("height");
+        String cssValue = driver.findElement(By.className("v-shadow")).getCssValue("height");
 
-        Assert.assertNotEquals("v-shadow height should not be 10px", "10px",
-                cssValue);
+        Assert.assertNotEquals("v-shadow height should not be 10px", "10px", cssValue);
 
     }
 

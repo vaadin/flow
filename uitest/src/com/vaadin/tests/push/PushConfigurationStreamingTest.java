@@ -27,8 +27,7 @@ public class PushConfigurationStreamingTest extends PushConfigurationTest {
         openDebugLogTab();
 
         getTransportSelect().selectByText("Streaming");
-        assertThat(getStatusText(),
-                containsString("fallbackTransport: long-polling"));
+        assertThat(getStatusText(), containsString("fallbackTransport: long-polling"));
         assertThat(getStatusText(), containsString("transport: streaming"));
 
         clearDebugMessages();

@@ -53,8 +53,7 @@ public class UIScrollingTest extends MultiBrowserTest {
         waitForElementPresent(By.className("v-Notification"));
 
         NotificationElement notification = $(NotificationElement.class).first();
-        assertEquals("Scrolled to 1000 px",
-                notification.findElement(By.tagName("h1")).getText());
+        assertEquals("Scrolled to 1000 px", notification.findElement(By.tagName("h1")).getText());
 
         // attempt to close the notification
         notification.close();
@@ -67,8 +66,7 @@ public class UIScrollingTest extends MultiBrowserTest {
         waitForElementPresent(By.className("v-Notification"));
 
         notification = $(NotificationElement.class).first();
-        assertEquals("Scrolled to 1020 px",
-                notification.findElement(By.tagName("h1")).getText());
+        assertEquals("Scrolled to 1020 px", notification.findElement(By.tagName("h1")).getText());
 
         notification.close();
 

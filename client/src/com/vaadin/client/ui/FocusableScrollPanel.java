@@ -39,8 +39,7 @@ import com.vaadin.client.BrowserInfo;
  * A scrollhandlers similar to {@link ScrollPanel}.
  * 
  */
-public class FocusableScrollPanel extends SimpleFocusablePanel implements
-        HasScrollHandlers, ScrollHandler {
+public class FocusableScrollPanel extends SimpleFocusablePanel implements HasScrollHandlers, ScrollHandler {
 
     public FocusableScrollPanel() {
         // Prevent IE standard mode bug when a AbsolutePanel is contained.
@@ -168,14 +167,11 @@ public class FocusableScrollPanel extends SimpleFocusablePanel implements
      *            the new vertical scroll position, in pixels
      */
     public void setScrollPosition(int position) {
-        if (BrowserInfo.get().isAndroidWithBrokenScrollTop()
-                && BrowserInfo.get().requiresTouchScrollDelegate()) {
-            ArrayList<com.google.gwt.dom.client.Element> elements = TouchScrollDelegate
-                    .getElements(getElement());
+        if (BrowserInfo.get().isAndroidWithBrokenScrollTop() && BrowserInfo.get().requiresTouchScrollDelegate()) {
+            ArrayList<com.google.gwt.dom.client.Element> elements = TouchScrollDelegate.getElements(getElement());
             for (com.google.gwt.dom.client.Element el : elements) {
                 final Style style = el.getStyle();
-                style.setProperty("webkitTransform", "translate3d(0px,"
-                        + -position + "px,0px)");
+                style.setProperty("webkitTransform", "translate3d(0px," + -position + "px,0px)");
             }
             getElement().setPropertyInt("_vScrollTop", position);
         } else {
@@ -189,8 +185,7 @@ public class FocusableScrollPanel extends SimpleFocusablePanel implements
             @Override
             public void execute() {
                 focusElement.getStyle().setTop(getScrollPosition(), Unit.PX);
-                focusElement.getStyle().setLeft(getHorizontalScrollPosition(),
-                        Unit.PX);
+                focusElement.getStyle().setLeft(getHorizontalScrollPosition(), Unit.PX);
             }
         });
     }

@@ -27,8 +27,7 @@ public abstract class ClickEventHandler extends AbstractClickEventHandler {
         this(connector, EventId.CLICK_EVENT_IDENTIFIER);
     }
 
-    public ClickEventHandler(ComponentConnector connector,
-            String clickEventIdentifier) {
+    public ClickEventHandler(ComponentConnector connector, String clickEventIdentifier) {
         super(connector, clickEventIdentifier);
     }
 
@@ -41,8 +40,7 @@ public abstract class ClickEventHandler extends AbstractClickEventHandler {
      */
     @Override
     protected void fireClick(NativeEvent event) {
-        MouseEventDetails mouseDetails = MouseEventDetailsBuilder
-                .buildMouseEventDetails(event, getRelativeToElement());
+        MouseEventDetails mouseDetails = MouseEventDetailsBuilder.buildMouseEventDetails(event, getRelativeToElement());
         fireClick(event, mouseDetails);
     }
 
@@ -56,7 +54,6 @@ public abstract class ClickEventHandler extends AbstractClickEventHandler {
      * @param mouseDetails
      *            The mouse details for the event
      */
-    protected abstract void fireClick(NativeEvent event,
-            MouseEventDetails mouseDetails);
+    protected abstract void fireClick(NativeEvent event, MouseEventDetails mouseDetails);
 
 }

@@ -14,8 +14,7 @@ public class StringToEnumConverterTest extends TestCase {
     }
 
     StringToEnumConverter converter = new StringToEnumConverter();
-    Converter<Enum, String> reverseConverter = new ReverseConverter<Enum, String>(
-            converter);
+    Converter<Enum, String> reverseConverter = new ReverseConverter<Enum, String>(converter);
 
     public void testEmptyStringConversion() {
         assertEquals(null, converter.convertToModel("", Enum.class, null));
@@ -35,38 +34,25 @@ public class StringToEnumConverterTest extends TestCase {
     }
 
     public void testReverseNullConversion() {
-        assertEquals(null,
-                reverseConverter.convertToModel(null, String.class, null));
+        assertEquals(null, reverseConverter.convertToModel(null, String.class, null));
     }
 
     public void testValueConversion() {
-        assertEquals(FooEnum.VALUE1,
-                converter.convertToModel("Value1", FooEnum.class, null));
-        assertEquals(FooEnum.SOME_VALUE,
-                converter.convertToModel("Some value", FooEnum.class, null));
-        assertEquals(FooEnum.FOO_BAR_BAZ,
-                converter.convertToModel("Foo bar baz", FooEnum.class, null));
-        assertEquals(FooEnum.Bar,
-                converter.convertToModel("Bar", FooEnum.class, null));
-        assertEquals(FooEnum.nonStandardCase, converter.convertToModel(
-                "Nonstandardcase", FooEnum.class, null));
-        assertEquals(FooEnum._HUGH,
-                converter.convertToModel("_hugh", FooEnum.class, null));
+        assertEquals(FooEnum.VALUE1, converter.convertToModel("Value1", FooEnum.class, null));
+        assertEquals(FooEnum.SOME_VALUE, converter.convertToModel("Some value", FooEnum.class, null));
+        assertEquals(FooEnum.FOO_BAR_BAZ, converter.convertToModel("Foo bar baz", FooEnum.class, null));
+        assertEquals(FooEnum.Bar, converter.convertToModel("Bar", FooEnum.class, null));
+        assertEquals(FooEnum.nonStandardCase, converter.convertToModel("Nonstandardcase", FooEnum.class, null));
+        assertEquals(FooEnum._HUGH, converter.convertToModel("_hugh", FooEnum.class, null));
     }
 
     public void testReverseValueConversion() {
-        assertEquals("Value1", reverseConverter.convertToModel(FooEnum.VALUE1,
-                String.class, null));
-        assertEquals("Some value", reverseConverter.convertToModel(
-                FooEnum.SOME_VALUE, String.class, null));
-        assertEquals("Foo bar baz", reverseConverter.convertToModel(
-                FooEnum.FOO_BAR_BAZ, String.class, null));
-        assertEquals("Bar", reverseConverter.convertToModel(FooEnum.Bar,
-                String.class, null));
-        assertEquals("Nonstandardcase", reverseConverter.convertToModel(
-                FooEnum.nonStandardCase, String.class, null));
-        assertEquals("_hugh", reverseConverter.convertToModel(FooEnum._HUGH,
-                String.class, null));
+        assertEquals("Value1", reverseConverter.convertToModel(FooEnum.VALUE1, String.class, null));
+        assertEquals("Some value", reverseConverter.convertToModel(FooEnum.SOME_VALUE, String.class, null));
+        assertEquals("Foo bar baz", reverseConverter.convertToModel(FooEnum.FOO_BAR_BAZ, String.class, null));
+        assertEquals("Bar", reverseConverter.convertToModel(FooEnum.Bar, String.class, null));
+        assertEquals("Nonstandardcase", reverseConverter.convertToModel(FooEnum.nonStandardCase, String.class, null));
+        assertEquals("_hugh", reverseConverter.convertToModel(FooEnum._HUGH, String.class, null));
 
     }
 

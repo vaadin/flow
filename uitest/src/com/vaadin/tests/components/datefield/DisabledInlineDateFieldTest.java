@@ -45,8 +45,7 @@ public class DisabledInlineDateFieldTest extends MultiBrowserTest {
         String expectedMonth = getSelectedMonth(cssClass);
 
         // Attempt to click the next month button.
-        driver.findElement(By.cssSelector(cssClass + " .v-button-nextmonth"))
-                .click();
+        driver.findElement(By.cssSelector(cssClass + " .v-button-nextmonth")).click();
 
         // Assert that we did not navigate to next month.
         String actualMonth = getSelectedMonth(cssClass);
@@ -56,8 +55,7 @@ public class DisabledInlineDateFieldTest extends MultiBrowserTest {
     private void testDaySelection(String cssClass) {
         // We know that the first day element is not selected, because of the
         // fixed date in the test.
-        WebElement nonSelectedDay = driver.findElement(By.cssSelector(cssClass
-                + " .v-inline-datefield-calendarpanel-day"));
+        WebElement nonSelectedDay = driver.findElement(By.cssSelector(cssClass + " .v-inline-datefield-calendarpanel-day"));
 
         // Assert it is not selected before click.
         assertFalse(nonSelectedDay.getAttribute("class").contains("selected"));
@@ -70,10 +68,7 @@ public class DisabledInlineDateFieldTest extends MultiBrowserTest {
     }
 
     private String getSelectedMonth(String selectorPrefix) {
-        return driver.findElement(
-                By.cssSelector(selectorPrefix
-                        + " .v-inline-datefield-calendarpanel-month"))
-                .getText();
+        return driver.findElement(By.cssSelector(selectorPrefix + " .v-inline-datefield-calendarpanel-month")).getText();
     }
 
 }

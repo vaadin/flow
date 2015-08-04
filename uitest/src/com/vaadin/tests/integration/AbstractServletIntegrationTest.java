@@ -27,8 +27,7 @@ import com.vaadin.testbench.elements.TableElement;
  * 
  * @author Vaadin Ltd
  */
-public abstract class AbstractServletIntegrationTest extends
-        AbstractIntegrationTest {
+public abstract class AbstractServletIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void runTest() throws IOException, AssertionError {

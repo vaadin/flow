@@ -12,10 +12,8 @@ import com.vaadin.ui.Tree;
 
 public class TreeIconUpdate extends TestBase {
 
-    private static final Resource ICON1 = new ThemeResource(
-            "../runo/icons/16/folder.png");
-    private static final Resource ICON2 = new ThemeResource(
-            "../runo/icons/16/ok.png");
+    private static final Resource ICON1 = new ThemeResource("../runo/icons/16/folder.png");
+    private static final Resource ICON2 = new ThemeResource("../runo/icons/16/ok.png");
 
     @Override
     protected void setup() {

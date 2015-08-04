@@ -40,8 +40,7 @@ public class InsertComponentInHorizontalLayout extends AbstractTestUI {
         });
         final HorizontalLayout hl = new HorizontalLayout(a, b);
         hl.setSpacing(true);
-        Button add = new Button(
-                "Insert 2 comboboxes between combobox(es) and button 'x'");
+        Button add = new Button("Insert 2 comboboxes between combobox(es) and button 'x'");
         add.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {

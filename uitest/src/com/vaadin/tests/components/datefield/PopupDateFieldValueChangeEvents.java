@@ -61,8 +61,7 @@ public class PopupDateFieldValueChangeEvents extends AbstractTestUIWithLog {
         df.setImmediate(true);
         hl.addComponent(df);
 
-        NativeSelect resolution = new NativeSelect(null,
-                Arrays.asList(Resolution.values()));
+        NativeSelect resolution = new NativeSelect(null, Arrays.asList(Resolution.values()));
         resolution.setImmediate(true);
         resolution.setValue(df.getResolution());
         hl.addComponent(resolution);

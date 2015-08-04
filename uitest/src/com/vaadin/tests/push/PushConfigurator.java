@@ -100,8 +100,7 @@ public class PushConfigurator extends VerticalLayout {
         paramValue.setDefaultComponentAlignment(Alignment.BOTTOM_RIGHT);
         paramValue.addComponents(parameter, value, set);
         status.setId("status");
-        vl.addComponents(pushMode, transport, fallbackTransport, paramValue,
-                new Label("<hr/>", ContentMode.HTML), status);
+        vl.addComponents(pushMode, transport, fallbackTransport, paramValue, new Label("<hr/>", ContentMode.HTML), status);
         addComponent(vl);
 
     }
@@ -113,8 +112,7 @@ public class PushConfigurator extends VerticalLayout {
         pushMode.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
-                ui.getPushConfiguration().setPushMode(
-                        (PushMode) pushMode.getValue());
+                ui.getPushConfiguration().setPushMode((PushMode) pushMode.getValue());
                 refreshStatus();
             }
         });
@@ -140,8 +138,7 @@ public class PushConfigurator extends VerticalLayout {
         set.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                ui.getPushConfiguration().setParameter(parameter.getValue(),
-                        value.getValue());
+                ui.getPushConfiguration().setParameter(parameter.getValue(), value.getValue());
                 refreshStatus();
             }
         });

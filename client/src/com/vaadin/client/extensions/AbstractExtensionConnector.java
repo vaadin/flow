@@ -30,8 +30,7 @@ public abstract class AbstractExtensionConnector extends AbstractConnector {
             return;
         }
         if (hasBeenAttached && parent != null) {
-            throw new IllegalStateException(
-                    "An extension can not be moved from one parent to another.");
+            throw new IllegalStateException("An extension can not be moved from one parent to another.");
         }
 
         super.setParent(parent);

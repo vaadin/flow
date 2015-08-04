@@ -28,8 +28,7 @@ public class NativeSelects extends AbstractSelectTestCase<NativeSelect> {
         options.put("100", 100);
         options.put("1000", 1000);
 
-        super.createSelectAction("Columns", CATEGORY_DATA_SOURCE, options, "-",
-                columnsAction);
+        super.createSelectAction("Columns", CATEGORY_DATA_SOURCE, options, "-", columnsAction);
 
     }
 

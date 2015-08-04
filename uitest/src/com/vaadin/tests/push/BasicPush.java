@@ -61,14 +61,13 @@ public class BasicPush extends AbstractTestUI {
         lbl.setId(CLIENT_COUNTER_ID);
         addComponent(lbl);
 
-        Button incrementButton = new Button("Increment",
-                new Button.ClickListener() {
+        Button incrementButton = new Button("Increment", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        counter.setValue(counter.getValue() + 1);
-                    }
-                });
+            @Override
+            public void buttonClick(ClickEvent event) {
+                counter.setValue(counter.getValue() + 1);
+            }
+        });
         incrementButton.setId(INCREMENT_BUTTON_ID);
         addComponent(incrementButton);
 
@@ -82,30 +81,29 @@ public class BasicPush extends AbstractTestUI {
         lbl.setId(SERVER_COUNTER_ID);
         addComponent(lbl);
 
-        Button startTimer = new Button("Start timer",
-                new Button.ClickListener() {
+        Button startTimer = new Button("Start timer", new Button.ClickListener() {
+
+            @Override
+            public void buttonClick(ClickEvent event) {
+                counter2.setValue(0);
+                if (task != null) {
+                    task.cancel();
+                }
+                task = new TimerTask() {
 
                     @Override
-                    public void buttonClick(ClickEvent event) {
-                        counter2.setValue(0);
-                        if (task != null) {
-                            task.cancel();
-                        }
-                        task = new TimerTask() {
-
+                    public void run() {
+                        access(new Runnable() {
                             @Override
                             public void run() {
-                                access(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        counter2.setValue(counter2.getValue() + 1);
-                                    }
-                                });
+                                counter2.setValue(counter2.getValue() + 1);
                             }
-                        };
-                        timer.scheduleAtFixedRate(task, 3000, 3000);
+                        });
                     }
-                });
+                };
+                timer.scheduleAtFixedRate(task, 3000, 3000);
+            }
+        });
         startTimer.setId(START_TIMER_ID);
         addComponent(startTimer);
 
@@ -124,10 +122,7 @@ public class BasicPush extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "This test tests the very basic operations of push. "
-                + "It tests that client initiated changes are "
-                + "recieved back to the client as well as server "
-                + "initiated changes are correctly updated to the client.";
+        return "This test tests the very basic operations of push. " + "It tests that client initiated changes are " + "recieved back to the client as well as server " + "initiated changes are correctly updated to the client.";
     }
 
     @Override

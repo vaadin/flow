@@ -37,14 +37,10 @@ public class TogglePush extends AbstractTestUI {
         updateCounter();
         addComponent(counterLabel);
 
-        getPushConfiguration()
-                .setPushMode(
-                        "disabled".equals(request.getParameter("push")) ? PushMode.DISABLED
-                                : PushMode.AUTOMATIC);
+        getPushConfiguration().setPushMode("disabled".equals(request.getParameter("push")) ? PushMode.DISABLED : PushMode.AUTOMATIC);
 
         CheckBox pushSetting = new CheckBox("Push enabled");
-        pushSetting.setValue(Boolean.valueOf(getPushConfiguration()
-                .getPushMode().isEnabled()));
+        pushSetting.setValue(Boolean.valueOf(getPushConfiguration().getPushMode().isEnabled()));
         pushSetting.setImmediate(true);
         pushSetting.addValueChangeListener(new ValueChangeListener() {
             @Override
@@ -58,36 +54,33 @@ public class TogglePush extends AbstractTestUI {
         });
         addComponent(pushSetting);
 
-        addComponent(new Button("Update counter now",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        updateCounter();
-                    }
-                }));
+        addComponent(new Button("Update counter now", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                updateCounter();
+            }
+        }));
 
-        addComponent(new Button("Update counter in 1 sec",
-                new Button.ClickListener() {
+        addComponent(new Button("Update counter in 1 sec", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                new Timer().schedule(new TimerTask() {
                     @Override
-                    public void buttonClick(ClickEvent event) {
-                        new Timer().schedule(new TimerTask() {
+                    public void run() {
+                        access(new Runnable() {
                             @Override
                             public void run() {
-                                access(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        updateCounter();
-                                    }
-                                });
+                                updateCounter();
                             }
-                        }, 1000);
+                        });
                     }
-                }));
+                }, 1000);
+            }
+        }));
     }
 
     public void updateCounter() {
-        counterLabel.setValue("Counter has been updated " + counter++
-                + " times");
+        counterLabel.setValue("Counter has been updated " + counter++ + " times");
     }
 
     @Override

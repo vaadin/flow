@@ -43,8 +43,7 @@ public class BigDecimalTextField extends AbstractTestUIWithLog {
         setLocale(new Locale("fi", "FI"));
 
         BeanBigDecimal beanBigDecimal = new BeanBigDecimal();
-        BeanItem<BeanBigDecimal> beanItem = new BeanItem<BeanBigDecimal>(
-                beanBigDecimal);
+        BeanItem<BeanBigDecimal> beanItem = new BeanItem<BeanBigDecimal>(beanBigDecimal);
 
         FormLayout formLayout = new FormLayout();
         TextField textField = new TextField("BigDecimal field");
@@ -68,9 +67,7 @@ public class BigDecimalTextField extends AbstractTestUIWithLog {
             public void buttonClick(Button.ClickEvent event) {
                 try {
                     fieldGroup.commit();
-                    log("Commit ok. Property value: "
-                            + fieldGroup.getItemDataSource()
-                                    .getItemProperty("decimal").getValue());
+                    log("Commit ok. Property value: " + fieldGroup.getItemDataSource().getItemProperty("decimal").getValue());
                 } catch (FieldGroup.CommitException e) {
                     log("Commit failed: " + e.getMessage());
                 }

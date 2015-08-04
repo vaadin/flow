@@ -50,29 +50,25 @@ public class Accordions extends VerticalLayout implements View {
         ac.addTab(new VerticalLayout() {
             {
                 setMargin(true);
-                addComponent(new Label(
-                        "Fabio vel iudice vincam, sunt in culpa qui officia. Ut enim ad minim veniam, quis nostrud exercitation."));
+                addComponent(new Label("Fabio vel iudice vincam, sunt in culpa qui officia. Ut enim ad minim veniam, quis nostrud exercitation."));
             }
         }, "First Caption", testIcon.get());
         ac.addTab(new VerticalLayout() {
             {
                 setMargin(true);
-                addComponent(new Label(
-                        "Gallia est omnis divisa in partes tres, quarum."));
+                addComponent(new Label("Gallia est omnis divisa in partes tres, quarum."));
             }
         }, "Second Caption", testIcon.get());
         ac.addTab(new VerticalLayout() {
             {
                 setMargin(true);
-                addComponent(new Label(
-                        "Nihil hic munitissimus habendi senatus locus, nihil horum? Sed haec quis possit intrepidus aestimare tellus."));
+                addComponent(new Label("Nihil hic munitissimus habendi senatus locus, nihil horum? Sed haec quis possit intrepidus aestimare tellus."));
             }
         }, "Third Caption", testIcon.get());
         ac.addTab(new VerticalLayout() {
             {
                 setMargin(true);
-                addComponent(new Label(
-                        "Inmensae subtilitatis, obscuris et malesuada fames. Quisque ut dolor gravida, placerat libero vel, euismod."));
+                addComponent(new Label("Inmensae subtilitatis, obscuris et malesuada fames. Quisque ut dolor gravida, placerat libero vel, euismod."));
             }
         }, "Custom Caption Style", testIcon.get()).setStyleName("color1");
         return ac;

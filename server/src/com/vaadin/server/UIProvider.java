@@ -53,8 +53,7 @@ public abstract class UIProvider implements Serializable {
      * @return an annotation of the given type, or <code>null</code> if the
      *         annotation is not present on the class
      */
-    protected static <T extends Annotation> T getAnnotationFor(Class<?> clazz,
-            Class<T> annotationType) {
+    protected static <T extends Annotation> T getAnnotationFor(Class<?> clazz, Class<T> annotationType) {
         // Find from the class hierarchy
         Class<?> currentType = clazz;
         while (currentType != Object.class) {
@@ -115,8 +114,7 @@ public abstract class UIProvider implements Serializable {
      * 
      */
     public String getWidgetset(UICreateEvent event) {
-        Widgetset uiWidgetset = getAnnotationFor(event.getUIClass(),
-                Widgetset.class);
+        Widgetset uiWidgetset = getAnnotationFor(event.getUIClass(), Widgetset.class);
         if (uiWidgetset != null) {
             return uiWidgetset.value();
         } else {
@@ -143,14 +141,12 @@ public abstract class UIProvider implements Serializable {
      *         when the browser window is refreshed.
      */
     public boolean isPreservedOnRefresh(UICreateEvent event) {
-        PreserveOnRefresh preserveOnRefresh = getAnnotationFor(
-                event.getUIClass(), PreserveOnRefresh.class);
+        PreserveOnRefresh preserveOnRefresh = getAnnotationFor(event.getUIClass(), PreserveOnRefresh.class);
         return preserveOnRefresh != null;
     }
 
     public String getPageTitle(UICreateEvent event) {
-        Title titleAnnotation = getAnnotationFor(event.getUIClass(),
-                Title.class);
+        Title titleAnnotation = getAnnotationFor(event.getUIClass(), Title.class);
         if (titleAnnotation == null) {
             return null;
         } else {

@@ -54,7 +54,6 @@ public class TestIcon {
         return new ThemeResource("../runo/icons/" + imageSize + "/document.png");
     }
 
-    static List<FontAwesome> ICONS = Collections.unmodifiableList(Arrays
-            .asList(FontAwesome.values()));
+    static List<FontAwesome> ICONS = Collections.unmodifiableList(Arrays.asList(FontAwesome.values()));
 
 }

@@ -35,8 +35,7 @@ public class TabSheetWithHasComponent extends AbstractTestUI {
         TabSheet ts = new TabSheet();
         ts.addComponent(createPopupView(createSmallTabSheet()));
         ts.addComponent(createPanel());
-        ts.addComponent(new CustomComponent(new Panel(
-                "Panel in custom component", new Button("In panel"))));
+        ts.addComponent(new CustomComponent(new Panel("Panel in custom component", new Button("In panel"))));
 
         addComponent(ts);
     }
@@ -60,13 +59,11 @@ public class TabSheetWithHasComponent extends AbstractTestUI {
     }
 
     protected TabSheet createSmallTabSheet() {
-        return new TabSheet(new Button("Tab1 inside popup"), new NativeButton(
-                "Tab 2 inside popup"));
+        return new TabSheet(new Button("Tab1 inside popup"), new NativeButton("Tab 2 inside popup"));
     }
 
     private Panel createPanel() {
-        return new Panel("Panel containing stuff", new VerticalLayout(
-                new Label("A Label"), new Button("A button")));
+        return new Panel("Panel containing stuff", new VerticalLayout(new Label("A Label"), new Button("A button")));
     }
 
     @Override

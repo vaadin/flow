@@ -53,10 +53,7 @@ public class TreeKeyboardNavigationToNoneTest extends MultiBrowserTest {
     }
 
     private void checkNotificationErrorAbsence(String item) {
-        Assert.assertFalse(
-                "Notification is found after using keyboard for navigation "
-                        + "from " + item + " tree item",
-                isElementPresent(By.className("v-Notification")));
+        Assert.assertFalse("Notification is found after using keyboard for navigation " + "from " + item + " tree item", isElementPresent(By.className("v-Notification")));
     }
 
     private void sendKey(Keys key) {

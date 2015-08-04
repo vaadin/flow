@@ -34,12 +34,10 @@ public class SaneErrors extends AbstractTestUI {
                 reportException(b, content);
             }
 
-            private void reportException(final AbstractComponent b,
-                    final VerticalLayout content) {
+            private void reportException(final AbstractComponent b, final VerticalLayout content) {
                 String message = b.getErrorMessage().getFormattedHtmlMessage();
                 message = message.replaceAll("&#46;", ".");
-                message = message.substring(message.indexOf("h2>") + 3,
-                        message.indexOf("&#10;"));
+                message = message.substring(message.indexOf("h2>") + 3, message.indexOf("&#10;"));
                 Label label = new Label(message);
                 content.addComponent(label);
             }

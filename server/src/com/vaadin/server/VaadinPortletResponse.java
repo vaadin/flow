@@ -42,8 +42,7 @@ import com.google.gwt.thirdparty.guava.common.html.HtmlEscapers;
  * @see VaadinPortletRequest
  */
 public class VaadinPortletResponse implements VaadinResponse {
-    static final DateFormat HTTP_DATE_FORMAT = new SimpleDateFormat(
-            "EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+    static final DateFormat HTTP_DATE_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
     static {
         HTTP_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
@@ -59,8 +58,7 @@ public class VaadinPortletResponse implements VaadinResponse {
      * @param vaadinService
      *            the associated vaadin service
      */
-    public VaadinPortletResponse(PortletResponse response,
-            VaadinPortletService vaadinService) {
+    public VaadinPortletResponse(PortletResponse response, VaadinPortletService vaadinService) {
         this.response = response;
         this.vaadinService = vaadinService;
     }
@@ -70,9 +68,7 @@ public class VaadinPortletResponse implements VaadinResponse {
         if (response instanceof MimeResponse) {
             return ((MimeResponse) response).getPortletOutputStream();
         } else {
-            throw new IOException(
-                    "Output stream not available for response of type "
-                            + response.getClass().getName());
+            throw new IOException("Output stream not available for response of type " + response.getClass().getName());
         }
     }
 
@@ -90,9 +86,7 @@ public class VaadinPortletResponse implements VaadinResponse {
         if (response instanceof MimeResponse) {
             ((MimeResponse) response).setContentType(type);
         } else {
-            throw new RuntimeException(
-                    "Content type cannot be set for response of type "
-                            + response.getClass().getName());
+            throw new RuntimeException("Content type cannot be set for response of type " + response.getClass().getName());
         }
     }
 
@@ -109,15 +103,13 @@ public class VaadinPortletResponse implements VaadinResponse {
         if (response instanceof MimeResponse) {
             return ((MimeResponse) response).getWriter();
         } else {
-            throw new IOException("Writer not available for response of type "
-                    + response.getClass().getName());
+            throw new IOException("Writer not available for response of type " + response.getClass().getName());
         }
     }
 
     @Override
     public void setStatus(int responseStatus) {
-        response.setProperty(ResourceResponse.HTTP_STATUS_CODE,
-                Integer.toString(responseStatus));
+        response.setProperty(ResourceResponse.HTTP_STATUS_CODE, Integer.toString(responseStatus));
     }
 
     @Override

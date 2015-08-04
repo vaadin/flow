@@ -41,16 +41,13 @@ import com.vaadin.ui.UI;
 public class VaadinPortletService extends VaadinService {
     private final VaadinPortlet portlet;
 
-    public VaadinPortletService(VaadinPortlet portlet,
-            DeploymentConfiguration deploymentConfiguration)
-            throws ServiceException {
+    public VaadinPortletService(VaadinPortlet portlet, DeploymentConfiguration deploymentConfiguration) throws ServiceException {
         super(deploymentConfiguration);
         this.portlet = portlet;
     }
 
     @Override
-    protected List<RequestHandler> createRequestHandlers()
-            throws ServiceException {
+    protected List<RequestHandler> createRequestHandlers() throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
 
         handlers.add(new PortletUIInitHandler());
@@ -75,8 +72,7 @@ public class VaadinPortletService extends VaadinService {
         return ((VaadinPortletRequest) request).getPortalProperty(propertyName);
     }
 
-    private String getParameter(VaadinRequest request, String name,
-            String defaultValue) {
+    private String getParameter(VaadinRequest request, String name, String defaultValue) {
         VaadinPortletRequest portletRequest = (VaadinPortletRequest) request;
 
         String preference = portletRequest.getPortletPreference(name);
@@ -107,8 +103,7 @@ public class VaadinPortletService extends VaadinService {
     private String getAppOrSystemProperty(String name, String defaultValue) {
         DeploymentConfiguration deploymentConfiguration = getDeploymentConfiguration();
 
-        return deploymentConfiguration.getApplicationOrSystemProperty(name,
-                defaultValue);
+        return deploymentConfiguration.getApplicationOrSystemProperty(name, defaultValue);
     }
 
     @Override
@@ -117,9 +112,7 @@ public class VaadinPortletService extends VaadinService {
         String widgetset = getDeploymentConfiguration().getWidgetset(null);
 
         if (widgetset == null) {
-            widgetset = getParameter(request,
-                    Constants.PORTAL_PARAMETER_VAADIN_WIDGETSET,
-                    Constants.DEFAULT_WIDGETSET);
+            widgetset = getParameter(request, Constants.PORTAL_PARAMETER_VAADIN_WIDGETSET, Constants.DEFAULT_WIDGETSET);
         }
 
         return widgetset;
@@ -135,8 +128,7 @@ public class VaadinPortletService extends VaadinService {
 
     @Override
     public String getConfiguredTheme(VaadinRequest request) {
-        return getParameter(request, Constants.PORTAL_PARAMETER_VAADIN_THEME,
-                Constants.DEFAULT_THEME_NAME);
+        return getParameter(request, Constants.PORTAL_PARAMETER_VAADIN_THEME, Constants.DEFAULT_THEME_NAME);
     }
 
     @Override
@@ -147,8 +139,7 @@ public class VaadinPortletService extends VaadinService {
     @Override
     public String getStaticFileLocation(VaadinRequest request) {
         // /html is default for Liferay
-        String staticFileLocation = getParameter(request,
-                Constants.PORTAL_PARAMETER_VAADIN_RESOURCE_PATH, "/html");
+        String staticFileLocation = getParameter(request, Constants.PORTAL_PARAMETER_VAADIN_RESOURCE_PATH, "/html");
 
         if (Constants.PORTLET_CONTEXT.equals(staticFileLocation)) {
             return request.getContextPath();
@@ -178,11 +169,7 @@ public class VaadinPortletService extends VaadinService {
                 return new File(url.getFile());
             } catch (final Exception e) {
                 // FIXME: Handle exception
-                getLogger()
-                        .log(Level.INFO,
-                                "Cannot access base directory, possible security issue "
-                                        + "with Application Server or Servlet Container",
-                                e);
+                getLogger().log(Level.INFO, "Cannot access base directory, possible security issue " + "with Application Server or Servlet Container", e);
             }
         }
         return null;
@@ -195,12 +182,10 @@ public class VaadinPortletService extends VaadinService {
     @Override
     protected boolean requestCanCreateSession(VaadinRequest request) {
         if (!(request instanceof VaadinPortletRequest)) {
-            throw new IllegalArgumentException(
-                    "Request is not a VaadinPortletRequest");
+            throw new IllegalArgumentException("Request is not a VaadinPortletRequest");
         }
 
-        PortletRequest portletRequest = ((VaadinPortletRequest) request)
-                .getPortletRequest();
+        PortletRequest portletRequest = ((VaadinPortletRequest) request).getPortletRequest();
         if (portletRequest instanceof RenderRequest) {
             // In most cases the first request is a render request that
             // renders the HTML fragment. This should create a Vaadin
@@ -231,8 +216,7 @@ public class VaadinPortletService extends VaadinService {
      */
     @Deprecated
     protected RequestType getRequestType(VaadinRequest request) {
-        RequestType type = (RequestType) request.getAttribute(RequestType.class
-                .getName());
+        RequestType type = (RequestType) request.getAttribute(RequestType.class.getName());
         if (type == null) {
             type = getPortlet().getRequestType((VaadinPortletRequest) request);
             request.setAttribute(RequestType.class.getName(), type);
@@ -288,8 +272,7 @@ public class VaadinPortletService extends VaadinService {
     }
 
     @Override
-    protected VaadinSession createVaadinSession(VaadinRequest request)
-            throws ServiceException {
+    protected VaadinSession createVaadinSession(VaadinRequest request) throws ServiceException {
         return new VaadinPortletSession(this);
     }
 
@@ -307,21 +290,15 @@ public class VaadinPortletService extends VaadinService {
     }
 
     @Override
-    public InputStream getThemeResourceAsStream(UI uI, String themeName,
-            String resource) {
+    public InputStream getThemeResourceAsStream(UI uI, String themeName, String resource) {
         VaadinPortletSession session = (VaadinPortletSession) uI.getSession();
-        PortletContext portletContext = session.getPortletSession()
-                .getPortletContext();
-        return portletContext.getResourceAsStream("/"
-                + VaadinPortlet.THEME_DIR_PATH + '/' + themeName + "/"
-                + resource);
+        PortletContext portletContext = session.getPortletSession().getPortletContext();
+        return portletContext.getResourceAsStream("/" + VaadinPortlet.THEME_DIR_PATH + '/' + themeName + "/" + resource);
     }
 
     @Override
-    public String getMainDivId(VaadinSession session, VaadinRequest request,
-            Class<? extends UI> uiClass) {
-        PortletRequest portletRequest = ((VaadinPortletRequest) request)
-                .getPortletRequest();
+    public String getMainDivId(VaadinSession session, VaadinRequest request, Class<? extends UI> uiClass) {
+        PortletRequest portletRequest = ((VaadinPortletRequest) request).getPortletRequest();
         /*
          * We need to generate a unique ID because some portals already create a
          * DIV with the portlet's Window ID as the DOM ID.
@@ -337,8 +314,7 @@ public class VaadinPortletService extends VaadinService {
      * .VaadinRequest, com.vaadin.server.VaadinResponse)
      */
     @Override
-    protected void handleSessionExpired(VaadinRequest request,
-            VaadinResponse response) {
+    protected void handleSessionExpired(VaadinRequest request, VaadinResponse response) {
         // TODO Figure out a better way to deal with
         // SessionExpiredExceptions
         getLogger().finest("A user session has expired");

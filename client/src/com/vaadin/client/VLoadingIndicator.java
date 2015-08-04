@@ -227,8 +227,7 @@ public class VLoadingIndicator {
      * @return true if the loading indicator is visible, false otherwise
      */
     public boolean isVisible() {
-        if (getElement().getStyle().getDisplay()
-                .equals(Display.NONE.getCssName())) {
+        if (getElement().getStyle().getDisplay().equals(Display.NONE.getCssName())) {
             return false;
         }
 
@@ -244,8 +243,7 @@ public class VLoadingIndicator {
         if (element == null) {
             element = DOM.createDiv();
             element.getStyle().setPosition(Position.ABSOLUTE);
-            getConnection().getUIConnector().getWidget().getElement()
-                    .appendChild(element);
+            getConnection().getUIConnector().getWidget().getElement().appendChild(element);
         }
         return DOM.asOld(element);
     }

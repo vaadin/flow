@@ -26,8 +26,7 @@ public class ReplacedConnector extends AbstractComponentConnector {
 
     @Override
     protected void init() {
-        getWidget().setHTML(
-                ReplacedConnector.class.getName() + ", should not be used");
+        getWidget().setHTML(ReplacedConnector.class.getName() + ", should not be used");
     }
 
     @Override

@@ -50,20 +50,15 @@ public class SerializerTestConnector extends AbstractExtensionConnector {
     public SerializerTestConnector() {
         registerRpc(SerializerTestRpc.class, new SerializerTestRpc() {
             @Override
-            public void sendWrappedGenerics(
-                    Map<Set<SimpleTestBean>, Map<Integer, List<SimpleTestBean>>> generics) {
+            public void sendWrappedGenerics(Map<Set<SimpleTestBean>, Map<Integer, List<SimpleTestBean>>> generics) {
                 Map<Set<SimpleTestBean>, Map<Integer, List<SimpleTestBean>>> updated = new HashMap<Set<SimpleTestBean>, Map<Integer, List<SimpleTestBean>>>();
 
-                SimpleTestBean firstValue = generics.values().iterator().next()
-                        .get(Integer.valueOf(1)).get(0);
-                Set<SimpleTestBean> key = new HashSet<SimpleTestBean>(Arrays
-                        .asList(firstValue));
+                SimpleTestBean firstValue = generics.values().iterator().next().get(Integer.valueOf(1)).get(0);
+                Set<SimpleTestBean> key = new HashSet<SimpleTestBean>(Arrays.asList(firstValue));
 
                 Map<Integer, List<SimpleTestBean>> value = new HashMap<Integer, List<SimpleTestBean>>();
-                Set<SimpleTestBean> firstKeyValue = generics.keySet()
-                        .iterator().next();
-                value.put(Integer.valueOf(1), new ArrayList<SimpleTestBean>(
-                        firstKeyValue));
+                Set<SimpleTestBean> firstKeyValue = generics.keySet().iterator().next();
+                value.put(Integer.valueOf(1), new ArrayList<SimpleTestBean>(firstKeyValue));
 
                 updated.put(key, value);
 
@@ -74,13 +69,11 @@ public class SerializerTestConnector extends AbstractExtensionConnector {
             public void sendString(String value, String[] array) {
                 char[] chars = value.toCharArray();
                 Arrays.sort(chars);
-                rpc.sendString(new String(chars), new String[] { array[1],
-                        array[0] });
+                rpc.sendString(new String(chars), new String[] { array[1], array[0] });
             }
 
             @Override
-            public void sendSet(Set<Integer> intSet,
-                    Set<Connector> connectorSet, Set<SimpleTestBean> beanSet) {
+            public void sendSet(Set<Integer> intSet, Set<Connector> connectorSet, Set<SimpleTestBean> beanSet) {
 
                 beanSet.iterator().next().setValue(intSet.size());
                 Set<Integer> updatedIntSet = new HashSet<Integer>();
@@ -88,72 +81,50 @@ public class SerializerTestConnector extends AbstractExtensionConnector {
                 for (Integer integer : intSet) {
                     updatedIntSet.add(Integer.valueOf(-integer.intValue()));
                 }
-                rpc.sendSet(updatedIntSet,
-                        Collections.singleton(getUIConnector()), beanSet);
+                rpc.sendSet(updatedIntSet, Collections.singleton(getUIConnector()), beanSet);
             }
 
             @Override
-            public void sendNestedArray(int[][] nestedIntArray,
-                    SimpleTestBean[][] nestedBeanArray) {
-                rpc.sendNestedArray(new int[][] { { nestedIntArray[1][0],
-                        nestedIntArray[0][0] } }, new SimpleTestBean[][] {
-                        { nestedBeanArray[0][1] }, { nestedBeanArray[0][0] } });
+            public void sendNestedArray(int[][] nestedIntArray, SimpleTestBean[][] nestedBeanArray) {
+                rpc.sendNestedArray(new int[][] { { nestedIntArray[1][0], nestedIntArray[0][0] } }, new SimpleTestBean[][] { { nestedBeanArray[0][1] }, { nestedBeanArray[0][0] } });
             }
 
             @Override
-            public void sendMap(Map<String, SimpleTestBean> stringMap,
-                    Map<Connector, SimpleTestBean> connectorMap,
-                    Map<Integer, Connector> intMap,
-                    Map<SimpleTestBean, SimpleTestBean> beanMap) {
+            public void sendMap(Map<String, SimpleTestBean> stringMap, Map<Connector, SimpleTestBean> connectorMap, Map<Integer, Connector> intMap, Map<SimpleTestBean, SimpleTestBean> beanMap) {
                 Map<SimpleTestBean, SimpleTestBean> updatedBeanMap = new HashMap<SimpleTestBean, SimpleTestBean>();
-                for (Entry<SimpleTestBean, SimpleTestBean> entry : beanMap
-                        .entrySet()) {
+                for (Entry<SimpleTestBean, SimpleTestBean> entry : beanMap.entrySet()) {
                     updatedBeanMap.put(entry.getValue(), entry.getKey());
                 }
 
-                rpc.sendMap(Collections.singletonMap("a", stringMap.get("1")),
-                        Collections.singletonMap(getThisConnector(),
-                                connectorMap.get(getUIConnector())),
-                        Collections.singletonMap(
-                                Integer.valueOf(stringMap.size()),
-                                getThisConnector()), updatedBeanMap);
+                rpc.sendMap(Collections.singletonMap("a", stringMap.get("1")), Collections.singletonMap(getThisConnector(), connectorMap.get(getUIConnector())), Collections.singletonMap(Integer.valueOf(stringMap.size()), getThisConnector()), updatedBeanMap);
             }
 
             @Override
             public void sendLong(long value, Long boxedValue, long[] array) {
-                rpc.sendLong(array[0], Long.valueOf(value), new long[] {
-                        array[1], boxedValue.longValue() });
+                rpc.sendLong(array[0], Long.valueOf(value), new long[] { array[1], boxedValue.longValue() });
             }
 
             @Override
-            public void sendList(List<Integer> intList,
-                    List<Connector> connectorList, List<SimpleTestBean> beanList) {
+            public void sendList(List<Integer> intList, List<Connector> connectorList, List<SimpleTestBean> beanList) {
                 Collections.sort(intList);
                 Collections.reverse(beanList);
-                rpc.sendList(intList,
-                        Arrays.asList(getThisConnector(), getUIConnector()),
-                        beanList);
+                rpc.sendList(intList, Arrays.asList(getThisConnector(), getUIConnector()), beanList);
             }
 
             @Override
             public void sendInt(int value, Integer boxedValue, int[] array) {
-                rpc.sendInt(array.length, Integer.valueOf(array[0]), new int[] {
-                        value, boxedValue.intValue() });
+                rpc.sendInt(array.length, Integer.valueOf(array[0]), new int[] { value, boxedValue.intValue() });
             }
 
             @Override
             public void sendFloat(float value, Float boxedValue, float[] array) {
                 Arrays.sort(array);
-                rpc.sendFloat(boxedValue.floatValue(), Float.valueOf(value),
-                        array);
+                rpc.sendFloat(boxedValue.floatValue(), Float.valueOf(value), array);
             }
 
             @Override
-            public void sendDouble(double value, Double boxedValue,
-                    double[] array) {
-                rpc.sendDouble(value + boxedValue.doubleValue(),
-                        Double.valueOf(value - boxedValue.doubleValue()),
-                        new double[] { array.length, array[0], array[1] });
+            public void sendDouble(double value, Double boxedValue, double[] array) {
+                rpc.sendDouble(value + boxedValue.doubleValue(), Double.valueOf(value - boxedValue.doubleValue()), new double[] { array.length, array[0], array[1] });
             }
 
             @Override
@@ -163,9 +134,7 @@ public class SerializerTestConnector extends AbstractExtensionConnector {
 
             @Override
             public void sendChar(char value, Character boxedValue, char[] array) {
-                rpc.sendChar(Character.toUpperCase(boxedValue.charValue()),
-                        Character.valueOf(value), new String(array)
-                                .toLowerCase().toCharArray());
+                rpc.sendChar(Character.toUpperCase(boxedValue.charValue()), Character.valueOf(value), new String(array).toLowerCase().toCharArray());
             }
 
             @Override
@@ -177,55 +146,40 @@ public class SerializerTestConnector extends AbstractExtensionConnector {
             }
 
             @Override
-            public void sendBoolean(boolean value, Boolean boxedValue,
-                    boolean[] array) {
+            public void sendBoolean(boolean value, Boolean boxedValue, boolean[] array) {
                 boolean[] inverseArray = new boolean[array.length];
                 for (int i = 0; i < array.length; i++) {
                     inverseArray[i] = !array[i];
                 }
-                rpc.sendBoolean(boxedValue == Boolean.TRUE,
-                        Boolean.valueOf(!value), inverseArray);
+                rpc.sendBoolean(boxedValue == Boolean.TRUE, Boolean.valueOf(!value), inverseArray);
             }
 
             @Override
-            public void sendBean(ComplexTestBean complexBean,
-                    SimpleTestBean simpleBean, SimpleTestBean[] array) {
+            public void sendBean(ComplexTestBean complexBean, SimpleTestBean simpleBean, SimpleTestBean[] array) {
                 SimpleTestBean updatedSimpleBean = new SimpleTestBean();
-                updatedSimpleBean.setValue(complexBean.getInnerBean1()
-                        .getValue());
+                updatedSimpleBean.setValue(complexBean.getInnerBean1().getValue());
 
                 ComplexTestBean updatedComplexBean = new ComplexTestBean();
                 updatedComplexBean.setInnerBean1(complexBean.getInnerBean2());
-                updatedComplexBean.setInnerBean2(complexBean
-                        .getInnerBeanCollection().get(0));
-                updatedComplexBean.setInnerBeanCollection(Arrays.asList(
-                        simpleBean, updatedSimpleBean));
+                updatedComplexBean.setInnerBean2(complexBean.getInnerBeanCollection().get(0));
+                updatedComplexBean.setInnerBeanCollection(Arrays.asList(simpleBean, updatedSimpleBean));
                 updatedComplexBean.setPrivimite(complexBean.getPrivimite() + 1);
 
-                ArrayList<SimpleTestBean> arrayList = new ArrayList<SimpleTestBean>(
-                        Arrays.asList(array));
+                ArrayList<SimpleTestBean> arrayList = new ArrayList<SimpleTestBean>(Arrays.asList(array));
                 Collections.reverse(arrayList);
 
-                rpc.sendBean(updatedComplexBean, updatedSimpleBean,
-                        arrayList.toArray(new SimpleTestBean[array.length]));
+                rpc.sendBean(updatedComplexBean, updatedSimpleBean, arrayList.toArray(new SimpleTestBean[array.length]));
             }
 
             @Override
-            public void sendArrayList(List<int[]> primitiveArrayList,
-                    List<Integer[]> objectArrayList,
-                    List<SimpleTestBean[]> beanArrayList) {
+            public void sendArrayList(List<int[]> primitiveArrayList, List<Integer[]> objectArrayList, List<SimpleTestBean[]> beanArrayList) {
                 Collections.reverse(beanArrayList);
                 List<Integer[]> updatedObjectArrayList = new ArrayList<Integer[]>();
                 for (int[] array : primitiveArrayList) {
-                    updatedObjectArrayList.add(new Integer[] {
-                            Integer.valueOf(array.length),
-                            Integer.valueOf(array[0]) });
+                    updatedObjectArrayList.add(new Integer[] { Integer.valueOf(array.length), Integer.valueOf(array[0]) });
                 }
 
-                rpc.sendArrayList(Arrays.asList(
-                        new int[] { primitiveArrayList.size() },
-                        new int[] { objectArrayList.get(0).length }),
-                        updatedObjectArrayList, beanArrayList);
+                rpc.sendArrayList(Arrays.asList(new int[] { primitiveArrayList.size() }, new int[] { objectArrayList.get(0).length }), updatedObjectArrayList, beanArrayList);
             }
 
             @Override
@@ -234,21 +188,14 @@ public class SerializerTestConnector extends AbstractExtensionConnector {
             }
 
             @Override
-            public void sendListArray(List<Integer>[] objectListArray,
-                    List<SimpleTestBean>[] beanListArray) {
-                rpc.sendListArray(new List[] { objectListArray[1],
-                        objectListArray[0] }, new List[] { Collections
-                        .singletonList(beanListArray[0].get(0)) });
+            public void sendListArray(List<Integer>[] objectListArray, List<SimpleTestBean>[] beanListArray) {
+                rpc.sendListArray(new List[] { objectListArray[1], objectListArray[0] }, new List[] { Collections.singletonList(beanListArray[0].get(0)) });
             }
 
             @Override
-            public void sendEnum(ContentMode contentMode, ContentMode[] array,
-                    List<ContentMode> list) {
-                ContentMode nextContentMode = ContentMode.values()[contentMode
-                        .ordinal() + 1];
-                rpc.sendEnum(nextContentMode,
-                        list.toArray(new ContentMode[list.size()]),
-                        Arrays.asList(array));
+            public void sendEnum(ContentMode contentMode, ContentMode[] array, List<ContentMode> list) {
+                ContentMode nextContentMode = ContentMode.values()[contentMode.ordinal() + 1];
+                rpc.sendEnum(nextContentMode, list.toArray(new ContentMode[list.size()]), Arrays.asList(array));
             }
 
             @Override
@@ -272,24 +219,20 @@ public class SerializerTestConnector extends AbstractExtensionConnector {
             }
 
             @Override
-            public void sendJson(JsonValue value1, JsonValue value2,
-                    JsonString string) {
+            public void sendJson(JsonValue value1, JsonValue value2, JsonString string) {
                 if (value1.getType() != JsonType.BOOLEAN) {
-                    throw new RuntimeException("Expected boolean, got "
-                            + value1.toJson());
+                    throw new RuntimeException("Expected boolean, got " + value1.toJson());
                 }
 
                 if (value2.getType() != JsonType.NULL) {
-                    throw new RuntimeException("Expected null, got "
-                            + value2.toJson());
+                    throw new RuntimeException("Expected null, got " + value2.toJson());
                 }
 
                 JsonObject returnObject = Json.createObject();
                 returnObject.put("b", !((JsonBoolean) value1).asBoolean());
                 returnObject.put("s", string);
 
-                rpc.sendJson(returnObject, Json.createNull(),
-                        Json.create("value"));
+                rpc.sendJson(returnObject, Json.createNull(), Json.create("value"));
             }
 
             @Override
@@ -318,8 +261,7 @@ public class SerializerTestConnector extends AbstractExtensionConnector {
     public void onStateChanged(StateChangeEvent stateChangeEvent) {
         rpc.log("state.booleanValue: " + getState().booleanValue);
         rpc.log("state.booleanObjectValue: " + getState().booleanObjectValue);
-        rpc.log("state.booleanArray: "
-                + Arrays.toString(getState().booleanArray));
+        rpc.log("state.booleanArray: " + Arrays.toString(getState().booleanArray));
 
         rpc.log("state.byteValue: " + getState().byteValue);
         rpc.log("state.byteObjectValue: " + getState().byteObjectValue);
@@ -349,8 +291,7 @@ public class SerializerTestConnector extends AbstractExtensionConnector {
         rpc.log("state.stringArray: " + Arrays.toString(getState().stringArray));
 
         rpc.log("state.jsonNull: " + getState().jsonNull.getType().name());
-        rpc.log("state.jsonString: "
-                + ((JsonString) getState().jsonString).getString());
+        rpc.log("state.jsonString: " + ((JsonString) getState().jsonString).getString());
         rpc.log("state.jsonBoolean: " + getState().jsonBoolean.getBoolean());
 
         rpc.log("state.date1: " + getState().date1);

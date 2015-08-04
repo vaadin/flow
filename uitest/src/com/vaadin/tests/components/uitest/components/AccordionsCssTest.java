@@ -19,12 +19,10 @@ public class AccordionsCssTest {
         Accordion def = createAccordionWith("Def Accordion", null);
         parent.addComponent(def);
 
-        Accordion light = createAccordionWith("Light Accordion",
-                Runo.ACCORDION_LIGHT);
+        Accordion light = createAccordionWith("Light Accordion", Runo.ACCORDION_LIGHT);
         parent.addComponent(light);
 
-        Accordion opaque = createAccordionWith("Oppaque Accordion",
-                ChameleonTheme.ACCORDION_OPAQUE);
+        Accordion opaque = createAccordionWith("Oppaque Accordion", ChameleonTheme.ACCORDION_OPAQUE);
         parent.addComponent(opaque);
 
     }

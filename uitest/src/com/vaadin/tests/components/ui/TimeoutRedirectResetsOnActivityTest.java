@@ -60,8 +60,7 @@ public class TimeoutRedirectResetsOnActivityTest extends MultiBrowserTest {
         assertThat(driver.getCurrentUrl(), is(getTestUrl()));
 
         testBench().disableWaitForVaadin();
-        Thread.sleep(actualExpireTime - originalExpireTime
-                + communicationOverhead);
+        Thread.sleep(actualExpireTime - originalExpireTime + communicationOverhead);
 
         assertThat(driver.getCurrentUrl(), is(not(getTestUrl())));
     }

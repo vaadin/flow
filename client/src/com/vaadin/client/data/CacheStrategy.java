@@ -33,8 +33,7 @@ public interface CacheStrategy {
      * This simple approach rules out more advanced heuristics that would take
      * the current scrolling direction or past scrolling behavior into account.
      */
-    public static abstract class AbstractBasicSymmetricalCacheStrategy
-            implements CacheStrategy {
+    public static abstract class AbstractBasicSymmetricalCacheStrategy implements CacheStrategy {
 
         @Override
         public void onDataArrive(double roundTripTime, int rowCount) {
@@ -42,21 +41,17 @@ public interface CacheStrategy {
         }
 
         @Override
-        public Range getMinCacheRange(Range displayedRange, Range cachedRange,
-                Range estimatedAvailableRange) {
+        public Range getMinCacheRange(Range displayedRange, Range cachedRange, Range estimatedAvailableRange) {
             int cacheSize = getMinimumCacheSize(displayedRange.length());
 
-            return displayedRange.expand(cacheSize, cacheSize).restrictTo(
-                    estimatedAvailableRange);
+            return displayedRange.expand(cacheSize, cacheSize).restrictTo(estimatedAvailableRange);
         }
 
         @Override
-        public Range getMaxCacheRange(Range displayedRange, Range cachedRange,
-                Range estimatedAvailableRange) {
+        public Range getMaxCacheRange(Range displayedRange, Range cachedRange, Range estimatedAvailableRange) {
             int cacheSize = getMaximumCacheSize(displayedRange.length());
 
-            return displayedRange.expand(cacheSize, cacheSize).restrictTo(
-                    estimatedAvailableRange);
+            return displayedRange.expand(cacheSize, cacheSize).restrictTo(estimatedAvailableRange);
         }
 
         /**
@@ -86,8 +81,7 @@ public interface CacheStrategy {
      * the cache and items are discarded if there's yet another page size worth
      * of items cached in either direction.
      */
-    public static class DefaultCacheStrategy extends
-            AbstractBasicSymmetricalCacheStrategy {
+    public static class DefaultCacheStrategy extends AbstractBasicSymmetricalCacheStrategy {
         private final int minimumRatio;
         private final int maximumRatio;
 
@@ -160,8 +154,7 @@ public interface CacheStrategy {
      *         include the displayed range and should not exceed the total
      *         estimated available range
      */
-    public Range getMinCacheRange(Range displayedRange, Range cachedRange,
-            Range estimatedAvailableRange);
+    public Range getMinCacheRange(Range displayedRange, Range cachedRange, Range estimatedAvailableRange);
 
     /**
      * Gets the maximum row range that should be cached. The data source will
@@ -178,6 +171,5 @@ public interface CacheStrategy {
      *         include the displayed range and should not exceed the total
      *         estimated available range
      */
-    public Range getMaxCacheRange(Range displayedRange, Range cachedRange,
-            Range estimatedAvailableRange);
+    public Range getMaxCacheRange(Range displayedRange, Range cachedRange, Range estimatedAvailableRange);
 }

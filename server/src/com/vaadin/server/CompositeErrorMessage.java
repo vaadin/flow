@@ -44,8 +44,7 @@ public class CompositeErrorMessage extends AbstractErrorMessage {
         }
 
         if (getCauses().size() == 0) {
-            throw new IllegalArgumentException(
-                    "Composite error message must have at least one error");
+            throw new IllegalArgumentException("Composite error message must have at least one error");
         }
 
     }
@@ -57,19 +56,16 @@ public class CompositeErrorMessage extends AbstractErrorMessage {
      *            the Collection of error messages that are listed together. At
      *            least one message is required.
      */
-    public CompositeErrorMessage(
-            Collection<? extends ErrorMessage> errorMessages) {
+    public CompositeErrorMessage(Collection<? extends ErrorMessage> errorMessages) {
         super(null);
         setErrorLevel(ErrorLevel.INFORMATION);
 
-        for (final Iterator<? extends ErrorMessage> i = errorMessages
-                .iterator(); i.hasNext();) {
+        for (final Iterator<? extends ErrorMessage> i = errorMessages.iterator(); i.hasNext();) {
             addErrorMessage(i.next());
         }
 
         if (getCauses().size() == 0) {
-            throw new IllegalArgumentException(
-                    "Composite error message must have at least one error");
+            throw new IllegalArgumentException("Composite error message must have at least one error");
         }
     }
 
@@ -107,8 +103,7 @@ public class CompositeErrorMessage extends AbstractErrorMessage {
     public String toString() {
         String retval = "[";
         int pos = 0;
-        for (final Iterator<ErrorMessage> i = getCauses().iterator(); i
-                .hasNext();) {
+        for (final Iterator<ErrorMessage> i = getCauses().iterator(); i.hasNext();) {
             if (pos > 0) {
                 retval += ",";
             }

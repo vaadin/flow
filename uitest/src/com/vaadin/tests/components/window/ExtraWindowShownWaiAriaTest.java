@@ -58,15 +58,12 @@ public class ExtraWindowShownWaiAriaTest extends MultiBrowserTest {
         assertEquals("alertdialog", window.getAttribute("role"));
 
         WebElement header = window.findElement(By.className("v-window-header"));
-        assertEquals(header.getAttribute("id"),
-                window.getAttribute("aria-labelledby"));
+        assertEquals(header.getAttribute("id"), window.getAttribute("aria-labelledby"));
 
         WebElement label = window.findElement(By.className("v-label"));
-        assertEquals(label.getAttribute("id"),
-                window.getAttribute("aria-describedby"));
+        assertEquals(label.getAttribute("id"), window.getAttribute("aria-describedby"));
 
-        List<WebElement> wButtons = window.findElements(By
-                .className("v-button"));
+        List<WebElement> wButtons = window.findElements(By.className("v-button"));
         assertEquals("button", wButtons.get(0).getAttribute("role"));
         assertEquals("button", wButtons.get(1).getAttribute("role"));
 
@@ -95,9 +92,7 @@ public class ExtraWindowShownWaiAriaTest extends MultiBrowserTest {
         // ensure correct attributes
         window = $(WindowElement.class).first();
         List<WebElement> labels = window.findElements(By.className("v-label"));
-        assertEquals(labels.get(0).getAttribute("id") + " "
-                + labels.get(1).getAttribute("id"),
-                window.getAttribute("aria-describedby"));
+        assertEquals(labels.get(0).getAttribute("id") + " " + labels.get(1).getAttribute("id"), window.getAttribute("aria-describedby"));
 
         // close dialog
         wButtons = window.findElements(By.className("v-button"));
@@ -121,11 +116,8 @@ public class ExtraWindowShownWaiAriaTest extends MultiBrowserTest {
         // ensure the assistive spans have been added to the header
         window = $(WindowElement.class).first();
         header = window.findElement(By.className("v-window-header"));
-        List<WebElement> assistiveElements = header.findElements(By
-                .className("v-assistive-device-only"));
-        assertEquals("Important",
-                assistiveElements.get(0).getAttribute("innerHTML"));
-        assertEquals(" - do ASAP",
-                assistiveElements.get(1).getAttribute("innerHTML"));
+        List<WebElement> assistiveElements = header.findElements(By.className("v-assistive-device-only"));
+        assertEquals("Important", assistiveElements.get(0).getAttribute("innerHTML"));
+        assertEquals(" - do ASAP", assistiveElements.get(1).getAttribute("innerHTML"));
     }
 }

@@ -41,12 +41,10 @@ import com.vaadin.shared.util.SharedUtil;
 public class InfoSection implements Section {
 
     private static final String THEME_VERSION_CLASSNAME = "v-vaadin-version";
-    private static final String PRIMARY_STYLE_NAME = VDebugWindow.STYLENAME
-            + "-info";
+    private static final String PRIMARY_STYLE_NAME = VDebugWindow.STYLENAME + "-info";
     private static final String ERROR_STYLE = Level.SEVERE.getName();
     private final HTML content = new HTML();
-    private DebugButton tabButton = new DebugButton(Icon.INFO,
-            "General information about the application(s)");
+    private DebugButton tabButton = new DebugButton(Icon.INFO, "General information about the application(s)");
     private HTML controls = new HTML(tabButton.getTitle());
 
     private Timer refresher = new Timer() {
@@ -140,8 +138,7 @@ public class InfoSection implements Section {
      */
     private void refresh() {
         clear();
-        List<ApplicationConnection> apps = ApplicationConfiguration
-                .getRunningApplications();
+        List<ApplicationConnection> apps = ApplicationConfiguration.getRunningApplications();
         if (apps.size() == 0) {
             // try again in a while
             refresher.schedule(1000);
@@ -165,12 +162,10 @@ public class InfoSection implements Section {
         addRow("Widget set", GWT.getModuleName());
         addRow("Theme", connection.getUIConnector().getActiveTheme());
 
-        String communicationMethodInfo = connection
-                .getServerCommunicationHandler().getCommunicationMethodName();
+        String communicationMethodInfo = connection.getServerCommunicationHandler().getCommunicationMethodName();
         int pollInterval = connection.getUIConnector().getState().pollInterval;
         if (pollInterval > 0) {
-            communicationMethodInfo += " (poll interval " + pollInterval
-                    + "ms)";
+            communicationMethodInfo += " (poll interval " + pollInterval + "ms)";
         }
         addRow("Communication method", communicationMethodInfo);
 
@@ -189,12 +184,10 @@ public class InfoSection implements Section {
      * @param applicationConfiguration
      * @since 7.1
      */
-    private void addVersionInfo(
-            ApplicationConfiguration applicationConfiguration) {
+    private void addVersionInfo(ApplicationConfiguration applicationConfiguration) {
         String clientVersion = Version.getFullVersion();
         String servletVersion = applicationConfiguration.getServletVersion();
-        String atmosphereVersion = applicationConfiguration
-                .getAtmosphereVersion();
+        String atmosphereVersion = applicationConfiguration.getAtmosphereVersion();
         String jsVersion = applicationConfiguration.getAtmosphereJSVersion();
 
         String themeVersion;
@@ -207,19 +200,14 @@ public class InfoSection implements Section {
             themeOk = equalsEither(themeVersion, clientVersion, servletVersion);
         }
 
-        boolean clientOk = equalsEither(clientVersion, servletVersion,
-                themeVersion);
-        boolean servletOk = equalsEither(servletVersion, clientVersion,
-                themeVersion);
-        addRow("Client engine version", clientVersion, clientOk ? null
-                : ERROR_STYLE);
-        addRow("Server engine version", servletVersion, servletOk ? null
-                : ERROR_STYLE);
+        boolean clientOk = equalsEither(clientVersion, servletVersion, themeVersion);
+        boolean servletOk = equalsEither(servletVersion, clientVersion, themeVersion);
+        addRow("Client engine version", clientVersion, clientOk ? null : ERROR_STYLE);
+        addRow("Server engine version", servletVersion, servletOk ? null : ERROR_STYLE);
         addRow("Theme version", themeVersion, themeOk ? null : ERROR_STYLE);
         if (jsVersion != null) {
             addRow("Push server version", atmosphereVersion);
-            addRow("Push client version", jsVersion
-                    + " (note: does not need to match server version)");
+            addRow("Push client version", jsVersion + " (note: does not need to match server version)");
         }
     }
 
@@ -234,8 +222,7 @@ public class InfoSection implements Section {
      *            A reference value
      * @return true if target equals one of the references, false otherwise
      */
-    private boolean equalsEither(String target, String reference1,
-            String reference2) {
+    private boolean equalsEither(String target, String reference1, String reference2) {
         if (SharedUtil.equals(target, reference1)) {
             return true;
         }
@@ -267,8 +254,7 @@ public class InfoSection implements Section {
         return version;
     }
 
-    private native String getComputedStyle(Element elem, String pseudoElement,
-            String property)
+    private native String getComputedStyle(Element elem, String pseudoElement, String property)
     /*-{
          if ($wnd.document.defaultView && $wnd.document.defaultView.getComputedStyle) {
              return $wnd.document.defaultView.getComputedStyle(elem, pseudoElement)[property];

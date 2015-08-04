@@ -93,8 +93,7 @@ public class FirstTabNotVisibleWhenTabsheetNotClipped extends AbstractTestUI {
         addComponent(layout);
     }
 
-    private Button.ClickListener createTabListener(
-            final HashMap<String, TabSheet.Tab> map, final TabSheet tabsheet) {
+    private Button.ClickListener createTabListener(final HashMap<String, TabSheet.Tab> map, final TabSheet tabsheet) {
 
         Button.ClickListener clickListener = new Button.ClickListener() {
 

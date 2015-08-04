@@ -42,8 +42,7 @@ public class ReadNestedTemplatesTest {
     @Test
     public void rootContainsOneChild() {
         assertThat(root.getComponentCount(), is(1));
-        assertThat(root.iterator().next(),
-                instanceOf(MyExtendedChildDesign.class));
+        assertThat(root.iterator().next(), instanceOf(MyExtendedChildDesign.class));
     }
 
     @Test
@@ -65,7 +64,6 @@ public class ReadNestedTemplatesTest {
     @Test
     public void childCustomComponentsIsNotNull() {
         assertThat(root.childDesign.childCustomComponent, is(not(nullValue())));
-        assertThat(root.childDesign.childCustomComponent.getCaption(),
-                is("custom content"));
+        assertThat(root.childDesign.childCustomComponent.getCaption(), is("custom content"));
     }
 }

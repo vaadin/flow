@@ -25,12 +25,10 @@ import java.util.Locale;
 public class DateRangeWithSqlDate extends AbstractTestUI {
 
     // 2014-12-01
-    private static final java.sql.Date startDate = new java.sql.Date(
-            1417467822699L);
+    private static final java.sql.Date startDate = new java.sql.Date(1417467822699L);
 
     // 2014-12-02
-    private static final java.sql.Date endDate = new java.sql.Date(
-            1417554763317L);
+    private static final java.sql.Date endDate = new java.sql.Date(1417554763317L);
 
     @Override
     protected void setup(VaadinRequest request) {

@@ -36,8 +36,7 @@ public class NativeSelectTest {
 
     @Test
     public void rpcRegisteredConstructorStringCollection() {
-        assertFocusRpcRegistered(new NativeSelect("foo",
-                Collections.singleton("Hello")));
+        assertFocusRpcRegistered(new NativeSelect("foo", Collections.singleton("Hello")));
     }
 
     @Test
@@ -46,9 +45,7 @@ public class NativeSelectTest {
     }
 
     private void assertFocusRpcRegistered(NativeSelect s) {
-        Assert.assertNotNull(
-                "RPC is not correctly registered",
-                s.getRpcManager("com.vaadin.shared.communication.FieldRpc$FocusAndBlurServerRpc"));
+        Assert.assertNotNull("RPC is not correctly registered", s.getRpcManager("com.vaadin.shared.communication.FieldRpc$FocusAndBlurServerRpc"));
     }
 
 }

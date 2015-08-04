@@ -18,8 +18,7 @@ public class TooltipConfiguration extends AbstractTestUIWithLog {
 
     @Override
     protected void setup(VaadinRequest request) {
-        NativeButton componentWithShortTooltip = new NativeButton(
-                "Short tooltip");
+        NativeButton componentWithShortTooltip = new NativeButton("Short tooltip");
         componentWithShortTooltip.setDescription("This is a short tooltip");
         componentWithShortTooltip.setId("shortTooltip");
 
@@ -27,73 +26,57 @@ public class TooltipConfiguration extends AbstractTestUIWithLog {
         componentWithLongTooltip.setId("longTooltip");
         componentWithLongTooltip.setDescription(LoremIpsum.get(5000));
 
-        closeTimeout = createIntegerTextField("Close timeout",
-                getState().tooltipConfiguration.closeTimeout);
+        closeTimeout = createIntegerTextField("Close timeout", getState().tooltipConfiguration.closeTimeout);
         closeTimeout.addValueChangeListener(new Property.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (closeTimeout.getConvertedValue() != null) {
-                    getTooltipConfiguration().setCloseTimeout(
-                            (Integer) closeTimeout.getConvertedValue());
+                    getTooltipConfiguration().setCloseTimeout((Integer) closeTimeout.getConvertedValue());
                 }
             }
         });
-        maxWidth = createIntegerTextField("Max width",
-                getState().tooltipConfiguration.maxWidth);
+        maxWidth = createIntegerTextField("Max width", getState().tooltipConfiguration.maxWidth);
         maxWidth.addValueChangeListener(new Property.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (maxWidth.getConvertedValue() != null) {
-                    getTooltipConfiguration().setMaxWidth(
-                            (Integer) maxWidth.getConvertedValue());
+                    getTooltipConfiguration().setMaxWidth((Integer) maxWidth.getConvertedValue());
                 }
             }
         });
-        openDelay = createIntegerTextField("Open delay",
-                getState().tooltipConfiguration.openDelay);
+        openDelay = createIntegerTextField("Open delay", getState().tooltipConfiguration.openDelay);
         openDelay.addValueChangeListener(new Property.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (openDelay.getConvertedValue() != null) {
-                    getTooltipConfiguration().setOpenDelay(
-                            (Integer) openDelay.getConvertedValue());
+                    getTooltipConfiguration().setOpenDelay((Integer) openDelay.getConvertedValue());
                 }
             }
         });
 
-        quickOpenDelay = createIntegerTextField("Quick open delay",
-                getState().tooltipConfiguration.quickOpenDelay);
-        quickOpenDelay
-                .addValueChangeListener(new Property.ValueChangeListener() {
-                    @Override
-                    public void valueChange(ValueChangeEvent event) {
-                        if (quickOpenDelay.getConvertedValue() != null) {
-                            getTooltipConfiguration().setQuickOpenDelay(
-                                    (Integer) quickOpenDelay
-                                            .getConvertedValue());
-                        }
-                    }
-                });
+        quickOpenDelay = createIntegerTextField("Quick open delay", getState().tooltipConfiguration.quickOpenDelay);
+        quickOpenDelay.addValueChangeListener(new Property.ValueChangeListener() {
+            @Override
+            public void valueChange(ValueChangeEvent event) {
+                if (quickOpenDelay.getConvertedValue() != null) {
+                    getTooltipConfiguration().setQuickOpenDelay((Integer) quickOpenDelay.getConvertedValue());
+                }
+            }
+        });
 
-        quickOpenTimeout = createIntegerTextField("Quick open timeout",
-                getState().tooltipConfiguration.quickOpenTimeout);
-        quickOpenTimeout
-                .addValueChangeListener(new Property.ValueChangeListener() {
-                    @Override
-                    public void valueChange(ValueChangeEvent event) {
-                        if (quickOpenTimeout.getConvertedValue() != null) {
-                            getTooltipConfiguration().setQuickOpenTimeout(
-                                    (Integer) quickOpenTimeout
-                                            .getConvertedValue());
-                        }
-                    }
-                });
+        quickOpenTimeout = createIntegerTextField("Quick open timeout", getState().tooltipConfiguration.quickOpenTimeout);
+        quickOpenTimeout.addValueChangeListener(new Property.ValueChangeListener() {
+            @Override
+            public void valueChange(ValueChangeEvent event) {
+                if (quickOpenTimeout.getConvertedValue() != null) {
+                    getTooltipConfiguration().setQuickOpenTimeout((Integer) quickOpenTimeout.getConvertedValue());
+                }
+            }
+        });
 
-        getLayout().addComponents(closeTimeout, openDelay, quickOpenDelay,
-                quickOpenTimeout, maxWidth);
+        getLayout().addComponents(closeTimeout, openDelay, quickOpenDelay, quickOpenTimeout, maxWidth);
 
-        getLayout().addComponents(componentWithShortTooltip,
-                componentWithLongTooltip);
+        getLayout().addComponents(componentWithShortTooltip, componentWithLongTooltip);
 
     }
 

@@ -28,8 +28,7 @@ public class GenericWidgetHandlingTest extends MultiBrowserTest {
         openTestURL();
         WebElement label = vaadinElementById("label");
 
-        Assert.assertEquals("The generic text is strong in this one",
-                label.getText());
+        Assert.assertEquals("The generic text is strong in this one", label.getText());
     }
 
 }

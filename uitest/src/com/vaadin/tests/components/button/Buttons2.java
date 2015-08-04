@@ -8,8 +8,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.themes.Reindeer;
 
-public class Buttons2<T extends Button> extends AbstractComponentTest<T>
-        implements ClickListener {
+public class Buttons2<T extends Button> extends AbstractComponentTest<T> implements ClickListener {
 
     private Command<T, Boolean> disableOnClickCommand = new Command<T, Boolean>() {
 
@@ -42,22 +41,19 @@ public class Buttons2<T extends Button> extends AbstractComponentTest<T>
     protected void createActions() {
         super.createActions();
 
-        createBooleanAction("Disable on click", CATEGORY_FEATURES, false,
-                disableOnClickCommand);
+        createBooleanAction("Disable on click", CATEGORY_FEATURES, false, disableOnClickCommand);
         addClickListener(CATEGORY_LISTENERS);
     }
 
     @Override
-    protected void createComponentStyleNames(
-            LinkedHashMap<String, String> options) {
+    protected void createComponentStyleNames(LinkedHashMap<String, String> options) {
         options.put("Reindeer default", Reindeer.BUTTON_DEFAULT);
         options.put("Reindeer small", Reindeer.BUTTON_SMALL);
         options.put("Reindeer link", Reindeer.BUTTON_LINK);
     }
 
     private void addClickListener(String category) {
-        createBooleanAction("Click listener", category, false,
-                clickListenerCommand);
+        createBooleanAction("Click listener", category, false, clickListenerCommand);
 
     }
 

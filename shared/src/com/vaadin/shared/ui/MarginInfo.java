@@ -94,8 +94,7 @@ public class MarginInfo implements Serializable {
      * @param left
      *            enable or disable left margin
      */
-    public void setMargins(boolean top, boolean right, boolean bottom,
-            boolean left) {
+    public void setMargins(boolean top, boolean right, boolean bottom, boolean left) {
         bitMask = top ? TOP : 0;
         bitMask += right ? RIGHT : 0;
         bitMask += bottom ? BOTTOM : 0;
@@ -184,8 +183,7 @@ public class MarginInfo implements Serializable {
 
     @Override
     public String toString() {
-        return "MarginInfo(" + hasTop() + ", " + hasRight() + ", "
-                + hasBottom() + ", " + hasLeft() + ")";
+        return "MarginInfo(" + hasTop() + ", " + hasRight() + ", " + hasBottom() + ", " + hasLeft() + ")";
 
     }
 }

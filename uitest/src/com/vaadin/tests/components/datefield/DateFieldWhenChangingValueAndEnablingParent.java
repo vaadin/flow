@@ -55,22 +55,17 @@ public class DateFieldWhenChangingValueAndEnablingParent extends AbstractTestUI 
     }
 
     private DateField createDateField(boolean enabled) {
-        DateField df = new DateField("DateField, "
-                + (enabled ? "enabled" : "disabled"));
+        DateField df = new DateField("DateField, " + (enabled ? "enabled" : "disabled"));
         df.setEnabled(enabled);
         df.setId("DATEFIELD_" + (enabled ? "ENABLED" : "DISABLED"));
         return df;
     }
 
-    private PopupDateField createPopupDateField(boolean enabled,
-            boolean textInputEnabled) {
-        PopupDateField df = new PopupDateField("PopupDateField, "
-                + (enabled ? "enabled" : "disabled") + ", text input "
-                + (textInputEnabled ? "enabled" : "disabled"));
+    private PopupDateField createPopupDateField(boolean enabled, boolean textInputEnabled) {
+        PopupDateField df = new PopupDateField("PopupDateField, " + (enabled ? "enabled" : "disabled") + ", text input " + (textInputEnabled ? "enabled" : "disabled"));
         df.setEnabled(enabled);
         df.setTextFieldEnabled(textInputEnabled);
-        df.setId("DATEFIELD_" + (enabled ? "ENABLED" : "DISABLED") + "_"
-                + (textInputEnabled ? "ENABLED" : "DISABLED"));
+        df.setId("DATEFIELD_" + (enabled ? "ENABLED" : "DISABLED") + "_" + (textInputEnabled ? "ENABLED" : "DISABLED"));
         return df;
     }
 }

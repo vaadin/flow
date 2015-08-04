@@ -62,15 +62,13 @@ public class MetadataWriterTest {
     @Test
     public void writeRepaintTag() throws Exception {
         new MetadataWriter().write(ui, writer, true, false, messages);
-        Assert.assertEquals("{\"repaintAll\":true}", writer.getBuffer()
-                .toString());
+        Assert.assertEquals("{\"repaintAll\":true}", writer.getBuffer().toString());
     }
 
     @Test
     public void writeRepaintAndAsyncTag() throws Exception {
         new MetadataWriter().write(ui, writer, true, true, messages);
-        Assert.assertEquals("{\"repaintAll\":true, \"async\":true}", writer
-                .getBuffer().toString());
+        Assert.assertEquals("{\"repaintAll\":true, \"async\":true}", writer.getBuffer().toString());
     }
 
     @Test
@@ -89,9 +87,7 @@ public class MetadataWriterTest {
         disableSessionExpirationMessages(messages);
 
         new MetadataWriter().write(ui, writer, false, false, messages);
-        Assert.assertEquals(
-                "{\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}", writer
-                        .getBuffer().toString());
+        Assert.assertEquals("{\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}", writer.getBuffer().toString());
     }
 
     @Test
@@ -102,8 +98,6 @@ public class MetadataWriterTest {
         disableSessionExpirationMessages(messages);
 
         new MetadataWriter().write(ui, writer, false, true, messages);
-        Assert.assertEquals(
-                "{\"async\":true,\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}",
-                writer.getBuffer().toString());
+        Assert.assertEquals("{\"async\":true,\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}", writer.getBuffer().toString());
     }
 }

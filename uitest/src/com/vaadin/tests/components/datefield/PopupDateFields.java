@@ -13,8 +13,7 @@ import com.vaadin.ui.PopupDateField;
 @SuppressWarnings("serial")
 public class PopupDateFields extends ComponentTestCase<PopupDateField> {
 
-    private static final Locale[] LOCALES = new Locale[] { Locale.US,
-            Locale.TAIWAN, new Locale("fi", "FI") };
+    private static final Locale[] LOCALES = new Locale[] { Locale.US, Locale.TAIWAN, new Locale("fi", "FI") };
 
     @Override
     protected Class<PopupDateField> getTestClass() {
@@ -25,8 +24,7 @@ public class PopupDateFields extends ComponentTestCase<PopupDateField> {
     protected void initializeComponents() {
 
         for (Locale locale : LOCALES) {
-            PopupDateField pd = createPopupDateField("Undefined width", "-1",
-                    locale);
+            PopupDateField pd = createPopupDateField("Undefined width", "-1", locale);
             pd.setId("Locale-" + locale.toString() + "-undefined-wide");
             addTestComponent(pd);
             pd = createPopupDateField("500px width", "500px", locale);
@@ -40,10 +38,8 @@ public class PopupDateFields extends ComponentTestCase<PopupDateField> {
 
     }
 
-    private PopupDateField createPopupDateField(String caption, String width,
-            Locale locale) {
-        PopupDateField pd = new PopupDateField(caption + "("
-                + locale.toString() + ")");
+    private PopupDateField createPopupDateField(String caption, String width, Locale locale) {
+        PopupDateField pd = new PopupDateField(caption + "(" + locale.toString() + ")");
         pd.setWidth(width);
         pd.setValue(new Date(12312312313L));
         pd.setLocale(locale);
@@ -73,16 +69,14 @@ public class PopupDateFields extends ComponentTestCase<PopupDateField> {
         options.put("Hour", Resolution.HOUR);
         options.put("Min", Resolution.MINUTE);
         options.put("Sec", Resolution.SECOND);
-        return createSelectAction("Resolution", options, "Year",
-                new Command<PopupDateField, Resolution>() {
+        return createSelectAction("Resolution", options, "Year", new Command<PopupDateField, Resolution>() {
 
-                    @Override
-                    public void execute(PopupDateField c, Resolution value,
-                            Object data) {
-                        c.setResolution(value);
+            @Override
+            public void execute(PopupDateField c, Resolution value, Object data) {
+                c.setResolution(value);
 
-                    }
-                });
+            }
+        });
     }
 
     private Component createInputPromptSelectAction() {
@@ -91,16 +85,14 @@ public class PopupDateFields extends ComponentTestCase<PopupDateField> {
         options.put("Please enter date", "Please enter date");
         options.put("åäöÅÄÖ", "åäöÅÄÖ");
 
-        return createSelectAction("Input prompt", options, "<none>",
-                new Command<PopupDateField, String>() {
+        return createSelectAction("Input prompt", options, "<none>", new Command<PopupDateField, String>() {
 
-                    @Override
-                    public void execute(PopupDateField c, String value,
-                            Object data) {
-                        c.setInputPrompt(value);
+            @Override
+            public void execute(PopupDateField c, String value, Object data) {
+                c.setInputPrompt(value);
 
-                    }
-                });
+            }
+        });
     }
 
 }

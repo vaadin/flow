@@ -47,8 +47,7 @@ public class ClickableRenderer<T> extends AbstractRenderer<T> {
      */
     public interface RendererClickListener extends ConnectorEventListener {
 
-        static final Method CLICK_METHOD = ReflectTools.findMethod(
-                RendererClickListener.class, "click", RendererClickEvent.class);
+        static final Method CLICK_METHOD = ReflectTools.findMethod(RendererClickListener.class, "click", RendererClickEvent.class);
 
         /**
          * Called when a rendered button is clicked.
@@ -67,8 +66,7 @@ public class ClickableRenderer<T> extends AbstractRenderer<T> {
         private Object itemId;
         private Column column;
 
-        protected RendererClickEvent(Grid source, Object itemId, Column column,
-                MouseEventDetails mouseEventDetails) {
+        protected RendererClickEvent(Grid source, Object itemId, Column column, MouseEventDetails mouseEventDetails) {
             super(source, mouseEventDetails);
             this.itemId = itemId;
             this.column = column;
@@ -106,15 +104,12 @@ public class ClickableRenderer<T> extends AbstractRenderer<T> {
         this(presentationType, null);
     }
 
-    protected ClickableRenderer(Class<T> presentationType,
-            String nullRepresentation) {
+    protected ClickableRenderer(Class<T> presentationType, String nullRepresentation) {
         super(presentationType, nullRepresentation);
         registerRpc(new RendererClickRpc() {
             @Override
-            public void click(String rowKey, String columnId,
-                    MouseEventDetails mouseDetails) {
-                fireEvent(new RendererClickEvent(getParentGrid(),
-                        getItemId(rowKey), getColumn(columnId), mouseDetails));
+            public void click(String rowKey, String columnId, MouseEventDetails mouseDetails) {
+                fireEvent(new RendererClickEvent(getParentGrid(), getItemId(rowKey), getColumn(columnId), mouseDetails));
             }
         });
     }
@@ -127,8 +122,7 @@ public class ClickableRenderer<T> extends AbstractRenderer<T> {
      *            the click listener to be added
      */
     public void addClickListener(RendererClickListener listener) {
-        addListener(RendererClickEvent.class, listener,
-                RendererClickListener.CLICK_METHOD);
+        addListener(RendererClickEvent.class, listener, RendererClickListener.CLICK_METHOD);
     }
 
     /**

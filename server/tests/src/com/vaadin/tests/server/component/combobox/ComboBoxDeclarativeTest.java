@@ -25,8 +25,7 @@ public class ComboBoxDeclarativeTest extends DeclarativeTestBase<ComboBox> {
 
     @Test
     public void testReadOnlyWithOptionsRead() {
-        testRead(getReadOnlyWithOptionsDesign(),
-                getReadOnlyWithOptionsExpected());
+        testRead(getReadOnlyWithOptionsDesign(), getReadOnlyWithOptionsExpected());
     }
 
     private ComboBox getReadOnlyWithOptionsExpected() {
@@ -43,8 +42,7 @@ public class ComboBoxDeclarativeTest extends DeclarativeTestBase<ComboBox> {
 
     @Test
     public void testReadOnlyWithOptionsWrite() {
-        testWrite(stripOptionTags(getReadOnlyWithOptionsDesign()),
-                getReadOnlyWithOptionsExpected());
+        testWrite(stripOptionTags(getReadOnlyWithOptionsDesign()), getReadOnlyWithOptionsExpected());
     }
 
     @Test

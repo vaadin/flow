@@ -34,22 +34,16 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        HorizontalLayout level1 = new HorizontalLayout(
-                createComparisonTableOnFixed(), createTableOnFixed(),
-                createHalfTableOnFixed(),
-                createHalfTableAndFixedTableOnFixed(), createHalfTableOnFull());
+        HorizontalLayout level1 = new HorizontalLayout(createComparisonTableOnFixed(), createTableOnFixed(), createHalfTableOnFixed(), createHalfTableAndFixedTableOnFixed(), createHalfTableOnFull());
         level1.setSpacing(true);
         level1.setWidth(100, Unit.PERCENTAGE);
-        level1.setExpandRatio(
-                level1.getComponent(level1.getComponentCount() - 1), 1);
+        level1.setExpandRatio(level1.getComponent(level1.getComponentCount() - 1), 1);
         level1.setMargin(new MarginInfo(true, false, false, false));
 
-        HorizontalLayout level2 = new HorizontalLayout(createFullOnFixed(),
-                createFullOnFull());
+        HorizontalLayout level2 = new HorizontalLayout(createFullOnFixed(), createFullOnFull());
         level2.setSpacing(true);
         level2.setWidth(100, Unit.PERCENTAGE);
-        level2.setExpandRatio(
-                level2.getComponent(level2.getComponentCount() - 1), 1);
+        level2.setExpandRatio(level2.getComponent(level2.getComponentCount() - 1), 1);
         level2.setMargin(new MarginInfo(true, false, false, false));
 
         addComponent(level1);

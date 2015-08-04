@@ -60,10 +60,7 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * 
  * @since 6.5
  */
-public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
-        AbstractInMemoryContainer<IDTYPE, String, BeanItem<BEANTYPE>> implements
-        Filterable, SimpleFilterable, Sortable, ValueChangeListener,
-        PropertySetChangeNotifier {
+public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends AbstractInMemoryContainer<IDTYPE, String, BeanItem<BEANTYPE>> implements Filterable, SimpleFilterable, Sortable, ValueChangeListener, PropertySetChangeNotifier {
 
     /**
      * Resolver that maps beans to their (item) identifiers, removing the need
@@ -78,8 +75,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      * 
      * @since 6.5
      */
-    public static interface BeanIdResolver<IDTYPE, BEANTYPE> extends
-            Serializable {
+    public static interface BeanIdResolver<IDTYPE, BEANTYPE> extends Serializable {
         /**
          * Return the item identifier for a bean.
          * 
@@ -95,31 +91,26 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      * The bean must have a getter for the property, and the getter must return
      * an object of type IDTYPE.
      */
-    protected class PropertyBasedBeanIdResolver implements
-            BeanIdResolver<IDTYPE, BEANTYPE> {
+    protected class PropertyBasedBeanIdResolver implements BeanIdResolver<IDTYPE, BEANTYPE> {
 
         private final Object propertyId;
 
         public PropertyBasedBeanIdResolver(Object propertyId) {
             if (propertyId == null) {
-                throw new IllegalArgumentException(
-                        "Property identifier must not be null");
+                throw new IllegalArgumentException("Property identifier must not be null");
             }
             this.propertyId = propertyId;
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public IDTYPE getIdForBean(BEANTYPE bean)
-                throws IllegalArgumentException {
+        public IDTYPE getIdForBean(BEANTYPE bean) throws IllegalArgumentException {
             VaadinPropertyDescriptor<BEANTYPE> pd = model.get(propertyId);
             if (null == pd) {
-                throw new IllegalStateException("Property " + propertyId
-                        + " not found");
+                throw new IllegalStateException("Property " + propertyId + " not found");
             }
             try {
-                Property<IDTYPE> property = (Property<IDTYPE>) pd
-                        .createProperty(bean);
+                Property<IDTYPE> property = (Property<IDTYPE>) pd.createProperty(bean);
                 return property.getValue();
             } catch (MethodException e) {
                 throw new IllegalArgumentException(e);
@@ -164,8 +155,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      */
     protected AbstractBeanContainer(Class<? super BEANTYPE> type) {
         if (type == null) {
-            throw new IllegalArgumentException(
-                    "The bean type passed to AbstractBeanContainer must not be null");
+            throw new IllegalArgumentException("The bean type passed to AbstractBeanContainer must not be null");
         }
         this.type = type;
         model = BeanItem.getPropertyDescriptors((Class<BEANTYPE>) type);
@@ -335,11 +325,9 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      * java.lang.String, boolean, boolean)
      */
     @Override
-    public void addContainerFilter(Object propertyId, String filterString,
-            boolean ignoreCase, boolean onlyMatchPrefix) {
+    public void addContainerFilter(Object propertyId, String filterString, boolean ignoreCase, boolean onlyMatchPrefix) {
         try {
-            addFilter(new SimpleStringFilter(propertyId, filterString,
-                    ignoreCase, onlyMatchPrefix));
+            addFilter(new SimpleStringFilter(propertyId, filterString, ignoreCase, onlyMatchPrefix));
         } catch (UnsupportedFilterException e) {
             // the filter instance created here is always valid for in-memory
             // containers
@@ -380,8 +368,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
     }
 
     @Override
-    public void addContainerFilter(Filter filter)
-            throws UnsupportedFilterException {
+    public void addContainerFilter(Filter filter) throws UnsupportedFilterException {
         addFilter(filter);
     }
 
@@ -490,8 +477,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
     }
 
     @Override
-    protected void registerNewItem(int position, IDTYPE itemId,
-            BeanItem<BEANTYPE> item) {
+    protected void registerNewItem(int position, IDTYPE itemId, BeanItem<BEANTYPE> item) {
         itemIdToItem.put(itemId, item);
 
         // add listeners to be able to update filtering on property
@@ -538,13 +524,11 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      * 
      * @see com.vaadin.data.Container.Ordered#addItemAfter(Object, Object)
      */
-    protected BeanItem<BEANTYPE> addItemAfter(IDTYPE previousItemId,
-            IDTYPE newItemId, BEANTYPE bean) {
+    protected BeanItem<BEANTYPE> addItemAfter(IDTYPE previousItemId, IDTYPE newItemId, BEANTYPE bean) {
         if (!validateBean(bean)) {
             return null;
         }
-        return internalAddItemAfter(previousItemId, newItemId,
-                createBeanItem(bean), true);
+        return internalAddItemAfter(previousItemId, newItemId, createBeanItem(bean), true);
     }
 
     /**
@@ -561,8 +545,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      * 
      * @return Returns the new BeanItem or null if the operation fails.
      */
-    protected BeanItem<BEANTYPE> addItemAt(int index, IDTYPE newItemId,
-            BEANTYPE bean) {
+    protected BeanItem<BEANTYPE> addItemAt(int index, IDTYPE newItemId, BEANTYPE bean) {
         if (!validateBean(bean)) {
             return null;
         }
@@ -585,15 +568,13 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      * @throws IllegalArgumentException
      *             if an identifier cannot be resolved for the bean
      */
-    protected BeanItem<BEANTYPE> addBean(BEANTYPE bean)
-            throws IllegalStateException, IllegalArgumentException {
+    protected BeanItem<BEANTYPE> addBean(BEANTYPE bean) throws IllegalStateException, IllegalArgumentException {
         if (bean == null) {
             return null;
         }
         IDTYPE itemId = resolveBeanId(bean);
         if (itemId == null) {
-            throw new IllegalArgumentException(
-                    "Resolved identifier for a bean must not be null");
+            throw new IllegalArgumentException("Resolved identifier for a bean must not be null");
         }
         return addItem(itemId, bean);
     }
@@ -617,16 +598,13 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      * @throws IllegalArgumentException
      *             if an identifier cannot be resolved for the bean
      */
-    protected BeanItem<BEANTYPE> addBeanAfter(IDTYPE previousItemId,
-            BEANTYPE bean) throws IllegalStateException,
-            IllegalArgumentException {
+    protected BeanItem<BEANTYPE> addBeanAfter(IDTYPE previousItemId, BEANTYPE bean) throws IllegalStateException, IllegalArgumentException {
         if (bean == null) {
             return null;
         }
         IDTYPE itemId = resolveBeanId(bean);
         if (itemId == null) {
-            throw new IllegalArgumentException(
-                    "Resolved identifier for a bean must not be null");
+            throw new IllegalArgumentException("Resolved identifier for a bean must not be null");
         }
         return addItemAfter(previousItemId, itemId, bean);
     }
@@ -649,15 +627,13 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      * @throws IllegalArgumentException
      *             if an identifier cannot be resolved for the bean
      */
-    protected BeanItem<BEANTYPE> addBeanAt(int index, BEANTYPE bean)
-            throws IllegalStateException, IllegalArgumentException {
+    protected BeanItem<BEANTYPE> addBeanAt(int index, BEANTYPE bean) throws IllegalStateException, IllegalArgumentException {
         if (bean == null) {
             return null;
         }
         IDTYPE itemId = resolveBeanId(bean);
         if (itemId == null) {
-            throw new IllegalArgumentException(
-                    "Resolved identifier for a bean must not be null");
+            throw new IllegalArgumentException("Resolved identifier for a bean must not be null");
         }
         return addItemAt(index, itemId, bean);
     }
@@ -681,21 +657,18 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      *             if the resolver returns a null itemId for one of the beans in
      *             the collection
      */
-    protected void addAll(Collection<? extends BEANTYPE> collection)
-            throws IllegalStateException, IllegalArgumentException {
+    protected void addAll(Collection<? extends BEANTYPE> collection) throws IllegalStateException, IllegalArgumentException {
         boolean modified = false;
         int origSize = size();
 
         for (BEANTYPE bean : collection) {
             // TODO skipping invalid beans - should not allow them in javadoc?
-            if (bean == null
-                    || !getBeanType().isAssignableFrom(bean.getClass())) {
+            if (bean == null || !getBeanType().isAssignableFrom(bean.getClass())) {
                 continue;
             }
             IDTYPE itemId = resolveBeanId(bean);
             if (itemId == null) {
-                throw new IllegalArgumentException(
-                        "Resolved identifier for a bean must not be null");
+                throw new IllegalArgumentException("Resolved identifier for a bean must not be null");
             }
 
             if (internalAddItemAtEnd(itemId, createBeanItem(bean), false) != null) {
@@ -732,8 +705,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      */
     protected IDTYPE resolveBeanId(BEANTYPE bean) {
         if (beanIdResolver == null) {
-            throw new IllegalStateException(
-                    "Bean item identifier resolver is required.");
+            throw new IllegalStateException("Bean item identifier resolver is required.");
         }
         return beanIdResolver.getIdForBean(bean);
     }
@@ -751,8 +723,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      * @param beanIdResolver
      *            to use or null to disable automatic id resolution
      */
-    protected void setBeanIdResolver(
-            BeanIdResolver<IDTYPE, BEANTYPE> beanIdResolver) {
+    protected void setBeanIdResolver(BeanIdResolver<IDTYPE, BEANTYPE> beanIdResolver) {
         this.beanIdResolver = beanIdResolver;
     }
 
@@ -772,8 +743,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      *            property identifier, which must map to a getter in BEANTYPE
      * @return created resolver
      */
-    protected BeanIdResolver<IDTYPE, BEANTYPE> createBeanPropertyResolver(
-            Object propertyId) {
+    protected BeanIdResolver<IDTYPE, BEANTYPE> createBeanPropertyResolver(Object propertyId) {
         return new PropertyBasedBeanIdResolver(propertyId);
     }
 
@@ -787,8 +757,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
     }
 
     @Override
-    public void addPropertySetChangeListener(
-            Container.PropertySetChangeListener listener) {
+    public void addPropertySetChangeListener(Container.PropertySetChangeListener listener) {
         super.addPropertySetChangeListener(listener);
     }
 
@@ -803,17 +772,13 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
     }
 
     @Override
-    public void removePropertySetChangeListener(
-            Container.PropertySetChangeListener listener) {
+    public void removePropertySetChangeListener(Container.PropertySetChangeListener listener) {
         super.removePropertySetChangeListener(listener);
     }
 
     @Override
-    public boolean addContainerProperty(Object propertyId, Class<?> type,
-            Object defaultValue) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "Use addNestedContainerProperty(String) to add container properties to a "
-                        + getClass().getSimpleName());
+    public boolean addContainerProperty(Object propertyId, Class<?> type, Object defaultValue) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Use addNestedContainerProperty(String) to add container properties to a " + getClass().getSimpleName());
     }
 
     /**
@@ -825,8 +790,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      * @param propertyDescriptor
      * @return true if the property was added
      */
-    protected final boolean addContainerProperty(String propertyId,
-            VaadinPropertyDescriptor<BEANTYPE> propertyDescriptor) {
+    protected final boolean addContainerProperty(String propertyId, VaadinPropertyDescriptor<BEANTYPE> propertyDescriptor) {
         if (null == propertyId || null == propertyDescriptor) {
             return false;
         }
@@ -838,8 +802,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
 
         model.put(propertyId, propertyDescriptor);
         for (BeanItem<BEANTYPE> item : itemIdToItem.values()) {
-            item.addItemProperty(propertyId,
-                    propertyDescriptor.createProperty(item.getBean()));
+            item.addItemProperty(propertyId, propertyDescriptor.createProperty(item.getBean()));
         }
 
         // Sends a change event
@@ -862,8 +825,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
      * @return true if the property was added
      */
     public boolean addNestedContainerProperty(String propertyId) {
-        return addContainerProperty(propertyId, new NestedPropertyDescriptor(
-                propertyId, type));
+        return addContainerProperty(propertyId, new NestedPropertyDescriptor(propertyId, type));
     }
 
     /**
@@ -883,17 +845,14 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
     @SuppressWarnings("unchecked")
     public void addNestedContainerBean(String propertyId) {
         Class<?> propertyType = getType(propertyId);
-        LinkedHashMap<String, VaadinPropertyDescriptor<Object>> pds = BeanItem
-                .getPropertyDescriptors((Class<Object>) propertyType);
+        LinkedHashMap<String, VaadinPropertyDescriptor<Object>> pds = BeanItem.getPropertyDescriptors((Class<Object>) propertyType);
         for (String subPropertyId : pds.keySet()) {
             String qualifiedPropertyId = propertyId + "." + subPropertyId;
-            NestedPropertyDescriptor<BEANTYPE> pd = new NestedPropertyDescriptor<BEANTYPE>(
-                    qualifiedPropertyId, (Class<BEANTYPE>) type);
+            NestedPropertyDescriptor<BEANTYPE> pd = new NestedPropertyDescriptor<BEANTYPE>(qualifiedPropertyId, (Class<BEANTYPE>) type);
             model.put(qualifiedPropertyId, pd);
             model.remove(propertyId);
             for (BeanItem<BEANTYPE> item : itemIdToItem.values()) {
-                item.addItemProperty(qualifiedPropertyId,
-                        pd.createProperty(item.getBean()));
+                item.addItemProperty(qualifiedPropertyId, pd.createProperty(item.getBean()));
                 item.removeItemProperty(propertyId);
             }
         }
@@ -903,8 +862,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends
     }
 
     @Override
-    public boolean removeContainerProperty(Object propertyId)
-            throws UnsupportedOperationException {
+    public boolean removeContainerProperty(Object propertyId) throws UnsupportedOperationException {
         // Fails if the Property is not present
         if (!model.containsKey(propertyId)) {
             return false;

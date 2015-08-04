@@ -17,10 +17,8 @@ public class ValidationOfRequiredEmptyFields extends AbstractTestUI {
     private CheckBox requiredInput;
     private TextField requiredErrorInput;
 
-    private Validator integerValidator = new IntegerValidator(
-            "Must be an integer");
-    private Validator stringLengthValidator = new StringLengthValidator(
-            "Must be 5-10 chars", 5, 10, false);
+    private Validator integerValidator = new IntegerValidator("Must be an integer");
+    private Validator stringLengthValidator = new StringLengthValidator("Must be 5-10 chars", 5, 10, false);
     private CheckBox integerValidatorInput;
     private CheckBox stringLengthValidatorInput;
 
@@ -59,18 +57,17 @@ public class ValidationOfRequiredEmptyFields extends AbstractTestUI {
         });
         stringLengthValidatorInput = new CheckBox("String length validator");
         stringLengthValidatorInput.setImmediate(true);
-        stringLengthValidatorInput
-                .addValueChangeListener(new ValueChangeListener() {
+        stringLengthValidatorInput.addValueChangeListener(new ValueChangeListener() {
 
-                    @Override
-                    public void valueChange(ValueChangeEvent event) {
-                        if (stringLengthValidatorInput.getValue()) {
-                            tf.addValidator(stringLengthValidator);
-                        } else {
-                            tf.removeValidator(stringLengthValidator);
-                        }
-                    }
-                });
+            @Override
+            public void valueChange(ValueChangeEvent event) {
+                if (stringLengthValidatorInput.getValue()) {
+                    tf.addValidator(stringLengthValidator);
+                } else {
+                    tf.removeValidator(stringLengthValidator);
+                }
+            }
+        });
 
         tf = new TextField();
         tf.setImmediate(true);

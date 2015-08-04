@@ -50,15 +50,12 @@ public class Like implements Filter {
     }
 
     @Override
-    public boolean passesFilter(Object itemId, Item item)
-            throws UnsupportedOperationException {
-        if (!item.getItemProperty(getPropertyId()).getType()
-                .isAssignableFrom(String.class)) {
+    public boolean passesFilter(Object itemId, Item item) throws UnsupportedOperationException {
+        if (!item.getItemProperty(getPropertyId()).getType().isAssignableFrom(String.class)) {
             // We can only handle strings
             return false;
         }
-        String colValue = (String) item.getItemProperty(getPropertyId())
-                .getValue();
+        String colValue = (String) item.getItemProperty(getPropertyId()).getValue();
 
         // Fix issue #10167 - avoid NPE and drop null property values
         if (colValue == null) {
@@ -95,10 +92,8 @@ public class Like implements Filter {
         final Like o = (Like) obj;
 
         // Checks the properties one by one
-        boolean propertyIdEqual = (null != getPropertyId()) ? getPropertyId()
-                .equals(o.getPropertyId()) : null == o.getPropertyId();
-        boolean valueEqual = (null != getValue()) ? getValue().equals(
-                o.getValue()) : null == o.getValue();
+        boolean propertyIdEqual = (null != getPropertyId()) ? getPropertyId().equals(o.getPropertyId()) : null == o.getPropertyId();
+        boolean valueEqual = (null != getValue()) ? getValue().equals(o.getValue()) : null == o.getValue();
         return propertyIdEqual && valueEqual;
     }
 }

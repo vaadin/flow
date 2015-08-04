@@ -11,17 +11,14 @@ import com.vaadin.ui.Tree.ExpandListener;
 
 public class TreeListenersTest extends AbstractListenerMethodsTestBase {
     public void testExpandListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Tree.class, ExpandEvent.class,
-                ExpandListener.class);
+        testListenerAddGetRemove(Tree.class, ExpandEvent.class, ExpandListener.class);
     }
 
     public void testItemClickListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Tree.class, ItemClickEvent.class,
-                ItemClickListener.class);
+        testListenerAddGetRemove(Tree.class, ItemClickEvent.class, ItemClickListener.class);
     }
 
     public void testCollapseListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Tree.class, CollapseEvent.class,
-                CollapseListener.class);
+        testListenerAddGetRemove(Tree.class, CollapseEvent.class, CollapseListener.class);
     }
 }

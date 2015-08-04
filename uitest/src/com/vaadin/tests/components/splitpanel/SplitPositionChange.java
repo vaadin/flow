@@ -37,8 +37,7 @@ public class SplitPositionChange extends AbstractTestUIWithLog {
         addSplitPanel(false, "Top", "Bottom");
     }
 
-    private void addSplitPanel(final boolean horizontal, String firstCaption,
-            String secondCaption) {
+    private void addSplitPanel(final boolean horizontal, String firstCaption, String secondCaption) {
         AbstractSplitPanel splitPanel;
         if (horizontal) {
             splitPanel = new HorizontalSplitPanel();
@@ -49,19 +48,13 @@ public class SplitPositionChange extends AbstractTestUIWithLog {
         splitPanel.setHeight("200px");
         splitPanel.addComponent(buildPanel(firstCaption));
         splitPanel.addComponent(buildPanel(secondCaption));
-        splitPanel
-                .addSplitPositionChangeListener(new AbstractSplitPanel.SplitPositionChangeListener() {
+        splitPanel.addSplitPositionChangeListener(new AbstractSplitPanel.SplitPositionChangeListener() {
 
-                    @Override
-                    public void onSplitPositionChanged(
-                            AbstractSplitPanel.SplitPositionChangeEvent event) {
-                        log(String.format(
-                                "Split position changed: %s, position: %s %s",
-                                (horizontal ? "horizontal" : "vertical"),
-                                event.getSplitPosition(),
-                                event.getSplitPositionUnit()));
-                    }
-                });
+            @Override
+            public void onSplitPositionChanged(AbstractSplitPanel.SplitPositionChangeEvent event) {
+                log(String.format("Split position changed: %s, position: %s %s", (horizontal ? "horizontal" : "vertical"), event.getSplitPosition(), event.getSplitPositionUnit()));
+            }
+        });
         addComponent(splitPanel);
     }
 

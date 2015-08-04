@@ -22,7 +22,6 @@ public class UITabIndexTest extends MultiBrowserTest {
     }
 
     private void assertTabIndex(String expected) {
-        Assert.assertEquals("Unexpected tab index,", expected,
-                $(UIElement.class).first().getAttribute("tabIndex"));
+        Assert.assertEquals("Unexpected tab index,", expected, $(UIElement.class).first().getAttribute("tabIndex"));
     }
 }

@@ -80,8 +80,7 @@ public class ConfiguringColumnWidths extends UI {
             return;
         }
         try {
-            getClass().getDeclaredMethod("setupCase" + number, Grid.class)
-                    .invoke(this, grid);
+            getClass().getDeclaredMethod("setupCase" + number, Grid.class).invoke(this, grid);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

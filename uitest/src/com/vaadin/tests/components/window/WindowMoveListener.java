@@ -50,8 +50,7 @@ public class WindowMoveListener extends AbstractTestUI {
      */
     @Override
     protected String getTestDescription() {
-        return "Tests that windows send their updated position "
-                + "to server-side after being moved by user";
+        return "Tests that windows send their updated position " + "to server-side after being moved by user";
     }
 
     /*

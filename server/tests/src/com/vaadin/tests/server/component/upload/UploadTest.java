@@ -77,20 +77,17 @@ public class UploadTest {
         }
 
         @Override
-        protected void fireNoInputStream(String filename, String MIMEType,
-                long length) {
+        protected void fireNoInputStream(String filename, String MIMEType, long length) {
             fireEvent();
         }
 
         @Override
-        protected void fireNoOutputStream(String filename, String MIMEType,
-                long length) {
+        protected void fireNoOutputStream(String filename, String MIMEType, long length) {
             fireEvent();
         }
 
         @Override
-        protected void fireUploadInterrupted(String filename, String MIMEType,
-                long length, Exception e) {
+        protected void fireUploadInterrupted(String filename, String MIMEType, long length, Exception e) {
             fireEvent();
         }
 

@@ -30,23 +30,19 @@ import com.vaadin.ui.declarative.Design.ComponentMapper;
 import com.vaadin.ui.declarative.DesignContext;
 
 public class ComponentMapperTest {
-    private static final ComponentMapper defaultMapper = Design
-            .getComponentMapper();
+    private static final ComponentMapper defaultMapper = Design.getComponentMapper();
 
     private static final ThreadLocal<ComponentMapper> currentMapper = new ThreadLocal<ComponentMapper>();
 
     static {
         Design.setComponentMapper(new ComponentMapper() {
             @Override
-            public Component tagToComponent(String tag,
-                    ComponentFactory componentFactory, DesignContext context) {
-                return getActualMapper().tagToComponent(tag, componentFactory,
-                        context);
+            public Component tagToComponent(String tag, ComponentFactory componentFactory, DesignContext context) {
+                return getActualMapper().tagToComponent(tag, componentFactory, context);
             }
 
             @Override
-            public String componentToTag(Component component,
-                    DesignContext context) {
+            public String componentToTag(Component component, DesignContext context) {
                 return getActualMapper().componentToTag(component, context);
             }
 
@@ -60,16 +56,11 @@ public class ComponentMapperTest {
         });
     }
 
-    private final class CustomComponentMapper extends
-            Design.DefaultComponentMapper {
+    private final class CustomComponentMapper extends Design.DefaultComponentMapper {
         @Override
-        public Component tagToComponent(String tag,
-                ComponentFactory componentFactory, DesignContext context) {
+        public Component tagToComponent(String tag, ComponentFactory componentFactory, DesignContext context) {
             if (tag.startsWith("custom-")) {
-                ComponentWithCustomTagName component = (ComponentWithCustomTagName) componentFactory
-                        .createComponent(
-                                ComponentWithCustomTagName.class.getName(),
-                                context);
+                ComponentWithCustomTagName component = (ComponentWithCustomTagName) componentFactory.createComponent(ComponentWithCustomTagName.class.getName(), context);
                 component.tagName = tag;
                 return component;
             } else {
@@ -96,14 +87,10 @@ public class ComponentMapperTest {
     public void testCustomComponentMapperRead() {
         currentMapper.set(new CustomComponentMapper());
 
-        Component component = Design.read(new ByteArrayInputStream(
-                "<custom-foobar />".getBytes()));
+        Component component = Design.read(new ByteArrayInputStream("<custom-foobar />".getBytes()));
 
-        Assert.assertTrue("<custom-foobar> should resolve "
-                + ComponentWithCustomTagName.class.getSimpleName(),
-                component instanceof ComponentWithCustomTagName);
-        Assert.assertEquals("custom-foobar",
-                ((ComponentWithCustomTagName) component).tagName);
+        Assert.assertTrue("<custom-foobar> should resolve " + ComponentWithCustomTagName.class.getSimpleName(), component instanceof ComponentWithCustomTagName);
+        Assert.assertEquals("custom-foobar", ((ComponentWithCustomTagName) component).tagName);
     }
 
     @Test
@@ -117,10 +104,7 @@ public class ComponentMapperTest {
         Design.write(component, bos);
         String writtenDesign = new String(bos.toByteArray());
 
-        Assert.assertTrue(
-                "Written design should contain \"<custom-special\", but instead got "
-                        + writtenDesign,
-                writtenDesign.contains("<custom-special"));
+        Assert.assertTrue("Written design should contain \"<custom-special\", but instead got " + writtenDesign, writtenDesign.contains("<custom-special"));
     }
 
     public void cleanup() {

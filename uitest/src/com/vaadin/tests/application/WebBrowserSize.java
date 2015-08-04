@@ -21,10 +21,8 @@ public class WebBrowserSize extends AbstractTestUI {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                screenSizeLabel.setValue(getBrowser().getScreenWidth() + " x "
-                        + getBrowser().getScreenHeight());
-                browserSizeLabel.setValue(getPage().getBrowserWindowWidth()
-                        + " x " + getPage().getBrowserWindowHeight());
+                screenSizeLabel.setValue(getBrowser().getScreenWidth() + " x " + getBrowser().getScreenHeight());
+                browserSizeLabel.setValue(getPage().getBrowserWindowWidth() + " x " + getPage().getBrowserWindowHeight());
             }
         });
 

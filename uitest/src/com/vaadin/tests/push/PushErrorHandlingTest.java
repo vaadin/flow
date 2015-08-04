@@ -39,17 +39,12 @@ public class PushErrorHandlingTest extends MultiBrowserTest {
             // This results as an extra error label.
             ++idx;
         }
-        Assert.assertEquals(
-                "An error! Unable to invoke method click in com.vaadin.shared.ui.button.ButtonServerRpc",
-                $(LabelElement.class).get(idx).getText());
+        Assert.assertEquals("An error! Unable to invoke method click in com.vaadin.shared.ui.button.ButtonServerRpc", $(LabelElement.class).get(idx).getText());
 
         WebElement table = vaadinElementById("testtable");
-        WebElement row = table.findElement(By
-                .xpath("//div[text()='Click for NPE']"));
+        WebElement row = table.findElement(By.xpath("//div[text()='Click for NPE']"));
         row.click();
 
-        Assert.assertEquals("Internal error",
-                vaadinElement("Root/VNotification[0]/HTML[0]/domChild[0]")
-                        .getText());
+        Assert.assertEquals("Internal error", vaadinElement("Root/VNotification[0]/HTML[0]/domChild[0]").getText());
     }
 }

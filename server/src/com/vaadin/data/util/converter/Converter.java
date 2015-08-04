@@ -70,9 +70,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * @throws ConversionException
      *             If the value could not be converted
      */
-    public MODEL convertToModel(PRESENTATION value,
-            Class<? extends MODEL> targetType, Locale locale)
-            throws ConversionException;
+    public MODEL convertToModel(PRESENTATION value, Class<? extends MODEL> targetType, Locale locale) throws ConversionException;
 
     /**
      * Converts the given value from source type to target type.
@@ -95,9 +93,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * @throws ConversionException
      *             If the value could not be converted
      */
-    public PRESENTATION convertToPresentation(MODEL value,
-            Class<? extends PRESENTATION> targetType, Locale locale)
-            throws ConversionException;
+    public PRESENTATION convertToPresentation(MODEL value, Class<? extends PRESENTATION> targetType, Locale locale) throws ConversionException;
 
     /**
      * The source type of the converter.

@@ -24,21 +24,19 @@ public class RelativeChildrenWithoutExpand extends AbstractTestUI {
         setContent(vl);
 
         HorizontalLayout verticalExpand = new HorizontalLayout();
-        verticalExpand.addComponent(new Button("Add relative child",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        horizontalExpand.addComponent(new Label(loremIpsum), 0);
-                    }
-                }));
+        verticalExpand.addComponent(new Button("Add relative child", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                horizontalExpand.addComponent(new Label(loremIpsum), 0);
+            }
+        }));
         vl.addComponent(verticalExpand);
         vl.setExpandRatio(verticalExpand, 1);
 
         horizontalExpand.setWidth("100%");
         vl.addComponent(horizontalExpand);
 
-        Label lblExpandRatio1 = new Label(
-                "This is an expanding label that will get all of the normal space in the component.");
+        Label lblExpandRatio1 = new Label("This is an expanding label that will get all of the normal space in the component.");
         horizontalExpand.addComponent(lblExpandRatio1);
         horizontalExpand.setExpandRatio(lblExpandRatio1, 1);
     }

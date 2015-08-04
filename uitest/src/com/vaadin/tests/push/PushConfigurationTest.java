@@ -53,8 +53,7 @@ abstract class PushConfigurationTest extends MultiBrowserTest {
 
         int counter = getServerCounter();
         sleep(2000);
-        assertEquals("Server count changed without push enabled", counter,
-                getServerCounter());
+        assertEquals("Server count changed without push enabled", counter, getServerCounter());
     }
 
     protected NativeSelectElement getPushModeSelect() {

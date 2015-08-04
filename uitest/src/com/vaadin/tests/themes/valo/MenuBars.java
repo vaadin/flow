@@ -160,8 +160,7 @@ public class MenuBars extends VerticalLayout implements View {
         Command check = new Command() {
             @Override
             public void menuSelected(MenuItem selectedItem) {
-                Notification.show(selectedItem.isChecked() ? "Checked"
-                        : "Unchecked");
+                Notification.show(selectedItem.isChecked() ? "Checked" : "Unchecked");
             }
         };
 

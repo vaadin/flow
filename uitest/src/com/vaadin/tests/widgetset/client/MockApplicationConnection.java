@@ -40,8 +40,7 @@ public class MockApplicationConnection extends ApplicationConnection {
 
     @Override
     public MockServerCommunicationHandler getServerCommunicationHandler() {
-        return (MockServerCommunicationHandler) super
-                .getServerCommunicationHandler();
+        return (MockServerCommunicationHandler) super.getServerCommunicationHandler();
     }
 
     /**

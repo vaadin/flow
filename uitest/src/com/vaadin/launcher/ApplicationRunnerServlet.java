@@ -62,8 +62,7 @@ import com.vaadin.util.CurrentInstance;
 @SuppressWarnings("serial")
 public class ApplicationRunnerServlet extends VaadinServlet {
 
-    public static String CUSTOM_SYSTEM_MESSAGES_PROPERTY = "custom-"
-            + SystemMessages.class.getName();
+    public static String CUSTOM_SYSTEM_MESSAGES_PROPERTY = "custom-" + SystemMessages.class.getName();
 
     /**
      * The name of the application class currently used. Only valid within one
@@ -76,8 +75,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
-        String initParameter = servletConfig
-                .getInitParameter("defaultPackages");
+        String initParameter = servletConfig.getInitParameter("defaultPackages");
         if (initParameter != null) {
             Collections.addAll(defaultPackages, initParameter.split(","));
         }
@@ -90,8 +88,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
             } catch (URISyntaxException e) {
                 getLogger().log(Level.FINE, "Failed to decode url", e);
             }
-            File comVaadinTests = new File(path).getParentFile()
-                    .getParentFile();
+            File comVaadinTests = new File(path).getParentFile().getParentFile();
             addDirectories(comVaadinTests, defaultPackages, "com.vaadin.tests");
 
         }
@@ -102,15 +99,13 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         super.servletInitialized();
         getService().addSessionInitListener(new SessionInitListener() {
             @Override
-            public void sessionInit(SessionInitEvent event)
-                    throws ServiceException {
+            public void sessionInit(SessionInitEvent event) throws ServiceException {
                 onVaadinSessionStarted(event.getRequest(), event.getSession());
             }
         });
     }
 
-    private void addDirectories(File parent, LinkedHashSet<String> packages,
-            String parentPackage) {
+    private void addDirectories(File parent, LinkedHashSet<String> packages, String parentPackage) {
         packages.add(parentPackage);
 
         for (File f : parent.listFiles()) {
@@ -122,8 +117,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     }
 
     @Override
-    protected void service(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         this.request.set(request);
         try {
             super.service(request, response);
@@ -133,8 +127,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     }
 
     @Override
-    protected URL getApplicationUrl(HttpServletRequest request)
-            throws MalformedURLException {
+    protected URL getApplicationUrl(HttpServletRequest request) throws MalformedURLException {
         URL url = super.getApplicationUrl(request);
 
         String path = url.toString();
@@ -144,48 +137,38 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         return new URL(path);
     }
 
-    protected void onVaadinSessionStarted(VaadinRequest request,
-            VaadinSession session) throws ServiceException {
+    protected void onVaadinSessionStarted(VaadinRequest request, VaadinSession session) throws ServiceException {
         try {
             final Class<?> classToRun = getClassToRun();
             if (UI.class.isAssignableFrom(classToRun)) {
-                session.addUIProvider(new ApplicationRunnerUIProvider(
-                        classToRun));
+                session.addUIProvider(new ApplicationRunnerUIProvider(classToRun));
             } else if (UIProvider.class.isAssignableFrom(classToRun)) {
                 session.addUIProvider((UIProvider) classToRun.newInstance());
             } else {
-                throw new ServiceException(classToRun.getCanonicalName()
-                        + " is neither an Application nor a UI");
+                throw new ServiceException(classToRun.getCanonicalName() + " is neither an Application nor a UI");
             }
         } catch (final IllegalAccessException e) {
             throw new ServiceException(e);
         } catch (final InstantiationException e) {
             throw new ServiceException(e);
         } catch (final ClassNotFoundException e) {
-            throw new ServiceException(
-                    new InstantiationException(
-                            "Failed to load application class: "
-                                    + getApplicationRunnerApplicationClassName((VaadinServletRequest) request)));
+            throw new ServiceException(new InstantiationException("Failed to load application class: " + getApplicationRunnerApplicationClassName((VaadinServletRequest) request)));
         }
     }
 
-    private String getApplicationRunnerApplicationClassName(
-            HttpServletRequest request) {
+    private String getApplicationRunnerApplicationClassName(HttpServletRequest request) {
         return getApplicationRunnerURIs(request).applicationClassname;
     }
 
-    private final static class ProxyDeploymentConfiguration implements
-            InvocationHandler, Serializable {
+    private final static class ProxyDeploymentConfiguration implements InvocationHandler, Serializable {
         private final DeploymentConfiguration originalConfiguration;
 
-        private ProxyDeploymentConfiguration(
-                DeploymentConfiguration originalConfiguration) {
+        private ProxyDeploymentConfiguration(DeploymentConfiguration originalConfiguration) {
             this.originalConfiguration = originalConfiguration;
         }
 
         @Override
-        public Object invoke(Object proxy, Method method, Object[] args)
-                throws Throwable {
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             if (method.getDeclaringClass() == DeploymentConfiguration.class) {
                 // Find the configuration instance to delegate to
                 DeploymentConfiguration configuration = findDeploymentConfiguration(originalConfiguration);
@@ -236,8 +219,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
      *         context, runner, application classname
      */
     private static URIS getApplicationRunnerURIs(HttpServletRequest request) {
-        final String[] urlParts = request.getRequestURI().toString()
-                .split("\\/");
+        final String[] urlParts = request.getRequestURI().toString().split("\\/");
         // String runner = null;
         URIS uris = new URIS();
         String applicationClassname = null;
@@ -276,8 +258,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
 
         Class<?> appClass = null;
 
-        String baseName = getApplicationRunnerApplicationClassName(request
-                .get());
+        String baseName = getApplicationRunnerApplicationClassName(request.get());
         try {
             appClass = getClass().getClassLoader().loadClass(baseName);
             return appClass;
@@ -285,16 +266,12 @@ public class ApplicationRunnerServlet extends VaadinServlet {
             //
             for (String pkg : defaultPackages) {
                 try {
-                    appClass = getClass().getClassLoader().loadClass(
-                            pkg + "." + baseName);
+                    appClass = getClass().getClassLoader().loadClass(pkg + "." + baseName);
                 } catch (ClassNotFoundException ee) {
                     // Ignore as this is expected for many packages
                 } catch (Exception e2) {
                     // TODO: handle exception
-                    getLogger().log(
-                            Level.FINE,
-                            "Failed to find application class " + pkg + "."
-                                    + baseName, e2);
+                    getLogger().log(Level.FINE, "Failed to find application class " + pkg + "." + baseName, e2);
                 }
                 if (appClass != null) {
                     return appClass;
@@ -311,38 +288,27 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     }
 
     @Override
-    protected DeploymentConfiguration createDeploymentConfiguration(
-            Properties initParameters) {
+    protected DeploymentConfiguration createDeploymentConfiguration(Properties initParameters) {
         // Get the original configuration from the super class
-        final DeploymentConfiguration originalConfiguration = super
-                .createDeploymentConfiguration(initParameters);
+        final DeploymentConfiguration originalConfiguration = super.createDeploymentConfiguration(initParameters);
 
         // And then create a proxy instance that delegates to the original
         // configuration or a customized version
-        return (DeploymentConfiguration) Proxy.newProxyInstance(
-                DeploymentConfiguration.class.getClassLoader(),
-                new Class[] { DeploymentConfiguration.class },
-                new ProxyDeploymentConfiguration(originalConfiguration));
+        return (DeploymentConfiguration) Proxy.newProxyInstance(DeploymentConfiguration.class.getClassLoader(), new Class[] { DeploymentConfiguration.class }, new ProxyDeploymentConfiguration(originalConfiguration));
     }
 
     @Override
-    protected VaadinServletService createServletService(
-            DeploymentConfiguration deploymentConfiguration)
-            throws ServiceException {
-        VaadinServletService service = super
-                .createServletService(deploymentConfiguration);
-        final SystemMessagesProvider provider = service
-                .getSystemMessagesProvider();
+    protected VaadinServletService createServletService(DeploymentConfiguration deploymentConfiguration) throws ServiceException {
+        VaadinServletService service = super.createServletService(deploymentConfiguration);
+        final SystemMessagesProvider provider = service.getSystemMessagesProvider();
         service.setSystemMessagesProvider(new SystemMessagesProvider() {
 
             @Override
-            public SystemMessages getSystemMessages(
-                    SystemMessagesInfo systemMessagesInfo) {
+            public SystemMessages getSystemMessages(SystemMessagesInfo systemMessagesInfo) {
                 if (systemMessagesInfo.getRequest() == null) {
                     return provider.getSystemMessages(systemMessagesInfo);
                 }
-                Object messages = systemMessagesInfo.getRequest().getAttribute(
-                        CUSTOM_SYSTEM_MESSAGES_PROPERTY);
+                Object messages = systemMessagesInfo.getRequest().getAttribute(CUSTOM_SYSTEM_MESSAGES_PROPERTY);
                 if (messages instanceof SystemMessages) {
                     return (SystemMessages) messages;
                 }
@@ -353,11 +319,9 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         return service;
     }
 
-    private static DeploymentConfiguration findDeploymentConfiguration(
-            DeploymentConfiguration originalConfiguration) throws Exception {
+    private static DeploymentConfiguration findDeploymentConfiguration(DeploymentConfiguration originalConfiguration) throws Exception {
         // First level of cache
-        DeploymentConfiguration configuration = CurrentInstance
-                .get(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = CurrentInstance.get(DeploymentConfiguration.class);
 
         if (configuration == null) {
             // Not in cache, try to find a VaadinSession to get it from
@@ -372,19 +336,14 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                  * request.
                  */
 
-                HttpServletRequest currentRequest = VaadinServletService
-                        .getCurrentServletRequest();
+                HttpServletRequest currentRequest = VaadinServletService.getCurrentServletRequest();
                 if (currentRequest != null) {
                     HttpSession httpSession = currentRequest.getSession(false);
                     if (httpSession != null) {
-                        Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance
-                                .setCurrent((VaadinSession) null);
+                        Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance.setCurrent((VaadinSession) null);
                         try {
-                            VaadinServletService service = (VaadinServletService) VaadinService
-                                    .getCurrent();
-                            session = service
-                                    .findVaadinSession(new VaadinServletRequest(
-                                            currentRequest, service));
+                            VaadinServletService service = (VaadinServletService) VaadinService.getCurrent();
+                            session = service.findVaadinSession(new VaadinServletRequest(currentRequest, service));
                         } finally {
                             /*
                              * Clear some state set by findVaadinSession to
@@ -392,24 +351,20 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                              * e.g. static request handling.
                              */
                             CurrentInstance.restoreInstances(oldCurrent);
-                            currentRequest.removeAttribute(VaadinSession.class
-                                    .getName());
+                            currentRequest.removeAttribute(VaadinSession.class.getName());
                         }
                     }
                 }
             }
 
             if (session != null) {
-                String name = ApplicationRunnerServlet.class.getName()
-                        + ".deploymentConfiguration";
+                String name = ApplicationRunnerServlet.class.getName() + ".deploymentConfiguration";
                 try {
                     session.lock();
-                    configuration = (DeploymentConfiguration) session
-                            .getAttribute(name);
+                    configuration = (DeploymentConfiguration) session.getAttribute(name);
 
                     if (configuration == null) {
-                        ApplicationRunnerServlet servlet = (ApplicationRunnerServlet) VaadinServlet
-                                .getCurrent();
+                        ApplicationRunnerServlet servlet = (ApplicationRunnerServlet) VaadinServlet.getCurrent();
                         Class<?> classToRun;
                         try {
                             classToRun = servlet.getClassToRun();
@@ -423,19 +378,15 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                             return originalConfiguration;
                         }
 
-                        CustomDeploymentConfiguration customDeploymentConfiguration = classToRun
-                                .getAnnotation(CustomDeploymentConfiguration.class);
+                        CustomDeploymentConfiguration customDeploymentConfiguration = classToRun.getAnnotation(CustomDeploymentConfiguration.class);
                         if (customDeploymentConfiguration != null) {
-                            Properties initParameters = new Properties(
-                                    originalConfiguration.getInitParameters());
+                            Properties initParameters = new Properties(originalConfiguration.getInitParameters());
 
-                            for (Conf entry : customDeploymentConfiguration
-                                    .value()) {
+                            for (Conf entry : customDeploymentConfiguration.value()) {
                                 initParameters.put(entry.name(), entry.value());
                             }
 
-                            configuration = new DefaultDeploymentConfiguration(
-                                    servlet.getClass(), initParameters);
+                            configuration = new DefaultDeploymentConfiguration(servlet.getClass(), initParameters);
                         } else {
                             configuration = originalConfiguration;
                         }
@@ -446,8 +397,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                     session.unlock();
                 }
 
-                CurrentInstance.set(DeploymentConfiguration.class,
-                        configuration);
+                CurrentInstance.set(DeploymentConfiguration.class, configuration);
 
             } else {
                 configuration = originalConfiguration;

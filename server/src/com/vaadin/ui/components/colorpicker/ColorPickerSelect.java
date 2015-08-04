@@ -27,8 +27,7 @@ import com.vaadin.ui.VerticalLayout;
  * 
  * @since 7.0.0
  */
-public class ColorPickerSelect extends CustomComponent implements
-        ColorSelector, ValueChangeListener {
+public class ColorPickerSelect extends CustomComponent implements ColorSelector, ValueChangeListener {
 
     /** The range. */
     private final ComboBox range;
@@ -40,8 +39,7 @@ public class ColorPickerSelect extends CustomComponent implements
      * The Enum ColorRangePropertyId.
      */
     private enum ColorRangePropertyId {
-        ALL("All colors"), RED("Red colors"), GREEN("Green colors"), BLUE(
-                "Blue colors");
+        ALL("All colors"), RED("Red colors"), GREEN("Green colors"), BLUE("Blue colors");
 
         /** The caption. */
         private String caption;
@@ -130,8 +128,7 @@ public class ColorPickerSelect extends CustomComponent implements
                         value = 1f - ((row - (rows / 2f)) / (rows / 2f));
                     }
 
-                    colors[row][col] = new Color(Color.HSVtoRGB(hue,
-                            saturation, value));
+                    colors[row][col] = new Color(Color.HSVtoRGB(hue, saturation, value));
                 }
 
                 // The last row should have the black&white gradient
@@ -140,8 +137,7 @@ public class ColorPickerSelect extends CustomComponent implements
                     float saturation = 0f;
                     float value = 1f - ((float) col / (float) columns);
 
-                    colors[row][col] = new Color(Color.HSVtoRGB(hue,
-                            saturation, value));
+                    colors[row][col] = new Color(Color.HSVtoRGB(hue, saturation, value));
                 }
             }
         }
@@ -178,16 +174,13 @@ public class ColorPickerSelect extends CustomComponent implements
                 value = 1f;
 
                 if (index <= ((rows * columns) / 2)) {
-                    saturation = index
-                            / (((float) rows * (float) columns) / 2f);
+                    saturation = index / (((float) rows * (float) columns) / 2f);
                 } else {
                     index -= ((rows * columns) / 2);
-                    value = 1f - index
-                            / (((float) rows * (float) columns) / 2f);
+                    value = 1f - index / (((float) rows * (float) columns) / 2f);
                 }
 
-                colors[row][col] = new Color(Color.HSVtoRGB(hue, saturation,
-                        value));
+                colors[row][col] = new Color(Color.HSVtoRGB(hue, saturation, value));
             }
         }
 

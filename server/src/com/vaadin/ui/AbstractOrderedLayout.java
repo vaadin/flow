@@ -40,17 +40,13 @@ import com.vaadin.ui.declarative.DesignAttributeHandler;
 import com.vaadin.ui.declarative.DesignContext;
 
 @SuppressWarnings("serial")
-public abstract class AbstractOrderedLayout extends AbstractLayout implements
-        Layout.AlignmentHandler, Layout.SpacingHandler, LayoutClickNotifier,
-        Layout.MarginHandler {
+public abstract class AbstractOrderedLayout extends AbstractLayout implements Layout.AlignmentHandler, Layout.SpacingHandler, LayoutClickNotifier, Layout.MarginHandler {
 
     private AbstractOrderedLayoutServerRpc rpc = new AbstractOrderedLayoutServerRpc() {
 
         @Override
-        public void layoutClick(MouseEventDetails mouseDetails,
-                Connector clickedConnector) {
-            fireEvent(LayoutClickEvent.createEvent(AbstractOrderedLayout.this,
-                    mouseDetails, clickedConnector));
+        public void layoutClick(MouseEventDetails mouseDetails, Connector clickedConnector) {
+            fireEvent(LayoutClickEvent.createEvent(AbstractOrderedLayout.this, mouseDetails, clickedConnector));
         }
     };
 
@@ -251,15 +247,13 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements
     }
 
     @Override
-    public void setComponentAlignment(Component childComponent,
-            Alignment alignment) {
+    public void setComponentAlignment(Component childComponent, Alignment alignment) {
         ChildComponentData childData = getState().childData.get(childComponent);
         if (childData != null) {
             // Alignments are bit masks
             childData.alignmentBitmask = alignment.getBitMask();
         } else {
-            throw new IllegalArgumentException(
-                    "Component must be added to layout before using setComponentAlignment()");
+            throw new IllegalArgumentException("Component must be added to layout before using setComponentAlignment()");
         }
 
     }
@@ -274,8 +268,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements
     public Alignment getComponentAlignment(Component childComponent) {
         ChildComponentData childData = getState().childData.get(childComponent);
         if (childData == null) {
-            throw new IllegalArgumentException(
-                    "The given component is not a child of this layout");
+            throw new IllegalArgumentException("The given component is not a child of this layout");
         }
 
         return new Alignment(childData.alignmentBitmask);
@@ -333,8 +326,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements
     public void setExpandRatio(Component component, float ratio) {
         ChildComponentData childData = getState().childData.get(component);
         if (childData == null) {
-            throw new IllegalArgumentException(
-                    "The given component is not a child of this layout");
+            throw new IllegalArgumentException("The given component is not a child of this layout");
         }
 
         childData.expandRatio = ratio;
@@ -350,8 +342,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements
     public float getExpandRatio(Component component) {
         ChildComponentData childData = getState(false).childData.get(component);
         if (childData == null) {
-            throw new IllegalArgumentException(
-                    "The given component is not a child of this layout");
+            throw new IllegalArgumentException("The given component is not a child of this layout");
         }
 
         return childData.expandRatio;
@@ -359,9 +350,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements
 
     @Override
     public void addLayoutClickListener(LayoutClickListener listener) {
-        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
-                LayoutClickEvent.class, listener,
-                LayoutClickListener.clickMethod);
+        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener, LayoutClickListener.clickMethod);
     }
 
     /**
@@ -376,8 +365,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements
 
     @Override
     public void removeLayoutClickListener(LayoutClickListener listener) {
-        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
-                LayoutClickEvent.class, listener);
+        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener);
     }
 
     /**
@@ -461,8 +449,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements
         defaultComponentAlignment = defaultAlignment;
     }
 
-    private void applyLayoutSettings(Component target, Alignment alignment,
-            float expandRatio) {
+    private void applyLayoutSettings(Component target, Alignment alignment, float expandRatio) {
         setComponentAlignment(target, alignment);
         setExpandRatio(target, expandRatio);
     }
@@ -510,8 +497,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements
                         float ratio = Float.valueOf(value);
                         setExpandRatio(newChild, ratio);
                     } catch (NumberFormatException nfe) {
-                        getLogger().info(
-                                "Failed to parse expand ratio " + value);
+                        getLogger().info("Failed to parse expand ratio " + value);
                     }
                 } else {
                     setExpandRatio(newChild, 1.0f);
@@ -531,8 +517,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements
         // write default attributes
         super.writeDesign(design, designContext);
 
-        AbstractOrderedLayout def = (AbstractOrderedLayout) designContext
-                .getDefaultInstance(this);
+        AbstractOrderedLayout def = (AbstractOrderedLayout) designContext.getDefaultInstance(this);
 
         writeMargin(design, getMargin(), def.getMargin(), designContext);
 
@@ -561,8 +546,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements
             if (expandRatio == 1.0f) {
                 childElement.attr(":expand", "");
             } else if (expandRatio > 0) {
-                childElement.attr(":expand", DesignAttributeHandler
-                        .getFormatter().format(expandRatio));
+                childElement.attr(":expand", DesignAttributeHandler.getFormatter().format(expandRatio));
             }
         }
     }

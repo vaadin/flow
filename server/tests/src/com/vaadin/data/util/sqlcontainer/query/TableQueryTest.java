@@ -33,9 +33,7 @@ public class TableQueryTest {
     @Before
     public void setUp() throws SQLException {
         try {
-            connectionPool = new ValidatingSimpleJDBCConnectionPool(
-                    SQLTestsConstants.dbDriver, SQLTestsConstants.dbURL,
-                    SQLTestsConstants.dbUser, SQLTestsConstants.dbPwd, 2, 2);
+            connectionPool = new ValidatingSimpleJDBCConnectionPool(SQLTestsConstants.dbDriver, SQLTestsConstants.dbURL, SQLTestsConstants.dbUser, SQLTestsConstants.dbPwd, 2, 2);
         } catch (SQLException e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -55,23 +53,17 @@ public class TableQueryTest {
      **********************************************************************/
     @Test
     public void construction_legalParameters_shouldSucceed() {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                new DefaultSQLGenerator());
-        Assert.assertArrayEquals(new Object[] { "ID" }, tQuery
-                .getPrimaryKeyColumns().toArray());
-        boolean correctTableName = "people".equalsIgnoreCase(tQuery
-                .getTableName());
+        TableQuery tQuery = new TableQuery("people", connectionPool, new DefaultSQLGenerator());
+        Assert.assertArrayEquals(new Object[] { "ID" }, tQuery.getPrimaryKeyColumns().toArray());
+        boolean correctTableName = "people".equalsIgnoreCase(tQuery.getTableName());
         Assert.assertTrue(correctTableName);
     }
 
     @Test
     public void construction_legalParameters_defaultGenerator_shouldSucceed() {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
-        Assert.assertArrayEquals(new Object[] { "ID" }, tQuery
-                .getPrimaryKeyColumns().toArray());
-        boolean correctTableName = "people".equalsIgnoreCase(tQuery
-                .getTableName());
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
+        Assert.assertArrayEquals(new Object[] { "ID" }, tQuery.getPrimaryKeyColumns().toArray());
+        boolean correctTableName = "people".equalsIgnoreCase(tQuery.getTableName());
         Assert.assertTrue(correctTableName);
     }
 
@@ -100,14 +92,12 @@ public class TableQueryTest {
      **********************************************************************/
     @Test
     public void getCount_simpleQuery_returnsFour() throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         Assert.assertEquals(4, tQuery.getCount());
     }
 
     @Test
-    public void getCount_simpleQueryTwoMorePeopleAdded_returnsSix()
-            throws SQLException {
+    public void getCount_simpleQueryTwoMorePeopleAdded_returnsSix() throws SQLException {
         // Add some people
         Connection conn = connectionPool.reserveConnection();
         Statement statement = conn.createStatement();
@@ -115,25 +105,21 @@ public class TableQueryTest {
             statement.executeUpdate("insert into people values('Bengt', 30)");
             statement.executeUpdate("insert into people values('Ingvar', 50)");
         } else {
-            statement
-                    .executeUpdate("insert into people values(default, 'Bengt', 30)");
-            statement
-                    .executeUpdate("insert into people values(default, 'Ingvar', 50)");
+            statement.executeUpdate("insert into people values(default, 'Bengt', 30)");
+            statement.executeUpdate("insert into people values(default, 'Ingvar', 50)");
         }
         statement.close();
         conn.commit();
         connectionPool.releaseConnection(conn);
 
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
 
         Assert.assertEquals(6, tQuery.getCount());
     }
 
     @Test
     public void getCount_normalState_releasesConnection() throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.getCount();
         tQuery.getCount();
         Connection c = connectionPool.reserveConnection();
@@ -146,8 +132,7 @@ public class TableQueryTest {
      **********************************************************************/
     @Test
     public void getResults_simpleQuery_returnsFourRecords() throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.beginTransaction();
         ResultSet rs = tQuery.getResults(0, 0);
 
@@ -172,12 +157,10 @@ public class TableQueryTest {
     }
 
     @Test
-    public void getResults_noDelegate5000Rows_returns5000rows()
-            throws SQLException {
+    public void getResults_noDelegate5000Rows_returns5000rows() throws SQLException {
         DataGenerator.addFiveThousandPeople(connectionPool);
 
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
 
         tQuery.beginTransaction();
         ResultSet rs = tQuery.getResults(0, 0);
@@ -192,10 +175,8 @@ public class TableQueryTest {
      * TableQuery transaction management tests
      **********************************************************************/
     @Test
-    public void beginTransaction_transactionAlreadyActive_shouldFail()
-            throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+    public void beginTransaction_transactionAlreadyActive_shouldFail() throws SQLException {
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
 
         tQuery.beginTransaction();
         try {
@@ -209,31 +190,27 @@ public class TableQueryTest {
 
     @Test
     public void commit_readOnly_shouldSucceed() throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.beginTransaction();
         tQuery.commit();
     }
 
     @Test
     public void rollback_readOnly_shouldSucceed() throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.beginTransaction();
         tQuery.rollback();
     }
 
     @Test(expected = SQLException.class)
     public void commit_noActiveTransaction_shouldFail() throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.commit();
     }
 
     @Test(expected = SQLException.class)
     public void rollback_noActiveTransaction_shouldFail() throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.rollback();
     }
 
@@ -241,27 +218,21 @@ public class TableQueryTest {
      * TableQuery row query with given keys tests
      **********************************************************************/
     @Test
-    public void containsRowWithKeys_existingKeys_returnsTrue()
-            throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+    public void containsRowWithKeys_existingKeys_returnsTrue() throws SQLException {
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         Assert.assertTrue(tQuery.containsRowWithKey(1));
     }
 
     @Test
-    public void containsRowWithKeys_nonexistingKeys_returnsTrue()
-            throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+    public void containsRowWithKeys_nonexistingKeys_returnsTrue() throws SQLException {
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
 
         Assert.assertFalse(tQuery.containsRowWithKey(1337));
     }
 
     @Test
-    public void containsRowWithKeys_invalidKeys_shouldFail()
-            throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+    public void containsRowWithKeys_invalidKeys_shouldFail() throws SQLException {
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         boolean b = true;
         try {
             b = tQuery.containsRowWithKey("foo");
@@ -272,14 +243,11 @@ public class TableQueryTest {
     }
 
     @Test
-    public void containsRowWithKeys_nullKeys_shouldFailAndReleaseConnections()
-            throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+    public void containsRowWithKeys_nullKeys_shouldFailAndReleaseConnections() throws SQLException {
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         try {
             tQuery.containsRowWithKey(new Object[] { null });
-            org.junit.Assert
-                    .fail("null should throw an IllegalArgumentException from StatementHelper");
+            org.junit.Assert.fail("null should throw an IllegalArgumentException from StatementHelper");
         } catch (IllegalArgumentException e) {
             // We should now be able to reserve two connections
             Connection c1 = connectionPool.reserveConnection();
@@ -297,8 +265,7 @@ public class TableQueryTest {
      **********************************************************************/
     @Test
     public void setFilters_shouldReturnCorrectCount() throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         List<Filter> filters = new ArrayList<Filter>();
         filters.add(new Like("NAME", "%lle"));
         tQuery.setFilters(filters);
@@ -306,10 +273,8 @@ public class TableQueryTest {
     }
 
     @Test
-    public void setOrderByNameAscending_shouldReturnCorrectOrder()
-            throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+    public void setOrderByNameAscending_shouldReturnCorrectOrder() throws SQLException {
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
 
         List<OrderBy> orderBys = Arrays.asList(new OrderBy("NAME", true));
         tQuery.setOrderBy(orderBys);
@@ -339,10 +304,8 @@ public class TableQueryTest {
     }
 
     @Test
-    public void setOrderByNameDescending_shouldReturnCorrectOrder()
-            throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+    public void setOrderByNameDescending_shouldReturnCorrectOrder() throws SQLException {
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
 
         List<OrderBy> orderBys = Arrays.asList(new OrderBy("NAME", false));
         tQuery.setOrderBy(orderBys);
@@ -373,15 +336,13 @@ public class TableQueryTest {
 
     @Test
     public void setFilters_nullParameter_shouldSucceed() {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.setFilters(null);
     }
 
     @Test
     public void setOrderBy_nullParameter_shouldSucceed() {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.setOrderBy(null);
     }
 
@@ -389,14 +350,11 @@ public class TableQueryTest {
      * TableQuery row removal tests
      **********************************************************************/
     @Test
-    public void removeRowThroughContainer_legalRowItem_shouldSucceed()
-            throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+    public void removeRowThroughContainer_legalRowItem_shouldSucceed() throws SQLException {
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         SQLContainer container = new SQLContainer(tQuery);
         container.setAutoCommit(false);
-        Assert.assertTrue(container.removeItem(container.getItemIds()
-                .iterator().next()));
+        Assert.assertTrue(container.removeItem(container.getItemIds().iterator().next()));
 
         Assert.assertEquals(4, tQuery.getCount());
         Assert.assertEquals(3, container.size());
@@ -407,10 +365,8 @@ public class TableQueryTest {
     }
 
     @Test
-    public void removeRowThroughContainer_nonexistingRowId_shouldFail()
-            throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+    public void removeRowThroughContainer_nonexistingRowId_shouldFail() throws SQLException {
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
 
         SQLContainer container = new SQLContainer(tQuery);
         container.setAutoCommit(true);
@@ -422,8 +378,7 @@ public class TableQueryTest {
      **********************************************************************/
     @Test
     public void insertRowThroughContainer_shouldSucceed() throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.setVersionColumn("ID");
 
         SQLContainer container = new SQLContainer(tQuery);
@@ -442,8 +397,7 @@ public class TableQueryTest {
 
     @Test
     public void modifyRowThroughContainer_shouldSucceed() throws SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
 
         // In this test the primary key is used as a version column
         tQuery.setVersionColumn("ID");
@@ -459,8 +413,7 @@ public class TableQueryTest {
         tQuery.setFilters(null);
 
         /* Fetch first item, modify and commit */
-        Object item = container.getItem(container.getItemIds().iterator()
-                .next());
+        Object item = container.getItem(container.getItemIds().iterator().next());
         Assert.assertNotNull(item);
 
         RowItem ri = (RowItem) item;
@@ -477,10 +430,8 @@ public class TableQueryTest {
     }
 
     @Test
-    public void storeRow_noVersionColumn_shouldSucceed()
-            throws UnsupportedOperationException, SQLException {
-        TableQuery tQuery = new TableQuery("people", connectionPool,
-                SQLTestsConstants.sqlGen);
+    public void storeRow_noVersionColumn_shouldSucceed() throws UnsupportedOperationException, SQLException {
+        TableQuery tQuery = new TableQuery("people", connectionPool, SQLTestsConstants.sqlGen);
         SQLContainer container = new SQLContainer(tQuery);
         Object id = container.addItem();
         RowItem row = (RowItem) container.getItem(id);
@@ -491,8 +442,7 @@ public class TableQueryTest {
         tQuery.commit();
 
         Connection conn = connectionPool.reserveConnection();
-        PreparedStatement stmt = conn
-                .prepareStatement("SELECT * FROM PEOPLE WHERE \"NAME\" = ?");
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM PEOPLE WHERE \"NAME\" = ?");
         stmt.setString(1, "R2D2");
         ResultSet rs = stmt.executeQuery();
         Assert.assertTrue(rs.next());
@@ -502,12 +452,10 @@ public class TableQueryTest {
     }
 
     @Test
-    public void storeRow_versionSetAndEqualToDBValue_shouldSucceed()
-            throws SQLException {
+    public void storeRow_versionSetAndEqualToDBValue_shouldSucceed() throws SQLException {
         DataGenerator.addVersionedData(connectionPool);
 
-        TableQuery tQuery = new TableQuery("versioned", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("versioned", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.setVersionColumn("VERSION");
         SQLContainer container = new SQLContainer(tQuery);
         RowItem row = (RowItem) container.getItem(container.firstItemId());
@@ -517,8 +465,7 @@ public class TableQueryTest {
         container.commit();
 
         Connection conn = connectionPool.reserveConnection();
-        PreparedStatement stmt = conn
-                .prepareStatement("SELECT * FROM VERSIONED WHERE \"TEXT\" = ?");
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM VERSIONED WHERE \"TEXT\" = ?");
         stmt.setString(1, "asdf");
         ResultSet rs = stmt.executeQuery();
         Assert.assertTrue(rs.next());
@@ -529,17 +476,13 @@ public class TableQueryTest {
     }
 
     @Test(expected = OptimisticLockException.class)
-    public void storeRow_versionSetAndLessThanDBValue_shouldThrowException()
-            throws SQLException {
+    public void storeRow_versionSetAndLessThanDBValue_shouldThrowException() throws SQLException {
         if (SQLTestsConstants.db == DB.HSQLDB) {
-            throw new OptimisticLockException(
-                    "HSQLDB doesn't support row versioning for optimistic locking - don't run this test.",
-                    null);
+            throw new OptimisticLockException("HSQLDB doesn't support row versioning for optimistic locking - don't run this test.", null);
         }
         DataGenerator.addVersionedData(connectionPool);
 
-        TableQuery tQuery = new TableQuery("versioned", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("versioned", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.setVersionColumn("VERSION");
         SQLContainer container = new SQLContainer(tQuery);
         RowItem row = (RowItem) container.getItem(container.firstItemId());
@@ -549,8 +492,7 @@ public class TableQueryTest {
 
         // Update the version using another connection.
         Connection conn = connectionPool.reserveConnection();
-        PreparedStatement stmt = conn
-                .prepareStatement("UPDATE VERSIONED SET \"TEXT\" = ? WHERE \"ID\" = ?");
+        PreparedStatement stmt = conn.prepareStatement("UPDATE VERSIONED SET \"TEXT\" = ? WHERE \"ID\" = ?");
         stmt.setString(1, "foo");
         stmt.setObject(2, row.getItemProperty("ID").getValue());
         stmt.executeUpdate();
@@ -562,12 +504,10 @@ public class TableQueryTest {
     }
 
     @Test
-    public void removeRow_versionSetAndEqualToDBValue_shouldSucceed()
-            throws SQLException {
+    public void removeRow_versionSetAndEqualToDBValue_shouldSucceed() throws SQLException {
         DataGenerator.addVersionedData(connectionPool);
 
-        TableQuery tQuery = new TableQuery("versioned", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("versioned", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.setVersionColumn("VERSION");
         SQLContainer container = new SQLContainer(tQuery);
         RowItem row = (RowItem) container.getItem(container.firstItemId());
@@ -577,8 +517,7 @@ public class TableQueryTest {
         container.commit();
 
         Connection conn = connectionPool.reserveConnection();
-        PreparedStatement stmt = conn
-                .prepareStatement("SELECT * FROM VERSIONED WHERE \"TEXT\" = ?");
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM VERSIONED WHERE \"TEXT\" = ?");
         stmt.setString(1, "Junk");
         ResultSet rs = stmt.executeQuery();
         Assert.assertFalse(rs.next());
@@ -589,8 +528,7 @@ public class TableQueryTest {
     }
 
     @Test(expected = OptimisticLockException.class)
-    public void removeRow_versionSetAndLessThanDBValue_shouldThrowException()
-            throws SQLException {
+    public void removeRow_versionSetAndLessThanDBValue_shouldThrowException() throws SQLException {
         if (SQLTestsConstants.db == SQLTestsConstants.DB.HSQLDB) {
             // HSQLDB doesn't support versioning, so this is to make the test
             // green.
@@ -598,8 +536,7 @@ public class TableQueryTest {
         }
         DataGenerator.addVersionedData(connectionPool);
 
-        TableQuery tQuery = new TableQuery("versioned", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("versioned", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.setVersionColumn("VERSION");
         SQLContainer container = new SQLContainer(tQuery);
         RowItem row = (RowItem) container.getItem(container.firstItemId());
@@ -607,8 +544,7 @@ public class TableQueryTest {
 
         // Update the version using another connection.
         Connection conn = connectionPool.reserveConnection();
-        PreparedStatement stmt = conn
-                .prepareStatement("UPDATE VERSIONED SET \"TEXT\" = ? WHERE \"ID\" = ?");
+        PreparedStatement stmt = conn.prepareStatement("UPDATE VERSIONED SET \"TEXT\" = ? WHERE \"ID\" = ?");
         stmt.setString(1, "asdf");
         stmt.setObject(2, row.getItemProperty("ID").getValue());
         stmt.executeUpdate();
@@ -621,8 +557,7 @@ public class TableQueryTest {
     }
 
     @Test
-    public void removeRow_throwsOptimisticLockException_shouldStillWork()
-            throws SQLException {
+    public void removeRow_throwsOptimisticLockException_shouldStillWork() throws SQLException {
         if (SQLTestsConstants.db == SQLTestsConstants.DB.HSQLDB) {
             // HSQLDB doesn't support versioning, so this is to make the test
             // green.
@@ -630,8 +565,7 @@ public class TableQueryTest {
         }
         DataGenerator.addVersionedData(connectionPool);
 
-        TableQuery tQuery = new TableQuery("versioned", connectionPool,
-                SQLTestsConstants.sqlGen);
+        TableQuery tQuery = new TableQuery("versioned", connectionPool, SQLTestsConstants.sqlGen);
         tQuery.setVersionColumn("VERSION");
         SQLContainer container = new SQLContainer(tQuery);
         RowItem row = (RowItem) container.getItem(container.firstItemId());
@@ -639,8 +573,7 @@ public class TableQueryTest {
 
         // Update the version using another connection.
         Connection conn = connectionPool.reserveConnection();
-        PreparedStatement stmt = conn
-                .prepareStatement("UPDATE VERSIONED SET \"TEXT\" = ? WHERE \"ID\" = ?");
+        PreparedStatement stmt = conn.prepareStatement("UPDATE VERSIONED SET \"TEXT\" = ? WHERE \"ID\" = ?");
         stmt.setString(1, "asdf");
         stmt.setObject(2, row.getItemProperty("ID").getValue());
         stmt.executeUpdate();
@@ -666,9 +599,7 @@ public class TableQueryTest {
 
     @Test
     public void construction_explicitSchema_shouldSucceed() throws SQLException {
-        if (SQLTestsConstants.createSchema == null
-                || SQLTestsConstants.createProductTable == null
-                || SQLTestsConstants.dropSchema == null) {
+        if (SQLTestsConstants.createSchema == null || SQLTestsConstants.createProductTable == null || SQLTestsConstants.dropSchema == null) {
             // only perform the test on the databases for which the setup and
             // cleanup statements are available
             return;
@@ -689,8 +620,7 @@ public class TableQueryTest {
 
         try {
             // metadata scanning at query creation time should not fail
-            TableQuery tq1 = new TableQuery(null, "oaas", "product",
-                    connectionPool, SQLTestsConstants.sqlGen);
+            TableQuery tq1 = new TableQuery(null, "oaas", "product", connectionPool, SQLTestsConstants.sqlGen);
             Assert.assertNotNull(tq1);
         } finally {
             // cleanup - might not be an in-memory DB
@@ -702,14 +632,10 @@ public class TableQueryTest {
     }
 
     @Test
-    public void construction_explicitCatalogAndSchema_shouldSucceed()
-            throws SQLException {
+    public void construction_explicitCatalogAndSchema_shouldSucceed() throws SQLException {
         // not all databases support explicit catalogs, test with PostgreSQL
         // using database name as catalog
-        if (SQLTestsConstants.db != SQLTestsConstants.DB.POSTGRESQL
-                || SQLTestsConstants.createSchema == null
-                || SQLTestsConstants.createProductTable == null
-                || SQLTestsConstants.dropSchema == null) {
+        if (SQLTestsConstants.db != SQLTestsConstants.DB.POSTGRESQL || SQLTestsConstants.createSchema == null || SQLTestsConstants.createProductTable == null || SQLTestsConstants.dropSchema == null) {
             // only perform the test on the databases for which the setup and
             // cleanup statements are available
             return;
@@ -732,8 +658,7 @@ public class TableQueryTest {
             // metadata scanning at query creation time should not fail
             // note that for most DBMS, catalog is just an optional database
             // name
-            TableQuery tq1 = new TableQuery("sqlcontainer", "oaas", "product",
-                    connectionPool, SQLTestsConstants.sqlGen);
+            TableQuery tq1 = new TableQuery("sqlcontainer", "oaas", "product", connectionPool, SQLTestsConstants.sqlGen);
             Assert.assertNotNull(tq1);
         } finally {
             // cleanup - might not be an in-memory DB

@@ -12,8 +12,7 @@ import com.vaadin.data.Property;
 import com.vaadin.data.util.AbstractContainer;
 import com.vaadin.data.util.ObjectProperty;
 
-public class LargeContainer extends AbstractContainer implements
-        Container.Indexed {
+public class LargeContainer extends AbstractContainer implements Container.Indexed {
 
     public class TestItem implements Item {
 
@@ -25,9 +24,7 @@ public class LargeContainer extends AbstractContainer implements
 
         @Override
         public Property<?> getItemProperty(Object propertyId) {
-            ObjectProperty<String> property = new ObjectProperty<String>(
-                    containerPropertyIdDefaults.get(propertyId) + " (item "
-                            + itemId + ")");
+            ObjectProperty<String> property = new ObjectProperty<String>(containerPropertyIdDefaults.get(propertyId) + " (item " + itemId + ")");
             return property;
 
         }
@@ -39,16 +36,13 @@ public class LargeContainer extends AbstractContainer implements
 
         @Override
         @SuppressWarnings("rawtypes")
-        public boolean addItemProperty(Object id, Property property)
-                throws UnsupportedOperationException {
+        public boolean addItemProperty(Object id, Property property) throws UnsupportedOperationException {
             throw new UnsupportedOperationException("Cannot add item property");
         }
 
         @Override
-        public boolean removeItemProperty(Object id)
-                throws UnsupportedOperationException {
-            throw new UnsupportedOperationException(
-                    "Cannot remove item property");
+        public boolean removeItemProperty(Object id) throws UnsupportedOperationException {
+            throw new UnsupportedOperationException("Cannot remove item property");
         }
 
     }
@@ -124,8 +118,7 @@ public class LargeContainer extends AbstractContainer implements
     @Override
     public List<?> getItemIds(int startIndex, int numberOfIds) {
         // TODO use a lazy list for better performance
-        return ContainerHelpers.getItemIdsUsingGetIdByIndex(startIndex,
-                numberOfIds, this);
+        return ContainerHelpers.getItemIdsUsingGetIdByIndex(startIndex, numberOfIds, this);
     }
 
     @Override
@@ -185,8 +178,7 @@ public class LargeContainer extends AbstractContainer implements
     }
 
     @Override
-    public boolean addContainerProperty(Object propertyId, Class<?> type,
-            Object defaultValue) throws UnsupportedOperationException {
+    public boolean addContainerProperty(Object propertyId, Class<?> type, Object defaultValue) throws UnsupportedOperationException {
         if (containerPropertyIdTypes.containsKey(propertyId) || null == type) {
             return false;
         }
@@ -196,8 +188,7 @@ public class LargeContainer extends AbstractContainer implements
     }
 
     @Override
-    public boolean removeContainerProperty(Object propertyId)
-            throws UnsupportedOperationException {
+    public boolean removeContainerProperty(Object propertyId) throws UnsupportedOperationException {
         if (!containerPropertyIdTypes.containsKey(propertyId)) {
             return false;
         }
@@ -217,8 +208,7 @@ public class LargeContainer extends AbstractContainer implements
     }
 
     @Override
-    public boolean removeItem(Object itemId)
-            throws UnsupportedOperationException {
+    public boolean removeItem(Object itemId) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Not supported");
     }
 
@@ -228,20 +218,17 @@ public class LargeContainer extends AbstractContainer implements
     }
 
     @Override
-    public Item addItemAt(int index, Object newItemId)
-            throws UnsupportedOperationException {
+    public Item addItemAt(int index, Object newItemId) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public Object addItemAfter(Object previousItemId)
-            throws UnsupportedOperationException {
+    public Object addItemAfter(Object previousItemId) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public Item addItemAfter(Object previousItemId, Object newItemId)
-            throws UnsupportedOperationException {
+    public Item addItemAfter(Object previousItemId, Object newItemId) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Not supported");
     }
 

@@ -97,13 +97,7 @@ public abstract class AbstractTestUI extends UI {
         long currentWidgetsetTimestamp = currentWidgetsetFolder.lastModified();
         int halfHour = 30 * 60 * 1000;
         if (currentWidgetsetTimestamp + halfHour < newestWidgetsetTimestamp) {
-            Notification
-                    .show("The currently used widgetset ("
-                            + usedWidgetset
-                            + ") was compiled long before the most recently compiled one ("
-                            + newestWidgetsetName
-                            + "). Are you sure you have compiled the right widgetset?",
-                            Type.WARNING_MESSAGE);
+            Notification.show("The currently used widgetset (" + usedWidgetset + ") was compiled long before the most recently compiled one (" + newestWidgetsetName + "). Are you sure you have compiled the right widgetset?", Type.WARNING_MESSAGE);
         }
     }
 
@@ -129,9 +123,7 @@ public abstract class AbstractTestUI extends UI {
         } else if ("long-polling".equals(transport)) {
             enablePush(Transport.LONG_POLLING);
         } else if (transport != null) {
-            throw new IllegalArgumentException("Unknown transport value '"
-                    + transport
-                    + "'. Supported are xhr,websocket,streaming,long-polling");
+            throw new IllegalArgumentException("Unknown transport value '" + transport + "'. Supported are xhr,websocket,streaming,long-polling");
         }
     }
 
@@ -142,8 +134,7 @@ public abstract class AbstractTestUI extends UI {
         }
         config.setTransport(transport);
         // Ensure no fallback is used
-        getPushConfiguration().setParameter(
-                PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
+        getPushConfiguration().setParameter(PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
     }
 
     /**

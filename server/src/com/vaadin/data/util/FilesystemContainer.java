@@ -87,14 +87,12 @@ public class FilesystemContainer implements Container.Hierarchical {
         FILE_PROPERTIES.add(PROPERTY_LASTMODIFIED);
         FILE_PROPERTIES = Collections.unmodifiableCollection(FILE_PROPERTIES);
         try {
-            FILEITEM_LASTMODIFIED = FileItem.class.getMethod("lastModified",
-                    new Class[] {});
+            FILEITEM_LASTMODIFIED = FileItem.class.getMethod("lastModified", new Class[] {});
             FILEITEM_NAME = FileItem.class.getMethod("getName", new Class[] {});
             FILEITEM_ICON = FileItem.class.getMethod("getIcon", new Class[] {});
             FILEITEM_SIZE = FileItem.class.getMethod("getSize", new Class[] {});
         } catch (final NoSuchMethodException e) {
-            throw new RuntimeException(
-                    "Internal error finding methods in FilesystemContainer");
+            throw new RuntimeException("Internal error finding methods in FilesystemContainer");
         }
     }
 
@@ -161,8 +159,7 @@ public class FilesystemContainer implements Container.Hierarchical {
      * @param recursive
      *            should the container recursively contain subdirectories.
      */
-    public FilesystemContainer(File root, FilenameFilter filter,
-            boolean recursive) {
+    public FilesystemContainer(File root, FilenameFilter filter, boolean recursive) {
         this(root);
         this.setFilter(filter);
         setRecursive(recursive);
@@ -199,8 +196,7 @@ public class FilesystemContainer implements Container.Hierarchical {
      */
     @Override
     public boolean areChildrenAllowed(Object itemId) {
-        return itemId instanceof File && ((File) itemId).canRead()
-                && ((File) itemId).isDirectory();
+        return itemId instanceof File && ((File) itemId).canRead() && ((File) itemId).isDirectory();
     }
 
     /*
@@ -328,11 +324,9 @@ public class FilesystemContainer implements Container.Hierarchical {
      *             if the setChildrenAllowed is not supported.
      */
     @Override
-    public boolean setChildrenAllowed(Object itemId, boolean areChildrenAllowed)
-            throws UnsupportedOperationException {
+    public boolean setChildrenAllowed(Object itemId, boolean areChildrenAllowed) throws UnsupportedOperationException {
 
-        throw new UnsupportedOperationException(
-                "Conversion file to/from directory is not supported");
+        throw new UnsupportedOperationException("Conversion file to/from directory is not supported");
     }
 
     /**
@@ -350,8 +344,7 @@ public class FilesystemContainer implements Container.Hierarchical {
      *             if the setParent is not supported.
      */
     @Override
-    public boolean setParent(Object itemId, Object newParentId)
-            throws UnsupportedOperationException {
+    public boolean setParent(Object itemId, Object newParentId) throws UnsupportedOperationException {
 
         throw new UnsupportedOperationException("File moving is not supported");
     }
@@ -372,16 +365,14 @@ public class FilesystemContainer implements Container.Hierarchical {
         // Try to match all roots
         for (int i = 0; i < roots.length; i++) {
             try {
-                val |= ((File) itemId).getCanonicalPath().startsWith(
-                        roots[i].getCanonicalPath());
+                val |= ((File) itemId).getCanonicalPath().startsWith(roots[i].getCanonicalPath());
             } catch (final IOException e) {
                 // Exception ignored
             }
 
         }
         if (val && filter != null) {
-            val &= filter.accept(((File) itemId).getParentFile(),
-                    ((File) itemId).getName());
+            val &= filter.accept(((File) itemId).getParentFile(), ((File) itemId).getName());
         }
         return val;
     }
@@ -458,8 +449,7 @@ public class FilesystemContainer implements Container.Hierarchical {
             }
 
             if (f == null) {
-                return Collections
-                        .unmodifiableCollection(new LinkedList<File>());
+                return Collections.unmodifiableCollection(new LinkedList<File>());
             }
 
             final List<File> l = Arrays.asList(f);
@@ -488,23 +478,19 @@ public class FilesystemContainer implements Container.Hierarchical {
         }
 
         if (propertyId.equals(PROPERTY_NAME)) {
-            return new MethodProperty<Object>(getType(propertyId),
-                    new FileItem((File) itemId), FILEITEM_NAME, null);
+            return new MethodProperty<Object>(getType(propertyId), new FileItem((File) itemId), FILEITEM_NAME, null);
         }
 
         if (propertyId.equals(PROPERTY_ICON)) {
-            return new MethodProperty<Object>(getType(propertyId),
-                    new FileItem((File) itemId), FILEITEM_ICON, null);
+            return new MethodProperty<Object>(getType(propertyId), new FileItem((File) itemId), FILEITEM_ICON, null);
         }
 
         if (propertyId.equals(PROPERTY_SIZE)) {
-            return new MethodProperty<Object>(getType(propertyId),
-                    new FileItem((File) itemId), FILEITEM_SIZE, null);
+            return new MethodProperty<Object>(getType(propertyId), new FileItem((File) itemId), FILEITEM_SIZE, null);
         }
 
         if (propertyId.equals(PROPERTY_LASTMODIFIED)) {
-            return new MethodProperty<Object>(getType(propertyId),
-                    new FileItem((File) itemId), FILEITEM_LASTMODIFIED, null);
+            return new MethodProperty<Object>(getType(propertyId), new FileItem((File) itemId), FILEITEM_LASTMODIFIED, null);
         }
 
         return null;
@@ -742,10 +728,8 @@ public class FilesystemContainer implements Container.Hierarchical {
          * @see com.vaadin.data.Item#addItemProperty(Object, Property)
          */
         @Override
-        public boolean addItemProperty(Object id, Property property)
-                throws UnsupportedOperationException {
-            throw new UnsupportedOperationException("Filesystem container "
-                    + "does not support adding new properties");
+        public boolean addItemProperty(Object id, Property property) throws UnsupportedOperationException {
+            throw new UnsupportedOperationException("Filesystem container " + "does not support adding new properties");
         }
 
         /**
@@ -754,10 +738,8 @@ public class FilesystemContainer implements Container.Hierarchical {
          * @see com.vaadin.data.Item#removeItemProperty(Object)
          */
         @Override
-        public boolean removeItemProperty(Object id)
-                throws UnsupportedOperationException {
-            throw new UnsupportedOperationException(
-                    "Filesystem container does not support property removal");
+        public boolean removeItemProperty(Object id) throws UnsupportedOperationException {
+            throw new UnsupportedOperationException("Filesystem container does not support property removal");
         }
 
     }
@@ -859,10 +841,8 @@ public class FilesystemContainer implements Container.Hierarchical {
      * java.lang.Class, java.lang.Object)
      */
     @Override
-    public boolean addContainerProperty(Object propertyId, Class<?> type,
-            Object defaultValue) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "File system container does not support this operation");
+    public boolean addContainerProperty(Object propertyId, Class<?> type, Object defaultValue) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("File system container does not support this operation");
     }
 
     /*
@@ -872,8 +852,7 @@ public class FilesystemContainer implements Container.Hierarchical {
      */
     @Override
     public Object addItem() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "File system container does not support this operation");
+        throw new UnsupportedOperationException("File system container does not support this operation");
     }
 
     /*
@@ -883,8 +862,7 @@ public class FilesystemContainer implements Container.Hierarchical {
      */
     @Override
     public Item addItem(Object itemId) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "File system container does not support this operation");
+        throw new UnsupportedOperationException("File system container does not support this operation");
     }
 
     /*
@@ -894,8 +872,7 @@ public class FilesystemContainer implements Container.Hierarchical {
      */
     @Override
     public boolean removeAllItems() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "File system container does not support this operation");
+        throw new UnsupportedOperationException("File system container does not support this operation");
     }
 
     /*
@@ -904,10 +881,8 @@ public class FilesystemContainer implements Container.Hierarchical {
      * @see com.vaadin.data.Container#removeItem(java.lang.Object)
      */
     @Override
-    public boolean removeItem(Object itemId)
-            throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "File system container does not support this operation");
+    public boolean removeItem(Object itemId) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("File system container does not support this operation");
     }
 
     /*
@@ -916,9 +891,7 @@ public class FilesystemContainer implements Container.Hierarchical {
      * @see com.vaadin.data.Container#removeContainerProperty(java.lang.Object )
      */
     @Override
-    public boolean removeContainerProperty(Object propertyId)
-            throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "File system container does not support this operation");
+    public boolean removeContainerProperty(Object propertyId) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("File system container does not support this operation");
     }
 }

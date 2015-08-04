@@ -29,9 +29,7 @@ public interface LayoutEvents {
 
     public interface LayoutClickListener extends ConnectorEventListener {
 
-        public static final Method clickMethod = ReflectTools.findMethod(
-                LayoutClickListener.class, "layoutClick",
-                LayoutClickEvent.class);
+        public static final Method clickMethod = ReflectTools.findMethod(LayoutClickListener.class, "layoutClick", LayoutClickEvent.class);
 
         /**
          * Layout has been clicked
@@ -113,9 +111,7 @@ public interface LayoutEvents {
         private final Component clickedComponent;
         private final Component childComponent;
 
-        public LayoutClickEvent(Component source,
-                MouseEventDetails mouseEventDetails,
-                Component clickedComponent, Component childComponent) {
+        public LayoutClickEvent(Component source, MouseEventDetails mouseEventDetails, Component clickedComponent, Component childComponent) {
             super(source, mouseEventDetails);
             this.clickedComponent = clickedComponent;
             this.childComponent = childComponent;
@@ -148,17 +144,14 @@ public interface LayoutEvents {
             return childComponent;
         }
 
-        public static LayoutClickEvent createEvent(ComponentContainer layout,
-                MouseEventDetails mouseDetails, Connector clickedConnector) {
+        public static LayoutClickEvent createEvent(ComponentContainer layout, MouseEventDetails mouseDetails, Connector clickedConnector) {
             Component clickedComponent = (Component) clickedConnector;
             Component childComponent = clickedComponent;
-            while (childComponent != null
-                    && childComponent.getParent() != layout) {
+            while (childComponent != null && childComponent.getParent() != layout) {
                 childComponent = childComponent.getParent();
             }
 
-            return new LayoutClickEvent(layout, mouseDetails, clickedComponent,
-                    childComponent);
+            return new LayoutClickEvent(layout, mouseDetails, clickedComponent, childComponent);
         }
     }
 }

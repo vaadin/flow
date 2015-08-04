@@ -64,9 +64,7 @@ public class ConverterThatEnforcesAFormatTest extends MultiBrowserTest {
 
             @Override
             public String toString() {
-                return String.format(
-                        "the field to have value '%s' (was: '%s')", expected,
-                        actual);
+                return String.format("the field to have value '%s' (was: '%s')", expected, actual);
             }
         });
     }
@@ -81,8 +79,7 @@ public class ConverterThatEnforcesAFormatTest extends MultiBrowserTest {
 
             @Override
             public String toString() {
-                return String.format("the field to have css class '%s'",
-                        className);
+                return String.format("the field to have css class '%s'", className);
             }
         });
     }

@@ -28,12 +28,10 @@ public class InitialFragmentEventTest extends MultiBrowserTest {
     public void testChangeFragmentOnServerToMatchClient() {
         openTestURL("#foo");
 
-        assertEquals("Log should not contain any text initially", " ",
-                getLogRow(0));
+        assertEquals("Log should not contain any text initially", " ", getLogRow(0));
 
         $(ButtonElement.class).caption("Set fragment to 'foo'").first().click();
 
-        assertEquals("Log should not contain any text after clicking button",
-                " ", getLogRow(0));
+        assertEquals("Log should not contain any text after clicking button", " ", getLogRow(0));
     }
 }

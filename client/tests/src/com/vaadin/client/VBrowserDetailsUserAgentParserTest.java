@@ -77,8 +77,7 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
     }
 
     public void testIPhoneIOS6Homescreen() {
-        VBrowserDetails bd = new VBrowserDetails(
-                IPHONE_IOS_6_1_HOMESCREEN_SIMULATOR);
+        VBrowserDetails bd = new VBrowserDetails(IPHONE_IOS_6_1_HOMESCREEN_SIMULATOR);
         assertWebKit(bd);
         // not identified as Safari, no browser version available
         // assertSafari(bd);
@@ -154,8 +153,7 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
     }
 
     public void testAndroid40Chrome() {
-        VBrowserDetails bd = new VBrowserDetails(
-                ANDROID_GALAXY_NEXUS_4_0_4_CHROME);
+        VBrowserDetails bd = new VBrowserDetails(ANDROID_GALAXY_NEXUS_4_0_4_CHROME);
         assertWebKit(bd);
         assertChrome(bd);
         assertBrowserMajorVersion(bd, 18);
@@ -427,20 +425,17 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
      * Helper methods below
      */
 
-    private void assertEngineVersion(VBrowserDetails browserDetails,
-            float version) {
+    private void assertEngineVersion(VBrowserDetails browserDetails, float version) {
         assertEquals(version, browserDetails.getBrowserEngineVersion());
 
     }
 
-    private void assertBrowserMajorVersion(VBrowserDetails browserDetails,
-            int version) {
+    private void assertBrowserMajorVersion(VBrowserDetails browserDetails, int version) {
         assertEquals(version, browserDetails.getBrowserMajorVersion());
 
     }
 
-    private void assertBrowserMinorVersion(VBrowserDetails browserDetails,
-            int version) {
+    private void assertBrowserMinorVersion(VBrowserDetails browserDetails, int version) {
         assertEquals(version, browserDetails.getBrowserMinorVersion());
 
     }
@@ -529,8 +524,7 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertFalse(browserDetails.isAndroid());
     }
 
-    private void assertAndroid(VBrowserDetails browserDetails,
-            int majorVersion, int minorVersion) {
+    private void assertAndroid(VBrowserDetails browserDetails, int majorVersion, int minorVersion) {
         assertFalse(browserDetails.isLinux());
         assertFalse(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());
@@ -541,8 +535,7 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertOSMinorVersion(browserDetails, minorVersion);
     }
 
-    private void assertIOS(VBrowserDetails browserDetails, int majorVersion,
-            int minorVersion) {
+    private void assertIOS(VBrowserDetails browserDetails, int majorVersion, int minorVersion) {
         assertFalse(browserDetails.isLinux());
         assertFalse(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());
@@ -567,8 +560,7 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertWindows(browserDetails, false);
     }
 
-    private void assertWindows(VBrowserDetails browserDetails,
-            boolean isWindowsPhone) {
+    private void assertWindows(VBrowserDetails browserDetails, boolean isWindowsPhone) {
         assertFalse(browserDetails.isLinux());
         assertTrue(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());

@@ -44,8 +44,7 @@ import elemental.json.JsonObject;
  * @since 7.6
  * @author Vaadin Ltd
  */
-public class ReconnectingCommunicationProblemHandler implements
-        CommunicationProblemHandler {
+public class ReconnectingCommunicationProblemHandler implements CommunicationProblemHandler {
 
     private ApplicationConnection connection;
     private ReconnectDialog reconnectDialog = GWT.create(ReconnectDialog.class);
@@ -92,21 +91,18 @@ public class ReconnectingCommunicationProblemHandler implements
     public void setConnection(ApplicationConnection connection) {
         this.connection = connection;
 
-        connection.addHandler(ApplicationStoppedEvent.TYPE,
-                new ApplicationStoppedHandler() {
-                    @Override
-                    public void onApplicationStopped(
-                            ApplicationStoppedEvent event) {
-                        if (isReconnecting()) {
-                            giveUp();
-                        }
-                        if (scheduledReconnect != null
-                                && scheduledReconnect.isRunning()) {
-                            scheduledReconnect.cancel();
-                        }
-                    }
+        connection.addHandler(ApplicationStoppedEvent.TYPE, new ApplicationStoppedHandler() {
+            @Override
+            public void onApplicationStopped(ApplicationStoppedEvent event) {
+                if (isReconnecting()) {
+                    giveUp();
+                }
+                if (scheduledReconnect != null && scheduledReconnect.isRunning()) {
+                    scheduledReconnect.cancel();
+                }
+            }
 
-                });
+        });
     };
 
     /**
@@ -120,8 +116,7 @@ public class ReconnectingCommunicationProblemHandler implements
     }
 
     private static Logger getLogger() {
-        return Logger.getLogger(ReconnectingCommunicationProblemHandler.class
-                .getName());
+        return Logger.getLogger(ReconnectingCommunicationProblemHandler.class.getName());
     }
 
     /**
@@ -215,8 +210,7 @@ public class ReconnectingCommunicationProblemHandler implements
             // If a higher priority issues is resolved, we can assume the lower
             // one will be also
             if (type.isHigherPriorityThan(reconnectionCause)) {
-                getLogger().warning(
-                        "Now reconnecting because of " + type + " failure");
+                getLogger().warning("Now reconnecting because of " + type + " failure");
                 reconnectionCause = type;
             }
         }
@@ -226,8 +220,7 @@ public class ReconnectingCommunicationProblemHandler implements
         }
 
         reconnectAttempt++;
-        getLogger().info(
-                "Reconnect attempt " + reconnectAttempt + " for " + type);
+        getLogger().info("Reconnect attempt " + reconnectAttempt + " for " + type);
 
         if (reconnectAttempt >= getConfiguration().reconnectAttempts) {
             // Max attempts reached, stop trying
@@ -281,9 +274,7 @@ public class ReconnectingCommunicationProblemHandler implements
         if (!connection.isApplicationRunning()) {
             // This should not happen as nobody should call this if the
             // application has been stopped
-            getLogger()
-                    .warning(
-                            "Trying to reconnect after application has been stopped. Giving up");
+            getLogger().warning("Trying to reconnect after application has been stopped. Giving up");
             return;
         }
         if (payload != null) {
@@ -372,8 +363,7 @@ public class ReconnectingCommunicationProblemHandler implements
      * @return The text to show in the reconnect dialog after giving up
      */
     protected String getDialogTextGaveUp(int reconnectAttempt) {
-        return getConfiguration().dialogTextGaveUp.replace("{0}",
-                reconnectAttempt + "");
+        return getConfiguration().dialogTextGaveUp.replace("{0}", reconnectAttempt + "");
     }
 
     /**
@@ -384,8 +374,7 @@ public class ReconnectingCommunicationProblemHandler implements
      * @return The text to show in the reconnect dialog
      */
     protected String getDialogText(int reconnectAttempt) {
-        return getConfiguration().dialogText.replace("{0}", reconnectAttempt
-                + "");
+        return getConfiguration().dialogText.replace("{0}", reconnectAttempt + "");
     }
 
     private ReconnectDialogConfigurationState getConfiguration() {
@@ -404,14 +393,11 @@ public class ReconnectingCommunicationProblemHandler implements
          * has expired.) If the response contains a magic substring, do a
          * synchronous refresh. See #8241.
          */
-        MatchResult refreshToken = RegExp.compile(
-                ApplicationConnection.UIDL_REFRESH_TOKEN
-                        + "(:\\s*(.*?))?(\\s|$)").exec(responseText);
+        MatchResult refreshToken = RegExp.compile(ApplicationConnection.UIDL_REFRESH_TOKEN + "(:\\s*(.*?))?(\\s|$)").exec(responseText);
         if (refreshToken != null) {
             WidgetUtil.redirect(refreshToken.getGroup(2));
         } else {
-            handleUnrecoverableCommunicationError(
-                    "Invalid JSON response from server: " + responseText, event);
+            handleUnrecoverableCommunicationError("Invalid JSON response from server: " + responseText, event);
         }
 
     }
@@ -465,8 +451,7 @@ public class ReconnectingCommunicationProblemHandler implements
         connection.setApplicationRunning(false);
     }
 
-    private void handleUnrecoverableCommunicationError(String details,
-            CommunicationProblemEvent event) {
+    private void handleUnrecoverableCommunicationError(String details, CommunicationProblemEvent event) {
         Response response = event.getResponse();
         int statusCode = -1;
         if (response != null) {
@@ -510,8 +495,7 @@ public class ReconnectingCommunicationProblemHandler implements
 
     @Override
     public void pushScriptLoadError(String resourceUrl) {
-        connection.handleCommunicationError(resourceUrl
-                + " could not be loaded. Push will not work.", 0);
+        connection.handleCommunicationError(resourceUrl + " could not be loaded. Push will not work.", 0);
     }
 
     @Override
@@ -540,8 +524,7 @@ public class ReconnectingCommunicationProblemHandler implements
     @Override
     public void pushError(PushConnection pushConnection) {
         debug("pushError()");
-        connection.handleCommunicationError("Push connection using "
-                + pushConnection.getTransportType() + " failed!", -1);
+        connection.handleCommunicationError("Push connection using " + pushConnection.getTransportType() + " failed!", -1);
     }
 
     @Override
@@ -549,10 +532,7 @@ public class ReconnectingCommunicationProblemHandler implements
         debug("pushClientTimeout()");
         // TODO Reconnect, allowing client timeout to be set
         // https://dev.vaadin.com/ticket/18429
-        connection
-                .handleCommunicationError(
-                        "Client unexpectedly disconnected. Ensure client timeout is disabled.",
-                        -1);
+        connection.handleCommunicationError("Client unexpectedly disconnected. Ensure client timeout is disabled.", -1);
     }
 
     @Override

@@ -37,8 +37,7 @@ public class EmbeddedImageRefresh extends TestBase {
 
         // Attach it to a resource.
         final MyImageSource imageSource = new MyImageSource();
-        final StreamResource imageResource = new StreamResource(imageSource,
-                "testimage.png");
+        final StreamResource imageResource = new StreamResource(imageSource, "testimage.png");
         imageResource.setCacheTime(0);
         embedded.setSource(imageResource);
 
@@ -55,8 +54,7 @@ public class EmbeddedImageRefresh extends TestBase {
         button.addListener(new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                ((StreamResource) embedded.getSource()).setFilename(new Date()
-                        .getTime() + ".png");
+                ((StreamResource) embedded.getSource()).setFilename(new Date().getTime() + ".png");
                 embedded.markAsDirty();
             }
         });
@@ -92,8 +90,7 @@ public class EmbeddedImageRefresh extends TestBase {
         @Override
         public InputStream getStream() {
             // Create an image and draw some background on it.
-            BufferedImage image = new BufferedImage(640, 480,
-                    BufferedImage.TYPE_INT_RGB);
+            BufferedImage image = new BufferedImage(640, 480, BufferedImage.TYPE_INT_RGB);
             Graphics drawable = image.getGraphics();
 
             // Background
@@ -130,8 +127,7 @@ public class EmbeddedImageRefresh extends TestBase {
                     } else {
                         drawable.setColor(Color.black);
                     }
-                    drawable.fillRect(gridx + 1, gridy + 1, gridxnext - gridx
-                            - 1, gridynext - gridy - 1);
+                    drawable.fillRect(gridx + 1, gridy + 1, gridxnext - gridx - 1, gridynext - gridy - 1);
                 }
             }
 
@@ -141,8 +137,7 @@ public class EmbeddedImageRefresh extends TestBase {
                 ImageIO.write(image, "png", imagebuffer);
 
                 // Return a stream from the buffer.
-                ByteArrayInputStream istream = new ByteArrayInputStream(
-                        imagebuffer.toByteArray());
+                ByteArrayInputStream istream = new ByteArrayInputStream(imagebuffer.toByteArray());
                 return istream; // new DownloadStream (istream,null,null);
             } catch (IOException e) {
                 return null;

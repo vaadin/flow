@@ -38,33 +38,25 @@ public class PointerEventSupportImplModernIE extends PointerEventSupportImpl {
     @Override
     protected void init() {
         if (!inited) {
-            JavaScriptObject eventDispatcherMapExtensions = JavaScriptObject
-                    .createObject();
-            JavaScriptObject captureEventDispatcherMapExtensions = JavaScriptObject
-                    .createObject();
+            JavaScriptObject eventDispatcherMapExtensions = JavaScriptObject.createObject();
+            JavaScriptObject captureEventDispatcherMapExtensions = JavaScriptObject.createObject();
             for (EventType e : EventType.values()) {
-                addEventDispatcher(e.getNativeEventName(),
-                        eventDispatcherMapExtensions);
-                getPointerEventCaptureDispatchers(e.getNativeEventName(),
-                        captureEventDispatcherMapExtensions);
+                addEventDispatcher(e.getNativeEventName(), eventDispatcherMapExtensions);
+                getPointerEventCaptureDispatchers(e.getNativeEventName(), captureEventDispatcherMapExtensions);
             }
-            DOMImplStandard
-                    .addBitlessEventDispatchers(eventDispatcherMapExtensions);
-            DOMImplStandard
-                    .addCaptureEventDispatchers(captureEventDispatcherMapExtensions);
+            DOMImplStandard.addBitlessEventDispatchers(eventDispatcherMapExtensions);
+            DOMImplStandard.addCaptureEventDispatchers(captureEventDispatcherMapExtensions);
 
             inited = true;
         }
     }
 
-    private static native void addEventDispatcher(String eventName,
-            JavaScriptObject jso)
+    private static native void addEventDispatcher(String eventName, JavaScriptObject jso)
     /*-{
         jso[eventName] = @com.google.gwt.user.client.impl.DOMImplStandard::dispatchEvent(*);
     }-*/;
 
-    private static native void getPointerEventCaptureDispatchers(
-            String eventName, JavaScriptObject jso)
+    private static native void getPointerEventCaptureDispatchers(String eventName, JavaScriptObject jso)
     /*-{
         jso[eventName] = @com.google.gwt.user.client.impl.DOMImplStandard::dispatchCapturedMouseEvent(*);
     }-*/;

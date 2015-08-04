@@ -27,7 +27,6 @@ public class ExtremelyLongPushTimeLongPolling extends ExtremelyLongPushTime {
     public void init(VaadinRequest request) {
         super.init(request);
         // Don't use fallback so we can easier detect failures
-        getPushConfiguration().setParameter(
-                PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
+        getPushConfiguration().setParameter(PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
     }
 }

@@ -43,8 +43,7 @@ public class ComboboxStyleChangeWidthTest extends MultiBrowserTest {
         button.click();
         String newStyle = comboBox.getAttribute("style");
 
-        assertEquals("width has changed, should remain equal", oldStyle,
-                newStyle);
+        assertEquals("width has changed, should remain equal", oldStyle, newStyle);
 
     }
 

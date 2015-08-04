@@ -32,14 +32,12 @@ public class DateFieldTimezone extends TestBase {
         ArrayList<String> timeZoneCodes = new ArrayList<String>();
         timeZoneCodes.add(nullValue);
         timeZoneCodes.addAll(Arrays.asList(TimeZone.getAvailableIDs()));
-        ComboBox timezoneSelector = new ComboBox("Select time zone",
-                timeZoneCodes) {
+        ComboBox timezoneSelector = new ComboBox("Select time zone", timeZoneCodes) {
             @Override
             public String getItemCaption(Object itemId) {
                 if (itemId == nullValue || itemId == null) {
                     TimeZone timeZone = TimeZone.getDefault();
-                    return "Default time zone (" + timeZone.getDisplayName()
-                            + ")";
+                    return "Default time zone (" + timeZone.getDisplayName() + ")";
                 } else {
                     TimeZone timeZone = TimeZone.getTimeZone((String) itemId);
                     return itemId + " (" + timeZone.getDisplayName() + ")";
@@ -58,8 +56,7 @@ public class DateFieldTimezone extends TestBase {
                 TimeZone timeZone;
                 if (value == nullValue || value == null) {
                     timeZone = null;
-                    log.log("Change to default time zone "
-                            + TimeZone.getDefault().getID());
+                    log.log("Change to default time zone " + TimeZone.getDefault().getID());
                 } else {
                     timeZone = TimeZone.getTimeZone((String) value);
                     log.log("Changed to time zone " + timeZone.getID());
@@ -80,8 +77,7 @@ public class DateFieldTimezone extends TestBase {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 Date date = dateField.getValue();
-                DateFormat format = DateFormat.getDateTimeInstance(
-                        DateFormat.SHORT, DateFormat.LONG, EN);
+                DateFormat format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.LONG, EN);
                 format.setTimeZone(UTC);
                 log.log("Date changed to " + format.format(date));
             }

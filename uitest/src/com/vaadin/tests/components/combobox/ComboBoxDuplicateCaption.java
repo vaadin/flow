@@ -29,8 +29,7 @@ public class ComboBoxDuplicateCaption extends TestBase {
         p2.setLastName("Doe");
         list.add(p2);
 
-        BeanItemContainer<Person> container = new BeanItemContainer<Person>(
-                Person.class);
+        BeanItemContainer<Person> container = new BeanItemContainer<Person>(Person.class);
         container.addAll(list);
 
         ComboBox box = new ComboBox("Duplicate captions test Box");
@@ -39,8 +38,7 @@ public class ComboBoxDuplicateCaption extends TestBase {
         box.addValueChangeListener(new ValueChangeListener() {
 
             @Override
-            public void valueChange(
-                    com.vaadin.data.Property.ValueChangeEvent event) {
+            public void valueChange(com.vaadin.data.Property.ValueChangeEvent event) {
                 Person p = (Person) event.getProperty().getValue();
                 log.log("Person = " + p.getFirstName() + " " + p.getLastName());
             }

@@ -31,8 +31,7 @@ public abstract class AbstractIntegrationTest extends PrivateTB3Configuration {
     protected String getBaseURL() {
         String deploymentUrl = System.getProperty("deployment.url");
         if (deploymentUrl == null || deploymentUrl.equals("")) {
-            throw new RuntimeException(
-                    "Deployment url must be given as deployment.url");
+            throw new RuntimeException("Deployment url must be given as deployment.url");
         }
         return deploymentUrl;
     }

@@ -34,15 +34,13 @@ public class MethodInvocation implements Serializable {
     private final String methodName;
     private Object[] parameters;
 
-    public MethodInvocation(String connectorId, String interfaceName,
-            String methodName) {
+    public MethodInvocation(String connectorId, String interfaceName, String methodName) {
         this.connectorId = connectorId;
         this.interfaceName = interfaceName;
         this.methodName = methodName;
     }
 
-    public MethodInvocation(String connectorId, String interfaceName,
-            String methodName, Object[] parameters) {
+    public MethodInvocation(String connectorId, String interfaceName, String methodName, Object[] parameters) {
         this(connectorId, interfaceName, methodName);
         setParameters(parameters);
     }
@@ -69,8 +67,7 @@ public class MethodInvocation implements Serializable {
 
     @Override
     public String toString() {
-        return connectorId + ":" + interfaceName + "." + methodName + "("
-                + Arrays.toString(parameters) + ")";
+        return connectorId + ":" + interfaceName + "." + methodName + "(" + Arrays.toString(parameters) + ")";
     }
 
     /**

@@ -51,8 +51,7 @@ public class EmbeddedThemeResourceTest extends SingleBrowserTest {
     public List<DesiredCapabilities> getBrowsersToTest() {
         // Seems like stylesheet onload is not fired on PhantomJS
         // https://github.com/ariya/phantomjs/issues/12332
-        return Collections.singletonList(Browser.FIREFOX
-                .getDesiredCapabilities());
+        return Collections.singletonList(Browser.FIREFOX.getDesiredCapabilities());
     }
 
     @Before
@@ -69,13 +68,8 @@ public class EmbeddedThemeResourceTest extends SingleBrowserTest {
         ImageElement image = $(ImageElement.class).first();
         final String initial = image.getAttribute("src");
 
-        assertFalse(
-                "ThemeResource image source uses default theme instead of set theme.",
-                initial.contains("/reindeer/"));
-        assertThat(
-                "Embedded and Image aren't using the same source for the image despite sharing the ThemeResource.",
-                embedded.findElement(By.tagName("img")).getAttribute("src"),
-                is(initial));
+        assertFalse("ThemeResource image source uses default theme instead of set theme.", initial.contains("/reindeer/"));
+        assertThat("Embedded and Image aren't using the same source for the image despite sharing the ThemeResource.", embedded.findElement(By.tagName("img")).getAttribute("src"), is(initial));
     }
 
     @Test
@@ -100,11 +94,7 @@ public class EmbeddedThemeResourceTest extends SingleBrowserTest {
             }
         });
 
-        assertTrue("ThemeResource image source didn't update correctly.", image
-                .getAttribute("src").contains("/reindeer/"));
-        assertThat(
-                "Embedded and Image aren't using the same source for the image despite sharing the ThemeResource.",
-                embedded.findElement(By.tagName("img")).getAttribute("src"),
-                is(image.getAttribute("src")));
+        assertTrue("ThemeResource image source didn't update correctly.", image.getAttribute("src").contains("/reindeer/"));
+        assertThat("Embedded and Image aren't using the same source for the image despite sharing the ThemeResource.", embedded.findElement(By.tagName("img")).getAttribute("src"), is(image.getAttribute("src")));
     }
 }

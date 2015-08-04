@@ -63,22 +63,15 @@ public class Heartbeat {
 
         setInterval(connection.getConfiguration().getHeartbeatInterval());
 
-        uri = SharedUtil.addGetParameters(connection
-                .translateVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX
-                        + ApplicationConstants.HEARTBEAT_PATH + '/'),
-                UIConstants.UI_ID_PARAMETER + "="
-                        + connection.getConfiguration().getUIId());
+        uri = SharedUtil.addGetParameters(connection.translateVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX + ApplicationConstants.HEARTBEAT_PATH + '/'), UIConstants.UI_ID_PARAMETER + "=" + connection.getConfiguration().getUIId());
 
-        connection.addHandler(
-                ApplicationConnection.ApplicationStoppedEvent.TYPE,
-                new ApplicationConnection.ApplicationStoppedHandler() {
+        connection.addHandler(ApplicationConnection.ApplicationStoppedEvent.TYPE, new ApplicationConnection.ApplicationStoppedHandler() {
 
-                    @Override
-                    public void onApplicationStopped(
-                            ApplicationStoppedEvent event) {
-                        setInterval(-1);
-                    }
-                });
+            @Override
+            public void onApplicationStopped(ApplicationStoppedEvent event) {
+                setInterval(-1);
+            }
+        });
     }
 
     /**
@@ -100,8 +93,7 @@ public class Heartbeat {
                 } else {
                     // Handler should stop the application if heartbeat should
                     // no longer be sent
-                    connection.getCommunicationProblemHandler()
-                            .heartbeatInvalidStatusCode(request, response);
+                    connection.getCommunicationProblemHandler().heartbeatInvalidStatusCode(request, response);
                 }
 
                 schedule();
@@ -111,8 +103,7 @@ public class Heartbeat {
             public void onError(Request request, Throwable exception) {
                 // Handler should stop the application if heartbeat should no
                 // longer be sent
-                connection.getCommunicationProblemHandler().heartbeatException(
-                        request, exception);
+                connection.getCommunicationProblemHandler().heartbeatException(request, exception);
                 schedule();
             }
         };
@@ -141,8 +132,7 @@ public class Heartbeat {
      */
     public void schedule() {
         if (interval > 0) {
-            getLogger()
-                    .fine("Scheduling heartbeat in " + interval + " seconds");
+            getLogger().fine("Scheduling heartbeat in " + interval + " seconds");
             timer.schedule(interval * 1000);
         } else {
             getLogger().fine("Disabling heartbeat");
@@ -165,8 +155,7 @@ public class Heartbeat {
      *            new interval in seconds.
      */
     public void setInterval(int heartbeatInterval) {
-        getLogger().info(
-                "Setting hearbeat interval to " + heartbeatInterval + "sec.");
+        getLogger().info("Setting hearbeat interval to " + heartbeatInterval + "sec.");
         interval = heartbeatInterval;
         schedule();
     }

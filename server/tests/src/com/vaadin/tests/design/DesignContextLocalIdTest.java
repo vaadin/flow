@@ -52,24 +52,18 @@ public class DesignContextLocalIdTest {
 
     @Test
     public void testSetLocalId() throws FileNotFoundException {
-        DesignContext ctx = Design.read(new FileInputStream(
-                "server/tests/src/com/vaadin/tests/design/local-ids.html"),
-                new VerticalLayout());
+        DesignContext ctx = Design.read(new FileInputStream("server/tests/src/com/vaadin/tests/design/local-ids.html"), new VerticalLayout());
         TextField tf = (TextField) ctx.getComponentByLocalId("foo");
         Button b = (Button) ctx.getComponentByLocalId("bar");
         // A duplicate id should be handled by removing the id from the old
         // component.
         ctx.setComponentLocalId(b, "foo");
-        assertEquals("Found the wrong component by local id.", ctx
-                .getComponentByLocalId("foo").getClass(), Button.class);
-        assertEquals("Found the wrong component by local id.",
-                ctx.getComponentByLocalId("bar"), null);
+        assertEquals("Found the wrong component by local id.", ctx.getComponentByLocalId("foo").getClass(), Button.class);
+        assertEquals("Found the wrong component by local id.", ctx.getComponentByLocalId("bar"), null);
         // Set an id also for the text field.
         ctx.setComponentLocalId(tf, "bar");
-        assertEquals("Found the wrong component by local id.", ctx
-                .getComponentByLocalId("foo").getClass(), Button.class);
-        assertEquals("Found the wrong component by local id.", ctx
-                .getComponentByLocalId("bar").getClass(), TextField.class);
+        assertEquals("Found the wrong component by local id.", ctx.getComponentByLocalId("foo").getClass(), Button.class);
+        assertEquals("Found the wrong component by local id.", ctx.getComponentByLocalId("bar").getClass(), TextField.class);
     }
 
     @Test
@@ -86,11 +80,7 @@ public class DesignContextLocalIdTest {
     public void testWriteChildLocalIds() throws Exception {
         DesignContext ctx = new DesignContext();
 
-        ComponentContainer[] ctrs = { new AbsoluteLayout(), new CssLayout(),
-                new GridLayout(1, 1), new HorizontalLayout(),
-                new VerticalLayout(), new Accordion(),
-                new HorizontalSplitPanel(), new TabSheet(),
-                new VerticalSplitPanel() };
+        ComponentContainer[] ctrs = { new AbsoluteLayout(), new CssLayout(), new GridLayout(1, 1), new HorizontalLayout(), new VerticalLayout(), new Accordion(), new HorizontalSplitPanel(), new TabSheet(), new VerticalSplitPanel() };
 
         Button b = new Button();
         ctx.setComponentLocalId(b, "button-id");
@@ -98,9 +88,7 @@ public class DesignContextLocalIdTest {
         for (ComponentContainer ctr : ctrs) {
             ctr.addComponent(b);
             Element e = ctx.createElement(ctr);
-            assertEquals("Unexpected child local id for "
-                    + ctr.getClass().getSimpleName(), "button-id", e
-                    .getElementsByTag("v-button").first().attr("_id"));
+            assertEquals("Unexpected child local id for " + ctr.getClass().getSimpleName(), "button-id", e.getElementsByTag("v-button").first().attr("_id"));
         }
 
         SingleComponentContainer[] sctrs = { new Window(), new Panel() };
@@ -108,9 +96,7 @@ public class DesignContextLocalIdTest {
         for (SingleComponentContainer ctr : sctrs) {
             ctr.setContent(b);
             Element e = ctx.createElement(ctr);
-            assertEquals("Unexpected child local id for "
-                    + ctr.getClass().getSimpleName(), "button-id", e
-                    .getElementsByTag("v-button").first().attr("_id"));
+            assertEquals("Unexpected child local id for " + ctr.getClass().getSimpleName(), "button-id", e.getElementsByTag("v-button").first().attr("_id"));
         }
     }
 

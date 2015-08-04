@@ -56,8 +56,7 @@ public class SelectsCssTest extends GridLayout {
 
         createComboBoxWith(null, null, null);
         createComboBoxWith("CB Search", ChameleonTheme.COMBOBOX_SEARCH, null);
-        createComboBoxWith("SelectButton",
-                ChameleonTheme.COMBOBOX_SELECT_BUTTON, null);
+        createComboBoxWith("SelectButton", ChameleonTheme.COMBOBOX_SELECT_BUTTON, null);
 
         ListSelect ls = new ListSelect();
         ls.setId("select" + debugIdCounter++);
@@ -77,12 +76,10 @@ public class SelectsCssTest extends GridLayout {
 
         createComboBoxWith(null, null, "100px");
         createComboBoxWith("CB Search", ChameleonTheme.COMBOBOX_SEARCH, "100px");
-        createComboBoxWith("SelectButton",
-                ChameleonTheme.COMBOBOX_SELECT_BUTTON, "100px");
+        createComboBoxWith("SelectButton", ChameleonTheme.COMBOBOX_SELECT_BUTTON, "100px");
     }
 
-    private void createComboBoxWith(String caption, String primaryStyleName,
-            String width) {
+    private void createComboBoxWith(String caption, String primaryStyleName, String width) {
         ComboBox cb = new ComboBox();
         cb.setId("select" + debugIdCounter++);
         if (caption != null) {

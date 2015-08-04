@@ -47,8 +47,7 @@ public class VaadinPortletServiceTests {
     }
 
     private void mockFileLocationProperty(String location) {
-        mockPortalProperty(Constants.PORTAL_PARAMETER_VAADIN_RESOURCE_PATH,
-                location);
+        mockPortalProperty(Constants.PORTAL_PARAMETER_VAADIN_RESOURCE_PATH, location);
     }
 
     private void mockPortalProperty(String name, String value) {
@@ -56,16 +55,11 @@ public class VaadinPortletServiceTests {
     }
 
     private void mockFileLocationPreference(String location) {
-        when(
-                request.getPortletPreference(Constants.PORTAL_PARAMETER_VAADIN_RESOURCE_PATH))
-                .thenReturn(location);
+        when(request.getPortletPreference(Constants.PORTAL_PARAMETER_VAADIN_RESOURCE_PATH)).thenReturn(location);
     }
 
     private void mockLocationDeploymentConfiguration(String location) {
-        when(
-                conf.getApplicationOrSystemProperty(
-                        Constants.PORTAL_PARAMETER_VAADIN_RESOURCE_PATH, null))
-                .thenReturn(location);
+        when(conf.getApplicationOrSystemProperty(Constants.PORTAL_PARAMETER_VAADIN_RESOURCE_PATH, null)).thenReturn(location);
     }
 
     private String getStaticFileLocation() {
@@ -81,8 +75,7 @@ public class VaadinPortletServiceTests {
     }
 
     private void mockWidgetsetProperty(String widgetset) {
-        mockPortalProperty(Constants.PORTAL_PARAMETER_VAADIN_WIDGETSET,
-                widgetset);
+        mockPortalProperty(Constants.PORTAL_PARAMETER_VAADIN_WIDGETSET, widgetset);
     }
 
     private void mockWidgetsetConfiguration(String widgetset) {
@@ -189,8 +182,7 @@ public class VaadinPortletServiceTests {
 
         String widgetset = getWidgetset();
 
-        assertThat(widgetset,
-                is("com.vaadin.portal.gwt.PortalDefaultWidgetSet"));
+        assertThat(widgetset, is("com.vaadin.portal.gwt.PortalDefaultWidgetSet"));
     }
 
     @Test
@@ -199,16 +191,11 @@ public class VaadinPortletServiceTests {
             ReentrantLock mockLock = Mockito.mock(ReentrantLock.class);
             when(mockLock.isHeldByCurrentThread()).thenReturn(true);
 
-            WrappedSession emptyWrappedSession = Mockito
-                    .mock(WrappedSession.class);
-            when(emptyWrappedSession.getAttribute("null.lock")).thenReturn(
-                    mockLock);
-            VaadinRequest requestWithUIIDSet = Mockito
-                    .mock(VaadinRequest.class);
-            when(requestWithUIIDSet.getParameter(UIConstants.UI_ID_PARAMETER))
-                    .thenReturn("1");
-            when(requestWithUIIDSet.getWrappedSession()).thenReturn(
-                    emptyWrappedSession);
+            WrappedSession emptyWrappedSession = Mockito.mock(WrappedSession.class);
+            when(emptyWrappedSession.getAttribute("null.lock")).thenReturn(mockLock);
+            VaadinRequest requestWithUIIDSet = Mockito.mock(VaadinRequest.class);
+            when(requestWithUIIDSet.getParameter(UIConstants.UI_ID_PARAMETER)).thenReturn("1");
+            when(requestWithUIIDSet.getWrappedSession()).thenReturn(emptyWrappedSession);
 
             UI ui = sut.findUI(requestWithUIIDSet);
             Assert.assertNull("Unset session did not return null", ui);

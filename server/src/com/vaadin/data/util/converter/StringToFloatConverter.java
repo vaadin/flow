@@ -33,8 +33,7 @@ import java.util.Locale;
  * @author Vaadin Ltd
  * @since 7.0
  */
-public class StringToFloatConverter extends
-        AbstractStringToNumberConverter<Float> {
+public class StringToFloatConverter extends AbstractStringToNumberConverter<Float> {
 
     /*
      * (non-Javadoc)
@@ -44,9 +43,7 @@ public class StringToFloatConverter extends
      * java.util.Locale)
      */
     @Override
-    public Float convertToModel(String value,
-            Class<? extends Float> targetType, Locale locale)
-            throws ConversionException {
+    public Float convertToModel(String value, Class<? extends Float> targetType, Locale locale) throws ConversionException {
         Number n = convertToNumber(value, targetType, locale);
         return n == null ? null : n.floatValue();
     }

@@ -48,8 +48,7 @@ public class CurrentInstanceTest {
     @Test
     public void testClearedAfterRemove() throws Exception {
         CurrentInstance.set(CurrentInstanceTest.class, this);
-        Assert.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        Assert.assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.set(CurrentInstanceTest.class, null);
 
         assertCleared();
@@ -60,8 +59,7 @@ public class CurrentInstanceTest {
         CurrentInstance.clearAll();
 
         CurrentInstance.setInheritable(CurrentInstanceTest.class, this);
-        Assert.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        Assert.assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.setInheritable(CurrentInstanceTest.class, null);
 
         assertCleared();
@@ -72,13 +70,11 @@ public class CurrentInstanceTest {
         final AtomicBoolean threadFailed = new AtomicBoolean(true);
 
         CurrentInstance.setInheritable(CurrentInstanceTest.class, this);
-        Assert.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        Assert.assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         Thread t = new Thread() {
             @Override
             public void run() {
-                Assert.assertEquals(CurrentInstanceTest.this,
-                        CurrentInstance.get(CurrentInstanceTest.class));
+                Assert.assertEquals(CurrentInstanceTest.this, CurrentInstance.get(CurrentInstanceTest.class));
                 threadFailed.set(false);
             }
         };
@@ -98,14 +94,12 @@ public class CurrentInstanceTest {
         final AtomicBoolean threadFailed = new AtomicBoolean(true);
 
         CurrentInstance.setInheritable(CurrentInstanceTest.class, this);
-        Assert.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        Assert.assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         Thread t = new Thread() {
             @Override
             public void run() {
                 try {
-                    Assert.assertEquals(CurrentInstanceTest.this,
-                            CurrentInstance.get(CurrentInstanceTest.class));
+                    Assert.assertEquals(CurrentInstanceTest.this, CurrentInstance.get(CurrentInstanceTest.class));
                     CurrentInstance.set(CurrentInstanceTest.class, null);
                     assertCleared();
 
@@ -124,8 +118,7 @@ public class CurrentInstanceTest {
 
         // Clearing the threadlocal in the thread should not have cleared it
         // here
-        Assert.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        Assert.assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
 
         // Clearing the only remaining threadlocal should free all memory
         CurrentInstance.set(CurrentInstanceTest.class, null);
@@ -135,25 +128,20 @@ public class CurrentInstanceTest {
     @Test
     public void testClearedWithClearAll() throws Exception {
         CurrentInstance.set(CurrentInstanceTest.class, this);
-        Assert.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        Assert.assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.clearAll();
 
         assertCleared();
     }
 
-    private void assertCleared() throws SecurityException,
-            NoSuchFieldException, IllegalAccessException {
+    private void assertCleared() throws SecurityException, NoSuchFieldException, IllegalAccessException {
         Assert.assertNull(getInternalCurrentInstanceVariable().get());
     }
 
-    private InheritableThreadLocal<Map<Class<?>, CurrentInstance>> getInternalCurrentInstanceVariable()
-            throws SecurityException, NoSuchFieldException,
-            IllegalAccessException {
+    private InheritableThreadLocal<Map<Class<?>, CurrentInstance>> getInternalCurrentInstanceVariable() throws SecurityException, NoSuchFieldException, IllegalAccessException {
         Field f = CurrentInstance.class.getDeclaredField("instances");
         f.setAccessible(true);
-        return (InheritableThreadLocal<Map<Class<?>, CurrentInstance>>) f
-                .get(null);
+        return (InheritableThreadLocal<Map<Class<?>, CurrentInstance>>) f.get(null);
     }
 
     public void testInheritedClearedAfterRemove() {
@@ -178,8 +166,7 @@ public class CurrentInstanceTest {
         CurrentInstance.clearAll();
 
         // Then store a new UI in there
-        Map<Class<?>, CurrentInstance> old = CurrentInstance
-                .setCurrent(new UIStoredInCurrentInstance());
+        Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(new UIStoredInCurrentInstance());
 
         // Restore the old values and assert that the UI is null again
         CurrentInstance.restoreInstances(old);
@@ -192,9 +179,7 @@ public class CurrentInstanceTest {
         CurrentInstance.clearAll();
 
         // Then store a new session in there
-        Map<Class<?>, CurrentInstance> old = CurrentInstance
-                .setCurrent(new SessionStoredInCurrentInstance(EasyMock
-                        .createNiceMock(VaadinService.class)));
+        Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(new SessionStoredInCurrentInstance(EasyMock.createNiceMock(VaadinService.class)));
 
         // Restore the old values and assert that the session is null again
         CurrentInstance.restoreInstances(old);
@@ -203,8 +188,7 @@ public class CurrentInstanceTest {
     }
 
     @Test
-    public void testRestoreWithGarbageCollectedValue()
-            throws InterruptedException {
+    public void testRestoreWithGarbageCollectedValue() throws InterruptedException {
         VaadinSession session1 = new VaadinSession(null) {
             @Override
             public String toString() {
@@ -219,12 +203,10 @@ public class CurrentInstanceTest {
         };
 
         VaadinSession.setCurrent(session1);
-        Map<Class<?>, CurrentInstance> previous = CurrentInstance
-                .setCurrent(session2);
+        Map<Class<?>, CurrentInstance> previous = CurrentInstance.setCurrent(session2);
 
         // Use weak ref to verify object is collected
-        WeakReference<VaadinSession> ref = new WeakReference<VaadinSession>(
-                session1);
+        WeakReference<VaadinSession> ref = new WeakReference<VaadinSession>(session1);
 
         session1 = null;
         waitUntilGarbageCollected(ref);
@@ -234,8 +216,7 @@ public class CurrentInstanceTest {
         Assert.assertNull(VaadinSession.getCurrent());
     }
 
-    private static void waitUntilGarbageCollected(WeakReference<?> ref)
-            throws InterruptedException {
+    private static void waitUntilGarbageCollected(WeakReference<?> ref) throws InterruptedException {
         for (int i = 0; i < 50; i++) {
             System.gc();
             if (ref.get() == null) {

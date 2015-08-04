@@ -54,8 +54,7 @@ public class GridEditorFrozenColumnsUITest extends MultiBrowserTest {
     }
 
     private void scrollGridHorizontallyTo(double px) {
-        executeScript("arguments[0].scrollLeft = " + px,
-                getGridHorizontalScrollbar());
+        executeScript("arguments[0].scrollLeft = " + px, getGridHorizontalScrollbar());
     }
 
     private Object executeScript(String script, WebElement element) {
@@ -64,15 +63,11 @@ public class GridEditorFrozenColumnsUITest extends MultiBrowserTest {
             final JavascriptExecutor je = (JavascriptExecutor) driver;
             return je.executeScript(script, element);
         } else {
-            throw new IllegalStateException("current driver "
-                    + getDriver().getClass().getName() + " is not a "
-                    + JavascriptExecutor.class.getSimpleName());
+            throw new IllegalStateException("current driver " + getDriver().getClass().getName() + " is not a " + JavascriptExecutor.class.getSimpleName());
         }
     }
 
     private WebElement getGridHorizontalScrollbar() {
-        return getDriver()
-                .findElement(
-                        By.xpath("//div[contains(@class, \"v-grid-scroller-horizontal\")]"));
+        return getDriver().findElement(By.xpath("//div[contains(@class, \"v-grid-scroller-horizontal\")]"));
     }
 }

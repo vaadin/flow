@@ -74,8 +74,7 @@ public class ComponentLocator {
      *             {@link #getPathForElement(Element)} instead
      */
     @Deprecated
-    public String getPathForElement(
-            com.google.gwt.user.client.Element targetElement) {
+    public String getPathForElement(com.google.gwt.user.client.Element targetElement) {
         String path = strategy.getPathForElement(targetElement);
         if (null != path) {
             return path;
@@ -168,12 +167,10 @@ public class ComponentLocator {
      * @return The JavaScriptArray of DOM elements identified by {@code path} or
      *         empty array if elements could not be located.
      */
-    public JsArray<Element> getElementsByPathStartingAt(String path,
-            Element root) {
+    public JsArray<Element> getElementsByPathStartingAt(String path, Element root) {
         JsArray<Element> jsElements = JavaScriptObject.createArray().cast();
         if (strategy.validatePath(path)) {
-            List<Element> elements = strategy.getElementsByPathStartingAt(path,
-                    root);
+            List<Element> elements = strategy.getElementsByPathStartingAt(path, root);
             if (elements.size() > 0) {
                 for (Element e : elements) {
                     jsElements.push(e);
@@ -199,8 +196,7 @@ public class ComponentLocator {
      * @return The DOM element identified by {@code path} or null if the element
      *         could not be located.
      */
-    public com.google.gwt.user.client.Element getElementByPathStartingAt(
-            String path, Element root) {
+    public com.google.gwt.user.client.Element getElementByPathStartingAt(String path, Element root) {
         if (strategy.validatePath(path)) {
             Element element = strategy.getElementByPathStartingAt(path, root);
             if (null != element) {

@@ -10,19 +10,17 @@ public class ImageAltText extends TestBase {
 
     @Override
     protected void setup() {
-        final Image image = new Image("Caption", new ThemeResource(
-                "../runo/icons/64/ok.png"));
+        final Image image = new Image("Caption", new ThemeResource("../runo/icons/64/ok.png"));
         image.setDebugId("image");
         image.setAlternateText("Original alt text");
         addComponent(image);
 
-        Button changeAltTexts = new Button("Change alt text",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        image.setAlternateText("New alt text!");
-                    }
-                });
+        Button changeAltTexts = new Button("Change alt text", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                image.setAlternateText("New alt text!");
+            }
+        });
         addComponent(changeAltTexts);
     }
 

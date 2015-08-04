@@ -81,8 +81,7 @@ public final class CvalChecker {
         private static <T> T get(JsonObject o, String k, Class<T> clz) {
             Object ret = null;
             try {
-                if (o == null || o.get(k) == null
-                        || o.get(k) instanceof JsonNull) {
+                if (o == null || o.get(k) == null || o.get(k) instanceof JsonNull) {
                     return null;
                 }
                 if (clz == String.class) {
@@ -152,22 +151,16 @@ public final class CvalChecker {
         }
 
         public boolean isLicenseExpired() {
-            return (getExpired() != null && getExpired())
-                    || (getExpiredEpoch() != null && getExpiredEpoch().before(
-                            new Date()));
+            return (getExpired() != null && getExpired()) || (getExpiredEpoch() != null && getExpiredEpoch().before(new Date()));
         }
 
         public boolean isValidVersion(int majorVersion) {
-            return getProduct().getVersion() == null
-                    || getProduct().getVersion() >= majorVersion;
+            return getProduct().getVersion() == null || getProduct().getVersion() >= majorVersion;
 
         }
 
         private boolean isValidInfo(String name, String key) {
-            return getProduct() != null && getProduct().getName() != null
-                    && getLicenseKey() != null
-                    && getProduct().getName().equals(name)
-                    && getLicenseKey().equals(key);
+            return getProduct() != null && getProduct().getName() != null && getLicenseKey() != null && getProduct().getName().equals(name) && getLicenseKey().equals(key);
         }
     }
 
@@ -178,16 +171,13 @@ public final class CvalChecker {
     public static class CvalServer {
         protected String licenseUrl = LICENSE_URL_PROD;
 
-        String askServer(String productName, String productKey, int timeoutMs)
-                throws IOException {
+        String askServer(String productName, String productKey, int timeoutMs) throws IOException {
             String url = licenseUrl + productKey;
             URLConnection con;
             try {
                 // Send some additional info in the User-Agent string.
-                String ua = "Cval " + productName + " " + productKey + " "
-                        + getFirstLaunch();
-                for (String prop : Arrays.asList("java.vendor.url",
-                        "java.version", "os.name", "os.version", "os.arch")) {
+                String ua = "Cval " + productName + " " + productKey + " " + getFirstLaunch();
+                for (String prop : Arrays.asList("java.vendor.url", "java.version", "os.name", "os.version", "os.arch")) {
                     ua += " " + System.getProperty(prop, "-").replace(" ", "_");
                 }
                 con = new URL(url).openConnection();
@@ -207,10 +197,8 @@ public final class CvalChecker {
          */
         String getFirstLaunch() {
             try {
-                Class<?> clz = Class
-                        .forName("com.google.gwt.dev.shell.CheckForUpdates");
-                return Preferences.userNodeForPackage(clz).get("firstLaunch",
-                        "-");
+                Class<?> clz = Class.forName("com.google.gwt.dev.shell.CheckForUpdates");
+                return Preferences.userNodeForPackage(clz).get("firstLaunch", "-");
             } catch (ClassNotFoundException e) {
                 return "-";
             }
@@ -228,8 +216,7 @@ public final class CvalChecker {
         public final String version;
         public final String title;
 
-        public InvalidCvalException(String name, String version, String title,
-                String key, CvalInfo info) {
+        public InvalidCvalException(String name, String version, String title, String key, CvalInfo info) {
             super(composeMessage(title, version, key, info));
             this.info = info;
             this.name = name;
@@ -238,8 +225,7 @@ public final class CvalChecker {
             this.title = title;
         }
 
-        static String composeMessage(String title, String version, String key,
-                CvalInfo info) {
+        static String composeMessage(String title, String version, String key, CvalInfo info) {
             String msg = "";
             int majorVers = computeMajorVersion(version);
 
@@ -248,8 +234,7 @@ public final class CvalChecker {
             } else if (info != null && info.getMessage() != null) {
                 msg = info.getMessage().replace("\\n", "\n");
             } else if (info != null && info.isLicenseExpired()) {
-                String type = "evaluation".equals(info.getType()) ? "Evaluation license"
-                        : "License";
+                String type = "evaluation".equals(info.getType()) ? "Evaluation license" : "License";
                 msg = getErrorMessage("expired", title, majorVers, type);
             } else if (key == null) {
                 msg = getErrorMessage("none", title, majorVers);
@@ -317,8 +302,7 @@ public final class CvalChecker {
     }
 
     static final int computeMajorVersion(String productVersion) {
-        return productVersion == null || productVersion.isEmpty() ? 0
-                : parseInt(productVersion.replaceFirst("[^\\d]+.*$", ""));
+        return productVersion == null || productVersion.isEmpty() ? 0 : parseInt(productVersion.replaceFirst("[^\\d]+.*$", ""));
     }
 
     /*
@@ -358,11 +342,8 @@ public final class CvalChecker {
      * @throws UnreachableCvalServerException
      *             when we have license key but server is unreachable
      */
-    public CvalInfo validateProduct(String productName, String productVersion,
-            String productTitle) throws InvalidCvalException,
-            UnreachableCvalServerException {
-        String key = getDeveloperLicenseKey(productName, productVersion,
-                productTitle);
+    public CvalInfo validateProduct(String productName, String productVersion, String productTitle) throws InvalidCvalException, UnreachableCvalServerException {
+        String key = getDeveloperLicenseKey(productName, productVersion, productTitle);
 
         CvalInfo info = null;
         if (key != null && !key.isEmpty()) {
@@ -372,15 +353,12 @@ public final class CvalChecker {
                 info = null;
             }
             info = askLicenseServer(productName, key, productVersion, info);
-            if (info != null && info.isValidInfo(productName, key)
-                    && info.isValidVersion(computeMajorVersion(productVersion))
-                    && !info.isLicenseExpired()) {
+            if (info != null && info.isValidInfo(productName, key) && info.isValidVersion(computeMajorVersion(productVersion)) && !info.isLicenseExpired()) {
                 return info;
             }
         }
 
-        throw new InvalidCvalException(productName, productVersion,
-                productTitle, key, info);
+        throw new InvalidCvalException(productName, productVersion, productTitle, key, info);
     }
 
     /*
@@ -391,9 +369,7 @@ public final class CvalChecker {
         return this;
     }
 
-    private CvalInfo askLicenseServer(String productName, String productKey,
-            String productVersion, CvalInfo info)
-            throws UnreachableCvalServerException {
+    private CvalInfo askLicenseServer(String productName, String productKey, String productVersion, CvalInfo info) throws UnreachableCvalServerException {
 
         int majorVersion = computeMajorVersion(productVersion);
 
@@ -401,25 +377,19 @@ public final class CvalChecker {
         // cache.
         // We add a grace time when so as if the server is unreachable
         // we allow the user to use the product.
-        if (info != null && info.getExpiredEpoch() != null
-                && !"evaluation".equals(info.getType())) {
+        if (info != null && info.getExpiredEpoch() != null && !"evaluation".equals(info.getType())) {
             long ts = info.getExpiredEpoch().getTime() + GRACE_DAYS_MSECS;
             info.setExpiredEpoch(new Date(ts));
         }
 
-        boolean validCache = info != null
-                && info.isValidInfo(productName, productKey)
-                && info.isValidVersion(majorVersion)
-                && !info.isLicenseExpired();
+        boolean validCache = info != null && info.isValidInfo(productName, productKey) && info.isValidVersion(majorVersion) && !info.isLicenseExpired();
 
         // if we have a validCache we set the timeout smaller
         int timeout = validCache ? 2000 : 10000;
 
         try {
-            CvalInfo srvinfo = parseJson(provider.askServer(productName + "-"
-                    + productVersion, productKey, timeout));
-            if (srvinfo != null && srvinfo.isValidInfo(productName, productKey)
-                    && srvinfo.isValidVersion(majorVersion)) {
+            CvalInfo srvinfo = parseJson(provider.askServer(productName + "-" + productVersion, productKey, timeout));
+            if (srvinfo != null && srvinfo.isValidInfo(productName, productKey) && srvinfo.isValidVersion(majorVersion)) {
                 // We always cache the info if it is valid although it is
                 // expired
                 cacheLicenseInfo(srvinfo);
@@ -448,9 +418,7 @@ public final class CvalChecker {
         return null;
     }
 
-    private String getDeveloperLicenseKey(String productName,
-            String productVersion, String productTitle)
-            throws InvalidCvalException {
+    private String getDeveloperLicenseKey(String productName, String productVersion, String productTitle) throws InvalidCvalException {
         String licenseName = computeLicenseName(productName);
 
         String key = System.getProperty(licenseName);
@@ -461,15 +429,10 @@ public final class CvalChecker {
         try {
             String dotLicenseName = "." + licenseName;
             String userHome = System.getProperty("user.home");
-            for (URL url : new URL[] {
-                    new File(userHome, dotLicenseName).toURI().toURL(),
-                    new File(userHome, licenseName).toURI().toURL(),
-                    URL.class.getResource("/" + dotLicenseName),
-                    URL.class.getResource("/" + licenseName) }) {
+            for (URL url : new URL[] { new File(userHome, dotLicenseName).toURI().toURL(), new File(userHome, licenseName).toURI().toURL(), URL.class.getResource("/" + dotLicenseName), URL.class.getResource("/" + licenseName) }) {
                 if (url != null) {
                     try {
-                        key = readKeyFromFile(url,
-                                computeMajorVersion(productVersion));
+                        key = readKeyFromFile(url, computeMajorVersion(productVersion));
                         if (key != null && !(key = key.trim()).isEmpty()) {
                             return key;
                         }
@@ -480,8 +443,7 @@ public final class CvalChecker {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        throw new InvalidCvalException(productName, productVersion,
-                productTitle, null, null);
+        throw new InvalidCvalException(productName, productVersion, productTitle, null, null);
     }
 
     String readKeyFromFile(URL url, int majorVersion) throws IOException {
@@ -502,8 +464,7 @@ public final class CvalChecker {
 
     static String getErrorMessage(String key, Object... pars) {
         Locale loc = Locale.getDefault();
-        ResourceBundle res = ResourceBundle.getBundle(
-                CvalChecker.class.getName(), loc);
+        ResourceBundle res = ResourceBundle.getBundle(CvalChecker.class.getName(), loc);
         String msg = res.getString(key);
         return new MessageFormat(msg, loc).format(pars);
     }

@@ -54,8 +54,7 @@ public class NewSelectionAfterTabRemoveTest extends MultiBrowserTest {
     /*
      * Select the specified tab and close it.
      */
-    private void selectAndClose(TestBenchElement tab)
-            throws InterruptedException {
+    private void selectAndClose(TestBenchElement tab) throws InterruptedException {
         tab.click(5, 5);
 
         sleep(10);
@@ -69,21 +68,16 @@ public class NewSelectionAfterTabRemoveTest extends MultiBrowserTest {
      * Gets the selected state of the specified tab.
      */
     private boolean isTabSelected(TestBenchElement tab) {
-        return tab.getAttribute("class").contains(
-                "v-tabsheet-tabitemcell-selected")
-                && tab.getAttribute("class").contains(
-                        "v-tabsheet-tabitemcell-focus");
+        return tab.getAttribute("class").contains("v-tabsheet-tabitemcell-selected") && tab.getAttribute("class").contains("v-tabsheet-tabitemcell-focus");
     }
 
     /*
      * Scroll the tabsheet bar to the right.
      */
     private boolean scrollRight() {
-        List<WebElement> scrollElements = getDriver().findElements(
-                By.className("v-tabsheet-scrollerNext"));
+        List<WebElement> scrollElements = getDriver().findElements(By.className("v-tabsheet-scrollerNext"));
         if (!scrollElements.isEmpty()) {
-            TestBenchElement rightScrollElement = (TestBenchElement) scrollElements
-                    .get(0);
+            TestBenchElement rightScrollElement = (TestBenchElement) scrollElements.get(0);
             rightScrollElement.click(5, 5);
             return true;
         } else {
@@ -95,8 +89,7 @@ public class NewSelectionAfterTabRemoveTest extends MultiBrowserTest {
      * Provide the tab close button for the specified tab.
      */
     private TestBenchElement tabClose(TestBenchElement tab) {
-        return (TestBenchElement) tab.findElement(By
-                .className("v-tabsheet-caption-close"));
+        return (TestBenchElement) tab.findElement(By.className("v-tabsheet-caption-close"));
     }
 
     /*

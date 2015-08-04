@@ -37,8 +37,7 @@ public class WindowInUiWithNoContentTest extends MultiBrowserTest {
         WebElement window = driver.findElement(By.className("v-window"));
         String position = window.getCssValue("position");
 
-        Assert.assertEquals("Window element has non-absolute position and "
-                + "is broken in the UI", "absolute", position);
+        Assert.assertEquals("Window element has non-absolute position and " + "is broken in the UI", "absolute", position);
     }
 
 }

@@ -20,8 +20,7 @@ public class EmbeddedAltText extends TestBase {
 
     @Override
     protected void setup() {
-        final Embedded e = new Embedded("Caption", new ThemeResource(
-                "../runo/icons/64/ok.png"));
+        final Embedded e = new Embedded("Caption", new ThemeResource("../runo/icons/64/ok.png"));
         e.setAlternateText("Alt text of the image");
         addComponent(e);
         final Embedded player = new Embedded();
@@ -36,14 +35,13 @@ public class EmbeddedAltText extends TestBase {
         player.setParameter("allowFullScreen", "true");
         addComponent(player);
 
-        Button changeAltTexts = new Button("Change alt texts",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        e.setAlternateText("New alt text of the image!");
-                        player.setAlternateText("New alt text of the object!");
-                    }
-                });
+        Button changeAltTexts = new Button("Change alt texts", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                e.setAlternateText("New alt text of the image!");
+                player.setAlternateText("New alt text of the object!");
+            }
+        });
         addComponent(changeAltTexts);
     }
 }

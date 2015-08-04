@@ -114,8 +114,7 @@ public class EventRouter implements MethodEventSource {
      * implemented interface.
      */
     @Override
-    public void removeListener(Class<?> eventType, Object target,
-            String methodName) {
+    public void removeListener(Class<?> eventType, Object target, String methodName) {
 
         // Find the correct method
         final Method[] methods = target.getClass().getMethods();

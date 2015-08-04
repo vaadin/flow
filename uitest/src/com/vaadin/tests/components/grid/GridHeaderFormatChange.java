@@ -44,8 +44,7 @@ public class GridHeaderFormatChange extends AbstractTestUI {
         Integer zipCode;
         String city;
 
-        public Person(String firstName, String lastName, String streetAddress,
-                Integer zipCode, String city) {
+        public Person(String firstName, String lastName, String streetAddress, Integer zipCode, String city) {
             this.firstName = firstName;
             this.lastName = lastName;
             this.streetAddress = streetAddress;
@@ -97,76 +96,67 @@ public class GridHeaderFormatChange extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        BeanItemContainer<Person> datasource = new BeanItemContainer<Person>(
-                Person.class);
+        BeanItemContainer<Person> datasource = new BeanItemContainer<Person>(Person.class);
         final Grid grid;
 
-        datasource.addItem(new Person("Rudolph", "Reindeer", "Ruukinkatu 2-4",
-                20540, "Turku"));
+        datasource.addItem(new Person("Rudolph", "Reindeer", "Ruukinkatu 2-4", 20540, "Turku"));
 
         grid = new Grid(datasource);
         grid.setWidth("600px");
         grid.getColumn("zipCode").setRenderer(new NumberRenderer());
-        grid.setColumnOrder("firstName", "lastName", "streetAddress",
-                "zipCode", "city");
+        grid.setColumnOrder("firstName", "lastName", "streetAddress", "zipCode", "city");
         grid.setSelectionMode(SelectionMode.SINGLE);
         addComponent(grid);
 
-        Button showHide = new Button("Hide firstName",
-                new Button.ClickListener() {
-                    private static final long serialVersionUID = 8107530972693788705L;
+        Button showHide = new Button("Hide firstName", new Button.ClickListener() {
+            private static final long serialVersionUID = 8107530972693788705L;
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        if (grid.getColumn("firstName") != null) {
-                            grid.removeColumn("firstName");
-                            event.getButton().setCaption("Show firstName");
-                        } else {
-                            grid.addColumn("firstName");
-                            grid.setColumnOrder("firstName", "lastName",
-                                    "streetAddress", "zipCode", "city");
+            @Override
+            public void buttonClick(ClickEvent event) {
+                if (grid.getColumn("firstName") != null) {
+                    grid.removeColumn("firstName");
+                    event.getButton().setCaption("Show firstName");
+                } else {
+                    grid.addColumn("firstName");
+                    grid.setColumnOrder("firstName", "lastName", "streetAddress", "zipCode", "city");
 
-                            event.getButton().setCaption("Hide firstName");
-                        }
-                    }
-                });
+                    event.getButton().setCaption("Hide firstName");
+                }
+            }
+        });
         showHide.setId("show_hide");
 
-        Button selectionMode = new Button("Set multiselect",
-                new Button.ClickListener() {
-                    private static final long serialVersionUID = 8107530972693788705L;
+        Button selectionMode = new Button("Set multiselect", new Button.ClickListener() {
+            private static final long serialVersionUID = 8107530972693788705L;
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        if (grid.getSelectionModel() instanceof SelectionModel.Single) {
-                            grid.setSelectionMode(SelectionMode.MULTI);
-                        } else {
-                            grid.setSelectionMode(SelectionMode.SINGLE);
-                        }
-                    }
-                });
+            @Override
+            public void buttonClick(ClickEvent event) {
+                if (grid.getSelectionModel() instanceof SelectionModel.Single) {
+                    grid.setSelectionMode(SelectionMode.MULTI);
+                } else {
+                    grid.setSelectionMode(SelectionMode.SINGLE);
+                }
+            }
+        });
         selectionMode.setId("selection_mode");
 
-        Button join = new Button("Add Join header column",
-                new Button.ClickListener() {
-                    private static final long serialVersionUID = -5330801275551280623L;
+        Button join = new Button("Add Join header column", new Button.ClickListener() {
+            private static final long serialVersionUID = -5330801275551280623L;
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        if (row == null) {
-                            row = grid.prependHeaderRow();
-                            if (grid.getColumn("firstName") != null) {
-                                row.join("firstName", "lastName").setText(
-                                        "Full Name");
-                            }
-                            row.join("streetAddress", "zipCode", "city")
-                                    .setText("Address");
-                        } else {
-                            grid.removeHeaderRow(row);
-                            row = null;
-                        }
+            @Override
+            public void buttonClick(ClickEvent event) {
+                if (row == null) {
+                    row = grid.prependHeaderRow();
+                    if (grid.getColumn("firstName") != null) {
+                        row.join("firstName", "lastName").setText("Full Name");
                     }
-                });
+                    row.join("streetAddress", "zipCode", "city").setText("Address");
+                } else {
+                    grid.removeHeaderRow(row);
+                    row = null;
+                }
+            }
+        });
         join.setId("join");
         addComponent(new HorizontalLayout(showHide, selectionMode, join));
     }

@@ -41,8 +41,7 @@ public final class RowItem implements Item {
     private RowItem() {
     }
 
-    public RowItem(SQLContainer container, RowId id,
-            Collection<ColumnProperty> properties) {
+    public RowItem(SQLContainer container, RowId id, Collection<ColumnProperty> properties) {
         if (container == null) {
             throw new IllegalArgumentException("Container cannot be null.");
         }
@@ -86,8 +85,7 @@ public final class RowItem implements Item {
      * SQLContainer.
      */
     @Override
-    public boolean addItemProperty(Object id, Property property)
-            throws UnsupportedOperationException {
+    public boolean addItemProperty(Object id, Property property) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -96,8 +94,7 @@ public final class RowItem implements Item {
      * SQLContainer.
      */
     @Override
-    public boolean removeItemProperty(Object id)
-            throws UnsupportedOperationException {
+    public boolean removeItemProperty(Object id) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 

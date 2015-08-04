@@ -45,7 +45,6 @@ public class DelegateWidget extends HTML {
     }
 
     private void updateText() {
-        setHTML(value1 + "<br />" + value2 + "<br />" + value3 + "<br />"
-                + value4 + "<br />");
+        setHTML(value1 + "<br />" + value2 + "<br />" + value3 + "<br />" + value4 + "<br />");
     }
 }

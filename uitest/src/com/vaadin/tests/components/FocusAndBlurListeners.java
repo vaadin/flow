@@ -25,8 +25,7 @@ public class FocusAndBlurListeners extends TestBase {
 
         @Override
         public void focus(FocusEvent event) {
-            Label msg = new Label(new Date() + " Focused "
-                    + event.getComponent().getCaption());
+            Label msg = new Label(new Date() + " Focused " + event.getComponent().getCaption());
             messages.addComponentAsFirst(msg);
         }
     };
@@ -34,8 +33,7 @@ public class FocusAndBlurListeners extends TestBase {
 
         @Override
         public void blur(BlurEvent event) {
-            Label msg = new Label(new Date() + " Blurred "
-                    + event.getComponent().getCaption());
+            Label msg = new Label(new Date() + " Blurred " + event.getComponent().getCaption());
             messages.addComponentAsFirst(msg);
 
         }

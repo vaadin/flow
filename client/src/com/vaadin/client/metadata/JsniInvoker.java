@@ -47,7 +47,6 @@ public abstract class JsniInvoker implements Invoker {
      * @return the value returned by the invoked method, or <code>null</code> if
      *         the target method return type is <code>void</code>.
      */
-    protected abstract Object jsniInvoke(Object target,
-            JsArrayObject<Object> params);
+    protected abstract Object jsniInvoke(Object target, JsArrayObject<Object> params);
 
 }

@@ -37,11 +37,8 @@ public class GridExtensionCommunicationTest extends SingleBrowserTest {
         int expectedX = cell.getLocation().getX() + 5;
         int expectedY = cell.getLocation().getY() + 5;
 
-        assertEquals(
-                "1. Click on Person Nina Brown on column Column[propertyId:gender]",
-                getLogRow(1));
-        assertEquals("2. MouseEventDetails: left (" + expectedX + ", "
-                + expectedY + ")", getLogRow(0));
+        assertEquals("1. Click on Person Nina Brown on column Column[propertyId:gender]", getLogRow(1));
+        assertEquals("2. MouseEventDetails: left (" + expectedX + ", " + expectedY + ")", getLogRow(0));
 
     }
 }

@@ -38,7 +38,6 @@ public class SplitPositionChangeListenerTest {
         SplitPositionChangeListener splitPositionChangeListener = mock(SplitPositionChangeListener.class);
         splitPanel.addSplitPositionChangeListener(splitPositionChangeListener);
         splitPanel.setSplitPosition(50, Unit.PERCENTAGE);
-        verify(splitPositionChangeListener).onSplitPositionChanged(
-                any(SplitPositionChangeEvent.class));
+        verify(splitPositionChangeListener).onSplitPositionChanged(any(SplitPositionChangeEvent.class));
     }
 }

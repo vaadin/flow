@@ -32,9 +32,7 @@ import com.vaadin.ui.ProgressIndicator;
 public class NavigateWithOngoingXHR extends AbstractTestUI {
     private final RequestHandler slowRequestHandler = new RequestHandler() {
         @Override
-        public boolean handleRequest(VaadinSession session,
-                VaadinRequest request, VaadinResponse response)
-                throws IOException {
+        public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
             if ("/slowRequestHandler".equals(request.getPathInfo())) {
                 // Make the navigation request last longer to keep the
                 // communication error visible
@@ -85,10 +83,8 @@ public class NavigateWithOngoingXHR extends AbstractTestUI {
         });
 
         // Hacky URLs that are might not work in all deployment scenarios
-        addComponent(new Link("Navigate away", new ExternalResource(
-                "slowRequestHandler")));
-        addComponent(new Link("Start download", new ExternalResource(
-                "slowRequestHandler?download")));
+        addComponent(new Link("Navigate away", new ExternalResource("slowRequestHandler")));
+        addComponent(new Link("Start download", new ExternalResource("slowRequestHandler?download")));
     }
 
     @Override

@@ -78,8 +78,7 @@ public class MenuBarFocus extends AbstractTestUI {
             }
         };
 
-        Button focusButton = new Button("Click me to focus the menubar",
-                buttonClickListener);
+        Button focusButton = new Button("Click me to focus the menubar", buttonClickListener);
         focusButton.setTabIndex(1);
         return focusButton;
     }

@@ -27,28 +27,26 @@ public class CheckBoxRevertValueChange extends AbstractTestUIWithLog {
     @Override
     protected void setup(VaadinRequest request) {
         final CheckBox alwaysUnchecked = new CheckBox("You may not check me");
-        alwaysUnchecked
-                .addValueChangeListener(new Property.ValueChangeListener() {
-                    @Override
-                    public void valueChange(Property.ValueChangeEvent event) {
-                        if (alwaysUnchecked.getValue()) {
-                            log("I said no checking!");
-                            alwaysUnchecked.setValue(false);
-                        }
-                    }
-                });
+        alwaysUnchecked.addValueChangeListener(new Property.ValueChangeListener() {
+            @Override
+            public void valueChange(Property.ValueChangeEvent event) {
+                if (alwaysUnchecked.getValue()) {
+                    log("I said no checking!");
+                    alwaysUnchecked.setValue(false);
+                }
+            }
+        });
         final CheckBox alwaysChecked = new CheckBox("You may not uncheck me");
         alwaysChecked.setValue(true);
-        alwaysChecked
-                .addValueChangeListener(new Property.ValueChangeListener() {
-                    @Override
-                    public void valueChange(Property.ValueChangeEvent event) {
-                        if (!alwaysChecked.getValue()) {
-                            log("I said no unchecking!");
-                            alwaysChecked.setValue(true);
-                        }
-                    }
-                });
+        alwaysChecked.addValueChangeListener(new Property.ValueChangeListener() {
+            @Override
+            public void valueChange(Property.ValueChangeEvent event) {
+                if (!alwaysChecked.getValue()) {
+                    log("I said no unchecking!");
+                    alwaysChecked.setValue(true);
+                }
+            }
+        });
 
         addComponent(alwaysUnchecked);
         addComponent(alwaysChecked);

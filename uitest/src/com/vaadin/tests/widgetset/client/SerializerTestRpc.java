@@ -49,37 +49,25 @@ public interface SerializerTestRpc extends ServerRpc, ClientRpc {
 
     public void sendConnector(Connector connector);
 
-    public void sendBean(ComplexTestBean complexBean,
-            SimpleTestBean simpleBean, SimpleTestBean[] array);
+    public void sendBean(ComplexTestBean complexBean, SimpleTestBean simpleBean, SimpleTestBean[] array);
 
     public void sendNull(String value1, String value2);
 
-    public void sendNestedArray(int[][] nestedIntArray,
-            SimpleTestBean[][] nestedBeanArray);
+    public void sendNestedArray(int[][] nestedIntArray, SimpleTestBean[][] nestedBeanArray);
 
-    public void sendList(List<Integer> intList, List<Connector> connectorList,
-            List<SimpleTestBean> beanList);
+    public void sendList(List<Integer> intList, List<Connector> connectorList, List<SimpleTestBean> beanList);
 
-    public void sendArrayList(List<int[]> primitiveArrayList,
-            List<Integer[]> objectArrayList,
-            List<SimpleTestBean[]> beanArrayList);
+    public void sendArrayList(List<int[]> primitiveArrayList, List<Integer[]> objectArrayList, List<SimpleTestBean[]> beanArrayList);
 
-    public void sendListArray(List<Integer>[] objectListArray,
-            List<SimpleTestBean>[] beanListArray);
+    public void sendListArray(List<Integer>[] objectListArray, List<SimpleTestBean>[] beanListArray);
 
-    public void sendSet(Set<Integer> intSet, Set<Connector> connectorSet,
-            Set<SimpleTestBean> beanSet);
+    public void sendSet(Set<Integer> intSet, Set<Connector> connectorSet, Set<SimpleTestBean> beanSet);
 
-    public void sendMap(Map<String, SimpleTestBean> stringMap,
-            Map<Connector, SimpleTestBean> connectorMap,
-            Map<Integer, Connector> intMap,
-            Map<SimpleTestBean, SimpleTestBean> beanMap);
+    public void sendMap(Map<String, SimpleTestBean> stringMap, Map<Connector, SimpleTestBean> connectorMap, Map<Integer, Connector> intMap, Map<SimpleTestBean, SimpleTestBean> beanMap);
 
-    public void sendWrappedGenerics(
-            Map<Set<SimpleTestBean>, Map<Integer, List<SimpleTestBean>>> generics);
+    public void sendWrappedGenerics(Map<Set<SimpleTestBean>, Map<Integer, List<SimpleTestBean>>> generics);
 
-    public void sendEnum(ContentMode contentMode, ContentMode[] array,
-            List<ContentMode> list);
+    public void sendEnum(ContentMode contentMode, ContentMode[] array, List<ContentMode> list);
 
     public void sendBeanSubclass(SimpleTestBean bean);
 

@@ -57,8 +57,7 @@ public abstract class AbstractContainer implements Container {
      * concerned by the change, but subclasses can provide additional
      * information about the changes.
      */
-    protected static class BasePropertySetChangeEvent extends EventObject
-            implements Container.PropertySetChangeEvent, Serializable {
+    protected static class BasePropertySetChangeEvent extends EventObject implements Container.PropertySetChangeEvent, Serializable {
 
         protected BasePropertySetChangeEvent(Container source) {
             super(source);
@@ -78,8 +77,7 @@ public abstract class AbstractContainer implements Container {
      * performed, but subclasses can add provide additional information about
      * the changes.
      */
-    protected static class BaseItemSetChangeEvent extends EventObject implements
-            Container.ItemSetChangeEvent, Serializable {
+    protected static class BaseItemSetChangeEvent extends EventObject implements Container.ItemSetChangeEvent, Serializable {
 
         protected BaseItemSetChangeEvent(Container source) {
             super(source);
@@ -100,8 +98,7 @@ public abstract class AbstractContainer implements Container {
      * 
      * @see PropertySetChangeNotifier#addListener(com.vaadin.data.Container.PropertySetChangeListener)
      */
-    protected void addPropertySetChangeListener(
-            Container.PropertySetChangeListener listener) {
+    protected void addPropertySetChangeListener(Container.PropertySetChangeListener listener) {
         if (getPropertySetChangeListeners() == null) {
             setPropertySetChangeListeners(new LinkedList<Container.PropertySetChangeListener>());
         }
@@ -125,8 +122,7 @@ public abstract class AbstractContainer implements Container {
      * @see PropertySetChangeNotifier#removeListener(com.vaadin.data.Container.
      *      PropertySetChangeListener)
      */
-    protected void removePropertySetChangeListener(
-            Container.PropertySetChangeListener listener) {
+    protected void removePropertySetChangeListener(Container.PropertySetChangeListener listener) {
         if (getPropertySetChangeListeners() != null) {
             getPropertySetChangeListeners().remove(listener);
         }
@@ -150,8 +146,7 @@ public abstract class AbstractContainer implements Container {
      * 
      * @see ItemSetChangeNotifier#addListener(com.vaadin.data.Container.ItemSetChangeListener)
      */
-    protected void addItemSetChangeListener(
-            Container.ItemSetChangeListener listener) {
+    protected void addItemSetChangeListener(Container.ItemSetChangeListener listener) {
         if (getItemSetChangeListeners() == null) {
             setItemSetChangeListeners(new LinkedList<Container.ItemSetChangeListener>());
         }
@@ -174,8 +169,7 @@ public abstract class AbstractContainer implements Container {
      * 
      * @see ItemSetChangeNotifier#removeListener(com.vaadin.data.Container.ItemSetChangeListener)
      */
-    protected void removeItemSetChangeListener(
-            Container.ItemSetChangeListener listener) {
+    protected void removeItemSetChangeListener(Container.ItemSetChangeListener listener) {
         if (getItemSetChangeListeners() != null) {
             getItemSetChangeListeners().remove(listener);
         }
@@ -208,13 +202,11 @@ public abstract class AbstractContainer implements Container {
      *            the property change event to send, optionally with additional
      *            information
      */
-    protected void fireContainerPropertySetChange(
-            Container.PropertySetChangeEvent event) {
+    protected void fireContainerPropertySetChange(Container.PropertySetChangeEvent event) {
         if (getPropertySetChangeListeners() != null) {
             final Object[] l = getPropertySetChangeListeners().toArray();
             for (int i = 0; i < l.length; i++) {
-                ((Container.PropertySetChangeListener) l[i])
-                        .containerPropertySetChange(event);
+                ((Container.PropertySetChangeListener) l[i]).containerPropertySetChange(event);
             }
         }
     }
@@ -239,8 +231,7 @@ public abstract class AbstractContainer implements Container {
         if (getItemSetChangeListeners() != null) {
             final Object[] l = getItemSetChangeListeners().toArray();
             for (int i = 0; i < l.length; i++) {
-                ((Container.ItemSetChangeListener) l[i])
-                        .containerItemSetChange(event);
+                ((Container.ItemSetChangeListener) l[i]).containerItemSetChange(event);
             }
         }
     }
@@ -250,8 +241,7 @@ public abstract class AbstractContainer implements Container {
      * 
      * @param propertySetChangeListeners
      */
-    protected void setPropertySetChangeListeners(
-            Collection<Container.PropertySetChangeListener> propertySetChangeListeners) {
+    protected void setPropertySetChangeListeners(Collection<Container.PropertySetChangeListener> propertySetChangeListeners) {
         this.propertySetChangeListeners = propertySetChangeListeners;
     }
 
@@ -268,8 +258,7 @@ public abstract class AbstractContainer implements Container {
      * 
      * @param itemSetChangeListeners
      */
-    protected void setItemSetChangeListeners(
-            Collection<Container.ItemSetChangeListener> itemSetChangeListeners) {
+    protected void setItemSetChangeListeners(Collection<Container.ItemSetChangeListener> itemSetChangeListeners) {
         this.itemSetChangeListeners = itemSetChangeListeners;
     }
 
@@ -285,16 +274,13 @@ public abstract class AbstractContainer implements Container {
             if (propertySetChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return Collections
-                        .unmodifiableCollection(propertySetChangeListeners);
+                return Collections.unmodifiableCollection(propertySetChangeListeners);
             }
-        } else if (Container.ItemSetChangeEvent.class
-                .isAssignableFrom(eventType)) {
+        } else if (Container.ItemSetChangeEvent.class.isAssignableFrom(eventType)) {
             if (itemSetChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return Collections
-                        .unmodifiableCollection(itemSetChangeListeners);
+                return Collections.unmodifiableCollection(itemSetChangeListeners);
             }
         }
 

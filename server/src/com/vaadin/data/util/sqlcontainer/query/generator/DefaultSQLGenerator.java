@@ -48,8 +48,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
      * 
      * @param statementHelper
      */
-    public DefaultSQLGenerator(
-            Class<? extends StatementHelper> statementHelperClazz) {
+    public DefaultSQLGenerator(Class<? extends StatementHelper> statementHelperClazz) {
         this();
         statementHelperClass = statementHelperClazz;
     }
@@ -66,8 +65,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
      *            the identifier (character) denoting the end of a quoted string
      */
     public DefaultSQLGenerator(String quoteStart, String quoteEnd) {
-        QueryBuilder.setStringDecorator(new StringDecorator(quoteStart,
-                quoteEnd));
+        QueryBuilder.setStringDecorator(new StringDecorator(quoteStart, quoteEnd));
     }
 
     /**
@@ -78,8 +76,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
      * @param quoteEnd
      * @param statementHelperClazz
      */
-    public DefaultSQLGenerator(String quoteStart, String quoteEnd,
-            Class<? extends StatementHelper> statementHelperClazz) {
+    public DefaultSQLGenerator(String quoteStart, String quoteEnd, Class<? extends StatementHelper> statementHelperClazz) {
         this(quoteStart, quoteEnd);
         statementHelperClass = statementHelperClazz;
     }
@@ -92,17 +89,14 @@ public class DefaultSQLGenerator implements SQLGenerator {
      * int, int, java.lang.String)
      */
     @Override
-    public StatementHelper generateSelectQuery(String tableName,
-            List<Filter> filters, List<OrderBy> orderBys, int offset,
-            int pagelength, String toSelect) {
+    public StatementHelper generateSelectQuery(String tableName, List<Filter> filters, List<OrderBy> orderBys, int offset, int pagelength, String toSelect) {
         if (tableName == null || tableName.trim().equals("")) {
             throw new IllegalArgumentException("Table name must be given.");
         }
         toSelect = toSelect == null ? "*" : toSelect;
         StatementHelper sh = getStatementHelper();
         StringBuffer query = new StringBuffer();
-        query.append("SELECT " + toSelect + " FROM ").append(
-                SQLUtil.escapeSQL(tableName));
+        query.append("SELECT " + toSelect + " FROM ").append(SQLUtil.escapeSQL(tableName));
         if (filters != null) {
             query.append(QueryBuilder.getWhereStringForFilters(filters, sh));
         }
@@ -148,8 +142,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
             } else {
                 query.append(", " + QueryBuilder.quote(column) + " = ?");
             }
-            sh.addParameterValue(columnToValueMap.get(column), item
-                    .getItemProperty(column).getType());
+            sh.addParameterValue(columnToValueMap.get(column), item.getItemProperty(column).getType());
             first = false;
         }
         /* Generate identifiers for the row to be updated */
@@ -160,8 +153,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
             } else {
                 query.append(" AND " + QueryBuilder.quote(column) + " = ?");
             }
-            sh.addParameterValue(rowIdentifiers.get(column), item
-                    .getItemProperty(column).getType());
+            sh.addParameterValue(rowIdentifiers.get(column), item.getItemProperty(column).getType());
             first = false;
         }
         sh.setQueryString(query.toString());
@@ -184,8 +176,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
             throw new IllegalArgumentException("New item must be given.");
         }
         if (!(item.getId() instanceof TemporaryRowId)) {
-            throw new IllegalArgumentException(
-                    "Cannot generate an insert query for item already in database.");
+            throw new IllegalArgumentException("Cannot generate an insert query for item already in database.");
         }
         StatementHelper sh = getStatementHelper();
         StringBuffer query = new StringBuffer();
@@ -211,8 +202,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
                 query.append(", ");
             }
             query.append("?");
-            sh.addParameterValue(columnToValueMap.get(column), item
-                    .getItemProperty(column).getType());
+            sh.addParameterValue(columnToValueMap.get(column), item.getItemProperty(column).getType());
             first = false;
         }
         query.append(")");
@@ -228,26 +218,22 @@ public class DefaultSQLGenerator implements SQLGenerator {
      * com.vaadin.addon.sqlcontainer.RowItem)
      */
     @Override
-    public StatementHelper generateDeleteQuery(String tableName,
-            List<String> primaryKeyColumns, String versionColumn, RowItem item) {
+    public StatementHelper generateDeleteQuery(String tableName, List<String> primaryKeyColumns, String versionColumn, RowItem item) {
         if (tableName == null || tableName.trim().equals("")) {
             throw new IllegalArgumentException("Table name must be given.");
         }
         if (item == null) {
-            throw new IllegalArgumentException(
-                    "Item to be deleted must be given.");
+            throw new IllegalArgumentException("Item to be deleted must be given.");
         }
         if (primaryKeyColumns == null || primaryKeyColumns.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Valid keyColumnNames must be provided.");
+            throw new IllegalArgumentException("Valid keyColumnNames must be provided.");
         }
         StatementHelper sh = getStatementHelper();
         StringBuffer query = new StringBuffer();
         query.append("DELETE FROM ").append(tableName).append(" WHERE ");
         int count = 1;
         for (String keyColName : primaryKeyColumns) {
-            if ((this instanceof MSSQLGenerator || this instanceof OracleGenerator)
-                    && keyColName.equalsIgnoreCase("rownum")) {
+            if ((this instanceof MSSQLGenerator || this instanceof OracleGenerator) && keyColName.equalsIgnoreCase("rownum")) {
                 count++;
                 continue;
             }
@@ -256,23 +242,17 @@ public class DefaultSQLGenerator implements SQLGenerator {
             }
             if (item.getItemProperty(keyColName).getValue() != null) {
                 query.append(QueryBuilder.quote(keyColName) + " = ?");
-                sh.addParameterValue(item.getItemProperty(keyColName)
-                        .getValue(), item.getItemProperty(keyColName).getType());
+                sh.addParameterValue(item.getItemProperty(keyColName).getValue(), item.getItemProperty(keyColName).getType());
             }
             count++;
         }
         if (versionColumn != null) {
             if (!item.getItemPropertyIds().contains(versionColumn)) {
-                throw new IllegalArgumentException(String.format(
-                        "Table '%s' does not contain version column '%s'.",
-                        tableName, versionColumn));
+                throw new IllegalArgumentException(String.format("Table '%s' does not contain version column '%s'.", tableName, versionColumn));
             }
 
-            query.append(String.format(" AND %s = ?",
-                    QueryBuilder.quote(versionColumn)));
-            sh.addParameterValue(
-                    item.getItemProperty(versionColumn).getValue(), item
-                            .getItemProperty(versionColumn).getType());
+            query.append(String.format(" AND %s = ?", QueryBuilder.quote(versionColumn)));
+            sh.addParameterValue(item.getItemProperty(versionColumn).getValue(), item.getItemProperty(versionColumn).getType());
         }
 
         sh.setQueryString(query.toString());
@@ -290,8 +270,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
      *            If true, this is the first OrderBy.
      * @return
      */
-    protected StringBuffer generateOrderBy(StringBuffer sb, OrderBy o,
-            boolean firstOrderBy) {
+    protected StringBuffer generateOrderBy(StringBuffer sb, OrderBy o, boolean firstOrderBy) {
         if (firstOrderBy) {
             sb.append(" ORDER BY ");
         } else {
@@ -317,10 +296,8 @@ public class DefaultSQLGenerator implements SQLGenerator {
      *            Value for pagelength.
      * @return StringBuffer with LIMIT and OFFSET clause added.
      */
-    protected StringBuffer generateLimits(StringBuffer sb, int offset,
-            int pagelength) {
-        sb.append(" LIMIT ").append(pagelength).append(" OFFSET ")
-                .append(offset);
+    protected StringBuffer generateLimits(StringBuffer sb, int offset, int pagelength) {
+        sb.append(" LIMIT ").append(pagelength).append(" OFFSET ").append(offset);
         return sb;
     }
 
@@ -329,8 +306,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
         for (Object id : item.getItemPropertyIds()) {
             ColumnProperty cp = (ColumnProperty) item.getItemProperty(id);
             /* Prevent "rownum" usage as a column name if MSSQL or ORACLE */
-            if ((this instanceof MSSQLGenerator || this instanceof OracleGenerator)
-                    && cp.getPropertyId().equalsIgnoreCase("rownum")) {
+            if ((this instanceof MSSQLGenerator || this instanceof OracleGenerator) && cp.getPropertyId().equalsIgnoreCase("rownum")) {
                 continue;
             }
             if (cp.isPersistent()) {
@@ -345,8 +321,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
         for (Object id : item.getItemPropertyIds()) {
             ColumnProperty cp = (ColumnProperty) item.getItemProperty(id);
             /* Prevent "rownum" usage as a column name if MSSQL or ORACLE */
-            if ((this instanceof MSSQLGenerator || this instanceof OracleGenerator)
-                    && cp.getPropertyId().equalsIgnoreCase("rownum")) {
+            if ((this instanceof MSSQLGenerator || this instanceof OracleGenerator) && cp.getPropertyId().equalsIgnoreCase("rownum")) {
                 continue;
             }
 
@@ -380,11 +355,9 @@ public class DefaultSQLGenerator implements SQLGenerator {
         try {
             return statementHelperClass.newInstance();
         } catch (InstantiationException e) {
-            throw new RuntimeException(
-                    "Unable to instantiate custom StatementHelper", e);
+            throw new RuntimeException("Unable to instantiate custom StatementHelper", e);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(
-                    "Unable to instantiate custom StatementHelper", e);
+            throw new RuntimeException("Unable to instantiate custom StatementHelper", e);
         }
     }
 

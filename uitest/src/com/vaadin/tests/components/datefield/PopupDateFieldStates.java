@@ -35,8 +35,7 @@ public class PopupDateFieldStates extends AbstractTestUI {
         return 14565;
     }
 
-    private static PopupDateField createPopupDateField(final boolean enabled,
-            final boolean textFieldEnabled) {
+    private static PopupDateField createPopupDateField(final boolean enabled, final boolean textFieldEnabled) {
         final PopupDateField popupDatefield = new PopupDateField();
 
         Calendar cal = GregorianCalendar.getInstance();
@@ -47,8 +46,7 @@ public class PopupDateFieldStates extends AbstractTestUI {
         final Date currentDate = cal.getTime();
 
         popupDatefield.setValue(currentDate);
-        popupDatefield.setCaption("Enabled: " + enabled
-                + ", Text field enabled: " + textFieldEnabled);
+        popupDatefield.setCaption("Enabled: " + enabled + ", Text field enabled: " + textFieldEnabled);
         popupDatefield.setEnabled(enabled);
         popupDatefield.setTextFieldEnabled(textFieldEnabled);
         return popupDatefield;

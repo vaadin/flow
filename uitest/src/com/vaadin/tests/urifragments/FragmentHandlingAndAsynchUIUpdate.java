@@ -23,8 +23,7 @@ public class FragmentHandlingAndAsynchUIUpdate extends AbstractTestUIWithLog {
 
     @Override
     protected void setup(VaadinRequest request) {
-        Button button = new Button(
-                "Click Me 10 times, wait for ui to settle (10 seconds) then click the back button 10 times.");
+        Button button = new Button("Click Me 10 times, wait for ui to settle (10 seconds) then click the back button 10 times.");
 
         button.setId(BUTTON_ID);
 
@@ -35,17 +34,14 @@ public class FragmentHandlingAndAsynchUIUpdate extends AbstractTestUIWithLog {
                 c.setId(String.valueOf(fragmentId));
                 getLayout().addComponent(c);
 
-                log(String.format("Button was clicked for fragmentId %s",
-                        fragmentId));
-                Page.getCurrent().setUriFragment(
-                        String.format(FRAG_NAME_TPL, fragmentId++));
+                log(String.format("Button was clicked for fragmentId %s", fragmentId));
+                Page.getCurrent().setUriFragment(String.format(FRAG_NAME_TPL, fragmentId++));
             }
         });
 
         getLayout().addComponent(button);
 
-        Page.getCurrent().addUriFragmentChangedListener(
-                createUriFragmentChangedListener());
+        Page.getCurrent().addUriFragmentChangedListener(createUriFragmentChangedListener());
     }
 
     private UriFragmentChangedListener createUriFragmentChangedListener() {
@@ -54,8 +50,7 @@ public class FragmentHandlingAndAsynchUIUpdate extends AbstractTestUIWithLog {
             @Override
             public void uriFragmentChanged(final UriFragmentChangedEvent event) {
 
-                log(String.format("uriFragmentChanged %s",
-                        event.getUriFragment()));
+                log(String.format("uriFragmentChanged %s", event.getUriFragment()));
 
                 if (!event.getUriFragment().startsWith("FRAG")) {
                     return;
@@ -67,8 +62,7 @@ public class FragmentHandlingAndAsynchUIUpdate extends AbstractTestUIWithLog {
                 Component fragComp = null;
                 while (it.hasNext()) {
                     Component comp = it.next();
-                    if (comp.getId() != null && comp instanceof Label
-                            && comp.getId().equals(frag)) {
+                    if (comp.getId() != null && comp instanceof Label && comp.getId().equals(frag)) {
                         fragComp = comp;
                         break;
                     }
@@ -81,8 +75,7 @@ public class FragmentHandlingAndAsynchUIUpdate extends AbstractTestUIWithLog {
 
                 createThread(frag, fragLabel).start();
 
-                fragLabel.setCaption(String.format("Thread running for %s!",
-                        frag));
+                fragLabel.setCaption(String.format("Thread running for %s!", frag));
                 UI.getCurrent().setPollInterval(1000);
             }
         };
@@ -109,13 +102,9 @@ public class FragmentHandlingAndAsynchUIUpdate extends AbstractTestUIWithLog {
                             e.printStackTrace();
                         }
 
-                        log(String.format(
-                                "setCaption in synch mode for fragment %s",
-                                frag));
+                        log(String.format("setCaption in synch mode for fragment %s", frag));
                         java.util.Random rand = new java.util.Random();
-                        fragLabel.setCaption(String.format(
-                                "Thread finished on %s (%s)", frag,
-                                rand.nextInt()));
+                        fragLabel.setCaption(String.format("Thread finished on %s (%s)", frag, rand.nextInt()));
                     }
                 });
 

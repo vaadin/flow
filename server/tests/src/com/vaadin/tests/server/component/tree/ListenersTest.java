@@ -11,8 +11,7 @@ import com.vaadin.ui.Tree.CollapseListener;
 import com.vaadin.ui.Tree.ExpandEvent;
 import com.vaadin.ui.Tree.ExpandListener;
 
-public class ListenersTest extends TestCase implements ExpandListener,
-        CollapseListener {
+public class ListenersTest extends TestCase implements ExpandListener, CollapseListener {
     private int expandCalled;
     private int collapseCalled;
     private Object lastExpanded;

@@ -11,8 +11,7 @@ import com.vaadin.data.util.sqlcontainer.query.generator.filter.QueryBuilder;
 
 public class FreeformQueryUtil {
 
-    public static StatementHelper getQueryWithFilters(List<Filter> filters,
-            int offset, int limit) {
+    public static StatementHelper getQueryWithFilters(List<Filter> filters, int offset, int limit) {
         StatementHelper sh = new StatementHelper();
         if (SQLTestsConstants.db == DB.MSSQL) {
             if (limit > 1) {
@@ -27,8 +26,7 @@ public class FreeformQueryUtil {
             if (!filters.isEmpty()) {
                 query.append(QueryBuilder.getWhereStringForFilters(filters, sh));
             }
-            query.append(") AS a WHERE a.rownum BETWEEN ").append(offset)
-                    .append(" AND ").append(Integer.toString(offset + limit));
+            query.append(") AS a WHERE a.rownum BETWEEN ").append(offset).append(" AND ").append(Integer.toString(offset + limit));
             sh.setQueryString(query.toString());
             return sh;
         } else if (SQLTestsConstants.db == DB.ORACLE) {
@@ -37,8 +35,7 @@ public class FreeformQueryUtil {
                 limit--;
             }
             StringBuilder query = new StringBuilder();
-            query.append("SELECT * FROM (SELECT x.*, ROWNUM AS "
-                    + "\"rownum\" FROM (SELECT * FROM \"PEOPLE\"");
+            query.append("SELECT * FROM (SELECT x.*, ROWNUM AS " + "\"rownum\" FROM (SELECT * FROM \"PEOPLE\"");
             if (!filters.isEmpty()) {
                 query.append(QueryBuilder.getWhereStringForFilters(filters, sh));
             }

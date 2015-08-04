@@ -93,9 +93,7 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * 
  * @since 6.6
  */
-public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITEMCLASS extends Item>
-        extends AbstractContainer implements ItemSetChangeNotifier,
-        Container.Indexed {
+public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITEMCLASS extends Item> extends AbstractContainer implements ItemSetChangeNotifier, Container.Indexed {
 
     /**
      * An ordered {@link List} of all item identifiers in the container,
@@ -148,14 +146,12 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
         }
     }
 
-    private static abstract class BaseItemAddOrRemoveEvent extends EventObject
-            implements Serializable {
+    private static abstract class BaseItemAddOrRemoveEvent extends EventObject implements Serializable {
         protected Object itemId;
         protected int index;
         protected int count;
 
-        public BaseItemAddOrRemoveEvent(Container source, Object itemId,
-                int index, int count) {
+        public BaseItemAddOrRemoveEvent(Container source, Object itemId, int index, int count) {
             super(source);
             this.itemId = itemId;
             this.index = index;
@@ -190,11 +186,9 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * 
      * @since 7.4
      */
-    protected static class BaseItemAddEvent extends BaseItemAddOrRemoveEvent
-            implements Container.Indexed.ItemAddEvent {
+    protected static class BaseItemAddEvent extends BaseItemAddOrRemoveEvent implements Container.Indexed.ItemAddEvent {
 
-        public BaseItemAddEvent(Container source, Object itemId, int index,
-                int count) {
+        public BaseItemAddEvent(Container source, Object itemId, int index, int count) {
             super(source, itemId, index, count);
         }
 
@@ -215,11 +209,9 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * 
      * @since 7.4
      */
-    protected static class BaseItemRemoveEvent extends BaseItemAddOrRemoveEvent
-            implements Container.Indexed.ItemRemoveEvent {
+    protected static class BaseItemRemoveEvent extends BaseItemAddOrRemoveEvent implements Container.Indexed.ItemRemoveEvent {
 
-        public BaseItemRemoveEvent(Container source, Object itemId, int index,
-                int count) {
+        public BaseItemRemoveEvent(Container source, Object itemId, int index, int count) {
             super(source, itemId, index, count);
         }
 
@@ -336,15 +328,11 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     @Override
     public List<ITEMIDTYPE> getItemIds(int startIndex, int numberOfIds) {
         if (startIndex < 0) {
-            throw new IndexOutOfBoundsException(
-                    "Start index cannot be negative! startIndex=" + startIndex);
+            throw new IndexOutOfBoundsException("Start index cannot be negative! startIndex=" + startIndex);
         }
 
         if (startIndex > getVisibleItemIds().size()) {
-            throw new IndexOutOfBoundsException(
-                    "Start index exceeds container size! startIndex="
-                            + startIndex + " containerLastItemIndex="
-                            + (getVisibleItemIds().size() - 1));
+            throw new IndexOutOfBoundsException("Start index exceeds container size! startIndex=" + startIndex + " containerLastItemIndex=" + (getVisibleItemIds().size() - 1));
         }
 
         if (numberOfIds < 1) {
@@ -352,9 +340,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
                 return Collections.emptyList();
             }
 
-            throw new IllegalArgumentException(
-                    "Cannot get negative amount of items! numberOfItems="
-                            + numberOfIds);
+            throw new IllegalArgumentException("Cannot get negative amount of items! numberOfItems=" + numberOfIds);
         }
 
         int endIndex = startIndex + numberOfIds;
@@ -363,8 +349,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
             endIndex = getVisibleItemIds().size();
         }
 
-        return Collections.unmodifiableList(getVisibleItemIds().subList(
-                startIndex, endIndex));
+        return Collections.unmodifiableList(getVisibleItemIds().subList(startIndex, endIndex));
 
     }
 
@@ -377,68 +362,52 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
 
     @Override
     public Object addItemAt(int index) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "Adding items not supported. Override the relevant addItem*() methods if required as specified in AbstractInMemoryContainer javadoc.");
+        throw new UnsupportedOperationException("Adding items not supported. Override the relevant addItem*() methods if required as specified in AbstractInMemoryContainer javadoc.");
     }
 
     @Override
-    public Item addItemAt(int index, Object newItemId)
-            throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "Adding items not supported. Override the relevant addItem*() methods if required as specified in AbstractInMemoryContainer javadoc.");
+    public Item addItemAt(int index, Object newItemId) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Adding items not supported. Override the relevant addItem*() methods if required as specified in AbstractInMemoryContainer javadoc.");
     }
 
     @Override
-    public Object addItemAfter(Object previousItemId)
-            throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "Adding items not supported. Override the relevant addItem*() methods if required as specified in AbstractInMemoryContainer javadoc.");
+    public Object addItemAfter(Object previousItemId) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Adding items not supported. Override the relevant addItem*() methods if required as specified in AbstractInMemoryContainer javadoc.");
     }
 
     @Override
-    public Item addItemAfter(Object previousItemId, Object newItemId)
-            throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "Adding items not supported. Override the relevant addItem*() methods if required as specified in AbstractInMemoryContainer javadoc.");
+    public Item addItemAfter(Object previousItemId, Object newItemId) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Adding items not supported. Override the relevant addItem*() methods if required as specified in AbstractInMemoryContainer javadoc.");
     }
 
     @Override
     public Item addItem(Object itemId) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "Adding items not supported. Override the relevant addItem*() methods if required as specified in AbstractInMemoryContainer javadoc.");
+        throw new UnsupportedOperationException("Adding items not supported. Override the relevant addItem*() methods if required as specified in AbstractInMemoryContainer javadoc.");
     }
 
     @Override
     public Object addItem() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "Adding items not supported. Override the relevant addItem*() methods if required as specified in AbstractInMemoryContainer javadoc.");
+        throw new UnsupportedOperationException("Adding items not supported. Override the relevant addItem*() methods if required as specified in AbstractInMemoryContainer javadoc.");
     }
 
     @Override
-    public boolean removeItem(Object itemId)
-            throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "Removing items not supported. Override the removeItem() method if required as specified in AbstractInMemoryContainer javadoc.");
+    public boolean removeItem(Object itemId) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Removing items not supported. Override the removeItem() method if required as specified in AbstractInMemoryContainer javadoc.");
     }
 
     @Override
     public boolean removeAllItems() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "Removing items not supported. Override the removeAllItems() method if required as specified in AbstractInMemoryContainer javadoc.");
+        throw new UnsupportedOperationException("Removing items not supported. Override the removeAllItems() method if required as specified in AbstractInMemoryContainer javadoc.");
     }
 
     @Override
-    public boolean addContainerProperty(Object propertyId, Class<?> type,
-            Object defaultValue) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "Adding container properties not supported. Override the addContainerProperty() method if required.");
+    public boolean addContainerProperty(Object propertyId, Class<?> type, Object defaultValue) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Adding container properties not supported. Override the addContainerProperty() method if required.");
     }
 
     @Override
-    public boolean removeContainerProperty(Object propertyId)
-            throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "Removing container properties not supported. Override the addContainerProperty() method if required.");
+    public boolean removeContainerProperty(Object propertyId) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Removing container properties not supported. Override the addContainerProperty() method if required.");
     }
 
     // ItemSetChangeNotifier
@@ -453,14 +422,12 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     }
 
     @Override
-    public void addItemSetChangeListener(
-            Container.ItemSetChangeListener listener) {
+    public void addItemSetChangeListener(Container.ItemSetChangeListener listener) {
         super.addItemSetChangeListener(listener);
     }
 
     @Override
-    public void removeItemSetChangeListener(
-            Container.ItemSetChangeListener listener) {
+    public void removeItemSetChangeListener(Container.ItemSetChangeListener listener) {
         super.removeItemSetChangeListener(listener);
     }
 
@@ -502,8 +469,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      */
     protected boolean doFilterContainer(boolean hasFilters) {
         if (!hasFilters) {
-            boolean changed = getAllItemIds().size() != getVisibleItemIds()
-                    .size();
+            boolean changed = getAllItemIds().size() != getVisibleItemIds().size();
             setFilteredItemIds(null);
             return changed;
         }
@@ -520,8 +486,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
         // Filter
         boolean equal = true;
         Iterator<ITEMIDTYPE> origIt = originalFilteredItemIds.iterator();
-        for (final Iterator<ITEMIDTYPE> i = getAllItemIds().iterator(); i
-                .hasNext();) {
+        for (final Iterator<ITEMIDTYPE> i = getAllItemIds().iterator(); i.hasNext();) {
             final ITEMIDTYPE id = i.next();
             if (passesFilters(id)) {
                 // filtered list comes from the full list, can use ==
@@ -530,8 +495,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
             }
         }
 
-        return (wasUnfiltered && !getAllItemIds().isEmpty()) || !equal
-                || origIt.hasNext();
+        return (wasUnfiltered && !getAllItemIds().isEmpty()) || !equal || origIt.hasNext();
     }
 
     /**
@@ -610,8 +574,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * .
      */
     protected void removeFilter(Filter filter) {
-        for (Iterator<Filter> iterator = getFilters().iterator(); iterator
-                .hasNext();) {
+        for (Iterator<Filter> iterator = getFilters().iterator(); iterator.hasNext();) {
             Filter f = iterator.next();
             if (f.equals(filter)) {
                 iterator.remove();
@@ -671,8 +634,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
             return Collections.emptyList();
         }
         List<Filter> removedFilters = new LinkedList<Filter>();
-        for (Iterator<Filter> iterator = getFilters().iterator(); iterator
-                .hasNext();) {
+        for (Iterator<Filter> iterator = getFilters().iterator(); iterator.hasNext();) {
             Filter f = iterator.next();
             if (f.appliesToProperty(propertyId)) {
                 removedFilters.add(f);
@@ -723,13 +685,11 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      */
     protected void sortContainer(Object[] propertyId, boolean[] ascending) {
         if (!(this instanceof Sortable)) {
-            throw new UnsupportedOperationException(
-                    "Cannot sort a Container that does not implement Sortable");
+            throw new UnsupportedOperationException("Cannot sort a Container that does not implement Sortable");
         }
 
         // Set up the item sorter for the sort operation
-        getItemSorter().setSortProperties((Sortable) this, propertyId,
-                ascending);
+        getItemSorter().setSortProperties((Sortable) this, propertyId, ascending);
 
         // Perform the actual sort
         doSort();
@@ -763,8 +723,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
         LinkedList<Object> sortables = new LinkedList<Object>();
         for (Object propertyId : getContainerPropertyIds()) {
             Class<?> propertyType = getType(propertyId);
-            if (Comparable.class.isAssignableFrom(propertyType)
-                    || propertyType.isPrimitive()) {
+            if (Comparable.class.isAssignableFrom(propertyType) || propertyType.isPrimitive()) {
                 sortables.add(propertyId);
             }
         }
@@ -839,10 +798,8 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * 
      * @return ITEMCLASS if the item was added successfully, null otherwise
      */
-    private ITEMCLASS internalAddAt(int position, ITEMIDTYPE itemId,
-            ITEMCLASS item) {
-        if (position < 0 || position > getAllItemIds().size() || itemId == null
-                || item == null) {
+    private ITEMCLASS internalAddAt(int position, ITEMIDTYPE itemId, ITEMCLASS item) {
+        if (position < 0 || position > getAllItemIds().size() || itemId == null || item == null) {
             return null;
         }
         // Make sure that the item has not been added previously
@@ -872,10 +829,8 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      *            performed at the end of the batch
      * @return item added or null if no item was added
      */
-    protected ITEMCLASS internalAddItemAtEnd(ITEMIDTYPE newItemId,
-            ITEMCLASS item, boolean filter) {
-        ITEMCLASS newItem = internalAddAt(getAllItemIds().size(), newItemId,
-                item);
+    protected ITEMCLASS internalAddItemAtEnd(ITEMIDTYPE newItemId, ITEMCLASS item, boolean filter) {
+        ITEMCLASS newItem = internalAddAt(getAllItemIds().size(), newItemId, item);
         if (newItem != null && filter) {
             // TODO filter only this item, use fireItemAdded()
             filterAll();
@@ -906,16 +861,13 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      *            performed at the end of the batch
      * @return item added or null if no item was added
      */
-    protected ITEMCLASS internalAddItemAfter(ITEMIDTYPE previousItemId,
-            ITEMIDTYPE newItemId, ITEMCLASS item, boolean filter) {
+    protected ITEMCLASS internalAddItemAfter(ITEMIDTYPE previousItemId, ITEMIDTYPE newItemId, ITEMCLASS item, boolean filter) {
         // only add if the previous item is visible
         ITEMCLASS newItem = null;
         if (previousItemId == null) {
             newItem = internalAddAt(0, newItemId, item);
         } else if (containsId(previousItemId)) {
-            newItem = internalAddAt(
-                    getAllItemIds().indexOf(previousItemId) + 1, newItemId,
-                    item);
+            newItem = internalAddAt(getAllItemIds().indexOf(previousItemId) + 1, newItemId, item);
         }
         if (newItem != null && filter) {
             // TODO filter only this item, use fireItemAdded()
@@ -944,8 +896,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      *            performed at the end of the batch
      * @return item added or null if no item was added
      */
-    protected ITEMCLASS internalAddItemAt(int index, ITEMIDTYPE newItemId,
-            ITEMCLASS item, boolean filter) {
+    protected ITEMCLASS internalAddItemAt(int index, ITEMIDTYPE newItemId, ITEMCLASS item, boolean filter) {
         if (index < 0 || index > size()) {
             return null;
         } else if (index == 0) {
@@ -953,8 +904,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
             return internalAddItemAfter(null, newItemId, item, filter);
         } else {
             // if index==size(), adds immediately after last visible item
-            return internalAddItemAfter(getIdByIndex(index - 1), newItemId,
-                    item, filter);
+            return internalAddItemAfter(getIdByIndex(index - 1), newItemId, item, filter);
         }
     }
 
@@ -971,8 +921,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * @param itemId
      * @param item
      */
-    protected void registerNewItem(int position, ITEMIDTYPE itemId,
-            ITEMCLASS item) {
+    protected void registerNewItem(int position, ITEMIDTYPE itemId, ITEMCLASS item) {
     }
 
     // item set change notifications
@@ -1005,10 +954,8 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * @param numberOfItems
      *            the number of visible added items
      */
-    protected void fireItemsAdded(int firstPosition, ITEMIDTYPE firstItemId,
-            int numberOfItems) {
-        BaseItemAddEvent addEvent = new BaseItemAddEvent(this, firstItemId,
-                firstPosition, numberOfItems);
+    protected void fireItemsAdded(int firstPosition, ITEMIDTYPE firstItemId, int numberOfItems) {
+        BaseItemAddEvent addEvent = new BaseItemAddEvent(this, firstItemId, firstPosition, numberOfItems);
         fireItemSetChange(addEvent);
     }
 
@@ -1043,10 +990,8 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      *            the number of removed visible items
      * 
      */
-    protected void fireItemsRemoved(int firstPosition, Object firstItemId,
-            int numberOfItems) {
-        BaseItemRemoveEvent removeEvent = new BaseItemRemoveEvent(this,
-                firstItemId, firstPosition, numberOfItems);
+    protected void fireItemsRemoved(int firstPosition, Object firstItemId, int numberOfItems) {
+        BaseItemRemoveEvent removeEvent = new BaseItemRemoveEvent(this, firstItemId, firstPosition, numberOfItems);
         fireItemSetChange(removeEvent);
     }
 

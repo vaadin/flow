@@ -29,11 +29,7 @@ public class GridHeaderFooterDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testSingleDefaultHeader() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' property-id='Column1'>"
-                + "   <col sortable='' property-id='Column2'>"
-                + "   <col sortable='' property-id='Column3'>"
-                + "</colgroup>" //
+                + "<colgroup>" + "   <col sortable='' property-id='Column1'>" + "   <col sortable='' property-id='Column2'>" + "   <col sortable='' property-id='Column3'>" + "</colgroup>" //
                 + "<thead>" //
                 + "   <tr default=''><th plain-text=''>Column1<th plain-text=''>Column2<th plain-text=''>Column3</tr>" //
                 + "</thead>" //
@@ -50,10 +46,7 @@ public class GridHeaderFooterDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testSingleDefaultHTMLHeader() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' property-id='Column1'>"
-                + "   <col sortable='' property-id='Column2'>"
-                + "   <col sortable='' property-id='Column3'>" + "</colgroup>" //
+                + "<colgroup>" + "   <col sortable='' property-id='Column1'>" + "   <col sortable='' property-id='Column2'>" + "   <col sortable='' property-id='Column3'>" + "</colgroup>" //
                 + "<thead>" //
                 + "   <tr default=''><th>Column1<th>Column2<th>Column3</tr>" //
                 + "</thead>" //
@@ -75,9 +68,7 @@ public class GridHeaderFooterDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testNoHeaderRows() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' property-id='Column1'>"
-                + "</colgroup>" //
+                + "<colgroup>" + "   <col sortable='' property-id='Column1'>" + "</colgroup>" //
                 + "<thead />" //
                 + "</table></v-grid>";
 
@@ -92,14 +83,9 @@ public class GridHeaderFooterDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testMultipleHeadersWithColSpans() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' property-id='Column1'>"
-                + "   <col sortable='' property-id='Column2'>"
-                + "   <col sortable='' property-id='Column3'>"
-                + "</colgroup>" //
+                + "<colgroup>" + "   <col sortable='' property-id='Column1'>" + "   <col sortable='' property-id='Column2'>" + "   <col sortable='' property-id='Column3'>" + "</colgroup>" //
                 + "<thead>" //
-                + "   <tr><th colspan=3>Baz</tr>"
-                + "   <tr default=''><th>Column1<th>Column2<th>Column3</tr>" //
+                + "   <tr><th colspan=3>Baz</tr>" + "   <tr default=''><th>Column1<th>Column2<th>Column3</tr>" //
                 + "   <tr><th>Foo<th colspan=2>Bar</tr>" //
                 + "</thead>" //
                 + "</table></v-grid>";
@@ -113,8 +99,7 @@ public class GridHeaderFooterDeclarativeTest extends GridDeclarativeTestBase {
             row.getCell(c.getPropertyId()).setHtml(c.getHeaderCaption());
         }
 
-        grid.prependHeaderRow().join("Column1", "Column2", "Column3")
-                .setHtml("Baz");
+        grid.prependHeaderRow().join("Column1", "Column2", "Column3").setHtml("Baz");
         row = grid.appendHeaderRow();
         row.getCell("Column1").setHtml("Foo");
         row.join("Column2", "Column3").setHtml("Bar");
@@ -126,11 +111,7 @@ public class GridHeaderFooterDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testSingleDefaultFooter() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' property-id='Column1'>"
-                + "   <col sortable='' property-id='Column2'>"
-                + "   <col sortable='' property-id='Column3'>"
-                + "</colgroup>" //
+                + "<colgroup>" + "   <col sortable='' property-id='Column1'>" + "   <col sortable='' property-id='Column2'>" + "   <col sortable='' property-id='Column3'>" + "</colgroup>" //
                 + "<thead />" // No headers read or written
                 + "<tfoot>" //
                 + "   <tr><td plain-text=''>Column1<td plain-text=''>Column2<td plain-text=''>Column3</tr>" //
@@ -155,10 +136,7 @@ public class GridHeaderFooterDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testSingleDefaultHTMLFooter() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' property-id='Column1'>"
-                + "   <col sortable='' property-id='Column2'>"
-                + "   <col sortable='' property-id='Column3'>" + "</colgroup>" //
+                + "<colgroup>" + "   <col sortable='' property-id='Column1'>" + "   <col sortable='' property-id='Column2'>" + "   <col sortable='' property-id='Column3'>" + "</colgroup>" //
                 + "<thead />" // No headers read or written
                 + "<tfoot>" //
                 + "   <tr><td>Column1<td>Column2<td>Column3</tr>" //
@@ -183,15 +161,10 @@ public class GridHeaderFooterDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testMultipleFootersWithColSpans() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' property-id='Column1'>"
-                + "   <col sortable='' property-id='Column2'>"
-                + "   <col sortable='' property-id='Column3'>"
-                + "</colgroup>" //
+                + "<colgroup>" + "   <col sortable='' property-id='Column1'>" + "   <col sortable='' property-id='Column2'>" + "   <col sortable='' property-id='Column3'>" + "</colgroup>" //
                 + "<thead />" // No headers read or written.
                 + "<tfoot>" //
-                + "   <tr><td colspan=3>Baz</tr>"
-                + "   <tr><td>Column1<td>Column2<td>Column3</tr>" //
+                + "   <tr><td colspan=3>Baz</tr>" + "   <tr><td>Column1<td>Column2<td>Column3</tr>" //
                 + "   <tr><td>Foo<td colspan=2>Bar</tr>" //
                 + "</tfoot>" //
                 + "</table></v-grid>";
@@ -205,8 +178,7 @@ public class GridHeaderFooterDeclarativeTest extends GridDeclarativeTestBase {
             row.getCell(c.getPropertyId()).setHtml(c.getHeaderCaption());
         }
 
-        grid.prependFooterRow().join("Column1", "Column2", "Column3")
-                .setHtml("Baz");
+        grid.prependFooterRow().join("Column1", "Column2", "Column3").setHtml("Baz");
         row = grid.appendFooterRow();
         row.getCell("Column1").setHtml("Foo");
         row.join("Column2", "Column3").setHtml("Bar");
@@ -220,12 +192,9 @@ public class GridHeaderFooterDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testComponentInGridHeader() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' property-id='Column1'>"
-                + "</colgroup>" //
+                + "<colgroup>" + "   <col sortable='' property-id='Column1'>" + "</colgroup>" //
                 + "<thead>" //
-                + "<tr default=''><th><v-label><b>Foo</b></v-label></tr>"
-                + "</thead>"//
+                + "<tr default=''><th><v-label><b>Foo</b></v-label></tr>" + "</thead>"//
                 + "</table></v-grid>";
 
         Label component = new Label("<b>Foo</b>");
@@ -242,9 +211,7 @@ public class GridHeaderFooterDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testComponentInGridFooter() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' property-id='Column1'>"
-                + "</colgroup>" //
+                + "<colgroup>" + "   <col sortable='' property-id='Column1'>" + "</colgroup>" //
                 + "<thead />" // No headers read or written
                 + "<tfoot>" //
                 + "<tr><td><v-label><b>Foo</b></v-label></tr>"//

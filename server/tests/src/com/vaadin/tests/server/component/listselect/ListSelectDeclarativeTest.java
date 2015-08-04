@@ -31,9 +31,7 @@ public class ListSelectDeclarativeTest extends DeclarativeTestBase<ListSelect> {
     }
 
     private String getWithOptionsDesign() {
-        return "<v-list-select rows=10>\n" + "        <option>Male</option>\n"
-                + "        <option>Female</option>\n" + "</v-list-select>\n"
-                + "";
+        return "<v-list-select rows=10>\n" + "        <option>Male</option>\n" + "        <option>Female</option>\n" + "</v-list-select>\n" + "";
     }
 
     @Test
@@ -43,8 +41,7 @@ public class ListSelectDeclarativeTest extends DeclarativeTestBase<ListSelect> {
 
     @Test
     public void testWriteWithOptions() {
-        testWrite(stripOptionTags(getWithOptionsDesign()),
-                getWithOptionsExpected());
+        testWrite(stripOptionTags(getWithOptionsDesign()), getWithOptionsExpected());
     }
 
     private ListSelect getBasicExpected() {

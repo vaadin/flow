@@ -25,10 +25,7 @@ public class VerticalScrollbarPosition extends TestBase {
         tf.setRows(2);
         tf.setHeight("300px");
         tf.setWidth("200px");
-        tabsheet.addTab(
-                tf,
-                "A text area that is 200px wide, the tab bar for the tabsheet is wider",
-                null);
+        tabsheet.addTab(tf, "A text area that is 200px wide, the tab bar for the tabsheet is wider", null);
         TextArea tf2 = new TextArea("Another tab", "b");
         tf2.setWidth("1000px");
         tf2.setHeight("50px");

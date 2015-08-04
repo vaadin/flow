@@ -82,8 +82,7 @@ public class FileDownloaderUI extends AbstractTestUIWithLog {
         try {
             File hugeFile = File.createTempFile("huge", ".txt");
             hugeFile.deleteOnExit();
-            BufferedOutputStream os = new BufferedOutputStream(
-                    new FileOutputStream(hugeFile));
+            BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(hugeFile));
             int writeAtOnce = 1024 * 1024;
             byte[] b = new byte[writeAtOnce];
             for (int i = 0; i < 5l * 1024l * 1024l; i += writeAtOnce) {
@@ -99,38 +98,31 @@ public class FileDownloaderUI extends AbstractTestUIWithLog {
         addComponents("Class resource pdf", resource, components);
 
         Button downloadUtf8File = new Button("Download UTF-8 named file");
-        FileDownloader fd = new FileDownloader(new ClassResource(
-                new EmbeddedPdf().getClass(), "åäö-日本語.pdf"));
+        FileDownloader fd = new FileDownloader(new ClassResource(new EmbeddedPdf().getClass(), "åäö-日本語.pdf"));
         fd.setOverrideContentType(false);
         fd.extend(downloadUtf8File);
         addComponent(downloadUtf8File);
 
-        addComponent(new Button("Remove first download button",
-                new ClickListener() {
+        addComponent(new Button("Remove first download button", new ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        Layout parent = (Layout) firstDownloadComponent
-                                .getParent();
-                        parent.removeComponent(firstDownloadComponent);
-                    }
-                }));
-        addComponent(new Button(
-                "Detach FileDownloader from first download button",
-                new ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                Layout parent = (Layout) firstDownloadComponent.getParent();
+                parent.removeComponent(firstDownloadComponent);
+            }
+        }));
+        addComponent(new Button("Detach FileDownloader from first download button", new ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        FileDownloader e = (FileDownloader) firstDownloadComponent
-                                .getExtensions().iterator().next();
-                        e.remove();
-                        log("FileDownload detached");
-                    }
-                }));
+            @Override
+            public void buttonClick(ClickEvent event) {
+                FileDownloader e = (FileDownloader) firstDownloadComponent.getExtensions().iterator().next();
+                e.remove();
+                log("FileDownload detached");
+            }
+        }));
     }
 
-    public void addComponents(String caption, ConnectorResource resource,
-            List<Class<? extends Component>> components) {
+    public void addComponents(String caption, ConnectorResource resource, List<Class<? extends Component>> components) {
         HorizontalLayout layout = new HorizontalLayout();
         layout.setCaption(caption);
         for (Class<? extends Component> cls : components) {
@@ -142,8 +134,7 @@ public class FileDownloaderUI extends AbstractTestUIWithLog {
 
                 c.setId(cls.getName() + caption.replace(" ", ""));
                 c.setCaption(cls.getName());
-                c.setDescription(resource.getMIMEType() + " / "
-                        + resource.getClass());
+                c.setDescription(resource.getMIMEType() + " / " + resource.getClass());
                 c.setWidth("100px");
                 c.setHeight("100px");
 
@@ -169,8 +160,7 @@ public class FileDownloaderUI extends AbstractTestUIWithLog {
     private static final String DYNAMIC_IMAGE_NAME = "requestImage.png";
 
     @Override
-    public boolean handleConnectorRequest(VaadinRequest request,
-            VaadinResponse response, String path) throws IOException {
+    public boolean handleConnectorRequest(VaadinRequest request, VaadinResponse response, String path) throws IOException {
         if (DYNAMIC_IMAGE_NAME.equals(path)) {
             // Create an image, draw the "text" parameter to it and output it to
             // the browser.
@@ -180,8 +170,7 @@ public class FileDownloaderUI extends AbstractTestUIWithLog {
             }
             BufferedImage bi = getImage(text);
             response.setContentType("image/png");
-            response.setHeader("Content-Disposition", "attachment; filename=\""
-                    + path + "\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + path + "\"");
             ImageIO.write(bi, "png", response.getOutputStream());
 
             return true;
@@ -191,18 +180,14 @@ public class FileDownloaderUI extends AbstractTestUIWithLog {
     }
 
     private BufferedImage getImage(String text) {
-        BufferedImage bi = new BufferedImage(150, 30,
-                BufferedImage.TYPE_3BYTE_BGR);
-        bi.getGraphics()
-                .drawChars(text.toCharArray(), 0, text.length(), 10, 20);
+        BufferedImage bi = new BufferedImage(150, 30, BufferedImage.TYPE_3BYTE_BGR);
+        bi.getGraphics().drawChars(text.toCharArray(), 0, text.length(), 10, 20);
         return bi;
     }
 
     private BufferedImage getImage2(String text) {
-        BufferedImage bi = new BufferedImage(200, 200,
-                BufferedImage.TYPE_INT_RGB);
-        bi.getGraphics()
-                .drawChars(text.toCharArray(), 0, text.length(), 10, 20);
+        BufferedImage bi = new BufferedImage(200, 200, BufferedImage.TYPE_INT_RGB);
+        bi.getGraphics().drawChars(text.toCharArray(), 0, text.length(), 10, 20);
         return bi;
     }
 

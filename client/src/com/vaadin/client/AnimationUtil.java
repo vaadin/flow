@@ -59,8 +59,7 @@ public class AnimationUtil {
     }
 
     /** For internal use only. May be removed or replaced in the future. */
-    public static native JavaScriptObject addAnimationEndListener(Element elem,
-            AnimationEndListener listener)
+    public static native JavaScriptObject addAnimationEndListener(Element elem, AnimationEndListener listener)
     /*-{
       var callbackFunc = $entry(function(e) {
         listener.@com.vaadin.client.AnimationUtil.AnimationEndListener::onAnimationEnd(Lcom/google/gwt/dom/client/NativeEvent;)(e);
@@ -78,8 +77,7 @@ public class AnimationUtil {
     }-*/;
 
     /** For internal use only. May be removed or replaced in the future. */
-    public static native void removeAnimationEndListener(Element elem,
-            JavaScriptObject listener)
+    public static native void removeAnimationEndListener(Element elem, JavaScriptObject listener)
     /*-{
       elem.removeEventListener(@com.vaadin.client.AnimationUtil::ANIMATION_END_EVENT_NAME, listener, false);
     }-*/;

@@ -41,16 +41,13 @@ import com.vaadin.ui.declarative.Design;
  */
 public class EmbeddedsTest {
 
-    public static final boolean equals(ExternalResource obj,
-            ExternalResource other) {
-        return SharedUtil.equals(obj.getURL(), other.getURL())
-                && SharedUtil.equals(obj.getMIMEType(), other.getMIMEType());
+    public static final boolean equals(ExternalResource obj, ExternalResource other) {
+        return SharedUtil.equals(obj.getURL(), other.getURL()) && SharedUtil.equals(obj.getMIMEType(), other.getMIMEType());
     }
 
     @Test
     public void testAbstractEmbeddedsToFromDesign() throws Exception {
-        for (AbstractEmbedded ae : new AbstractEmbedded[] { new Image(),
-                new Flash(), new BrowserFrame() }) {
+        for (AbstractEmbedded ae : new AbstractEmbedded[] { new Image(), new Flash(), new BrowserFrame() }) {
             ae.setSource(new ExternalResource("http://www.example.org"));
             ae.setAlternateText("some alternate text");
             ae.setCaption("some <b>caption</b>");
@@ -58,10 +55,8 @@ public class EmbeddedsTest {
             ae.setDescription("some description");
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             Design.write(ae, bos);
-            AbstractEmbedded result = (AbstractEmbedded) Design
-                    .read(new ByteArrayInputStream(bos.toByteArray()));
-            assertTrue(equals((ExternalResource) ae.getSource(),
-                    (ExternalResource) result.getSource()));
+            AbstractEmbedded result = (AbstractEmbedded) Design.read(new ByteArrayInputStream(bos.toByteArray()));
+            assertTrue(equals((ExternalResource) ae.getSource(), (ExternalResource) result.getSource()));
             assertEquals(ae.getAlternateText(), result.getAlternateText());
             assertEquals(ae.getCaption(), result.getCaption());
             assertEquals(ae.isCaptionAsHtml(), result.isCaptionAsHtml());
@@ -85,10 +80,8 @@ public class EmbeddedsTest {
         ae.setStandby("foobar");
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         Design.write(ae, bos);
-        Flash result = (Flash) Design.read(new ByteArrayInputStream(bos
-                .toByteArray()));
-        assertTrue(equals((ExternalResource) ae.getSource(),
-                (ExternalResource) result.getSource()));
+        Flash result = (Flash) Design.read(new ByteArrayInputStream(bos.toByteArray()));
+        assertTrue(equals((ExternalResource) ae.getSource(), (ExternalResource) result.getSource()));
         assertEquals(ae.getAlternateText(), result.getAlternateText());
         assertEquals(ae.getCaption(), result.getCaption());
         assertEquals(ae.isCaptionAsHtml(), result.isCaptionAsHtml());
@@ -97,8 +90,7 @@ public class EmbeddedsTest {
         assertEquals(ae.getArchive(), result.getArchive());
         assertEquals(ae.getCodetype(), result.getCodetype());
         assertEquals(ae.getParameter("foo"), result.getParameter("foo"));
-        assertEquals(ae.getParameter("something"),
-                result.getParameter("something"));
+        assertEquals(ae.getParameter("something"), result.getParameter("something"));
         assertEquals(ae.getStandby(), result.getStandby());
     }
 

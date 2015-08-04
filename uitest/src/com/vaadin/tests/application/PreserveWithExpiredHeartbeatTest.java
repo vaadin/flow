@@ -23,8 +23,7 @@ import com.vaadin.tests.tb3.SingleBrowserTest;
 
 public class PreserveWithExpiredHeartbeatTest extends SingleBrowserTest {
     @Test
-    public void testNavigateBackAfterMissingHeartbeats()
-            throws InterruptedException {
+    public void testNavigateBackAfterMissingHeartbeats() throws InterruptedException {
         final int heartbeatInterval = 5000;
 
         openTestURL();
@@ -42,8 +41,7 @@ public class PreserveWithExpiredHeartbeatTest extends SingleBrowserTest {
             openTestURL();
 
             // Verify that that we still get the same UI
-            Assert.assertEquals("Original UI has been closed", originalId,
-                    getUiIdentification());
+            Assert.assertEquals("Original UI has been closed", originalId, getUiIdentification());
         }
     }
 

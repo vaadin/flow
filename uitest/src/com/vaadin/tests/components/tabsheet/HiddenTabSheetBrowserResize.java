@@ -15,13 +15,12 @@ public class HiddenTabSheetBrowserResize extends TestBase {
         tabSheet.addTab(new Label("Label1"), "Tab1");
         tabSheet.addTab(new Label("Label2"), "Tab2");
 
-        Button toggleButton = new Button("Toggle TabSheet",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        tabSheet.setVisible(!tabSheet.isVisible());
-                    }
-                });
+        Button toggleButton = new Button("Toggle TabSheet", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                tabSheet.setVisible(!tabSheet.isVisible());
+            }
+        });
         addComponent(toggleButton);
         addComponent(tabSheet);
     }

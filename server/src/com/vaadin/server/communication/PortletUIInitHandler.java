@@ -34,8 +34,7 @@ public class PortletUIInitHandler extends UIInitHandler {
             return false;
         }
 
-        return UIInitHandler.BROWSER_DETAILS_PARAMETER.equals(resourceRequest
-                .getResourceID());
+        return UIInitHandler.BROWSER_DETAILS_PARAMETER.equals(resourceRequest.getResourceID());
     }
 
     /**
@@ -48,11 +47,9 @@ public class PortletUIInitHandler extends UIInitHandler {
      */
     static ResourceRequest getResourceRequest(VaadinRequest request) {
         if (!(request instanceof VaadinPortletRequest)) {
-            throw new IllegalArgumentException(
-                    "Request must a VaadinPortletRequest");
+            throw new IllegalArgumentException("Request must a VaadinPortletRequest");
         }
-        PortletRequest portletRequest = ((VaadinPortletRequest) request)
-                .getPortletRequest();
+        PortletRequest portletRequest = ((VaadinPortletRequest) request).getPortletRequest();
         if (!(portletRequest instanceof ResourceRequest)) {
             return null;
         }

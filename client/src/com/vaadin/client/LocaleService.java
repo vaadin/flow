@@ -61,8 +61,7 @@ public class LocaleService {
         return cache.keySet();
     }
 
-    public static String[] getMonthNames(String locale)
-            throws LocaleNotLoadedException {
+    public static String[] getMonthNames(String locale) throws LocaleNotLoadedException {
         if (cache.containsKey(locale)) {
             return cache.get(locale).monthNames;
         } else {
@@ -70,8 +69,7 @@ public class LocaleService {
         }
     }
 
-    public static String[] getShortMonthNames(String locale)
-            throws LocaleNotLoadedException {
+    public static String[] getShortMonthNames(String locale) throws LocaleNotLoadedException {
         if (cache.containsKey(locale)) {
             return cache.get(locale).shortMonthNames;
         } else {
@@ -79,8 +77,7 @@ public class LocaleService {
         }
     }
 
-    public static String[] getDayNames(String locale)
-            throws LocaleNotLoadedException {
+    public static String[] getDayNames(String locale) throws LocaleNotLoadedException {
         if (cache.containsKey(locale)) {
             return cache.get(locale).dayNames;
         } else {
@@ -88,8 +85,7 @@ public class LocaleService {
         }
     }
 
-    public static String[] getShortDayNames(String locale)
-            throws LocaleNotLoadedException {
+    public static String[] getShortDayNames(String locale) throws LocaleNotLoadedException {
         if (cache.containsKey(locale)) {
             return cache.get(locale).shortDayNames;
         } else {
@@ -97,8 +93,7 @@ public class LocaleService {
         }
     }
 
-    public static int getFirstDayOfWeek(String locale)
-            throws LocaleNotLoadedException {
+    public static int getFirstDayOfWeek(String locale) throws LocaleNotLoadedException {
         if (cache.containsKey(locale)) {
             return cache.get(locale).firstDayOfWeek;
         } else {
@@ -106,8 +101,7 @@ public class LocaleService {
         }
     }
 
-    public static String getDateFormat(String locale)
-            throws LocaleNotLoadedException {
+    public static String getDateFormat(String locale) throws LocaleNotLoadedException {
         if (cache.containsKey(locale)) {
             return cache.get(locale).dateFormat;
         } else {
@@ -115,8 +109,7 @@ public class LocaleService {
         }
     }
 
-    public static boolean isTwelveHourClock(String locale)
-            throws LocaleNotLoadedException {
+    public static boolean isTwelveHourClock(String locale) throws LocaleNotLoadedException {
         if (cache.containsKey(locale)) {
             return cache.get(locale).twelveHourClock;
         } else {
@@ -124,8 +117,7 @@ public class LocaleService {
         }
     }
 
-    public static String getClockDelimiter(String locale)
-            throws LocaleNotLoadedException {
+    public static String getClockDelimiter(String locale) throws LocaleNotLoadedException {
         if (cache.containsKey(locale)) {
             return cache.get(locale).hourMinuteDelimiter;
         } else {
@@ -133,8 +125,7 @@ public class LocaleService {
         }
     }
 
-    public static String[] getAmPmStrings(String locale)
-            throws LocaleNotLoadedException {
+    public static String[] getAmPmStrings(String locale) throws LocaleNotLoadedException {
         if (cache.containsKey(locale)) {
             return new String[] { cache.get(locale).am, cache.get(locale).pm };
         } else {

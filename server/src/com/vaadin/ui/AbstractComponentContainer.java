@@ -29,8 +29,7 @@ import java.util.LinkedList;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public abstract class AbstractComponentContainer extends AbstractComponent
-        implements ComponentContainer {
+public abstract class AbstractComponentContainer extends AbstractComponent implements ComponentContainer {
 
     /**
      * Constructs a new component container.
@@ -79,8 +78,7 @@ public abstract class AbstractComponentContainer extends AbstractComponent
     @Override
     public void moveComponentsFrom(ComponentContainer source) {
         final LinkedList<Component> components = new LinkedList<Component>();
-        for (final Iterator<Component> i = source.getComponentIterator(); i
-                .hasNext();) {
+        for (final Iterator<Component> i = source.getComponentIterator(); i.hasNext();) {
             components.add(i.next());
         }
 
@@ -94,8 +92,7 @@ public abstract class AbstractComponentContainer extends AbstractComponent
     /* documented in interface */
     @Override
     public void addComponentAttachListener(ComponentAttachListener listener) {
-        addListener(ComponentAttachEvent.class, listener,
-                ComponentAttachListener.attachMethod);
+        addListener(ComponentAttachEvent.class, listener, ComponentAttachListener.attachMethod);
     }
 
     /**
@@ -111,8 +108,7 @@ public abstract class AbstractComponentContainer extends AbstractComponent
     /* documented in interface */
     @Override
     public void removeComponentAttachListener(ComponentAttachListener listener) {
-        removeListener(ComponentAttachEvent.class, listener,
-                ComponentAttachListener.attachMethod);
+        removeListener(ComponentAttachEvent.class, listener, ComponentAttachListener.attachMethod);
     }
 
     /**
@@ -128,8 +124,7 @@ public abstract class AbstractComponentContainer extends AbstractComponent
     /* documented in interface */
     @Override
     public void addComponentDetachListener(ComponentDetachListener listener) {
-        addListener(ComponentDetachEvent.class, listener,
-                ComponentDetachListener.detachMethod);
+        addListener(ComponentDetachEvent.class, listener, ComponentDetachListener.detachMethod);
     }
 
     /**
@@ -145,8 +140,7 @@ public abstract class AbstractComponentContainer extends AbstractComponent
     /* documented in interface */
     @Override
     public void removeComponentDetachListener(ComponentDetachListener listener) {
-        removeListener(ComponentDetachEvent.class, listener,
-                ComponentDetachListener.detachMethod);
+        removeListener(ComponentDetachEvent.class, listener, ComponentDetachListener.detachMethod);
     }
 
     /**
@@ -194,8 +188,7 @@ public abstract class AbstractComponentContainer extends AbstractComponent
     public void addComponent(Component c) {
         // Make sure we're not adding the component inside it's own content
         if (isOrHasAncestor(c)) {
-            throw new IllegalArgumentException(
-                    "Component cannot be added inside it's own content");
+            throw new IllegalArgumentException("Component cannot be added inside it's own content");
         }
 
         if (c.getParent() != null) {

@@ -35,8 +35,7 @@ import com.vaadin.tests.widgetset.client.TestWidgetConnector.TestWidgetRegistry;
 public class TestWidgetRegistryGenerator extends Generator {
 
     @Override
-    public String generate(TreeLogger logger, GeneratorContext context,
-            String typeName) throws UnableToCompleteException {
+    public String generate(TreeLogger logger, GeneratorContext context, String typeName) throws UnableToCompleteException {
 
         try {
             TypeOracle typeOracle = context.getTypeOracle();
@@ -50,17 +49,14 @@ public class TestWidgetRegistryGenerator extends Generator {
             generateClass(packageName, className, logger, context);
             return packageName + "." + className;
         } catch (Exception e) {
-            logger.log(TreeLogger.ERROR,
-                    "Accept criterion factory creation failed", e);
+            logger.log(TreeLogger.ERROR, "Accept criterion factory creation failed", e);
             throw new UnableToCompleteException();
         }
         // return the fully qualifed name of the class generated
     }
 
-    private void generateClass(String packageName, String className,
-            TreeLogger logger, GeneratorContext context) {
-        PrintWriter printWriter = context.tryCreate(logger, packageName,
-                className);
+    private void generateClass(String packageName, String className, TreeLogger logger, GeneratorContext context) {
+        PrintWriter printWriter = context.tryCreate(logger, packageName, className);
         // print writer if null, source code has ALREADY been generated
         if (printWriter == null) {
             return;
@@ -72,8 +68,7 @@ public class TestWidgetRegistryGenerator extends Generator {
 
         composer.setSuperclass(TestWidgetRegistry.class.getCanonicalName());
 
-        List<JClassType> testWidgets = findTestWidgets(logger,
-                context.getTypeOracle());
+        List<JClassType> testWidgets = findTestWidgets(logger, context.getTypeOracle());
 
         SourceWriter w = composer.createSourceWriter(context, printWriter);
 
@@ -84,16 +79,13 @@ public class TestWidgetRegistryGenerator extends Generator {
         w.println();
 
         for (JClassType testWidgetType : testWidgets) {
-            w.println("register(\"%s\", new %s() {",
-                    escape(testWidgetType.getQualifiedSourceName()),
-                    Invoker.class.getCanonicalName());
+            w.println("register(\"%s\", new %s() {", escape(testWidgetType.getQualifiedSourceName()), Invoker.class.getCanonicalName());
             w.indent();
 
             w.println("public Object invoke(Object target, Object... params) {");
             w.indent();
 
-            w.println("return new %s();",
-                    testWidgetType.getQualifiedSourceName());
+            w.println("return new %s();", testWidgetType.getQualifiedSourceName());
 
             w.outdent();
             w.println("}");
@@ -115,12 +107,10 @@ public class TestWidgetRegistryGenerator extends Generator {
         context.commit(logger, printWriter);
     }
 
-    private List<JClassType> findTestWidgets(TreeLogger logger,
-            TypeOracle typeOracle) {
+    private List<JClassType> findTestWidgets(TreeLogger logger, TypeOracle typeOracle) {
         List<JClassType> testWidgetTypes = new ArrayList<JClassType>();
 
-        JClassType[] widgetTypes = typeOracle.findType(Widget.class.getName())
-                .getSubtypes();
+        JClassType[] widgetTypes = typeOracle.findType(Widget.class.getName()).getSubtypes();
         for (JClassType widgetType : widgetTypes) {
             if (isTestWidget(widgetType)) {
                 testWidgetTypes.add(widgetType);
@@ -133,11 +123,9 @@ public class TestWidgetRegistryGenerator extends Generator {
     private boolean isTestWidget(JClassType widgetType) {
         if (widgetType.isAbstract()) {
             return false;
-        } else if (!widgetType.getPackage().getName()
-                .startsWith(TestWidgetConnector.class.getPackage().getName())) {
+        } else if (!widgetType.getPackage().getName().startsWith(TestWidgetConnector.class.getPackage().getName())) {
             return false;
-        } else if (widgetType.getEnclosingType() != null
-                && !widgetType.isStatic()) {
+        } else if (widgetType.getEnclosingType() != null && !widgetType.isStatic()) {
             return false;
         }
 

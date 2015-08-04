@@ -37,8 +37,7 @@ public class GridDeclarativeAttributeTest extends DeclarativeTestBase<Grid> {
     @Test
     public void testBasicAttributes() {
 
-        String design = "<v-grid editable='' rows=20 frozen-columns=-1 "
-                + "editor-save-caption='Tallenna' editor-cancel-caption='Peruuta' column-reordering-allowed=''>";
+        String design = "<v-grid editable='' rows=20 frozen-columns=-1 " + "editor-save-caption='Tallenna' editor-cancel-caption='Peruuta' column-reordering-allowed=''>";
 
         Grid grid = new Grid();
         grid.setEditorEnabled(true);
@@ -70,15 +69,12 @@ public class GridDeclarativeAttributeTest extends DeclarativeTestBase<Grid> {
     @Test
     public void testSelectionMode() {
         String design = "<v-grid selection-mode='none'>";
-        assertSame(NoSelectionModel.class, read(design).getSelectionModel()
-                .getClass());
+        assertSame(NoSelectionModel.class, read(design).getSelectionModel().getClass());
 
         design = "<v-grid selection-mode='single'>";
-        assertSame(SingleSelectionModel.class, read(design).getSelectionModel()
-                .getClass());
+        assertSame(SingleSelectionModel.class, read(design).getSelectionModel().getClass());
 
         design = "<v-grid selection-mode='multi'>";
-        assertSame(MultiSelectionModel.class, read(design).getSelectionModel()
-                .getClass());
+        assertSame(MultiSelectionModel.class, read(design).getSelectionModel().getClass());
     }
 }

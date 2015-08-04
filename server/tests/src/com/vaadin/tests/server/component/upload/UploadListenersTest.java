@@ -15,27 +15,22 @@ import com.vaadin.ui.Upload.SucceededListener;
 
 public class UploadListenersTest extends AbstractListenerMethodsTestBase {
     public void testProgressListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Upload.class, StreamingProgressEvent.class,
-                ProgressListener.class);
+        testListenerAddGetRemove(Upload.class, StreamingProgressEvent.class, ProgressListener.class);
     }
 
     public void testSucceededListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Upload.class, SucceededEvent.class,
-                SucceededListener.class);
+        testListenerAddGetRemove(Upload.class, SucceededEvent.class, SucceededListener.class);
     }
 
     public void testStartedListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Upload.class, StartedEvent.class,
-                StartedListener.class);
+        testListenerAddGetRemove(Upload.class, StartedEvent.class, StartedListener.class);
     }
 
     public void testFailedListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Upload.class, FailedEvent.class,
-                FailedListener.class);
+        testListenerAddGetRemove(Upload.class, FailedEvent.class, FailedListener.class);
     }
 
     public void testFinishedListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Upload.class, FinishedEvent.class,
-                FinishedListener.class);
+        testListenerAddGetRemove(Upload.class, FinishedEvent.class, FinishedListener.class);
     }
 }

@@ -65,11 +65,9 @@ public class BasicCrudGridEditorRowTest extends MultiBrowserTest {
         editor.save();
 
         Assert.assertTrue("Editor wasn't displayed.", editor.isDisplayed());
-        Assert.assertTrue("DateField wasn't displayed.",
-                dateField.isDisplayed());
+        Assert.assertTrue("DateField wasn't displayed.", dateField.isDisplayed());
 
-        Assert.assertTrue("DateField didn't have 'v-invalid' css class.",
-                hasCssClass(dateField, "v-datefield-error"));
+        Assert.assertTrue("DateField didn't have 'v-invalid' css class.", hasCssClass(dateField, "v-datefield-error"));
     }
 
 }

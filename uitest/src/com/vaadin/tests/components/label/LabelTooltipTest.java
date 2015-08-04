@@ -51,20 +51,15 @@ public class LabelTooltipTest extends MultiBrowserTest {
 
     private void assertTooltips() throws IOException {
         $(LabelElement.class).get(2).showTooltip();
-        Assert.assertEquals("Default tooltip content", getTooltipElement()
-                .getText());
+        Assert.assertEquals("Default tooltip content", getTooltipElement().getText());
 
         /* Some cases tooltip doesn't disappear without some extra mouse events */
         new Actions(getDriver()).moveByOffset(100, -40).perform();
-        new Actions(getDriver()).moveToElement($(LabelElement.class).get(1))
-                .click().perform();
+        new Actions(getDriver()).moveToElement($(LabelElement.class).get(1)).click().perform();
 
         $(LabelElement.class).get(4).showTooltip();
-        Assert.assertEquals(
-                "Error inside tooltip together with the regular tooltip message.",
-                getTooltipErrorElement().getText());
-        Assert.assertEquals("Default tooltip content", getTooltipElement()
-                .getText());
+        Assert.assertEquals("Error inside tooltip together with the regular tooltip message.", getTooltipErrorElement().getText());
+        Assert.assertEquals("Default tooltip content", getTooltipElement().getText());
 
         /* Visual comparison */
         compareScreen("tooltipVisible");

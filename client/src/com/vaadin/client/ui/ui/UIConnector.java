@@ -154,9 +154,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
         getWidget().addResizeHandler(new ResizeHandler() {
             @Override
             public void onResize(ResizeEvent event) {
-                getRpcProxy(UIServerRpc.class).resize(event.getHeight(),
-                        event.getWidth(), Window.getClientWidth(),
-                        Window.getClientHeight());
+                getRpcProxy(UIServerRpc.class).resize(event.getHeight(), event.getWidth(), Window.getClientWidth(), Window.getClientHeight());
                 if (getState().immediate || getPageState().hasResizeListeners) {
                     getConnection().getServerRpcQueue().flush();
                 }
@@ -171,12 +169,10 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
                 Element element = getWidget().getElement();
                 int newScrollTop = element.getScrollTop();
                 int newScrollLeft = element.getScrollLeft();
-                if (newScrollTop != lastSentScrollTop
-                        || newScrollLeft != lastSentScrollLeft) {
+                if (newScrollTop != lastSentScrollTop || newScrollLeft != lastSentScrollLeft) {
                     lastSentScrollTop = newScrollTop;
                     lastSentScrollLeft = newScrollLeft;
-                    getRpcProxy(UIServerRpc.class).scroll(newScrollTop,
-                            newScrollLeft);
+                    getRpcProxy(UIServerRpc.class).scroll(newScrollTop, newScrollLeft);
                 }
             }
         });
@@ -204,19 +200,15 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
 
             // Check if we have resources to inject
             if (cssInjectionsUidl.getTag().equals("css-resource")) {
-                String url = getWidget().connection
-                        .translateVaadinUri(cssInjectionsUidl
-                                .getStringAttribute("url"));
-                LinkElement link = LinkElement.as(DOM
-                        .createElement(LinkElement.TAG));
+                String url = getWidget().connection.translateVaadinUri(cssInjectionsUidl.getStringAttribute("url"));
+                LinkElement link = LinkElement.as(DOM.createElement(LinkElement.TAG));
                 link.setRel("stylesheet");
                 link.setHref(url);
                 link.setType("text/css");
                 getHead().appendChild(link);
                 // Check if we have CSS string to inject
             } else if (cssInjectionsUidl.getTag().equals("css-string")) {
-                for (Iterator<?> it2 = cssInjectionsUidl.getChildIterator(); it2
-                        .hasNext();) {
+                for (Iterator<?> it2 = cssInjectionsUidl.getChildIterator(); it2.hasNext();) {
                     StyleInjector.injectAtEnd((String) it2.next());
                     StyleInjector.flush();
                 }
@@ -231,8 +223,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
      * @return the head element
      */
     private HeadElement getHead() {
-        return HeadElement.as(Document.get()
-                .getElementsByTagName(HeadElement.TAG).getItem(0));
+        return HeadElement.as(Document.get().getElementsByTagName(HeadElement.TAG).getItem(0));
     }
 
     /**
@@ -243,8 +234,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
      *            the url to match with existing stylesheets
      */
     private void removeStylesheet(String url) {
-        NodeList<Element> linkTags = getHead().getElementsByTagName(
-                LinkElement.TAG);
+        NodeList<Element> linkTags = getHead().getElementsByTagName(LinkElement.TAG);
         for (int i = 0; i < linkTags.getLength(); i++) {
             LinkElement link = LinkElement.as(linkTags.getItem(i));
             if (!"stylesheet".equals(link.getRel())) {
@@ -259,21 +249,18 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
         }
     }
 
-    public void init(String rootPanelId,
-            ApplicationConnection applicationConnection) {
+    public void init(String rootPanelId, ApplicationConnection applicationConnection) {
         // Create a style tag for style injections so they don't end up in
         // the theme tag in IE8-IE10 (we don't want to wipe them out if we
         // change theme).
         // StyleInjectorImplIE always injects to the last style tag on the page.
-        if (BrowserInfo.get().isIE()
-                && BrowserInfo.get().getBrowserMajorVersion() < 11) {
+        if (BrowserInfo.get().isIE() && BrowserInfo.get().getBrowserMajorVersion() < 11) {
             StyleElement style = Document.get().createStyleElement();
             style.setType("text/css");
             getHead().appendChild(style);
         }
 
-        DOM.sinkEvents(getWidget().getElement(), Event.ONKEYDOWN
-                | Event.ONSCROLL);
+        DOM.sinkEvents(getWidget().getElement(), Event.ONKEYDOWN | Event.ONSCROLL);
 
         RootPanel root = RootPanel.get(rootPanelId);
 
@@ -301,27 +288,23 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
             getWidget().getElement().focus();
         }
 
-        applicationConnection.addHandler(
-                ApplicationConnection.ApplicationStoppedEvent.TYPE,
-                new ApplicationConnection.ApplicationStoppedHandler() {
+        applicationConnection.addHandler(ApplicationConnection.ApplicationStoppedEvent.TYPE, new ApplicationConnection.ApplicationStoppedHandler() {
 
-                    @Override
-                    public void onApplicationStopped(
-                            ApplicationStoppedEvent event) {
-                        // Stop any polling
-                        if (pollTimer != null) {
-                            pollTimer.cancel();
-                            pollTimer = null;
-                        }
-                    }
-                });
+            @Override
+            public void onApplicationStopped(ApplicationStoppedEvent event) {
+                // Stop any polling
+                if (pollTimer != null) {
+                    pollTimer.cancel();
+                    pollTimer = null;
+                }
+            }
+        });
     }
 
     private ClickEventHandler clickEventHandler = new ClickEventHandler(this) {
 
         @Override
-        protected void fireClick(NativeEvent event,
-                MouseEventDetails mouseDetails) {
+        protected void fireClick(NativeEvent event, MouseEventDetails mouseDetails) {
             getRpcProxy(UIServerRpc.class).click(mouseDetails);
         }
 
@@ -401,8 +384,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
             }
             if (newChild != null) {
                 getWidget().setWidget(newChild.getWidget());
-                childStateChangeHandlerRegistration = newChild
-                        .addStateChangeHandler(childStateChangeHandler);
+                childStateChangeHandlerRegistration = newChild.addStateChangeHandler(childStateChangeHandler);
                 // Must handle new child here as state change events are already
                 // fired
                 onChildSizeChange();
@@ -447,26 +429,17 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
     public void onStateChanged(StateChangeEvent stateChangeEvent) {
         super.onStateChanged(stateChangeEvent);
         if (stateChangeEvent.hasPropertyChanged("tooltipConfiguration")) {
-            getConnection().getVTooltip().setCloseTimeout(
-                    getState().tooltipConfiguration.closeTimeout);
-            getConnection().getVTooltip().setOpenDelay(
-                    getState().tooltipConfiguration.openDelay);
-            getConnection().getVTooltip().setQuickOpenDelay(
-                    getState().tooltipConfiguration.quickOpenDelay);
-            getConnection().getVTooltip().setQuickOpenTimeout(
-                    getState().tooltipConfiguration.quickOpenTimeout);
-            getConnection().getVTooltip().setMaxWidth(
-                    getState().tooltipConfiguration.maxWidth);
+            getConnection().getVTooltip().setCloseTimeout(getState().tooltipConfiguration.closeTimeout);
+            getConnection().getVTooltip().setOpenDelay(getState().tooltipConfiguration.openDelay);
+            getConnection().getVTooltip().setQuickOpenDelay(getState().tooltipConfiguration.quickOpenDelay);
+            getConnection().getVTooltip().setQuickOpenTimeout(getState().tooltipConfiguration.quickOpenTimeout);
+            getConnection().getVTooltip().setMaxWidth(getState().tooltipConfiguration.maxWidth);
         }
 
-        if (stateChangeEvent
-                .hasPropertyChanged("loadingIndicatorConfiguration")) {
-            getConnection().getLoadingIndicator().setFirstDelay(
-                    getState().loadingIndicatorConfiguration.firstDelay);
-            getConnection().getLoadingIndicator().setSecondDelay(
-                    getState().loadingIndicatorConfiguration.secondDelay);
-            getConnection().getLoadingIndicator().setThirdDelay(
-                    getState().loadingIndicatorConfiguration.thirdDelay);
+        if (stateChangeEvent.hasPropertyChanged("loadingIndicatorConfiguration")) {
+            getConnection().getLoadingIndicator().setFirstDelay(getState().loadingIndicatorConfiguration.firstDelay);
+            getConnection().getLoadingIndicator().setSecondDelay(getState().loadingIndicatorConfiguration.secondDelay);
+            getConnection().getLoadingIndicator().setThirdDelay(getState().loadingIndicatorConfiguration.thirdDelay);
         }
 
         if (stateChangeEvent.hasPropertyChanged("pollInterval")) {
@@ -481,13 +454,11 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
         }
 
         if (stateChangeEvent.hasPropertyChanged("pushConfiguration")) {
-            getConnection().getServerCommunicationHandler().setPushEnabled(
-                    getState().pushConfiguration.mode.isEnabled());
+            getConnection().getServerCommunicationHandler().setPushEnabled(getState().pushConfiguration.mode.isEnabled());
         }
 
         if (stateChangeEvent.hasPropertyChanged("overlayContainerLabel")) {
-            VOverlay.setOverlayContainerLabel(getConnection(),
-                    getState().overlayContainerLabel);
+            VOverlay.setOverlayContainerLabel(getConnection(), getState().overlayContainerLabel);
         }
     }
 
@@ -514,9 +485,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
             pollTimer.scheduleRepeating(getState().pollInterval);
         } else {
             // Ensure no more polls are sent as polling has been disabled
-            getConnection().getServerRpcQueue().removeMatching(
-                    new MethodInvocation(getConnectorId(), UIServerRpc.class
-                            .getName(), "poll"));
+            getConnection().getServerRpcQueue().removeMatching(new MethodInvocation(getConnectorId(), UIServerRpc.class.getName(), "poll"));
         }
     }
 
@@ -530,8 +499,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
      *            the connector to locate
      */
     public void showServerDebugInfo(ServerConnector serverConnector) {
-        getRpcProxy(DebugWindowServerRpc.class).showServerDebugInfo(
-                serverConnector);
+        getRpcProxy(DebugWindowServerRpc.class).showServerDebugInfo(serverConnector);
     }
 
     /**
@@ -568,8 +536,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
                 // If there is no style tag, load it the normal way (the class
                 // name will be added when theme has been loaded)
                 replaceTheme(null, newTheme, null, newThemeUrl);
-            } else if (!getWidget().getParent().getElement()
-                    .hasClassName(newTheme)) {
+            } else if (!getWidget().getParent().getElement().hasClassName(newTheme)) {
                 // If only the class name is missing, add that
                 activateTheme(newTheme);
             }
@@ -593,8 +560,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
      * @param newThemeUrl
      *            The url of the new theme
      */
-    protected void replaceTheme(final String oldTheme, final String newTheme,
-            String oldThemeUrl, final String newThemeUrl) {
+    protected void replaceTheme(final String oldTheme, final String newTheme, String oldThemeUrl, final String newThemeUrl) {
 
         LinkElement tagToReplace = null;
 
@@ -602,12 +568,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
             tagToReplace = findStylesheetTag(oldThemeUrl);
 
             if (tagToReplace == null) {
-                getLogger()
-                        .warning(
-                                "Did not find the link tag for the old theme ("
-                                        + oldThemeUrl
-                                        + "), adding a new stylesheet for the new theme ("
-                                        + newThemeUrl + ")");
+                getLogger().warning("Did not find the link tag for the old theme (" + oldThemeUrl + "), adding a new stylesheet for the new theme (" + newThemeUrl + ")");
             }
         }
 
@@ -629,10 +590,8 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
             Element iconElement = iconElements.getItem(i);
 
             String href = iconElement.getAttribute("href");
-            if (href != null && href.contains("VAADIN/themes")
-                    && href.endsWith("/favicon.ico")) {
-                href = href.replaceFirst("VAADIN/themes/.+?/favicon.ico",
-                        "VAADIN/themes/" + newTheme + "/favicon.ico");
+            if (href != null && href.contains("VAADIN/themes") && href.endsWith("/favicon.ico")) {
+                href = href.replaceFirst("VAADIN/themes/.+?/favicon.ico", "VAADIN/themes/" + newTheme + "/favicon.ico");
                 iconElement.setAttribute("href", href);
             }
         }
@@ -652,13 +611,10 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
      * @return the link tag or null if no matching link tag was found
      */
     private LinkElement findStylesheetTag(String url) {
-        NodeList<Element> linkTags = getHead().getElementsByTagName(
-                LinkElement.TAG);
+        NodeList<Element> linkTags = getHead().getElementsByTagName(LinkElement.TAG);
         for (int i = 0; i < linkTags.getLength(); i++) {
             final LinkElement link = LinkElement.as(linkTags.getItem(i));
-            if ("stylesheet".equals(link.getRel())
-                    && "text/css".equals(link.getType())
-                    && url.equals(link.getHref())) {
+            if ("stylesheet".equals(link.getRel()) && "text/css".equals(link.getType()) && url.equals(link.getHref())) {
                 return link;
             }
         }
@@ -677,35 +633,28 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
      *            The link element to replace. If null, then the new link
      *            element is added at the end.
      */
-    private void loadTheme(final String newTheme, final String newThemeUrl,
-            final LinkElement tagToReplace) {
+    private void loadTheme(final String newTheme, final String newThemeUrl, final LinkElement tagToReplace) {
         LinkElement newThemeLinkElement = Document.get().createLinkElement();
         newThemeLinkElement.setRel("stylesheet");
         newThemeLinkElement.setType("text/css");
         newThemeLinkElement.setHref(newThemeUrl);
-        ResourceLoader.addOnloadHandler(newThemeLinkElement,
-                new ResourceLoadListener() {
+        ResourceLoader.addOnloadHandler(newThemeLinkElement, new ResourceLoadListener() {
 
-                    @Override
-                    public void onLoad(ResourceLoadEvent event) {
-                        getLogger().info(
-                                "Loading of " + newTheme + " from "
-                                        + newThemeUrl + " completed");
+            @Override
+            public void onLoad(ResourceLoadEvent event) {
+                getLogger().info("Loading of " + newTheme + " from " + newThemeUrl + " completed");
 
-                        if (tagToReplace != null) {
-                            tagToReplace.getParentElement().removeChild(
-                                    tagToReplace);
-                        }
-                        activateTheme(newTheme);
-                    }
+                if (tagToReplace != null) {
+                    tagToReplace.getParentElement().removeChild(tagToReplace);
+                }
+                activateTheme(newTheme);
+            }
 
-                    @Override
-                    public void onError(ResourceLoadEvent event) {
-                        getLogger().warning(
-                                "Could not load theme from "
-                                        + getThemeUrl(newTheme));
-                    }
-                }, null);
+            @Override
+            public void onError(ResourceLoadEvent event) {
+                getLogger().warning("Could not load theme from " + getThemeUrl(newTheme));
+            }
+        }, null);
 
         if (tagToReplace != null) {
             getHead().insertBefore(newThemeLinkElement, tagToReplace);
@@ -725,8 +674,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
     protected void activateTheme(String newTheme) {
         if (activeTheme != null) {
             getWidget().getParent().removeStyleName(activeTheme);
-            VOverlay.getOverlayContainer(getConnection()).removeClassName(
-                    activeTheme);
+            VOverlay.getOverlayContainer(getConnection()).removeClassName(activeTheme);
         }
 
         String oldThemeBase = getConnection().translateVaadinUri("theme://");
@@ -735,8 +683,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
 
         if (newTheme != null) {
             getWidget().getParent().addStyleName(newTheme);
-            VOverlay.getOverlayContainer(getConnection()).addClassName(
-                    activeTheme);
+            VOverlay.getOverlayContainer(getConnection()).addClassName(activeTheme);
 
             updateVaadinFavicon(newTheme);
 
@@ -778,18 +725,13 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
      * @param newPrefix
      *            The start of the new theme URL
      */
-    private void replaceThemeAttribute(String attributeName, String oldPrefix,
-            String newPrefix) {
+    private void replaceThemeAttribute(String attributeName, String oldPrefix, String newPrefix) {
         // Find all "attributeName=" which start with "oldPrefix" using e.g.
         // [^src='http://oldpath']
-        NodeList<Element> elements = querySelectorAll("[" + attributeName
-                + "^='" + oldPrefix + "']");
+        NodeList<Element> elements = querySelectorAll("[" + attributeName + "^='" + oldPrefix + "']");
         for (int i = 0; i < elements.getLength(); i++) {
             Element element = elements.getItem(i);
-            element.setAttribute(
-                    attributeName,
-                    element.getAttribute(attributeName).replace(oldPrefix,
-                            newPrefix));
+            element.setAttribute(attributeName, element.getAttribute(attributeName).replace(oldPrefix, newPrefix));
         }
     }
 
@@ -800,17 +742,14 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
      * 
      * @since 7.3
      */
-    protected static void forceStateChangeRecursively(
-            AbstractConnector connector) {
+    protected static void forceStateChangeRecursively(AbstractConnector connector) {
         connector.forceStateChange();
 
         for (ServerConnector child : connector.getChildren()) {
             if (child instanceof AbstractConnector) {
                 forceStateChangeRecursively((AbstractConnector) child);
             } else {
-                getLogger().warning(
-                        "Could not force state change for unknown connector type: "
-                                + child.getClass().getName());
+                getLogger().warning("Could not force state change for unknown connector type: " + child.getClass().getName());
             }
         }
 
@@ -825,9 +764,7 @@ public class UIConnector extends AbstractSingleComponentContainerConnector {
      * @return The URL the theme can be loaded from
      */
     private String getThemeUrl(String theme) {
-        String themeUrl = getConnection().translateVaadinUri(
-                ApplicationConstants.VAADIN_PROTOCOL_PREFIX + "themes/" + theme
-                        + "/styles" + ".css");
+        String themeUrl = getConnection().translateVaadinUri(ApplicationConstants.VAADIN_PROTOCOL_PREFIX + "themes/" + theme + "/styles" + ".css");
         // Parameter appended to bypass caches after version upgrade.
         themeUrl += "?v=" + Version.getFullVersion();
         return themeUrl;

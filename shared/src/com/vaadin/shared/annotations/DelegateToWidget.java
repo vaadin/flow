@@ -83,12 +83,10 @@ public @interface DelegateToWidget {
          *            the {@link DelegateToWidget#value()} of the annotation
          * @return the name of the method to delegate to
          */
-        public static String getDelegateTarget(String propertyName,
-                String annotationValue) {
+        public static String getDelegateTarget(String propertyName, String annotationValue) {
             String name = annotationValue;
             if (name.isEmpty()) {
-                name = "set" + Character.toUpperCase(propertyName.charAt(0))
-                        + propertyName.substring(1);
+                name = "set" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
             }
             return name;
         }

@@ -53,11 +53,9 @@ public class ComponentPositionTest extends TestCase {
         assertEquals(CSS_VALUE, layout.getPosition(b).getRightValue());
 
         assertEquals(Sizeable.Unit.PIXELS, layout.getPosition(b).getTopUnits());
-        assertEquals(Sizeable.Unit.PICAS, layout.getPosition(b)
-                .getBottomUnits());
+        assertEquals(Sizeable.Unit.PICAS, layout.getPosition(b).getBottomUnits());
         assertEquals(Sizeable.Unit.EM, layout.getPosition(b).getLeftUnits());
-        assertEquals(Sizeable.Unit.PERCENTAGE, layout.getPosition(b)
-                .getRightUnits());
+        assertEquals(Sizeable.Unit.PERCENTAGE, layout.getPosition(b).getRightUnits());
 
         assertEquals(7, layout.getPosition(b).getZIndex());
 

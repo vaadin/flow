@@ -26,8 +26,7 @@ public class FieldRpc implements Serializable {
         public void blur();
     }
 
-    public interface FocusAndBlurServerRpc extends FocusServerRpc,
-            BlurServerRpc {
+    public interface FocusAndBlurServerRpc extends FocusServerRpc, BlurServerRpc {
 
     }
 }

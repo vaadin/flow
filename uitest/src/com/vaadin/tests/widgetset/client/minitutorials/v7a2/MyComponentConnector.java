@@ -14,17 +14,14 @@ import com.vaadin.tests.minitutorials.v7a2.MyComponent;
 @Connect(MyComponent.class)
 public class MyComponentConnector extends AbstractComponentConnector {
 
-    MyComponentServerRpc rpc = RpcProxy
-            .create(MyComponentServerRpc.class, this);
+    MyComponentServerRpc rpc = RpcProxy.create(MyComponentServerRpc.class, this);
 
     public MyComponentConnector() {
         getWidget().addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
 
-                final MouseEventDetails mouseDetails = MouseEventDetailsBuilder
-                        .buildMouseEventDetails(event.getNativeEvent(),
-                                getWidget().getElement());
+                final MouseEventDetails mouseDetails = MouseEventDetailsBuilder.buildMouseEventDetails(event.getNativeEvent(), getWidget().getElement());
 
                 rpc.clicked(mouseDetails);
             }

@@ -47,8 +47,7 @@ public class Slider extends AbstractField<Double> {
              * 
              * See #12133.
              */
-            getUI().getConnectorTracker().getDiffState(Slider.this)
-                    .put("value", value);
+            getUI().getConnectorTracker().getDiffState(Slider.this).put("value", value);
 
             try {
                 setValue(value, true);
@@ -251,8 +250,7 @@ public class Slider extends AbstractField<Double> {
      */
     public void setResolution(int resolution) {
         if (resolution < 0) {
-            throw new IllegalArgumentException(
-                    "Cannot set a negative resolution to Slider");
+            throw new IllegalArgumentException("Cannot set a negative resolution to Slider");
         }
         getState().resolution = resolution;
     }
@@ -332,8 +330,7 @@ public class Slider extends AbstractField<Double> {
          * @param valueOutOfBounds
          */
         public ValueOutOfBoundsException(Double valueOutOfBounds) {
-            super(String.format("Value %s is out of bounds: [%s, %s]",
-                    valueOutOfBounds, getMin(), getMax()));
+            super(String.format("Value %s is out of bounds: [%s, %s]", valueOutOfBounds, getMin(), getMax()));
             value = valueOutOfBounds;
         }
 
@@ -371,8 +368,7 @@ public class Slider extends AbstractField<Double> {
             setOrientation(SliderOrientation.VERTICAL);
         }
         if (!attr.get("value").isEmpty()) {
-            setValue(DesignAttributeHandler.readAttribute("value", attr,
-                    Double.class));
+            setValue(DesignAttributeHandler.readAttribute("value", attr, Double.class));
         }
     }
 
@@ -383,8 +379,7 @@ public class Slider extends AbstractField<Double> {
             design.attr("vertical", "");
         }
         Slider defaultSlider = context.getDefaultInstance(this);
-        DesignAttributeHandler.writeAttribute(this, "value",
-                design.attributes(), defaultSlider);
+        DesignAttributeHandler.writeAttribute(this, "value", design.attributes(), defaultSlider);
     }
 
     @Override

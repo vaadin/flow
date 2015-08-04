@@ -33,8 +33,7 @@ import com.vaadin.tests.widgetset.server.TestWidgetComponent;
 
 @Connect(TestWidgetComponent.class)
 public class TestWidgetConnector extends AbstractComponentConnector {
-    public static class SubPartAwareSimplePanel extends SimplePanel implements
-            SubPartAware {
+    public static class SubPartAwareSimplePanel extends SimplePanel implements SubPartAware {
         @Override
         public Element getSubPartElement(String subPart) {
             Widget target = getWidget();
@@ -62,8 +61,7 @@ public class TestWidgetConnector extends AbstractComponentConnector {
         public String widgetClass;
     }
 
-    private final TestWidgetRegistry registry = GWT
-            .create(TestWidgetRegistry.class);
+    private final TestWidgetRegistry registry = GWT.create(TestWidgetRegistry.class);
 
     public static abstract class TestWidgetRegistry {
         private Map<String, Invoker> creators = new HashMap<String, Invoker>();

@@ -21,8 +21,6 @@ import com.vaadin.ui.declarative.Design;
 public class DesignReadInConstructor extends CssLayout {
 
     public DesignReadInConstructor() {
-        Design.read(
-                getClass().getResourceAsStream("DesignReadInConstructor.html"),
-                this);
+        Design.read(getClass().getResourceAsStream("DesignReadInConstructor.html"), this);
     }
 }

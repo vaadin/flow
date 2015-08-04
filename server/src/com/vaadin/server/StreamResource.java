@@ -140,8 +140,7 @@ public class StreamResource implements ConnectorResource {
         if (ss == null) {
             return null;
         }
-        final DownloadStream ds = new DownloadStream(ss.getStream(),
-                getMIMEType(), getFilename());
+        final DownloadStream ds = new DownloadStream(ss.getStream(), getMIMEType(), getFilename());
         ds.setBufferSize(getBufferSize());
         ds.setCacheTime(cacheTime);
         return ds;
@@ -221,11 +220,7 @@ public class StreamResource implements ConnectorResource {
             return true;
         } else if (obj instanceof StreamResource) {
             StreamResource that = (StreamResource) obj;
-            return SharedUtil.equals(getStreamSource(), that.getStreamSource())
-                    && SharedUtil.equals(MIMEType, that.MIMEType)
-                    && SharedUtil.equals(getFilename(), that.getFilename())
-                    && getBufferSize() == that.getBufferSize()
-                    && getCacheTime() == that.getCacheTime();
+            return SharedUtil.equals(getStreamSource(), that.getStreamSource()) && SharedUtil.equals(MIMEType, that.MIMEType) && SharedUtil.equals(getFilename(), that.getFilename()) && getBufferSize() == that.getBufferSize() && getCacheTime() == that.getCacheTime();
         } else {
             return false;
         }
@@ -233,8 +228,7 @@ public class StreamResource implements ConnectorResource {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(new Object[] { getStreamSource(), MIMEType,
-                getFilename(), getBufferSize(), getCacheTime() });
+        return Arrays.hashCode(new Object[] { getStreamSource(), MIMEType, getFilename(), getBufferSize(), getCacheTime() });
     }
 
 }

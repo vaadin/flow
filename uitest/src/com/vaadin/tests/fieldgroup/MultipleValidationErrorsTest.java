@@ -16,8 +16,7 @@ public class MultipleValidationErrorsTest extends MultiBrowserTest {
     }
 
     private void clearTextField(String caption) {
-        TextFieldElement textField = $(TextFieldElement.class).caption(caption)
-                .first();
+        TextFieldElement textField = $(TextFieldElement.class).caption(caption).first();
         textField.clear();
     }
 
@@ -30,14 +29,9 @@ public class MultipleValidationErrorsTest extends MultiBrowserTest {
 
         commitTextFields();
 
-        String validationErrors = $(LabelElement.class).id("validationErrors")
-                .getText();
+        String validationErrors = $(LabelElement.class).id("validationErrors").getText();
 
-        assertThat(
-                validationErrors,
-                containsString(MultipleValidationErrors.FIRST_NAME_NOT_EMPTY_VALIDATION_MESSAGE));
-        assertThat(
-                validationErrors,
-                containsString(MultipleValidationErrors.LAST_NAME_NOT_EMPTY_VALIDATION_MESSAGE));
+        assertThat(validationErrors, containsString(MultipleValidationErrors.FIRST_NAME_NOT_EMPTY_VALIDATION_MESSAGE));
+        assertThat(validationErrors, containsString(MultipleValidationErrors.LAST_NAME_NOT_EMPTY_VALIDATION_MESSAGE));
     }
 }

@@ -17,9 +17,7 @@ public class ComboBoxSuggestionPopupClose extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Closing the suggestion popup using Enter key is "
-                + "broken in combobox when opening popup using Enter "
-                + "key and not changin the selection using arrows";
+        return "Closing the suggestion popup using Enter key is " + "broken in combobox when opening popup using Enter " + "key and not changin the selection using arrows";
     }
 
     @Override

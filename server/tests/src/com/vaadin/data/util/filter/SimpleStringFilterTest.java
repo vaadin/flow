@@ -2,8 +2,7 @@ package com.vaadin.data.util.filter;
 
 import org.junit.Assert;
 
-public class SimpleStringFilterTest extends
-        AbstractFilterTestBase<SimpleStringFilter> {
+public class SimpleStringFilterTest extends AbstractFilterTestBase<SimpleStringFilter> {
 
     protected static TestItem<String, String> createTestItem() {
         return new TestItem<String, String>("abcde", "TeSt");
@@ -13,16 +12,12 @@ public class SimpleStringFilterTest extends
         return createTestItem();
     }
 
-    protected SimpleStringFilter f(Object propertyId, String filterString,
-            boolean ignoreCase, boolean onlyMatchPrefix) {
-        return new SimpleStringFilter(propertyId, filterString, ignoreCase,
-                onlyMatchPrefix);
+    protected SimpleStringFilter f(Object propertyId, String filterString, boolean ignoreCase, boolean onlyMatchPrefix) {
+        return new SimpleStringFilter(propertyId, filterString, ignoreCase, onlyMatchPrefix);
     }
 
-    protected boolean passes(Object propertyId, String filterString,
-            boolean ignoreCase, boolean onlyMatchPrefix) {
-        return f(propertyId, filterString, ignoreCase, onlyMatchPrefix)
-                .passesFilter(null, getTestItem());
+    protected boolean passes(Object propertyId, String filterString, boolean ignoreCase, boolean onlyMatchPrefix) {
+        return f(propertyId, filterString, ignoreCase, onlyMatchPrefix).passesFilter(null, getTestItem());
     }
 
     public void testStartsWithCaseSensitive() {
@@ -123,8 +118,7 @@ public class SimpleStringFilterTest extends
         TestItem<String, String> item = createTestItem();
         item.addItemProperty("other1", new NullProperty());
 
-        Assert.assertFalse(f("other1", "ab", false, true).passesFilter(null,
-                item));
+        Assert.assertFalse(f("other1", "ab", false, true).passesFilter(null, item));
     }
 
 }

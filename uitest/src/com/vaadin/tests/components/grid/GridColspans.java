@@ -55,38 +55,32 @@ public class GridColspans extends AbstractTestUI {
         HeaderRow row = grid.prependHeaderRow();
         row.join("firstName", "lastName").setText("Full Name");
         row.join("streetAddress", "zipCode", "city").setText("Address");
-        grid.prependHeaderRow()
-                .join(dataSource.getContainerPropertyIds().toArray())
-                .setText("All the stuff");
+        grid.prependHeaderRow().join(dataSource.getContainerPropertyIds().toArray()).setText("All the stuff");
 
         FooterRow footerRow = grid.appendFooterRow();
         footerRow.join("firstName", "lastName").setText("Full Name");
         footerRow.join("streetAddress", "zipCode", "city").setText("Address");
-        grid.appendFooterRow()
-                .join(dataSource.getContainerPropertyIds().toArray())
-                .setText("All the stuff");
+        grid.appendFooterRow().join(dataSource.getContainerPropertyIds().toArray()).setText("All the stuff");
 
-        addComponent(new Button("Show/Hide firstName",
-                new Button.ClickListener() {
+        addComponent(new Button("Show/Hide firstName", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        if (grid.getColumn("firstName") != null) {
-                            grid.removeColumn("firstName");
-                        } else {
-                            grid.addColumn("firstName");
-                        }
-                    }
-                }));
+            @Override
+            public void buttonClick(ClickEvent event) {
+                if (grid.getColumn("firstName") != null) {
+                    grid.removeColumn("firstName");
+                } else {
+                    grid.addColumn("firstName");
+                }
+            }
+        }));
 
-        addComponent(new Button("Change column order",
-                new Button.ClickListener() {
+        addComponent(new Button("Change column order", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        grid.setColumnOrder("zipCode", "firstName");
-                    }
-                }));
+            @Override
+            public void buttonClick(ClickEvent event) {
+                grid.setColumnOrder("zipCode", "firstName");
+            }
+        }));
     }
 
     @Override

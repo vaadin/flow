@@ -14,13 +14,12 @@ public class DisabledDateFieldWidth extends TestBase {
         dateField1.setResolution(DateField.RESOLUTION_YEAR);
         dateField1.setEnabled(false);
 
-        Button button = new Button("Repaint datefield",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        dateField1.markAsDirty();
-                    }
-                });
+        Button button = new Button("Repaint datefield", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                dateField1.markAsDirty();
+            }
+        });
 
         GridLayout gl = new GridLayout(3, 1);
         gl.addComponent(dateField1);

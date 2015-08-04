@@ -54,28 +54,22 @@ public class ConnectorHierarchyWriter implements Serializable {
      */
     public void write(UI ui, Writer writer) throws IOException {
 
-        Collection<ClientConnector> dirtyVisibleConnectors = ui
-                .getConnectorTracker().getDirtyVisibleConnectors();
+        Collection<ClientConnector> dirtyVisibleConnectors = ui.getConnectorTracker().getDirtyVisibleConnectors();
 
         JsonObject hierarchyInfo = Json.createObject();
         for (ClientConnector connector : dirtyVisibleConnectors) {
             String connectorId = connector.getConnectorId();
             JsonArray children = Json.createArray();
 
-            for (ClientConnector child : AbstractClientConnector
-                    .getAllChildrenIterable(connector)) {
-                if (LegacyCommunicationManager
-                        .isConnectorVisibleToClient(child)) {
+            for (ClientConnector child : AbstractClientConnector.getAllChildrenIterable(connector)) {
+                if (LegacyCommunicationManager.isConnectorVisibleToClient(child)) {
                     children.set(children.length(), child.getConnectorId());
                 }
             }
             try {
                 hierarchyInfo.put(connectorId, children);
             } catch (JsonException e) {
-                throw new PaintException(
-                        "Failed to send hierarchy information about "
-                                + connectorId + " to the client: "
-                                + e.getMessage(), e);
+                throw new PaintException("Failed to send hierarchy information about " + connectorId + " to the client: " + e.getMessage(), e);
             }
         }
         writer.write(JsonUtil.stringify(hierarchyInfo));

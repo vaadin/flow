@@ -33,8 +33,7 @@ import com.vaadin.event.FieldEvents.FocusListener;
  * better choice.
  */
 @SuppressWarnings("serial")
-public class NativeSelect extends AbstractSelect implements
-        FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
+public class NativeSelect extends AbstractSelect implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 
     // width in characters, mimics TextField
     private int columns = 0;
@@ -108,26 +107,22 @@ public class NativeSelect extends AbstractSelect implements
     }
 
     @Override
-    public void setMultiSelect(boolean multiSelect)
-            throws UnsupportedOperationException {
+    public void setMultiSelect(boolean multiSelect) throws UnsupportedOperationException {
         if (multiSelect == true) {
             throw new UnsupportedOperationException("Multiselect not supported");
         }
     }
 
     @Override
-    public void setNewItemsAllowed(boolean allowNewOptions)
-            throws UnsupportedOperationException {
+    public void setNewItemsAllowed(boolean allowNewOptions) throws UnsupportedOperationException {
         if (allowNewOptions == true) {
-            throw new UnsupportedOperationException(
-                    "newItemsAllowed not supported");
+            throw new UnsupportedOperationException("newItemsAllowed not supported");
         }
     }
 
     @Override
     public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
-                FocusListener.focusMethod);
+        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
     }
 
     /**
@@ -157,8 +152,7 @@ public class NativeSelect extends AbstractSelect implements
 
     @Override
     public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
-                BlurListener.blurMethod);
+        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
     }
 
     /**

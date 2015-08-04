@@ -137,12 +137,10 @@ import com.vaadin.shared.ui.JavaScriptComponentState;
  * @since 7.0.0
  */
 public abstract class AbstractJavaScriptComponent extends AbstractComponent {
-    private JavaScriptCallbackHelper callbackHelper = new JavaScriptCallbackHelper(
-            this);
+    private JavaScriptCallbackHelper callbackHelper = new JavaScriptCallbackHelper(this);
 
     @Override
-    protected <T extends ServerRpc> void registerRpc(T implementation,
-            Class<T> rpcInterfaceType) {
+    protected <T extends ServerRpc> void registerRpc(T implementation, Class<T> rpcInterfaceType) {
         super.registerRpc(implementation, rpcInterfaceType);
         callbackHelper.registerRpc(rpcInterfaceType);
     }

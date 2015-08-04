@@ -192,9 +192,7 @@ public class ClassPathExplorer {
      *            separators) to a URL (see {@link #classpathLocations}) - new
      *            entries are added to this map
      */
-    private static void searchForWidgetSetsAndAddonStyles(
-            String locationString, Map<String, URL> widgetsets,
-            Map<String, URL> addonStyles) {
+    private static void searchForWidgetSetsAndAddonStyles(String locationString, Map<String, URL> widgetsets, Map<String, URL> addonStyles) {
 
         URL location = classpathLocations.get(locationString);
         File directory = new File(location.getFile());
@@ -210,8 +208,7 @@ public class ClassPathExplorer {
 
                 // remove the .gwt.xml extension
                 String classname = files[i].substring(0, files[i].length() - 8);
-                String packageName = locationString.substring(locationString
-                        .lastIndexOf("/") + 1);
+                String packageName = locationString.substring(locationString.lastIndexOf("/") + 1);
                 classname = packageName + "." + classname;
 
                 if (!WidgetSetBuilder.isWidgetset(classname)) {
@@ -222,12 +219,9 @@ public class ClassPathExplorer {
 
                 if (!widgetsets.containsKey(classname)) {
                     String packagePath = packageName.replaceAll("\\.", "/");
-                    String basePath = location.getFile().replaceAll(
-                            "/" + packagePath + "$", "");
+                    String basePath = location.getFile().replaceAll("/" + packagePath + "$", "");
                     try {
-                        URL url = new URL(location.getProtocol(),
-                                location.getHost(), location.getPort(),
-                                basePath);
+                        URL url = new URL(location.getProtocol(), location.getHost(), location.getPort(), basePath);
                         widgetsets.put(classname, url);
                     } catch (MalformedURLException e) {
                         // should never happen as based on an existing URL,
@@ -255,8 +249,7 @@ public class ClassPathExplorer {
                     }
 
                     // Check for widgetset attribute
-                    String value = manifest.getMainAttributes().getValue(
-                            "Vaadin-Widgetsets");
+                    String value = manifest.getMainAttributes().getValue("Vaadin-Widgetsets");
                     if (value != null) {
                         String[] widgetsetNames = value.split(",");
                         for (int i = 0; i < widgetsetNames.length; i++) {
@@ -268,8 +261,7 @@ public class ClassPathExplorer {
                     }
 
                     // Check for theme attribute
-                    value = manifest.getMainAttributes().getValue(
-                            "Vaadin-Stylesheets");
+                    value = manifest.getMainAttributes().getValue("Vaadin-Stylesheets");
                     if (value != null) {
                         String[] stylesheets = value.split(",");
                         for (int i = 0; i < stylesheets.length; i++) {
@@ -333,8 +325,7 @@ public class ClassPathExplorer {
      *            string
      * @return map of classpath locations, see {@link #classpathLocations}
      */
-    private final static Map<String, URL> getClasspathLocations(
-            List<String> rawClasspathEntries) {
+    private final static Map<String, URL> getClasspathLocations(List<String> rawClasspathEntries) {
         long start = System.currentTimeMillis();
         // try to keep the order of the classpath
         Map<String, URL> locations = new LinkedHashMap<String, URL>();
@@ -372,24 +363,20 @@ public class ClassPathExplorer {
         } else {
             // accepts jars that comply with vaadin-component packaging
             // convention (.vaadin. or vaadin- as distribution packages),
-            if (classpathEntry.contains("vaadin-")
-                    || classpathEntry.contains(".vaadin.")) {
+            if (classpathEntry.contains("vaadin-") || classpathEntry.contains(".vaadin.")) {
                 return true;
             } else {
                 URL url;
                 try {
-                    url = new URL("file:"
-                            + new File(classpathEntry).getCanonicalPath());
+                    url = new URL("file:" + new File(classpathEntry).getCanonicalPath());
                     url = new URL("jar:" + url.toExternalForm() + "!/");
-                    JarURLConnection conn = (JarURLConnection) url
-                            .openConnection();
+                    JarURLConnection conn = (JarURLConnection) url.openConnection();
                     debug(url.toString());
 
                     JarFile jarFile = conn.getJarFile();
                     Manifest manifest = jarFile.getManifest();
                     if (manifest != null) {
-                        Attributes mainAttributes = manifest
-                                .getMainAttributes();
+                        Attributes mainAttributes = manifest.getMainAttributes();
                         if (mainAttributes.getValue("Vaadin-Widgetsets") != null) {
                             return true;
                         }
@@ -420,8 +407,7 @@ public class ClassPathExplorer {
      * @param file
      * @param locations
      */
-    private final static void include(String name, File file,
-            Map<String, URL> locations) {
+    private final static void include(String name, File file, Map<String, URL> locations) {
         if (!file.exists()) {
             return;
         }
@@ -446,12 +432,9 @@ public class ClassPathExplorer {
         for (int i = 0; i < dirs.length; i++) {
             try {
                 // add the present directory
-                if (!dirs[i].isHidden()
-                        && !dirs[i].getPath().contains(File.separator + ".")) {
-                    String key = dirs[i].getCanonicalPath() + "/" + name
-                            + dirs[i].getName();
-                    locations.put(key,
-                            new URL("file://" + dirs[i].getCanonicalPath()));
+                if (!dirs[i].isHidden() && !dirs[i].getPath().contains(File.separator + ".")) {
+                    String key = dirs[i].getCanonicalPath() + "/" + name + dirs[i].getName();
+                    locations.put(key, new URL("file://" + dirs[i].getCanonicalPath()));
                 }
             } catch (Exception ioe) {
                 return;
@@ -498,8 +481,7 @@ public class ClassPathExplorer {
 
         if (debug) {
             debug("classpathLocations values:");
-            ArrayList<String> locations = new ArrayList<String>(
-                    classpathLocations.keySet());
+            ArrayList<String> locations = new ArrayList<String>(classpathLocations.keySet());
             for (String location : locations) {
                 debug(String.valueOf(classpathLocations.get(location)));
             }
@@ -510,8 +492,7 @@ public class ClassPathExplorer {
             String entry = it.next();
 
             File directory = new File(entry);
-            if (directory.exists() && !directory.isHidden()
-                    && directory.isDirectory()) {
+            if (directory.exists() && !directory.isHidden() && directory.isDirectory()) {
                 try {
                     return new URL("file://" + directory.getCanonicalPath());
                 } catch (MalformedURLException e) {

@@ -54,8 +54,7 @@ public class StationaryTooltipTest extends MultiBrowserTest {
         Coordinates buttonCoordinates = getButtonCoordinates();
         Dimension buttonDimensions = getButtonDimensions();
 
-        mouse.mouseMove(buttonCoordinates, buttonDimensions.getWidth() - 1,
-                buttonDimensions.getHeight() - 1);
+        mouse.mouseMove(buttonCoordinates, buttonDimensions.getWidth() - 1, buttonDimensions.getHeight() - 1);
     }
 
     private void moveMouseToButtonUpperLeftCorner(Mouse mouse) {

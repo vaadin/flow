@@ -33,9 +33,7 @@ public abstract class MultiBrowserTestWithProxy extends MultiBrowserTest {
     private Integer proxyPort = null;
     private JSch jsch;
     private static String sshDir = System.getProperty("user.home") + "/.ssh/";
-    private String[] publicKeys = new String[] {
-            System.getProperty("sshkey.file"), sshDir + "id_rsa",
-            sshDir + "id_dsa", sshDir + "id_rsa2" };
+    private String[] publicKeys = new String[] { System.getProperty("sshkey.file"), sshDir + "id_rsa", sshDir + "id_dsa", sshDir + "id_rsa2" };
 
     @Override
     public void setup() throws Exception {
@@ -86,8 +84,7 @@ public abstract class MultiBrowserTestWithProxy extends MultiBrowserTest {
                 } catch (InterruptedException e1) {
                 }
                 if (i == 9) {
-                    throw new RuntimeException(
-                            "All 10 attempts to connect a proxy failed", e);
+                    throw new RuntimeException("All 10 attempts to connect a proxy failed", e);
                 }
             }
         }
@@ -110,8 +107,7 @@ public abstract class MultiBrowserTestWithProxy extends MultiBrowserTest {
         }
         proxySession = jsch.getSession("localhost");
         proxySession.setConfig("StrictHostKeyChecking", "no");
-        proxySession.setPortForwardingL("0.0.0.0", proxyPort,
-                super.getDeploymentHostname(), super.getDeploymentPort());
+        proxySession.setPortForwardingL("0.0.0.0", proxyPort, super.getDeploymentHostname(), super.getDeploymentPort());
         proxySession.connect();
     }
 

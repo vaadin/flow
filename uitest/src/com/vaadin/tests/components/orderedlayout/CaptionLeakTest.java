@@ -70,13 +70,10 @@ public class CaptionLeakTest extends MultiBrowserTest {
     }
 
     private void clearLog() {
-        getDriver().findElement(By.xpath("//button[@title = 'Clear log']"))
-                .click();
+        getDriver().findElement(By.xpath("//button[@title = 'Clear log']")).click();
     }
 
     private void checkConnectorCount() {
-        getDriver()
-                .findElement(
-                        By.xpath("//span[text() = 'Measured 3 non connector elements']"));
+        getDriver().findElement(By.xpath("//span[text() = 'Measured 3 non connector elements']"));
     }
 }

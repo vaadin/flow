@@ -29,8 +29,7 @@ public class TwinColSelects extends AbstractSelectTestCase<TwinColSelect> {
         options.put("100", 100);
         options.put("1000", 1000);
 
-        super.createSelectAction("Columns", CATEGORY_DATA_SOURCE, options, "-",
-                columnsAction);
+        super.createSelectAction("Columns", CATEGORY_DATA_SOURCE, options, "-", columnsAction);
 
     }
 
@@ -44,8 +43,7 @@ public class TwinColSelects extends AbstractSelectTestCase<TwinColSelect> {
         options.put("100", 100);
         options.put("1000", 1000);
 
-        super.createSelectAction("Rows", CATEGORY_DATA_SOURCE, options, "-",
-                rowsAction);
+        super.createSelectAction("Rows", CATEGORY_DATA_SOURCE, options, "-", rowsAction);
 
     }
 

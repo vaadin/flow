@@ -10,8 +10,7 @@ import com.vaadin.ui.Layout.AlignmentHandler;
 import com.vaadin.ui.Layout.MarginHandler;
 import com.vaadin.ui.Layout.SpacingHandler;
 
-public abstract class AbstractLayoutTest<T extends AbstractLayout> extends
-        AbstractComponentContainerTest<T> {
+public abstract class AbstractLayoutTest<T extends AbstractLayout> extends AbstractComponentContainerTest<T> {
 
     protected static final String CATEGORY_LAYOUT_FEATURES = "Layout features";
     private Command<T, MarginInfo> marginCommand = new Command<T, MarginInfo>() {
@@ -35,8 +34,7 @@ public abstract class AbstractLayoutTest<T extends AbstractLayout> extends
         @Override
         public void execute(T c, Integer value, Object alignment) {
             Component child = getComponentAtIndex(c, value);
-            ((AlignmentHandler) c).setComponentAlignment(child,
-                    (Alignment) alignment);
+            ((AlignmentHandler) c).setComponentAlignment(child, (Alignment) alignment);
         }
     };
 
@@ -95,9 +93,7 @@ public abstract class AbstractLayoutTest<T extends AbstractLayout> extends
             createCategory(componentAlignmentCategory, alignmentCategory);
 
             for (String option : options.keySet()) {
-                createClickAction(option, componentAlignmentCategory,
-                        setComponentAlignment, Integer.valueOf(i),
-                        options.get(option));
+                createClickAction(option, componentAlignmentCategory, setComponentAlignment, Integer.valueOf(i), options.get(option));
             }
 
         }

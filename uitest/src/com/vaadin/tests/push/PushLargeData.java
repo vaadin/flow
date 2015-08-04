@@ -43,13 +43,11 @@ public abstract class PushLargeData extends AbstractTestUIWithLog {
     // 3 MB is enough for streaming to reconnect
     static final int DEFAULT_DATA_TO_PUSH = 3 * 1000 * 1000;
 
-    static final int DEFAULT_DURATION_MS = DEFAULT_DATA_TO_PUSH
-            / DEFAULT_SIZE_BYTES * DEFAULT_DELAY_MS;
+    static final int DEFAULT_DURATION_MS = DEFAULT_DATA_TO_PUSH / DEFAULT_SIZE_BYTES * DEFAULT_DELAY_MS;
 
     private Label dataLabel = new Label();
 
-    private final ExecutorService executor = Executors
-            .newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     protected TextField dataSize;
 
@@ -84,11 +82,9 @@ public abstract class PushLargeData extends AbstractTestUIWithLog {
                 Integer pushSize = (Integer) dataSize.getConvertedValue();
                 Integer pushInterval = (Integer) interval.getConvertedValue();
                 Integer pushDuration = (Integer) duration.getConvertedValue();
-                PushRunnable r = new PushRunnable(pushSize, pushInterval,
-                        pushDuration);
+                PushRunnable r = new PushRunnable(pushSize, pushInterval, pushDuration);
                 executor.execute(r);
-                log.log("Starting push, size: " + pushSize + ", interval: "
-                        + pushInterval + "ms, duration: " + pushDuration + "ms");
+                log.log("Starting push, size: " + pushSize + ", interval: " + pushInterval + "ms, duration: " + pushDuration + "ms");
             }
         });
         addComponent(b);
@@ -134,8 +130,7 @@ public abstract class PushLargeData extends AbstractTestUIWithLog {
                         PushLargeData ui = (PushLargeData) UI.getCurrent();
                         // Using description as it is not rendered to the DOM
                         // immediately
-                        ui.getDataLabel().setDescription(
-                                System.currentTimeMillis() + ": " + data);
+                        ui.getDataLabel().setDescription(System.currentTimeMillis() + ": " + data);
                         ui.log("Package " + idx + " pushed");
                     }
                 });

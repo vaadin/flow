@@ -19,14 +19,12 @@ public class OptionGroups extends AbstractSelectTestCase<OptionGroup> {
         super.createActions();
 
         createDisabledItemsMultiToggle("Disabled items");
-        createBooleanAction("HTML content allowed", CATEGORY_STATE, false,
-                new Command<OptionGroup, Boolean>() {
-                    @Override
-                    public void execute(OptionGroup og, Boolean value,
-                            Object data) {
-                        og.setHtmlContentAllowed(value.booleanValue());
-                    }
-                });
+        createBooleanAction("HTML content allowed", CATEGORY_STATE, false, new Command<OptionGroup, Boolean>() {
+            @Override
+            public void execute(OptionGroup og, Boolean value, Object data) {
+                og.setHtmlContentAllowed(value.booleanValue());
+            }
+        });
         createIconToggle("Item icons");
     }
 
@@ -37,24 +35,20 @@ public class OptionGroups extends AbstractSelectTestCase<OptionGroup> {
         options.put("32x32", ICON_32_ATTENTION_PNG_CACHEABLE);
         options.put("64x64", ICON_64_EMAIL_REPLY_PNG_CACHEABLE);
 
-        createSelectAction(string, CATEGORY_DECORATIONS, options, options
-                .keySet().iterator().next(),
-                new Command<OptionGroup, ThemeResource>() {
-                    @Override
-                    public void execute(OptionGroup c, ThemeResource icon,
-                            Object data) {
-                        Collection<?> itemIds = c.getItemIds();
-                        for (Object itemId : itemIds) {
-                            c.setItemIcon(itemId, icon);
-                        }
-                    }
-                });
+        createSelectAction(string, CATEGORY_DECORATIONS, options, options.keySet().iterator().next(), new Command<OptionGroup, ThemeResource>() {
+            @Override
+            public void execute(OptionGroup c, ThemeResource icon, Object data) {
+                Collection<?> itemIds = c.getItemIds();
+                for (Object itemId : itemIds) {
+                    c.setItemIcon(itemId, icon);
+                }
+            }
+        });
     }
 
     private void createDisabledItemsMultiToggle(String category) {
         for (Object id : getComponent().getItemIds()) {
-            createBooleanAction(id.toString() + " - enabled", category, true,
-                    enabledItemCommand, id);
+            createBooleanAction(id.toString() + " - enabled", category, true, enabledItemCommand, id);
         }
     }
 

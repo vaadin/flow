@@ -90,8 +90,7 @@ public class Forms extends VerticalLayout implements View {
         form.addComponent(section);
 
         TextField email = new TextField("Email");
-        email.setValue(sg.nextString(false) + "@" + sg.nextString(false)
-                + ".com");
+        email.setValue(sg.nextString(false) + "@" + sg.nextString(false) + ".com");
         email.setWidth("50%");
         email.setRequired(true);
         form.addComponent(email);

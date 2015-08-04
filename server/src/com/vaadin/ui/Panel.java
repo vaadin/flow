@@ -37,8 +37,7 @@ import com.vaadin.ui.declarative.DesignContext;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class Panel extends AbstractSingleComponentContainer implements
-        Scrollable, Focusable {
+public class Panel extends AbstractSingleComponentContainer implements Scrollable, Focusable {
 
     private PanelServerRpc rpc = new PanelServerRpc() {
         @Override
@@ -134,8 +133,7 @@ public class Panel extends AbstractSingleComponentContainer implements
     @Override
     public void setScrollLeft(int scrollLeft) {
         if (scrollLeft < 0) {
-            throw new IllegalArgumentException(
-                    "Scroll offset must be at least 0");
+            throw new IllegalArgumentException("Scroll offset must be at least 0");
         }
         getState().scrollLeft = scrollLeft;
     }
@@ -148,8 +146,7 @@ public class Panel extends AbstractSingleComponentContainer implements
     @Override
     public void setScrollTop(int scrollTop) {
         if (scrollTop < 0) {
-            throw new IllegalArgumentException(
-                    "Scroll offset must be at least 0");
+            throw new IllegalArgumentException("Scroll offset must be at least 0");
         }
         getState().scrollTop = scrollTop;
     }
@@ -166,8 +163,7 @@ public class Panel extends AbstractSingleComponentContainer implements
      *            The listener to add
      */
     public void addClickListener(ClickListener listener) {
-        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener,
-                ClickListener.clickMethod);
+        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener, ClickListener.clickMethod);
     }
 
     /**
@@ -187,8 +183,7 @@ public class Panel extends AbstractSingleComponentContainer implements
      *            The listener to remove
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class,
-                listener);
+        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener);
     }
 
     /**

@@ -35,8 +35,7 @@ import com.vaadin.client.Focusable;
 /**
  * Adds keyboard focus to {@link FlexPanel}.
  */
-public class FocusableFlexTable extends FlexTable implements HasFocusHandlers,
-        HasBlurHandlers, HasKeyDownHandlers, HasKeyPressHandlers, Focusable {
+public class FocusableFlexTable extends FlexTable implements HasFocusHandlers, HasBlurHandlers, HasKeyDownHandlers, HasKeyPressHandlers, Focusable {
 
     /**
      * Default constructor.

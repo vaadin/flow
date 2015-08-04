@@ -94,8 +94,7 @@ public class DefaultItemSorter implements ItemSorter {
 
         for (int i = 0; i < sortPropertyIds.length; i++) {
 
-            int result = compareProperty(sortPropertyIds[i], sortDirections[i],
-                    item1, item2);
+            int result = compareProperty(sortPropertyIds[i], sortDirections[i], item1, item2);
 
             // If order can be decided
             if (result != 0) {
@@ -131,8 +130,7 @@ public class DefaultItemSorter implements ItemSorter {
      *         property value in the second item. Negated if
      *         {@code sortDirection} is false.
      */
-    protected int compareProperty(Object propertyId, boolean sortDirection,
-            Item item1, Item item2) {
+    protected int compareProperty(Object propertyId, boolean sortDirection, Item item1, Item item2) {
 
         // Get the properties to compare
         final Property<?> property1 = item1.getItemProperty(propertyId);
@@ -161,20 +159,17 @@ public class DefaultItemSorter implements ItemSorter {
      * .Sortable, java.lang.Object[], boolean[])
      */
     @Override
-    public void setSortProperties(Container.Sortable container,
-            Object[] propertyId, boolean[] ascending) {
+    public void setSortProperties(Container.Sortable container, Object[] propertyId, boolean[] ascending) {
         this.container = container;
 
         // Removes any non-sortable property ids
         final List<Object> ids = new ArrayList<Object>();
         final List<Boolean> orders = new ArrayList<Boolean>();
-        final Collection<?> sortable = container
-                .getSortableContainerPropertyIds();
+        final Collection<?> sortable = container.getSortableContainerPropertyIds();
         for (int i = 0; i < propertyId.length; i++) {
             if (sortable.contains(propertyId[i])) {
                 ids.add(propertyId[i]);
-                orders.add(Boolean.valueOf(i < ascending.length ? ascending[i]
-                        : true));
+                orders.add(Boolean.valueOf(i < ascending.length ? ascending[i] : true));
             }
         }
 
@@ -192,8 +187,7 @@ public class DefaultItemSorter implements ItemSorter {
      * compares can be cast to Comparable.
      * 
      */
-    public static class DefaultPropertyValueComparator implements
-            Comparator<Object>, Serializable {
+    public static class DefaultPropertyValueComparator implements Comparator<Object>, Serializable {
 
         @Override
         @SuppressWarnings("unchecked")

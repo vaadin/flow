@@ -18,16 +18,7 @@ public class IconsInCaption extends TestBase {
     private static final String TYPE_EMBEDDED = "Embedded";
     private static final String TYPE_CAPTION = "In caption";
 
-    private static final String[] icons = new String[] { "arrow-down.png",
-            "arrow-left.png", "arrow-right.png", "arrow-up.png",
-            "attention.png", "calendar.png", "cancel.png", "document.png",
-            "document-add.png", "document-delete.png", "document-doc.png",
-            "document-image.png", "document-pdf.png", "document-ppt.png",
-            "document-txt.png", "document-web.png", "document-xsl.png",
-            "email.png", "email-reply.png", "email-send.png", "folder.png",
-            "folder-add.png", "folder-delete.png", "globe.png", "help.png",
-            "lock.png", "note.png", "ok.png", "reload.png", "settings.png",
-            "trash.png", "trash-full.png", "user.png", "users.png" };
+    private static final String[] icons = new String[] { "arrow-down.png", "arrow-left.png", "arrow-right.png", "arrow-up.png", "attention.png", "calendar.png", "cancel.png", "document.png", "document-add.png", "document-delete.png", "document-doc.png", "document-image.png", "document-pdf.png", "document-ppt.png", "document-txt.png", "document-web.png", "document-xsl.png", "email.png", "email-reply.png", "email-send.png", "folder.png", "folder-add.png", "folder-delete.png", "globe.png", "help.png", "lock.png", "note.png", "ok.png", "reload.png", "settings.png", "trash.png", "trash-full.png", "user.png", "users.png" };
 
     private static final String[] sizes = new String[] { "16", "32", "64" };
 
@@ -54,8 +45,7 @@ public class IconsInCaption extends TestBase {
         });
 
         containerSelect = new ComboBox("Container");
-        for (Class<? extends ComponentContainer> cc : VaadinClasses
-                .getComponentContainersSupportingUnlimitedNumberOfComponents()) {
+        for (Class<? extends ComponentContainer> cc : VaadinClasses.getComponentContainersSupportingUnlimitedNumberOfComponents()) {
             containerSelect.addItem(cc);
         }
         containerSelect.setImmediate(true);
@@ -78,39 +68,31 @@ public class IconsInCaption extends TestBase {
     }
 
     protected void updateContainer() {
-        Class<? extends ComponentContainer> containerClass = (Class<? extends ComponentContainer>) containerSelect
-                .getValue();
+        Class<? extends ComponentContainer> containerClass = (Class<? extends ComponentContainer>) containerSelect.getValue();
         if (containerClass == null) {
             return;
         }
 
         Object iconType = iconTypeSelect.getValue();
         try {
-            ComponentContainer newContainer = createContainer(containerClass,
-                    iconType);
+            ComponentContainer newContainer = createContainer(containerClass, iconType);
             replaceComponent(container, newContainer);
             container = newContainer;
-            log.log("Container changed to " + containerClass.getName() + "/"
-                    + iconType);
+            log.log("Container changed to " + containerClass.getName() + "/" + iconType);
         } catch (Exception e) {
-            log.log("Create container failed for " + containerClass.getName()
-                    + ": " + e.getMessage());
+            log.log("Create container failed for " + containerClass.getName() + ": " + e.getMessage());
             e.printStackTrace();
         }
 
     }
 
-    private static ComponentContainer createContainer(
-            Class<? extends ComponentContainer> containerClass, Object iconType)
-            throws InstantiationException, IllegalAccessException {
+    private static ComponentContainer createContainer(Class<? extends ComponentContainer> containerClass, Object iconType) throws InstantiationException, IllegalAccessException {
         ComponentContainer container = containerClass.newInstance();
         for (String size : sizes) {
-            Label title = new Label("<h3>" + size + "x" + size + "</h3>",
-                    ContentMode.HTML);
+            Label title = new Label("<h3>" + size + "x" + size + "</h3>", ContentMode.HTML);
             container.addComponent(title);
             for (String icon : icons) {
-                ThemeResource res = new ThemeResource("../runo/icons/" + size
-                        + "/" + icon);
+                ThemeResource res = new ThemeResource("../runo/icons/" + size + "/" + icon);
                 if (TYPE_CAPTION.equals(iconType)) {
                     Label name = new Label();
                     name.setCaption(icon);

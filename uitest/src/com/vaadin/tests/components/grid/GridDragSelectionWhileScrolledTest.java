@@ -42,13 +42,10 @@ public class GridDragSelectionWhileScrolledTest extends MultiBrowserTest {
 
         // Scroll grid to view
         GridElement grid = $(GridElement.class).first();
-        ((JavascriptExecutor) getDriver()).executeScript(
-                "arguments[0].scrollIntoView(true);", grid);
+        ((JavascriptExecutor) getDriver()).executeScript("arguments[0].scrollIntoView(true);", grid);
 
         // Drag select 2 rows
-        new Actions(getDriver()).moveToElement(grid.getCell(3, 0), 5, 5)
-                .clickAndHold().moveToElement(grid.getCell(2, 0), 5, 5)
-                .release().perform();
+        new Actions(getDriver()).moveToElement(grid.getCell(3, 0), 5, 5).clickAndHold().moveToElement(grid.getCell(2, 0), 5, 5).release().perform();
 
         // Assert only those are selected.
         assertTrue("Row 3 should be selected", grid.getRow(3).isSelected());

@@ -27,8 +27,7 @@ public class BasicPushWebsocket extends BasicPush {
     public void init(VaadinRequest request) {
         super.init(request);
         // Don't use fallback so we can easier detect if websocket fails
-        getPushConfiguration().setParameter(
-                PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
+        getPushConfiguration().setParameter(PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
     }
 
 }

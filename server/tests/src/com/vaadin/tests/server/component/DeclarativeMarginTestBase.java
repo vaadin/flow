@@ -22,8 +22,7 @@ import com.vaadin.tests.design.DeclarativeTestBase;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.Layout.MarginHandler;
 
-public abstract class DeclarativeMarginTestBase<L extends Layout & MarginHandler>
-        extends DeclarativeTestBase<L> {
+public abstract class DeclarativeMarginTestBase<L extends Layout & MarginHandler> extends DeclarativeTestBase<L> {
 
     protected void testMargins(String componentTag) {
 
@@ -47,8 +46,7 @@ public abstract class DeclarativeMarginTestBase<L extends Layout & MarginHandler
         }
     }
 
-    private String getMarginTag(String componentTag, boolean top,
-            boolean right, boolean bottom, boolean left) {
+    private String getMarginTag(String componentTag, boolean top, boolean right, boolean bottom, boolean left) {
         String s = "<" + componentTag + " ";
 
         if (left && right && top && bottom) {

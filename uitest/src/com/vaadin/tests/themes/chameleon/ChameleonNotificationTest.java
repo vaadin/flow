@@ -16,10 +16,8 @@ public class ChameleonNotificationTest extends MultiBrowserTest {
         openTestURL();
         $(ButtonElement.class).first().click();
 
-        NotificationElement notificationElement = $(NotificationElement.class)
-                .first();
+        NotificationElement notificationElement = $(NotificationElement.class).first();
 
-        assertThat(notificationElement.getCssValue("background-image"),
-                containsString("chameleon/img/grad"));
+        assertThat(notificationElement.getCssValue("background-image"), containsString("chameleon/img/grad"));
     }
 }

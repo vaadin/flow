@@ -119,14 +119,13 @@ public class WindowMaximizeRestoreTest extends AbstractTestUI {
             }
         });
         ((ComponentContainer) w.getContent()).addComponent(closeable);
-        NativeButton contentFull = new NativeButton("Set Content Size Full",
-                new Button.ClickListener() {
+        NativeButton contentFull = new NativeButton("Set Content Size Full", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        w.getContent().setSizeFull();
-                    }
-                });
+            @Override
+            public void buttonClick(ClickEvent event) {
+                w.getContent().setSizeFull();
+            }
+        });
         contentFull.setWidth("100%");
         ((ComponentContainer) w.getContent()).addComponent(contentFull);
 
@@ -145,8 +144,7 @@ public class WindowMaximizeRestoreTest extends AbstractTestUI {
             @Override
             public void windowClose(CloseEvent e) {
                 Item item = addWindowAgain.addItem(w);
-                addWindowAgain.setItemCaption(w, "Window "
-                        + w.getData().toString());
+                addWindowAgain.setItemCaption(w, "Window " + w.getData().toString());
             }
         });
 

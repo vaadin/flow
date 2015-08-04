@@ -36,15 +36,14 @@ public class ComboBoxInputPrompt extends AbstractTestUI {
         cb3.setReadOnly(true);
         cb3.setInputPrompt("Read-only input prompt");
 
-        Button enableButton = new Button("Toggle enabled",
-                new Button.ClickListener() {
+        Button enableButton = new Button("Toggle enabled", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        cb2.setEnabled(!cb2.isEnabled());
-                        cb3.setReadOnly(!cb3.isReadOnly());
-                    }
-                });
+            @Override
+            public void buttonClick(ClickEvent event) {
+                cb2.setEnabled(!cb2.isEnabled());
+                cb3.setReadOnly(!cb3.isReadOnly());
+            }
+        });
 
         addComponents(cb1, cb2, cb3, enableButton);
     }

@@ -40,9 +40,7 @@ public class BrowserPopupExtensionTest extends AbstractTestUI {
     public static class ShowParamsUI extends UI {
         @Override
         protected void init(VaadinRequest request) {
-            setContent(new Label("Query: "
-                    + getPage().getLocation().getRawQuery() + ", Fragment: "
-                    + getPage().getLocation().getFragment()));
+            setContent(new Label("Query: " + getPage().getLocation().getRawQuery() + ", Fragment: " + getPage().getLocation().getFragment()));
         }
     }
 
@@ -61,30 +59,25 @@ public class BrowserPopupExtensionTest extends AbstractTestUI {
         addComponent(uiClassButton);
 
         Button uiWithPath = new Button("Open UI class with path");
-        new BrowserWindowOpener(ReopenPopupView.class, "foobar")
-                .extend(uiWithPath);
+        new BrowserWindowOpener(ReopenPopupView.class, "foobar").extend(uiWithPath);
         addComponent(uiWithPath);
 
-        Button withPopupFeaturesButton = new Button(
-                "Open with features and fragment");
-        BrowserWindowOpener featuresPopup = new BrowserWindowOpener(
-                "/statictestfiles/static.html#originalfragment");
+        Button withPopupFeaturesButton = new Button("Open with features and fragment");
+        BrowserWindowOpener featuresPopup = new BrowserWindowOpener("/statictestfiles/static.html#originalfragment");
         featuresPopup.setFeatures("width=400,height=400");
         featuresPopup.extend(withPopupFeaturesButton);
         featuresPopup.setUriFragment("myFragment");
         addComponent(withPopupFeaturesButton);
 
         Button withParametersButton = new Button("Open UI with parameters");
-        BrowserWindowOpener parametersOpener = new BrowserWindowOpener(
-                ShowParamsUI.class);
+        BrowserWindowOpener parametersOpener = new BrowserWindowOpener(ShowParamsUI.class);
         parametersOpener.setUriFragment("myfragment");
         parametersOpener.setParameter("my&param", "my=param#value");
         parametersOpener.extend(withParametersButton);
         addComponent(withParametersButton);
     }
 
-    public void addComponents(List<Class<? extends Component>> components,
-            String URL) {
+    public void addComponents(List<Class<? extends Component>> components, String URL) {
         final HorizontalLayout hl = new HorizontalLayout();
         for (Class<? extends Component> cls : components) {
             try {
@@ -115,8 +108,7 @@ public class BrowserPopupExtensionTest extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Test for " + BrowserWindowOpener.class.getSimpleName()
-                + " features";
+        return "Test for " + BrowserWindowOpener.class.getSimpleName() + " features";
     }
 
     @Override

@@ -17,7 +17,6 @@ public class StringToFloatConverterTest extends TestCase {
     }
 
     public void testValueConversion() {
-        assertEquals(Float.valueOf(10),
-                converter.convertToModel("10", Float.class, null));
+        assertEquals(Float.valueOf(10), converter.convertToModel("10", Float.class, null));
     }
 }

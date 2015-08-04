@@ -13,8 +13,7 @@ import com.vaadin.ui.InlineDateField;
 @SuppressWarnings("serial")
 public class InlineDateFields extends ComponentTestCase<InlineDateField> {
 
-    private static final Locale[] LOCALES = new Locale[] { Locale.US,
-            Locale.TAIWAN, new Locale("fi", "FI") };
+    private static final Locale[] LOCALES = new Locale[] { Locale.US, Locale.TAIWAN, new Locale("fi", "FI") };
 
     @Override
     protected Class<InlineDateField> getTestClass() {
@@ -30,8 +29,7 @@ public class InlineDateFields extends ComponentTestCase<InlineDateField> {
 
         Locale locale = LOCALES[0];
 
-        InlineDateField pd = createInlineDateField("Undefined width", "-1",
-                locale);
+        InlineDateField pd = createInlineDateField("Undefined width", "-1", locale);
         pd.setId("Locale-" + locale.toString() + "-undefined-wide");
         addTestComponent(pd);
         pd = createInlineDateField("300px width", "300px", locale);
@@ -44,10 +42,8 @@ public class InlineDateFields extends ComponentTestCase<InlineDateField> {
 
     }
 
-    private InlineDateField createInlineDateField(String caption, String width,
-            Locale locale) {
-        InlineDateField pd = new InlineDateField(caption + "("
-                + locale.toString() + ")");
+    private InlineDateField createInlineDateField(String caption, String width, Locale locale) {
+        InlineDateField pd = new InlineDateField(caption + "(" + locale.toString() + ")");
         pd.setWidth(width);
         pd.setValue(new Date(12312312313L));
         pd.setLocale(locale);
@@ -77,16 +73,14 @@ public class InlineDateFields extends ComponentTestCase<InlineDateField> {
         options.put("Hour", Resolution.HOUR);
         options.put("Min", Resolution.MINUTE);
         options.put("Sec", Resolution.SECOND);
-        return createSelectAction("Resolution", options, "Year",
-                new Command<InlineDateField, Resolution>() {
+        return createSelectAction("Resolution", options, "Year", new Command<InlineDateField, Resolution>() {
 
-                    @Override
-                    public void execute(InlineDateField c, Resolution value,
-                            Object data) {
-                        c.setResolution(value);
+            @Override
+            public void execute(InlineDateField c, Resolution value, Object data) {
+                c.setResolution(value);
 
-                    }
-                });
+            }
+        });
     }
 
     private Component createLocaleSelectAction() {
@@ -94,18 +88,15 @@ public class InlineDateFields extends ComponentTestCase<InlineDateField> {
         for (Locale locale : LOCALES) {
             options.put(locale.toString(), locale);
         }
-        return createSelectAction("Locale", options, LOCALES[0].toString(),
-                new Command<InlineDateField, Locale>() {
+        return createSelectAction("Locale", options, LOCALES[0].toString(), new Command<InlineDateField, Locale>() {
 
-                    @Override
-                    public void execute(InlineDateField c, Locale value,
-                            Object data) {
-                        c.setCaption(c.getCaption().replaceAll(
-                                c.getLocale().toString(), value.toString()));
-                        c.setLocale(value);
+            @Override
+            public void execute(InlineDateField c, Locale value, Object data) {
+                c.setCaption(c.getCaption().replaceAll(c.getLocale().toString(), value.toString()));
+                c.setLocale(value);
 
-                    }
-                });
+            }
+        });
     }
 
 }

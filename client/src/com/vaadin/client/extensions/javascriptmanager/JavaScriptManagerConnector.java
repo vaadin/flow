@@ -124,9 +124,7 @@ public class JavaScriptManagerConnector extends AbstractExtensionConnector {
          * because of the JSONArray parameter
          */
         ServerRpcQueue rpcQueue = ServerRpcQueue.get(getConnection());
-        rpcQueue.add(new JavaScriptMethodInvocation(getConnectorId(),
-                "com.vaadin.ui.JavaScript$JavaScriptCallbackRpc", "call",
-                parameters), false);
+        rpcQueue.add(new JavaScriptMethodInvocation(getConnectorId(), "com.vaadin.ui.JavaScript$JavaScriptCallbackRpc", "call", parameters), false);
         rpcQueue.flush();
     }
 

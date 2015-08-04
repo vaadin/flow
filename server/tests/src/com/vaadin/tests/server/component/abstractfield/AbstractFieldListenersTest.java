@@ -9,13 +9,10 @@ import com.vaadin.ui.CheckBox;
 
 public class AbstractFieldListenersTest extends AbstractListenerMethodsTestBase {
     public void testReadOnlyStatusChangeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(CheckBox.class,
-                ReadOnlyStatusChangeEvent.class,
-                ReadOnlyStatusChangeListener.class);
+        testListenerAddGetRemove(CheckBox.class, ReadOnlyStatusChangeEvent.class, ReadOnlyStatusChangeListener.class);
     }
 
     public void testValueChangeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(CheckBox.class, ValueChangeEvent.class,
-                ValueChangeListener.class);
+        testListenerAddGetRemove(CheckBox.class, ValueChangeEvent.class, ValueChangeListener.class);
     }
 }

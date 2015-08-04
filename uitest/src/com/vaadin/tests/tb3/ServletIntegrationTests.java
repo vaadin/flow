@@ -63,26 +63,19 @@ public class ServletIntegrationTests {
     }
 
     public static class ServletIntegrationTestSuite extends TB3TestSuite {
-        public ServletIntegrationTestSuite(Class<?> klass)
-                throws InitializationError, IOException {
-            super(klass, AbstractServletIntegrationTest.class,
-                    "com.vaadin.tests.integration", new String[] {},
-                    new ServletTestLocator());
+        public ServletIntegrationTestSuite(Class<?> klass) throws InitializationError, IOException {
+            super(klass, AbstractServletIntegrationTest.class, "com.vaadin.tests.integration", new String[] {}, new ServletTestLocator());
         }
     }
 
     public static class ServletTestLocator extends TB3TestLocator {
         @Override
-        protected <T> List<Class<? extends T>> findClasses(Class<T> baseClass,
-                String basePackage, String[] ignoredPackages)
-                throws IOException {
-            List<Class<? extends T>> allClasses = super.findClasses(baseClass,
-                    basePackage, ignoredPackages);
+        protected <T> List<Class<? extends T>> findClasses(Class<T> baseClass, String basePackage, String[] ignoredPackages) throws IOException {
+            List<Class<? extends T>> allClasses = super.findClasses(baseClass, basePackage, ignoredPackages);
             String serverName = System.getProperty("server-name");
 
             if (notJSR356Compatible.contains(serverName)) {
-                allClasses
-                        .remove(ServletIntegrationJSR356WebsocketUITest.class);
+                allClasses.remove(ServletIntegrationJSR356WebsocketUITest.class);
             }
 
             if (notWebsocketCompatible.contains(serverName)) {

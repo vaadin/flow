@@ -15,8 +15,7 @@ import com.vaadin.data.util.AbstractBeanContainer.BeanIdResolver;
 
 public class BeanContainerTest extends AbstractBeanContainerTestBase {
 
-    protected static class PersonNameResolver implements
-            BeanIdResolver<String, Person> {
+    protected static class PersonNameResolver implements BeanIdResolver<String, Person> {
 
         @Override
         public String getIdForBean(Person bean) {
@@ -25,8 +24,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
 
     }
 
-    protected static class NullResolver implements
-            BeanIdResolver<String, Person> {
+    protected static class NullResolver implements BeanIdResolver<String, Person> {
 
         @Override
         public String getIdForBean(Person bean) {
@@ -70,15 +68,12 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
 
     public void testGetType_existingProperty_typeReturned() {
         BeanContainer<String, ClassName> container = getContainer();
-        Assert.assertEquals(
-                "Unexpected type is returned for property 'simpleName'",
-                String.class, container.getType("simpleName"));
+        Assert.assertEquals("Unexpected type is returned for property 'simpleName'", String.class, container.getType("simpleName"));
     }
 
     public void testGetType_notExistingProperty_nullReturned() {
         BeanContainer<String, ClassName> container = getContainer();
-        Assert.assertNull("Not null type is returned for property ''",
-                container.getType(""));
+        Assert.assertNull("Not null type is returned for property ''", container.getType(""));
     }
 
     public void testBasicOperations() {
@@ -100,8 +95,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     // duplicated from parent class and modified - adding items to
     // BeanContainer differs from other containers
     public void testContainerOrdered() {
-        BeanContainer<String, String> container = new BeanContainer<String, String>(
-                String.class);
+        BeanContainer<String, String> container = new BeanContainer<String, String>(String.class);
 
         String id = "test1";
 
@@ -144,8 +138,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
 
         // addItemAfter(IDTYPE, IDTYPE, BT)
         String newSecondItemId = "newSecond";
-        item = container.addItemAfter(newFirstId, newSecondItemId,
-                "newSecondValue");
+        item = container.addItemAfter(newFirstId, newSecondItemId, "newSecondValue");
         // order is now: newFirstId, newSecondItemId, id
         assertNotNull(item);
         assertNotNull(container.getItem(newSecondItemId));
@@ -154,8 +147,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
 
         // addItemAfter(IDTYPE, IDTYPE, BT)
         String fourthId = "id of the fourth item";
-        Item fourth = container.addItemAfter(newFirstId, fourthId,
-                "fourthValue");
+        Item fourth = container.addItemAfter(newFirstId, fourthId, "fourthValue");
         // order is now: newFirstId, fourthId, newSecondItemId, id
         assertNotNull(fourth);
         assertEquals(fourth, container.getItem(fourthId));
@@ -176,8 +168,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     // TODO test Container.Indexed interface operation - testContainerIndexed()?
 
     public void testAddItemAt() {
-        BeanContainer<String, String> container = new BeanContainer<String, String>(
-                String.class);
+        BeanContainer<String, String> container = new BeanContainer<String, String>(String.class);
 
         container.addItem("id1", "value1");
         // id1
@@ -199,8 +190,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     }
 
     public void testUnsupportedMethods() {
-        BeanContainer<String, Person> container = new BeanContainer<String, Person>(
-                Person.class);
+        BeanContainer<String, Person> container = new BeanContainer<String, Person>(Person.class);
         container.addItem("John", new Person("John"));
 
         try {
@@ -256,13 +246,11 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     }
 
     public void testRemoveContainerProperty() {
-        BeanContainer<String, Person> container = new BeanContainer<String, Person>(
-                Person.class);
+        BeanContainer<String, Person> container = new BeanContainer<String, Person>(Person.class);
         container.setBeanIdResolver(new PersonNameResolver());
         container.addBean(new Person("John"));
 
-        Assert.assertEquals("John",
-                container.getContainerProperty("John", "name").getValue());
+        Assert.assertEquals("John", container.getContainerProperty("John", "name").getValue());
         Assert.assertTrue(container.removeContainerProperty("name"));
         Assert.assertNull(container.getContainerProperty("John", "name"));
 
@@ -272,8 +260,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     }
 
     public void testAddNullBeans() {
-        BeanContainer<String, Person> container = new BeanContainer<String, Person>(
-                Person.class);
+        BeanContainer<String, Person> container = new BeanContainer<String, Person>(Person.class);
 
         assertNull(container.addItem("id1", null));
         assertNull(container.addItemAfter(null, "id2", null));
@@ -283,8 +270,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     }
 
     public void testAddNullId() {
-        BeanContainer<String, Person> container = new BeanContainer<String, Person>(
-                Person.class);
+        BeanContainer<String, Person> container = new BeanContainer<String, Person>(Person.class);
 
         Person john = new Person("John");
 
@@ -296,8 +282,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     }
 
     public void testEmptyContainer() {
-        BeanContainer<String, Person> container = new BeanContainer<String, Person>(
-                Person.class);
+        BeanContainer<String, Person> container = new BeanContainer<String, Person>(Person.class);
 
         assertNull(container.firstItemId());
         assertNull(container.lastItemId());
@@ -308,8 +293,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     }
 
     public void testAddBeanWithoutResolver() {
-        BeanContainer<String, Person> container = new BeanContainer<String, Person>(
-                Person.class);
+        BeanContainer<String, Person> container = new BeanContainer<String, Person>(Person.class);
 
         try {
             container.addBean(new Person("John"));
@@ -330,8 +314,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
             // should get exception
         }
         try {
-            container
-                    .addAll(Arrays.asList(new Person[] { new Person("Jack") }));
+            container.addAll(Arrays.asList(new Person[] { new Person("Jack") }));
             Assert.fail();
         } catch (IllegalStateException e) {
             // should get exception
@@ -341,17 +324,15 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     }
 
     public void testAddAllWithNullItemId() {
-        BeanContainer<String, Person> container = new BeanContainer<String, Person>(
-                Person.class);
+        BeanContainer<String, Person> container = new BeanContainer<String, Person>(Person.class);
         // resolver that returns null as item id
-        container
-                .setBeanIdResolver(new BeanIdResolver<String, AbstractBeanContainerTestBase.Person>() {
+        container.setBeanIdResolver(new BeanIdResolver<String, AbstractBeanContainerTestBase.Person>() {
 
-                    @Override
-                    public String getIdForBean(Person bean) {
-                        return bean.getName();
-                    }
-                });
+            @Override
+            public String getIdForBean(Person bean) {
+                return bean.getName();
+            }
+        });
 
         List<Person> persons = new ArrayList<Person>();
         persons.add(new Person("John"));
@@ -373,8 +354,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     }
 
     public void testAddBeanWithNullResolver() {
-        BeanContainer<String, Person> container = new BeanContainer<String, Person>(
-                Person.class);
+        BeanContainer<String, Person> container = new BeanContainer<String, Person>(Person.class);
         // resolver that returns null as item id
         container.setBeanIdResolver(new NullResolver());
 
@@ -401,16 +381,14 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     }
 
     public void testAddBeanWithResolver() {
-        BeanContainer<String, Person> container = new BeanContainer<String, Person>(
-                Person.class);
+        BeanContainer<String, Person> container = new BeanContainer<String, Person>(Person.class);
         container.setBeanIdResolver(new PersonNameResolver());
 
         assertNotNull(container.addBean(new Person("John")));
         assertNotNull(container.addBeanAfter(null, new Person("Jane")));
         assertNotNull(container.addBeanAt(0, new Person("Jack")));
 
-        container.addAll(Arrays.asList(new Person[] { new Person("Jill"),
-                new Person("Joe") }));
+        container.addAll(Arrays.asList(new Person[] { new Person("Jill"), new Person("Joe") }));
 
         assertTrue(container.containsId("John"));
         assertTrue(container.containsId("Jane"));
@@ -423,8 +401,7 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     }
 
     public void testAddNullBeansWithResolver() {
-        BeanContainer<String, Person> container = new BeanContainer<String, Person>(
-                Person.class);
+        BeanContainer<String, Person> container = new BeanContainer<String, Person>(Person.class);
         container.setBeanIdResolver(new PersonNameResolver());
 
         assertNull(container.addBean(null));
@@ -435,16 +412,14 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     }
 
     public void testAddBeanWithPropertyResolver() {
-        BeanContainer<String, Person> container = new BeanContainer<String, Person>(
-                Person.class);
+        BeanContainer<String, Person> container = new BeanContainer<String, Person>(Person.class);
         container.setBeanIdProperty("name");
 
         assertNotNull(container.addBean(new Person("John")));
         assertNotNull(container.addBeanAfter(null, new Person("Jane")));
         assertNotNull(container.addBeanAt(0, new Person("Jack")));
 
-        container.addAll(Arrays.asList(new Person[] { new Person("Jill"),
-                new Person("Joe") }));
+        container.addAll(Arrays.asList(new Person[] { new Person("Jill"), new Person("Joe") }));
 
         assertTrue(container.containsId("John"));
         assertTrue(container.containsId("Jane"));
@@ -457,32 +432,25 @@ public class BeanContainerTest extends AbstractBeanContainerTestBase {
     }
 
     public void testAddNestedContainerProperty() {
-        BeanContainer<String, NestedMethodPropertyTest.Person> container = new BeanContainer<String, NestedMethodPropertyTest.Person>(
-                NestedMethodPropertyTest.Person.class);
+        BeanContainer<String, NestedMethodPropertyTest.Person> container = new BeanContainer<String, NestedMethodPropertyTest.Person>(NestedMethodPropertyTest.Person.class);
         container.setBeanIdProperty("name");
 
-        container.addBean(new NestedMethodPropertyTest.Person("John",
-                new NestedMethodPropertyTest.Address("Ruukinkatu 2-4", 20540)));
+        container.addBean(new NestedMethodPropertyTest.Person("John", new NestedMethodPropertyTest.Address("Ruukinkatu 2-4", 20540)));
 
         assertTrue(container.addNestedContainerProperty("address.street"));
-        assertEquals("Ruukinkatu 2-4",
-                container.getContainerProperty("John", "address.street")
-                        .getValue());
+        assertEquals("Ruukinkatu 2-4", container.getContainerProperty("John", "address.street").getValue());
     }
 
     public void testNestedContainerPropertyWithNullBean() {
-        BeanContainer<String, NestedMethodPropertyTest.Person> container = new BeanContainer<String, NestedMethodPropertyTest.Person>(
-                NestedMethodPropertyTest.Person.class);
+        BeanContainer<String, NestedMethodPropertyTest.Person> container = new BeanContainer<String, NestedMethodPropertyTest.Person>(NestedMethodPropertyTest.Person.class);
         container.setBeanIdProperty("name");
 
         container.addBean(new NestedMethodPropertyTest.Person("John", null));
-        assertTrue(container
-                .addNestedContainerProperty("address.postalCodeObject"));
+        assertTrue(container.addNestedContainerProperty("address.postalCodeObject"));
         assertTrue(container.addNestedContainerProperty("address.street"));
         // the nested properties added with allowNullBean setting should return
         // null
-        assertNull(container.getContainerProperty("John", "address.street")
-                .getValue());
+        assertNull(container.getContainerProperty("John", "address.street").getValue());
     }
 
 }

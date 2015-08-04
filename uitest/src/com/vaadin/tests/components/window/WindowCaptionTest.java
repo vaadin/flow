@@ -41,11 +41,8 @@ public class WindowCaptionTest extends SingleBrowserTest {
 
     @Test
     public void htmlCaption() {
-        Assert.assertEquals("HtmlWindow's caption didn't match,",
-                "This may or may not be red", htmlWindow.getCaption());
-        Assert.assertEquals("TextWindow's caption didn't match,",
-                "<font style='color: red;'>This may or may not be red</font>",
-                textWindow.getCaption());
+        Assert.assertEquals("HtmlWindow's caption didn't match,", "This may or may not be red", htmlWindow.getCaption());
+        Assert.assertEquals("TextWindow's caption didn't match,", "<font style='color: red;'>This may or may not be red</font>", textWindow.getCaption());
     }
 
     @Test
@@ -80,13 +77,11 @@ public class WindowCaptionTest extends SingleBrowserTest {
             @Override
             public String toString() {
                 // Timed out after 10 seconds waiting for ...
-                return "htmlWindow's caption to be '" + expectedCaption
-                        + "' (was: '" + htmlWindow.getCaption() + "')";
+                return "htmlWindow's caption to be '" + expectedCaption + "' (was: '" + htmlWindow.getCaption() + "')";
             }
 
         });
 
-        Assert.assertEquals("TextWindow's caption didn't match,",
-                expectedCaption, textWindow.getCaption());
+        Assert.assertEquals("TextWindow's caption didn't match,", expectedCaption, textWindow.getCaption());
     }
 }

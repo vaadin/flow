@@ -55,8 +55,7 @@ import java.io.Serializable;
  * </p>
  */
 
-public class CustomizedSystemMessages extends SystemMessages implements
-        Serializable {
+public class CustomizedSystemMessages extends SystemMessages implements Serializable {
 
     /**
      * Sets the URL to go to when the session has expired.
@@ -76,8 +75,7 @@ public class CustomizedSystemMessages extends SystemMessages implements
      * @param sessionExpiredNotificationEnabled
      *            true = enabled, false = disabled
      */
-    public void setSessionExpiredNotificationEnabled(
-            boolean sessionExpiredNotificationEnabled) {
+    public void setSessionExpiredNotificationEnabled(boolean sessionExpiredNotificationEnabled) {
         this.sessionExpiredNotificationEnabled = sessionExpiredNotificationEnabled;
     }
 
@@ -124,8 +122,7 @@ public class CustomizedSystemMessages extends SystemMessages implements
      * @param authenticationErrorNotificationEnabled
      *            true = enabled, false = disabled
      */
-    public void setAuthenticationErrorNotificationEnabled(
-            boolean authenticationErrorNotificationEnabled) {
+    public void setAuthenticationErrorNotificationEnabled(boolean authenticationErrorNotificationEnabled) {
         this.authenticationErrorNotificationEnabled = authenticationErrorNotificationEnabled;
     }
 
@@ -168,8 +165,7 @@ public class CustomizedSystemMessages extends SystemMessages implements
      * @param communicationErrorNotificationEnabled
      *            true = enabled, false = disabled
      */
-    public void setCommunicationErrorNotificationEnabled(
-            boolean communicationErrorNotificationEnabled) {
+    public void setCommunicationErrorNotificationEnabled(boolean communicationErrorNotificationEnabled) {
         this.communicationErrorNotificationEnabled = communicationErrorNotificationEnabled;
     }
 
@@ -212,8 +208,7 @@ public class CustomizedSystemMessages extends SystemMessages implements
      * @param internalErrorNotificationEnabled
      *            true = enabled, false = disabled
      */
-    public void setInternalErrorNotificationEnabled(
-            boolean internalErrorNotificationEnabled) {
+    public void setInternalErrorNotificationEnabled(boolean internalErrorNotificationEnabled) {
         this.internalErrorNotificationEnabled = internalErrorNotificationEnabled;
     }
 
@@ -257,8 +252,7 @@ public class CustomizedSystemMessages extends SystemMessages implements
      * @param cookiesDisabledNotificationEnabled
      *            true to enable "cookies disabled" messages, false otherwise
      */
-    public void setCookiesDisabledNotificationEnabled(
-            boolean cookiesDisabledNotificationEnabled) {
+    public void setCookiesDisabledNotificationEnabled(boolean cookiesDisabledNotificationEnabled) {
         this.cookiesDisabledNotificationEnabled = cookiesDisabledNotificationEnabled;
     }
 

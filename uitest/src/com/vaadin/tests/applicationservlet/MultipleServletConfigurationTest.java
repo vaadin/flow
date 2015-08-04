@@ -23,7 +23,6 @@ public class MultipleServletConfigurationTest extends MultiBrowserTest {
     }
 
     private void assertLabelText(String expected) {
-        Assert.assertEquals("Unexpected label text,", expected,
-                $(LabelElement.class).first().getText());
+        Assert.assertEquals("Unexpected label text,", expected, $(LabelElement.class).first().getText());
     }
 }

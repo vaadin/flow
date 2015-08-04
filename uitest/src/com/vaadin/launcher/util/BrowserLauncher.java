@@ -39,8 +39,7 @@ public class BrowserLauncher {
         final Runtime runtime = Runtime.getRuntime();
         boolean started = false;
 
-        final String os = System.getProperty("os.name", "windows")
-                .toLowerCase();
+        final String os = System.getProperty("os.name", "windows").toLowerCase();
 
         // Linux
         if (os.indexOf("linux") >= 0) {
@@ -49,10 +48,8 @@ public class BrowserLauncher {
             try {
                 // Find out the location of the x-www-browser link from path.
                 Process process = runtime.exec("which x-www-browser");
-                BufferedInputStream ins = new BufferedInputStream(
-                        process.getInputStream());
-                BufferedReader bufreader = new BufferedReader(
-                        new InputStreamReader(ins));
+                BufferedInputStream ins = new BufferedInputStream(process.getInputStream());
+                BufferedReader bufreader = new BufferedReader(new InputStreamReader(ins));
                 String defaultLinkPath = bufreader.readLine();
                 ins.close();
 

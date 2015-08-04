@@ -20,7 +20,6 @@ package com.vaadin.client.ui;
  * 
  * @since 7.0
  */
-public abstract class AbstractComponentContainerConnector extends
-        AbstractHasComponentsConnector {
+public abstract class AbstractComponentContainerConnector extends AbstractHasComponentsConnector {
 
 }

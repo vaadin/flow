@@ -34,8 +34,7 @@ import com.vaadin.ui.CheckBox;
  */
 public class ButtonUpdateAltText extends AbstractTestUI {
 
-    private final ThemeResource ICON = new ThemeResource(
-            "../runo/icons/16/folder.png");
+    private final ThemeResource ICON = new ThemeResource("../runo/icons/16/folder.png");
 
     /*
      * (non-Javadoc)

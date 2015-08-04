@@ -6,14 +6,10 @@ import com.vaadin.data.validator.DoubleRangeValidator;
 
 public class DoubleRangeValidatorTest extends TestCase {
 
-    private DoubleRangeValidator cleanValidator = new DoubleRangeValidator(
-            "no values", null, null);
-    private DoubleRangeValidator minValidator = new DoubleRangeValidator(
-            "no values", 10.1, null);
-    private DoubleRangeValidator maxValidator = new DoubleRangeValidator(
-            "no values", null, 100.1);
-    private DoubleRangeValidator minMaxValidator = new DoubleRangeValidator(
-            "no values", 10.5, 100.5);
+    private DoubleRangeValidator cleanValidator = new DoubleRangeValidator("no values", null, null);
+    private DoubleRangeValidator minValidator = new DoubleRangeValidator("no values", 10.1, null);
+    private DoubleRangeValidator maxValidator = new DoubleRangeValidator("no values", null, 100.1);
+    private DoubleRangeValidator minMaxValidator = new DoubleRangeValidator("no values", 10.5, 100.5);
 
     public void testNullValue() {
         assertTrue("Didn't accept null", cleanValidator.isValid(null));
@@ -23,15 +19,13 @@ public class DoubleRangeValidatorTest extends TestCase {
     }
 
     public void testMinValue() {
-        assertTrue("Validator without ranges didn't accept value",
-                cleanValidator.isValid(-15.0));
+        assertTrue("Validator without ranges didn't accept value", cleanValidator.isValid(-15.0));
         assertTrue("Didn't accept valid value", minValidator.isValid(10.1));
         assertFalse("Accepted too small value", minValidator.isValid(10.0));
     }
 
     public void testMaxValue() {
-        assertTrue("Validator without ranges didn't accept value",
-                cleanValidator.isValid(1120.0));
+        assertTrue("Validator without ranges didn't accept value", cleanValidator.isValid(1120.0));
         assertTrue("Didn't accept valid value", maxValidator.isValid(15.0));
         assertFalse("Accepted too large value", maxValidator.isValid(100.6));
     }

@@ -40,16 +40,13 @@ import com.vaadin.tests.tb3.MultiBrowserTest;
 public class TooltipPositionTest extends MultiBrowserTest {
 
     @Test
-    public void testRegression_EmptyTooltipShouldNotBeAppearedDuringInitialization()
-            throws Exception {
+    public void testRegression_EmptyTooltipShouldNotBeAppearedDuringInitialization() throws Exception {
         openTestURL();
 
         waitForElementVisible(By.cssSelector(".v-tooltip"));
         WebElement tooltip = driver.findElement(By.cssSelector(".v-tooltip"));
 
-        Assert.assertTrue(
-                "This init tooltip with text ' ' is present in the DOM and should be entirely outside the browser window",
-                isOutsideOfWindow(tooltip));
+        Assert.assertTrue("This init tooltip with text ' ' is present in the DOM and should be entirely outside the browser window", isOutsideOfWindow(tooltip));
     }
 
     @Test
@@ -61,16 +58,14 @@ public class TooltipPositionTest extends MultiBrowserTest {
             Actions actions = new Actions(driver);
             actions.moveToElement(button, 10, 10);
             actions.build().perform();
-            waitUntil(tooltipToBeInsideWindow(By.cssSelector(".v-tooltip"),
-                    driver.manage().window()));
+            waitUntil(tooltipToBeInsideWindow(By.cssSelector(".v-tooltip"), driver.manage().window()));
 
             if (i < TooltipPosition.NUMBER_OF_BUTTONS - 1) {
                 // Remove the tooltip by moving the mouse.
                 actions = new Actions(driver);
                 actions.moveByOffset(300, 0);
                 actions.build().perform();
-                waitUntil(tooltipNotToBeShown(By.cssSelector(".v-tooltip"),
-                        driver.manage().window()));
+                waitUntil(tooltipNotToBeShown(By.cssSelector(".v-tooltip"), driver.manage().window()));
             }
         }
     }
@@ -80,8 +75,7 @@ public class TooltipPositionTest extends MultiBrowserTest {
      * is present in the DOM and entirely inside the browser window. The
      * coordinate of the top left corner of the window is supposed to be (0, 0).
      */
-    private ExpectedCondition<Boolean> tooltipToBeInsideWindow(
-            final By tooltipLocator, final Window window) {
+    private ExpectedCondition<Boolean> tooltipToBeInsideWindow(final By tooltipLocator, final Window window) {
         return new ExpectedCondition<Boolean>() {
 
             @Override
@@ -105,8 +99,7 @@ public class TooltipPositionTest extends MultiBrowserTest {
                     int xRight = xLeft + elementSize.getWidth() - 1;
                     int yBottom = yTop + elementSize.getHeight() - 1;
                     Dimension browserSize = window.getSize();
-                    return xRight < browserSize.getWidth()
-                            && yBottom < browserSize.getHeight();
+                    return xRight < browserSize.getWidth() && yBottom < browserSize.getHeight();
                 } catch (StaleElementReferenceException e) {
                     return false;
                 }
@@ -124,8 +117,7 @@ public class TooltipPositionTest extends MultiBrowserTest {
      * is not shown in the window, even partially. The top left corner of window
      * should have coordinates (0, 0).
      */
-    private ExpectedCondition<Boolean> tooltipNotToBeShown(
-            final By tooltipLocator, final Window window) {
+    private ExpectedCondition<Boolean> tooltipNotToBeShown(final By tooltipLocator, final Window window) {
         return new ExpectedCondition<Boolean>() {
 
             @Override
@@ -164,10 +156,8 @@ public class TooltipPositionTest extends MultiBrowserTest {
         int yTop = topLeft.getY();
         int xRight = xLeft + tooltipSize.getWidth() - 1;
         int yBottom = yTop + tooltipSize.getHeight() - 1;
-        boolean overlapHorizontally = !(xRight < 0 || xLeft >= windowSize
-                .getWidth());
-        boolean overlapVertically = !(yBottom < 0 || yTop >= windowSize
-                .getHeight());
+        boolean overlapHorizontally = !(xRight < 0 || xLeft >= windowSize.getWidth());
+        boolean overlapVertically = !(yBottom < 0 || yTop >= windowSize.getHeight());
         return !(overlapHorizontally && overlapVertically);
     }
 }

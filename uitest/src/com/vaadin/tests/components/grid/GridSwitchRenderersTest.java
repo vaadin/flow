@@ -37,23 +37,17 @@ public class GridSwitchRenderersTest extends MultiBrowserTest {
 
         GridElement grid = $(GridElement.class).first();
 
-        Assert.assertTrue(
-                "Initial rendering of column 1 is not unformatted text",
-                cellTextIsUnformatted(grid.getCell(0, 1).getText()));
+        Assert.assertTrue("Initial rendering of column 1 is not unformatted text", cellTextIsUnformatted(grid.getCell(0, 1).getText()));
 
         // NOTE: must click at 5,5 because of Valo and rendering in Chrome
         // This is a TestBench bug that may be fixed sometime in the future
         CheckBoxElement cb = $(CheckBoxElement.class).first();
         cb.click(5, 5);
 
-        Assert.assertTrue(
-                "Column 1 data has not been rendered with HTMLRenderer after renderer swap",
-                cellTextIsHTMLFormatted(grid.getCell(0, 1).getText()));
+        Assert.assertTrue("Column 1 data has not been rendered with HTMLRenderer after renderer swap", cellTextIsHTMLFormatted(grid.getCell(0, 1).getText()));
         cb.click(5, 5);
 
-        Assert.assertTrue(
-                "Column 1 data has not been re-rendered as text after renderer swap",
-                cellTextIsUnformatted(grid.getCell(0, 1).getText()));
+        Assert.assertTrue("Column 1 data has not been re-rendered as text after renderer swap", cellTextIsUnformatted(grid.getCell(0, 1).getText()));
     }
 
     /**

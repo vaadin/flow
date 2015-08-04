@@ -150,8 +150,7 @@ public class Embedded extends AbstractComponent {
      * @since 6.8
      */
     public void setAlternateText(String altText) {
-        if (altText != this.altText
-                || (altText != null && !altText.equals(this.altText))) {
+        if (altText != this.altText || (altText != null && !altText.equals(this.altText))) {
             this.altText = altText;
             markAsDirty();
         }
@@ -261,8 +260,7 @@ public class Embedded extends AbstractComponent {
      *            The base path
      */
     public void setCodebase(String codebase) {
-        if (codebase != this.codebase
-                || (codebase != null && !codebase.equals(this.codebase))) {
+        if (codebase != this.codebase || (codebase != null && !codebase.equals(this.codebase))) {
             this.codebase = codebase;
             markAsDirty();
         }
@@ -279,8 +277,7 @@ public class Embedded extends AbstractComponent {
      *            the codetype to set.
      */
     public void setCodetype(String codetype) {
-        if (codetype != this.codetype
-                || (codetype != null && !codetype.equals(this.codetype))) {
+        if (codetype != this.codetype || (codetype != null && !codetype.equals(this.codetype))) {
             this.codetype = codetype;
             markAsDirty();
         }
@@ -293,8 +290,7 @@ public class Embedded extends AbstractComponent {
      *            the mimeType to set.
      */
     public void setMimeType(String mimeType) {
-        if (mimeType != this.mimeType
-                || (mimeType != null && !mimeType.equals(this.mimeType))) {
+        if (mimeType != this.mimeType || (mimeType != null && !mimeType.equals(this.mimeType))) {
             this.mimeType = mimeType;
             if ("application/x-shockwave-flash".equals(mimeType)) {
                 /*
@@ -319,8 +315,7 @@ public class Embedded extends AbstractComponent {
      *            The text to display while loading
      */
     public void setStandby(String standby) {
-        if (standby != this.standby
-                || (standby != null && !standby.equals(this.standby))) {
+        if (standby != this.standby || (standby != null && !standby.equals(this.standby))) {
             this.standby = standby;
             markAsDirty();
         }
@@ -344,8 +339,7 @@ public class Embedded extends AbstractComponent {
      *            the classId to set.
      */
     public void setClassId(String classId) {
-        if (classId != this.classId
-                || (classId != null && !classId.equals(this.classId))) {
+        if (classId != this.classId || (classId != null && !classId.equals(this.classId))) {
             this.classId = classId;
             markAsDirty();
         }
@@ -394,8 +388,7 @@ public class Embedded extends AbstractComponent {
 
             if (mt.equals("image/svg+xml")) {
                 type = TYPE_OBJECT;
-            } else if ((mt.substring(0, mt.indexOf("/"))
-                    .equalsIgnoreCase("image"))) {
+            } else if ((mt.substring(0, mt.indexOf("/")).equalsIgnoreCase("image"))) {
                 type = TYPE_IMAGE;
             } else {
                 // Keep previous type
@@ -456,8 +449,7 @@ public class Embedded extends AbstractComponent {
      *            object
      */
     public void setArchive(String archive) {
-        if (archive != this.archive
-                || (archive != null && !archive.equals(this.archive))) {
+        if (archive != this.archive || (archive != null && !archive.equals(this.archive))) {
             this.archive = archive;
             markAsDirty();
         }
@@ -474,8 +466,7 @@ public class Embedded extends AbstractComponent {
      *            The listener to add
      */
     public void addClickListener(ClickListener listener) {
-        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener,
-                ClickListener.clickMethod);
+        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener, ClickListener.clickMethod);
     }
 
     /**
@@ -495,8 +486,7 @@ public class Embedded extends AbstractComponent {
      *            The listener to remove
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class,
-                listener);
+        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener);
     }
 
     /**

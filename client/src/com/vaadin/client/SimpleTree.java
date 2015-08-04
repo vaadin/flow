@@ -81,8 +81,7 @@ public class SimpleTree extends ComplexPanel implements HasDoubleClickHandlers {
             @Override
             public void onClick(ClickEvent event) {
                 if (event.getNativeEvent().getEventTarget().cast() == handle) {
-                    if (children.getStyle().getDisplay().intern() == Display.NONE
-                            .getCssName()) {
+                    if (children.getStyle().getDisplay().intern() == Display.NONE.getCssName()) {
                         open(event.getNativeEvent().getAltKey());
                     } else {
                         close();
@@ -152,8 +151,7 @@ public class SimpleTree extends ComplexPanel implements HasDoubleClickHandlers {
      */
     @Override
     @Deprecated
-    protected void add(Widget child,
-            com.google.gwt.user.client.Element container) {
+    protected void add(Widget child, com.google.gwt.user.client.Element container) {
         super.add(child, container);
         handle.getStyle().setDisplay(Display.INLINE_BLOCK);
         getElement().getStyle().setPaddingLeft(3, Unit.PX);
@@ -185,8 +183,7 @@ public class SimpleTree extends ComplexPanel implements HasDoubleClickHandlers {
                 }
             }, DoubleClickEvent.getType());
         }
-        return textDoubleClickHandlerManager.addHandler(
-                DoubleClickEvent.getType(), handler);
+        return textDoubleClickHandlerManager.addHandler(DoubleClickEvent.getType(), handler);
     }
 
 }

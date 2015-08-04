@@ -20,13 +20,10 @@ import org.junit.Test;
 import com.vaadin.tests.design.DeclarativeTestBase;
 import com.vaadin.ui.RichTextArea;
 
-public class RichTextAreaDeclarativeTest extends
-        DeclarativeTestBase<RichTextArea> {
+public class RichTextAreaDeclarativeTest extends DeclarativeTestBase<RichTextArea> {
 
     private String getBasicDesign() {
-        return "<v-rich-text-area null-representation='' null-setting-allowed=''>\n"
-                + "\n      <b>Header</b> <br/>Some text\n      "
-                + "</v-rich-text-area>";
+        return "<v-rich-text-area null-representation='' null-setting-allowed=''>\n" + "\n      <b>Header</b> <br/>Some text\n      " + "</v-rich-text-area>";
     }
 
     private RichTextArea getBasicExpected() {

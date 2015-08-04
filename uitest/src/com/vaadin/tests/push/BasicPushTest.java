@@ -52,8 +52,7 @@ public abstract class BasicPushTest extends MultiBrowserTest {
     }
 
     public static int getClientCounter(AbstractTB3Test t) {
-        WebElement clientCounterElem = t
-                .vaadinElementById(BasicPush.CLIENT_COUNTER_ID);
+        WebElement clientCounterElem = t.vaadinElementById(BasicPush.CLIENT_COUNTER_ID);
         return Integer.parseInt(clientCounterElem.getText());
     }
 
@@ -66,8 +65,7 @@ public abstract class BasicPushTest extends MultiBrowserTest {
     }
 
     public static int getServerCounter(AbstractTB3Test t) {
-        WebElement serverCounterElem = t
-                .vaadinElementById(BasicPush.SERVER_COUNTER_ID);
+        WebElement serverCounterElem = t.vaadinElementById(BasicPush.SERVER_COUNTER_ID);
         return Integer.parseInt(serverCounterElem.getText());
     }
 

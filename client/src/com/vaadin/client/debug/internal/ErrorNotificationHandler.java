@@ -62,16 +62,12 @@ public class ErrorNotificationHandler extends Handler {
                  * ApplicationConnection. This is better than than leaving the
                  * exception completely unstyled...
                  */
-                ApplicationConnection connection = ApplicationConfiguration
-                        .getRunningApplications().get(0);
+                ApplicationConnection connection = ApplicationConfiguration.getRunningApplications().get(0);
                 owner = connection.getUIConnector().getWidget();
             }
-            VNotification n = VNotification.createNotification(
-                    VNotification.DELAY_FOREVER, owner);
+            VNotification n = VNotification.createNotification(VNotification.DELAY_FOREVER, owner);
             n.getElement().getStyle().setTextAlign(TextAlign.LEFT);
-            n.show("<h1>Uncaught client side exception</h1><br />"
-                    + exceptionText.replace("\n", "<br/>\n"),
-                    VNotification.CENTERED, "error");
+            n.show("<h1>Uncaught client side exception</h1><br />" + exceptionText.replace("\n", "<br/>\n"), VNotification.CENTERED, "error");
         } catch (Exception e2) {
             // Just swallow this exception
         }

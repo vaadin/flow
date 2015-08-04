@@ -160,8 +160,7 @@ public class ComboBoxSelectingWithNewItemsAllowedTest extends MultiBrowserTest {
         assertThatSelectedValueIs("z5");
         // longer delay for this one because otherwise it keeps failing when run
         // on local machine
-        comboBoxElement.sendKeys(200, Keys.BACK_SPACE, Keys.BACK_SPACE,
-                Keys.TAB);
+        comboBoxElement.sendKeys(200, Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.TAB);
         assertInitialItemCount();
         assertThatSelectedValueIs("", "null");
 
@@ -243,8 +242,7 @@ public class ComboBoxSelectingWithNewItemsAllowedTest extends MultiBrowserTest {
         assertThatSelectedValueIs(value, value);
     }
 
-    private void assertThatSelectedValueIs(final String value,
-            final String labelValue) {
+    private void assertThatSelectedValueIs(final String value, final String labelValue) {
         assertThat(comboBoxElement.getText(), is(value));
 
         waitUntil(new ExpectedCondition<Boolean>() {
@@ -259,8 +257,7 @@ public class ComboBoxSelectingWithNewItemsAllowedTest extends MultiBrowserTest {
             @Override
             public String toString() {
                 // Timed out after 10 seconds waiting for ...
-                return String.format("label value to match '%s' (was: '%s')",
-                        labelValue, actualValue);
+                return String.format("label value to match '%s' (was: '%s')", labelValue, actualValue);
             }
         });
     }
@@ -271,8 +268,7 @@ public class ComboBoxSelectingWithNewItemsAllowedTest extends MultiBrowserTest {
             sleep(1000);
         } catch (InterruptedException ignore) {
         }
-        assertThat("Wrong initial item count.", labelElement.getText(),
-                is("2600"));
+        assertThat("Wrong initial item count.", labelElement.getText(), is("2600"));
     }
 
     private void assertOneMoreThanInitial() {
@@ -285,8 +281,7 @@ public class ComboBoxSelectingWithNewItemsAllowedTest extends MultiBrowserTest {
             @Override
             public String toString() {
                 // Timed out after 10 seconds waiting for ...
-                return String.format("item count to become 2601 (was: %s)",
-                        labelElement.getText());
+                return String.format("item count to become 2601 (was: %s)", labelElement.getText());
             }
         });
     }

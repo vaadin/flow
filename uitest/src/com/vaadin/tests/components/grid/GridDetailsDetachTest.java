@@ -65,9 +65,7 @@ public class GridDetailsDetachTest extends MultiBrowserTest {
 
         List<WebElement> spacers = findElements(By.className("v-grid-spacer"));
         Assert.assertEquals("Not enough spacers in DOM", 2, spacers.size());
-        Assert.assertEquals("Spacer content not visible",
-                "Extra data for Bean 3", spacers.get(0).getText());
-        Assert.assertEquals("Spacer content not visible",
-                "Extra data for Bean 5", spacers.get(1).getText());
+        Assert.assertEquals("Spacer content not visible", "Extra data for Bean 3", spacers.get(0).getText());
+        Assert.assertEquals("Spacer content not visible", "Extra data for Bean 5", spacers.get(1).getText());
     }
 }

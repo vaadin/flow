@@ -29,11 +29,7 @@ public class Media extends TestBase {
     @Override
     protected void setup() {
         final Video v = new Video("video");
-        v.setSources(
-                new ExternalResource(
-                        "http://jonatan.virtuallypreinstalled.com/media/big_buck_bunny.mp4"),
-                new ExternalResource(
-                        "http://jonatan.virtuallypreinstalled.com/media/big_buck_bunny.ogv"));
+        v.setSources(new ExternalResource("http://jonatan.virtuallypreinstalled.com/media/big_buck_bunny.mp4"), new ExternalResource("http://jonatan.virtuallypreinstalled.com/media/big_buck_bunny.ogv"));
         v.setWidth("640px");
         v.setHeight("360px");
         addComponent(v);
@@ -55,11 +51,7 @@ public class Media extends TestBase {
         }));
 
         final Audio a = new Audio("audio");
-        a.setSources(
-                new ExternalResource(
-                        "http://jonatan.virtuallypreinstalled.com/media/audio.mp3"),
-                new ExternalResource(
-                        "http://jonatan.virtuallypreinstalled.com/media/audio.ogg"));
+        a.setSources(new ExternalResource("http://jonatan.virtuallypreinstalled.com/media/audio.mp3"), new ExternalResource("http://jonatan.virtuallypreinstalled.com/media/audio.ogg"));
         addComponent(a);
 
         addComponent(new Button("Play audio", new ClickListener() {
@@ -82,8 +74,7 @@ public class Media extends TestBase {
 
     @Override
     protected String getTestDescription() {
-        return "Video and audio files should play using the HTML5 elements. "
-                + "(Movie is (c) copyright 2008, Blender Foundation / www.bigbuckbunny.org)";
+        return "Video and audio files should play using the HTML5 elements. " + "(Movie is (c) copyright 2008, Blender Foundation / www.bigbuckbunny.org)";
     }
 
     @Override

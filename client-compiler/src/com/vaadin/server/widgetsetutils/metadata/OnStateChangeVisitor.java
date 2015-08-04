@@ -32,8 +32,7 @@ import com.vaadin.shared.ui.Connect;
 public class OnStateChangeVisitor extends TypeVisitor {
 
     @Override
-    public void visitConnector(TreeLogger logger, JClassType type,
-            ConnectorBundle bundle) throws UnableToCompleteException {
+    public void visitConnector(TreeLogger logger, JClassType type, ConnectorBundle bundle) throws UnableToCompleteException {
         Connect connectAnnotation = type.getAnnotation(Connect.class);
         if (connectAnnotation != null) {
             // Find all the annotated methods in all the superclasses

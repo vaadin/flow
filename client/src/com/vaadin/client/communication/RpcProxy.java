@@ -30,36 +30,27 @@ import com.vaadin.shared.communication.ServerRpc;
  */
 public class RpcProxy {
 
-    public static <T extends ServerRpc> T create(Class<T> rpcInterface,
-            ServerConnector connector) {
+    public static <T extends ServerRpc> T create(Class<T> rpcInterface, ServerConnector connector) {
         try {
-            return (T) TypeData.getType(rpcInterface).createProxy(
-                    new RpcInvokationHandler(rpcInterface, connector));
+            return (T) TypeData.getType(rpcInterface).createProxy(new RpcInvokationHandler(rpcInterface, connector));
         } catch (NoDataException e) {
-            throw new IllegalStateException("There is no information about "
-                    + rpcInterface
-                    + ". Did you forget to compile the widgetset?");
+            throw new IllegalStateException("There is no information about " + rpcInterface + ". Did you forget to compile the widgetset?");
         }
     }
 
-    private static final class RpcInvokationHandler implements
-            InvokationHandler {
+    private static final class RpcInvokationHandler implements InvokationHandler {
         private final Class<?> rpcInterface;
         private final ServerConnector connector;
 
-        private RpcInvokationHandler(Class<?> rpcInterface,
-                ServerConnector connector) {
+        private RpcInvokationHandler(Class<?> rpcInterface, ServerConnector connector) {
             this.rpcInterface = rpcInterface;
             this.connector = connector;
         }
 
         @Override
         public Object invoke(Object target, Method method, Object[] params) {
-            MethodInvocation invocation = new MethodInvocation(
-                    connector.getConnectorId(), rpcInterface.getName(),
-                    method.getName(), params);
-            ServerRpcQueue serverRpcQueue = ServerRpcQueue.get(connector
-                    .getConnection());
+            MethodInvocation invocation = new MethodInvocation(connector.getConnectorId(), rpcInterface.getName(), method.getName(), params);
+            ServerRpcQueue serverRpcQueue = ServerRpcQueue.get(connector.getConnection());
             serverRpcQueue.add(invocation, method.isLastOnly());
             if (!method.isDelayed()) {
                 serverRpcQueue.flush();

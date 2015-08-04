@@ -42,8 +42,7 @@ public class ComboBoxIdenticalItemsTest extends MultiBrowserTest {
         combobox.sendKeys(delay, Keys.ARROW_DOWN, getReturn());
         waitUntilLogText("1. Item one-1 selected");
 
-        Keys[] downDownEnter = new Keys[] { Keys.ARROW_DOWN, Keys.ARROW_DOWN,
-                getReturn() };
+        Keys[] downDownEnter = new Keys[] { Keys.ARROW_DOWN, Keys.ARROW_DOWN, getReturn() };
 
         combobox.sendKeys(delay, downDownEnter);
         waitUntilLogText("2. Item one-2 selected");
@@ -51,8 +50,7 @@ public class ComboBoxIdenticalItemsTest extends MultiBrowserTest {
         combobox.sendKeys(delay, downDownEnter);
         waitUntilLogText("3. Item two selected");
 
-        combobox.sendKeys(delay, new Keys[] { Keys.ARROW_UP, Keys.ARROW_UP,
-                Keys.ARROW_UP, getReturn() });
+        combobox.sendKeys(delay, new Keys[] { Keys.ARROW_UP, Keys.ARROW_UP, Keys.ARROW_UP, getReturn() });
         waitUntilLogText("4. Item one-1 selected");
     }
 
@@ -75,9 +73,7 @@ public class ComboBoxIdenticalItemsTest extends MultiBrowserTest {
 
             @Override
             public String toString() {
-                return String.format(
-                        "log content to update. Expected: '%s' (was: '%s')",
-                        expected, text);
+                return String.format("log content to update. Expected: '%s' (was: '%s')", expected, text);
             }
         });
     }

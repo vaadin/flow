@@ -50,15 +50,10 @@ public class PersonWithBeanValidationAnnotations {
 
     @Override
     public String toString() {
-        return "Person [firstName=" + firstName + ", lastName=" + lastName
-                + ", email=" + email + ", age=" + age + ", sex=" + sex
-                + ", address=" + address + ", deceased=" + deceased
-                + ", salary=" + salary + ", salaryDouble=" + salaryDouble
-                + ", rent=" + rent + "]";
+        return "Person [firstName=" + firstName + ", lastName=" + lastName + ", email=" + email + ", age=" + age + ", sex=" + sex + ", address=" + address + ", deceased=" + deceased + ", salary=" + salary + ", salaryDouble=" + salaryDouble + ", rent=" + rent + "]";
     }
 
-    public PersonWithBeanValidationAnnotations(String firstName,
-            String lastName, String email, int age, Sex sex, Address address) {
+    public PersonWithBeanValidationAnnotations(String firstName, String lastName, String email, int age, Sex sex, Address address) {
         super();
         this.firstName = firstName;
         this.lastName = lastName;

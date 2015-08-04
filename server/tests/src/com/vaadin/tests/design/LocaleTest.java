@@ -84,26 +84,17 @@ public class LocaleTest {
         // check the created html
         Element body = doc.body();
         Element evLayout = body.child(0);
-        assertEquals("Wrong locale information.", "en_US",
-                evLayout.attr("locale"));
+        assertEquals("Wrong locale information.", "en_US", evLayout.attr("locale"));
         Element ehLayout = evLayout.child(0);
-        assertEquals("Wrong locale information.", "it_IT",
-                ehLayout.attr("locale"));
+        assertEquals("Wrong locale information.", "it_IT", ehLayout.attr("locale"));
         Element eb1 = ehLayout.child(0);
-        assertTrue(
-                "The element should not have a locale specification, found locale "
-                        + eb1.attr("locale"), "".equals(eb1.attr("locale")));
+        assertTrue("The element should not have a locale specification, found locale " + eb1.attr("locale"), "".equals(eb1.attr("locale")));
         Element eb2 = ehLayout.child(1);
         assertEquals("Wrong locale information.", "en_US", eb2.attr("locale"));
         Element ehLayout2 = evLayout.child(1);
-        assertTrue(
-                "The element should not have a locale specification, found locale "
-                        + ehLayout2.attr("locale"),
-                "".equals(ehLayout2.attr("locale")));
+        assertTrue("The element should not have a locale specification, found locale " + ehLayout2.attr("locale"), "".equals(ehLayout2.attr("locale")));
         Element el1 = ehLayout2.child(0);
-        assertTrue(
-                "The element should not have a locale specification, found locale "
-                        + el1.attr("locale"), "".equals(el1.attr("locale")));
+        assertTrue("The element should not have a locale specification, found locale " + el1.attr("locale"), "".equals(el1.attr("locale")));
         Element el2 = ehLayout2.child(1);
         assertEquals("Wrong locale information.", "en_CA", el2.attr("locale"));
     }
@@ -162,20 +153,15 @@ public class LocaleTest {
         // parse the created document and check the constructed component
         // hierarchy
         String string = doc.html();
-        VerticalLayout vLayout = (VerticalLayout) Design
-                .read(new ByteArrayInputStream(string.getBytes()));
-        assertEquals("Wrong locale.", new Locale("en", "US"),
-                vLayout.getLocale());
+        VerticalLayout vLayout = (VerticalLayout) Design.read(new ByteArrayInputStream(string.getBytes()));
+        assertEquals("Wrong locale.", new Locale("en", "US"), vLayout.getLocale());
         HorizontalLayout hLayout = (HorizontalLayout) vLayout.getComponent(0);
-        assertEquals("The element should have the same locale as its parent.",
-                vLayout.getLocale(), hLayout.getLocale());
+        assertEquals("The element should have the same locale as its parent.", vLayout.getLocale(), hLayout.getLocale());
         Button b1 = (Button) hLayout.getComponent(0);
         assertEquals("Wrong locale.", new Locale("en", "US"), b1.getLocale());
         Button b2 = (Button) hLayout.getComponent(1);
         assertEquals("Wrong locale.", new Locale("en", "GB"), b2.getLocale());
         Button b3 = (Button) hLayout.getComponent(2);
-        assertEquals(
-                "The component should have the same locale as its parent.",
-                hLayout.getLocale(), b3.getLocale());
+        assertEquals("The component should have the same locale as its parent.", hLayout.getLocale(), b3.getLocale());
     }
 }

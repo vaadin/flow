@@ -173,29 +173,25 @@ public class VNotification extends VOverlay {
         FlowPanel panel = new FlowPanel();
         if (hasPrefix(styleSetup)) {
             panel.add(new Label(styleSetup.prefix));
-            AriaHelper.setVisibleForAssistiveDevicesOnly(panel.getElement(),
-                    true);
+            AriaHelper.setVisibleForAssistiveDevicesOnly(panel.getElement(), true);
         }
 
         panel.add(widget);
 
         if (hasPostfix(styleSetup)) {
             panel.add(new Label(styleSetup.postfix));
-            AriaHelper.setVisibleForAssistiveDevicesOnly(panel.getElement(),
-                    true);
+            AriaHelper.setVisibleForAssistiveDevicesOnly(panel.getElement(), true);
         }
         setWidget(panel);
         show(position, style);
     }
 
     private boolean hasPostfix(NotificationTypeConfiguration styleSetup) {
-        return styleSetup != null && styleSetup.postfix != null
-                && !styleSetup.postfix.isEmpty();
+        return styleSetup != null && styleSetup.postfix != null && !styleSetup.postfix.isEmpty();
     }
 
     private boolean hasPrefix(NotificationTypeConfiguration styleSetup) {
-        return styleSetup != null && styleSetup.prefix != null
-                && !styleSetup.prefix.isEmpty();
+        return styleSetup != null && styleSetup.prefix != null && !styleSetup.prefix.isEmpty();
     }
 
     public void show(String html, Position position, String style) {
@@ -208,13 +204,11 @@ public class VNotification extends VOverlay {
         String usage = "";
 
         if (hasPrefix(styleSetup)) {
-            type = "<span class='" + assistiveDeviceOnlyStyle + "'>"
-                    + styleSetup.prefix + "</span>";
+            type = "<span class='" + assistiveDeviceOnlyStyle + "'>" + styleSetup.prefix + "</span>";
         }
 
         if (hasPostfix(styleSetup)) {
-            usage = "<span class='" + assistiveDeviceOnlyStyle + "'>"
-                    + styleSetup.postfix + "</span>";
+            usage = "<span class='" + assistiveDeviceOnlyStyle + "'>" + styleSetup.postfix + "</span>";
         }
 
         setWidget(new HTML(type + html + usage));
@@ -222,13 +216,11 @@ public class VNotification extends VOverlay {
     }
 
     private NotificationTypeConfiguration getUiState(String style) {
-        if (getApplicationConnection() == null
-                || getApplicationConnection().getUIConnector() == null) {
+        if (getApplicationConnection() == null || getApplicationConnection().getUIConnector() == null) {
             return null;
         }
 
-        return getApplicationConnection().getUIConnector().getState().notificationConfigurations
-                .get(style);
+        return getApplicationConnection().getUIConnector().getState().notificationConfigurations.get(style);
     }
 
     private void setWaiAriaRole(NotificationTypeConfiguration styleSetup) {
@@ -268,8 +260,7 @@ public class VNotification extends VOverlay {
     }
 
     private boolean isChrome41OrHigher() {
-        return BrowserInfo.get().isChrome()
-                && BrowserInfo.get().getBrowserMajorVersion() >= 41;
+        return BrowserInfo.get().isChrome() && BrowserInfo.get().getBrowserMajorVersion() >= 41;
     }
 
     protected void hideAfterDelay() {
@@ -296,20 +287,15 @@ public class VNotification extends VOverlay {
             // Still animating in, wait for it to finish before touching
             // the animation delay (which would restart the animation-in
             // in some browsers)
-            if (getStyleName().contains(
-                    VOverlay.ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
-                AnimationUtil.addAnimationEndListener(getElement(),
-                        new AnimationEndListener() {
-                            @Override
-                            public void onAnimationEnd(NativeEvent event) {
-                                if (AnimationUtil
-                                        .getAnimationName(event)
-                                        .contains(
-                                                VOverlay.ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
-                                    VNotification.this.hide();
-                                }
-                            }
-                        });
+            if (getStyleName().contains(VOverlay.ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
+                AnimationUtil.addAnimationEndListener(getElement(), new AnimationEndListener() {
+                    @Override
+                    public void onAnimationEnd(NativeEvent event) {
+                        if (AnimationUtil.getAnimationName(event).contains(VOverlay.ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
+                            VNotification.this.hide();
+                        }
+                    }
+                });
             } else {
                 VNotification.super.hide();
                 fireEvent(new HideEvent(this));
@@ -422,8 +408,7 @@ public class VNotification extends VOverlay {
                     hide();
                     return false;
                 }
-            } else if (type == Event.ONKEYDOWN
-                    && event.getKeyCode() == KeyCodes.KEY_ESCAPE) {
+            } else if (type == Event.ONKEYDOWN && event.getKeyCode() == KeyCodes.KEY_ESCAPE) {
                 hide();
                 return false;
             }
@@ -439,8 +424,7 @@ public class VNotification extends VOverlay {
             if (x < 0) {
                 x = DOM.eventGetClientX(event);
                 y = DOM.eventGetClientY(event);
-            } else if (Math.abs(DOM.eventGetClientX(event) - x) > mouseMoveThreshold
-                    || Math.abs(DOM.eventGetClientY(event) - y) > mouseMoveThreshold) {
+            } else if (Math.abs(DOM.eventGetClientX(event) - x) > mouseMoveThreshold || Math.abs(DOM.eventGetClientY(event) - y) > mouseMoveThreshold) {
                 hideAfterDelay();
             }
             break;
@@ -477,60 +461,44 @@ public class VNotification extends VOverlay {
 
     private void fireEvent(HideEvent event) {
         if (listeners != null) {
-            for (Iterator<EventListener> it = listeners.iterator(); it
-                    .hasNext();) {
+            for (Iterator<EventListener> it = listeners.iterator(); it.hasNext();) {
                 EventListener l = it.next();
                 l.notificationHidden(event);
             }
         }
     }
 
-    public static void showNotification(ApplicationConnection client,
-            final UIDL notification) {
-        boolean onlyPlainText = notification
-                .hasAttribute(UIConstants.NOTIFICATION_HTML_CONTENT_NOT_ALLOWED);
+    public static void showNotification(ApplicationConnection client, final UIDL notification) {
+        boolean onlyPlainText = notification.hasAttribute(UIConstants.NOTIFICATION_HTML_CONTENT_NOT_ALLOWED);
         String html = "";
         if (notification.hasAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_ICON)) {
-            String iconUri = notification
-                    .getStringAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_ICON);
+            String iconUri = notification.getStringAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_ICON);
             html += client.getIcon(iconUri).getElement().getString();
         }
-        if (notification
-                .hasAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_CAPTION)) {
-            String caption = notification
-                    .getStringAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_CAPTION);
+        if (notification.hasAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_CAPTION)) {
+            String caption = notification.getStringAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_CAPTION);
             if (onlyPlainText) {
                 caption = WidgetUtil.escapeHTML(caption);
                 caption = caption.replaceAll("\\n", "<br />");
             }
-            html += "<h1 class='" + getDependentStyle(client, CAPTION) + "'>"
-                    + caption + "</h1>";
+            html += "<h1 class='" + getDependentStyle(client, CAPTION) + "'>" + caption + "</h1>";
         }
-        if (notification
-                .hasAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_MESSAGE)) {
-            String message = notification
-                    .getStringAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_MESSAGE);
+        if (notification.hasAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_MESSAGE)) {
+            String message = notification.getStringAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_MESSAGE);
             if (onlyPlainText) {
                 message = WidgetUtil.escapeHTML(message);
                 message = message.replaceAll("\\n", "<br />");
             }
-            html += "<p class='" + getDependentStyle(client, DESCRIPTION)
-                    + "'>" + message + "</p>";
+            html += "<p class='" + getDependentStyle(client, DESCRIPTION) + "'>" + message + "</p>";
         }
 
-        final String style = notification
-                .hasAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_STYLE) ? notification
-                .getStringAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_STYLE)
-                : null;
+        final String style = notification.hasAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_STYLE) ? notification.getStringAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_STYLE) : null;
 
-        final int pos = notification
-                .getIntAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_POSITION);
+        final int pos = notification.getIntAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_POSITION);
         Position position = Position.values()[pos];
 
-        final int delay = notification
-                .getIntAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_DELAY);
-        createNotification(delay, client.getUIConnector().getWidget()).show(
-                html, position, style);
+        final int delay = notification.getIntAttribute(UIConstants.ATTRIBUTE_NOTIFICATION_DELAY);
+        createNotification(delay, client.getUIConnector().getWidget()).show(html, position, style);
     }
 
     /**
@@ -544,10 +512,8 @@ public class VNotification extends VOverlay {
      * @return the given dependent style name prefixed with current notification
      *         primary style
      */
-    public static String getDependentStyle(ApplicationConnection client,
-            String style) {
-        VNotification notification = createNotification(-1, client
-                .getUIConnector().getWidget());
+    public static String getDependentStyle(ApplicationConnection client, String style) {
+        VNotification notification = createNotification(-1, client.getUIConnector().getWidget());
         String styleName = notification.getStyleName();
         notification.addStyleDependentName(style);
         String extendedStyle = notification.getStyleName();
@@ -618,8 +584,7 @@ public class VNotification extends VOverlay {
      *            A url to redirect to after the user clicks the error
      *            notification
      */
-    public static void showError(ApplicationConnection connection,
-            String caption, String message, String details, String url) {
+    public static void showError(ApplicationConnection connection, String caption, String message, String details, String url) {
 
         StringBuilder html = new StringBuilder();
         if (caption != null) {
@@ -649,11 +614,9 @@ public class VNotification extends VOverlay {
                 html.append("</i></p>");
             }
 
-            VNotification n = VNotification.createNotification(1000 * 60 * 45,
-                    connection.getUIConnector().getWidget());
+            VNotification n = VNotification.createNotification(1000 * 60 * 45, connection.getUIConnector().getWidget());
             n.addEventListener(new NotificationRedirect(url));
-            n.show(html.toString(), VNotification.CENTERED_TOP,
-                    VNotification.STYLE_SYSTEM);
+            n.show(html.toString(), VNotification.CENTERED_TOP, VNotification.STYLE_SYSTEM);
         } else {
             WidgetUtil.redirect(url);
         }
@@ -664,8 +627,7 @@ public class VNotification extends VOverlay {
      * messages, such as session expired.
      * 
      */
-    private static class NotificationRedirect implements
-            VNotification.EventListener {
+    private static class NotificationRedirect implements VNotification.EventListener {
         String url;
 
         NotificationRedirect(String url) {

@@ -40,9 +40,7 @@ public class PopupDateFieldLocaleTest extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Changing the locale while the popupdatefield is visible can "
-                + "result in the locale remaining at the previous value; the locale "
-                + "is only changed once the current month is changed.";
+        return "Changing the locale while the popupdatefield is visible can " + "result in the locale remaining at the previous value; the locale " + "is only changed once the current month is changed.";
     }
 
     @Override

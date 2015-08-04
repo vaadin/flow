@@ -36,8 +36,7 @@ public class SelectionEvent extends EventObject {
     private LinkedHashSet<Object> oldSelection;
     private LinkedHashSet<Object> newSelection;
 
-    public SelectionEvent(Object source, Collection<Object> oldSelection,
-            Collection<Object> newSelection) {
+    public SelectionEvent(Object source, Collection<Object> oldSelection, Collection<Object> newSelection) {
         super(source);
         this.oldSelection = new LinkedHashSet<Object>(oldSelection);
         this.newSelection = new LinkedHashSet<Object>(newSelection);

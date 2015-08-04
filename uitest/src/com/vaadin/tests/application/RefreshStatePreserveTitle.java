@@ -11,8 +11,7 @@ public class RefreshStatePreserveTitle extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         getPage().setTitle("TEST");
-        addComponent(new Label(
-                "Refresh the page and observe that window title 'TEST' is lost."));
+        addComponent(new Label("Refresh the page and observe that window title 'TEST' is lost."));
     }
 
     @Override

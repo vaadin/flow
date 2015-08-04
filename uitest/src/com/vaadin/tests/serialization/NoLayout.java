@@ -48,22 +48,18 @@ public class NoLayout extends AbstractTestUI {
         });
         addComponent(uiPolling);
 
-        addComponent(new Button("Change regular state",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        event.getButton().setCaption(
-                                String.valueOf(System.currentTimeMillis()));
-                    }
-                }));
-        addComponent(new Button("Change @NoLayout state",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        event.getButton().setDescription(
-                                String.valueOf(System.currentTimeMillis()));
-                    }
-                }));
+        addComponent(new Button("Change regular state", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                event.getButton().setCaption(String.valueOf(System.currentTimeMillis()));
+            }
+        }));
+        addComponent(new Button("Change @NoLayout state", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                event.getButton().setDescription(String.valueOf(System.currentTimeMillis()));
+            }
+        }));
         addComponent(new Button("Do regular RPC", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
@@ -78,14 +74,13 @@ public class NoLayout extends AbstractTestUI {
             }
         }));
 
-        addComponent(new Button("Update LegacyComponent",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        // Assumes UI is a LegacyComponent
-                        markAsDirty();
-                    }
-                }));
+        addComponent(new Button("Update LegacyComponent", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                // Assumes UI is a LegacyComponent
+                markAsDirty();
+            }
+        }));
     }
 
     @Override

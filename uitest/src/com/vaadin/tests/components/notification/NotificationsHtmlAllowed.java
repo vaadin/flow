@@ -22,8 +22,7 @@ public class NotificationsHtmlAllowed extends TestBase implements ClickListener 
         addComponent(captionField);
         captionField.focus();
 
-        messageField = new TextArea("Message",
-                "Hello <i>world</i>\nWith a newline <br/>And a html line break");
+        messageField = new TextArea("Message", "Hello <i>world</i>\nWith a newline <br/>And a html line break");
         messageField.setRows(10);
         addComponent(messageField);
 
@@ -51,9 +50,7 @@ public class NotificationsHtmlAllowed extends TestBase implements ClickListener 
     }
 
     private Notification makeNotification() {
-        Notification n = new Notification(captionField.getValue(),
-                messageField.getValue(), Notification.TYPE_HUMANIZED_MESSAGE,
-                htmlAllowedBox.getValue());
+        Notification n = new Notification(captionField.getValue(), messageField.getValue(), Notification.TYPE_HUMANIZED_MESSAGE, htmlAllowedBox.getValue());
         return n;
     }
 }

@@ -20,8 +20,7 @@ public class LayoutAttachListenerInfo extends TestBase {
     @Override
     protected void setup() {
 
-        OptionGroup layouts = new OptionGroup("Layouts", Arrays.asList(
-                "AbsoluteLayout", "OrderedLayout", "GridLayout"));
+        OptionGroup layouts = new OptionGroup("Layouts", Arrays.asList("AbsoluteLayout", "OrderedLayout", "GridLayout"));
         layouts.select("AbsoluteLayout");
         layouts.setImmediate(true);
         layouts.addValueChangeListener(new ValueChangeListener() {
@@ -29,8 +28,7 @@ public class LayoutAttachListenerInfo extends TestBase {
             public void valueChange(ValueChangeEvent event) {
                 if (event.getProperty().getValue().equals("AbsoluteLayout")) {
                     testAbsoluteLayout();
-                } else if (event.getProperty().getValue()
-                        .equals("OrderedLayout")) {
+                } else if (event.getProperty().getValue().equals("OrderedLayout")) {
                     testOrderedLayout();
                 } else if (event.getProperty().getValue().equals("GridLayout")) {
                     testGridLayout();
@@ -46,9 +44,7 @@ public class LayoutAttachListenerInfo extends TestBase {
 
     @Override
     protected String getTestDescription() {
-        return "When pressing the attach button a Label with the value \"X\" "
-                + "should get added to the selected layout and a notification of the position"
-                + " of the component should be visible";
+        return "When pressing the attach button a Label with the value \"X\" " + "should get added to the selected layout and a notification of the position" + " of the component should be visible";
     }
 
     @Override
@@ -66,22 +62,19 @@ public class LayoutAttachListenerInfo extends TestBase {
             @Override
             public void componentAttachedToContainer(ComponentAttachEvent event) {
                 AbsoluteLayout layout = (AbsoluteLayout) event.getContainer();
-                AbsoluteLayout.ComponentPosition position = layout
-                        .getPosition(event.getAttachedComponent());
+                AbsoluteLayout.ComponentPosition position = layout.getPosition(event.getAttachedComponent());
 
-                showNotification("Attached to " + position.getCSSString(),
-                        Notification.TYPE_ERROR_MESSAGE);
+                showNotification("Attached to " + position.getCSSString(), Notification.TYPE_ERROR_MESSAGE);
             }
         });
         content.addComponent(a);
 
-        content.addComponent(new Button("Attach label to layout",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        a.addComponent(new Label("X"), "top:50px;left:50px");
-                    }
-                }));
+        content.addComponent(new Button("Attach label to layout", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                a.addComponent(new Label("X"), "top:50px;left:50px");
+            }
+        }));
     }
 
     private void testOrderedLayout() {
@@ -94,23 +87,18 @@ public class LayoutAttachListenerInfo extends TestBase {
             @Override
             public void componentAttachedToContainer(ComponentAttachEvent event) {
                 VerticalLayout layout = (VerticalLayout) event.getContainer();
-                showNotification(
-                        "Attached to index "
-                                + layout.getComponentIndex(event
-                                        .getAttachedComponent()),
-                        Notification.TYPE_ERROR_MESSAGE);
+                showNotification("Attached to index " + layout.getComponentIndex(event.getAttachedComponent()), Notification.TYPE_ERROR_MESSAGE);
             }
         });
         content.addComponent(v);
 
-        content.addComponent(new Button("Attach label to layout",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        v.addComponent(new Label("X"));
+        content.addComponent(new Button("Attach label to layout", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                v.addComponent(new Label("X"));
 
-                    }
-                }));
+            }
+        }));
     }
 
     private void testGridLayout() {
@@ -124,21 +112,18 @@ public class LayoutAttachListenerInfo extends TestBase {
             @Override
             public void componentAttachedToContainer(ComponentAttachEvent event) {
                 GridLayout layout = (GridLayout) event.getContainer();
-                GridLayout.Area area = layout.getComponentArea(event
-                        .getAttachedComponent());
-                showNotification("Attached to " + area.getColumn1() + ","
-                        + area.getRow1(), Notification.TYPE_ERROR_MESSAGE);
+                GridLayout.Area area = layout.getComponentArea(event.getAttachedComponent());
+                showNotification("Attached to " + area.getColumn1() + "," + area.getRow1(), Notification.TYPE_ERROR_MESSAGE);
             }
         });
 
         content.addComponent(g);
 
-        content.addComponent(new Button("Attach label to layout",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        g.addComponent(new Label("X"), 2, 3);
-                    }
-                }));
+        content.addComponent(new Button("Attach label to layout", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                g.addComponent(new Label("X"), 2, 3);
+            }
+        }));
     }
 }

@@ -30,22 +30,18 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.UI;
 
 public class BootstrapModifyUI extends AbstractTestUI {
-    private static final String INSTALLED_ATRIBUTE_NAME = BootstrapModifyUI.class
-            .getName() + ".installed";
+    private static final String INSTALLED_ATRIBUTE_NAME = BootstrapModifyUI.class.getName() + ".installed";
 
     @Override
     protected void setup(VaadinRequest request) {
-        Button c = new Button("Add bootstrap listener",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        getSession().addBootstrapListener(
-                                createBootstrapListener());
-                        event.getButton().setEnabled(false);
-                        getSession().setAttribute(INSTALLED_ATRIBUTE_NAME,
-                                Boolean.TRUE);
-                    }
-                });
+        Button c = new Button("Add bootstrap listener", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                getSession().addBootstrapListener(createBootstrapListener());
+                event.getButton().setEnabled(false);
+                getSession().setAttribute(INSTALLED_ATRIBUTE_NAME, Boolean.TRUE);
+            }
+        });
         addComponent(c);
         c.setEnabled(getSession().getAttribute(INSTALLED_ATRIBUTE_NAME) == null);
     }
@@ -53,11 +49,9 @@ public class BootstrapModifyUI extends AbstractTestUI {
     private static BootstrapListener createBootstrapListener() {
         return new BootstrapListener() {
             @Override
-            public void modifyBootstrapFragment(
-                    BootstrapFragmentResponse response) {
+            public void modifyBootstrapFragment(BootstrapFragmentResponse response) {
                 if (shouldModify(response)) {
-                    Element heading = new Element(Tag.valueOf("div"), "")
-                            .text("Added by modifyBootstrapFragment");
+                    Element heading = new Element(Tag.valueOf("div"), "").text("Added by modifyBootstrapFragment");
                     response.getFragmentNodes().add(0, heading);
                 }
             }
@@ -71,8 +65,7 @@ public class BootstrapModifyUI extends AbstractTestUI {
             @Override
             public void modifyBootstrapPage(BootstrapPageResponse response) {
                 if (shouldModify(response)) {
-                    response.getDocument().body().child(0)
-                            .before("<div>Added by modifyBootstrapPage</div>");
+                    response.getDocument().body().child(0).before("<div>Added by modifyBootstrapPage</div>");
                 }
             }
         };

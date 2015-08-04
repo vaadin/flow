@@ -72,11 +72,7 @@ public class TextAreaSizeResettedTest extends MultiBrowserTest {
 
     private void resizeTextAreaBy(int offset) {
         int resizeHandlerOffset = 10;
-        new Actions(getDriver())
-                .moveToElement(getTextArea(),
-                        TEXTAREAWIDTH - resizeHandlerOffset,
-                        TEXTAREAHEIGHT - resizeHandlerOffset).clickAndHold()
-                .moveByOffset(offset, offset).release().build().perform();
+        new Actions(getDriver()).moveToElement(getTextArea(), TEXTAREAWIDTH - resizeHandlerOffset, TEXTAREAHEIGHT - resizeHandlerOffset).clickAndHold().moveByOffset(offset, offset).release().build().perform();
     }
 
     @Test

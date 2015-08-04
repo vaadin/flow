@@ -61,15 +61,11 @@ public class GridColspansTest extends MultiBrowserTest {
         openTestURL();
 
         GridElement grid = $(GridElement.class).first();
-        assertEquals("Failed initial condition.", "all the stuff", grid
-                .getHeaderCell(0, 1).getText().toLowerCase());
-        assertEquals("Failed initial condition.", "first name", grid
-                .getHeaderCell(2, 1).getText().toLowerCase());
+        assertEquals("Failed initial condition.", "all the stuff", grid.getHeaderCell(0, 1).getText().toLowerCase());
+        assertEquals("Failed initial condition.", "first name", grid.getHeaderCell(2, 1).getText().toLowerCase());
         $(ButtonElement.class).caption("Show/Hide firstName").first().click();
-        assertEquals("Header text changed on column hide.", "all the stuff",
-                grid.getHeaderCell(0, 1).getText().toLowerCase());
-        assertEquals("Failed initial condition.", "last name", grid
-                .getHeaderCell(2, 1).getText().toLowerCase());
+        assertEquals("Header text changed on column hide.", "all the stuff", grid.getHeaderCell(0, 1).getText().toLowerCase());
+        assertEquals("Failed initial condition.", "last name", grid.getHeaderCell(2, 1).getText().toLowerCase());
     }
 
     @Test
@@ -78,24 +74,17 @@ public class GridColspansTest extends MultiBrowserTest {
 
         GridElement grid = $(GridElement.class).first();
         GridCellElement headerCell = grid.getHeaderCell(1, 1);
-        assertEquals("Failed initial condition.", "full name", headerCell
-                .getText().toLowerCase());
-        assertEquals("Failed initial condition.", "first name", grid
-                .getHeaderCell(2, 1).getText().toLowerCase());
+        assertEquals("Failed initial condition.", "full name", headerCell.getText().toLowerCase());
+        assertEquals("Failed initial condition.", "first name", grid.getHeaderCell(2, 1).getText().toLowerCase());
         $(ButtonElement.class).get(1).click();
         headerCell = grid.getHeaderCell(1, 1);
-        assertEquals("Header text not changed on column reorder.", "address",
-                headerCell.getText().toLowerCase());
-        assertEquals("Unexpected colspan", "1",
-                headerCell.getAttribute("colspan"));
+        assertEquals("Header text not changed on column reorder.", "address", headerCell.getText().toLowerCase());
+        assertEquals("Unexpected colspan", "1", headerCell.getAttribute("colspan"));
         headerCell = grid.getHeaderCell(1, 2);
-        assertEquals("Header text not changed on column reorder", "full name",
-                headerCell.getText().toLowerCase());
-        assertEquals("Unexpected colspan", "2",
-                headerCell.getAttribute("colspan"));
+        assertEquals("Header text not changed on column reorder", "full name", headerCell.getText().toLowerCase());
+        assertEquals("Unexpected colspan", "2", headerCell.getAttribute("colspan"));
 
-        assertTrue("Error indicator not present",
-                isElementPresent(By.className("v-errorindicator")));
+        assertTrue("Error indicator not present", isElementPresent(By.className("v-errorindicator")));
 
     }
 }

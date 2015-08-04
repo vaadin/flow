@@ -30,8 +30,7 @@ import java.util.Locale;
  * @author Vaadin Ltd
  * @since 7.2
  */
-public class StringToLongConverter extends
-        AbstractStringToNumberConverter<Long> {
+public class StringToLongConverter extends AbstractStringToNumberConverter<Long> {
 
     /**
      * Returns the format used by
@@ -58,8 +57,7 @@ public class StringToLongConverter extends
      * java.lang.Class, java.util.Locale)
      */
     @Override
-    public Long convertToModel(String value, Class<? extends Long> targetType,
-            Locale locale) throws ConversionException {
+    public Long convertToModel(String value, Class<? extends Long> targetType, Locale locale) throws ConversionException {
         Number n = convertToNumber(value, targetType, locale);
         return n == null ? null : n.longValue();
 

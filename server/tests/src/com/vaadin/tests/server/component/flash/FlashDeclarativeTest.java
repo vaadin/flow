@@ -43,8 +43,7 @@ public class FlashDeclarativeTest extends DeclarativeTestBase<Flash> {
     };
 
     protected String getDesign() {
-        return "<v-flash standby='Please wait' archive='arch' codebase='foo' codetype='bar' >"
-                + "  <parameter name='baz' value='foo' />\n" //
+        return "<v-flash standby='Please wait' archive='arch' codebase='foo' codetype='bar' >" + "  <parameter name='baz' value='foo' />\n" //
                 + "  <parameter name='foo' value='bar' />\n" //
                 + "</v-flash>"; //
     }

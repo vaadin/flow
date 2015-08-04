@@ -57,13 +57,9 @@ public class LegacyPropertyHelper implements Serializable {
             return;
         }
 
-        getLogger().log(Level.WARNING,
-                Constants.WARNING_LEGACY_PROPERTY_TOSTRING,
-                p.getClass().getName());
+        getLogger().log(Level.WARNING, Constants.WARNING_LEGACY_PROPERTY_TOSTRING, p.getClass().getName());
         if (getLogger().isLoggable(Level.FINE)) {
-            getLogger().log(Level.FINE,
-                    "Strack trace for legacy toString to ease debugging",
-                    new Throwable());
+            getLogger().log(Level.FINE, "Strack trace for legacy toString to ease debugging", new Throwable());
         }
     }
 
@@ -86,8 +82,7 @@ public class LegacyPropertyHelper implements Serializable {
             // value should be but it seems more safe to use the legacy mode.
             return true;
         }
-        return VaadinService.getCurrent().getDeploymentConfiguration()
-                .getLegacyPropertyToStringMode().useLegacyMode();
+        return VaadinService.getCurrent().getDeploymentConfiguration().getLegacyPropertyToStringMode().useLegacyMode();
     }
 
     private static boolean logLegacyToStringWarning() {
@@ -96,8 +91,7 @@ public class LegacyPropertyHelper implements Serializable {
             // the log with these messages in this case.
             return false;
         }
-        return VaadinService.getCurrent().getDeploymentConfiguration()
-                .getLegacyPropertyToStringMode() == LegacyProperyToStringMode.WARNING;
+        return VaadinService.getCurrent().getDeploymentConfiguration().getLegacyPropertyToStringMode() == LegacyProperyToStringMode.WARNING;
 
     }
 

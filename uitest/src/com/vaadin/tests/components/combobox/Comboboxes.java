@@ -132,20 +132,18 @@ public class Comboboxes extends ComponentTestCase<ComboBox> {
         options.put("32x32", "../runo/icons/32/attention.png");
         options.put("64x64", "../runo/icons/64/email-reply.png");
 
-        return createSelectAction("Icon", options, "<None>",
-                new Command<ComboBox, String>() {
+        return createSelectAction("Icon", options, "<None>", new Command<ComboBox, String>() {
 
-                    @Override
-                    public void execute(ComboBox c, String value, Object data) {
-                        for (Object id : c.getItemIds()) {
-                            if (value == null) {
-                                c.setItemIcon(id, null);
-                            } else {
-                                c.setItemIcon(id, new ThemeResource(value + "?"
-                                        + new Date().getTime()));
-                            }
-                        }
+            @Override
+            public void execute(ComboBox c, String value, Object data) {
+                for (Object id : c.getItemIds()) {
+                    if (value == null) {
+                        c.setItemIcon(id, null);
+                    } else {
+                        c.setItemIcon(id, new ThemeResource(value + "?" + new Date().getTime()));
                     }
-                });
+                }
+            }
+        });
     }
 }

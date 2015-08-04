@@ -68,13 +68,11 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
             return createEnumField(type, fieldType);
         } else if (Date.class.isAssignableFrom(type)) {
             return createDateField(type, fieldType);
-        } else if (Boolean.class.isAssignableFrom(type)
-                || boolean.class.isAssignableFrom(type)) {
+        } else if (Boolean.class.isAssignableFrom(type) || boolean.class.isAssignableFrom(type)) {
             return createBooleanField(fieldType);
         }
         if (AbstractTextField.class.isAssignableFrom(fieldType)) {
-            return fieldType.cast(createAbstractTextField(fieldType
-                    .asSubclass(AbstractTextField.class)));
+            return fieldType.cast(createAbstractTextField(fieldType.asSubclass(AbstractTextField.class)));
         } else if (fieldType == RichTextArea.class) {
             return fieldType.cast(createRichTextArea());
         }
@@ -88,8 +86,7 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
         return rta;
     }
 
-    private <T extends Field> T createEnumField(Class<?> type,
-            Class<T> fieldType) {
+    private <T extends Field> T createEnumField(Class<?> type, Class<T> fieldType) {
         // Determine first if we should (or can) create a select for the enum
         Class<AbstractSelect> selectClass = null;
         if (AbstractSelect.class.isAssignableFrom(fieldType)) {
@@ -109,14 +106,12 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
         return null;
     }
 
-    private <T extends Field> T createDateField(Class<?> type,
-            Class<T> fieldType) {
+    private <T extends Field> T createDateField(Class<?> type, Class<T> fieldType) {
         AbstractField field;
 
         if (InlineDateField.class.isAssignableFrom(fieldType)) {
             field = new InlineDateField();
-        } else if (anyField(fieldType)
-                || DateField.class.isAssignableFrom(fieldType)) {
+        } else if (anyField(fieldType) || DateField.class.isAssignableFrom(fieldType)) {
             field = new PopupDateField();
         } else if (AbstractTextField.class.isAssignableFrom(fieldType)) {
             field = createAbstractTextField((Class<? extends AbstractTextField>) fieldType);
@@ -128,8 +123,7 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
         return (T) field;
     }
 
-    protected AbstractSelect createCompatibleSelect(
-            Class<? extends AbstractSelect> fieldType) {
+    protected AbstractSelect createCompatibleSelect(Class<? extends AbstractSelect> fieldType) {
         AbstractSelect select;
         if (fieldType.isAssignableFrom(ListSelect.class)) {
             select = new ListSelect();
@@ -180,8 +174,7 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
         return null;
     }
 
-    protected <T extends AbstractTextField> T createAbstractTextField(
-            Class<T> fieldType) {
+    protected <T extends AbstractTextField> T createAbstractTextField(Class<T> fieldType) {
         if (fieldType == AbstractTextField.class) {
             fieldType = (Class<T>) TextField.class;
         }
@@ -190,8 +183,7 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
             field.setImmediate(true);
             return field;
         } catch (Exception e) {
-            throw new BindException("Could not create a field of type "
-                    + fieldType, e);
+            throw new BindException("Could not create a field of type " + fieldType, e);
         }
     }
 
@@ -208,8 +200,7 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
      * @return A field capable of editing the data or null if no field could be
      *         created
      */
-    protected <T extends Field> T createDefaultField(Class<?> type,
-            Class<T> fieldType) {
+    protected <T extends Field> T createDefaultField(Class<?> type, Class<T> fieldType) {
         if (fieldType.isAssignableFrom(TextField.class)) {
             return fieldType.cast(createAbstractTextField(TextField.class));
         }
@@ -225,8 +216,7 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
      * @param enumClass
      *            The Enum class to use
      */
-    protected void populateWithEnumData(AbstractSelect select,
-            Class<? extends Enum> enumClass) {
+    protected void populateWithEnumData(AbstractSelect select, Class<? extends Enum> enumClass) {
         select.removeAllItems();
         for (Object p : select.getContainerPropertyIds()) {
             select.removeContainerProperty(p);

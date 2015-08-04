@@ -45,8 +45,7 @@ public abstract class ExtremelyLongPushTimeTest extends MultiBrowserTest {
         vaadinElementById("startButton").click();
 
         // Wait for push to start. Should take 60s
-        waitUntil(ExpectedConditions.textToBePresentInElement(logRow0,
-                "Package "), 120);
+        waitUntil(ExpectedConditions.textToBePresentInElement(logRow0, "Package "), 120);
 
         // Check every hour that push is still going on
         for (int i = 0; i < 24; i++) {
@@ -59,9 +58,7 @@ public abstract class ExtremelyLongPushTimeTest extends MultiBrowserTest {
     private void ensureStillPushing(By logRow0) {
         String logValue = getDriver().findElement(logRow0).getText();
         // Wait for the log value to change. Should take max 60s
-        waitUntilNot(
-                ExpectedConditions.textToBePresentInElement(logRow0, logValue),
-                120);
+        waitUntilNot(ExpectedConditions.textToBePresentInElement(logRow0, logValue), 120);
     }
 
 }

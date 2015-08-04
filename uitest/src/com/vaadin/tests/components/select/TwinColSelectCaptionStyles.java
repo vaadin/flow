@@ -17,16 +17,15 @@ public class TwinColSelectCaptionStyles extends TestBase {
         sel.setWidth("300px");
         addComponent(sel);
 
-        Button b = new Button("Set height and width to 500px",
-                new Button.ClickListener() {
+        Button b = new Button("Set height and width to 500px", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        sel.setHeight("500px");
-                        sel.setWidth("500px");
+            @Override
+            public void buttonClick(ClickEvent event) {
+                sel.setHeight("500px");
+                sel.setWidth("500px");
 
-                    }
-                });
+            }
+        });
         addComponent(b);
     }
 

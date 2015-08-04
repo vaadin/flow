@@ -34,8 +34,6 @@ public class ComponentIncludedInCustomWidgetsetTest extends MultiBrowserTest {
     public void testComponentInTestingWidgetsetNotInDefaultWidgetset() {
         openTestURL();
         WebElement component = vaadinElementById("missing-component");
-        assertEquals(
-                "This component is available in TestingWidgetset, but not in DefaultWidgetset",
-                component.getText());
+        assertEquals("This component is available in TestingWidgetset, but not in DefaultWidgetset", component.getText());
     }
 }

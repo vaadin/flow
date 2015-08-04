@@ -34,7 +34,6 @@ public class GridClientDataChangeHandlerTest extends SingleBrowserTest {
         // Wait for delayed functionality.
         sleep(1000);
 
-        assertFalse("Unexpected exception is visible.",
-                $(NotificationElement.class).exists());
+        assertFalse("Unexpected exception is visible.", $(NotificationElement.class).exists());
     }
 }

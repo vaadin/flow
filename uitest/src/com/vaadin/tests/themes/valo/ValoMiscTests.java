@@ -62,8 +62,7 @@ public class ValoMiscTests extends UI {
         // row.setMargin(true);
         col.setDefaultComponentAlignment(Alignment.BOTTOM_CENTER);
 
-        col.addComponents(new Button("Boo"), new InlineDateField(),
-                new CheckBox("Far"), new Button("Abc"));
+        col.addComponents(new Button("Boo"), new InlineDateField(), new CheckBox("Far"), new Button("Abc"));
 
         p.setContent(col);
 

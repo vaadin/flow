@@ -31,10 +31,8 @@ public class ProgrammaticEditorControlTest extends SingleBrowserTest {
     public void multipleOpenFromServerSide() {
         openTestURL();
         GridElement grid = $(GridElement.class).first();
-        ButtonElement editButton = $(ButtonElement.class).caption("Edit")
-                .first();
-        ButtonElement cancelButton = $(ButtonElement.class).caption("Cancel")
-                .first();
+        ButtonElement editButton = $(ButtonElement.class).caption("Edit").first();
+        ButtonElement cancelButton = $(ButtonElement.class).caption("Cancel").first();
 
         editButton.click();
         assertEditorFieldContents(grid, "test");
@@ -47,8 +45,7 @@ public class ProgrammaticEditorControlTest extends SingleBrowserTest {
     }
 
     private void assertEditorFieldContents(GridElement grid, String text) {
-        TextFieldElement editorField = wrap(TextFieldElement.class, grid
-                .getEditor().getField(0));
+        TextFieldElement editorField = wrap(TextFieldElement.class, grid.getEditor().getField(0));
         Assert.assertEquals(text, editorField.getValue());
     }
 

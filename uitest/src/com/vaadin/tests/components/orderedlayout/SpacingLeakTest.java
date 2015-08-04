@@ -28,13 +28,10 @@ public class SpacingLeakTest extends MultiBrowserTest {
         openTestURL();
         openDebugLogTab();
         getDriver().findElement(By.id("addbutton")).click();
-        getDriver().findElement(By.xpath("//button[@title = 'Clear log']"))
-                .click();
+        getDriver().findElement(By.xpath("//button[@title = 'Clear log']")).click();
         getDriver().findElement(By.id("removebutton")).click();
 
         // this should be present
-        getDriver()
-                .findElement(
-                        By.xpath("//span[text() = 'Measured 0 non connector elements']"));
+        getDriver().findElement(By.xpath("//span[text() = 'Measured 0 non connector elements']"));
     }
 }

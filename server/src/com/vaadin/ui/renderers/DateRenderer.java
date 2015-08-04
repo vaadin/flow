@@ -72,8 +72,7 @@ public class DateRenderer extends AbstractRenderer<Date> {
      * @throws IllegalArgumentException
      *             if {@code locale} is {@code null}
      */
-    public DateRenderer(Locale locale, String nullRepresentation)
-            throws IllegalArgumentException {
+    public DateRenderer(Locale locale, String nullRepresentation) throws IllegalArgumentException {
         this("%s", locale, nullRepresentation);
     }
 
@@ -111,8 +110,7 @@ public class DateRenderer extends AbstractRenderer<Date> {
      *      href="http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax">Format
      *      String Syntax</a>
      */
-    public DateRenderer(String formatString, String nullRepresentation)
-            throws IllegalArgumentException {
+    public DateRenderer(String formatString, String nullRepresentation) throws IllegalArgumentException {
         this(formatString, Locale.getDefault(), nullRepresentation);
     }
 
@@ -132,8 +130,7 @@ public class DateRenderer extends AbstractRenderer<Date> {
      *      href="http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax">Format
      *      String Syntax</a>
      */
-    public DateRenderer(String formatString, Locale locale)
-            throws IllegalArgumentException {
+    public DateRenderer(String formatString, Locale locale) throws IllegalArgumentException {
         this(formatString, locale, "");
     }
 
@@ -155,8 +152,7 @@ public class DateRenderer extends AbstractRenderer<Date> {
      *      href="http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax">Format
      *      String Syntax</a>
      */
-    public DateRenderer(String formatString, Locale locale,
-            String nullRepresentation) throws IllegalArgumentException {
+    public DateRenderer(String formatString, Locale locale, String nullRepresentation) throws IllegalArgumentException {
         super(Date.class, nullRepresentation);
 
         if (formatString == null) {
@@ -196,8 +192,7 @@ public class DateRenderer extends AbstractRenderer<Date> {
      * @throws IllegalArgumentException
      *             if {@code dateFormat} is {@code null}
      */
-    public DateRenderer(DateFormat dateFormat, String nullRepresentation)
-            throws IllegalArgumentException {
+    public DateRenderer(DateFormat dateFormat, String nullRepresentation) throws IllegalArgumentException {
         super(Date.class, nullRepresentation);
         if (dateFormat == null) {
             throw new IllegalArgumentException("date format may not be null");

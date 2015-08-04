@@ -47,9 +47,7 @@ public class HelloWorldExtensionConnector extends AbstractExtensionConnector {
     }
 
     private void greet() {
-        String msg = getState().getGreeting() + " from "
-                + Util.getConnectorString(this) + " attached to "
-                + Util.getConnectorString(getParent());
+        String msg = getState().getGreeting() + " from " + Util.getConnectorString(this) + " attached to " + Util.getConnectorString(getParent());
         VConsole.log(msg);
 
         String response = Window.prompt(msg, "");

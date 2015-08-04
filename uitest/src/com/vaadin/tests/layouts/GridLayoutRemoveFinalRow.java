@@ -24,13 +24,12 @@ public class GridLayoutRemoveFinalRow extends TestBase {
         layout.addComponent(new Label("Label4"));
         addComponent(layout);
 
-        Button removeRowBtn = new Button("Remove row",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        layout.removeRow(0);
-                    }
-                });
+        Button removeRowBtn = new Button("Remove row", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                layout.removeRow(0);
+            }
+        });
         addComponent(removeRowBtn);
     }
 

@@ -11,8 +11,7 @@ import com.vaadin.util.ReflectTools;
 
 public class Refresher extends AbstractExtension {
     public interface RefreshListener {
-        static Method METHOD = ReflectTools.findMethod(RefreshListener.class,
-                "refresh", RefreshEvent.class);
+        static Method METHOD = ReflectTools.findMethod(RefreshListener.class, "refresh", RefreshEvent.class);
 
         public void refresh(RefreshEvent refreshEvent);
     }
@@ -65,7 +64,6 @@ public class Refresher extends AbstractExtension {
     }
 
     public void removeRefreshListener(RefreshListener listener) {
-        super.removeListener(RefreshEvent.class, listener,
-                RefreshListener.METHOD);
+        super.removeListener(RefreshEvent.class, listener, RefreshListener.METHOD);
     }
 }

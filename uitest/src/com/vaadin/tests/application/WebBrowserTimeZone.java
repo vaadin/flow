@@ -42,10 +42,8 @@ public class WebBrowserTimeZone extends AbstractTestUI {
                 rawOffsetLabel.setValue(String.valueOf(browserRawOffset));
                 diffLabel.setValue(String.valueOf(browserOffset - hkiOffset));
                 containsLabel.setValue(contains ? "Yes" : "No");
-                dstDiffLabel.setValue(String.valueOf(getBrowser()
-                        .getDSTSavings()));
-                dstInEffectLabel.setValue(getBrowser().isDSTInEffect() ? "Yes"
-                        : "No");
+                dstDiffLabel.setValue(String.valueOf(getBrowser().getDSTSavings()));
+                dstInEffectLabel.setValue(getBrowser().isDSTInEffect() ? "Yes" : "No");
                 curDateLabel.setValue(getBrowser().getCurrentDate().toString());
             }
         });

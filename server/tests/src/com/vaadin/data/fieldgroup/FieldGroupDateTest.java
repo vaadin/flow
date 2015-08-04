@@ -60,8 +60,7 @@ public class FieldGroupDateTest {
     @Before
     public void setup() {
         fieldGroup = new FieldGroup();
-        fieldGroup.setItemDataSource(new BeanItem<TestBean>(new TestBean(
-                new Date(2010, 5, 7), new java.sql.Date(2011, 6, 8))));
+        fieldGroup.setItemDataSource(new BeanItem<TestBean>(new TestBean(new Date(2010, 5, 7), new java.sql.Date(2011, 6, 8))));
     }
 
     @Test

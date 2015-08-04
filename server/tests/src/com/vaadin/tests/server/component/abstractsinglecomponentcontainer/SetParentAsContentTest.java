@@ -35,8 +35,7 @@ public class SetParentAsContentTest {
     public void testSetContent() {
         AbstractSingleComponentContainer container = new AbstractSingleComponentContainer() {
         };
-        HasComponents hasComponentsMock = EasyMock
-                .createMock(HasComponents.class);
+        HasComponents hasComponentsMock = EasyMock.createMock(HasComponents.class);
         container.setParent(hasComponentsMock);
 
         container.setContent(hasComponentsMock);

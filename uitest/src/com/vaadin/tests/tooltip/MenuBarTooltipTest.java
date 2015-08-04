@@ -17,8 +17,7 @@ public class MenuBarTooltipTest extends MultiBrowserTest {
 
     @Test
     public void toolTipShouldBeOnTopOfMenuItem() {
-        String[] themes = new String[] { ValoTheme.THEME_NAME,
-                Reindeer.THEME_NAME, Runo.THEME_NAME, ChameleonTheme.THEME_NAME };
+        String[] themes = new String[] { ValoTheme.THEME_NAME, Reindeer.THEME_NAME, Runo.THEME_NAME, ChameleonTheme.THEME_NAME };
 
         for (String theme : themes) {
             assertZIndices(theme);
@@ -30,14 +29,11 @@ public class MenuBarTooltipTest extends MultiBrowserTest {
 
         $(MenuBarElement.class).first().clickItem("Menu item");
 
-        assertThat(String.format("Invalid z-index for theme %s.", theme),
-                getZIndex("v-tooltip"),
-                greaterThan(getZIndex("v-menubar-popup")));
+        assertThat(String.format("Invalid z-index for theme %s.", theme), getZIndex("v-tooltip"), greaterThan(getZIndex("v-menubar-popup")));
     }
 
     private int getZIndex(String className) {
-        return Integer.parseInt(findElement(By.className(className))
-                .getCssValue("z-index"));
+        return Integer.parseInt(findElement(By.className(className)).getCssValue("z-index"));
     }
 
 }

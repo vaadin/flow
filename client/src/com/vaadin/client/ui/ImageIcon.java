@@ -64,8 +64,7 @@ public class ImageIcon extends Icon {
 
     @Override
     public void setAlternateText(String alternateText) {
-        getElement().setAttribute("alt",
-                alternateText == null ? "" : alternateText);
+        getElement().setAttribute("alt", alternateText == null ? "" : alternateText);
     }
 
     @Override

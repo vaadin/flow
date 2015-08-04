@@ -34,13 +34,11 @@ import com.vaadin.tests.tb3.MultiBrowserTest;
 public class ComboBoxSetNullWhenNewItemsAllowedTest extends MultiBrowserTest {
 
     @Test
-    public void testNewValueIsClearedAppropriately()
-            throws InterruptedException {
+    public void testNewValueIsClearedAppropriately() throws InterruptedException {
         setDebug(true);
         openTestURL();
 
-        WebElement element = $(ComboBoxElement.class).first().findElement(
-                By.vaadin("#textbox"));
+        WebElement element = $(ComboBoxElement.class).first().findElement(By.vaadin("#textbox"));
         ((TestBenchElementCommands) element).click(8, 7);
         element.clear();
         element.sendKeys("New value");

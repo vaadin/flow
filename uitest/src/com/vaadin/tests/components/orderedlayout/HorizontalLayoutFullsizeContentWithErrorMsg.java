@@ -44,8 +44,7 @@ public class HorizontalLayoutFullsizeContentWithErrorMsg extends AbstractTestUI 
         toggleError.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                tf.setComponentError(tf.getComponentError() == null ? new UserError(
-                        "foo") : null);
+                tf.setComponentError(tf.getComponentError() == null ? new UserError("foo") : null);
             }
         });
         hl.addComponent(toggleError);

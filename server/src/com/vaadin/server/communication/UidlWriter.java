@@ -96,9 +96,7 @@ public class UidlWriter implements Serializable {
         while (true) {
             ArrayList<ClientConnector> connectorsToProcess = new ArrayList<ClientConnector>();
             for (ClientConnector c : uiConnectorTracker.getDirtyConnectors()) {
-                if (!processedConnectors.contains(c)
-                        && LegacyCommunicationManager
-                                .isConnectorVisibleToClient(c)) {
+                if (!processedConnectors.contains(c) && LegacyCommunicationManager.isConnectorVisibleToClient(c)) {
                     connectorsToProcess.add(c);
                 }
             }
@@ -108,8 +106,7 @@ public class UidlWriter implements Serializable {
             }
 
             for (ClientConnector connector : connectorsToProcess) {
-                boolean initialized = uiConnectorTracker
-                        .isClientSideInitialized(connector);
+                boolean initialized = uiConnectorTracker.isClientSideInitialized(connector);
                 processedConnectors.add(connector);
 
                 try {
@@ -120,27 +117,18 @@ public class UidlWriter implements Serializable {
             }
         }
 
-        getLogger().log(
-                Level.FINE,
-                "Found " + processedConnectors.size()
-                        + " dirty connectors to paint");
+        getLogger().log(Level.FINE, "Found " + processedConnectors.size() + " dirty connectors to paint");
 
         uiConnectorTracker.setWritingResponse(true);
         try {
 
-            int syncId = service.getDeploymentConfiguration()
-                    .isSyncIdCheckEnabled() ? uiConnectorTracker
-                    .getCurrentSyncId() : -1;
-            writer.write("\"" + ApplicationConstants.SERVER_SYNC_ID + "\": "
-                    + syncId + ", ");
+            int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled() ? uiConnectorTracker.getCurrentSyncId() : -1;
+            writer.write("\"" + ApplicationConstants.SERVER_SYNC_ID + "\": " + syncId + ", ");
             if (repaintAll) {
-                writer.write("\"" + ApplicationConstants.RESYNCHRONIZE_ID
-                        + "\": true, ");
+                writer.write("\"" + ApplicationConstants.RESYNCHRONIZE_ID + "\": true, ");
             }
-            int nextClientToServerMessageId = ui
-                    .getLastProcessedClientToServerId() + 1;
-            writer.write("\"" + ApplicationConstants.CLIENT_TO_SERVER_ID
-                    + "\": " + nextClientToServerMessageId + ", ");
+            int nextClientToServerMessageId = ui.getLastProcessedClientToServerId() + 1;
+            writer.write("\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\": " + nextClientToServerMessageId + ", ");
 
             // send shared state to client
 
@@ -163,20 +151,15 @@ public class UidlWriter implements Serializable {
             // widget mapping
 
             writer.write("\"types\":");
-            Collection<ClientConnector> dirtyVisibleConnectors = ui
-                    .getConnectorTracker().getDirtyVisibleConnectors();
+            Collection<ClientConnector> dirtyVisibleConnectors = ui.getConnectorTracker().getDirtyVisibleConnectors();
 
             JsonObject connectorTypes = Json.createObject();
             for (ClientConnector connector : dirtyVisibleConnectors) {
                 String connectorType = getTag(connector, manager);
                 try {
-                    connectorTypes.put(connector.getConnectorId(),
-                            connectorType);
+                    connectorTypes.put(connector.getConnectorId(), connectorType);
                 } catch (JsonException e) {
-                    throw new PaintException(
-                            "Failed to send connector type for connector "
-                                    + connector.getConnectorId() + ": "
-                                    + e.getMessage(), e);
+                    throw new PaintException("Failed to send connector type for connector " + connector.getConnectorId() + ": " + e.getMessage(), e);
                 }
             }
             writer.write(JsonUtil.stringify(connectorTypes));
@@ -207,8 +190,7 @@ public class UidlWriter implements Serializable {
 
             writer.write("\"meta\" : ");
 
-            SystemMessages messages = ui.getSession().getService()
-                    .getSystemMessages(ui.getLocale(), null);
+            SystemMessages messages = ui.getSession().getService().getSystemMessages(ui.getLocale(), null);
             // TODO hilightedConnector
             new MetadataWriter().write(ui, writer, repaintAll, async, messages);
             writer.write(", ");
@@ -245,8 +227,7 @@ public class UidlWriter implements Serializable {
             if (typeMappingsOpen) {
                 // send the whole type inheritance map if any new mappings
                 for (Class<? extends ClientConnector> class1 : usedClientConnectors) {
-                    if (!ClientConnector.class.isAssignableFrom(class1
-                            .getSuperclass())) {
+                    if (!ClientConnector.class.isAssignableFrom(class1.getSuperclass())) {
                         continue;
                     }
                     if (!typeInheritanceMapOpen) {
@@ -258,9 +239,7 @@ public class UidlWriter implements Serializable {
                     writer.write("\"");
                     writer.write(manager.getTagForType(class1));
                     writer.write("\" : ");
-                    writer.write(manager
-                            .getTagForType((Class<? extends ClientConnector>) class1
-                                    .getSuperclass()));
+                    writer.write(manager.getTagForType((Class<? extends ClientConnector>) class1.getSuperclass()));
                 }
                 if (typeInheritanceMapOpen) {
                     writer.write(" }");
@@ -294,35 +273,29 @@ public class UidlWriter implements Serializable {
             List<String> styleDependencies = new ArrayList<String>();
 
             for (Class<? extends ClientConnector> class1 : newConnectorTypes) {
-                JavaScript jsAnnotation = class1
-                        .getAnnotation(JavaScript.class);
+                JavaScript jsAnnotation = class1.getAnnotation(JavaScript.class);
                 if (jsAnnotation != null) {
                     for (String uri : jsAnnotation.value()) {
-                        scriptDependencies.add(manager.registerDependency(uri,
-                                class1));
+                        scriptDependencies.add(manager.registerDependency(uri, class1));
                     }
                 }
 
-                StyleSheet styleAnnotation = class1
-                        .getAnnotation(StyleSheet.class);
+                StyleSheet styleAnnotation = class1.getAnnotation(StyleSheet.class);
                 if (styleAnnotation != null) {
                     for (String uri : styleAnnotation.value()) {
-                        styleDependencies.add(manager.registerDependency(uri,
-                                class1));
+                        styleDependencies.add(manager.registerDependency(uri, class1));
                     }
                 }
             }
 
             // Include script dependencies in output if there are any
             if (!scriptDependencies.isEmpty()) {
-                writer.write(", \"scriptDependencies\": "
-                        + JsonUtil.stringify(toJsonArray(scriptDependencies)));
+                writer.write(", \"scriptDependencies\": " + JsonUtil.stringify(toJsonArray(scriptDependencies)));
             }
 
             // Include style dependencies in output if there are any
             if (!styleDependencies.isEmpty()) {
-                writer.write(", \"styleDependencies\": "
-                        + JsonUtil.stringify(toJsonArray(styleDependencies)));
+                writer.write(", \"styleDependencies\": " + JsonUtil.stringify(toJsonArray(styleDependencies)));
             }
 
             for (ClientConnector connector : processedConnectors) {
@@ -354,24 +327,17 @@ public class UidlWriter implements Serializable {
      * @throws IOException
      */
     private void writePerformanceData(UI ui, Writer writer) throws IOException {
-        writer.write(String.format(", \"timings\":[%d, %d]", ui.getSession()
-                .getCumulativeRequestDuration(), ui.getSession()
-                .getLastRequestDuration()));
+        writer.write(String.format(", \"timings\":[%d, %d]", ui.getSession().getCumulativeRequestDuration(), ui.getSession().getLastRequestDuration()));
     }
 
     @SuppressWarnings("unchecked")
-    public String getTag(ClientConnector clientConnector,
-            LegacyCommunicationManager manager) {
-        Class<? extends ClientConnector> clientConnectorClass = clientConnector
-                .getClass();
+    public String getTag(ClientConnector clientConnector, LegacyCommunicationManager manager) {
+        Class<? extends ClientConnector> clientConnectorClass = clientConnector.getClass();
         while (clientConnectorClass.isAnonymousClass()) {
-            clientConnectorClass = (Class<? extends ClientConnector>) clientConnectorClass
-                    .getSuperclass();
+            clientConnectorClass = (Class<? extends ClientConnector>) clientConnectorClass.getSuperclass();
         }
         Class<?> clazz = clientConnectorClass;
-        while (!usedClientConnectors.contains(clazz)
-                && clazz.getSuperclass() != null
-                && ClientConnector.class.isAssignableFrom(clazz)) {
+        while (!usedClientConnectors.contains(clazz) && clazz.getSuperclass() != null && ClientConnector.class.isAssignableFrom(clazz)) {
             usedClientConnectors.add((Class<? extends ClientConnector>) clazz);
             clazz = clazz.getSuperclass();
         }

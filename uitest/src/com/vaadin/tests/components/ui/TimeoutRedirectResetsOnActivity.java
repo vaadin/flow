@@ -62,24 +62,21 @@ public class TimeoutRedirectResetsOnActivity extends AbstractTestUI {
     }
 
     private long getExpireTime() {
-        return System.currentTimeMillis()
-                + (maxActiveInterval + timeoutOverhead) * 1000;
+        return System.currentTimeMillis() + (maxActiveInterval + timeoutOverhead) * 1000;
     }
 
     private void setupTimeout(VaadinRequest request) {
-        request.getService().setSystemMessagesProvider(
-                new SystemMessagesProvider() {
-                    @Override
-                    public SystemMessages getSystemMessages(
-                            SystemMessagesInfo systemMessagesInfo) {
-                        CustomizedSystemMessages msgs = new CustomizedSystemMessages();
-                        msgs.setSessionExpiredMessage(null);
-                        msgs.setSessionExpiredCaption(null);
-                        msgs.setSessionExpiredNotificationEnabled(true);
-                        msgs.setSessionExpiredURL("http://example.com/");
-                        return msgs;
-                    }
-                });
+        request.getService().setSystemMessagesProvider(new SystemMessagesProvider() {
+            @Override
+            public SystemMessages getSystemMessages(SystemMessagesInfo systemMessagesInfo) {
+                CustomizedSystemMessages msgs = new CustomizedSystemMessages();
+                msgs.setSessionExpiredMessage(null);
+                msgs.setSessionExpiredCaption(null);
+                msgs.setSessionExpiredNotificationEnabled(true);
+                msgs.setSessionExpiredURL("http://example.com/");
+                return msgs;
+            }
+        });
         /*
          * NOTE: in practice, this means a timeout after 25 seconds, because of
          * implementation details in

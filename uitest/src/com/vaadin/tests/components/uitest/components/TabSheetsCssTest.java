@@ -19,29 +19,22 @@ public class TabSheetsCssTest {
         TabSheet basic = createTabSheetWith("Basic TabSheet", null);
         parent.addComponent(basic);
 
-        TabSheet bordeless = createTabSheetWith("Borderelss TabSheet",
-                Reindeer.TABSHEET_BORDERLESS);
+        TabSheet bordeless = createTabSheetWith("Borderelss TabSheet", Reindeer.TABSHEET_BORDERLESS);
         parent.addComponent(bordeless);
 
-        TabSheet bar = createTabSheetWith("A small/bar TabSheet",
-                Reindeer.TABSHEET_SMALL);
+        TabSheet bar = createTabSheetWith("A small/bar TabSheet", Reindeer.TABSHEET_SMALL);
         parent.addComponent(bar);
 
-        TabSheet minimal = createTabSheetWith("A minimal tabsheet",
-                Reindeer.TABSHEET_MINIMAL);
+        TabSheet minimal = createTabSheetWith("A minimal tabsheet", Reindeer.TABSHEET_MINIMAL);
         parent.addComponent(minimal);
 
-        TabSheet hoverClosable = createTabSheetWith(
-                "A hover-closable TabSheet", Reindeer.TABSHEET_HOVER_CLOSABLE);
+        TabSheet hoverClosable = createTabSheetWith("A hover-closable TabSheet", Reindeer.TABSHEET_HOVER_CLOSABLE);
         parent.addComponent(hoverClosable);
 
-        TabSheet selectedClosable = createTabSheetWith(
-                "A selected-closable TabSheet",
-                Reindeer.TABSHEET_SELECTED_CLOSABLE);
+        TabSheet selectedClosable = createTabSheetWith("A selected-closable TabSheet", Reindeer.TABSHEET_SELECTED_CLOSABLE);
         parent.addComponent(selectedClosable);
 
-        TabSheet light = createTabSheetWith("A light TabSheet",
-                Runo.TABSHEET_SMALL);
+        TabSheet light = createTabSheetWith("A light TabSheet", Runo.TABSHEET_SMALL);
         parent.addComponent(light);
 
     }

@@ -29,8 +29,7 @@ public class VaadinSessionAttributeTest extends MultiBrowserTest {
     public void testSessionAttribute() {
         openTestURL();
         $(ButtonElement.class).first().click();
-        assertEquals("notification does not contain suitable text", "42 & 84",
-                $(FixedNotificationElement.class).first().getCaption());
+        assertEquals("notification does not contain suitable text", "42 & 84", $(FixedNotificationElement.class).first().getCaption());
     }
 
 }

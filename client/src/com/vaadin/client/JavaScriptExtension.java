@@ -23,10 +23,8 @@ import com.vaadin.shared.JavaScriptExtensionState;
 import com.vaadin.shared.ui.Connect;
 
 @Connect(AbstractJavaScriptExtension.class)
-public final class JavaScriptExtension extends AbstractExtensionConnector
-        implements HasJavaScriptConnectorHelper {
-    private final JavaScriptConnectorHelper helper = new JavaScriptConnectorHelper(
-            this);
+public final class JavaScriptExtension extends AbstractExtensionConnector implements HasJavaScriptConnectorHelper {
+    private final JavaScriptConnectorHelper helper = new JavaScriptConnectorHelper(this);
 
     @Override
     protected void init() {

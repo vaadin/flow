@@ -23,18 +23,15 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.tests.tb3.MultiBrowserTest;
 
-public class HorizontalLayoutFullsizeContentWithErrorMsgTest extends
-        MultiBrowserTest {
+public class HorizontalLayoutFullsizeContentWithErrorMsgTest extends MultiBrowserTest {
 
     @Test
     public void test() {
         openTestURL();
-        WebElement element = getDriver().findElement(
-                By.id(HorizontalLayoutFullsizeContentWithErrorMsg.FIELD_ID));
+        WebElement element = getDriver().findElement(By.id(HorizontalLayoutFullsizeContentWithErrorMsg.FIELD_ID));
         Point location = element.getLocation();
 
-        WebElement errorToggleButton = getDriver().findElement(
-                By.id(HorizontalLayoutFullsizeContentWithErrorMsg.BUTTON_ID));
+        WebElement errorToggleButton = getDriver().findElement(By.id(HorizontalLayoutFullsizeContentWithErrorMsg.BUTTON_ID));
 
         errorToggleButton.click();
 

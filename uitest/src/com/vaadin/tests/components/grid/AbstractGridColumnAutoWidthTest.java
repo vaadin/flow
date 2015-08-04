@@ -46,10 +46,8 @@ public abstract class AbstractGridColumnAutoWidthTest extends MultiBrowserTest {
         int bodyWidth = col[1].getSize().getWidth();
         int colWidth = col[2].getSize().getWidth() - TOTAL_MARGIN_PX;
 
-        assertLessThan("header should've been narrower than body", headerWidth,
-                bodyWidth);
-        assertEquals("column should've been roughly as wide as the body",
-                bodyWidth, colWidth, 5);
+        assertLessThan("header should've been narrower than body", headerWidth, bodyWidth);
+        assertEquals("column should've been roughly as wide as the body", bodyWidth, colWidth, 5);
     }
 
     @Test
@@ -59,10 +57,8 @@ public abstract class AbstractGridColumnAutoWidthTest extends MultiBrowserTest {
         int bodyWidth = col[1].getSize().getWidth();
         int colWidth = col[2].getSize().getWidth() - TOTAL_MARGIN_PX;
 
-        assertGreater("header should've been wider than body", headerWidth,
-                bodyWidth);
-        assertEquals("column should've been roughly as wide as the header",
-                headerWidth, colWidth, 5);
+        assertGreater("header should've been wider than body", headerWidth, bodyWidth);
+        assertEquals("column should've been roughly as wide as the header", headerWidth, colWidth, 5);
 
     }
 
@@ -77,8 +73,7 @@ public abstract class AbstractGridColumnAutoWidthTest extends MultiBrowserTest {
         int headerWidth = col[0].getSize().getWidth();
         int colWidth = col[2].getSize().getWidth() - TOTAL_MARGIN_PX;
 
-        assertLessThan("column should've been narrower than content", colWidth,
-                headerWidth);
+        assertLessThan("column should've been narrower than content", colWidth, headerWidth);
     }
 
     @Test
@@ -87,8 +82,7 @@ public abstract class AbstractGridColumnAutoWidthTest extends MultiBrowserTest {
         int headerWidth = col[0].getSize().getWidth();
         int colWidth = col[2].getSize().getWidth() - TOTAL_MARGIN_PX;
 
-        assertGreater("column should've been wider than content", colWidth,
-                headerWidth);
+        assertGreater("column should've been wider than content", colWidth, headerWidth);
     }
 
     @Test
@@ -98,12 +92,9 @@ public abstract class AbstractGridColumnAutoWidthTest extends MultiBrowserTest {
 
     private WebElement[] getColumn(int i) {
         WebElement[] col = new WebElement[3];
-        col[0] = getDriver().findElement(
-                By.xpath("//thead//th[" + (i + 1) + "]/span"));
-        col[1] = getDriver().findElement(
-                By.xpath("//tbody//td[" + (i + 1) + "]/span"));
-        col[2] = getDriver().findElement(
-                By.xpath("//tbody//td[" + (i + 1) + "]"));
+        col[0] = getDriver().findElement(By.xpath("//thead//th[" + (i + 1) + "]/span"));
+        col[1] = getDriver().findElement(By.xpath("//tbody//td[" + (i + 1) + "]/span"));
+        col[2] = getDriver().findElement(By.xpath("//tbody//td[" + (i + 1) + "]"));
         return col;
     }
 

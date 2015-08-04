@@ -71,16 +71,14 @@ public class WidgetsetCompiler {
 
                         // TODO expecting this is launched via eclipse WTP
                         // project
-                        System.out
-                                .println("Updating GWT module description file...");
+                        System.out.println("Updating GWT module description file...");
                         WidgetSetBuilder.updateWidgetSet(wsname);
                         System.out.println("Done.");
 
                         System.out.println("Starting GWT compiler");
                         com.google.gwt.dev.Compiler.main(args);
                     } catch (Throwable thr) {
-                        getLogger().log(Level.SEVERE,
-                                "Widgetset compilation failed", thr);
+                        getLogger().log(Level.SEVERE, "Widgetset compilation failed", thr);
                     }
                 }
             };

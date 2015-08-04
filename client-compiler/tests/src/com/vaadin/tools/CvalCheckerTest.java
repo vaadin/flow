@@ -65,15 +65,9 @@ public class CvalCheckerTest {
     static final String VALID_KEY = "valid";
     static final String INVALID_KEY = "invalid";
 
-    static final String responseJson = "{'licenseKey':'" + VALID_KEY + "',"
-            + "'licensee':'Test User','type':'normal',"
-            + "'expiredEpoch':1893511225000," + "'product':{'name':'"
-            + productNameCval + "', 'version': 2}}";
+    static final String responseJson = "{'licenseKey':'" + VALID_KEY + "'," + "'licensee':'Test User','type':'normal'," + "'expiredEpoch':1893511225000," + "'product':{'name':'" + productNameCval + "', 'version': 2}}";
 
-    static final String responseJsonWithNullVersion = "{'licenseKey':'"
-            + VALID_KEY + "'," + "'licensee':'Test User','type':'normal',"
-            + "'expiredEpoch':1893511225000," + "'product':{'name':'"
-            + productNameCval + "', 'version': null}}";
+    static final String responseJsonWithNullVersion = "{'licenseKey':'" + VALID_KEY + "'," + "'licensee':'Test User','type':'normal'," + "'expiredEpoch':1893511225000," + "'product':{'name':'" + productNameCval + "', 'version': null}}";
 
     private static ByteArrayOutputStream outContent;
 
@@ -96,9 +90,7 @@ public class CvalCheckerTest {
     static final CvalServer expiredLicenseProviderWithMessage = new CvalServer() {
         @Override
         String askServer(String productName, String productKey, int timeout) {
-            return responseJson
-                    .replace("'expired",
-                            "'message':'Custom\\\\nServer\\\\nMessage','expired':true,'expired");
+            return responseJson.replace("'expired", "'message':'Custom\\\\nServer\\\\nMessage','expired':true,'expired");
         }
     };
     // A provider returning an expired license with a server message
@@ -126,8 +118,7 @@ public class CvalCheckerTest {
     // An unreachable provider
     static final CvalServer unreachableLicenseProvider = new CvalServer() {
         @Override
-        String askServer(String productName, String productKey, int timeout)
-                throws IOException {
+        String askServer(String productName, String productKey, int timeout) throws IOException {
             // Normally there is no route for this ip in public routers, so we
             // should get a timeout.
             licenseUrl = "http://localhost:9999/";
@@ -137,8 +128,7 @@ public class CvalCheckerTest {
     // A provider with 'null' in the version field
     static final CvalServer nullVersionLicenseProvider = new CvalServer() {
         @Override
-        String askServer(String productName, String productKey, int timeout)
-                throws IOException {
+        String askServer(String productName, String productKey, int timeout) throws IOException {
             return responseJsonWithNullVersion;
         }
     };
@@ -148,8 +138,7 @@ public class CvalCheckerTest {
 
     @Before
     public void setup() {
-        licenseChecker = new CvalChecker()
-                .setLicenseProvider(validLicenseProvider);
+        licenseChecker = new CvalChecker().setLicenseProvider(validLicenseProvider);
         licenseName = CvalChecker.computeLicenseName(productNameCval);
         System.getProperties().remove(licenseName);
         deleteCache(productNameCval);
@@ -161,8 +150,7 @@ public class CvalCheckerTest {
 
         // If the license key in our environment is null, throw an exception
         try {
-            licenseChecker.validateProduct(productNameCval, "2.1",
-                    productTitleCval);
+            licenseChecker.validateProduct(productNameCval, "2.1", productTitleCval);
             Assert.fail();
         } catch (InvalidCvalException expected) {
             assertEquals(productNameCval, expected.name);
@@ -172,8 +160,7 @@ public class CvalCheckerTest {
         // If the license key is empty, throw an exception
         System.setProperty(licenseName, "");
         try {
-            licenseChecker.validateProduct(productNameCval, "2.1",
-                    productTitleCval);
+            licenseChecker.validateProduct(productNameCval, "2.1", productTitleCval);
             Assert.fail();
         } catch (InvalidCvalException expected) {
             assertEquals(productNameCval, expected.name);
@@ -183,8 +170,7 @@ public class CvalCheckerTest {
         // If license key is invalid, throw an exception
         System.setProperty(licenseName, "invalid");
         try {
-            licenseChecker.validateProduct(productNameCval, "2.1",
-                    productTitleCval);
+            licenseChecker.validateProduct(productNameCval, "2.1", productTitleCval);
             Assert.fail();
         } catch (InvalidCvalException expected) {
             assertEquals(productNameCval, expected.name);
@@ -194,8 +180,7 @@ public class CvalCheckerTest {
         // Fail if version is bigger
         System.setProperty(licenseName, VALID_KEY);
         try {
-            licenseChecker.validateProduct(productNameCval, "3.0",
-                    productTitleCval);
+            licenseChecker.validateProduct(productNameCval, "3.0", productTitleCval);
             Assert.fail();
         } catch (InvalidCvalException expected) {
             assertEquals(productNameCval, expected.name);
@@ -205,23 +190,20 @@ public class CvalCheckerTest {
 
         // Success if license key and version are valid
         System.setProperty(licenseName, VALID_KEY);
-        licenseChecker
-                .validateProduct(productNameCval, "2.1", productTitleCval);
+        licenseChecker.validateProduct(productNameCval, "2.1", productTitleCval);
         Assert.assertTrue(cacheExists(productNameCval));
 
         // Success if license and cache file are valid, although the license
         // server is offline
         licenseChecker.setLicenseProvider(unreachableLicenseProvider);
-        licenseChecker
-                .validateProduct(productNameCval, "2.1", productTitleCval);
+        licenseChecker.validateProduct(productNameCval, "2.1", productTitleCval);
         Assert.assertTrue(cacheExists(productNameCval));
 
         // Fail if license key changes although cache file were validated
         // previously and it is ok, we are offline
         try {
             System.setProperty(licenseName, INVALID_KEY);
-            licenseChecker.validateProduct(productNameCval, "2.1",
-                    productTitleCval);
+            licenseChecker.validateProduct(productNameCval, "2.1", productTitleCval);
             Assert.fail();
         } catch (InvalidCvalException expected) {
             Assert.fail();
@@ -234,8 +216,7 @@ public class CvalCheckerTest {
         // server is offline
         try {
             System.setProperty(licenseName, VALID_KEY);
-            licenseChecker.validateProduct(productNameCval, "2.1",
-                    productTitleCval);
+            licenseChecker.validateProduct(productNameCval, "2.1", productTitleCval);
             Assert.fail();
         } catch (InvalidCvalException expected) {
             Assert.fail();
@@ -249,8 +230,7 @@ public class CvalCheckerTest {
         deleteCache(productNameCval);
         licenseChecker.setLicenseProvider(expiredLicenseProviderWithMessage);
         try {
-            licenseChecker.validateProduct(productNameCval, "2.1",
-                    productTitleCval);
+            licenseChecker.validateProduct(productNameCval, "2.1", productTitleCval);
             Assert.fail();
         } catch (InvalidCvalException expected) {
             assertEquals(productNameCval, expected.name);
@@ -262,8 +242,7 @@ public class CvalCheckerTest {
         // Check an unlimited license
         deleteCache(productNameCval);
         licenseChecker.setLicenseProvider(unlimitedLicenseProvider);
-        licenseChecker
-                .validateProduct(productNameCval, "2.1", productTitleCval);
+        licenseChecker.validateProduct(productNameCval, "2.1", productTitleCval);
         Assert.assertTrue(cacheExists(productNameCval));
 
         // Fail if expired flag does not come, but expired epoch is in the past
@@ -271,8 +250,7 @@ public class CvalCheckerTest {
         deleteCache(productNameCval);
         licenseChecker.setLicenseProvider(expiredEpochLicenseProvider);
         try {
-            licenseChecker.validateProduct(productNameCval, "2.1",
-                    productTitleCval);
+            licenseChecker.validateProduct(productNameCval, "2.1", productTitleCval);
             Assert.fail();
         } catch (InvalidCvalException expected) {
             assertEquals(productNameCval, expected.name);
@@ -281,8 +259,7 @@ public class CvalCheckerTest {
 
         deleteCache(productNameCval);
         licenseChecker.setLicenseProvider(nullVersionLicenseProvider);
-        licenseChecker
-                .validateProduct(productNameCval, "2.1", productTitleCval);
+        licenseChecker.validateProduct(productNameCval, "2.1", productTitleCval);
         Assert.assertTrue(cacheExists(productNameCval));
     }
 
@@ -290,33 +267,26 @@ public class CvalCheckerTest {
      * Creates a new .jar file with a MANIFEST.MF with all vaadin license info
      * attributes set, and add the .jar to the classpath
      */
-    static void addLicensedJarToClasspath(String productName, String licenseType)
-            throws Exception {
+    static void addLicensedJarToClasspath(String productName, String licenseType) throws Exception {
         // Create a manifest with Vaadin CVAL license
         Manifest testManifest = new Manifest();
         testManifest.getMainAttributes().putValue("Manifest-Version", "1.0");
-        testManifest.getMainAttributes().putValue(VAADIN_ADDON_LICENSE,
-                licenseType);
-        testManifest.getMainAttributes().putValue(VAADIN_ADDON_NAME,
-                productName);
-        testManifest.getMainAttributes().putValue(VAADIN_ADDON_TITLE,
-                "Test " + productName);
+        testManifest.getMainAttributes().putValue(VAADIN_ADDON_LICENSE, licenseType);
+        testManifest.getMainAttributes().putValue(VAADIN_ADDON_NAME, productName);
+        testManifest.getMainAttributes().putValue(VAADIN_ADDON_TITLE, "Test " + productName);
         testManifest.getMainAttributes().putValue(VAADIN_ADDON_VERSION, "2");
 
         // Create a temporary Jar
         File testJarFile = File.createTempFile("vaadin." + productName, "jar");
         testJarFile.deleteOnExit();
-        JarOutputStream target = new JarOutputStream(new FileOutputStream(
-                testJarFile), testManifest);
+        JarOutputStream target = new JarOutputStream(new FileOutputStream(testJarFile), testManifest);
         target.close();
 
         // Add the new jar to our classpath (use reflection)
         URL url = new URL("file://" + testJarFile.getAbsolutePath());
-        final Method addURL = URLClassLoader.class.getDeclaredMethod("addURL",
-                new Class[] { URL.class });
+        final Method addURL = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
         addURL.setAccessible(true);
-        final URLClassLoader urlClassLoader = (URLClassLoader) Thread
-                .currentThread().getContextClassLoader();
+        final URLClassLoader urlClassLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
         addURL.invoke(urlClassLoader, new Object[] { url });
     }
 
@@ -332,8 +302,7 @@ public class CvalCheckerTest {
         return p.get(productName, null);
     }
 
-    static void saveCache(String productName, String key, Boolean expired,
-            Long expireTs, String type) {
+    static void saveCache(String productName, String key, Boolean expired, Long expireTs, String type) {
         String json = responseJson.replace(productNameCval, productName);
         if (expired != null && expired) {
             expireTs = System.currentTimeMillis() - GRACE_DAYS_MSECS - 1000;
@@ -374,70 +343,59 @@ public class CvalCheckerTest {
     public void testReadKeyFromFile_LicenseFileEmpty() throws Exception {
         File tmpLicenseFile = File.createTempFile("license", "lic");
 
-        assertNull(licenseChecker.readKeyFromFile(tmpLicenseFile.toURI()
-                .toURL(), 4));
+        assertNull(licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 4));
 
         tmpLicenseFile.delete();
     }
 
     @Test
-    public void testReadKeyFromFile_LicenseFileHasSingleUnidentifiedKey()
-            throws Exception {
+    public void testReadKeyFromFile_LicenseFileHasSingleUnidentifiedKey() throws Exception {
         File tmpLicenseFile = File.createTempFile("license", "lic");
         PrintWriter out = new PrintWriter(tmpLicenseFile);
         out.println("this-is-a-license");
         out.close();
 
-        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(
-                tmpLicenseFile.toURI().toURL(), 4));
+        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 4));
 
         tmpLicenseFile.delete();
     }
 
     @Test
-    public void testReadKeyFromFile_LicenseFileHasSingleIdentifiedKey()
-            throws Exception {
+    public void testReadKeyFromFile_LicenseFileHasSingleIdentifiedKey() throws Exception {
         File tmpLicenseFile = File.createTempFile("license", "lic");
         PrintWriter out = new PrintWriter(tmpLicenseFile);
         out.println("4=this-is-a-license");
         out.close();
 
-        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(
-                tmpLicenseFile.toURI().toURL(), 4));
+        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 4));
 
         tmpLicenseFile.delete();
     }
 
     @Test
-    public void testReadKeyFromFile_LicenseFileHasMultipleKeys()
-            throws Exception {
+    public void testReadKeyFromFile_LicenseFileHasMultipleKeys() throws Exception {
         File tmpLicenseFile = File.createTempFile("license", "lic");
         PrintWriter out = new PrintWriter(tmpLicenseFile);
         out.println("4=this-is-a-license");
         out.println("5=this-is-another-license");
         out.close();
 
-        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(
-                tmpLicenseFile.toURI().toURL(), 4));
-        assertEquals("this-is-another-license", licenseChecker.readKeyFromFile(
-                tmpLicenseFile.toURI().toURL(), 5));
+        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 4));
+        assertEquals("this-is-another-license", licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 5));
 
         tmpLicenseFile.delete();
     }
 
     @Test
-    public void testReadKeyFromFile_LicenseFileHasMultipleKeysWithWhitespace()
-            throws Exception {
+    public void testReadKeyFromFile_LicenseFileHasMultipleKeysWithWhitespace() throws Exception {
         File tmpLicenseFile = File.createTempFile("license", "lic");
         PrintWriter out = new PrintWriter(tmpLicenseFile);
         out.println("4 = this-is-a-license");
         out.println("5 = this-is-another-license");
         out.close();
 
-        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(
-                tmpLicenseFile.toURI().toURL(), 4));
-        assertEquals("this-is-another-license", licenseChecker.readKeyFromFile(
-                tmpLicenseFile.toURI().toURL(), 5));
+        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 4));
+        assertEquals("this-is-another-license", licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 5));
 
         tmpLicenseFile.delete();
     }
@@ -450,8 +408,7 @@ public class CvalCheckerTest {
         out.println("5 = this-is-another-license");
         out.close();
 
-        assertNull(licenseChecker.readKeyFromFile(tmpLicenseFile.toURI()
-                .toURL(), 3));
+        assertNull(licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 3));
 
         tmpLicenseFile.delete();
     }
@@ -464,31 +421,24 @@ public class CvalCheckerTest {
         out.println("5 = this-is-another-license");
         out.close();
 
-        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(
-                tmpLicenseFile.toURI().toURL(), 3));
-        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(
-                tmpLicenseFile.toURI().toURL(), 4));
-        assertEquals("this-is-another-license", licenseChecker.readKeyFromFile(
-                tmpLicenseFile.toURI().toURL(), 5));
+        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 3));
+        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 4));
+        assertEquals("this-is-another-license", licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 5));
 
         tmpLicenseFile.delete();
     }
 
     @Test
-    public void testReadKeyFromFile_FallbackToDefaultKeyReversed()
-            throws Exception {
+    public void testReadKeyFromFile_FallbackToDefaultKeyReversed() throws Exception {
         File tmpLicenseFile = File.createTempFile("license", "lic");
         PrintWriter out = new PrintWriter(tmpLicenseFile);
         out.println("5 = this-is-another-license");
         out.println("this-is-a-license");
         out.close();
 
-        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(
-                tmpLicenseFile.toURI().toURL(), 3));
-        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(
-                tmpLicenseFile.toURI().toURL(), 4));
-        assertEquals("this-is-another-license", licenseChecker.readKeyFromFile(
-                tmpLicenseFile.toURI().toURL(), 5));
+        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 3));
+        assertEquals("this-is-a-license", licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 4));
+        assertEquals("this-is-another-license", licenseChecker.readKeyFromFile(tmpLicenseFile.toURI().toURL(), 5));
 
         tmpLicenseFile.delete();
     }

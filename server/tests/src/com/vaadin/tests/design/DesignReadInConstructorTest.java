@@ -46,9 +46,7 @@ public class DesignReadInConstructorTest {
         Design.write(dric, baos);
         Document doc = Jsoup.parse(baos.toString("UTF-8"));
 
-        Document d = Jsoup.parse(
-                getClass().getResourceAsStream("DesignReadInConstructor.html"),
-                "UTF-8", "");
+        Document d = Jsoup.parse(getClass().getResourceAsStream("DesignReadInConstructor.html"), "UTF-8", "");
         assertJsoupTreeEquals(d.body().child(0), doc.body().child(0));
     }
 
@@ -64,12 +62,10 @@ public class DesignReadInConstructorTest {
             keys.add(attr.getKey());
         }
         for (String attributeKey : keys) {
-            Assert.assertEquals(expected.attr(attributeKey),
-                    actual.attr(attributeKey));
+            Assert.assertEquals(expected.attr(attributeKey), actual.attr(attributeKey));
         }
 
-        Assert.assertEquals(expected.children().size(), actual.children()
-                .size());
+        Assert.assertEquals(expected.children().size(), actual.children().size());
         for (int i = 0; i < expected.children().size(); i++) {
             assertJsoupTreeEquals(expected.child(i), actual.child(i));
         }

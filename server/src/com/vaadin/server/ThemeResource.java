@@ -49,8 +49,7 @@ public class ThemeResource implements Resource {
             throw new IllegalArgumentException("Resource ID can not be empty");
         }
         if (resourceId.charAt(0) == '/') {
-            throw new IllegalArgumentException(
-                    "Resource ID must be relative (can not begin with /)");
+            throw new IllegalArgumentException("Resource ID must be relative (can not begin with /)");
         }
 
         resourceID = resourceId;
@@ -67,8 +66,7 @@ public class ThemeResource implements Resource {
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof ThemeResource
-                && resourceID.equals(((ThemeResource) obj).resourceID);
+        return obj instanceof ThemeResource && resourceID.equals(((ThemeResource) obj).resourceID);
     }
 
     /**

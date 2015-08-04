@@ -33,13 +33,12 @@ public class WindowTitleOverflow extends AbstractTestUI {
             }
         });
 
-        addButton("Open Non-Resizable and Non-Closable",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(Button.ClickEvent event) {
-                        addWindow(getWindow(false, false));
-                    }
-                });
+        addButton("Open Non-Resizable and Non-Closable", new Button.ClickListener() {
+            @Override
+            public void buttonClick(Button.ClickEvent event) {
+                addWindow(getWindow(false, false));
+            }
+        });
     }
 
     private Window getWindow(boolean resizable, boolean closable) {

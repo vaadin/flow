@@ -10,13 +10,10 @@ import com.vaadin.data.validator.RegexpValidator;
 
 public class CompositeValidatorTest extends TestCase {
 
-    CompositeValidator and = new CompositeValidator(CombinationMode.AND,
-            "One validator not valid");
-    CompositeValidator or = new CompositeValidator(CombinationMode.OR,
-            "No validators are valid");
+    CompositeValidator and = new CompositeValidator(CombinationMode.AND, "One validator not valid");
+    CompositeValidator or = new CompositeValidator(CombinationMode.OR, "No validators are valid");
     EmailValidator email = new EmailValidator("Faulty email");
-    RegexpValidator regex = new RegexpValidator("@mail.com", false,
-            "Partial match validator error");
+    RegexpValidator regex = new RegexpValidator("@mail.com", false, "Partial match validator error");
 
     @Override
     protected void setUp() throws Exception {
@@ -52,8 +49,7 @@ public class CompositeValidatorTest extends TestCase {
     public void testCorrectRegex() {
 
         String testString = "@mail.com";
-        assertFalse(testString + " should not validate",
-                email.isValid(testString));
+        assertFalse(testString + " should not validate", email.isValid(testString));
         assertTrue(testString + "should validate", regex.isValid(testString));
         try {
             // notNull.validate(null);
@@ -76,8 +72,7 @@ public class CompositeValidatorTest extends TestCase {
         String testString = "user@gmail.com";
 
         assertTrue(testString + " should validate", email.isValid(testString));
-        assertFalse(testString + " should not validate",
-                regex.isValid(testString));
+        assertFalse(testString + " should not validate", regex.isValid(testString));
         try {
             and.validate(testString);
             fail("expected and to fail with an exception");
@@ -95,10 +90,8 @@ public class CompositeValidatorTest extends TestCase {
 
         String testString = "gmail.com";
 
-        assertFalse(testString + " should not validate",
-                email.isValid(testString));
-        assertFalse(testString + " should not validate",
-                regex.isValid(testString));
+        assertFalse(testString + " should not validate", email.isValid(testString));
+        assertFalse(testString + " should not validate", regex.isValid(testString));
         try {
             and.validate(testString);
             fail("expected and to fail with an exception");

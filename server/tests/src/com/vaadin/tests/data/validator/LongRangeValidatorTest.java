@@ -6,14 +6,10 @@ import com.vaadin.data.validator.LongRangeValidator;
 
 public class LongRangeValidatorTest extends TestCase {
 
-    private LongRangeValidator cleanValidator = new LongRangeValidator(
-            "no values", null, null);
-    private LongRangeValidator minValidator = new LongRangeValidator(
-            "no values", 10l, null);
-    private LongRangeValidator maxValidator = new LongRangeValidator(
-            "no values", null, 100l);
-    private LongRangeValidator minMaxValidator = new LongRangeValidator(
-            "no values", 10l, 100l);
+    private LongRangeValidator cleanValidator = new LongRangeValidator("no values", null, null);
+    private LongRangeValidator minValidator = new LongRangeValidator("no values", 10l, null);
+    private LongRangeValidator maxValidator = new LongRangeValidator("no values", null, 100l);
+    private LongRangeValidator minMaxValidator = new LongRangeValidator("no values", 10l, 100l);
 
     public void testNullValue() {
         assertTrue("Didn't accept null", cleanValidator.isValid(null));
@@ -23,15 +19,13 @@ public class LongRangeValidatorTest extends TestCase {
     }
 
     public void testMinValue() {
-        assertTrue("Validator without ranges didn't accept value",
-                cleanValidator.isValid(-15l));
+        assertTrue("Validator without ranges didn't accept value", cleanValidator.isValid(-15l));
         assertTrue("Didn't accept valid value", minValidator.isValid(15l));
         assertFalse("Accepted too small value", minValidator.isValid(9l));
     }
 
     public void testMaxValue() {
-        assertTrue("Validator without ranges didn't accept value",
-                cleanValidator.isValid(1120l));
+        assertTrue("Validator without ranges didn't accept value", cleanValidator.isValid(1120l));
         assertTrue("Didn't accept valid value", maxValidator.isValid(15l));
         assertFalse("Accepted too large value", maxValidator.isValid(120l));
     }

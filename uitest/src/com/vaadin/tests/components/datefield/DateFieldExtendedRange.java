@@ -68,8 +68,7 @@ public class DateFieldExtendedRange extends TestBase {
         return 6718;
     }
 
-    private DateField makeDateField(boolean isPopup, Locale locale,
-            String caption) {
+    private DateField makeDateField(boolean isPopup, Locale locale, String caption) {
         DateField df = isPopup ? new PopupDateField() : new InlineDateField();
         df.setResolution(DateField.RESOLUTION_DAY);
         df.setValue(date.getTime());

@@ -38,8 +38,7 @@ public class BrowserWindowOpener extends AbstractExtension {
         private final String path;
         private final Class<? extends UI> uiClass;
 
-        public BrowserWindowOpenerUIProvider(Class<? extends UI> uiClass,
-                String path) {
+        public BrowserWindowOpenerUIProvider(Class<? extends UI> uiClass, String path) {
             this.path = ensureInitialSlash(path);
             this.uiClass = uiClass;
         }
@@ -91,8 +90,7 @@ public class BrowserWindowOpener extends AbstractExtension {
      */
     public BrowserWindowOpener(Class<? extends UI> uiClass, String path) {
         // Create a Resource with a translated URL going to the VaadinService
-        this(new ExternalResource(ApplicationConstants.APP_PROTOCOL_PREFIX
-                + path), new BrowserWindowOpenerUIProvider(uiClass, path));
+        this(new ExternalResource(ApplicationConstants.APP_PROTOCOL_PREFIX + path), new BrowserWindowOpenerUIProvider(uiClass, path));
     }
 
     /**
@@ -115,8 +113,7 @@ public class BrowserWindowOpener extends AbstractExtension {
         this(resource, null);
     }
 
-    private BrowserWindowOpener(Resource resource,
-            BrowserWindowOpenerUIProvider uiProvider) {
+    private BrowserWindowOpener(Resource resource, BrowserWindowOpenerUIProvider uiProvider) {
         this.uiProvider = uiProvider;
         setResource(BrowserWindowOpenerState.locationResource, resource);
     }
@@ -244,8 +241,7 @@ public class BrowserWindowOpener extends AbstractExtension {
     @Override
     public void attach() {
         super.attach();
-        if (uiProvider != null
-                && !getSession().getUIProviders().contains(uiProvider)) {
+        if (uiProvider != null && !getSession().getUIProviders().contains(uiProvider)) {
             getSession().addUIProvider(uiProvider);
         }
     }

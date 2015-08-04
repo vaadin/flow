@@ -50,15 +50,11 @@ public class ComboBoxMouseSelectEnterTest extends MultiBrowserTest {
     public void enterSetsValueSelectedByMouseOver() {
         comboBoxElement.openPopup();
         comboBoxElement.sendKeys(Keys.DOWN, Keys.DOWN);
-        String selectedItemText = findElement(
-                By.className("gwt-MenuItem-selected")).getText();
-        assertThat("Item selected by arrows should be a1", selectedItemText,
-                is("a1"));
-        new Actions(driver).moveToElement(getWebElementForItem("a5")).build()
-                .perform();
+        String selectedItemText = findElement(By.className("gwt-MenuItem-selected")).getText();
+        assertThat("Item selected by arrows should be a1", selectedItemText, is("a1"));
+        new Actions(driver).moveToElement(getWebElementForItem("a5")).build().perform();
         comboBoxElement.sendKeys(getReturn());
-        assertThat("Item selected by mouse should be a5",
-                comboBoxElement.getText(), is("a5"));
+        assertThat("Item selected by mouse should be a5", comboBoxElement.getText(), is("a5"));
         checkLabelValue("a5");
     }
 
@@ -96,8 +92,7 @@ public class ComboBoxMouseSelectEnterTest extends MultiBrowserTest {
             @Override
             public String toString() {
                 // Timed out after 10 seconds waiting for ...
-                return String.format("Label value to match '%s' (was: '%s')",
-                        expectedValue, actualValue);
+                return String.format("Label value to match '%s' (was: '%s')", expectedValue, actualValue);
             }
         });
     }

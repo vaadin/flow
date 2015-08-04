@@ -25,7 +25,6 @@ public class ComponentInStateUI extends UI {
         ComponentInStateComponent component = new ComponentInStateComponent();
         component.setOtherComponent(this);
         layout.addComponent(component);
-        layout.addComponent(new Label("Server-side type of other component: "
-                + component.getOtherComponent().getClass().getName()));
+        layout.addComponent(new Label("Server-side type of other component: " + component.getOtherComponent().getClass().getName()));
     }
 }

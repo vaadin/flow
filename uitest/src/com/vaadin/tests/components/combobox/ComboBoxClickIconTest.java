@@ -37,11 +37,9 @@ public class ComboBoxClickIconTest extends MultiBrowserTest {
 
         getDriver().findElements(By.className("gwt-MenuItem")).get(1).click();
 
-        getDriver().findElement(By.className("v-filterselect"))
-                .findElement(By.className("v-icon")).click();
+        getDriver().findElement(By.className("v-filterselect")).findElement(By.className("v-icon")).click();
 
-        Assert.assertTrue("Unable to find menu items in combobox popup",
-                isElementPresent(By.className("gwt-MenuItem")));
+        Assert.assertTrue("Unable to find menu items in combobox popup", isElementPresent(By.className("gwt-MenuItem")));
     }
 
 }

@@ -17,8 +17,7 @@ public class UtilTest {
 
     @Test
     public void escapeSQL_severalQuotes_returnsEscapedString() {
-        Assert.assertEquals("asdf''ghjk''qwerty",
-                SQLUtil.escapeSQL("asdf'ghjk'qwerty"));
+        Assert.assertEquals("asdf''ghjk''qwerty", SQLUtil.escapeSQL("asdf'ghjk'qwerty"));
     }
 
     @Test
@@ -28,14 +27,12 @@ public class UtilTest {
 
     @Test
     public void escapeSQL_multipleDoubleQuotes_returnsEscapedString() {
-        Assert.assertEquals("asdf\\\"foo\\\"bar",
-                SQLUtil.escapeSQL("asdf\"foo\"bar"));
+        Assert.assertEquals("asdf\\\"foo\\\"bar", SQLUtil.escapeSQL("asdf\"foo\"bar"));
     }
 
     @Test
     public void escapeSQL_backslashes_returnsEscapedString() {
-        Assert.assertEquals("foo\\\\nbar\\\\r",
-                SQLUtil.escapeSQL("foo\\nbar\\r"));
+        Assert.assertEquals("foo\\\\nbar\\\\r", SQLUtil.escapeSQL("foo\\nbar\\r"));
     }
 
     @Test

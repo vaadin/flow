@@ -47,7 +47,6 @@ public class ButtonTooltipsTest extends TooltipTest {
         moveMouseTo(buttonOne, 5, 5);
         sleep(100);
         assertThat(getTooltipElement().getSize().getWidth(), is(originalWidth));
-        assertThat(getTooltipElement().getSize().getHeight(),
-                is(originalHeight));
+        assertThat(getTooltipElement().getSize().getHeight(), is(originalHeight));
     }
 }

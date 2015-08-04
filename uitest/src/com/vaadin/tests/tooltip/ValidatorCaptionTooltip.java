@@ -31,10 +31,8 @@ public class ValidatorCaptionTooltip extends AbstractTestUI {
         TextField fieldWithError = new TextField();
         int min = 0;
         int max = 100;
-        String errorMessage = "Valid value is between " + min + " and " + max
-                + ". {0} is not.";
-        IntegerRangeValidator validator = new IntegerRangeValidator(
-                errorMessage, min, max);
+        String errorMessage = "Valid value is between " + min + " and " + max + ". {0} is not.";
+        IntegerRangeValidator validator = new IntegerRangeValidator(errorMessage, min, max);
         fieldWithError.setValue("142");
 
         fieldWithError.addValidator(validator);

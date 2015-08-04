@@ -31,8 +31,7 @@ public class LabelTooltip extends TestBase {
         tooltip = new Label("Hover over me to see the tooltip");
         tooltip.setSizeUndefined();
         tooltip.setDescription("Default tooltip content");
-        tooltip.setComponentError(new UserError(
-                "Error inside tooltip together with the regular tooltip message."));
+        tooltip.setComponentError(new UserError("Error inside tooltip together with the regular tooltip message."));
         layout.addComponent(tooltip);
 
         return layout;

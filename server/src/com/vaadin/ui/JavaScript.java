@@ -158,8 +158,7 @@ public class JavaScript extends AbstractExtension {
      */
     @Override
     public void remove() {
-        throw new UnsupportedOperationException(
-                "JavaScript is not designed to be removed.");
+        throw new UnsupportedOperationException("JavaScript is not designed to be removed.");
     }
 
 }

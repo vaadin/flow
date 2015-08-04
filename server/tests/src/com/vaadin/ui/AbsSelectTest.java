@@ -30,8 +30,7 @@ public class AbsSelectTest {
         NativeSelect ns = new NativeSelect();
         ns.addItems("Foo", "bar", "baz");
         Assert.assertEquals(3, ns.size());
-        Assert.assertArrayEquals(new Object[] { "Foo", "bar", "baz" }, ns
-                .getItemIds().toArray());
+        Assert.assertArrayEquals(new Object[] { "Foo", "bar", "baz" }, ns.getItemIds().toArray());
     }
 
     @Test
@@ -43,8 +42,7 @@ public class AbsSelectTest {
         NativeSelect ns = new NativeSelect();
         ns.addItems(o1, o2, o3);
         Assert.assertEquals(3, ns.size());
-        Assert.assertArrayEquals(new Object[] { o1, o2, o3 }, ns.getItemIds()
-                .toArray());
+        Assert.assertArrayEquals(new Object[] { o1, o2, o3 }, ns.getItemIds().toArray());
     }
 
     @Test
@@ -56,8 +54,7 @@ public class AbsSelectTest {
         NativeSelect ns = new NativeSelect();
         ns.addItems(itemIds);
         Assert.assertEquals(3, ns.size());
-        Assert.assertArrayEquals(new Object[] { "foo", "bar", "baz" }, ns
-                .getItemIds().toArray());
+        Assert.assertArrayEquals(new Object[] { "foo", "bar", "baz" }, ns.getItemIds().toArray());
     }
 
     @Test
@@ -72,8 +69,7 @@ public class AbsSelectTest {
         NativeSelect ns = new NativeSelect();
         ns.addItems(itemIds);
         Assert.assertEquals(3, ns.size());
-        Assert.assertArrayEquals(new Object[] { o1, o2, o3 }, ns.getItemIds()
-                .toArray());
+        Assert.assertArrayEquals(new Object[] { o1, o2, o3 }, ns.getItemIds().toArray());
 
     }
 

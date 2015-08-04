@@ -37,8 +37,7 @@ public class TogglePushTest extends MultiBrowserTest {
 
         getDelayedCounterUpdateButton().click();
         sleep(2000);
-        Assert.assertEquals("Counter has been updated 0 times",
-                getCounterText());
+        Assert.assertEquals("Counter has been updated 0 times", getCounterText());
 
         // Open with push enabled
         driver.get(addParameter(url, "push=enabled"));
@@ -46,8 +45,7 @@ public class TogglePushTest extends MultiBrowserTest {
 
         getDelayedCounterUpdateButton().click();
         sleep(2000);
-        Assert.assertEquals("Counter has been updated 1 times",
-                getCounterText());
+        Assert.assertEquals("Counter has been updated 1 times", getCounterText());
 
     }
 
@@ -67,21 +65,18 @@ public class TogglePushTest extends MultiBrowserTest {
         sleep(2000);
 
         // Push is enabled, so text gets updated
-        Assert.assertEquals("Counter has been updated 1 times",
-                getCounterText());
+        Assert.assertEquals("Counter has been updated 1 times", getCounterText());
 
         // Disable push
         getPushToggle().click();
         getDelayedCounterUpdateButton().click();
         sleep(2000);
         // Push is disabled, so text is not updated
-        Assert.assertEquals("Counter has been updated 1 times",
-                getCounterText());
+        Assert.assertEquals("Counter has been updated 1 times", getCounterText());
 
         getDirectCounterUpdateButton().click();
         // Direct update is visible, and includes previous update
-        Assert.assertEquals("Counter has been updated 3 times",
-                getCounterText());
+        Assert.assertEquals("Counter has been updated 3 times", getCounterText());
 
         // Re-enable push
         getPushToggle().click();
@@ -89,8 +84,7 @@ public class TogglePushTest extends MultiBrowserTest {
         sleep(2000);
 
         // Push is enabled again, so text gets updated
-        Assert.assertEquals("Counter has been updated 4 times",
-                getCounterText());
+        Assert.assertEquals("Counter has been updated 4 times", getCounterText());
     }
 
     private WebElement getDirectCounterUpdateButton() {
@@ -106,9 +100,7 @@ public class TogglePushTest extends MultiBrowserTest {
     }
 
     private String getCounterText() {
-        return vaadinElement(
-                "/VVerticalLayout[0]/Slot[1]/VVerticalLayout[0]/Slot[0]/VLabel[0]")
-                .getText();
+        return vaadinElement("/VVerticalLayout[0]/Slot[1]/VVerticalLayout[0]/Slot[0]/VLabel[0]").getText();
     }
 
 }

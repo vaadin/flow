@@ -38,8 +38,7 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
                     }
                     String packageName = "com.vaadin.tests.server";
                     if (Component.class.isAssignableFrom(c)) {
-                        packageName += ".component."
-                                + c.getSimpleName().toLowerCase();
+                        packageName += ".component." + c.getSimpleName().toLowerCase();
                         continue;
                     }
 
@@ -47,26 +46,15 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
                         found = true;
                         System.out.println("package " + packageName + ";");
 
-                        System.out.println("import "
-                                + AbstractListenerMethodsTestBase.class
-                                        .getName() + ";");
+                        System.out.println("import " + AbstractListenerMethodsTestBase.class.getName() + ";");
                         System.out.println("import " + c.getName() + ";");
-                        System.out.println("public class "
-                                + c.getSimpleName()
-                                + "Listeners extends "
-                                + AbstractListenerMethodsTestBase.class
-                                        .getSimpleName() + " {");
+                        System.out.println("public class " + c.getSimpleName() + "Listeners extends " + AbstractListenerMethodsTestBase.class.getSimpleName() + " {");
                     }
 
-                    String listenerClassName = m.getParameterTypes()[0]
-                            .getSimpleName();
-                    String eventClassName = listenerClassName.replaceFirst(
-                            "Listener$", "Event");
-                    System.out.println("public void test" + listenerClassName
-                            + "() throws Exception {");
-                    System.out.println("    testListener(" + c.getSimpleName()
-                            + ".class, " + eventClassName + ".class, "
-                            + listenerClassName + ".class);");
+                    String listenerClassName = m.getParameterTypes()[0].getSimpleName();
+                    String eventClassName = listenerClassName.replaceFirst("Listener$", "Event");
+                    System.out.println("public void test" + listenerClassName + "() throws Exception {");
+                    System.out.println("    testListener(" + c.getSimpleName() + ".class, " + eventClassName + ".class, " + listenerClassName + ".class);");
                     System.out.println("}");
                 }
             }
@@ -77,16 +65,14 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
         }
     }
 
-    protected void testListenerAddGetRemove(Class<?> testClass,
-            Class<?> eventClass, Class<?> listenerClass) throws Exception {
+    protected void testListenerAddGetRemove(Class<?> testClass, Class<?> eventClass, Class<?> listenerClass) throws Exception {
         // Create a component for testing
         Object c = testClass.newInstance();
         testListenerAddGetRemove(testClass, eventClass, listenerClass, c);
 
     }
 
-    protected void testListenerAddGetRemove(Class<?> cls, Class<?> eventClass,
-            Class<?> listenerClass, Object c) throws Exception {
+    protected void testListenerAddGetRemove(Class<?> cls, Class<?> eventClass, Class<?> listenerClass, Object c) throws Exception {
 
         Object mockListener1 = EasyMock.createMock(listenerClass);
         Object mockListener2 = EasyMock.createMock(listenerClass);
@@ -104,8 +90,7 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
 
         // Ensure we can fetch using parent class also
         if (eventClass.getSuperclass() != null) {
-            verifyListeners(c, eventClass.getSuperclass(), mockListener1,
-                    mockListener2);
+            verifyListeners(c, eventClass.getSuperclass(), mockListener1, mockListener2);
         }
 
         // Remove the first and verify
@@ -118,56 +103,41 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
 
     }
 
-    private void removeListener(Object c, Object listener,
-            Class<?> listenerClass) throws IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException,
-            SecurityException, NoSuchMethodException {
+    private void removeListener(Object c, Object listener, Class<?> listenerClass) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException {
         Method method = getRemoveListenerMethod(c.getClass(), listenerClass);
         method.invoke(c, listener);
 
     }
 
-    private void addListener(Object c, Object listener1, Class<?> listenerClass)
-            throws IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException, SecurityException, NoSuchMethodException {
+    private void addListener(Object c, Object listener1, Class<?> listenerClass) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException {
         Method method = getAddListenerMethod(c.getClass(), listenerClass);
         method.invoke(c, listener1);
     }
 
-    private Collection<?> getListeners(Object c, Class<?> eventType)
-            throws IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException, SecurityException, NoSuchMethodException {
+    private Collection<?> getListeners(Object c, Class<?> eventType) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException {
         Method method = getGetListenersMethod(c.getClass());
         return (Collection<?>) method.invoke(c, eventType);
     }
 
-    private Method getGetListenersMethod(Class<? extends Object> cls)
-            throws SecurityException, NoSuchMethodException {
+    private Method getGetListenersMethod(Class<? extends Object> cls) throws SecurityException, NoSuchMethodException {
         return cls.getMethod("getListeners", Class.class);
     }
 
-    private Method getAddListenerMethod(Class<?> cls, Class<?> listenerClass)
-            throws SecurityException, NoSuchMethodException {
+    private Method getAddListenerMethod(Class<?> cls, Class<?> listenerClass) throws SecurityException, NoSuchMethodException {
         return cls.getMethod("addListener", listenerClass);
 
     }
 
-    private Method getRemoveListenerMethod(Class<?> cls, Class<?> listenerClass)
-            throws SecurityException, NoSuchMethodException {
+    private Method getRemoveListenerMethod(Class<?> cls, Class<?> listenerClass) throws SecurityException, NoSuchMethodException {
         return cls.getMethod("removeListener", listenerClass);
 
     }
 
-    private void verifyListeners(Object c, Class<?> eventClass,
-            Object... expectedListeners) throws IllegalArgumentException,
-            SecurityException, IllegalAccessException,
-            InvocationTargetException, NoSuchMethodException {
+    private void verifyListeners(Object c, Class<?> eventClass, Object... expectedListeners) throws IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         Collection<?> registeredListeners = getListeners(c, eventClass);
-        assertEquals("Number of listeners", expectedListeners.length,
-                registeredListeners.size());
+        assertEquals("Number of listeners", expectedListeners.length, registeredListeners.size());
 
-        Assert.assertArrayEquals(expectedListeners,
-                registeredListeners.toArray());
+        Assert.assertArrayEquals(expectedListeners, registeredListeners.toArray());
 
     }
 }

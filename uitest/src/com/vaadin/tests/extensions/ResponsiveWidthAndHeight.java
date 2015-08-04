@@ -34,8 +34,7 @@ public class ResponsiveWidthAndHeight extends AbstractTestUI {
         setContent(layout);
         Responsive.makeResponsive(layout);
 
-        layout.addComponent(new Label(
-                "Resize the browser window in both dimensions to see the background color change."));
+        layout.addComponent(new Label("Resize the browser window in both dimensions to see the background color change."));
     }
 
     @Override

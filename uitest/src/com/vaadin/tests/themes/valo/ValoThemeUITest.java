@@ -45,8 +45,7 @@ public class ValoThemeUITest extends MultiBrowserTest {
     @Test
     public void textFields() throws Exception {
         openTestURL("test");
-        open("Text Fields <span class=\"valo-menu-badge\">123</span>",
-                "Text Fields");
+        open("Text Fields <span class=\"valo-menu-badge\">123</span>", "Text Fields");
         compareScreen("textFields");
     }
 
@@ -118,9 +117,7 @@ public class ValoThemeUITest extends MultiBrowserTest {
     }
 
     private void selectTreeNodeByCaption(String string) {
-        WebElement e = $(TreeElement.class).first().findElement(
-                By.xpath("//div[@class='v-tree-node-caption']//span[text()='"
-                        + string + "']"));
+        WebElement e = $(TreeElement.class).first().findElement(By.xpath("//div[@class='v-tree-node-caption']//span[text()='" + string + "']"));
         e.click();
     }
 
@@ -275,19 +272,15 @@ public class ValoThemeUITest extends MultiBrowserTest {
     // FIXME: Remove this once click works properly on IE...
     private void open(String link, String caption, int tries) {
         if (tries <= 0) {
-            throw new RuntimeException(
-                    "Tried many times but was not able to click the link...");
+            throw new RuntimeException("Tried many times but was not able to click the link...");
         }
 
         $(ButtonElement.class).caption(link).first().click();
-        CssLayoutElement content = wrap(CssLayoutElement.class,
-                findElement(By.className("valo-content")));
+        CssLayoutElement content = wrap(CssLayoutElement.class, findElement(By.className("valo-content")));
         LabelElement captionElem = content.$(LabelElement.class).first();
         if (!captionElem.getText().equals(caption)) {
             // IE ... why you fail clicks
-            System.err.println("Extra click needed on '" + link
-                    + "' on remote " + getDesiredCapabilities() + " "
-                    + getRemoteControlName());
+            System.err.println("Extra click needed on '" + link + "' on remote " + getDesiredCapabilities() + " " + getRemoteControlName());
 
             open(link, caption, tries - 1);
         } else {

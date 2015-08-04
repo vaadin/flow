@@ -56,23 +56,20 @@ public class DataProviderExtension {
         for (Object itemId : Arrays.asList(ITEM_ID1, ITEM_ID2, ITEM_ID3)) {
             final Item item = container.addItem(itemId);
             @SuppressWarnings("unchecked")
-            final Property<String> stringProperty = item
-                    .getItemProperty(PROPERTY_ID1_STRING);
+            final Property<String> stringProperty = item.getItemProperty(PROPERTY_ID1_STRING);
             stringProperty.setValue(itemId.toString());
         }
     }
 
     @Test
     public void pinBasics() {
-        assertFalse("itemId1 should not start as pinned",
-                keyMapper.isPinned(ITEM_ID2));
+        assertFalse("itemId1 should not start as pinned", keyMapper.isPinned(ITEM_ID2));
 
         keyMapper.pin(ITEM_ID1);
         assertTrue("itemId1 should now be pinned", keyMapper.isPinned(ITEM_ID1));
 
         keyMapper.unpin(ITEM_ID1);
-        assertFalse("itemId1 should not be pinned anymore",
-                keyMapper.isPinned(ITEM_ID2));
+        assertFalse("itemId1 should not be pinned anymore", keyMapper.isPinned(ITEM_ID2));
     }
 
     @Test(expected = IllegalStateException.class)

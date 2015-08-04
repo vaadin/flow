@@ -50,11 +50,9 @@ public class RoundTripTesterConnector extends AbstractComponentConnector {
                 receivedPings++;
 
                 if (now - lastPrintedTime > 1000) {
-                    double roundtripsPerSecond = receivedPings
-                            / (now - lastPrintedTime) * 1000;
+                    double roundtripsPerSecond = receivedPings / (now - lastPrintedTime) * 1000;
                     throughputData.add(roundtripsPerSecond);
-                    getWidget().setText(
-                            roundtripsPerSecond + " roundtrips/second");
+                    getWidget().setText(roundtripsPerSecond + " roundtrips/second");
 
                     lastPrintedTime = now;
                     receivedPings = 0;
@@ -64,8 +62,7 @@ public class RoundTripTesterConnector extends AbstractComponentConnector {
 
             @Override
             public void done() {
-                String result = "Test results for payload of size "
-                        + payloadSize + ":";
+                String result = "Test results for payload of size " + payloadSize + ":";
                 double max = -1;
                 double min = 1239482038939.0;
                 double avg = 0;

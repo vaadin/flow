@@ -33,8 +33,7 @@ import java.util.Locale;
  * @author Vaadin Ltd
  * @since 7.0
  */
-public class StringToDoubleConverter extends
-        AbstractStringToNumberConverter<Double> {
+public class StringToDoubleConverter extends AbstractStringToNumberConverter<Double> {
 
     /*
      * (non-Javadoc)
@@ -44,9 +43,7 @@ public class StringToDoubleConverter extends
      * java.util.Locale)
      */
     @Override
-    public Double convertToModel(String value,
-            Class<? extends Double> targetType, Locale locale)
-            throws ConversionException {
+    public Double convertToModel(String value, Class<? extends Double> targetType, Locale locale) throws ConversionException {
         Number n = convertToNumber(value, targetType, locale);
         return n == null ? null : n.doubleValue();
     }

@@ -18,13 +18,11 @@ package com.vaadin.server.communication;
 import com.vaadin.server.StreamVariable.StreamingStartEvent;
 
 @SuppressWarnings("serial")
-final class StreamingStartEventImpl extends AbstractStreamingEvent implements
-        StreamingStartEvent {
+final class StreamingStartEventImpl extends AbstractStreamingEvent implements StreamingStartEvent {
 
     private boolean disposed;
 
-    public StreamingStartEventImpl(final String filename, final String type,
-            long contentLength) {
+    public StreamingStartEventImpl(final String filename, final String type, long contentLength) {
         super(filename, type, contentLength, 0);
     }
 

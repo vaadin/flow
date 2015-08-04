@@ -18,8 +18,7 @@ public class EmbeddedTooltip extends TestBase {
 
     @Override
     protected void setup() {
-        Embedded e = new Embedded("Embedded caption", new ThemeResource(
-                "../runo/icons/64/ok.png"));
+        Embedded e = new Embedded("Embedded caption", new ThemeResource("../runo/icons/64/ok.png"));
         e.setDescription("Embedded tooltip, only shown on caption, not on the image");
         addComponent(e);
 

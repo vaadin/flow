@@ -27,15 +27,11 @@ import com.vaadin.ui.Button;
  * @since 7.4
  * @author Vaadin Ltd
  */
-public class AbsoluteLayoutDeclarativeTest extends
-        DeclarativeTestBase<AbsoluteLayout> {
+public class AbsoluteLayoutDeclarativeTest extends DeclarativeTestBase<AbsoluteLayout> {
 
     @Test
     public void testAbsoluteLayoutFeatures() {
-        String design = "<v-absolute-layout caption=\"test-layout\">"
-                + "<v-button :top='100px' :left='0px' :z-index=21>OK</v-button>"
-                + "<v-button :bottom='0px' :right='0px'>Cancel</v-button>"
-                + "</v-absolute-layout>";
+        String design = "<v-absolute-layout caption=\"test-layout\">" + "<v-button :top='100px' :left='0px' :z-index=21>OK</v-button>" + "<v-button :bottom='0px' :right='0px'>Cancel</v-button>" + "</v-absolute-layout>";
         AbsoluteLayout layout = new AbsoluteLayout();
         layout.setCaption("test-layout");
         Button b1 = new Button("OK");

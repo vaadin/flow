@@ -28,12 +28,7 @@ public class DownloadStreamTest {
         stream.writeResponse(mock(VaadinRequest.class), response);
 
         String encodedFileName = URLEncoder.encode(filename, "utf-8");
-        verify(response).setHeader(eq(DownloadStream.CONTENT_DISPOSITION),
-                contains(String.format("filename=\"%s\";", encodedFileName)));
-        verify(response)
-                .setHeader(
-                        eq(DownloadStream.CONTENT_DISPOSITION),
-                        contains(String.format("filename*=utf-8''%s",
-                                encodedFileName)));
+        verify(response).setHeader(eq(DownloadStream.CONTENT_DISPOSITION), contains(String.format("filename=\"%s\";", encodedFileName)));
+        verify(response).setHeader(eq(DownloadStream.CONTENT_DISPOSITION), contains(String.format("filename*=utf-8''%s", encodedFileName)));
     }
 }

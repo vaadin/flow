@@ -60,8 +60,7 @@ public class AdjacentElementsWithTooltipsTest extends MultiBrowserTest {
         assertThat(getTooltipElement().getLocation().x, is(lessThan(-1000)));
 
         sleep(1000);
-        assertThat(getTooltipElement().getLocation().x,
-                is(greaterThan(button1Coordinates.onPage().x)));
+        assertThat(getTooltipElement().getLocation().x, is(greaterThan(button1Coordinates.onPage().x)));
     }
 
     private Coordinates getButtonCoordinates(String caption) {

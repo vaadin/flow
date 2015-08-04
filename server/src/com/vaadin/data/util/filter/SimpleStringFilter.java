@@ -42,11 +42,9 @@ public final class SimpleStringFilter implements Filter {
     final boolean ignoreCase;
     final boolean onlyMatchPrefix;
 
-    public SimpleStringFilter(Object propertyId, String filterString,
-            boolean ignoreCase, boolean onlyMatchPrefix) {
+    public SimpleStringFilter(Object propertyId, String filterString, boolean ignoreCase, boolean onlyMatchPrefix) {
         this.propertyId = propertyId;
-        this.filterString = ignoreCase ? filterString.toLowerCase()
-                : filterString;
+        this.filterString = ignoreCase ? filterString.toLowerCase() : filterString;
         this.ignoreCase = ignoreCase;
         this.onlyMatchPrefix = onlyMatchPrefix;
     }
@@ -61,8 +59,7 @@ public final class SimpleStringFilter implements Filter {
         if (propertyValue == null) {
             return false;
         }
-        final String value = ignoreCase ? propertyValue.toString()
-                .toLowerCase() : propertyValue.toString();
+        final String value = ignoreCase ? propertyValue.toString().toLowerCase() : propertyValue.toString();
         if (onlyMatchPrefix) {
             if (!value.startsWith(filterString)) {
                 return false;
@@ -93,12 +90,10 @@ public final class SimpleStringFilter implements Filter {
         final SimpleStringFilter o = (SimpleStringFilter) obj;
 
         // Checks the properties one by one
-        if (propertyId != o.propertyId && o.propertyId != null
-                && !o.propertyId.equals(propertyId)) {
+        if (propertyId != o.propertyId && o.propertyId != null && !o.propertyId.equals(propertyId)) {
             return false;
         }
-        if (filterString != o.filterString && o.filterString != null
-                && !o.filterString.equals(filterString)) {
+        if (filterString != o.filterString && o.filterString != null && !o.filterString.equals(filterString)) {
             return false;
         }
         if (ignoreCase != o.ignoreCase) {
@@ -113,8 +108,7 @@ public final class SimpleStringFilter implements Filter {
 
     @Override
     public int hashCode() {
-        return (propertyId != null ? propertyId.hashCode() : 0)
-                ^ (filterString != null ? filterString.hashCode() : 0);
+        return (propertyId != null ? propertyId.hashCode() : 0) ^ (filterString != null ? filterString.hashCode() : 0);
     }
 
     /**

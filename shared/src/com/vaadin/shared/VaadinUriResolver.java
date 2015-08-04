@@ -63,22 +63,15 @@ public abstract class VaadinUriResolver implements Serializable {
             vaadinUri = themeUri + vaadinUri.substring(7);
         }
 
-        if (vaadinUri
-                .startsWith(ApplicationConstants.PUBLISHED_PROTOCOL_PREFIX)) {
+        if (vaadinUri.startsWith(ApplicationConstants.PUBLISHED_PROTOCOL_PREFIX)) {
             // getAppUri *should* always end with /
             // substring *should* always start with / (published:///foo.bar
             // without published://)
-            vaadinUri = ApplicationConstants.APP_PROTOCOL_PREFIX
-                    + ApplicationConstants.PUBLISHED_FILE_PATH
-                    + vaadinUri
-                            .substring(ApplicationConstants.PUBLISHED_PROTOCOL_PREFIX
-                                    .length());
+            vaadinUri = ApplicationConstants.APP_PROTOCOL_PREFIX + ApplicationConstants.PUBLISHED_FILE_PATH + vaadinUri.substring(ApplicationConstants.PUBLISHED_PROTOCOL_PREFIX.length());
             // Let translation of app:// urls take care of the rest
         }
         if (vaadinUri.startsWith(ApplicationConstants.APP_PROTOCOL_PREFIX)) {
-            String relativeUrl = vaadinUri
-                    .substring(ApplicationConstants.APP_PROTOCOL_PREFIX
-                            .length());
+            String relativeUrl = vaadinUri.substring(ApplicationConstants.APP_PROTOCOL_PREFIX.length());
             String serviceUrl = getServiceUrl();
             String serviceUrlParameterName = getServiceUrlParameterName();
             if (serviceUrlParameterName != null) {
@@ -91,14 +84,12 @@ public abstract class VaadinUriResolver implements Serializable {
                 // string to the base URL
                 if (parts.length > 1) {
                     String appUrlParams = parts[1];
-                    serviceUrl = SharedUtil.addGetParameters(serviceUrl,
-                            appUrlParams);
+                    serviceUrl = SharedUtil.addGetParameters(serviceUrl, appUrlParams);
                 }
                 if (!path.startsWith("/")) {
                     path = '/' + path;
                 }
-                String pathParam = serviceUrlParameterName + "="
-                        + encodeQueryStringParameterValue(path);
+                String pathParam = serviceUrlParameterName + "=" + encodeQueryStringParameterValue(path);
                 serviceUrl = SharedUtil.addGetParameters(serviceUrl, pathParam);
                 vaadinUri = serviceUrl;
             } else {
@@ -107,9 +98,7 @@ public abstract class VaadinUriResolver implements Serializable {
         }
         if (vaadinUri.startsWith(ApplicationConstants.VAADIN_PROTOCOL_PREFIX)) {
             final String vaadinDirUri = getVaadinDirUrl();
-            String relativeUrl = vaadinUri
-                    .substring(ApplicationConstants.VAADIN_PROTOCOL_PREFIX
-                            .length());
+            String relativeUrl = vaadinUri.substring(ApplicationConstants.VAADIN_PROTOCOL_PREFIX.length());
             vaadinUri = vaadinDirUri + relativeUrl;
         }
 
@@ -156,6 +145,5 @@ public abstract class VaadinUriResolver implements Serializable {
      *            the value to encode
      * @return the encoded value
      */
-    protected abstract String encodeQueryStringParameterValue(
-            String parameterValue);
+    protected abstract String encodeQueryStringParameterValue(String parameterValue);
 }

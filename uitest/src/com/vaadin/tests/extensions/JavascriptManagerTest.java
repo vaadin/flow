@@ -37,13 +37,10 @@ public class JavascriptManagerTest extends AbstractTestUI {
             @Override
             public void call(JsonArray arguments) {
                 log.log("Got " + arguments.length() + " arguments");
-                log.log("Argument 1 as a number: "
-                        + (int) arguments.getNumber(0));
+                log.log("Argument 1 as a number: " + (int) arguments.getNumber(0));
                 log.log("Argument 2 as a string: " + arguments.getString(1));
-                log.log("Argument 3.p as a boolean: "
-                        + arguments.getObject(2).getBoolean("p"));
-                log.log("Argument 4 is JSONObject.NULL: "
-                        + (arguments.get(3) instanceof JsonNull));
+                log.log("Argument 3.p as a boolean: " + arguments.getObject(2).getBoolean("p"));
+                log.log("Argument 4 is JSONObject.NULL: " + (arguments.get(3) instanceof JsonNull));
                 js.removeFunction("testing.doTest");
             }
         });

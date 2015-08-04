@@ -62,8 +62,7 @@ import com.vaadin.util.ReflectTools;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public abstract class AbstractComponent extends AbstractClientConnector
-        implements Component {
+public abstract class AbstractComponent extends AbstractClientConnector implements Component {
 
     /* Private members */
 
@@ -158,8 +157,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
     public String getStyleName() {
         String s = "";
         if (ComponentStateUtil.hasStyles(getState(false))) {
-            for (final Iterator<String> it = getState(false).styles.iterator(); it
-                    .hasNext();) {
+            for (final Iterator<String> it = getState(false).styles.iterator(); it.hasNext();) {
                 s += it.next();
                 if (it.hasNext()) {
                     s += " ";
@@ -415,8 +413,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
             return false;
         } else if (!super.isConnectorEnabled()) {
             return false;
-        } else if ((getParent() instanceof SelectiveRenderer)
-                && !((SelectiveRenderer) getParent()).isRendered(this)) {
+        } else if ((getParent() instanceof SelectiveRenderer) && !((SelectiveRenderer) getParent()).isRendered(this)) {
             return false;
         } else {
             return true;
@@ -549,8 +546,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
 
         if (parent != null && this.parent != null) {
-            throw new IllegalStateException(getClass().getName()
-                    + " already has a parent.");
+            throw new IllegalStateException(getClass().getName() + " already has a parent.");
         }
 
         // Send a detach event if the component is currently attached
@@ -736,9 +732,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /* General event framework */
 
-    private static final Method COMPONENT_EVENT_METHOD = ReflectTools
-            .findMethod(Component.Listener.class, "componentEvent",
-                    Component.Event.class);
+    private static final Method COMPONENT_EVENT_METHOD = ReflectTools.findMethod(Component.Listener.class, "componentEvent", Component.Event.class);
 
     /* Component event framework */
 
@@ -958,15 +952,13 @@ public abstract class AbstractComponent extends AbstractClientConnector
         // handle default attributes
         for (String attribute : getDefaultAttributes()) {
             if (design.hasAttr(attribute)) {
-                DesignAttributeHandler.assignValue(this, attribute,
-                        design.attr(attribute));
+                DesignAttributeHandler.assignValue(this, attribute, design.attr(attribute));
             }
 
         }
         // handle immediate
         if (attr.hasKey("immediate")) {
-            setImmediate(DesignAttributeHandler.getFormatter().parse(
-                    attr.get("immediate"), Boolean.class));
+            setImmediate(DesignAttributeHandler.getFormatter().parse(attr.get("immediate"), Boolean.class));
         }
 
         // handle locale
@@ -977,15 +969,12 @@ public abstract class AbstractComponent extends AbstractClientConnector
         readSize(attr);
         // handle component error
         if (attr.hasKey("error")) {
-            UserError error = new UserError(attr.get("error"),
-                    ContentMode.HTML, ErrorLevel.ERROR);
+            UserError error = new UserError(attr.get("error"), ContentMode.HTML, ErrorLevel.ERROR);
             setComponentError(error);
         }
         // Tab index when applicable
         if (design.hasAttr("tabindex") && this instanceof Focusable) {
-            ((Focusable) this).setTabIndex(DesignAttributeHandler
-                    .readAttribute("tabindex", design.attributes(),
-                            Integer.class));
+            ((Focusable) this).setTabIndex(DesignAttributeHandler.readAttribute("tabindex", design.attributes(), Integer.class));
         }
 
         // check for unsupported attributes
@@ -994,9 +983,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
         supported.addAll(getCustomAttributes());
         for (Attribute a : attr) {
             if (!a.getKey().startsWith(":") && !supported.contains(a.getKey())) {
-                getLogger().info(
-                        "Unsupported attribute found when reading from design : "
-                                + a.getKey());
+                getLogger().info("Unsupported attribute found when reading from design : " + a.getKey());
             }
         }
     }
@@ -1017,8 +1004,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
         String[] parts = localeString.split("_");
         if (parts.length > 3) {
-            throw new RuntimeException("Cannot parse the locale string: "
-                    + localeString);
+            throw new RuntimeException("Cannot parse the locale string: " + localeString);
         }
         switch (parts.length) {
         case 1:
@@ -1045,8 +1031,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
             }
         } else {
             // remove responsive extensions
-            List<Extension> extensions = new ArrayList<Extension>(
-                    getExtensions());
+            List<Extension> extensions = new ArrayList<Extension>(getExtensions());
             for (Extension e : extensions) {
                 if (e instanceof Responsive) {
                     removeExtension(e);
@@ -1084,8 +1069,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
         // read width
         if (attributes.hasKey("width-auto") || attributes.hasKey("size-auto")) {
             this.setWidth(null);
-        } else if (attributes.hasKey("width-full")
-                || attributes.hasKey("size-full")) {
+        } else if (attributes.hasKey("width-full") || attributes.hasKey("size-full")) {
             this.setWidth("100%");
         } else if (attributes.hasKey("width")) {
             this.setWidth(attributes.get("width"));
@@ -1094,8 +1078,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
         // read height
         if (attributes.hasKey("height-auto") || attributes.hasKey("size-auto")) {
             this.setHeight(null);
-        } else if (attributes.hasKey("height-full")
-                || attributes.hasKey("size-full")) {
+        } else if (attributes.hasKey("height-full") || attributes.hasKey("size-full")) {
             this.setHeight("100%");
         } else if (attributes.hasKey("height")) {
             this.setHeight(attributes.get("height"));
@@ -1119,10 +1102,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
             // we have default values -> ignore
             return;
         }
-        boolean widthFull = getWidth() == 100f
-                && getWidthUnits().equals(Sizeable.Unit.PERCENTAGE);
-        boolean heightFull = getHeight() == 100f
-                && getHeightUnits().equals(Sizeable.Unit.PERCENTAGE);
+        boolean widthFull = getWidth() == 100f && getWidthUnits().equals(Sizeable.Unit.PERCENTAGE);
+        boolean heightFull = getHeight() == 100f && getHeightUnits().equals(Sizeable.Unit.PERCENTAGE);
         boolean widthAuto = getWidth() == -1;
         boolean heightAuto = getHeight() == -1;
 
@@ -1139,8 +1120,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
                 } else if (widthAuto) {
                     attributes.put("width-auto", "");
                 } else {
-                    String widthString = DesignAttributeHandler.getFormatter()
-                            .format(getWidth()) + getWidthUnits().getSymbol();
+                    String widthString = DesignAttributeHandler.getFormatter().format(getWidth()) + getWidthUnits().getSymbol();
                     attributes.put("width", widthString);
 
                 }
@@ -1152,8 +1132,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
                 } else if (heightAuto) {
                     attributes.put("height-auto", "");
                 } else {
-                    String heightString = DesignAttributeHandler.getFormatter()
-                            .format(getHeight()) + getHeightUnits().getSymbol();
+                    String heightString = DesignAttributeHandler.getFormatter().format(getHeight()) + getHeightUnits().getSymbol();
                     attributes.put("height", heightString);
                 }
             }
@@ -1168,8 +1147,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      * @return true if the widths are equal
      */
     private boolean hasEqualWidth(Component component) {
-        return getWidth() == component.getWidth()
-                && getWidthUnits().equals(component.getWidthUnits());
+        return getWidth() == component.getWidth() && getWidthUnits().equals(component.getWidthUnits());
     }
 
     /**
@@ -1180,8 +1158,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      * @return true if the heights are equal
      */
     private boolean hasEqualHeight(Component component) {
-        return getHeight() == component.getHeight()
-                && getHeightUnits().equals(component.getHeightUnits());
+        return getHeight() == component.getHeight() && getHeightUnits().equals(component.getHeightUnits());
     }
 
     /**
@@ -1205,8 +1182,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      *         default approach.
      */
     private Collection<String> getDefaultAttributes() {
-        Collection<String> attributes = DesignAttributeHandler
-                .getSupportedAttributes(this.getClass());
+        Collection<String> attributes = DesignAttributeHandler.getSupportedAttributes(this.getClass());
         attributes.removeAll(getCustomAttributes());
         return attributes;
     }
@@ -1223,8 +1199,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      *         implementation
      */
     protected Collection<String> getCustomAttributes() {
-        ArrayList<String> l = new ArrayList<String>(
-                Arrays.asList(customAttributes));
+        ArrayList<String> l = new ArrayList<String>(Arrays.asList(customAttributes));
         if (this instanceof Focusable) {
             l.add("tab-index");
             l.add("tabindex");
@@ -1232,10 +1207,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
         return l;
     }
 
-    private static final String[] customAttributes = new String[] { "width",
-            "height", "debug-id", "error", "width-auto", "height-auto",
-            "width-full", "height-full", "size-auto", "size-full", "immediate",
-            "locale", "read-only", "_id" };
+    private static final String[] customAttributes = new String[] { "width", "height", "debug-id", "error", "width-auto", "height-auto", "width-full", "height-full", "size-auto", "size-full", "immediate", "locale", "read-only", "_id" };
 
     /*
      * (non-Javadoc)
@@ -1253,30 +1225,23 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
         // handle immediate
         if (explicitImmediateValue != null) {
-            DesignAttributeHandler.writeAttribute("immediate", attr,
-                    explicitImmediateValue, def.isImmediate(), Boolean.class);
+            DesignAttributeHandler.writeAttribute("immediate", attr, explicitImmediateValue, def.isImmediate(), Boolean.class);
         }
         // handle locale
-        if (getLocale() != null
-                && (getParent() == null || !getLocale().equals(
-                        getParent().getLocale()))) {
+        if (getLocale() != null && (getParent() == null || !getLocale().equals(getParent().getLocale()))) {
             design.attr("locale", getLocale().toString());
         }
         // handle size
         writeSize(attr, def);
         // handle component error
-        String errorMsg = getComponentError() != null ? getComponentError()
-                .getFormattedHtmlMessage() : null;
-        String defErrorMsg = def.getComponentError() != null ? def
-                .getComponentError().getFormattedHtmlMessage() : null;
+        String errorMsg = getComponentError() != null ? getComponentError().getFormattedHtmlMessage() : null;
+        String defErrorMsg = def.getComponentError() != null ? def.getComponentError().getFormattedHtmlMessage() : null;
         if (!SharedUtil.equals(errorMsg, defErrorMsg)) {
             attr.put("error", errorMsg);
         }
         // handle tab index
         if (this instanceof Focusable) {
-            DesignAttributeHandler.writeAttribute("tabindex", attr,
-                    ((Focusable) this).getTabIndex(),
-                    ((Focusable) def).getTabIndex(), Integer.class);
+            DesignAttributeHandler.writeAttribute("tabindex", attr, ((Focusable) this).getTabIndex(), ((Focusable) def).getTabIndex(), Integer.class);
         }
 
     }
@@ -1291,8 +1256,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     protected boolean isOrHasAncestor(Component content) {
         if (content instanceof HasComponents) {
-            for (Component parent = this; parent != null; parent = parent
-                    .getParent()) {
+            for (Component parent = this; parent != null; parent = parent.getParent()) {
                 if (parent.equals(content)) {
                     return true;
                 }

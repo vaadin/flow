@@ -40,16 +40,14 @@ public abstract class AbstractBeanFieldGroupTest extends TestBase {
 
     protected Button getShowBeanButton() {
         if (showBeanButton == null) {
-            showBeanButton = new Button("Show bean values",
-                    new Button.ClickListener() {
+            showBeanButton = new Button("Show bean values", new Button.ClickListener() {
 
-                        @Override
-                        public void buttonClick(ClickEvent event) {
-                            log.log(getFieldBinder().getItemDataSource()
-                                    .getBean().toString());
+                @Override
+                public void buttonClick(ClickEvent event) {
+                    log.log(getFieldBinder().getItemDataSource().getBean().toString());
 
-                        }
-                    });
+                }
+            });
         }
         return showBeanButton;
     }

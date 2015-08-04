@@ -46,7 +46,6 @@ public abstract class DateFieldPopupPosition extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Calendar popup should not placed on the top of text field when "
-                + "there is no space on bottom.";
+        return "Calendar popup should not placed on the top of text field when " + "there is no space on bottom.";
     }
 }

@@ -52,8 +52,7 @@ import java.util.Collection;
  * @since 5.4
  */
 @SuppressWarnings("serial")
-public class BeanItemContainer<BEANTYPE> extends
-        AbstractBeanContainer<BEANTYPE, BEANTYPE> {
+public class BeanItemContainer<BEANTYPE> extends AbstractBeanContainer<BEANTYPE, BEANTYPE> {
 
     /**
      * Bean identity resolver that returns the bean itself as its item
@@ -67,8 +66,7 @@ public class BeanItemContainer<BEANTYPE> extends
      * 
      * @since 6.5
      */
-    private static class IdentityBeanIdResolver<BT> implements
-            BeanIdResolver<BT, BT> {
+    private static class IdentityBeanIdResolver<BT> implements BeanIdResolver<BT, BT> {
 
         @Override
         public BT getIdForBean(BT bean) {
@@ -85,8 +83,7 @@ public class BeanItemContainer<BEANTYPE> extends
      * @throws IllegalArgumentException
      *             If {@code type} is null
      */
-    public BeanItemContainer(Class<? super BEANTYPE> type)
-            throws IllegalArgumentException {
+    public BeanItemContainer(Class<? super BEANTYPE> type) throws IllegalArgumentException {
         super(type);
         super.setBeanIdResolver(new IdentityBeanIdResolver<BEANTYPE>());
     }
@@ -114,12 +111,10 @@ public class BeanItemContainer<BEANTYPE> extends
      */
     @SuppressWarnings("unchecked")
     @Deprecated
-    public BeanItemContainer(Collection<? extends BEANTYPE> collection)
-            throws IllegalArgumentException {
+    public BeanItemContainer(Collection<? extends BEANTYPE> collection) throws IllegalArgumentException {
         // must assume the class is BT
         // the class information is erased by the compiler
-        this((Class<BEANTYPE>) getBeanClassForCollection(collection),
-                collection);
+        this((Class<BEANTYPE>) getBeanClassForCollection(collection), collection);
     }
 
     /**
@@ -133,12 +128,9 @@ public class BeanItemContainer<BEANTYPE> extends
      */
     @SuppressWarnings("unchecked")
     @Deprecated
-    private static <BT> Class<? extends BT> getBeanClassForCollection(
-            Collection<? extends BT> collection)
-            throws IllegalArgumentException {
+    private static <BT> Class<? extends BT> getBeanClassForCollection(Collection<? extends BT> collection) throws IllegalArgumentException {
         if (collection == null || collection.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "The collection passed to BeanItemContainer constructor must not be null or empty. Use the other BeanItemContainer constructor.");
+            throw new IllegalArgumentException("The collection passed to BeanItemContainer constructor must not be null or empty. Use the other BeanItemContainer constructor.");
         }
         return (Class<? extends BT>) collection.iterator().next().getClass();
     }
@@ -153,9 +145,7 @@ public class BeanItemContainer<BEANTYPE> extends
      * @throws IllegalArgumentException
      *             If {@code type} is null
      */
-    public BeanItemContainer(Class<? super BEANTYPE> type,
-            Collection<? extends BEANTYPE> collection)
-            throws IllegalArgumentException {
+    public BeanItemContainer(Class<? super BEANTYPE> type, Collection<? extends BEANTYPE> collection) throws IllegalArgumentException {
         super(type);
         super.setBeanIdResolver(new IdentityBeanIdResolver<BEANTYPE>());
 
@@ -190,10 +180,8 @@ public class BeanItemContainer<BEANTYPE> extends
      */
     @Override
     @SuppressWarnings("unchecked")
-    public BeanItem<BEANTYPE> addItemAfter(Object previousItemId,
-            Object newItemId) throws IllegalArgumentException {
-        return super.addBeanAfter((BEANTYPE) previousItemId,
-                (BEANTYPE) newItemId);
+    public BeanItem<BEANTYPE> addItemAfter(Object previousItemId, Object newItemId) throws IllegalArgumentException {
+        return super.addBeanAfter((BEANTYPE) previousItemId, (BEANTYPE) newItemId);
     }
 
     /**
@@ -209,8 +197,7 @@ public class BeanItemContainer<BEANTYPE> extends
      */
     @Override
     @SuppressWarnings("unchecked")
-    public BeanItem<BEANTYPE> addItemAt(int index, Object newItemId)
-            throws IllegalArgumentException {
+    public BeanItem<BEANTYPE> addItemAt(int index, Object newItemId) throws IllegalArgumentException {
         return super.addBeanAt(index, (BEANTYPE) newItemId);
     }
 
@@ -243,11 +230,8 @@ public class BeanItemContainer<BEANTYPE> extends
      * Unsupported in BeanItemContainer.
      */
     @Override
-    protected void setBeanIdResolver(
-            AbstractBeanContainer.BeanIdResolver<BEANTYPE, BEANTYPE> beanIdResolver)
-            throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "BeanItemContainer always uses an IdentityBeanIdResolver");
+    protected void setBeanIdResolver(AbstractBeanContainer.BeanIdResolver<BEANTYPE, BEANTYPE> beanIdResolver) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("BeanItemContainer always uses an IdentityBeanIdResolver");
     }
 
 }

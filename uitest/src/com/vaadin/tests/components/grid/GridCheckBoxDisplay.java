@@ -25,8 +25,7 @@ import com.vaadin.ui.Grid;
 public class GridCheckBoxDisplay extends AbstractTestUI {
 
     private static final long serialVersionUID = -5575892909354637168L;
-    private BeanItemContainer<Todo> todoContainer = new BeanItemContainer<Todo>(
-            Todo.class);
+    private BeanItemContainer<Todo> todoContainer = new BeanItemContainer<Todo>(Todo.class);
 
     @Override
     protected void setup(VaadinRequest request) {

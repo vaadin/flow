@@ -34,10 +34,8 @@ public class MenuBarNavigationKeyboardTest extends MultiBrowserTest {
         openTestURL();
 
         openMenu("File");
-        getMenuBar().sendKeys(Keys.DOWN, Keys.DOWN, Keys.DOWN, Keys.DOWN,
-                Keys.RIGHT, Keys.ENTER);
-        Assert.assertEquals("1. MenuItem File/Export../As PDF... selected",
-                getLogRow(0));
+        getMenuBar().sendKeys(Keys.DOWN, Keys.DOWN, Keys.DOWN, Keys.DOWN, Keys.RIGHT, Keys.ENTER);
+        Assert.assertEquals("1. MenuItem File/Export../As PDF... selected", getLogRow(0));
 
         openMenu("File");
         getMenuBar().sendKeys(Keys.RIGHT, Keys.RIGHT, Keys.RIGHT, Keys.ENTER);
@@ -67,22 +65,18 @@ public class MenuBarNavigationKeyboardTest extends MultiBrowserTest {
     }
 
     @Test
-    public void testMenuSelectWithKeyboardStateClearedCorrectly()
-            throws InterruptedException {
+    public void testMenuSelectWithKeyboardStateClearedCorrectly() throws InterruptedException {
         openTestURL();
 
         openMenu("File");
 
-        getMenuBar().sendKeys(Keys.ARROW_RIGHT, Keys.ARROW_RIGHT,
-                Keys.ARROW_RIGHT, Keys.ENTER);
+        getMenuBar().sendKeys(Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ARROW_RIGHT, Keys.ENTER);
 
-        assertTrue("Help menu was not selected",
-                logContainsText("MenuItem Help selected"));
+        assertTrue("Help menu was not selected", logContainsText("MenuItem Help selected"));
 
         new Actions(driver).moveToElement(getMenuBar(), 10, 10).perform();
 
-        assertFalse("Unexpected MenuBar popup is visible",
-                isElementPresent(By.className("v-menubar-popup")));
+        assertFalse("Unexpected MenuBar popup is visible", isElementPresent(By.className("v-menubar-popup")));
     }
 
     public MenuBarElement getMenuBar() {

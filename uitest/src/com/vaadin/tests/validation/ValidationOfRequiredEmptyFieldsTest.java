@@ -68,8 +68,7 @@ public class ValidationOfRequiredEmptyFieldsTest extends MultiBrowserTest {
 
             @Override
             public String toString() {
-                return "tooltip to be '" + message + "' (was: '"
-                        + getTooltipErrorElement().getText() + "')";
+                return "tooltip to be '" + message + "' (was: '" + getTooltipErrorElement().getText() + "')";
             }
         });
         hideTooltip();
@@ -88,18 +87,15 @@ public class ValidationOfRequiredEmptyFieldsTest extends MultiBrowserTest {
     }
 
     private WebElement getRequiredCheckbox() {
-        return $(CheckBoxElement.class).caption("Field required").first()
-                .findElement(By.xpath("input"));
+        return $(CheckBoxElement.class).caption("Field required").first().findElement(By.xpath("input"));
     }
 
     private WebElement getIntegerValidatorCheckbox() {
-        return $(CheckBoxElement.class).caption("Integer validator").first()
-                .findElement(By.xpath("input"));
+        return $(CheckBoxElement.class).caption("Integer validator").first().findElement(By.xpath("input"));
     }
 
     private WebElement getLengthValidatorCheckbox() {
-        return $(CheckBoxElement.class).caption("String length validator")
-                .first().findElement(By.xpath("input"));
+        return $(CheckBoxElement.class).caption("String length validator").first().findElement(By.xpath("input"));
     }
 
 }

@@ -21,8 +21,7 @@ public class LabelsCssTest extends GridLayout {
 
         createLabelWith(null, "Default empty label", null, null);
         createLabelWith(null, "Label with icon", null, parent.ICON_URL);
-        Label l = createLabelWith("The caption", "With caption and tooltip",
-                null, null);
+        Label l = createLabelWith("The caption", "With caption and tooltip", null, null);
         l.setDescription("The tooltip");
 
         createLabelWith("H1", ChameleonTheme.LABEL_H1);
@@ -49,8 +48,7 @@ public class LabelsCssTest extends GridLayout {
         return createLabelWith(null, content, primaryStyleName, null);
     }
 
-    private Label createLabelWith(String caption, String content,
-            String primaryStyleName, String iconUrl) {
+    private Label createLabelWith(String caption, String content, String primaryStyleName, String iconUrl) {
 
         Label l = new Label();
         l.setId("label" + debugIdCounter++);

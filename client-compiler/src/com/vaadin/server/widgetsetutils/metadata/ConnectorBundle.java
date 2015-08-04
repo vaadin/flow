@@ -59,16 +59,14 @@ public class ConnectorBundle {
     public static final Comparator<JClassType> jClassComparator = new Comparator<JClassType>() {
         @Override
         public int compare(JClassType o1, JClassType o2) {
-            return o1.getQualifiedSourceName().compareTo(
-                    o2.getQualifiedSourceName());
+            return o1.getQualifiedSourceName().compareTo(o2.getQualifiedSourceName());
         }
     };
 
     public static final Comparator<JMethod> jMethodComparator = new Comparator<JMethod>() {
         @Override
         public int compare(JMethod o1, JMethod o2) {
-            return o1.getReadableDeclaration().compareTo(
-                    o2.getReadableDeclaration());
+            return o1.getReadableDeclaration().compareTo(o2.getReadableDeclaration());
         }
     };
 
@@ -80,45 +78,31 @@ public class ConnectorBundle {
     private final Set<JType> hasSerializeSupport = new HashSet<JType>();
     private final Set<JType> needsSerializeSupport = new HashSet<JType>();
 
-    private final Map<JType, GeneratedSerializer> serializers = new TreeMap<JType, GeneratedSerializer>(
-            new Comparator<JType>() {
-                @Override
-                public int compare(JType o1, JType o2) {
-                    return o1.toString().compareTo(o2.toString());
-                }
-            });
+    private final Map<JType, GeneratedSerializer> serializers = new TreeMap<JType, GeneratedSerializer>(new Comparator<JType>() {
+        @Override
+        public int compare(JType o1, JType o2) {
+            return o1.toString().compareTo(o2.toString());
+        }
+    });
 
-    private final Map<JClassType, Map<JMethod, Set<MethodAttribute>>> methodAttributes = new TreeMap<JClassType, Map<JMethod, Set<MethodAttribute>>>(
-            jClassComparator);
-    private final Set<JClassType> needsSuperClass = new TreeSet<JClassType>(
-            jClassComparator);
-    private final Set<JClassType> needsGwtConstructor = new TreeSet<JClassType>(
-            jClassComparator);
+    private final Map<JClassType, Map<JMethod, Set<MethodAttribute>>> methodAttributes = new TreeMap<JClassType, Map<JMethod, Set<MethodAttribute>>>(jClassComparator);
+    private final Set<JClassType> needsSuperClass = new TreeSet<JClassType>(jClassComparator);
+    private final Set<JClassType> needsGwtConstructor = new TreeSet<JClassType>(jClassComparator);
     private final Set<JClassType> visitedTypes = new HashSet<JClassType>();
 
-    private final Set<JClassType> needsProxySupport = new TreeSet<JClassType>(
-            jClassComparator);
+    private final Set<JClassType> needsProxySupport = new TreeSet<JClassType>(jClassComparator);
 
-    private final Map<JClassType, JType> presentationTypes = new TreeMap<JClassType, JType>(
-            jClassComparator);
-    private final Map<JClassType, Set<String>> identifiers = new TreeMap<JClassType, Set<String>>(
-            jClassComparator);
-    private final Map<JClassType, Set<JMethod>> needsReturnType = new TreeMap<JClassType, Set<JMethod>>(
-            jClassComparator);
-    private final Map<JClassType, Set<JMethod>> needsInvoker = new TreeMap<JClassType, Set<JMethod>>(
-            jClassComparator);
-    private final Map<JClassType, Set<JMethod>> needsParamTypes = new TreeMap<JClassType, Set<JMethod>>(
-            jClassComparator);
-    private final Map<JClassType, Set<JMethod>> needsOnStateChange = new TreeMap<JClassType, Set<JMethod>>(
-            jClassComparator);
+    private final Map<JClassType, JType> presentationTypes = new TreeMap<JClassType, JType>(jClassComparator);
+    private final Map<JClassType, Set<String>> identifiers = new TreeMap<JClassType, Set<String>>(jClassComparator);
+    private final Map<JClassType, Set<JMethod>> needsReturnType = new TreeMap<JClassType, Set<JMethod>>(jClassComparator);
+    private final Map<JClassType, Set<JMethod>> needsInvoker = new TreeMap<JClassType, Set<JMethod>>(jClassComparator);
+    private final Map<JClassType, Set<JMethod>> needsParamTypes = new TreeMap<JClassType, Set<JMethod>>(jClassComparator);
+    private final Map<JClassType, Set<JMethod>> needsOnStateChange = new TreeMap<JClassType, Set<JMethod>>(jClassComparator);
 
     private final Set<Property> needsProperty = new TreeSet<Property>();
-    private final Map<JClassType, Set<Property>> needsDelegateToWidget = new TreeMap<JClassType, Set<Property>>(
-            jClassComparator);
+    private final Map<JClassType, Set<Property>> needsDelegateToWidget = new TreeMap<JClassType, Set<Property>>(jClassComparator);
 
-    private ConnectorBundle(String name, ConnectorBundle previousBundle,
-            Collection<TypeVisitor> visitors,
-            Map<JType, JClassType> customSerializers) {
+    private ConnectorBundle(String name, ConnectorBundle previousBundle, Collection<TypeVisitor> visitors, Map<JType, JClassType> customSerializers) {
         this.name = name;
         this.previousBundle = previousBundle;
         this.visitors = visitors;
@@ -126,33 +110,24 @@ public class ConnectorBundle {
     }
 
     public ConnectorBundle(String name, ConnectorBundle previousBundle) {
-        this(name, previousBundle, previousBundle.visitors,
-                previousBundle.customSerializers);
+        this(name, previousBundle, previousBundle.visitors, previousBundle.customSerializers);
     }
 
-    public ConnectorBundle(String name, Collection<TypeVisitor> visitors,
-            TypeOracle oracle) throws NotFoundException {
+    public ConnectorBundle(String name, Collection<TypeVisitor> visitors, TypeOracle oracle) throws NotFoundException {
         this(name, null, visitors, findCustomSerializers(oracle));
     }
 
-    private static Map<JType, JClassType> findCustomSerializers(
-            TypeOracle oracle) throws NotFoundException {
+    private static Map<JType, JClassType> findCustomSerializers(TypeOracle oracle) throws NotFoundException {
         Map<JType, JClassType> serializers = new HashMap<JType, JClassType>();
 
-        JClassType serializerInterface = oracle.findType(JSONSerializer.class
-                .getName());
-        JType[] deserializeParamTypes = new JType[] {
-                oracle.findType(com.vaadin.client.metadata.Type.class.getName()),
-                oracle.findType(JsonValue.class.getName()),
-                oracle.findType(ApplicationConnection.class.getName()) };
+        JClassType serializerInterface = oracle.findType(JSONSerializer.class.getName());
+        JType[] deserializeParamTypes = new JType[] { oracle.findType(com.vaadin.client.metadata.Type.class.getName()), oracle.findType(JsonValue.class.getName()), oracle.findType(ApplicationConnection.class.getName()) };
         String deserializeMethodName = "deserialize";
         // Just test that the method exists
-        serializerInterface.getMethod(deserializeMethodName,
-                deserializeParamTypes);
+        serializerInterface.getMethod(deserializeMethodName, deserializeParamTypes);
 
         for (JClassType serializer : serializerInterface.getSubtypes()) {
-            JMethod deserializeMethod = serializer.findMethod(
-                    deserializeMethodName, deserializeParamTypes);
+            JMethod deserializeMethod = serializer.findMethod(deserializeMethodName, deserializeParamTypes);
             if (deserializeMethod == null) {
                 continue;
             }
@@ -173,8 +148,7 @@ public class ConnectorBundle {
         if (needsGwtConstructor.contains(type)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.needsGwtConstructor(type);
+            return previousBundle != null && previousBundle.needsGwtConstructor(type);
         }
     }
 
@@ -188,8 +162,7 @@ public class ConnectorBundle {
         if (hasMapping(identifiers, type, identifier)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.hasIdentifier(type, identifier);
+            return previousBundle != null && previousBundle.hasIdentifier(type, identifier);
         }
     }
 
@@ -209,15 +182,13 @@ public class ConnectorBundle {
         return Collections.unmodifiableSet(needsGwtConstructor);
     }
 
-    public void processTypes(TreeLogger logger, Collection<JClassType> types)
-            throws UnableToCompleteException {
+    public void processTypes(TreeLogger logger, Collection<JClassType> types) throws UnableToCompleteException {
         for (JClassType type : types) {
             processType(logger, type);
         }
     }
 
-    public void processType(TreeLogger logger, JClassType type)
-            throws UnableToCompleteException {
+    public void processType(TreeLogger logger, JClassType type) throws UnableToCompleteException {
         if (!isTypeVisited(type)) {
             for (TypeVisitor typeVisitor : visitors) {
                 invokeVisitor(logger, type, typeVisitor);
@@ -235,8 +206,7 @@ public class ConnectorBundle {
         }
     }
 
-    private void purgeSerializeSupportQueue(TreeLogger logger)
-            throws UnableToCompleteException {
+    private void purgeSerializeSupportQueue(TreeLogger logger) throws UnableToCompleteException {
         while (!needsSerializeSupport.isEmpty()) {
             Iterator<JType> iterator = needsSerializeSupport.iterator();
             JType type = iterator.next();
@@ -250,8 +220,7 @@ public class ConnectorBundle {
         }
     }
 
-    private void addSerializeSupport(TreeLogger logger, JType type)
-            throws UnableToCompleteException {
+    private void addSerializeSupport(TreeLogger logger, JType type) throws UnableToCompleteException {
         hasSerializeSupport.add(type);
 
         JParameterizedType parametrized = type.isParameterized();
@@ -271,8 +240,7 @@ public class ConnectorBundle {
         JArrayType arrayType = type.isArray();
 
         if (customSerializer != null) {
-            logger.log(Type.INFO, "Will serialize " + type + " using "
-                    + customSerializer.getName());
+            logger.log(Type.INFO, "Will serialize " + type + " using " + customSerializer.getName());
             setSerializer(type, new CustomSerializer(customSerializer));
         } else if (arrayType != null) {
             logger.log(Type.INFO, "Will serialize " + type + " as an array");
@@ -306,23 +274,12 @@ public class ConnectorBundle {
         }
     }
 
-    private void checkSerializable(TreeLogger logger, JClassType type)
-            throws UnableToCompleteException {
-        JClassType javaSerializable = type.getOracle().findType(
-                Serializable.class.getName());
+    private void checkSerializable(TreeLogger logger, JClassType type) throws UnableToCompleteException {
+        JClassType javaSerializable = type.getOracle().findType(Serializable.class.getName());
         boolean serializable = type.isAssignableTo(javaSerializable);
         if (!serializable) {
-            boolean abortCompile = "true".equals(System
-                    .getProperty(FAIL_IF_NOT_SERIALIZABLE));
-            logger.log(
-                    abortCompile ? Type.ERROR : Type.WARN,
-                    type
-                            + " is used in RPC or shared state but does not implement "
-                            + Serializable.class.getName()
-                            + ". Communication will work but the Application on server side cannot be serialized if it refers to objects of this type. "
-                            + "If the system property "
-                            + FAIL_IF_NOT_SERIALIZABLE
-                            + " is set to \"true\", this causes the compilation to fail instead of just emitting a warning.");
+            boolean abortCompile = "true".equals(System.getProperty(FAIL_IF_NOT_SERIALIZABLE));
+            logger.log(abortCompile ? Type.ERROR : Type.WARN, type + " is used in RPC or shared state but does not implement " + Serializable.class.getName() + ". Communication will work but the Application on server side cannot be serialized if it refers to objects of this type. " + "If the system property " + FAIL_IF_NOT_SERIALIZABLE + " is set to \"true\", this causes the compilation to fail instead of just emitting a warning.");
             if (abortCompile) {
                 throw new UnableToCompleteException();
             }
@@ -357,8 +314,7 @@ public class ConnectorBundle {
         if (presentationTypes.containsKey(type)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.hasPresentationType(type);
+            return previousBundle != null && previousBundle.hasPresentationType(type);
         }
     }
 
@@ -376,8 +332,7 @@ public class ConnectorBundle {
         if (needsSuperClass.contains(typeAsClass)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.isNeedsSuperClass(typeAsClass);
+            return previousBundle != null && previousBundle.isNeedsSuperClass(typeAsClass);
         }
     }
 
@@ -395,8 +350,7 @@ public class ConnectorBundle {
         if (needsProperty.contains(property)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.isNeedsProperty(property);
+            return previousBundle != null && previousBundle.isNeedsProperty(property);
         }
     }
 
@@ -413,11 +367,8 @@ public class ConnectorBundle {
         return properties;
     }
 
-    private void invokeVisitor(TreeLogger logger, JClassType type,
-            TypeVisitor typeVisitor) throws UnableToCompleteException {
-        TreeLogger subLogger = logger.branch(Type.TRACE,
-                "Visiting " + type.getName() + " with "
-                        + typeVisitor.getClass().getSimpleName());
+    private void invokeVisitor(TreeLogger logger, JClassType type, TypeVisitor typeVisitor) throws UnableToCompleteException {
+        TreeLogger subLogger = logger.branch(Type.TRACE, "Visiting " + type.getName() + " with " + typeVisitor.getClass().getSimpleName());
         if (isConnectedConnector(type)) {
             typeVisitor.visitConnector(subLogger, type, this);
         }
@@ -429,8 +380,7 @@ public class ConnectorBundle {
         }
     }
 
-    public void processSubTypes(TreeLogger logger, JClassType type)
-            throws UnableToCompleteException {
+    public void processSubTypes(TreeLogger logger, JClassType type) throws UnableToCompleteException {
         processTypes(logger, Arrays.asList(type.getSubtypes()));
     }
 
@@ -444,8 +394,7 @@ public class ConnectorBundle {
         if (hasMapping(needsReturnType, type, method)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.isNeedsReturnType(type, method);
+            return previousBundle != null && previousBundle.isNeedsReturnType(type, method);
         }
     }
 
@@ -466,9 +415,7 @@ public class ConnectorBundle {
     }
 
     private static boolean isConnected(JClassType type) {
-        return type.isAnnotationPresent(Connect.class)
-                || type.getQualifiedSourceName().equals(
-                        UnknownComponentConnector.class.getCanonicalName());
+        return type.isAnnotationPresent(Connect.class) || type.getQualifiedSourceName().equals(UnknownComponentConnector.class.getCanonicalName());
     }
 
     public static boolean isConnectedComponentConnector(JClassType type) {
@@ -481,8 +428,7 @@ public class ConnectorBundle {
 
     private static boolean isType(JClassType type, Class<?> class1) {
         try {
-            return type.getOracle().getType(class1.getName())
-                    .isAssignableFrom(type);
+            return type.getOracle().getType(class1.getName()).isAssignableFrom(type);
         } catch (NotFoundException e) {
             throw new RuntimeException("Could not find " + class1.getName(), e);
         }
@@ -520,8 +466,7 @@ public class ConnectorBundle {
         if (hasMapping(needsInvoker, type, method)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.isNeedsInvoker(type, method);
+            return previousBundle != null && previousBundle.isNeedsInvoker(type, method);
         }
     }
 
@@ -539,8 +484,7 @@ public class ConnectorBundle {
         if (hasMapping(needsParamTypes, type, method)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.isNeedsParamTypes(type, method);
+            return previousBundle != null && previousBundle.isNeedsParamTypes(type, method);
         }
     }
 
@@ -558,8 +502,7 @@ public class ConnectorBundle {
         if (needsProxySupport.contains(type)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.isNeedsProxySupport(type);
+            return previousBundle != null && previousBundle.isNeedsProxySupport(type);
         }
     }
 
@@ -567,22 +510,17 @@ public class ConnectorBundle {
         return Collections.unmodifiableSet(needsProxySupport);
     }
 
-    public void setMethodAttribute(JClassType type, JMethod method,
-            MethodAttribute methodAttribute) {
+    public void setMethodAttribute(JClassType type, JMethod method, MethodAttribute methodAttribute) {
         if (!hasMethodAttribute(type, method, methodAttribute)) {
-            Map<JMethod, Set<MethodAttribute>> typeData = methodAttributes
-                    .get(type);
+            Map<JMethod, Set<MethodAttribute>> typeData = methodAttributes.get(type);
             if (typeData == null) {
-                typeData = new TreeMap<JMethod, Set<MethodAttribute>>(
-                        jMethodComparator);
+                typeData = new TreeMap<JMethod, Set<MethodAttribute>>(jMethodComparator);
                 methodAttributes.put(type, typeData);
             }
 
-            Map<JMethod, Set<MethodAttribute>> methods = methodAttributes
-                    .get(type);
+            Map<JMethod, Set<MethodAttribute>> methods = methodAttributes.get(type);
             if (methods == null) {
-                methods = new TreeMap<JMethod, Set<MethodAttribute>>(
-                        jMethodComparator);
+                methods = new TreeMap<JMethod, Set<MethodAttribute>>(jMethodComparator);
                 methodAttributes.put(type, methods);
             }
 
@@ -596,16 +534,12 @@ public class ConnectorBundle {
         }
     }
 
-    private boolean hasMethodAttribute(JClassType type, JMethod method,
-            MethodAttribute methodAttribute) {
-        Map<JMethod, Set<MethodAttribute>> typeData = methodAttributes
-                .get(type);
+    private boolean hasMethodAttribute(JClassType type, JMethod method, MethodAttribute methodAttribute) {
+        Map<JMethod, Set<MethodAttribute>> typeData = methodAttributes.get(type);
         if (typeData != null && hasMapping(typeData, method, methodAttribute)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.hasMethodAttribute(type, method,
-                            methodAttribute);
+            return previousBundle != null && previousBundle.hasMethodAttribute(type, method, methodAttribute);
         }
     }
 
@@ -660,8 +594,7 @@ public class ConnectorBundle {
         if (hasSerializeSupport.contains(type)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.hasSerializeSupport(type);
+            return previousBundle != null && previousBundle.hasSerializeSupport(type);
         }
     }
 
@@ -679,8 +612,7 @@ public class ConnectorBundle {
         if (needsDelegateToWidget.containsKey(type)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.isNeedsDelegateToWidget(type);
+            return previousBundle != null && previousBundle.isNeedsDelegateToWidget(type);
         }
     }
 
@@ -698,8 +630,7 @@ public class ConnectorBundle {
         if (hasMapping(needsOnStateChange, type, method)) {
             return true;
         } else {
-            return previousBundle != null
-                    && previousBundle.isNeedsOnStateChangeHandler(type, method);
+            return previousBundle != null && previousBundle.isNeedsOnStateChangeHandler(type, method);
         }
     }
 
@@ -707,8 +638,7 @@ public class ConnectorBundle {
         return Collections.unmodifiableMap(needsOnStateChange);
     }
 
-    public static JMethod findInheritedMethod(JClassType type,
-            String methodName, JType... params) {
+    public static JMethod findInheritedMethod(JClassType type, String methodName, JType... params) {
 
         JClassType currentType = type;
         while (currentType != null) {

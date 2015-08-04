@@ -54,14 +54,11 @@ public class StreamVariableMappingTest extends TestCase {
 
     public void testAddStreamVariable() {
         owner.getUI().getConnectorTracker().registerConnector(owner);
-        String targetUrl = cm.getStreamVariableTargetUrl(owner, variableName,
-                streamVariable);
-        assertTrue(targetUrl.startsWith("app://APP/UPLOAD/-1/"
-                + owner.getConnectorId() + "/myName/"));
+        String targetUrl = cm.getStreamVariableTargetUrl(owner, variableName, streamVariable);
+        assertTrue(targetUrl.startsWith("app://APP/UPLOAD/-1/" + owner.getConnectorId() + "/myName/"));
 
         ConnectorTracker tracker = owner.getUI().getConnectorTracker();
-        StreamVariable streamVariable2 = tracker.getStreamVariable(
-                owner.getConnectorId(), variableName);
+        StreamVariable streamVariable2 = tracker.getStreamVariable(owner.getConnectorId(), variableName);
         assertSame(streamVariable, streamVariable2);
     }
 
@@ -69,22 +66,17 @@ public class StreamVariableMappingTest extends TestCase {
         ConnectorTracker tracker = owner.getUI().getConnectorTracker();
         tracker.registerConnector(owner);
         cm.getStreamVariableTargetUrl(owner, variableName, streamVariable);
-        assertNotNull(tracker.getStreamVariable(owner.getConnectorId(),
-                variableName));
+        assertNotNull(tracker.getStreamVariable(owner.getConnectorId(), variableName));
 
         tracker.cleanStreamVariable(owner.getConnectorId(), variableName);
-        assertNull(tracker.getStreamVariable(owner.getConnectorId(),
-                variableName));
+        assertNull(tracker.getStreamVariable(owner.getConnectorId(), variableName));
     }
 
-    private LegacyCommunicationManager createCommunicationManager()
-            throws Exception {
+    private LegacyCommunicationManager createCommunicationManager() throws Exception {
         VaadinServlet servlet = new VaadinServlet();
         servlet.init(new MockServletConfig());
-        VaadinServletService vss = new VaadinServletService(servlet,
-                new MockDeploymentConfiguration());
+        VaadinServletService vss = new VaadinServletService(servlet, new MockDeploymentConfiguration());
         servlet.init(new MockServletConfig());
-        return new LegacyCommunicationManager(
-                new AlwaysLockedVaadinSession(vss));
+        return new LegacyCommunicationManager(new AlwaysLockedVaadinSession(vss));
     }
 }

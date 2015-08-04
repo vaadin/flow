@@ -18,11 +18,7 @@ public class ScrollCursor extends TestBase {
     @Override
     protected void setup() {
         textArea = new TextArea();
-        textArea.setValue("saddddddddddd     fdgdfgfdgfd\n"
-                + "aasddddddddddd\n" + "dsaffffffdsf\n" + "sdf\n"
-                + "dsfsdfsdfsdfsd\n\n" + "ffffffffffffffffffff\n"
-                + "sdfdsfdsfsdfsdfsd  xxxxxxxxxxxxxxxx\n" + "sdgfsd\n"
-                + "dsf\n" + "ds\n" + "fds\n" + "fds\nfs");
+        textArea.setValue("saddddddddddd     fdgdfgfdgfd\n" + "aasddddddddddd\n" + "dsaffffffdsf\n" + "sdf\n" + "dsfsdfsdfsdfsd\n\n" + "ffffffffffffffffffff\n" + "sdfdsfdsfsdfsdfsd  xxxxxxxxxxxxxxxx\n" + "sdgfsd\n" + "dsf\n" + "ds\n" + "fds\n" + "fds\nfs");
         addComponent(textArea);
         Button button = new Button("Scroll");
         button.addListener(new ClickListener() {
@@ -77,9 +73,7 @@ public class ScrollCursor extends TestBase {
 
     @Override
     protected String getTestDescription() {
-        return "Tests scrolling for TextArea with different word wrapping settings. "
-                + "Sets cursor position at the beginning, middle and the end "
-                + "of text and checks textarea is scrolled.";
+        return "Tests scrolling for TextArea with different word wrapping settings. " + "Sets cursor position at the beginning, middle and the end " + "of text and checks textarea is scrolled.";
     }
 
     @Override

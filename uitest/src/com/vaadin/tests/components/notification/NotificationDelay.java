@@ -29,8 +29,7 @@ public class NotificationDelay extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        Notification notification = new Notification("Foo",
-                Type.HUMANIZED_MESSAGE);
+        Notification notification = new Notification("Foo", Type.HUMANIZED_MESSAGE);
         notification.setDelayMsec(500);
         notification.show(getPage());
     }

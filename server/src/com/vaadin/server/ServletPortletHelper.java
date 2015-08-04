@@ -36,11 +36,9 @@ public class ServletPortletHelper implements Serializable {
      */
     static final SystemMessages DEFAULT_SYSTEM_MESSAGES = new SystemMessages();
 
-    private static void verifyUIClass(String className, ClassLoader classLoader)
-            throws ServiceException {
+    private static void verifyUIClass(String className, ClassLoader classLoader) throws ServiceException {
         if (className == null) {
-            throw new ServiceException(VaadinSession.UI_PARAMETER
-                    + " init parameter not defined");
+            throw new ServiceException(VaadinSession.UI_PARAMETER + " init parameter not defined");
         }
 
         // Check that the UI layout class can be found
@@ -54,11 +52,9 @@ public class ServletPortletHelper implements Serializable {
         } catch (ClassNotFoundException e) {
             throw new ServiceException(className + " could not be loaded", e);
         } catch (SecurityException e) {
-            throw new ServiceException("Could not access " + className
-                    + " class", e);
+            throw new ServiceException("Could not access " + className + " class", e);
         } catch (NoSuchMethodException e) {
-            throw new ServiceException(className
-                    + " doesn't have a public no-args constructor");
+            throw new ServiceException(className + " doesn't have a public no-args constructor");
         }
     }
 
@@ -103,8 +99,7 @@ public class ServletPortletHelper implements Serializable {
     }
 
     public static boolean isPublishedFileRequest(VaadinRequest request) {
-        return hasPathPrefix(request, ApplicationConstants.PUBLISHED_FILE_PATH
-                + "/");
+        return hasPathPrefix(request, ApplicationConstants.PUBLISHED_FILE_PATH + "/");
     }
 
     public static boolean isUIDLRequest(VaadinRequest request) {
@@ -123,10 +118,8 @@ public class ServletPortletHelper implements Serializable {
         return isPathInfo(request, ApplicationConstants.PUSH_PATH);
     }
 
-    public static void initDefaultUIProvider(VaadinSession session,
-            VaadinService vaadinService) throws ServiceException {
-        String uiProperty = vaadinService.getDeploymentConfiguration()
-                .getUIClassName();
+    public static void initDefaultUIProvider(VaadinSession session, VaadinService vaadinService) throws ServiceException {
+        String uiProperty = vaadinService.getDeploymentConfiguration().getUIClassName();
 
         // Add provider for UI parameter first to give it lower priority
         // (providers are FILO)
@@ -135,44 +128,33 @@ public class ServletPortletHelper implements Serializable {
             session.addUIProvider(new DefaultUIProvider());
         }
 
-        String uiProviderProperty = vaadinService.getDeploymentConfiguration()
-                .getUIProviderClassName();
+        String uiProviderProperty = vaadinService.getDeploymentConfiguration().getUIProviderClassName();
         // Then add custom UI provider if defined
         if (uiProviderProperty != null) {
-            UIProvider uiProvider = getUIProvider(uiProviderProperty,
-                    vaadinService.getClassLoader());
+            UIProvider uiProvider = getUIProvider(uiProviderProperty, vaadinService.getClassLoader());
             session.addUIProvider(uiProvider);
         }
     }
 
-    private static UIProvider getUIProvider(String uiProviderProperty,
-            ClassLoader classLoader) throws ServiceException {
+    private static UIProvider getUIProvider(String uiProviderProperty, ClassLoader classLoader) throws ServiceException {
         try {
             Class<?> providerClass = classLoader.loadClass(uiProviderProperty);
-            Class<? extends UIProvider> subclass = providerClass
-                    .asSubclass(UIProvider.class);
+            Class<? extends UIProvider> subclass = providerClass.asSubclass(UIProvider.class);
             return subclass.newInstance();
         } catch (ClassNotFoundException e) {
-            throw new ServiceException("Could not load UIProvider class "
-                    + uiProviderProperty, e);
+            throw new ServiceException("Could not load UIProvider class " + uiProviderProperty, e);
         } catch (ClassCastException e) {
-            throw new ServiceException("UIProvider class " + uiProviderProperty
-                    + " does not extend UIProvider", e);
+            throw new ServiceException("UIProvider class " + uiProviderProperty + " does not extend UIProvider", e);
         } catch (InstantiationException e) {
-            throw new ServiceException("Could not instantiate UIProvider "
-                    + uiProviderProperty, e);
+            throw new ServiceException("Could not instantiate UIProvider " + uiProviderProperty, e);
         } catch (IllegalAccessException e) {
-            throw new ServiceException("Could not instantiate UIProvider "
-                    + uiProviderProperty, e);
+            throw new ServiceException("Could not instantiate UIProvider " + uiProviderProperty, e);
         }
     }
 
-    public static void checkUiProviders(VaadinSession session,
-            VaadinService vaadinService) throws ServiceException {
+    public static void checkUiProviders(VaadinSession session, VaadinService vaadinService) throws ServiceException {
         if (session.getUIProviders().isEmpty()) {
-            throw new ServiceException(
-                    "No UIProvider has been added and there is no \""
-                            + VaadinSession.UI_PARAMETER + "\" init parameter.");
+            throw new ServiceException("No UIProvider has been added and there is no \"" + VaadinSession.UI_PARAMETER + "\" init parameter.");
         }
     }
 
@@ -189,8 +171,7 @@ public class ServletPortletHelper implements Serializable {
      * <li>{@link Locale#getDefault()}</li>
      * </ol>
      */
-    public static Locale findLocale(Component component, VaadinSession session,
-            VaadinRequest request) {
+    public static Locale findLocale(Component component, VaadinSession session, VaadinRequest request) {
         if (component == null) {
             component = UI.getCurrent();
         }

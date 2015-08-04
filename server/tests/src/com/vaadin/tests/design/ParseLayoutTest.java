@@ -58,10 +58,7 @@ public class ParseLayoutTest {
 
     @Before
     public void setUp() throws Exception {
-        ctx = Design
-                .read(new FileInputStream(
-                        "server/tests/src/com/vaadin/tests/design/testFile.html"),
-                        null);
+        ctx = Design.read(new FileInputStream("server/tests/src/com/vaadin/tests/design/testFile.html"), null);
     }
 
     @Test
@@ -83,8 +80,7 @@ public class ParseLayoutTest {
 
     @Test
     public void buttonWithoutIdsIsParsed() {
-        assertThat(ctx.getComponentByCaption("Yet another button"),
-                is(not(nullValue())));
+        assertThat(ctx.getComponentByCaption("Yet another button"), is(not(nullValue())));
     }
 
     @Test
@@ -104,8 +100,7 @@ public class ParseLayoutTest {
     }
 
     @Test
-    public void designIsSerializedWithCorrectPrefixesAndPackageNames()
-            throws IOException {
+    public void designIsSerializedWithCorrectPrefixesAndPackageNames() throws IOException {
         ByteArrayOutputStream out = serializeDesign(ctx);
 
         // Check the mapping from prefixes to package names using the html tree
@@ -121,16 +116,13 @@ public class ParseLayoutTest {
                 if ("package-mapping".equals(name)) {
                     String content = child.attributes().get("content");
                     String[] parts = content.split(":");
-                    assertEquals("Unexpected prefix.", expectedPrefixes[index],
-                            parts[0]);
-                    assertEquals("Unexpected package name.",
-                            expectedPackageNames[index], parts[1]);
+                    assertEquals("Unexpected prefix.", expectedPrefixes[index], parts[0]);
+                    assertEquals("Unexpected package name.", expectedPackageNames[index], parts[1]);
                     index++;
                 }
             }
         }
-        assertEquals("Unexpected number of prefix - package name pairs.", 1,
-                index);
+        assertEquals("Unexpected number of prefix - package name pairs.", 1, index);
     }
 
     private DesignContext deSerializeDesign(ByteArrayOutputStream out) {
@@ -138,8 +130,7 @@ public class ParseLayoutTest {
         return Design.read(in, null);
     }
 
-    private ByteArrayOutputStream serializeDesign(DesignContext context)
-            throws IOException {
+    private ByteArrayOutputStream serializeDesign(DesignContext context) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         Design.write(context, out);
 
@@ -155,8 +146,7 @@ public class ParseLayoutTest {
     @Test
     public void fieldsAreBoundToATemplate() throws IOException {
         LayoutTemplate template = new LayoutTemplate();
-        InputStream htmlFile = new FileInputStream(
-                "server/tests/src/com/vaadin/tests/design/testFile.html");
+        InputStream htmlFile = new FileInputStream("server/tests/src/com/vaadin/tests/design/testFile.html");
         Design.read(htmlFile, template);
         assertNotNull(template.getFirstButton());
         assertNotNull(template.getSecondButton());
@@ -168,8 +158,7 @@ public class ParseLayoutTest {
     @Test(expected = DesignException.class)
     public void fieldsCannotBeBoundToAnInvalidTemplate() throws IOException {
         InvalidLayoutTemplate template = new InvalidLayoutTemplate();
-        InputStream htmlFile = new FileInputStream(
-                "server/tests/src/com/vaadin/tests/design/testFile.html");
+        InputStream htmlFile = new FileInputStream("server/tests/src/com/vaadin/tests/design/testFile.html");
 
         Design.read(htmlFile, template);
     }
@@ -193,8 +182,7 @@ public class ParseLayoutTest {
         assertThat(hlayout.getComponent(0).getCaption(), is("FooBar"));
         assertThat(hlayout.getComponent(1).getCaption(), is("Native click me"));
         assertThat(hlayout.getComponent(2).getCaption(), is("Another button"));
-        assertThat(hlayout.getComponent(3).getCaption(),
-                is("Yet another button"));
+        assertThat(hlayout.getComponent(3).getCaption(), is("Yet another button"));
         assertThat(hlayout.getComponent(4).getCaption(), is("Click me"));
         assertThat(hlayout.getComponent(4).getWidth(), is(150f));
 

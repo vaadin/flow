@@ -71,8 +71,7 @@ public class Type {
         return TypeDataStore.getProperties(this);
     }
 
-    public JsArrayObject<Property> getPropertiesAsArray()
-            throws NoDataException {
+    public JsArrayObject<Property> getPropertiesAsArray() throws NoDataException {
         return TypeDataStore.getPropertiesAsArray(this);
     }
 
@@ -130,10 +129,8 @@ public class Type {
         return getSignature().hashCode();
     }
 
-    public Object createProxy(InvokationHandler invokationHandler)
-            throws NoDataException {
-        return TypeDataStore.get().getProxyHandler(this)
-                .createProxy(invokationHandler);
+    public Object createProxy(InvokationHandler invokationHandler) throws NoDataException {
+        return TypeDataStore.get().getProxyHandler(this).createProxy(invokationHandler);
     }
 
     public JSONSerializer<?> findSerializer() {

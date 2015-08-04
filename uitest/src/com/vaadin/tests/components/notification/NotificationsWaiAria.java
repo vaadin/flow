@@ -40,8 +40,7 @@ public class NotificationsWaiAria extends AbstractTestUI {
         prefix = new TextField("Prefix", "Info");
         addComponent(prefix);
 
-        postfix = new TextField("Postfix",
-                " - closes automatically after 10 seconds");
+        postfix = new TextField("Postfix", " - closes automatically after 10 seconds");
         addComponent(postfix);
 
         role = new NativeSelect("NotificationRole");
@@ -77,12 +76,10 @@ public class NotificationsWaiAria extends AbstractTestUI {
         type.setValue(type.getItemIds().iterator().next());
         addComponent(type);
 
-        Button showNotification = new Button("Show notification",
-                new SettingHandler());
+        Button showNotification = new Button("Show notification", new SettingHandler());
         addComponent(showNotification);
 
-        Button showDefaultNotification = new Button("Default notification",
-                new DefaultHandler());
+        Button showDefaultNotification = new Button("Default notification", new DefaultHandler());
         addComponent(showDefaultNotification);
     }
 
@@ -104,12 +101,10 @@ public class NotificationsWaiAria extends AbstractTestUI {
             Notification n = new Notification(tf.getValue(), typeValue);
             n.setDelayMsec(-1);
             n.setHtmlContentAllowed(true);
-            NotificationConfiguration notificationConf = UI.getCurrent()
-                    .getNotificationConfiguration();
+            NotificationConfiguration notificationConf = UI.getCurrent().getNotificationConfiguration();
             notificationConf.setAssistivePrefix(typeValue, prefix.getValue());
             notificationConf.setAssistivePostfix(typeValue, postfix.getValue());
-            notificationConf.setAssistiveRole(typeValue,
-                    (NotificationRole) role.getValue());
+            notificationConf.setAssistiveRole(typeValue, (NotificationRole) role.getValue());
 
             n.show(Page.getCurrent());
         }
@@ -118,8 +113,7 @@ public class NotificationsWaiAria extends AbstractTestUI {
     private class DefaultHandler implements ClickListener {
         @Override
         public void buttonClick(ClickEvent event) {
-            Notification n = new Notification(tf.getValue(),
-                    (Type) type.getValue());
+            Notification n = new Notification(tf.getValue(), (Type) type.getValue());
             n.setHtmlContentAllowed(true);
             n.show(Page.getCurrent());
         }

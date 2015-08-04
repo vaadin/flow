@@ -30,15 +30,13 @@ public class ApplicationConstants implements Serializable {
 
     public static final String PUSH_PATH = "PUSH";
 
-    public static final String PUBLISHED_FILE_PATH = APP_PATH + '/'
-            + "PUBLISHED";
+    public static final String PUBLISHED_FILE_PATH = APP_PATH + '/' + "PUBLISHED";
 
     public static final String APP_PROTOCOL_PREFIX = "app://";
     public static final String VAADIN_PROTOCOL_PREFIX = "vaadin://";
     public static final String FONTICON_PROTOCOL_PREFIX = "fonticon://";
     public static final String PUBLISHED_PROTOCOL_NAME = "published";
-    public static final String PUBLISHED_PROTOCOL_PREFIX = PUBLISHED_PROTOCOL_NAME
-            + "://";
+    public static final String PUBLISHED_PROTOCOL_PREFIX = PUBLISHED_PROTOCOL_NAME + "://";
     /**
      * Prefix used for theme resource URLs
      * 

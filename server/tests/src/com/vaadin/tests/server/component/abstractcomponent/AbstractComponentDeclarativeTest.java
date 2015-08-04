@@ -48,8 +48,7 @@ import com.vaadin.ui.declarative.DesignContext;
  * @since
  * @author Vaadin Ltd
  */
-public class AbstractComponentDeclarativeTest extends
-        DeclarativeTestBase<AbstractComponent> {
+public class AbstractComponentDeclarativeTest extends DeclarativeTestBase<AbstractComponent> {
 
     private AbstractComponent component;
 
@@ -69,17 +68,13 @@ public class AbstractComponentDeclarativeTest extends
 
     @Test
     public void testProperties() {
-        String design = "<v-label id=\"testId\" primary-style-name=\"test-style\" "
-                + "caption=\"test-caption\" locale=\"fi_FI\" description=\"test-description\" "
-                + "error=\"<div>test-error</div>\" immediate=\"\"/>";
+        String design = "<v-label id=\"testId\" primary-style-name=\"test-style\" " + "caption=\"test-caption\" locale=\"fi_FI\" description=\"test-description\" " + "error=\"<div>test-error</div>\" immediate=\"\"/>";
         component.setId("testId");
         component.setPrimaryStyleName("test-style");
         component.setCaption("test-caption");
         component.setLocale(new Locale("fi", "FI"));
         component.setDescription("test-description");
-        component.setComponentError(new UserError("<div>test-error</div>",
-                com.vaadin.server.AbstractErrorMessage.ContentMode.HTML,
-                ErrorLevel.ERROR));
+        component.setComponentError(new UserError("<div>test-error</div>", com.vaadin.server.AbstractErrorMessage.ContentMode.HTML, ErrorLevel.ERROR));
         component.setImmediate(true);
         testRead(design, component);
         testWrite(design, component);
@@ -89,15 +84,11 @@ public class AbstractComponentDeclarativeTest extends
     public void testReadImmediate() {
         // Additional tests for the immediate property, including
         // explicit immediate values
-        String[] design = { "<v-label/>", "<v-label immediate=\"false\"/>",
-                "<v-label immediate=\"true\"/>", "<v-label immediate=\"\"/>" };
-        Boolean[] explicitImmediate = { null, Boolean.FALSE, Boolean.TRUE,
-                Boolean.TRUE };
+        String[] design = { "<v-label/>", "<v-label immediate=\"false\"/>", "<v-label immediate=\"true\"/>", "<v-label immediate=\"\"/>" };
+        Boolean[] explicitImmediate = { null, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE };
         boolean[] immediate = { false, false, true, true };
         for (int i = 0; i < design.length; i++) {
-            component = (AbstractComponent) Design
-                    .read(new ByteArrayInputStream(design[i].getBytes(Charset
-                            .forName("UTF-8"))));
+            component = (AbstractComponent) Design.read(new ByteArrayInputStream(design[i].getBytes(Charset.forName("UTF-8"))));
             assertEquals(immediate[i], component.isImmediate());
             assertEquals(explicitImmediate[i], getExplicitImmediate(component));
         }
@@ -106,8 +97,7 @@ public class AbstractComponentDeclarativeTest extends
     @Test
     public void testExternalIcon() {
         String design = "<v-label icon=\"http://example.com/example.gif\"/>";
-        component
-                .setIcon(new ExternalResource("http://example.com/example.gif"));
+        component.setIcon(new ExternalResource("http://example.com/example.gif"));
         testRead(design, component);
         testWrite(design, component);
     }
@@ -216,8 +206,7 @@ public class AbstractComponentDeclarativeTest extends
         Responsive.makeResponsive(component);
         Element design = createDesign("responsive", "");
         component.readDesign(design, new DesignContext());
-        assertEquals("Component should have only one extension", 1, component
-                .getExtensions().size());
+        assertEquals("Component should have only one extension", 1, component.getExtensions().size());
     }
 
     private Element createDesign(String key, String value) {
@@ -229,13 +218,11 @@ public class AbstractComponentDeclarativeTest extends
 
     private Boolean getExplicitImmediate(AbstractComponent component) {
         try {
-            Field immediate = AbstractComponent.class
-                    .getDeclaredField("explicitImmediateValue");
+            Field immediate = AbstractComponent.class.getDeclaredField("explicitImmediateValue");
             immediate.setAccessible(true);
             return (Boolean) immediate.get(component);
         } catch (Exception e) {
-            throw new RuntimeException(
-                    "Getting the field explicitImmediateValue failed.");
+            throw new RuntimeException("Getting the field explicitImmediateValue failed.");
         }
     }
 }

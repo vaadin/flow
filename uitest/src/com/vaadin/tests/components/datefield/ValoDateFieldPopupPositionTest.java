@@ -34,10 +34,8 @@ public class ValoDateFieldPopupPositionTest extends DateFieldPopupPositionTest {
         DateFieldElement field = $(DateFieldElement.class).first();
         WebElement popup = getPopup();
         int left = field.getLocation().getX();
-        int popupRight = popup.getLocation().getX()
-                + popup.getSize().getWidth();
+        int popupRight = popup.getLocation().getX() + popup.getSize().getWidth();
 
-        Assert.assertTrue("Calendar popup has wrong X coordinate=" + popupRight
-                + " , left side of the field is " + left, popupRight <= left);
+        Assert.assertTrue("Calendar popup has wrong X coordinate=" + popupRight + " , left side of the field is " + left, popupRight <= left);
     }
 }

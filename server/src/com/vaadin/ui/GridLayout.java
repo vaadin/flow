@@ -71,17 +71,13 @@ import com.vaadin.ui.declarative.DesignContext;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class GridLayout extends AbstractLayout implements
-        Layout.AlignmentHandler, Layout.SpacingHandler, Layout.MarginHandler,
-        LayoutClickNotifier {
+public class GridLayout extends AbstractLayout implements Layout.AlignmentHandler, Layout.SpacingHandler, Layout.MarginHandler, LayoutClickNotifier {
 
     private GridLayoutServerRpc rpc = new GridLayoutServerRpc() {
 
         @Override
-        public void layoutClick(MouseEventDetails mouseDetails,
-                Connector clickedConnector) {
-            fireEvent(LayoutClickEvent.createEvent(GridLayout.this,
-                    mouseDetails, clickedConnector));
+        public void layoutClick(MouseEventDetails mouseDetails, Connector clickedConnector) {
+            fireEvent(LayoutClickEvent.createEvent(GridLayout.this, mouseDetails, clickedConnector));
 
         }
     };
@@ -188,9 +184,7 @@ public class GridLayout extends AbstractLayout implements
      * @throws OutOfBoundsException
      *             if the cells are outside the grid area.
      */
-    public void addComponent(Component component, int column1, int row1,
-            int column2, int row2) throws OverlapsException,
-            OutOfBoundsException {
+    public void addComponent(Component component, int column1, int row1, int column2, int row2) throws OverlapsException, OutOfBoundsException {
 
         if (component == null) {
             throw new NullPointerException("Component must not be null");
@@ -198,8 +192,7 @@ public class GridLayout extends AbstractLayout implements
 
         // Checks that the component does not already exist in the container
         if (components.contains(component)) {
-            throw new IllegalArgumentException(
-                    "Component is already in the container");
+            throw new IllegalArgumentException("Component is already in the container");
         }
 
         // Creates the area
@@ -207,11 +200,9 @@ public class GridLayout extends AbstractLayout implements
 
         // Checks the validity of the coordinates
         if (column2 < column1 || row2 < row1) {
-            throw new IllegalArgumentException(
-                    "Illegal coordinates for the component");
+            throw new IllegalArgumentException("Illegal coordinates for the component");
         }
-        if (column1 < 0 || row1 < 0 || column2 >= getColumns()
-                || row2 >= getRows()) {
+        if (column1 < 0 || row1 < 0 || column2 >= getColumns() || row2 >= getRows()) {
             throw new OutOfBoundsException(area);
         }
 
@@ -227,8 +218,7 @@ public class GridLayout extends AbstractLayout implements
         boolean done = false;
         while (!done && i.hasNext()) {
             final ChildComponentData existingArea = childDataMap.get(i.next());
-            if ((existingArea.row1 >= row1 && existingArea.column1 > column1)
-                    || existingArea.row1 > row1) {
+            if ((existingArea.row1 >= row1 && existingArea.column1 > column1) || existingArea.row1 > row1) {
                 components.add(index, component);
                 done = true;
             }
@@ -251,8 +241,7 @@ public class GridLayout extends AbstractLayout implements
 
         // update cursor position, if it's within this area; use first position
         // outside this area, even if it's occupied
-        if (cursorX >= column1 && cursorX <= column2 && cursorY >= row1
-                && cursorY <= row2) {
+        if (cursorX >= column1 && cursorX <= column2 && cursorY >= row1 && cursorY <= row2) {
             // cursor within area
             cursorX = column2 + 1; // one right of area
             if (cursorX >= getColumns()) {
@@ -276,12 +265,10 @@ public class GridLayout extends AbstractLayout implements
      *             if <code>area</code> overlaps with any existing area.
      */
     private void checkExistingOverlaps(Area area) throws OverlapsException {
-        for (Entry<Connector, ChildComponentData> entry : getState().childData
-                .entrySet()) {
+        for (Entry<Connector, ChildComponentData> entry : getState().childData.entrySet()) {
             if (componentsOverlap(entry.getValue(), area.childData)) {
                 // Component not added, overlaps with existing component
-                throw new OverlapsException(new Area(entry.getValue(),
-                        (Component) entry.getKey()));
+                throw new OverlapsException(new Area(entry.getValue(), (Component) entry.getKey()));
             }
         }
     }
@@ -304,8 +291,7 @@ public class GridLayout extends AbstractLayout implements
      * @throws OutOfBoundsException
      *             if the cell is outside the grid area.
      */
-    public void addComponent(Component component, int column, int row)
-            throws OverlapsException, OutOfBoundsException {
+    public void addComponent(Component component, int column, int row) throws OverlapsException, OutOfBoundsException {
         this.addComponent(component, column, row, column, row);
     }
 
@@ -413,8 +399,7 @@ public class GridLayout extends AbstractLayout implements
         // Finds the area
         for (final Iterator<Component> i = components.iterator(); i.hasNext();) {
             final Component component = i.next();
-            final ChildComponentData childData = getState().childData
-                    .get(component);
+            final ChildComponentData childData = getState().childData.get(component);
             if (childData.column1 == column && childData.row1 == row) {
                 removeComponent(component);
                 return;
@@ -446,8 +431,7 @@ public class GridLayout extends AbstractLayout implements
 
     private float getExpandRatioSum(Map<Integer, Float> ratioMap) {
         float sum = 0;
-        for (Iterator<Entry<Integer, Float>> iterator = ratioMap.entrySet()
-                .iterator(); iterator.hasNext();) {
+        for (Iterator<Entry<Integer, Float>> iterator = ratioMap.entrySet().iterator(); iterator.hasNext();) {
             sum += iterator.next().getValue();
         }
         return sum;
@@ -461,11 +445,9 @@ public class GridLayout extends AbstractLayout implements
      */
     @Override
     public Alignment getComponentAlignment(Component childComponent) {
-        ChildComponentData childComponentData = getState(false).childData
-                .get(childComponent);
+        ChildComponentData childComponentData = getState(false).childData.get(childComponent);
         if (childComponentData == null) {
-            throw new IllegalArgumentException(
-                    "The given component is not a child of this layout");
+            throw new IllegalArgumentException("The given component is not a child of this layout");
         } else {
             return new Alignment(childComponentData.alignment);
         }
@@ -511,8 +493,7 @@ public class GridLayout extends AbstractLayout implements
          *            The row of the lower right corner cell of the area. The
          *            topmost row has index 0.
          */
-        public Area(Component component, int column1, int row1, int column2,
-                int row2) {
+        public Area(Component component, int column1, int row1, int column2, int row2) {
             this.component = component;
             childData = new ChildComponentData();
             childData.alignment = getDefaultComponentAlignment().getBitMask();
@@ -587,10 +568,8 @@ public class GridLayout extends AbstractLayout implements
 
     }
 
-    private static boolean componentsOverlap(ChildComponentData a,
-            ChildComponentData b) {
-        return a.column1 <= b.column2 && a.row1 <= b.row2
-                && a.column2 >= b.column1 && a.row2 >= b.row1;
+    private static boolean componentsOverlap(ChildComponentData a, ChildComponentData b) {
+        return a.column1 <= b.column2 && a.row1 <= b.row2 && a.column2 >= b.column1 && a.row2 >= b.row1;
     }
 
     /**
@@ -692,8 +671,7 @@ public class GridLayout extends AbstractLayout implements
 
         // The the param
         if (columns < 1) {
-            throw new IllegalArgumentException(
-                    "The number of columns and rows in the grid must be at least 1");
+            throw new IllegalArgumentException("The number of columns and rows in the grid must be at least 1");
         }
 
         // In case of no change
@@ -703,11 +681,9 @@ public class GridLayout extends AbstractLayout implements
 
         // Checks for overlaps
         if (getColumns() > columns) {
-            for (Entry<Connector, ChildComponentData> entry : getState().childData
-                    .entrySet()) {
+            for (Entry<Connector, ChildComponentData> entry : getState().childData.entrySet()) {
                 if (entry.getValue().column2 >= columns) {
-                    throw new OutOfBoundsException(new Area(entry.getValue(),
-                            (Component) entry.getKey()));
+                    throw new OutOfBoundsException(new Area(entry.getValue(), (Component) entry.getKey()));
                 }
             }
         }
@@ -743,8 +719,7 @@ public class GridLayout extends AbstractLayout implements
 
         // The the param
         if (rows < 1) {
-            throw new IllegalArgumentException(
-                    "The number of columns and rows in the grid must be at least 1");
+            throw new IllegalArgumentException("The number of columns and rows in the grid must be at least 1");
         }
 
         // In case of no change
@@ -754,11 +729,9 @@ public class GridLayout extends AbstractLayout implements
 
         // Checks for overlaps
         if (getRows() > rows) {
-            for (Entry<Connector, ChildComponentData> entry : getState().childData
-                    .entrySet()) {
+            for (Entry<Connector, ChildComponentData> entry : getState().childData.entrySet()) {
                 if (entry.getValue().row2 >= rows) {
-                    throw new OutOfBoundsException(new Area(entry.getValue(),
-                            (Component) entry.getKey()));
+                    throw new OutOfBoundsException(new Area(entry.getValue(), (Component) entry.getKey()));
                 }
             }
         }
@@ -847,8 +820,7 @@ public class GridLayout extends AbstractLayout implements
             addComponent(newComponent);
         } else if (newLocation == null) {
             removeComponent(oldComponent);
-            addComponent(newComponent, oldLocation.column1, oldLocation.row1,
-                    oldLocation.column2, oldLocation.row2);
+            addComponent(newComponent, oldLocation.column1, oldLocation.row1, oldLocation.column2, oldLocation.row2);
         } else {
             int oldAlignment = oldLocation.alignment;
             oldLocation.alignment = newLocation.alignment;
@@ -872,17 +844,13 @@ public class GridLayout extends AbstractLayout implements
     }
 
     @Override
-    public void setComponentAlignment(Component childComponent,
-            Alignment alignment) {
-        ChildComponentData childComponentData = getState().childData
-                .get(childComponent);
+    public void setComponentAlignment(Component childComponent, Alignment alignment) {
+        ChildComponentData childComponentData = getState().childData.get(childComponent);
         if (childComponentData == null) {
-            throw new IllegalArgumentException(
-                    "Component must be added to layout before using setComponentAlignment()");
+            throw new IllegalArgumentException("Component must be added to layout before using setComponentAlignment()");
         } else {
             if (alignment == null) {
-                childComponentData.alignment = GridLayoutState.ALIGNMENT_DEFAULT
-                        .getBitMask();
+                childComponentData.alignment = GridLayoutState.ALIGNMENT_DEFAULT.getBitMask();
             } else {
                 childComponentData.alignment = alignment.getBitMask();
             }
@@ -918,8 +886,7 @@ public class GridLayout extends AbstractLayout implements
      */
     public void insertRow(int row) {
         if (row > getRows()) {
-            throw new IllegalArgumentException("Cannot insert row at " + row
-                    + " in a gridlayout with height " + getRows());
+            throw new IllegalArgumentException("Cannot insert row at " + row + " in a gridlayout with height " + getRows());
         }
 
         for (ChildComponentData existingArea : getState().childData.values()) {
@@ -962,8 +929,7 @@ public class GridLayout extends AbstractLayout implements
      */
     public void removeRow(int row) {
         if (row >= getRows()) {
-            throw new IllegalArgumentException("Cannot delete row " + row
-                    + " from a gridlayout with height " + getRows());
+            throw new IllegalArgumentException("Cannot delete row " + row + " from a gridlayout with height " + getRows());
         }
 
         // Remove all components in row
@@ -1089,11 +1055,9 @@ public class GridLayout extends AbstractLayout implements
      * @return Component in given cell or null if empty
      */
     public Component getComponent(int x, int y) {
-        for (Entry<Connector, ChildComponentData> entry : getState(false).childData
-                .entrySet()) {
+        for (Entry<Connector, ChildComponentData> entry : getState(false).childData.entrySet()) {
             ChildComponentData childData = entry.getValue();
-            if (childData.column1 <= x && x <= childData.column2
-                    && childData.row1 <= y && y <= childData.row2) {
+            if (childData.column1 <= x && x <= childData.column2 && childData.row1 <= y && y <= childData.row2) {
                 return (Component) entry.getKey();
             }
         }
@@ -1110,8 +1074,7 @@ public class GridLayout extends AbstractLayout implements
      *         the grid
      */
     public Area getComponentArea(Component component) {
-        ChildComponentData childComponentData = getState(false).childData
-                .get(component);
+        ChildComponentData childComponentData = getState(false).childData.get(component);
         if (childComponentData == null) {
             return null;
         } else {
@@ -1121,9 +1084,7 @@ public class GridLayout extends AbstractLayout implements
 
     @Override
     public void addLayoutClickListener(LayoutClickListener listener) {
-        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
-                LayoutClickEvent.class, listener,
-                LayoutClickListener.clickMethod);
+        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener, LayoutClickListener.clickMethod);
     }
 
     /**
@@ -1138,8 +1099,7 @@ public class GridLayout extends AbstractLayout implements
 
     @Override
     public void removeLayoutClickListener(LayoutClickListener listener) {
-        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
-                LayoutClickEvent.class, listener);
+        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener);
     }
 
     /**
@@ -1266,8 +1226,7 @@ public class GridLayout extends AbstractLayout implements
 
             // Row Expand
             if (rowElement.hasAttr("expand")) {
-                int expand = DesignAttributeHandler.readAttribute("expand",
-                        rowElement.attributes(), int.class);
+                int expand = DesignAttributeHandler.readAttribute("expand", rowElement.attributes(), int.class);
                 setRowExpandRatio(row, expand);
             }
 
@@ -1293,10 +1252,8 @@ public class GridLayout extends AbstractLayout implements
 
                 // Handle rowspan and colspan for this child component
                 Attributes attr = col.attributes();
-                int colspan = DesignAttributeHandler.readAttribute("colspan",
-                        attr, 1, int.class);
-                int rowspan = DesignAttributeHandler.readAttribute("rowspan",
-                        attr, 1, int.class);
+                int colspan = DesignAttributeHandler.readAttribute("colspan", attr, 1, int.class);
+                int rowspan = DesignAttributeHandler.readAttribute("rowspan", attr, 1, int.class);
 
                 for (int rowIndex = row; rowIndex < row + rowspan; ++rowIndex) {
                     for (int colIndex = column; colIndex < column + colspan; ++colIndex) {
@@ -1304,8 +1261,7 @@ public class GridLayout extends AbstractLayout implements
                             // Rowspan with not enough rows. Fix by adding rows.
                             rows.add(new HashMap<Integer, Component>());
                         }
-                        rows.get(rowIndex)
-                                .put(colIndex + skippedColumns, child);
+                        rows.get(rowIndex).put(colIndex + skippedColumns, child);
                     }
                 }
 
@@ -1357,14 +1313,12 @@ public class GridLayout extends AbstractLayout implements
 
                 // Figure out col and rowspan from 2D map
                 int colspan = 0;
-                while (j + colspan + 1 < row.size()
-                        && row.get(j + colspan + 1) == child) {
+                while (j + colspan + 1 < row.size() && row.get(j + colspan + 1) == child) {
                     ++colspan;
                 }
 
                 int rowspan = 0;
-                while (i + rowspan + 1 < rows.size()
-                        && rows.get(i + rowspan + 1).get(j) == child) {
+                while (i + rowspan + 1 < rows.size() && rows.get(i + rowspan + 1).get(j) == child) {
                     ++rowspan;
                 }
 
@@ -1385,8 +1339,7 @@ public class GridLayout extends AbstractLayout implements
 
         writeMargin(design, getMargin(), def.getMargin(), designContext);
 
-        if (components.isEmpty()
-                || !designContext.shouldWriteChildren(this, def)) {
+        if (components.isEmpty() || !designContext.shouldWriteChildren(this, def)) {
             return;
         }
 
@@ -1415,8 +1368,7 @@ public class GridLayout extends AbstractLayout implements
             Element row = design.appendElement("row");
 
             // Row Expand
-            DesignAttributeHandler.writeAttribute("expand", row.attributes(),
-                    (int) getRowExpandRatio(i), 0, int.class);
+            DesignAttributeHandler.writeAttribute("expand", row.attributes(), (int) getRowExpandRatio(i), 0, int.class);
 
             int colspan = 1;
             Element col;
@@ -1449,8 +1401,7 @@ public class GridLayout extends AbstractLayout implements
 
                     col.appendChild(childElement);
                     if (coords.row1 != coords.row2) {
-                        col.attr("rowspan", ""
-                                + (1 + coords.row2 - coords.row1));
+                        col.attr("rowspan", "" + (1 + coords.row2 - coords.row1));
                     }
 
                     colspan = 1 + coords.column2 - coords.column1;
@@ -1460,8 +1411,7 @@ public class GridLayout extends AbstractLayout implements
 
                 } else {
                     boolean hasExpands = false;
-                    if (i == 0
-                            && lastComponentOnRow(componentMap[i], j, visited)) {
+                    if (i == 0 && lastComponentOnRow(componentMap[i], j, visited)) {
                         // A column with expand and no content in the end of
                         // first row needs to be present.
                         for (int c = j; c < componentMap[i].length; ++c) {
@@ -1471,8 +1421,7 @@ public class GridLayout extends AbstractLayout implements
                         }
                     }
 
-                    if (lastComponentOnRow(componentMap[i], j, visited)
-                            && !hasExpands) {
+                    if (lastComponentOnRow(componentMap[i], j, visited) && !hasExpands) {
                         continue;
                     }
 
@@ -1480,8 +1429,7 @@ public class GridLayout extends AbstractLayout implements
                     col = row.appendElement("column");
 
                     // Use colspan to make placeholders more pleasant
-                    while (j + colspan < componentMap[i].length
-                            && componentMap[i][j + colspan] == child) {
+                    while (j + colspan < componentMap[i].length && componentMap[i][j + colspan] == child) {
                         ++colspan;
                     }
 
@@ -1522,8 +1470,7 @@ public class GridLayout extends AbstractLayout implements
         }
     }
 
-    private int getRowSpan(Component[][] compMap, int i, int j, int colspan,
-            Component child) {
+    private int getRowSpan(Component[][] compMap, int i, int j, int colspan, Component child) {
         int rowspan = 1;
         while (i + rowspan < compMap.length && compMap[i + rowspan][j] == child) {
             for (int k = 0; k < colspan; ++k) {
@@ -1536,8 +1483,7 @@ public class GridLayout extends AbstractLayout implements
         return rowspan;
     }
 
-    private boolean lastComponentOnRow(Component[] componentArray, int j,
-            Set<Connector> visited) {
+    private boolean lastComponentOnRow(Component[] componentArray, int j, Set<Connector> visited) {
         while ((++j) < componentArray.length) {
             Component child = componentArray[j];
             if (child != null && !visited.contains(child)) {

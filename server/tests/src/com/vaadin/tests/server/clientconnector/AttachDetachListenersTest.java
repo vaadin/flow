@@ -41,8 +41,7 @@ public class AttachDetachListenersTest {
     public void setUp() {
         control = EasyMock.createStrictControl();
 
-        session = new AlwaysLockedVaadinSession(
-                control.createMock(VaadinService.class));
+        session = new AlwaysLockedVaadinSession(control.createMock(VaadinService.class));
 
         ui = new UI() {
             @Override
@@ -124,8 +123,7 @@ public class AttachDetachListenersTest {
         control.verify();
     }
 
-    public static class EventEquals<E extends ConnectorEvent> implements
-            IArgumentMatcher {
+    public static class EventEquals<E extends ConnectorEvent> implements IArgumentMatcher {
 
         private E expected;
 
@@ -136,16 +134,13 @@ public class AttachDetachListenersTest {
         @Override
         public void appendTo(StringBuffer buffer) {
             buffer.append("EventEquals(");
-            buffer.append("expected " + expected.getClass().getSimpleName()
-                    + " with connector " + expected.getConnector());
+            buffer.append("expected " + expected.getClass().getSimpleName() + " with connector " + expected.getConnector());
             buffer.append(")");
         }
 
         @Override
         public boolean matches(Object argument) {
-            return expected.getClass().isInstance(argument)
-                    && ((ConnectorEvent) argument).getConnector() == expected
-                            .getConnector();
+            return expected.getClass().isInstance(argument) && ((ConnectorEvent) argument).getConnector() == expected.getConnector();
         }
     }
 

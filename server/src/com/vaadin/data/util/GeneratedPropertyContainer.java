@@ -60,9 +60,7 @@ import com.vaadin.shared.data.sort.SortDirection;
  * @since 7.4
  * @author Vaadin Ltd
  */
-public class GeneratedPropertyContainer extends AbstractContainer implements
-        Container.Indexed, Container.Sortable, Container.Filterable,
-        Container.PropertySetChangeNotifier, Container.ItemSetChangeNotifier {
+public class GeneratedPropertyContainer extends AbstractContainer implements Container.Indexed, Container.Sortable, Container.Filterable, Container.PropertySetChangeNotifier, Container.ItemSetChangeNotifier {
 
     private final Container.Indexed wrappedContainer;
     private final Map<Object, PropertyValueGenerator<?>> propertyGenerators;
@@ -83,8 +81,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
         private Object propertyId;
         private PropertyValueGenerator<T> generator;
 
-        public GeneratedProperty(Item item, Object propertyId, Object itemId,
-                PropertyValueGenerator<T> generator) {
+        public GeneratedProperty(Item item, Object propertyId, Object itemId, PropertyValueGenerator<T> generator) {
             this.item = item;
             this.itemId = itemId;
             this.propertyId = propertyId;
@@ -117,8 +114,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
                 // No-op
                 return;
             }
-            throw new UnsupportedOperationException(
-                    "Generated properties are read only");
+            throw new UnsupportedOperationException("Generated properties are read only");
         }
     }
 
@@ -138,8 +134,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
         @Override
         public Property getItemProperty(Object id) {
             if (propertyGenerators.containsKey(id)) {
-                return createProperty(wrappedItem, id, itemId,
-                        propertyGenerators.get(id));
+                return createProperty(wrappedItem, id, itemId, propertyGenerators.get(id));
             }
             return wrappedItem.getItemProperty(id);
         }
@@ -147,23 +142,17 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
         @Override
         public Collection<?> getItemPropertyIds() {
             Set<?> wrappedProperties = asSet(wrappedItem.getItemPropertyIds());
-            return Sets.union(
-                    Sets.difference(wrappedProperties, removedProperties),
-                    propertyGenerators.keySet());
+            return Sets.union(Sets.difference(wrappedProperties, removedProperties), propertyGenerators.keySet());
         }
 
         @Override
-        public boolean addItemProperty(Object id, Property property)
-                throws UnsupportedOperationException {
-            throw new UnsupportedOperationException(
-                    "GeneratedPropertyItem does not support adding properties");
+        public boolean addItemProperty(Object id, Property property) throws UnsupportedOperationException {
+            throw new UnsupportedOperationException("GeneratedPropertyItem does not support adding properties");
         }
 
         @Override
-        public boolean removeItemProperty(Object id)
-                throws UnsupportedOperationException {
-            throw new UnsupportedOperationException(
-                    "GeneratedPropertyItem does not support removing properties");
+        public boolean removeItemProperty(Object id) throws UnsupportedOperationException {
+            throw new UnsupportedOperationException("GeneratedPropertyItem does not support removing properties");
         }
     };
 
@@ -172,15 +161,13 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
      * event is fired from wrapped container and needs to be reconstructed to
      * act like it actually came from this container.
      */
-    protected abstract class GeneratedItemAddOrRemoveEvent implements
-            Serializable {
+    protected abstract class GeneratedItemAddOrRemoveEvent implements Serializable {
 
         private Object firstItemId;
         private int firstIndex;
         private int count;
 
-        protected GeneratedItemAddOrRemoveEvent(Object itemId, int first,
-                int count) {
+        protected GeneratedItemAddOrRemoveEvent(Object itemId, int first, int count) {
             firstItemId = itemId;
             firstIndex = first;
             this.count = count;
@@ -203,12 +190,10 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
         }
     };
 
-    protected class GeneratedItemRemoveEvent extends
-            GeneratedItemAddOrRemoveEvent implements ItemRemoveEvent {
+    protected class GeneratedItemRemoveEvent extends GeneratedItemAddOrRemoveEvent implements ItemRemoveEvent {
 
         protected GeneratedItemRemoveEvent(ItemRemoveEvent event) {
-            super(event.getFirstItemId(), event.getFirstIndex(), event
-                    .getRemovedItemsCount());
+            super(event.getFirstItemId(), event.getFirstIndex(), event.getRemovedItemsCount());
         }
 
         @Override
@@ -217,12 +202,10 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
         }
     }
 
-    protected class GeneratedItemAddEvent extends GeneratedItemAddOrRemoveEvent
-            implements ItemAddEvent {
+    protected class GeneratedItemAddEvent extends GeneratedItemAddOrRemoveEvent implements ItemAddEvent {
 
         protected GeneratedItemAddEvent(ItemAddEvent event) {
-            super(event.getFirstItemId(), event.getFirstIndex(), event
-                    .getAddedItemsCount());
+            super(event.getFirstItemId(), event.getFirstIndex(), event.getAddedItemsCount());
         }
 
         @Override
@@ -255,38 +238,32 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
 
         // ItemSetChangeEvents
         if (wrappedContainer instanceof ItemSetChangeNotifier) {
-            ((ItemSetChangeNotifier) wrappedContainer)
-                    .addItemSetChangeListener(new ItemSetChangeListener() {
+            ((ItemSetChangeNotifier) wrappedContainer).addItemSetChangeListener(new ItemSetChangeListener() {
 
-                        @Override
-                        public void containerItemSetChange(
-                                ItemSetChangeEvent event) {
-                            if (event instanceof ItemAddEvent) {
-                                final ItemAddEvent addEvent = (ItemAddEvent) event;
-                                fireItemSetChange(new GeneratedItemAddEvent(
-                                        addEvent));
-                            } else if (event instanceof ItemRemoveEvent) {
-                                final ItemRemoveEvent removeEvent = (ItemRemoveEvent) event;
-                                fireItemSetChange(new GeneratedItemRemoveEvent(
-                                        removeEvent));
-                            } else {
-                                fireItemSetChange();
-                            }
-                        }
-                    });
+                @Override
+                public void containerItemSetChange(ItemSetChangeEvent event) {
+                    if (event instanceof ItemAddEvent) {
+                        final ItemAddEvent addEvent = (ItemAddEvent) event;
+                        fireItemSetChange(new GeneratedItemAddEvent(addEvent));
+                    } else if (event instanceof ItemRemoveEvent) {
+                        final ItemRemoveEvent removeEvent = (ItemRemoveEvent) event;
+                        fireItemSetChange(new GeneratedItemRemoveEvent(removeEvent));
+                    } else {
+                        fireItemSetChange();
+                    }
+                }
+            });
         }
 
         // PropertySetChangeEvents
         if (wrappedContainer instanceof PropertySetChangeNotifier) {
-            ((PropertySetChangeNotifier) wrappedContainer)
-                    .addPropertySetChangeListener(new PropertySetChangeListener() {
+            ((PropertySetChangeNotifier) wrappedContainer).addPropertySetChangeListener(new PropertySetChangeListener() {
 
-                        @Override
-                        public void containerPropertySetChange(
-                                PropertySetChangeEvent event) {
-                            fireContainerPropertySetChange();
-                        }
-                    });
+                @Override
+                public void containerPropertySetChange(PropertySetChangeEvent event) {
+                    fireContainerPropertySetChange();
+                }
+            });
         }
     }
 
@@ -302,8 +279,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
      * @param generator
      *            a property value generator
      */
-    public void addGeneratedProperty(Object propertyId,
-            PropertyValueGenerator<?> generator) {
+    public void addGeneratedProperty(Object propertyId, PropertyValueGenerator<?> generator) {
         propertyGenerators.put(propertyId, generator);
         fireContainerPropertySetChange();
     }
@@ -322,14 +298,11 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
         }
     }
 
-    private Item createGeneratedPropertyItem(final Object itemId,
-            final Item item) {
+    private Item createGeneratedPropertyItem(final Object itemId, final Item item) {
         return new GeneratedPropertyItem(itemId, item);
     }
 
-    private <T> Property<T> createProperty(final Item item,
-            final Object propertyId, final Object itemId,
-            final PropertyValueGenerator<T> generator) {
+    private <T> Property<T> createProperty(final Item item, final Object propertyId, final Object itemId, final PropertyValueGenerator<T> generator) {
         return new GeneratedProperty<T>(item, propertyId, itemId, generator);
     }
 
@@ -374,8 +347,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
     }
 
     @Override
-    public void removePropertySetChangeListener(
-            PropertySetChangeListener listener) {
+    public void removePropertySetChangeListener(PropertySetChangeListener listener) {
         super.removePropertySetChangeListener(listener);
     }
 
@@ -387,16 +359,13 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
     /* Filtering functionality */
 
     @Override
-    public void addContainerFilter(Filter filter)
-            throws UnsupportedFilterException {
+    public void addContainerFilter(Filter filter) throws UnsupportedFilterException {
         if (filterableContainer == null) {
-            throw new UnsupportedOperationException(
-                    "Wrapped container is not filterable");
+            throw new UnsupportedOperationException("Wrapped container is not filterable");
         }
 
         List<Filter> addedFilters = new ArrayList<Filter>();
-        for (Entry<?, PropertyValueGenerator<?>> entry : propertyGenerators
-                .entrySet()) {
+        for (Entry<?, PropertyValueGenerator<?>> entry : propertyGenerators.entrySet()) {
             Object property = entry.getKey();
             if (filter.appliesToProperty(property)) {
                 // Have generated property modify filter to fit the original
@@ -420,8 +389,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
     @Override
     public void removeContainerFilter(Filter filter) {
         if (filterableContainer == null) {
-            throw new UnsupportedOperationException(
-                    "Wrapped container is not filterable");
+            throw new UnsupportedOperationException("Wrapped container is not filterable");
         }
 
         if (activeFilters.containsKey(filter)) {
@@ -435,8 +403,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
     @Override
     public void removeAllContainerFilters() {
         if (filterableContainer == null) {
-            throw new UnsupportedOperationException(
-                    "Wrapped container is not filterable");
+            throw new UnsupportedOperationException("Wrapped container is not filterable");
         }
         filterableContainer.removeAllContainerFilters();
         activeFilters.clear();
@@ -445,8 +412,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
     @Override
     public Collection<Filter> getContainerFilters() {
         if (filterableContainer == null) {
-            throw new UnsupportedOperationException(
-                    "Wrapped container is not filterable");
+            throw new UnsupportedOperationException("Wrapped container is not filterable");
         }
         return Collections.unmodifiableSet(activeFilters.keySet());
     }
@@ -456,8 +422,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
     @Override
     public void sort(Object[] propertyId, boolean[] ascending) {
         if (sortableContainer == null) {
-            new UnsupportedOperationException(
-                    "Wrapped container is not Sortable");
+            new UnsupportedOperationException("Wrapped container is not Sortable");
         }
 
         if (propertyId.length == 0) {
@@ -482,11 +447,9 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
                 // Sorting by a generated property. Generated property should
                 // modify sort orders to work with original properties in the
                 // container.
-                for (SortOrder s : propertyGenerators.get(property)
-                        .getSortProperties(new SortOrder(property, direction))) {
+                for (SortOrder s : propertyGenerators.get(property).getSortProperties(new SortOrder(property, direction))) {
                     actualSortProperties.add(s.getPropertyId());
-                    actualSortDirections
-                            .add(s.getDirection() == SortDirection.ASCENDING);
+                    actualSortDirections.add(s.getDirection() == SortDirection.ASCENDING);
                 }
             } else {
                 actualSortProperties.add(property);
@@ -505,14 +468,11 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
     @Override
     public Collection<?> getSortableContainerPropertyIds() {
         if (sortableContainer == null) {
-            new UnsupportedOperationException(
-                    "Wrapped container is not Sortable");
+            new UnsupportedOperationException("Wrapped container is not Sortable");
         }
 
-        Set<Object> sortablePropertySet = new HashSet<Object>(
-                sortableContainer.getSortableContainerPropertyIds());
-        for (Entry<?, PropertyValueGenerator<?>> entry : propertyGenerators
-                .entrySet()) {
+        Set<Object> sortablePropertySet = new HashSet<Object>(sortableContainer.getSortableContainerPropertyIds());
+        for (Entry<?, PropertyValueGenerator<?>> entry : propertyGenerators.entrySet()) {
             Object property = entry.getKey();
             SortOrder order = new SortOrder(property, SortDirection.ASCENDING);
             if (entry.getValue().getSortProperties(order).length > 0) {
@@ -528,8 +488,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
     /* Item related overrides */
 
     @Override
-    public Item addItemAfter(Object previousItemId, Object newItemId)
-            throws UnsupportedOperationException {
+    public Item addItemAfter(Object previousItemId, Object newItemId) throws UnsupportedOperationException {
         Item item = wrappedContainer.addItemAfter(previousItemId, newItemId);
         return createGeneratedPropertyItem(newItemId, item);
     }
@@ -541,8 +500,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
     }
 
     @Override
-    public Item addItemAt(int index, Object newItemId)
-            throws UnsupportedOperationException {
+    public Item addItemAt(int index, Object newItemId) throws UnsupportedOperationException {
         Item item = wrappedContainer.addItemAt(index, newItemId);
         return createGeneratedPropertyItem(newItemId, item);
     }
@@ -573,11 +531,8 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
      */
     @Override
     public Collection<?> getContainerPropertyIds() {
-        Set<?> wrappedProperties = asSet(wrappedContainer
-                .getContainerPropertyIds());
-        return Sets.union(
-                Sets.difference(wrappedProperties, removedProperties),
-                propertyGenerators.keySet());
+        Set<?> wrappedProperties = asSet(wrappedContainer.getContainerPropertyIds());
+        return Sets.union(Sets.difference(wrappedProperties, removedProperties), propertyGenerators.keySet());
     }
 
     /**
@@ -586,11 +541,9 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
      * UnsupportedOperationException.
      */
     @Override
-    public boolean addContainerProperty(Object propertyId, Class<?> type,
-            Object defaultValue) throws UnsupportedOperationException {
+    public boolean addContainerProperty(Object propertyId, Class<?> type, Object defaultValue) throws UnsupportedOperationException {
         if (!removedProperties.contains(propertyId)) {
-            throw new UnsupportedOperationException(
-                    "GeneratedPropertyContainer does not support adding properties.");
+            throw new UnsupportedOperationException("GeneratedPropertyContainer does not support adding properties.");
         }
         removedProperties.remove(propertyId);
         fireContainerPropertySetChange();
@@ -603,10 +556,8 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
      * be available in Items retrieved from this container.
      */
     @Override
-    public boolean removeContainerProperty(Object propertyId)
-            throws UnsupportedOperationException {
-        if (wrappedContainer.getContainerPropertyIds().contains(propertyId)
-                && removedProperties.add(propertyId)) {
+    public boolean removeContainerProperty(Object propertyId) throws UnsupportedOperationException {
+        if (wrappedContainer.getContainerPropertyIds().contains(propertyId) && removedProperties.add(propertyId)) {
             fireContainerPropertySetChange();
             return true;
         }
@@ -657,8 +608,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
     }
 
     @Override
-    public Object addItemAfter(Object previousItemId)
-            throws UnsupportedOperationException {
+    public Object addItemAfter(Object previousItemId) throws UnsupportedOperationException {
         return wrappedContainer.addItemAfter(previousItemId);
     }
 
@@ -683,8 +633,7 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
     }
 
     @Override
-    public boolean removeItem(Object itemId)
-            throws UnsupportedOperationException {
+    public boolean removeItem(Object itemId) throws UnsupportedOperationException {
         return wrappedContainer.removeItem(itemId);
     }
 

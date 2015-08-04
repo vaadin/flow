@@ -115,8 +115,7 @@ public class CustomComponent extends AbstractComponent implements HasComponents 
                 // set new component
                 if (compositionRoot.getParent() != null) {
                     // If the component already has a parent, try to remove it
-                    AbstractSingleComponentContainer
-                            .removeFromParent(compositionRoot);
+                    AbstractSingleComponentContainer.removeFromParent(compositionRoot);
                 }
                 compositionRoot.setParent(this);
             }

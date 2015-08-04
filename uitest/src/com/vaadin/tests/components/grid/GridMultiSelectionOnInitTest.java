@@ -30,8 +30,6 @@ public class GridMultiSelectionOnInitTest extends MultiBrowserTest {
     @Test
     public void testSelectAllCheckBoxExists() {
         openTestURL();
-        assertTrue("The select all checkbox was missing.",
-                $(GridElement.class).first().getHeaderCell(0, 0)
-                        .isElementPresent(By.tagName("input")));
+        assertTrue("The select all checkbox was missing.", $(GridElement.class).first().getHeaderCell(0, 0).isElementPresent(By.tagName("input")));
     }
 }

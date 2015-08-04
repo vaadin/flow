@@ -29,8 +29,7 @@ import com.vaadin.ui.Link;
  */
 public class LinkDeclarativeTest extends DeclarativeTestBase<Link> {
     private String getBasicDesign() {
-        return "<v-link href='http://vaadin.com' target='vaadin-window' target-height=500"
-                + " target-width=800 target-border='none' />";
+        return "<v-link href='http://vaadin.com' target='vaadin-window' target-height=500" + " target-width=800 target-border='none' />";
     }
 
     private Link getBasicExpected() {

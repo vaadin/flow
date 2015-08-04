@@ -38,12 +38,10 @@ import com.vaadin.ui.declarative.DesignException;
  * 
  * @author Vaadin Ltd
  */
-public class AbstractSelectDeclarativeTest extends
-        DeclarativeTestBase<AbstractSelect> {
+public class AbstractSelectDeclarativeTest extends DeclarativeTestBase<AbstractSelect> {
 
     public String getDesignSingleSelectNewItemsAllowed() {
-        return "<v-combo-box new-items-allowed='' item-caption-mode='icon_only'"
-                + " null-selection-item-id='nullIid'/>";
+        return "<v-combo-box new-items-allowed='' item-caption-mode='icon_only'" + " null-selection-item-id='nullIid'/>";
 
     }
 
@@ -71,14 +69,12 @@ public class AbstractSelectDeclarativeTest extends
 
     @Test
     public void testReadSingleSelectNewItemsAllowed() {
-        testRead(getDesignSingleSelectNewItemsAllowed(),
-                getExpectedSingleSelectNewItemsAllowed());
+        testRead(getDesignSingleSelectNewItemsAllowed(), getExpectedSingleSelectNewItemsAllowed());
     }
 
     @Test
     public void testWriteSingleSelectNewItemsAllowed() {
-        testWrite(getDesignSingleSelectNewItemsAllowed(),
-                getExpectedSingleSelectNewItemsAllowed());
+        testWrite(getDesignSingleSelectNewItemsAllowed(), getExpectedSingleSelectNewItemsAllowed());
     }
 
     @Test
@@ -98,8 +94,7 @@ public class AbstractSelectDeclarativeTest extends
 
     @Test(expected = DesignException.class)
     public void testReadMultipleValuesForSingleSelect() {
-        testRead("<v-list-select>" + "<option selected>1</option>"
-                + "<option selected>2</option>" + "</v-list-select>", null);
+        testRead("<v-list-select>" + "<option selected>1</option>" + "<option selected>2</option>" + "</v-list-select>", null);
     }
 
     @Test
@@ -110,8 +105,7 @@ public class AbstractSelectDeclarativeTest extends
         ls.addItem("2");
         ls.select("1");
         ls.select("2");
-        testRead("<v-list-select multi-select>" + "<option selected>1</option>"
-                + "<option selected>2</option>" + "</v-list-select>", ls);
+        testRead("<v-list-select multi-select>" + "<option selected>1</option>" + "<option selected>2</option>" + "</v-list-select>", ls);
     }
 
     @Test
@@ -121,8 +115,7 @@ public class AbstractSelectDeclarativeTest extends
         ls.addItem("1");
         ls.addItem("2");
         ls.select("1");
-        testRead("<v-list-select multi-select>" + "<option selected>1</option>"
-                + "<option>2</option>" + "</v-list-select>", ls);
+        testRead("<v-list-select multi-select>" + "<option selected>1</option>" + "<option>2</option>" + "</v-list-select>", ls);
     }
 
     @Test
@@ -132,26 +125,22 @@ public class AbstractSelectDeclarativeTest extends
         ls.addItem("1");
         ls.addItem("2");
         ls.select("1");
-        testRead("<v-list-select>" + "<option selected>1</option>"
-                + "<option>2</option>" + "</v-list-select>", ls);
+        testRead("<v-list-select>" + "<option selected>1</option>" + "<option>2</option>" + "</v-list-select>", ls);
     }
 
     @Test
     public void testWriteInlineDataIgnored() {
         // No data is written by default
-        testWrite(stripOptionTags(getDesignForInlineData()),
-                getExpectedComponentForInlineData());
+        testWrite(stripOptionTags(getDesignForInlineData()), getExpectedComponentForInlineData());
     }
 
     @Test
     public void testWriteInlineData() {
-        testWrite(getDesignForInlineData(),
-                getExpectedComponentForInlineData(), true);
+        testWrite(getDesignForInlineData(), getExpectedComponentForInlineData(), true);
     }
 
     private String getDesignForInlineData() {
-        return "<v-list-select>\n"
-                + "        <option icon='http://some.url/icon.png'>Value 1</option>\n" //
+        return "<v-list-select>\n" + "        <option icon='http://some.url/icon.png'>Value 1</option>\n" //
                 + "        <option selected>Value 2</option>\n"//
                 + "</v-list-select>";
     }
@@ -159,8 +148,7 @@ public class AbstractSelectDeclarativeTest extends
     private AbstractSelect getExpectedComponentForInlineData() {
         AbstractSelect as = new ListSelect();
         as.addItem("Value 1");
-        as.setItemIcon("Value 1", new ExternalResource(
-                "http://some.url/icon.png"));
+        as.setItemIcon("Value 1", new ExternalResource("http://some.url/icon.png"));
         as.addItem("Value 2");
         as.setValue("Value 2");
         return as;
@@ -175,19 +163,12 @@ public class AbstractSelectDeclarativeTest extends
         container.addContainerProperty("name", String.class, null);
         cb.setContainerDataSource(container);
         cb.readDesign(design, new DesignContext());
-        Assert.assertTrue("Adding new items should be allowed.",
-                cb.isNewItemsAllowed());
-        assertEquals("Wrong item caption mode.",
-                AbstractSelect.ItemCaptionMode.PROPERTY,
-                cb.getItemCaptionMode());
-        assertEquals("Wrong item caption property id.", "name",
-                cb.getItemCaptionPropertyId());
-        assertEquals("Wrong item icon property id.", "icon",
-                cb.getItemIconPropertyId());
-        Assert.assertTrue("Null selection should be allowed.",
-                cb.isNullSelectionAllowed());
-        assertEquals("Wrong null selection item id.", "No items selected",
-                cb.getNullSelectionItemId());
+        Assert.assertTrue("Adding new items should be allowed.", cb.isNewItemsAllowed());
+        assertEquals("Wrong item caption mode.", AbstractSelect.ItemCaptionMode.PROPERTY, cb.getItemCaptionMode());
+        assertEquals("Wrong item caption property id.", "name", cb.getItemCaptionPropertyId());
+        assertEquals("Wrong item icon property id.", "icon", cb.getItemIconPropertyId());
+        Assert.assertTrue("Null selection should be allowed.", cb.isNullSelectionAllowed());
+        assertEquals("Wrong null selection item id.", "No items selected", cb.getNullSelectionItemId());
     }
 
     @Test
@@ -196,11 +177,8 @@ public class AbstractSelectDeclarativeTest extends
         ListSelect ls = new ListSelect();
         ls.readDesign(design, new DesignContext());
         Assert.assertTrue("Multi select should be allowed.", ls.isMultiSelect());
-        assertEquals("Wrong caption mode.",
-                AbstractSelect.ItemCaptionMode.EXPLICIT,
-                ls.getItemCaptionMode());
-        Assert.assertFalse("Null selection should not be allowed.",
-                ls.isNullSelectionAllowed());
+        assertEquals("Wrong caption mode.", AbstractSelect.ItemCaptionMode.EXPLICIT, ls.getItemCaptionMode());
+        Assert.assertFalse("Null selection should not be allowed.", ls.isNullSelectionAllowed());
     }
 
     private Element createDesignWithAttributesSingleSelect() {
@@ -228,20 +206,12 @@ public class AbstractSelectDeclarativeTest extends
         ComboBox cb = createSingleSelectWithOnlyAttributes();
         Element e = new Element(Tag.valueOf("v-combo-box"), "");
         cb.writeDesign(e, new DesignContext());
-        assertEquals("Wrong caption for the combo box.", "A combo box",
-                e.attr("caption"));
-        Assert.assertTrue("Adding new items should be allowed.",
-                "".equals(e.attr("new-items-allowed")));
-        assertEquals("Wrong item caption mode.", "icon_only",
-                e.attr("item-caption-mode"));
-        assertEquals("Wrong item icon property id.", "icon",
-                e.attr("item-icon-property-id"));
-        Assert.assertTrue(
-                "Null selection should be allowed.",
-                "".equals(e.attr("null-selection-allowed"))
-                        || "true".equals(e.attr("null-selection-allowed")));
-        assertEquals("Wrong null selection item id.", "No item selected",
-                e.attr("null-selection-item-id"));
+        assertEquals("Wrong caption for the combo box.", "A combo box", e.attr("caption"));
+        Assert.assertTrue("Adding new items should be allowed.", "".equals(e.attr("new-items-allowed")));
+        assertEquals("Wrong item caption mode.", "icon_only", e.attr("item-caption-mode"));
+        assertEquals("Wrong item icon property id.", "icon", e.attr("item-icon-property-id"));
+        Assert.assertTrue("Null selection should be allowed.", "".equals(e.attr("null-selection-allowed")) || "true".equals(e.attr("null-selection-allowed")));
+        assertEquals("Wrong null selection item id.", "No item selected", e.attr("null-selection-item-id"));
     }
 
     @Test
@@ -249,12 +219,8 @@ public class AbstractSelectDeclarativeTest extends
         ListSelect ls = createMultiSelect();
         Element e = new Element(Tag.valueOf("v-list-select"), "");
         ls.writeDesign(e, new DesignContext());
-        assertEquals("Null selection should not be allowed.", "false",
-                e.attr("null-selection-allowed"));
-        Assert.assertTrue(
-                "Multi select should be allowed.",
-                "".equals(e.attr("multi-select"))
-                        || "true".equals(e.attr("multi-select")));
+        assertEquals("Null selection should not be allowed.", "false", e.attr("null-selection-allowed"));
+        Assert.assertTrue("Multi select should be allowed.", "".equals(e.attr("multi-select")) || "true".equals(e.attr("multi-select")));
     }
 
     public ComboBox createSingleSelectWithOnlyAttributes() {

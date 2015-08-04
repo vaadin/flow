@@ -18,8 +18,7 @@ public class ColorPickerHsvTest extends AbstractTestUI {
         layout.setMargin(true);
         setContent(layout);
 
-        layout.addComponent(new Label(
-                "HSV initial values when opening the tab for the first time"));
+        layout.addComponent(new Label("HSV initial values when opening the tab for the first time"));
         ColorPickerArea colorpicker = new ColorPickerArea();
         colorpicker.setColor(new Color(Integer.parseInt("00b4f0", 16)));
         colorpicker.setDefaultCaptionEnabled(false);

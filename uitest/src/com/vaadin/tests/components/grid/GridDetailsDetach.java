@@ -54,15 +54,14 @@ public class GridDetailsDetach extends AbstractTestUI {
             }
         });
 
-        layout.addComponent(new Button("Reattach Grid",
-                new Button.ClickListener() {
+        layout.addComponent(new Button("Reattach Grid", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        gridContainer.removeAllComponents();
-                        gridContainer.addComponent(currentGrid);
-                    }
-                }));
+            @Override
+            public void buttonClick(ClickEvent event) {
+                gridContainer.removeAllComponents();
+                gridContainer.addComponent(currentGrid);
+            }
+        }));
 
         layout.addComponent(gridContainer);
         layout.setExpandRatio(gridContainer, 1f);
@@ -71,8 +70,7 @@ public class GridDetailsDetach extends AbstractTestUI {
     }
 
     private Grid generateGrid() {
-        BeanItemContainer<GridExampleBean> container = new BeanItemContainer<GridExampleBean>(
-                GridExampleBean.class);
+        BeanItemContainer<GridExampleBean> container = new BeanItemContainer<GridExampleBean>(GridExampleBean.class);
         for (int i = 0; i < 1000; i++) {
             container.addItem(new GridExampleBean("Bean " + i, i * i, i / 10d));
         }
@@ -84,10 +82,8 @@ public class GridDetailsDetach extends AbstractTestUI {
         grid.setDetailsGenerator(new DetailsGenerator() {
             @Override
             public Component getDetails(RowReference rowReference) {
-                final GridExampleBean bean = (GridExampleBean) rowReference
-                        .getItemId();
-                VerticalLayout layout = new VerticalLayout(new Label(
-                        "Extra data for " + bean.getName()));
+                final GridExampleBean bean = (GridExampleBean) rowReference.getItemId();
+                VerticalLayout layout = new VerticalLayout(new Label("Extra data for " + bean.getName()));
                 layout.setMargin(true);
                 return layout;
             }

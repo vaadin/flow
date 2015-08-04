@@ -44,9 +44,7 @@ public class CloseSessionTest extends MultiBrowserTest {
     @Test
     public void testCloseVaadinServiceAndRedirect() {
         clickButton("Close VaadinServiceSession and redirect elsewhere");
-        Assert.assertEquals("Unexpected page contents,",
-                "This is a static file", findElement(By.xpath("//h1"))
-                        .getText());
+        Assert.assertEquals("Unexpected page contents,", "This is a static file", findElement(By.xpath("//h1")).getText());
     }
 
     /**
@@ -78,8 +76,7 @@ public class CloseSessionTest extends MultiBrowserTest {
      * background thread.
      */
     @Test
-    public void testBackgroundThreadHttpSessionInvalidation()
-            throws InterruptedException {
+    public void testBackgroundThreadHttpSessionInvalidation() throws InterruptedException {
         String caption = "Invalidate HttpSession in a background thread";
         clickButton(caption);
         sleep(2000);

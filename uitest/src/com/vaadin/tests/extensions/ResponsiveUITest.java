@@ -47,66 +47,49 @@ public class ResponsiveUITest extends MultiBrowserTest {
         openTestURL();
 
         // IE sometimes has trouble waiting long enough.
-        new WebDriverWait(getDriver(), 30).until(ExpectedConditions
-                .presenceOfElementLocated(By
-                        .cssSelector(".v-csslayout-grid.first")));
+        new WebDriverWait(getDriver(), 30).until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".v-csslayout-grid.first")));
 
-        assertEquals("401px-600px",
-                $(".v-csslayout-grid.first").getAttribute("width-range"));
-        assertEquals("501px-",
-                $(".v-csslayout-grid.second").getAttribute("width-range"));
+        assertEquals("401px-600px", $(".v-csslayout-grid.first").getAttribute("width-range"));
+        assertEquals("501px-", $(".v-csslayout-grid.second").getAttribute("width-range"));
 
         moveSplitter(200);
 
-        assertEquals("601-800",
-                $(".v-csslayout-grid.first").getAttribute("width-range"));
-        assertEquals("501px-",
-                $(".v-csslayout-grid.second").getAttribute("width-range"));
+        assertEquals("601-800", $(".v-csslayout-grid.first").getAttribute("width-range"));
+        assertEquals("501px-", $(".v-csslayout-grid.second").getAttribute("width-range"));
 
         moveSplitter(-350);
 
-        assertEquals("201px-400px",
-                $(".v-csslayout-grid.first").getAttribute("width-range"));
-        assertEquals("301px-400px",
-                $(".v-csslayout-grid.second").getAttribute("width-range"));
+        assertEquals("201px-400px", $(".v-csslayout-grid.first").getAttribute("width-range"));
+        assertEquals("301px-400px", $(".v-csslayout-grid.second").getAttribute("width-range"));
 
         compareScreen("responsive");
 
         moveSplitter(-200);
-        assertEquals("-200px",
-                $(".v-csslayout-grid.first").getAttribute("width-range"));
+        assertEquals("-200px", $(".v-csslayout-grid.first").getAttribute("width-range"));
 
         moveSplitter(-100);
-        assertEquals("0-100px",
-                $(".v-csslayout-grid.second").getAttribute("width-range"));
+        assertEquals("0-100px", $(".v-csslayout-grid.second").getAttribute("width-range"));
     }
 
     private void moveSplitter(int xOffset) {
-        new Actions(getDriver()).clickAndHold($(".v-splitpanel-hsplitter"))
-                .moveByOffset(xOffset, 0).release().build().perform();
+        new Actions(getDriver()).clickAndHold($(".v-splitpanel-hsplitter")).moveByOffset(xOffset, 0).release().build().perform();
     }
 
     @Test
     public void testResizingWindowReflowsLayout() throws Exception {
         openTestURL();
 
-        assertEquals("401px-600px",
-                $(".v-csslayout-grid.first").getAttribute("width-range"));
-        assertEquals("501px-",
-                $(".v-csslayout-grid.second").getAttribute("width-range"));
+        assertEquals("401px-600px", $(".v-csslayout-grid.first").getAttribute("width-range"));
+        assertEquals("501px-", $(".v-csslayout-grid.second").getAttribute("width-range"));
 
         testBench().resizeViewPortTo(1224, 768);
 
-        assertEquals("601-800",
-                $(".v-csslayout-grid.first").getAttribute("width-range"));
-        assertEquals("501px-",
-                $(".v-csslayout-grid.second").getAttribute("width-range"));
+        assertEquals("601-800", $(".v-csslayout-grid.first").getAttribute("width-range"));
+        assertEquals("501px-", $(".v-csslayout-grid.second").getAttribute("width-range"));
 
         testBench().resizeViewPortTo(674, 768);
 
-        assertEquals("201px-400px",
-                $(".v-csslayout-grid.first").getAttribute("width-range"));
-        assertEquals("301px-400px",
-                $(".v-csslayout-grid.second").getAttribute("width-range"));
+        assertEquals("201px-400px", $(".v-csslayout-grid.first").getAttribute("width-range"));
+        assertEquals("301px-400px", $(".v-csslayout-grid.second").getAttribute("width-range"));
     }
 }

@@ -91,8 +91,7 @@ public class ErrorEvent implements Serializable {
          * the current session
          */
         if (VaadinSession.getCurrent() != null) {
-            ErrorHandler errorHandler = VaadinSession.getCurrent()
-                    .getErrorHandler();
+            ErrorHandler errorHandler = VaadinSession.getCurrent().getErrorHandler();
             if (errorHandler != null) {
                 return errorHandler;
             }

@@ -71,16 +71,11 @@ public class TreeTest {
 
     @Test
     public void testContainerTypeIsHierarchical() {
-        assertTrue(HierarchicalContainer.class.isAssignableFrom(tree
-                .getContainerDataSource().getClass()));
-        assertTrue(HierarchicalContainer.class.isAssignableFrom(tree2
-                .getContainerDataSource().getClass()));
-        assertTrue(HierarchicalContainer.class.isAssignableFrom(tree3
-                .getContainerDataSource().getClass()));
-        assertFalse(HierarchicalContainer.class.isAssignableFrom(tree4
-                .getContainerDataSource().getClass()));
-        assertTrue(Container.Hierarchical.class.isAssignableFrom(tree4
-                .getContainerDataSource().getClass()));
+        assertTrue(HierarchicalContainer.class.isAssignableFrom(tree.getContainerDataSource().getClass()));
+        assertTrue(HierarchicalContainer.class.isAssignableFrom(tree2.getContainerDataSource().getClass()));
+        assertTrue(HierarchicalContainer.class.isAssignableFrom(tree3.getContainerDataSource().getClass()));
+        assertFalse(HierarchicalContainer.class.isAssignableFrom(tree4.getContainerDataSource().getClass()));
+        assertTrue(Container.Hierarchical.class.isAssignableFrom(tree4.getContainerDataSource().getClass()));
     }
 
     @Test
@@ -89,8 +84,7 @@ public class TreeTest {
         tree.expandItem("child");
 
         Field expandedField = tree.getClass().getDeclaredField("expanded");
-        Field expandedItemIdField = tree.getClass().getDeclaredField(
-                "expandedItemId");
+        Field expandedItemIdField = tree.getClass().getDeclaredField("expandedItemId");
 
         expandedField.setAccessible(true);
         expandedItemIdField.setAccessible(true);
@@ -129,8 +123,7 @@ public class TreeTest {
         tree.setContainerDataSource(new HierarchicalContainer());
 
         Field expandedField = tree.getClass().getDeclaredField("expanded");
-        Field expandedItemIdField = tree.getClass().getDeclaredField(
-                "expandedItemId");
+        Field expandedItemIdField = tree.getClass().getDeclaredField("expandedItemId");
 
         expandedField.setAccessible(true);
         expandedItemIdField.setAccessible(true);

@@ -24,8 +24,7 @@ import com.vaadin.shared.ui.Connect;
 import com.vaadin.tests.widgetset.server.UseStateFromHierachyComponent;
 
 @Connect(UseStateFromHierachyComponent.class)
-public class UseStateFromHierachyChangeConnector extends
-        AbstractSingleComponentContainerConnector {
+public class UseStateFromHierachyChangeConnector extends AbstractSingleComponentContainerConnector {
 
     @Override
     public SimplePanel getWidget() {
@@ -38,21 +37,17 @@ public class UseStateFromHierachyChangeConnector extends
     }
 
     @Override
-    public void onConnectorHierarchyChange(
-            ConnectorHierarchyChangeEvent connectorHierarchyChangeEvent) {
+    public void onConnectorHierarchyChange(ConnectorHierarchyChangeEvent connectorHierarchyChangeEvent) {
         Connector stateChild = getState().child;
         if (stateChild == null) {
             if (getChildComponents().size() != 0) {
-                throw new IllegalStateException(
-                        "Hierarchy has child but state has not");
+                throw new IllegalStateException("Hierarchy has child but state has not");
             } else {
                 getWidget().setWidget(null);
             }
         } else {
-            if (getChildComponents().size() != 1
-                    || getChildComponents().get(0) != stateChild) {
-                throw new IllegalStateException(
-                        "State has child but hierarchy has not");
+            if (getChildComponents().size() != 1 || getChildComponents().get(0) != stateChild) {
+                throw new IllegalStateException("State has child but hierarchy has not");
             } else {
                 getWidget().setWidget(getChildComponents().get(0).getWidget());
             }

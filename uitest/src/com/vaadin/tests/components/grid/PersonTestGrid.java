@@ -22,8 +22,7 @@ import com.vaadin.ui.Grid;
 public class PersonTestGrid extends Grid {
 
     public PersonTestGrid(int size) {
-        BeanItemContainer<ComplexPerson> container = ComplexPerson
-                .createContainer(size);
+        BeanItemContainer<ComplexPerson> container = ComplexPerson.createContainer(size);
         container.addNestedContainerBean("address");
         setContainerDataSource(container);
     }

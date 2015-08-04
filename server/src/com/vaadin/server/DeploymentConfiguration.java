@@ -168,8 +168,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return the property value, or the passed default value if no property
      *         value is found
      */
-    public String getApplicationOrSystemProperty(String propertyName,
-            String defaultValue);
+    public String getApplicationOrSystemProperty(String propertyName, String defaultValue);
 
     /**
      * Gets UI class configuration option value.

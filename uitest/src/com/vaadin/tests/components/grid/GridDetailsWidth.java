@@ -67,8 +67,7 @@ public class GridDetailsWidth extends AbstractTestUI {
 
             @Override
             public void itemClick(ItemClickEvent event) {
-                grid.setDetailsVisible(event.getItemId(),
-                        !grid.isDetailsVisible(event.getItemId()));
+                grid.setDetailsVisible(event.getItemId(), !grid.isDetailsVisible(event.getItemId()));
 
             }
         });

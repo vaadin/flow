@@ -19,9 +19,7 @@ import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalSplitPanel;
 
-public abstract class AbstractComponentContainerTest<T extends AbstractComponentContainer>
-        extends AbstractComponentTest<T> implements ComponentAttachListener,
-        ComponentDetachListener {
+public abstract class AbstractComponentContainerTest<T extends AbstractComponentContainer> extends AbstractComponentTest<T> implements ComponentAttachListener, ComponentDetachListener {
 
     private String CATEGORY_COMPONENT_CONTAINER_FEATURES = "Component container features";
     private Command<T, ComponentSize> addButtonCommand = new Command<T, ComponentSize>() {
@@ -235,14 +233,12 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
     }
 
     private void createComponentAttachListener(String category) {
-        createBooleanAction("Component attach listener", category, false,
-                componentAttachListenerCommand);
+        createBooleanAction("Component attach listener", category, false, componentAttachListenerCommand);
 
     }
 
     private void createComponentDetachListener(String category) {
-        createBooleanAction("Component detach listener", category, false,
-                componentDetachListenerCommand);
+        createBooleanAction("Component detach listener", category, false, componentDetachListenerCommand);
 
     }
 
@@ -252,11 +248,9 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
 
         createCategory(subCategory, category);
         createCategory(byIndexCategory, subCategory);
-        createClickAction("Remove all components", subCategory,
-                removeAllComponentsCommand, null);
+        createClickAction("Remove all components", subCategory, removeAllComponentsCommand, null);
         for (int i = 0; i < 20; i++) {
-            createClickAction("Remove component " + i, byIndexCategory,
-                    removeComponentByIndexCommand, Integer.valueOf(i));
+            createClickAction("Remove component " + i, byIndexCategory, removeComponentByIndexCommand, Integer.valueOf(i));
         }
 
     }
@@ -285,14 +279,7 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
         // addCommands.put("HorizontalLayout", addHorizontalLayoutCommand);
         // addCommands.put("VerticalLayout", addVerticalLayoutCommand);
 
-        ComponentSize[] sizes = new ComponentSize[] {
-                new ComponentSize(null, null),
-                new ComponentSize("200px", null),
-                new ComponentSize("100%", null),
-                new ComponentSize(null, "200px"),
-                new ComponentSize(null, "100%"),
-                new ComponentSize("300px", "300px"),
-                new ComponentSize("100%", "100%"),
+        ComponentSize[] sizes = new ComponentSize[] { new ComponentSize(null, null), new ComponentSize("200px", null), new ComponentSize("100%", null), new ComponentSize(null, "200px"), new ComponentSize(null, "100%"), new ComponentSize("300px", "300px"), new ComponentSize("100%", "100%"),
 
         };
 
@@ -300,12 +287,10 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
             createCategory(componentCategory, subCategory);
 
             for (ComponentSize size : sizes) {
-                if (size.getHeight() != null
-                        && noVerticalSize.contains(componentCategory)) {
+                if (size.getHeight() != null && noVerticalSize.contains(componentCategory)) {
                     continue;
                 }
-                createClickAction(size.toString(), componentCategory,
-                        addCommands.get(componentCategory), size);
+                createClickAction(size.toString(), componentCategory, addCommands.get(componentCategory), size);
             }
         }
 
@@ -324,15 +309,11 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
             createCategory(componentWidthCategory, widthCategory);
             createCategory(componentHeightCategory, heightCategory);
 
-            createClickAction("auto", componentHeightCategory,
-                    setComponentHeight, Integer.valueOf(i), null);
-            createClickAction("auto", componentWidthCategory,
-                    setComponentWidth, Integer.valueOf(i), null);
+            createClickAction("auto", componentHeightCategory, setComponentHeight, Integer.valueOf(i), null);
+            createClickAction("auto", componentWidthCategory, setComponentWidth, Integer.valueOf(i), null);
             for (String option : options) {
-                createClickAction(option, componentHeightCategory,
-                        setComponentHeight, Integer.valueOf(i), option);
-                createClickAction(option, componentWidthCategory,
-                        setComponentWidth, Integer.valueOf(i), option);
+                createClickAction(option, componentHeightCategory, setComponentHeight, Integer.valueOf(i), option);
+                createClickAction(option, componentWidthCategory, setComponentWidth, Integer.valueOf(i), option);
             }
 
         }
@@ -341,18 +322,12 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
 
     @Override
     public void componentDetachedFromContainer(ComponentDetachEvent event) {
-        log(event.getClass().getSimpleName() + ": "
-                + event.getDetachedComponent().getClass().getSimpleName()
-                + " detached from "
-                + event.getContainer().getClass().getSimpleName());
+        log(event.getClass().getSimpleName() + ": " + event.getDetachedComponent().getClass().getSimpleName() + " detached from " + event.getContainer().getClass().getSimpleName());
     }
 
     @Override
     public void componentAttachedToContainer(ComponentAttachEvent event) {
-        log(event.getClass().getSimpleName() + ": "
-                + event.getAttachedComponent().getClass().getSimpleName()
-                + " attached to "
-                + event.getContainer().getClass().getSimpleName());
+        log(event.getClass().getSimpleName() + ": " + event.getAttachedComponent().getClass().getSimpleName() + " attached to " + event.getContainer().getClass().getSimpleName());
 
     }
 

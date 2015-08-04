@@ -55,14 +55,11 @@ public class PortletListenerNotifier extends SynchronizedRequestHandler {
      * PortletListener method corresponding to the request type is invoked.
      */
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
 
         VaadinPortletSession sess = (VaadinPortletSession) session;
-        PortletRequest portletRequest = ((VaadinPortletRequest) request)
-                .getPortletRequest();
-        PortletResponse portletResponse = ((VaadinPortletResponse) response)
-                .getPortletResponse();
+        PortletRequest portletRequest = ((VaadinPortletRequest) request).getPortletRequest();
+        PortletResponse portletResponse = ((VaadinPortletResponse) response).getPortletResponse();
 
         // Finds the right UI
         UI uI = null;
@@ -71,18 +68,13 @@ public class PortletListenerNotifier extends SynchronizedRequestHandler {
         }
 
         if (portletRequest instanceof RenderRequest) {
-            sess.firePortletRenderRequest(uI, (RenderRequest) portletRequest,
-                    (RenderResponse) portletResponse);
+            sess.firePortletRenderRequest(uI, (RenderRequest) portletRequest, (RenderResponse) portletResponse);
         } else if (portletRequest instanceof ActionRequest) {
-            sess.firePortletActionRequest(uI, (ActionRequest) portletRequest,
-                    (ActionResponse) portletResponse);
+            sess.firePortletActionRequest(uI, (ActionRequest) portletRequest, (ActionResponse) portletResponse);
         } else if (portletRequest instanceof EventRequest) {
-            sess.firePortletEventRequest(uI, (EventRequest) portletRequest,
-                    (EventResponse) portletResponse);
+            sess.firePortletEventRequest(uI, (EventRequest) portletRequest, (EventResponse) portletResponse);
         } else if (portletRequest instanceof ResourceRequest) {
-            sess.firePortletResourceRequest(uI,
-                    (ResourceRequest) portletRequest,
-                    (ResourceResponse) portletResponse);
+            sess.firePortletResourceRequest(uI, (ResourceRequest) portletRequest, (ResourceResponse) portletResponse);
         }
 
         return false;

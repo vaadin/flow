@@ -33,8 +33,7 @@ public interface GridServerRpc extends ServerRpc {
 
     void selectAll();
 
-    void sort(String[] columnIds, SortDirection[] directions,
-            boolean userOriginated);
+    void sort(String[] columnIds, SortDirection[] directions, boolean userOriginated);
 
     /**
      * Informs the server that the editor was opened (fresh) on a certain row
@@ -82,8 +81,7 @@ public interface GridServerRpc extends ServerRpc {
      * @param oldColumnOrder
      *            a list of column ids in order before the change
      */
-    void columnsReordered(List<String> newColumnOrder,
-            List<String> oldColumnOrder);
+    void columnsReordered(List<String> newColumnOrder, List<String> oldColumnOrder);
 
     /**
      * This is a trigger for Grid to send whatever has changed regarding the
@@ -114,6 +112,5 @@ public interface GridServerRpc extends ServerRpc {
      *            <code>true</code> if triggered by user, <code>false</code> if
      *            by code
      */
-    void columnVisibilityChanged(String id, boolean hidden,
-            boolean userOriginated);
+    void columnVisibilityChanged(String id, boolean hidden, boolean userOriginated);
 }

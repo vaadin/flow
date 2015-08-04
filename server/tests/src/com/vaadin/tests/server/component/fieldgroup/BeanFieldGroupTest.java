@@ -84,8 +84,7 @@ public class BeanFieldGroupTest {
         MyBean myBean = new MyBean();
 
         ViewStub viewStub = new ViewStub();
-        BeanFieldGroup<MyBean> bindFields = BeanFieldGroup
-                .bindFieldsUnbuffered(myBean, viewStub);
+        BeanFieldGroup<MyBean> bindFields = BeanFieldGroup.bindFieldsUnbuffered(myBean, viewStub);
 
         Field<String> field = (Field<String>) bindFields.getField("basicField");
         Assert.assertEquals(DEFAULT_FOR_BASIC_FIELD, myBean.basicField);
@@ -103,16 +102,13 @@ public class BeanFieldGroupTest {
         MyBean myBean = new MyBean();
 
         ViewStub viewStub = new ViewStub();
-        BeanFieldGroup<MyBean> bindFields = BeanFieldGroup.bindFieldsBuffered(
-                myBean, viewStub);
+        BeanFieldGroup<MyBean> bindFields = BeanFieldGroup.bindFieldsBuffered(myBean, viewStub);
 
-        Field<String> basicField = (Field<String>) bindFields
-                .getField("basicField");
+        Field<String> basicField = (Field<String>) bindFields.getField("basicField");
         basicField.setValue("Foo");
         Assert.assertEquals(DEFAULT_FOR_BASIC_FIELD, myBean.basicField);
 
-        Field<String> anotherField = (Field<String>) bindFields
-                .getField("anotherField");
+        Field<String> anotherField = (Field<String>) bindFields.getField("anotherField");
         anotherField.setValue("Foo");
         Assert.assertNull(myBean.anotherField);
 
@@ -131,8 +127,7 @@ public class BeanFieldGroupTest {
         BeanFieldGroup<MyBean> bfg = new BeanFieldGroup<MyBean>(MyBean.class);
         bfg.setItemDataSource(bean);
 
-        com.vaadin.ui.Field<?> helloField = bfg.buildAndBind("Hello string",
-                "nestedBean.hello");
+        com.vaadin.ui.Field<?> helloField = bfg.buildAndBind("Hello string", "nestedBean.hello");
         assertEquals(bean.nestedBean.hello, helloField.getValue().toString());
     }
 
@@ -144,8 +139,7 @@ public class BeanFieldGroupTest {
         BeanFieldGroup<MyBean> bfg = new BeanFieldGroup<MyBean>(MyBean.class);
         bfg.setItemDataSource(bean);
 
-        RichTextArea helloField = bfg.buildAndBind("Hello string",
-                "nestedBean.hello", RichTextArea.class);
+        RichTextArea helloField = bfg.buildAndBind("Hello string", "nestedBean.hello", RichTextArea.class);
         assertEquals(bean.nestedBean.hello, helloField.getValue().toString());
     }
 

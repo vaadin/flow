@@ -27,13 +27,12 @@ public class MenuBarPrimaryStylenames extends TestBase {
 
         addComponent(mainMenu);
 
-        addComponent(new Button("Change primary stylename",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        mainMenu.setPrimaryStyleName("my-other-menu");
-                    }
-                }));
+        addComponent(new Button("Change primary stylename", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                mainMenu.setPrimaryStyleName("my-other-menu");
+            }
+        }));
 
     }
 

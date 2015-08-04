@@ -102,9 +102,7 @@ public class Page implements Serializable {
         }
     }
 
-    private static final Method BROWSER_RESIZE_METHOD = ReflectTools
-            .findMethod(BrowserWindowResizeListener.class,
-                    "browserWindowResized", BrowserWindowResizeEvent.class);
+    private static final Method BROWSER_RESIZE_METHOD = ReflectTools.findMethod(BrowserWindowResizeListener.class, "browserWindowResized", BrowserWindowResizeEvent.class);
 
     /**
      * @deprecated As of 7.0, use {@link BorderStyle#NONE} instead.
@@ -145,9 +143,7 @@ public class Page implements Serializable {
         public void uriFragmentChanged(UriFragmentChangedEvent event);
     }
 
-    private static final Method URI_FRAGMENT_CHANGED_METHOD = ReflectTools
-            .findMethod(Page.UriFragmentChangedListener.class,
-                    "uriFragmentChanged", UriFragmentChangedEvent.class);
+    private static final Method URI_FRAGMENT_CHANGED_METHOD = ReflectTools.findMethod(Page.UriFragmentChangedListener.class, "uriFragmentChanged", UriFragmentChangedEvent.class);
 
     /**
      * A list of notifications that are waiting to be sent to the client.
@@ -250,10 +246,8 @@ public class Page implements Serializable {
      * @param listener
      *            the URI fragment listener to add
      */
-    public void addUriFragmentChangedListener(
-            Page.UriFragmentChangedListener listener) {
-        addListener(UriFragmentChangedEvent.class, listener,
-                URI_FRAGMENT_CHANGED_METHOD);
+    public void addUriFragmentChangedListener(Page.UriFragmentChangedListener listener) {
+        addListener(UriFragmentChangedEvent.class, listener, URI_FRAGMENT_CHANGED_METHOD);
     }
 
     /**
@@ -273,10 +267,8 @@ public class Page implements Serializable {
      * 
      * @see Page#addUriFragmentChangedListener(UriFragmentChangedListener)
      */
-    public void removeUriFragmentChangedListener(
-            Page.UriFragmentChangedListener listener) {
-        removeListener(UriFragmentChangedEvent.class, listener,
-                URI_FRAGMENT_CHANGED_METHOD);
+    public void removeUriFragmentChangedListener(Page.UriFragmentChangedListener listener) {
+        removeListener(UriFragmentChangedEvent.class, listener, URI_FRAGMENT_CHANGED_METHOD);
     }
 
     /**
@@ -319,14 +311,11 @@ public class Page implements Serializable {
             // instead set it to the empty string
             newUriFragment = "";
         }
-        if (newUriFragment == oldUriFragment
-                || (newUriFragment != null && newUriFragment
-                        .equals(oldUriFragment))) {
+        if (newUriFragment == oldUriFragment || (newUriFragment != null && newUriFragment.equals(oldUriFragment))) {
             return;
         }
         try {
-            location = new URI(location.getScheme(),
-                    location.getSchemeSpecificPart(), newUriFragment);
+            location = new URI(location.getScheme(), location.getSchemeSpecificPart(), newUriFragment);
         } catch (URISyntaxException e) {
             // This should not actually happen as the fragment syntax is not
             // constrained
@@ -390,8 +379,7 @@ public class Page implements Serializable {
             try {
                 this.location = new URI(location);
             } catch (URISyntaxException e) {
-                throw new RuntimeException(
-                        "Invalid location URI received from client", e);
+                throw new RuntimeException("Invalid location URI received from client", e);
             }
         }
         if (clientWidth != null && clientHeight != null) {
@@ -399,8 +387,7 @@ public class Page implements Serializable {
                 browserWindowWidth = Integer.parseInt(clientWidth);
                 browserWindowHeight = Integer.parseInt(clientHeight);
             } catch (NumberFormatException e) {
-                throw new RuntimeException(
-                        "Invalid window size received from client", e);
+                throw new RuntimeException("Invalid window size received from client", e);
             }
         }
     }
@@ -451,8 +438,7 @@ public class Page implements Serializable {
      *            whether to fire {@link BrowserWindowResizeEvent} if the size
      *            changes
      */
-    public void updateBrowserWindowSize(int width, int height,
-            boolean fireEvents) {
+    public void updateBrowserWindowSize(int width, int height, boolean fireEvents) {
         boolean sizeChanged = false;
 
         if (width != browserWindowWidth) {
@@ -466,8 +452,7 @@ public class Page implements Serializable {
         }
 
         if (fireEvents && sizeChanged) {
-            fireEvent(new BrowserWindowResizeEvent(this, browserWindowWidth,
-                    browserWindowHeight));
+            fireEvent(new BrowserWindowResizeEvent(this, browserWindowWidth, browserWindowHeight));
         }
 
     }
@@ -489,10 +474,8 @@ public class Page implements Serializable {
      * @see BrowserWindowResizeListener#browserWindowResized(BrowserWindowResizeEvent)
      * @see UI#setResizeLazy(boolean)
      */
-    public void addBrowserWindowResizeListener(
-            BrowserWindowResizeListener resizeListener) {
-        addListener(BrowserWindowResizeEvent.class, resizeListener,
-                BROWSER_RESIZE_METHOD);
+    public void addBrowserWindowResizeListener(BrowserWindowResizeListener resizeListener) {
+        addListener(BrowserWindowResizeEvent.class, resizeListener, BROWSER_RESIZE_METHOD);
         getState(true).hasResizeListeners = true;
     }
 
@@ -512,12 +495,9 @@ public class Page implements Serializable {
      * @param resizeListener
      *            the listener to remove
      */
-    public void removeBrowserWindowResizeListener(
-            BrowserWindowResizeListener resizeListener) {
-        removeListener(BrowserWindowResizeEvent.class, resizeListener,
-                BROWSER_RESIZE_METHOD);
-        getState(true).hasResizeListeners = hasEventRouter()
-                && eventRouter.hasListeners(BrowserWindowResizeEvent.class);
+    public void removeBrowserWindowResizeListener(BrowserWindowResizeListener resizeListener) {
+        removeListener(BrowserWindowResizeEvent.class, resizeListener, BROWSER_RESIZE_METHOD);
+        getState(true).hasResizeListeners = hasEventRouter() && eventRouter.hasListeners(BrowserWindowResizeEvent.class);
     }
 
     /**
@@ -602,11 +582,8 @@ public class Page implements Serializable {
      * @return The browser location URI.
      */
     public URI getLocation() {
-        if (location == null
-                && !uI.getSession().getConfiguration().isSendUrlsAsParameters()) {
-            throw new IllegalStateException("Location is not available as the "
-                    + Constants.SERVLET_PARAMETER_SENDURLSASPARAMETERS
-                    + " parameter is configured as false");
+        if (location == null && !uI.getSession().getConfiguration().isSendUrlsAsParameters()) {
+            throw new IllegalStateException("Location is not available as the " + Constants.SERVLET_PARAMETER_SENDURLSASPARAMETERS + " parameter is configured as false");
         }
         return location;
     }
@@ -643,8 +620,7 @@ public class Page implements Serializable {
             String oldUriFragment = this.location.getFragment();
             this.location = new URI(location);
             String newUriFragment = this.location.getFragment();
-            if (fireEvents
-                    && !SharedUtil.equals(oldUriFragment, newUriFragment)) {
+            if (fireEvents && !SharedUtil.equals(oldUriFragment, newUriFragment)) {
                 fireEvent(new UriFragmentChangedEvent(this, newUriFragment));
             }
         } catch (URISyntaxException e) {

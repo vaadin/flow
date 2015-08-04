@@ -46,8 +46,6 @@ public class GridThemeChangeTest extends MultiBrowserTest {
 
         int valoHeight = grid.getRow(0).getSize().getHeight();
 
-        Assert.assertTrue(
-                "Row height should increase when changing from Reindeer to Valo",
-                valoHeight > reindeerHeight);
+        Assert.assertTrue("Row height should increase when changing from Reindeer to Valo", valoHeight > reindeerHeight);
     }
 }

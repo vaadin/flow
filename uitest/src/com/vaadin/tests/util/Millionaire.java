@@ -9,11 +9,8 @@ public class Millionaire extends Person {
     public Millionaire() {
     }
 
-    public Millionaire(String firstName, String lastName, String email,
-            String phoneNumber, String streetAddress, int postalCode,
-            String city) {
-        super(firstName, lastName, email, phoneNumber, streetAddress,
-                postalCode, city);
+    public Millionaire(String firstName, String lastName, String email, String phoneNumber, String streetAddress, int postalCode, String city) {
+        super(firstName, lastName, email, phoneNumber, streetAddress, postalCode, city);
     }
 
     public List<Address> getSecondaryResidences() {

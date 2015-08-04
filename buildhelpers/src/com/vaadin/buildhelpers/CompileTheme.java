@@ -44,14 +44,11 @@ public class CompileTheme {
     public static void main(String[] args) throws IOException, ParseException {
         Options options = new Options();
         options.addOption("t", "theme", true, "the theme to compile");
-        options.addOption("f", "theme-folder", true,
-                "the folder containing the theme");
-        options.addOption("v", "version", true,
-                "the Vaadin version to compile for");
+        options.addOption("f", "theme-folder", true, "the folder containing the theme");
+        options.addOption("v", "version", true, "the Vaadin version to compile for");
         CommandLineParser parser = new PosixParser();
         CommandLine params = parser.parse(options, args);
-        if (!params.hasOption("theme") || !params.hasOption("theme-folder")
-                || !params.hasOption("version")) {
+        if (!params.hasOption("theme") || !params.hasOption("theme-folder") || !params.hasOption("version")) {
             // automatically generate the help statement
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(CompileTheme.class.getName(), options);
@@ -64,37 +61,29 @@ public class CompileTheme {
         // Regular theme
         try {
             processSassTheme(themeFolder, themeName, "styles", version);
-            System.out.println("Compiling theme " + themeName
-                    + " styles successful");
+            System.out.println("Compiling theme " + themeName + " styles successful");
         } catch (Exception e) {
-            System.err.println("Compiling theme " + themeName
-                    + " styles failed");
+            System.err.println("Compiling theme " + themeName + " styles failed");
             e.printStackTrace();
         }
         // Legacy theme w/o .themename{} wrapping
         try {
-            String legacyFile = themeFolder + File.separator + themeName
-                    + File.separator + "legacy-styles.scss";
+            String legacyFile = themeFolder + File.separator + themeName + File.separator + "legacy-styles.scss";
             if (new File(legacyFile).exists()) {
-                processSassTheme(themeFolder, themeName, "legacy-styles",
-                        version);
-                System.out.println("Compiling theme " + themeName
-                        + " legacy-styles successful");
+                processSassTheme(themeFolder, themeName, "legacy-styles", version);
+                System.out.println("Compiling theme " + themeName + " legacy-styles successful");
             }
         } catch (Exception e) {
-            System.err.println("Compiling theme " + themeName
-                    + " legacy-styles failed");
+            System.err.println("Compiling theme " + themeName + " legacy-styles failed");
             e.printStackTrace();
         }
     }
 
-    private static void processSassTheme(String themeFolder, String themeName,
-            String variant, String version) throws Exception {
+    private static void processSassTheme(String themeFolder, String themeName, String variant, String version) throws Exception {
 
         StringBuffer cssHeader = new StringBuffer();
 
-        String stylesCssDir = themeFolder + File.separator + themeName
-                + File.separator;
+        String stylesCssDir = themeFolder + File.separator + themeName + File.separator;
 
         String stylesCssName = stylesCssDir + variant + ".css";
 
@@ -103,8 +92,7 @@ public class CompileTheme {
 
         ScssStylesheet scss = ScssStylesheet.get(sassFile);
         if (scss == null) {
-            throw new IllegalArgumentException("SASS file: " + sassFile
-                    + " not found");
+            throw new IllegalArgumentException("SASS file: " + sassFile + " not found");
         }
         scss.compile();
         String filteredScss = scss.printState().replace("@version@", version);
@@ -114,8 +102,7 @@ public class CompileTheme {
         out.write(filteredScss);
         out.close();
 
-        System.out.println("Compiled CSS to " + stylesCssName + " ("
-                + filteredScss.length() + " bytes)");
+        System.out.println("Compiled CSS to " + stylesCssName + " (" + filteredScss.length() + " bytes)");
 
         createSprites(themeFolder, themeName);
         File oldCss = new File(stylesCssName);
@@ -128,29 +115,23 @@ public class CompileTheme {
 
             boolean ok = newCss.renameTo(oldCss);
             if (!ok) {
-                throw new RuntimeException("Rename " + newCss + " -> " + oldCss
-                        + " failed");
+                throw new RuntimeException("Rename " + newCss + " -> " + oldCss + " failed");
             }
         }
 
     }
 
-    private static void createSprites(String themeFolder, String themeName)
-            throws FileNotFoundException, IOException {
+    private static void createSprites(String themeFolder, String themeName) throws FileNotFoundException, IOException {
         try {
             // Try loading the class separately from using it to avoid
             // hiding other classpath issues
             Class<?> smartSpritesClass = org.carrot2.labs.smartsprites.SmartSprites.class;
         } catch (NoClassDefFoundError e) {
-            System.err
-                    .println("Could not find smartsprites. No sprites were generated. The theme should still work.");
+            System.err.println("Could not find smartsprites. No sprites were generated. The theme should still work.");
             return;
         }
 
-        String[] parameters = new String[] { "--sprite-png-depth", "AUTO",
-                "--css-file-suffix", "-sprite", "--css-file-encoding", "UTF-8",
-                "--root-dir-path", themeFolder + File.separator + themeName,
-                "--log-level", "WARN" };
+        String[] parameters = new String[] { "--sprite-png-depth", "AUTO", "--css-file-suffix", "-sprite", "--css-file-encoding", "UTF-8", "--root-dir-path", themeFolder + File.separator + themeName, "--log-level", "WARN" };
 
         org.carrot2.labs.smartsprites.SmartSprites.main(parameters);
         System.out.println("Generated sprites");

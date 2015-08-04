@@ -34,8 +34,7 @@ public class LikeTranslator implements FilterTranslator {
             return QueryBuilder.quote(like.getPropertyId()) + " LIKE ?";
         } else {
             sh.addParameterValue(like.getValue().toUpperCase());
-            return "UPPER(" + QueryBuilder.quote(like.getPropertyId())
-                    + ") LIKE ?";
+            return "UPPER(" + QueryBuilder.quote(like.getPropertyId()) + ") LIKE ?";
         }
     }
 

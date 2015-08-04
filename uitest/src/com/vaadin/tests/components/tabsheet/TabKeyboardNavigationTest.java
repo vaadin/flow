@@ -54,8 +54,7 @@ public class TabKeyboardNavigationTest extends MultiBrowserTest {
         assertSheet(5);
         compareScreen("skip-disabled-to-tab5");
 
-        TestBenchElement addTabButton = (TestBenchElement) getDriver()
-                .findElements(By.className("v-button")).get(0);
+        TestBenchElement addTabButton = (TestBenchElement) getDriver().findElements(By.className("v-button")).get(0);
 
         click(addTabButton);
 
@@ -126,8 +125,7 @@ public class TabKeyboardNavigationTest extends MultiBrowserTest {
     /*
      * Press key on the element.
      */
-    private void sendKeys(TestBenchElement element, Keys key)
-            throws InterruptedException {
+    private void sendKeys(TestBenchElement element, Keys key) throws InterruptedException {
 
         element.sendKeys(key);
         if (DELAY > 0) {
@@ -175,12 +173,10 @@ public class TabKeyboardNavigationTest extends MultiBrowserTest {
     private TestBenchElement tab(int index) {
         By by = By.className("v-tabsheet-tabitemcell");
 
-        TestBenchElement element = (TestBenchElement) getDriver().findElements(
-                by).get(index - 1);
+        TestBenchElement element = (TestBenchElement) getDriver().findElements(by).get(index - 1);
 
         String expected = "Tab " + index;
-        Assert.assertEquals(expected,
-                element.getText().substring(0, expected.length()));
+        Assert.assertEquals(expected, element.getText().substring(0, expected.length()));
 
         return element;
     }

@@ -32,8 +32,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 import com.vaadin.client.Focusable;
 
-public class FocusableFlowPanel extends FlowPanel implements HasFocusHandlers,
-        HasBlurHandlers, HasKeyDownHandlers, HasKeyPressHandlers, Focusable {
+public class FocusableFlowPanel extends FlowPanel implements HasFocusHandlers, HasBlurHandlers, HasKeyDownHandlers, HasKeyPressHandlers, Focusable {
 
     /**
      * Constructor

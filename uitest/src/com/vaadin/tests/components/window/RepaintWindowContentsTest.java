@@ -26,8 +26,7 @@ public class RepaintWindowContentsTest extends MultiBrowserTest {
     }
 
     private void assertWindowContents(String expected) {
-        Assert.assertEquals("Unexpected window contents,", expected,
-                getWindowButton().getText());
+        Assert.assertEquals("Unexpected window contents,", expected, getWindowButton().getText());
     }
 
     private ButtonElement getWindowButton() {

@@ -30,16 +30,12 @@ import com.vaadin.ui.declarative.DesignAttributeHandler;
 public class DesignObjectConverter implements Converter<String, Object> {
 
     @Override
-    public Object convertToModel(String value,
-            Class<? extends Object> targetType, Locale locale)
-            throws com.vaadin.data.util.converter.Converter.ConversionException {
+    public Object convertToModel(String value, Class<? extends Object> targetType, Locale locale) throws com.vaadin.data.util.converter.Converter.ConversionException {
         return value;
     }
 
     @Override
-    public String convertToPresentation(Object value,
-            Class<? extends String> targetType, Locale locale)
-            throws com.vaadin.data.util.converter.Converter.ConversionException {
+    public String convertToPresentation(Object value, Class<? extends String> targetType, Locale locale) throws com.vaadin.data.util.converter.Converter.ConversionException {
         if (value == null) {
             return null;
         }

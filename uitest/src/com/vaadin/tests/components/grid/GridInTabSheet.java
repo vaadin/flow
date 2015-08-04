@@ -51,43 +51,36 @@ public class GridInTabSheet extends AbstractTestUI {
                 grid.addRow(100 + (k++));
             }
         }));
-        addComponent(new Button("Remove row from Grid",
-                new Button.ClickListener() {
+        addComponent(new Button("Remove row from Grid", new Button.ClickListener() {
 
-                    private Integer k = 0;
+            private Integer k = 0;
 
+            @Override
+            public void buttonClick(ClickEvent event) {
+                Object firstItemId = grid.getContainerDataSource().firstItemId();
+                if (firstItemId != null) {
+                    grid.getContainerDataSource().removeItem(firstItemId);
+                }
+            }
+        }));
+        addComponent(new Button("Add CellStyleGenerator", new Button.ClickListener() {
+
+            @Override
+            public void buttonClick(ClickEvent event) {
+                grid.setCellStyleGenerator(new CellStyleGenerator() {
                     @Override
-                    public void buttonClick(ClickEvent event) {
-                        Object firstItemId = grid.getContainerDataSource()
-                                .firstItemId();
-                        if (firstItemId != null) {
-                            grid.getContainerDataSource().removeItem(
-                                    firstItemId);
+                    public String getStyle(CellReference cellReference) {
+                        int rowIndex = ((Integer) cellReference.getItemId()).intValue();
+                        Object propertyId = cellReference.getPropertyId();
+                        if (rowIndex % 4 == 1) {
+                            return null;
+                        } else if (rowIndex % 4 == 3 && "Column 1".equals(propertyId)) {
+                            return null;
                         }
+                        return propertyId.toString().replace(' ', '_');
                     }
-                }));
-        addComponent(new Button("Add CellStyleGenerator",
-                new Button.ClickListener() {
-
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        grid.setCellStyleGenerator(new CellStyleGenerator() {
-                            @Override
-                            public String getStyle(CellReference cellReference) {
-                                int rowIndex = ((Integer) cellReference
-                                        .getItemId()).intValue();
-                                Object propertyId = cellReference
-                                        .getPropertyId();
-                                if (rowIndex % 4 == 1) {
-                                    return null;
-                                } else if (rowIndex % 4 == 3
-                                        && "Column 1".equals(propertyId)) {
-                                    return null;
-                                }
-                                return propertyId.toString().replace(' ', '_');
-                            }
-                        });
-                    }
-                }));
+                });
+            }
+        }));
     }
 }

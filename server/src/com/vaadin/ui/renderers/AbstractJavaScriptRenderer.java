@@ -102,11 +102,9 @@ import com.vaadin.ui.JavaScriptFunction;
  * @since 7.4
  */
 public abstract class AbstractJavaScriptRenderer<T> extends AbstractRenderer<T> {
-    private JavaScriptCallbackHelper callbackHelper = new JavaScriptCallbackHelper(
-            this);
+    private JavaScriptCallbackHelper callbackHelper = new JavaScriptCallbackHelper(this);
 
-    protected AbstractJavaScriptRenderer(Class<T> presentationType,
-            String nullRepresentation) {
+    protected AbstractJavaScriptRenderer(Class<T> presentationType, String nullRepresentation) {
         super(presentationType, nullRepresentation);
     }
 
@@ -115,8 +113,7 @@ public abstract class AbstractJavaScriptRenderer<T> extends AbstractRenderer<T> 
     }
 
     @Override
-    protected <R extends ServerRpc> void registerRpc(R implementation,
-            Class<R> rpcInterfaceType) {
+    protected <R extends ServerRpc> void registerRpc(R implementation, Class<R> rpcInterfaceType) {
         super.registerRpc(implementation, rpcInterfaceType);
         callbackHelper.registerRpc(rpcInterfaceType);
     }

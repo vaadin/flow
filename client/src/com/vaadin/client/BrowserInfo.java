@@ -147,10 +147,8 @@ public class BrowserInfo {
 
             if (browserDetails.isFirefox()) {
                 browserIdentifier = BROWSER_FIREFOX;
-                majorVersionClass = browserIdentifier
-                        + getBrowserMajorVersion();
-                minorVersionClass = majorVersionClass
-                        + browserDetails.getBrowserMinorVersion();
+                majorVersionClass = browserIdentifier + getBrowserMajorVersion();
+                minorVersionClass = majorVersionClass + browserDetails.getBrowserMinorVersion();
                 browserEngineClass = ENGINE_GECKO;
             } else if (browserDetails.isChrome()) {
                 // TODO update when Chrome is more stable
@@ -159,24 +157,18 @@ public class BrowserInfo {
                 browserEngineClass = ENGINE_WEBKIT;
             } else if (browserDetails.isSafari()) {
                 browserIdentifier = BROWSER_SAFARI;
-                majorVersionClass = browserIdentifier
-                        + getBrowserMajorVersion();
-                minorVersionClass = majorVersionClass
-                        + browserDetails.getBrowserMinorVersion();
+                majorVersionClass = browserIdentifier + getBrowserMajorVersion();
+                minorVersionClass = majorVersionClass + browserDetails.getBrowserMinorVersion();
                 browserEngineClass = ENGINE_WEBKIT;
             } else if (browserDetails.isIE()) {
                 browserIdentifier = BROWSER_IE;
-                majorVersionClass = browserIdentifier
-                        + getBrowserMajorVersion();
-                minorVersionClass = majorVersionClass
-                        + browserDetails.getBrowserMinorVersion();
+                majorVersionClass = browserIdentifier + getBrowserMajorVersion();
+                minorVersionClass = majorVersionClass + browserDetails.getBrowserMinorVersion();
                 browserEngineClass = ENGINE_TRIDENT;
             } else if (browserDetails.isOpera()) {
                 browserIdentifier = BROWSER_OPERA;
-                majorVersionClass = browserIdentifier
-                        + getBrowserMajorVersion();
-                minorVersionClass = majorVersionClass
-                        + browserDetails.getBrowserMinorVersion();
+                majorVersionClass = browserIdentifier + getBrowserMajorVersion();
+                minorVersionClass = majorVersionClass + browserDetails.getBrowserMinorVersion();
                 browserEngineClass = ENGINE_PRESTO;
             }
 
@@ -343,9 +335,7 @@ public class BrowserInfo {
      *         otherwise <code>false</code>
      */
     public boolean requiresOverflowAutoFix() {
-        return (getWebkitVersion() > 0 || getOperaVersion() >= 11
-                || getIEVersion() >= 10 || isFirefox())
-                && WidgetUtil.getNativeScrollbarSize() > 0;
+        return (getWebkitVersion() > 0 || getOperaVersion() >= 11 || getIEVersion() >= 10 || isFirefox()) && WidgetUtil.getNativeScrollbarSize() > 0;
     }
 
     /**
@@ -361,8 +351,7 @@ public class BrowserInfo {
      *         otherwise <code>false</code>
      */
     public boolean requiresPositionAbsoluteOverflowAutoFix() {
-        return (getWebkitVersion() > 0)
-                && WidgetUtil.getNativeScrollbarSize() > 0;
+        return (getWebkitVersion() > 0) && WidgetUtil.getNativeScrollbarSize() > 0;
     }
 
     /**
@@ -429,13 +418,11 @@ public class BrowserInfo {
      *         otherwise
      */
     public boolean isAndroidWithBrokenScrollTop() {
-        return isAndroid()
-                && (getOperatingSystemMajorVersion() == 3 || getOperatingSystemMajorVersion() == 4);
+        return isAndroid() && (getOperatingSystemMajorVersion() == 3 || getOperatingSystemMajorVersion() == 4);
     }
 
     public boolean isAndroid23() {
-        return isAndroid() && getOperatingSystemMajorVersion() == 2
-                && getOperatingSystemMinorVersion() == 3;
+        return isAndroid() && getOperatingSystemMajorVersion() == 2 && getOperatingSystemMinorVersion() == 3;
     }
 
     private int getOperatingSystemMajorVersion() {
@@ -482,8 +469,7 @@ public class BrowserInfo {
      * @return true if the browser version is newer or equal to the given
      *         version
      */
-    public boolean isBrowserVersionNewerOrEqual(int majorVersion,
-            int minorVersion) {
+    public boolean isBrowserVersionNewerOrEqual(int majorVersion, int minorVersion) {
         if (getBrowserMajorVersion() == majorVersion) {
             // Same major
             return (getBrowserMinorVersion() >= minorVersion);

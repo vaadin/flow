@@ -41,20 +41,16 @@ public class WidgetRenderers extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         IndexedContainer container = new IndexedContainer();
 
-        container.addContainerProperty(ProgressBarRenderer.class, Double.class,
-                null);
-        container
-                .addContainerProperty(ButtonRenderer.class, String.class, null);
-        container.addContainerProperty(ImageRenderer.class, Resource.class,
-                null);
+        container.addContainerProperty(ProgressBarRenderer.class, Double.class, null);
+        container.addContainerProperty(ButtonRenderer.class, String.class, null);
+        container.addContainerProperty(ImageRenderer.class, Resource.class, null);
         container.addContainerProperty(PROPERTY_ID, String.class, null);
 
         final Item item = container.getItem(container.addItem());
 
         item.getItemProperty(ProgressBarRenderer.class).setValue(0.3);
         item.getItemProperty(ButtonRenderer.class).setValue("Click");
-        item.getItemProperty(ImageRenderer.class).setValue(
-                new ThemeResource("window/img/close.png"));
+        item.getItemProperty(ImageRenderer.class).setValue(new ThemeResource("window/img/close.png"));
         item.getItemProperty(PROPERTY_ID).setValue("Click");
 
         final Grid grid = new Grid(container);
@@ -62,47 +58,38 @@ public class WidgetRenderers extends AbstractTestUI {
         grid.setId("test-grid");
         grid.setSelectionMode(SelectionMode.NONE);
 
-        grid.getColumn(ProgressBarRenderer.class).setRenderer(
-                new ProgressBarRenderer());
+        grid.getColumn(ProgressBarRenderer.class).setRenderer(new ProgressBarRenderer());
 
-        grid.getColumn(ButtonRenderer.class).setRenderer(
-                new ButtonRenderer(new RendererClickListener() {
-                    @Override
-                    public void click(RendererClickEvent event) {
-                        item.getItemProperty(ButtonRenderer.class).setValue(
-                                "Clicked!");
-                    }
-                }));
+        grid.getColumn(ButtonRenderer.class).setRenderer(new ButtonRenderer(new RendererClickListener() {
+            @Override
+            public void click(RendererClickEvent event) {
+                item.getItemProperty(ButtonRenderer.class).setValue("Clicked!");
+            }
+        }));
 
-        grid.getColumn(ImageRenderer.class).setRenderer(
-                new ImageRenderer(new RendererClickListener() {
+        grid.getColumn(ImageRenderer.class).setRenderer(new ImageRenderer(new RendererClickListener() {
 
-                    @Override
-                    public void click(RendererClickEvent event) {
-                        item.getItemProperty(ImageRenderer.class).setValue(
-                                new ThemeResource("window/img/maximize.png"));
-                    }
-                }));
+            @Override
+            public void click(RendererClickEvent event) {
+                item.getItemProperty(ImageRenderer.class).setValue(new ThemeResource("window/img/maximize.png"));
+            }
+        }));
 
-        grid.getColumn(PROPERTY_ID).setRenderer(
-                new ButtonRenderer(new RendererClickListener() {
-                    @Override
-                    public void click(RendererClickEvent event) {
-                        item.getItemProperty(PROPERTY_ID).setValue(
-                                event.getPropertyId());
-                    }
-                }));
+        grid.getColumn(PROPERTY_ID).setRenderer(new ButtonRenderer(new RendererClickListener() {
+            @Override
+            public void click(RendererClickEvent event) {
+                item.getItemProperty(PROPERTY_ID).setValue(event.getPropertyId());
+            }
+        }));
 
         addComponent(grid);
 
-        addComponent(new NativeButton("Change column order",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        grid.setColumnOrder(ImageRenderer.class,
-                                ProgressBarRenderer.class, ButtonRenderer.class);
-                    }
-                }));
+        addComponent(new NativeButton("Change column order", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                grid.setColumnOrder(ImageRenderer.class, ProgressBarRenderer.class, ButtonRenderer.class);
+            }
+        }));
     }
 
     @Override

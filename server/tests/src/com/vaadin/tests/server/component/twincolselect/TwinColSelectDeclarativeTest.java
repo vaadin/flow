@@ -27,15 +27,10 @@ import com.vaadin.ui.TwinColSelect;
  * 
  * @author Vaadin Ltd
  */
-public class TwinColSelectDeclarativeTest extends
-        DeclarativeTestBase<TwinColSelect> {
+public class TwinColSelectDeclarativeTest extends DeclarativeTestBase<TwinColSelect> {
 
     public String getBasicDesign() {
-        return "<v-twin-col-select rows=5 right-column-caption='Selected values' left-column-caption='Unselected values'>\n"
-                + "        <option>First item</option>\n"
-                + "        <option selected>Second item</option>\n"
-                + "        <option selected>Third item</option>\n"
-                + "</v-twin-col-select>";
+        return "<v-twin-col-select rows=5 right-column-caption='Selected values' left-column-caption='Unselected values'>\n" + "        <option>First item</option>\n" + "        <option selected>Second item</option>\n" + "        <option selected>Third item</option>\n" + "</v-twin-col-select>";
 
     }
 

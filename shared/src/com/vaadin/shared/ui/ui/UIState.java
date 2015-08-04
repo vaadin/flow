@@ -34,25 +34,15 @@ public class UIState extends TabIndexState {
     public String overlayContainerLabel = "This content is announced automatically and does not need to be navigated into.";
     public Map<String, NotificationTypeConfiguration> notificationConfigurations = new HashMap<String, NotificationTypeConfiguration>();
     {
-        notificationConfigurations.put("error",
-                new NotificationTypeConfiguration("Error: ",
-                        " - close with ESC-key", NotificationRole.ALERT));
-        notificationConfigurations.put("warning",
-                new NotificationTypeConfiguration("Warning: ", null,
-                        NotificationRole.ALERT));
-        notificationConfigurations.put("humanized",
-                new NotificationTypeConfiguration("Info: ", null,
-                        NotificationRole.ALERT));
+        notificationConfigurations.put("error", new NotificationTypeConfiguration("Error: ", " - close with ESC-key", NotificationRole.ALERT));
+        notificationConfigurations.put("warning", new NotificationTypeConfiguration("Warning: ", null, NotificationRole.ALERT));
+        notificationConfigurations.put("humanized", new NotificationTypeConfiguration("Info: ", null, NotificationRole.ALERT));
 
         // We use alert instead of status for all notifications because
         // (at least) Jaws 16 and earlier fail to announce any role=status
         // message in Chrome/Firefox
-        notificationConfigurations.put("tray",
-                new NotificationTypeConfiguration("Status: ", null,
-                        NotificationRole.ALERT));
-        notificationConfigurations.put("assistive",
-                new NotificationTypeConfiguration("Note: ", null,
-                        NotificationRole.ALERT));
+        notificationConfigurations.put("tray", new NotificationTypeConfiguration("Status: ", null, NotificationRole.ALERT));
+        notificationConfigurations.put("assistive", new NotificationTypeConfiguration("Note: ", null, NotificationRole.ALERT));
     }
     /**
      * State related to the Page class.
@@ -79,8 +69,7 @@ public class UIState extends TabIndexState {
         tabIndex = 1;
     }
 
-    public static class LoadingIndicatorConfigurationState implements
-            Serializable {
+    public static class LoadingIndicatorConfigurationState implements Serializable {
         public int firstDelay = 300;
         public int secondDelay = 1500;
         public int thirdDelay = 5000;
@@ -102,8 +91,7 @@ public class UIState extends TabIndexState {
         public NotificationTypeConfiguration() {
         }
 
-        public NotificationTypeConfiguration(String prefix, String postfix,
-                NotificationRole role) {
+        public NotificationTypeConfiguration(String prefix, String postfix, NotificationRole role) {
             this.prefix = prefix;
             this.postfix = postfix;
             notificationRole = role;
@@ -118,15 +106,12 @@ public class UIState extends TabIndexState {
         public PushMode mode = PushMode.DISABLED;
         public Map<String, String> parameters = new HashMap<String, String>();
         {
-            parameters
-                    .put(TRANSPORT_PARAM, Transport.WEBSOCKET.getIdentifier());
-            parameters.put(FALLBACK_TRANSPORT_PARAM,
-                    Transport.LONG_POLLING.getIdentifier());
+            parameters.put(TRANSPORT_PARAM, Transport.WEBSOCKET.getIdentifier());
+            parameters.put(FALLBACK_TRANSPORT_PARAM, Transport.LONG_POLLING.getIdentifier());
         }
     }
 
-    public static class ReconnectDialogConfigurationState implements
-            Serializable {
+    public static class ReconnectDialogConfigurationState implements Serializable {
         public String dialogText = "Server connection lost, trying to reconnect...";
         public String dialogTextGaveUp = "Server connection lost.";
         public int reconnectAttempts = 10000;

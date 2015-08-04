@@ -21,8 +21,7 @@ public class RpcForClosedUITest extends MultiBrowserTest {
         clickButton("Log 'hello'");
         /* Ensure 'hello' was not logged */
         checkLogMatches("2. Current WrappedSession id: .*");
-        Assert.assertFalse("Page contains word 'Hello'", driver.getPageSource()
-                .contains("Hello"));
+        Assert.assertFalse("Page contains word 'Hello'", driver.getPageSource().contains("Hello"));
     }
 
     private void clickButton(String caption) {
@@ -31,8 +30,6 @@ public class RpcForClosedUITest extends MultiBrowserTest {
 
     private void checkLogMatches(String expected) {
         String actual = getLogRow(0);
-        Assert.assertTrue(String.format(
-                "Unexpected log row.\n expected format: '%s'\n was: '%s'",
-                expected, actual), actual.matches(expected));
+        Assert.assertTrue(String.format("Unexpected log row.\n expected format: '%s'\n was: '%s'", expected, actual), actual.matches(expected));
     }
 }

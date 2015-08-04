@@ -30,8 +30,7 @@ public class AccordionClipsContentTest extends MultiBrowserTest {
     public void testAccordionClipsContent() throws Exception {
         openTestURL();
 
-        selectMenuPath("Component", "Component container features",
-                "Add component", "NativeButton", "auto x auto");
+        selectMenuPath("Component", "Component container features", "Add component", "NativeButton", "auto x auto");
 
         $(NativeButtonElement.class).first().click();
 

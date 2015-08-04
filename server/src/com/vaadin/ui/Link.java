@@ -90,8 +90,7 @@ public class Link extends AbstractComponent {
      *            the Border style of the target window.
      * 
      */
-    public Link(String caption, Resource resource, String targetName,
-            int width, int height, BorderStyle border) {
+    public Link(String caption, Resource resource, String targetName, int width, int height, BorderStyle border) {
         setCaption(caption);
         setResource(resource);
         setTargetName(targetName);
@@ -125,8 +124,7 @@ public class Link extends AbstractComponent {
      * @return the target window height.
      */
     public int getTargetHeight() {
-        return getState(false).targetHeight < 0 ? -1
-                : getState(false).targetHeight;
+        return getState(false).targetHeight < 0 ? -1 : getState(false).targetHeight;
     }
 
     /**
@@ -145,8 +143,7 @@ public class Link extends AbstractComponent {
      * @return the target window width.
      */
     public int getTargetWidth() {
-        return getState(false).targetWidth < 0 ? -1
-                : getState(false).targetWidth;
+        return getState(false).targetWidth < 0 ? -1 : getState(false).targetWidth;
     }
 
     /**
@@ -212,12 +209,10 @@ public class Link extends AbstractComponent {
     public void readDesign(Element design, DesignContext designContext) {
         super.readDesign(design, designContext);
         if (design.hasAttr("target")) {
-            setTargetName(DesignAttributeHandler.getFormatter().parse(
-                    design.attr("target"), String.class));
+            setTargetName(DesignAttributeHandler.getFormatter().parse(design.attr("target"), String.class));
         }
         if (design.hasAttr("href")) {
-            setResource(DesignAttributeHandler.getFormatter().parse(
-                    design.attr("href"), Resource.class));
+            setResource(DesignAttributeHandler.getFormatter().parse(design.attr("href"), Resource.class));
         }
     }
 
@@ -225,10 +220,8 @@ public class Link extends AbstractComponent {
     public void writeDesign(Element design, DesignContext designContext) {
         super.writeDesign(design, designContext);
         Link def = designContext.getDefaultInstance(this);
-        DesignAttributeHandler.writeAttribute("target", design.attributes(),
-                getTargetName(), def.getTargetName(), String.class);
-        DesignAttributeHandler.writeAttribute("href", design.attributes(),
-                getResource(), def.getResource(), Resource.class);
+        DesignAttributeHandler.writeAttribute("target", design.attributes(), getTargetName(), def.getTargetName(), String.class);
+        DesignAttributeHandler.writeAttribute("href", design.attributes(), getResource(), def.getResource(), Resource.class);
     }
 
     @Override

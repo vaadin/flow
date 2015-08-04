@@ -32,10 +32,7 @@ public class PanelDeclarativeTest extends DeclarativeTestBase<Panel> {
 
     @Test
     public void testFeatures() {
-        String design = "<v-panel id=panelId caption=\"A panel\" tabindex=2 scroll-left=10 "
-                + "scroll-top=20 width=200px height=150px> "
-                + "<v-vertical-layout width=300px height=400px /> "
-                + "</v-panel>";
+        String design = "<v-panel id=panelId caption=\"A panel\" tabindex=2 scroll-left=10 " + "scroll-top=20 width=200px height=150px> " + "<v-vertical-layout width=300px height=400px /> " + "</v-panel>";
         Panel p = new Panel();
         p.setId("panelId");
         p.setCaption("A panel");

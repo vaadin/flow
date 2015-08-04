@@ -165,9 +165,7 @@ public class MouseEventDetails implements Serializable {
     }
 
     public String serialize() {
-        return button.toString() + DELIM + clientX + DELIM + clientY + DELIM
-                + altKey + DELIM + ctrlKey + DELIM + metaKey + DELIM + shiftKey
-                + DELIM + type + DELIM + relativeX + DELIM + relativeY;
+        return button.toString() + DELIM + clientX + DELIM + clientY + DELIM + altKey + DELIM + ctrlKey + DELIM + metaKey + DELIM + shiftKey + DELIM + type + DELIM + relativeX + DELIM + relativeY;
     }
 
     public static MouseEventDetails deSerialize(String serializedString) {

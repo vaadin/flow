@@ -15,8 +15,7 @@ public class MarginsInLabels extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         AbstractLayout layout = new VerticalLayout();
-        layout.addComponent(new Label("<h1>Vertical layout</h1>",
-                ContentMode.HTML));
+        layout.addComponent(new Label("<h1>Vertical layout</h1>", ContentMode.HTML));
         layout.addComponent(new Label("Next row"));
         addComponent(layout);
 
@@ -27,13 +26,11 @@ public class MarginsInLabels extends AbstractTestUI {
         addComponent(layout);
 
         TabSheet tabSheet = new TabSheet();
-        tabSheet.addTab(new Label("<h1>Tabsheet</h1>", ContentMode.HTML),
-                "Label");
+        tabSheet.addTab(new Label("<h1>Tabsheet</h1>", ContentMode.HTML), "Label");
         addComponent(tabSheet);
 
         Accordion accordion = new Accordion();
-        accordion.addTab(new Label("<h1>Accordion</h1>", ContentMode.HTML),
-                "Label");
+        accordion.addTab(new Label("<h1>Accordion</h1>", ContentMode.HTML), "Label");
         addComponent(accordion);
     }
 

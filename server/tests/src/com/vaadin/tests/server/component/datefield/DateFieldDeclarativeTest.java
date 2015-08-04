@@ -82,9 +82,6 @@ public class DateFieldDeclarativeTest extends DeclarativeTestBase<DateField> {
     @Test
     public void writeYearResolution() {
         // Writing is always done in full resolution..
-        testWrite(
-                getYearResolutionDesign().replace("2020",
-                        "2020-01-01 00:00:00+0200"),
-                getYearResolutionExpected());
+        testWrite(getYearResolutionDesign().replace("2020", "2020-01-01 00:00:00+0200"), getYearResolutionExpected());
     }
 }

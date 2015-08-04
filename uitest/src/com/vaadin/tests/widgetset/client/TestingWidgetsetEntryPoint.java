@@ -37,11 +37,9 @@ public class TestingWidgetsetEntryPoint implements EntryPoint {
 
     private void addDummyDebugWindowSection() {
         VDebugWindow.get().addSection(new Section() {
-            private final DebugButton tabButton = new DebugButton(Icon.ERROR,
-                    "Dummy debug window section");
+            private final DebugButton tabButton = new DebugButton(Icon.ERROR, "Dummy debug window section");
             private final Label controls = new Label("");
-            private final Label contents = new Label(
-                    "Dummy debug window section");
+            private final Label contents = new Label("Dummy debug window section");
 
             @Override
             public DebugButton getTabButton() {

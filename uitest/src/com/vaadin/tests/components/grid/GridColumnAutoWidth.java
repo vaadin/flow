@@ -31,13 +31,11 @@ public class GridColumnAutoWidth extends AbstractTestUI {
         grid.getColumn("fixed width narrow").setWidth(50);
         grid.getColumn("fixed width wide").setWidth(200);
 
-        for (Object propertyId : grid.getContainerDataSource()
-                .getContainerPropertyIds()) {
+        for (Object propertyId : grid.getContainerDataSource().getContainerPropertyIds()) {
             Column column = grid.getColumn(propertyId);
             column.setExpandRatio(0);
             column.setRenderer(new HtmlRenderer());
-            grid.getHeaderRow(0).getCell(propertyId)
-                    .setHtml("<span>" + column.getHeaderCaption() + "</span>");
+            grid.getHeaderRow(0).getCell(propertyId).setHtml("<span>" + column.getHeaderCaption() + "</span>");
         }
 
         grid.setSelectionMode(SelectionMode.NONE);
@@ -47,16 +45,11 @@ public class GridColumnAutoWidth extends AbstractTestUI {
 
     private static Container.Indexed createContainer() {
         IndexedContainer c = new IndexedContainer();
-        c.addContainerProperty("equal width", String.class,
-                "<span>equal width</span>");
-        c.addContainerProperty("short", String.class,
-                "<span>a very long cell content</span>");
-        c.addContainerProperty("a very long header content", String.class,
-                "<span>short</span>");
-        c.addContainerProperty("fixed width narrow", String.class,
-                "<span>fixed width narrow</span>");
-        c.addContainerProperty("fixed width wide", String.class,
-                "<span>fixed width wide</span>");
+        c.addContainerProperty("equal width", String.class, "<span>equal width</span>");
+        c.addContainerProperty("short", String.class, "<span>a very long cell content</span>");
+        c.addContainerProperty("a very long header content", String.class, "<span>short</span>");
+        c.addContainerProperty("fixed width narrow", String.class, "<span>fixed width narrow</span>");
+        c.addContainerProperty("fixed width wide", String.class, "<span>fixed width wide</span>");
         c.addItem();
         return c;
     }

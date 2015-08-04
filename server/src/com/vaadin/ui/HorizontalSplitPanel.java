@@ -53,8 +53,7 @@ public class HorizontalSplitPanel extends AbstractSplitPanel {
      * @param secondComponent
      *            The component to be placed to the right of the splitter
      */
-    public HorizontalSplitPanel(Component firstComponent,
-            Component secondComponent) {
+    public HorizontalSplitPanel(Component firstComponent, Component secondComponent) {
         this();
         setFirstComponent(firstComponent);
         setSecondComponent(secondComponent);

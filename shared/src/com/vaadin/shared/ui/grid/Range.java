@@ -60,8 +60,7 @@ public final class Range implements Serializable {
      * @throws IllegalArgumentException
      *             if <code>start &gt; end</code>
      */
-    public static Range between(final int start, final int end)
-            throws IllegalArgumentException {
+    public static Range between(final int start, final int end) throws IllegalArgumentException {
         return new Range(start, end);
     }
 
@@ -77,8 +76,7 @@ public final class Range implements Serializable {
      * @throws IllegalArgumentException
      *             if length &lt; 0
      */
-    public static Range withLength(final int start, final int length)
-            throws IllegalArgumentException {
+    public static Range withLength(final int start, final int length) throws IllegalArgumentException {
         if (length < 0) {
             /*
              * The constructor of Range will throw an exception if start >
@@ -100,11 +98,9 @@ public final class Range implements Serializable {
      * @throws IllegalArgumentException
      *             if <code>start &gt; end</code>
      */
-    private Range(final int start, final int end)
-            throws IllegalArgumentException {
+    private Range(final int start, final int end) throws IllegalArgumentException {
         if (start > end) {
-            throw new IllegalArgumentException(
-                    "start must not be greater than end");
+            throw new IllegalArgumentException("start must not be greater than end");
         }
 
         this.start = start;
@@ -228,8 +224,7 @@ public final class Range implements Serializable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [" + getStart() + ".." + getEnd()
-                + "[" + (isEmpty() ? " (empty)" : "");
+        return getClass().getSimpleName() + " [" + getStart() + ".." + getEnd() + "[" + (isEmpty() ? " (empty)" : "");
     }
 
     @Override
@@ -332,8 +327,7 @@ public final class Range implements Serializable {
         } else if (integer >= end) {
             return new Range[] { this, Range.withLength(end, 0) };
         } else {
-            return new Range[] { new Range(start, integer),
-                    new Range(integer, end) };
+            return new Range[] { new Range(start, integer), new Range(integer, end) };
         }
     }
 
@@ -374,12 +368,10 @@ public final class Range implements Serializable {
      */
     public Range combineWith(Range other) throws IllegalArgumentException {
         if (getStart() > other.getEnd() || other.getStart() > getEnd()) {
-            throw new IllegalArgumentException("There is a gap between " + this
-                    + " and " + other);
+            throw new IllegalArgumentException("There is a gap between " + this + " and " + other);
         }
 
-        return Range.between(Math.min(getStart(), other.getStart()),
-                Math.max(getEnd(), other.getEnd()));
+        return Range.between(Math.min(getStart(), other.getStart()), Math.max(getEnd(), other.getEnd()));
     }
 
     /**
@@ -395,8 +387,7 @@ public final class Range implements Serializable {
      * @throws IllegalArgumentException
      *             if the new range would have <code>start &gt; end</code>
      */
-    public Range expand(int startDelta, int endDelta)
-            throws IllegalArgumentException {
+    public Range expand(int startDelta, int endDelta) throws IllegalArgumentException {
         return Range.between(getStart() - startDelta, getEnd() + endDelta);
     }
 
@@ -417,8 +408,7 @@ public final class Range implements Serializable {
     public Range restrictTo(Range bounds) {
         boolean startWithin = bounds.contains(getStart());
         boolean endWithin = bounds.contains(getEnd());
-        boolean boundsWithin = getStart() < bounds.getStart()
-                && getEnd() >= bounds.getEnd();
+        boolean boundsWithin = getStart() < bounds.getStart() && getEnd() >= bounds.getEnd();
 
         if (startWithin) {
             if (endWithin) {

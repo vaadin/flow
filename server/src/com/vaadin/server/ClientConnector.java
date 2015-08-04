@@ -55,8 +55,7 @@ public interface ClientConnector extends Connector {
      * 
      */
     public static interface AttachListener extends ConnectorEventListener {
-        public static final Method attachMethod = ReflectTools.findMethod(
-                AttachListener.class, "attach", AttachEvent.class);
+        public static final Method attachMethod = ReflectTools.findMethod(AttachListener.class, "attach", AttachEvent.class);
 
         /**
          * Called when a AttachListener is notified of a AttachEvent.
@@ -83,8 +82,7 @@ public interface ClientConnector extends Connector {
      * 
      */
     public static interface DetachListener extends ConnectorEventListener {
-        public static final Method detachMethod = ReflectTools.findMethod(
-                DetachListener.class, "detach", DetachEvent.class);
+        public static final Method detachMethod = ReflectTools.findMethod(DetachListener.class, "detach", DetachEvent.class);
 
         /**
          * Called when a DetachListener is notified of a DetachEvent.
@@ -108,8 +106,7 @@ public interface ClientConnector extends Connector {
      * to find the connector where the error occurred or {@link #getComponent()}
      * to find the nearest parent component.
      */
-    public static class ConnectorErrorEvent extends
-            com.vaadin.server.ErrorEvent {
+    public static class ConnectorErrorEvent extends com.vaadin.server.ErrorEvent {
 
         private Connector connector;
 
@@ -304,8 +301,7 @@ public interface ClientConnector extends Connector {
      * @throws IOException
      *             if there is a problem generating a response.
      */
-    public boolean handleConnectorRequest(VaadinRequest request,
-            VaadinResponse response, String path) throws IOException;
+    public boolean handleConnectorRequest(VaadinRequest request, VaadinResponse response, String path) throws IOException;
 
     /**
      * Returns the RPC manager instance to use when receiving calls for an RPC

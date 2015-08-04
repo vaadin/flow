@@ -49,18 +49,14 @@ public class TooltipInWindowTest extends TooltipTest {
         return getDriver().findElement(By.className("v-tooltip"));
     }
 
-    private void ensureVisibleTooltipPositionedCorrectly(WebElement textfield)
-            throws InterruptedException {
+    private void ensureVisibleTooltipPositionedCorrectly(WebElement textfield) throws InterruptedException {
         int tooltipX = getTooltip().getLocation().getX();
         int textfieldX = textfield.getLocation().getX();
-        assertGreaterOrEqual("Tooltip should be positioned on the textfield ("
-                + tooltipX + " < " + textfieldX + ")", tooltipX, textfieldX);
+        assertGreaterOrEqual("Tooltip should be positioned on the textfield (" + tooltipX + " < " + textfieldX + ")", tooltipX, textfieldX);
     }
 
     private void ensureHiddenTooltipPositionedCorrectly() {
         int tooltipX = getTooltipContainerElement().getLocation().getX();
-        assertLessThanOrEqual(
-                "Tooltip should be positioned outside of viewport (was at "
-                        + tooltipX + ")", tooltipX, -1000);
+        assertLessThanOrEqual("Tooltip should be positioned outside of viewport (was at " + tooltipX + ")", tooltipX, -1000);
     }
 }

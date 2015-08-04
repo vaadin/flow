@@ -102,8 +102,7 @@ public class Video extends AbstractMedia {
         Elements elems = design.getElementsByTag("poster");
         for (Element poster : elems) {
             if (getPoster() == null && poster.hasAttr("href")) {
-                setPoster(DesignAttributeHandler.readAttribute("href",
-                        poster.attributes(), Resource.class));
+                setPoster(DesignAttributeHandler.readAttribute("href", poster.attributes(), Resource.class));
             }
             poster.remove();
         }
@@ -117,8 +116,7 @@ public class Video extends AbstractMedia {
         super.writeDesign(design, designContext);
         if (getPoster() != null) {
             Attributes attr = design.appendElement("poster").attributes();
-            DesignAttributeHandler.writeAttribute("href", attr, getPoster(),
-                    null, Resource.class);
+            DesignAttributeHandler.writeAttribute("href", attr, getPoster(), null, Resource.class);
         }
     }
 

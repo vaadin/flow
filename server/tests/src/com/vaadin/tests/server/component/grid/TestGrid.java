@@ -51,10 +51,8 @@ public class TestGrid extends Grid {
 
     private void init() {
         UI mockUI = EasyMock.createNiceMock(UI.class);
-        ConnectorTracker mockCT = EasyMock
-                .createNiceMock(ConnectorTracker.class);
-        EasyMock.expect(mockUI.getConnectorTracker()).andReturn(mockCT)
-                .anyTimes();
+        ConnectorTracker mockCT = EasyMock.createNiceMock(ConnectorTracker.class);
+        EasyMock.expect(mockUI.getConnectorTracker()).andReturn(mockCT).anyTimes();
         EasyMock.replay(mockUI, mockCT);
 
         setParent(mockUI);

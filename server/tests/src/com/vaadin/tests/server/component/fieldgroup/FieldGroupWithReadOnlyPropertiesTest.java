@@ -18,8 +18,7 @@ public class FieldGroupWithReadOnlyPropertiesTest {
     @Test
     public void bindReadOnlyPropertyToFieldGroup() {
         BeanWithReadOnlyField bean = new BeanWithReadOnlyField();
-        BeanItem<BeanWithReadOnlyField> beanItem = new BeanItem<BeanWithReadOnlyField>(
-                bean);
+        BeanItem<BeanWithReadOnlyField> beanItem = new BeanItem<BeanWithReadOnlyField>(bean);
         beanItem.getItemProperty("readOnlyField").setReadOnly(true);
 
         FieldGroup fieldGroup = new FieldGroup(beanItem);
@@ -32,8 +31,7 @@ public class FieldGroupWithReadOnlyPropertiesTest {
     @Test
     public void fieldGroupSetReadOnlyTest() {
         BeanWithReadOnlyField bean = new BeanWithReadOnlyField();
-        BeanItem<BeanWithReadOnlyField> beanItem = new BeanItem<BeanWithReadOnlyField>(
-                bean);
+        BeanItem<BeanWithReadOnlyField> beanItem = new BeanItem<BeanWithReadOnlyField>(bean);
         beanItem.getItemProperty("readOnlyField").setReadOnly(true);
 
         FieldGroup fieldGroup = new FieldGroup(beanItem);

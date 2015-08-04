@@ -28,8 +28,7 @@ public class PreserveWithExpiredHeartbeat extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        Label label = new Label("UI with id " + getUIId() + " in session "
-                + getSession().getSession().getId());
+        Label label = new Label("UI with id " + getUIId() + " in session " + getSession().getSession().getId());
         label.setId("idLabel");
         addComponent(label);
     }

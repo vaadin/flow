@@ -51,8 +51,7 @@ public abstract class ReconnectTest extends MultiBrowserTestWithProxy {
     }
 
     @Test
-    public void messageIsNotSentBeforeConnectionIsEstablished()
-            throws JSchException, InterruptedException {
+    public void messageIsNotSentBeforeConnectionIsEstablished() throws JSchException, InterruptedException {
         disconnectProxy();
 
         waitForNextReconnectionAttempt();

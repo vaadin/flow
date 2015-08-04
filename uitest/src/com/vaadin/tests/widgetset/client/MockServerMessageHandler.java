@@ -26,8 +26,7 @@ public class MockServerMessageHandler extends ServerMessageHandler {
 
     @Override
     public void handleJSON(ValueMap json) {
-        lastCsrfTokenReceiver = json
-                .getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
+        lastCsrfTokenReceiver = json.getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
 
         super.handleJSON(json);
     }

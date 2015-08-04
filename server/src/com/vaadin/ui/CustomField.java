@@ -43,8 +43,7 @@ import com.vaadin.data.Property;
  * 
  * @since 7.0
  */
-public abstract class CustomField<T> extends AbstractField<T> implements
-        HasComponents {
+public abstract class CustomField<T> extends AbstractField<T> implements HasComponents {
 
     /**
      * The root component implementing the custom component.
@@ -125,8 +124,7 @@ public abstract class CustomField<T> extends AbstractField<T> implements
 
     // ComponentContainer methods
 
-    private class ComponentIterator implements Iterator<Component>,
-            Serializable {
+    private class ComponentIterator implements Iterator<Component>, Serializable {
         boolean first = (root != null);
 
         @Override

@@ -77,17 +77,14 @@ public class GridColumns {
     @Test
     public void testColumnGeneration() throws Exception {
 
-        for (Object propertyId : grid.getContainerDataSource()
-                .getContainerPropertyIds()) {
+        for (Object propertyId : grid.getContainerDataSource().getContainerPropertyIds()) {
 
             // All property ids should get a column
             Column column = grid.getColumn(propertyId);
             assertNotNull(column);
 
             // Humanized property id should be the column header by default
-            assertEquals(
-                    SharedUtil.camelCaseToHumanFriendly(propertyId.toString()),
-                    grid.getDefaultHeaderRow().getCell(propertyId).getText());
+            assertEquals(SharedUtil.camelCaseToHumanFriendly(propertyId.toString()), grid.getDefaultHeaderRow().getCell(propertyId).getText());
         }
     }
 
@@ -100,8 +97,7 @@ public class GridColumns {
 
         column.setHeaderCaption("CustomHeader");
         assertEquals("CustomHeader", column.getHeaderCaption());
-        assertEquals(column.getHeaderCaption(), grid.getDefaultHeaderRow()
-                .getCell("column1").getText());
+        assertEquals(column.getHeaderCaption(), grid.getDefaultHeaderRow().getCell("column1").getText());
 
         column.setWidth(100);
         assertEquals(100, column.getWidth(), 0.49d);
@@ -119,8 +115,7 @@ public class GridColumns {
     }
 
     @Test
-    public void testRemovingColumnByRemovingPropertyFromContainer()
-            throws Exception {
+    public void testRemovingColumnByRemovingPropertyFromContainer() throws Exception {
 
         Column column = grid.getColumn("column1");
         assertNotNull(column);
@@ -149,8 +144,7 @@ public class GridColumns {
 
     @Test
     public void testAddingColumnByAddingPropertyToContainer() throws Exception {
-        grid.getContainerDataSource().addContainerProperty("columnX",
-                String.class, "");
+        grid.getContainerDataSource().addContainerProperty("columnX", String.class, "");
         Column column = grid.getColumn("columnX");
         assertNotNull(column);
     }
@@ -187,45 +181,34 @@ public class GridColumns {
 
     @Test
     public void testSetFrozenColumnCount() {
-        assertEquals("Grid should not start with a frozen column", 0,
-                grid.getFrozenColumnCount());
+        assertEquals("Grid should not start with a frozen column", 0, grid.getFrozenColumnCount());
         grid.setFrozenColumnCount(2);
-        assertEquals("Freezing two columns should freeze two columns", 2,
-                grid.getFrozenColumnCount());
+        assertEquals("Freezing two columns should freeze two columns", 2, grid.getFrozenColumnCount());
     }
 
     @Test
     public void testSetFrozenColumnCountThroughColumn() {
-        assertEquals("Grid should not start with a frozen column", 0,
-                grid.getFrozenColumnCount());
+        assertEquals("Grid should not start with a frozen column", 0, grid.getFrozenColumnCount());
         grid.getColumns().get(2).setLastFrozenColumn();
-        assertEquals(
-                "Setting the third column as last frozen should freeze three columns",
-                3, grid.getFrozenColumnCount());
+        assertEquals("Setting the third column as last frozen should freeze three columns", 3, grid.getFrozenColumnCount());
     }
 
     @Test
     public void testFrozenColumnRemoveColumn() {
-        assertEquals("Grid should not start with a frozen column", 0,
-                grid.getFrozenColumnCount());
+        assertEquals("Grid should not start with a frozen column", 0, grid.getFrozenColumnCount());
 
-        int containerSize = grid.getContainerDataSource()
-                .getContainerPropertyIds().size();
+        int containerSize = grid.getContainerDataSource().getContainerPropertyIds().size();
         grid.setFrozenColumnCount(containerSize);
 
-        Object propertyId = grid.getContainerDataSource()
-                .getContainerPropertyIds().iterator().next();
+        Object propertyId = grid.getContainerDataSource().getContainerPropertyIds().iterator().next();
 
         grid.getContainerDataSource().removeContainerProperty(propertyId);
-        assertEquals(
-                "Frozen column count should update when removing last row",
-                containerSize - 1, grid.getFrozenColumnCount());
+        assertEquals("Frozen column count should update when removing last row", containerSize - 1, grid.getFrozenColumnCount());
     }
 
     @Test
     public void testReorderColumns() {
-        Set<?> containerProperties = new LinkedHashSet<Object>(grid
-                .getContainerDataSource().getContainerPropertyIds());
+        Set<?> containerProperties = new LinkedHashSet<Object>(grid.getContainerDataSource().getContainerPropertyIds());
         Object[] properties = new Object[] { "column3", "column2", "column6" };
         grid.setColumnOrder(properties);
 
@@ -233,14 +216,12 @@ public class GridColumns {
         // Test sorted columns are first in order
         for (Object property : properties) {
             containerProperties.remove(property);
-            assertEquals(columnIdMapper.key(property),
-                    state.columnOrder.get(i++));
+            assertEquals(columnIdMapper.key(property), state.columnOrder.get(i++));
         }
 
         // Test remaining columns are in original order
         for (Object property : containerProperties) {
-            assertEquals(columnIdMapper.key(property),
-                    state.columnOrder.get(i++));
+            assertEquals(columnIdMapper.key(property), state.columnOrder.get(i++));
         }
 
         try {
@@ -259,8 +240,7 @@ public class GridColumns {
     @Test(expected = IllegalStateException.class)
     public void testSetNonSortableColumnSortable() {
         Column noSortColumn = grid.getColumn("noSort");
-        assertFalse("Object property column should not be sortable.",
-                noSortColumn.isSortable());
+        assertFalse("Object property column should not be sortable.", noSortColumn.isSortable());
         noSortColumn.setSortable(true);
     }
 
@@ -275,8 +255,7 @@ public class GridColumns {
     public void testPropertyAndColumnEditorFieldsMatch() {
         Column column1 = grid.getColumn("column1");
         column1.setEditorField(new TextField());
-        assertSame(column1.getEditorField(), grid.getColumn("column1")
-                .getEditorField());
+        assertSame(column1.getEditorField(), grid.getColumn("column1").getEditorField());
 
         Column column2 = grid.getColumn("column2");
         column2.setEditorField(new TextField());
@@ -290,8 +269,7 @@ public class GridColumns {
         col.setEditable(false);
 
         assertFalse("Column should be uneditable", col.isEditable());
-        assertNull("Uneditable column should not be auto-assigned a Field",
-                col.getEditorField());
+        assertNull("Uneditable column should not be auto-assigned a Field", col.getEditorField());
     }
 
     private GridColumnState getColumnState(Object propertyId) {
@@ -309,8 +287,7 @@ public class GridColumns {
         boolean sortable = grid.getColumn("column1").isSortable();
         grid.removeColumn("column1");
         grid.addColumn("column1");
-        assertEquals("Column sortability changed when re-adding", sortable,
-                grid.getColumn("column1").isSortable());
+        assertEquals("Column sortability changed when re-adding", sortable, grid.getColumn("column1").isSortable());
     }
 
     @Test
@@ -351,7 +328,6 @@ public class GridColumns {
         Column firstColumn = grid.getColumns().get(0);
         firstColumn.setHidingToggleCaption("hidingToggleCaption");
         firstColumn.setHeaderCaption("headerCaption");
-        assertEquals("hidingToggleCaption",
-                firstColumn.getHidingToggleCaption());
+        assertEquals("hidingToggleCaption", firstColumn.getHidingToggleCaption());
     }
 }

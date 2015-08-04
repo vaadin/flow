@@ -36,8 +36,7 @@ import com.vaadin.shared.ui.textfield.TextFieldConstants;
 import com.vaadin.ui.declarative.DesignAttributeHandler;
 import com.vaadin.ui.declarative.DesignContext;
 
-public abstract class AbstractTextField extends AbstractField<String> implements
-        BlurNotifier, FocusNotifier, TextChangeNotifier {
+public abstract class AbstractTextField extends AbstractField<String> implements BlurNotifier, FocusNotifier, TextChangeNotifier {
 
     /**
      * Null representation.
@@ -323,13 +322,11 @@ public abstract class AbstractTextField extends AbstractField<String> implements
              * case textChangeEventPending flag is already on and text change
              * event will be fired after the value change event.
              */
-            if (newValue == null && lastKnownTextContent != null
-                    && !lastKnownTextContent.equals(getNullRepresentation())) {
+            if (newValue == null && lastKnownTextContent != null && !lastKnownTextContent.equals(getNullRepresentation())) {
                 // Value was changed from something to null representation
                 lastKnownTextContent = getNullRepresentation();
                 textChangeEventPending = true;
-            } else if (newValue != null
-                    && !newValue.toString().equals(lastKnownTextContent)) {
+            } else if (newValue != null && !newValue.toString().equals(lastKnownTextContent)) {
                 // Value was changed to something else than null representation
                 lastKnownTextContent = newValue.toString();
                 textChangeEventPending = true;
@@ -425,8 +422,7 @@ public abstract class AbstractTextField extends AbstractField<String> implements
 
     @Override
     public void addTextChangeListener(TextChangeListener listener) {
-        addListener(TextChangeListener.EVENT_ID, TextChangeEvent.class,
-                listener, TextChangeListener.EVENT_METHOD);
+        addListener(TextChangeListener.EVENT_ID, TextChangeEvent.class, listener, TextChangeListener.EVENT_METHOD);
     }
 
     /**
@@ -441,8 +437,7 @@ public abstract class AbstractTextField extends AbstractField<String> implements
 
     @Override
     public void removeTextChangeListener(TextChangeListener listener) {
-        removeListener(TextChangeListener.EVENT_ID, TextChangeEvent.class,
-                listener);
+        removeListener(TextChangeListener.EVENT_ID, TextChangeEvent.class, listener);
     }
 
     /**
@@ -594,8 +589,7 @@ public abstract class AbstractTextField extends AbstractField<String> implements
 
     @Override
     public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
-                FocusListener.focusMethod);
+        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
     }
 
     /**
@@ -625,8 +619,7 @@ public abstract class AbstractTextField extends AbstractField<String> implements
 
     @Override
     public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
-                BlurListener.blurMethod);
+        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
     }
 
     /**
@@ -664,8 +657,7 @@ public abstract class AbstractTextField extends AbstractField<String> implements
         super.readDesign(design, designContext);
         Attributes attr = design.attributes();
         if (attr.hasKey("maxlength")) {
-            setMaxLength(DesignAttributeHandler.readAttribute("maxlength",
-                    attr, Integer.class));
+            setMaxLength(DesignAttributeHandler.readAttribute("maxlength", attr, Integer.class));
         }
     }
 
@@ -693,11 +685,9 @@ public abstract class AbstractTextField extends AbstractField<String> implements
     @Override
     public void writeDesign(Element design, DesignContext designContext) {
         super.writeDesign(design, designContext);
-        AbstractTextField def = (AbstractTextField) designContext
-                .getDefaultInstance(this);
+        AbstractTextField def = (AbstractTextField) designContext.getDefaultInstance(this);
         Attributes attr = design.attributes();
-        DesignAttributeHandler.writeAttribute("maxlength", attr,
-                getMaxLength(), def.getMaxLength(), Integer.class);
+        DesignAttributeHandler.writeAttribute("maxlength", attr, getMaxLength(), def.getMaxLength(), Integer.class);
     }
 
 }

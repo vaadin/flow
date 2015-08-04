@@ -42,8 +42,7 @@ import com.vaadin.data.Property;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class ContainerOrderedWrapper implements Container.Ordered,
-        Container.ItemSetChangeNotifier, Container.PropertySetChangeNotifier {
+public class ContainerOrderedWrapper implements Container.Ordered, Container.ItemSetChangeNotifier, Container.PropertySetChangeNotifier {
 
     /**
      * The wrapped container
@@ -323,8 +322,7 @@ public class ContainerOrderedWrapper implements Container.Ordered,
      *         if not
      */
     @Override
-    public boolean addContainerProperty(Object propertyId, Class<?> type,
-            Object defaultValue) throws UnsupportedOperationException {
+    public boolean addContainerProperty(Object propertyId, Class<?> type, Object defaultValue) throws UnsupportedOperationException {
 
         return container.addContainerProperty(propertyId, type, defaultValue);
     }
@@ -398,8 +396,7 @@ public class ContainerOrderedWrapper implements Container.Ordered,
      *             if the removeItem is not supported.
      */
     @Override
-    public boolean removeItem(Object itemId)
-            throws UnsupportedOperationException {
+    public boolean removeItem(Object itemId) throws UnsupportedOperationException {
 
         final boolean success = container.removeItem(itemId);
         if (!ordered && success) {
@@ -423,8 +420,7 @@ public class ContainerOrderedWrapper implements Container.Ordered,
      *             if the removeContainerProperty is not supported.
      */
     @Override
-    public boolean removeContainerProperty(Object propertyId)
-            throws UnsupportedOperationException {
+    public boolean removeContainerProperty(Object propertyId) throws UnsupportedOperationException {
         return container.removeContainerProperty(propertyId);
     }
 
@@ -495,8 +491,7 @@ public class ContainerOrderedWrapper implements Container.Ordered,
     public int size() {
         int newSize = container.size();
         assert newSize >= 0;
-        if (lastKnownSize != -1 && newSize != lastKnownSize
-                && !(container instanceof Container.ItemSetChangeNotifier)) {
+        if (lastKnownSize != -1 && newSize != lastKnownSize && !(container instanceof Container.ItemSetChangeNotifier)) {
             // Update the internal cache when the size of the container changes
             // and the container is incapable of sending ItemSetChangeEvents
             updateOrderWrapper();
@@ -511,11 +506,9 @@ public class ContainerOrderedWrapper implements Container.Ordered,
      * interface.
      */
     @Override
-    public void addItemSetChangeListener(
-            Container.ItemSetChangeListener listener) {
+    public void addItemSetChangeListener(Container.ItemSetChangeListener listener) {
         if (container instanceof Container.ItemSetChangeNotifier) {
-            ((Container.ItemSetChangeNotifier) container)
-                    .addItemSetChangeListener(new PiggybackListener(listener));
+            ((Container.ItemSetChangeNotifier) container).addItemSetChangeListener(new PiggybackListener(listener));
         }
     }
 
@@ -535,11 +528,9 @@ public class ContainerOrderedWrapper implements Container.Ordered,
      * interface.
      */
     @Override
-    public void removeItemSetChangeListener(
-            Container.ItemSetChangeListener listener) {
+    public void removeItemSetChangeListener(Container.ItemSetChangeListener listener) {
         if (container instanceof Container.ItemSetChangeNotifier) {
-            ((Container.ItemSetChangeNotifier) container)
-                    .removeItemSetChangeListener(new PiggybackListener(listener));
+            ((Container.ItemSetChangeNotifier) container).removeItemSetChangeListener(new PiggybackListener(listener));
         }
     }
 
@@ -559,12 +550,9 @@ public class ContainerOrderedWrapper implements Container.Ordered,
      * implemented interface.
      */
     @Override
-    public void addPropertySetChangeListener(
-            Container.PropertySetChangeListener listener) {
+    public void addPropertySetChangeListener(Container.PropertySetChangeListener listener) {
         if (container instanceof Container.PropertySetChangeNotifier) {
-            ((Container.PropertySetChangeNotifier) container)
-                    .addPropertySetChangeListener(new PiggybackListener(
-                            listener));
+            ((Container.PropertySetChangeNotifier) container).addPropertySetChangeListener(new PiggybackListener(listener));
         }
     }
 
@@ -584,12 +572,9 @@ public class ContainerOrderedWrapper implements Container.Ordered,
      * interface.
      */
     @Override
-    public void removePropertySetChangeListener(
-            Container.PropertySetChangeListener listener) {
+    public void removePropertySetChangeListener(Container.PropertySetChangeListener listener) {
         if (container instanceof Container.PropertySetChangeNotifier) {
-            ((Container.PropertySetChangeNotifier) container)
-                    .removePropertySetChangeListener(new PiggybackListener(
-                            listener));
+            ((Container.PropertySetChangeNotifier) container).removePropertySetChangeListener(new PiggybackListener(listener));
         }
     }
 
@@ -610,8 +595,7 @@ public class ContainerOrderedWrapper implements Container.Ordered,
      * java.lang.Object)
      */
     @Override
-    public Item addItemAfter(Object previousItemId, Object newItemId)
-            throws UnsupportedOperationException {
+    public Item addItemAfter(Object previousItemId, Object newItemId) throws UnsupportedOperationException {
 
         // If the previous item is not in the container, fail
         if (previousItemId != null && !containsId(previousItemId)) {
@@ -635,8 +619,7 @@ public class ContainerOrderedWrapper implements Container.Ordered,
      * @see com.vaadin.data.Container.Ordered#addItemAfter(java.lang.Object)
      */
     @Override
-    public Object addItemAfter(Object previousItemId)
-            throws UnsupportedOperationException {
+    public Object addItemAfter(Object previousItemId) throws UnsupportedOperationException {
 
         // If the previous item is not in the container, fail
         if (previousItemId != null && !containsId(previousItemId)) {
@@ -660,9 +643,7 @@ public class ContainerOrderedWrapper implements Container.Ordered,
      * listener so that the correct listener gets removed.
      * 
      */
-    private class PiggybackListener implements
-            Container.PropertySetChangeListener,
-            Container.ItemSetChangeListener {
+    private class PiggybackListener implements Container.PropertySetChangeListener, Container.ItemSetChangeListener {
 
         Object listener;
 
@@ -673,16 +654,14 @@ public class ContainerOrderedWrapper implements Container.Ordered,
         @Override
         public void containerItemSetChange(ItemSetChangeEvent event) {
             updateOrderWrapper();
-            ((Container.ItemSetChangeListener) listener)
-                    .containerItemSetChange(event);
+            ((Container.ItemSetChangeListener) listener).containerItemSetChange(event);
 
         }
 
         @Override
         public void containerPropertySetChange(PropertySetChangeEvent event) {
             updateOrderWrapper();
-            ((Container.PropertySetChangeListener) listener)
-                    .containerPropertySetChange(event);
+            ((Container.PropertySetChangeListener) listener).containerPropertySetChange(event);
 
         }
 

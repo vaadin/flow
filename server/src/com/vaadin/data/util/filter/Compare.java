@@ -277,9 +277,7 @@ public abstract class Compare implements Filter {
             return (otherValue == value);
         } else if (value == otherValue) {
             return true;
-        } else if (value instanceof Comparable
-                && otherValue.getClass()
-                        .isAssignableFrom(getValue().getClass())) {
+        } else if (value instanceof Comparable && otherValue.getClass().isAssignableFrom(getValue().getClass())) {
             return ((Comparable) value).compareTo(otherValue) == 0;
         } else {
             return value.equals(otherValue);
@@ -292,12 +290,10 @@ public abstract class Compare implements Filter {
             return null == value1 ? 0 : -1;
         } else if (null == value1) {
             return 1;
-        } else if (getValue() instanceof Comparable
-                && value1.getClass().isAssignableFrom(getValue().getClass())) {
+        } else if (getValue() instanceof Comparable && value1.getClass().isAssignableFrom(getValue().getClass())) {
             return -((Comparable) getValue()).compareTo(value1);
         }
-        throw new IllegalArgumentException("Could not compare the arguments: "
-                + value1 + ", " + getValue());
+        throw new IllegalArgumentException("Could not compare the arguments: " + value1 + ", " + getValue());
     }
 
     @Override
@@ -318,21 +314,18 @@ public abstract class Compare implements Filter {
         final Compare o = (Compare) obj;
 
         // Checks the properties one by one
-        if (getPropertyId() != o.getPropertyId() && null != o.getPropertyId()
-                && !o.getPropertyId().equals(getPropertyId())) {
+        if (getPropertyId() != o.getPropertyId() && null != o.getPropertyId() && !o.getPropertyId().equals(getPropertyId())) {
             return false;
         }
         if (getOperation() != o.getOperation()) {
             return false;
         }
-        return (null == getValue()) ? null == o.getValue() : getValue().equals(
-                o.getValue());
+        return (null == getValue()) ? null == o.getValue() : getValue().equals(o.getValue());
     }
 
     @Override
     public int hashCode() {
-        return (null != getPropertyId() ? getPropertyId().hashCode() : 0)
-                ^ (null != getValue() ? getValue().hashCode() : 0);
+        return (null != getPropertyId() ? getPropertyId().hashCode() : 0) ^ (null != getValue() ? getValue().hashCode() : 0);
     }
 
     /**

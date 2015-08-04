@@ -41,17 +41,11 @@ public class SortTest {
 
         @Override
         public void sort(Object[] propertyId, boolean[] ascending) {
-            Assert.assertEquals(
-                    "Different amount of expected and actual properties,",
-                    expectedProperties.length, propertyId.length);
-            Assert.assertEquals(
-                    "Different amount of expected and actual directions",
-                    expectedAscending.length, ascending.length);
+            Assert.assertEquals("Different amount of expected and actual properties,", expectedProperties.length, propertyId.length);
+            Assert.assertEquals("Different amount of expected and actual directions", expectedAscending.length, ascending.length);
             for (int i = 0; i < propertyId.length; ++i) {
-                Assert.assertEquals("Sorting properties differ",
-                        expectedProperties[i], propertyId[i]);
-                Assert.assertEquals("Sorting directions differ",
-                        expectedAscending[i], ascending[i]);
+                Assert.assertEquals("Sorting properties differ", expectedProperties[i], propertyId[i]);
+                Assert.assertEquals("Sorting directions differ", expectedAscending[i], ascending[i]);
             }
             sorted = true;
         }
@@ -107,8 +101,7 @@ public class SortTest {
 
     @After
     public void tearDown() {
-        Assert.assertTrue("Container was not sorted after the test.",
-                container.isSorted());
+        Assert.assertTrue("Container was not sorted after the test.", container.isSorted());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -134,8 +127,7 @@ public class SortTest {
 
     @Test
     public void testGridDirectSortAscending() {
-        container.expectedSort(new Object[] { "foo" },
-                new SortDirection[] { SortDirection.ASCENDING });
+        container.expectedSort(new Object[] { "foo" }, new SortDirection[] { SortDirection.ASCENDING });
         grid.sort("foo");
 
         listener.assertEventFired(new SortOrder("foo", SortDirection.ASCENDING));
@@ -143,8 +135,7 @@ public class SortTest {
 
     @Test
     public void testGridDirectSortDescending() {
-        container.expectedSort(new Object[] { "foo" },
-                new SortDirection[] { SortDirection.DESCENDING });
+        container.expectedSort(new Object[] { "foo" }, new SortDirection[] { SortDirection.DESCENDING });
         grid.sort("foo", SortDirection.DESCENDING);
 
         listener.assertEventFired(new SortOrder("foo", SortDirection.DESCENDING));
@@ -152,16 +143,10 @@ public class SortTest {
 
     @Test
     public void testGridSortBy() {
-        container.expectedSort(new Object[] { "foo", "bar", "baz" },
-                new SortDirection[] { SortDirection.ASCENDING,
-                        SortDirection.ASCENDING, SortDirection.DESCENDING });
-        grid.sort(Sort.by("foo").then("bar")
-                .then("baz", SortDirection.DESCENDING));
+        container.expectedSort(new Object[] { "foo", "bar", "baz" }, new SortDirection[] { SortDirection.ASCENDING, SortDirection.ASCENDING, SortDirection.DESCENDING });
+        grid.sort(Sort.by("foo").then("bar").then("baz", SortDirection.DESCENDING));
 
-        listener.assertEventFired(
-                new SortOrder("foo", SortDirection.ASCENDING), new SortOrder(
-                        "bar", SortDirection.ASCENDING), new SortOrder("baz",
-                        SortDirection.DESCENDING));
+        listener.assertEventFired(new SortOrder("foo", SortDirection.ASCENDING), new SortOrder("bar", SortDirection.ASCENDING), new SortOrder("baz", SortDirection.DESCENDING));
 
     }
 
@@ -170,23 +155,16 @@ public class SortTest {
         class Person {
         }
 
-        container.expectedSort(new Object[] { "foo", "bar", "baz" },
-                new SortDirection[] { SortDirection.ASCENDING,
-                        SortDirection.ASCENDING, SortDirection.DESCENDING });
-        grid.sort(Sort.by("foo").then("bar")
-                .then("baz", SortDirection.DESCENDING));
+        container.expectedSort(new Object[] { "foo", "bar", "baz" }, new SortDirection[] { SortDirection.ASCENDING, SortDirection.ASCENDING, SortDirection.DESCENDING });
+        grid.sort(Sort.by("foo").then("bar").then("baz", SortDirection.DESCENDING));
 
-        listener.assertEventFired(
-                new SortOrder("foo", SortDirection.ASCENDING), new SortOrder(
-                        "bar", SortDirection.ASCENDING), new SortOrder("baz",
-                        SortDirection.DESCENDING));
+        listener.assertEventFired(new SortOrder("foo", SortDirection.ASCENDING), new SortOrder("bar", SortDirection.ASCENDING), new SortOrder("baz", SortDirection.DESCENDING));
 
         container = new DummySortingIndexedContainer();
         container.addContainerProperty("foo", Person.class, null);
         container.addContainerProperty("baz", String.class, "");
         container.addContainerProperty("bar", Person.class, null);
-        container.expectedSort(new Object[] { "baz" },
-                new SortDirection[] { SortDirection.DESCENDING });
+        container.expectedSort(new Object[] { "baz" }, new SortDirection[] { SortDirection.DESCENDING });
         grid.setContainerDataSource(container);
 
         listener.assertEventFired(new SortOrder("baz", SortDirection.DESCENDING));

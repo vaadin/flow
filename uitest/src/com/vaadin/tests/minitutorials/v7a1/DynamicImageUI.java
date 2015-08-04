@@ -19,17 +19,13 @@ public class DynamicImageUI extends AbstractTestUI {
 
     private final RequestHandler requestHandler = new RequestHandler() {
         @Override
-        public boolean handleRequest(VaadinSession session,
-                VaadinRequest request, VaadinResponse response)
-                throws IOException {
+        public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
             if (("/" + IMAGE_URL).equals(request.getPathInfo())) {
                 // Create an image, draw the "text" parameter to it and output
                 // it to the browser.
                 String text = request.getParameter("text");
-                BufferedImage bi = new BufferedImage(100, 30,
-                        BufferedImage.TYPE_3BYTE_BGR);
-                bi.getGraphics().drawChars(text.toCharArray(), 0,
-                        text.length(), 10, 20);
+                BufferedImage bi = new BufferedImage(100, 30, BufferedImage.TYPE_3BYTE_BGR);
+                bi.getGraphics().drawChars(text.toCharArray(), 0, text.length(), 10, 20);
                 response.setContentType("image/png");
                 ImageIO.write(bi, "png", response.getOutputStream());
 

@@ -26,14 +26,10 @@ public class Notifications extends TestBase implements ClickListener {
         type.setNullSelectionAllowed(false);
         type.addContainerProperty(CAPTION, String.class, "");
         type.setItemCaptionPropertyId(CAPTION);
-        type.addItem(Notification.TYPE_HUMANIZED_MESSAGE)
-                .getItemProperty(CAPTION).setValue("Humanized");
-        type.addItem(Notification.TYPE_ERROR_MESSAGE).getItemProperty(CAPTION)
-                .setValue("Error");
-        type.addItem(Notification.TYPE_WARNING_MESSAGE)
-                .getItemProperty(CAPTION).setValue("Warning");
-        type.addItem(Notification.TYPE_TRAY_NOTIFICATION)
-                .getItemProperty(CAPTION).setValue("Tray");
+        type.addItem(Notification.TYPE_HUMANIZED_MESSAGE).getItemProperty(CAPTION).setValue("Humanized");
+        type.addItem(Notification.TYPE_ERROR_MESSAGE).getItemProperty(CAPTION).setValue("Error");
+        type.addItem(Notification.TYPE_WARNING_MESSAGE).getItemProperty(CAPTION).setValue("Warning");
+        type.addItem(Notification.TYPE_TRAY_NOTIFICATION).getItemProperty(CAPTION).setValue("Tray");
         type.setValue(type.getItemIds().iterator().next());
         addComponent(type);
         Button showNotification = new Button("Show notification", this);

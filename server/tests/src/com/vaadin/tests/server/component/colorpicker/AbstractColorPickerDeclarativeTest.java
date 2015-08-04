@@ -24,14 +24,11 @@ import com.vaadin.ui.AbstractColorPicker.PopupStyle;
 import com.vaadin.ui.ColorPicker;
 import com.vaadin.ui.ColorPickerArea;
 
-public class AbstractColorPickerDeclarativeTest extends
-        DeclarativeTestBase<AbstractColorPicker> {
+public class AbstractColorPickerDeclarativeTest extends DeclarativeTestBase<AbstractColorPicker> {
 
     @Test
     public void testAllAbstractColorPickerFeatures() {
-        String design = "<v-color-picker color='#fafafa' default-caption-enabled='' position='100,100'"
-                + " popup-style='simple' rgb-visibility='false' hsv-visibility='false'"
-                + " history-visibility=false textfield-visibility=false />";
+        String design = "<v-color-picker color='#fafafa' default-caption-enabled='' position='100,100'" + " popup-style='simple' rgb-visibility='false' hsv-visibility='false'" + " history-visibility=false textfield-visibility=false />";
         ColorPicker colorPicker = new ColorPicker();
         int colorInt = Integer.parseInt("fafafa", 16);
         colorPicker.setColor(new Color(colorInt));
@@ -58,9 +55,7 @@ public class AbstractColorPickerDeclarativeTest extends
 
     @Test
     public void testAllAbstractColorPickerAreaFeatures() {
-        String design = "<v-color-picker-area color='#fafafa' default-caption-enabled='' position='100,100'"
-                + " popup-style='simple' rgb-visibility='false' hsv-visibility='false'"
-                + " history-visibility=false textfield-visibility=false />";
+        String design = "<v-color-picker-area color='#fafafa' default-caption-enabled='' position='100,100'" + " popup-style='simple' rgb-visibility='false' hsv-visibility='false'" + " history-visibility=false textfield-visibility=false />";
         AbstractColorPicker colorPicker = new ColorPickerArea();
         int colorInt = Integer.parseInt("fafafa", 16);
         colorPicker.setColor(new Color(colorInt));

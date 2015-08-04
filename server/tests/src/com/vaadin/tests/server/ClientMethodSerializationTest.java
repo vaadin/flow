@@ -35,20 +35,13 @@ import elemental.json.impl.JsonUtil;
 
 public class ClientMethodSerializationTest extends TestCase {
 
-    private static final Method JAVASCRIPT_CALLBACK_METHOD = ReflectTools
-            .findMethod(JavaScriptCallbackRpc.class, "call", String.class,
-                    JsonArray.class);
+    private static final Method JAVASCRIPT_CALLBACK_METHOD = ReflectTools.findMethod(JavaScriptCallbackRpc.class, "call", String.class, JsonArray.class);
 
-    private static final Method BASIC_PARAMS_CALL_METHOD = ReflectTools
-            .findMethod(ClientMethodSerializationTest.class,
-                    "basicParamsMethodForTesting", String.class, Integer.class);
+    private static final Method BASIC_PARAMS_CALL_METHOD = ReflectTools.findMethod(ClientMethodSerializationTest.class, "basicParamsMethodForTesting", String.class, Integer.class);
 
-    private static final Method NO_PARAMS_CALL_METHOD = ReflectTools
-            .findMethod(ClientMethodSerializationTest.class,
-                    "noParamsMethodForTesting");
+    private static final Method NO_PARAMS_CALL_METHOD = ReflectTools.findMethod(ClientMethodSerializationTest.class, "noParamsMethodForTesting");
 
-    public void basicParamsMethodForTesting(String stringParam,
-            Integer integerParam) {
+    public void basicParamsMethodForTesting(String stringParam, Integer integerParam) {
     }
 
     public void noParamsMethodForTesting() {
@@ -59,29 +52,22 @@ public class ClientMethodSerializationTest extends TestCase {
      * {@link JavaScriptCallbackHelper#invokeCallback(String, Object...)}.
      * #12532
      */
-    public void testClientMethodSerialization_WithJSONArray_ContentStaysSame()
-            throws Exception {
+    public void testClientMethodSerialization_WithJSONArray_ContentStaysSame() throws Exception {
         JsonArray originalArray = Json.createArray();
         originalArray.set(0, "callbackParameter1");
         originalArray.set(1, "callBackParameter2");
         originalArray.set(2, "12345");
-        ClientMethodInvocation original = new ClientMethodInvocation(null,
-                "interfaceName", JAVASCRIPT_CALLBACK_METHOD, new Object[] {
-                        "callBackMethodName", originalArray });
+        ClientMethodInvocation original = new ClientMethodInvocation(null, "interfaceName", JAVASCRIPT_CALLBACK_METHOD, new Object[] { "callBackMethodName", originalArray });
 
         ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(original);
         JsonArray copyArray = (JsonArray) copy.getParameters()[1];
-        assertEquals(JsonUtil.stringify(originalArray),
-                JsonUtil.stringify(copyArray));
+        assertEquals(JsonUtil.stringify(originalArray), JsonUtil.stringify(copyArray));
     }
 
-    public void testClientMethodSerialization_WithBasicParams_NoChanges()
-            throws Exception {
+    public void testClientMethodSerialization_WithBasicParams_NoChanges() throws Exception {
         String stringParam = "a string 123";
         Integer integerParam = 1234567890;
-        ClientMethodInvocation original = new ClientMethodInvocation(null,
-                "interfaceName", BASIC_PARAMS_CALL_METHOD, new Serializable[] {
-                        stringParam, integerParam });
+        ClientMethodInvocation original = new ClientMethodInvocation(null, "interfaceName", BASIC_PARAMS_CALL_METHOD, new Serializable[] { stringParam, integerParam });
         ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(original);
         String copyString = (String) copy.getParameters()[0];
         Integer copyInteger = (Integer) copy.getParameters()[1];
@@ -90,8 +76,7 @@ public class ClientMethodSerializationTest extends TestCase {
     }
 
     public void testClientMethodSerialization_NoParams_NoExceptions() {
-        ClientMethodInvocation original = new ClientMethodInvocation(null,
-                "interfaceName", NO_PARAMS_CALL_METHOD, null);
+        ClientMethodInvocation original = new ClientMethodInvocation(null, "interfaceName", NO_PARAMS_CALL_METHOD, null);
         ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(original);
     }
 
@@ -102,12 +87,10 @@ public class ClientMethodSerializationTest extends TestCase {
             ObjectOutputStream out = new ObjectOutputStream(bs);
             out.writeObject(input);
             byte[] data = bs.toByteArray();
-            ObjectInputStream in = new ObjectInputStream(
-                    new ByteArrayInputStream(data));
+            ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data));
             output = (Serializable) in.readObject();
         } catch (Exception e) {
-            fail("Exception during serialization/deserialization: "
-                    + e.getMessage());
+            fail("Exception during serialization/deserialization: " + e.getMessage());
         }
         return output;
     }

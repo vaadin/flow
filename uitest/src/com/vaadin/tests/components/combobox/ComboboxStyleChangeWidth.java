@@ -35,14 +35,13 @@ public class ComboboxStyleChangeWidth extends AbstractTestUIWithLog {
         cbFoo.setSizeUndefined();
         cbFoo.addItem("A really long string that causes an inline width to be set");
 
-        Button btn = new Button("Click to break CB",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        cbFoo.addStyleName("foofoo");
+        Button btn = new Button("Click to break CB", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                cbFoo.addStyleName("foofoo");
 
-                    }
-                });
+            }
+        });
 
         addComponent(cbFoo);
         addComponent(btn);
@@ -51,10 +50,7 @@ public class ComboboxStyleChangeWidth extends AbstractTestUIWithLog {
 
     @Override
     protected String getTestDescription() {
-        return "The computed inline width of an undefined-width ComboBox "
-                + "(with a sufficiently long option string) breaks when "
-                + "the component's stylename is changed after initial "
-                + "rendering.";
+        return "The computed inline width of an undefined-width ComboBox " + "(with a sufficiently long option string) breaks when " + "the component's stylename is changed after initial " + "rendering.";
     }
 
     @Override

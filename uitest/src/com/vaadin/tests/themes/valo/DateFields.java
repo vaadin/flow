@@ -206,8 +206,7 @@ public class DateFields extends VerticalLayout implements View {
         form.setMargin(false);
 
         FieldGroup binder = new FieldGroup(item);
-        form.addComponent(binder.buildAndBind(
-                "Picker in read-only field group", "date"));
+        form.addComponent(binder.buildAndBind("Picker in read-only field group", "date"));
         binder.setReadOnly(true);
 
         row.addComponent(form);

@@ -11,8 +11,7 @@ import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.TabSheet.Tab;
 
-public class TabSheetTest<T extends TabSheet> extends
-        AbstractComponentContainerTest<T> implements SelectedTabChangeListener {
+public class TabSheetTest<T extends TabSheet> extends AbstractComponentContainerTest<T> implements SelectedTabChangeListener {
 
     private Command<T, Integer> setTabCaption = new Command<T, Integer>() {
 
@@ -116,14 +115,12 @@ public class TabSheetTest<T extends TabSheet> extends
     }
 
     private void createSelectListenerToggle(String category) {
-        createBooleanAction("Selected tab listener", category, false,
-                setSelectedTabListener);
+        createBooleanAction("Selected tab listener", category, false, setSelectedTabListener);
 
     }
 
     private void createCloseHandlerToggle(String category) {
-        createBooleanAction("Close event listener (handler)", category, false,
-                setCloseHandlerListener);
+        createBooleanAction("Close event listener (handler)", category, false, setCloseHandlerListener);
 
     }
 
@@ -134,10 +131,8 @@ public class TabSheetTest<T extends TabSheet> extends
             String tabClosableCategory = "Tab " + i + " closable";
 
             createCategory(tabClosableCategory, closableCategory);
-            createClickAction("true", tabClosableCategory, setTabClosable, i,
-                    true);
-            createClickAction("false", tabClosableCategory, setTabClosable, i,
-                    false);
+            createClickAction("true", tabClosableCategory, setTabClosable, i, true);
+            createClickAction("false", tabClosableCategory, setTabClosable, i, false);
 
         }
     }
@@ -146,8 +141,7 @@ public class TabSheetTest<T extends TabSheet> extends
         String selectTabCategory = "Select tab";
         createCategory(selectTabCategory, category);
         for (int i = 0; i < 20; i++) {
-            createClickAction("Select tab " + i, selectTabCategory, selectTab,
-                    i);
+            createClickAction("Select tab " + i, selectTabCategory, selectTab, i);
 
         }
     }
@@ -158,18 +152,15 @@ public class TabSheetTest<T extends TabSheet> extends
         createCategory(captionCategory, category);
         createCategory(iconCategory, category);
 
-        String captionOptions[] = new String[] { "", "{id}", "Tab {id}",
-                "A long caption for tab {id}" };
+        String captionOptions[] = new String[] { "", "{id}", "Tab {id}", "A long caption for tab {id}" };
         LinkedHashMap<String, Resource> iconOptions = new LinkedHashMap<String, Resource>();
         iconOptions.put("-", null);
         iconOptions.put("16x16 (cachable)", ICON_16_USER_PNG_CACHEABLE);
         iconOptions.put("16x16 (uncachable)", ICON_16_USER_PNG_UNCACHEABLE);
         iconOptions.put("32x32 (cachable)", ICON_32_ATTENTION_PNG_CACHEABLE);
-        iconOptions
-                .put("32x32 (uncachable)", ICON_32_ATTENTION_PNG_UNCACHEABLE);
+        iconOptions.put("32x32 (uncachable)", ICON_32_ATTENTION_PNG_UNCACHEABLE);
         iconOptions.put("64x64 (cachable)", ICON_64_EMAIL_REPLY_PNG_CACHEABLE);
-        iconOptions.put("64x64 (uncachable)",
-                ICON_64_EMAIL_REPLY_PNG_UNCACHEABLE);
+        iconOptions.put("64x64 (uncachable)", ICON_64_EMAIL_REPLY_PNG_UNCACHEABLE);
 
         for (int i = 0; i < 20; i++) {
             String tabCaptionCategory = "Tab " + i + " caption";
@@ -178,21 +169,17 @@ public class TabSheetTest<T extends TabSheet> extends
             createCategory(tabCaptionCategory, captionCategory);
             createCategory(tabIconCategory, iconCategory);
 
-            createClickAction("(null)", tabCaptionCategory, setTabCaption,
-                    Integer.valueOf(i), null);
-            createClickAction("(null)", tabIconCategory, setTabIcon,
-                    Integer.valueOf(i), null);
+            createClickAction("(null)", tabCaptionCategory, setTabCaption, Integer.valueOf(i), null);
+            createClickAction("(null)", tabIconCategory, setTabIcon, Integer.valueOf(i), null);
 
             for (String option : captionOptions) {
                 option = option.replace("{id}", String.valueOf(i));
-                createClickAction(option, tabCaptionCategory, setTabCaption,
-                        Integer.valueOf(i), option);
+                createClickAction(option, tabCaptionCategory, setTabCaption, Integer.valueOf(i), option);
             }
 
             for (String option : iconOptions.keySet()) {
                 Resource icon = iconOptions.get(option);
-                createClickAction(option, tabIconCategory, setTabIcon,
-                        Integer.valueOf(i), icon);
+                createClickAction(option, tabIconCategory, setTabIcon, Integer.valueOf(i), icon);
             }
 
         }
@@ -206,8 +193,7 @@ public class TabSheetTest<T extends TabSheet> extends
     @Override
     public void selectedTabChange(SelectedTabChangeEvent event) {
         TabSheet ts = event.getTabSheet();
-        log("Tab " + ts.getTabPosition(ts.getTab(ts.getSelectedTab()))
-                + " selected");
+        log("Tab " + ts.getTabPosition(ts.getTab(ts.getSelectedTab())) + " selected");
 
     }
 }

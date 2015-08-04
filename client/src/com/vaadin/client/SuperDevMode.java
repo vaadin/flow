@@ -51,77 +51,60 @@ public class SuperDevMode {
         }-*/;
     }
 
-    private static void recompileWidgetsetAndStartInDevMode(
-            final String serverUrl) {
-        getLogger().info(
-                "Recompiling widgetset using<br/>" + serverUrl
-                        + "<br/>and then reloading in super dev mode");
+    private static void recompileWidgetsetAndStartInDevMode(final String serverUrl) {
+        getLogger().info("Recompiling widgetset using<br/>" + serverUrl + "<br/>and then reloading in super dev mode");
         VNotification n = new VNotification();
-        n.show("<b>Recompiling widgetset, please wait</b>",
-                VNotification.CENTERED, VNotification.STYLE_SYSTEM);
+        n.show("<b>Recompiling widgetset, please wait</b>", VNotification.CENTERED, VNotification.STYLE_SYSTEM);
 
         JsonpRequestBuilder b = new JsonpRequestBuilder();
         b.setCallbackParam("_callback");
         b.setTimeout(COMPILE_TIMEOUT_IN_SECONDS * 1000);
-        b.requestObject(serverUrl + "recompile/" + GWT.getModuleName() + "?"
-                + getRecompileParameters(GWT.getModuleName()),
-                new AsyncCallback<RecompileResult>() {
+        b.requestObject(serverUrl + "recompile/" + GWT.getModuleName() + "?" + getRecompileParameters(GWT.getModuleName()), new AsyncCallback<RecompileResult>() {
+
+            @Override
+            public void onSuccess(RecompileResult result) {
+                getLogger().fine("JSONP compile call successful");
+
+                if (!result.ok()) {
+                    getLogger().fine("* result: " + result);
+                    failed();
+                    return;
+                }
+
+                setSession(getSuperDevModeHookKey(), getSuperDevWidgetSetUrl(GWT.getModuleName(), serverUrl));
+                setSession(SKIP_RECOMPILE, "1");
+
+                getLogger().fine("* result: OK. Reloading");
+                Location.reload();
+            }
+
+            @Override
+            public void onFailure(Throwable caught) {
+                getLogger().severe("JSONP compile call failed");
+                // Don't log exception as they are shown as
+                // notifications
+                getLogger().severe(caught.getClass().getSimpleName() + ": " + caught.getMessage());
+                failed();
+
+            }
+
+            private void failed() {
+                VNotification n = new VNotification();
+                n.addEventListener(new EventListener() {
 
                     @Override
-                    public void onSuccess(RecompileResult result) {
-                        getLogger().fine("JSONP compile call successful");
-
-                        if (!result.ok()) {
-                            getLogger().fine("* result: " + result);
-                            failed();
-                            return;
-                        }
-
-                        setSession(
-                                getSuperDevModeHookKey(),
-                                getSuperDevWidgetSetUrl(GWT.getModuleName(),
-                                        serverUrl));
-                        setSession(SKIP_RECOMPILE, "1");
-
-                        getLogger().fine("* result: OK. Reloading");
-                        Location.reload();
-                    }
-
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        getLogger().severe("JSONP compile call failed");
-                        // Don't log exception as they are shown as
-                        // notifications
-                        getLogger().severe(
-                                caught.getClass().getSimpleName() + ": "
-                                        + caught.getMessage());
-                        failed();
-
-                    }
-
-                    private void failed() {
-                        VNotification n = new VNotification();
-                        n.addEventListener(new EventListener() {
-
-                            @Override
-                            public void notificationHidden(HideEvent event) {
-                                recompileWidgetsetAndStartInDevMode(serverUrl);
-                            }
-                        });
-                        n.show("Recompilation failed.<br/>"
-                                + "Make sure CodeServer is running, "
-                                + "check its output and click to retry",
-                                VNotification.CENTERED,
-                                VNotification.STYLE_SYSTEM);
+                    public void notificationHidden(HideEvent event) {
+                        recompileWidgetsetAndStartInDevMode(serverUrl);
                     }
                 });
+                n.show("Recompilation failed.<br/>" + "Make sure CodeServer is running, " + "check its output and click to retry", VNotification.CENTERED, VNotification.STYLE_SYSTEM);
+            }
+        });
 
     }
 
-    protected static String getSuperDevWidgetSetUrl(String widgetsetName,
-            String serverUrl) {
-        return serverUrl + GWT.getModuleName() + "/" + GWT.getModuleName()
-                + ".nocache.js";
+    protected static String getSuperDevWidgetSetUrl(String widgetsetName, String serverUrl) {
+        return serverUrl + GWT.getModuleName() + "/" + GWT.getModuleName() + ".nocache.js";
     }
 
     private native static String getRecompileParameters(String moduleName)
@@ -219,8 +202,7 @@ public class SuperDevMode {
         return isSuperDevModeEnabledInModule(moduleName);
     }
 
-    protected native static boolean isSuperDevModeEnabledInModule(
-            String moduleName)
+    protected native static boolean isSuperDevModeEnabledInModule(String moduleName)
     /*-{
         if (!$wnd.__gwt_activeModules)
            return false;
@@ -254,9 +236,7 @@ public class SuperDevMode {
             // in super dev mode, as a result of the recompile, the enabled
             // check will fail...
             if (!isSuperDevModeEnabledInModule()) {
-                showError("SuperDevMode is disabled for this module/widgetset.<br/>"
-                        + "Ensure that your module definition (.gwt.xml) does not contain <br/>"
-                        + "&lt;set-configuration-property name=&quot;devModeRedirectEnabled&quot; value=&quot;false&quot; /&gt;<br/>");
+                showError("SuperDevMode is disabled for this module/widgetset.<br/>" + "Ensure that your module definition (.gwt.xml) does not contain <br/>" + "&lt;set-configuration-property name=&quot;devModeRedirectEnabled&quot; value=&quot;false&quot; /&gt;<br/>");
                 return false;
             }
             return SuperDevMode.recompileIfNeeded(superDevModeParameter);

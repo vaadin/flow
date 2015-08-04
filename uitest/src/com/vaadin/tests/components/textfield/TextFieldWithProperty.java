@@ -21,8 +21,7 @@ public class TextFieldWithProperty extends TestBase {
 
         addComponent(tf1);
 
-        Button b = new Button(
-                "Set BAR to underlaying property (should propagate to UI)");
+        Button b = new Button("Set BAR to underlaying property (should propagate to UI)");
         b.addListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {

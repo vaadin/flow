@@ -12,7 +12,6 @@ public class AtmosphereVersionTest extends TestCase {
      * classpath
      */
     public void testAtmosphereVersion() {
-        assertEquals(Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION,
-                Version.getRawVersion());
+        assertEquals(Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION, Version.getRawVersion());
     }
 }

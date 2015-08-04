@@ -24,9 +24,7 @@ public class GridInlineDataDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testSimpleInlineData() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' property-id='Col1' />"
-                + "</colgroup>" //
+                + "<colgroup>" + "   <col sortable='' property-id='Col1' />" + "</colgroup>" //
                 + "<thead />" // No headers read or written
                 + "<tbody>" //
                 + "<tr><td>Foo</tr>" //
@@ -50,10 +48,7 @@ public class GridInlineDataDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testMultipleColumnsInlineData() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' property-id='Col1' />"
-                + "   <col sortable='' property-id='Col2' />"
-                + "   <col sortable='' property-id='Col3' />" //
+                + "<colgroup>" + "   <col sortable='' property-id='Col1' />" + "   <col sortable='' property-id='Col2' />" + "   <col sortable='' property-id='Col3' />" //
                 + "</colgroup>" //
                 + "<thead />" // No headers read or written
                 + "<tbody>" //
@@ -78,10 +73,7 @@ public class GridInlineDataDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testMultipleColumnsInlineDataReordered() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' property-id='Col2' />"
-                + "   <col sortable='' property-id='Col3' />"
-                + "   <col sortable='' property-id='Col1' />" //
+                + "<colgroup>" + "   <col sortable='' property-id='Col2' />" + "   <col sortable='' property-id='Col3' />" + "   <col sortable='' property-id='Col1' />" //
                 + "</colgroup>" //
                 + "<thead />" // No headers read or written
                 + "<tbody>" //

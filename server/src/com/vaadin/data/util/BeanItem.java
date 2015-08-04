@@ -98,8 +98,7 @@ public class BeanItem<BT> extends PropertysetItem {
      * @param propertyDescriptors
      *            pre-computed property descriptors
      */
-    BeanItem(BT bean,
-            Map<String, VaadinPropertyDescriptor<BT>> propertyDescriptors) {
+    BeanItem(BT bean, Map<String, VaadinPropertyDescriptor<BT>> propertyDescriptors) {
 
         this.bean = bean;
 
@@ -131,8 +130,7 @@ public class BeanItem<BT> extends PropertysetItem {
         this.bean = bean;
 
         // Create bean information
-        LinkedHashMap<String, VaadinPropertyDescriptor<BT>> pds = getPropertyDescriptors((Class<BT>) bean
-                .getClass());
+        LinkedHashMap<String, VaadinPropertyDescriptor<BT>> pds = getPropertyDescriptors((Class<BT>) bean.getClass());
 
         // Add all the bean properties as MethodProperties to this Item
         for (Object id : propertyIds) {
@@ -181,24 +179,19 @@ public class BeanItem<BT> extends PropertysetItem {
      *            the Java Bean class to get properties for.
      * @return an ordered map from property names to property descriptors
      */
-    static <BT> LinkedHashMap<String, VaadinPropertyDescriptor<BT>> getPropertyDescriptors(
-            final Class<BT> beanClass) {
+    static <BT> LinkedHashMap<String, VaadinPropertyDescriptor<BT>> getPropertyDescriptors(final Class<BT> beanClass) {
         final LinkedHashMap<String, VaadinPropertyDescriptor<BT>> pdMap = new LinkedHashMap<String, VaadinPropertyDescriptor<BT>>();
 
         // Try to introspect, if it fails, we just have an empty Item
         try {
-            List<PropertyDescriptor> propertyDescriptors = BeanUtil
-                    .getBeanPropertyDescriptor(beanClass);
+            List<PropertyDescriptor> propertyDescriptors = BeanUtil.getBeanPropertyDescriptor(beanClass);
 
             // Add all the bean properties as MethodProperties to this Item
             // later entries on the list overwrite earlier ones
             for (PropertyDescriptor pd : propertyDescriptors) {
                 final Method getMethod = pd.getReadMethod();
-                if ((getMethod != null)
-                        && getMethod.getDeclaringClass() != Object.class) {
-                    VaadinPropertyDescriptor<BT> vaadinPropertyDescriptor = new MethodPropertyDescriptor<BT>(
-                            pd.getName(), pd.getPropertyType(),
-                            pd.getReadMethod(), pd.getWriteMethod());
+                if ((getMethod != null) && getMethod.getDeclaringClass() != Object.class) {
+                    VaadinPropertyDescriptor<BT> vaadinPropertyDescriptor = new MethodPropertyDescriptor<BT>(pd.getName(), pd.getPropertyType(), pd.getReadMethod(), pd.getWriteMethod());
                     pdMap.put(pd.getName(), vaadinPropertyDescriptor);
                 }
             }
@@ -220,8 +213,7 @@ public class BeanItem<BT> extends PropertysetItem {
      *            not specified
      */
     public void expandProperty(String propertyId, String... subPropertyIds) {
-        Set<String> subPropertySet = new HashSet<String>(
-                Arrays.asList(subPropertyIds));
+        Set<String> subPropertySet = new HashSet<String>(Arrays.asList(subPropertyIds));
 
         if (0 == subPropertyIds.length) {
             // Enumerate all sub-properties
@@ -248,8 +240,7 @@ public class BeanItem<BT> extends PropertysetItem {
      *            property id to add.
      */
     public void addNestedProperty(String nestedPropertyId) {
-        addItemProperty(nestedPropertyId, new NestedMethodProperty<Object>(
-                getBean(), nestedPropertyId));
+        addItemProperty(nestedPropertyId, new NestedMethodProperty<Object>(getBean(), nestedPropertyId));
     }
 
     /**

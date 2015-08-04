@@ -44,14 +44,7 @@ public class ResponsiveUI extends AbstractTestUI {
         grids.addComponent(secondGrid);
         split.addComponent(grids);
 
-        Label description = new Label(
-                "<h3>This application demonstrates the Responsive extension in Vaadin.</h3>"
-                        + "<p>Drag the splitter to see how the boxes on the left side adapt to "
-                        + "different widths. They maintain a width of 100-200px, and always "
-                        + "span the entire width of the container.</p><p>This label will "
-                        + "adapt its font size and line height for different widths.</p>"
-                        + "<p><a href=\"http://vaadin.com/download\">Download "
-                        + "Vaadin</a></p>", ContentMode.HTML);
+        Label description = new Label("<h3>This application demonstrates the Responsive extension in Vaadin.</h3>" + "<p>Drag the splitter to see how the boxes on the left side adapt to " + "different widths. They maintain a width of 100-200px, and always " + "span the entire width of the container.</p><p>This label will " + "adapt its font size and line height for different widths.</p>" + "<p><a href=\"http://vaadin.com/download\">Download " + "Vaadin</a></p>", ContentMode.HTML);
         description.addStyleName("description");
         split.addComponent(description);
 

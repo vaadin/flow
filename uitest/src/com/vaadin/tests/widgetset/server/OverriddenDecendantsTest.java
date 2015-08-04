@@ -33,8 +33,7 @@ import com.vaadin.tests.tb3.MultiBrowserTest;
 public class OverriddenDecendantsTest extends MultiBrowserTest {
 
     @Test
-    public void allExtendingFieldsShouldGetRowsFromTextAreaStateAnnotation()
-            throws InterruptedException {
+    public void allExtendingFieldsShouldGetRowsFromTextAreaStateAnnotation() throws InterruptedException {
         openTestURL();
 
         List<TextAreaElement> textAreas = $(TextAreaElement.class).all();
@@ -42,8 +41,7 @@ public class OverriddenDecendantsTest extends MultiBrowserTest {
         assertEquals("Did not contain all 3 text areas", 3, textAreas.size());
 
         for (TextAreaElement area : textAreas) {
-            assertEquals("Text area was missing rows", "10",
-                    area.getAttribute("rows"));
+            assertEquals("Text area was missing rows", "10", area.getAttribute("rows"));
         }
 
     }

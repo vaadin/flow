@@ -25,8 +25,7 @@ public class Margins {
     private int horizontal = 0;
     private int vertical = 0;
 
-    public Margins(int marginTop, int marginBottom, int marginLeft,
-            int marginRight) {
+    public Margins(int marginTop, int marginBottom, int marginLeft, int marginRight) {
         super();
         this.marginTop = marginTop;
         this.marginBottom = marginBottom;
@@ -91,8 +90,6 @@ public class Margins {
 
     @Override
     public String toString() {
-        return "Margins [marginLeft=" + marginLeft + ",marginTop=" + marginTop
-                + ",marginRight=" + marginRight + ",marginBottom="
-                + marginBottom + "]";
+        return "Margins [marginLeft=" + marginLeft + ",marginTop=" + marginTop + ",marginRight=" + marginRight + ",marginBottom=" + marginBottom + "]";
     }
 }

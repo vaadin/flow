@@ -94,8 +94,7 @@ public class AtmospherePushConnection implements PushConnection {
 
             String result;
             if (index == 0) {
-                String header = "" + message.length()
-                        + PushConstants.MESSAGE_DELIMITER;
+                String header = "" + message.length() + PushConstants.MESSAGE_DELIMITER;
                 int fragmentLen = FRAGMENT_LENGTH - header.length();
                 result = header + getFragment(0, fragmentLen);
                 index += fragmentLen;
@@ -140,37 +139,32 @@ public class AtmospherePushConnection implements PushConnection {
      * , Map<String, String>, CommunicationErrorHandler)
      */
     @Override
-    public void init(final ApplicationConnection connection,
-            final PushConfigurationState pushConfiguration) {
+    public void init(final ApplicationConnection connection, final PushConfigurationState pushConfiguration) {
         this.connection = connection;
 
-        connection.addHandler(ApplicationStoppedEvent.TYPE,
-                new ApplicationStoppedHandler() {
+        connection.addHandler(ApplicationStoppedEvent.TYPE, new ApplicationStoppedHandler() {
 
+            @Override
+            public void onApplicationStopped(ApplicationStoppedEvent event) {
+                if (state == State.DISCONNECT_PENDING || state == State.DISCONNECTED) {
+                    return;
+                }
+
+                disconnect(new Command() {
                     @Override
-                    public void onApplicationStopped(
-                            ApplicationStoppedEvent event) {
-                        if (state == State.DISCONNECT_PENDING
-                                || state == State.DISCONNECTED) {
-                            return;
-                        }
-
-                        disconnect(new Command() {
-                            @Override
-                            public void execute() {
-                            }
-                        });
-
+                    public void execute() {
                     }
                 });
+
+            }
+        });
         config = createConfig();
         String debugParameter = Location.getParameter("debug");
         if ("push".equals(debugParameter)) {
             config.setStringValue("logLevel", "debug");
         }
         for (String param : pushConfiguration.parameters.keySet()) {
-            config.setStringValue(param,
-                    pushConfiguration.parameters.get(param));
+            config.setStringValue(param, pushConfiguration.parameters.get(param));
         }
 
         runWhenAtmosphereLoaded(new Command() {
@@ -187,16 +181,12 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     private void connect() {
-        String baseUrl = connection
-                .translateVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX
-                        + ApplicationConstants.PUSH_PATH);
-        String extraParams = UIConstants.UI_ID_PARAMETER + "="
-                + connection.getConfiguration().getUIId();
+        String baseUrl = connection.translateVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX + ApplicationConstants.PUSH_PATH);
+        String extraParams = UIConstants.UI_ID_PARAMETER + "=" + connection.getConfiguration().getUIId();
 
         String csrfToken = connection.getServerMessageHandler().getCsrfToken();
         if (!csrfToken.equals(ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE)) {
-            extraParams += "&" + ApplicationConstants.CSRF_TOKEN_PARAMETER
-                    + "=" + csrfToken;
+            extraParams += "&" + ApplicationConstants.CSRF_TOKEN_PARAMETER + "=" + csrfToken;
         }
 
         // uri is needed to identify the right connection when closing
@@ -248,17 +238,13 @@ public class AtmospherePushConnection implements PushConnection {
     @Override
     public void push(JsonObject message) {
         if (!isBidirectional()) {
-            throw new IllegalStateException(
-                    "This server to client push connection should not be used to send client to server messages");
+            throw new IllegalStateException("This server to client push connection should not be used to send client to server messages");
         }
         if (state == State.CONNECTED) {
-            getLogger().info(
-                    "Sending push (" + transport + ") message to server: "
-                            + message.toJson());
+            getLogger().info("Sending push (" + transport + ") message to server: " + message.toJson());
 
             if (transport.equals("websocket")) {
-                FragmentedMessage fragmented = new FragmentedMessage(
-                        message.toJson());
+                FragmentedMessage fragmented = new FragmentedMessage(message.toJson());
                 while (fragmented.hasNextFragment()) {
                     doPush(socket, fragmented.getNextFragment());
                 }
@@ -281,15 +267,12 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     protected void onReopen(AtmosphereResponse response) {
-        getLogger().info(
-                "Push connection re-established using "
-                        + response.getTransport());
+        getLogger().info("Push connection re-established using " + response.getTransport());
         onConnect(response);
     }
 
     protected void onOpen(AtmosphereResponse response) {
-        getLogger().info(
-                "Push connection established using " + response.getTransport());
+        getLogger().info("Push connection established using " + response.getTransport());
         onConnect(response);
     }
 
@@ -318,9 +301,7 @@ public class AtmospherePushConnection implements PushConnection {
             // IE likes to open the same connection multiple times, just ignore
             break;
         default:
-            throw new IllegalStateException(
-                    "Got onOpen event when conncetion state is " + state
-                            + ". This should never happen.");
+            throw new IllegalStateException("Got onOpen event when conncetion state is " + state + ". This should never happen.");
         }
     }
 
@@ -360,9 +341,7 @@ public class AtmospherePushConnection implements PushConnection {
             getCommunicationProblemHandler().pushInvalidContent(this, message);
             return;
         } else {
-            getLogger().info(
-                    "Received push (" + getTransportType() + ") message: "
-                            + json);
+            getLogger().info("Received push (" + getTransportType() + ") message: " + json);
             connection.getServerMessageHandler().handleMessage(json);
         }
     }
@@ -372,10 +351,7 @@ public class AtmospherePushConnection implements PushConnection {
      * tried
      */
     protected void onTransportFailure() {
-        getLogger().warning(
-                "Push connection using primary method ("
-                        + getConfig().getTransport() + ") failed. Trying with "
-                        + getConfig().getFallbackTransport());
+        getLogger().warning("Push connection using primary method (" + getConfig().getTransport() + ") failed. Trying with " + getConfig().getFallbackTransport());
     }
 
     /**
@@ -398,8 +374,7 @@ public class AtmospherePushConnection implements PushConnection {
         getCommunicationProblemHandler().pushClientTimeout(this);
     }
 
-    protected void onReconnect(JavaScriptObject request,
-            final AtmosphereResponse response) {
+    protected void onReconnect(JavaScriptObject request, final AtmosphereResponse response) {
         if (state == State.CONNECTED) {
             state = State.CONNECT_PENDING;
         }
@@ -500,8 +475,7 @@ public class AtmospherePushConnection implements PushConnection {
         };
     }-*/;
 
-    private native JavaScriptObject doConnect(String uri,
-            JavaScriptObject config)
+    private native JavaScriptObject doConnect(String uri, JavaScriptObject config)
     /*-{
         var self = this;
     
@@ -556,28 +530,25 @@ public class AtmospherePushConnection implements PushConnection {
             final String pushJs = getVersionedPushJs();
 
             getLogger().info("Loading " + pushJs);
-            ResourceLoader.get().loadScript(
-                    connection.getConfiguration().getVaadinDirUrl() + pushJs,
-                    new ResourceLoadListener() {
-                        @Override
-                        public void onLoad(ResourceLoadEvent event) {
-                            if (isAtmosphereLoaded()) {
-                                getLogger().info(pushJs + " loaded");
-                                command.execute();
-                            } else {
-                                // If bootstrap tried to load vaadinPush.js,
-                                // ResourceLoader assumes it succeeded even if
-                                // it failed (#11673)
-                                onError(event);
-                            }
-                        }
+            ResourceLoader.get().loadScript(connection.getConfiguration().getVaadinDirUrl() + pushJs, new ResourceLoadListener() {
+                @Override
+                public void onLoad(ResourceLoadEvent event) {
+                    if (isAtmosphereLoaded()) {
+                        getLogger().info(pushJs + " loaded");
+                        command.execute();
+                    } else {
+                        // If bootstrap tried to load vaadinPush.js,
+                        // ResourceLoader assumes it succeeded even if
+                        // it failed (#11673)
+                        onError(event);
+                    }
+                }
 
-                        @Override
-                        public void onError(ResourceLoadEvent event) {
-                            getCommunicationProblemHandler()
-                                    .pushScriptLoadError(event.getResourceUrl());
-                        }
-                    });
+                @Override
+                public void onError(ResourceLoadEvent event) {
+                    getCommunicationProblemHandler().pushScriptLoadError(event.getResourceUrl());
+                }
+            });
         }
     }
 

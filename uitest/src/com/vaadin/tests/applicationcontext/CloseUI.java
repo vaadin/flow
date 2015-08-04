@@ -43,8 +43,7 @@ public class CloseUI extends AbstractTestUIWithLog {
         String oldHashValue = request.getParameter(OLD_HASH_PARAM);
         if (oldHashValue != null) {
             log("Old session hashcode: " + oldHashValue);
-            log("Same hash as current? "
-                    + oldHashValue.equals(Integer.toString(sessionHash)));
+            log("Same hash as current? " + oldHashValue.equals(Integer.toString(sessionHash)));
         }
 
         String oldSessionId = request.getParameter(OLD_SESSION_ID_PARAM);
@@ -77,30 +76,26 @@ public class CloseUI extends AbstractTestUIWithLog {
                 }.start();
             }
         });
-        addButton("Close UI and redirect to /statictestfiles/static.html",
-                new Button.ClickListener() {
+        addButton("Close UI and redirect to /statictestfiles/static.html", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                getPage().setLocation("/statictestfiles/static.html");
+                close();
+            }
+        });
+        addButton("Close UI and redirect to /statictestfiles/static.html (background)", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                new UIRunSafelyThread(CloseUI.this) {
+
                     @Override
-                    public void buttonClick(ClickEvent event) {
+                    protected void runSafely() {
                         getPage().setLocation("/statictestfiles/static.html");
                         close();
                     }
-                });
-        addButton(
-                "Close UI and redirect to /statictestfiles/static.html (background)",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        new UIRunSafelyThread(CloseUI.this) {
-
-                            @Override
-                            protected void runSafely() {
-                                getPage().setLocation(
-                                        "/statictestfiles/static.html");
-                                close();
-                            }
-                        }.start();
-                    }
-                });
+                }.start();
+            }
+        });
 
     }
 
@@ -121,8 +116,7 @@ public class CloseUI extends AbstractTestUIWithLog {
         boolean correctUI = (UI.getCurrent() == this);
         boolean correctPage = (Page.getCurrent() == getPage());
         boolean correctVaadinSession = (VaadinSession.getCurrent() == getSession());
-        boolean correctVaadinService = (VaadinService.getCurrent() == getSession()
-                .getService());
+        boolean correctVaadinService = (VaadinService.getCurrent() == getSession().getService());
         log("UI.current correct in detach: " + correctUI);
         log("Page.current correct in detach: " + correctPage);
         log("VaadinSession.current correct in detach: " + correctVaadinSession);

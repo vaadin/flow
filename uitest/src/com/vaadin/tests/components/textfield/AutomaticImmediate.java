@@ -97,24 +97,21 @@ public class AutomaticImmediate extends AbstractTestUIWithLog {
         });
         checkBox.setId(LISTENER_TOGGLE);
 
-        Button b = new Button(
-                "setImmediate(false), sets explicitly false and causes server roundtrip",
-                new ClickListener() {
+        Button b = new Button("setImmediate(false), sets explicitly false and causes server roundtrip", new ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        textField.setImmediate(false);
-                    }
-                });
+            @Override
+            public void buttonClick(ClickEvent event) {
+                textField.setImmediate(false);
+            }
+        });
         b.setId(EXPLICIT_FALSE);
 
-        Button b2 = new Button("Hit server, causes server roundtrip",
-                new ClickListener() {
+        Button b2 = new Button("Hit server, causes server roundtrip", new ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                    }
-                });
+            @Override
+            public void buttonClick(ClickEvent event) {
+            }
+        });
         b2.setId(BUTTON);
 
         addComponent(textField);

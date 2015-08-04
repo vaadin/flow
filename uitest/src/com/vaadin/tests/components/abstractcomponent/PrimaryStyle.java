@@ -42,21 +42,20 @@ public class PrimaryStyle extends AbstractTestUI {
         tf.setStyleName("state");
         addComponent(tf);
 
-        Button updateButton = new Button("Update styles",
-                new Button.ClickListener() {
+        Button updateButton = new Button("Update styles", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        label.setPrimaryStyleName("updated");
-                        label.setStyleName("correctly");
+            @Override
+            public void buttonClick(ClickEvent event) {
+                label.setPrimaryStyleName("updated");
+                label.setStyleName("correctly");
 
-                        button.setPrimaryStyleName("updated");
-                        button.setStyleName("correctly");
+                button.setPrimaryStyleName("updated");
+                button.setStyleName("correctly");
 
-                        tf.setPrimaryStyleName("updated");
-                        tf.setStyleName("correctly");
-                    }
-                });
+                tf.setPrimaryStyleName("updated");
+                tf.setStyleName("correctly");
+            }
+        });
         updateButton.setId("update-button");
         addComponent(updateButton);
     }

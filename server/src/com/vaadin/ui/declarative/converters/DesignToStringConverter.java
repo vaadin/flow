@@ -64,19 +64,15 @@ public class DesignToStringConverter<TYPE> implements Converter<String, TYPE> {
      *            must be public and static method that returns an object of
      *            passed type.
      */
-    public DesignToStringConverter(Class<? extends TYPE> type,
-            String staticMethodName) {
+    public DesignToStringConverter(Class<? extends TYPE> type, String staticMethodName) {
         this.type = type;
         this.staticMethodName = staticMethodName;
     }
 
     @Override
-    public TYPE convertToModel(String value, Class<? extends TYPE> targetType,
-            Locale locale) throws Converter.ConversionException {
+    public TYPE convertToModel(String value, Class<? extends TYPE> targetType, Locale locale) throws Converter.ConversionException {
         try {
-            return type.cast(type
-                    .getMethod(this.staticMethodName, String.class).invoke(
-                            null, value));
+            return type.cast(type.getMethod(this.staticMethodName, String.class).invoke(null, value));
         } catch (IllegalAccessException e) {
             throw new Converter.ConversionException(e);
         } catch (IllegalArgumentException e) {
@@ -93,9 +89,7 @@ public class DesignToStringConverter<TYPE> implements Converter<String, TYPE> {
     }
 
     @Override
-    public String convertToPresentation(TYPE value,
-            Class<? extends String> targetType, Locale locale)
-            throws Converter.ConversionException {
+    public String convertToPresentation(TYPE value, Class<? extends String> targetType, Locale locale) throws Converter.ConversionException {
         if (value == null) {
             return NULL_VALUE_REPRESENTATION;
         } else {

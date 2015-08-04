@@ -173,8 +173,7 @@ class NotificationConfigurationImpl implements NotificationConfiguration {
         NotificationTypeConfiguration styleSetup = getTypeConf(type);
         if (styleSetup == null) {
             styleSetup = new NotificationTypeConfiguration();
-            ui.getState().notificationConfigurations.put(type.getStyle(),
-                    styleSetup);
+            ui.getState().notificationConfigurations.put(type.getStyle(), styleSetup);
         }
 
         return styleSetup;

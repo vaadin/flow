@@ -11,10 +11,8 @@ import com.vaadin.data.validator.DateRangeValidator;
 import com.vaadin.shared.ui.datefield.Resolution;
 
 public class DateRangeValidatorTest extends TestCase {
-    Calendar startDate = new GregorianCalendar(TimeZone.getTimeZone("GMT"),
-            Locale.ENGLISH);
-    Calendar endDate = new GregorianCalendar(TimeZone.getTimeZone("GMT"),
-            Locale.ENGLISH);
+    Calendar startDate = new GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.ENGLISH);
+    Calendar endDate = new GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.ENGLISH);
 
     private DateRangeValidator cleanValidator;
     private DateRangeValidator minValidator;
@@ -27,14 +25,10 @@ public class DateRangeValidatorTest extends TestCase {
         startDate.set(2000, Calendar.JANUARY, 1, 12, 0, 0);
         endDate.set(2000, Calendar.FEBRUARY, 20, 12, 0, 0);
 
-        cleanValidator = new DateRangeValidator("Given date outside range",
-                null, null, Resolution.DAY);
-        minValidator = new DateRangeValidator("Given date before startDate",
-                startDate.getTime(), null, Resolution.DAY);
-        maxValidator = new DateRangeValidator("Given date after endDate", null,
-                endDate.getTime(), Resolution.DAY);
-        minMaxValidator = new DateRangeValidator("Given date outside range",
-                startDate.getTime(), endDate.getTime(), Resolution.DAY);
+        cleanValidator = new DateRangeValidator("Given date outside range", null, null, Resolution.DAY);
+        minValidator = new DateRangeValidator("Given date before startDate", startDate.getTime(), null, Resolution.DAY);
+        maxValidator = new DateRangeValidator("Given date after endDate", null, endDate.getTime(), Resolution.DAY);
+        minMaxValidator = new DateRangeValidator("Given date outside range", startDate.getTime(), endDate.getTime(), Resolution.DAY);
     }
 
     public void testNullValue() {
@@ -45,53 +39,40 @@ public class DateRangeValidatorTest extends TestCase {
     }
 
     public void testMinValue() {
-        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT"),
-                Locale.ENGLISH);
+        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.ENGLISH);
         cal.setTime(startDate.getTime());
         cal.add(Calendar.SECOND, 1);
 
-        assertTrue("Validator without ranges didn't accept value",
-                cleanValidator.isValid(cal.getTime()));
-        assertTrue("Didn't accept valid value",
-                minValidator.isValid(cal.getTime()));
+        assertTrue("Validator without ranges didn't accept value", cleanValidator.isValid(cal.getTime()));
+        assertTrue("Didn't accept valid value", minValidator.isValid(cal.getTime()));
 
         cal.add(Calendar.SECOND, -3);
 
-        assertFalse("Accepted too small value",
-                minValidator.isValid(cal.getTime()));
+        assertFalse("Accepted too small value", minValidator.isValid(cal.getTime()));
     }
 
     public void testMaxValue() {
-        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT"),
-                Locale.ENGLISH);
+        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.ENGLISH);
         cal.setTime(endDate.getTime());
         cal.add(Calendar.SECOND, -1);
 
-        assertTrue("Validator without ranges didn't accept value",
-                cleanValidator.isValid(cal.getTime()));
-        assertTrue("Didn't accept valid value",
-                maxValidator.isValid(cal.getTime()));
+        assertTrue("Validator without ranges didn't accept value", cleanValidator.isValid(cal.getTime()));
+        assertTrue("Didn't accept valid value", maxValidator.isValid(cal.getTime()));
 
         cal.add(Calendar.SECOND, 2);
-        assertFalse("Accepted too large value",
-                maxValidator.isValid(cal.getTime()));
+        assertFalse("Accepted too large value", maxValidator.isValid(cal.getTime()));
     }
 
     public void testMinMaxValue() {
-        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT"),
-                Locale.ENGLISH);
+        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.ENGLISH);
         cal.setTime(endDate.getTime());
 
-        assertTrue("Didn't accept valid value",
-                minMaxValidator.isValid(cal.getTime()));
+        assertTrue("Didn't accept valid value", minMaxValidator.isValid(cal.getTime()));
         cal.add(Calendar.SECOND, 1);
-        assertFalse("Accepted too large value",
-                minMaxValidator.isValid(cal.getTime()));
+        assertFalse("Accepted too large value", minMaxValidator.isValid(cal.getTime()));
         cal.setTime(startDate.getTime());
-        assertTrue("Didn't accept valid value",
-                minMaxValidator.isValid(cal.getTime()));
+        assertTrue("Didn't accept valid value", minMaxValidator.isValid(cal.getTime()));
         cal.add(Calendar.SECOND, -1);
-        assertFalse("Accepted too small value",
-                minMaxValidator.isValid(cal.getTime()));
+        assertFalse("Accepted too small value", minMaxValidator.isValid(cal.getTime()));
     }
 }

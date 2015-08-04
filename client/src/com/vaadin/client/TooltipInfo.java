@@ -76,12 +76,10 @@ public class TooltipInfo {
      *         empty
      */
     public boolean hasMessage() {
-        return (title != null && !title.isEmpty())
-                || (errorMessageHtml != null && !errorMessageHtml.isEmpty());
+        return (title != null && !title.isEmpty()) || (errorMessageHtml != null && !errorMessageHtml.isEmpty());
     }
 
     public boolean equals(TooltipInfo other) {
-        return (other != null && SharedUtil.equals(other.title, title)
-                && SharedUtil.equals(other.errorMessageHtml, errorMessageHtml) && other.identifier == identifier);
+        return (other != null && SharedUtil.equals(other.title, title) && SharedUtil.equals(other.errorMessageHtml, errorMessageHtml) && other.identifier == identifier);
     }
 }

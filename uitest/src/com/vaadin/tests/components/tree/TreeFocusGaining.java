@@ -15,8 +15,7 @@ public class TreeFocusGaining extends TestBase {
     protected void setup() {
         final Log log = new Log(5);
 
-        TextField textField = new TextField(
-                "My value should get to server when tree is clicked");
+        TextField textField = new TextField("My value should get to server when tree is clicked");
         addComponent(textField);
         textField.addListener(new Property.ValueChangeListener() {
 

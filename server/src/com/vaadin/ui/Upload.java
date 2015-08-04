@@ -166,19 +166,13 @@ public class Upload extends AbstractComponent implements Component.Focusable {
 
     static {
         try {
-            UPLOAD_FINISHED_METHOD = FinishedListener.class.getDeclaredMethod(
-                    "uploadFinished", new Class[] { FinishedEvent.class });
-            UPLOAD_FAILED_METHOD = FailedListener.class.getDeclaredMethod(
-                    "uploadFailed", new Class[] { FailedEvent.class });
-            UPLOAD_STARTED_METHOD = StartedListener.class.getDeclaredMethod(
-                    "uploadStarted", new Class[] { StartedEvent.class });
-            UPLOAD_SUCCEEDED_METHOD = SucceededListener.class
-                    .getDeclaredMethod("uploadSucceeded",
-                            new Class[] { SucceededEvent.class });
+            UPLOAD_FINISHED_METHOD = FinishedListener.class.getDeclaredMethod("uploadFinished", new Class[] { FinishedEvent.class });
+            UPLOAD_FAILED_METHOD = FailedListener.class.getDeclaredMethod("uploadFailed", new Class[] { FailedEvent.class });
+            UPLOAD_STARTED_METHOD = StartedListener.class.getDeclaredMethod("uploadStarted", new Class[] { StartedEvent.class });
+            UPLOAD_SUCCEEDED_METHOD = SucceededListener.class.getDeclaredMethod("uploadSucceeded", new Class[] { SucceededEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in Upload");
+            throw new java.lang.RuntimeException("Internal error finding methods in Upload");
         }
     }
 
@@ -219,8 +213,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
          * @param length
          *            the length of the received file.
          */
-        public FinishedEvent(Upload source, String filename, String MIMEType,
-                long length) {
+        public FinishedEvent(Upload source, String filename, String MIMEType, long length) {
             super(source);
             type = MIMEType;
             this.filename = filename;
@@ -284,8 +277,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
          * @param length
          * @param exception
          */
-        public FailedEvent(Upload source, String filename, String MIMEType,
-                long length, Exception reason) {
+        public FailedEvent(Upload source, String filename, String MIMEType, long length, Exception reason) {
             this(source, filename, MIMEType, length);
             this.reason = reason;
         }
@@ -298,8 +290,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
          * @param length
          * @param exception
          */
-        public FailedEvent(Upload source, String filename, String MIMEType,
-                long length) {
+        public FailedEvent(Upload source, String filename, String MIMEType, long length) {
             super(source, filename, MIMEType, length);
         }
 
@@ -326,8 +317,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
          * @param MIMEType
          * @param length
          */
-        public NoOutputStreamEvent(Upload source, String filename,
-                String MIMEType, long length) {
+        public NoOutputStreamEvent(Upload source, String filename, String MIMEType, long length) {
             super(source, filename, MIMEType, length);
         }
     }
@@ -344,8 +334,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
          * @param MIMEType
          * @param length
          */
-        public NoInputStreamEvent(Upload source, String filename,
-                String MIMEType, long length) {
+        public NoInputStreamEvent(Upload source, String filename, String MIMEType, long length) {
             super(source, filename, MIMEType, length);
         }
 
@@ -367,8 +356,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
          * @param MIMEType
          * @param length
          */
-        public SucceededEvent(Upload source, String filename, String MIMEType,
-                long length) {
+        public SucceededEvent(Upload source, String filename, String MIMEType, long length) {
             super(source, filename, MIMEType, length);
         }
 
@@ -396,8 +384,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
          * @param MIMEType
          * @param length
          */
-        public StartedEvent(Upload source, String filename, String MIMEType,
-                long contentLength) {
+        public StartedEvent(Upload source, String filename, String MIMEType, long contentLength) {
             super(source);
             this.filename = filename;
             type = MIMEType;
@@ -551,8 +538,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      */
     public interface ChangeListener extends Serializable {
 
-        Method FILENAME_CHANGED = ReflectTools.findMethod(ChangeListener.class,
-                "filenameChanged", ChangeEvent.class);
+        Method FILENAME_CHANGED = ReflectTools.findMethod(ChangeListener.class, "filenameChanged", ChangeEvent.class);
 
         /**
          * A file has been selected but upload has not yet started.
@@ -756,8 +742,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the Listener to add
      */
     public void addChangeListener(ChangeListener listener) {
-        super.addListener(EventId.CHANGE, ChangeEvent.class, listener,
-                ChangeListener.FILENAME_CHANGED);
+        super.addListener(EventId.CHANGE, ChangeEvent.class, listener, ChangeListener.FILENAME_CHANGED);
     }
 
     /**
@@ -787,8 +772,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      * @param length
      */
     protected void fireStarted(String filename, String MIMEType) {
-        fireEvent(new Upload.StartedEvent(this, filename, MIMEType,
-                contentLength));
+        fireEvent(new Upload.StartedEvent(this, filename, MIMEType, contentLength));
     }
 
     /**
@@ -798,25 +782,19 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      * @param MIMEType
      * @param length
      */
-    protected void fireUploadInterrupted(String filename, String MIMEType,
-            long length) {
+    protected void fireUploadInterrupted(String filename, String MIMEType, long length) {
         fireEvent(new Upload.FailedEvent(this, filename, MIMEType, length));
     }
 
-    protected void fireNoInputStream(String filename, String MIMEType,
-            long length) {
-        fireEvent(new Upload.NoInputStreamEvent(this, filename, MIMEType,
-                length));
+    protected void fireNoInputStream(String filename, String MIMEType, long length) {
+        fireEvent(new Upload.NoInputStreamEvent(this, filename, MIMEType, length));
     }
 
-    protected void fireNoOutputStream(String filename, String MIMEType,
-            long length) {
-        fireEvent(new Upload.NoOutputStreamEvent(this, filename, MIMEType,
-                length));
+    protected void fireNoOutputStream(String filename, String MIMEType, long length) {
+        fireEvent(new Upload.NoOutputStreamEvent(this, filename, MIMEType, length));
     }
 
-    protected void fireUploadInterrupted(String filename, String MIMEType,
-            long length, Exception e) {
+    protected void fireUploadInterrupted(String filename, String MIMEType, long length, Exception e) {
         fireEvent(new Upload.FailedEvent(this, filename, MIMEType, length, e));
     }
 
@@ -828,8 +806,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      * @param length
      *
      */
-    protected void fireUploadSuccess(String filename, String MIMEType,
-            long length) {
+    protected void fireUploadSuccess(String filename, String MIMEType, long length) {
         fireEvent(new Upload.SucceededEvent(this, filename, MIMEType, length));
     }
 
@@ -846,8 +823,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
         // this is implemented differently than other listeners to maintain
         // backwards compatibility
         if (progressListeners != null) {
-            for (Iterator<ProgressListener> it = progressListeners.iterator(); it
-                    .hasNext();) {
+            for (Iterator<ProgressListener> it = progressListeners.iterator(); it.hasNext();) {
                 ProgressListener l = it.next();
                 l.updateProgress(totalBytes, contentLength);
             }
@@ -1054,14 +1030,12 @@ public class Upload extends AbstractComponent implements Component.Focusable {
 
                 @Override
                 public boolean listenProgress() {
-                    return (progressListeners != null && !progressListeners
-                            .isEmpty());
+                    return (progressListeners != null && !progressListeners.isEmpty());
                 }
 
                 @Override
                 public void onProgress(StreamingProgressEvent event) {
-                    fireUpdateProgress(event.getBytesReceived(),
-                            event.getContentLength());
+                    fireUpdateProgress(event.getBytesReceived(), event.getContentLength());
                 }
 
                 @Override
@@ -1072,12 +1046,9 @@ public class Upload extends AbstractComponent implements Component.Focusable {
                 @Override
                 public OutputStream getOutputStream() {
                     if (getReceiver() == null) {
-                        throw new IllegalStateException(
-                                "Upload cannot be performed without a receiver set");
+                        throw new IllegalStateException("Upload cannot be performed without a receiver set");
                     }
-                    OutputStream receiveUpload = getReceiver().receiveUpload(
-                            lastStartedEvent.getFileName(),
-                            lastStartedEvent.getMimeType());
+                    OutputStream receiveUpload = getReceiver().receiveUpload(lastStartedEvent.getFileName(), lastStartedEvent.getMimeType());
                     lastStartedEvent = null;
                     return receiveUpload;
                 }
@@ -1092,8 +1063,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
 
                 @Override
                 public void streamingFinished(StreamingEndEvent event) {
-                    fireUploadSuccess(event.getFileName(), event.getMimeType(),
-                            event.getContentLength());
+                    fireUploadSuccess(event.getFileName(), event.getMimeType(), event.getContentLength());
                     endUpload();
                 }
 
@@ -1102,14 +1072,11 @@ public class Upload extends AbstractComponent implements Component.Focusable {
                     try {
                         Exception exception = event.getException();
                         if (exception instanceof NoInputStreamException) {
-                            fireNoInputStream(event.getFileName(),
-                                    event.getMimeType(), 0);
+                            fireNoInputStream(event.getFileName(), event.getMimeType(), 0);
                         } else if (exception instanceof NoOutputStreamException) {
-                            fireNoOutputStream(event.getFileName(),
-                                    event.getMimeType(), 0);
+                            fireNoOutputStream(event.getFileName(), event.getMimeType(), 0);
                         } else {
-                            fireUploadInterrupted(event.getFileName(),
-                                    event.getMimeType(), 0, exception);
+                            fireUploadInterrupted(event.getFileName(), event.getMimeType(), 0, exception);
                         }
                     } finally {
                         endUpload();

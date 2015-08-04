@@ -31,8 +31,7 @@ public class PerformanceTestIndexedContainerTest extends TestCase {
             }
             times.add(System.currentTimeMillis() - start);
         }
-        checkMedian(ITEMS, times, "IndexedContainer.addItem()",
-                ADD_ITEM_FAIL_THRESHOLD);
+        checkMedian(ITEMS, times, "IndexedContainer.addItem()", ADD_ITEM_FAIL_THRESHOLD);
     }
 
     public void testAddItemAtPerformance() {
@@ -45,8 +44,7 @@ public class PerformanceTestIndexedContainerTest extends TestCase {
             }
             times.add(System.currentTimeMillis() - start);
         }
-        checkMedian(ITEMS, times, "IndexedContainer.addItemAt()",
-                ADD_ITEM_AT_FAIL_THRESHOLD);
+        checkMedian(ITEMS, times, "IndexedContainer.addItemAt()", ADD_ITEM_AT_FAIL_THRESHOLD);
     }
 
     public void testAddItemAfterPerformance() {
@@ -61,8 +59,7 @@ public class PerformanceTestIndexedContainerTest extends TestCase {
             }
             times.add(System.currentTimeMillis() - start);
         }
-        checkMedian(ITEMS, times, "IndexedContainer.addItemAfter()",
-                ADD_ITEM_AFTER_FAIL_THRESHOLD);
+        checkMedian(ITEMS, times, "IndexedContainer.addItemAfter()", ADD_ITEM_AFTER_FAIL_THRESHOLD);
     }
 
     public void testAddItemAfterLastPerformance() {
@@ -77,8 +74,7 @@ public class PerformanceTestIndexedContainerTest extends TestCase {
             }
             times.add(System.currentTimeMillis() - start);
         }
-        checkMedian(ITEMS / 3, times, "IndexedContainer.addItemAfter(lastId)",
-                ADD_ITEM_AFTER_LAST_FAIL_THRESHOLD);
+        checkMedian(ITEMS / 3, times, "IndexedContainer.addItemAfter(lastId)", ADD_ITEM_AFTER_LAST_FAIL_THRESHOLD);
     }
 
     public void testAddItemsConstructorPerformance() {
@@ -93,17 +89,13 @@ public class PerformanceTestIndexedContainerTest extends TestCase {
             new IndexedContainer(items);
             times.add(System.currentTimeMillis() - start);
         }
-        checkMedian(ITEMS, times, "IndexedContainer(Collection)",
-                ADD_ITEMS_CONSTRUCTOR_FAIL_THRESHOLD);
+        checkMedian(ITEMS, times, "IndexedContainer(Collection)", ADD_ITEMS_CONSTRUCTOR_FAIL_THRESHOLD);
     }
 
-    private void checkMedian(int items, Collection<Long> times,
-            String methodName, long threshold) {
+    private void checkMedian(int items, Collection<Long> times, String methodName, long threshold) {
         long median = median(times);
-        System.out.println(methodName + " timings (ms) for " + items
-                + " items: " + times);
-        Assert.assertTrue(methodName + " too slow, median time " + median
-                + "ms for " + items + " items", median <= threshold);
+        System.out.println(methodName + " timings (ms) for " + items + " items: " + times);
+        Assert.assertTrue(methodName + " too slow, median time " + median + "ms for " + items + " items", median <= threshold);
     }
 
     private Long median(Collection<Long> times) {

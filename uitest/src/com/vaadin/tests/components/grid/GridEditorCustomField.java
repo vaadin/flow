@@ -43,8 +43,7 @@ public class GridEditorCustomField extends AbstractTestUIWithLog {
             ComplexPerson p = (ComplexPerson) o;
             cities.add(p.getAddress().getCity());
         }
-        CustomCitySelect cityEditor = new CustomCitySelect(
-                cities.toArray(new String[cities.size()]));
+        CustomCitySelect cityEditor = new CustomCitySelect(cities.toArray(new String[cities.size()]));
         grid.getColumn("address.city").setEditorField(cityEditor);
         addComponent(grid);
     }

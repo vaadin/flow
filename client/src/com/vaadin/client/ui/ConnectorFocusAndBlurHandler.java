@@ -35,8 +35,7 @@ import com.vaadin.shared.communication.FieldRpc.FocusAndBlurServerRpc;
  * @since 7.6
  * @author Vaadin Ltd
  */
-public class ConnectorFocusAndBlurHandler implements StateChangeHandler,
-        FocusHandler, BlurHandler {
+public class ConnectorFocusAndBlurHandler implements StateChangeHandler, FocusHandler, BlurHandler {
 
     private final AbstractComponentConnector connector;
     private final Widget widget;
@@ -47,24 +46,19 @@ public class ConnectorFocusAndBlurHandler implements StateChangeHandler,
         addHandlers(connector, connector.getWidget());
     }
 
-    public static void addHandlers(AbstractComponentConnector connector,
-            Widget widget) {
-        connector.addStateChangeHandler("registeredEventListeners",
-                new ConnectorFocusAndBlurHandler(connector, widget));
+    public static void addHandlers(AbstractComponentConnector connector, Widget widget) {
+        connector.addStateChangeHandler("registeredEventListeners", new ConnectorFocusAndBlurHandler(connector, widget));
     }
 
-    private ConnectorFocusAndBlurHandler(AbstractComponentConnector connector,
-            Widget widget) {
+    private ConnectorFocusAndBlurHandler(AbstractComponentConnector connector, Widget widget) {
         this.connector = connector;
         this.widget = widget;
     }
 
     @Override
     public void onStateChanged(StateChangeEvent stateChangeEvent) {
-        focusRegistration = EventHelper.updateHandler(connector, this,
-                EventId.FOCUS, focusRegistration, FocusEvent.getType(), widget);
-        blurRegistration = EventHelper.updateHandler(connector, this,
-                EventId.BLUR, blurRegistration, BlurEvent.getType(), widget);
+        focusRegistration = EventHelper.updateHandler(connector, this, EventId.FOCUS, focusRegistration, FocusEvent.getType(), widget);
+        blurRegistration = EventHelper.updateHandler(connector, this, EventId.BLUR, blurRegistration, BlurEvent.getType(), widget);
     }
 
     @Override

@@ -7,14 +7,11 @@ import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
 
-public class VerticalLayoutWithRelativeSizeComponentsInitiallyHidden extends
-        TestBase {
+public class VerticalLayoutWithRelativeSizeComponentsInitiallyHidden extends TestBase {
 
     @Override
     protected String getTestDescription() {
-        return "Size calculations fail if expanded component is relative sized "
-                + "and initially invisible and when becoming visible at the "
-                + "same time some other component size changes.";
+        return "Size calculations fail if expanded component is relative sized " + "and initially invisible and when becoming visible at the " + "same time some other component size changes.";
     }
 
     @Override
@@ -39,8 +36,7 @@ public class VerticalLayoutWithRelativeSizeComponentsInitiallyHidden extends
         // bar.setHeight("100px");
         bar.setVisible(false);
 
-        Button b = new Button(
-                "Click to set bar visible. Button should stay visible.");
+        Button b = new Button("Click to set bar visible. Button should stay visible.");
         b.addListener(new ClickListener() {
 
             @Override

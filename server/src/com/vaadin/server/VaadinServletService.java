@@ -45,9 +45,7 @@ public class VaadinServletService extends VaadinService {
      */
     private boolean pushWarningLogged = false;
 
-    public VaadinServletService(VaadinServlet servlet,
-            DeploymentConfiguration deploymentConfiguration)
-            throws ServiceException {
+    public VaadinServletService(VaadinServlet servlet, DeploymentConfiguration deploymentConfiguration) throws ServiceException {
         super(deploymentConfiguration);
         this.servlet = servlet;
     }
@@ -59,19 +57,13 @@ public class VaadinServletService extends VaadinService {
         }
 
         if (!Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION.equals(rawVersion)) {
-            getLogger().log(
-                    Level.WARNING,
-                    Constants.INVALID_ATMOSPHERE_VERSION_WARNING,
-                    new Object[] {
-                            Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION,
-                            rawVersion });
+            getLogger().log(Level.WARNING, Constants.INVALID_ATMOSPHERE_VERSION_WARNING, new Object[] { Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION, rawVersion });
         }
         return true;
     }
 
     @Override
-    protected List<RequestHandler> createRequestHandlers()
-            throws ServiceException {
+    protected List<RequestHandler> createRequestHandlers() throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new ServletBootstrapHandler());
         handlers.add(new ServletUIInitHandler());
@@ -82,10 +74,7 @@ public class VaadinServletService extends VaadinService {
                 // Atmosphere init failed. Push won't work but we don't throw a
                 // service exception as we don't want to prevent non-push
                 // applications from working
-                getLogger()
-                        .log(Level.WARNING,
-                                "Error initializing Atmosphere. Push will not work.",
-                                e);
+                getLogger().log(Level.WARNING, "Error initializing Atmosphere. Push will not work.", e);
                 atmosphereAvailable = false;
             }
         }
@@ -145,8 +134,7 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     public String getConfiguredWidgetset(VaadinRequest request) {
-        return getDeploymentConfiguration().getWidgetset(
-                VaadinServlet.DEFAULT_WIDGETSET);
+        return getDeploymentConfiguration().getWidgetset(VaadinServlet.DEFAULT_WIDGETSET);
     }
 
     @Override
@@ -167,8 +155,7 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     public File getBaseDirectory() {
-        final String realPath = VaadinServlet.getResourcePath(
-                servlet.getServletContext(), "/");
+        final String realPath = VaadinServlet.getResourcePath(servlet.getServletContext(), "/");
         if (realPath == null) {
             return null;
         }
@@ -194,18 +181,11 @@ public class VaadinServletService extends VaadinService {
     private boolean isOtherRequest(VaadinRequest request) {
         // TODO This should be refactored in some way. It should not be
         // necessary to check all these types.
-        return (!ServletPortletHelper.isAppRequest(request)
-                && !ServletUIInitHandler.isUIInitRequest(request)
-                && !ServletPortletHelper.isFileUploadRequest(request)
-                && !ServletPortletHelper.isHeartbeatRequest(request)
-                && !ServletPortletHelper.isPublishedFileRequest(request)
-                && !ServletPortletHelper.isUIDLRequest(request) && !ServletPortletHelper
-                    .isPushRequest(request));
+        return (!ServletPortletHelper.isAppRequest(request) && !ServletUIInitHandler.isUIInitRequest(request) && !ServletPortletHelper.isFileUploadRequest(request) && !ServletPortletHelper.isHeartbeatRequest(request) && !ServletPortletHelper.isPublishedFileRequest(request) && !ServletPortletHelper.isUIDLRequest(request) && !ServletPortletHelper.isPushRequest(request));
     }
 
     @Override
-    protected URL getApplicationUrl(VaadinRequest request)
-            throws MalformedURLException {
+    protected URL getApplicationUrl(VaadinRequest request) throws MalformedURLException {
         return getServlet().getApplicationUrl((VaadinServletRequest) request);
     }
 
@@ -228,24 +208,17 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public InputStream getThemeResourceAsStream(UI uI, String themeName,
-            String resource) {
-        VaadinServletService service = (VaadinServletService) uI.getSession()
-                .getService();
-        ServletContext servletContext = service.getServlet()
-                .getServletContext();
-        return servletContext.getResourceAsStream("/"
-                + VaadinServlet.THEME_DIR_PATH + '/' + themeName + "/"
-                + resource);
+    public InputStream getThemeResourceAsStream(UI uI, String themeName, String resource) {
+        VaadinServletService service = (VaadinServletService) uI.getSession().getService();
+        ServletContext servletContext = service.getServlet().getServletContext();
+        return servletContext.getResourceAsStream("/" + VaadinServlet.THEME_DIR_PATH + '/' + themeName + "/" + resource);
     }
 
     @Override
-    public String getMainDivId(VaadinSession session, VaadinRequest request,
-            Class<? extends UI> uiClass) {
+    public String getMainDivId(VaadinSession session, VaadinRequest request, Class<? extends UI> uiClass) {
         String appId = null;
         try {
-            URL appUrl = getServlet().getApplicationUrl(
-                    (VaadinServletRequest) request);
+            URL appUrl = getServlet().getApplicationUrl((VaadinServletRequest) request);
             appId = appUrl.getPath();
         } catch (MalformedURLException e) {
             // Just ignore problem here
@@ -278,8 +251,7 @@ public class VaadinServletService extends VaadinService {
         } else {
             if (!pushWarningLogged) {
                 pushWarningLogged = true;
-                getLogger().log(Level.WARNING,
-                        Constants.ATMOSPHERE_MISSING_ERROR);
+                getLogger().log(Level.WARNING, Constants.ATMOSPHERE_MISSING_ERROR);
             }
             return false;
         }

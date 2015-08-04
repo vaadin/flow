@@ -42,8 +42,7 @@ public class BigDecimalRangeValidator extends RangeValidator<BigDecimal> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public BigDecimalRangeValidator(String errorMessage, BigDecimal minValue,
-            BigDecimal maxValue) {
+    public BigDecimalRangeValidator(String errorMessage, BigDecimal minValue, BigDecimal maxValue) {
         super(errorMessage, BigDecimal.class, minValue, maxValue);
     }
 

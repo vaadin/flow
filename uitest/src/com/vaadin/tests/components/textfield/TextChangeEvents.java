@@ -21,10 +21,7 @@ public class TextChangeEvents extends TestBase {
 
             @Override
             public void textChange(TextChangeEvent event) {
-                l.log("Text change event for  "
-                        + event.getComponent().getCaption()
-                        + ", text content currently:'" + event.getText()
-                        + "' Cursor at index:" + event.getCursorPosition());
+                l.log("Text change event for  " + event.getComponent().getCaption() + ", text content currently:'" + event.getText() + "' Cursor at index:" + event.getCursorPosition());
             }
         };
 
@@ -73,11 +70,8 @@ public class TextChangeEvents extends TestBase {
      * 2010-10
      * 
      */
-    private class VaadinDeveloperNameField extends TextField implements
-            TextChangeListener {
-        private String[] names = new String[] { "Matti Tahvonen",
-                "Marc Englund", "Joonas Lehtinen", "Jouni Koivuviita",
-                "Marko Grönroos", "Artur Signell" };
+    private class VaadinDeveloperNameField extends TextField implements TextChangeListener {
+        private String[] names = new String[] { "Matti Tahvonen", "Marc Englund", "Joonas Lehtinen", "Jouni Koivuviita", "Marko Grönroos", "Artur Signell" };
 
         public VaadinDeveloperNameField() {
             setCaption("Start typing 'old' Vaadin developers.");
@@ -88,8 +82,7 @@ public class TextChangeEvents extends TestBase {
         @Override
         public void attach() {
             super.attach();
-            TestUtils.injectCSS(getUI(), ".match { background:green ;} "
-                    + ".nomatch {background:red;}");
+            TestUtils.injectCSS(getUI(), ".match { background:green ;} " + ".nomatch {background:red;}");
         }
 
         @Override

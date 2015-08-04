@@ -31,8 +31,7 @@ public class ConnectorMap {
     }
 
     @Deprecated
-    private final ComponentDetailMap idToComponentDetail = ComponentDetailMap
-            .create();
+    private final ComponentDetailMap idToComponentDetail = ComponentDetailMap.create();
 
     /**
      * Returns a {@link ServerConnector} by its id
@@ -232,8 +231,7 @@ public class ConnectorMap {
     }
 
     public JsArrayObject<ComponentConnector> getComponentConnectorsAsJsArray() {
-        JsArrayObject<ComponentConnector> result = JavaScriptObject
-                .createArray().cast();
+        JsArrayObject<ComponentConnector> result = JavaScriptObject.createArray().cast();
 
         JsArrayObject<ServerConnector> connectors = getConnectorsAsJsArray();
         int size = connectors.size();
@@ -248,8 +246,7 @@ public class ConnectorMap {
     }
 
     @Deprecated
-    private ComponentDetail getComponentDetail(
-            ComponentConnector componentConnector) {
+    private ComponentDetail getComponentDetail(ComponentConnector componentConnector) {
         return idToComponentDetail.get(componentConnector.getConnectorId());
     }
 
@@ -266,8 +263,7 @@ public class ConnectorMap {
     @Deprecated
     public Collection<? extends ServerConnector> getConnectors() {
         Collection<ComponentDetail> values = idToComponentDetail.values();
-        ArrayList<ServerConnector> arrayList = new ArrayList<ServerConnector>(
-                values.size());
+        ArrayList<ServerConnector> arrayList = new ArrayList<ServerConnector>(values.size());
         for (ComponentDetail componentDetail : values) {
             arrayList.add(componentDetail.getConnector());
         }
@@ -275,10 +271,8 @@ public class ConnectorMap {
     }
 
     public JsArrayObject<ServerConnector> getConnectorsAsJsArray() {
-        JsArrayObject<ComponentDetail> componentDetails = idToComponentDetail
-                .valuesAsJsArray();
-        JsArrayObject<ServerConnector> connectors = JavaScriptObject
-                .createArray().cast();
+        JsArrayObject<ComponentDetail> componentDetails = idToComponentDetail.valuesAsJsArray();
+        JsArrayObject<ServerConnector> connectors = JavaScriptObject.createArray().cast();
 
         int size = componentDetails.size();
         for (int i = 0; i < size; i++) {

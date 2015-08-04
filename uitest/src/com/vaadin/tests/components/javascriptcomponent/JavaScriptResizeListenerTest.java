@@ -36,8 +36,7 @@ public class JavaScriptResizeListenerTest extends MultiBrowserTest {
         openTestURL();
 
         // Get handles to relevant elements in page
-        AbstractJavaScriptComponentElement jsComponent = $(
-                AbstractJavaScriptComponentElement.class).first();
+        AbstractJavaScriptComponentElement jsComponent = $(AbstractJavaScriptComponentElement.class).first();
 
         ButtonElement sizeToggleButton = $(ButtonElement.class).first();
 

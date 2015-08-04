@@ -27,8 +27,7 @@ import com.vaadin.shared.communication.MethodInvocation;
  */
 public class JavaScriptMethodInvocation extends MethodInvocation {
 
-    public JavaScriptMethodInvocation(String connectorId, String interfaceName,
-            String methodName, Object[] parameters) {
+    public JavaScriptMethodInvocation(String connectorId, String interfaceName, String methodName, Object[] parameters) {
         super(connectorId, interfaceName, methodName, parameters);
     }
 }

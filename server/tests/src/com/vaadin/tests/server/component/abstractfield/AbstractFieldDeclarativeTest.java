@@ -28,14 +28,11 @@ import com.vaadin.ui.TextField;
  * @since 7.4
  * @author Vaadin Ltd
  */
-public class AbstractFieldDeclarativeTest extends
-        DeclarativeTestBase<AbstractField<?>> {
+public class AbstractFieldDeclarativeTest extends DeclarativeTestBase<AbstractField<?>> {
 
     @Test
     public void testPlainText() {
-        String design = "<v-text-field buffered='' validation-visible='false' invalid-committed=''"
-                + " invalid-allowed='false' required='' required-error='This is a required field'"
-                + " conversion-error='Input {0} cannot be parsed' tabindex=3 readonly=''/>";
+        String design = "<v-text-field buffered='' validation-visible='false' invalid-committed=''" + " invalid-allowed='false' required='' required-error='This is a required field'" + " conversion-error='Input {0} cannot be parsed' tabindex=3 readonly=''/>";
         AbstractField tf = new TextField();
         tf.setBuffered(true);
         tf.setBuffered(true);

@@ -34,8 +34,7 @@ public class BasicExtensionTestConnector extends AbstractExtensionConnector {
     }
 
     private void appendMessage(String action) {
-        String message = getClass().getSimpleName() + action
-                + target.getClass().getSimpleName();
+        String message = getClass().getSimpleName() + action + target.getClass().getSimpleName();
 
         DivElement element = Document.get().createDivElement();
         element.setInnerText(message);

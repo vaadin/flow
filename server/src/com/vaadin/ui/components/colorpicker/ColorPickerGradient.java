@@ -28,18 +28,15 @@ import com.vaadin.ui.AbstractComponent;
  * 
  * @since 7.0.0
  */
-public class ColorPickerGradient extends AbstractComponent implements
-        ColorSelector {
+public class ColorPickerGradient extends AbstractComponent implements ColorSelector {
 
     private static final Method COLOR_CHANGE_METHOD;
     static {
         try {
-            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod(
-                    "colorChanged", new Class[] { ColorChangeEvent.class });
+            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod("colorChanged", new Class[] { ColorChangeEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in ColorPicker");
+            throw new java.lang.RuntimeException("Internal error finding methods in ColorPicker");
         }
     }
 

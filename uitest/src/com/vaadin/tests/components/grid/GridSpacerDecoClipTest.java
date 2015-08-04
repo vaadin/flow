@@ -56,9 +56,7 @@ public class GridSpacerDecoClipTest extends MultiBrowserTest {
         nearToBottomRow.doubleClick();
         deco = getSpacerDeco(0);
         System.out.println("Lower deco.clip = " + deco.getCssValue("clip"));
-        Assert.assertNotEquals(
-                "Spacer deco clipping is not updated after opening another spacer",
-                "auto", deco.getCssValue("clip"));
+        Assert.assertNotEquals("Spacer deco clipping is not updated after opening another spacer", "auto", deco.getCssValue("clip"));
     }
 
     @Test
@@ -85,14 +83,11 @@ public class GridSpacerDecoClipTest extends MultiBrowserTest {
         String clip = deco.getCssValue("clip");
         System.out.println("deco.rect = " + clip);
 
-        Assert.assertTrue(
-                "Part of lower Row Details is visible, its deco clip height should be positive, but it is negative",
-                clip.indexOf('-') < 0);
+        Assert.assertTrue("Part of lower Row Details is visible, its deco clip height should be positive, but it is negative", clip.indexOf('-') < 0);
     }
 
     private TestBenchElement getSpacerDeco(int index) {
         SearchContext context = getContext();
-        return (TestBenchElement) context.findElements(
-                By.className(SPACER_CSS_CLASS_DECO)).get(index);
+        return (TestBenchElement) context.findElements(By.className(SPACER_CSS_CLASS_DECO)).get(index);
     }
 }

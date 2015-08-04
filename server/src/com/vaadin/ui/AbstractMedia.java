@@ -87,15 +87,13 @@ public abstract class AbstractMedia extends AbstractComponent {
     public void addSource(Resource source) {
         if (source != null) {
             List<URLReference> sources = getState().sources;
-            sources.add(new ResourceReference(source, this, Integer
-                    .toString(sources.size())));
+            sources.add(new ResourceReference(source, this, Integer.toString(sources.size())));
             getState().sourceTypes.add(source.getMIMEType());
         }
     }
 
     @Override
-    public boolean handleConnectorRequest(VaadinRequest request,
-            VaadinResponse response, String path) throws IOException {
+    public boolean handleConnectorRequest(VaadinRequest request, VaadinResponse response, String path) throws IOException {
         Matcher matcher = Pattern.compile("(\\d+)(/.*)?").matcher(path);
         if (!matcher.matches()) {
             return super.handleConnectorRequest(request, response, path);
@@ -111,15 +109,12 @@ public abstract class AbstractMedia extends AbstractComponent {
             int sourceIndex = Integer.parseInt(matcher.group(1));
 
             if (sourceIndex < 0 || sourceIndex >= sources.size()) {
-                getLogger().log(Level.WARNING,
-                        "Requested source index {0} is out of bounds",
-                        sourceIndex);
+                getLogger().log(Level.WARNING, "Requested source index {0} is out of bounds", sourceIndex);
                 return false;
             }
 
             URLReference reference = sources.get(sourceIndex);
-            ConnectorResource resource = (ConnectorResource) ResourceReference
-                    .getResource(reference);
+            ConnectorResource resource = (ConnectorResource) ResourceReference.getResource(reference);
             stream = resource.getStream();
         } finally {
             session.unlock();
@@ -274,8 +269,7 @@ public abstract class AbstractMedia extends AbstractComponent {
 
         for (Resource r : getSources()) {
             Attributes attr = design.appendElement("source").attributes();
-            DesignAttributeHandler.writeAttribute("href", attr, r, null,
-                    Resource.class);
+            DesignAttributeHandler.writeAttribute("href", attr, r, null, Resource.class);
         }
     }
 
@@ -285,11 +279,8 @@ public abstract class AbstractMedia extends AbstractComponent {
 
         String altText = "";
         for (Node child : design.childNodes()) {
-            if (child instanceof Element
-                    && ((Element) child).tagName().equals("source")
-                    && child.hasAttr("href")) {
-                addSource(DesignAttributeHandler.readAttribute("href",
-                        child.attributes(), Resource.class));
+            if (child instanceof Element && ((Element) child).tagName().equals("source") && child.hasAttr("href")) {
+                addSource(DesignAttributeHandler.readAttribute("href", child.attributes(), Resource.class));
             } else {
                 altText += child.toString();
             }

@@ -107,9 +107,7 @@ public class ApplicationConnection implements HasHandlers {
      * <pre>
      * if (sessionExpired) {
      *     response.setHeader(&quot;Content-Type&quot;, &quot;text/html&quot;);
-     *     response.getWriter().write(
-     *             myLoginPageHtml + &quot;&lt;!-- Vaadin-Refresh: &quot;
-     *                     + request.getContextPath() + &quot; --&gt;&quot;);
+     *     response.getWriter().write(myLoginPageHtml + &quot;&lt;!-- Vaadin-Refresh: &quot; + request.getContextPath() + &quot; --&gt;&quot;);
      * }
      * </pre>
      */
@@ -169,8 +167,7 @@ public class ApplicationConnection implements HasHandlers {
         }
     }
 
-    public static class ResponseHandlingEndedEvent extends
-            ApplicationConnectionEvent {
+    public static class ResponseHandlingEndedEvent extends ApplicationConnectionEvent {
 
         public static Type<CommunicationHandler> TYPE = new Type<CommunicationHandler>();
 
@@ -189,8 +186,7 @@ public class ApplicationConnection implements HasHandlers {
         }
     }
 
-    public static abstract class ApplicationConnectionEvent extends
-            GwtEvent<CommunicationHandler> {
+    public static abstract class ApplicationConnectionEvent extends GwtEvent<CommunicationHandler> {
 
         private ApplicationConnection connection;
 
@@ -204,8 +200,7 @@ public class ApplicationConnection implements HasHandlers {
 
     }
 
-    public static class ResponseHandlingStartedEvent extends
-            ApplicationConnectionEvent {
+    public static class ResponseHandlingStartedEvent extends ApplicationConnectionEvent {
 
         public ResponseHandlingStartedEvent(ApplicationConnection connection) {
             super(connection);
@@ -236,8 +231,7 @@ public class ApplicationConnection implements HasHandlers {
      * @since 7.1.8
      * @author Vaadin Ltd
      */
-    public static class ApplicationStoppedEvent extends
-            GwtEvent<ApplicationStoppedHandler> {
+    public static class ApplicationStoppedEvent extends GwtEvent<ApplicationStoppedHandler> {
 
         public static Type<ApplicationStoppedHandler> TYPE = new Type<ApplicationStoppedHandler>();
 
@@ -345,8 +339,7 @@ public class ApplicationConnection implements HasHandlers {
 
     public ApplicationConnection() {
         // Assuming UI data is eagerly loaded
-        ConnectorBundleLoader.get().loadBundle(
-                ConnectorBundleLoader.EAGER_BUNDLE_NAME, null);
+        ConnectorBundleLoader.get().loadBundle(ConnectorBundleLoader.EAGER_BUNDLE_NAME, null);
         uIConnector = GWT.create(UIConnector.class);
         rpcManager = GWT.create(RpcManager.class);
         tooltip = GWT.create(VTooltip.class);
@@ -354,13 +347,11 @@ public class ApplicationConnection implements HasHandlers {
         loadingIndicator.setConnection(this);
         serverRpcQueue = GWT.create(ServerRpcQueue.class);
         serverRpcQueue.setConnection(this);
-        communicationProblemHandler = GWT
-                .create(ReconnectingCommunicationProblemHandler.class);
+        communicationProblemHandler = GWT.create(ReconnectingCommunicationProblemHandler.class);
         communicationProblemHandler.setConnection(this);
         serverMessageHandler = GWT.create(ServerMessageHandler.class);
         serverMessageHandler.setConnection(this);
-        serverCommunicationHandler = GWT
-                .create(ServerCommunicationHandler.class);
+        serverCommunicationHandler = GWT.create(ServerCommunicationHandler.class);
         serverCommunicationHandler.setConnection(this);
     }
 
@@ -368,15 +359,10 @@ public class ApplicationConnection implements HasHandlers {
         getLogger().info("Starting application " + cnf.getRootPanelId());
         getLogger().info("Using theme: " + cnf.getThemeName());
 
-        getLogger().info(
-                "Vaadin application servlet version: "
-                        + cnf.getServletVersion());
+        getLogger().info("Vaadin application servlet version: " + cnf.getServletVersion());
 
         if (!cnf.getServletVersion().equals(Version.getFullVersion())) {
-            getLogger()
-                    .severe("Warning: your widget set seems to be built with a different "
-                            + "version than the one used on server. Unexpected "
-                            + "behavior may occur.");
+            getLogger().severe("Warning: your widget set seems to be built with a different " + "version than the one used on server. Unexpected " + "behavior may occur.");
         }
 
         this.widgetSet = widgetSet;
@@ -403,12 +389,9 @@ public class ApplicationConnection implements HasHandlers {
         // Ensure the overlay container is added to the dom and set as a live
         // area for assistive devices
         Element overlayContainer = VOverlay.getOverlayContainer(this);
-        Roles.getAlertRole().setAriaLiveProperty(overlayContainer,
-                LiveValue.ASSERTIVE);
-        VOverlay.setOverlayContainerLabel(this,
-                getUIConnector().getState().overlayContainerLabel);
-        Roles.getAlertRole().setAriaRelevantProperty(overlayContainer,
-                RelevantValue.ADDITIONS);
+        Roles.getAlertRole().setAriaLiveProperty(overlayContainer, LiveValue.ASSERTIVE);
+        VOverlay.setOverlayContainerLabel(this, getUIConnector().getState().overlayContainerLabel);
+        Roles.getAlertRole().setAriaRelevantProperty(overlayContainer, RelevantValue.ADDITIONS);
     }
 
     /**
@@ -452,14 +435,10 @@ public class ApplicationConnection implements HasHandlers {
      * @return true if the client has some work to be done, false otherwise
      */
     private boolean isActive() {
-        return !getServerMessageHandler().isInitialUidlHandled()
-                || isWorkPending()
-                || getServerCommunicationHandler().hasActiveRequest()
-                || isExecutingDeferredCommands();
+        return !getServerMessageHandler().isInitialUidlHandled() || isWorkPending() || getServerCommunicationHandler().hasActiveRequest() || isExecutingDeferredCommands();
     }
 
-    private native void initializeTestbenchHooks(
-            ComponentLocator componentLocator, String TTAppId)
+    private native void initializeTestbenchHooks(ComponentLocator componentLocator, String TTAppId)
     /*-{
         var ap = this;
         var client = {};
@@ -622,10 +601,7 @@ public class ApplicationConnection implements HasHandlers {
 
             // Show this message just once
             if (cssWaits++ == 0) {
-                getLogger().warning(
-                        "Assuming CSS loading is not complete, "
-                                + "postponing render phase. "
-                                + "(.v-loading-indicator height == 0)");
+                getLogger().warning("Assuming CSS loading is not complete, " + "postponing render phase. " + "(.v-loading-indicator height == 0)");
             }
         } else {
             cssLoaded = true;
@@ -644,8 +620,7 @@ public class ApplicationConnection implements HasHandlers {
      * @return
      */
     protected boolean isCSSLoaded() {
-        return cssLoaded
-                || getLoadingIndicator().getElement().getOffsetHeight() != 0;
+        return cssLoaded || getLoadingIndicator().getElement().getOffsetHeight() != 0;
     }
 
     /**
@@ -693,8 +668,7 @@ public class ApplicationConnection implements HasHandlers {
      *            An ErrorMessage describing the error.
      */
     protected void showError(String details, ErrorMessage message) {
-        VNotification.showError(this, message.getCaption(),
-                message.getMessage(), details, message.getUrl());
+        VNotification.showError(this, message.getCaption(), message.getMessage(), details, message.getUrl());
     }
 
     /**
@@ -702,8 +676,7 @@ public class ApplicationConnection implements HasHandlers {
      */
     private boolean isWorkPending() {
         ConnectorMap connectorMap = getConnectorMap();
-        JsArrayObject<ServerConnector> connectors = connectorMap
-                .getConnectorsAsJsArray();
+        JsArrayObject<ServerConnector> connectors = connectorMap.getConnectorsAsJsArray();
         int size = connectors.size();
         for (int i = 0; i < size; i++) {
             ServerConnector conn = connectors.get(i);
@@ -722,8 +695,7 @@ public class ApplicationConnection implements HasHandlers {
     }
 
     private static boolean isWorkPending(Object object) {
-        return object instanceof DeferredWorker
-                && ((DeferredWorker) object).isWorkPending();
+        return object instanceof DeferredWorker && ((DeferredWorker) object).isWorkPending();
     }
 
     /**
@@ -778,9 +750,7 @@ public class ApplicationConnection implements HasHandlers {
 
             @Override
             public void onError(ResourceLoadEvent event) {
-                getLogger()
-                        .severe(event.getResourceUrl()
-                                + " could not be loaded, or the load detection failed because the stylesheet is empty.");
+                getLogger().severe(event.getResourceUrl() + " could not be loaded, or the load detection failed because the stylesheet is empty.");
                 // The show must go on
                 onLoad(event);
             }
@@ -814,8 +784,7 @@ public class ApplicationConnection implements HasHandlers {
 
             @Override
             public void onError(ResourceLoadEvent event) {
-                getLogger().severe(
-                        event.getResourceUrl() + " could not be loaded.");
+                getLogger().severe(event.getResourceUrl() + " could not be loaded.");
                 // The show must go on
                 onLoad(event);
             }
@@ -886,13 +855,11 @@ public class ApplicationConnection implements HasHandlers {
      * 
      * @return A new ServerConnector of the given type
      */
-    private ServerConnector createAndRegisterConnector(String connectorId,
-            int connectorType) {
+    private ServerConnector createAndRegisterConnector(String connectorId, int connectorType) {
         Profiler.enter("ApplicationConnection.createAndRegisterConnector");
 
         // Create and register a new connector with the given type
-        ServerConnector p = widgetSet.createConnector(connectorType,
-                configuration);
+        ServerConnector p = widgetSet.createConnector(connectorType, configuration);
         connectorMap.registerConnector(connectorId, p);
         p.doInit(connectorId, this);
 
@@ -965,8 +932,7 @@ public class ApplicationConnection implements HasHandlers {
      * @return URI to the current theme
      */
     public String getThemeUri() {
-        return configuration.getVaadinDirUrl() + "themes/"
-                + getUIConnector().getActiveTheme();
+        return configuration.getVaadinDirUrl() + "themes/" + getUIConnector().getActiveTheme();
     }
 
     /* Extended title handling */
@@ -1023,8 +989,7 @@ public class ApplicationConnection implements HasHandlers {
      *             {@link AbstractConnector#hasEventListener(String)} instead
      */
     @Deprecated
-    public boolean hasEventListeners(ComponentConnector connector,
-            String eventIdentifier) {
+    public boolean hasEventListeners(ComponentConnector connector, String eventIdentifier) {
         return connector.hasEventListener(eventIdentifier);
     }
 
@@ -1055,9 +1020,7 @@ public class ApplicationConnection implements HasHandlers {
      */
     @Deprecated
     public void unregisterPaintable(ServerConnector p) {
-        getLogger().info(
-                "unregisterPaintable (unnecessarily) called for "
-                        + Util.getConnectorString(p));
+        getLogger().info("unregisterPaintable (unnecessarily) called for " + Util.getConnectorString(p));
     }
 
     /**
@@ -1082,19 +1045,14 @@ public class ApplicationConnection implements HasHandlers {
      * @return
      */
     @Deprecated
-    public boolean updateComponent(Widget component, UIDL uidl,
-            boolean manageCaption) {
-        ComponentConnector connector = getConnectorMap()
-                .getConnector(component);
+    public boolean updateComponent(Widget component, UIDL uidl, boolean manageCaption) {
+        ComponentConnector connector = getConnectorMap().getConnector(component);
         if (!AbstractComponentConnector.isRealUpdate(uidl)) {
             return true;
         }
 
         if (!manageCaption) {
-            getLogger()
-                    .warning(
-                            Util.getConnectorString(connector)
-                                    + " called updateComponent with manageCaption=false. The parameter was ignored - override delegateCaption() to return false instead. It is however not recommended to use caption this way at all.");
+            getLogger().warning(Util.getConnectorString(connector) + " called updateComponent with manageCaption=false. The parameter was ignored - override delegateCaption() to return false instead. It is however not recommended to use caption this way at all.");
         }
         return false;
     }
@@ -1115,8 +1073,7 @@ public class ApplicationConnection implements HasHandlers {
             return false;
         }
 
-        return hasEventListeners(getConnectorMap().getConnector(widget),
-                eventIdentifier);
+        return hasEventListeners(getConnectorMap().getConnector(widget), eventIdentifier);
     }
 
     /**
@@ -1171,30 +1128,23 @@ public class ApplicationConnection implements HasHandlers {
     public void setApplicationRunning(boolean applicationRunning) {
         if (getState() == State.TERMINATED) {
             if (applicationRunning) {
-                getLogger()
-                        .severe("Tried to restart a terminated application. This is not supported");
+                getLogger().severe("Tried to restart a terminated application. This is not supported");
             } else {
-                getLogger()
-                        .warning(
-                                "Tried to stop a terminated application. This should not be done");
+                getLogger().warning("Tried to stop a terminated application. This should not be done");
             }
             return;
         } else if (getState() == State.INITIALIZING) {
             if (applicationRunning) {
                 state = State.RUNNING;
             } else {
-                getLogger()
-                        .warning(
-                                "Tried to stop the application before it has started. This should not be done");
+                getLogger().warning("Tried to stop the application before it has started. This should not be done");
             }
         } else if (getState() == State.RUNNING) {
             if (!applicationRunning) {
                 state = State.TERMINATED;
                 eventBus.fireEvent(new ApplicationStoppedEvent());
             } else {
-                getLogger()
-                        .warning(
-                                "Tried to start an already running application. This should not be done");
+                getLogger().warning("Tried to start an already running application. This should not be done");
             }
         }
     }
@@ -1209,8 +1159,7 @@ public class ApplicationConnection implements HasHandlers {
         return state == State.RUNNING;
     }
 
-    public <H extends EventHandler> HandlerRegistration addHandler(
-            GwtEvent.Type<H> type, H handler) {
+    public <H extends EventHandler> HandlerRegistration addHandler(GwtEvent.Type<H> type, H handler) {
         return eventBus.addHandler(type, handler);
     }
 
@@ -1241,8 +1190,7 @@ public class ApplicationConnection implements HasHandlers {
         if (focusedElement == null) {
             return null;
         }
-        return Util.getConnectorForElement(this, getUIConnector().getWidget(),
-                focusedElement);
+        return Util.getConnectorForElement(this, getUIConnector().getWidget(), focusedElement);
     }
 
     private static Logger getLogger() {

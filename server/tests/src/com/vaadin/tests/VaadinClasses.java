@@ -82,8 +82,7 @@ public class VaadinClasses {
 
     public static List<Class<? extends Object>> getAllServerSideClasses() {
         try {
-            return findClassesNoTests(Object.class, "com.vaadin", new String[] {
-                    "com.vaadin.tests", "com.vaadin.client" });
+            return findClassesNoTests(Object.class, "com.vaadin", new String[] { "com.vaadin.tests", "com.vaadin.client" });
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -123,9 +122,7 @@ public class VaadinClasses {
     public static List<Class<?>> getBasicComponentTests() {
         try {
             // Given as name to avoid dependencies on testbench source folder
-            return (List) findClasses(
-                    Class.forName("com.vaadin.tests.components.AbstractComponentTest"),
-                    "com.vaadin.tests.components");
+            return (List) findClasses(Class.forName("com.vaadin.tests.components.AbstractComponentTest"), "com.vaadin.tests.components");
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -133,13 +130,11 @@ public class VaadinClasses {
 
     }
 
-    private static <T> List<Class<? extends T>> findClasses(Class<T> baseClass,
-            String basePackage) throws IOException {
+    private static <T> List<Class<? extends T>> findClasses(Class<T> baseClass, String basePackage) throws IOException {
         return findClasses(baseClass, basePackage, new String[] {});
     }
 
-    private static <T> List<Class<? extends T>> findClasses(Class<T> baseClass,
-            String basePackage, String[] ignoredPackages) throws IOException {
+    private static <T> List<Class<? extends T>> findClasses(Class<T> baseClass, String basePackage, String[] ignoredPackages) throws IOException {
         List<Class<? extends T>> classes = new ArrayList<Class<? extends T>>();
         String basePackageDirName = "/" + basePackage.replace('.', '/');
         URL location = VaadinSession.class.getResource(basePackageDirName);
@@ -147,11 +142,9 @@ public class VaadinClasses {
             try {
                 File f = new File(location.toURI());
                 if (!f.exists()) {
-                    throw new IOException("Directory " + f.toString()
-                            + " does not exist");
+                    throw new IOException("Directory " + f.toString() + " does not exist");
                 }
-                findPackages(f, basePackage, baseClass, classes,
-                        ignoredPackages);
+                findPackages(f, basePackage, baseClass, classes, ignoredPackages);
             } catch (URISyntaxException e) {
                 throw new IOException(e.getMessage());
             }
@@ -171,11 +164,8 @@ public class VaadinClasses {
         return classes;
     }
 
-    private static <T> List<Class<? extends T>> findClassesNoTests(
-            Class<T> baseClass, String basePackage, String[] ignoredPackages)
-            throws IOException {
-        List<Class<? extends T>> classes = findClasses(baseClass, basePackage,
-                ignoredPackages);
+    private static <T> List<Class<? extends T>> findClassesNoTests(Class<T> baseClass, String basePackage, String[] ignoredPackages) throws IOException {
+        List<Class<? extends T>> classes = findClasses(baseClass, basePackage, ignoredPackages);
         List<Class<? extends T>> classesNoTests = new ArrayList<Class<? extends T>>();
         for (Class<? extends T> clazz : classes) {
             if (!clazz.getName().contains("Test")) {
@@ -194,25 +184,19 @@ public class VaadinClasses {
         return classesNoTests;
     }
 
-    private static <T> void findPackages(JarURLConnection juc,
-            String javaPackage, Class<T> baseClass,
-            Collection<Class<? extends T>> result) throws IOException {
+    private static <T> void findPackages(JarURLConnection juc, String javaPackage, Class<T> baseClass, Collection<Class<? extends T>> result) throws IOException {
         String prefix = "com/vaadin/ui";
         Enumeration<JarEntry> ent = juc.getJarFile().entries();
         while (ent.hasMoreElements()) {
             JarEntry e = ent.nextElement();
-            if (e.getName().endsWith(".class")
-                    && e.getName().startsWith(prefix)) {
-                String fullyQualifiedClassName = e.getName().replace('/', '.')
-                        .replace(".class", "");
+            if (e.getName().endsWith(".class") && e.getName().startsWith(prefix)) {
+                String fullyQualifiedClassName = e.getName().replace('/', '.').replace(".class", "");
                 addClassIfMatches(result, fullyQualifiedClassName, baseClass);
             }
         }
     }
 
-    private static <T> void findPackages(File parent, String javaPackage,
-            Class<T> baseClass, Collection<Class<? extends T>> result,
-            String[] ignoredPackages) {
+    private static <T> void findPackages(File parent, String javaPackage, Class<T> baseClass, Collection<Class<? extends T>> result, String[] ignoredPackages) {
         for (String ignoredPackage : ignoredPackages) {
             if (javaPackage.equals(ignoredPackage)) {
                 return;
@@ -221,11 +205,9 @@ public class VaadinClasses {
 
         for (File file : parent.listFiles()) {
             if (file.isDirectory()) {
-                findPackages(file, javaPackage + "." + file.getName(),
-                        baseClass, result, ignoredPackages);
+                findPackages(file, javaPackage + "." + file.getName(), baseClass, result, ignoredPackages);
             } else if (file.getName().endsWith(".class")) {
-                String fullyQualifiedClassName = javaPackage + "."
-                        + file.getName().replace(".class", "");
+                String fullyQualifiedClassName = javaPackage + "." + file.getName().replace(".class", "");
                 addClassIfMatches(result, fullyQualifiedClassName, baseClass);
             }
         }
@@ -233,17 +215,12 @@ public class VaadinClasses {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> void addClassIfMatches(
-            Collection<Class<? extends T>> result,
-            String fullyQualifiedClassName, Class<T> baseClass) {
+    private static <T> void addClassIfMatches(Collection<Class<? extends T>> result, String fullyQualifiedClassName, Class<T> baseClass) {
         try {
             // Try to load the class
 
             Class<?> c = Class.forName(fullyQualifiedClassName);
-            if (baseClass.isAssignableFrom(c)
-                    && !Modifier.isAbstract(c.getModifiers())
-                    && !c.isAnonymousClass() && !c.isMemberClass()
-                    && !c.isLocalClass()) {
+            if (baseClass.isAssignableFrom(c) && !Modifier.isAbstract(c.getModifiers()) && !c.isAnonymousClass() && !c.isMemberClass() && !c.isLocalClass()) {
                 result.add((Class<? extends T>) c);
             }
         } catch (Exception e) {

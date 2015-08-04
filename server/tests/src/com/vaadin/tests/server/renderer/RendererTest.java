@@ -68,19 +68,14 @@ public class RendererTest {
     private static class TestConverter implements Converter<String, TestBean> {
 
         @Override
-        public TestBean convertToModel(String value,
-                Class<? extends TestBean> targetType, Locale locale)
-                throws ConversionException {
+        public TestBean convertToModel(String value, Class<? extends TestBean> targetType, Locale locale) throws ConversionException {
             return null;
         }
 
         @Override
-        public String convertToPresentation(TestBean value,
-                Class<? extends String> targetType, Locale locale)
-                throws ConversionException {
+        public String convertToPresentation(TestBean value, Class<? extends String> targetType, Locale locale) throws ConversionException {
             if (value instanceof ExtendedBean) {
-                return "ExtendedBean(" + value.i + ", "
-                        + ((ExtendedBean) value).f + ")";
+                return "ExtendedBean(" + value.i + ", " + ((ExtendedBean) value).f + ")";
             } else {
                 return "TestBean(" + value.i + ")";
             }
@@ -150,8 +145,7 @@ public class RendererTest {
     @Test
     public void testDefaultRendererAndConverter() throws Exception {
         assertSame(TextRenderer.class, intColumn.getRenderer().getClass());
-        assertSame(StringToIntegerConverter.class, intColumn.getConverter()
-                .getClass());
+        assertSame(StringToIntegerConverter.class, intColumn.getConverter().getClass());
 
         assertSame(TextRenderer.class, textColumn.getRenderer().getClass());
         // String->String; converter not needed
@@ -165,8 +159,7 @@ public class RendererTest {
     @Test
     public void testFindCompatibleConverter() throws Exception {
         intColumn.setRenderer(renderer());
-        assertSame(StringToIntegerConverter.class, intColumn.getConverter()
-                .getClass());
+        assertSame(StringToIntegerConverter.class, intColumn.getConverter().getClass());
 
         textColumn.setRenderer(renderer());
         assertNull(textColumn.getConverter());
@@ -196,8 +189,7 @@ public class RendererTest {
 
     @Test
     public void testEncodingWithoutConverter() throws Exception {
-        assertEquals("TestBean [42]", render(beanColumn, new TestBean())
-                .asString());
+        assertEquals("TestBean [42]", render(beanColumn, new TestBean()).asString());
     }
 
     @Test
@@ -205,13 +197,10 @@ public class RendererTest {
         beanColumn.setRenderer(renderer(), converter());
         extendedBeanColumn.setRenderer(renderer(), converter());
 
-        assertEquals("renderer(TestBean(42))",
-                render(beanColumn, new TestBean()).asString());
-        assertEquals("renderer(ExtendedBean(42, 3.14))",
-                render(beanColumn, new ExtendedBean()).asString());
+        assertEquals("renderer(TestBean(42))", render(beanColumn, new TestBean()).asString());
+        assertEquals("renderer(ExtendedBean(42, 3.14))", render(beanColumn, new ExtendedBean()).asString());
 
-        assertEquals("renderer(ExtendedBean(42, 3.14))",
-                render(extendedBeanColumn, new ExtendedBean()).asString());
+        assertEquals("renderer(ExtendedBean(42, 3.14))", render(extendedBeanColumn, new ExtendedBean()).asString());
     }
 
     @Test
@@ -235,21 +224,15 @@ public class RendererTest {
 
         textColumn.setRenderer(new TextRenderer("default value"));
         htmlColumn.setRenderer(new HtmlRenderer("default value"));
-        numberColumn.setRenderer(new NumberRenderer("%s", Locale.getDefault(),
-                "default value"));
+        numberColumn.setRenderer(new NumberRenderer("%s", Locale.getDefault(), "default value"));
         dateColumn.setRenderer(new DateRenderer("%s", "default value"));
         buttonColumn.setRenderer(new ButtonRenderer("default value"));
 
-        assertEquals("default value", textColumn.getRenderer().encode(null)
-                .asString());
-        assertEquals("default value", htmlColumn.getRenderer().encode(null)
-                .asString());
-        assertEquals("default value", numberColumn.getRenderer().encode(null)
-                .asString());
-        assertEquals("default value", dateColumn.getRenderer().encode(null)
-                .asString());
-        assertEquals("default value", buttonColumn.getRenderer().encode(null)
-                .asString());
+        assertEquals("default value", textColumn.getRenderer().encode(null).asString());
+        assertEquals("default value", htmlColumn.getRenderer().encode(null).asString());
+        assertEquals("default value", numberColumn.getRenderer().encode(null).asString());
+        assertEquals("default value", dateColumn.getRenderer().encode(null).asString());
+        assertEquals("default value", buttonColumn.getRenderer().encode(null).asString());
     }
 
     private TestConverter converter() {
@@ -261,7 +244,6 @@ public class RendererTest {
     }
 
     private JsonValue render(Column column, Object value) {
-        return AbstractRenderer.encodeValue(value, column.getRenderer(),
-                column.getConverter(), grid.getLocale());
+        return AbstractRenderer.encodeValue(value, column.getRenderer(), column.getConverter(), grid.getLocale());
     }
 }

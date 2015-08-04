@@ -49,8 +49,7 @@ public class DefaultFieldFactory implements FormFieldFactory, TableFieldFactory 
     }
 
     @Override
-    public Field<?> createField(Item item, Object propertyId,
-            Component uiContext) {
+    public Field<?> createField(Item item, Object propertyId, Component uiContext) {
         Class<?> type = item.getItemProperty(propertyId).getType();
         Field<?> field = createFieldByPropertyType(type);
         field.setCaption(createCaptionByPropertyId(propertyId));
@@ -58,10 +57,8 @@ public class DefaultFieldFactory implements FormFieldFactory, TableFieldFactory 
     }
 
     @Override
-    public Field createField(Container container, Object itemId,
-            Object propertyId, Component uiContext) {
-        Property containerProperty = container.getContainerProperty(itemId,
-                propertyId);
+    public Field createField(Container container, Object itemId, Object propertyId, Component uiContext) {
+        Property containerProperty = container.getContainerProperty(itemId, propertyId);
         Class<?> type = containerProperty.getType();
         Field<?> field = createFieldByPropertyType(type);
         field.setCaption(createCaptionByPropertyId(propertyId));

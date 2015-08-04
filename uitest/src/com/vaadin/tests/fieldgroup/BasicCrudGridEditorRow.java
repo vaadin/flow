@@ -40,18 +40,13 @@ public class BasicCrudGridEditorRow extends AbstractBasicCrud {
         grid.addSelectionListener(new SelectionListener() {
             @Override
             public void select(SelectionEvent event) {
-                Item item = grid.getContainerDataSource().getItem(
-                        grid.getSelectedRow());
+                Item item = grid.getContainerDataSource().getItem(grid.getSelectedRow());
                 form.edit((BeanItem<ComplexPerson>) item);
             }
         });
         grid.setEditorEnabled(true);
         grid.setSizeFull();
-        grid.getColumn("age")
-                .getEditorField()
-                .addValidator(
-                        new IntegerRangeValidator("Must be between 0 and 100",
-                                0, 100));
+        grid.getColumn("age").getEditorField().addValidator(new IntegerRangeValidator("Must be between 0 and 100", 0, 100));
         addComponent(grid);
         getLayout().setExpandRatio(grid, 1);
     }

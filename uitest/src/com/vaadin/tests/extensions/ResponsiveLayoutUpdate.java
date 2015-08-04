@@ -35,15 +35,13 @@ public class ResponsiveLayoutUpdate extends AbstractTestUI {
         setContent(layout);
         Responsive.makeResponsive(layout);
 
-        Label label = new Label(
-                "This label changes its size between the breakpoints, allowing more space for the adjacent component.");
+        Label label = new Label("This label changes its size between the breakpoints, allowing more space for the adjacent component.");
         label.addStyleName("change-width");
         label.setSizeUndefined();
         layout.addComponent(label);
 
         Panel panel = new Panel("Panel");
-        panel.setContent(new Label(
-                "This Panel should be maximized in both breakpoints."));
+        panel.setContent(new Label("This Panel should be maximized in both breakpoints."));
         panel.setSizeFull();
         layout.addComponent(panel);
         layout.setExpandRatio(panel, 1);

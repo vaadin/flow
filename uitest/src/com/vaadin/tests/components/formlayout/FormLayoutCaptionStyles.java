@@ -17,20 +17,19 @@ public class FormLayoutCaptionStyles extends TestBase {
         final TextField f2 = createTextField("Text field 2", "bold");
 
         fl.addComponent(f1);
-        fl.addComponent(new Button("Toggle Text field 2 bold style",
-                new Button.ClickListener() {
+        fl.addComponent(new Button("Toggle Text field 2 bold style", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        if ("bold".equals(f2.getStyleName())) {
-                            f2.setStyleName("");
-                        } else {
-                            f2.setStyleName("bold");
-                        }
+            @Override
+            public void buttonClick(ClickEvent event) {
+                if ("bold".equals(f2.getStyleName())) {
+                    f2.setStyleName("");
+                } else {
+                    f2.setStyleName("bold");
+                }
 
-                    }
+            }
 
-                }));
+        }));
         fl.addComponent(f2);
 
         addComponent(fl);

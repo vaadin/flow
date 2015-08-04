@@ -41,12 +41,10 @@ public class PopupDateFieldInputPromptTest extends MultiBrowserTest {
     public void testInputPrompt() {
         openTestURL();
         TextFieldElement textField = $(TextFieldElement.class).first();
-        final PopupDateFieldElement dateField = $(PopupDateFieldElement.class)
-                .first();
+        final PopupDateFieldElement dateField = $(PopupDateFieldElement.class).first();
 
         // ensure initial state
-        Assert.assertFalse("DateField required when it shouldn't be.",
-                isRequired(dateField));
+        Assert.assertFalse("DateField required when it shouldn't be.", isRequired(dateField));
         WebElement input = dateField.findElement(By.className("v-textfield"));
         Assert.assertEquals("prompt", input.getAttribute("value"));
 
@@ -55,15 +53,13 @@ public class PopupDateFieldInputPromptTest extends MultiBrowserTest {
 
         // wait for ValueChange to update DateField's state and the DateField to
         // gain focus.
-        waitForElementRequiredAndFocused(dateField,
-                By.className("v-textfield-focus"));
+        waitForElementRequiredAndFocused(dateField, By.className("v-textfield-focus"));
 
         // ensure prompt hasn't come back when field was set required
         Assert.assertNotEquals("prompt", input.getAttribute("value"));
     }
 
-    private void waitForElementRequiredAndFocused(
-            final PopupDateFieldElement dateField, final By locator) {
+    private void waitForElementRequiredAndFocused(final PopupDateFieldElement dateField, final By locator) {
         waitUntil(new ExpectedCondition<Boolean>() {
 
             @Override
@@ -78,8 +74,7 @@ public class PopupDateFieldInputPromptTest extends MultiBrowserTest {
 
             @Override
             public String toString() {
-                return "dateField to become required and presence of element located by: "
-                        + locator;
+                return "dateField to become required and presence of element located by: " + locator;
             }
         });
     }

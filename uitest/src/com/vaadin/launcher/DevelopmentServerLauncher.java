@@ -75,8 +75,7 @@ public class DevelopmentServerLauncher {
      */
     public static void main(String[] args) {
         System.setProperty("java.awt.headless", "true");
-        System.setProperty("org.eclipse.jetty.util.log.class",
-                JavaUtilLog.class.getName());
+        System.setProperty("org.eclipse.jetty.util.log.class", JavaUtilLog.class.getName());
 
         assertAssertionsEnabled();
 
@@ -122,9 +121,7 @@ public class DevelopmentServerLauncher {
         try {
             assert false;
 
-            System.err.println("You should run "
-                    + DevelopmentServerLauncher.class.getSimpleName()
-                    + " with assertions enabled. Add -ea as a VM argument.");
+            System.err.println("You should run " + DevelopmentServerLauncher.class.getSimpleName() + " with assertions enabled. Add -ea as a VM argument.");
         } catch (AssertionError e) {
             // All is fine
         }
@@ -138,8 +135,7 @@ public class DevelopmentServerLauncher {
      * @throws Exception
      * @throws Exception
      */
-    protected static String runServer(Map<String, String> serverArgs,
-            String mode) throws Exception {
+    protected static String runServer(Map<String, String> serverArgs, String mode) throws Exception {
 
         // Assign default values for some arguments
         assignDefault(serverArgs, "webroot", "WebContent");
@@ -155,14 +151,7 @@ public class DevelopmentServerLauncher {
         }
 
         // Add help for System.out
-        System.out
-                .println("-------------------------------------------------\n"
-                        + "Starting Vaadin in "
-                        + mode
-                        + ".\n"
-                        + "Running in http://localhost:"
-                        + port
-                        + "\n-------------------------------------------------\n");
+        System.out.println("-------------------------------------------------\n" + "Starting Vaadin in " + mode + ".\n" + "Running in http://localhost:" + port + "\n-------------------------------------------------\n");
 
         final Server server = new Server();
 
@@ -194,8 +183,7 @@ public class DevelopmentServerLauncher {
             String[] paths = serverArgs.get("slowdown").split(",");
             for (String p : paths) {
                 System.out.println("Slowing down: " + p);
-                webappcontext.addFilter(SlowFilter.class, p,
-                        EnumSet.of(DispatcherType.REQUEST));
+                webappcontext.addFilter(SlowFilter.class, p, EnumSet.of(DispatcherType.REQUEST));
             }
         }
         // --cache=/run/APP/PUBLISHED/*,/other/path/asd.jpg
@@ -204,8 +192,7 @@ public class DevelopmentServerLauncher {
             String[] paths = serverArgs.get("cache").split(",");
             for (String p : paths) {
                 System.out.println("Enabling cache for: " + p);
-                webappcontext.addFilter(CacheFilter.class, p,
-                        EnumSet.of(DispatcherType.REQUEST));
+                webappcontext.addFilter(CacheFilter.class, p, EnumSet.of(DispatcherType.REQUEST));
             }
         }
 
@@ -239,9 +226,7 @@ public class DevelopmentServerLauncher {
                 }
             }
             if (!classFolders.isEmpty()) {
-                System.out
-                        .println("Enabling context auto-reload.\n Scan interval: "
-                                + interval + " secs.\n Scanned folders: ");
+                System.out.println("Enabling context auto-reload.\n Scan interval: " + interval + " secs.\n Scanned folders: ");
                 for (File f : classFolders) {
                     System.out.println("  " + f.getAbsolutePath());
                     webappcontext.setExtraClasspath(f.getAbsolutePath());
@@ -254,8 +239,7 @@ public class DevelopmentServerLauncher {
                 scanner.setRecursive(true);
                 scanner.addListener(new Scanner.BulkListener() {
                     @Override
-                    public void filesChanged(List<String> filenames)
-                            throws Exception {
+                    public void filesChanged(List<String> filenames) throws Exception {
                         webappcontext.stop();
                         server.stop();
                         webappcontext.start();
@@ -283,17 +267,13 @@ public class DevelopmentServerLauncher {
             server.start();
 
             if (serverArgs.containsKey("shutdownPort")) {
-                int shutdownPort = Integer.parseInt(serverArgs
-                        .get("shutdownPort"));
-                final ServerSocket serverSocket = new ServerSocket(
-                        shutdownPort, 1, InetAddress.getByName("127.0.0.1"));
+                int shutdownPort = Integer.parseInt(serverArgs.get("shutdownPort"));
+                final ServerSocket serverSocket = new ServerSocket(shutdownPort, 1, InetAddress.getByName("127.0.0.1"));
                 new Thread() {
                     @Override
                     public void run() {
                         try {
-                            System.out
-                                    .println("Waiting for shutdown signal on port "
-                                            + serverSocket.getLocalPort());
+                            System.out.println("Waiting for shutdown signal on port " + serverSocket.getLocalPort());
                             // Start waiting for a close signal
                             Socket accept = serverSocket.accept();
                             // First stop listening to the port
@@ -307,8 +287,7 @@ public class DevelopmentServerLauncher {
                                     try {
                                         Thread.sleep(5000);
                                         if (!server.isStopped()) {
-                                            System.out
-                                                    .println("Jetty still running. Closing JVM.");
+                                            System.out.println("Jetty still running. Closing JVM.");
                                             dumpThreadStacks();
                                             System.exit(-1);
                                         }
@@ -328,8 +307,7 @@ public class DevelopmentServerLauncher {
 
                             // Send a byte to tell the other process that it can
                             // start jetty
-                            OutputStream outputStream = accept
-                                    .getOutputStream();
+                            OutputStream outputStream = accept.getOutputStream();
                             outputStream.write(0);
                             outputStream.flush();
                             // Finally close the socket
@@ -357,8 +335,7 @@ public class DevelopmentServerLauncher {
      * @param key
      * @param value
      */
-    private static void assignDefault(Map<String, String> map, String key,
-            String value) {
+    private static void assignDefault(Map<String, String> map, String key, String value) {
         if (!map.containsKey(key)) {
             map.put(key, value);
         }
@@ -397,8 +374,7 @@ public class DevelopmentServerLauncher {
         }
 
         @Override
-        public void doFilter(ServletRequest request, ServletResponse response,
-                FilterChain chain) throws IOException, ServletException {
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
             String path = ((HttpServletRequest) request).getPathInfo();
             long delay = Math.round(Math.random() * 3000) + 2000;
@@ -437,22 +413,18 @@ public class DevelopmentServerLauncher {
         }
 
         @Override
-        public void doFilter(ServletRequest request, ServletResponse response,
-                FilterChain chain) throws IOException, ServletException {
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
             String path = ((HttpServletRequest) request).getPathInfo();
-            System.out.println("Caching " + path + " for " + CACHE_MINUTES
-                    + " minutes");
+            System.out.println("Caching " + path + " for " + CACHE_MINUTES + " minutes");
 
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.MINUTE, CACHE_MINUTES);
 
-            String expires = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z")
-                    .format(calendar.getTime());
+            String expires = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z").format(calendar.getTime());
 
             ((HttpServletResponse) response).setHeader("Expires", expires);
-            ((HttpServletResponse) response).setHeader("Cache-Control",
-                    "max-age=" + (CACHE_MINUTES * 60));
+            ((HttpServletResponse) response).setHeader("Cache-Control", "max-age=" + (CACHE_MINUTES * 60));
 
             chain.doFilter(request, response);
         }
@@ -464,8 +436,7 @@ public class DevelopmentServerLauncher {
     }
 
     private static void dumpThreadStacks() {
-        for (Entry<Thread, StackTraceElement[]> entry : Thread
-                .getAllStackTraces().entrySet()) {
+        for (Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
             Thread thread = entry.getKey();
             StackTraceElement[] stackTraceElements = entry.getValue();
 

@@ -47,8 +47,7 @@ import com.vaadin.data.util.sqlcontainer.query.generator.SQLGenerator;
 import com.vaadin.data.util.sqlcontainer.query.generator.StatementHelper;
 
 @SuppressWarnings("serial")
-public class TableQuery extends AbstractTransactionalQuery implements
-        QueryDelegate, QueryDelegate.RowIdChangeNotifier {
+public class TableQuery extends AbstractTransactionalQuery implements QueryDelegate, QueryDelegate.RowIdChangeNotifier {
 
     /**
      * Table name (without catalog or schema information).
@@ -100,8 +99,7 @@ public class TableQuery extends AbstractTransactionalQuery implements
      * @param sqlGenerator
      *            SQL query generator implementation
      */
-    public TableQuery(String tableName, JDBCConnectionPool connectionPool,
-            SQLGenerator sqlGenerator) {
+    public TableQuery(String tableName, JDBCConnectionPool connectionPool, SQLGenerator sqlGenerator) {
         this(null, null, tableName, connectionPool, sqlGenerator);
     }
 
@@ -122,10 +120,8 @@ public class TableQuery extends AbstractTransactionalQuery implements
      *            SQL query generator implementation
      * @since 7.1
      */
-    public TableQuery(String catalogName, String schemaName, String tableName,
-            JDBCConnectionPool connectionPool, SQLGenerator sqlGenerator) {
-        this(catalogName, schemaName, tableName, connectionPool, sqlGenerator,
-                true);
+    public TableQuery(String catalogName, String schemaName, String tableName, JDBCConnectionPool connectionPool, SQLGenerator sqlGenerator) {
+        this(catalogName, schemaName, tableName, connectionPool, sqlGenerator, true);
     }
 
     /**
@@ -167,14 +163,10 @@ public class TableQuery extends AbstractTransactionalQuery implements
      *            names, false to use the names as-is
      * @since 7.1
      */
-    protected TableQuery(String catalogName, String schemaName,
-            String tableName, JDBCConnectionPool connectionPool,
-            SQLGenerator sqlGenerator, boolean escapeNames) {
+    protected TableQuery(String catalogName, String schemaName, String tableName, JDBCConnectionPool connectionPool, SQLGenerator sqlGenerator, boolean escapeNames) {
         super(connectionPool);
-        if (tableName == null || tableName.trim().length() < 1
-                || connectionPool == null || sqlGenerator == null) {
-            throw new IllegalArgumentException(
-                    "Table name, connection pool and SQL generator parameters must be non-null and non-empty.");
+        if (tableName == null || tableName.trim().length() < 1 || connectionPool == null || sqlGenerator == null) {
+            throw new IllegalArgumentException("Table name, connection pool and SQL generator parameters must be non-null and non-empty.");
         }
         if (escapeNames) {
             this.catalogName = SQLUtil.escapeSQL(catalogName);
@@ -197,8 +189,7 @@ public class TableQuery extends AbstractTransactionalQuery implements
     @Override
     public int getCount() throws SQLException {
         getLogger().log(Level.FINE, "Fetching count...");
-        StatementHelper sh = sqlGenerator.generateSelectQuery(
-                getFullTableName(), filters, null, 0, 0, "COUNT(*)");
+        StatementHelper sh = sqlGenerator.generateSelectQuery(getFullTableName(), filters, null, 0, 0, "COUNT(*)");
         boolean shouldCloseTransaction = false;
         if (!isInTransaction()) {
             shouldCloseTransaction = true;
@@ -243,11 +234,9 @@ public class TableQuery extends AbstractTransactionalQuery implements
             for (int i = 0; i < primaryKeyColumns.size(); i++) {
                 ob.add(new OrderBy(primaryKeyColumns.get(i), true));
             }
-            sh = sqlGenerator.generateSelectQuery(getFullTableName(), filters,
-                    ob, offset, pagelength, null);
+            sh = sqlGenerator.generateSelectQuery(getFullTableName(), filters, ob, offset, pagelength, null);
         } else {
-            sh = sqlGenerator.generateSelectQuery(getFullTableName(), filters,
-                    orderBys, offset, pagelength, null);
+            sh = sqlGenerator.generateSelectQuery(getFullTableName(), filters, orderBys, offset, pagelength, null);
         }
         return executeQuery(sh);
     }
@@ -271,8 +260,7 @@ public class TableQuery extends AbstractTransactionalQuery implements
      * .addon.sqlcontainer.RowItem)
      */
     @Override
-    public int storeRow(RowItem row) throws UnsupportedOperationException,
-            SQLException {
+    public int storeRow(RowItem row) throws UnsupportedOperationException, SQLException {
         if (row == null) {
             throw new IllegalArgumentException("Row argument must be non-null.");
         }
@@ -288,16 +276,13 @@ public class TableQuery extends AbstractTransactionalQuery implements
             result = executeUpdate(sh);
         }
         if (versionColumn != null && result == 0) {
-            throw new OptimisticLockException(
-                    "Someone else changed the row that was being updated.",
-                    row.getId());
+            throw new OptimisticLockException("Someone else changed the row that was being updated.", row.getId());
         }
         return result;
     }
 
     private void setVersionColumnFlagInProperty(RowItem row) {
-        ColumnProperty versionProperty = (ColumnProperty) row
-                .getItemProperty(versionColumn);
+        ColumnProperty versionProperty = (ColumnProperty) row.getItemProperty(versionColumn);
         if (versionProperty != null) {
             versionProperty.setVersionColumn(true);
         }
@@ -320,15 +305,13 @@ public class TableQuery extends AbstractTransactionalQuery implements
         /* Set version column, if one is provided */
         setVersionColumnFlagInProperty(row);
         /* Generate query */
-        StatementHelper sh = sqlGenerator.generateInsertQuery(
-                getFullTableName(), row);
+        StatementHelper sh = sqlGenerator.generateInsertQuery(getFullTableName(), row);
         Connection connection = null;
         PreparedStatement pstmt = null;
         ResultSet generatedKeys = null;
         connection = getConnection();
         try {
-            pstmt = connection.prepareStatement(sh.getQueryString(),
-                    primaryKeyColumns.toArray(new String[0]));
+            pstmt = connection.prepareStatement(sh.getQueryString(), primaryKeyColumns.toArray(new String[0]));
             sh.setParameterValuesToStatement(pstmt);
             getLogger().log(Level.FINE, "DB -> {0}", sh.getQueryString());
             int result = pstmt.executeUpdate();
@@ -357,8 +340,7 @@ public class TableQuery extends AbstractTransactionalQuery implements
      * .List)
      */
     @Override
-    public void setFilters(List<Filter> filters)
-            throws UnsupportedOperationException {
+    public void setFilters(List<Filter> filters) throws UnsupportedOperationException {
         if (filters == null) {
             this.filters = null;
             return;
@@ -374,8 +356,7 @@ public class TableQuery extends AbstractTransactionalQuery implements
      * .List)
      */
     @Override
-    public void setOrderBy(List<OrderBy> orderBys)
-            throws UnsupportedOperationException {
+    public void setOrderBy(List<OrderBy> orderBys) throws UnsupportedOperationException {
         if (orderBys == null) {
             this.orderBys = null;
             return;
@@ -389,8 +370,7 @@ public class TableQuery extends AbstractTransactionalQuery implements
      * @see com.vaadin.addon.sqlcontainer.query.QueryDelegate#beginTransaction()
      */
     @Override
-    public void beginTransaction() throws UnsupportedOperationException,
-            SQLException {
+    public void beginTransaction() throws UnsupportedOperationException, SQLException {
         getLogger().log(Level.FINE, "DB -> begin transaction");
         super.beginTransaction();
     }
@@ -406,8 +386,7 @@ public class TableQuery extends AbstractTransactionalQuery implements
         super.commit();
 
         /* Handle firing row ID change events */
-        RowIdChangeEvent[] unFiredEvents = bufferedEvents
-                .toArray(new RowIdChangeEvent[] {});
+        RowIdChangeEvent[] unFiredEvents = bufferedEvents.toArray(new RowIdChangeEvent[] {});
         bufferedEvents.clear();
         if (rowIdChangeListeners != null && !rowIdChangeListeners.isEmpty()) {
             for (RowIdChangeListener r : rowIdChangeListeners) {
@@ -574,15 +553,13 @@ public class TableQuery extends AbstractTransactionalQuery implements
      * @return Number of affected rows
      * @throws SQLException
      */
-    private int executeUpdateReturnKeys(StatementHelper sh, RowItem row)
-            throws SQLException {
+    private int executeUpdateReturnKeys(StatementHelper sh, RowItem row) throws SQLException {
         PreparedStatement pstmt = null;
         ResultSet genKeys = null;
         Connection connection = null;
         try {
             connection = getConnection();
-            pstmt = connection.prepareStatement(sh.getQueryString(),
-                    primaryKeyColumns.toArray(new String[0]));
+            pstmt = connection.prepareStatement(sh.getQueryString(), primaryKeyColumns.toArray(new String[0]));
             sh.setParameterValuesToStatement(pstmt);
             getLogger().log(Level.FINE, "DB -> {0}", sh.getQueryString());
             int result = pstmt.executeUpdate();
@@ -608,20 +585,13 @@ public class TableQuery extends AbstractTransactionalQuery implements
             connection = getConnection();
             DatabaseMetaData dbmd = connection.getMetaData();
             if (dbmd != null) {
-                tables = dbmd.getTables(catalogName, schemaName, tableName,
-                        null);
+                tables = dbmd.getTables(catalogName, schemaName, tableName, null);
                 if (!tables.next()) {
-                    String catalog = (catalogName != null) ? catalogName
-                            .toUpperCase() : null;
-                    String schema = (schemaName != null) ? schemaName
-                            .toUpperCase() : null;
-                    tables = dbmd.getTables(catalog, schema,
-                            tableName.toUpperCase(), null);
+                    String catalog = (catalogName != null) ? catalogName.toUpperCase() : null;
+                    String schema = (schemaName != null) ? schemaName.toUpperCase() : null;
+                    tables = dbmd.getTables(catalog, schema, tableName.toUpperCase(), null);
                     if (!tables.next()) {
-                        throw new IllegalArgumentException(
-                                "Table with the name \""
-                                        + getFullTableName()
-                                        + "\" was not found. Check your database contents.");
+                        throw new IllegalArgumentException("Table with the name \"" + getFullTableName() + "\" was not found. Check your database contents.");
                     } else {
                         catalogName = catalog;
                         schemaName = schema;
@@ -639,18 +609,12 @@ public class TableQuery extends AbstractTransactionalQuery implements
                     primaryKeyColumns = names;
                 }
                 if (primaryKeyColumns == null || primaryKeyColumns.isEmpty()) {
-                    throw new IllegalArgumentException(
-                            "Primary key constraints have not been defined for the table \""
-                                    + getFullTableName()
-                                    + "\". Use FreeFormQuery to access this table.");
+                    throw new IllegalArgumentException("Primary key constraints have not been defined for the table \"" + getFullTableName() + "\". Use FreeFormQuery to access this table.");
                 }
                 for (String colName : primaryKeyColumns) {
                     if (colName.equalsIgnoreCase("rownum")) {
-                        if (getSqlGenerator() instanceof MSSQLGenerator
-                                || getSqlGenerator() instanceof MSSQLGenerator) {
-                            throw new IllegalArgumentException(
-                                    "When using Oracle or MSSQL, a primary key column"
-                                            + " named \'rownum\' is not allowed!");
+                        if (getSqlGenerator() instanceof MSSQLGenerator || getSqlGenerator() instanceof MSSQLGenerator) {
+                            throw new IllegalArgumentException("When using Oracle or MSSQL, a primary key column" + " named \'rownum\' is not allowed!");
                         }
                     }
                 }
@@ -690,10 +654,8 @@ public class TableQuery extends AbstractTransactionalQuery implements
                     newRowId.add(values.get(values.keySet().iterator().next()));
                 } else {
                     for (String s : primaryKeyColumns) {
-                        if (!((ColumnProperty) row.getItemProperty(s))
-                                .isReadOnlyChangeAllowed()) {
-                            newRowId.add(values.get(values.keySet().iterator()
-                                    .next()));
+                        if (!((ColumnProperty) row.getItemProperty(s)).isReadOnlyChangeAllowed()) {
+                            newRowId.add(values.get(values.keySet().iterator().next()));
                         } else {
                             newRowId.add(values.get(s));
                         }
@@ -706,10 +668,7 @@ public class TableQuery extends AbstractTransactionalQuery implements
             }
             return new RowId(newRowId.toArray());
         } catch (Exception e) {
-            getLogger()
-                    .log(Level.FINE,
-                            "Failed to fetch key values on insert: {0}",
-                            e.getMessage());
+            getLogger().log(Level.FINE, "Failed to fetch key values on insert: {0}", e.getMessage());
             return null;
         }
     }
@@ -722,20 +681,15 @@ public class TableQuery extends AbstractTransactionalQuery implements
      * .addon.sqlcontainer.RowItem)
      */
     @Override
-    public boolean removeRow(RowItem row) throws UnsupportedOperationException,
-            SQLException {
+    public boolean removeRow(RowItem row) throws UnsupportedOperationException, SQLException {
         if (getLogger().isLoggable(Level.FINE)) {
-            getLogger().log(Level.FINE, "Removing row with id: {0}",
-                    row.getId().getId()[0]);
+            getLogger().log(Level.FINE, "Removing row with id: {0}", row.getId().getId()[0]);
         }
-        if (executeUpdate(sqlGenerator.generateDeleteQuery(getFullTableName(),
-                primaryKeyColumns, versionColumn, row)) == 1) {
+        if (executeUpdate(sqlGenerator.generateDeleteQuery(getFullTableName(), primaryKeyColumns, versionColumn, row)) == 1) {
             return true;
         }
         if (versionColumn != null) {
-            throw new OptimisticLockException(
-                    "Someone else changed the row that was being deleted.",
-                    row.getId());
+            throw new OptimisticLockException("Someone else changed the row that was being deleted.", row.getId());
         }
         return false;
     }
@@ -758,8 +712,7 @@ public class TableQuery extends AbstractTransactionalQuery implements
             filtersAndKeys.add(new Equal(colName, keys[ix]));
             ix++;
         }
-        StatementHelper sh = sqlGenerator.generateSelectQuery(
-                getFullTableName(), filtersAndKeys, orderBys, 0, 0, "*");
+        StatementHelper sh = sqlGenerator.generateSelectQuery(getFullTableName(), filtersAndKeys, orderBys, 0, 0, "*");
 
         boolean shouldCloseTransaction = false;
         if (!isInTransaction()) {
@@ -799,8 +752,7 @@ public class TableQuery extends AbstractTransactionalQuery implements
     /**
      * Simple RowIdChangeEvent implementation.
      */
-    public static class RowIdChangeEvent extends EventObject implements
-            QueryDelegate.RowIdChangeEvent {
+    public static class RowIdChangeEvent extends EventObject implements QueryDelegate.RowIdChangeEvent {
         private final RowId oldId;
         private final RowId newId;
 

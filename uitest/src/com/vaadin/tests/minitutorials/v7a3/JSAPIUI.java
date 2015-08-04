@@ -16,33 +16,26 @@ public class JSAPIUI extends UI {
     @Override
     public void init(VaadinRequest request) {
 
-        JavaScript.getCurrent().addFunction("com.example.api.notify",
-                new JavaScriptFunction() {
-                    @Override
-                    public void call(JsonArray arguments) {
-                        try {
-                            String caption = arguments.getString(0);
-                            if (arguments.length() == 1) {
-                                // only caption
-                                Notification.show(caption);
-                            } else {
-                                // type should be in [1]
-                                Notification.show(caption,
-                                        Type.values()[((int) arguments
-                                                .getNumber(1))]);
-                            }
-
-                        } catch (JsonException e) {
-                            // We'll log in the console, you might not want to
-                            JavaScript.getCurrent().execute(
-                                    "console.error('" + e.getMessage() + "')");
-                        }
+        JavaScript.getCurrent().addFunction("com.example.api.notify", new JavaScriptFunction() {
+            @Override
+            public void call(JsonArray arguments) {
+                try {
+                    String caption = arguments.getString(0);
+                    if (arguments.length() == 1) {
+                        // only caption
+                        Notification.show(caption);
+                    } else {
+                        // type should be in [1]
+                        Notification.show(caption, Type.values()[((int) arguments.getNumber(1))]);
                     }
-                });
 
-        setContent(new Link(
-                "Send message",
-                new ExternalResource(
-                        "javascript:(function(){com.example.api.notify(prompt('Message'),2);})();")));
+                } catch (JsonException e) {
+                    // We'll log in the console, you might not want to
+                    JavaScript.getCurrent().execute("console.error('" + e.getMessage() + "')");
+                }
+            }
+        });
+
+        setContent(new Link("Send message", new ExternalResource("javascript:(function(){com.example.api.notify(prompt('Message'),2);})();")));
     }
 }

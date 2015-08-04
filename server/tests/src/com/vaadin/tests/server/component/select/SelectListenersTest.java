@@ -9,12 +9,10 @@ import com.vaadin.ui.Select;
 
 public class SelectListenersTest extends AbstractListenerMethodsTestBase {
     public void testFocusListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Select.class, FocusEvent.class,
-                FocusListener.class);
+        testListenerAddGetRemove(Select.class, FocusEvent.class, FocusListener.class);
     }
 
     public void testBlurListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Select.class, BlurEvent.class,
-                BlurListener.class);
+        testListenerAddGetRemove(Select.class, BlurEvent.class, BlurListener.class);
     }
 }

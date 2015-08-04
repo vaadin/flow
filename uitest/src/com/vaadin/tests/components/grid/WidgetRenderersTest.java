@@ -51,14 +51,12 @@ public class WidgetRenderersTest extends MultiBrowserTest {
 
     @Test
     public void testProgressBarRenderer() {
-        assertTrue(getGridCell(0, 0).isElementPresent(
-                By.className("v-progressbar")));
+        assertTrue(getGridCell(0, 0).isElementPresent(By.className("v-progressbar")));
     }
 
     @Test
     public void testButtonRenderer() {
-        WebElement button = getGridCell(0, 1).findElement(
-                By.className("v-nativebutton"));
+        WebElement button = getGridCell(0, 1).findElement(By.className("v-nativebutton"));
 
         button.click();
 
@@ -68,18 +66,14 @@ public class WidgetRenderersTest extends MultiBrowserTest {
     @Test
     public void testButtonRendererAfterCellBeingFocused() {
         GridCellElement buttonCell = getGridCell(0, 1);
-        assertFalse("cell should not be focused before focusing",
-                buttonCell.isFocused());
+        assertFalse("cell should not be focused before focusing", buttonCell.isFocused());
 
         // avoid clicking on the button
         buttonCell.click(buttonCell.getSize().getWidth() - 10, 5);
-        assertTrue("cell should be focused after focusing",
-                buttonCell.isFocused());
+        assertTrue("cell should be focused after focusing", buttonCell.isFocused());
 
-        WebElement button = buttonCell.findElement(By
-                .className("v-nativebutton"));
-        assertNotEquals("Button should not be clicked before click",
-                "Clicked!", button.getText());
+        WebElement button = buttonCell.findElement(By.className("v-nativebutton"));
+        assertNotEquals("Button should not be clicked before click", "Clicked!", button.getText());
 
         new Actions(getDriver()).moveToElement(button).click().perform();
 
@@ -88,8 +82,7 @@ public class WidgetRenderersTest extends MultiBrowserTest {
 
     @Test
     public void testImageRenderer() {
-        final WebElement image = getGridCell(0, 2).findElement(
-                By.className("gwt-Image"));
+        final WebElement image = getGridCell(0, 2).findElement(By.className("gwt-Image"));
 
         waitUntilmageSrcEndsWith(image, "window/img/close.png");
 
@@ -98,8 +91,7 @@ public class WidgetRenderersTest extends MultiBrowserTest {
         waitUntilmageSrcEndsWith(image, "window/img/maximize.png");
     }
 
-    private void waitUntilmageSrcEndsWith(final WebElement image,
-            final String expectedText) {
+    private void waitUntilmageSrcEndsWith(final WebElement image, final String expectedText) {
         waitUntil(new ExpectedCondition<Boolean>() {
 
             @Override
@@ -110,9 +102,7 @@ public class WidgetRenderersTest extends MultiBrowserTest {
             @Override
             public String toString() {
                 // Timed out after 10 seconds waiting for ...
-                return String
-                        .format("image source to update. Supposed to end with '%s' (was: '%s').",
-                                expectedText, image.getAttribute("src"));
+                return String.format("image source to update. Supposed to end with '%s' (was: '%s').", expectedText, image.getAttribute("src"));
             }
         });
     }
@@ -121,21 +111,16 @@ public class WidgetRenderersTest extends MultiBrowserTest {
     public void testColumnReorder() {
         $(ButtonElement.class).caption("Change column order").first().click();
 
-        assertFalse("Notification was present",
-                isElementPresent(NotificationElement.class));
+        assertFalse("Notification was present", isElementPresent(NotificationElement.class));
 
-        assertTrue(getGridCell(0, 0)
-                .isElementPresent(By.className("gwt-Image")));
-        assertTrue(getGridCell(0, 1).isElementPresent(
-                By.className("v-progressbar")));
-        assertTrue(getGridCell(0, 2).isElementPresent(
-                By.className("v-nativebutton")));
+        assertTrue(getGridCell(0, 0).isElementPresent(By.className("gwt-Image")));
+        assertTrue(getGridCell(0, 1).isElementPresent(By.className("v-progressbar")));
+        assertTrue(getGridCell(0, 2).isElementPresent(By.className("v-nativebutton")));
     }
 
     @Test
     public void testPropertyIdInEvent() {
-        WebElement button = getGridCell(0, 3).findElement(
-                By.className("v-nativebutton"));
+        WebElement button = getGridCell(0, 3).findElement(By.className("v-nativebutton"));
 
         button.click();
 
@@ -146,8 +131,7 @@ public class WidgetRenderersTest extends MultiBrowserTest {
         return $(GridElement.class).first().getCell(row, col);
     }
 
-    private void waitUntilTextUpdated(final WebElement button,
-            final String expectedText) {
+    private void waitUntilTextUpdated(final WebElement button, final String expectedText) {
         waitUntil(new ExpectedCondition<Boolean>() {
 
             @Override
@@ -158,8 +142,7 @@ public class WidgetRenderersTest extends MultiBrowserTest {
             @Override
             public String toString() {
                 // Timed out after 10 seconds waiting for ...
-                return String.format("button's text to become '%s' (was: '').",
-                        expectedText, button.getText());
+                return String.format("button's text to become '%s' (was: '').", expectedText, button.getText());
             }
 
         });

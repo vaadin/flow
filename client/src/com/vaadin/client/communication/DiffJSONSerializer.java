@@ -27,6 +27,5 @@ public interface DiffJSONSerializer<T> extends JSONSerializer<T> {
      * @param jsonValue
      * @param connection
      */
-    public void update(T target, Type type, JsonValue jsonValue,
-            ApplicationConnection connection);
+    public void update(T target, Type type, JsonValue jsonValue, ApplicationConnection connection);
 }

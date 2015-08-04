@@ -47,8 +47,7 @@ class Reference implements Serializable {
      * Constructs a new reference to be used within the SQLContainer to
      * reference another SQLContainer.
      */
-    Reference(SQLContainer referencedContainer, String referencingColumn,
-            String referencedColumn) {
+    Reference(SQLContainer referencedContainer, String referencingColumn, String referencedColumn) {
         this.referencedContainer = referencedContainer;
         this.referencingColumn = referencingColumn;
         this.referencedColumn = referencedColumn;

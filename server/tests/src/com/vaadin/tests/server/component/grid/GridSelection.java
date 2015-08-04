@@ -33,8 +33,7 @@ import com.vaadin.ui.Grid.SelectionModel;
 
 public class GridSelection {
 
-    private static class MockSelectionChangeListener implements
-            SelectionListener {
+    private static class MockSelectionChangeListener implements SelectionListener {
         private SelectionEvent event;
 
         @Override
@@ -85,10 +84,8 @@ public class GridSelection {
         assertEquals("init size", 10, container.size());
         assertTrue("itemId1Present", container.containsId(itemId1Present));
         assertTrue("itemId2Present", container.containsId(itemId2Present));
-        assertFalse("itemId1NotPresent",
-                container.containsId(itemId1NotPresent));
-        assertFalse("itemId2NotPresent",
-                container.containsId(itemId2NotPresent));
+        assertFalse("itemId1NotPresent", container.containsId(itemId1NotPresent));
+        assertFalse("itemId2NotPresent", container.containsId(itemId2NotPresent));
 
         grid = new Grid(container);
 
@@ -181,8 +178,7 @@ public class GridSelection {
     private void selectionCallsListener() {
         grid.select(itemId1Present);
         assertEquals("added size", 1, mockListener.getAdded().size());
-        assertEquals("added item", itemId1Present, mockListener.getAdded()
-                .iterator().next());
+        assertEquals("added item", itemId1Present, mockListener.getAdded().iterator().next());
         assertEquals("removed size", 0, mockListener.getRemoved().size());
     }
 
@@ -204,8 +200,7 @@ public class GridSelection {
 
         grid.deselect(itemId1Present);
         assertEquals("removed size", 1, mockListener.getRemoved().size());
-        assertEquals("removed item", itemId1Present, mockListener.getRemoved()
-                .iterator().next());
+        assertEquals("removed item", itemId1Present, mockListener.getRemoved().iterator().next());
         assertEquals("removed size", 0, mockListener.getAdded().size());
     }
 
@@ -253,32 +248,26 @@ public class GridSelection {
     @Test
     public void selectAllMulti() {
         grid.setSelectionMode(SelectionMode.MULTI);
-        final SelectionModel.Multi select = (SelectionModel.Multi) grid
-                .getSelectionModel();
+        final SelectionModel.Multi select = (SelectionModel.Multi) grid.getSelectionModel();
         select.selectAll();
         assertEquals("added size", 10, mockListener.getAdded().size());
         assertEquals("removed size", 0, mockListener.getRemoved().size());
-        assertTrue("itemId1Present",
-                mockListener.getAdded().contains(itemId1Present));
-        assertTrue("itemId2Present",
-                mockListener.getAdded().contains(itemId2Present));
+        assertTrue("itemId1Present", mockListener.getAdded().contains(itemId1Present));
+        assertTrue("itemId2Present", mockListener.getAdded().contains(itemId2Present));
     }
 
     @Test
     public void deselectAllMulti() {
         grid.setSelectionMode(SelectionMode.MULTI);
-        final SelectionModel.Multi select = (SelectionModel.Multi) grid
-                .getSelectionModel();
+        final SelectionModel.Multi select = (SelectionModel.Multi) grid.getSelectionModel();
         select.selectAll();
         mockListener.clearEvent();
 
         select.deselectAll();
         assertEquals("removed size", 10, mockListener.getRemoved().size());
         assertEquals("added size", 0, mockListener.getAdded().size());
-        assertTrue("itemId1Present",
-                mockListener.getRemoved().contains(itemId1Present));
-        assertTrue("itemId2Present",
-                mockListener.getRemoved().contains(itemId2Present));
+        assertTrue("itemId1Present", mockListener.getRemoved().contains(itemId1Present));
+        assertTrue("itemId2Present", mockListener.getRemoved().contains(itemId2Present));
         assertTrue("selectedRows is empty", grid.getSelectedRows().isEmpty());
     }
 
@@ -291,11 +280,8 @@ public class GridSelection {
         grid.select(itemId2Present);
         assertEquals("added size", 1, mockListener.getAdded().size());
         assertEquals("removed size", 1, mockListener.getRemoved().size());
-        assertEquals("added item", itemId2Present, mockListener.getAdded()
-                .iterator().next());
-        assertEquals("removed item", itemId1Present, mockListener.getRemoved()
-                .iterator().next());
-        assertEquals("selectedRows is correct", itemId2Present,
-                grid.getSelectedRow());
+        assertEquals("added item", itemId2Present, mockListener.getAdded().iterator().next());
+        assertEquals("removed item", itemId1Present, mockListener.getRemoved().iterator().next());
+        assertEquals("selectedRows is correct", itemId2Present, grid.getSelectedRow());
     }
 }

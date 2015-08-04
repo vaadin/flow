@@ -52,7 +52,6 @@ public class WriteEmptyDesignTest extends TestCase {
     private void checkHtml(String html) {
         Document doc = Jsoup.parse(html);
         Element body = doc.body();
-        assertEquals("There should be no elements in the html body.", "",
-                body.html());
+        assertEquals("There should be no elements in the html body.", "", body.html());
     }
 }

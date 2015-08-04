@@ -33,8 +33,7 @@ public class NestedInvalidLayoutsTest extends SingleBrowserTest {
 
         // All Button components should have equal width
         List<Integer> widths = new ArrayList<Integer>();
-        List<ButtonElement> all = $(ButtonElement.class).state(
-                "primaryStyleName", "v-button").all();
+        List<ButtonElement> all = $(ButtonElement.class).state("primaryStyleName", "v-button").all();
         for (ButtonElement button : all) {
             widths.add(button.getSize().getWidth());
         }

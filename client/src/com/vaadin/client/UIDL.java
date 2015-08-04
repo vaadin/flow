@@ -313,9 +313,7 @@ public final class UIDL extends JavaScriptObject {
                     case CHILD_TYPE_XML:
                         return getChildXML(index);
                     default:
-                        throw new IllegalStateException(
-                                "Illegal child  in tag " + getTag()
-                                        + " at index " + index);
+                        throw new IllegalStateException("Illegal child  in tag " + getTag() + " at index " + index);
                     }
                 }
                 return null;
@@ -519,10 +517,8 @@ public final class UIDL extends JavaScriptObject {
      *            the name of the attribute
      * @return the Paintable referenced by the attribute, if it exists
      */
-    public ServerConnector getPaintableAttribute(String name,
-            ApplicationConnection connection) {
-        return ConnectorMap.get(connection).getConnector(
-                getStringAttribute(name));
+    public ServerConnector getPaintableAttribute(String name, ApplicationConnection connection) {
+        return ConnectorMap.get(connection).getConnector(getStringAttribute(name));
     }
 
     /**
@@ -532,10 +528,8 @@ public final class UIDL extends JavaScriptObject {
      *            the name of the variable
      * @return the Paintable referenced by the variable, if it exists
      */
-    public ServerConnector getPaintableVariable(String name,
-            ApplicationConnection connection) {
-        return ConnectorMap.get(connection).getConnector(
-                getStringVariable(name));
+    public ServerConnector getPaintableVariable(String name, ApplicationConnection connection) {
+        return ConnectorMap.get(connection).getConnector(getStringVariable(name));
     }
 
     /**

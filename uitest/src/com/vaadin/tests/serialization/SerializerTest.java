@@ -63,8 +63,7 @@ public class SerializerTest extends AbstractTestUI {
         log.setNumberLogRows(false);
         addComponent(log);
 
-        final SerializerTestRpc rpc = testExtension
-                .getRpcProxy(SerializerTestRpc.class);
+        final SerializerTestRpc rpc = testExtension.getRpcProxy(SerializerTestRpc.class);
         SerializerTestState state = testExtension.getState();
 
         rpc.sendBeanSubclass(new SimpleTestBean() {
@@ -80,12 +79,10 @@ public class SerializerTest extends AbstractTestUI {
             }
         };
 
-        rpc.sendBoolean(true, Boolean.FALSE, new boolean[] { true, true, false,
-                true, false, false });
+        rpc.sendBoolean(true, Boolean.FALSE, new boolean[] { true, true, false, true, false, false });
         state.booleanValue = true;
         state.booleanObjectValue = Boolean.FALSE;
-        state.booleanArray = new boolean[] { true, true, false, true, false,
-                false };
+        state.booleanArray = new boolean[] { true, true, false, true, false, false };
 
         rpc.sendByte((byte) 5, Byte.valueOf((byte) -12), new byte[] { 3, 1, 2 });
         state.byteValue = (byte) 5;
@@ -102,20 +99,17 @@ public class SerializerTest extends AbstractTestUI {
         state.intObjectValue = Integer.valueOf(42);
         state.intArray = new int[] { 5, 7 };
 
-        rpc.sendLong(577431841358l, Long.valueOf(0), new long[] {
-                -57841235865l, 57 });
+        rpc.sendLong(577431841358l, Long.valueOf(0), new long[] { -57841235865l, 57 });
         state.longValue = 577431841359l;
         state.longObjectValue = Long.valueOf(577431841360l);
         state.longArray = new long[] { -57841235865l, 57 };
 
-        rpc.sendFloat(3.14159f, Float.valueOf(Math.nextUp(1)), new float[] {
-                57, 0, -12 });
+        rpc.sendFloat(3.14159f, Float.valueOf(Math.nextUp(1)), new float[] { 57, 0, -12 });
         state.floatValue = 3.14159f;
         state.floatObjectValue = Float.valueOf(Math.nextUp(1));
         state.floatArray = new float[] { 57, 0, -12 };
 
-        rpc.sendDouble(Math.PI, Double.valueOf(-Math.E), new double[] {
-                Double.MAX_VALUE, Double.MIN_VALUE });
+        rpc.sendDouble(Math.PI, Double.valueOf(-Math.E), new double[] { Double.MAX_VALUE, Double.MIN_VALUE });
         state.doubleValue = Math.PI;
         state.doubleObjectValue = Double.valueOf(-Math.E);
         state.doubleArray = new double[] { Double.MAX_VALUE, Double.MIN_VALUE };
@@ -127,61 +121,37 @@ public class SerializerTest extends AbstractTestUI {
         rpc.sendConnector(this);
         state.connector = this;
 
-        rpc.sendBean(
-                new ComplexTestBean(new SimpleTestBean(0),
-                        new SimpleTestBean(1), Arrays.asList(
-                                new SimpleTestBean(3), new SimpleTestBean(4)),
-                        5), new SimpleTestBean(6),
-                new SimpleTestBean[] { new SimpleTestBean(7) });
-        state.complexTestBean = new ComplexTestBean(new SimpleTestBean(0),
-                new SimpleTestBean(1), Arrays.asList(new SimpleTestBean(3),
-                        new SimpleTestBean(4)), 5);
+        rpc.sendBean(new ComplexTestBean(new SimpleTestBean(0), new SimpleTestBean(1), Arrays.asList(new SimpleTestBean(3), new SimpleTestBean(4)), 5), new SimpleTestBean(6), new SimpleTestBean[] { new SimpleTestBean(7) });
+        state.complexTestBean = new ComplexTestBean(new SimpleTestBean(0), new SimpleTestBean(1), Arrays.asList(new SimpleTestBean(3), new SimpleTestBean(4)), 5);
         state.simpleTestBean = new SimpleTestBean(6);
         state.simpleTestBeanArray = new SimpleTestBean[] { new SimpleTestBean(7) };
 
         rpc.sendNull("Not null", null);
         state.nullString = null;
 
-        rpc.sendNestedArray(new int[][] { { 5 }, { 7 } },
-                new SimpleTestBean[][] { { new SimpleTestBean(4),
-                        new SimpleTestBean(2) } });
+        rpc.sendNestedArray(new int[][] { { 5 }, { 7 } }, new SimpleTestBean[][] { { new SimpleTestBean(4), new SimpleTestBean(2) } });
         state.nestedIntArray = new int[][] { { 5 }, { 7 } };
-        state.nestedBeanArray = new SimpleTestBean[][] { {
-                new SimpleTestBean(4), new SimpleTestBean(2) } };
+        state.nestedBeanArray = new SimpleTestBean[][] { { new SimpleTestBean(4), new SimpleTestBean(2) } };
 
-        rpc.sendList(Arrays.asList(5, 8, -234), Arrays.<Connector> asList(this,
-                testExtension), Arrays.asList(new SimpleTestBean(234),
-                new SimpleTestBean(-568)));
+        rpc.sendList(Arrays.asList(5, 8, -234), Arrays.<Connector> asList(this, testExtension), Arrays.asList(new SimpleTestBean(234), new SimpleTestBean(-568)));
         state.intList = Arrays.asList(5, 8, -234);
         state.connectorList = Arrays.<Connector> asList(this, testExtension);
-        state.simpleTestBeanList = Arrays.asList(new SimpleTestBean(234),
-                new SimpleTestBean(-568));
+        state.simpleTestBeanList = Arrays.asList(new SimpleTestBean(234), new SimpleTestBean(-568));
 
-        rpc.sendArrayList(
-                Arrays.asList(new int[] { 1, 2 }, new int[] { 3, 4 }),
-                Arrays.asList(new Integer[] { 5, 6 }, new Integer[] { 7, 8 }),
-                Collections
-                        .singletonList(new SimpleTestBean[] { new SimpleTestBean(
-                                7) }));
-        state.primitiveArrayList = Arrays.asList(new int[] { 1, 2 }, new int[] {
-                3, 4 });
-        state.objectArrayList = Arrays.asList(new Integer[] { 5, 6 },
-                new Integer[] { 7, 8 });
-        state.beanArrayList = Collections
-                .singletonList(new SimpleTestBean[] { new SimpleTestBean(7) });
+        rpc.sendArrayList(Arrays.asList(new int[] { 1, 2 }, new int[] { 3, 4 }), Arrays.asList(new Integer[] { 5, 6 }, new Integer[] { 7, 8 }), Collections.singletonList(new SimpleTestBean[] { new SimpleTestBean(7) }));
+        state.primitiveArrayList = Arrays.asList(new int[] { 1, 2 }, new int[] { 3, 4 });
+        state.objectArrayList = Arrays.asList(new Integer[] { 5, 6 }, new Integer[] { 7, 8 });
+        state.beanArrayList = Collections.singletonList(new SimpleTestBean[] { new SimpleTestBean(7) });
 
         // Disabled because of #8861
         // rpc.sendListArray(
         // new List[] { Arrays.asList(1, 2), Arrays.asList(3, 4) },
         // new List[] { Collections.singletonList(new SimpleTestBean(-1)) });
-        rpc.sendSet(new HashSet<Integer>(Arrays.asList(4, 7, 12)), Collections
-                .singleton((Connector) this), new HashSet<SimpleTestBean>(
-                Arrays.asList(new SimpleTestBean(1), new SimpleTestBean(2))));
+        rpc.sendSet(new HashSet<Integer>(Arrays.asList(4, 7, 12)), Collections.singleton((Connector) this), new HashSet<SimpleTestBean>(Arrays.asList(new SimpleTestBean(1), new SimpleTestBean(2))));
         state.intSet = new HashSet<Integer>(Arrays.asList(4, 7, 12));
         state.connectorSet = Collections.singleton((Connector) this);
 
-        state.beanSet = new HashSet<SimpleTestBean>(Arrays.asList(
-                new SimpleTestBean(1), new SimpleTestBean(2)));
+        state.beanSet = new HashSet<SimpleTestBean>(Arrays.asList(new SimpleTestBean(1), new SimpleTestBean(2)));
 
         rpc.sendMap(new HashMap<String, SimpleTestBean>() {
             {
@@ -231,40 +201,32 @@ public class SerializerTest extends AbstractTestUI {
 
         rpc.sendWrappedGenerics(new HashMap<Set<SimpleTestBean>, Map<Integer, List<SimpleTestBean>>>() {
             {
-                put(Collections.singleton(new SimpleTestBean(42)),
-                        new HashMap<Integer, List<SimpleTestBean>>() {
-                            {
-                                put(1, Arrays.asList(new SimpleTestBean(1),
-                                        new SimpleTestBean(3)));
-                            }
-                        });
+                put(Collections.singleton(new SimpleTestBean(42)), new HashMap<Integer, List<SimpleTestBean>>() {
+                    {
+                        put(1, Arrays.asList(new SimpleTestBean(1), new SimpleTestBean(3)));
+                    }
+                });
             }
         });
         state.generics = new HashMap<Set<SimpleTestBean>, Map<Integer, List<SimpleTestBean>>>() {
             {
-                put(Collections.singleton(new SimpleTestBean(42)),
-                        new HashMap<Integer, List<SimpleTestBean>>() {
-                            {
-                                put(1, Arrays.asList(new SimpleTestBean(1),
-                                        new SimpleTestBean(3)));
-                            }
-                        });
+                put(Collections.singleton(new SimpleTestBean(42)), new HashMap<Integer, List<SimpleTestBean>>() {
+                    {
+                        put(1, Arrays.asList(new SimpleTestBean(1), new SimpleTestBean(3)));
+                    }
+                });
             }
         };
 
-        rpc.sendEnum(ContentMode.TEXT, new ContentMode[] {
-                ContentMode.PREFORMATTED, ContentMode.XML },
-                Arrays.asList(ContentMode.HTML, ContentMode.RAW));
+        rpc.sendEnum(ContentMode.TEXT, new ContentMode[] { ContentMode.PREFORMATTED, ContentMode.XML }, Arrays.asList(ContentMode.HTML, ContentMode.RAW));
 
         state.contentMode = ContentMode.TEXT;
-        state.array = new ContentMode[] { ContentMode.PREFORMATTED,
-                ContentMode.XML };
+        state.array = new ContentMode[] { ContentMode.PREFORMATTED, ContentMode.XML };
         state.list = Arrays.asList(ContentMode.HTML, ContentMode.RAW);
 
         rpc.sendDate(new Date(1));
         rpc.sendDate(new Date(2013 - 1900, 5 - 1, 31, 11, 12, 13));
-        rpc.sendDateArray(new Date[] { new Date(2013 - 1900, 1, 1),
-                new Date(2012 - 1900, 1, 1) });
+        rpc.sendDateArray(new Date[] { new Date(2013 - 1900, 1, 1), new Date(2012 - 1900, 1, 1) });
 
         state.jsonNull = Json.createNull();
         state.jsonString = Json.create("a string");
@@ -277,47 +239,38 @@ public class SerializerTest extends AbstractTestUI {
 
         testExtension.registerRpc(new SerializerTestRpc() {
             @Override
-            public void sendBoolean(boolean value, Boolean boxedValue,
-                    boolean[] array) {
-                log.log("sendBoolean: " + value + ", " + boxedValue + ", "
-                        + Arrays.toString(array));
+            public void sendBoolean(boolean value, Boolean boxedValue, boolean[] array) {
+                log.log("sendBoolean: " + value + ", " + boxedValue + ", " + Arrays.toString(array));
             }
 
             @Override
             public void sendByte(byte value, Byte boxedValue, byte[] array) {
-                log.log("sendByte: " + value + ", " + boxedValue + ", "
-                        + Arrays.toString(array));
+                log.log("sendByte: " + value + ", " + boxedValue + ", " + Arrays.toString(array));
             }
 
             @Override
             public void sendChar(char value, Character boxedValue, char[] array) {
-                log.log("sendChar: " + value + ", " + boxedValue + ", "
-                        + Arrays.toString(array));
+                log.log("sendChar: " + value + ", " + boxedValue + ", " + Arrays.toString(array));
             }
 
             @Override
             public void sendInt(int value, Integer boxedValue, int[] array) {
-                log.log("sendInt: " + value + ", " + boxedValue + ", "
-                        + Arrays.toString(array));
+                log.log("sendInt: " + value + ", " + boxedValue + ", " + Arrays.toString(array));
             }
 
             @Override
             public void sendLong(long value, Long boxedValue, long[] array) {
-                log.log("sendLong: " + value + ", " + boxedValue + ", "
-                        + Arrays.toString(array));
+                log.log("sendLong: " + value + ", " + boxedValue + ", " + Arrays.toString(array));
             }
 
             @Override
             public void sendFloat(float value, Float boxedValue, float[] array) {
-                log.log("sendFloat: " + value + ", " + boxedValue + ", "
-                        + Arrays.toString(array));
+                log.log("sendFloat: " + value + ", " + boxedValue + ", " + Arrays.toString(array));
             }
 
             @Override
-            public void sendDouble(double value, Double boxedValue,
-                    double[] array) {
-                log.log("sendDouble: " + value + ", " + boxedValue + ", "
-                        + Arrays.toString(array));
+            public void sendDouble(double value, Double boxedValue, double[] array) {
+                log.log("sendDouble: " + value + ", " + boxedValue + ", " + Arrays.toString(array));
             }
 
             @Override
@@ -331,10 +284,8 @@ public class SerializerTest extends AbstractTestUI {
             }
 
             @Override
-            public void sendBean(ComplexTestBean complexBean,
-                    SimpleTestBean simpleBean, SimpleTestBean[] array) {
-                log.log("sendBean: " + complexBean + ", " + simpleBean + ", "
-                        + Arrays.toString(array));
+            public void sendBean(ComplexTestBean complexBean, SimpleTestBean simpleBean, SimpleTestBean[] array) {
+                log.log("sendBean: " + complexBean + ", " + simpleBean + ", " + Arrays.toString(array));
             }
 
             @Override
@@ -343,23 +294,16 @@ public class SerializerTest extends AbstractTestUI {
             }
 
             @Override
-            public void sendNestedArray(int[][] nestedIntArray,
-                    SimpleTestBean[][] nestedBeanArray) {
-                log.log("sendNestedArray: "
-                        + Arrays.deepToString(nestedIntArray) + ", "
-                        + Arrays.deepToString(nestedBeanArray));
+            public void sendNestedArray(int[][] nestedIntArray, SimpleTestBean[][] nestedBeanArray) {
+                log.log("sendNestedArray: " + Arrays.deepToString(nestedIntArray) + ", " + Arrays.deepToString(nestedBeanArray));
             }
 
             @Override
-            public void sendList(List<Integer> intList,
-                    List<Connector> connectorList, List<SimpleTestBean> beanList) {
-                log.log("sendList: " + intList + ", "
-                        + connectorCollectionToString(connectorList) + ", "
-                        + beanList);
+            public void sendList(List<Integer> intList, List<Connector> connectorList, List<SimpleTestBean> beanList) {
+                log.log("sendList: " + intList + ", " + connectorCollectionToString(connectorList) + ", " + beanList);
             }
 
-            private String connectorCollectionToString(
-                    Collection<Connector> collection) {
+            private String connectorCollectionToString(Collection<Connector> collection) {
                 StringBuilder sb = new StringBuilder();
 
                 for (Connector connector : collection) {
@@ -374,46 +318,30 @@ public class SerializerTest extends AbstractTestUI {
             }
 
             @Override
-            public void sendArrayList(List<int[]> primitiveArrayList,
-                    List<Integer[]> objectArrayList,
-                    List<SimpleTestBean[]> beanArrayList) {
-                log.log("sendArrayList: "
-                        + Arrays.deepToString(primitiveArrayList.toArray())
-                        + ", " + Arrays.deepToString(objectArrayList.toArray())
-                        + ", " + Arrays.deepToString(beanArrayList.toArray()));
+            public void sendArrayList(List<int[]> primitiveArrayList, List<Integer[]> objectArrayList, List<SimpleTestBean[]> beanArrayList) {
+                log.log("sendArrayList: " + Arrays.deepToString(primitiveArrayList.toArray()) + ", " + Arrays.deepToString(objectArrayList.toArray()) + ", " + Arrays.deepToString(beanArrayList.toArray()));
             }
 
             @Override
-            public void sendListArray(List<Integer>[] objectListArray,
-                    List<SimpleTestBean>[] beanListArray) {
-                log.log("sendArrayList: " + Arrays.toString(objectListArray)
-                        + ", " + Arrays.toString(beanListArray));
+            public void sendListArray(List<Integer>[] objectListArray, List<SimpleTestBean>[] beanListArray) {
+                log.log("sendArrayList: " + Arrays.toString(objectListArray) + ", " + Arrays.toString(beanListArray));
             }
 
             @Override
-            public void sendSet(Set<Integer> intSet,
-                    Set<Connector> connectorSet, Set<SimpleTestBean> beanSet) {
+            public void sendSet(Set<Integer> intSet, Set<Connector> connectorSet, Set<SimpleTestBean> beanSet) {
                 List<Integer> intList = new ArrayList<Integer>(intSet);
                 Collections.sort(intList);
-                List<Connector> connectorList = new ArrayList<Connector>(
-                        connectorSet);
+                List<Connector> connectorList = new ArrayList<Connector>(connectorSet);
                 Collections.sort(connectorList, new ConnectorComparator());
-                List<SimpleTestBean> beanList = new ArrayList<SimpleTestBean>(
-                        beanSet);
+                List<SimpleTestBean> beanList = new ArrayList<SimpleTestBean>(beanSet);
                 Collections.sort(beanList, new SimpleBeanComparator());
-                log.log("sendSet: " + intList + ", "
-                        + connectorCollectionToString(connectorList) + ", "
-                        + beanList);
+                log.log("sendSet: " + intList + ", " + connectorCollectionToString(connectorList) + ", " + beanList);
             }
 
             @Override
-            public void sendMap(Map<String, SimpleTestBean> stringMap,
-                    Map<Connector, SimpleTestBean> connectorMap,
-                    Map<Integer, Connector> intMap,
-                    Map<SimpleTestBean, SimpleTestBean> beanMap) {
+            public void sendMap(Map<String, SimpleTestBean> stringMap, Map<Connector, SimpleTestBean> connectorMap, Map<Integer, Connector> intMap, Map<SimpleTestBean, SimpleTestBean> beanMap) {
                 StringBuilder sb = new StringBuilder();
-                for (Entry<Connector, SimpleTestBean> entry : connectorMap
-                        .entrySet()) {
+                for (Entry<Connector, SimpleTestBean> entry : connectorMap.entrySet()) {
                     if (sb.length() == 0) {
                         sb.append('[');
                     } else {
@@ -440,21 +368,17 @@ public class SerializerTest extends AbstractTestUI {
                 sb.append(']');
                 String intMapString = sb.toString();
 
-                log.log("sendMap: " + stringMap + ", " + connectorMapString
-                        + ", " + intMapString + ", " + beanMap);
+                log.log("sendMap: " + stringMap + ", " + connectorMapString + ", " + intMapString + ", " + beanMap);
             }
 
             @Override
-            public void sendWrappedGenerics(
-                    Map<Set<SimpleTestBean>, Map<Integer, List<SimpleTestBean>>> generics) {
+            public void sendWrappedGenerics(Map<Set<SimpleTestBean>, Map<Integer, List<SimpleTestBean>>> generics) {
                 log.log("sendWrappedGenerics: " + generics.toString());
             }
 
             @Override
-            public void sendEnum(ContentMode contentMode, ContentMode[] array,
-                    List<ContentMode> list) {
-                log.log("sendEnum: " + contentMode + ", "
-                        + Arrays.toString(array) + ", " + list);
+            public void sendEnum(ContentMode contentMode, ContentMode[] array, List<ContentMode> list) {
+                log.log("sendEnum: " + contentMode + ", " + Arrays.toString(array) + ", " + list);
             }
 
             @Override
@@ -464,18 +388,14 @@ public class SerializerTest extends AbstractTestUI {
 
             @Override
             public void sendDate(Date date) {
-                DateFormat format = DateFormat.getDateTimeInstance(
-                        DateFormat.LONG, DateFormat.FULL,
-                        new Locale("en", "fi"));
+                DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.FULL, new Locale("en", "fi"));
                 format.setTimeZone(TimeZone.getTimeZone("UTC"));
                 log.log("sendDate: " + format.format(date));
             }
 
             @Override
             public void sendDateArray(Date[] dateArray) {
-                DateFormat format = DateFormat.getDateTimeInstance(
-                        DateFormat.LONG, DateFormat.FULL,
-                        new Locale("en", "fi"));
+                DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.FULL, new Locale("en", "fi"));
                 format.setTimeZone(TimeZone.getTimeZone("UTC"));
                 String dates = "";
 
@@ -486,10 +406,8 @@ public class SerializerTest extends AbstractTestUI {
             }
 
             @Override
-            public void sendJson(JsonValue value1, JsonValue value2,
-                    JsonString string) {
-                log.log("sendJson: " + value1.toJson() + ", " + value2.toJson()
-                        + ", " + string.toJson());
+            public void sendJson(JsonValue value1, JsonValue value2, JsonString string) {
+                log.log("sendJson: " + value1.toJson() + ", " + value2.toJson() + ", " + string.toJson());
             }
 
             @Override
@@ -519,8 +437,7 @@ public class SerializerTest extends AbstractTestUI {
         }
     }
 
-    private static class SimpleBeanComparator implements
-            Comparator<SimpleTestBean> {
+    private static class SimpleBeanComparator implements Comparator<SimpleTestBean> {
         @Override
         public int compare(SimpleTestBean o1, SimpleTestBean o2) {
             return Integer.valueOf(o1.getValue()).compareTo(o2.getValue());

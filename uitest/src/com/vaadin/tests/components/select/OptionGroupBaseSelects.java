@@ -31,8 +31,7 @@ public class OptionGroupBaseSelects extends ComponentTestCase<HorizontalLayout> 
 
             @Override
             public void valueChange(ValueChangeEvent event) {
-                for (Iterator<Component> it = layout.getComponentIterator(); it
-                        .hasNext();) {
+                for (Iterator<Component> it = layout.getComponentIterator(); it.hasNext();) {
                     Component c = it.next();
                     if (c instanceof AbstractSelect) {
                         c.setReadOnly(!c.isReadOnly());
@@ -45,15 +44,12 @@ public class OptionGroupBaseSelects extends ComponentTestCase<HorizontalLayout> 
 
             @Override
             public void valueChange(ValueChangeEvent event) {
-                for (Iterator<Component> it = layout.getComponentIterator(); it
-                        .hasNext();) {
+                for (Iterator<Component> it = layout.getComponentIterator(); it.hasNext();) {
                     Component c = it.next();
                     if (c instanceof AbstractSelect) {
                         boolean enabled = !c.isEnabled();
                         c.setEnabled(enabled);
-                        c.setCaption(c.getCaption().replace(
-                                (enabled ? "disabled" : "enabled"),
-                                (enabled ? "enabled" : "disabled")));
+                        c.setCaption(c.getCaption().replace((enabled ? "disabled" : "enabled"), (enabled ? "enabled" : "disabled")));
                     }
                 }
             }
@@ -66,25 +62,17 @@ public class OptionGroupBaseSelects extends ComponentTestCase<HorizontalLayout> 
 
         layout = new HorizontalLayout();
         layout.setSpacing(true);
-        layout.addComponent(createSelect(
-                new ListSelect("List Select, enabled"), true));
-        layout.addComponent(createSelect(
-                new ListSelect("List Select, disabled"), false));
+        layout.addComponent(createSelect(new ListSelect("List Select, enabled"), true));
+        layout.addComponent(createSelect(new ListSelect("List Select, disabled"), false));
 
-        layout.addComponent(createSelect(new NativeSelect(
-                "Native Select, enabled"), true));
-        layout.addComponent(createSelect(new NativeSelect(
-                "Native Select, disabled"), false));
+        layout.addComponent(createSelect(new NativeSelect("Native Select, enabled"), true));
+        layout.addComponent(createSelect(new NativeSelect("Native Select, disabled"), false));
 
-        layout.addComponent(createSelect(new OptionGroup(
-                "Option Group, enabled"), true));
-        layout.addComponent(createSelect(new OptionGroup(
-                "Option Group, disabled"), false));
+        layout.addComponent(createSelect(new OptionGroup("Option Group, enabled"), true));
+        layout.addComponent(createSelect(new OptionGroup("Option Group, disabled"), false));
 
-        layout.addComponent(createSelect(new TwinColSelect(
-                "Twin Column Select, enabled"), true));
-        layout.addComponent(createSelect(new TwinColSelect(
-                "Twin Column Select, disabled"), false));
+        layout.addComponent(createSelect(new TwinColSelect("Twin Column Select, enabled"), true));
+        layout.addComponent(createSelect(new TwinColSelect("Twin Column Select, disabled"), false));
 
         addTestComponent(layout);
 
@@ -93,8 +81,7 @@ public class OptionGroupBaseSelects extends ComponentTestCase<HorizontalLayout> 
     private AbstractSelect createSelect(AbstractSelect select, boolean enabled) {
         select.addContainerProperty(CAPTION, String.class, null);
         for (int i = 0; i < 10; i++) {
-            select.addItem("" + i).getItemProperty(CAPTION)
-                    .setValue("Item " + i);
+            select.addItem("" + i).getItemProperty(CAPTION).setValue("Item " + i);
             if (select instanceof OptionGroup && i % 2 == 1) {
                 ((OptionGroup) select).setItemEnabled("" + i, false);
             }

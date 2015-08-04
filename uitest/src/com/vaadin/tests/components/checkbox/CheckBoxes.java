@@ -9,12 +9,9 @@ import com.vaadin.ui.CheckBox;
 
 public class CheckBoxes extends ComponentTestCase<CheckBox> {
 
-    private ThemeResource SMALL_ICON = new ThemeResource(
-            "../runo/icons/16/ok.png");
-    private ThemeResource LARGE_ICON = new ThemeResource(
-            "../runo/icons/64/document.png");
-    private ThemeResource LARGE_ICON_NOCACHE = new ThemeResource(
-            "../runo/icons/64/document.png?" + new Date().getTime());
+    private ThemeResource SMALL_ICON = new ThemeResource("../runo/icons/16/ok.png");
+    private ThemeResource LARGE_ICON = new ThemeResource("../runo/icons/64/document.png");
+    private ThemeResource LARGE_ICON_NOCACHE = new ThemeResource("../runo/icons/64/document.png?" + new Date().getTime());
 
     @Override
     protected Class<CheckBox> getTestClass() {
@@ -34,19 +31,15 @@ public class CheckBoxes extends ComponentTestCase<CheckBox> {
         cb.setStyleName("large");
         addTestComponent(cb);
 
-        cb = createCheckBox("CheckBox with normal text and small icon",
-                SMALL_ICON);
+        cb = createCheckBox("CheckBox with normal text and small icon", SMALL_ICON);
         addTestComponent(cb);
-        cb = createCheckBox("CheckBox with large text and small icon",
-                SMALL_ICON);
+        cb = createCheckBox("CheckBox with large text and small icon", SMALL_ICON);
         cb.setStyleName("large");
         addTestComponent(cb);
 
-        cb = createCheckBox("CheckBox with normal text and large icon",
-                LARGE_ICON);
+        cb = createCheckBox("CheckBox with normal text and large icon", LARGE_ICON);
         addTestComponent(cb);
-        cb = createCheckBox("CheckBox with large text and large icon",
-                LARGE_ICON_NOCACHE);
+        cb = createCheckBox("CheckBox with large text and large icon", LARGE_ICON_NOCACHE);
         cb.setStyleName("large");
         addTestComponent(cb);
 

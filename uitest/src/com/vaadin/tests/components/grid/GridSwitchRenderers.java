@@ -32,8 +32,7 @@ public class GridSwitchRenderers extends AbstractTestUIWithLog {
         ds = new IndexedContainer() {
             @Override
             public List<Object> getItemIds(int startIndex, int numberOfIds) {
-                log("Requested items " + startIndex + " - "
-                        + (startIndex + numberOfIds));
+                log("Requested items " + startIndex + " - " + (startIndex + numberOfIds));
                 return super.getItemIds(startIndex, numberOfIds);
             }
         };
@@ -43,8 +42,7 @@ public class GridSwitchRenderers extends AbstractTestUIWithLog {
 
             int col = MANUALLY_FORMATTED_COLUMNS;
             for (; col < COLUMNS; col++) {
-                ds.addContainerProperty(getColumnProperty(col), String.class,
-                        "");
+                ds.addContainerProperty(getColumnProperty(col), String.class, "");
             }
         }
 
@@ -62,15 +60,13 @@ public class GridSwitchRenderers extends AbstractTestUIWithLog {
         grid.getColumn(EXPANSION_COLUMN_ID).setWidth(50);
         for (int col = MANUALLY_FORMATTED_COLUMNS; col < COLUMNS; col++) {
             grid.getColumn(getColumnProperty(col)).setWidth(300);
-            grid.getColumn(getColumnProperty(col)).setRenderer(
-                    new TextRenderer());
+            grid.getColumn(getColumnProperty(col)).setRenderer(new TextRenderer());
         }
 
         grid.setSelectionMode(SelectionMode.NONE);
         addComponent(grid);
 
-        final CheckBox changeRenderer = new CheckBox(
-                "SetHtmlRenderer for Column 2", false);
+        final CheckBox changeRenderer = new CheckBox("SetHtmlRenderer for Column 2", false);
         changeRenderer.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -91,8 +87,7 @@ public class GridSwitchRenderers extends AbstractTestUIWithLog {
         int col = MANUALLY_FORMATTED_COLUMNS;
 
         for (; col < COLUMNS; col++) {
-            item.getItemProperty(getColumnProperty(col)).setValue(
-                    "<b>(" + content + ", " + col + ")</b>");
+            item.getItemProperty(getColumnProperty(col)).setValue("<b>(" + content + ", " + col + ")</b>");
         }
     }
 

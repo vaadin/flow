@@ -29,8 +29,7 @@ public class NoLayoutTest extends MultiBrowserTest {
         openTestURL();
         assertCounts(1, 0);
 
-        $(CheckBoxElement.class).caption("UI polling enabled").first()
-                .findElement(By.tagName("input")).click();
+        $(CheckBoxElement.class).caption("UI polling enabled").first().findElement(By.tagName("input")).click();
 
         // Toggling check box requires layout
         assertCounts(2, 0);
@@ -44,8 +43,7 @@ public class NoLayoutTest extends MultiBrowserTest {
         assertCounts(2, 0);
 
         // Disable polling
-        $(CheckBoxElement.class).caption("UI polling enabled").first()
-                .findElement(By.tagName("input")).click();
+        $(CheckBoxElement.class).caption("UI polling enabled").first().findElement(By.tagName("input")).click();
         // Toggling checkbox layotus again
         assertCounts(3, 0);
 
@@ -65,17 +63,14 @@ public class NoLayoutTest extends MultiBrowserTest {
         // Doing @NoLayout RPC does not layout, but updates the RPC count
         assertCounts(5, 1);
 
-        $(ButtonElement.class).caption("Update LegacyComponent").first()
-                .click();
+        $(ButtonElement.class).caption("Update LegacyComponent").first().click();
         // Painting LegacyComponent layouts
         assertCounts(6, 1);
     }
 
     private void assertCounts(int layoutCount, int rpcCount) {
-        Assert.assertEquals("Unexpected layout count", layoutCount,
-                getCount("layoutCount"));
-        Assert.assertEquals("Unexpected RPC count", rpcCount,
-                getCount("rpcCount"));
+        Assert.assertEquals("Unexpected layout count", layoutCount, getCount("layoutCount"));
+        Assert.assertEquals("Unexpected RPC count", rpcCount, getCount("rpcCount"));
     }
 
     private int getCount(String id) {

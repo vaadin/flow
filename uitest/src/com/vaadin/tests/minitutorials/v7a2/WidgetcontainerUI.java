@@ -25,8 +25,7 @@ public class WidgetcontainerUI extends UI {
         layout.addComponent(label);
         final WidgetContainer widgetContainer = new WidgetContainer();
         layout.addComponent(widgetContainer);
-        widgetContainer.addComponent(new Label(
-                "Click the button to add components to the WidgetContainer."));
+        widgetContainer.addComponent(new Label("Click the button to add components to the WidgetContainer."));
         Button button = new Button("Add more components", new ClickListener() {
 
             @Override

@@ -37,8 +37,7 @@ import com.vaadin.shared.util.SharedUtil;
  * @since 7.0.0
  */
 @Connect(BrowserWindowOpener.class)
-public class BrowserWindowOpenerConnector extends AbstractExtensionConnector
-        implements ClickHandler {
+public class BrowserWindowOpenerConnector extends AbstractExtensionConnector implements ClickHandler {
 
     @Override
     protected void extend(ServerConnector target) {

@@ -37,19 +37,16 @@ public class GridEditorUITest extends MultiBrowserTest {
         setDebug(true);
         openTestURL();
 
-        assertFalse("Sanity check",
-                isElementPresent(PasswordFieldElement.class));
+        assertFalse("Sanity check", isElementPresent(PasswordFieldElement.class));
 
         openEditor(5);
         new Actions(getDriver()).sendKeys(Keys.ESCAPE).perform();
 
         openEditor(10);
 
-        assertTrue("Editor should be opened with a password field",
-                isElementPresent(PasswordFieldElement.class));
+        assertTrue("Editor should be opened with a password field", isElementPresent(PasswordFieldElement.class));
 
-        assertFalse("Notification was present",
-                isElementPresent(NotificationElement.class));
+        assertFalse("Notification was present", isElementPresent(NotificationElement.class));
     }
 
     private void openEditor(int rowIndex) {

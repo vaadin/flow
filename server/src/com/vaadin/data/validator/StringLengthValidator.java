@@ -60,8 +60,7 @@ public class StringLengthValidator extends AbstractStringValidator {
      *            Are null strings permissible? This can be handled better by
      *            setting a field as required or not.
      */
-    public StringLengthValidator(String errorMessage, Integer minLength,
-            Integer maxLength, boolean allowNull) {
+    public StringLengthValidator(String errorMessage, Integer minLength, Integer maxLength, boolean allowNull) {
         this(errorMessage);
         setMinLength(minLength);
         setMaxLength(maxLength);
@@ -81,8 +80,7 @@ public class StringLengthValidator extends AbstractStringValidator {
             return allowNull;
         }
         final int len = value.length();
-        if ((minLength != null && minLength > -1 && len < minLength)
-                || (maxLength != null && maxLength > -1 && len > maxLength)) {
+        if ((minLength != null && minLength > -1 && len < minLength) || (maxLength != null && maxLength > -1 && len > maxLength)) {
             return false;
         }
         return true;

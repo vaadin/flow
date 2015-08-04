@@ -288,8 +288,7 @@ public class ApplicationConfiguration implements EntryPoint {
      * @return The parameter name, by default <code>v-resourcePath</code>
      */
     public String getServiceUrlParameterName() {
-        return getJsoConfiguration(id).getConfigString(
-                ApplicationConstants.SERVICE_URL_PARAMETER_NAME);
+        return getJsoConfiguration(id).getConfigString(ApplicationConstants.SERVICE_URL_PARAMETER_NAME);
     }
 
     public String getRootPanelId() {
@@ -392,8 +391,7 @@ public class ApplicationConfiguration implements EntryPoint {
      */
     private void loadFromDOM() {
         JsoConfiguration jsoConfiguration = getJsoConfiguration(id);
-        serviceUrl = jsoConfiguration
-                .getConfigString(ApplicationConstants.SERVICE_URL);
+        serviceUrl = jsoConfiguration.getConfigString(ApplicationConstants.SERVICE_URL);
         if (serviceUrl == null || "".equals(serviceUrl)) {
             /*
              * Use the current url without query parameters and fragment as the
@@ -413,16 +411,13 @@ public class ApplicationConfiguration implements EntryPoint {
             serviceUrl += '/';
         }
 
-        vaadinDirUrl = WidgetUtil.getAbsoluteUrl(jsoConfiguration
-                .getConfigString(ApplicationConstants.VAADIN_DIR_URL));
-        uiId = jsoConfiguration.getConfigInteger(UIConstants.UI_ID_PARAMETER)
-                .intValue();
+        vaadinDirUrl = WidgetUtil.getAbsoluteUrl(jsoConfiguration.getConfigString(ApplicationConstants.VAADIN_DIR_URL));
+        uiId = jsoConfiguration.getConfigInteger(UIConstants.UI_ID_PARAMETER).intValue();
 
         // null -> false
         standalone = jsoConfiguration.getConfigBoolean("standalone") == Boolean.TRUE;
 
-        heartbeatInterval = jsoConfiguration
-                .getConfigInteger("heartbeatInterval");
+        heartbeatInterval = jsoConfiguration.getConfigInteger("heartbeatInterval");
 
         communicationError = jsoConfiguration.getConfigError("comErrMsg");
         authorizationError = jsoConfiguration.getConfigError("authErrMsg");
@@ -444,8 +439,7 @@ public class ApplicationConfiguration implements EntryPoint {
             public void execute() {
                 Profiler.enter("ApplicationConfiguration.startApplication");
                 ApplicationConfiguration appConf = getConfigFromDOM(applicationId);
-                ApplicationConnection a = GWT
-                        .create(ApplicationConnection.class);
+                ApplicationConnection a = GWT.create(ApplicationConnection.class);
                 a.init(widgetSet, appConf);
                 runningApplications.add(a);
                 Profiler.leave("ApplicationConfiguration.startApplication");
@@ -505,8 +499,7 @@ public class ApplicationConfiguration implements EntryPoint {
         return getJsoConfiguration(id).getAtmosphereJSVersion();
     }
 
-    public Class<? extends ServerConnector> getConnectorClassByEncodedTag(
-            int tag) {
+    public Class<? extends ServerConnector> getConnectorClassByEncodedTag(int tag) {
         Class<? extends ServerConnector> type = classes.get(tag);
         if (type == null && !classes.containsKey(tag)) {
             // Initialize if not already loaded
@@ -515,8 +508,7 @@ public class ApplicationConfiguration implements EntryPoint {
                 String serverSideClassNameForTag = getServerSideClassNameForTag(currentTag);
                 if (TypeData.hasIdentifier(serverSideClassNameForTag)) {
                     try {
-                        type = (Class<? extends ServerConnector>) TypeData
-                                .getClass(serverSideClassNameForTag);
+                        type = (Class<? extends ServerConnector>) TypeData.getClass(serverSideClassNameForTag);
                     } catch (NoDataException e) {
                         throw new RuntimeException(e);
                     }
@@ -572,8 +564,7 @@ public class ApplicationConfiguration implements EntryPoint {
     public Integer[] getTagsForServerSideClassName(String classname) {
         List<Integer> tags = new ArrayList<Integer>();
 
-        for (Map.Entry<Integer, String> entry : tagToServerSideClassName
-                .entrySet()) {
+        for (Map.Entry<Integer, String> entry : tagToServerSideClassName.entrySet()) {
             if (classname.equals(entry.getValue())) {
                 tags.add(entry.getKey());
             }
@@ -625,23 +616,18 @@ public class ApplicationConfiguration implements EntryPoint {
                 cmd.execute();
             }
             callbacks.clear();
-        } else if (dependenciesLoading == 0
-                && !ConnectorBundleLoader.get().isBundleLoaded(
-                        ConnectorBundleLoader.DEFERRED_BUNDLE_NAME)) {
-            ConnectorBundleLoader.get().loadBundle(
-                    ConnectorBundleLoader.DEFERRED_BUNDLE_NAME,
-                    new BundleLoadCallback() {
-                        @Override
-                        public void loaded() {
-                            // Nothing to do
-                        }
+        } else if (dependenciesLoading == 0 && !ConnectorBundleLoader.get().isBundleLoaded(ConnectorBundleLoader.DEFERRED_BUNDLE_NAME)) {
+            ConnectorBundleLoader.get().loadBundle(ConnectorBundleLoader.DEFERRED_BUNDLE_NAME, new BundleLoadCallback() {
+                @Override
+                public void loaded() {
+                    // Nothing to do
+                }
 
-                        @Override
-                        public void failed(Throwable reason) {
-                            getLogger().log(Level.SEVERE,
-                                    "Error loading deferred bundle", reason);
-                        }
-                    });
+                @Override
+                public void failed(Throwable reason) {
+                    getLogger().log(Level.SEVERE, "Error loading deferred bundle", reason);
+                }
+            });
         }
     }
 
@@ -656,9 +642,7 @@ public class ApplicationConfiguration implements EntryPoint {
         // Don't run twice if the module has been inherited several times,
         // and don't continue if vaadinBootstrap was not executed.
         if (moduleLoaded || !vaadinBootstrapLoaded()) {
-            getLogger()
-                    .log(Level.WARNING,
-                            "vaadinBootstrap.js was not loaded, skipping vaadin application configuration.");
+            getLogger().log(Level.WARNING, "vaadinBootstrap.js was not loaded, skipping vaadin application configuration.");
             return;
         }
         moduleLoaded = true;
@@ -708,8 +692,7 @@ public class ApplicationConfiguration implements EntryPoint {
                 GWT.runAsync(new RunAsyncCallback() {
                     @Override
                     public void onSuccess() {
-                        DebugWindowStyles dws = GWT
-                                .create(DebugWindowStyles.class);
+                        DebugWindowStyles dws = GWT.create(DebugWindowStyles.class);
                         dws.css().ensureInjected();
                     }
 
@@ -725,8 +708,7 @@ public class ApplicationConfiguration implements EntryPoint {
             // Connect to the legacy API
             VConsole.setImplementation(window);
 
-            Handler errorNotificationHandler = GWT
-                    .create(ErrorNotificationHandler.class);
+            Handler errorNotificationHandler = GWT.create(ErrorNotificationHandler.class);
             Logger.getLogger("").addHandler(errorNotificationHandler);
         }
 
@@ -816,8 +798,7 @@ public class ApplicationConfiguration implements EntryPoint {
      * @return true if client side is currently been debugged
      */
     public static boolean isDebugMode() {
-        return isDebugAvailable()
-                && Window.Location.getParameter("debug") != null;
+        return isDebugAvailable() && Window.Location.getParameter("debug") != null;
     }
 
     /**
@@ -849,8 +830,7 @@ public class ApplicationConfiguration implements EntryPoint {
      */
     public static boolean isQuietDebugMode() {
         String debugParameter = Window.Location.getParameter("debug");
-        return isDebugAvailable() && debugParameter != null
-                && debugParameter.startsWith("q");
+        return isDebugAvailable() && debugParameter != null && debugParameter.startsWith("q");
     }
 
     /**

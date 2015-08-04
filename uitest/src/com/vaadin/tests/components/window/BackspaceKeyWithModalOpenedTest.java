@@ -85,8 +85,7 @@ public class BackspaceKeyWithModalOpenedTest extends MultiBrowserTest {
         WebElement nextButton = driver.findElement(By.id(BTN_NEXT_ID));
         nextButton.click();
 
-        WebElement openModalButton = driver.findElement(By
-                .id(BTN_OPEN_MODAL_ID));
+        WebElement openModalButton = driver.findElement(By.id(BTN_OPEN_MODAL_ID));
         openModalButton.click();
     }
 

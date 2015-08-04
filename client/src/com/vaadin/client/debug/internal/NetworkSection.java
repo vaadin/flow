@@ -34,8 +34,7 @@ public class NetworkSection implements Section {
 
     private final int maxSize = 10;
 
-    private final DebugButton tabButton = new DebugButton(Icon.NETWORK,
-            "Communication");
+    private final DebugButton tabButton = new DebugButton(Icon.NETWORK, "Communication");
 
     private final HTML controls = new HTML(tabButton.getTitle());
     private final FlowPanel content = new FlowPanel();
@@ -84,8 +83,7 @@ public class NetworkSection implements Section {
         VUIDLBrowser vuidlBrowser = new VUIDLBrowser(uidl, ac);
         vuidlBrowser.addStyleName(VDebugWindow.STYLENAME + "-row");
         vuidlBrowser.setText("Response @ " + sinceReset + "ms");
-        vuidlBrowser.setTitle(VDebugWindow.getTimingTooltip(sinceStart,
-                sinceReset));
+        vuidlBrowser.setTitle(VDebugWindow.getTimingTooltip(sinceStart, sinceReset));
         vuidlBrowser.close();
 
         content.add(vuidlBrowser);

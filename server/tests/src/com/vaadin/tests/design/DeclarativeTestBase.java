@@ -28,8 +28,7 @@ import com.vaadin.shared.Connector;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Flash;
 
-public abstract class DeclarativeTestBase<T extends Component> extends
-        DeclarativeTestBaseBase<T> {
+public abstract class DeclarativeTestBase<T extends Component> extends DeclarativeTestBaseBase<T> {
 
     private static boolean debug = false;
 
@@ -64,8 +63,7 @@ public abstract class DeclarativeTestBase<T extends Component> extends
                     // nonpublic superclass, see #17425
                     readMethod.setAccessible(true);
                     writeMethod.setAccessible(true);
-                    if (Connector.class.isAssignableFrom(c)
-                            && readMethod.getName().equals("getParent")) {
+                    if (Connector.class.isAssignableFrom(c) && readMethod.getName().equals("getParent")) {
                         // Hack to break cycles in the connector hierarchy
                         continue;
                     }
@@ -75,15 +73,13 @@ public abstract class DeclarativeTestBase<T extends Component> extends
                         // Not declared in this class, will be tested by parent
                         // class tester
                         if (debug) {
-                            System.out.println("Skipped " + c.getSimpleName()
-                                    + "." + readMethod.getName());
+                            System.out.println("Skipped " + c.getSimpleName() + "." + readMethod.getName());
                         }
                         continue;
                     }
 
                     if (debug) {
-                        System.out.println("Testing " + c.getSimpleName() + "."
-                                + readMethod.getName());
+                        System.out.println("Testing " + c.getSimpleName() + "." + readMethod.getName());
                     }
                     Object v1 = readMethod.invoke(o1);
                     Object v2 = readMethod.invoke(o2);
@@ -96,16 +92,13 @@ public abstract class DeclarativeTestBase<T extends Component> extends
     }
 
     {
-        comparators.put(Flash.class, new IntrospectorEqualsAsserter<Flash>(
-                Flash.class) {
+        comparators.put(Flash.class, new IntrospectorEqualsAsserter<Flash>(Flash.class) {
             @Override
             public void assertObjectEquals(Flash o1, Flash o2) {
                 super.assertObjectEquals(o1, o2);
-                assertEquals("parameterNames", o1.getParameterNames(),
-                        o2.getParameterNames());
+                assertEquals("parameterNames", o1.getParameterNames(), o2.getParameterNames());
                 for (String name : o1.getParameterNames()) {
-                    assertEquals("Parameter " + name, o1.getParameter(name),
-                            o2.getParameter(name));
+                    assertEquals("Parameter " + name, o1.getParameter(name), o2.getParameter(name));
                 }
             }
         });
@@ -113,15 +106,13 @@ public abstract class DeclarativeTestBase<T extends Component> extends
 
     @Override
     protected EqualsAsserter getComparator(Class c) {
-        com.vaadin.tests.design.DeclarativeTestBaseBase.EqualsAsserter<?> comp = comparators
-                .get(c);
+        com.vaadin.tests.design.DeclarativeTestBaseBase.EqualsAsserter<?> comp = comparators.get(c);
         if (comp == null) {
             if (c.isEnum()) {
                 return standardEqualsComparator;
             }
             if (debug) {
-                System.out.println("No comparator found for " + c.getName()
-                        + ". Using introspector.");
+                System.out.println("No comparator found for " + c.getName() + ". Using introspector.");
             }
             return new IntrospectorEqualsAsserter<T>(c);
         }

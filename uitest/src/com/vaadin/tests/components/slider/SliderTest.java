@@ -51,8 +51,7 @@ public class SliderTest extends AbstractFieldTest<Slider> {
     }
 
     private void createResolutionSelect(String category) {
-        createSelectAction("Resolution", category, createIntegerOptions(10),
-                "1", resolutionCommand);
+        createSelectAction("Resolution", category, createIntegerOptions(10), "1", resolutionCommand);
 
     }
 
@@ -60,19 +59,16 @@ public class SliderTest extends AbstractFieldTest<Slider> {
         LinkedHashMap<String, SliderOrientation> options = new LinkedHashMap<String, SliderOrientation>();
         options.put("Horizontal", SliderOrientation.HORIZONTAL);
         options.put("Vertical", SliderOrientation.VERTICAL);
-        createSelectAction("Orientation", category, options, "Horizontal",
-                orientationCommand);
+        createSelectAction("Orientation", category, options, "Horizontal", orientationCommand);
 
     }
 
     private void createMaxSelect(String category) {
-        createSelectAction("Max", category, createDoubleOptions(100), "0",
-                maxCommand);
+        createSelectAction("Max", category, createDoubleOptions(100), "0", maxCommand);
     }
 
     private void createMinSelect(String category) {
-        createSelectAction("Min", category, createDoubleOptions(100), "0",
-                minCommand);
+        createSelectAction("Min", category, createDoubleOptions(100), "0", minCommand);
 
     }
 

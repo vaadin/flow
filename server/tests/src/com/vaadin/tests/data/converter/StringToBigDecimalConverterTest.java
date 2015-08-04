@@ -27,8 +27,7 @@ public class StringToBigDecimalConverterTest extends TestCase {
     StringToBigDecimalConverter converter = new StringToBigDecimalConverter();
 
     public void testNullConversion() {
-        assertEquals(null,
-                converter.convertToModel(null, BigDecimal.class, null));
+        assertEquals(null, converter.convertToModel(null, BigDecimal.class, null));
     }
 
     public void testEmptyStringConversion() {
@@ -36,8 +35,7 @@ public class StringToBigDecimalConverterTest extends TestCase {
     }
 
     public void testValueParsing() {
-        BigDecimal converted = converter.convertToModel("10", BigDecimal.class,
-                null);
+        BigDecimal converted = converter.convertToModel("10", BigDecimal.class, null);
         BigDecimal expected = new BigDecimal(10);
         assertEquals(expected, converted);
     }
@@ -46,8 +44,7 @@ public class StringToBigDecimalConverterTest extends TestCase {
         BigDecimal bd = new BigDecimal(12.5);
         String expected = "12,5";
 
-        String converted = converter.convertToPresentation(bd, String.class,
-                Locale.GERMAN);
+        String converted = converter.convertToPresentation(bd, String.class, Locale.GERMAN);
         assertEquals(expected, converted);
     }
 }

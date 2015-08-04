@@ -89,8 +89,7 @@ public class MenuBarIdsTest extends TestCase implements Command {
 
     @Override
     public void menuSelected(MenuItem selectedItem) {
-        assertNull("lastSelectedItem was not cleared before selecting an item",
-                lastSelectedItem);
+        assertNull("lastSelectedItem was not cleared before selecting an item", lastSelectedItem);
 
         lastSelectedItem = selectedItem;
 

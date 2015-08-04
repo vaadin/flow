@@ -36,8 +36,7 @@ import com.vaadin.data.Property;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class PropertysetItem implements Item, Item.PropertySetChangeNotifier,
-        Cloneable {
+public class PropertysetItem implements Item, Item.PropertySetChangeNotifier, Cloneable {
 
     /* Private representation of the item */
 
@@ -175,8 +174,7 @@ public class PropertysetItem implements Item, Item.PropertySetChangeNotifier,
      * @author Vaadin Ltd.
      * @since 3.0
      */
-    private static class PropertySetChangeEvent extends EventObject implements
-            Item.PropertySetChangeEvent {
+    private static class PropertySetChangeEvent extends EventObject implements Item.PropertySetChangeEvent {
 
         private PropertySetChangeEvent(Item source) {
             super(source);
@@ -200,8 +198,7 @@ public class PropertysetItem implements Item, Item.PropertySetChangeNotifier,
      *            the new Listener to be registered.
      */
     @Override
-    public void addPropertySetChangeListener(
-            Item.PropertySetChangeListener listener) {
+    public void addPropertySetChangeListener(Item.PropertySetChangeListener listener) {
         if (propertySetChangeListeners == null) {
             propertySetChangeListeners = new LinkedList<PropertySetChangeListener>();
         }
@@ -225,8 +222,7 @@ public class PropertysetItem implements Item, Item.PropertySetChangeNotifier,
      *            the Listener to be removed.
      */
     @Override
-    public void removePropertySetChangeListener(
-            Item.PropertySetChangeListener listener) {
+    public void removePropertySetChangeListener(Item.PropertySetChangeListener listener) {
         if (propertySetChangeListeners != null) {
             propertySetChangeListeners.remove(listener);
         }
@@ -248,11 +244,9 @@ public class PropertysetItem implements Item, Item.PropertySetChangeNotifier,
     private void fireItemPropertySetChange() {
         if (propertySetChangeListeners != null) {
             final Object[] l = propertySetChangeListeners.toArray();
-            final Item.PropertySetChangeEvent event = new PropertysetItem.PropertySetChangeEvent(
-                    this);
+            final Item.PropertySetChangeEvent event = new PropertysetItem.PropertySetChangeEvent(this);
             for (int i = 0; i < l.length; i++) {
-                ((Item.PropertySetChangeListener) l[i])
-                        .itemPropertySetChange(event);
+                ((Item.PropertySetChangeListener) l[i]).itemPropertySetChange(event);
             }
         }
     }
@@ -262,8 +256,7 @@ public class PropertysetItem implements Item, Item.PropertySetChangeNotifier,
             if (propertySetChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return Collections
-                        .unmodifiableCollection(propertySetChangeListeners);
+                return Collections.unmodifiableCollection(propertySetChangeListeners);
             }
         }
 
@@ -297,8 +290,7 @@ public class PropertysetItem implements Item, Item.PropertySetChangeNotifier,
         final PropertysetItem npsi = new PropertysetItem();
 
         npsi.list = list != null ? (LinkedList<Object>) list.clone() : null;
-        npsi.propertySetChangeListeners = propertySetChangeListeners != null ? (LinkedList<PropertySetChangeListener>) propertySetChangeListeners
-                .clone() : null;
+        npsi.propertySetChangeListeners = propertySetChangeListeners != null ? (LinkedList<PropertySetChangeListener>) propertySetChangeListeners.clone() : null;
         npsi.map = (HashMap<Object, Property<?>>) map.clone();
 
         return npsi;
@@ -335,18 +327,15 @@ public class PropertysetItem implements Item, Item.PropertySetChangeNotifier,
             }
         }
         if (other.propertySetChangeListeners != propertySetChangeListeners) {
-            boolean thisEmpty = (propertySetChangeListeners == null || propertySetChangeListeners
-                    .isEmpty());
-            boolean otherEmpty = (other.propertySetChangeListeners == null || other.propertySetChangeListeners
-                    .isEmpty());
+            boolean thisEmpty = (propertySetChangeListeners == null || propertySetChangeListeners.isEmpty());
+            boolean otherEmpty = (other.propertySetChangeListeners == null || other.propertySetChangeListeners.isEmpty());
             if (thisEmpty && otherEmpty) {
                 return true;
             }
             if (otherEmpty) {
                 return false;
             }
-            if (!other.propertySetChangeListeners
-                    .equals(propertySetChangeListeners)) {
+            if (!other.propertySetChangeListeners.equals(propertySetChangeListeners)) {
                 return false;
             }
         }
@@ -362,9 +351,6 @@ public class PropertysetItem implements Item, Item.PropertySetChangeNotifier,
     @Override
     public int hashCode() {
 
-        return (list == null ? 0 : list.hashCode())
-                ^ (map == null ? 0 : map.hashCode())
-                ^ ((propertySetChangeListeners == null || propertySetChangeListeners
-                        .isEmpty()) ? 0 : propertySetChangeListeners.hashCode());
+        return (list == null ? 0 : list.hashCode()) ^ (map == null ? 0 : map.hashCode()) ^ ((propertySetChangeListeners == null || propertySetChangeListeners.isEmpty()) ? 0 : propertySetChangeListeners.hashCode());
     }
 }

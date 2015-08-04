@@ -70,10 +70,7 @@ public class PopupViewOffScreen extends TestBase {
         p.setWidth("400px");
         p.setHeight("400px");
 
-        Label l = new Label(
-                "<div style='width: 100%; height: 100%; background: " + bg
-                        + "'>" + LoremIpsum.get(2000) + "</div>",
-                ContentMode.HTML);
+        Label l = new Label("<div style='width: 100%; height: 100%; background: " + bg + "'>" + LoremIpsum.get(2000) + "</div>", ContentMode.HTML);
         l.setSizeFull();
         vl.addComponent(l);
         PopupView pv = new PopupView("Click here to popup", p);

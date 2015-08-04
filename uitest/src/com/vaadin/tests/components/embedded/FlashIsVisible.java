@@ -17,9 +17,7 @@ public class FlashIsVisible extends TestBase {
         player.setMimeType("application/x-shockwave-flash");
         player.setWidth("400px");
         player.setHeight("300px");
-        player.setSource(new ClassResource(
-                com.vaadin.tests.components.flash.FlashIsVisible.class,
-                "simple.swf"));
+        player.setSource(new ClassResource(com.vaadin.tests.components.flash.FlashIsVisible.class, "simple.swf"));
         addComponent(player);
     }
 

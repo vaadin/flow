@@ -160,8 +160,7 @@ public class TestSampler extends TabSheet {
         UI.getCurrent().addWindow(window);
     }
 
-    public void setCustomStyleNameToComponents(String oldStyleName,
-            String newStyleName) {
+    public void setCustomStyleNameToComponents(String oldStyleName, String newStyleName) {
         for (Component c : components) {
             if (oldStyleName != null) {
                 c.removeStyleName(oldStyleName);

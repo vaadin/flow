@@ -22,17 +22,15 @@ public class ExtraWindowShown extends AbstractTestUI {
                 layout.setMargin(true);
                 final Window w = new Window("Sub window", layout);
                 w.center();
-                layout.addComponent(new Button("Close",
-                        new Button.ClickListener() {
+                layout.addComponent(new Button("Close", new Button.ClickListener() {
 
-                            @Override
-                            public void buttonClick(ClickEvent event) {
-                                w.close();
-                            }
-                        }));
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        w.close();
+                    }
+                }));
                 Button iconButton = new Button("A button with icon");
-                iconButton
-                        .setIcon(new ThemeResource("../runo/icons/16/ok.png"));
+                iconButton.setIcon(new ThemeResource("../runo/icons/16/ok.png"));
                 layout.addComponent(iconButton);
                 event.getButton().getUI().addWindow(w);
             }

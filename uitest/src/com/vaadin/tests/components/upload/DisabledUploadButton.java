@@ -30,8 +30,7 @@ public class DisabledUploadButton extends AbstractTestUI {
 
     @Override
     public String getDescription() {
-        return "Upload button should be disabled when upload "
-                + "is set to readonly and/or disabled";
+        return "Upload button should be disabled when upload " + "is set to readonly and/or disabled";
     }
 
     @Override

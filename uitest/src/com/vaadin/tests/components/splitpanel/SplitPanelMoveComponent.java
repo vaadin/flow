@@ -28,8 +28,7 @@ public class SplitPanelMoveComponent extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         final HorizontalSplitPanel split = new HorizontalSplitPanel();
         split.setHeight("200px");
-        final Button targetComponent = new Button(
-                "Button in splitpanel. Click to move to the other side");
+        final Button targetComponent = new Button("Button in splitpanel. Click to move to the other side");
         split.setFirstComponent(targetComponent);
 
         targetComponent.addClickListener(new ClickListener() {

@@ -43,8 +43,7 @@ public class UploadTitleWithTooltipTest extends TooltipTest {
             }
         }
 
-        Assert.assertNotNull("Input element with type 'file' is not found",
-                input);
+        Assert.assertNotNull("Input element with type 'file' is not found", input);
 
         checkTooltip(input, "tootlip");
 

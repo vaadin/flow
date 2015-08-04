@@ -19,14 +19,13 @@ public class MoveComponentsFromAbsoluteLayoutToInnerLayout extends TestBase {
         al.setWidth("200px");
         al.setHeight("200px");
 
-        testButton = new Button("Click to move to inner layout",
-                new Button.ClickListener() {
+        testButton = new Button("Click to move to inner layout", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        vl.addComponent(testButton);
-                    }
-                });
+            @Override
+            public void buttonClick(ClickEvent event) {
+                vl.addComponent(testButton);
+            }
+        });
 
         al.addComponent(testButton);
 
@@ -35,14 +34,13 @@ public class MoveComponentsFromAbsoluteLayoutToInnerLayout extends TestBase {
 
         addComponent(al);
 
-        Button b = new Button("Repaint inner layout",
-                new Button.ClickListener() {
+        Button b = new Button("Repaint inner layout", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        vl.markAsDirty();
-                    }
-                });
+            @Override
+            public void buttonClick(ClickEvent event) {
+                vl.markAsDirty();
+            }
+        });
 
         addComponent(b);
     }

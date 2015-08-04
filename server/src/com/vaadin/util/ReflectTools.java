@@ -45,8 +45,7 @@ public class ReflectTools implements Serializable {
      *             Wraps any exception in an {@link ExceptionInInitializerError}
      *             so this method can be called from a static initializer.
      */
-    public static Method findMethod(Class<?> cls, String methodName,
-            Class<?>... parameterTypes) throws ExceptionInInitializerError {
+    public static Method findMethod(Class<?> cls, String methodName, Class<?>... parameterTypes) throws ExceptionInInitializerError {
         try {
             return cls.getDeclaredMethod(methodName, parameterTypes);
         } catch (Exception e) {
@@ -72,9 +71,7 @@ public class ReflectTools implements Serializable {
      * @throws IllegalArgumentException
      *             If the value could not be retrieved
      */
-    public static Object getJavaFieldValue(Object object,
-            java.lang.reflect.Field field) throws IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException {
+    public static Object getJavaFieldValue(Object object, java.lang.reflect.Field field) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         PropertyDescriptor pd;
         try {
             pd = new PropertyDescriptor(field.getName(), object.getClass());
@@ -116,10 +113,7 @@ public class ReflectTools implements Serializable {
      * @throws IllegalArgumentException
      *             If the value could not be retrieved
      */
-    public static Object getJavaFieldValue(Object object,
-            java.lang.reflect.Field field, Class<?> propertyType)
-            throws IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException {
+    public static Object getJavaFieldValue(Object object, java.lang.reflect.Field field, Class<?> propertyType) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         PropertyDescriptor pd;
         try {
             pd = new PropertyDescriptor(field.getName(), object.getClass());
@@ -163,10 +157,7 @@ public class ReflectTools implements Serializable {
      * @throws InvocationTargetException
      *             If the value could not be assigned to the field
      */
-    public static void setJavaFieldValue(Object object,
-            java.lang.reflect.Field field, Object value)
-            throws IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException {
+    public static void setJavaFieldValue(Object object, java.lang.reflect.Field field, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         PropertyDescriptor pd;
         try {
             pd = new PropertyDescriptor(field.getName(), object.getClass());

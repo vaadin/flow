@@ -232,8 +232,7 @@ public class AttachDetachWindowTest {
             }
         });
         ui.addWindow(window);
-        Assert.assertTrue("Attach event is not fired for added window",
-                eventFired[0]);
+        Assert.assertTrue("Attach event is not fired for added window", eventFired[0]);
     }
 
     @Test
@@ -245,16 +244,14 @@ public class AttachDetachWindowTest {
         ui.addComponentDetachListener(new ComponentDetachListener() {
 
             @Override
-            public void componentDetachedFromContainer(
-                    ComponentDetachEvent event) {
+            public void componentDetachedFromContainer(ComponentDetachEvent event) {
                 eventFired[0] = event.getDetachedComponent().equals(window);
             }
         });
         ui.addWindow(window);
         ui.removeWindow(window);
 
-        Assert.assertTrue("Detach event is not fired for removed window",
-                eventFired[0]);
+        Assert.assertTrue("Detach event is not fired for removed window", eventFired[0]);
     }
 
     /**
@@ -265,16 +262,12 @@ public class AttachDetachWindowTest {
         TestContent testContent = win.getTestContent();
 
         assertTrue("window attach not called", win.attachCalled());
-        assertTrue("window content attach not called",
-                testContent.contentAttachCalled);
-        assertTrue("window child attach not called",
-                testContent.childAttachCalled);
+        assertTrue("window content attach not called", testContent.contentAttachCalled);
+        assertTrue("window child attach not called", testContent.childAttachCalled);
 
         assertSame("window not attached", win.getSession(), testApp);
-        assertSame("window content not attached", testContent.getUI()
-                .getSession(), testApp);
-        assertSame("window children not attached", testContent.child.getUI()
-                .getSession(), testApp);
+        assertSame("window content not attached", testContent.getUI().getSession(), testApp);
+        assertSame("window children not attached", testContent.child.getUI().getSession(), testApp);
     }
 
     /**
@@ -282,10 +275,8 @@ public class AttachDetachWindowTest {
      */
     private void assertUnattached(TestContainer win) {
         assertSame("window not detached", win.getSession(), null);
-        assertSame("window content not detached",
-                getSession(win.getTestContent()), null);
-        assertSame("window children not detached",
-                getSession(win.getTestContent().child), null);
+        assertSame("window content not detached", getSession(win.getTestContent()), null);
+        assertSame("window children not detached", getSession(win.getTestContent().child), null);
     }
 
     private VaadinSession getSession(ClientConnector testContainer) {
@@ -306,9 +297,7 @@ public class AttachDetachWindowTest {
     private void assertDetached(TestContainer win) {
         assertUnattached(win);
         assertTrue("window detach not called", win.detachCalled());
-        assertTrue("window content detach not called",
-                win.getTestContent().contentDetachCalled);
-        assertTrue("window child detach not called",
-                win.getTestContent().childDetachCalled);
+        assertTrue("window content detach not called", win.getTestContent().contentDetachCalled);
+        assertTrue("window child detach not called", win.getTestContent().childDetachCalled);
     }
 }

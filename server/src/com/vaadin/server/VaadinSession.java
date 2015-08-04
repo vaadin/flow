@@ -85,8 +85,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
          * Snapshot of all non-inheritable current instances at the time this
          * object was created.
          */
-        private final Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                .getInstances(true);
+        private final Map<Class<?>, CurrentInstance> instances = CurrentInstance.getInstances(true);
         private final VaadinSession session;
         private Runnable runnable;
 
@@ -150,8 +149,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 } else {
                     ErrorEvent errorEvent = new ErrorEvent(exception);
 
-                    ErrorHandler errorHandler = ErrorEvent
-                            .findErrorHandler(session);
+                    ErrorHandler errorHandler = ErrorEvent.findErrorHandler(session);
 
                     if (errorHandler == null) {
                         errorHandler = new DefaultErrorHandler();
@@ -187,8 +185,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         CLOSED;
 
         private boolean isValidChange(State newState) {
-            return (this == OPEN && newState == CLOSING)
-                    || (this == CLOSING && newState == CLOSED);
+            return (this == OPEN && newState == CLOSING) || (this == CLOSING && newState == CLOSED);
         }
     }
 
@@ -199,12 +196,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     // javadoc in UI should be updated if this value is changed
     public static final String UI_PARAMETER = "UI";
 
-    private static final Method BOOTSTRAP_FRAGMENT_METHOD = ReflectTools
-            .findMethod(BootstrapListener.class, "modifyBootstrapFragment",
-                    BootstrapFragmentResponse.class);
-    private static final Method BOOTSTRAP_PAGE_METHOD = ReflectTools
-            .findMethod(BootstrapListener.class, "modifyBootstrapPage",
-                    BootstrapPageResponse.class);
+    private static final Method BOOTSTRAP_FRAGMENT_METHOD = ReflectTools.findMethod(BootstrapListener.class, "modifyBootstrapFragment", BootstrapFragmentResponse.class);
+    private static final Method BOOTSTRAP_PAGE_METHOD = ReflectTools.findMethod(BootstrapListener.class, "modifyBootstrapPage", BootstrapPageResponse.class);
 
     /**
      * Configuration for the session.
@@ -295,13 +288,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // closing
         // Notify the service
         if (service == null) {
-            getLogger()
-                    .warning(
-                            "A VaadinSession instance not associated to any service is getting unbound. "
-                                    + "Session destroy events will not be fired and UIs in the session will not get detached. "
-                                    + "This might happen if a session is deserialized but never used before it expires.");
-        } else if (VaadinService.getCurrentRequest() != null
-                && getCurrent() == this) {
+            getLogger().warning("A VaadinSession instance not associated to any service is getting unbound. " + "Session destroy events will not be fired and UIs in the session will not get detached. " + "This might happen if a session is deserialized but never used before it expires.");
+        } else if (VaadinService.getCurrentRequest() != null && getCurrent() == this) {
             assert hasLock();
             // Ignore if the session is being moved to a different backing
             // session or if GAEVaadinServlet is doing its normal cleanup.
@@ -431,12 +419,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *             class some day.
      */
     @Deprecated
-    public static VaadinSession getForSession(VaadinService service,
-            WrappedSession underlyingSession) {
+    public static VaadinSession getForSession(VaadinService service, WrappedSession underlyingSession) {
         assert hasLock(service, underlyingSession);
 
-        VaadinSession vaadinSession = (VaadinSession) underlyingSession
-                .getAttribute(getSessionAttributeName(service));
+        VaadinSession vaadinSession = (VaadinSession) underlyingSession.getAttribute(getSessionAttributeName(service));
         if (vaadinSession == null) {
             return null;
         }
@@ -456,8 +442,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the HTTP session
      * @return the found VaadinSessions
      */
-    public static Collection<VaadinSession> getAllSessions(
-            HttpSession httpSession) {
+    public static Collection<VaadinSession> getAllSessions(HttpSession httpSession) {
         Set<VaadinSession> sessions = new HashSet<VaadinSession>();
         Enumeration<String> attributeNames = httpSession.getAttributeNames();
 
@@ -533,8 +518,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         lock = service.getSessionLock(session);
     }
 
-    public void setCommunicationManager(
-            LegacyCommunicationManager communicationManager) {
+    public void setCommunicationManager(LegacyCommunicationManager communicationManager) {
         assert hasLock();
         if (communicationManager == null) {
             throw new IllegalArgumentException("Can not set to null");
@@ -833,10 +817,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void addBootstrapListener(BootstrapListener listener) {
         assert hasLock();
-        eventRouter.addListener(BootstrapFragmentResponse.class, listener,
-                BOOTSTRAP_FRAGMENT_METHOD);
-        eventRouter.addListener(BootstrapPageResponse.class, listener,
-                BOOTSTRAP_PAGE_METHOD);
+        eventRouter.addListener(BootstrapFragmentResponse.class, listener, BOOTSTRAP_FRAGMENT_METHOD);
+        eventRouter.addListener(BootstrapPageResponse.class, listener, BOOTSTRAP_PAGE_METHOD);
     }
 
     /**
@@ -849,10 +831,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void removeBootstrapListener(BootstrapListener listener) {
         assert hasLock();
-        eventRouter.removeListener(BootstrapFragmentResponse.class, listener,
-                BOOTSTRAP_FRAGMENT_METHOD);
-        eventRouter.removeListener(BootstrapPageResponse.class, listener,
-                BOOTSTRAP_PAGE_METHOD);
+        eventRouter.removeListener(BootstrapFragmentResponse.class, listener, BOOTSTRAP_FRAGMENT_METHOD);
+        eventRouter.removeListener(BootstrapPageResponse.class, listener, BOOTSTRAP_PAGE_METHOD);
     }
 
     /**
@@ -1008,8 +988,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
                 for (UI ui : getUIs()) {
                     if (ui.getPushConfiguration().getPushMode() == PushMode.AUTOMATIC) {
-                        Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance
-                                .setCurrent(ui);
+                        Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance.setCurrent(ui);
                         try {
                             ui.push();
                         } finally {
@@ -1088,9 +1067,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             throw new IllegalArgumentException("type can not be null");
         }
         if (value != null && !type.isInstance(value)) {
-            throw new IllegalArgumentException("value of type "
-                    + type.getName() + " expected but got "
-                    + value.getClass().getName());
+            throw new IllegalArgumentException("value of type " + type.getName() + " expected but got " + value.getClass().getName());
         }
         setAttribute(type.getName(), value);
     }
@@ -1165,12 +1142,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public void addUI(UI ui) {
         assert hasLock();
         if (ui.getUIId() == -1) {
-            throw new IllegalArgumentException(
-                    "Can not add an UI that has not been initialized.");
+            throw new IllegalArgumentException("Can not add an UI that has not been initialized.");
         }
         if (ui.getSession() != this) {
-            throw new IllegalArgumentException(
-                    "The UI belongs to a different session");
+            throw new IllegalArgumentException("The UI belongs to a different session");
         }
 
         Integer uiId = Integer.valueOf(ui.getUIId());
@@ -1181,8 +1156,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             Integer previousUiId = embedIdMap.put(embedId, uiId);
             if (previousUiId != null) {
                 UI previousUi = uIs.get(previousUiId);
-                assert previousUi != null
-                        && embedId.equals(previousUi.getEmbedId()) : "UI id map and embed id map not in sync";
+                assert previousUi != null && embedId.equals(previousUi.getEmbedId()) : "UI id map and embed id map not in sync";
 
                 // Will fire cleanup events at the end of the request handling.
                 previousUi.close();
@@ -1286,8 +1260,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     protected void setState(State state) {
         assert hasLock();
-        assert this.state.isValidChange(state) : "Invalid session state change "
-                + this.state + "->" + state;
+        assert this.state.isValidChange(state) : "Invalid session state change " + this.state + "->" + state;
 
         this.state = state;
     }
@@ -1426,8 +1399,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Override default deserialization logic to account for transient
      * {@link #pendingAccessQueue}.
      */
-    private void readObject(ObjectInputStream stream) throws IOException,
-            ClassNotFoundException {
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         pendingAccessQueue = new ConcurrentLinkedQueue<FutureAccess>();
     }

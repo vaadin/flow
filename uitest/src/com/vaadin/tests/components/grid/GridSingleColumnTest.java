@@ -32,8 +32,7 @@ public class GridSingleColumnTest extends MultiBrowserTest {
         openTestURL();
 
         GridCellElement cell = $(GridElement.class).first().getHeaderCell(0, 0);
-        Assert.assertTrue("No header available", cell.getText()
-                .equalsIgnoreCase("header"));
+        Assert.assertTrue("No header available", cell.getText().equalsIgnoreCase("header"));
     }
 
     @Test
@@ -41,7 +40,6 @@ public class GridSingleColumnTest extends MultiBrowserTest {
         setDebug(true);
         openTestURL();
 
-        Assert.assertFalse("Exception when scrolling on init",
-                isElementPresent(NotificationElement.class));
+        Assert.assertFalse("Exception when scrolling on init", isElementPresent(NotificationElement.class));
     }
 }

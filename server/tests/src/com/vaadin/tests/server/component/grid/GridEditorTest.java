@@ -61,8 +61,7 @@ public class GridEditorTest {
     public void setup() throws SecurityException, NoSuchMethodException {
         IndexedContainer container = new IndexedContainer();
         container.addContainerProperty(PROPERTY_NAME, String.class, "[name]");
-        container.addContainerProperty(PROPERTY_AGE, Integer.class,
-                Integer.valueOf(-1));
+        container.addContainerProperty(PROPERTY_AGE, Integer.class, Integer.valueOf(-1));
 
         Item item = container.addItem(ITEM_ID);
         item.getItemProperty(PROPERTY_NAME).setValue(DEFAULT_NAME);
@@ -70,8 +69,7 @@ public class GridEditorTest {
         grid.setContainerDataSource(container);
 
         // VaadinSession needed for ConverterFactory
-        VaadinService mockService = EasyMock
-                .createNiceMock(VaadinService.class);
+        VaadinService mockService = EasyMock.createNiceMock(VaadinService.class);
         session = new MockVaadinSession(mockService);
         VaadinSession.setCurrent(session);
         session.lock();
@@ -136,20 +134,16 @@ public class GridEditorTest {
     public void testEditItem() throws Exception {
         startEdit();
         assertEquals(ITEM_ID, grid.getEditedItemId());
-        assertEquals(getEditedItem(), grid.getEditorFieldGroup()
-                .getItemDataSource());
+        assertEquals(getEditedItem(), grid.getEditorFieldGroup().getItemDataSource());
 
-        assertEquals(DEFAULT_NAME, grid.getColumn(PROPERTY_NAME)
-                .getEditorField().getValue());
-        assertEquals(String.valueOf(DEFAULT_AGE), grid.getColumn(PROPERTY_AGE)
-                .getEditorField().getValue());
+        assertEquals(DEFAULT_NAME, grid.getColumn(PROPERTY_NAME).getEditorField().getValue());
+        assertEquals(String.valueOf(DEFAULT_AGE), grid.getColumn(PROPERTY_AGE).getEditorField().getValue());
     }
 
     @Test
     public void testSaveEditor() throws Exception {
         startEdit();
-        TextField field = (TextField) grid.getColumn(PROPERTY_NAME)
-                .getEditorField();
+        TextField field = (TextField) grid.getColumn(PROPERTY_NAME).getEditorField();
 
         field.setValue("New Name");
         assertEquals(DEFAULT_NAME, field.getPropertyDataSource().getValue());
@@ -165,8 +159,7 @@ public class GridEditorTest {
     public void testSaveEditorCommitFail() throws Exception {
         startEdit();
 
-        ((TextField) grid.getColumn(PROPERTY_AGE).getEditorField())
-                .setValue("Invalid");
+        ((TextField) grid.getColumn(PROPERTY_AGE).getEditorField()).setValue("Invalid");
         try {
             // Manual fail instead of @Test(expected=...) to check it is
             // saveEditor that fails and not setValue
@@ -180,8 +173,7 @@ public class GridEditorTest {
     @Test
     public void testCancelEditor() throws Exception {
         startEdit();
-        TextField field = (TextField) grid.getColumn(PROPERTY_NAME)
-                .getEditorField();
+        TextField field = (TextField) grid.getColumn(PROPERTY_NAME).getEditorField();
         field.setValue("New Name");
 
         Property<?> datasource = field.getPropertyDataSource();
@@ -267,8 +259,7 @@ public class GridEditorTest {
         field = new TextField();
         grid.getColumn(PROPERTY_NAME).setEditorField(field);
 
-        assertSame("new field should be used.", field,
-                grid.getColumn(PROPERTY_NAME).getEditorField());
+        assertSame("new field should be used.", field, grid.getColumn(PROPERTY_NAME).getEditorField());
     }
 
     private void startEdit() {
@@ -278,8 +269,7 @@ public class GridEditorTest {
         try {
             doEditMethod.invoke(grid);
         } catch (Exception e) {
-            Assert.fail("Editing item " + ITEM_ID + " failed. Cause: "
-                    + e.getCause().toString());
+            Assert.fail("Editing item " + ITEM_ID + " failed. Cause: " + e.getCause().toString());
         }
     }
 

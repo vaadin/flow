@@ -42,9 +42,7 @@ public class ConverterUtil implements Serializable {
      * @return a Converter capable of converting between the given types or null
      *         if no converter was found
      */
-    public static <PRESENTATIONTYPE, MODELTYPE> Converter<PRESENTATIONTYPE, MODELTYPE> getConverter(
-            Class<PRESENTATIONTYPE> presentationType,
-            Class<MODELTYPE> modelType, VaadinSession session) {
+    public static <PRESENTATIONTYPE, MODELTYPE> Converter<PRESENTATIONTYPE, MODELTYPE> getConverter(Class<PRESENTATIONTYPE> presentationType, Class<MODELTYPE> modelType, VaadinSession session) {
         Converter<PRESENTATIONTYPE, MODELTYPE> converter = null;
         if (session == null) {
             session = VaadinSession.getCurrent();
@@ -81,25 +79,15 @@ public class ConverterUtil implements Serializable {
      *             if there was a problem converting the value
      */
     @SuppressWarnings("unchecked")
-    public static <PRESENTATIONTYPE, MODELTYPE> PRESENTATIONTYPE convertFromModel(
-            MODELTYPE modelValue,
-            Class<? extends PRESENTATIONTYPE> presentationType,
-            Converter<PRESENTATIONTYPE, MODELTYPE> converter, Locale locale)
-            throws Converter.ConversionException {
+    public static <PRESENTATIONTYPE, MODELTYPE> PRESENTATIONTYPE convertFromModel(MODELTYPE modelValue, Class<? extends PRESENTATIONTYPE> presentationType, Converter<PRESENTATIONTYPE, MODELTYPE> converter, Locale locale) throws Converter.ConversionException {
         if (converter != null) {
             /*
              * If there is a converter, always use it. It must convert or throw
              * an exception.
              */
-            PRESENTATIONTYPE presentation = converter.convertToPresentation(
-                    modelValue, presentationType, locale);
-            if (presentation != null
-                    && !presentationType.isInstance(presentation)) {
-                throw new Converter.ConversionException(
-                        "Converter returned an object of type "
-                                + presentation.getClass().getName()
-                                + " when expecting "
-                                + presentationType.getName());
+            PRESENTATIONTYPE presentation = converter.convertToPresentation(modelValue, presentationType, locale);
+            if (presentation != null && !presentationType.isInstance(presentation)) {
+                throw new Converter.ConversionException("Converter returned an object of type " + presentation.getClass().getName() + " when expecting " + presentationType.getName());
             }
 
             return presentation;
@@ -113,12 +101,7 @@ public class ConverterUtil implements Serializable {
         if (presentationType.isAssignableFrom(modelValue.getClass())) {
             return (PRESENTATIONTYPE) modelValue;
         } else {
-            throw new Converter.ConversionException(
-                    "Unable to convert value of type "
-                            + modelValue.getClass().getName()
-                            + " to presentation type "
-                            + presentationType
-                            + ". No converter is set and the types are not compatible.");
+            throw new Converter.ConversionException("Unable to convert value of type " + modelValue.getClass().getName() + " to presentation type " + presentationType + ". No converter is set and the types are not compatible.");
         }
     }
 
@@ -144,22 +127,15 @@ public class ConverterUtil implements Serializable {
      * @throws Converter.ConversionException
      *             if there was a problem converting the value
      */
-    public static <MODELTYPE, PRESENTATIONTYPE> MODELTYPE convertToModel(
-            PRESENTATIONTYPE presentationValue, Class<MODELTYPE> modelType,
-            Converter<PRESENTATIONTYPE, MODELTYPE> converter, Locale locale)
-            throws Converter.ConversionException {
+    public static <MODELTYPE, PRESENTATIONTYPE> MODELTYPE convertToModel(PRESENTATIONTYPE presentationValue, Class<MODELTYPE> modelType, Converter<PRESENTATIONTYPE, MODELTYPE> converter, Locale locale) throws Converter.ConversionException {
         if (converter != null) {
             /*
              * If there is a converter, always use it. It must convert or throw
              * an exception.
              */
-            MODELTYPE model = converter.convertToModel(presentationValue,
-                    modelType, locale);
+            MODELTYPE model = converter.convertToModel(presentationValue, modelType, locale);
             if (model != null && !modelType.isInstance(model)) {
-                throw new Converter.ConversionException(
-                        "Converter returned an object of type "
-                                + model.getClass().getName()
-                                + " when expecting " + modelType.getName());
+                throw new Converter.ConversionException("Converter returned an object of type " + model.getClass().getName() + " when expecting " + modelType.getName());
             }
 
             return model;
@@ -178,12 +154,7 @@ public class ConverterUtil implements Serializable {
             // presentation type directly compatible with model type
             return modelType.cast(presentationValue);
         } else {
-            throw new Converter.ConversionException(
-                    "Unable to convert value of type "
-                            + presentationValue.getClass().getName()
-                            + " to model type "
-                            + modelType
-                            + ". No converter is set and the types are not compatible.");
+            throw new Converter.ConversionException("Unable to convert value of type " + presentationValue.getClass().getName() + " to model type " + modelType + ". No converter is set and the types are not compatible.");
         }
 
     }
@@ -205,8 +176,7 @@ public class ConverterUtil implements Serializable {
      * @return true if the converter supports conversion between the given
      *         presentation and model type, false otherwise
      */
-    public static boolean canConverterHandle(Converter<?, ?> converter,
-            Class<?> presentationType, Class<?> modelType) {
+    public static boolean canConverterHandle(Converter<?, ?> converter, Class<?> presentationType, Class<?> modelType) {
         if (converter == null) {
             return false;
         }
@@ -235,23 +205,19 @@ public class ConverterUtil implements Serializable {
      * @return true if the converter possibly support conversion between the
      *         given presentation and model type, false otherwise
      */
-    public static boolean canConverterPossiblyHandle(Converter<?, ?> converter,
-            Class<?> presentationType, Class<?> modelType) {
+    public static boolean canConverterPossiblyHandle(Converter<?, ?> converter, Class<?> presentationType, Class<?> modelType) {
         if (converter == null) {
             return false;
         }
         Class<?> converterModelType = converter.getModelType();
 
-        if (!modelType.isAssignableFrom(converterModelType)
-                && !converterModelType.isAssignableFrom(modelType)) {
+        if (!modelType.isAssignableFrom(converterModelType) && !converterModelType.isAssignableFrom(modelType)) {
             // model types are not compatible in any way
             return false;
         }
 
         Class<?> converterPresentationType = converter.getPresentationType();
-        if (!presentationType.isAssignableFrom(converterPresentationType)
-                && !converterPresentationType
-                        .isAssignableFrom(presentationType)) {
+        if (!presentationType.isAssignableFrom(converterPresentationType) && !converterPresentationType.isAssignableFrom(presentationType)) {
             // presentation types are not compatible in any way
             return false;
         }

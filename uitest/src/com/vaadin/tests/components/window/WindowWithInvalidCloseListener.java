@@ -15,8 +15,7 @@ public class WindowWithInvalidCloseListener extends AbstractTestUI {
 
             @Override
             public void windowClose(CloseEvent e) {
-                throw new RuntimeException(
-                        "Close listener intentionally failed");
+                throw new RuntimeException("Close listener intentionally failed");
             }
         });
         addWindow(w);

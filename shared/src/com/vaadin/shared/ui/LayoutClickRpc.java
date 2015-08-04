@@ -29,6 +29,5 @@ public interface LayoutClickRpc extends ServerRpc {
      * @param clickedConnector
      *            The child component that was the target of the event
      */
-    public void layoutClick(MouseEventDetails mouseDetails,
-            Connector clickedConnector);
+    public void layoutClick(MouseEventDetails mouseDetails, Connector clickedConnector);
 }

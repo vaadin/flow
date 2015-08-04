@@ -24,9 +24,7 @@ public class Menubars extends ComponentTestCase<MenuBar> {
         m.setWidth(null);
         addTestComponent(m);
 
-        m = createMenuBar(
-                "This is an undefined wide menubar with fixed 100px height (4 items)",
-                4);
+        m = createMenuBar("This is an undefined wide menubar with fixed 100px height (4 items)", 4);
         m.setWidth(null);
         m.setHeight("100px");
         addTestComponent(m);
@@ -47,9 +45,7 @@ public class Menubars extends ComponentTestCase<MenuBar> {
         m.setWidth("100%");
         addTestComponent(m);
 
-        m = createMenuBar(
-                "This is a 100% wide menubar with fixed 65px height (5 items). ",
-                5);
+        m = createMenuBar("This is a 100% wide menubar with fixed 65px height (5 items). ", 5);
         m.setWidth("100%");
         m.setHeight("65px");
 

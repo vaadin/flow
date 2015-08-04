@@ -76,10 +76,8 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
     private CssLayoutServerRpc rpc = new CssLayoutServerRpc() {
 
         @Override
-        public void layoutClick(MouseEventDetails mouseDetails,
-                Connector clickedConnector) {
-            fireEvent(LayoutClickEvent.createEvent(CssLayout.this,
-                    mouseDetails, clickedConnector));
+        public void layoutClick(MouseEventDetails mouseDetails, Connector clickedConnector) {
+            fireEvent(LayoutClickEvent.createEvent(CssLayout.this, mouseDetails, clickedConnector));
         }
     };
     /**
@@ -302,9 +300,7 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
 
     @Override
     public void addLayoutClickListener(LayoutClickListener listener) {
-        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
-                LayoutClickEvent.class, listener,
-                LayoutClickListener.clickMethod);
+        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener, LayoutClickListener.clickMethod);
     }
 
     /**
@@ -319,8 +315,7 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
 
     @Override
     public void removeLayoutClickListener(LayoutClickListener listener) {
-        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
-                LayoutClickEvent.class, listener);
+        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener);
     }
 
     /**

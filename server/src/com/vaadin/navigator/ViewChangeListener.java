@@ -45,8 +45,7 @@ public interface ViewChangeListener extends Serializable {
          * @param navigator
          *            Navigator that triggered the event, not null
          */
-        public ViewChangeEvent(Navigator navigator, View oldView, View newView,
-                String viewName, String parameters) {
+        public ViewChangeEvent(Navigator navigator, View oldView, View newView, String viewName, String parameters) {
             super(navigator);
             this.oldView = oldView;
             this.newView = newView;

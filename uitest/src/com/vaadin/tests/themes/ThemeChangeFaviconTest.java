@@ -36,8 +36,7 @@ public class ThemeChangeFaviconTest extends SingleBrowserTest {
     public List<DesiredCapabilities> getBrowsersToTest() {
         // Seems like stylesheet onload is not fired on PhantomJS
         // https://github.com/ariya/phantomjs/issues/12332
-        return Collections.singletonList(Browser.FIREFOX
-                .getDesiredCapabilities());
+        return Collections.singletonList(Browser.FIREFOX.getDesiredCapabilities());
     }
 
     @Test
@@ -56,8 +55,7 @@ public class ThemeChangeFaviconTest extends SingleBrowserTest {
     private void changeTheme(final String theme) {
         $(ButtonElement.class).caption(theme).first().click();
 
-        final WebElement rootDiv = findElement(By
-                .xpath("//div[contains(@class,'v-app')]"));
+        final WebElement rootDiv = findElement(By.xpath("//div[contains(@class,'v-app')]"));
         waitUntil(new ExpectedCondition<Boolean>() {
 
             @Override
@@ -72,15 +70,12 @@ public class ThemeChangeFaviconTest extends SingleBrowserTest {
     private void assertFavicon(String theme) {
         String faviconUrl = "/VAADIN/themes/" + theme + "/favicon.ico";
 
-        List<WebElement> elements = findElements(By
-                .cssSelector("link[rel~=\"icon\"]"));
+        List<WebElement> elements = findElements(By.cssSelector("link[rel~=\"icon\"]"));
 
         Assert.assertEquals(2, elements.size());
 
         for (WebElement element : elements) {
-            Assert.assertTrue(element.getAttribute("href")
-                    + " does not end with " + faviconUrl,
-                    element.getAttribute("href").endsWith(faviconUrl));
+            Assert.assertTrue(element.getAttribute("href") + " does not end with " + faviconUrl, element.getAttribute("href").endsWith(faviconUrl));
         }
     }
 

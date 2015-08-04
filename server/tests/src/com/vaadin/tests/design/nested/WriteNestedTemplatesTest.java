@@ -43,8 +43,7 @@ public class WriteNestedTemplatesTest {
     }
 
     private Element createDesign() {
-        Element design = new Element(Tag.valueOf("v-vertical-layout"), "",
-                new Attributes());
+        Element design = new Element(Tag.valueOf("v-vertical-layout"), "", new Attributes());
 
         DesignContext designContext = new DesignContext();
         designContext.setRootComponent(root);
@@ -55,10 +54,8 @@ public class WriteNestedTemplatesTest {
 
     @Test
     public void testChildRendered() {
-        assertEquals("Root layout must have one child", 1, design.children()
-                .size());
-        assertEquals("com_vaadin_tests_design_nested-my-extended-child-design",
-                design.child(0).tagName());
+        assertEquals("Root layout must have one child", 1, design.children().size());
+        assertEquals("com_vaadin_tests_design_nested-my-extended-child-design", design.child(0).tagName());
     }
 
     @Test

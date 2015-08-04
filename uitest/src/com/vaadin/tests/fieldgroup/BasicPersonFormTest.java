@@ -113,19 +113,13 @@ public abstract class BasicPersonFormTest extends MultiBrowserTest {
         assertFieldValue("Deceased", expected, getDeceasedField());
     }
 
-    private void assertFieldValue(String caption, String expected,
-            TestBenchElement field) {
-        Assert.assertEquals(
-                String.format("Unexpected value for field '%s',", caption),
-                expected, field.getAttribute("value"));
+    private void assertFieldValue(String caption, String expected, TestBenchElement field) {
+        Assert.assertEquals(String.format("Unexpected value for field '%s',", caption), expected, field.getAttribute("value"));
     }
 
     protected void assertSelectedSex(Sex sex) {
         TableRowElement row = getGenderTable().getRow(getIndex(sex));
-        Assert.assertTrue(
-                String.format("Given sex (%s) isn't selected.",
-                        sex.getStringRepresentation()),
-                hasCssClass(row, "v-selected"));
+        Assert.assertTrue(String.format("Given sex (%s) isn't selected.", sex.getStringRepresentation()), hasCssClass(row, "v-selected"));
     }
 
     private int getIndex(Sex sex) {
@@ -164,8 +158,7 @@ public abstract class BasicPersonFormTest extends MultiBrowserTest {
 
     protected void assertLogText(String expected) {
         ++logCounter;
-        Assert.assertEquals("Unexpected log contents,", logCounter + ". "
-                + expected, getLogRow(0));
+        Assert.assertEquals("Unexpected log contents,", logCounter + ". " + expected, getLogRow(0));
     }
 
     protected void assertDefaults() {

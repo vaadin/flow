@@ -40,8 +40,7 @@ public interface PushConnection {
      * @param connection
      *            The ApplicationConnection
      */
-    public void init(ApplicationConnection connection,
-            PushConfigurationState pushConfigurationState);
+    public void init(ApplicationConnection connection, PushConfigurationState pushConfigurationState);
 
     /**
      * Pushes a message to the server. Will throw an exception if the connection

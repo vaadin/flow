@@ -77,8 +77,7 @@ public class SettingsView extends Panel implements View {
         navigator.addViewChangeListener(new ViewChangeListener() {
             @Override
             public boolean beforeViewChange(ViewChangeEvent event) {
-                if (event.getOldView() == SettingsView.this
-                        && date.isModified()) {
+                if (event.getOldView() == SettingsView.this && date.isModified()) {
 
                     // save the View where the user intended to go
                     pendingViewAndParameters = event.getViewName();
@@ -88,8 +87,7 @@ public class SettingsView extends Panel implements View {
                     }
 
                     // Prompt the user to save or cancel if the name is changed
-                    Notification.show("Please apply or cancel your changes",
-                            Type.WARNING_MESSAGE);
+                    Notification.show("Please apply or cancel your changes", Type.WARNING_MESSAGE);
 
                     return false;
                 } else {

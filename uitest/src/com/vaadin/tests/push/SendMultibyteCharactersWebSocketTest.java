@@ -4,8 +4,7 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 
 import java.util.List;
 
-public class SendMultibyteCharactersWebSocketTest extends
-        SendMultibyteCharactersTest {
+public class SendMultibyteCharactersWebSocketTest extends SendMultibyteCharactersTest {
 
     @Override
     public List<DesiredCapabilities> getBrowsersToTest() {

@@ -165,8 +165,7 @@ public interface FieldEvents {
      */
     public interface FocusListener extends ConnectorEventListener {
 
-        public static final Method focusMethod = ReflectTools.findMethod(
-                FocusListener.class, "focus", FocusEvent.class);
+        public static final Method focusMethod = ReflectTools.findMethod(FocusListener.class, "focus", FocusEvent.class);
 
         /**
          * Component has been focused
@@ -205,8 +204,7 @@ public interface FieldEvents {
      */
     public interface BlurListener extends ConnectorEventListener {
 
-        public static final Method blurMethod = ReflectTools.findMethod(
-                BlurListener.class, "blur", BlurEvent.class);
+        public static final Method blurMethod = ReflectTools.findMethod(BlurListener.class, "blur", BlurEvent.class);
 
         /**
          * Component has been blurred
@@ -268,8 +266,7 @@ public interface FieldEvents {
     public interface TextChangeListener extends ConnectorEventListener {
 
         public static String EVENT_ID = "ie";
-        public static Method EVENT_METHOD = ReflectTools.findMethod(
-                TextChangeListener.class, "textChange", TextChangeEvent.class);
+        public static Method EVENT_METHOD = ReflectTools.findMethod(TextChangeListener.class, "textChange", TextChangeEvent.class);
 
         /**
          * This method is called repeatedly while the text is edited by a user.
@@ -305,8 +302,7 @@ public interface FieldEvents {
         public void removeListener(TextChangeListener listener);
     }
 
-    public static abstract class FocusAndBlurServerRpcImpl implements
-            FocusAndBlurServerRpc {
+    public static abstract class FocusAndBlurServerRpcImpl implements FocusAndBlurServerRpc {
 
         private Component component;
 

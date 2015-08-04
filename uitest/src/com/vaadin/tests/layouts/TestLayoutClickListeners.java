@@ -36,23 +36,17 @@ public class TestLayoutClickListeners extends AbstractTestUIWithLog {
         al.setStyleName("borders");
         al.setWidth("300px");
         al.setHeight("500px");
-        al.addComponent(new TextField("This is its caption",
-                "This is a textfield"), "top: 60px; left: 0px; width: 100px;");
-        al.addComponent(new TextField("Another textfield caption",
-                "This is another textfield"),
-                "top: 120px; left: 20px; width: 100px;");
+        al.addComponent(new TextField("This is its caption", "This is a textfield"), "top: 60px; left: 0px; width: 100px;");
+        al.addComponent(new TextField("Another textfield caption", "This is another textfield"), "top: 120px; left: 20px; width: 100px;");
 
-        al.addComponent(new Button("A button with its own click listener",
-                new Button.ClickListener() {
+        al.addComponent(new Button("A button with its own click listener", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(
-                            com.vaadin.ui.Button.ClickEvent event) {
-                        log("Button " + event.getButton().getCaption()
-                                + " was clicked");
+            @Override
+            public void buttonClick(com.vaadin.ui.Button.ClickEvent event) {
+                log("Button " + event.getButton().getCaption() + " was clicked");
 
-                    }
-                }));
+            }
+        }));
         al.addLayoutClickListener(new LayoutClickListener() {
 
             @Override
@@ -71,22 +65,17 @@ public class TestLayoutClickListeners extends AbstractTestUIWithLog {
         cl.setStyleName("borders");
         cl.setWidth("300px");
         cl.setHeight("500px");
-        cl.addComponent(new TextField("This is its caption",
-                "This is a textfield"));
-        cl.addComponent(new TextField("Another textfield caption",
-                "This is another textfield"));
+        cl.addComponent(new TextField("This is its caption", "This is a textfield"));
+        cl.addComponent(new TextField("Another textfield caption", "This is another textfield"));
 
-        cl.addComponent(new Button("A button with its own click listener",
-                new Button.ClickListener() {
+        cl.addComponent(new Button("A button with its own click listener", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(
-                            com.vaadin.ui.Button.ClickEvent event) {
-                        log("Button " + event.getButton().getCaption()
-                                + " was clicked");
+            @Override
+            public void buttonClick(com.vaadin.ui.Button.ClickEvent event) {
+                log("Button " + event.getButton().getCaption() + " was clicked");
 
-                    }
-                }));
+            }
+        }));
         cl.addLayoutClickListener(new LayoutClickListener() {
 
             @Override

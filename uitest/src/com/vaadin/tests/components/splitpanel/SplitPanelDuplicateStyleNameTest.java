@@ -41,23 +41,17 @@ public class SplitPanelDuplicateStyleNameTest extends MultiBrowserTest {
 
     @Test
     public void testHorizontalNoDuplicateStyleName() {
-        HorizontalSplitPanelElement split = $(HorizontalSplitPanelElement.class)
-                .first();
+        HorizontalSplitPanelElement split = $(HorizontalSplitPanelElement.class).first();
         String classNames = split.getAttribute("class");
         String primaryStyleName = new HorizontalSplitPanelState().primaryStyleName;
-        assertEquals("Duplicate primary style name should not exist",
-                classNames.indexOf(primaryStyleName),
-                classNames.lastIndexOf(primaryStyleName));
+        assertEquals("Duplicate primary style name should not exist", classNames.indexOf(primaryStyleName), classNames.lastIndexOf(primaryStyleName));
     }
 
     @Test
     public void testVerticalNoDuplicateStyleName() {
-        VerticalSplitPanelElement split = $(VerticalSplitPanelElement.class)
-                .first();
+        VerticalSplitPanelElement split = $(VerticalSplitPanelElement.class).first();
         String classNames = split.getAttribute("class");
         String primaryStyleName = new HorizontalSplitPanelState().primaryStyleName;
-        assertEquals("Duplicate primary style name should not exist",
-                classNames.indexOf(primaryStyleName),
-                classNames.lastIndexOf(primaryStyleName));
+        assertEquals("Duplicate primary style name should not exist", classNames.indexOf(primaryStyleName), classNames.lastIndexOf(primaryStyleName));
     }
 }

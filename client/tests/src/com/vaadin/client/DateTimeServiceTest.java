@@ -75,8 +75,7 @@ public class DateTimeServiceTest extends TestCase {
             Date d = new Date(start + i * MILLISECONDS_PER_DAY);
             int expected = getCalendarISOWeekNr(d);
             int calculated = DateTimeService.getISOWeekNumber(d);
-            assertEquals(d + " should be week " + expected, expected,
-                    calculated);
+            assertEquals(d + " should be week " + expected, expected, calculated);
 
         }
     }
@@ -91,11 +90,8 @@ public class DateTimeServiceTest extends TestCase {
             // System.out.println("Sample: " + d);
             int expected = isoWeekNumbers.get(d);
             int calculated = DateTimeService.getISOWeekNumber(d);
-            assertEquals(d + " should be week " + expected
-                    + " (Java Calendar is wrong?)", expected,
-                    getCalendarISOWeekNr(d));
-            assertEquals(d + " should be week " + expected, expected,
-                    calculated);
+            assertEquals(d + " should be week " + expected + " (Java Calendar is wrong?)", expected, getCalendarISOWeekNr(d));
+            assertEquals(d + " should be week " + expected, expected, calculated);
 
         }
     }

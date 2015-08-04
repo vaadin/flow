@@ -115,8 +115,7 @@ public class TextField extends AbstractTextField {
         super.readDesign(design, designContext);
         Attributes attr = design.attributes();
         if (attr.hasKey("value")) {
-            setValue(DesignAttributeHandler.readAttribute("value", attr,
-                    String.class));
+            setValue(DesignAttributeHandler.readAttribute("value", attr, String.class));
         }
     }
 
@@ -129,11 +128,9 @@ public class TextField extends AbstractTextField {
     @Override
     public void writeDesign(Element design, DesignContext designContext) {
         super.writeDesign(design, designContext);
-        AbstractTextField def = (AbstractTextField) designContext
-                .getDefaultInstance(this);
+        AbstractTextField def = (AbstractTextField) designContext.getDefaultInstance(this);
         Attributes attr = design.attributes();
-        DesignAttributeHandler.writeAttribute("value", attr, getValue(),
-                def.getValue(), String.class);
+        DesignAttributeHandler.writeAttribute("value", attr, getValue(), def.getValue(), String.class);
     }
 
     /*

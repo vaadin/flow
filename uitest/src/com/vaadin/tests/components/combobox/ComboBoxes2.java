@@ -39,23 +39,21 @@ public class ComboBoxes2<T extends ComboBox> extends AbstractSelectTestCase<T> {
     }
 
     private void createTextInputAlowedAction(String category) {
-        createBooleanAction("Text input allowed", category, true,
-                new Command<T, Boolean>() {
-                    @Override
-                    public void execute(T c, Boolean value, Object data) {
-                        c.setTextInputAllowed(value.booleanValue());
-                    }
-                });
+        createBooleanAction("Text input allowed", category, true, new Command<T, Boolean>() {
+            @Override
+            public void execute(T c, Boolean value, Object data) {
+                c.setTextInputAllowed(value.booleanValue());
+            }
+        });
     }
 
     private void createNewItemsAllowedAction(String category) {
-        createBooleanAction("New items allowed", category, false,
-                new Command<T, Boolean>() {
-                    @Override
-                    public void execute(T c, Boolean value, Object data) {
-                        c.setNewItemsAllowed(value.booleanValue());
-                    }
-                });
+        createBooleanAction("New items allowed", category, false, new Command<T, Boolean>() {
+            @Override
+            public void execute(T c, Boolean value, Object data) {
+                c.setNewItemsAllowed(value.booleanValue());
+            }
+        });
     }
 
     private void createFilteringModeAction(String category) {
@@ -64,8 +62,7 @@ public class ComboBoxes2<T extends ComboBox> extends AbstractSelectTestCase<T> {
         options.put("Contains", FilteringMode.CONTAINS);
         options.put("Starts with", FilteringMode.STARTSWITH);
 
-        createSelectAction("Filtering mode", category, options, "Contains",
-                filteringModeCommand);
+        createSelectAction("Filtering mode", category, options, "Contains", filteringModeCommand);
 
     }
 
@@ -74,27 +71,25 @@ public class ComboBoxes2<T extends ComboBox> extends AbstractSelectTestCase<T> {
         options.put("-", null);
         options.put("Enter a value", "Enter a value");
         options.put("- Click here -", "- Click here -");
-        createSelectAction("Input prompt", category, options, "-",
-                inputPromptCommand);
+        createSelectAction("Input prompt", category, options, "-", inputPromptCommand);
 
     }
 
     private void createItemIconSelect(String category) {
 
-        createSelectAction("Icon", category, createIconOptions(false), "-",
-                new Command<T, Resource>() {
+        createSelectAction("Icon", category, createIconOptions(false), "-", new Command<T, Resource>() {
 
-                    @Override
-                    public void execute(T c, Resource value, Object data) {
-                        for (Object id : c.getItemIds()) {
-                            if (value == null) {
-                                c.setItemIcon(id, null);
-                            } else {
-                                c.setItemIcon(id, value);
-                            }
-                        }
+            @Override
+            public void execute(T c, Resource value, Object data) {
+                for (Object id : c.getItemIds()) {
+                    if (value == null) {
+                        c.setItemIcon(id, null);
+                    } else {
+                        c.setItemIcon(id, value);
                     }
-                });
+                }
+            }
+        });
     }
 
 }

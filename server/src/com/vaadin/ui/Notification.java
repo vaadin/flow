@@ -63,8 +63,7 @@ import com.vaadin.shared.Position;
  */
 public class Notification implements Serializable {
     public enum Type {
-        HUMANIZED_MESSAGE("humanized"), WARNING_MESSAGE("warning"), ERROR_MESSAGE(
-                "error"), TRAY_NOTIFICATION("tray"),
+        HUMANIZED_MESSAGE("humanized"), WARNING_MESSAGE("warning"), ERROR_MESSAGE("error"), TRAY_NOTIFICATION("tray"),
         /**
          * @since 7.2
          */
@@ -197,8 +196,7 @@ public class Notification implements Serializable {
      *            Whether html in the caption and description should be
      *            displayed as html or as plain text
      */
-    public Notification(String caption, String description, Type type,
-            boolean htmlContentAllowed) {
+    public Notification(String caption, String description, Type type, boolean htmlContentAllowed) {
         this.caption = caption;
         this.description = description;
         this.htmlContentAllowed = htmlContentAllowed;

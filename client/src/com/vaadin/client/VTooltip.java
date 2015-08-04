@@ -36,9 +36,7 @@ import com.vaadin.client.ui.VOverlay;
 public class VTooltip extends VOverlay {
     private static final String CLASSNAME = "v-tooltip";
     private static final int MARGIN = 4;
-    public static final int TOOLTIP_EVENTS = Event.ONKEYDOWN
-            | Event.ONMOUSEOVER | Event.ONMOUSEOUT | Event.ONMOUSEMOVE
-            | Event.ONCLICK;
+    public static final int TOOLTIP_EVENTS = Event.ONKEYDOWN | Event.ONMOUSEOVER | Event.ONMOUSEOUT | Event.ONMOUSEMOVE | Event.ONCLICK;
     VErrorMessage em = new VErrorMessage();
     Element description = DOM.createDiv();
 
@@ -85,10 +83,8 @@ public class VTooltip extends VOverlay {
         // tooltip being a live-area, this change is notified to a assistive
         // device.
         Roles.getTooltipRole().set(getElement());
-        Roles.getTooltipRole().setAriaLiveProperty(getElement(),
-                LiveValue.ASSERTIVE);
-        Roles.getTooltipRole().setAriaRelevantProperty(getElement(),
-                RelevantValue.ADDITIONS);
+        Roles.getTooltipRole().setAriaLiveProperty(getElement(), LiveValue.ASSERTIVE);
+        Roles.getTooltipRole().setAriaRelevantProperty(getElement(), RelevantValue.ADDITIONS);
 
         // Tooltip needs to be on top of other VOverlay elements.
         setZIndex(VOverlay.Z_INDEX + 1);
@@ -212,13 +208,10 @@ public class VTooltip extends VOverlay {
                     if (roomRight > widthNeeded) {
                         x = tooltipEventMouseX + 10 + Window.getScrollLeft();
                     } else {
-                        x = tooltipEventMouseX + Window.getScrollLeft() - 10
-                                - offsetWidth;
+                        x = tooltipEventMouseX + Window.getScrollLeft() - 10 - offsetWidth;
                     }
-                    if (x + offsetWidth + MARGIN - Window.getScrollLeft() > Window
-                            .getClientWidth()) {
-                        x = Window.getClientWidth() - offsetWidth - MARGIN
-                                + Window.getScrollLeft();
+                    if (x + offsetWidth + MARGIN - Window.getScrollLeft() > Window.getClientWidth()) {
+                        x = Window.getClientWidth() - offsetWidth - MARGIN + Window.getScrollLeft();
                     }
 
                     if (tooltipEventMouseX != EVENT_XY_POSITION_OUTSIDE) {
@@ -242,8 +235,7 @@ public class VTooltip extends VOverlay {
                 private int getFinalTouchX(int offsetWidth) {
                     int x = 0;
                     int widthNeeded = 10 + offsetWidth;
-                    int roomLeft = currentElement != null ? currentElement
-                            .getAbsoluteLeft() : EVENT_XY_POSITION_OUTSIDE;
+                    int roomLeft = currentElement != null ? currentElement.getAbsoluteLeft() : EVENT_XY_POSITION_OUTSIDE;
                     int viewPortWidth = Window.getClientWidth();
                     int roomRight = viewPortWidth - roomLeft;
                     if (roomRight > widthNeeded) {
@@ -252,8 +244,7 @@ public class VTooltip extends VOverlay {
                         x = roomLeft - offsetWidth;
                     }
                     if (x + offsetWidth - Window.getScrollLeft() > viewPortWidth) {
-                        x = viewPortWidth - offsetWidth
-                                + Window.getScrollLeft();
+                        x = viewPortWidth - offsetWidth + Window.getScrollLeft();
                     }
 
                     if (roomLeft != EVENT_XY_POSITION_OUTSIDE) {
@@ -284,14 +275,11 @@ public class VTooltip extends VOverlay {
                     if (roomBelow > heightNeeded) {
                         y = tooltipEventMouseY + 10 + Window.getScrollTop();
                     } else {
-                        y = tooltipEventMouseY + Window.getScrollTop() - 10
-                                - offsetHeight;
+                        y = tooltipEventMouseY + Window.getScrollTop() - 10 - offsetHeight;
                     }
 
-                    if (y + offsetHeight + MARGIN - Window.getScrollTop() > Window
-                            .getClientHeight()) {
-                        y = tooltipEventMouseY - 5 - offsetHeight
-                                + Window.getScrollTop();
+                    if (y + offsetHeight + MARGIN - Window.getScrollTop() > Window.getClientHeight()) {
+                        y = tooltipEventMouseY - 5 - offsetHeight + Window.getScrollTop();
                         if (y - Window.getScrollTop() < 0) {
                             // tooltip does not fit on top of the mouse either,
                             // put it at the top of the screen
@@ -321,25 +309,17 @@ public class VTooltip extends VOverlay {
                 private int getFinalTouchY(int offsetHeight) {
                     int y = 0;
                     int heightNeeded = 10 + offsetHeight;
-                    int roomAbove = currentElement != null ? currentElement
-                            .getAbsoluteTop()
-                            + currentElement.getOffsetHeight()
-                            : EVENT_XY_POSITION_OUTSIDE;
+                    int roomAbove = currentElement != null ? currentElement.getAbsoluteTop() + currentElement.getOffsetHeight() : EVENT_XY_POSITION_OUTSIDE;
                     int roomBelow = Window.getClientHeight() - roomAbove;
 
                     if (roomBelow > heightNeeded) {
                         y = roomAbove;
                     } else {
-                        y = roomAbove
-                                - offsetHeight
-                                - (currentElement != null ? currentElement
-                                        .getOffsetHeight() : 0);
+                        y = roomAbove - offsetHeight - (currentElement != null ? currentElement.getOffsetHeight() : 0);
                     }
 
-                    if (y + offsetHeight - Window.getScrollTop() > Window
-                            .getClientHeight()) {
-                        y = roomAbove - 5 - offsetHeight
-                                + Window.getScrollTop();
+                    if (y + offsetHeight - Window.getScrollTop() > Window.getClientHeight()) {
+                        y = roomAbove - 5 - offsetHeight + Window.getScrollTop();
                         if (y - Window.getScrollTop() < 0) {
                             // tooltip does not fit on top of the mouse either,
                             // put it at the top of the screen
@@ -371,8 +351,7 @@ public class VTooltip extends VOverlay {
      * @return boolean
      */
     public boolean isTooltipOpen() {
-        return super.isShowing() && super.isVisible() && getPopupLeft() > 0
-                && getPopupTop() > 0;
+        return super.isShowing() && super.isVisible() && getPopupLeft() > 0 && getPopupTop() > 0;
     }
 
     private void closeNow() {
@@ -442,13 +421,11 @@ public class VTooltip extends VOverlay {
     }
 
     private int getEventX(Event event, boolean isFocused) {
-        return isFocused ? EVENT_XY_POSITION_OUTSIDE : DOM
-                .eventGetClientX(event);
+        return isFocused ? EVENT_XY_POSITION_OUTSIDE : DOM.eventGetClientX(event);
     }
 
     private int getEventY(Event event, boolean isFocused) {
-        return isFocused ? EVENT_XY_POSITION_OUTSIDE : DOM
-                .eventGetClientY(event);
+        return isFocused ? EVENT_XY_POSITION_OUTSIDE : DOM.eventGetClientY(event);
     }
 
     @Override
@@ -480,8 +457,7 @@ public class VTooltip extends VOverlay {
         opening = false;
     }
 
-    private class TooltipEventHandler implements MouseMoveHandler,
-            KeyDownHandler, FocusHandler, BlurHandler, MouseDownHandler {
+    private class TooltipEventHandler implements MouseMoveHandler, KeyDownHandler, FocusHandler, BlurHandler, MouseDownHandler {
 
         /**
          * Marker for handling of tooltip through focus
@@ -497,8 +473,7 @@ public class VTooltip extends VOverlay {
          */
         private TooltipInfo getTooltipFor(Element element) {
             ApplicationConnection ac = getApplicationConnection();
-            ComponentConnector connector = Util.getConnectorForElement(ac,
-                    RootPanel.get(), element);
+            ComponentConnector connector = Util.getConnectorForElement(ac, RootPanel.get(), element);
             // Try to find first connector with proper tooltip info
             TooltipInfo info = null;
             while (connector != null) {
@@ -518,9 +493,7 @@ public class VTooltip extends VOverlay {
             }
 
             if (connector != null && info != null) {
-                assert connector.hasTooltip() : "getTooltipInfo for "
-                        + Util.getConnectorString(connector)
-                        + " returned a tooltip even though hasTooltip claims there are no tooltips for the connector.";
+                assert connector.hasTooltip() : "getTooltipInfo for " + Util.getConnectorString(connector) + " returned a tooltip even though hasTooltip claims there are no tooltips for the connector.";
                 return info;
 
             }
@@ -589,8 +562,7 @@ public class VTooltip extends VOverlay {
             // checked in it's equals-method.
             if (currentElement != null && isTooltipOpen()) {
                 TooltipInfo newTooltip = getTooltipFor(element);
-                if (currentTooltipInfo != null
-                        && currentTooltipInfo.equals(newTooltip)) {
+                if (currentTooltipInfo != null && currentTooltipInfo.equals(newTooltip)) {
                     return;
                 }
             }

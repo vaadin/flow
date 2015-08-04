@@ -36,14 +36,13 @@ public class TextFieldTruncatesUnderscoresInModalDialogs extends AbstractTestUI 
         FormLayout formLayout = new FormLayout();
         formLayout.setSpacing(true);
 
-        formLayout.addComponent(new Button("Disappear",
-                new Button.ClickListener() {
+        formLayout.addComponent(new Button("Disappear", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        event.getButton().setVisible(false);
-                    }
-                }));
+            @Override
+            public void buttonClick(ClickEvent event) {
+                event.getButton().setVisible(false);
+            }
+        }));
 
         formLayout.addComponent(new TextField(null, "____pqjgy____"));
 

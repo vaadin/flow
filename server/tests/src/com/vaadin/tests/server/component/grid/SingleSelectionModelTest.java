@@ -50,8 +50,7 @@ public class SingleSelectionModelTest {
 
     @After
     public void tearDown() {
-        Assert.assertFalse("Some expected event did not happen.",
-                expectingEvent);
+        Assert.assertFalse("Some expected event did not happen.", expectingEvent);
     }
 
     private IndexedContainer createDataSource() {
@@ -129,21 +128,15 @@ public class SingleSelectionModelTest {
             @Override
             public void select(SelectionEvent event) {
                 if (selected != null) {
-                    Assert.assertTrue(
-                            "Selection did not contain expected item", event
-                                    .getAdded().contains(selected));
+                    Assert.assertTrue("Selection did not contain expected item", event.getAdded().contains(selected));
                 } else {
-                    Assert.assertTrue("Unexpected selection", event.getAdded()
-                            .isEmpty());
+                    Assert.assertTrue("Unexpected selection", event.getAdded().isEmpty());
                 }
 
                 if (deselected != null) {
-                    Assert.assertTrue(
-                            "DeSelection did not contain expected item", event
-                                    .getRemoved().contains(deselected));
+                    Assert.assertTrue("DeSelection did not contain expected item", event.getRemoved().contains(deselected));
                 } else {
-                    Assert.assertTrue("Unexpected selection", event
-                            .getRemoved().isEmpty());
+                    Assert.assertTrue("Unexpected selection", event.getRemoved().isEmpty());
                 }
 
                 grid.removeSelectionListener(this);

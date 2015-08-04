@@ -27,16 +27,10 @@ public class ComboBoxLargeIcons extends TestBase {
         cb.setItemIconPropertyId("icon");
         getLayout().addComponent(cb);
         cb.setNullSelectionAllowed(false);
-        String[] icons = new String[] { "folder-add", "folder-delete",
-                "arrow-down", "arrow-left", "arrow-right", "arrow-up",
-                "document-add", "document-delete", "document-doc",
-                "document-edit", "document-image", "document-pdf",
-                "document-ppt", "document-txt", "document-web", "document" };
+        String[] icons = new String[] { "folder-add", "folder-delete", "arrow-down", "arrow-left", "arrow-right", "arrow-up", "document-add", "document-delete", "document-doc", "document-edit", "document-image", "document-pdf", "document-ppt", "document-txt", "document-web", "document" };
         for (String icon : icons) {
             Item item = cb.addItem(icon);
-            item.getItemProperty("icon").setValue(
-                    new ThemeResource("../runo/icons/32/" + icon + ".png?"
-                            + new Date().getTime()));
+            item.getItemProperty("icon").setValue(new ThemeResource("../runo/icons/32/" + icon + ".png?" + new Date().getTime()));
         }
 
     }

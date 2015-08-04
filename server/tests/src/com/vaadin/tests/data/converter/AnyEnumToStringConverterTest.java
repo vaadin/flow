@@ -37,9 +37,7 @@ public class AnyEnumToStringConverterTest {
         }
 
         @Override
-        public String convertToModel(Enum value,
-                Class<? extends String> targetType, Locale locale)
-                throws com.vaadin.data.util.converter.Converter.ConversionException {
+        public String convertToModel(Enum value, Class<? extends String> targetType, Locale locale) throws com.vaadin.data.util.converter.Converter.ConversionException {
             if (value == null) {
                 return null;
             }
@@ -48,9 +46,7 @@ public class AnyEnumToStringConverterTest {
         }
 
         @Override
-        public Enum convertToPresentation(String value,
-                Class<? extends Enum> targetType, Locale locale)
-                throws com.vaadin.data.util.converter.Converter.ConversionException {
+        public Enum convertToPresentation(String value, Class<? extends Enum> targetType, Locale locale) throws com.vaadin.data.util.converter.Converter.ConversionException {
             if (value == null) {
                 return null;
             }
@@ -89,19 +85,14 @@ public class AnyEnumToStringConverterTest {
 
     @Test
     public void enumToStringConversion() {
-        Assert.assertEquals(TestEnum.TWO.toString(),
-                converter.convertToModel(TestEnum.TWO, String.class, null));
-        Assert.assertEquals(AnotherTestEnum.TWO.toString(), converter
-                .convertToModel(AnotherTestEnum.TWO, String.class, null));
+        Assert.assertEquals(TestEnum.TWO.toString(), converter.convertToModel(TestEnum.TWO, String.class, null));
+        Assert.assertEquals(AnotherTestEnum.TWO.toString(), converter.convertToModel(AnotherTestEnum.TWO, String.class, null));
     }
 
     @Test
     public void stringToEnumConversion() {
-        Assert.assertEquals(TestEnum.TWO, converter.convertToPresentation(
-                TestEnum.TWO.toString(), TestEnum.class, null));
-        Assert.assertEquals(AnotherTestEnum.TWO, converter
-                .convertToPresentation(AnotherTestEnum.TWO.toString(),
-                        AnotherTestEnum.class, null));
+        Assert.assertEquals(TestEnum.TWO, converter.convertToPresentation(TestEnum.TWO.toString(), TestEnum.class, null));
+        Assert.assertEquals(AnotherTestEnum.TWO, converter.convertToPresentation(AnotherTestEnum.TWO.toString(), AnotherTestEnum.class, null));
     }
 
     @Test
@@ -113,8 +104,7 @@ public class AnyEnumToStringConverterTest {
         tf.setValue(AnotherTestEnum.ONE.toString());
         Assert.assertEquals(AnotherTestEnum.ONE.toString(), tf.getValue());
         Assert.assertEquals(AnotherTestEnum.ONE, tf.getConvertedValue());
-        Assert.assertEquals(AnotherTestEnum.ONE, tf.getPropertyDataSource()
-                .getValue());
+        Assert.assertEquals(AnotherTestEnum.ONE, tf.getPropertyDataSource().getValue());
 
         tf.setPropertyDataSource(new ObjectProperty(TestEnum.TWO));
         Assert.assertEquals(TestEnum.TWO.toString(), tf.getValue());

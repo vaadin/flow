@@ -39,8 +39,7 @@ public class IntegerRangeValidator extends RangeValidator<Integer> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public IntegerRangeValidator(String errorMessage, Integer minValue,
-            Integer maxValue) {
+    public IntegerRangeValidator(String errorMessage, Integer minValue, Integer maxValue) {
         super(errorMessage, Integer.class, minValue, maxValue);
     }
 

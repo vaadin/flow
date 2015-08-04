@@ -20,16 +20,14 @@ import com.vaadin.tests.tb3.newelements.WindowElement;
 public abstract class ThemeTest extends MultiBrowserTest {
 
     @ServerClass("com.vaadin.ui.DateField")
-    public static class DateFieldElement extends
-            com.vaadin.testbench.elements.DateFieldElement {
+    public static class DateFieldElement extends com.vaadin.testbench.elements.DateFieldElement {
         public void openPopup() {
             findElement(By.tagName("button")).click();
         }
     }
 
     @ServerClass("com.vaadin.ui.TabSheet")
-    public static class TabSheetElement extends
-            com.vaadin.testbench.elements.TabSheetElement {
+    public static class TabSheetElement extends com.vaadin.testbench.elements.TabSheetElement {
         @Override
         public void openTab(String tabCaption) {
             super.openTab(tabCaption);
@@ -151,10 +149,8 @@ public abstract class ThemeTest extends MultiBrowserTest {
         $(ButtonElement.class).id("windButton" + id).click();
         compareScreen(identifier);
         WindowElement window = $(WindowElement.class).first();
-        if (getTheme() == "chameleon"
-                && BrowserUtil.isIE(getDesiredCapabilities())) {
-            new Actions(getDriver()).moveToElement(window, 10, 10).click()
-                    .sendKeys(Keys.ESCAPE).perform();
+        if (getTheme() == "chameleon" && BrowserUtil.isIE(getDesiredCapabilities())) {
+            new Actions(getDriver()).moveToElement(window, 10, 10).click().sendKeys(Keys.ESCAPE).perform();
         } else {
             window.findElement(By.className("v-window-closebox")).click();
         }
@@ -163,8 +159,7 @@ public abstract class ThemeTest extends MultiBrowserTest {
     private void testTables() throws IOException {
         compareScreen("tables");
         TableElement table = $(TableElement.class).first();
-        new Actions(driver).moveToElement(table.getCell(0, 1), 5, 5)
-                .contextClick().perform();
+        new Actions(driver).moveToElement(table.getCell(0, 1), 5, 5).contextClick().perform();
         compareScreen("tables-contextmenu");
         table.findElement(By.className("v-table-column-selector")).click();
         compareScreen("tables-collapsemenu");
@@ -184,8 +179,7 @@ public abstract class ThemeTest extends MultiBrowserTest {
         if (searchComboBox.findElement(By.tagName("div")).isDisplayed()) {
             searchComboBox.openPopup();
         } else {
-            WebElement textBox = searchComboBox.findElement(By
-                    .vaadin("#textbox"));
+            WebElement textBox = searchComboBox.findElement(By.vaadin("#textbox"));
             textBox.click();
             textBox.sendKeys(Keys.ARROW_DOWN);
         }

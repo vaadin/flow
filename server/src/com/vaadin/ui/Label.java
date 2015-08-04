@@ -55,9 +55,7 @@ import com.vaadin.ui.declarative.DesignContext;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class Label extends AbstractComponent implements Property<String>,
-        Property.Viewer, Property.ValueChangeListener,
-        Property.ValueChangeNotifier, Comparable<Label> {
+public class Label extends AbstractComponent implements Property<String>, Property.Viewer, Property.ValueChangeListener, Property.ValueChangeNotifier, Comparable<Label> {
 
     /**
      * @deprecated As of 7.0, use {@link ContentMode#TEXT} instead
@@ -189,8 +187,7 @@ public class Label extends AbstractComponent implements Property<String>,
      * @return
      */
     private String getDataSourceValue() {
-        return ConverterUtil.convertFromModel(getPropertyDataSource()
-                .getValue(), String.class, getConverter(), getLocale());
+        return ConverterUtil.convertFromModel(getPropertyDataSource().getValue(), String.class, getConverter(), getLocale());
     }
 
     /**
@@ -212,8 +209,7 @@ public class Label extends AbstractComponent implements Property<String>,
                 fireValueChange();
             }
         } else {
-            throw new IllegalStateException(
-                    "Label is only a Property.Viewer and cannot update its data source");
+            throw new IllegalStateException("Label is only a Property.Viewer and cannot update its data source");
         }
     }
 
@@ -249,20 +245,15 @@ public class Label extends AbstractComponent implements Property<String>,
     @Override
     public void setPropertyDataSource(Property newDataSource) {
         // Stops listening the old data source changes
-        if (dataSource != null
-                && Property.ValueChangeNotifier.class
-                        .isAssignableFrom(dataSource.getClass())) {
+        if (dataSource != null && Property.ValueChangeNotifier.class.isAssignableFrom(dataSource.getClass())) {
             ((Property.ValueChangeNotifier) dataSource).removeListener(this);
         }
 
         // Check if the current converter is compatible.
-        if (newDataSource != null
-                && !ConverterUtil.canConverterPossiblyHandle(getConverter(),
-                        getType(), newDataSource.getType())) {
+        if (newDataSource != null && !ConverterUtil.canConverterPossiblyHandle(getConverter(), getType(), newDataSource.getType())) {
             // There is no converter set or there is no way the current
             // converter can be compatible.
-            Converter<String, ?> c = ConverterUtil.getConverter(String.class,
-                    newDataSource.getType(), getSession());
+            Converter<String, ?> c = ConverterUtil.getConverter(String.class, newDataSource.getType(), getSession());
             setConverter(c);
         }
 
@@ -274,9 +265,7 @@ public class Label extends AbstractComponent implements Property<String>,
         }
 
         // Listens the new data source if possible
-        if (dataSource != null
-                && Property.ValueChangeNotifier.class
-                        .isAssignableFrom(dataSource.getClass())) {
+        if (dataSource != null && Property.ValueChangeNotifier.class.isAssignableFrom(dataSource.getClass())) {
             ((Property.ValueChangeNotifier) dataSource).addListener(this);
         }
         markAsDirty();
@@ -315,13 +304,10 @@ public class Label extends AbstractComponent implements Property<String>,
 
     static {
         try {
-            VALUE_CHANGE_METHOD = Property.ValueChangeListener.class
-                    .getDeclaredMethod("valueChange",
-                            new Class[] { Property.ValueChangeEvent.class });
+            VALUE_CHANGE_METHOD = Property.ValueChangeListener.class.getDeclaredMethod("valueChange", new Class[] { Property.ValueChangeEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in Label");
+            throw new java.lang.RuntimeException("Internal error finding methods in Label");
         }
     }
 
@@ -331,8 +317,7 @@ public class Label extends AbstractComponent implements Property<String>,
      * @author Vaadin Ltd.
      * @since 3.0
      */
-    public static class ValueChangeEvent extends Component.Event implements
-            Property.ValueChangeEvent {
+    public static class ValueChangeEvent extends Component.Event implements Property.ValueChangeEvent {
 
         /**
          * New instance of text change event
@@ -386,8 +371,7 @@ public class Label extends AbstractComponent implements Property<String>,
      */
     @Override
     public void removeValueChangeListener(Property.ValueChangeListener listener) {
-        removeListener(Label.ValueChangeEvent.class, listener,
-                VALUE_CHANGE_METHOD);
+        removeListener(Label.ValueChangeEvent.class, listener, VALUE_CHANGE_METHOD);
     }
 
     /**
@@ -451,8 +435,7 @@ public class Label extends AbstractComponent implements Property<String>,
             stringValue = "";
         }
 
-        if (getContentMode() == ContentMode.HTML
-                || getContentMode() == ContentMode.XML) {
+        if (getContentMode() == ContentMode.HTML || getContentMode() == ContentMode.XML) {
             return stripTags(stringValue);
         } else {
             return stringValue;

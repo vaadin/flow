@@ -35,8 +35,7 @@ public class ComboBoxScrollingToPageDisabledTest extends MultiBrowserTest {
 
     @Test
     public void checkValueIsVidinlr() throws InterruptedException {
-        WebElement input = driver.findElement(By
-                .className("v-filterselect-input"));
+        WebElement input = driver.findElement(By.className("v-filterselect-input"));
         String value = input.getAttribute("value");
         org.junit.Assert.assertEquals("Item 50", value);
     }

@@ -38,8 +38,7 @@ public class PushConfigurationTransportTest {
         };
         for (Transport transport : Transport.values()) {
             ui.getPushConfiguration().setTransport(transport);
-            Assert.assertEquals(ui.getPushConfiguration().getTransport(),
-                    transport);
+            Assert.assertEquals(ui.getPushConfiguration().getTransport(), transport);
         }
 
     }

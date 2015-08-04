@@ -24,23 +24,14 @@ public class GridColumnDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testSimpleGridColumns() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable='' width='100' property-id='Column1'>"
-                + "   <col sortable=false max-width='200' expand='2' property-id='Column2'>"
-                + "   <col sortable='' editable=false min-width='15' expand='1' property-id='Column3'>"
-                + "   <col sortable='' hidable='' hiding-toggle-caption='col 4' property-id='Column4'>"
-                + "   <col sortable='' hidden='' property-id='Column5'>"
-                + "</colgroup>" //
+                + "<colgroup>" + "   <col sortable='' width='100' property-id='Column1'>" + "   <col sortable=false max-width='200' expand='2' property-id='Column2'>" + "   <col sortable='' editable=false min-width='15' expand='1' property-id='Column3'>" + "   <col sortable='' hidable='' hiding-toggle-caption='col 4' property-id='Column4'>" + "   <col sortable='' hidden='' property-id='Column5'>" + "</colgroup>" //
                 + "<thead />" //
                 + "</table></v-grid>";
         Grid grid = new Grid();
         grid.addColumn("Column1", String.class).setWidth(100);
-        grid.addColumn("Column2", String.class).setMaximumWidth(200)
-                .setExpandRatio(2).setSortable(false);
-        grid.addColumn("Column3", String.class).setMinimumWidth(15)
-                .setExpandRatio(1).setEditable(false);
-        grid.addColumn("Column4", String.class).setHidable(true)
-                .setHidingToggleCaption("col 4");
+        grid.addColumn("Column2", String.class).setMaximumWidth(200).setExpandRatio(2).setSortable(false);
+        grid.addColumn("Column3", String.class).setMinimumWidth(15).setExpandRatio(1).setEditable(false);
+        grid.addColumn("Column4", String.class).setHidable(true).setHidingToggleCaption("col 4");
         grid.addColumn("Column5", String.class).setHidden(true);
 
         // Remove the default header
@@ -54,21 +45,15 @@ public class GridColumnDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testReadColumnsWithoutPropertyId() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable=true width='100' property-id='Column1'>"
-                + "   <col sortable=true max-width='200' expand='2'>" // property-id="property-1"
-                + "   <col sortable=true min-width='15' expand='1' property-id='Column3'>"
-                + "   <col sortable=true hidden=true hidable=true hiding-toggle-caption='col 4'>" // property-id="property-3"
+                + "<colgroup>" + "   <col sortable=true width='100' property-id='Column1'>" + "   <col sortable=true max-width='200' expand='2'>" // property-id="property-1"
+                + "   <col sortable=true min-width='15' expand='1' property-id='Column3'>" + "   <col sortable=true hidden=true hidable=true hiding-toggle-caption='col 4'>" // property-id="property-3"
                 + "</colgroup>" //
                 + "</table></v-grid>";
         Grid grid = new Grid();
         grid.addColumn("Column1", String.class).setWidth(100);
-        grid.addColumn("property-1", String.class).setMaximumWidth(200)
-                .setExpandRatio(2);
-        grid.addColumn("Column3", String.class).setMinimumWidth(15)
-                .setExpandRatio(1);
-        grid.addColumn("property-3", String.class).setHidable(true)
-                .setHidden(true).setHidingToggleCaption("col 4");
+        grid.addColumn("property-1", String.class).setMaximumWidth(200).setExpandRatio(2);
+        grid.addColumn("Column3", String.class).setMinimumWidth(15).setExpandRatio(1);
+        grid.addColumn("property-3", String.class).setHidable(true).setHidden(true).setHidingToggleCaption("col 4");
 
         testRead(design, grid);
     }
@@ -76,9 +61,7 @@ public class GridColumnDeclarativeTest extends GridDeclarativeTestBase {
     @Test
     public void testReadEmptyExpand() {
         String design = "<v-grid><table>"//
-                + "<colgroup>"
-                + "   <col sortable=true expand />"
-                + "</colgroup>" //
+                + "<colgroup>" + "   <col sortable=true expand />" + "</colgroup>" //
                 + "</table></v-grid>";
 
         Grid grid = new Grid();

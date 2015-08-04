@@ -52,8 +52,7 @@ public class ProgressIndicatorTest extends AbstractFieldTest<ProgressIndicator> 
     }
 
     private void createIndeterminateToggle() {
-        createBooleanAction("Indeterminate", CATEGORY_FEATURES, false,
-                setIndeterminateCommand);
+        createBooleanAction("Indeterminate", CATEGORY_FEATURES, false, setIndeterminateCommand);
 
     }
 
@@ -62,8 +61,7 @@ public class ProgressIndicatorTest extends AbstractFieldTest<ProgressIndicator> 
         for (int i = 100; i <= 3000; i += 200) {
             valueOptions.put(String.valueOf(i), i);
         }
-        createSelectAction("Polling interval", CATEGORY_FEATURES, valueOptions,
-                "1500", setPollingIntervalCommand);
+        createSelectAction("Polling interval", CATEGORY_FEATURES, valueOptions, "1500", setPollingIntervalCommand);
 
     }
 
@@ -72,8 +70,7 @@ public class ProgressIndicatorTest extends AbstractFieldTest<ProgressIndicator> 
         for (float f = 0.0f; f <= 1.0f; f += 0.1) {
             valueOptions.put(String.valueOf(f), f);
         }
-        createSelectAction("Value", CATEGORY_FEATURES, valueOptions, "0.0",
-                setValueCommand);
+        createSelectAction("Value", CATEGORY_FEATURES, valueOptions, "0.0", setValueCommand);
 
     }
 

@@ -6,23 +6,18 @@ import java.util.Random;
 import com.vaadin.data.util.BeanItemContainer;
 
 @SuppressWarnings("serial")
-public class PersonContainer extends BeanItemContainer<Person> implements
-        Serializable {
+public class PersonContainer extends BeanItemContainer<Person> implements Serializable {
 
     /**
      * Natural property order for Person bean. Used in tables and forms.
      */
-    public static final Object[] NATURAL_COL_ORDER = new Object[] {
-            "firstName", "lastName", "email", "phoneNumber",
-            "address.streetAddress", "address.postalCode", "address.city" };
+    public static final Object[] NATURAL_COL_ORDER = new Object[] { "firstName", "lastName", "email", "phoneNumber", "address.streetAddress", "address.postalCode", "address.city" };
 
     /**
      * "Human readable" captions for properties in same order as in
      * NATURAL_COL_ORDER.
      */
-    public static final String[] COL_HEADERS_ENGLISH = new String[] {
-            "First name", "Last name", "Email", "Phone number",
-            "Street Address", "Postal Code", "City" };
+    public static final String[] COL_HEADERS_ENGLISH = new String[] { "First name", "Last name", "Email", "Phone number", "Street Address", "Postal Code", "City" };
 
     public PersonContainer() {
         super(Person.class);
@@ -44,13 +39,11 @@ public class PersonContainer extends BeanItemContainer<Person> implements
             p.setFirstName(TestDataGenerator.getFirstName(r));
             p.setLastName(TestDataGenerator.getLastName(r));
             p.getAddress().setCity(TestDataGenerator.getCity(r));
-            p.setEmail(p.getFirstName().toLowerCase() + "."
-                    + p.getLastName().toLowerCase() + "@vaadin.com");
+            p.setEmail(p.getFirstName().toLowerCase() + "." + p.getLastName().toLowerCase() + "@vaadin.com");
             p.setPhoneNumber(TestDataGenerator.getPhoneNumber(r));
 
             p.getAddress().setPostalCode(TestDataGenerator.getPostalCode(r));
-            p.getAddress().setStreetAddress(
-                    TestDataGenerator.getStreetAddress(r));
+            p.getAddress().setStreetAddress(TestDataGenerator.getStreetAddress(r));
             c.addItem(p);
         }
 

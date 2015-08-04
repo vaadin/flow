@@ -152,8 +152,6 @@ public class GridColumnExpand extends AbstractTestUI {
         double maximumWidth = Math.round(column.getMaximumWidth() * 100) / 100;
         double width = Math.round(column.getWidth() * 100) / 100;
         Object propertyId = column.getPropertyId();
-        label.setValue(String.format(
-                "[%s] Expand ratio: %s - min: %s - max: %s - width: %s",
-                propertyId, expandRatio, minimumWidth, maximumWidth, width));
+        label.setValue(String.format("[%s] Expand ratio: %s - min: %s - max: %s - width: %s", propertyId, expandRatio, minimumWidth, maximumWidth, width));
     }
 }

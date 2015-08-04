@@ -11,17 +11,14 @@ import com.vaadin.ui.Button.ClickListener;
 
 public class ButtonListenersTest extends AbstractListenerMethodsTestBase {
     public void testFocusListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Button.class, FocusEvent.class,
-                FocusListener.class);
+        testListenerAddGetRemove(Button.class, FocusEvent.class, FocusListener.class);
     }
 
     public void testBlurListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Button.class, BlurEvent.class,
-                BlurListener.class);
+        testListenerAddGetRemove(Button.class, BlurEvent.class, BlurListener.class);
     }
 
     public void testClickListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Button.class, ClickEvent.class,
-                ClickListener.class);
+        testListenerAddGetRemove(Button.class, ClickEvent.class, ClickListener.class);
     }
 }

@@ -51,9 +51,7 @@ public class RoundTripTest extends AbstractTestUI {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                roundTripTester.start(
-                        (Integer) testDuration.getConvertedValue(),
-                        (Integer) payloadSize.getConvertedValue());
+                roundTripTester.start((Integer) testDuration.getConvertedValue(), (Integer) payloadSize.getConvertedValue());
             }
         });
         addComponent(roundTripTester);

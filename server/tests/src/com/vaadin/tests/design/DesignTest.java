@@ -41,25 +41,19 @@ public class DesignTest {
 
     @Test
     public void readStream() throws FileNotFoundException {
-        Component root = Design
-                .read(new FileInputStream(
-                        "server/tests/src/com/vaadin/tests/design/verticallayout-two-children.html"));
+        Component root = Design.read(new FileInputStream("server/tests/src/com/vaadin/tests/design/verticallayout-two-children.html"));
         VerticalLayout rootLayout = (VerticalLayout) root;
         Assert.assertEquals(VerticalLayout.class, root.getClass());
 
         Assert.assertEquals(2, rootLayout.getComponentCount());
-        Assert.assertEquals(TextField.class, rootLayout.getComponent(0)
-                .getClass());
+        Assert.assertEquals(TextField.class, rootLayout.getComponent(0).getClass());
         Assert.assertEquals(Button.class, rootLayout.getComponent(1).getClass());
     }
 
     @Test(expected = DesignException.class)
     @Ignore("Feature needs to be fixed")
     public void readWithIncorrectRoot() throws FileNotFoundException {
-        Design.read(
-                new FileInputStream(
-                        "server/tests/src/com/vaadin/tests/design/verticallayout-one-child.html"),
-                new Panel());
+        Design.read(new FileInputStream("server/tests/src/com/vaadin/tests/design/verticallayout-one-child.html"), new Panel());
     }
 
     public static class MyVerticalLayout extends VerticalLayout {
@@ -68,57 +62,43 @@ public class DesignTest {
 
     @Test
     public void readWithSubClassRoot() throws FileNotFoundException {
-        Design.read(
-                new FileInputStream(
-                        "server/tests/src/com/vaadin/tests/design/verticallayout-one-child.html"),
-                new MyVerticalLayout());
+        Design.read(new FileInputStream("server/tests/src/com/vaadin/tests/design/verticallayout-one-child.html"), new MyVerticalLayout());
     }
 
     @Test
     public void writeComponentToStream() throws IOException {
-        HorizontalLayout root = new HorizontalLayout(new Button("OK"),
-                new Button("Cancel"));
+        HorizontalLayout root = new HorizontalLayout(new Button("OK"), new Button("Cancel"));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Design.write(root, baos);
-        Component newRoot = Design.read(new ByteArrayInputStream(baos
-                .toByteArray()));
+        Component newRoot = Design.read(new ByteArrayInputStream(baos.toByteArray()));
 
         assertHierarchyEquals(root, newRoot);
     }
 
     @Test
     public void writeDesignContextToStream() throws IOException {
-        DesignContext dc = Design
-                .read(new FileInputStream(
-                        "server/tests/src/com/vaadin/tests/design/verticallayout-two-children.html"),
-                        null);
+        DesignContext dc = Design.read(new FileInputStream("server/tests/src/com/vaadin/tests/design/verticallayout-two-children.html"), null);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Design.write(dc, baos);
-        Component newRoot = Design.read(new ByteArrayInputStream(baos
-                .toByteArray()));
+        Component newRoot = Design.read(new ByteArrayInputStream(baos.toByteArray()));
 
         assertHierarchyEquals(dc.getRootComponent(), newRoot);
     }
 
     @Test(expected = DesignException.class)
     public void testDuplicateIds() throws FileNotFoundException {
-        Design.read(new FileInputStream(
-                "server/tests/src/com/vaadin/tests/design/duplicate-ids.html"));
+        Design.read(new FileInputStream("server/tests/src/com/vaadin/tests/design/duplicate-ids.html"));
     }
 
     @Test(expected = DesignException.class)
     public void testDuplicateLocalIds() throws FileNotFoundException {
-        Design.read(new FileInputStream(
-                "server/tests/src/com/vaadin/tests/design/duplicate-local-ids.html"));
+        Design.read(new FileInputStream("server/tests/src/com/vaadin/tests/design/duplicate-local-ids.html"));
     }
 
     private void assertHierarchyEquals(Component expected, Component actual) {
         if (expected.getClass() != actual.getClass()) {
-            throw new AssertionError(
-                    "Component classes do not match. Expected: "
-                            + expected.getClass().getName() + ", was: "
-                            + actual.getClass().getName());
+            throw new AssertionError("Component classes do not match. Expected: " + expected.getClass().getName() + ", was: " + actual.getClass().getName());
         }
 
         if (expected instanceof HasComponents) {

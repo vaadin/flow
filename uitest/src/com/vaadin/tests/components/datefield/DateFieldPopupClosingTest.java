@@ -16,8 +16,7 @@ import com.vaadin.tests.tb3.MultiBrowserTest;
 public class DateFieldPopupClosingTest extends MultiBrowserTest {
 
     @Test
-    public void testDateFieldPopupClosingLongClick()
-            throws InterruptedException, IOException {
+    public void testDateFieldPopupClosingLongClick() throws InterruptedException, IOException {
         openTestURL();
 
         fastClickDateDatePickerButton();
@@ -30,8 +29,7 @@ public class DateFieldPopupClosingTest extends MultiBrowserTest {
     }
 
     private void assertThatPopupIsVisible() {
-        waitUntil(ExpectedConditions.visibilityOfElementLocated(By
-                .className("v-datefield-popup")));
+        waitUntil(ExpectedConditions.visibilityOfElementLocated(By.className("v-datefield-popup")));
     }
 
     private void assertThatPopupIsInvisible() {
@@ -44,8 +42,7 @@ public class DateFieldPopupClosingTest extends MultiBrowserTest {
             @Override
             public Boolean apply(WebDriver input) {
                 try {
-                    return !(findElement(By.className("v-datefield-popup"))
-                            .isDisplayed());
+                    return !(findElement(By.className("v-datefield-popup")).isDisplayed());
                 } catch (Exception e) {
                     return true;
                 }

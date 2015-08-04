@@ -27,14 +27,12 @@ public class PushConfigurationLongPollingTest extends PushConfigurationTest {
         openDebugLogTab();
 
         getTransportSelect().selectByText("Long polling");
-        assertThat(getStatusText(),
-                containsString("fallbackTransport: long-polling"));
+        assertThat(getStatusText(), containsString("fallbackTransport: long-polling"));
         assertThat(getStatusText(), containsString("transport: long-polling"));
 
         clearDebugMessages();
         getPushModeSelect().selectByText("Automatic");
-        waitForDebugMessage("Push connection established using long-polling",
-                10);
+        waitForDebugMessage("Push connection established using long-polling", 10);
         waitForServerCounterToUpdate();
     }
 

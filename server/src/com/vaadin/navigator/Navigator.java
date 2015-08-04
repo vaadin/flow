@@ -99,8 +99,7 @@ public class Navigator implements Serializable {
      * This class is mostly for internal use by Navigator, and is only public
      * and static to enable testing.
      */
-    public static class UriFragmentManager implements NavigationStateManager,
-            UriFragmentChangedListener {
+    public static class UriFragmentManager implements NavigationStateManager, UriFragmentChangedListener {
         private final Page page;
         private Navigator navigator;
 
@@ -190,8 +189,7 @@ public class Navigator implements Serializable {
                 container.removeAllComponents();
                 container.addComponent((Component) view);
             } else {
-                throw new IllegalArgumentException("View is not a component: "
-                        + view);
+                throw new IllegalArgumentException("View is not a component: " + view);
             }
         }
     }
@@ -204,8 +202,7 @@ public class Navigator implements Serializable {
      * Attempting to display a view that is not a component causes an exception
      * to be thrown.
      */
-    public static class SingleComponentContainerViewDisplay implements
-            ViewDisplay {
+    public static class SingleComponentContainerViewDisplay implements ViewDisplay {
 
         private final SingleComponentContainer container;
 
@@ -213,8 +210,7 @@ public class Navigator implements Serializable {
          * Create new {@link ViewDisplay} that updates a
          * {@link SingleComponentContainer} to show the view.
          */
-        public SingleComponentContainerViewDisplay(
-                SingleComponentContainer container) {
+        public SingleComponentContainerViewDisplay(SingleComponentContainer container) {
             this.container = container;
         }
 
@@ -223,8 +219,7 @@ public class Navigator implements Serializable {
             if (view instanceof Component) {
                 container.setContent((Component) view);
             } else {
-                throw new IllegalArgumentException("View is not a component: "
-                        + view);
+                throw new IllegalArgumentException("View is not a component: " + view);
             }
         }
     }
@@ -259,8 +254,7 @@ public class Navigator implements Serializable {
             if (null == navigationState) {
                 return null;
             }
-            if (navigationState.equals(viewName)
-                    || navigationState.startsWith(viewName + "/")) {
+            if (navigationState.equals(viewName) || navigationState.startsWith(viewName + "/")) {
                 return viewName;
             }
             return null;
@@ -307,11 +301,9 @@ public class Navigator implements Serializable {
          * @param viewClass
          *            class to instantiate when a view is requested (not null)
          */
-        public ClassBasedViewProvider(String viewName,
-                Class<? extends View> viewClass) {
+        public ClassBasedViewProvider(String viewName, Class<? extends View> viewClass) {
             if (null == viewName || null == viewClass) {
-                throw new IllegalArgumentException(
-                        "View name and class should not be null");
+                throw new IllegalArgumentException("View name and class should not be null");
             }
             this.viewName = viewName;
             this.viewClass = viewClass;
@@ -322,8 +314,7 @@ public class Navigator implements Serializable {
             if (null == navigationState) {
                 return null;
             }
-            if (navigationState.equals(viewName)
-                    || navigationState.startsWith(viewName + "/")) {
+            if (navigationState.equals(viewName) || navigationState.startsWith(viewName + "/")) {
                 return viewName;
             }
             return null;
@@ -462,8 +453,7 @@ public class Navigator implements Serializable {
      *            The ViewDisplay used to display the views handled by this
      *            navigator
      */
-    public Navigator(UI ui, NavigationStateManager stateManager,
-            ViewDisplay display) {
+    public Navigator(UI ui, NavigationStateManager stateManager, ViewDisplay display) {
         this.ui = ui;
         this.ui.setNavigator(this);
         this.stateManager = stateManager;
@@ -502,16 +492,13 @@ public class Navigator implements Serializable {
         View viewWithLongestName = null;
         for (ViewProvider provider : providers) {
             String viewName = provider.getViewName(navigationState);
-            if (null != viewName
-                    && (longestViewName == null || viewName.length() > longestViewName
-                            .length())) {
+            if (null != viewName && (longestViewName == null || viewName.length() > longestViewName.length())) {
                 longestViewName = viewName;
                 longestViewNameProvider = provider;
             }
         }
         if (longestViewName != null) {
-            viewWithLongestName = longestViewNameProvider
-                    .getView(longestViewName);
+            viewWithLongestName = longestViewNameProvider.getView(longestViewName);
         }
 
         if (viewWithLongestName == null && errorProvider != null) {
@@ -521,15 +508,11 @@ public class Navigator implements Serializable {
         if (viewWithLongestName != null) {
             String parameters = "";
             if (navigationState.length() > longestViewName.length() + 1) {
-                parameters = navigationState
-                        .substring(longestViewName.length() + 1);
+                parameters = navigationState.substring(longestViewName.length() + 1);
             }
             navigateTo(viewWithLongestName, longestViewName, parameters);
         } else {
-            throw new IllegalArgumentException(
-                    "Trying to navigate to an unknown state '"
-                            + navigationState
-                            + "' and an error view provider not present");
+            throw new IllegalArgumentException("Trying to navigate to an unknown state '" + navigationState + "' and an error view provider not present");
         }
     }
 
@@ -549,8 +532,7 @@ public class Navigator implements Serializable {
      *            parameters passed in the navigation state to the view
      */
     protected void navigateTo(View view, String viewName, String parameters) {
-        ViewChangeEvent event = new ViewChangeEvent(this, currentView, view,
-                viewName, parameters);
+        ViewChangeEvent event = new ViewChangeEvent(this, currentView, view, viewName, parameters);
         if (!fireBeforeViewChange(event)) {
             // #10901. Revert URL to previous state if back-button navigation
             // was canceled
@@ -677,8 +659,7 @@ public class Navigator implements Serializable {
 
         // Check parameters
         if (viewName == null || view == null) {
-            throw new IllegalArgumentException(
-                    "view and viewName must be non-null");
+            throw new IllegalArgumentException("view and viewName must be non-null");
         }
 
         removeView(viewName);
@@ -703,8 +684,7 @@ public class Navigator implements Serializable {
 
         // Check parameters
         if (viewName == null || viewClass == null) {
-            throw new IllegalArgumentException(
-                    "view and viewClass must be non-null");
+            throw new IllegalArgumentException("view and viewClass must be non-null");
         }
 
         removeView(viewName);
@@ -751,8 +731,7 @@ public class Navigator implements Serializable {
      */
     public void addProvider(ViewProvider provider) {
         if (provider == null) {
-            throw new IllegalArgumentException(
-                    "Cannot add a null view provider");
+            throw new IllegalArgumentException("Cannot add a null view provider");
         }
         providers.add(provider);
     }

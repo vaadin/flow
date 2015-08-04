@@ -29,8 +29,7 @@ package com.vaadin.server;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public abstract class AbstractExtension extends AbstractClientConnector
-        implements Extension {
+public abstract class AbstractExtension extends AbstractClientConnector implements Extension {
     private boolean previouslyAttached = false;
 
     private ClientConnector parent;
@@ -85,8 +84,7 @@ public abstract class AbstractExtension extends AbstractClientConnector
     @Override
     public void setParent(ClientConnector parent) {
         if (previouslyAttached && parent != null) {
-            throw new IllegalStateException(
-                    "An extension can not be set to extend a new target after getting detached from the previous.");
+            throw new IllegalStateException("An extension can not be set to extend a new target after getting detached from the previous.");
         }
 
         Class<? extends ClientConnector> supportedParentType = getSupportedParentType();
@@ -94,10 +92,7 @@ public abstract class AbstractExtension extends AbstractClientConnector
             internalSetParent(parent);
             previouslyAttached = true;
         } else {
-            throw new IllegalArgumentException(getClass().getName()
-                    + " can only be attached to targets of type "
-                    + supportedParentType.getName() + " but attach to "
-                    + parent.getClass().getName() + " was attempted.");
+            throw new IllegalArgumentException(getClass().getName() + " can only be attached to targets of type " + supportedParentType.getName() + " but attach to " + parent.getClass().getName() + " was attempted.");
         }
     }
 

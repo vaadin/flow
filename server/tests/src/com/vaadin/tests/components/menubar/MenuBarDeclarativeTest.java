@@ -38,14 +38,7 @@ public class MenuBarDeclarativeTest extends DeclarativeTestBase<MenuBar> {
     @Test
     // #16328
     public void testReadWrite() throws IOException {
-        String design = "<v-menu-bar auto-open='' tabindex=5>"
-                + "<menu checkable=''>Save</menu>"
-                + "<menu description='Open a file'>Open</menu>"
-                + "<menu disabled=''>Close</menu>"
-                + "<menu icon='http://foo.bar/ico.png'>Help</menu>"
-                + "<menu visible='false'>About</menu>"
-                + "<menu>Sub<menu>Item</menu></menu>"
-                + "<menu more>WTF?!</menu>" + "</v-menu-bar>";
+        String design = "<v-menu-bar auto-open='' tabindex=5>" + "<menu checkable=''>Save</menu>" + "<menu description='Open a file'>Open</menu>" + "<menu disabled=''>Close</menu>" + "<menu icon='http://foo.bar/ico.png'>Help</menu>" + "<menu visible='false'>About</menu>" + "<menu>Sub<menu>Item</menu></menu>" + "<menu more>WTF?!</menu>" + "</v-menu-bar>";
         MenuBar bar = new MenuBar();
         bar.setAutoOpen(true);
         bar.setHtmlContentAllowed(true);
@@ -54,8 +47,7 @@ public class MenuBarDeclarativeTest extends DeclarativeTestBase<MenuBar> {
         bar.addItem("Save", null).setCheckable(true);
         bar.addItem("Open", null).setDescription("Open a file");
         bar.addItem("Close", null).setEnabled(false);
-        bar.addItem("Help", null).setIcon(
-                new ExternalResource("http://foo.bar/ico.png"));
+        bar.addItem("Help", null).setIcon(new ExternalResource("http://foo.bar/ico.png"));
         bar.addItem("About", null).setVisible(false);
 
         bar.addItem("Sub", null).addItem("Item", null);
@@ -69,23 +61,10 @@ public class MenuBarDeclarativeTest extends DeclarativeTestBase<MenuBar> {
     @Test
     // #16328
     public void testTicketSpec1() throws IOException {
-        String design = "<v-menu-bar auto-open='' plain-text tabindex=5> "
-                + "<menu>File"
-                + "<menu>Save</menu>"
-                + "<menu icon=\"theme://../runo/icons/16/folder.png\">Open</menu>"
-                + "<menu separator='' />"
-                + "<menu disabled=''>Exit</menu>"
-                + "<menu visible='false'>Not for everybody</menu>"
-                + "</menu>"
-                + "<menu description=\"This contains many items in sub menus\">Other"
-                + "<menu style-name=\"fancy\">Sub"
-                + "<menu checkable='' checked=''>Option 1 - no <b>html</b></menu>"
-                + "<menu checkable=''>Option 2</menu>"
-                + "<menu checkable=''>Option 3</menu>" //
+        String design = "<v-menu-bar auto-open='' plain-text tabindex=5> " + "<menu>File" + "<menu>Save</menu>" + "<menu icon=\"theme://../runo/icons/16/folder.png\">Open</menu>" + "<menu separator='' />" + "<menu disabled=''>Exit</menu>" + "<menu visible='false'>Not for everybody</menu>" + "</menu>" + "<menu description=\"This contains many items in sub menus\">Other" + "<menu style-name=\"fancy\">Sub" + "<menu checkable='' checked=''>Option 1 - no <b>html</b></menu>" + "<menu checkable=''>Option 2</menu>" + "<menu checkable=''>Option 3</menu>" //
                 + "</menu>" //
                 + "</menu>" //
-                + "<menu more icon=\"theme://icon.png\">foo</menu>"
-                + "</v-menu-bar>";
+                + "<menu more icon=\"theme://icon.png\">foo</menu>" + "</v-menu-bar>";
         // for one reason or another, no component has a correct .equals
         // implementation, which makes tests a bit annoying
         MenuBar menuBar = new MenuBar();
@@ -95,8 +74,7 @@ public class MenuBarDeclarativeTest extends DeclarativeTestBase<MenuBar> {
         // File menu
         MenuItem fileMenu = menuBar.addItem("File", null);
         fileMenu.addItem("Save", null);
-        fileMenu.addItem("Open", new ThemeResource(
-                "../runo/icons/16/folder.png"), null);
+        fileMenu.addItem("Open", new ThemeResource("../runo/icons/16/folder.png"), null);
         fileMenu.addSeparator();
         fileMenu.addItem("Exit", null).setEnabled(false);
         fileMenu.addItem("Not for everybody", null).setVisible(false);
@@ -120,18 +98,13 @@ public class MenuBarDeclarativeTest extends DeclarativeTestBase<MenuBar> {
     @Test
     // #16328
     public void testTicketSpec2() throws IOException {
-        String design = "<v-menu-bar>"
-                + "<menu><b>File</b>"
-                + "<menu><font style=\"color: red\">Save</font></menu>"
-                + "<menu icon=\"theme://../runo/icons/16/folder.png\">Open</menu>"
-                + "<menu separator='' />" + "<menu disabled=''>Exit</menu>" //
+        String design = "<v-menu-bar>" + "<menu><b>File</b>" + "<menu><font style=\"color: red\">Save</font></menu>" + "<menu icon=\"theme://../runo/icons/16/folder.png\">Open</menu>" + "<menu separator='' />" + "<menu disabled=''>Exit</menu>" //
                 + "</menu></v-menu-bar>";
         MenuBar menuBar = new MenuBar();
         menuBar.setHtmlContentAllowed(true);
         MenuItem fileMenu = menuBar.addItem("<b>File</b>", null);
         fileMenu.addItem("<font style=\"color: red\">Save</font>", null);
-        fileMenu.addItem("Open", new ThemeResource(
-                "../runo/icons/16/folder.png"), null);
+        fileMenu.addItem("Open", new ThemeResource("../runo/icons/16/folder.png"), null);
         fileMenu.addSeparator();
         fileMenu.addItem("Exit", null).setEnabled(false);
         testRead(design, menuBar);
@@ -144,8 +117,7 @@ public class MenuBarDeclarativeTest extends DeclarativeTestBase<MenuBar> {
 
         List<MenuItem> expectedMenuItems = expected.getItems();
         List<MenuItem> actualMenuItems = result.getItems();
-        Assert.assertEquals("Different amount of menu items",
-                expectedMenuItems.size(), actualMenuItems.size());
+        Assert.assertEquals("Different amount of menu items", expectedMenuItems.size(), actualMenuItems.size());
 
         for (int i = 0; i < expectedMenuItems.size(); ++i) {
             compareMenus(expectedMenuItems.get(i), actualMenuItems.get(i));
@@ -155,25 +127,16 @@ public class MenuBarDeclarativeTest extends DeclarativeTestBase<MenuBar> {
     }
 
     private void compareMenus(MenuItem expected, MenuItem actual) {
-        String baseError = "Error Comparing MenuItem " + expected.getText()
-                + ": ";
-        Assert.assertEquals(baseError + "Visibile", expected.isVisible(),
-                actual.isVisible());
-        Assert.assertEquals(baseError + "Checkable", expected.isCheckable(),
-                actual.isCheckable());
-        Assert.assertEquals(baseError + "Checked", expected.isChecked(),
-                actual.isChecked());
-        Assert.assertEquals(baseError + "Separator", expected.isSeparator(),
-                actual.isSeparator());
-        Assert.assertEquals(baseError + "Enabled", expected.isEnabled(),
-                actual.isEnabled());
+        String baseError = "Error Comparing MenuItem " + expected.getText() + ": ";
+        Assert.assertEquals(baseError + "Visibile", expected.isVisible(), actual.isVisible());
+        Assert.assertEquals(baseError + "Checkable", expected.isCheckable(), actual.isCheckable());
+        Assert.assertEquals(baseError + "Checked", expected.isChecked(), actual.isChecked());
+        Assert.assertEquals(baseError + "Separator", expected.isSeparator(), actual.isSeparator());
+        Assert.assertEquals(baseError + "Enabled", expected.isEnabled(), actual.isEnabled());
 
-        Assert.assertEquals(baseError + "Text", expected.getText(),
-                actual.getText());
-        Assert.assertEquals(baseError + "Description",
-                expected.getDescription(), actual.getDescription());
-        Assert.assertEquals(baseError + "Style Name", expected.getStyleName(),
-                actual.getStyleName());
+        Assert.assertEquals(baseError + "Text", expected.getText(), actual.getText());
+        Assert.assertEquals(baseError + "Description", expected.getDescription(), actual.getDescription());
+        Assert.assertEquals(baseError + "Style Name", expected.getStyleName(), actual.getStyleName());
 
         if (expected.getIcon() != null) {
             Assert.assertNotNull(baseError + "Icon was null", actual.getIcon());
@@ -183,13 +146,11 @@ public class MenuBarDeclarativeTest extends DeclarativeTestBase<MenuBar> {
             }
         }
 
-        Assert.assertEquals(baseError + "Has Children", expected.hasChildren(),
-                actual.hasChildren());
+        Assert.assertEquals(baseError + "Has Children", expected.hasChildren(), actual.hasChildren());
         if (expected.hasChildren()) {
             List<MenuItem> children = expected.getChildren();
             List<MenuItem> actualChildren = actual.getChildren();
-            Assert.assertEquals(baseError + "Child count", children.size(),
-                    actualChildren.size());
+            Assert.assertEquals(baseError + "Child count", children.size(), actualChildren.size());
             for (int i = 0; i < children.size(); ++i) {
                 compareMenus(children.get(i), actualChildren.get(i));
             }

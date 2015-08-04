@@ -42,8 +42,7 @@ public class MaximizedWindowOrder extends AbstractTestUI {
         layout.addComponent(button);
 
         window.setContent(layout);
-        window.setWindowMode(maximized ? WindowMode.MAXIMIZED
-                : WindowMode.NORMAL);
+        window.setWindowMode(maximized ? WindowMode.MAXIMIZED : WindowMode.NORMAL);
 
         addWindow(window);
     }

@@ -47,20 +47,16 @@ public class RpcManager {
      * @param invocation
      *            method to invoke
      */
-    public void applyInvocation(MethodInvocation invocation,
-            ServerConnector connector) {
+    public void applyInvocation(MethodInvocation invocation, ServerConnector connector) {
         Method method = getMethod(invocation);
 
-        Collection<ClientRpc> implementations = connector
-                .getRpcImplementations(invocation.getInterfaceName());
+        Collection<ClientRpc> implementations = connector.getRpcImplementations(invocation.getInterfaceName());
         try {
             for (ClientRpc clientRpc : implementations) {
                 method.invoke(clientRpc, invocation.getParameters());
             }
         } catch (NoDataException e) {
-            throw new IllegalStateException("There is no information about "
-                    + method.getSignature()
-                    + ". Did you remember to compile the right widgetset?", e);
+            throw new IllegalStateException("There is no information about " + method.getSignature() + ". Did you remember to compile the right widgetset?", e);
         }
     }
 
@@ -91,14 +87,11 @@ public class RpcManager {
             Type[] parameterTypes = method.getParameterTypes();
             return parameterTypes;
         } catch (NoDataException e) {
-            throw new IllegalStateException("There is no information about "
-                    + method.getSignature()
-                    + ". Did you remember to compile the right widgetset?", e);
+            throw new IllegalStateException("There is no information about " + method.getSignature() + ". Did you remember to compile the right widgetset?", e);
         }
     }
 
-    public MethodInvocation parseAndApplyInvocation(JsonArray rpcCall,
-            ApplicationConnection connection) {
+    public MethodInvocation parseAndApplyInvocation(JsonArray rpcCall, ApplicationConnection connection) {
         ConnectorMap connectorMap = ConnectorMap.get(connection);
 
         String connectorId = rpcCall.getString(0);
@@ -108,17 +101,12 @@ public class RpcManager {
 
         ServerConnector connector = connectorMap.getConnector(connectorId);
 
-        MethodInvocation invocation = new MethodInvocation(connectorId,
-                interfaceName, methodName);
+        MethodInvocation invocation = new MethodInvocation(connectorId, interfaceName, methodName);
         if (connector instanceof HasJavaScriptConnectorHelper) {
-            ((HasJavaScriptConnectorHelper) connector)
-                    .getJavascriptConnectorHelper().invokeJsRpc(invocation,
-                            parametersJson);
+            ((HasJavaScriptConnectorHelper) connector).getJavascriptConnectorHelper().invokeJsRpc(invocation, parametersJson);
         } else {
             if (connector == null) {
-                throw new IllegalStateException("Target connector ("
-                        + connector + ") not found for RCC to "
-                        + getSignature(invocation));
+                throw new IllegalStateException("Target connector (" + connector + ") not found for RCC to " + getSignature(invocation));
             }
 
             parseMethodParameters(invocation, parametersJson, connection);
@@ -129,14 +117,12 @@ public class RpcManager {
         return invocation;
     }
 
-    private void parseMethodParameters(MethodInvocation methodInvocation,
-            JsonArray parametersJson, ApplicationConnection connection) {
+    private void parseMethodParameters(MethodInvocation methodInvocation, JsonArray parametersJson, ApplicationConnection connection) {
         Type[] parameterTypes = getParameterTypes(methodInvocation);
 
         Object[] parameters = new Object[parametersJson.length()];
         for (int j = 0; j < parametersJson.length(); ++j) {
-            parameters[j] = JsonDecoder.decodeValue(parameterTypes[j],
-                    parametersJson.get(j), null, connection);
+            parameters[j] = JsonDecoder.decodeValue(parameterTypes[j], parametersJson.get(j), null, connection);
         }
 
         methodInvocation.setParameters(parameters);

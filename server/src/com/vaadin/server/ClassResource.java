@@ -101,9 +101,7 @@ public class ClassResource implements ConnectorResource, Serializable {
 
     @Override
     public DownloadStream getStream() {
-        final DownloadStream ds = new DownloadStream(getAssociatedClass()
-                .getResourceAsStream(resourceName), getMIMEType(),
-                getFilename());
+        final DownloadStream ds = new DownloadStream(getAssociatedClass().getResourceAsStream(resourceName), getMIMEType(), getFilename());
         ds.setBufferSize(getBufferSize());
         ds.setCacheTime(getCacheTime());
         return ds;

@@ -38,11 +38,8 @@ public class AlignTopIconInButtonTest extends MultiBrowserTest {
 
         WebElement wrapper = findElement(By.className("v-button-wrap"));
         WebElement icon = wrapper.findElement(By.className("v-icon"));
-        int leftSpace = icon.getLocation().getX()
-                - wrapper.getLocation().getX();
-        int rightSpace = wrapper.getLocation().getX()
-                + wrapper.getSize().getWidth() - icon.getLocation().getX()
-                - icon.getSize().getWidth();
+        int leftSpace = icon.getLocation().getX() - wrapper.getLocation().getX();
+        int rightSpace = wrapper.getLocation().getX() + wrapper.getSize().getWidth() - icon.getLocation().getX() - icon.getSize().getWidth();
 
         assertThat(Math.abs(rightSpace - leftSpace), is(lessThanOrEqualTo(2)));
     }

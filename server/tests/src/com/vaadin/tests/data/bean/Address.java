@@ -14,8 +14,7 @@ public class Address implements Serializable {
 
     }
 
-    public Address(String streetAddress, int postalCode, String city,
-            Country country) {
+    public Address(String streetAddress, int postalCode, String city, Country country) {
         setStreetAddress(streetAddress);
         setPostalCode(postalCode);
         setCity(city);
@@ -24,8 +23,7 @@ public class Address implements Serializable {
 
     @Override
     public String toString() {
-        return "Address [streetAddress=" + streetAddress + ", postalCode="
-                + postalCode + ", city=" + city + ", country=" + country + "]";
+        return "Address [streetAddress=" + streetAddress + ", postalCode=" + postalCode + ", city=" + city + ", country=" + country + "]";
     }
 
     public String getStreetAddress() {

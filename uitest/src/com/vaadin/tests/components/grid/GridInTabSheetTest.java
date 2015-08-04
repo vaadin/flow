@@ -41,16 +41,14 @@ public class GridInTabSheetTest extends MultiBrowserTest {
 
         for (int i = 0; i < 3; ++i) {
             addGridRow();
-            assertEquals("" + (100 + i), getGridElement().getCell(i, 1)
-                    .getText());
+            assertEquals("" + (100 + i), getGridElement().getCell(i, 1).getText());
         }
 
         assertNoNotification();
     }
 
     private void assertNoNotification() {
-        assertFalse("There was an unexpected error notification",
-                isElementPresent(NotificationElement.class));
+        assertFalse("There was an unexpected error notification", isElementPresent(NotificationElement.class));
     }
 
     @Test
@@ -92,8 +90,7 @@ public class GridInTabSheetTest extends MultiBrowserTest {
     }
 
     private void addCellStyleGenerator() {
-        $(ButtonElement.class).caption("Add CellStyleGenerator").first()
-                .click();
+        $(ButtonElement.class).caption("Add CellStyleGenerator").first().click();
     }
 
     private GridElement getGridElement() {

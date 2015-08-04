@@ -50,8 +50,7 @@ public class StringToDateConverter implements Converter<String, Date> {
             locale = Locale.getDefault();
         }
 
-        DateFormat f = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-                DateFormat.MEDIUM, locale);
+        DateFormat f = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, locale);
         f.setLenient(false);
         return f;
     }
@@ -64,13 +63,9 @@ public class StringToDateConverter implements Converter<String, Date> {
      * java.lang.Class, java.util.Locale)
      */
     @Override
-    public Date convertToModel(String value, Class<? extends Date> targetType,
-            Locale locale)
-            throws com.vaadin.data.util.converter.Converter.ConversionException {
+    public Date convertToModel(String value, Class<? extends Date> targetType, Locale locale) throws com.vaadin.data.util.converter.Converter.ConversionException {
         if (targetType != getModelType()) {
-            throw new ConversionException("Converter only supports "
-                    + getModelType().getName() + " (targetType was "
-                    + targetType.getName() + ")");
+            throw new ConversionException("Converter only supports " + getModelType().getName() + " (targetType was " + targetType.getName() + ")");
         }
 
         if (value == null) {
@@ -83,8 +78,7 @@ public class StringToDateConverter implements Converter<String, Date> {
         ParsePosition parsePosition = new ParsePosition(0);
         Date parsedValue = getFormat(locale).parse(value, parsePosition);
         if (parsePosition.getIndex() != value.length()) {
-            throw new ConversionException("Could not convert '" + value
-                    + "' to " + getModelType().getName());
+            throw new ConversionException("Could not convert '" + value + "' to " + getModelType().getName());
         }
 
         return parsedValue;
@@ -98,9 +92,7 @@ public class StringToDateConverter implements Converter<String, Date> {
      * .Object, java.lang.Class, java.util.Locale)
      */
     @Override
-    public String convertToPresentation(Date value,
-            Class<? extends String> targetType, Locale locale)
-            throws com.vaadin.data.util.converter.Converter.ConversionException {
+    public String convertToPresentation(Date value, Class<? extends String> targetType, Locale locale) throws com.vaadin.data.util.converter.Converter.ConversionException {
         if (value == null) {
             return null;
         }

@@ -24,8 +24,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.declarative.DesignContext;
 
-public class GridLayoutDeclarativeTest extends
-        DeclarativeMarginTestBase<GridLayout> {
+public class GridLayoutDeclarativeTest extends DeclarativeMarginTestBase<GridLayout> {
 
     @Test
     public void testMargins() {
@@ -194,12 +193,10 @@ public class GridLayoutDeclarativeTest extends
 
         GridLayout result = super.testRead(design, expected);
         for (int row = 0; row < expected.getRows(); ++row) {
-            Assert.assertTrue(Math.abs(expected.getRowExpandRatio(row)
-                    - result.getRowExpandRatio(row)) < 0.00001);
+            Assert.assertTrue(Math.abs(expected.getRowExpandRatio(row) - result.getRowExpandRatio(row)) < 0.00001);
         }
         for (int col = 0; col < expected.getColumns(); ++col) {
-            Assert.assertTrue(Math.abs(expected.getColumnExpandRatio(col)
-                    - result.getColumnExpandRatio(col)) < 0.00001);
+            Assert.assertTrue(Math.abs(expected.getColumnExpandRatio(col) - result.getColumnExpandRatio(col)) < 0.00001);
         }
         return result;
     }

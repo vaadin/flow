@@ -38,9 +38,7 @@ import com.vaadin.client.Focusable;
  * Compared to FocusPanel in GWT this panel does not support eg. accesskeys, but
  * is simpler by its dom hierarchy nor supports focusing via java api.
  */
-public class SimpleFocusablePanel extends SimplePanel implements
-        HasFocusHandlers, HasBlurHandlers, HasKeyDownHandlers,
-        HasKeyPressHandlers, Focusable {
+public class SimpleFocusablePanel extends SimplePanel implements HasFocusHandlers, HasBlurHandlers, HasKeyDownHandlers, HasKeyPressHandlers, Focusable {
 
     public SimpleFocusablePanel() {
         // make focusable, as we don't need access key magic we don't need to

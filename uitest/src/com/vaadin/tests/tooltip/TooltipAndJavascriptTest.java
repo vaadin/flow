@@ -30,11 +30,9 @@ public class TooltipAndJavascriptTest extends MultiBrowserTest {
     public void ensureTooltipInOverlay() throws InterruptedException {
         openTestURL();
         $(ButtonElement.class).first().showTooltip();
-        WebElement tooltip = findElement(By
-                .cssSelector(".v-overlay-container .v-tooltip"));
+        WebElement tooltip = findElement(By.cssSelector(".v-overlay-container .v-tooltip"));
         WebElement overlayContainer = getParent(tooltip);
-        Assert.assertTrue("v-overlay-container did not receive theme",
-                hasClass(overlayContainer, "reindeer"));
+        Assert.assertTrue("v-overlay-container did not receive theme", hasClass(overlayContainer, "reindeer"));
     }
 
     private boolean hasClass(WebElement element, String classname) {
@@ -48,7 +46,6 @@ public class TooltipAndJavascriptTest extends MultiBrowserTest {
     }
 
     private WebElement getParent(WebElement element) {
-        return (WebElement) ((JavascriptExecutor) getDriver()).executeScript(
-                "return arguments[0].parentNode;", element);
+        return (WebElement) ((JavascriptExecutor) getDriver()).executeScript("return arguments[0].parentNode;", element);
     }
 }

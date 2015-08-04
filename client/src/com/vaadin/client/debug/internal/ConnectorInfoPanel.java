@@ -57,30 +57,24 @@ public class ConnectorInfoPanel extends FlowPanel {
         if (connector instanceof ComponentConnector) {
             ComponentConnector component = (ComponentConnector) connector;
 
-            ignoreProperties.addAll(Arrays.asList("caption", "description",
-                    "width", "height"));
+            ignoreProperties.addAll(Arrays.asList("caption", "description", "width", "height"));
 
             AbstractComponentState componentState = component.getState();
 
-            html += getRowHTML("Widget", component.getWidget().getClass()
-                    .getSimpleName());
+            html += getRowHTML("Widget", component.getWidget().getClass().getSimpleName());
             html += getRowHTML("Caption", componentState.caption);
             html += getRowHTML("Description", componentState.description);
-            html += getRowHTML("Width", componentState.width + " (actual: "
-                    + component.getWidget().getOffsetWidth() + "px)");
-            html += getRowHTML("Height", componentState.height + " (actual: "
-                    + component.getWidget().getOffsetHeight() + "px)");
+            html += getRowHTML("Width", componentState.width + " (actual: " + component.getWidget().getOffsetWidth() + "px)");
+            html += getRowHTML("Height", componentState.height + " (actual: " + component.getWidget().getOffsetHeight() + "px)");
         }
 
         try {
-            JsArrayObject<Property> properties = AbstractConnector
-                    .getStateType(connector).getPropertiesAsArray();
+            JsArrayObject<Property> properties = AbstractConnector.getStateType(connector).getPropertiesAsArray();
             for (int i = 0; i < properties.size(); i++) {
                 Property property = properties.get(i);
                 String name = property.getName();
                 if (!ignoreProperties.contains(name)) {
-                    html += getRowHTML(property.getDisplayName(),
-                            property.getValue(state));
+                    html += getRowHTML(property.getDisplayName(), property.getValue(state));
                 }
             }
         } catch (NoDataException e) {
@@ -93,11 +87,7 @@ public class ConnectorInfoPanel extends FlowPanel {
     }
 
     private String getRowHTML(String caption, Object value) {
-        return "<div class=\"" + VDebugWindow.STYLENAME
-                + "-row\"><span class=\"caption\">" + caption
-                + "</span><span class=\"value\">"
-                + WidgetUtil.escapeHTML(String.valueOf(value))
-                + "</span></div>";
+        return "<div class=\"" + VDebugWindow.STYLENAME + "-row\"><span class=\"caption\">" + caption + "</span><span class=\"value\">" + WidgetUtil.escapeHTML(String.valueOf(value)) + "</span></div>";
     }
 
     /**

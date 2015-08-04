@@ -41,8 +41,7 @@ import com.vaadin.shared.ui.Connect;
 import com.vaadin.tests.util.ResizeTerrorizer;
 
 @Connect(ResizeTerrorizer.ResizeTerrorizerControl.class)
-public class ResizeTerrorizerControlConnector extends
-        AbstractComponentConnector {
+public class ResizeTerrorizerControlConnector extends AbstractComponentConnector {
 
     public static class ResizeTerorrizerState extends AbstractComponentState {
         public Connector target;
@@ -61,15 +60,12 @@ public class ResizeTerrorizerControlConnector extends
         private IntegerBox startHeight = new IntegerBox();
         private IntegerBox endHeight = new IntegerBox();
 
-        private final Button terrorizeButton = new Button("Terrorize",
-                new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                        terrorize(startWidth.getValue(), endWidth.getValue(),
-                                startHeight.getValue(), endHeight.getValue(),
-                                1000);
-                    }
-                });
+        private final Button terrorizeButton = new Button("Terrorize", new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                terrorize(startWidth.getValue(), endWidth.getValue(), startHeight.getValue(), endHeight.getValue(), 1000);
+            }
+        });
 
         private HandlerRegistration historyHandlerRegistration;
 
@@ -95,8 +91,7 @@ public class ResizeTerrorizerControlConnector extends
             results.getElement().setId("terror-results");
 
             // Emulate button click from enter on any of the text boxes
-            for (IntegerBox box : Arrays.asList(startWidth, endWidth,
-                    startHeight, endHeight)) {
+            for (IntegerBox box : Arrays.asList(startWidth, endWidth, startHeight, endHeight)) {
                 box.addKeyUpHandler(new KeyUpHandler() {
                     @Override
                     public void onKeyUp(KeyUpEvent event) {
@@ -130,14 +125,12 @@ public class ResizeTerrorizerControlConnector extends
                 updateFromHistoryToken(History.getToken());
 
                 // Then add history change listener
-                historyHandlerRegistration = History
-                        .addValueChangeHandler(new ValueChangeHandler<String>() {
-                            @Override
-                            public void onValueChange(
-                                    ValueChangeEvent<String> event) {
-                                updateFromHistoryToken(event.getValue());
-                            }
-                        });
+                historyHandlerRegistration = History.addValueChangeHandler(new ValueChangeHandler<String>() {
+                    @Override
+                    public void onValueChange(ValueChangeEvent<String> event) {
+                        updateFromHistoryToken(event.getValue());
+                    }
+                });
             } else if (!useUriFragments && historyHandlerRegistration != null) {
                 historyHandlerRegistration.removeHandler();
                 historyHandlerRegistration = null;
@@ -165,18 +158,13 @@ public class ResizeTerrorizerControlConnector extends
         }
 
         private void upateHistoryToken() {
-            String token = startWidth.getValue().intValue() + ","
-                    + endWidth.getValue().intValue() + ","
-                    + startHeight.getValue().intValue() + ","
-                    + endHeight.getValue().intValue();
+            String token = startWidth.getValue().intValue() + "," + endWidth.getValue().intValue() + "," + startHeight.getValue().intValue() + "," + endHeight.getValue().intValue();
 
             History.newItem(token, false);
         }
     }
 
-    private void terrorize(final double startWidth, final double endWidth,
-            final double startHeight, final double endHeight,
-            final double duration) {
+    private void terrorize(final double startWidth, final double endWidth, final double startHeight, final double endHeight, final double duration) {
         final AbstractComponentConnector target = getTarget();
 
         final AnimationScheduler scheduler = AnimationScheduler.get();
@@ -201,11 +189,9 @@ public class ResizeTerrorizerControlConnector extends
 
                 double progress = time / duration;
 
-                double widthToSet = startWidth + (endWidth - startWidth)
-                        * progress;
+                double widthToSet = startWidth + (endWidth - startWidth) * progress;
 
-                double heightToSet = startHeight + (endHeight - startHeight)
-                        * progress;
+                double heightToSet = startHeight + (endHeight - startHeight) * progress;
 
                 if (widthToSet != startWidth) {
                     target.getWidget().setWidth(widthToSet + "px");

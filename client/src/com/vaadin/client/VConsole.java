@@ -51,8 +51,7 @@ public class VConsole {
         if (LogConfiguration.loggingIsEnabled(Level.INFO)) {
             // Check for null, so no NullPointerException is generated when
             // formatting (#12588)
-            getLogger().log(Level.INFO,
-                    e.getMessage() == null ? "" : e.getMessage(), e);
+            getLogger().log(Level.INFO, e.getMessage() == null ? "" : e.getMessage(), e);
         }
     }
 
@@ -60,8 +59,7 @@ public class VConsole {
         if (LogConfiguration.loggingIsEnabled(Level.SEVERE)) {
             // Check for null, so no NullPointerException is generated when
             // formatting (#12588)
-            getLogger().log(Level.SEVERE,
-                    e.getMessage() == null ? "" : e.getMessage(), e);
+            getLogger().log(Level.SEVERE, e.getMessage() == null ? "" : e.getMessage(), e);
         }
     }
 
@@ -89,8 +87,7 @@ public class VConsole {
         }
     }
 
-    public static void printLayoutProblems(ValueMap meta,
-            ApplicationConnection applicationConnection) {
+    public static void printLayoutProblems(ValueMap meta, ApplicationConnection applicationConnection) {
         if (impl != null) {
             impl.meta(applicationConnection, meta);
         }

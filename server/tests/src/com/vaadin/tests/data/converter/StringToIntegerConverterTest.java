@@ -18,15 +18,12 @@ public class StringToIntegerConverterTest extends TestCase {
     }
 
     public void testValueOutOfRange() {
-        Double[] values = new Double[] { Integer.MAX_VALUE * 2.0,
-                Integer.MIN_VALUE * 2.0, Long.MAX_VALUE * 2.0,
-                Long.MIN_VALUE * 2.0 };
+        Double[] values = new Double[] { Integer.MAX_VALUE * 2.0, Integer.MIN_VALUE * 2.0, Long.MAX_VALUE * 2.0, Long.MIN_VALUE * 2.0 };
 
         boolean accepted = false;
         for (Number value : values) {
             try {
-                converter.convertToModel(String.format("%.0f", value),
-                        Integer.class, null);
+                converter.convertToModel(String.format("%.0f", value), Integer.class, null);
                 accepted = true;
             } catch (ConversionException expected) {
             }
@@ -35,7 +32,6 @@ public class StringToIntegerConverterTest extends TestCase {
     }
 
     public void testValueConversion() {
-        assertEquals(Integer.valueOf(10),
-                converter.convertToModel("10", Integer.class, null));
+        assertEquals(Integer.valueOf(10), converter.convertToModel("10", Integer.class, null));
     }
 }

@@ -26,8 +26,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Label;
 
 public class DetachOldUIOnReload extends AbstractTestUIWithLog {
-    private static final String PERSISTENT_MESSAGES_ATTRIBUTE = DetachOldUIOnReload.class
-            .getName() + ".sessionMessages";
+    private static final String PERSISTENT_MESSAGES_ATTRIBUTE = DetachOldUIOnReload.class.getName() + ".sessionMessages";
 
     @Override
     protected void setup(VaadinRequest request) {
@@ -38,26 +37,23 @@ public class DetachOldUIOnReload extends AbstractTestUIWithLog {
                 getPage().reload();
             }
         }));
-        addComponent(new Button("Read log messages from session",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        for (String message : getSessionMessages(false)) {
-                            log(message);
-                        }
-                    }
-                }));
+        addComponent(new Button("Read log messages from session", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                for (String message : getSessionMessages(false)) {
+                    log(message);
+                }
+            }
+        }));
     }
 
     private List<String> getSessionMessages(boolean storeIfNeeded) {
         @SuppressWarnings("unchecked")
-        List<String> messages = (List<String>) getSession().getAttribute(
-                PERSISTENT_MESSAGES_ATTRIBUTE);
+        List<String> messages = (List<String>) getSession().getAttribute(PERSISTENT_MESSAGES_ATTRIBUTE);
         if (messages == null) {
             messages = new ArrayList<String>();
             if (storeIfNeeded) {
-                getSession().setAttribute(PERSISTENT_MESSAGES_ATTRIBUTE,
-                        messages);
+                getSession().setAttribute(PERSISTENT_MESSAGES_ATTRIBUTE, messages);
             }
         }
         return messages;

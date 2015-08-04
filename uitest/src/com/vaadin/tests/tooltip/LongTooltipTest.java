@@ -37,8 +37,7 @@ public class LongTooltipTest extends TooltipTest {
         checkTooltipNotPresent();
         int i = 0;
         for (TextFieldElement element : elements) {
-            checkTooltip(element, "Tooltip " + Integer.toString(i++) + ": "
-                    + LoremIpsum.get(1000));
+            checkTooltip(element, "Tooltip " + Integer.toString(i++) + ": " + LoremIpsum.get(1000));
             clearTooltip();
             checkTooltipNotPresent();
         }

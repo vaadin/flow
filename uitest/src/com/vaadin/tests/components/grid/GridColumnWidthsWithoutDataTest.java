@@ -39,8 +39,7 @@ public class GridColumnWidthsWithoutDataTest extends SingleBrowserTest {
         int[] baseWidths = getColWidths(grid);
         Assert.assertEquals("Sanity check", 2, baseWidths.length);
 
-        Assert.assertTrue("Columns should not have equal width",
-                Math.abs(baseWidths[0] - baseWidths[1]) > 2);
+        Assert.assertTrue("Columns should not have equal width", Math.abs(baseWidths[0] - baseWidths[1]) > 2);
 
         removeData();
 
@@ -62,27 +61,22 @@ public class GridColumnWidthsWithoutDataTest extends SingleBrowserTest {
         int[] baseWidths = getColWidths(grid);
         Assert.assertEquals("Sanity check", 2, baseWidths.length);
 
-        Assert.assertTrue("Columns should have roughly equal width",
-                Math.abs(baseWidths[0] - baseWidths[1]) < 10);
-        Assert.assertTrue("Columns should not have default widths",
-                baseWidths[0] > 140);
-        Assert.assertTrue("Columns should not have default widths",
-                baseWidths[1] > 140);
+        Assert.assertTrue("Columns should have roughly equal width", Math.abs(baseWidths[0] - baseWidths[1]) < 10);
+        Assert.assertTrue("Columns should not have default widths", baseWidths[0] > 140);
+        Assert.assertTrue("Columns should not have default widths", baseWidths[1] > 140);
 
         addData();
 
         assertSameWidths(baseWidths, getColWidths(grid));
 
-        Assert.assertFalse("Notification was present",
-                isElementPresent(NotificationElement.class));
+        Assert.assertFalse("Notification was present", isElementPresent(NotificationElement.class));
     }
 
     @Test
     public void testMultiSelectWidths() {
         setDebug(true);
         openTestURL();
-        $(NativeSelectElement.class).caption("Selection mode").first()
-                .selectByText("Multi");
+        $(NativeSelectElement.class).caption("Selection mode").first().selectByText("Multi");
 
         GridElement grid = $(GridElement.class).first();
 
@@ -109,13 +103,11 @@ public class GridColumnWidthsWithoutDataTest extends SingleBrowserTest {
     }
 
     private static void assertSameWidths(int[] expected, int[] actual) {
-        Assert.assertEquals("Arrays have differing lengths", expected.length,
-                actual.length);
+        Assert.assertEquals("Arrays have differing lengths", expected.length, actual.length);
 
         for (int i = 0; i < expected.length; i++) {
             if (Math.abs(expected[i] - actual[i]) > 1) {
-                Assert.fail("Differing sizes at index " + i + ". Expected "
-                        + expected[i] + " but got " + actual[i]);
+                Assert.fail("Differing sizes at index " + i + ". Expected " + expected[i] + " but got " + actual[i]);
             }
         }
     }

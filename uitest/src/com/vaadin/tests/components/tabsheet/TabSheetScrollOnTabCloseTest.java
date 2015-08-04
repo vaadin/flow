@@ -42,8 +42,7 @@ public class TabSheetScrollOnTabCloseTest extends MultiBrowserTest {
     public void testScrollPositionAfterClosing() throws Exception {
         openTestURL();
         TabSheetElement ts = $(TabSheetElement.class).first();
-        WebElement tabSheetScroller = ts.findElement(By
-                .className("v-tabsheet-scrollerNext"));
+        WebElement tabSheetScroller = ts.findElement(By.className("v-tabsheet-scrollerNext"));
         // scroll to the right
         for (int i = 0; i < 4; i++) {
             tabSheetScroller.click();
@@ -77,8 +76,7 @@ public class TabSheetScrollOnTabCloseTest extends MultiBrowserTest {
      * If there is no tab with the specified id, the tab is considered not to be
      * visible.
      */
-    private void checkDisplayedStatus(TabSheetElement tabSheet, String tabId,
-            boolean shouldBeVisible) {
+    private void checkDisplayedStatus(TabSheetElement tabSheet, String tabId, boolean shouldBeVisible) {
         org.openqa.selenium.By locator = By.cssSelector("#" + tabId);
         waitUntil(visibilityOfElement(locator, shouldBeVisible));
     }
@@ -92,8 +90,7 @@ public class TabSheetScrollOnTabCloseTest extends MultiBrowserTest {
      * checkDisplayedStatus).
      */
     private void checkFirstTab(TabSheetElement tabSheet, String tabId) {
-        waitUntil(visibilityOfElement(
-                By.cssSelector(".v-tabsheet-tabitemcell[aria-hidden]"), false));
+        waitUntil(visibilityOfElement(By.cssSelector(".v-tabsheet-tabitemcell[aria-hidden]"), false));
         waitUntil(leftmostTabHasId(tabSheet, tabId));
     }
 
@@ -108,14 +105,11 @@ public class TabSheetScrollOnTabCloseTest extends MultiBrowserTest {
      * @param expectedVisibility
      *            whether the element should be visible
      */
-    private static ExpectedCondition<Boolean> visibilityOfElement(
-            final org.openqa.selenium.By locator,
-            final boolean expectedVisibility) {
+    private static ExpectedCondition<Boolean> visibilityOfElement(final org.openqa.selenium.By locator, final boolean expectedVisibility) {
         return new ExpectedCondition<Boolean>() {
             @Override
             public Boolean apply(WebDriver driver) {
-                List<WebElement> matchingElements = driver
-                        .findElements(locator);
+                List<WebElement> matchingElements = driver.findElements(locator);
                 if (matchingElements.isEmpty()) {
                     return !expectedVisibility;
                 } else {
@@ -132,8 +126,7 @@ public class TabSheetScrollOnTabCloseTest extends MultiBrowserTest {
 
             @Override
             public String toString() {
-                return "element " + (expectedVisibility ? "" : "not ")
-                        + "expected to be visible: " + locator;
+                return "element " + (expectedVisibility ? "" : "not ") + "expected to be visible: " + locator;
             }
         };
     }
@@ -146,14 +139,12 @@ public class TabSheetScrollOnTabCloseTest extends MultiBrowserTest {
      * @param tabId
      *            the id of the tab that should be the leftmost tab
      */
-    private static ExpectedCondition<Boolean> leftmostTabHasId(
-            final TabSheetElement tabSheet, final String tabId) {
+    private static ExpectedCondition<Boolean> leftmostTabHasId(final TabSheetElement tabSheet, final String tabId) {
         return new ExpectedCondition<Boolean>() {
             @Override
             public Boolean apply(WebDriver driver) {
                 try {
-                    WebElement leftElement = tabSheet.findElement(By
-                            .cssSelector(".v-tabsheet-tabitemcell"));
+                    WebElement leftElement = tabSheet.findElement(By.cssSelector(".v-tabsheet-tabitemcell"));
                     String leftId = leftElement.getAttribute("id");
                     return leftId.equals(tabId);
                 } catch (NoSuchElementException e) {
@@ -163,8 +154,7 @@ public class TabSheetScrollOnTabCloseTest extends MultiBrowserTest {
 
             @Override
             public String toString() {
-                return "expected tab index of the leftmost tab in the tab sheet: "
-                        + tabId;
+                return "expected tab index of the leftmost tab in the tab sheet: " + tabId;
             }
         };
     }

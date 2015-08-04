@@ -65,21 +65,19 @@ public class ProgressBarTest extends AbstractTestUI {
             }
         }));
 
-        addComponent(new Button("Use ProgressIndicator",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        useComponent(new ProgressIndicator());
-                    }
-                }));
+        addComponent(new Button("Use ProgressIndicator", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                useComponent(new ProgressIndicator());
+            }
+        }));
 
-        addComponent(new Button("Stop background thread",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        stopUpdateThread();
-                    }
-                }));
+        addComponent(new Button("Stop background thread", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                stopUpdateThread();
+            }
+        }));
         updateThread.setDaemon(true);
         updateThread.start();
     }

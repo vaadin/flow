@@ -47,8 +47,7 @@ public class AriaHelper {
                 ((HandlesAriaCaption) widget).bindAriaCaption(null);
             } else {
                 ensureHasId(captionElement);
-                ((HandlesAriaCaption) widget).bindAriaCaption(DOM
-                        .asOld(captionElement));
+                ((HandlesAriaCaption) widget).bindAriaCaption(DOM.asOld(captionElement));
             }
         } else if (captionElement != null) {
             // Handle the default case
@@ -56,8 +55,7 @@ public class AriaHelper {
             String ownerId = ensureHasId(widget.getElement());
             captionElement.setAttribute("for", ownerId);
 
-            Roles.getTextboxRole().setAriaLabelledbyProperty(
-                    widget.getElement(), Id.of(captionElement));
+            Roles.getTextboxRole().setAriaLabelledbyProperty(widget.getElement(), Id.of(captionElement));
         } else {
             clearCaption(widget);
         }
@@ -71,8 +69,7 @@ public class AriaHelper {
      *            Widget, that was bound to a caption before
      */
     private static void clearCaption(Widget widget) {
-        Roles.getTextboxRole()
-                .removeAriaLabelledbyProperty(widget.getElement());
+        Roles.getTextboxRole().removeAriaLabelledbyProperty(widget.getElement());
     }
 
     /**
@@ -141,8 +138,7 @@ public class AriaHelper {
      */
     public static void handleInputInvalid(Element element, boolean invalid) {
         if (invalid) {
-            Roles.getTextboxRole().setAriaInvalidState(element,
-                    InvalidValue.TRUE);
+            Roles.getTextboxRole().setAriaInvalidState(element, InvalidValue.TRUE);
         } else {
             Roles.getTextboxRole().removeAriaInvalidState(element);
         }
@@ -178,8 +174,7 @@ public class AriaHelper {
      * @param boolean assistiveOnly true when element should only be visible for
      *        assistive devices, false to make the element visible for all
      */
-    public static void setVisibleForAssistiveDevicesOnly(Element element,
-            boolean assistiveOnly) {
+    public static void setVisibleForAssistiveDevicesOnly(Element element, boolean assistiveOnly) {
         if (assistiveOnly) {
             element.addClassName(ASSISTIVE_DEVICE_ONLY_STYLE);
         } else {

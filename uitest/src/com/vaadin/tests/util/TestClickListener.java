@@ -31,8 +31,7 @@ public class TestClickListener implements Button.ClickListener {
 
     @Override
     public void buttonClick(ClickEvent event) {
-        System.out
-                .println("ClickEvent from listener " + name + ", id=" + count);
+        System.out.println("ClickEvent from listener " + name + ", id=" + count);
     }
 
 }

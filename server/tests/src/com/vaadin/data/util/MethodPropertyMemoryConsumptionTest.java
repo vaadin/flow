@@ -35,71 +35,52 @@ import org.junit.Test;
 public class MethodPropertyMemoryConsumptionTest {
 
     @Test
-    public void testSetArguments() throws NoSuchFieldException,
-            SecurityException, IllegalArgumentException, IllegalAccessException {
+    public void testSetArguments() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         TestBean bean = new TestBean();
-        TestMethodProperty<String> property = new TestMethodProperty<String>(
-                bean, "name");
+        TestMethodProperty<String> property = new TestMethodProperty<String>(bean, "name");
         Object[] getArgs = property.getGetArgs();
         Object[] setArgs = property.getSetArgs();
 
-        Field getArgsField = TestMethodProperty.class
-                .getDeclaredField("getArgs");
+        Field getArgsField = TestMethodProperty.class.getDeclaredField("getArgs");
         getArgsField.setAccessible(true);
 
-        Field setArgsField = TestMethodProperty.class
-                .getDeclaredField("setArgs");
+        Field setArgsField = TestMethodProperty.class.getDeclaredField("setArgs");
         setArgsField.setAccessible(true);
 
-        Assert.assertSame("setArguments method sets non-default instance"
-                + " of empty Object array for getArgs",
-                getArgsField.get(property), getArgs);
+        Assert.assertSame("setArguments method sets non-default instance" + " of empty Object array for getArgs", getArgsField.get(property), getArgs);
 
-        Assert.assertSame("setArguments method sets non-default instance"
-                + " of empty Object array for setArgs",
-                setArgsField.get(property), setArgs);
+        Assert.assertSame("setArguments method sets non-default instance" + " of empty Object array for setArgs", setArgsField.get(property), setArgs);
     }
 
     @Test
     public void testDefaultCtor() {
         TestBean bean = new TestBean();
-        TestMethodProperty<String> property = new TestMethodProperty<String>(
-                bean, "name");
+        TestMethodProperty<String> property = new TestMethodProperty<String>(bean, "name");
 
         Object[] getArgs = property.getGetArgs();
         Object[] setArgs = property.getSetArgs();
 
         TestBean otherBean = new TestBean();
-        TestMethodProperty<String> otherProperty = new TestMethodProperty<String>(
-                otherBean, "name");
-        Assert.assertSame("setArguments method uses different instance"
-                + " of empty Object array for getArgs", getArgs,
-                otherProperty.getGetArgs());
-        Assert.assertSame("setArguments method uses different instance"
-                + " of empty Object array for setArgs", setArgs,
-                otherProperty.getSetArgs());
+        TestMethodProperty<String> otherProperty = new TestMethodProperty<String>(otherBean, "name");
+        Assert.assertSame("setArguments method uses different instance" + " of empty Object array for getArgs", getArgs, otherProperty.getGetArgs());
+        Assert.assertSame("setArguments method uses different instance" + " of empty Object array for setArgs", setArgs, otherProperty.getSetArgs());
     }
 
     @Test
-    public void testDefaultArgsSerialization() throws IOException,
-            ClassNotFoundException {
+    public void testDefaultArgsSerialization() throws IOException, ClassNotFoundException {
         TestBean bean = new TestBean();
-        TestMethodProperty<String> property = new TestMethodProperty<String>(
-                bean, "name");
+        TestMethodProperty<String> property = new TestMethodProperty<String>(bean, "name");
 
         ByteArrayOutputStream sourceOutStream = new ByteArrayOutputStream();
         ObjectOutputStream outStream = new ObjectOutputStream(sourceOutStream);
         outStream.writeObject(property);
 
-        ObjectInputStream inputStream = new ObjectInputStream(
-                new ByteArrayInputStream(sourceOutStream.toByteArray()));
+        ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(sourceOutStream.toByteArray()));
         Object red = inputStream.readObject();
         TestMethodProperty<?> deserialized = (TestMethodProperty<?>) red;
 
-        Assert.assertNotNull("Deseriliation doesn't call setArguments method",
-                deserialized.getGetArgs());
-        Assert.assertNotNull("Deseriliation doesn't call setArguments method",
-                deserialized.getSetArgs());
+        Assert.assertNotNull("Deseriliation doesn't call setArguments method", deserialized.getGetArgs());
+        Assert.assertNotNull("Deseriliation doesn't call setArguments method", deserialized.getSetArgs());
 
     }
 
@@ -110,8 +91,7 @@ public class MethodPropertyMemoryConsumptionTest {
         }
 
         @Override
-        public void setArguments(Object[] getArgs, Object[] setArgs,
-                int setArgumentIndex) {
+        public void setArguments(Object[] getArgs, Object[] setArgs, int setArgumentIndex) {
             super.setArguments(getArgs, setArgs, setArgumentIndex);
             this.getArgs = getArgs;
             this.setArgs = setArgs;

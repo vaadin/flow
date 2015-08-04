@@ -97,8 +97,7 @@ public class MenuBar extends AbstractComponent implements Focusable {
      *            the command for the menu item
      * @throws IllegalArgumentException
      */
-    public MenuBar.MenuItem addItem(String caption, Resource icon,
-            MenuBar.Command command) {
+    public MenuBar.MenuItem addItem(String caption, Resource icon, MenuBar.Command command) {
         if (caption == null) {
             throw new IllegalArgumentException("caption cannot be null");
         }
@@ -125,8 +124,7 @@ public class MenuBar extends AbstractComponent implements Focusable {
      *            the item that will be after the new item
      * @throws IllegalArgumentException
      */
-    public MenuBar.MenuItem addItemBefore(String caption, Resource icon,
-            MenuBar.Command command, MenuBar.MenuItem itemToAddBefore) {
+    public MenuBar.MenuItem addItemBefore(String caption, Resource icon, MenuBar.Command command, MenuBar.MenuItem itemToAddBefore) {
         if (caption == null) {
             throw new IllegalArgumentException("caption cannot be null");
         }
@@ -399,15 +397,12 @@ public class MenuBar extends AbstractComponent implements Focusable {
          * @throws IllegalStateException
          *             If the item is checkable and thus cannot have children.
          */
-        public MenuBar.MenuItem addItem(String caption, Resource icon,
-                MenuBar.Command command) throws IllegalStateException {
+        public MenuBar.MenuItem addItem(String caption, Resource icon, MenuBar.Command command) throws IllegalStateException {
             if (isSeparator()) {
-                throw new UnsupportedOperationException(
-                        "Cannot add items to a separator");
+                throw new UnsupportedOperationException("Cannot add items to a separator");
             }
             if (isCheckable()) {
-                throw new IllegalStateException(
-                        "A checkable item cannot have children");
+                throw new IllegalStateException("A checkable item cannot have children");
             }
             if (caption == null) {
                 throw new IllegalArgumentException("Caption cannot be null");
@@ -444,12 +439,9 @@ public class MenuBar extends AbstractComponent implements Focusable {
          * @throws IllegalStateException
          *             If the item is checkable and thus cannot have children.
          */
-        public MenuBar.MenuItem addItemBefore(String caption, Resource icon,
-                MenuBar.Command command, MenuBar.MenuItem itemToAddBefore)
-                throws IllegalStateException {
+        public MenuBar.MenuItem addItemBefore(String caption, Resource icon, MenuBar.Command command, MenuBar.MenuItem itemToAddBefore) throws IllegalStateException {
             if (isCheckable()) {
-                throw new IllegalStateException(
-                        "A checkable item cannot have children");
+                throw new IllegalStateException("A checkable item cannot have children");
             }
             MenuItem newItem = null;
 
@@ -750,11 +742,9 @@ public class MenuBar extends AbstractComponent implements Focusable {
          *             If the item has children
          * @since 6.6.2
          */
-        public void setCheckable(boolean checkable)
-                throws IllegalStateException {
+        public void setCheckable(boolean checkable) throws IllegalStateException {
             if (hasChildren()) {
-                throw new IllegalStateException(
-                        "A menu item with children cannot be checkable");
+                throw new IllegalStateException("A menu item with children cannot be checkable");
             }
             this.checkable = checkable;
             markAsDirty();
@@ -828,22 +818,14 @@ public class MenuBar extends AbstractComponent implements Focusable {
         MenuItem def = new MenuItem("", null, null);
 
         Attributes attr = menuElement.attributes();
-        DesignAttributeHandler.writeAttribute("icon", attr, item.getIcon(),
-                def.getIcon(), Resource.class);
-        DesignAttributeHandler.writeAttribute("disabled", attr,
-                !item.isEnabled(), !def.isEnabled(), boolean.class);
-        DesignAttributeHandler.writeAttribute("visible", attr,
-                item.isVisible(), def.isVisible(), boolean.class);
-        DesignAttributeHandler.writeAttribute("separator", attr,
-                item.isSeparator(), def.isSeparator(), boolean.class);
-        DesignAttributeHandler.writeAttribute("checkable", attr,
-                item.isCheckable(), def.isCheckable(), boolean.class);
-        DesignAttributeHandler.writeAttribute("checked", attr,
-                item.isChecked(), def.isChecked(), boolean.class);
-        DesignAttributeHandler.writeAttribute("description", attr,
-                item.getDescription(), def.getDescription(), String.class);
-        DesignAttributeHandler.writeAttribute("style-name", attr,
-                item.getStyleName(), def.getStyleName(), String.class);
+        DesignAttributeHandler.writeAttribute("icon", attr, item.getIcon(), def.getIcon(), Resource.class);
+        DesignAttributeHandler.writeAttribute("disabled", attr, !item.isEnabled(), !def.isEnabled(), boolean.class);
+        DesignAttributeHandler.writeAttribute("visible", attr, item.isVisible(), def.isVisible(), boolean.class);
+        DesignAttributeHandler.writeAttribute("separator", attr, item.isSeparator(), def.isSeparator(), boolean.class);
+        DesignAttributeHandler.writeAttribute("checkable", attr, item.isCheckable(), def.isCheckable(), boolean.class);
+        DesignAttributeHandler.writeAttribute("checked", attr, item.isChecked(), def.isChecked(), boolean.class);
+        DesignAttributeHandler.writeAttribute("description", attr, item.getDescription(), def.getDescription(), String.class);
+        DesignAttributeHandler.writeAttribute("style-name", attr, item.getStyleName(), def.getStyleName(), String.class);
 
         menuElement.append(item.getText());
 
@@ -859,15 +841,13 @@ public class MenuBar extends AbstractComponent implements Focusable {
     protected MenuItem readMenuElement(Element menuElement) {
         Resource icon = null;
         if (menuElement.hasAttr("icon")) {
-            icon = DesignAttributeHandler.getFormatter().parse(
-                    menuElement.attr("icon"), Resource.class);
+            icon = DesignAttributeHandler.getFormatter().parse(menuElement.attr("icon"), Resource.class);
         }
 
         String caption = "";
         List<Element> subMenus = new ArrayList<Element>();
         for (Node node : menuElement.childNodes()) {
-            if (node instanceof Element
-                    && ((Element) node).tagName().equals("menu")) {
+            if (node instanceof Element && ((Element) node).tagName().equals("menu")) {
                 subMenus.add((Element) node);
             } else {
                 caption += node.toString();
@@ -877,36 +857,28 @@ public class MenuBar extends AbstractComponent implements Focusable {
 
         Attributes attr = menuElement.attributes();
         if (menuElement.hasAttr("icon")) {
-            menu.setIcon(DesignAttributeHandler.readAttribute("icon", attr,
-                    Resource.class));
+            menu.setIcon(DesignAttributeHandler.readAttribute("icon", attr, Resource.class));
         }
         if (menuElement.hasAttr("disabled")) {
-            menu.setEnabled(!DesignAttributeHandler.readAttribute("disabled",
-                    attr, boolean.class));
+            menu.setEnabled(!DesignAttributeHandler.readAttribute("disabled", attr, boolean.class));
         }
         if (menuElement.hasAttr("visible")) {
-            menu.setVisible(DesignAttributeHandler.readAttribute("visible",
-                    attr, boolean.class));
+            menu.setVisible(DesignAttributeHandler.readAttribute("visible", attr, boolean.class));
         }
         if (menuElement.hasAttr("separator")) {
-            menu.setSeparator(DesignAttributeHandler.readAttribute("separator",
-                    attr, boolean.class));
+            menu.setSeparator(DesignAttributeHandler.readAttribute("separator", attr, boolean.class));
         }
         if (menuElement.hasAttr("checkable")) {
-            menu.setCheckable(DesignAttributeHandler.readAttribute("checkable",
-                    attr, boolean.class));
+            menu.setCheckable(DesignAttributeHandler.readAttribute("checkable", attr, boolean.class));
         }
         if (menuElement.hasAttr("checked")) {
-            menu.setChecked(DesignAttributeHandler.readAttribute("checked",
-                    attr, boolean.class));
+            menu.setChecked(DesignAttributeHandler.readAttribute("checked", attr, boolean.class));
         }
         if (menuElement.hasAttr("description")) {
-            menu.setDescription(DesignAttributeHandler.readAttribute(
-                    "description", attr, String.class));
+            menu.setDescription(DesignAttributeHandler.readAttribute("description", attr, String.class));
         }
         if (menuElement.hasAttr("style-name")) {
-            menu.setStyleName(DesignAttributeHandler.readAttribute(
-                    "style-name", attr, String.class));
+            menu.setStyleName(DesignAttributeHandler.readAttribute("style-name", attr, String.class));
         }
 
         if (!subMenus.isEmpty()) {

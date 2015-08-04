@@ -46,8 +46,7 @@ public class NativeSelectsFocusAndBlurListenerTests extends MultiBrowserTest {
 
         // Somehow selectByText causes focus + blur + focus + blur on
         // Chrome/PhantomJS
-        if (BrowserUtil.isChrome(getDesiredCapabilities())
-                || BrowserUtil.isPhantomJS(getDesiredCapabilities())) {
+        if (BrowserUtil.isChrome(getDesiredCapabilities()) || BrowserUtil.isPhantomJS(getDesiredCapabilities())) {
             Assert.assertEquals("4. FocusEvent", getLogRow(1));
             Assert.assertEquals("5. BlurEvent", getLogRow(0));
         } else {
@@ -63,14 +62,12 @@ public class NativeSelectsFocusAndBlurListenerTests extends MultiBrowserTest {
     }
 
     private void menuSub(String string) {
-        getDriver().findElement(By.xpath("//span[text() = '" + string + "']"))
-                .click();
+        getDriver().findElement(By.xpath("//span[text() = '" + string + "']")).click();
         new Actions(getDriver()).moveByOffset(100, 0).build().perform();
     }
 
     private void menu(String string) {
-        getDriver().findElement(By.xpath("//span[text() = '" + string + "']"))
-                .click();
+        getDriver().findElement(By.xpath("//span[text() = '" + string + "']")).click();
 
     }
 

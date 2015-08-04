@@ -18,8 +18,7 @@ public class IdOverrideTest extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Id shouldn't get overridden unless specifically re-set.<br>"
-                + "First two are custom labels with a default id, third is an ordinary label for comparison.";
+        return "Id shouldn't get overridden unless specifically re-set.<br>" + "First two are custom labels with a default id, third is an ordinary label for comparison.";
     }
 
     @Override

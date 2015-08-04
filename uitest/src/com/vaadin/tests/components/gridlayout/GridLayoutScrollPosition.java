@@ -42,8 +42,7 @@ public class GridLayoutScrollPosition extends AbstractTestUI {
         dummyLabel.setHeight("500px");
         gridLayout.addComponent(dummyLabel);
 
-        final CheckBox visibilityToggleCheckBox = new CheckBox(
-                "Hide / Show toggleable components");
+        final CheckBox visibilityToggleCheckBox = new CheckBox("Hide / Show toggleable components");
         visibilityToggleCheckBox.setId("visibility-toggle");
         visibilityToggleCheckBox.setHeight("2000px");
         visibilityToggleCheckBox.setImmediate(true);
@@ -55,14 +54,12 @@ public class GridLayoutScrollPosition extends AbstractTestUI {
         toggleableLabel.setVisible(false); // Initially hidden
         gridLayout.addComponent(toggleableLabel);
 
-        visibilityToggleCheckBox
-                .addValueChangeListener(new ValueChangeListener() {
-                    @Override
-                    public void valueChange(ValueChangeEvent event) {
-                        toggleableLabel.setVisible(visibilityToggleCheckBox
-                                .getValue());
-                    }
-                });
+        visibilityToggleCheckBox.addValueChangeListener(new ValueChangeListener() {
+            @Override
+            public void valueChange(ValueChangeEvent event) {
+                toggleableLabel.setVisible(visibilityToggleCheckBox.getValue());
+            }
+        });
 
     }
 

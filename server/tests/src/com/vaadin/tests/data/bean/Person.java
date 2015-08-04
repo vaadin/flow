@@ -24,15 +24,10 @@ public class Person {
 
     @Override
     public String toString() {
-        return "Person [firstName=" + firstName + ", lastName=" + lastName
-                + ", email=" + email + ", age=" + age + ", sex=" + sex
-                + ", address=" + address + ", deceased=" + deceased
-                + ", salary=" + salary + ", salaryDouble=" + salaryDouble
-                + ", rent=" + rent + "]";
+        return "Person [firstName=" + firstName + ", lastName=" + lastName + ", email=" + email + ", age=" + age + ", sex=" + sex + ", address=" + address + ", deceased=" + deceased + ", salary=" + salary + ", salaryDouble=" + salaryDouble + ", rent=" + rent + "]";
     }
 
-    public Person(String firstName, String lastName, String email, int age,
-            Sex sex, Address address) {
+    public Person(String firstName, String lastName, String email, int age, Sex sex, Address address) {
         super();
         this.firstName = firstName;
         this.lastName = lastName;
@@ -131,13 +126,10 @@ public class Person {
     }
 
     public static Person createTestPerson1() {
-        return new Person("Foo", "Bar", "yeah@cool.com", 46, Sex.MALE,
-                new Address("Street", 1123, "Turku", Country.FINLAND));
+        return new Person("Foo", "Bar", "yeah@cool.com", 46, Sex.MALE, new Address("Street", 1123, "Turku", Country.FINLAND));
     }
 
     public static Person createTestPerson2() {
-        return new Person("Maya", "Dinkelstein", "maya@foo.bar", 18,
-                Sex.FEMALE, new Address("Red street", 12, "Amsterdam",
-                        Country.NETHERLANDS));
+        return new Person("Maya", "Dinkelstein", "maya@foo.bar", 18, Sex.FEMALE, new Address("Red street", 12, "Amsterdam", Country.NETHERLANDS));
     }
 }

@@ -48,8 +48,7 @@ import com.vaadin.testbench.screenshot.ImageFileUtil;
 public abstract class ScreenshotTB3Test extends AbstractTB3Test {
 
     @Rule
-    public ScreenshotOnFailureRule screenshotOnFailure = new ScreenshotOnFailureRule(
-            this, true) {
+    public ScreenshotOnFailureRule screenshotOnFailure = new ScreenshotOnFailureRule(this, true) {
 
         @Override
         protected void failed(Throwable throwable, Description description) {
@@ -65,8 +64,7 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
 
         @Override
         protected File getErrorScreenshotFile(Description description) {
-            return ImageFileUtil
-                    .getErrorScreenshotFile(getScreenshotFailureName());
+            return ImageFileUtil.getErrorScreenshotFile(getScreenshotFailureName());
         };
     };
 
@@ -102,8 +100,7 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
         screenshotFailures = new ArrayList<String>();
 
         Parameters.setScreenshotErrorDirectory(getScreenshotErrorDirectory());
-        Parameters
-                .setScreenshotReferenceDirectory(getScreenshotReferenceDirectory());
+        Parameters.setScreenshotReferenceDirectory(getScreenshotReferenceDirectory());
     }
 
     /**
@@ -124,8 +121,7 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
         compareScreen(null, identifier);
     }
 
-    protected void compareScreen(WebElement element, String identifier)
-            throws IOException {
+    protected void compareScreen(WebElement element, String identifier) throws IOException {
         if (identifier == null || identifier.isEmpty()) {
             throw new IllegalArgumentException("Empty identifier not supported");
         }
@@ -142,9 +138,7 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
                 match = testBench(driver).compareScreen(referenceFile);
             } else {
                 // Only the element
-                match = customTestBench(driver).compareScreen(element,
-                        referenceFile,
-                        BrowserUtil.isIE8(getDesiredCapabilities()));
+                match = customTestBench(driver).compareScreen(element, referenceFile, BrowserUtil.isIE8(getDesiredCapabilities()));
             }
             if (match) {
                 // There might be failure files because of retries in TestBench.
@@ -192,8 +186,7 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
         }
         if (referenceToKeep != null) {
             File errorPng = getErrorFileFromReference(referenceToKeep);
-            enableAutoswitch(new File(errorPng.getParentFile(),
-                    errorPng.getName() + ".html"));
+            enableAutoswitch(new File(errorPng.getParentFile(), errorPng.getName() + ".html"));
         }
     }
 
@@ -207,18 +200,15 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
         return customTestBench;
     }
 
-    private void enableAutoswitch(File htmlFile) throws FileNotFoundException,
-            IOException {
+    private void enableAutoswitch(File htmlFile) throws FileNotFoundException, IOException {
         if (htmlFile == null || !htmlFile.exists()) {
             return;
         }
 
         String html = FileUtils.readFileToString(htmlFile);
 
-        html = html.replace("body onclick=\"",
-                "body onclick=\"clearInterval(autoSwitch);");
-        html = html.replace("</script>",
-                ";autoSwitch=setInterval(switchImage,500);</script>");
+        html = html.replace("body onclick=\"", "body onclick=\"clearInterval(autoSwitch);");
+        html = html.replace("</script>", ";autoSwitch=setInterval(switchImage,500);</script>");
 
         FileUtils.writeStringToFile(htmlFile, html);
     }
@@ -238,8 +228,7 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
      * @return
      */
     private static File htmlFromPng(File png) {
-        return new File(png.getParentFile(), png.getName().replaceAll(
-                "\\.png$", ".png.html"));
+        return new File(png.getParentFile(), png.getName().replaceAll("\\.png$", ".png.html"));
     }
 
     /**
@@ -259,13 +248,9 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
         // We throw an exception to safeguard against accidental reference
         // deletion. See (#14446)
         if (!absolutePath.contains(screenshotReferenceDirectory)) {
-            throw new IllegalStateException(
-                    "Reference screenshot not in reference directory. Screenshot path: '"
-                            + absolutePath + "', directory path: '"
-                            + screenshotReferenceDirectory + "'");
+            throw new IllegalStateException("Reference screenshot not in reference directory. Screenshot path: '" + absolutePath + "', directory path: '" + screenshotReferenceDirectory + "'");
         }
-        return new File(absolutePath.replace(screenshotReferenceDirectory,
-                screenshotErrorDirectory));
+        return new File(absolutePath.replace(screenshotReferenceDirectory, screenshotErrorDirectory));
     }
 
     /**
@@ -313,8 +298,7 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
 
         if (browserVersion.matches("\\d+")) {
             for (int version = Integer.parseInt(browserVersion); version > 0; version--) {
-                String fileName = getScreenshotReferenceName(identifier,
-                        version);
+                String fileName = getScreenshotReferenceName(identifier, version);
                 File oldVersionFile = new File(fileName);
                 if (oldVersionFile.exists()) {
                     return oldVersionFile;
@@ -368,9 +352,7 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
     @After
     public void checkCompareFailures() throws IOException {
         if (screenshotFailures != null && !screenshotFailures.isEmpty()) {
-            throw new IOException(
-                    "The following screenshots did not match the reference: "
-                            + screenshotFailures.toString());
+            throw new IOException("The following screenshots did not match the reference: " + screenshotFailures.toString());
         }
 
     }
@@ -381,9 +363,7 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
      *         fails
      */
     private String getScreenshotFailureName() {
-        return getScreenshotBaseName() + "_"
-                + getUniqueIdentifier(getDesiredCapabilities())
-                + "-failure.png";
+        return getScreenshotBaseName() + "_" + getUniqueIdentifier(getDesiredCapabilities()) + "-failure.png";
     }
 
     /**
@@ -416,20 +396,16 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
      * @param identifier
      * @return the full path of the reference
      */
-    private String getScreenshotReferenceName(String identifier,
-            Integer versionOverride) {
+    private String getScreenshotReferenceName(String identifier, Integer versionOverride) {
         String uniqueBrowserIdentifier;
         if (versionOverride == null) {
             uniqueBrowserIdentifier = getUniqueIdentifier(getDesiredCapabilities());
         } else {
-            uniqueBrowserIdentifier = getUniqueIdentifier(
-                    getDesiredCapabilities(), "" + versionOverride);
+            uniqueBrowserIdentifier = getUniqueIdentifier(getDesiredCapabilities(), "" + versionOverride);
         }
 
         // WindowMaximizeRestoreTest_Windows_InternetExplorer_8_window-1-moved-maximized-restored.png
-        return getScreenshotReferenceDirectory() + File.separator
-                + getScreenshotBaseName() + "_" + uniqueBrowserIdentifier + "_"
-                + identifier + ".png";
+        return getScreenshotReferenceDirectory() + File.separator + getScreenshotBaseName() + "_" + uniqueBrowserIdentifier + "_" + identifier + ".png";
     }
 
     /**
@@ -441,10 +417,8 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
      * 
      * @return a unique string for each browser
      */
-    private String getUniqueIdentifier(DesiredCapabilities capabilities,
-            String versionOverride) {
-        return getUniqueIdentifier(BrowserUtil.getPlatform(capabilities),
-                BrowserUtil.getBrowserIdentifier(capabilities), versionOverride);
+    private String getUniqueIdentifier(DesiredCapabilities capabilities, String versionOverride) {
+        return getUniqueIdentifier(BrowserUtil.getPlatform(capabilities), BrowserUtil.getBrowserIdentifier(capabilities), versionOverride);
     }
 
     /**
@@ -456,13 +430,10 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
      * @return a unique string for each browser
      */
     private String getUniqueIdentifier(DesiredCapabilities capabilities) {
-        return getUniqueIdentifier(BrowserUtil.getPlatform(capabilities),
-                BrowserUtil.getBrowserIdentifier(capabilities),
-                capabilities.getVersion());
+        return getUniqueIdentifier(BrowserUtil.getPlatform(capabilities), BrowserUtil.getBrowserIdentifier(capabilities), capabilities.getVersion());
     }
 
-    private String getUniqueIdentifier(String platform, String browser,
-            String version) {
+    private String getUniqueIdentifier(String platform, String browser, String version) {
         return platform + "_" + browser + "_" + version;
     }
 
@@ -474,9 +445,7 @@ public abstract class ScreenshotTB3Test extends AbstractTB3Test {
      * running this test.
      */
     private String getScreenshotErrorBaseName() {
-        return getScreenshotReferenceName("dummy", null).replace(
-                getScreenshotReferenceDirectory(),
-                getScreenshotErrorDirectory()).replace("_dummy.png", "");
+        return getScreenshotReferenceName("dummy", null).replace(getScreenshotReferenceDirectory(), getScreenshotErrorDirectory()).replace("_dummy.png", "");
     }
 
     /**

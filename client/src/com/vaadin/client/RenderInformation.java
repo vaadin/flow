@@ -57,8 +57,7 @@ public class RenderInformation {
      */
     @Deprecated
     public boolean updateSize(com.google.gwt.user.client.Element element) {
-        Size newSize = new Size(element.getOffsetWidth(),
-                element.getOffsetHeight());
+        Size newSize = new Size(element.getOffsetWidth(), element.getOffsetHeight());
         if (newSize.equals(renderedSize)) {
             return false;
         } else {
@@ -82,8 +81,7 @@ public class RenderInformation {
 
     @Override
     public String toString() {
-        return "RenderInformation [contentArea=" + contentArea
-                + ",renderedSize=" + renderedSize + "]";
+        return "RenderInformation [contentArea=" + contentArea + ",renderedSize=" + renderedSize + "]";
 
     }
 

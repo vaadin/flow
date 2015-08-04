@@ -24,7 +24,6 @@ public class ReplacingConnector extends IntermediateReplaceConnector {
     @Override
     protected void init() {
         super.init();
-        getWidget().setHTML(
-                ReplacingConnector.class.getName() + ", this is the right one");
+        getWidget().setHTML(ReplacingConnector.class.getName() + ", this is the right one");
     }
 }

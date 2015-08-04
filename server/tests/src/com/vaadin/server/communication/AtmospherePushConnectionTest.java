@@ -36,8 +36,7 @@ public class AtmospherePushConnectionTest {
     public void testSerialization() throws Exception {
 
         UI ui = EasyMock.createNiceMock(UI.class);
-        AtmosphereResource resource = EasyMock
-                .createNiceMock(AtmosphereResource.class);
+        AtmosphereResource resource = EasyMock.createNiceMock(AtmosphereResource.class);
 
         AtmospherePushConnection connection = new AtmospherePushConnection(ui);
         connection.connect(resource);
@@ -48,8 +47,7 @@ public class AtmospherePushConnectionTest {
 
         new ObjectOutputStream(baos).writeObject(connection);
 
-        connection = (AtmospherePushConnection) new ObjectInputStream(
-                new ByteArrayInputStream(baos.toByteArray())).readObject();
+        connection = (AtmospherePushConnection) new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray())).readObject();
 
         Assert.assertEquals(State.DISCONNECTED, connection.getState());
     }

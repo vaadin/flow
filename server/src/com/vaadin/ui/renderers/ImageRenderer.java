@@ -56,12 +56,9 @@ public class ImageRenderer extends ClickableRenderer<Resource> {
     @Override
     public JsonValue encode(Resource resource) {
         if (!(resource == null || resource instanceof ExternalResource || resource instanceof ThemeResource)) {
-            throw new IllegalArgumentException(
-                    "ImageRenderer only supports ExternalResource and ThemeResource ("
-                            + resource.getClass().getSimpleName() + "given )");
+            throw new IllegalArgumentException("ImageRenderer only supports ExternalResource and ThemeResource (" + resource.getClass().getSimpleName() + "given )");
         }
 
-        return encode(ResourceReference.create(resource, this, null),
-                URLReference.class);
+        return encode(ResourceReference.create(resource, this, null), URLReference.class);
     }
 }

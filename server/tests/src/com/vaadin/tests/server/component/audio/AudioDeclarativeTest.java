@@ -43,10 +43,8 @@ public class AudioDeclarativeTest extends DeclarativeTestBase<Audio> {
 
     @Test
     public void testAudioMultipleSources() {
-        String design = "<v-audio muted='' show-controls='false'>"
-                + "some <b>text</b>" //
-                + "<source href='http://foo.pl' />"
-                + "<source href='https://bar.pl' />" //
+        String design = "<v-audio muted='' show-controls='false'>" + "some <b>text</b>" //
+                + "<source href='http://foo.pl' />" + "<source href='https://bar.pl' />" //
                 + "<source href='ohai' />" //
                 + "</v-audio>";
         Audio audio = new Audio();
@@ -54,9 +52,7 @@ public class AudioDeclarativeTest extends DeclarativeTestBase<Audio> {
         audio.setAutoplay(false);
         audio.setMuted(true);
         audio.setShowControls(false);
-        audio.setSources(new ExternalResource("http://foo.pl"),
-                new ExternalResource("https://bar.pl"), new FileResource(
-                        new File("ohai")));
+        audio.setSources(new ExternalResource("http://foo.pl"), new ExternalResource("https://bar.pl"), new FileResource(new File("ohai")));
         testRead(design, audio);
         testWrite(design, audio);
     }

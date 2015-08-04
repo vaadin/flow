@@ -34,13 +34,12 @@ public class ChangeHierarchyBeforeResponse extends AbstractTestUI {
         }
     };
 
-    private Button buttonToAdd = new Button("Added from beforeClientResponse",
-            new Button.ClickListener() {
-                @Override
-                public void buttonClick(ClickEvent event) {
-                    layout.addComponent(labelToRemove);
-                }
-            }) {
+    private Button buttonToAdd = new Button("Added from beforeClientResponse", new Button.ClickListener() {
+        @Override
+        public void buttonClick(ClickEvent event) {
+            layout.addComponent(labelToRemove);
+        }
+    }) {
         @Override
         public void beforeClientResponse(boolean initial) {
             super.beforeClientResponse(initial);

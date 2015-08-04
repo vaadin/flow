@@ -20,7 +20,6 @@ public class StringToDateConverterTest extends TestCase {
     }
 
     public void testValueConversion() {
-        assertEquals(new Date(100, 0, 1), converter.convertToModel(
-                "Jan 1, 2000 12:00:00 AM", Date.class, Locale.ENGLISH));
+        assertEquals(new Date(100, 0, 1), converter.convertToModel("Jan 1, 2000 12:00:00 AM", Date.class, Locale.ENGLISH));
     }
 }

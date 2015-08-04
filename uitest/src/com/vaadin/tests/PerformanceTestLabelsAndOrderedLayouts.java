@@ -48,23 +48,20 @@ public class PerformanceTestLabelsAndOrderedLayouts extends CustomComponent {
         result = new Label();
         main.addComponent(result);
 
-        main.addComponent(new Button("click when rendered",
-                new ClickListener() {
+        main.addComponent(new Button("click when rendered", new ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        endTest();
-                    }
-                }));
+            @Override
+            public void buttonClick(ClickEvent event) {
+                endTest();
+            }
+        }));
 
-        main.addComponent(new Button(
-                "Click for layout repaint (cached components)",
-                new ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        testContainer.markAsDirty();
-                    }
-                }));
+        main.addComponent(new Button("Click for layout repaint (cached components)", new ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                testContainer.markAsDirty();
+            }
+        }));
 
         testContainer = new VerticalLayout();
 

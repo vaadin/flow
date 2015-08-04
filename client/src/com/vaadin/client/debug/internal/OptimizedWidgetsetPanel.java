@@ -44,11 +44,9 @@ public class OptimizedWidgetsetPanel extends FlowPanel {
         add(h);
 
         String s = "";
-        for (ApplicationConnection ac : ApplicationConfiguration
-                .getRunningApplications()) {
+        for (ApplicationConnection ac : ApplicationConfiguration.getRunningApplications()) {
             ApplicationConfiguration conf = ac.getConfiguration();
-            s += "<h1>Used connectors for "
-                    + Util.escapeHTML(conf.getServiceUrl()) + "</h1>";
+            s += "<h1>Used connectors for " + Util.escapeHTML(conf.getServiceUrl()) + "</h1>";
 
             for (String connectorName : getUsedConnectorNames(conf)) {
                 s += Util.escapeHTML(connectorName) + "<br/>";
@@ -73,18 +71,15 @@ public class OptimizedWidgetsetPanel extends FlowPanel {
         h.setHTML(s);
     }
 
-    private Set<String> getUsedConnectorNames(
-            ApplicationConfiguration configuration) {
+    private Set<String> getUsedConnectorNames(ApplicationConfiguration configuration) {
         int tag = 0;
         Set<String> usedConnectors = new HashSet<String>();
         while (true) {
-            String serverSideClass = configuration
-                    .getServerSideClassNameForTag(tag);
+            String serverSideClass = configuration.getServerSideClassNameForTag(tag);
             if (serverSideClass == null) {
                 break;
             }
-            Class<? extends ServerConnector> connectorClass = configuration
-                    .getConnectorClassByEncodedTag(tag);
+            Class<? extends ServerConnector> connectorClass = configuration.getConnectorClassByEncodedTag(tag);
             if (connectorClass == null) {
                 break;
             }
@@ -95,8 +90,7 @@ public class OptimizedWidgetsetPanel extends FlowPanel {
             tag++;
             if (tag > 10000) {
                 // Sanity check
-                getLogger()
-                        .severe("Search for used connector classes was forcefully terminated");
+                getLogger().severe("Search for used connector classes was forcefully terminated");
                 break;
             }
         }
@@ -117,8 +111,7 @@ public class OptimizedWidgetsetPanel extends FlowPanel {
         s += "    private Set<String> eagerConnectors = new HashSet<String>();\n";
         s += "    {\n";
         for (String c : usedConnectors) {
-            s += "            eagerConnectors.add(" + Util.escapeHTML(c)
-                    + ".class.getName());\n";
+            s += "            eagerConnectors.add(" + Util.escapeHTML(c) + ".class.getName());\n";
         }
         s += "    }\n";
         s += "\n";

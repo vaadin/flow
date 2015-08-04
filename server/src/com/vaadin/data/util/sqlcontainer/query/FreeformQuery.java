@@ -34,8 +34,7 @@ import com.vaadin.data.util.sqlcontainer.query.generator.StatementHelper;
 import com.vaadin.data.util.sqlcontainer.query.generator.filter.QueryBuilder;
 
 @SuppressWarnings("serial")
-public class FreeformQuery extends AbstractTransactionalQuery implements
-        QueryDelegate {
+public class FreeformQuery extends AbstractTransactionalQuery implements QueryDelegate {
 
     FreeformQueryDelegate delegate = null;
     private String queryString;
@@ -64,25 +63,20 @@ public class FreeformQuery extends AbstractTransactionalQuery implements
      *             {@link FreeformQuery#FreeformQuery(String, JDBCConnectionPool, String...)}
      */
     @Deprecated
-    public FreeformQuery(String queryString, List<String> primaryKeyColumns,
-            JDBCConnectionPool connectionPool) {
+    public FreeformQuery(String queryString, List<String> primaryKeyColumns, JDBCConnectionPool connectionPool) {
         super(connectionPool);
         if (primaryKeyColumns == null) {
             primaryKeyColumns = new ArrayList<String>();
         }
         if (primaryKeyColumns.contains("")) {
-            throw new IllegalArgumentException(
-                    "The primary key columns contain an empty string!");
+            throw new IllegalArgumentException("The primary key columns contain an empty string!");
         } else if (queryString == null || "".equals(queryString)) {
-            throw new IllegalArgumentException(
-                    "The query string may not be empty or null!");
+            throw new IllegalArgumentException("The query string may not be empty or null!");
         } else if (connectionPool == null) {
-            throw new IllegalArgumentException(
-                    "The connectionPool may not be null!");
+            throw new IllegalArgumentException("The connectionPool may not be null!");
         }
         this.queryString = queryString;
-        this.primaryKeyColumns = Collections
-                .unmodifiableList(primaryKeyColumns);
+        this.primaryKeyColumns = Collections.unmodifiableList(primaryKeyColumns);
     }
 
     /**
@@ -98,8 +92,7 @@ public class FreeformQuery extends AbstractTransactionalQuery implements
      *            The primary key columns. Read-only mode is forced if none are
      *            provided. (optional)
      */
-    public FreeformQuery(String queryString, JDBCConnectionPool connectionPool,
-            String... primaryKeyColumns) {
+    public FreeformQuery(String queryString, JDBCConnectionPool connectionPool, String... primaryKeyColumns) {
         this(queryString, Arrays.asList(primaryKeyColumns), connectionPool);
     }
 
@@ -120,9 +113,7 @@ public class FreeformQuery extends AbstractTransactionalQuery implements
             ResultSet rs = null;
             Connection conn = getConnection();
             try {
-                statement = conn.createStatement(
-                        ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY);
+                statement = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 
                 rs = statement.executeQuery(queryString);
                 if (rs.last()) {
@@ -146,8 +137,7 @@ public class FreeformQuery extends AbstractTransactionalQuery implements
         /* First try using prepared statement */
         if (delegate instanceof FreeformStatementDelegate) {
             try {
-                StatementHelper sh = ((FreeformStatementDelegate) delegate)
-                        .getCountStatement();
+                StatementHelper sh = ((FreeformStatementDelegate) delegate).getCountStatement();
                 PreparedStatement pstmt = null;
                 ResultSet rs = null;
                 Connection c = getConnection();
@@ -218,10 +208,8 @@ public class FreeformQuery extends AbstractTransactionalQuery implements
             /* First try using prepared statement */
             if (delegate instanceof FreeformStatementDelegate) {
                 try {
-                    StatementHelper sh = ((FreeformStatementDelegate) delegate)
-                            .getQueryStatement(offset, pagelength);
-                    PreparedStatement pstmt = getConnection().prepareStatement(
-                            sh.getQueryString());
+                    StatementHelper sh = ((FreeformStatementDelegate) delegate).getQueryStatement(offset, pagelength);
+                    PreparedStatement pstmt = getConnection().prepareStatement(sh.getQueryString());
                     sh.setParameterValuesToStatement(pstmt);
                     return pstmt.executeQuery();
                 } catch (UnsupportedOperationException e) {
@@ -259,10 +247,8 @@ public class FreeformQuery extends AbstractTransactionalQuery implements
         /* First try using prepared statement */
         if (delegate instanceof FreeformStatementDelegate) {
             try {
-                StatementHelper sh = ((FreeformStatementDelegate) delegate)
-                        .getCountStatement();
-                if (sh != null && sh.getQueryString() != null
-                        && sh.getQueryString().length() > 0) {
+                StatementHelper sh = ((FreeformStatementDelegate) delegate).getCountStatement();
+                if (sh != null && sh.getQueryString() != null && sh.getQueryString().length() > 0) {
                     return true;
                 }
             } catch (UnsupportedOperationException e) {
@@ -285,13 +271,11 @@ public class FreeformQuery extends AbstractTransactionalQuery implements
      * .util.List)
      */
     @Override
-    public void setFilters(List<Filter> filters)
-            throws UnsupportedOperationException {
+    public void setFilters(List<Filter> filters) throws UnsupportedOperationException {
         if (delegate != null) {
             delegate.setFilters(filters);
         } else if (filters != null) {
-            throw new UnsupportedOperationException(
-                    "FreeFormQueryDelegate not set!");
+            throw new UnsupportedOperationException("FreeFormQueryDelegate not set!");
         }
     }
 
@@ -303,13 +287,11 @@ public class FreeformQuery extends AbstractTransactionalQuery implements
      * .util.List)
      */
     @Override
-    public void setOrderBy(List<OrderBy> orderBys)
-            throws UnsupportedOperationException {
+    public void setOrderBy(List<OrderBy> orderBys) throws UnsupportedOperationException {
         if (delegate != null) {
             delegate.setOrderBy(orderBys);
         } else if (orderBys != null) {
-            throw new UnsupportedOperationException(
-                    "FreeFormQueryDelegate not set!");
+            throw new UnsupportedOperationException("FreeFormQueryDelegate not set!");
         }
     }
 
@@ -325,14 +307,12 @@ public class FreeformQuery extends AbstractTransactionalQuery implements
         if (!isInTransaction()) {
             throw new IllegalStateException("No transaction is active!");
         } else if (primaryKeyColumns.isEmpty()) {
-            throw new UnsupportedOperationException(
-                    "Cannot store items fetched with a read-only freeform query!");
+            throw new UnsupportedOperationException("Cannot store items fetched with a read-only freeform query!");
         }
         if (delegate != null) {
             return delegate.storeRow(getConnection(), row);
         } else {
-            throw new UnsupportedOperationException(
-                    "FreeFormQueryDelegate not set!");
+            throw new UnsupportedOperationException("FreeFormQueryDelegate not set!");
         }
     }
 
@@ -348,32 +328,27 @@ public class FreeformQuery extends AbstractTransactionalQuery implements
         if (!isInTransaction()) {
             throw new IllegalStateException("No transaction is active!");
         } else if (primaryKeyColumns.isEmpty()) {
-            throw new UnsupportedOperationException(
-                    "Cannot remove items fetched with a read-only freeform query!");
+            throw new UnsupportedOperationException("Cannot remove items fetched with a read-only freeform query!");
         }
         if (delegate != null) {
             return delegate.removeRow(getConnection(), row);
         } else {
-            throw new UnsupportedOperationException(
-                    "FreeFormQueryDelegate not set!");
+            throw new UnsupportedOperationException("FreeFormQueryDelegate not set!");
         }
     }
 
     @Override
-    public synchronized void beginTransaction()
-            throws UnsupportedOperationException, SQLException {
+    public synchronized void beginTransaction() throws UnsupportedOperationException, SQLException {
         super.beginTransaction();
     }
 
     @Override
-    public synchronized void commit() throws UnsupportedOperationException,
-            SQLException {
+    public synchronized void commit() throws UnsupportedOperationException, SQLException {
         super.commit();
     }
 
     @Override
-    public synchronized void rollback() throws UnsupportedOperationException,
-            SQLException {
+    public synchronized void rollback() throws UnsupportedOperationException, SQLException {
         super.rollback();
     }
 
@@ -420,8 +395,7 @@ public class FreeformQuery extends AbstractTransactionalQuery implements
         if (delegate != null) {
             if (delegate instanceof FreeformStatementDelegate) {
                 try {
-                    StatementHelper sh = ((FreeformStatementDelegate) delegate)
-                            .getContainsRowQueryStatement(keys);
+                    StatementHelper sh = ((FreeformStatementDelegate) delegate).getContainsRowQueryStatement(keys);
 
                     PreparedStatement pstmt = null;
                     ResultSet rs = null;
@@ -478,8 +452,7 @@ public class FreeformQuery extends AbstractTransactionalQuery implements
         int index = queryString.toLowerCase().indexOf("where ");
         if (index > -1) {
             // Rewrite the where clause
-            return queryString.substring(0, index) + "WHERE " + where + " AND "
-                    + queryString.substring(index + 6);
+            return queryString.substring(0, index) + "WHERE " + where + " AND " + queryString.substring(index + 6);
         }
         // Append a where clause
         return queryString + " WHERE " + where;

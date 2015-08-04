@@ -133,8 +133,7 @@ public class ComboBoxValueInputTest extends MultiBrowserTest {
 
         // selectByText doesn't work when filtering is off.
         comboBox.openPopup();
-        List<WebElement> filteredItems = findElements(By
-                .className("gwt-MenuItem"));
+        List<WebElement> filteredItems = findElements(By.className("gwt-MenuItem"));
         filteredItems.get(1).click();
 
         sendKeysToComboBox(comboBox, "mnop");

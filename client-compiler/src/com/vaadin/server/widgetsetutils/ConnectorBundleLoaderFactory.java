@@ -94,8 +94,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
         private int approximateChars = 0;
         private int wrapCount = 0;
 
-        public SplittingSourceWriter(SourceWriter target, String baseName,
-                int splitSize) {
+        public SplittingSourceWriter(SourceWriter target, String baseName, int splitSize) {
             this.target = target;
             this.baseName = baseName;
             this.splitSize = splitSize;
@@ -221,8 +220,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
     private CvalAddonsChecker cvalChecker = new CvalAddonsChecker();
 
     @Override
-    public String generate(TreeLogger logger, GeneratorContext context,
-            String typeName) throws UnableToCompleteException {
+    public String generate(TreeLogger logger, GeneratorContext context, String typeName) throws UnableToCompleteException {
         TypeOracle typeOracle = context.getTypeOracle();
 
         try {
@@ -242,11 +240,8 @@ public class ConnectorBundleLoaderFactory extends Generator {
         }
     }
 
-    private void generateClass(TreeLogger logger, GeneratorContext context,
-            String packageName, String className, String requestedType)
-            throws Exception {
-        PrintWriter printWriter = context.tryCreate(logger, packageName,
-                className);
+    private void generateClass(TreeLogger logger, GeneratorContext context, String packageName, String className, String requestedType) throws Exception {
+        PrintWriter printWriter = context.tryCreate(logger, packageName, className);
         if (printWriter == null) {
             return;
         }
@@ -268,11 +263,9 @@ public class ConnectorBundleLoaderFactory extends Generator {
             throw new UnableToCompleteException();
         }
 
-        List<ConnectorBundle> bundles = buildBundles(logger,
-                context.getTypeOracle());
+        List<ConnectorBundle> bundles = buildBundles(logger, context.getTypeOracle());
 
-        ClassSourceFileComposerFactory composer = new ClassSourceFileComposerFactory(
-                packageName, className);
+        ClassSourceFileComposerFactory composer = new ClassSourceFileComposerFactory(packageName, className);
         composer.setSuperclass(requestedType);
 
         SourceWriter w = composer.createSourceWriter(context, printWriter);
@@ -284,16 +277,14 @@ public class ConnectorBundleLoaderFactory extends Generator {
             detectBadProperties(bundle, logger);
 
             String name = bundle.getName();
-            boolean isEager = name
-                    .equals(ConnectorBundleLoader.EAGER_BUNDLE_NAME);
+            boolean isEager = name.equals(ConnectorBundleLoader.EAGER_BUNDLE_NAME);
 
             w.print("addAsyncBlockLoader(new AsyncBundleLoader(\"");
             w.print(escape(name));
             w.print("\", ");
 
             w.print("new String[] {");
-            for (Entry<JClassType, Set<String>> entry : bundle.getIdentifiers()
-                    .entrySet()) {
+            for (Entry<JClassType, Set<String>> entry : bundle.getIdentifiers().entrySet()) {
                 Set<String> identifiers = entry.getValue();
                 for (String id : identifiers) {
                     w.print("\"");
@@ -321,8 +312,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
             w.indent();
 
             w.println("load();");
-            w.println("%s.get().setLoaded(getName());",
-                    ConnectorBundleLoader.class.getName());
+            w.println("%s.get().setLoaded(getName());", ConnectorBundleLoader.class.getName());
 
             // Close onSuccess method
             w.outdent();
@@ -342,19 +332,16 @@ public class ConnectorBundleLoaderFactory extends Generator {
             String loadNativeJsMethodName = "loadNativeJs";
             // To support fields of type long (#13692)
             w.println("@com.google.gwt.core.client.UnsafeNativeLong");
-            w.println("private native void %s(%s store) /*-{",
-                    loadNativeJsMethodName, TypeDataStore.class.getName());
+            w.println("private native void %s(%s store) /*-{", loadNativeJsMethodName, TypeDataStore.class.getName());
             w.indent();
-            List<String> jsMethodNames = printJsBundleData(logger, w, bundle,
-                    loadNativeJsMethodName);
+            List<String> jsMethodNames = printJsBundleData(logger, w, bundle, loadNativeJsMethodName);
 
             w.outdent();
             w.println("}-*/;");
 
             // Call all generated native method inside one Java method to avoid
             // refercences inside native methods to each other
-            w.println("private void %s(%s store) {", loadNativeJsBundle,
-                    TypeDataStore.class.getName());
+            w.println("private void %s(%s store) {", loadNativeJsBundle, TypeDataStore.class.getName());
             w.indent();
             printLoadJsBundleData(w, loadNativeJsBundle, jsMethodNames);
             w.outdent();
@@ -364,8 +351,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
             w.println("public void onFailure(Throwable reason) {");
             w.indent();
 
-            w.println("%s.get().setLoadFailure(getName(), reason);",
-                    ConnectorBundleLoader.class.getName());
+            w.println("%s.get().setLoadFailure(getName(), reason);", ConnectorBundleLoader.class.getName());
 
             w.outdent();
             w.println("}");
@@ -393,9 +379,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
             w.println("{");
             for (CValUiInfo c : cvalInfos) {
                 if ("evaluation".equals(c.type)) {
-                    w.println("cvals.add(new CValUiInfo(\"" + c.product
-                            + "\", \"" + c.version + "\", \"" + c.widgetset
-                            + "\", null));");
+                    w.println("cvals.add(new CValUiInfo(\"" + c.product + "\", \"" + c.version + "\", \"" + c.widgetset + "\", null));");
                 }
             }
             w.println("}");
@@ -407,10 +391,8 @@ public class ConnectorBundleLoaderFactory extends Generator {
         w.commit(logger);
     }
 
-    private void printLoadJsBundleData(SourceWriter w, String methodName,
-            List<String> methods) {
-        SplittingSourceWriter writer = new SplittingSourceWriter(w, methodName,
-                30000);
+    private void printLoadJsBundleData(SourceWriter w, String methodName, List<String> methods) {
+        SplittingSourceWriter writer = new SplittingSourceWriter(w, methodName, 30000);
 
         for (String method : methods) {
             writer.println("%s(store);", method);
@@ -418,8 +400,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
         }
     }
 
-    private void detectBadProperties(ConnectorBundle bundle, TreeLogger logger)
-            throws UnableToCompleteException {
+    private void detectBadProperties(ConnectorBundle bundle, TreeLogger logger) throws UnableToCompleteException {
         Map<JClassType, Set<String>> definedProperties = new HashMap<JClassType, Set<String>>();
 
         for (Property property : bundle.getNeedsProperty()) {
@@ -432,25 +413,18 @@ public class ConnectorBundleLoaderFactory extends Generator {
 
             String name = property.getName();
             if (!usedPropertyNames.add(name)) {
-                logger.log(Type.ERROR, beanType.getQualifiedSourceName()
-                        + " has multiple properties with the name " + name
-                        + ". This can happen if there are multiple "
-                        + "setters with identical names ignoring case.");
+                logger.log(Type.ERROR, beanType.getQualifiedSourceName() + " has multiple properties with the name " + name + ". This can happen if there are multiple " + "setters with identical names ignoring case.");
                 throw new UnableToCompleteException();
             }
             if (!property.hasAccessorMethods()) {
-                logger.log(Type.ERROR, beanType.getQualifiedSourceName()
-                        + " has the property '" + name
-                        + "' without getter defined.");
+                logger.log(Type.ERROR, beanType.getQualifiedSourceName() + " has the property '" + name + "' without getter defined.");
                 throw new UnableToCompleteException();
             }
         }
     }
 
-    private List<String> printJsBundleData(TreeLogger logger, SourceWriter w,
-            ConnectorBundle bundle, String methodName) {
-        SplittingSourceWriter writer = new SplittingSourceWriter(w, methodName,
-                30000);
+    private List<String> printJsBundleData(TreeLogger logger, SourceWriter w, ConnectorBundle bundle, String methodName) {
+        SplittingSourceWriter writer = new SplittingSourceWriter(w, methodName, 30000);
         Set<Property> needsProperty = bundle.getNeedsProperty();
         for (Property property : needsProperty) {
             writer.println("var data = {");
@@ -476,24 +450,17 @@ public class ConnectorBundleLoaderFactory extends Generator {
             writer.println("};");
 
             // Method declaration
-            writer.print(
-                    "store.@%s::setPropertyData(Ljava/lang/Class;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)",
-                    TypeDataStore.class.getName());
-            writer.println("(@%s::class, '%s', data);", property.getBeanType()
-                    .getQualifiedSourceName(), property.getName());
+            writer.print("store.@%s::setPropertyData(Ljava/lang/Class;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)", TypeDataStore.class.getName());
+            writer.println("(@%s::class, '%s', data);", property.getBeanType().getQualifiedSourceName(), property.getName());
             writer.println();
-            writer.splitIfNeeded(true,
-                    String.format("%s store", TypeDataStore.class.getName()));
+            writer.splitIfNeeded(true, String.format("%s store", TypeDataStore.class.getName()));
         }
         return writer.getMethodNames();
     }
 
-    private void printBundleData(TreeLogger logger, SourceWriter sourceWriter,
-            ConnectorBundle bundle, String loadNativeJsMethodName)
-            throws UnableToCompleteException {
+    private void printBundleData(TreeLogger logger, SourceWriter sourceWriter, ConnectorBundle bundle, String loadNativeJsMethodName) throws UnableToCompleteException {
         // Split into new load method when reaching approximately 30000 bytes
-        SplittingSourceWriter w = new SplittingSourceWriter(sourceWriter,
-                "load", 30000);
+        SplittingSourceWriter w = new SplittingSourceWriter(sourceWriter, "load", 30000);
 
         writeSuperClasses(w, bundle);
         writeIdentifiers(w, bundle);
@@ -515,75 +482,55 @@ public class ConnectorBundleLoaderFactory extends Generator {
         writeOnStateChangeHandlers(logger, w, bundle);
     }
 
-    private void writeOnStateChangeHandlers(TreeLogger logger,
-            SplittingSourceWriter w, ConnectorBundle bundle)
-            throws UnableToCompleteException {
-        Map<JClassType, Set<JMethod>> needsOnStateChangeHandler = bundle
-                .getNeedsOnStateChangeHandler();
-        for (Entry<JClassType, Set<JMethod>> entry : needsOnStateChangeHandler
-                .entrySet()) {
+    private void writeOnStateChangeHandlers(TreeLogger logger, SplittingSourceWriter w, ConnectorBundle bundle) throws UnableToCompleteException {
+        Map<JClassType, Set<JMethod>> needsOnStateChangeHandler = bundle.getNeedsOnStateChangeHandler();
+        for (Entry<JClassType, Set<JMethod>> entry : needsOnStateChangeHandler.entrySet()) {
             JClassType connector = entry.getKey();
 
-            TreeLogger typeLogger = logger.branch(
-                    Type.DEBUG,
-                    "Generating @OnStateChange support for "
-                            + connector.getName());
+            TreeLogger typeLogger = logger.branch(Type.DEBUG, "Generating @OnStateChange support for " + connector.getName());
 
             // Build map to speed up error checking
             HashMap<String, Property> stateProperties = new HashMap<String, Property>();
-            JClassType stateType = ConnectorBundle
-                    .findInheritedMethod(connector, "getState").getReturnType()
-                    .isClassOrInterface();
+            JClassType stateType = ConnectorBundle.findInheritedMethod(connector, "getState").getReturnType().isClassOrInterface();
             for (Property property : bundle.getProperties(stateType)) {
                 stateProperties.put(property.getName(), property);
             }
 
             for (JMethod method : entry.getValue()) {
-                TreeLogger methodLogger = typeLogger.branch(Type.DEBUG,
-                        "Processing method " + method.getName());
+                TreeLogger methodLogger = typeLogger.branch(Type.DEBUG, "Processing method " + method.getName());
 
                 if (method.isPublic() || method.isProtected()) {
-                    methodLogger
-                            .log(Type.ERROR,
-                                    "@OnStateChange is only supported for methods with private or default visibility.");
+                    methodLogger.log(Type.ERROR, "@OnStateChange is only supported for methods with private or default visibility.");
                     throw new UnableToCompleteException();
                 }
 
-                OnStateChange onStateChange = method
-                        .getAnnotation(OnStateChange.class);
+                OnStateChange onStateChange = method.getAnnotation(OnStateChange.class);
 
                 String[] properties = onStateChange.value();
 
                 if (properties.length == 0) {
-                    methodLogger.log(Type.ERROR,
-                            "There are no properties to listen to");
+                    methodLogger.log(Type.ERROR, "There are no properties to listen to");
                     throw new UnableToCompleteException();
                 }
 
                 // Verify that all properties do exist
                 for (String propertyName : properties) {
                     if (!stateProperties.containsKey(propertyName)) {
-                        methodLogger.log(Type.ERROR,
-                                "State class has no property named "
-                                        + propertyName);
+                        methodLogger.log(Type.ERROR, "State class has no property named " + propertyName);
                         throw new UnableToCompleteException();
                     }
                 }
 
                 if (method.getParameters().length != 0) {
-                    methodLogger.log(Type.ERROR,
-                            "Method should accept zero parameters");
+                    methodLogger.log(Type.ERROR, "Method should accept zero parameters");
                     throw new UnableToCompleteException();
                 }
 
                 // new OnStateChangeMethod(Class declaringClass, String
                 // methodName, String[], properties)
-                w.print("store.addOnStateChangeMethod(%s, new %s(",
-                        getClassLiteralString(connector),
-                        OnStateChangeMethod.class.getName());
+                w.print("store.addOnStateChangeMethod(%s, new %s(", getClassLiteralString(connector), OnStateChangeMethod.class.getName());
                 if (!connector.equals(method.getEnclosingType())) {
-                    w.print("%s, ",
-                            getClassLiteralString(method.getEnclosingType()));
+                    w.print("%s, ", getClassLiteralString(method.getEnclosingType()));
                 }
                 w.print("\"%s\", ", method.getName());
 
@@ -600,10 +547,8 @@ public class ConnectorBundleLoaderFactory extends Generator {
         }
     }
 
-    private void writeSuperClasses(SplittingSourceWriter w,
-            ConnectorBundle bundle) {
-        List<JClassType> needsSuperclass = new ArrayList<JClassType>(
-                bundle.getNeedsSuperclass());
+    private void writeSuperClasses(SplittingSourceWriter w, ConnectorBundle bundle) {
+        List<JClassType> needsSuperclass = new ArrayList<JClassType>(bundle.getNeedsSuperclass());
         // Emit in hierarchy order to ensure superclass is defined when
         // referenced
         Collections.sort(needsSuperclass, new Comparator<JClassType>() {
@@ -640,31 +585,23 @@ public class ConnectorBundleLoaderFactory extends Generator {
             } else {
                 classLiteralString = getClassLiteralString(superclass);
             }
-            w.println("store.setSuperClass(%s, %s);",
-                    getClassLiteralString(jClassType), classLiteralString);
+            w.println("store.setSuperClass(%s, %s);", getClassLiteralString(jClassType), classLiteralString);
         }
     }
 
-    private void writeDelegateToWidget(TreeLogger logger,
-            SplittingSourceWriter w, ConnectorBundle bundle) {
-        Map<JClassType, Set<Property>> needsDelegateToWidget = bundle
-                .getNeedsDelegateToWidget();
-        for (Entry<JClassType, Set<Property>> entry : needsDelegateToWidget
-                .entrySet()) {
+    private void writeDelegateToWidget(TreeLogger logger, SplittingSourceWriter w, ConnectorBundle bundle) {
+        Map<JClassType, Set<Property>> needsDelegateToWidget = bundle.getNeedsDelegateToWidget();
+        for (Entry<JClassType, Set<Property>> entry : needsDelegateToWidget.entrySet()) {
             JClassType beanType = entry.getKey();
             for (Property property : entry.getValue()) {
-                w.println(
-                        "store.setDelegateToWidget(%s, \"%s\", \"%s\");",
-                        getClassLiteralString(beanType), // property.getBeanType()),
-                        property.getName(),
-                        property.getAnnotation(DelegateToWidget.class).value());
+                w.println("store.setDelegateToWidget(%s, \"%s\", \"%s\");", getClassLiteralString(beanType), // property.getBeanType()),
+                        property.getName(), property.getAnnotation(DelegateToWidget.class).value());
             }
             w.splitIfNeeded();
         }
     }
 
-    private void writeSerializers(TreeLogger logger, SplittingSourceWriter w,
-            ConnectorBundle bundle) throws UnableToCompleteException {
+    private void writeSerializers(TreeLogger logger, SplittingSourceWriter w, ConnectorBundle bundle) throws UnableToCompleteException {
         Map<JType, GeneratedSerializer> serializers = bundle.getSerializers();
         for (Entry<JType, GeneratedSerializer> entry : serializers.entrySet()) {
             JType type = entry.getKey();
@@ -692,10 +629,8 @@ public class ConnectorBundleLoaderFactory extends Generator {
         }
     }
 
-    private void writePresentationTypes(SplittingSourceWriter w,
-            ConnectorBundle bundle) {
-        Map<JClassType, JType> presentationTypes = bundle
-                .getPresentationTypes();
+    private void writePresentationTypes(SplittingSourceWriter w, ConnectorBundle bundle) {
+        Map<JClassType, JType> presentationTypes = bundle.getPresentationTypes();
         for (Entry<JClassType, JType> entry : presentationTypes.entrySet()) {
 
             w.print("store.setPresentationType(");
@@ -707,8 +642,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
         }
     }
 
-    private void writePropertyTypes(TreeLogger logger, SplittingSourceWriter w,
-            ConnectorBundle bundle) {
+    private void writePropertyTypes(TreeLogger logger, SplittingSourceWriter w, ConnectorBundle bundle) {
         Set<Property> properties = bundle.getNeedsProperty();
         for (Property property : properties) {
             w.print("store.setPropertyType(");
@@ -723,20 +657,14 @@ public class ConnectorBundleLoaderFactory extends Generator {
         }
     }
 
-    private void writeMethodAttributes(TreeLogger logger,
-            SplittingSourceWriter w, ConnectorBundle bundle) {
-        for (Entry<JClassType, Map<JMethod, Set<MethodAttribute>>> typeEntry : bundle
-                .getMethodAttributes().entrySet()) {
+    private void writeMethodAttributes(TreeLogger logger, SplittingSourceWriter w, ConnectorBundle bundle) {
+        for (Entry<JClassType, Map<JMethod, Set<MethodAttribute>>> typeEntry : bundle.getMethodAttributes().entrySet()) {
             JClassType type = typeEntry.getKey();
-            for (Entry<JMethod, Set<MethodAttribute>> methodEntry : typeEntry
-                    .getValue().entrySet()) {
+            for (Entry<JMethod, Set<MethodAttribute>> methodEntry : typeEntry.getValue().entrySet()) {
                 JMethod method = methodEntry.getKey();
                 Set<MethodAttribute> attributes = methodEntry.getValue();
                 for (MethodAttribute attribute : attributes) {
-                    w.println("store.setMethodAttribute(%s, \"%s\", %s.%s);",
-                            getClassLiteralString(type), method.getName(),
-                            MethodAttribute.class.getCanonicalName(),
-                            attribute.name());
+                    w.println("store.setMethodAttribute(%s, \"%s\", %s.%s);", getClassLiteralString(type), method.getName(), MethodAttribute.class.getCanonicalName(), attribute.name());
                     w.splitIfNeeded();
                 }
             }
@@ -753,8 +681,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
             w.println("() {");
             w.indent();
 
-            w.println("public Object createProxy(final "
-                    + InvokationHandler.class.getName() + " handler) {");
+            w.println("public Object createProxy(final " + InvokationHandler.class.getName() + " handler) {");
             w.indent();
 
             w.print("return new ");
@@ -784,8 +711,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
                     w.println(") {");
                     w.indent();
 
-                    if (!method.getReturnType().getQualifiedSourceName()
-                            .equals("void")) {
+                    if (!method.getReturnType().getQualifiedSourceName().equals("void")) {
                         w.print("return ");
                     }
 
@@ -820,8 +746,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
     }
 
     private void writeParamTypes(SplittingSourceWriter w, ConnectorBundle bundle) {
-        Map<JClassType, Set<JMethod>> needsParamTypes = bundle
-                .getNeedsParamTypes();
+        Map<JClassType, Set<JMethod>> needsParamTypes = bundle.getNeedsParamTypes();
         for (Entry<JClassType, Set<JMethod>> entry : needsParamTypes.entrySet()) {
             JClassType type = entry.getKey();
 
@@ -845,14 +770,12 @@ public class ConnectorBundleLoaderFactory extends Generator {
         }
     }
 
-    private void writeInvokers(TreeLogger logger, SplittingSourceWriter w,
-            ConnectorBundle bundle) throws UnableToCompleteException {
+    private void writeInvokers(TreeLogger logger, SplittingSourceWriter w, ConnectorBundle bundle) throws UnableToCompleteException {
         Map<JClassType, Set<JMethod>> needsInvoker = bundle.getNeedsInvoker();
         for (Entry<JClassType, Set<JMethod>> entry : needsInvoker.entrySet()) {
             JClassType type = entry.getKey();
 
-            TreeLogger typeLogger = logger.branch(Type.DEBUG,
-                    "Creating invokers for " + type);
+            TreeLogger typeLogger = logger.branch(Type.DEBUG, "Creating invokers for " + type);
 
             Set<JMethod> methods = entry.getValue();
             for (JMethod method : methods) {
@@ -863,13 +786,11 @@ public class ConnectorBundleLoaderFactory extends Generator {
                 w.print("\",");
 
                 if (method.isPublic()) {
-                    typeLogger.log(Type.DEBUG, "Invoking " + method.getName()
-                            + " using java");
+                    typeLogger.log(Type.DEBUG, "Invoking " + method.getName() + " using java");
 
                     writeJavaInvoker(w, type, method);
                 } else {
-                    TreeLogger methodLogger = typeLogger.branch(Type.DEBUG,
-                            "Invoking " + method.getName() + " using jsni");
+                    TreeLogger methodLogger = typeLogger.branch(Type.DEBUG, "Invoking " + method.getName() + " using jsni");
                     // Must use JSNI to access non-public methods
                     writeJsniInvoker(methodLogger, w, type, method);
                 }
@@ -881,49 +802,37 @@ public class ConnectorBundleLoaderFactory extends Generator {
         }
     }
 
-    private void writeJsniInvoker(TreeLogger logger, SplittingSourceWriter w,
-            JClassType type, JMethod method) throws UnableToCompleteException {
+    private void writeJsniInvoker(TreeLogger logger, SplittingSourceWriter w, JClassType type, JMethod method) throws UnableToCompleteException {
         w.println("new JsniInvoker() {");
         w.indent();
 
-        w.println(
-                "protected native Object jsniInvoke(Object target, %s<Object> params) /*-{ ",
-                JsArrayObject.class.getName());
+        w.println("protected native Object jsniInvoke(Object target, %s<Object> params) /*-{ ", JsArrayObject.class.getName());
         w.indent();
 
         JType returnType = method.getReturnType();
-        boolean hasReturnType = !"void".equals(returnType
-                .getQualifiedSourceName());
+        boolean hasReturnType = !"void".equals(returnType.getQualifiedSourceName());
 
         // Note that void is also a primitive type
-        boolean hasPrimitiveReturnType = hasReturnType
-                && returnType.isPrimitive() != null;
+        boolean hasPrimitiveReturnType = hasReturnType && returnType.isPrimitive() != null;
 
         if (hasReturnType) {
             w.print("return ");
 
             if (hasPrimitiveReturnType) {
                 // Integer.valueOf(expression);
-                w.print("@%s::valueOf(%s)(", returnType.isPrimitive()
-                        .getQualifiedBoxedSourceName(), returnType
-                        .getJNISignature());
+                w.print("@%s::valueOf(%s)(", returnType.isPrimitive().getQualifiedBoxedSourceName(), returnType.getJNISignature());
 
                 // Implementation tested briefly, but I don't dare leave it
                 // enabled since we are not using it in the framework and we
                 // have not tests for it.
-                logger.log(Type.ERROR,
-                        "JSNI invocation is not yet supported for methods with "
-                                + "primitive return types. Change your method "
-                                + "to public to be able to use conventional"
-                                + " Java invoking instead.");
+                logger.log(Type.ERROR, "JSNI invocation is not yet supported for methods with " + "primitive return types. Change your method " + "to public to be able to use conventional" + " Java invoking instead.");
                 throw new UnableToCompleteException();
             }
         }
 
         JType[] parameterTypes = method.getParameterTypes();
 
-        w.print("target.@%s::" + method.getName() + "(*)(", method
-                .getEnclosingType().getQualifiedSourceName());
+        w.print("target.@%s::" + method.getName() + "(*)(", method.getEnclosingType().getQualifiedSourceName());
         for (int i = 0; i < parameterTypes.length; i++) {
             if (i != 0) {
                 w.print(", ");
@@ -934,9 +843,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
             JPrimitiveType primitive = parameterTypes[i].isPrimitive();
             if (primitive != null) {
                 // param.intValue();
-                w.print(".@%s::%sValue()()",
-                        primitive.getQualifiedBoxedSourceName(),
-                        primitive.getQualifiedSourceName());
+                w.print(".@%s::%sValue()()", primitive.getQualifiedBoxedSourceName(), primitive.getQualifiedSourceName());
             }
         }
 
@@ -958,8 +865,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
         w.print("}");
     }
 
-    private void writeJavaInvoker(SplittingSourceWriter w, JClassType type,
-            JMethod method) {
+    private void writeJavaInvoker(SplittingSourceWriter w, JClassType type, JMethod method) {
         w.println("new Invoker() {");
         w.indent();
 
@@ -967,16 +873,14 @@ public class ConnectorBundleLoaderFactory extends Generator {
         w.indent();
 
         JType returnType = method.getReturnType();
-        boolean hasReturnType = !"void".equals(returnType
-                .getQualifiedSourceName());
+        boolean hasReturnType = !"void".equals(returnType.getQualifiedSourceName());
         if (hasReturnType) {
             w.print("return ");
         }
 
         JType[] parameterTypes = method.getParameterTypes();
 
-        w.print("((" + type.getQualifiedSourceName() + ") target)."
-                + method.getName() + "(");
+        w.print("((" + type.getQualifiedSourceName() + ") target)." + method.getName() + "(");
         for (int i = 0; i < parameterTypes.length; i++) {
             JType parameterType = parameterTypes[i];
             if (i != 0) {
@@ -987,9 +891,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
             if (parameterTypeName.startsWith("elemental.json.Json")) {
                 // Need to pass through native method to allow casting Object to
                 // JSO if the value is a string
-                w.print("%s.<%s>obj2jso(params[%d])",
-                        JsonDecoder.class.getCanonicalName(),
-                        parameterTypeName, i);
+                w.print("%s.<%s>obj2jso(params[%d])", JsonDecoder.class.getCanonicalName(), parameterTypeName, i);
             } else {
                 w.print("(" + parameterTypeName + ") params[" + i + "]");
             }
@@ -1007,12 +909,9 @@ public class ConnectorBundleLoaderFactory extends Generator {
         w.print("}");
     }
 
-    private void writeReturnTypes(SplittingSourceWriter w,
-            ConnectorBundle bundle) {
-        Map<JClassType, Set<JMethod>> methodReturnTypes = bundle
-                .getMethodReturnTypes();
-        for (Entry<JClassType, Set<JMethod>> entry : methodReturnTypes
-                .entrySet()) {
+    private void writeReturnTypes(SplittingSourceWriter w, ConnectorBundle bundle) {
+        Map<JClassType, Set<JMethod>> methodReturnTypes = bundle.getMethodReturnTypes();
+        for (Entry<JClassType, Set<JMethod>> entry : methodReturnTypes.entrySet()) {
             JClassType type = entry.getKey();
 
             Set<JMethod> methods = entry.getValue();
@@ -1032,8 +931,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
         }
     }
 
-    private void writeGwtConstructors(SplittingSourceWriter w,
-            ConnectorBundle bundle) {
+    private void writeGwtConstructors(SplittingSourceWriter w, ConnectorBundle bundle) {
         Set<JClassType> constructors = bundle.getGwtConstructors();
         for (JClassType type : constructors) {
             w.print("store.setConstructor(");
@@ -1068,8 +966,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
         return type.getQualifiedSourceName() + ".class";
     }
 
-    private void writeIdentifiers(SplittingSourceWriter w,
-            ConnectorBundle bundle) {
+    private void writeIdentifiers(SplittingSourceWriter w, ConnectorBundle bundle) {
         Map<JClassType, Set<String>> identifiers = bundle.getIdentifiers();
         for (Entry<JClassType, Set<String>> entry : identifiers.entrySet()) {
             Set<String> ids = entry.getValue();
@@ -1086,9 +983,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
         }
     }
 
-    private List<ConnectorBundle> buildBundles(TreeLogger logger,
-            TypeOracle typeOracle) throws NotFoundException,
-            UnableToCompleteException {
+    private List<ConnectorBundle> buildBundles(TreeLogger logger, TypeOracle typeOracle) throws NotFoundException, UnableToCompleteException {
 
         Map<LoadStyle, Collection<JClassType>> connectorsByLoadStyle = new HashMap<LoadStyle, Collection<JClassType>>();
         for (LoadStyle loadStyle : LoadStyle.values()) {
@@ -1096,8 +991,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
         }
 
         // Find all types with a valid mapping
-        Collection<JClassType> selectedTypes = getConnectorsForWidgetset(
-                logger, typeOracle);
+        Collection<JClassType> selectedTypes = getConnectorsForWidgetset(logger, typeOracle);
 
         // Group by load style
         for (JClassType connectorSubtype : selectedTypes) {
@@ -1111,38 +1005,27 @@ public class ConnectorBundleLoaderFactory extends Generator {
 
         Collection<TypeVisitor> visitors = getVisitors(typeOracle);
 
-        ConnectorBundle eagerBundle = new ConnectorBundle(
-                ConnectorBundleLoader.EAGER_BUNDLE_NAME, visitors, typeOracle);
-        TreeLogger eagerLogger = logger.branch(Type.TRACE,
-                "Populating eager bundle");
+        ConnectorBundle eagerBundle = new ConnectorBundle(ConnectorBundleLoader.EAGER_BUNDLE_NAME, visitors, typeOracle);
+        TreeLogger eagerLogger = logger.branch(Type.TRACE, "Populating eager bundle");
 
         // Eager connectors and all RPC interfaces are loaded by default
-        eagerBundle.processTypes(eagerLogger,
-                connectorsByLoadStyle.get(LoadStyle.EAGER));
-        eagerBundle.processType(eagerLogger, typeOracle
-                .findType(UnknownComponentConnector.class.getCanonicalName()));
-        eagerBundle.processSubTypes(eagerLogger,
-                typeOracle.getType(ClientRpc.class.getName()));
-        eagerBundle.processSubTypes(eagerLogger,
-                typeOracle.getType(ServerRpc.class.getName()));
+        eagerBundle.processTypes(eagerLogger, connectorsByLoadStyle.get(LoadStyle.EAGER));
+        eagerBundle.processType(eagerLogger, typeOracle.findType(UnknownComponentConnector.class.getCanonicalName()));
+        eagerBundle.processSubTypes(eagerLogger, typeOracle.getType(ClientRpc.class.getName()));
+        eagerBundle.processSubTypes(eagerLogger, typeOracle.getType(ServerRpc.class.getName()));
 
         bundles.add(eagerBundle);
 
-        ConnectorBundle deferredBundle = new ConnectorBundle(
-                ConnectorBundleLoader.DEFERRED_BUNDLE_NAME, eagerBundle);
-        TreeLogger deferredLogger = logger.branch(Type.TRACE,
-                "Populating deferred bundle");
-        deferredBundle.processTypes(deferredLogger,
-                connectorsByLoadStyle.get(LoadStyle.DEFERRED));
+        ConnectorBundle deferredBundle = new ConnectorBundle(ConnectorBundleLoader.DEFERRED_BUNDLE_NAME, eagerBundle);
+        TreeLogger deferredLogger = logger.branch(Type.TRACE, "Populating deferred bundle");
+        deferredBundle.processTypes(deferredLogger, connectorsByLoadStyle.get(LoadStyle.DEFERRED));
 
         bundles.add(deferredBundle);
 
         Collection<JClassType> lazy = connectorsByLoadStyle.get(LoadStyle.LAZY);
         for (JClassType type : lazy) {
-            ConnectorBundle bundle = new ConnectorBundle(type.getName(),
-                    eagerBundle);
-            TreeLogger subLogger = logger.branch(Type.TRACE, "Populating "
-                    + type.getName() + " bundle");
+            ConnectorBundle bundle = new ConnectorBundle(type.getName(), eagerBundle);
+            TreeLogger subLogger = logger.branch(Type.TRACE, "Populating " + type.getName() + " bundle");
             bundle.processType(subLogger, type);
 
             bundles.add(bundle);
@@ -1170,16 +1053,12 @@ public class ConnectorBundleLoaderFactory extends Generator {
      * @throws UnableToCompleteException
      *             if the operation fails
      */
-    protected Collection<JClassType> getConnectorsForWidgetset(
-            TreeLogger logger, TypeOracle typeOracle)
-            throws UnableToCompleteException {
+    protected Collection<JClassType> getConnectorsForWidgetset(TreeLogger logger, TypeOracle typeOracle) throws UnableToCompleteException {
         JClassType serverConnectorType;
         try {
-            serverConnectorType = typeOracle.getType(ServerConnector.class
-                    .getName());
+            serverConnectorType = typeOracle.getType(ServerConnector.class.getName());
         } catch (NotFoundException e) {
-            logger.log(Type.ERROR,
-                    "Can't find " + ServerConnector.class.getName());
+            logger.log(Type.ERROR, "Can't find " + ServerConnector.class.getName());
             throw new UnableToCompleteException();
         }
 
@@ -1188,8 +1067,7 @@ public class ConnectorBundleLoaderFactory extends Generator {
         Map<String, JClassType> mappings = new TreeMap<String, JClassType>();
 
         // Keep track of what has happened to avoid logging intermediate state
-        Map<JClassType, List<JClassType>> replaced = new TreeMap<JClassType, List<JClassType>>(
-                ConnectorBundle.jClassComparator);
+        Map<JClassType, List<JClassType>> replaced = new TreeMap<JClassType, List<JClassType>>(ConnectorBundle.jClassComparator);
 
         for (JClassType type : types) {
             Connect connectAnnotation = type.getAnnotation(Connect.class);
@@ -1212,23 +1090,14 @@ public class ConnectorBundleLoaderFactory extends Generator {
                     superclass = type;
                 } else {
                     // Neither inherits from the other - this is a conflict
-                    logger.log(
-                            Type.ERROR,
-                            "Conflicting @Connect mappings detected for "
-                                    + identifier
-                                    + ": "
-                                    + type.getQualifiedSourceName()
-                                    + " and "
-                                    + previousMapping.getQualifiedSourceName()
-                                    + ". There can only be multiple @Connect mappings for the same server-side type if one is the subclass of the other.");
+                    logger.log(Type.ERROR, "Conflicting @Connect mappings detected for " + identifier + ": " + type.getQualifiedSourceName() + " and " + previousMapping.getQualifiedSourceName() + ". There can only be multiple @Connect mappings for the same server-side type if one is the subclass of the other.");
                     throw new UnableToCompleteException();
                 }
 
                 mappings.put(identifier, subclass);
 
                 // Inherit any previous replacements
-                List<JClassType> previousReplacements = replaced
-                        .remove(superclass);
+                List<JClassType> previousReplacements = replaced.remove(superclass);
                 if (previousReplacements == null) {
                     previousReplacements = new ArrayList<JClassType>();
                 }
@@ -1257,12 +1126,8 @@ public class ConnectorBundleLoaderFactory extends Generator {
         return mappings.values();
     }
 
-    private Collection<TypeVisitor> getVisitors(TypeOracle oracle)
-            throws NotFoundException {
-        List<TypeVisitor> visitors = Arrays.<TypeVisitor> asList(
-                new ConnectorInitVisitor(), new StateInitVisitor(),
-                new WidgetInitVisitor(), new ClientRpcVisitor(),
-                new ServerRpcVisitor(), new OnStateChangeVisitor());
+    private Collection<TypeVisitor> getVisitors(TypeOracle oracle) throws NotFoundException {
+        List<TypeVisitor> visitors = Arrays.<TypeVisitor> asList(new ConnectorInitVisitor(), new StateInitVisitor(), new WidgetInitVisitor(), new ClientRpcVisitor(), new ServerRpcVisitor(), new OnStateChangeVisitor());
         for (TypeVisitor typeVisitor : visitors) {
             typeVisitor.init(oracle);
         }

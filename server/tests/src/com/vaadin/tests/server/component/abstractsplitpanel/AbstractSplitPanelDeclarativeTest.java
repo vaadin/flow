@@ -32,15 +32,11 @@ import com.vaadin.ui.VerticalSplitPanel;
  * @since
  * @author Vaadin Ltd
  */
-public class AbstractSplitPanelDeclarativeTest extends
-        DeclarativeTestBase<AbstractSplitPanel> {
+public class AbstractSplitPanelDeclarativeTest extends DeclarativeTestBase<AbstractSplitPanel> {
 
     @Test
     public void testWithBothChildren() {
-        String design = "<v-horizontal-split-panel split-position=20.5% "
-                + "min-split-position=20% max-split-position=50px locked='' "
-                + "reversed=\"\"> <v-grid /> <v-vertical-layout />"
-                + "</v-horizontal-split-panel>";
+        String design = "<v-horizontal-split-panel split-position=20.5% " + "min-split-position=20% max-split-position=50px locked='' " + "reversed=\"\"> <v-grid /> <v-vertical-layout />" + "</v-horizontal-split-panel>";
         AbstractSplitPanel sp = new HorizontalSplitPanel();
         sp.setSplitPosition(20.5f, Unit.PERCENTAGE, true);
         sp.setMinSplitPosition(20, Unit.PERCENTAGE);
@@ -54,8 +50,7 @@ public class AbstractSplitPanelDeclarativeTest extends
 
     @Test
     public void testWithFirstChild() {
-        String design = "<v-vertical-split-panel><v-grid caption=\"First slot\"/>"
-                + "</v-vertical-split-panel>";
+        String design = "<v-vertical-split-panel><v-grid caption=\"First slot\"/>" + "</v-vertical-split-panel>";
         AbstractSplitPanel sp = new VerticalSplitPanel();
         Grid t = new Grid();
         t.setCaption("First slot");
@@ -66,8 +61,7 @@ public class AbstractSplitPanelDeclarativeTest extends
 
     @Test
     public void testWithSecondChild() {
-        String design = "<v-horizontal-split-panel><v-button :second>Second slot</v-button>"
-                + "</v-vertical-split-panel>";
+        String design = "<v-horizontal-split-panel><v-button :second>Second slot</v-button>" + "</v-vertical-split-panel>";
         AbstractSplitPanel sp = new HorizontalSplitPanel();
         Button b = new Button("Second slot");
         b.setCaptionAsHtml(true);

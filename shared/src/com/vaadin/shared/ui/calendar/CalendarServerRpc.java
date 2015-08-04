@@ -41,8 +41,7 @@ public interface CalendarServerRpc extends ServerRpc {
 
     void actionOnEmptyCell(String actionKey, String startDate, String endDate);
 
-    void actionOnEvent(String actionKey, String startDate, String endDate,
-            int eventIndex);
+    void actionOnEvent(String actionKey, String startDate, String endDate, int eventIndex);
 
     @Delayed(lastOnly = true)
     void scroll(int scrollPosition);

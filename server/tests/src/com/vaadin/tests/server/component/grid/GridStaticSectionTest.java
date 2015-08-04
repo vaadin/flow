@@ -77,18 +77,12 @@ public class GridStaticSectionTest extends Grid {
     @Test
     public void testUnusedPropertyNotInCells() {
         removeColumn("firstName");
-        assertNull("firstName cell was not removed from existing row",
-                getDefaultHeaderRow().getCell("firstName"));
+        assertNull("firstName cell was not removed from existing row", getDefaultHeaderRow().getCell("firstName"));
         HeaderRow newRow = appendHeaderRow();
-        assertNull("firstName cell was created when it should not.",
-                newRow.getCell("firstName"));
+        assertNull("firstName cell was created when it should not.", newRow.getCell("firstName"));
         addColumn("firstName");
-        assertNotNull(
-                "firstName cell was not created for default row when added again",
-                getDefaultHeaderRow().getCell("firstName"));
-        assertNotNull(
-                "firstName cell was not created for new row when added again",
-                newRow.getCell("firstName"));
+        assertNotNull("firstName cell was not created for default row when added again", getDefaultHeaderRow().getCell("firstName"));
+        assertNotNull("firstName cell was not created for new row when added again", newRow.getCell("firstName"));
 
     }
 
@@ -96,8 +90,7 @@ public class GridStaticSectionTest extends Grid {
     public void testJoinHeaderCells() {
         HeaderRow mergeRow = prependHeaderRow();
         mergeRow.join("firstName", "lastName").setText("Name");
-        mergeRow.join(mergeRow.getCell("streetAddress"),
-                mergeRow.getCell("zipCode"));
+        mergeRow.join(mergeRow.getCell("streetAddress"), mergeRow.getCell("zipCode"));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -110,18 +103,15 @@ public class GridStaticSectionTest extends Grid {
     @Test
     public void testJoinAllFooterCells() {
         FooterRow mergeRow = prependFooterRow();
-        mergeRow.join(dataSource.getContainerPropertyIds().toArray()).setText(
-                "All the stuff.");
+        mergeRow.join(dataSource.getContainerPropertyIds().toArray()).setText("All the stuff.");
     }
 
     private void sanityCheck() throws Throwable {
         Method sanityCheckHeader;
         try {
-            sanityCheckHeader = Grid.Header.class
-                    .getDeclaredMethod("sanityCheck");
+            sanityCheckHeader = Grid.Header.class.getDeclaredMethod("sanityCheck");
             sanityCheckHeader.setAccessible(true);
-            Method sanityCheckFooter = Grid.Footer.class
-                    .getDeclaredMethod("sanityCheck");
+            Method sanityCheckFooter = Grid.Footer.class.getDeclaredMethod("sanityCheck");
             sanityCheckFooter.setAccessible(true);
             sanityCheckHeader.invoke(getHeader());
             sanityCheckFooter.invoke(getFooter());

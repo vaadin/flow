@@ -25,16 +25,15 @@ public class ChangeStateWhenReattaching extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        Button button = new Button("Reattach and remove caption",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        Button button = event.getButton();
-                        removeComponent(button);
-                        addComponent(button);
-                        button.setCaption(null);
-                    }
-                });
+        Button button = new Button("Reattach and remove caption", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                Button button = event.getButton();
+                removeComponent(button);
+                addComponent(button);
+                button.setCaption(null);
+            }
+        });
         addComponent(button);
     }
 

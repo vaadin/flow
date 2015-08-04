@@ -46,8 +46,7 @@ public class ComboBoxes extends VerticalLayout implements View {
         combo.select(combo.getItemIds().iterator().next());
         combo.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
         combo.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
-        combo.setItemIcon(combo.getItemIds().iterator().next(),
-                new ThemeResource("../runo/icons/16/document.png"));
+        combo.setItemIcon(combo.getItemIds().iterator().next(), new ThemeResource("../runo/icons/16/document.png"));
         row.addComponent(combo);
 
         CssLayout group = new CssLayout();

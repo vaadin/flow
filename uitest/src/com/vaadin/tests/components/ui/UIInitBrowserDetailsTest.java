@@ -34,12 +34,9 @@ public class UIInitBrowserDetailsTest extends MultiBrowserTest {
         assertTextNotNull("current date");
     }
 
-    private void compareRequestAndBrowserValue(String paramName,
-            String browserName, String errorValue) {
+    private void compareRequestAndBrowserValue(String paramName, String browserName, String errorValue) {
         assertTextNotEquals(browserName, errorValue);
-        Assert.assertEquals(String.format(
-                "Browser and request values differ in '%s',", browserName),
-                getLabelText(paramName), getLabelText(browserName));
+        Assert.assertEquals(String.format("Browser and request values differ in '%s',", browserName), getLabelText(paramName), getLabelText(browserName));
     }
 
     private String getLabelText(String id) {
@@ -52,7 +49,6 @@ public class UIInitBrowserDetailsTest extends MultiBrowserTest {
 
     private void assertTextNotEquals(String id, String notExpected) {
         String actual = getLabelText(id);
-        Assert.assertNotEquals(String.format("Unexpected value for '%s'", id),
-                notExpected, actual);
+        Assert.assertNotEquals(String.format("Unexpected value for '%s'", id), notExpected, actual);
     }
 }

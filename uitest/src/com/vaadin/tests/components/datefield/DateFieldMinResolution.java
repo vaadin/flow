@@ -15,8 +15,7 @@ public class DateFieldMinResolution extends TestBase {
     @Override
     protected void setup() {
 
-        final SimpleDateFormat dformat = new SimpleDateFormat(
-                "dd/MM/yyyy HH:mm");
+        final SimpleDateFormat dformat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
         Calendar cal = Calendar.getInstance();
         cal.set(2019, 1, 1, 1, 1);

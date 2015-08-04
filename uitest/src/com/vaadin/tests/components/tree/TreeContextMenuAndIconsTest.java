@@ -44,8 +44,7 @@ public class TreeContextMenuAndIconsTest extends MultiBrowserTest {
         openTestURL();
 
         selectMenuPath("Settings", "Show event log");
-        selectMenuPath("Component", "Features", "Context menu",
-                "Item without icon");
+        selectMenuPath("Component", "Features", "Context menu", "Item without icon");
 
         openContextMenu(getTreeNodeByCaption("Item 1"));
 
@@ -59,8 +58,7 @@ public class TreeContextMenuAndIconsTest extends MultiBrowserTest {
         openTestURL();
 
         selectMenuPath("Settings", "Show event log");
-        selectMenuPath("Component", "Features", "Context menu",
-                "With and without icon");
+        selectMenuPath("Component", "Features", "Context menu", "With and without icon");
 
         openContextMenu(getTreeNodeByCaption("Item 1"));
 
@@ -74,8 +72,7 @@ public class TreeContextMenuAndIconsTest extends MultiBrowserTest {
         openTestURL();
 
         selectMenuPath("Settings", "Show event log");
-        selectMenuPath("Component", "Features", "Context menu",
-                "Only one large icon");
+        selectMenuPath("Component", "Features", "Context menu", "Only one large icon");
 
         WebElement menu = openContextMenu(getTreeNodeByCaption("Item 1"));
 
@@ -93,14 +90,12 @@ public class TreeContextMenuAndIconsTest extends MultiBrowserTest {
         openTestURL();
 
         selectMenuPath("Settings", "Show event log");
-        selectMenuPath("Component", "Features", "Context menu",
-                "Only one large icon");
+        selectMenuPath("Component", "Features", "Context menu", "Only one large icon");
 
         openContextMenu(getTreeNodeByCaption("Item 1"));
         closeContextMenu();
 
-        selectMenuPath("Component", "Features", "Context menu",
-                "Item without icon");
+        selectMenuPath("Component", "Features", "Context menu", "Item without icon");
 
         openContextMenu(getTreeNodeByCaption("Item 1"));
 
@@ -123,8 +118,7 @@ public class TreeContextMenuAndIconsTest extends MultiBrowserTest {
     }
 
     private WebElement getTreeNodeByCaption(String caption) {
-        return getDriver().findElement(
-                By.xpath("//span[text() = '" + caption + "']"));
+        return getDriver().findElement(By.xpath("//span[text() = '" + caption + "']"));
     }
 
 }

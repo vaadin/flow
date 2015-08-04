@@ -10,8 +10,7 @@ public class TestingPushConnection extends AtmospherePushConnection {
     private String transport;
 
     @Override
-    public void init(ApplicationConnection connection,
-            PushConfigurationState pushConfiguration) {
+    public void init(ApplicationConnection connection, PushConfigurationState pushConfiguration) {
         super.init(connection, pushConfiguration);
         transport = Window.Location.getParameter("transport");
     }

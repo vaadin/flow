@@ -39,8 +39,7 @@ public class BootstrapListenerCode {
     public static BootstrapListener listener = new BootstrapListener() {
         @Override
         public void modifyBootstrapPage(BootstrapPageResponse response) {
-            response.getDocument().body()
-                    .appendChild(new Comment("Powered by Vaadin!", ""));
+            response.getDocument().body().appendChild(new Comment("Powered by Vaadin!", ""));
             response.setHeader("X-Powered-By", "Vaadin 7");
         }
 
@@ -64,10 +63,8 @@ class MyVaadinServlet extends VaadinServlet {
         super.servletInitialized();
         getService().addSessionInitListener(new SessionInitListener() {
             @Override
-            public void sessionInit(SessionInitEvent event)
-                    throws ServiceException {
-                event.getSession().addBootstrapListener(
-                        BootstrapListenerCode.listener);
+            public void sessionInit(SessionInitEvent event) throws ServiceException {
+                event.getSession().addBootstrapListener(BootstrapListenerCode.listener);
             }
         });
     }
@@ -81,10 +78,8 @@ class MyVaadinPortlet extends VaadinPortlet {
         super.portletInitialized();
         getService().addSessionInitListener(new SessionInitListener() {
             @Override
-            public void sessionInit(SessionInitEvent event)
-                    throws ServiceException {
-                event.getSession().addBootstrapListener(
-                        BootstrapListenerCode.listener);
+            public void sessionInit(SessionInitEvent event) throws ServiceException {
+                event.getSession().addBootstrapListener(BootstrapListenerCode.listener);
             }
         });
     }

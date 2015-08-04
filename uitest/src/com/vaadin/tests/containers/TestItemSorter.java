@@ -38,8 +38,7 @@ public class TestItemSorter extends TestBase {
                     return caption1.compareTo(caption2);
 
                 } else if (o1 instanceof String && o2 instanceof String) {
-                    return ((String) o1).toLowerCase().compareTo(
-                            ((String) o2).toLowerCase());
+                    return ((String) o1).toLowerCase().compareTo(((String) o2).toLowerCase());
                 }
 
                 return 0;
@@ -54,15 +53,13 @@ public class TestItemSorter extends TestBase {
 
     private static void populateContainer(IndexedContainer container) {
         container.removeAllItems();
-        String[] strings = new String[] { "Text 1", "Text 2", "true", "false",
-                "Caption 1", "Caption 2" };
+        String[] strings = new String[] { "Text 1", "Text 2", "true", "false", "Caption 1", "Caption 2" };
         for (String s : strings) {
             Object id = container.addItem();
             Item item = container.getItem(id);
             item.getItemProperty(STRING).setValue(s);
             item.getItemProperty(BUTTON).setValue(new Button(s));
-            item.getItemProperty(CHECKBOX).setValue(
-                    new CheckBox("", s.equals("true")));
+            item.getItemProperty(CHECKBOX).setValue(new CheckBox("", s.equals("true")));
         }
 
     }

@@ -26,8 +26,7 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
 
 public class GridThemeChange extends AbstractTestUI {
-    private final List<String> themes = Arrays.asList("valo", "reindeer",
-            "runo", "chameleon", "base");
+    private final List<String> themes = Arrays.asList("valo", "reindeer", "runo", "chameleon", "base");
 
     @Override
     protected void setup(VaadinRequest request) {
@@ -46,9 +45,7 @@ public class GridThemeChange extends AbstractTestUI {
             @Override
             public void select(SelectionEvent event) {
                 Object selectedItemId = grid.getSelectedRow();
-                Object theme = grid.getContainerDataSource()
-                        .getItem(selectedItemId).getItemProperty("Theme")
-                        .getValue();
+                Object theme = grid.getContainerDataSource().getItem(selectedItemId).getItemProperty("Theme").getValue();
                 setTheme(String.valueOf(theme));
             }
         });

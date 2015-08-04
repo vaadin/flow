@@ -55,8 +55,7 @@ public class NullValidator implements Validator {
      */
     @Override
     public void validate(Object value) throws Validator.InvalidValueException {
-        if ((onlyNullAllowed && value != null)
-                || (!onlyNullAllowed && value == null)) {
+        if ((onlyNullAllowed && value != null) || (!onlyNullAllowed && value == null)) {
             throw new Validator.InvalidValueException(errorMessage);
         }
     }

@@ -69,7 +69,6 @@ public interface GridClientRpc extends ClientRpc {
      *            the id of the request for fetching the changes. A negative
      *            number indicates a push (not requested by the client side)
      */
-    public void setDetailsConnectorChanges(
-            Set<DetailsConnectorChange> connectorChanges, int fetchId);
+    public void setDetailsConnectorChanges(Set<DetailsConnectorChange> connectorChanges, int fetchId);
 
 }

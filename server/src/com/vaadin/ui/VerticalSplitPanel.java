@@ -47,8 +47,7 @@ public class VerticalSplitPanel extends AbstractSplitPanel {
      * @param secondComponent
      *            The component to be placed below of the splitter
      */
-    public VerticalSplitPanel(Component firstComponent,
-            Component secondComponent) {
+    public VerticalSplitPanel(Component firstComponent, Component secondComponent) {
         this();
         setFirstComponent(firstComponent);
         setSecondComponent(secondComponent);

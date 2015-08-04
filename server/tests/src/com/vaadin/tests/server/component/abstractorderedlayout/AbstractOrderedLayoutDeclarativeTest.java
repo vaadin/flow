@@ -34,11 +34,9 @@ import com.vaadin.ui.VerticalLayout;
  * @since
  * @author Vaadin Ltd
  */
-public class AbstractOrderedLayoutDeclarativeTest extends
-        DeclarativeMarginTestBase<AbstractOrderedLayout> {
+public class AbstractOrderedLayoutDeclarativeTest extends DeclarativeMarginTestBase<AbstractOrderedLayout> {
 
-    private List<String> defaultAlignments = Arrays.asList(new String[] {
-            ":top", ":left" });
+    private List<String> defaultAlignments = Arrays.asList(new String[] { ":top", ":left" });
 
     @Test
     public void testMargins() {
@@ -76,8 +74,7 @@ public class AbstractOrderedLayoutDeclarativeTest extends
     private String getDesign(float expandRatio, String... alignments) {
         String result = "<v-vertical-layout caption=test-layout>";
         result += "<v-label caption=test-label ";
-        String ratioString = expandRatio == 1.0f ? "\"\"" : String
-                .valueOf(expandRatio);
+        String ratioString = expandRatio == 1.0f ? "\"\"" : String.valueOf(expandRatio);
         if (expandRatio != 0) {
             result += ":expand=" + ratioString;
         }
@@ -99,8 +96,7 @@ public class AbstractOrderedLayoutDeclarativeTest extends
         return result;
     }
 
-    private AbstractOrderedLayout getLayout(float expandRatio,
-            Alignment alignment) {
+    private AbstractOrderedLayout getLayout(float expandRatio, Alignment alignment) {
         VerticalLayout layout = new VerticalLayout();
         layout.setCaption("test-layout");
         Label l = new Label();

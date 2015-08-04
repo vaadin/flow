@@ -40,8 +40,7 @@ import com.vaadin.shared.ApplicationConstants;
  * @see VaadinRequest
  * @see VaadinPortletResponse
  */
-public class VaadinPortletRequest extends PortletRequestWrapper implements
-        VaadinRequest {
+public class VaadinPortletRequest extends PortletRequestWrapper implements VaadinRequest {
 
     private final VaadinPortletService vaadinService;
 
@@ -53,8 +52,7 @@ public class VaadinPortletRequest extends PortletRequestWrapper implements
      * @param vaadinService
      *            the associated vaadin service
      */
-    public VaadinPortletRequest(PortletRequest request,
-            VaadinPortletService vaadinService) {
+    public VaadinPortletRequest(PortletRequest request, VaadinPortletService vaadinService) {
         super(request);
         this.vaadinService = vaadinService;
     }
@@ -64,8 +62,7 @@ public class VaadinPortletRequest extends PortletRequestWrapper implements
         try {
             return ((ClientDataRequest) getRequest()).getContentLength();
         } catch (ClassCastException e) {
-            throw new IllegalStateException(
-                    "Content lenght only available for ClientDataRequests");
+            throw new IllegalStateException("Content lenght only available for ClientDataRequests");
         }
     }
 
@@ -74,8 +71,7 @@ public class VaadinPortletRequest extends PortletRequestWrapper implements
         try {
             return ((ClientDataRequest) getRequest()).getPortletInputStream();
         } catch (ClassCastException e) {
-            throw new IllegalStateException(
-                    "Input data only available for ClientDataRequests");
+            throw new IllegalStateException("Input data only available for ClientDataRequests");
         }
     }
 
@@ -84,8 +80,7 @@ public class VaadinPortletRequest extends PortletRequestWrapper implements
         try {
             return ((ClientDataRequest) getRequest()).getReader();
         } catch (ClassCastException e) {
-            throw new IllegalStateException(
-                    "Reader only available for ClientDataRequests");
+            throw new IllegalStateException("Reader only available for ClientDataRequests");
         }
     }
 
@@ -96,8 +91,7 @@ public class VaadinPortletRequest extends PortletRequestWrapper implements
             ResourceRequest resourceRequest = (ResourceRequest) request;
             String resourceID = resourceRequest.getResourceID();
             if (VaadinPortlet.RESOURCE_URL_ID.equals(resourceID)) {
-                String resourcePath = resourceRequest
-                        .getParameter(ApplicationConstants.V_RESOURCE_PATH);
+                String resourcePath = resourceRequest.getParameter(ApplicationConstants.V_RESOURCE_PATH);
                 return resourcePath;
             }
             return resourceID;
@@ -135,8 +129,7 @@ public class VaadinPortletRequest extends PortletRequestWrapper implements
         try {
             return ((ResourceRequest) getRequest()).getContentType();
         } catch (ClassCastException e) {
-            throw new IllegalStateException(
-                    "Content type only available for ResourceRequests");
+            throw new IllegalStateException("Content type only available for ResourceRequests");
         }
     }
 
@@ -145,8 +138,7 @@ public class VaadinPortletRequest extends PortletRequestWrapper implements
         try {
             return ((ClientDataRequest) getRequest()).getCharacterEncoding();
         } catch (ClassCastException e) {
-            throw new IllegalStateException(
-                    "Character encoding only available for ClientDataRequest");
+            throw new IllegalStateException("Character encoding only available for ClientDataRequest");
         }
     }
 
@@ -155,8 +147,7 @@ public class VaadinPortletRequest extends PortletRequestWrapper implements
         try {
             return ((ClientDataRequest) getRequest()).getMethod();
         } catch (ClassCastException e) {
-            throw new IllegalStateException(
-                    "Method only available for ClientDataRequest");
+            throw new IllegalStateException("Method only available for ClientDataRequest");
         }
     }
 
@@ -221,8 +212,7 @@ public class VaadinPortletRequest extends PortletRequestWrapper implements
             return -1;
         } else {
             try {
-                return VaadinPortletResponse.HTTP_DATE_FORMAT.parse(header)
-                        .getTime();
+                return VaadinPortletResponse.HTTP_DATE_FORMAT.parse(header).getTime();
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e);
             }

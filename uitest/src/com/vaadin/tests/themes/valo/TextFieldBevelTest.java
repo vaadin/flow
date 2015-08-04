@@ -51,11 +51,7 @@ public class TextFieldBevelTest extends MultiBrowserTest {
     }
 
     private void openTestUrlWithoutBevel() {
-        getDriver().get(
-                getTestUrl()
-                        + "$"
-                        + TextFieldBevel.ValoDefaultTextFieldBevel.class
-                                .getSimpleName() + "?restartApplication");
+        getDriver().get(getTestUrl() + "$" + TextFieldBevel.ValoDefaultTextFieldBevel.class.getSimpleName() + "?restartApplication");
     }
 
     private String getBoxShadow() {

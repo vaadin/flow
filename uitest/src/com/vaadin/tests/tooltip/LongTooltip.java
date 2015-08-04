@@ -35,8 +35,7 @@ public class LongTooltip extends TestBase {
 
     private TextField createField() {
         final TextField field = new TextField();
-        field.setDescription("Tooltip " + Integer.toString(tooltipCount++)
-                + ": " + LoremIpsum.get(1000));
+        field.setDescription("Tooltip " + Integer.toString(tooltipCount++) + ": " + LoremIpsum.get(1000));
         return field;
     }
 

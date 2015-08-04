@@ -25,8 +25,7 @@ import com.vaadin.ui.NativeSelect;
  * 
  * @author Vaadin Ltd
  */
-public class NativeSelectDeclarativeTest extends
-        DeclarativeTestBase<NativeSelect> {
+public class NativeSelectDeclarativeTest extends DeclarativeTestBase<NativeSelect> {
 
     public String getBasicDesign() {
         return "<v-native-select><option>foo</option><option>bar</option></v-native-select>";

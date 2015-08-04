@@ -39,8 +39,7 @@ public class ShortRangeValidator extends RangeValidator<Short> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public ShortRangeValidator(String errorMessage, Short minValue,
-            Short maxValue) {
+    public ShortRangeValidator(String errorMessage, Short minValue, Short maxValue) {
         super(errorMessage, Short.class, minValue, maxValue);
     }
 

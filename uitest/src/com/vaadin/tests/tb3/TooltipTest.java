@@ -44,13 +44,11 @@ public abstract class TooltipTest extends MultiBrowserTest {
         checkTooltip(By.vaadin(locator), value);
     }
 
-    protected void checkTooltip(org.openqa.selenium.By by, String value)
-            throws Exception {
+    protected void checkTooltip(org.openqa.selenium.By by, String value) throws Exception {
         checkTooltip(getDriver().findElement(by), value);
     }
 
-    protected void checkTooltip(WebElement element, String value)
-            throws Exception {
+    protected void checkTooltip(WebElement element, String value) throws Exception {
         testBenchElement(element).showTooltip();
         if (null != value) {
             checkTooltip(value);
@@ -63,16 +61,10 @@ public abstract class TooltipTest extends MultiBrowserTest {
         WebElement body = findElement(By.cssSelector("body"));
         WebElement tooltip = getTooltip();
         Assert.assertEquals(value, tooltip.getText());
-        Assert.assertTrue("Tooltip overflowed to the left", tooltip
-                .getLocation().getX() >= 0);
-        Assert.assertTrue("Tooltip overflowed up",
-                tooltip.getLocation().getY() >= 0);
-        Assert.assertTrue("Tooltip overflowed to the right", tooltip
-                .getLocation().getX() + tooltip.getSize().getWidth() < body
-                .getSize().getWidth());
-        Assert.assertTrue("Tooltip overflowed down", tooltip.getLocation()
-                .getY() + tooltip.getSize().getHeight() < body.getSize()
-                .getHeight());
+        Assert.assertTrue("Tooltip overflowed to the left", tooltip.getLocation().getX() >= 0);
+        Assert.assertTrue("Tooltip overflowed up", tooltip.getLocation().getY() >= 0);
+        Assert.assertTrue("Tooltip overflowed to the right", tooltip.getLocation().getX() + tooltip.getSize().getWidth() < body.getSize().getWidth());
+        Assert.assertTrue("Tooltip overflowed down", tooltip.getLocation().getY() + tooltip.getSize().getHeight() < body.getSize().getHeight());
 
     }
 
@@ -89,10 +81,8 @@ public abstract class TooltipTest extends MultiBrowserTest {
     protected void checkTooltipNotPresent() throws Exception {
         try {
             WebElement tooltip = getTooltip();
-            if (!"".equals(tooltip.getText())
-                    || tooltip.getLocation().getX() > -999) {
-                Assert.fail("Found tooltip that shouldn't be visible: "
-                        + tooltip.getText() + " at " + tooltip.getLocation());
+            if (!"".equals(tooltip.getText()) || tooltip.getLocation().getX() > -999) {
+                Assert.fail("Found tooltip that shouldn't be visible: " + tooltip.getText() + " at " + tooltip.getLocation());
             }
         } catch (NoSuchElementException e) {
             Assert.fail("Tooltip element was removed completely, causing extra events to accessibility tools");
@@ -104,8 +94,7 @@ public abstract class TooltipTest extends MultiBrowserTest {
     }
 
     protected void moveMouseTo(WebElement element, int offsetX, int offsetY) {
-        new Actions(getDriver()).moveToElement(element, offsetX, offsetY)
-                .perform();
+        new Actions(getDriver()).moveToElement(element, offsetX, offsetY).perform();
     }
 
     @Override

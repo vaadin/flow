@@ -30,16 +30,14 @@ public class TabSheetCaptions extends TestBase {
     protected void setup() {
         final TabSheet tabSheet = new TabSheet();
         // Define date and locale so that it doesn't change for machine/time
-        final SimpleDateFormat dateFormatter = new SimpleDateFormat(
-                "EEE, yyyy-MMM-dd", Locale.ENGLISH);
+        final SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, yyyy-MMM-dd", Locale.ENGLISH);
         final Date date = new Date();
         date.setTime((long) 1000000000000.0);
 
         VerticalLayout layout1 = new VerticalLayout();
         layout1.setMargin(true);
         layout1.setSizeFull();
-        panel1 = new Panel(
-                "Panel initial caption (should also be tab caption)", layout1);
+        panel1 = new Panel("Panel initial caption (should also be tab caption)", layout1);
         panel1.setSizeFull();
         layout1.addComponent(new Label("This is a panel"));
         tabSheet.addTab(panel1);
@@ -48,9 +46,7 @@ public class TabSheetCaptions extends TestBase {
         button.addClickListener(new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                tabSheet.getTab(panel1).setCaption(
-                        "This is a new tab caption "
-                                + dateFormatter.format(date));
+                tabSheet.getTab(panel1).setCaption("This is a new tab caption " + dateFormatter.format(date));
             }
         });
 
@@ -58,8 +54,7 @@ public class TabSheetCaptions extends TestBase {
         button2.addClickListener(new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                panel1.setCaption("This is a new panel caption "
-                        + dateFormatter.format(date));
+                panel1.setCaption("This is a new panel caption " + dateFormatter.format(date));
             }
         });
 

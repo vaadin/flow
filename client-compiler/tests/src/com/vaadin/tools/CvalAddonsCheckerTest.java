@@ -52,8 +52,7 @@ public class CvalAddonsCheckerTest {
 
     @Before
     public void setup() {
-        addonChecker = new CvalAddonsChecker().setLicenseProvider(
-                validLicenseProvider).setFilter(".*test.*");
+        addonChecker = new CvalAddonsChecker().setLicenseProvider(validLicenseProvider).setFilter(".*test.*");
         licenseName = computeLicenseName(productNameCval);
 
         deleteCache(productNameCval);
@@ -107,15 +106,13 @@ public class CvalAddonsCheckerTest {
         // messages
         System.setProperty(licenseName, VALID_KEY);
         addonChecker.setLicenseProvider(unreachableLicenseProvider);
-        setCacheFileTs(System.currentTimeMillis() - (GRACE_DAYS_MSECS / 2),
-                "normal");
+        setCacheFileTs(System.currentTimeMillis() - (GRACE_DAYS_MSECS / 2), "normal");
         captureSystemOut();
         addonChecker.run();
 
         // Expired license and we are offline
         // -> After 14 days, interpret it as expired license
-        setCacheFileTs(System.currentTimeMillis() - (GRACE_DAYS_MSECS * 2),
-                "normal");
+        setCacheFileTs(System.currentTimeMillis() - (GRACE_DAYS_MSECS * 2), "normal");
         try {
             addonChecker.run();
             Assert.fail();
@@ -127,8 +124,7 @@ public class CvalAddonsCheckerTest {
         // "Your evaluation license for TouchKit 4 is not valid"
         System.setProperty(licenseName, VALID_KEY);
         addonChecker.setLicenseProvider(unreachableLicenseProvider);
-        setCacheFileTs(System.currentTimeMillis() - (GRACE_DAYS_MSECS / 2),
-                "evaluation");
+        setCacheFileTs(System.currentTimeMillis() - (GRACE_DAYS_MSECS / 2), "evaluation");
         try {
             addonChecker.run();
             Assert.fail();
@@ -142,8 +138,7 @@ public class CvalAddonsCheckerTest {
         // compilation phase. No license checks are done in application runtime.
         System.setProperty(licenseName, VALID_KEY);
         addonChecker.setLicenseProvider(unreachableLicenseProvider);
-        setCacheFileTs(System.currentTimeMillis() + GRACE_DAYS_MSECS,
-                "evaluation");
+        setCacheFileTs(System.currentTimeMillis() + GRACE_DAYS_MSECS, "evaluation");
         List<CValUiInfo> uiInfo = addonChecker.run();
         Assert.assertEquals(1, uiInfo.size());
         Assert.assertEquals("Test " + productNameCval, uiInfo.get(0).product);

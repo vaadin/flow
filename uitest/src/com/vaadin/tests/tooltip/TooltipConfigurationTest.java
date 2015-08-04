@@ -59,8 +59,7 @@ public class TooltipConfigurationTest extends TooltipTest {
         selectAndType(maxWidth, "100");
 
         testBenchElement(longTooltip).showTooltip();
-        assertThat(getDriver().findElement(By.className("popupContent"))
-                .getSize().getWidth(), is(100));
+        assertThat(getDriver().findElement(By.className("popupContent")).getSize().getWidth(), is(100));
     }
 
     private void selectAndType(WebElement element, String value) {

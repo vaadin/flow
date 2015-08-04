@@ -59,10 +59,7 @@ public class SizedTextFields extends TestBase {
 
     @Override
     protected String getTestDescription() {
-        return "TextField sizing is problematic with old IE browsers. "
-                + "This test is to verify correct size. No red color should "
-                + "be visible in IE (at least with default windows themes) "
-                + "and textfields should not look clipped.";
+        return "TextField sizing is problematic with old IE browsers. " + "This test is to verify correct size. No red color should " + "be visible in IE (at least with default windows themes) " + "and textfields should not look clipped.";
     }
 
     @Override

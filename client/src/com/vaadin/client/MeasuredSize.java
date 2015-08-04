@@ -87,13 +87,11 @@ public class MeasuredSize {
     }
 
     public double getInnerHeight() {
-        return height - sumHeights(margins) - sumHeights(borders)
-                - sumHeights(paddings);
+        return height - sumHeights(margins) - sumHeights(borders) - sumHeights(paddings);
     }
 
     public double getInnerWidth() {
-        return width - sumWidths(margins) - sumWidths(borders)
-                - sumWidths(paddings);
+        return width - sumWidths(margins) - sumWidths(borders) - sumWidths(paddings);
     }
 
     public boolean setOuterHeight(double height) {
@@ -200,8 +198,7 @@ public class MeasuredSize {
 
         Profiler.enter("Measure paddings");
         if (!heightChanged && hasHeightChanged(this.paddings, paddings)) {
-            debugSizeChange(element, "Height (padding)", this.paddings,
-                    paddings);
+            debugSizeChange(element, "Height (padding)", this.paddings, paddings);
             heightChanged = true;
         }
         if (!widthChanged && hasWidthChanged(this.paddings, paddings)) {
@@ -262,25 +259,17 @@ public class MeasuredSize {
         return new MeasureResult(widthChanged, heightChanged);
     }
 
-    private void debugSizeChange(Element element, String sizeChangeType,
-            int[] changedFrom, int[] changedTo) {
-        debugSizeChange(element, sizeChangeType,
-                java.util.Arrays.asList(changedFrom).toString(),
-                java.util.Arrays.asList(changedTo).toString());
+    private void debugSizeChange(Element element, String sizeChangeType, int[] changedFrom, int[] changedTo) {
+        debugSizeChange(element, sizeChangeType, java.util.Arrays.asList(changedFrom).toString(), java.util.Arrays.asList(changedTo).toString());
     }
 
-    private void debugSizeChange(Element element, String sizeChangeType,
-            double changedFrom, double changedTo) {
-        debugSizeChange(element, sizeChangeType, String.valueOf(changedFrom),
-                String.valueOf(changedTo));
+    private void debugSizeChange(Element element, String sizeChangeType, double changedFrom, double changedTo) {
+        debugSizeChange(element, sizeChangeType, String.valueOf(changedFrom), String.valueOf(changedTo));
     }
 
-    private void debugSizeChange(Element element, String sizeChangeType,
-            String changedFrom, String changedTo) {
+    private void debugSizeChange(Element element, String sizeChangeType, String changedFrom, String changedTo) {
         if (debugSizeChanges) {
-            getLogger()
-                    .info(sizeChangeType + " has changed from " + changedFrom
-                            + " to " + changedTo + " for " + element.toString());
+            getLogger().info(sizeChangeType + " has changed from " + changedFrom + " to " + changedTo + " for " + element.toString());
         }
     }
 

@@ -38,15 +38,14 @@ public class TreeKeyboardNavigationToNone extends AbstractTestUI {
         addComponents(tree);
         tree.focus();
 
-        Button button = new Button("Select last item",
-                new Button.ClickListener() {
+        Button button = new Button("Select last item", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        tree.select("b");
-                        tree.focus();
-                    }
-                });
+            @Override
+            public void buttonClick(ClickEvent event) {
+                tree.select("b");
+                tree.focus();
+            }
+        });
         addComponent(button);
     }
 
@@ -57,8 +56,7 @@ public class TreeKeyboardNavigationToNone extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Keyboard navigation should not throw client side exception "
-                + "when there are no items to navigate.";
+        return "Keyboard navigation should not throw client side exception " + "when there are no items to navigate.";
     }
 
 }

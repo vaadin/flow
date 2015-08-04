@@ -7,7 +7,6 @@ import com.vaadin.ui.Embedded;
 
 public class EmbeddedListenersTest extends AbstractListenerMethodsTestBase {
     public void testClickListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Embedded.class, ClickEvent.class,
-                ClickListener.class);
+        testListenerAddGetRemove(Embedded.class, ClickEvent.class, ClickListener.class);
     }
 }

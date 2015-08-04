@@ -123,8 +123,7 @@ public class FileDownloader extends AbstractExtension {
     }
 
     @Override
-    public boolean handleConnectorRequest(VaadinRequest request,
-            VaadinResponse response, String path) throws IOException {
+    public boolean handleConnectorRequest(VaadinRequest request, VaadinResponse response, String path) throws IOException {
         if (!path.matches("dl(/.*)?")) {
             // Ignore if it isn't for us
             return false;
@@ -141,16 +140,12 @@ public class FileDownloader extends AbstractExtension {
             }
             stream = ((ConnectorResource) resource).getStream();
 
-            String contentDisposition = stream
-                    .getParameter(DownloadStream.CONTENT_DISPOSITION);
+            String contentDisposition = stream.getParameter(DownloadStream.CONTENT_DISPOSITION);
             if (contentDisposition == null) {
-                contentDisposition = "attachment; "
-                        + DownloadStream.getContentDispositionFilename(stream
-                                .getFileName());
+                contentDisposition = "attachment; " + DownloadStream.getContentDispositionFilename(stream.getFileName());
             }
 
-            stream.setParameter(DownloadStream.CONTENT_DISPOSITION,
-                    contentDisposition);
+            stream.setParameter(DownloadStream.CONTENT_DISPOSITION, contentDisposition);
 
             // Content-Type to block eager browser plug-ins from hijacking
             // the file

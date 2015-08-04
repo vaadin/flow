@@ -27,9 +27,7 @@ public class FormBuilderWithNestedProperties extends TestBase {
         addComponent(lastName);
         addComponent(streetAddress);
 
-        fieldGroup.setItemDataSource(new BeanItem<Person>(new Person("Who",
-                "me?", "email", 1, Sex.MALE, new Address("street name", 202020,
-                        "City", Country.FINLAND))));
+        fieldGroup.setItemDataSource(new BeanItem<Person>(new Person("Who", "me?", "email", 1, Sex.MALE, new Address("street name", 202020, "City", Country.FINLAND))));
     }
 
     @Override

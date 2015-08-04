@@ -36,8 +36,7 @@ public class DateTimeService {
 
     private String currentLocale;
 
-    private static int[] maxDaysInMonth = { 31, 28, 31, 30, 31, 30, 31, 31, 30,
-            31, 30, 31 };
+    private static int[] maxDaysInMonth = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
     /**
      * Creates a new date time service with the application default locale.
@@ -139,21 +138,18 @@ public class DateTimeService {
             return LocaleService.getAmPmStrings(currentLocale);
         } catch (final LocaleNotLoadedException e) {
             // TODO can this practically even happen? Should die instead?
-            getLogger().log(Level.SEVERE,
-                    "Locale not loaded, using fallback : AM/PM", e);
+            getLogger().log(Level.SEVERE, "Locale not loaded, using fallback : AM/PM", e);
             return DEFAULT_AMPM_STRINGS;
         }
     }
 
     public int getStartWeekDay(Date date) {
-        final Date dateForFirstOfThisMonth = new Date(date.getYear(),
-                date.getMonth(), 1);
+        final Date dateForFirstOfThisMonth = new Date(date.getYear(), date.getMonth(), 1);
         int firstDay;
         try {
             firstDay = LocaleService.getFirstDayOfWeek(currentLocale);
         } catch (final LocaleNotLoadedException e) {
-            getLogger().log(Level.SEVERE,
-                    "Locale not loaded, using fallback 0", e);
+            getLogger().log(Level.SEVERE, "Locale not loaded, using fallback 0", e);
             firstDay = 0;
         }
         int start = dateForFirstOfThisMonth.getDay() - firstDay;
@@ -202,8 +198,7 @@ public class DateTimeService {
         return (getDayInt(d1) == getDayInt(d2));
     }
 
-    public static boolean isInRange(Date date, Date rangeStart, Date rangeEnd,
-            Resolution resolution) {
+    public static boolean isInRange(Date date, Date rangeStart, Date rangeEnd, Resolution resolution) {
         Date s;
         Date e;
         if (rangeStart.after(rangeEnd)) {
@@ -278,16 +273,14 @@ public class DateTimeService {
         // Find nearest thursday (defines the week in ISO 8601). The week number
         // for the nearest thursday is the same as for the target date.
         int nearestThursdayDiff = 4 - dayOfWeek; // 4 is thursday
-        Date nearestThursday = new Date(date.getTime() + nearestThursdayDiff
-                * MILLISECONDS_PER_DAY);
+        Date nearestThursday = new Date(date.getTime() + nearestThursdayDiff * MILLISECONDS_PER_DAY);
 
         Date firstOfJanuary = new Date(nearestThursday.getYear(), 0, 1);
         long timeDiff = nearestThursday.getTime() - firstOfJanuary.getTime();
 
         // Rounding the result, as the division doesn't result in an integer
         // when the given date is inside daylight saving time period.
-        int daysSinceFirstOfJanuary = (int) Math.round((double) timeDiff
-                / MILLISECONDS_PER_DAY);
+        int daysSinceFirstOfJanuary = (int) Math.round((double) timeDiff / MILLISECONDS_PER_DAY);
 
         int weekNumber = (daysSinceFirstOfJanuary) / 7 + 1;
 
@@ -343,8 +336,7 @@ public class DateTimeService {
                 formatStr = formatStr.replaceAll("'([E]{4,})'", dayName);
                 formatStr = formatStr.replaceAll("([E]{4,})'", "'" + dayName);
                 formatStr = formatStr.replaceAll("'([E]{4,})", dayName + "'");
-                formatStr = formatStr
-                        .replaceAll("[E]{4,}", "'" + dayName + "'");
+                formatStr = formatStr.replaceAll("[E]{4,}", "'" + dayName + "'");
             }
         }
 
@@ -363,8 +355,7 @@ public class DateTimeService {
                 formatStr = formatStr.replaceAll("'([E]{3,})'", dayName);
                 formatStr = formatStr.replaceAll("([E]{3,})'", "'" + dayName);
                 formatStr = formatStr.replaceAll("'([E]{3,})", dayName + "'");
-                formatStr = formatStr
-                        .replaceAll("[E]{3,}", "'" + dayName + "'");
+                formatStr = formatStr.replaceAll("[E]{3,}", "'" + dayName + "'");
             }
         }
 
@@ -386,8 +377,7 @@ public class DateTimeService {
                 formatStr = formatStr.replaceAll("'([M]{4,})'", monthName);
                 formatStr = formatStr.replaceAll("([M]{4,})'", "'" + monthName);
                 formatStr = formatStr.replaceAll("'([M]{4,})", monthName + "'");
-                formatStr = formatStr.replaceAll("[M]{4,}", "'" + monthName
-                        + "'");
+                formatStr = formatStr.replaceAll("[M]{4,}", "'" + monthName + "'");
             }
         }
 
@@ -406,8 +396,7 @@ public class DateTimeService {
                 formatStr = formatStr.replaceAll("'([M]{3,})'", monthName);
                 formatStr = formatStr.replaceAll("([M]{3,})'", "'" + monthName);
                 formatStr = formatStr.replaceAll("'([M]{3,})", monthName + "'");
-                formatStr = formatStr.replaceAll("[M]{3,}", "'" + monthName
-                        + "'");
+                formatStr = formatStr.replaceAll("[M]{3,}", "'" + monthName + "'");
             }
         }
 
@@ -431,23 +420,19 @@ public class DateTimeService {
             // No conversion needs to be done when locales match
             return enteredDate;
         }
-        String[] browserMonthNames = browserLocale.getDateTimeConstants()
-                .months();
-        String[] browserShortMonthNames = browserLocale.getDateTimeConstants()
-                .shortMonths();
+        String[] browserMonthNames = browserLocale.getDateTimeConstants().months();
+        String[] browserShortMonthNames = browserLocale.getDateTimeConstants().shortMonths();
 
         if (formatString.contains("MMMM")) {
             // Full month name
             for (int i = 0; i < 12; i++) {
-                enteredDate = enteredDate.replaceAll(getMonth(i),
-                        browserMonthNames[i]);
+                enteredDate = enteredDate.replaceAll(getMonth(i), browserMonthNames[i]);
             }
         }
         if (formatString.contains("MMM")) {
             // Short month name
             for (int i = 0; i < 12; i++) {
-                enteredDate = enteredDate.replaceAll(getShortMonth(i),
-                        browserShortMonthNames[i]);
+                enteredDate = enteredDate.replaceAll(getShortMonth(i), browserShortMonthNames[i]);
             }
         }
 
@@ -469,8 +454,7 @@ public class DateTimeService {
      *             if the parsing fails
      * 
      */
-    public Date parseDate(String dateString, String formatString,
-            boolean lenient) throws IllegalArgumentException {
+    public Date parseDate(String dateString, String formatString, boolean lenient) throws IllegalArgumentException {
         /* DateTimeFormat uses the browser's locale */
         DateTimeFormat format = DateTimeFormat.getFormat(formatString);
 
@@ -490,8 +474,7 @@ public class DateTimeService {
 
         // Some version of Firefox sets the timestamp to 0 if parsing fails.
         if (date != null && date.getTime() == 0) {
-            throw new IllegalArgumentException("Parsing of '" + dateString
-                    + "' failed");
+            throw new IllegalArgumentException("Parsing of '" + dateString + "' failed");
         }
 
         return date;

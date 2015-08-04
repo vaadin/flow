@@ -37,8 +37,7 @@ import com.vaadin.data.Item;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class HierarchicalContainer extends IndexedContainer implements
-        Container.Hierarchical {
+public class HierarchicalContainer extends IndexedContainer implements Container.Hierarchical {
 
     /**
      * Set of IDs of those contained Items that can't have children.
@@ -253,8 +252,7 @@ public class HierarchicalContainer extends IndexedContainer implements
         final Object oldParentId = parent.get(itemId);
 
         // Checks if no change is necessary
-        if ((newParentId == null && oldParentId == null)
-                || ((newParentId != null) && newParentId.equals(oldParentId))) {
+        if ((newParentId == null && oldParentId == null) || ((newParentId != null) && newParentId.equals(oldParentId))) {
             return true;
         }
 
@@ -392,8 +390,7 @@ public class HierarchicalContainer extends IndexedContainer implements
                 childrenList.remove(oldIndex);
                 childrenList.add(newIndex, itemId);
             } else {
-                throw new IllegalArgumentException(
-                        "Given identifiers no not have the same parent.");
+                throw new IllegalArgumentException("Given identifiers no not have the same parent.");
             }
         }
         fireItemSetChange();
@@ -429,8 +426,7 @@ public class HierarchicalContainer extends IndexedContainer implements
     }
 
     @Override
-    protected void fireItemSetChange(
-            com.vaadin.data.Container.ItemSetChangeEvent event) {
+    protected void fireItemSetChange(com.vaadin.data.Container.ItemSetChangeEvent event) {
         if (contentsChangeEventsOn()) {
             super.fireItemSetChange(event);
         } else {
@@ -448,9 +444,7 @@ public class HierarchicalContainer extends IndexedContainer implements
 
     private void enableAndFireContentsChangeEvents() {
         if (contentChangedEventsDisabledCount <= 0) {
-            getLogger()
-                    .log(Level.WARNING,
-                            "Mismatched calls to disable and enable contents change events in HierarchicalContainer");
+            getLogger().log(Level.WARNING, "Mismatched calls to disable and enable contents change events in HierarchicalContainer");
             contentChangedEventsDisabledCount = 0;
         } else {
             contentChangedEventsDisabledCount--;
@@ -571,8 +565,7 @@ public class HierarchicalContainer extends IndexedContainer implements
                         // Found in the children list so might also be in the
                         // filteredChildren list
                         if (filteredChildren != null) {
-                            LinkedList<Object> f = filteredChildren
-                                    .get(parentItemId);
+                            LinkedList<Object> f = filteredChildren.get(parentItemId);
                             if (f != null) {
                                 f.remove(itemId);
                                 if (f.isEmpty()) {
@@ -625,15 +618,13 @@ public class HierarchicalContainer extends IndexedContainer implements
      *            the identifier of the Item to be removed
      * @return true if the operation succeeded
      */
-    public static boolean removeItemRecursively(
-            Container.Hierarchical container, Object itemId) {
+    public static boolean removeItemRecursively(Container.Hierarchical container, Object itemId) {
         boolean success = true;
         Collection<?> children2 = container.getChildren(itemId);
         if (children2 != null) {
             Object[] array = children2.toArray();
             for (int i = 0; i < array.length; i++) {
-                boolean removeItemRecursively = removeItemRecursively(
-                        container, array[i]);
+                boolean removeItemRecursively = removeItemRecursively(container, array[i]);
                 if (!removeItemRecursively) {
                     success = false;
                 }
@@ -684,8 +675,7 @@ public class HierarchicalContainer extends IndexedContainer implements
      *            true to include all parents for items that match the filter,
      *            false to only include the matching items
      */
-    public void setIncludeParentsWhenFiltering(
-            boolean includeParentsWhenFiltering) {
+    public void setIncludeParentsWhenFiltering(boolean includeParentsWhenFiltering) {
         this.includeParentsWhenFiltering = includeParentsWhenFiltering;
         if (filteredRoots != null) {
             // Currently filtered so needs to be re-filtered
@@ -741,8 +731,7 @@ public class HierarchicalContainer extends IndexedContainer implements
             // match
             super.doFilterContainer(hasFilters);
 
-            LinkedHashSet<Object> filteredItemIds = new LinkedHashSet<Object>(
-                    getItemIds());
+            LinkedHashSet<Object> filteredItemIds = new LinkedHashSet<Object>(getItemIds());
 
             for (Object itemId : filteredItemIds) {
                 Object itemParent = parent.get(itemId);
@@ -769,8 +758,7 @@ public class HierarchicalContainer extends IndexedContainer implements
      * @param childItemId
      */
     private void addFilteredChild(Object parentItemId, Object childItemId) {
-        LinkedList<Object> parentToChildrenList = filteredChildren
-                .get(parentItemId);
+        LinkedList<Object> parentToChildrenList = filteredChildren.get(parentItemId);
         if (parentToChildrenList == null) {
             parentToChildrenList = new LinkedList<Object>();
             filteredChildren.put(parentItemId, parentToChildrenList);
@@ -793,8 +781,7 @@ public class HierarchicalContainer extends IndexedContainer implements
      *            Set containing the item ids for the items that should be
      *            included in the filteredChildren map
      */
-    private void addFilteredChildrenRecursively(Object parentItemId,
-            HashSet<Object> includedItems) {
+    private void addFilteredChildrenRecursively(Object parentItemId, HashSet<Object> includedItems) {
         LinkedList<Object> childList = children.get(parentItemId);
         if (childList == null) {
             return;
@@ -818,15 +805,13 @@ public class HierarchicalContainer extends IndexedContainer implements
      * @param includedItems
      * @return true if the itemId should be included in the filtered container.
      */
-    private boolean filterIncludingParents(Object itemId,
-            HashSet<Object> includedItems) {
+    private boolean filterIncludingParents(Object itemId, HashSet<Object> includedItems) {
         boolean toBeIncluded = passesFilters(itemId);
 
         LinkedList<Object> childList = children.get(itemId);
         if (childList != null) {
             for (Object childItemId : children.get(itemId)) {
-                toBeIncluded |= filterIncludingParents(childItemId,
-                        includedItems);
+                toBeIncluded |= filterIncludingParents(childItemId, includedItems);
             }
         }
 

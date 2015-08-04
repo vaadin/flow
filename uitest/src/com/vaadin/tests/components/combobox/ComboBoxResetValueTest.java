@@ -37,14 +37,11 @@ public class ComboBoxResetValueTest extends MultiBrowserTest {
 
         openTestURL();
 
-        comboBoxWithNullSelectionItemId = $(ComboBoxElement.class).id(
-                ComboBoxResetValue.WITH_SET_NULL_SELECTION_ITEM_ID);
+        comboBoxWithNullSelectionItemId = $(ComboBoxElement.class).id(ComboBoxResetValue.WITH_SET_NULL_SELECTION_ITEM_ID);
 
-        comboBoxWithoutNullSelectionItemId = $(ComboBoxElement.class).id(
-                ComboBoxResetValue.WITHOUT_NULL_SELECTION_ITEM_ID);
+        comboBoxWithoutNullSelectionItemId = $(ComboBoxElement.class).id(ComboBoxResetValue.WITHOUT_NULL_SELECTION_ITEM_ID);
 
-        comboBoxWithNullNotAllowed = $(ComboBoxElement.class).id(
-                ComboBoxResetValue.NULL_SELECTION_NOT_ALLOWED);
+        comboBoxWithNullNotAllowed = $(ComboBoxElement.class).id(ComboBoxResetValue.NULL_SELECTION_NOT_ALLOWED);
 
         clickResetButton();
     }
@@ -89,18 +86,15 @@ public class ComboBoxResetValueTest extends MultiBrowserTest {
         comboBoxWithNullNotAllowed.sendKeys("1", Keys.TAB);
         comboBoxWithNullNotAllowed.sendKeys(Keys.BACK_SPACE, Keys.TAB);
 
-        assertThat("Selection changed when it shouldn't have.",
-                comboBoxWithNullNotAllowed.getText(), is("1"));
+        assertThat("Selection changed when it shouldn't have.", comboBoxWithNullNotAllowed.getText(), is("1"));
     }
 
     private void assertThatNullSelectionItemSelected(ComboBoxElement comboBox) {
-        assertThat("Null selection item not selected.", comboBox.getText(),
-                is(ComboBoxResetValue.EMPTY_VALUE));
+        assertThat("Null selection item not selected.", comboBox.getText(), is(ComboBoxResetValue.EMPTY_VALUE));
     }
 
     private void assertThatSelectionIsEmpty(ComboBoxElement comboBox) {
-        assertThat("Something selected when should be empty.",
-                comboBox.getText(), is(""));
+        assertThat("Something selected when should be empty.", comboBox.getText(), is(""));
     }
 
     private void clickResetButton() {

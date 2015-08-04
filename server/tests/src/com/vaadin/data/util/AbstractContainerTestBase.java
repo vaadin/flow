@@ -60,8 +60,7 @@ public abstract class AbstractContainerTestBase extends TestCase {
      * Test class for counting item set change events and verifying they have
      * been received.
      */
-    protected static class ItemSetChangeCounter extends AbstractEventCounter
-            implements ItemSetChangeListener {
+    protected static class ItemSetChangeCounter extends AbstractEventCounter implements ItemSetChangeListener {
 
         @Override
         public void containerItemSetChange(ItemSetChangeEvent event) {
@@ -74,10 +73,7 @@ public abstract class AbstractContainerTestBase extends TestCase {
     // not specify what to return from getItem() and getContainerProperty(), so
     // need checkGetItemNull parameter for the test to be usable for most
     // current containers
-    protected void validateContainer(Container container,
-            Object expectedFirstItemId, Object expectedLastItemId,
-            Object itemIdInSet, Object itemIdNotInSet,
-            boolean checkGetItemNull, int expectedSize) {
+    protected void validateContainer(Container container, Object expectedFirstItemId, Object expectedLastItemId, Object itemIdInSet, Object itemIdNotInSet, boolean checkGetItemNull, int expectedSize) {
         Container.Indexed indexed = null;
         if (container instanceof Container.Indexed) {
             indexed = (Container.Indexed) container;
@@ -109,8 +105,7 @@ public abstract class AbstractContainerTestBase extends TestCase {
         // getContainerProperty
         for (Object propId : container.getContainerPropertyIds()) {
             if (checkGetItemNull) {
-                assertNull(container.getContainerProperty(itemIdNotInSet,
-                        propId));
+                assertNull(container.getContainerProperty(itemIdNotInSet, propId));
             }
             assertNotNull(container.getContainerProperty(itemIdInSet, propId));
         }
@@ -126,8 +121,7 @@ public abstract class AbstractContainerTestBase extends TestCase {
             assertEquals(itemIdList.get(1), indexed.nextItemId(first));
 
             // prevItemId
-            assertEquals(itemIdList.get(itemIdList.size() - 2),
-                    indexed.prevItemId(last));
+            assertEquals(itemIdList.get(itemIdList.size() - 2), indexed.prevItemId(last));
 
             // isFirstId
             assertTrue(indexed.isFirstId(first));
@@ -158,9 +152,7 @@ public abstract class AbstractContainerTestBase extends TestCase {
         initializeContainer(container);
 
         // Basic container
-        validateContainer(container, sampleData[0],
-                sampleData[sampleData.length - 1], sampleData[10], "abc", true,
-                sampleData.length);
+        validateContainer(container, sampleData[0], sampleData[sampleData.length - 1], sampleData[10], "abc", true, sampleData.length);
     }
 
     protected void testContainerOrdered(Container.Ordered container) {
@@ -230,9 +222,7 @@ public abstract class AbstractContainerTestBase extends TestCase {
 
     }
 
-    protected void testContainerIndexed(Container.Indexed container,
-            Object itemId, int itemPosition, boolean testAddEmptyItemAt,
-            Object newItemId, boolean testAddItemAtWithId) {
+    protected void testContainerIndexed(Container.Indexed container, Object itemId, int itemPosition, boolean testAddEmptyItemAt, Object newItemId, boolean testAddItemAtWithId) {
         initializeContainer(container);
 
         // indexOfId
@@ -247,34 +237,27 @@ public abstract class AbstractContainerTestBase extends TestCase {
             Assert.assertEquals(itemPosition, container.indexOfId(addedId));
             Assert.assertEquals(itemPosition + 1, container.indexOfId(itemId));
             Assert.assertEquals(addedId, container.getIdByIndex(itemPosition));
-            Assert.assertEquals(itemId,
-                    container.getIdByIndex(itemPosition + 1));
+            Assert.assertEquals(itemId, container.getIdByIndex(itemPosition + 1));
 
             Object newFirstId = container.addItemAt(0);
             Assert.assertEquals(0, container.indexOfId(newFirstId));
             Assert.assertEquals(itemPosition + 2, container.indexOfId(itemId));
             Assert.assertEquals(newFirstId, container.firstItemId());
             Assert.assertEquals(newFirstId, container.getIdByIndex(0));
-            Assert.assertEquals(itemId,
-                    container.getIdByIndex(itemPosition + 2));
+            Assert.assertEquals(itemId, container.getIdByIndex(itemPosition + 2));
 
             Object newLastId = container.addItemAt(container.size());
-            Assert.assertEquals(container.size() - 1,
-                    container.indexOfId(newLastId));
+            Assert.assertEquals(container.size() - 1, container.indexOfId(newLastId));
             Assert.assertEquals(itemPosition + 2, container.indexOfId(itemId));
             Assert.assertEquals(newLastId, container.lastItemId());
-            Assert.assertEquals(newLastId,
-                    container.getIdByIndex(container.size() - 1));
-            Assert.assertEquals(itemId,
-                    container.getIdByIndex(itemPosition + 2));
+            Assert.assertEquals(newLastId, container.getIdByIndex(container.size() - 1));
+            Assert.assertEquals(itemId, container.getIdByIndex(itemPosition + 2));
 
             Assert.assertTrue(container.removeItem(addedId));
             Assert.assertTrue(container.removeItem(newFirstId));
             Assert.assertTrue(container.removeItem(newLastId));
 
-            Assert.assertFalse(
-                    "Removing non-existing item should indicate failure",
-                    container.removeItem(addedId));
+            Assert.assertFalse("Removing non-existing item should indicate failure", container.removeItem(addedId));
         }
 
         // addItemAt
@@ -283,8 +266,7 @@ public abstract class AbstractContainerTestBase extends TestCase {
             Assert.assertEquals(itemPosition, container.indexOfId(newItemId));
             Assert.assertEquals(itemPosition + 1, container.indexOfId(itemId));
             Assert.assertEquals(newItemId, container.getIdByIndex(itemPosition));
-            Assert.assertEquals(itemId,
-                    container.getIdByIndex(itemPosition + 1));
+            Assert.assertEquals(itemId, container.getIdByIndex(itemPosition + 1));
             Assert.assertTrue(container.removeItem(newItemId));
             Assert.assertFalse(container.containsId(newItemId));
 
@@ -293,18 +275,15 @@ public abstract class AbstractContainerTestBase extends TestCase {
             Assert.assertEquals(itemPosition + 1, container.indexOfId(itemId));
             Assert.assertEquals(newItemId, container.firstItemId());
             Assert.assertEquals(newItemId, container.getIdByIndex(0));
-            Assert.assertEquals(itemId,
-                    container.getIdByIndex(itemPosition + 1));
+            Assert.assertEquals(itemId, container.getIdByIndex(itemPosition + 1));
             Assert.assertTrue(container.removeItem(newItemId));
             Assert.assertFalse(container.containsId(newItemId));
 
             container.addItemAt(container.size(), newItemId);
-            Assert.assertEquals(container.size() - 1,
-                    container.indexOfId(newItemId));
+            Assert.assertEquals(container.size() - 1, container.indexOfId(newItemId));
             Assert.assertEquals(itemPosition, container.indexOfId(itemId));
             Assert.assertEquals(newItemId, container.lastItemId());
-            Assert.assertEquals(newItemId,
-                    container.getIdByIndex(container.size() - 1));
+            Assert.assertEquals(newItemId, container.getIdByIndex(container.size() - 1));
             Assert.assertEquals(itemId, container.getIdByIndex(itemPosition));
             Assert.assertTrue(container.removeItem(newItemId));
             Assert.assertFalse(container.containsId(newItemId));
@@ -315,35 +294,26 @@ public abstract class AbstractContainerTestBase extends TestCase {
         initializeContainer(container);
 
         // Filter by "contains ab"
-        SimpleStringFilter filter1 = new SimpleStringFilter(
-                FULLY_QUALIFIED_NAME, "ab", false, false);
+        SimpleStringFilter filter1 = new SimpleStringFilter(FULLY_QUALIFIED_NAME, "ab", false, false);
         container.addContainerFilter(filter1);
 
         assertTrue(container.getContainerFilters().size() == 1);
         assertEquals(filter1, container.getContainerFilters().iterator().next());
 
-        validateContainer(container, "com.vaadin.data.BufferedValidatable",
-                "com.vaadin.ui.TabSheet",
-                "com.vaadin.terminal.gwt.client.Focusable",
-                "com.vaadin.data.Buffered", isFilteredOutItemNull(), 20);
+        validateContainer(container, "com.vaadin.data.BufferedValidatable", "com.vaadin.ui.TabSheet", "com.vaadin.terminal.gwt.client.Focusable", "com.vaadin.data.Buffered", isFilteredOutItemNull(), 20);
 
         // Filter by "contains da" (reversed as ad here)
         container.removeAllContainerFilters();
 
         assertTrue(container.getContainerFilters().isEmpty());
 
-        SimpleStringFilter filter2 = new SimpleStringFilter(
-                REVERSE_FULLY_QUALIFIED_NAME, "ad", false, false);
+        SimpleStringFilter filter2 = new SimpleStringFilter(REVERSE_FULLY_QUALIFIED_NAME, "ad", false, false);
         container.addContainerFilter(filter2);
 
         assertTrue(container.getContainerFilters().size() == 1);
         assertEquals(filter2, container.getContainerFilters().iterator().next());
 
-        validateContainer(container, "com.vaadin.data.Buffered",
-                "com.vaadin.server.ComponentSizeValidator",
-                "com.vaadin.data.util.IndexedContainer",
-                "com.vaadin.terminal.gwt.client.ui.VUriFragmentUtility",
-                isFilteredOutItemNull(), 37);
+        validateContainer(container, "com.vaadin.data.Buffered", "com.vaadin.server.ComponentSizeValidator", "com.vaadin.data.util.IndexedContainer", "com.vaadin.terminal.gwt.client.ui.VUriFragmentUtility", isFilteredOutItemNull(), 37);
     }
 
     /**
@@ -362,20 +332,14 @@ public abstract class AbstractContainerTestBase extends TestCase {
         initializeContainer(sortable);
 
         // Filter by "contains ab"
-        filterable.addContainerFilter(new SimpleStringFilter(
-                FULLY_QUALIFIED_NAME, "ab", false, false));
+        filterable.addContainerFilter(new SimpleStringFilter(FULLY_QUALIFIED_NAME, "ab", false, false));
 
         // Must be able to sort based on PROP1 for this test
-        assertTrue(sortable.getSortableContainerPropertyIds().contains(
-                FULLY_QUALIFIED_NAME));
+        assertTrue(sortable.getSortableContainerPropertyIds().contains(FULLY_QUALIFIED_NAME));
 
-        sortable.sort(new Object[] { FULLY_QUALIFIED_NAME },
-                new boolean[] { true });
+        sortable.sort(new Object[] { FULLY_QUALIFIED_NAME }, new boolean[] { true });
 
-        validateContainer(sortable, "com.vaadin.data.BufferedValidatable",
-                "com.vaadin.ui.TableFieldFactory",
-                "com.vaadin.ui.TableFieldFactory",
-                "com.vaadin.data.util.BeanItem", isFilteredOutItemNull(), 20);
+        validateContainer(sortable, "com.vaadin.data.BufferedValidatable", "com.vaadin.ui.TableFieldFactory", "com.vaadin.ui.TableFieldFactory", "com.vaadin.data.util.BeanItem", isFilteredOutItemNull(), 20);
     }
 
     protected void testContainerSorting(Container.Filterable container) {
@@ -384,26 +348,16 @@ public abstract class AbstractContainerTestBase extends TestCase {
         initializeContainer(container);
 
         // Must be able to sort based on PROP1 for this test
-        assertTrue(sortable.getSortableContainerPropertyIds().contains(
-                FULLY_QUALIFIED_NAME));
-        assertTrue(sortable.getSortableContainerPropertyIds().contains(
-                REVERSE_FULLY_QUALIFIED_NAME));
+        assertTrue(sortable.getSortableContainerPropertyIds().contains(FULLY_QUALIFIED_NAME));
+        assertTrue(sortable.getSortableContainerPropertyIds().contains(REVERSE_FULLY_QUALIFIED_NAME));
 
-        sortable.sort(new Object[] { FULLY_QUALIFIED_NAME },
-                new boolean[] { true });
+        sortable.sort(new Object[] { FULLY_QUALIFIED_NAME }, new boolean[] { true });
 
-        validateContainer(container, "com.vaadin.Application",
-                "org.vaadin.test.LastClass",
-                "com.vaadin.server.ApplicationResource", "blah", true,
-                sampleData.length);
+        validateContainer(container, "com.vaadin.Application", "org.vaadin.test.LastClass", "com.vaadin.server.ApplicationResource", "blah", true, sampleData.length);
 
-        sortable.sort(new Object[] { REVERSE_FULLY_QUALIFIED_NAME },
-                new boolean[] { true });
+        sortable.sort(new Object[] { REVERSE_FULLY_QUALIFIED_NAME }, new boolean[] { true });
 
-        validateContainer(container, "com.vaadin.server.ApplicationPortlet2",
-                "com.vaadin.data.util.ObjectProperty",
-                "com.vaadin.ui.BaseFieldFactory", "blah", true,
-                sampleData.length);
+        validateContainer(container, "com.vaadin.server.ApplicationPortlet2", "com.vaadin.data.util.ObjectProperty", "com.vaadin.ui.BaseFieldFactory", "blah", true, sampleData.length);
 
     }
 
@@ -416,8 +370,7 @@ public abstract class AbstractContainerTestBase extends TestCase {
 
         container.addContainerProperty(FULLY_QUALIFIED_NAME, String.class, "");
         container.addContainerProperty(SIMPLE_NAME, String.class, "");
-        container.addContainerProperty(REVERSE_FULLY_QUALIFIED_NAME,
-                String.class, null);
+        container.addContainerProperty(REVERSE_FULLY_QUALIFIED_NAME, String.class, null);
         container.addContainerProperty(ID_NUMBER, Integer.class, null);
 
         for (int i = 0; i < sampleData.length; i++) {
@@ -425,10 +378,8 @@ public abstract class AbstractContainerTestBase extends TestCase {
             Item item = container.addItem(id);
 
             item.getItemProperty(FULLY_QUALIFIED_NAME).setValue(sampleData[i]);
-            item.getItemProperty(SIMPLE_NAME).setValue(
-                    getSimpleName(sampleData[i]));
-            item.getItemProperty(REVERSE_FULLY_QUALIFIED_NAME).setValue(
-                    reverse(sampleData[i]));
+            item.getItemProperty(SIMPLE_NAME).setValue(getSimpleName(sampleData[i]));
+            item.getItemProperty(REVERSE_FULLY_QUALIFIED_NAME).setValue(reverse(sampleData[i]));
             item.getItemProperty(ID_NUMBER).setValue(i);
         }
     }
@@ -445,235 +396,6 @@ public abstract class AbstractContainerTestBase extends TestCase {
         return new StringBuilder(string).reverse().toString();
     }
 
-    protected final String[] sampleData = {
-            "com.vaadin.annotations.AutoGenerated", "com.vaadin.Application",
-            "com.vaadin.data.Buffered", "com.vaadin.data.BufferedValidatable",
-            "com.vaadin.data.Container", "com.vaadin.data.Item",
-            "com.vaadin.data.Property", "com.vaadin.data.util.BeanItem",
-            "com.vaadin.data.util.BeanItemContainer",
-            "com.vaadin.data.util.ContainerHierarchicalWrapper",
-            "com.vaadin.data.util.ContainerOrderedWrapper",
-            "com.vaadin.data.util.DefaultItemSorter",
-            "com.vaadin.data.util.FilesystemContainer",
-            "com.vaadin.data.util.Filter",
-            "com.vaadin.data.util.HierarchicalContainer",
-            "com.vaadin.data.util.IndexedContainer",
-            "com.vaadin.data.util.ItemSorter",
-            "com.vaadin.data.util.MethodProperty",
-            "com.vaadin.data.util.ObjectProperty",
-            "com.vaadin.data.util.PropertyFormatter",
-            "com.vaadin.data.util.PropertysetItem",
-            "com.vaadin.data.util.QueryContainer",
-            "com.vaadin.data.util.TextFileProperty",
-            "com.vaadin.data.Validatable",
-            "com.vaadin.data.validator.AbstractStringValidator",
-            "com.vaadin.data.validator.AbstractValidator",
-            "com.vaadin.data.validator.CompositeValidator",
-            "com.vaadin.data.validator.DoubleValidator",
-            "com.vaadin.data.validator.EmailValidator",
-            "com.vaadin.data.validator.IntegerValidator",
-            "com.vaadin.data.validator.NullValidator",
-            "com.vaadin.data.validator.RegexpValidator",
-            "com.vaadin.data.validator.StringLengthValidator",
-            "com.vaadin.data.Validator", "com.vaadin.event.Action",
-            "com.vaadin.event.ComponentEventListener",
-            "com.vaadin.event.EventRouter", "com.vaadin.event.FieldEvents",
-            "com.vaadin.event.ItemClickEvent", "com.vaadin.event.LayoutEvents",
-            "com.vaadin.event.ListenerMethod",
-            "com.vaadin.event.MethodEventSource",
-            "com.vaadin.event.MouseEvents", "com.vaadin.event.ShortcutAction",
-            "com.vaadin.launcher.DemoLauncher",
-            "com.vaadin.launcher.DevelopmentServerLauncher",
-            "com.vaadin.launcher.util.BrowserLauncher",
-            "com.vaadin.service.ApplicationContext",
-            "com.vaadin.service.FileTypeResolver",
-            "com.vaadin.server.ApplicationResource",
-            "com.vaadin.server.ClassResource",
-            "com.vaadin.server.CompositeErrorMessage",
-            "com.vaadin.server.DownloadStream",
-            "com.vaadin.server.ErrorMessage",
-            "com.vaadin.server.ExternalResource",
-            "com.vaadin.server.FileResource",
-            "com.vaadin.terminal.gwt.client.ApplicationConfiguration",
-            "com.vaadin.terminal.gwt.client.ApplicationConnection",
-            "com.vaadin.terminal.gwt.client.BrowserInfo",
-            "com.vaadin.terminal.gwt.client.ClientExceptionHandler",
-            "com.vaadin.terminal.gwt.client.ComponentDetail",
-            "com.vaadin.terminal.gwt.client.ComponentDetailMap",
-            "com.vaadin.terminal.gwt.client.ComponentLocator",
-            "com.vaadin.terminal.gwt.client.Console",
-            "com.vaadin.terminal.gwt.client.Container",
-            "com.vaadin.terminal.gwt.client.ContainerResizedListener",
-            "com.vaadin.terminal.gwt.client.CSSRule",
-            "com.vaadin.terminal.gwt.client.DateTimeService",
-            "com.vaadin.terminal.gwt.client.DefaultWidgetSet",
-            "com.vaadin.terminal.gwt.client.Focusable",
-            "com.vaadin.terminal.gwt.client.HistoryImplIEVaadin",
-            "com.vaadin.terminal.gwt.client.LocaleNotLoadedException",
-            "com.vaadin.terminal.gwt.client.LocaleService",
-            "com.vaadin.terminal.gwt.client.MouseEventDetails",
-            "com.vaadin.terminal.gwt.client.NullConsole",
-            "com.vaadin.terminal.gwt.client.Paintable",
-            "com.vaadin.terminal.gwt.client.RenderInformation",
-            "com.vaadin.terminal.gwt.client.RenderSpace",
-            "com.vaadin.terminal.gwt.client.StyleConstants",
-            "com.vaadin.terminal.gwt.client.TooltipInfo",
-            "com.vaadin.terminal.gwt.client.ui.Action",
-            "com.vaadin.terminal.gwt.client.ui.ActionOwner",
-            "com.vaadin.terminal.gwt.client.ui.AlignmentInfo",
-            "com.vaadin.terminal.gwt.client.ui.CalendarEntry",
-            "com.vaadin.terminal.gwt.client.ui.ClickEventHandler",
-            "com.vaadin.terminal.gwt.client.ui.Field",
-            "com.vaadin.terminal.gwt.client.ui.Icon",
-            "com.vaadin.terminal.gwt.client.ui.layout.CellBasedLayout",
-            "com.vaadin.terminal.gwt.client.ui.layout.ChildComponentContainer",
-            "com.vaadin.terminal.gwt.client.ui.layout.Margins",
-            "com.vaadin.terminal.gwt.client.ui.LayoutClickEventHandler",
-            "com.vaadin.terminal.gwt.client.ui.MenuBar",
-            "com.vaadin.terminal.gwt.client.ui.MenuItem",
-            "com.vaadin.terminal.gwt.client.ui.richtextarea.VRichTextToolbar",
-            "com.vaadin.terminal.gwt.client.ui.ShortcutActionHandler",
-            "com.vaadin.terminal.gwt.client.ui.SubPartAware",
-            "com.vaadin.terminal.gwt.client.ui.Table",
-            "com.vaadin.terminal.gwt.client.ui.TreeAction",
-            "com.vaadin.terminal.gwt.client.ui.TreeImages",
-            "com.vaadin.terminal.gwt.client.ui.VAbsoluteLayout",
-            "com.vaadin.terminal.gwt.client.ui.VAccordion",
-            "com.vaadin.terminal.gwt.client.ui.VButton",
-            "com.vaadin.terminal.gwt.client.ui.VCalendarPanel",
-            "com.vaadin.terminal.gwt.client.ui.VCheckBox",
-            "com.vaadin.terminal.gwt.client.ui.VContextMenu",
-            "com.vaadin.terminal.gwt.client.ui.VCssLayout",
-            "com.vaadin.terminal.gwt.client.ui.VCustomComponent",
-            "com.vaadin.terminal.gwt.client.ui.VCustomLayout",
-            "com.vaadin.terminal.gwt.client.ui.VDateField",
-            "com.vaadin.terminal.gwt.client.ui.VDateFieldCalendar",
-            "com.vaadin.terminal.gwt.client.ui.VEmbedded",
-            "com.vaadin.terminal.gwt.client.ui.VFilterSelect",
-            "com.vaadin.terminal.gwt.client.ui.VForm",
-            "com.vaadin.terminal.gwt.client.ui.VFormLayout",
-            "com.vaadin.terminal.gwt.client.ui.VGridLayout",
-            "com.vaadin.terminal.gwt.client.ui.VHorizontalLayout",
-            "com.vaadin.terminal.gwt.client.ui.VLabel",
-            "com.vaadin.terminal.gwt.client.ui.VLink",
-            "com.vaadin.terminal.gwt.client.ui.VListSelect",
-            "com.vaadin.terminal.gwt.client.ui.VMarginInfo",
-            "com.vaadin.terminal.gwt.client.ui.VMenuBar",
-            "com.vaadin.terminal.gwt.client.ui.VNativeButton",
-            "com.vaadin.terminal.gwt.client.ui.VNativeSelect",
-            "com.vaadin.terminal.gwt.client.ui.VNotification",
-            "com.vaadin.terminal.gwt.client.ui.VOptionGroup",
-            "com.vaadin.terminal.gwt.client.ui.VOptionGroupBase",
-            "com.vaadin.terminal.gwt.client.ui.VOrderedLayout",
-            "com.vaadin.terminal.gwt.client.ui.VOverlay",
-            "com.vaadin.terminal.gwt.client.ui.VPanel",
-            "com.vaadin.terminal.gwt.client.ui.VPasswordField",
-            "com.vaadin.terminal.gwt.client.ui.VPopupCalendar",
-            "com.vaadin.terminal.gwt.client.ui.VPopupView",
-            "com.vaadin.terminal.gwt.client.ui.VProgressIndicator",
-            "com.vaadin.terminal.gwt.client.ui.VRichTextArea",
-            "com.vaadin.terminal.gwt.client.ui.VScrollTable",
-            "com.vaadin.terminal.gwt.client.ui.VSlider",
-            "com.vaadin.terminal.gwt.client.ui.VSplitPanel",
-            "com.vaadin.terminal.gwt.client.ui.VSplitPanelHorizontal",
-            "com.vaadin.terminal.gwt.client.ui.VSplitPanelVertical",
-            "com.vaadin.terminal.gwt.client.ui.VTablePaging",
-            "com.vaadin.terminal.gwt.client.ui.VTabsheet",
-            "com.vaadin.terminal.gwt.client.ui.VTabsheetBase",
-            "com.vaadin.terminal.gwt.client.ui.VTabsheetPanel",
-            "com.vaadin.terminal.gwt.client.ui.VTextArea",
-            "com.vaadin.terminal.gwt.client.ui.VTextField",
-            "com.vaadin.terminal.gwt.client.ui.VTextualDate",
-            "com.vaadin.terminal.gwt.client.ui.VTime",
-            "com.vaadin.terminal.gwt.client.ui.VTree",
-            "com.vaadin.terminal.gwt.client.ui.VTwinColSelect",
-            "com.vaadin.terminal.gwt.client.ui.VUnknownComponent",
-            "com.vaadin.terminal.gwt.client.ui.VUpload",
-            "com.vaadin.terminal.gwt.client.ui.VUriFragmentUtility",
-            "com.vaadin.terminal.gwt.client.ui.VVerticalLayout",
-            "com.vaadin.terminal.gwt.client.ui.VView",
-            "com.vaadin.terminal.gwt.client.ui.VWindow",
-            "com.vaadin.terminal.gwt.client.UIDL",
-            "com.vaadin.terminal.gwt.client.Util",
-            "com.vaadin.terminal.gwt.client.ValueMap",
-            "com.vaadin.terminal.gwt.client.VCaption",
-            "com.vaadin.terminal.gwt.client.VCaptionWrapper",
-            "com.vaadin.terminal.gwt.client.VDebugConsole",
-            "com.vaadin.terminal.gwt.client.VErrorMessage",
-            "com.vaadin.terminal.gwt.client.VTooltip",
-            "com.vaadin.terminal.gwt.client.VUIDLBrowser",
-            "com.vaadin.terminal.gwt.client.WidgetMap",
-            "com.vaadin.terminal.gwt.client.WidgetSet",
-            "com.vaadin.server.AbstractApplicationPortlet",
-            "com.vaadin.server.AbstractApplicationServlet",
-            "com.vaadin.server.AbstractCommunicationManager",
-            "com.vaadin.server.AbstractWebApplicationContext",
-            "com.vaadin.server.ApplicationPortlet",
-            "com.vaadin.server.ApplicationPortlet2",
-            "com.vaadin.server.ApplicationRunnerServlet",
-            "com.vaadin.server.ApplicationServlet",
-            "com.vaadin.server.ChangeVariablesErrorEvent",
-            "com.vaadin.server.CommunicationManager",
-            "com.vaadin.server.ComponentSizeValidator",
-            "com.vaadin.server.Constants",
-            "com.vaadin.server.GAEApplicationServlet",
-            "com.vaadin.server.HttpServletRequestListener",
-            "com.vaadin.server.HttpUploadStream",
-            "com.vaadin.server.JsonPaintTarget",
-            "com.vaadin.server.PortletApplicationContext",
-            "com.vaadin.server.PortletApplicationContext2",
-            "com.vaadin.server.PortletCommunicationManager",
-            "com.vaadin.server.PortletRequestListener",
-            "com.vaadin.server.RestrictedRenderResponse",
-            "com.vaadin.server.SessionExpiredException",
-            "com.vaadin.server.SystemMessageException",
-            "com.vaadin.server.WebApplicationContext",
-            "com.vaadin.server.WebBrowser",
-            "com.vaadin.server.widgetsetutils.ClassPathExplorer",
-            "com.vaadin.server.widgetsetutils.WidgetMapGenerator",
-            "com.vaadin.server.widgetsetutils.WidgetSetBuilder",
-            "com.vaadin.server.KeyMapper", "com.vaadin.server.Paintable",
-            "com.vaadin.server.PaintException",
-            "com.vaadin.server.PaintTarget",
-            "com.vaadin.server.ParameterHandler", "com.vaadin.server.Resource",
-            "com.vaadin.server.Scrollable", "com.vaadin.server.Sizeable",
-            "com.vaadin.server.StreamResource",
-            "com.vaadin.server.SystemError", "com.vaadin.server.Terminal",
-            "com.vaadin.server.ThemeResource",
-            "com.vaadin.server.UploadStream", "com.vaadin.server.URIHandler",
-            "com.vaadin.server.UserError", "com.vaadin.server.VariableOwner",
-            "com.vaadin.tools.ReflectTools",
-            "com.vaadin.tools.WidgetsetCompiler",
-            "com.vaadin.ui.AbsoluteLayout", "com.vaadin.ui.AbstractComponent",
-            "com.vaadin.ui.AbstractComponentContainer",
-            "com.vaadin.ui.AbstractField", "com.vaadin.ui.AbstractLayout",
-            "com.vaadin.ui.AbstractOrderedLayout",
-            "com.vaadin.ui.AbstractSelect", "com.vaadin.ui.Accordion",
-            "com.vaadin.ui.Alignment", "com.vaadin.ui.AlignmentUtils",
-            "com.vaadin.ui.BaseFieldFactory", "com.vaadin.ui.Button",
-            "com.vaadin.ui.CheckBox", "com.vaadin.ui.ClientWidget",
-            "com.vaadin.ui.ComboBox", "com.vaadin.ui.Component",
-            "com.vaadin.ui.ComponentContainer", "com.vaadin.ui.CssLayout",
-            "com.vaadin.ui.CustomComponent", "com.vaadin.ui.CustomLayout",
-            "com.vaadin.ui.DateField", "com.vaadin.ui.DefaultFieldFactory",
-            "com.vaadin.ui.Embedded", "com.vaadin.ui.ExpandLayout",
-            "com.vaadin.ui.Field", "com.vaadin.ui.FieldFactory",
-            "com.vaadin.ui.Form", "com.vaadin.ui.FormFieldFactory",
-            "com.vaadin.ui.FormLayout", "com.vaadin.ui.GridLayout",
-            "com.vaadin.ui.HorizontalLayout", "com.vaadin.ui.InlineDateField",
-            "com.vaadin.ui.Label", "com.vaadin.ui.Layout",
-            "com.vaadin.ui.Link", "com.vaadin.ui.ListSelect",
-            "com.vaadin.ui.LoginForm", "com.vaadin.ui.MenuBar",
-            "com.vaadin.ui.NativeButton", "com.vaadin.ui.NativeSelect",
-            "com.vaadin.ui.OptionGroup", "com.vaadin.ui.OrderedLayout",
-            "com.vaadin.ui.Panel", "com.vaadin.ui.PopupDateField",
-            "com.vaadin.ui.PopupView", "com.vaadin.ui.ProgressIndicator",
-            "com.vaadin.ui.RichTextArea", "com.vaadin.ui.Select",
-            "com.vaadin.ui.Slider", "com.vaadin.ui.SplitPanel",
-            "com.vaadin.ui.Table", "com.vaadin.ui.TableFieldFactory",
-            "com.vaadin.ui.TabSheet", "com.vaadin.ui.TextField",
-            "com.vaadin.ui.Tree", "com.vaadin.ui.TwinColSelect",
-            "com.vaadin.ui.Upload", "com.vaadin.ui.UriFragmentUtility",
-            "com.vaadin.ui.VerticalLayout", "com.vaadin.ui.Window",
-            "com.vaadin.util.SerializerHelper", "org.vaadin.test.LastClass" };
+    protected final String[] sampleData = { "com.vaadin.annotations.AutoGenerated", "com.vaadin.Application", "com.vaadin.data.Buffered", "com.vaadin.data.BufferedValidatable", "com.vaadin.data.Container", "com.vaadin.data.Item", "com.vaadin.data.Property", "com.vaadin.data.util.BeanItem", "com.vaadin.data.util.BeanItemContainer", "com.vaadin.data.util.ContainerHierarchicalWrapper", "com.vaadin.data.util.ContainerOrderedWrapper", "com.vaadin.data.util.DefaultItemSorter", "com.vaadin.data.util.FilesystemContainer", "com.vaadin.data.util.Filter", "com.vaadin.data.util.HierarchicalContainer", "com.vaadin.data.util.IndexedContainer", "com.vaadin.data.util.ItemSorter", "com.vaadin.data.util.MethodProperty", "com.vaadin.data.util.ObjectProperty", "com.vaadin.data.util.PropertyFormatter", "com.vaadin.data.util.PropertysetItem", "com.vaadin.data.util.QueryContainer", "com.vaadin.data.util.TextFileProperty", "com.vaadin.data.Validatable", "com.vaadin.data.validator.AbstractStringValidator", "com.vaadin.data.validator.AbstractValidator", "com.vaadin.data.validator.CompositeValidator", "com.vaadin.data.validator.DoubleValidator", "com.vaadin.data.validator.EmailValidator", "com.vaadin.data.validator.IntegerValidator", "com.vaadin.data.validator.NullValidator", "com.vaadin.data.validator.RegexpValidator", "com.vaadin.data.validator.StringLengthValidator", "com.vaadin.data.Validator", "com.vaadin.event.Action", "com.vaadin.event.ComponentEventListener", "com.vaadin.event.EventRouter", "com.vaadin.event.FieldEvents", "com.vaadin.event.ItemClickEvent", "com.vaadin.event.LayoutEvents", "com.vaadin.event.ListenerMethod", "com.vaadin.event.MethodEventSource", "com.vaadin.event.MouseEvents", "com.vaadin.event.ShortcutAction", "com.vaadin.launcher.DemoLauncher", "com.vaadin.launcher.DevelopmentServerLauncher", "com.vaadin.launcher.util.BrowserLauncher", "com.vaadin.service.ApplicationContext", "com.vaadin.service.FileTypeResolver", "com.vaadin.server.ApplicationResource", "com.vaadin.server.ClassResource", "com.vaadin.server.CompositeErrorMessage", "com.vaadin.server.DownloadStream", "com.vaadin.server.ErrorMessage", "com.vaadin.server.ExternalResource", "com.vaadin.server.FileResource", "com.vaadin.terminal.gwt.client.ApplicationConfiguration", "com.vaadin.terminal.gwt.client.ApplicationConnection", "com.vaadin.terminal.gwt.client.BrowserInfo", "com.vaadin.terminal.gwt.client.ClientExceptionHandler", "com.vaadin.terminal.gwt.client.ComponentDetail", "com.vaadin.terminal.gwt.client.ComponentDetailMap", "com.vaadin.terminal.gwt.client.ComponentLocator", "com.vaadin.terminal.gwt.client.Console", "com.vaadin.terminal.gwt.client.Container", "com.vaadin.terminal.gwt.client.ContainerResizedListener", "com.vaadin.terminal.gwt.client.CSSRule", "com.vaadin.terminal.gwt.client.DateTimeService", "com.vaadin.terminal.gwt.client.DefaultWidgetSet", "com.vaadin.terminal.gwt.client.Focusable", "com.vaadin.terminal.gwt.client.HistoryImplIEVaadin", "com.vaadin.terminal.gwt.client.LocaleNotLoadedException", "com.vaadin.terminal.gwt.client.LocaleService", "com.vaadin.terminal.gwt.client.MouseEventDetails", "com.vaadin.terminal.gwt.client.NullConsole", "com.vaadin.terminal.gwt.client.Paintable", "com.vaadin.terminal.gwt.client.RenderInformation", "com.vaadin.terminal.gwt.client.RenderSpace", "com.vaadin.terminal.gwt.client.StyleConstants", "com.vaadin.terminal.gwt.client.TooltipInfo", "com.vaadin.terminal.gwt.client.ui.Action", "com.vaadin.terminal.gwt.client.ui.ActionOwner", "com.vaadin.terminal.gwt.client.ui.AlignmentInfo", "com.vaadin.terminal.gwt.client.ui.CalendarEntry", "com.vaadin.terminal.gwt.client.ui.ClickEventHandler", "com.vaadin.terminal.gwt.client.ui.Field", "com.vaadin.terminal.gwt.client.ui.Icon", "com.vaadin.terminal.gwt.client.ui.layout.CellBasedLayout", "com.vaadin.terminal.gwt.client.ui.layout.ChildComponentContainer", "com.vaadin.terminal.gwt.client.ui.layout.Margins", "com.vaadin.terminal.gwt.client.ui.LayoutClickEventHandler", "com.vaadin.terminal.gwt.client.ui.MenuBar", "com.vaadin.terminal.gwt.client.ui.MenuItem", "com.vaadin.terminal.gwt.client.ui.richtextarea.VRichTextToolbar", "com.vaadin.terminal.gwt.client.ui.ShortcutActionHandler", "com.vaadin.terminal.gwt.client.ui.SubPartAware", "com.vaadin.terminal.gwt.client.ui.Table", "com.vaadin.terminal.gwt.client.ui.TreeAction", "com.vaadin.terminal.gwt.client.ui.TreeImages", "com.vaadin.terminal.gwt.client.ui.VAbsoluteLayout", "com.vaadin.terminal.gwt.client.ui.VAccordion", "com.vaadin.terminal.gwt.client.ui.VButton", "com.vaadin.terminal.gwt.client.ui.VCalendarPanel", "com.vaadin.terminal.gwt.client.ui.VCheckBox", "com.vaadin.terminal.gwt.client.ui.VContextMenu", "com.vaadin.terminal.gwt.client.ui.VCssLayout", "com.vaadin.terminal.gwt.client.ui.VCustomComponent", "com.vaadin.terminal.gwt.client.ui.VCustomLayout", "com.vaadin.terminal.gwt.client.ui.VDateField", "com.vaadin.terminal.gwt.client.ui.VDateFieldCalendar", "com.vaadin.terminal.gwt.client.ui.VEmbedded", "com.vaadin.terminal.gwt.client.ui.VFilterSelect", "com.vaadin.terminal.gwt.client.ui.VForm", "com.vaadin.terminal.gwt.client.ui.VFormLayout", "com.vaadin.terminal.gwt.client.ui.VGridLayout", "com.vaadin.terminal.gwt.client.ui.VHorizontalLayout", "com.vaadin.terminal.gwt.client.ui.VLabel", "com.vaadin.terminal.gwt.client.ui.VLink", "com.vaadin.terminal.gwt.client.ui.VListSelect", "com.vaadin.terminal.gwt.client.ui.VMarginInfo", "com.vaadin.terminal.gwt.client.ui.VMenuBar", "com.vaadin.terminal.gwt.client.ui.VNativeButton", "com.vaadin.terminal.gwt.client.ui.VNativeSelect", "com.vaadin.terminal.gwt.client.ui.VNotification", "com.vaadin.terminal.gwt.client.ui.VOptionGroup", "com.vaadin.terminal.gwt.client.ui.VOptionGroupBase", "com.vaadin.terminal.gwt.client.ui.VOrderedLayout", "com.vaadin.terminal.gwt.client.ui.VOverlay", "com.vaadin.terminal.gwt.client.ui.VPanel", "com.vaadin.terminal.gwt.client.ui.VPasswordField", "com.vaadin.terminal.gwt.client.ui.VPopupCalendar", "com.vaadin.terminal.gwt.client.ui.VPopupView", "com.vaadin.terminal.gwt.client.ui.VProgressIndicator", "com.vaadin.terminal.gwt.client.ui.VRichTextArea", "com.vaadin.terminal.gwt.client.ui.VScrollTable", "com.vaadin.terminal.gwt.client.ui.VSlider", "com.vaadin.terminal.gwt.client.ui.VSplitPanel", "com.vaadin.terminal.gwt.client.ui.VSplitPanelHorizontal", "com.vaadin.terminal.gwt.client.ui.VSplitPanelVertical", "com.vaadin.terminal.gwt.client.ui.VTablePaging", "com.vaadin.terminal.gwt.client.ui.VTabsheet", "com.vaadin.terminal.gwt.client.ui.VTabsheetBase", "com.vaadin.terminal.gwt.client.ui.VTabsheetPanel", "com.vaadin.terminal.gwt.client.ui.VTextArea", "com.vaadin.terminal.gwt.client.ui.VTextField", "com.vaadin.terminal.gwt.client.ui.VTextualDate", "com.vaadin.terminal.gwt.client.ui.VTime", "com.vaadin.terminal.gwt.client.ui.VTree", "com.vaadin.terminal.gwt.client.ui.VTwinColSelect", "com.vaadin.terminal.gwt.client.ui.VUnknownComponent", "com.vaadin.terminal.gwt.client.ui.VUpload", "com.vaadin.terminal.gwt.client.ui.VUriFragmentUtility", "com.vaadin.terminal.gwt.client.ui.VVerticalLayout", "com.vaadin.terminal.gwt.client.ui.VView", "com.vaadin.terminal.gwt.client.ui.VWindow", "com.vaadin.terminal.gwt.client.UIDL", "com.vaadin.terminal.gwt.client.Util", "com.vaadin.terminal.gwt.client.ValueMap", "com.vaadin.terminal.gwt.client.VCaption", "com.vaadin.terminal.gwt.client.VCaptionWrapper", "com.vaadin.terminal.gwt.client.VDebugConsole", "com.vaadin.terminal.gwt.client.VErrorMessage", "com.vaadin.terminal.gwt.client.VTooltip", "com.vaadin.terminal.gwt.client.VUIDLBrowser", "com.vaadin.terminal.gwt.client.WidgetMap", "com.vaadin.terminal.gwt.client.WidgetSet", "com.vaadin.server.AbstractApplicationPortlet", "com.vaadin.server.AbstractApplicationServlet", "com.vaadin.server.AbstractCommunicationManager", "com.vaadin.server.AbstractWebApplicationContext", "com.vaadin.server.ApplicationPortlet", "com.vaadin.server.ApplicationPortlet2", "com.vaadin.server.ApplicationRunnerServlet",
+            "com.vaadin.server.ApplicationServlet", "com.vaadin.server.ChangeVariablesErrorEvent", "com.vaadin.server.CommunicationManager", "com.vaadin.server.ComponentSizeValidator", "com.vaadin.server.Constants", "com.vaadin.server.GAEApplicationServlet", "com.vaadin.server.HttpServletRequestListener", "com.vaadin.server.HttpUploadStream", "com.vaadin.server.JsonPaintTarget", "com.vaadin.server.PortletApplicationContext", "com.vaadin.server.PortletApplicationContext2", "com.vaadin.server.PortletCommunicationManager", "com.vaadin.server.PortletRequestListener", "com.vaadin.server.RestrictedRenderResponse", "com.vaadin.server.SessionExpiredException", "com.vaadin.server.SystemMessageException", "com.vaadin.server.WebApplicationContext", "com.vaadin.server.WebBrowser", "com.vaadin.server.widgetsetutils.ClassPathExplorer", "com.vaadin.server.widgetsetutils.WidgetMapGenerator", "com.vaadin.server.widgetsetutils.WidgetSetBuilder", "com.vaadin.server.KeyMapper", "com.vaadin.server.Paintable", "com.vaadin.server.PaintException", "com.vaadin.server.PaintTarget", "com.vaadin.server.ParameterHandler", "com.vaadin.server.Resource", "com.vaadin.server.Scrollable", "com.vaadin.server.Sizeable", "com.vaadin.server.StreamResource", "com.vaadin.server.SystemError", "com.vaadin.server.Terminal", "com.vaadin.server.ThemeResource", "com.vaadin.server.UploadStream", "com.vaadin.server.URIHandler", "com.vaadin.server.UserError", "com.vaadin.server.VariableOwner", "com.vaadin.tools.ReflectTools", "com.vaadin.tools.WidgetsetCompiler", "com.vaadin.ui.AbsoluteLayout", "com.vaadin.ui.AbstractComponent", "com.vaadin.ui.AbstractComponentContainer", "com.vaadin.ui.AbstractField", "com.vaadin.ui.AbstractLayout", "com.vaadin.ui.AbstractOrderedLayout", "com.vaadin.ui.AbstractSelect", "com.vaadin.ui.Accordion", "com.vaadin.ui.Alignment", "com.vaadin.ui.AlignmentUtils", "com.vaadin.ui.BaseFieldFactory", "com.vaadin.ui.Button", "com.vaadin.ui.CheckBox", "com.vaadin.ui.ClientWidget", "com.vaadin.ui.ComboBox", "com.vaadin.ui.Component", "com.vaadin.ui.ComponentContainer", "com.vaadin.ui.CssLayout", "com.vaadin.ui.CustomComponent", "com.vaadin.ui.CustomLayout", "com.vaadin.ui.DateField", "com.vaadin.ui.DefaultFieldFactory", "com.vaadin.ui.Embedded", "com.vaadin.ui.ExpandLayout", "com.vaadin.ui.Field", "com.vaadin.ui.FieldFactory", "com.vaadin.ui.Form", "com.vaadin.ui.FormFieldFactory", "com.vaadin.ui.FormLayout", "com.vaadin.ui.GridLayout", "com.vaadin.ui.HorizontalLayout", "com.vaadin.ui.InlineDateField", "com.vaadin.ui.Label", "com.vaadin.ui.Layout", "com.vaadin.ui.Link", "com.vaadin.ui.ListSelect", "com.vaadin.ui.LoginForm", "com.vaadin.ui.MenuBar", "com.vaadin.ui.NativeButton", "com.vaadin.ui.NativeSelect", "com.vaadin.ui.OptionGroup", "com.vaadin.ui.OrderedLayout", "com.vaadin.ui.Panel", "com.vaadin.ui.PopupDateField", "com.vaadin.ui.PopupView", "com.vaadin.ui.ProgressIndicator", "com.vaadin.ui.RichTextArea", "com.vaadin.ui.Select", "com.vaadin.ui.Slider", "com.vaadin.ui.SplitPanel", "com.vaadin.ui.Table", "com.vaadin.ui.TableFieldFactory", "com.vaadin.ui.TabSheet", "com.vaadin.ui.TextField", "com.vaadin.ui.Tree", "com.vaadin.ui.TwinColSelect", "com.vaadin.ui.Upload", "com.vaadin.ui.UriFragmentUtility", "com.vaadin.ui.VerticalLayout", "com.vaadin.ui.Window", "com.vaadin.util.SerializerHelper", "org.vaadin.test.LastClass" };
 }

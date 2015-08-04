@@ -15,7 +15,6 @@
  */
 package com.vaadin.tests.push;
 
-public class ExtremelyLongPushTimeStreamingTest extends
-        ExtremelyLongPushTimeTest {
+public class ExtremelyLongPushTimeStreamingTest extends ExtremelyLongPushTimeTest {
 
 }

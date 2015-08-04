@@ -33,8 +33,7 @@ public class StylePrefixTest extends MultiBrowserTest {
     public void testStylePrefix() {
         openTestURL();
 
-        Assert.assertTrue("Custom style has unexpected prefix",
-                isElementPresent(By.className("v-formlayout-mystyle")));
+        Assert.assertTrue("Custom style has unexpected prefix", isElementPresent(By.className("v-formlayout-mystyle")));
     }
 
 }

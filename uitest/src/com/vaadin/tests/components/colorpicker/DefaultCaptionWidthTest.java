@@ -53,14 +53,11 @@ public class DefaultCaptionWidthTest extends MultiBrowserTest {
     }
 
     protected void checkStylePresence(boolean expectedStyle) {
-        String clazz = $(ColorPickerElement.class).first()
-                .getAttribute("class");
+        String clazz = $(ColorPickerElement.class).first().getAttribute("class");
         if (expectedStyle) {
-            Assert.assertTrue("Default caption style is not found",
-                    clazz.contains("v-default-caption-width"));
+            Assert.assertTrue("Default caption style is not found", clazz.contains("v-default-caption-width"));
         } else {
-            Assert.assertFalse("Found unexpected default caption style",
-                    clazz.contains("v-default-caption-width"));
+            Assert.assertFalse("Found unexpected default caption style", clazz.contains("v-default-caption-width"));
         }
     }
 

@@ -41,11 +41,9 @@ public class CommunicationError extends UIProvider {
 
     @Override
     public Class<? extends UI> getUIClass(UIClassSelectionEvent event) {
-        VaadinServletRequest request = (VaadinServletRequest) event
-                .getRequest();
+        VaadinServletRequest request = (VaadinServletRequest) event.getRequest();
         String currentUrl = request.getRequestURL().toString();
-        StringBuilder redirectClass = new StringBuilder(
-                CommunicationError.class.getSimpleName());
+        StringBuilder redirectClass = new StringBuilder(CommunicationError.class.getSimpleName());
         redirectClass.append('$');
         redirectClass.append(RedirectedUI.class.getSimpleName());
 
@@ -53,12 +51,9 @@ public class CommunicationError extends UIProvider {
         if (!currentUrl.contains(restartApplication)) {
             redirectClass.append(restartApplication);
         }
-        final String url = currentUrl.replace(
-                CommunicationError.class.getSimpleName(), redirectClass);
+        final String url = currentUrl.replace(CommunicationError.class.getSimpleName(), redirectClass);
 
-        request.setAttribute(
-                ApplicationRunnerServlet.CUSTOM_SYSTEM_MESSAGES_PROPERTY,
-                createSystemMessages(url));
+        request.setAttribute(ApplicationRunnerServlet.CUSTOM_SYSTEM_MESSAGES_PROPERTY, createSystemMessages(url));
 
         return CommunicationErrorUI.class;
     }
@@ -67,24 +62,22 @@ public class CommunicationError extends UIProvider {
 
         @Override
         protected void setup(VaadinRequest request) {
-            Button button = new Button("Send bad request",
-                    new Button.ClickListener() {
+            Button button = new Button("Send bad request", new Button.ClickListener() {
 
-                        @Override
-                        public void buttonClick(ClickEvent event) {
-                            try {
-                                // An unparseable response will cause
-                                // communication error
-                                PrintWriter writer = VaadinService
-                                        .getCurrentResponse().getWriter();
-                                writer.write("for(;;)[{FOOBAR}]");
-                                writer.flush();
-                                writer.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+                @Override
+                public void buttonClick(ClickEvent event) {
+                    try {
+                        // An unparseable response will cause
+                        // communication error
+                        PrintWriter writer = VaadinService.getCurrentResponse().getWriter();
+                        writer.write("for(;;)[{FOOBAR}]");
+                        writer.flush();
+                        writer.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
             addComponent(button);
         }
 

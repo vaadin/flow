@@ -24,10 +24,8 @@ public class DefaultAlignmentTest {
         TextField tf = new TextField("A TextField");
         gridLayout.addComponent(label);
         gridLayout.addComponent(tf);
-        Assert.assertEquals(Alignment.TOP_LEFT,
-                gridLayout.getComponentAlignment(label));
-        Assert.assertEquals(Alignment.TOP_LEFT,
-                gridLayout.getComponentAlignment(tf));
+        Assert.assertEquals(Alignment.TOP_LEFT, gridLayout.getComponentAlignment(label));
+        Assert.assertEquals(Alignment.TOP_LEFT, gridLayout.getComponentAlignment(tf));
     }
 
     @Test
@@ -37,9 +35,7 @@ public class DefaultAlignmentTest {
         gridLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
         gridLayout.addComponent(label);
         gridLayout.addComponent(tf);
-        Assert.assertEquals(Alignment.MIDDLE_CENTER,
-                gridLayout.getComponentAlignment(label));
-        Assert.assertEquals(Alignment.MIDDLE_CENTER,
-                gridLayout.getComponentAlignment(tf));
+        Assert.assertEquals(Alignment.MIDDLE_CENTER, gridLayout.getComponentAlignment(label));
+        Assert.assertEquals(Alignment.MIDDLE_CENTER, gridLayout.getComponentAlignment(tf));
     }
 }

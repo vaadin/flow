@@ -41,8 +41,7 @@ public class GridSortIndicator extends AbstractTestUI {
 
             @Override
             public void sort(SortEvent event) {
-                List<SortOrder> currentSortOrder = new ArrayList<SortOrder>(
-                        event.getSortOrder());
+                List<SortOrder> currentSortOrder = new ArrayList<SortOrder>(event.getSortOrder());
                 if (currentSortOrder.size() == 1) {
                     // If the name column was clicked, set a new sort order for
                     // both columns. Otherwise, revert to oldSortDirection if it
@@ -50,15 +49,11 @@ public class GridSortIndicator extends AbstractTestUI {
                     List<SortOrder> newSortOrder = new ArrayList<SortOrder>();
                     SortDirection newSortDirection = oldSortDirection;
                     if (currentSortOrder.get(0).getPropertyId().equals("Name")) {
-                        newSortDirection = SortDirection.ASCENDING
-                                .equals(oldSortDirection) ? SortDirection.DESCENDING
-                                : SortDirection.ASCENDING;
+                        newSortDirection = SortDirection.ASCENDING.equals(oldSortDirection) ? SortDirection.DESCENDING : SortDirection.ASCENDING;
                     }
                     if (newSortDirection != null) {
-                        newSortOrder
-                                .add(new SortOrder("Name", newSortDirection));
-                        newSortOrder.add(new SortOrder("Value",
-                                newSortDirection));
+                        newSortOrder.add(new SortOrder("Name", newSortDirection));
+                        newSortOrder.add(new SortOrder("Value", newSortDirection));
                         g.setSortOrder(newSortOrder);
                     }
                     oldSortDirection = newSortDirection;
@@ -83,9 +78,7 @@ public class GridSortIndicator extends AbstractTestUI {
 
     @Override
     public String getTestDescription() {
-        return "When the first column is the primary sort column, both columns should have "
-                + "a sort indicator with the same sort direction. Clicking on the right column "
-                + "in that state should have no effect.";
+        return "When the first column is the primary sort column, both columns should have " + "a sort indicator with the same sort direction. Clicking on the right column " + "in that state should have no effect.";
     }
 
     @Override

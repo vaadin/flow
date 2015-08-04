@@ -34,8 +34,7 @@ import com.vaadin.shared.VBrowserDetails;
 import com.vaadin.shared.ui.Connect;
 
 @Connect(FileDownloader.class)
-public class FileDownloaderConnector extends AbstractExtensionConnector
-        implements ClickHandler {
+public class FileDownloaderConnector extends AbstractExtensionConnector implements ClickHandler {
 
     private IFrameElement iframe;
 

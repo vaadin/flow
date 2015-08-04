@@ -23,11 +23,8 @@ public class IntegerTextFieldStandalone extends AbstractTestUI {
             public void buttonClick(ClickEvent event) {
                 String uiValue = textField.getValue();
                 try {
-                    Integer convertedValue = (Integer) textField
-                            .getConvertedValue();
-                    Notification.show("UI value (String): " + uiValue
-                            + "<br />Converted value (Integer): "
-                            + convertedValue);
+                    Integer convertedValue = (Integer) textField.getConvertedValue();
+                    Notification.show("UI value (String): " + uiValue + "<br />Converted value (Integer): " + convertedValue);
                 } catch (ConversionException e) {
                     e.printStackTrace();
                     Notification.show("Could not convert value: " + uiValue);
@@ -36,8 +33,7 @@ public class IntegerTextFieldStandalone extends AbstractTestUI {
         });
 
         addComponent(new Label("Text field type: " + textField.getType()));
-        addComponent(new Label("Converterd text field type: "
-                + textField.getConverter().getModelType()));
+        addComponent(new Label("Converterd text field type: " + textField.getConverter().getModelType()));
         addComponent(textField);
         addComponent(submitButton);
     }

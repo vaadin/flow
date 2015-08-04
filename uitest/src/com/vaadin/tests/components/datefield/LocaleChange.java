@@ -37,8 +37,7 @@ public class LocaleChange extends AbstractTestUI {
     private static final Date dateValue;
     static {
         try {
-            dateValue = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
-                    .parse("2014-05-22 20:00:00");
+            dateValue = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse("2014-05-22 20:00:00");
         } catch (ParseException e) {
             throw new ExceptionInInitializerError("Should never happen.");
         }

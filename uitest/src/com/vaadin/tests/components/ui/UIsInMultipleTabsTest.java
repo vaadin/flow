@@ -19,7 +19,6 @@ public class UIsInMultipleTabsTest extends MultiBrowserTest {
     }
 
     private void assertUI(int i) {
-        Assert.assertEquals("Unexpected UI found,", "This is UI number " + i,
-                $(LabelElement.class).first().getText());
+        Assert.assertEquals("Unexpected UI found,", "This is UI number " + i, $(LabelElement.class).first().getText());
     }
 }

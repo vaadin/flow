@@ -28,8 +28,7 @@ import com.vaadin.ui.HasComponents.ComponentAttachDetachNotifier;
  * @author Vaadin Ltd.
  * @since 3.0
  */
-public interface ComponentContainer extends HasComponents,
-        ComponentAttachDetachNotifier {
+public interface ComponentContainer extends HasComponents, ComponentAttachDetachNotifier {
 
     /**
      * Adds the component into this container.

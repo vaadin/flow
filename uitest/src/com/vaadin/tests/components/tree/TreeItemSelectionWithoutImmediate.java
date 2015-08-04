@@ -35,8 +35,7 @@ public class TreeItemSelectionWithoutImmediate extends AbstractTestUIWithLog {
 
     @Override
     protected String getTestDescription() {
-        return "Test for ensuring that selection of tree items works correctly if immediate == false "
-                + "and ItemClickListener is added to Tree";
+        return "Test for ensuring that selection of tree items works correctly if immediate == false " + "and ItemClickListener is added to Tree";
     }
 
     @Override

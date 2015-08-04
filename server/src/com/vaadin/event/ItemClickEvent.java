@@ -40,8 +40,7 @@ public class ItemClickEvent extends ClickEvent implements Serializable {
     private Object itemId;
     private Object propertyId;
 
-    public ItemClickEvent(Component source, Item item, Object itemId,
-            Object propertyId, MouseEventDetails details) {
+    public ItemClickEvent(Component source, Item item, Object itemId, Object propertyId, MouseEventDetails details) {
         super(source, details);
         this.item = item;
         this.itemId = itemId;
@@ -82,8 +81,7 @@ public class ItemClickEvent extends ClickEvent implements Serializable {
 
     static {
         try {
-            ITEM_CLICK_METHOD = ItemClickListener.class.getDeclaredMethod(
-                    "itemClick", new Class[] { ItemClickEvent.class });
+            ITEM_CLICK_METHOD = ItemClickListener.class.getDeclaredMethod("itemClick", new Class[] { ItemClickEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
             throw new java.lang.RuntimeException();

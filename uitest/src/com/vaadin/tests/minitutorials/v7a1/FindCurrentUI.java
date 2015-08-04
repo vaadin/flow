@@ -41,8 +41,7 @@ public class FindCurrentUI extends UI {
             @Override
             public void buttonClick(ClickEvent event) {
                 String msg = "Running in ";
-                msg += VaadinSession.getCurrent().getConfiguration()
-                        .isProductionMode() ? "production" : "debug";
+                msg += VaadinSession.getCurrent().getConfiguration().isProductionMode() ? "production" : "debug";
                 Notification.show(msg);
             }
         });
@@ -50,8 +49,7 @@ public class FindCurrentUI extends UI {
         helloButton.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                Notification.show("This UI is "
-                        + UI.getCurrent().getClass().getSimpleName());
+                Notification.show("This UI is " + UI.getCurrent().getClass().getSimpleName());
             }
         });
 

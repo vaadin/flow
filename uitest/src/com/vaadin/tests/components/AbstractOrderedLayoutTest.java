@@ -7,8 +7,7 @@ import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.ui.AbstractOrderedLayout;
 import com.vaadin.ui.Component;
 
-public abstract class AbstractOrderedLayoutTest<T extends AbstractOrderedLayout>
-        extends AbstractLayoutTest<T> implements LayoutClickListener {
+public abstract class AbstractOrderedLayoutTest<T extends AbstractOrderedLayout> extends AbstractLayoutTest<T> implements LayoutClickListener {
 
     private Command<T, Boolean> layoutClickListenerCommand = new Command<T, Boolean>() {
 
@@ -46,8 +45,7 @@ public abstract class AbstractOrderedLayoutTest<T extends AbstractOrderedLayout>
     }
 
     private void createLayoutClickListenerAction(String category) {
-        createBooleanAction("Layout click listener", category, false,
-                layoutClickListenerCommand);
+        createBooleanAction("Layout click listener", category, false, layoutClickListenerCommand);
     }
 
     private void createChangeComponentExpandRatioAction(String category) {
@@ -62,14 +60,11 @@ public abstract class AbstractOrderedLayoutTest<T extends AbstractOrderedLayout>
         }
 
         for (int i = 0; i < 20; i++) {
-            String componentExpandRatioCategory = "Component " + i
-                    + " expand ratio";
+            String componentExpandRatioCategory = "Component " + i + " expand ratio";
             createCategory(componentExpandRatioCategory, expandRatioCategory);
 
             for (String option : options.keySet()) {
-                createClickAction(option, componentExpandRatioCategory,
-                        setComponentExpandRatio, Integer.valueOf(i),
-                        options.get(option));
+                createClickAction(option, componentExpandRatioCategory, setComponentExpandRatio, Integer.valueOf(i), options.get(option));
             }
 
         }
@@ -78,11 +73,7 @@ public abstract class AbstractOrderedLayoutTest<T extends AbstractOrderedLayout>
 
     @Override
     public void layoutClick(LayoutClickEvent event) {
-        log(event.getClass().getSimpleName() + ": button="
-                + event.getButtonName() + ", childComponent="
-                + event.getChildComponent().getClass().getSimpleName()
-                + ", relativeX=" + event.getRelativeX() + ", relativeY="
-                + event.getRelativeY());
+        log(event.getClass().getSimpleName() + ": button=" + event.getButtonName() + ", childComponent=" + event.getChildComponent().getClass().getSimpleName() + ", relativeX=" + event.getRelativeX() + ", relativeY=" + event.getRelativeY());
 
     }
 }

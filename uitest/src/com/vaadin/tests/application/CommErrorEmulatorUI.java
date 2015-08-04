@@ -102,26 +102,17 @@ public class CommErrorEmulatorUI extends AbstractTestUIWithLog {
         vl.setMargin(true);
         p.setContent(vl);
         vl.addComponent(createTemporaryResponseCodeSetters("UIDL", uidlResponse));
-        vl.addComponent(createTemporaryResponseCodeSetters("Heartbeat",
-                heartbeatResponse));
+        vl.addComponent(createTemporaryResponseCodeSetters("Heartbeat", heartbeatResponse));
         vl.addComponent(new Button("Activate", new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 if (uidlResponse.code != null && uidlResponse.code != 200) {
-                    getServlet().setUIDLResponseCode(CommErrorEmulatorUI.this,
-                            uidlResponse.code, uidlResponse.time);
-                    log("Responding with " + uidlResponse.code
-                            + " to UIDL requests for " + uidlResponse.time
-                            + "s");
+                    getServlet().setUIDLResponseCode(CommErrorEmulatorUI.this, uidlResponse.code, uidlResponse.time);
+                    log("Responding with " + uidlResponse.code + " to UIDL requests for " + uidlResponse.time + "s");
                 }
-                if (heartbeatResponse.code != null
-                        && heartbeatResponse.code != 200) {
-                    getServlet().setHeartbeatResponseCode(
-                            CommErrorEmulatorUI.this, heartbeatResponse.code,
-                            heartbeatResponse.time);
-                    log("Responding with " + heartbeatResponse.code
-                            + " to heartbeat requests for "
-                            + heartbeatResponse.time + "s");
+                if (heartbeatResponse.code != null && heartbeatResponse.code != 200) {
+                    getServlet().setHeartbeatResponseCode(CommErrorEmulatorUI.this, heartbeatResponse.code, heartbeatResponse.time);
+                    log("Responding with " + heartbeatResponse.code + " to heartbeat requests for " + heartbeatResponse.time + "s");
                 }
             }
         }));
@@ -132,86 +123,64 @@ public class CommErrorEmulatorUI extends AbstractTestUIWithLog {
     private Component createConfigPanel() {
         Panel p = new Panel("Reconnect dialog configuration");
         p.setSizeUndefined();
-        final TextField reconnectDialogMessage = new TextField(
-                "Reconnect message");
+        final TextField reconnectDialogMessage = new TextField("Reconnect message");
         reconnectDialogMessage.setWidth("50em");
         reconnectDialogMessage.setValue(getState().reconnectDialog.dialogText);
-        reconnectDialogMessage
-                .addValueChangeListener(new ValueChangeListener() {
-                    @Override
-                    public void valueChange(ValueChangeEvent event) {
-                        getState().reconnectDialog.dialogText = reconnectDialogMessage
-                                .getValue();
-                    }
-                });
+        reconnectDialogMessage.addValueChangeListener(new ValueChangeListener() {
+            @Override
+            public void valueChange(ValueChangeEvent event) {
+                getState().reconnectDialog.dialogText = reconnectDialogMessage.getValue();
+            }
+        });
 
-        final TextField reconnectDialogGaveUpMessage = new TextField(
-                "Reconnect gave up message");
+        final TextField reconnectDialogGaveUpMessage = new TextField("Reconnect gave up message");
         reconnectDialogGaveUpMessage.setWidth("50em");
 
-        reconnectDialogGaveUpMessage
-                .setValue(getState().reconnectDialog.dialogTextGaveUp);
-        reconnectDialogGaveUpMessage
-                .addValueChangeListener(new ValueChangeListener() {
-                    @Override
-                    public void valueChange(ValueChangeEvent event) {
-                        getState().reconnectDialog.dialogTextGaveUp = reconnectDialogGaveUpMessage
-                                .getValue();
-                    }
-                });
-        final TextField reconnectDialogReconnectAttempts = new TextField(
-                "Reconnect attempts");
+        reconnectDialogGaveUpMessage.setValue(getState().reconnectDialog.dialogTextGaveUp);
+        reconnectDialogGaveUpMessage.addValueChangeListener(new ValueChangeListener() {
+            @Override
+            public void valueChange(ValueChangeEvent event) {
+                getState().reconnectDialog.dialogTextGaveUp = reconnectDialogGaveUpMessage.getValue();
+            }
+        });
+        final TextField reconnectDialogReconnectAttempts = new TextField("Reconnect attempts");
         reconnectDialogReconnectAttempts.setConverter(Integer.class);
-        reconnectDialogReconnectAttempts
-                .setConvertedValue(getState().reconnectDialog.reconnectAttempts);
-        reconnectDialogReconnectAttempts
-                .addValueChangeListener(new ValueChangeListener() {
-                    @Override
-                    public void valueChange(ValueChangeEvent event) {
-                        getState().reconnectDialog.reconnectAttempts = (Integer) reconnectDialogReconnectAttempts
-                                .getConvertedValue();
-                    }
-                });
-        final TextField reconnectDialogReconnectInterval = new TextField(
-                "Reconnect interval (ms)");
+        reconnectDialogReconnectAttempts.setConvertedValue(getState().reconnectDialog.reconnectAttempts);
+        reconnectDialogReconnectAttempts.addValueChangeListener(new ValueChangeListener() {
+            @Override
+            public void valueChange(ValueChangeEvent event) {
+                getState().reconnectDialog.reconnectAttempts = (Integer) reconnectDialogReconnectAttempts.getConvertedValue();
+            }
+        });
+        final TextField reconnectDialogReconnectInterval = new TextField("Reconnect interval (ms)");
         reconnectDialogReconnectInterval.setConverter(Integer.class);
-        reconnectDialogReconnectInterval
-                .setConvertedValue(getState().reconnectDialog.reconnectInterval);
-        reconnectDialogReconnectInterval
-                .addValueChangeListener(new ValueChangeListener() {
-                    @Override
-                    public void valueChange(ValueChangeEvent event) {
-                        getState().reconnectDialog.reconnectInterval = (Integer) reconnectDialogReconnectInterval
-                                .getConvertedValue();
-                    }
-                });
+        reconnectDialogReconnectInterval.setConvertedValue(getState().reconnectDialog.reconnectInterval);
+        reconnectDialogReconnectInterval.addValueChangeListener(new ValueChangeListener() {
+            @Override
+            public void valueChange(ValueChangeEvent event) {
+                getState().reconnectDialog.reconnectInterval = (Integer) reconnectDialogReconnectInterval.getConvertedValue();
+            }
+        });
 
-        final TextField reconnectDialogGracePeriod = new TextField(
-                "Reconnect dialog grace period (ms)");
+        final TextField reconnectDialogGracePeriod = new TextField("Reconnect dialog grace period (ms)");
         reconnectDialogGracePeriod.setConverter(Integer.class);
-        reconnectDialogGracePeriod
-                .setConvertedValue(getState().reconnectDialog.dialogGracePeriod);
-        reconnectDialogGracePeriod
-                .addValueChangeListener(new ValueChangeListener() {
-                    @Override
-                    public void valueChange(ValueChangeEvent event) {
-                        getState().reconnectDialog.dialogGracePeriod = (Integer) reconnectDialogGracePeriod
-                                .getConvertedValue();
-                    }
-                });
+        reconnectDialogGracePeriod.setConvertedValue(getState().reconnectDialog.dialogGracePeriod);
+        reconnectDialogGracePeriod.addValueChangeListener(new ValueChangeListener() {
+            @Override
+            public void valueChange(ValueChangeEvent event) {
+                getState().reconnectDialog.dialogGracePeriod = (Integer) reconnectDialogGracePeriod.getConvertedValue();
+            }
+        });
 
         VerticalLayout vl = new VerticalLayout();
         vl.setMargin(true);
         vl.setSpacing(true);
         p.setContent(vl);
-        vl.addComponents(reconnectDialogMessage, reconnectDialogGaveUpMessage,
-                reconnectDialogGracePeriod, reconnectDialogReconnectAttempts,
-                reconnectDialogReconnectInterval);
+        vl.addComponents(reconnectDialogMessage, reconnectDialogGaveUpMessage, reconnectDialogGracePeriod, reconnectDialogReconnectAttempts, reconnectDialogReconnectInterval);
         return p;
     }
 
-    private Component createTemporaryResponseCodeSetters(String type,
-            final Response response) {
+    private Component createTemporaryResponseCodeSetters(String type, final Response response) {
 
         HorizontalLayout hl = new HorizontalLayout();
         hl.setSpacing(true);

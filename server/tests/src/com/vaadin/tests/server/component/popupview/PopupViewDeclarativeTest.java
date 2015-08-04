@@ -30,9 +30,7 @@ public class PopupViewDeclarativeTest extends DeclarativeTestBase<PopupView> {
     public void testEmptyPopupView() {
         PopupView component = new PopupView();
         Component popup = component.getContent().getPopupComponent();
-        String design = "<v-popup-view><popup-content>"
-                + new DesignContext().createElement(popup)
-                + "</popup-content></v-popup-view>";
+        String design = "<v-popup-view><popup-content>" + new DesignContext().createElement(popup) + "</popup-content></v-popup-view>";
         testWrite(design, component);
         testRead(design, component);
     }
@@ -43,16 +41,12 @@ public class PopupViewDeclarativeTest extends DeclarativeTestBase<PopupView> {
         verticalLayout.setWidth("300px");
         verticalLayout.setHeight("400px");
 
-        PopupView component = new PopupView("Click <u>here</u> to open",
-                verticalLayout);
+        PopupView component = new PopupView("Click <u>here</u> to open", verticalLayout);
         component.setHideOnMouseOut(true);
         component.setPopupVisible(true);
         // hide-on-mouse-out is true by default. not seen in design
         String design = "<v-popup-view popup-visible=''>" //
-                + "Click <u>here</u> to open"
-                + "<popup-content>"
-                + new DesignContext().createElement(verticalLayout)
-                + "</popup-content>" //
+                + "Click <u>here</u> to open" + "<popup-content>" + new DesignContext().createElement(verticalLayout) + "</popup-content>" //
                 + "</v-popup-view>";
         testWrite(design, component);
         testRead(design, component);
@@ -64,9 +58,7 @@ public class PopupViewDeclarativeTest extends DeclarativeTestBase<PopupView> {
         PopupView component = new PopupView("Click Me!", label);
         component.setHideOnMouseOut(false);
         String design = "<v-popup-view hide-on-mouse-out='false'>" //
-                + "Click Me!"
-                + "<popup-content>"
-                + new DesignContext().createElement(label) + "</popup-content>" //
+                + "Click Me!" + "<popup-content>" + new DesignContext().createElement(label) + "</popup-content>" //
                 + "</v-popup-view>";
         testWrite(design, component);
         testRead(design, component);

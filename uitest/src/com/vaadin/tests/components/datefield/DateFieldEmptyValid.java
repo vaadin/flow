@@ -24,8 +24,7 @@ public class DateFieldEmptyValid extends TestBase {
 
     private MyDateField df;
 
-    private SimpleDateFormat formatter = new SimpleDateFormat(
-            "MMMM d, yyyy hh:mm:ss aaa", Locale.US);
+    private SimpleDateFormat formatter = new SimpleDateFormat("MMMM d, yyyy hh:mm:ss aaa", Locale.US);
 
     public class MyDateField extends PopupDateField {
         @Override
@@ -88,16 +87,14 @@ public class DateFieldEmptyValid extends TestBase {
             @SuppressWarnings("deprecation")
             public void buttonClick(ClickEvent event) {
                 log.log("Setting new object property (5.6.2000) to datefield");
-                ObjectProperty<Date> dfProp = new ObjectProperty<Date>(
-                        new Date(2000 - 1900, 6 - 1, 5), Date.class);
+                ObjectProperty<Date> dfProp = new ObjectProperty<Date>(new Date(2000 - 1900, 6 - 1, 5), Date.class);
                 df.setPropertyDataSource(dfProp);
             }
         });
         b.setId("set-by-ds");
         addComponent(b);
 
-        b = new Button(
-                "Set date to 27.8.2005 by changing a new property data source from null, ds attached before value setting.");
+        b = new Button("Set date to 27.8.2005 by changing a new property data source from null, ds attached before value setting.");
         b.setId("set-via-ds");
         b.addListener(new ClickListener() {
 
@@ -105,8 +102,7 @@ public class DateFieldEmptyValid extends TestBase {
             @SuppressWarnings("deprecation")
             public void buttonClick(ClickEvent event) {
                 log.log("Setting object property (with value null) to datefield and set value of property to 27.8.2005");
-                ObjectProperty<Date> dfProp = new ObjectProperty<Date>(null,
-                        Date.class);
+                ObjectProperty<Date> dfProp = new ObjectProperty<Date>(null, Date.class);
                 df.setPropertyDataSource(dfProp);
                 dfProp.setValue(new Date(2005 - 1900, 8 - 1, 27));
             }
@@ -138,9 +134,7 @@ public class DateFieldEmptyValid extends TestBase {
 
     @Override
     protected String getTestDescription() {
-        return "Tests the isEmpty() and isValid() functionality of a DateField. The field is required and has no other validators."
-                + "IsEmpty() should return true when the field is truly empty i.e. contains no text, no matter how the field has been made empty. If the field contains any text, isEmpty() should return false."
-                + "IsValid() should in this case return true if the field is not empty and vice versa.";
+        return "Tests the isEmpty() and isValid() functionality of a DateField. The field is required and has no other validators." + "IsEmpty() should return true when the field is truly empty i.e. contains no text, no matter how the field has been made empty. If the field contains any text, isEmpty() should return false." + "IsValid() should in this case return true if the field is not empty and vice versa.";
     }
 
     @Override

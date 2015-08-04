@@ -26,8 +26,7 @@ import com.vaadin.data.util.sqlcontainer.query.generator.StatementHelper;
 public class QueryBuilder implements Serializable {
 
     private static ArrayList<FilterTranslator> filterTranslators = new ArrayList<FilterTranslator>();
-    private static StringDecorator stringDecorator = new StringDecorator("\"",
-            "\"");
+    private static StringDecorator stringDecorator = new StringDecorator("\"", "\"");
 
     static {
         /* Register all default filter translators */
@@ -41,8 +40,7 @@ public class QueryBuilder implements Serializable {
         addFilterTranslator(new SimpleStringTranslator());
     }
 
-    public synchronized static void addFilterTranslator(
-            FilterTranslator translator) {
+    public synchronized static void addFilterTranslator(FilterTranslator translator) {
         filterTranslators.add(translator);
     }
 
@@ -75,8 +73,7 @@ public class QueryBuilder implements Serializable {
      *            the statement helper to update with the value(s) of the filter
      * @return a string representing the filter.
      */
-    public synchronized static String getWhereStringForFilter(Filter filter,
-            StatementHelper sh) {
+    public synchronized static String getWhereStringForFilter(Filter filter, StatementHelper sh) {
         for (FilterTranslator ft : filterTranslators) {
             if (ft.translatesFilter(filter)) {
                 return ft.getWhereStringForFilter(filter, sh);
@@ -85,21 +82,18 @@ public class QueryBuilder implements Serializable {
         return "";
     }
 
-    public static String getJoinedFilterString(Collection<Filter> filters,
-            String joinString, StatementHelper sh) {
+    public static String getJoinedFilterString(Collection<Filter> filters, String joinString, StatementHelper sh) {
         StringBuilder result = new StringBuilder();
         for (Filter f : filters) {
             result.append(getWhereStringForFilter(f, sh));
             result.append(" ").append(joinString).append(" ");
         }
         // Remove the last instance of joinString
-        result.delete(result.length() - joinString.length() - 2,
-                result.length());
+        result.delete(result.length() - joinString.length() - 2, result.length());
         return result.toString();
     }
 
-    public static String getWhereStringForFilters(List<Filter> filters,
-            StatementHelper sh) {
+    public static String getWhereStringForFilters(List<Filter> filters, StatementHelper sh) {
         if (filters == null || filters.isEmpty()) {
             return "";
         }

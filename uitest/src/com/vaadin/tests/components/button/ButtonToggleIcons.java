@@ -17,8 +17,7 @@ public class ButtonToggleIcons extends UI {
         final VerticalLayout layout = new VerticalLayout();
         setContent(layout);
 
-        final ThemeResource iconResource = new ThemeResource(
-                "../runo/icons/16/arrow-left.png");
+        final ThemeResource iconResource = new ThemeResource("../runo/icons/16/arrow-left.png");
 
         final ClickListener iconToggleListener = new ClickListener() {
             @Override

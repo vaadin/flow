@@ -48,8 +48,7 @@ import com.vaadin.data.Property;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class ContainerHierarchicalWrapper implements Container.Hierarchical,
-        Container.ItemSetChangeNotifier, Container.PropertySetChangeNotifier {
+public class ContainerHierarchicalWrapper implements Container.Hierarchical, Container.ItemSetChangeNotifier, Container.PropertySetChangeNotifier {
 
     /** The wrapped container */
     private final Container container;
@@ -73,8 +72,7 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
      * A comparator that sorts the listed items before other items. Otherwise,
      * the order is undefined.
      */
-    private static class ListedItemsFirstComparator implements
-            Comparator<Object>, Serializable {
+    private static class ListedItemsFirstComparator implements Comparator<Object>, Serializable {
         private final Collection<?> itemIds;
 
         private ListedItemsFirstComparator(Collection<?> itemIds) {
@@ -139,8 +137,7 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
         if (!hierarchical) {
 
             // Recreate hierarchy and data structures if missing
-            if (noChildrenAllowed == null || parent == null || children == null
-                    || roots == null) {
+            if (noChildrenAllowed == null || parent == null || children == null || roots == null) {
                 noChildrenAllowed = new HashSet<Object>();
                 parent = new Hashtable<Object, Object>();
                 children = new Hashtable<Object, LinkedList<Object>>();
@@ -153,8 +150,7 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
                 // ensure order of root and child lists is same as in wrapped
                 // container
                 Collection<?> itemIds = container.getItemIds();
-                Comparator<Object> basedOnOrderFromWrappedContainer = new ListedItemsFirstComparator(
-                        itemIds);
+                Comparator<Object> basedOnOrderFromWrappedContainer = new ListedItemsFirstComparator(itemIds);
 
                 // Calculate the set of all items in the hierarchy
                 final HashSet<Object> s = new HashSet<Object>();
@@ -249,8 +245,7 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
 
         // If the wrapped container implements the method directly, use it
         if (hierarchical) {
-            return ((Container.Hierarchical) container)
-                    .areChildrenAllowed(itemId);
+            return ((Container.Hierarchical) container).areChildrenAllowed(itemId);
         }
 
         if (noChildrenAllowed.contains(itemId)) {
@@ -373,8 +368,7 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
 
         // If the wrapped container implements the method directly, use it
         if (hierarchical) {
-            return ((Container.Hierarchical) container).setChildrenAllowed(
-                    itemId, childrenAllowed);
+            return ((Container.Hierarchical) container).setChildrenAllowed(itemId, childrenAllowed);
         }
 
         // Check that the item is in the container
@@ -414,8 +408,7 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
 
         // If the wrapped container implements the method directly, use it
         if (hierarchical) {
-            return ((Container.Hierarchical) container).setParent(itemId,
-                    newParentId);
+            return ((Container.Hierarchical) container).setParent(itemId, newParentId);
         }
 
         // Check that the item is in the container
@@ -427,8 +420,7 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
         final Object oldParentId = parent.get(itemId);
 
         // Check if no change is necessary
-        if ((newParentId == null && oldParentId == null)
-                || (newParentId != null && newParentId.equals(oldParentId))) {
+        if ((newParentId == null && oldParentId == null) || (newParentId != null && newParentId.equals(oldParentId))) {
             return true;
         }
 
@@ -585,8 +577,7 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
      *             if the removeItem is not supported.
      */
     @Override
-    public boolean removeItem(Object itemId)
-            throws UnsupportedOperationException {
+    public boolean removeItem(Object itemId) throws UnsupportedOperationException {
 
         final boolean success = container.removeItem(itemId);
 
@@ -624,8 +615,7 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
      *             if the addContainerProperty is not supported.
      */
     @Override
-    public boolean addContainerProperty(Object propertyId, Class<?> type,
-            Object defaultValue) throws UnsupportedOperationException {
+    public boolean addContainerProperty(Object propertyId, Class<?> type, Object defaultValue) throws UnsupportedOperationException {
 
         return container.addContainerProperty(propertyId, type, defaultValue);
     }
@@ -645,8 +635,7 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
      *             if the removeContainerProperty is not supported.
      */
     @Override
-    public boolean removeContainerProperty(Object propertyId)
-            throws UnsupportedOperationException {
+    public boolean removeContainerProperty(Object propertyId) throws UnsupportedOperationException {
         return container.removeContainerProperty(propertyId);
     }
 
@@ -726,11 +715,9 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
      * interface.
      */
     @Override
-    public void addItemSetChangeListener(
-            Container.ItemSetChangeListener listener) {
+    public void addItemSetChangeListener(Container.ItemSetChangeListener listener) {
         if (container instanceof Container.ItemSetChangeNotifier) {
-            ((Container.ItemSetChangeNotifier) container)
-                    .addItemSetChangeListener(new PiggybackListener(listener));
+            ((Container.ItemSetChangeNotifier) container).addItemSetChangeListener(new PiggybackListener(listener));
         }
     }
 
@@ -750,11 +737,9 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
      * interface.
      */
     @Override
-    public void removeItemSetChangeListener(
-            Container.ItemSetChangeListener listener) {
+    public void removeItemSetChangeListener(Container.ItemSetChangeListener listener) {
         if (container instanceof Container.ItemSetChangeNotifier) {
-            ((Container.ItemSetChangeNotifier) container)
-                    .removeItemSetChangeListener(new PiggybackListener(listener));
+            ((Container.ItemSetChangeNotifier) container).removeItemSetChangeListener(new PiggybackListener(listener));
         }
     }
 
@@ -774,12 +759,9 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
      * implemented interface.
      */
     @Override
-    public void addPropertySetChangeListener(
-            Container.PropertySetChangeListener listener) {
+    public void addPropertySetChangeListener(Container.PropertySetChangeListener listener) {
         if (container instanceof Container.PropertySetChangeNotifier) {
-            ((Container.PropertySetChangeNotifier) container)
-                    .addPropertySetChangeListener(new PiggybackListener(
-                            listener));
+            ((Container.PropertySetChangeNotifier) container).addPropertySetChangeListener(new PiggybackListener(listener));
         }
     }
 
@@ -799,12 +781,9 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
      * interface.
      */
     @Override
-    public void removePropertySetChangeListener(
-            Container.PropertySetChangeListener listener) {
+    public void removePropertySetChangeListener(Container.PropertySetChangeListener listener) {
         if (container instanceof Container.PropertySetChangeNotifier) {
-            ((Container.PropertySetChangeNotifier) container)
-                    .removePropertySetChangeListener(new PiggybackListener(
-                            listener));
+            ((Container.PropertySetChangeNotifier) container).removePropertySetChangeListener(new PiggybackListener(listener));
         }
     }
 
@@ -824,9 +803,7 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
      * listener so that the correct listener gets removed.
      * 
      */
-    private class PiggybackListener implements
-            Container.PropertySetChangeListener,
-            Container.ItemSetChangeListener {
+    private class PiggybackListener implements Container.PropertySetChangeListener, Container.ItemSetChangeListener {
 
         Object listener;
 
@@ -837,16 +814,14 @@ public class ContainerHierarchicalWrapper implements Container.Hierarchical,
         @Override
         public void containerItemSetChange(ItemSetChangeEvent event) {
             updateHierarchicalWrapper();
-            ((Container.ItemSetChangeListener) listener)
-                    .containerItemSetChange(event);
+            ((Container.ItemSetChangeListener) listener).containerItemSetChange(event);
 
         }
 
         @Override
         public void containerPropertySetChange(PropertySetChangeEvent event) {
             updateHierarchicalWrapper();
-            ((Container.PropertySetChangeListener) listener)
-                    .containerPropertySetChange(event);
+            ((Container.PropertySetChangeListener) listener).containerPropertySetChange(event);
 
         }
 

@@ -22,43 +22,37 @@ import com.vaadin.testbench.elements.CheckBoxElement;
 import com.vaadin.testbench.elements.NotificationElement;
 import com.vaadin.tests.tb3.MultiBrowserThemeTest;
 
-public abstract class CriticalNotificationsTestBase extends
-        MultiBrowserThemeTest {
+public abstract class CriticalNotificationsTestBase extends MultiBrowserThemeTest {
 
-    public static class ValoCriticalNotificationsTest extends
-            CriticalNotificationsTestBase {
+    public static class ValoCriticalNotificationsTest extends CriticalNotificationsTestBase {
         @Override
         protected String getTheme() {
             return "valo";
         }
     }
 
-    public static class ReindeerCriticalNotificationsTest extends
-            CriticalNotificationsTestBase {
+    public static class ReindeerCriticalNotificationsTest extends CriticalNotificationsTestBase {
         @Override
         protected String getTheme() {
             return "reindeer";
         }
     }
 
-    public static class RunoCriticalNotificationsTest extends
-            CriticalNotificationsTestBase {
+    public static class RunoCriticalNotificationsTest extends CriticalNotificationsTestBase {
         @Override
         protected String getTheme() {
             return "runo";
         }
     }
 
-    public static class ChameleonCriticalNotificationsTest extends
-            CriticalNotificationsTestBase {
+    public static class ChameleonCriticalNotificationsTest extends CriticalNotificationsTestBase {
         @Override
         protected String getTheme() {
             return "chameleon";
         }
     }
 
-    public static class BaseCriticalNotificationsTest extends
-            CriticalNotificationsTestBase {
+    public static class BaseCriticalNotificationsTest extends CriticalNotificationsTestBase {
         @Override
         protected String getTheme() {
             return "base";
@@ -90,13 +84,11 @@ public abstract class CriticalNotificationsTestBase extends
         testCriticalNotification("Session expired", true);
     }
 
-    private void testCriticalNotification(String buttonCaption)
-            throws Exception {
+    private void testCriticalNotification(String buttonCaption) throws Exception {
         testCriticalNotification(buttonCaption, false);
     }
 
-    private void testCriticalNotification(String buttonCaption,
-            boolean withDetails) throws Exception {
+    private void testCriticalNotification(String buttonCaption, boolean withDetails) throws Exception {
         openTestURL(); // "theme=" + getTheme());
         if (withDetails) {
             click($(CheckBoxElement.class).caption("Include details").first());
@@ -104,8 +96,7 @@ public abstract class CriticalNotificationsTestBase extends
         $(ButtonElement.class).caption(buttonCaption).first().click();
         // Give the notification some time to animate
         sleep(1000);
-        compareScreen($(NotificationElement.class).first(),
-                "systemnotification");
+        compareScreen($(NotificationElement.class).first(), "systemnotification");
     }
 
     @Override

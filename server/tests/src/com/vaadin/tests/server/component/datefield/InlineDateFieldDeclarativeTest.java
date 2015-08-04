@@ -33,25 +33,20 @@ import com.vaadin.ui.declarative.Design;
  * @since 7.4
  * @author Vaadin Ltd
  */
-public class InlineDateFieldDeclarativeTest extends
-        DeclarativeTestBase<InlineDateField> {
+public class InlineDateFieldDeclarativeTest extends DeclarativeTestBase<InlineDateField> {
 
     @Test
     public void testInlineDateFieldToFromDesign() throws Exception {
-        InlineDateField field = new InlineDateField("Day is",
-                new SimpleDateFormat("yyyy-MM-dd").parse("2003-02-27"));
+        InlineDateField field = new InlineDateField("Day is", new SimpleDateFormat("yyyy-MM-dd").parse("2003-02-27"));
         field.setResolution(Resolution.DAY);
         field.setShowISOWeekNumbers(true);
-        field.setRangeStart(new SimpleDateFormat("yyyy-MM-dd")
-                .parse("2001-02-27"));
-        field.setRangeEnd(new SimpleDateFormat("yyyy-MM-dd")
-                .parse("2011-02-27"));
+        field.setRangeStart(new SimpleDateFormat("yyyy-MM-dd").parse("2001-02-27"));
+        field.setRangeEnd(new SimpleDateFormat("yyyy-MM-dd").parse("2011-02-27"));
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         Design.write(field, bos);
 
-        InlineDateField result = (InlineDateField) Design
-                .read(new ByteArrayInputStream(bos.toByteArray()));
+        InlineDateField result = (InlineDateField) Design.read(new ByteArrayInputStream(bos.toByteArray()));
         assertEquals(field.getResolution(), result.getResolution());
         assertEquals(field.getCaption(), result.getCaption());
         assertEquals(field.getValue(), result.getValue());

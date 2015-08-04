@@ -28,8 +28,7 @@ public class FileDownloaderUITest extends MultiBrowserTest {
         openTestURL();
         By id = By.id("com.vaadin.ui.ButtonDynamicimage");
         assertElementPresent(id);
-        $(ButtonElement.class).caption("Remove first download button").first()
-                .click();
+        $(ButtonElement.class).caption("Remove first download button").first().click();
         assertElementNotPresent(id);
     }
 

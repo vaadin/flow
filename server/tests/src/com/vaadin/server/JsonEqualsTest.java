@@ -34,24 +34,21 @@ public class JsonEqualsTest {
 
     @Test
     public void nulls_equal() {
-        boolean equals = JsonCodec.jsonEquals(Json.createNull(),
-                Json.createNull());
+        boolean equals = JsonCodec.jsonEquals(Json.createNull(), Json.createNull());
 
         Assert.assertTrue("Null and null should be equal", equals);
     }
 
     @Test
     public void differentBooleans_notEqual() {
-        boolean equals = JsonCodec.jsonEquals(Json.create(true),
-                Json.create(false));
+        boolean equals = JsonCodec.jsonEquals(Json.create(true), Json.create(false));
 
         Assert.assertFalse("Different booleans should not be equal", equals);
     }
 
     @Test
     public void sameBooleans_equal() {
-        boolean equals = JsonCodec.jsonEquals(Json.create(false),
-                Json.create(false));
+        boolean equals = JsonCodec.jsonEquals(Json.create(false), Json.create(false));
 
         Assert.assertTrue("Same booleans should be equal", equals);
     }
@@ -65,24 +62,21 @@ public class JsonEqualsTest {
 
     @Test
     public void sameNumbers_equal() {
-        boolean equals = JsonCodec.jsonEquals(Json.create(3.14),
-                Json.create(3.14));
+        boolean equals = JsonCodec.jsonEquals(Json.create(3.14), Json.create(3.14));
 
         Assert.assertTrue("Same numbers should be equal", equals);
     }
 
     @Test
     public void differentStrings_notEqual() {
-        boolean equals = JsonCodec.jsonEquals(Json.create("abc"),
-                Json.create("def"));
+        boolean equals = JsonCodec.jsonEquals(Json.create("abc"), Json.create("def"));
 
         Assert.assertFalse("Different strings should not be equal", equals);
     }
 
     @Test
     public void sameStrings_equal() {
-        boolean equals = JsonCodec.jsonEquals(Json.create("abc"),
-                Json.create("abc"));
+        boolean equals = JsonCodec.jsonEquals(Json.create("abc"), Json.create("abc"));
 
         Assert.assertTrue("Same strings should be equal", equals);
     }
@@ -96,8 +90,7 @@ public class JsonEqualsTest {
 
         boolean equals = JsonCodec.jsonEquals(o1, o2);
 
-        Assert.assertFalse(
-                "Object with different key counts should not be equal", equals);
+        Assert.assertFalse("Object with different key counts should not be equal", equals);
     }
 
     @Test
@@ -110,8 +103,7 @@ public class JsonEqualsTest {
 
         boolean equals = JsonCodec.jsonEquals(o1, o2);
 
-        Assert.assertFalse("Object with different keys should not be equal",
-                equals);
+        Assert.assertFalse("Object with different keys should not be equal", equals);
     }
 
     @Test
@@ -124,9 +116,7 @@ public class JsonEqualsTest {
 
         boolean equals = JsonCodec.jsonEquals(o1, o2);
 
-        Assert.assertFalse(
-                "Object with different child values should not be equal",
-                equals);
+        Assert.assertFalse("Object with different child values should not be equal", equals);
     }
 
     @Test
@@ -174,8 +164,7 @@ public class JsonEqualsTest {
 
         boolean equals = JsonCodec.jsonEquals(a1, a2);
 
-        Assert.assertFalse("Arrays with different sizes should not be equal",
-                equals);
+        Assert.assertFalse("Arrays with different sizes should not be equal", equals);
     }
 
     @Test
@@ -188,8 +177,7 @@ public class JsonEqualsTest {
 
         boolean equals = JsonCodec.jsonEquals(a1, a2);
 
-        Assert.assertFalse("Arrays with different content should not be equal",
-                equals);
+        Assert.assertFalse("Arrays with different content should not be equal", equals);
     }
 
     @Test
@@ -204,8 +192,7 @@ public class JsonEqualsTest {
 
         boolean equals = JsonCodec.jsonEquals(a1, a2);
 
-        Assert.assertFalse("Arrays with different order should not be equal",
-                equals);
+        Assert.assertFalse("Arrays with different order should not be equal", equals);
     }
 
     @Test
@@ -248,16 +235,14 @@ public class JsonEqualsTest {
 
     @Test
     public void differentDeeplyNested_notEquals() {
-        boolean equals = JsonCodec.jsonEquals(createDeeplyNestedValue(1),
-                createDeeplyNestedValue(2));
+        boolean equals = JsonCodec.jsonEquals(createDeeplyNestedValue(1), createDeeplyNestedValue(2));
 
         Assert.assertFalse("Values should not be equal", equals);
     }
 
     @Test
     public void sameDeeplyNested_equals() {
-        boolean equals = JsonCodec.jsonEquals(createDeeplyNestedValue(1),
-                createDeeplyNestedValue(1));
+        boolean equals = JsonCodec.jsonEquals(createDeeplyNestedValue(1), createDeeplyNestedValue(1));
 
         Assert.assertTrue("Values should be equal", equals);
     }

@@ -37,8 +37,7 @@ public class StateGetDoesNotMarkDirtyTest extends TestCase {
             methods.addAll(Arrays.asList(c.getDeclaredMethods()));
             for (Method method : methods) {
                 try {
-                    if (method.getName().startsWith("is")
-                            || method.getName().startsWith("get")) {
+                    if (method.getName().startsWith("is") || method.getName().startsWith("get")) {
                         if (method.getName().startsWith("getState")) {
                             continue;
                         }
@@ -47,8 +46,7 @@ public class StateGetDoesNotMarkDirtyTest extends TestCase {
                             // we still wouldnt know what to put into
                             continue;
                         }
-                        if (excludedMethods.contains(c.getName()
-                                + method.getName())) {
+                        if (excludedMethods.contains(c.getName() + method.getName())) {
                             // blacklisted method for specific classes
                             continue;
                         }
@@ -61,8 +59,7 @@ public class StateGetDoesNotMarkDirtyTest extends TestCase {
                         method.invoke(newInstance);
                     }
                 } catch (Exception e) {
-                    System.err.println("problem with method " + c.getName()
-                            + "# " + method.getName());
+                    System.err.println("problem with method " + c.getName() + "# " + method.getName());
                     e.printStackTrace();
                     throw e;
                 }
@@ -74,11 +71,9 @@ public class StateGetDoesNotMarkDirtyTest extends TestCase {
     private void prepareMockUI(Component newInstance) {
         UI ui = Mockito.mock(UI.class);
         Mockito.when(ui.getLocale()).thenReturn(Locale.ENGLISH);
-        ConnectorTracker connectorTracker = Mockito
-                .mock(ConnectorTracker.class);
+        ConnectorTracker connectorTracker = Mockito.mock(ConnectorTracker.class);
         Mockito.when(ui.getConnectorTracker()).thenReturn(connectorTracker);
-        Mockito.doThrow(new RuntimeException("getState(true) called in getter"))
-                .when(connectorTracker).markDirty(newInstance);
+        Mockito.doThrow(new RuntimeException("getState(true) called in getter")).when(connectorTracker).markDirty(newInstance);
 
         newInstance.setParent(ui);
     }
@@ -86,8 +81,7 @@ public class StateGetDoesNotMarkDirtyTest extends TestCase {
     private Component construct(Class<? extends Component> c) {
         try {
             try {
-                Constructor<? extends Component> declaredConstructor = c
-                        .getDeclaredConstructor();
+                Constructor<? extends Component> declaredConstructor = c.getDeclaredConstructor();
                 declaredConstructor.setAccessible(true);
                 return declaredConstructor.newInstance();
             } catch (NoSuchMethodException e) {

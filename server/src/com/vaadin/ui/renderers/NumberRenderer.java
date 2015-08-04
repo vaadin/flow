@@ -71,8 +71,7 @@ public class NumberRenderer extends AbstractRenderer<Number> {
      * @throws IllegalArgumentException
      *             if {@code numberFormat} is {@code null}
      */
-    public NumberRenderer(NumberFormat numberFormat, String nullRepresentation)
-            throws IllegalArgumentException {
+    public NumberRenderer(NumberFormat numberFormat, String nullRepresentation) throws IllegalArgumentException {
         super(Number.class, nullRepresentation);
 
         if (numberFormat == null) {
@@ -112,8 +111,7 @@ public class NumberRenderer extends AbstractRenderer<Number> {
      * @throws IllegalArgumentException
      *             if {@code locale} is {@code null}
      */
-    public NumberRenderer(String formatString, Locale locale)
-            throws IllegalArgumentException {
+    public NumberRenderer(String formatString, Locale locale) throws IllegalArgumentException {
         this(formatString, locale, ""); // This will call #toString() during
                                         // formatting
     }
@@ -152,8 +150,7 @@ public class NumberRenderer extends AbstractRenderer<Number> {
      *      href="http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax">Format
      *      String Syntax</a>
      */
-    public NumberRenderer(String formatString, Locale locale,
-            String nullRepresentation) {
+    public NumberRenderer(String formatString, Locale locale, String nullRepresentation) {
         super(Number.class, nullRepresentation);
 
         if (formatString == null) {
@@ -179,11 +176,7 @@ public class NumberRenderer extends AbstractRenderer<Number> {
         } else if (numberFormat != null) {
             stringValue = numberFormat.format(value);
         } else {
-            throw new IllegalStateException(String.format("Internal bug: "
-                    + "%s is in an illegal state: "
-                    + "[locale: %s, numberFormat: %s, formatString: %s]",
-                    getClass().getSimpleName(), locale, numberFormat,
-                    formatString));
+            throw new IllegalStateException(String.format("Internal bug: " + "%s is in an illegal state: " + "[locale: %s, numberFormat: %s, formatString: %s]", getClass().getSimpleName(), locale, numberFormat, formatString));
         }
         return encode(stringValue, String.class);
     }

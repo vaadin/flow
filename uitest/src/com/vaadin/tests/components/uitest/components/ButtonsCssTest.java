@@ -68,18 +68,14 @@ public class ButtonsCssTest extends GridLayout {
         createButtonWith("Wide", ChameleonTheme.BUTTON_WIDE, null);
         createButtonWith("Tall", ChameleonTheme.BUTTON_TALL, null);
         createButtonWith("Borderless", ChameleonTheme.BUTTON_BORDERLESS, null);
-        createButtonWith("Icn top", ChameleonTheme.BUTTON_ICON_ON_TOP,
-                parent.ICON_URL);
-        createButtonWith("Icn right", ChameleonTheme.BUTTON_ICON_ON_RIGHT,
-                parent.ICON_URL);
-        createButtonWith("Icon only", ChameleonTheme.BUTTON_ICON_ONLY,
-                parent.ICON_URL);
+        createButtonWith("Icn top", ChameleonTheme.BUTTON_ICON_ON_TOP, parent.ICON_URL);
+        createButtonWith("Icn right", ChameleonTheme.BUTTON_ICON_ON_RIGHT, parent.ICON_URL);
+        createButtonWith("Icon only", ChameleonTheme.BUTTON_ICON_ONLY, parent.ICON_URL);
         createButtonWith("Down", ChameleonTheme.BUTTON_DOWN, null);
 
     }
 
-    private void createButtonWith(String caption, String primaryStyleName,
-            String iconUrl) {
+    private void createButtonWith(String caption, String primaryStyleName, String iconUrl) {
         Button b = new Button();
         b.setId("button" + debugIdCounter++);
 

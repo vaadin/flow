@@ -68,8 +68,7 @@ import java.util.Collection;
  * 
  * @since 6.5
  */
-public class BeanContainer<IDTYPE, BEANTYPE> extends
-        AbstractBeanContainer<IDTYPE, BEANTYPE> {
+public class BeanContainer<IDTYPE, BEANTYPE> extends AbstractBeanContainer<IDTYPE, BEANTYPE> {
 
     public BeanContainer(Class<? super BEANTYPE> type) {
         super(type);
@@ -95,8 +94,7 @@ public class BeanContainer<IDTYPE, BEANTYPE> extends
      * @see com.vaadin.data.Container.Ordered#addItemAfter(Object, Object)
      */
     @Override
-    public BeanItem<BEANTYPE> addItemAfter(IDTYPE previousItemId,
-            IDTYPE newItemId, BEANTYPE bean) {
+    public BeanItem<BEANTYPE> addItemAfter(IDTYPE previousItemId, IDTYPE newItemId, BEANTYPE bean) {
         if (newItemId != null && bean != null) {
             return super.addItemAfter(previousItemId, newItemId, bean);
         } else {
@@ -119,8 +117,7 @@ public class BeanContainer<IDTYPE, BEANTYPE> extends
      * @return Returns the new BeanItem or null if the operation fails.
      */
     @Override
-    public BeanItem<BEANTYPE> addItemAt(int index, IDTYPE newItemId,
-            BEANTYPE bean) {
+    public BeanItem<BEANTYPE> addItemAt(int index, IDTYPE newItemId, BEANTYPE bean) {
         if (newItemId != null && bean != null) {
             return super.addItemAt(index, newItemId, bean);
         } else {
@@ -143,36 +140,31 @@ public class BeanContainer<IDTYPE, BEANTYPE> extends
 
     @Override
     // overridden to make public
-    public void setBeanIdResolver(
-            BeanIdResolver<IDTYPE, BEANTYPE> beanIdResolver) {
+    public void setBeanIdResolver(BeanIdResolver<IDTYPE, BEANTYPE> beanIdResolver) {
         super.setBeanIdResolver(beanIdResolver);
     }
 
     @Override
     // overridden to make public
-    public BeanItem<BEANTYPE> addBean(BEANTYPE bean)
-            throws IllegalStateException, IllegalArgumentException {
+    public BeanItem<BEANTYPE> addBean(BEANTYPE bean) throws IllegalStateException, IllegalArgumentException {
         return super.addBean(bean);
     }
 
     @Override
     // overridden to make public
-    public BeanItem<BEANTYPE> addBeanAfter(IDTYPE previousItemId, BEANTYPE bean)
-            throws IllegalStateException, IllegalArgumentException {
+    public BeanItem<BEANTYPE> addBeanAfter(IDTYPE previousItemId, BEANTYPE bean) throws IllegalStateException, IllegalArgumentException {
         return super.addBeanAfter(previousItemId, bean);
     }
 
     @Override
     // overridden to make public
-    public BeanItem<BEANTYPE> addBeanAt(int index, BEANTYPE bean)
-            throws IllegalStateException, IllegalArgumentException {
+    public BeanItem<BEANTYPE> addBeanAt(int index, BEANTYPE bean) throws IllegalStateException, IllegalArgumentException {
         return super.addBeanAt(index, bean);
     }
 
     @Override
     // overridden to make public
-    public void addAll(Collection<? extends BEANTYPE> collection)
-            throws IllegalStateException {
+    public void addAll(Collection<? extends BEANTYPE> collection) throws IllegalStateException {
         super.addAll(collection);
     }
 

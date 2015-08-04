@@ -20,8 +20,7 @@ import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextField;
 
-public class ExtendedDesignWithEmptyAnnotation extends
-        DesignWithEmptyAnnotation {
+public class ExtendedDesignWithEmptyAnnotation extends DesignWithEmptyAnnotation {
 
     private TextField customField = new TextField();
 

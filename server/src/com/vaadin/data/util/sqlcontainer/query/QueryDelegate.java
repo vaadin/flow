@@ -68,8 +68,7 @@ public interface QueryDelegate extends Serializable {
      * @throws UnsupportedOperationException
      *             if the implementation doesn't support filtering.
      */
-    public void setFilters(List<Filter> filters)
-            throws UnsupportedOperationException;
+    public void setFilters(List<Filter> filters) throws UnsupportedOperationException;
 
     /**
      * Sets the order in which to retrieve rows from the database. The result
@@ -82,8 +81,7 @@ public interface QueryDelegate extends Serializable {
      * @throws UnsupportedOperationException
      *             if the implementation doesn't support ordering.
      */
-    public void setOrderBy(List<OrderBy> orderBys)
-            throws UnsupportedOperationException;
+    public void setOrderBy(List<OrderBy> orderBys) throws UnsupportedOperationException;
 
     /**
      * Stores a row in the database. The implementation of this interface
@@ -97,8 +95,7 @@ public interface QueryDelegate extends Serializable {
      * @throws UnsupportedOperationException
      *             if the implementation is read only.
      */
-    public int storeRow(RowItem row) throws UnsupportedOperationException,
-            SQLException;
+    public int storeRow(RowItem row) throws UnsupportedOperationException, SQLException;
 
     /**
      * Removes the given RowItem from the database.
@@ -109,8 +106,7 @@ public interface QueryDelegate extends Serializable {
      * @throws UnsupportedOperationException
      * @throws SQLException
      */
-    public boolean removeRow(RowItem row) throws UnsupportedOperationException,
-            SQLException;
+    public boolean removeRow(RowItem row) throws UnsupportedOperationException, SQLException;
 
     /**
      * Starts a new database transaction. Used when storing multiple changes.
@@ -210,8 +206,7 @@ public interface QueryDelegate extends Serializable {
          * @param listener
          *            listener to be added
          */
-        public void addRowIdChangeListener(
-                QueryDelegate.RowIdChangeListener listener);
+        public void addRowIdChangeListener(QueryDelegate.RowIdChangeListener listener);
 
         /**
          * @deprecated As of 7.0, replaced by
@@ -226,8 +221,7 @@ public interface QueryDelegate extends Serializable {
          * @param listener
          *            listener to be removed
          */
-        public void removeRowIdChangeListener(
-                QueryDelegate.RowIdChangeListener listener);
+        public void removeRowIdChangeListener(QueryDelegate.RowIdChangeListener listener);
 
         /**
          * @deprecated As of 7.0, replaced by

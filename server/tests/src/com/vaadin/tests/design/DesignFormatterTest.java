@@ -57,15 +57,8 @@ public class DesignFormatterTest {
     @Test
     public void testSupportedClasses() {
 
-        for (Class<?> type : new Class<?>[] { boolean.class, char.class,
-                byte.class, short.class, int.class, long.class, float.class,
-                double.class, Boolean.class, Character.class, Byte.class,
-                Short.class, Integer.class, Long.class, Float.class,
-                Double.class, BigDecimal.class, String.class, Date.class,
-                FileResource.class, ExternalResource.class,
-                ThemeResource.class, Resource.class, TimeZone.class }) {
-            assertTrue("not supported " + type.getSimpleName(),
-                    formatter.canConvert(type));
+        for (Class<?> type : new Class<?>[] { boolean.class, char.class, byte.class, short.class, int.class, long.class, float.class, double.class, Boolean.class, Character.class, Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, BigDecimal.class, String.class, Date.class, FileResource.class, ExternalResource.class, ThemeResource.class, Resource.class, TimeZone.class }) {
+            assertTrue("not supported " + type.getSimpleName(), formatter.canConvert(type));
         }
     }
 
@@ -119,17 +112,13 @@ public class DesignFormatterTest {
 
         long l = 123456789123456789L;
         assertEquals("123456789123456789", formatter.format(l));
-        assertEquals(l,
-                (long) formatter.parse("123456789123456789", long.class));
-        assertEquals((Long) l,
-                formatter.parse("123456789123456789", Long.class));
+        assertEquals(l, (long) formatter.parse("123456789123456789", long.class));
+        assertEquals((Long) l, formatter.parse("123456789123456789", Long.class));
 
         l = -123456789123456789L;
         assertEquals("-123456789123456789", formatter.format(l));
-        assertEquals(l,
-                (long) formatter.parse("-123456789123456789", long.class));
-        assertEquals((Long) l,
-                formatter.parse("-123456789123456789", Long.class));
+        assertEquals(l, (long) formatter.parse("-123456789123456789", long.class));
+        assertEquals((Long) l, formatter.parse("-123456789123456789", Long.class));
     }
 
     @Test
@@ -141,10 +130,8 @@ public class DesignFormatterTest {
 
         double d = 123456789.123456789;
         assertEquals("123456789.123", formatter.format(d));
-        assertEquals(d, formatter.parse("123456789.123456789", double.class),
-                1e-9);
-        assertEquals(d, formatter.parse("123456789.123456789", Double.class),
-                1e-9);
+        assertEquals(d, formatter.parse("123456789.123456789", double.class), 1e-9);
+        assertEquals(d, formatter.parse("123456789.123456789", Double.class), 1e-9);
 
     }
 
@@ -152,8 +139,7 @@ public class DesignFormatterTest {
     public void testBigDecimal() {
         BigDecimal bd = new BigDecimal("123456789123456789.123456789123456789");
         assertEquals("123456789123456789.123", formatter.format(bd));
-        assertEquals(bd, formatter.parse(
-                "123456789123456789.123456789123456789", BigDecimal.class));
+        assertEquals(bd, formatter.parse("123456789123456789.123456789123456789", BigDecimal.class));
     }
 
     @Test
@@ -210,13 +196,10 @@ public class DesignFormatterTest {
         for (String scheme : new String[] { "http", "https", "ftp", "ftps" }) {
             Resource resource = formatter.parse(scheme + url, Resource.class);
 
-            assertTrue(scheme + " url should be parsed as ExternalResource",
-                    resource instanceof ExternalResource);
-            assertEquals("parsed ExternalResource", scheme + url,
-                    ((ExternalResource) resource).getURL());
+            assertTrue(scheme + " url should be parsed as ExternalResource", resource instanceof ExternalResource);
+            assertEquals("parsed ExternalResource", scheme + url, ((ExternalResource) resource).getURL());
 
-            String formatted = formatter.format(new ExternalResource(scheme
-                    + url));
+            String formatted = formatter.format(new ExternalResource(scheme + url));
 
             assertEquals("formatted ExternalResource", scheme + url, formatted);
         }
@@ -233,16 +216,12 @@ public class DesignFormatterTest {
 
         assertEquals(httpUrl, formatter.format(new ExternalResource(httpUrl)));
         assertEquals(httpsUrl, formatter.format(new ExternalResource(httpsUrl)));
-        assertEquals(ApplicationConstants.THEME_PROTOCOL_PREFIX + themePath,
-                formatter.format(new ThemeResource(themePath)));
+        assertEquals(ApplicationConstants.THEME_PROTOCOL_PREFIX + themePath, formatter.format(new ThemeResource(themePath)));
 
         assertEquals(fontAwesomeUrl, formatter.format(FontAwesome.AMBULANCE));
-        assertEquals(someOtherFontUrl.toLowerCase(),
-                formatter.format(new GenericFontIcon("SomeOther", 0xf0f9))
-                        .toLowerCase());
+        assertEquals(someOtherFontUrl.toLowerCase(), formatter.format(new GenericFontIcon("SomeOther", 0xf0f9)).toLowerCase());
 
-        assertEquals(fileSystemPath,
-                formatter.format(new FileResource(new File(fileSystemPath))));
+        assertEquals(fileSystemPath, formatter.format(new FileResource(new File(fileSystemPath))));
     }
 
     @Test(expected = ConversionException.class)
@@ -272,25 +251,14 @@ public class DesignFormatterTest {
         String fontAwesomeUrlOld = "font://AMBULANCE";
         String fileSystemPath = "c:\\app\\resources\\icon.png";
 
-        assertEquals(new ExternalResource(httpUrl).getURL(),
-                formatter.parse(httpUrl, ExternalResource.class).getURL());
-        assertEquals(new ExternalResource(httpsUrl).getURL(),
-                formatter.parse(httpsUrl, ExternalResource.class).getURL());
-        assertEquals(
-                new ThemeResource(themePath),
-                formatter.parse(ApplicationConstants.THEME_PROTOCOL_PREFIX
-                        + themePath, ThemeResource.class));
-        assertEquals(FontAwesome.AMBULANCE,
-                formatter.parse(fontAwesomeUrlOld, FontAwesome.class));
-        assertEquals(FontAwesome.AMBULANCE,
-                formatter.parse(fontAwesomeUrl, FontAwesome.class));
-        assertEquals(new GenericFontIcon("SomeOther", 0xF0F9),
-                formatter.parse(someOtherFont, FontIcon.class));
+        assertEquals(new ExternalResource(httpUrl).getURL(), formatter.parse(httpUrl, ExternalResource.class).getURL());
+        assertEquals(new ExternalResource(httpsUrl).getURL(), formatter.parse(httpsUrl, ExternalResource.class).getURL());
+        assertEquals(new ThemeResource(themePath), formatter.parse(ApplicationConstants.THEME_PROTOCOL_PREFIX + themePath, ThemeResource.class));
+        assertEquals(FontAwesome.AMBULANCE, formatter.parse(fontAwesomeUrlOld, FontAwesome.class));
+        assertEquals(FontAwesome.AMBULANCE, formatter.parse(fontAwesomeUrl, FontAwesome.class));
+        assertEquals(new GenericFontIcon("SomeOther", 0xF0F9), formatter.parse(someOtherFont, FontIcon.class));
 
-        assertEquals(
-                new FileResource(new File(fileSystemPath)).getSourceFile(),
-                formatter.parse(fileSystemPath, FileResource.class)
-                        .getSourceFile());
+        assertEquals(new FileResource(new File(fileSystemPath)).getSourceFile(), formatter.parse(fileSystemPath, FileResource.class).getSourceFile());
 
     }
 

@@ -19,11 +19,9 @@ public class SimpleMultiPartInputStreamTest extends TestCase {
      * @param expected
      * @throws Exception
      */
-    protected void checkBoundaryDetection(byte[] input, String boundary,
-            byte[] expected) throws Exception {
+    protected void checkBoundaryDetection(byte[] input, String boundary, byte[] expected) throws Exception {
         ByteArrayInputStream bais = new ByteArrayInputStream(input);
-        SimpleMultiPartInputStream smpis = new SimpleMultiPartInputStream(bais,
-                boundary);
+        SimpleMultiPartInputStream smpis = new SimpleMultiPartInputStream(bais, boundary);
         ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
         int outbyte;
         try {
@@ -31,18 +29,14 @@ public class SimpleMultiPartInputStreamTest extends TestCase {
                 resultStream.write(outbyte);
             }
         } catch (IOException e) {
-            throw new IOException(e.getMessage() + "; expected "
-                    + new String(expected) + " but got "
-                    + resultStream.toString());
+            throw new IOException(e.getMessage() + "; expected " + new String(expected) + " but got " + resultStream.toString());
         }
         if (!Arrays.equals(expected, resultStream.toByteArray())) {
-            throw new Exception("Mismatch: expected " + new String(expected)
-                    + " but got " + resultStream.toString());
+            throw new Exception("Mismatch: expected " + new String(expected) + " but got " + resultStream.toString());
         }
     }
 
-    protected void checkBoundaryDetection(String input, String boundary,
-            String expected) throws Exception {
+    protected void checkBoundaryDetection(String input, String boundary, String expected) throws Exception {
         checkBoundaryDetection(input.getBytes(), boundary, expected.getBytes());
     }
 
@@ -55,13 +49,11 @@ public class SimpleMultiPartInputStreamTest extends TestCase {
     }
 
     public void testCorrectBoundaryAtEnd() throws Exception {
-        checkBoundaryDetection("xyz123" + getFullBoundary("abc"), "abc",
-                "xyz123");
+        checkBoundaryDetection("xyz123" + getFullBoundary("abc"), "abc", "xyz123");
     }
 
     public void testCorrectBoundaryNearEnd() throws Exception {
-        checkBoundaryDetection("xyz123" + getFullBoundary("abc") + "de", "abc",
-                "xyz123");
+        checkBoundaryDetection("xyz123" + getFullBoundary("abc") + "de", "abc", "xyz123");
     }
 
     public void testCorrectBoundaryAtBeginning() throws Exception {
@@ -70,8 +62,7 @@ public class SimpleMultiPartInputStreamTest extends TestCase {
 
     public void testRepeatingCharacterBoundary() throws Exception {
         checkBoundaryDetection(getFullBoundary("aa") + "xyz123", "aa", "");
-        checkBoundaryDetection("axyz" + getFullBoundary("aa") + "123", "aa",
-                "axyz");
+        checkBoundaryDetection("axyz" + getFullBoundary("aa") + "123", "aa", "axyz");
         checkBoundaryDetection("xyz123" + getFullBoundary("aa"), "aa", "xyz123");
     }
 
@@ -87,19 +78,14 @@ public class SimpleMultiPartInputStreamTest extends TestCase {
 
     public void testRepeatingStringBoundary() throws Exception {
         checkBoundaryDetection(getFullBoundary("abab") + "xyz123", "abab", "");
-        checkBoundaryDetection("abaxyz" + getFullBoundary("abab") + "123",
-                "abab", "abaxyz");
-        checkBoundaryDetection("xyz123" + getFullBoundary("abab"), "abab",
-                "xyz123");
+        checkBoundaryDetection("abaxyz" + getFullBoundary("abab") + "123", "abab", "abaxyz");
+        checkBoundaryDetection("xyz123" + getFullBoundary("abab"), "abab", "xyz123");
     }
 
     public void testOverlappingBoundary() throws Exception {
-        checkBoundaryDetection("abc" + getFullBoundary("abcabd") + "xyz123",
-                "abcabd", "abc");
-        checkBoundaryDetection("xyzabc" + getFullBoundary("abcabd") + "123",
-                "abcabd", "xyzabc");
-        checkBoundaryDetection("xyz123abc" + getFullBoundary("abcabd"),
-                "abcabd", "xyz123abc");
+        checkBoundaryDetection("abc" + getFullBoundary("abcabd") + "xyz123", "abcabd", "abc");
+        checkBoundaryDetection("xyzabc" + getFullBoundary("abcabd") + "123", "abcabd", "xyzabc");
+        checkBoundaryDetection("xyz123abc" + getFullBoundary("abcabd"), "abcabd", "xyz123abc");
     }
 
     /*

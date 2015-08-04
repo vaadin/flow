@@ -19,8 +19,7 @@ import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.vaadin.client.ServerConnector;
 
-public abstract class AbstractServerConnectorEvent<H extends EventHandler>
-        extends GwtEvent<H> {
+public abstract class AbstractServerConnectorEvent<H extends EventHandler> extends GwtEvent<H> {
     private ServerConnector connector;
 
     protected AbstractServerConnectorEvent() {

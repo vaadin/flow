@@ -42,15 +42,14 @@ public class GridLayoutWidthChange extends AbstractTestUI {
         cc.setWidth("500px");
         addComponent(cc);
 
-        Button testButton = new Button("Reduce GridLayout parent width",
-                new Button.ClickListener() {
+        Button testButton = new Button("Reduce GridLayout parent width", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        cc.setWidth((cc.getWidth() - 100) + "px");
-                    }
+            @Override
+            public void buttonClick(ClickEvent event) {
+                cc.setWidth((cc.getWidth() - 100) + "px");
+            }
 
-                });
+        });
         addComponent(testButton);
     }
 

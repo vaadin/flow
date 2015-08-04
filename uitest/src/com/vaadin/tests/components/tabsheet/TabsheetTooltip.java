@@ -28,8 +28,7 @@ public class TabsheetTooltip extends TestBase {
         tab.setDescription("This is a tab");
         tab.setComponentError(new UserError("abc error"));
 
-        Tab tab2 = tabSheet.addTab(new Label("Another label, d'oh"), "Tab 2",
-                null);
+        Tab tab2 = tabSheet.addTab(new Label("Another label, d'oh"), "Tab 2", null);
         tab2.setDescription("This is another tab");
 
         addComponent(tabSheet);

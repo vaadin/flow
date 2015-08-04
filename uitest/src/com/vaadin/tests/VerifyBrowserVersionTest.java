@@ -39,17 +39,14 @@ public class VerifyBrowserVersionTest extends MultiBrowserTest {
         if (BrowserUtil.isChrome(getDesiredCapabilities())) {
             // Chrome version does not necessarily match the desired version
             // because of auto updates...
-            browserIdentifier = getExpectedUserAgentString(getDesiredCapabilities())
-                    + "43";
+            browserIdentifier = getExpectedUserAgentString(getDesiredCapabilities()) + "43";
         } else {
-            browserIdentifier = getExpectedUserAgentString(desiredCapabilities)
-                    + desiredCapabilities.getVersion();
+            browserIdentifier = getExpectedUserAgentString(desiredCapabilities) + desiredCapabilities.getVersion();
         }
 
         assertThat(userAgent, containsString(browserIdentifier));
 
-        assertThat(vaadinElementById("touchDevice").getText(),
-                is("Touch device? No"));
+        assertThat(vaadinElementById("touchDevice").getText(), is("Touch device? No"));
     }
 
     private String getExpectedUserAgentString(DesiredCapabilities dCap) {
@@ -68,8 +65,7 @@ public class VerifyBrowserVersionTest extends MultiBrowserTest {
         } else if (BrowserUtil.isPhantomJS(dCap)) {
             return "PhantomJS/";
         }
-        throw new UnsupportedOperationException(
-                "Test is being run on unknown browser.");
+        throw new UnsupportedOperationException("Test is being run on unknown browser.");
     }
 
 }

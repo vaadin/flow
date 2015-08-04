@@ -37,8 +37,7 @@ public class DateFieldDayResolutionOffset extends AbstractTestUI {
         });
     }
 
-    private DateField getDateField(TimeZone timezone,
-            SimpleDateFormat dateformat) {
+    private DateField getDateField(TimeZone timezone, SimpleDateFormat dateformat) {
         final DateField dateField = new DateField();
         try {
             Date initialDate = dateformat.parse(initialDateString);
@@ -52,8 +51,7 @@ public class DateFieldDayResolutionOffset extends AbstractTestUI {
     }
 
     private SimpleDateFormat getDateFormat(TimeZone timezone) {
-        final SimpleDateFormat dateformat = new SimpleDateFormat(
-                "MM/dd/yyyy HH:mm:ss");
+        final SimpleDateFormat dateformat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
         dateformat.setTimeZone(timezone);
         return dateformat;
     }

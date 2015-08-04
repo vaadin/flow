@@ -17,17 +17,16 @@ public class TabSheetDisabling extends TestBase {
         tabSheet = new TabSheet();
         for (int i = 0; i < NR_BUTTONS; i++) {
             if (i % 2 == 0) {
-                buttons[i] = new Button("Disable this tab",
-                        new ClickListener() {
+                buttons[i] = new Button("Disable this tab", new ClickListener() {
 
-                            @Override
-                            public void buttonClick(ClickEvent event) {
-                                Button b = event.getButton();
-                                tabSheet.getTab(b).setEnabled(false);
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        Button b = event.getButton();
+                        tabSheet.getTab(b).setEnabled(false);
 
-                            }
+                    }
 
-                        });
+                });
             } else {
                 buttons[i] = new Button("Hide this tab", new ClickListener() {
 

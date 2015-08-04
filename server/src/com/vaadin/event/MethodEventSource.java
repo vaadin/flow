@@ -162,6 +162,5 @@ public interface MethodEventSource extends Serializable {
      *            the name of the method owned by <code>target</code> that's
      *            registered to listen to events of type <code>eventType</code>.
      */
-    public void removeListener(Class<?> eventType, Object target,
-            String methodName);
+    public void removeListener(Class<?> eventType, Object target, String methodName);
 }

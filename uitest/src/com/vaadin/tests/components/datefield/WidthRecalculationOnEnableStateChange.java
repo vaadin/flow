@@ -18,20 +18,18 @@ public class WidthRecalculationOnEnableStateChange extends TestBase {
         df.setWidth("200px");
         df.addStyleName("enabled-readonly-styled");
         addComponent(df);
-        addComponent(new Button("Toggle disabled for date field",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        df.setEnabled(!df.isEnabled());
-                    }
-                }));
-        addComponent(new Button("Toggle read only for date field",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        df.setReadOnly(!df.isReadOnly());
-                    }
-                }));
+        addComponent(new Button("Toggle disabled for date field", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                df.setEnabled(!df.isEnabled());
+            }
+        }));
+        addComponent(new Button("Toggle read only for date field", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                df.setReadOnly(!df.isReadOnly());
+            }
+        }));
     }
 
     @Override

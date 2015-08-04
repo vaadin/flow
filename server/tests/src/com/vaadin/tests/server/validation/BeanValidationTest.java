@@ -12,22 +12,19 @@ import com.vaadin.ui.Field;
 public class BeanValidationTest {
     @Test(expected = InvalidValueException.class)
     public void testBeanValidationNull() {
-        BeanValidator validator = new BeanValidator(BeanToValidate.class,
-                "firstname");
+        BeanValidator validator = new BeanValidator(BeanToValidate.class, "firstname");
         validator.validate(null);
     }
 
     @Test(expected = InvalidValueException.class)
     public void testBeanValidationStringTooShort() {
-        BeanValidator validator = new BeanValidator(BeanToValidate.class,
-                "firstname");
+        BeanValidator validator = new BeanValidator(BeanToValidate.class, "firstname");
         validator.validate("aa");
     }
 
     @Test
     public void testBeanValidationStringOk() {
-        BeanValidator validator = new BeanValidator(BeanToValidate.class,
-                "firstname");
+        BeanValidator validator = new BeanValidator(BeanToValidate.class, "firstname");
         validator.validate("aaa");
     }
 
@@ -45,23 +42,20 @@ public class BeanValidationTest {
 
     @Test(expected = InvalidValueException.class)
     public void testBeanValidationTooManyDigits() {
-        BeanValidator validator = new BeanValidator(BeanToValidate.class,
-                "decimals");
+        BeanValidator validator = new BeanValidator(BeanToValidate.class, "decimals");
         validator.validate("1234.567");
     }
 
     @Test
     public void testBeanValidationDigitsOk() {
-        BeanValidator validator = new BeanValidator(BeanToValidate.class,
-                "decimals");
+        BeanValidator validator = new BeanValidator(BeanToValidate.class, "decimals");
         validator.validate("123.45");
     }
 
     @Test
     public void testBeanValidationException_OneValidationError() {
         InvalidValueException[] causes = null;
-        BeanValidator validator = new BeanValidator(BeanToValidate.class,
-                "lastname");
+        BeanValidator validator = new BeanValidator(BeanToValidate.class, "lastname");
         try {
             validator.validate(null);
         } catch (InvalidValueException e) {
@@ -74,8 +68,7 @@ public class BeanValidationTest {
     @Test
     public void testBeanValidationsException_TwoValidationErrors() {
         InvalidValueException[] causes = null;
-        BeanValidator validator = new BeanValidator(BeanToValidate.class,
-                "nickname");
+        BeanValidator validator = new BeanValidator(BeanToValidate.class, "nickname");
         try {
             validator.validate("A");
         } catch (InvalidValueException e) {
@@ -87,8 +80,7 @@ public class BeanValidationTest {
 
     public void testBeanValidationNotAddedTwice() {
         // See ticket #11045
-        BeanFieldGroup<BeanToValidate> fieldGroup = new BeanFieldGroup<BeanToValidate>(
-                BeanToValidate.class);
+        BeanFieldGroup<BeanToValidate> fieldGroup = new BeanFieldGroup<BeanToValidate>(BeanToValidate.class);
 
         BeanToValidate beanToValidate = new BeanToValidate();
         beanToValidate.setFirstname("a");

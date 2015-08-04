@@ -117,15 +117,12 @@ public class Tabsheets extends VerticalLayout implements View {
                 style += padded.getValue() ? " padded-tabbar" : "";
                 style += compact.getValue() ? " compact-tabbar" : "";
                 style += iconsOnTop.getValue() ? " icons-on-top" : "";
-                style += selectedOnly.getValue() ? " only-selected-closable"
-                        : "";
+                style += selectedOnly.getValue() ? " only-selected-closable" : "";
 
                 if (tabs != null) {
                     removeComponent(tabs);
                 }
-                tabs = getTabSheet(caption.getValue(), style.trim(),
-                        closable.getValue(), overflow.getValue(),
-                        icon.getValue(), disable.getValue());
+                tabs = getTabSheet(caption.getValue(), style.trim(), closable.getValue(), overflow.getValue(), icon.getValue(), disable.getValue());
                 addComponent(tabs);
             }
         };
@@ -147,8 +144,7 @@ public class Tabsheets extends VerticalLayout implements View {
         icon.setValue(true);
     }
 
-    static TabSheet getTabSheet(boolean caption, String style,
-            boolean closable, boolean scrolling, boolean icon, boolean disable) {
+    static TabSheet getTabSheet(boolean caption, String style, boolean closable, boolean scrolling, boolean icon, boolean disable) {
         TestIcon testIcon = new TestIcon(60);
 
         TabSheet ts = new TabSheet();
@@ -156,16 +152,14 @@ public class Tabsheets extends VerticalLayout implements View {
         StringGenerator sg = new StringGenerator();
 
         for (int i = 1; i <= (scrolling ? 10 : 3); i++) {
-            String tabcaption = caption ? sg.nextString(true) + " "
-                    + sg.nextString(false) : null;
+            String tabcaption = caption ? sg.nextString(true) + " " + sg.nextString(false) : null;
 
             VerticalLayout content = new VerticalLayout();
             content.setMargin(true);
             content.setSpacing(true);
             content.addComponent(new Label("Content for tab " + i));
             if (i == 2) {
-                content.addComponent(new Label(
-                        "Excepteur sint obcaecat cupiditat non proident culpa. Magna pars studiorum, prodita quaerimus."));
+                content.addComponent(new Label("Excepteur sint obcaecat cupiditat non proident culpa. Magna pars studiorum, prodita quaerimus."));
             }
             Tab t = ts.addTab(content, tabcaption);
             t.setClosable(closable);

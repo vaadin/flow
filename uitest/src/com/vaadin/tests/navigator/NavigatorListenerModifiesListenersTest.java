@@ -40,16 +40,9 @@ public class NavigatorListenerModifiesListenersTest extends SingleBrowserTest {
             button.click();
 
             // verify we are in another view and url is correct
-            waitForElementPresent(By
-                    .id(NavigatorListenerModifiesListeners.LABEL_ANOTHERVIEW_ID));
+            waitForElementPresent(By.id(NavigatorListenerModifiesListeners.LABEL_ANOTHERVIEW_ID));
             String currentUrl = driver.getCurrentUrl();
-            assertEquals(
-                    "Current URL should be equal to another view URL",
-                    initialUrl
-                            .replace(
-                                    NavigatorListenerModifiesListeners.MainView.NAME,
-                                    NavigatorListenerModifiesListeners.AnotherView.NAME),
-                    currentUrl);
+            assertEquals("Current URL should be equal to another view URL", initialUrl.replace(NavigatorListenerModifiesListeners.MainView.NAME, NavigatorListenerModifiesListeners.AnotherView.NAME), currentUrl);
 
             // click back button
             driver.navigate().back();
@@ -57,11 +50,9 @@ public class NavigatorListenerModifiesListenersTest extends SingleBrowserTest {
             // verify we are in main view and url is correct
             // without the fix for #17477, we get
             // ConcurrentModificationException
-            waitForElementPresent(By
-                    .id(NavigatorListenerModifiesListeners.LABEL_MAINVIEW_ID));
+            waitForElementPresent(By.id(NavigatorListenerModifiesListeners.LABEL_MAINVIEW_ID));
             currentUrl = driver.getCurrentUrl();
-            assertEquals("Current URL should be equal to the initial view URL",
-                    initialUrl, currentUrl);
+            assertEquals("Current URL should be equal to the initial view URL", initialUrl, currentUrl);
         }
     }
 

@@ -28,23 +28,19 @@ public abstract class LayoutClickEventHandler extends AbstractClickEventHandler 
         this(connector, EventId.LAYOUT_CLICK_EVENT_IDENTIFIER);
     }
 
-    public LayoutClickEventHandler(ComponentConnector connector,
-            String clickEventIdentifier) {
+    public LayoutClickEventHandler(ComponentConnector connector, String clickEventIdentifier) {
         super(connector, clickEventIdentifier);
     }
 
-    protected abstract ComponentConnector getChildComponent(
-            com.google.gwt.user.client.Element element);
+    protected abstract ComponentConnector getChildComponent(com.google.gwt.user.client.Element element);
 
     protected ComponentConnector getChildComponent(NativeEvent event) {
-        return getChildComponent((com.google.gwt.user.client.Element) event
-                .getEventTarget().cast());
+        return getChildComponent((com.google.gwt.user.client.Element) event.getEventTarget().cast());
     }
 
     @Override
     protected void fireClick(NativeEvent event) {
-        MouseEventDetails mouseDetails = MouseEventDetailsBuilder
-                .buildMouseEventDetails(event, getRelativeToElement());
+        MouseEventDetails mouseDetails = MouseEventDetailsBuilder.buildMouseEventDetails(event, getRelativeToElement());
         getLayoutClickRPC().layoutClick(mouseDetails, getChildComponent(event));
     }
 

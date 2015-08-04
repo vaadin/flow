@@ -37,8 +37,7 @@ public class GridColumnWidthsWithoutData extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         addComponent(grid);
 
-        NativeSelect selectionModeSelector = new NativeSelect("Selection mode",
-                EnumSet.allOf(SelectionMode.class));
+        NativeSelect selectionModeSelector = new NativeSelect("Selection mode", EnumSet.allOf(SelectionMode.class));
         selectionModeSelector.setValue(selectionMode);
         selectionModeSelector.setNullSelectionAllowed(false);
         selectionModeSelector.addValueChangeListener(new ValueChangeListener() {
@@ -50,21 +49,19 @@ public class GridColumnWidthsWithoutData extends AbstractTestUI {
         });
         addComponent(selectionModeSelector);
 
-        addComponent(new Button("Recreate without data",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        replaceGrid(createGrid(false));
-                    }
-                }));
+        addComponent(new Button("Recreate without data", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                replaceGrid(createGrid(false));
+            }
+        }));
 
-        addComponent(new Button("Recreate with data",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        replaceGrid(createGrid(true));
-                    }
-                }));
+        addComponent(new Button("Recreate with data", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                replaceGrid(createGrid(true));
+            }
+        }));
 
         addComponent(new Button("Add data", new Button.ClickListener() {
             @Override

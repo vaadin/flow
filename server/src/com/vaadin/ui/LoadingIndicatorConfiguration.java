@@ -81,8 +81,7 @@ public interface LoadingIndicatorConfiguration extends Serializable {
     public int getThirdDelay();
 }
 
-class LoadingIndicatorConfigurationImpl implements
-        LoadingIndicatorConfiguration {
+class LoadingIndicatorConfigurationImpl implements LoadingIndicatorConfiguration {
     private UI ui;
 
     public LoadingIndicatorConfigurationImpl(UI ui) {

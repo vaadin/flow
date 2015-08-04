@@ -19,8 +19,7 @@ public class RemoveListenersOnDetachTest {
     int numReadOnlyChanges = 0;
 
     AbstractField field = new AbstractField() {
-        final private VaadinSession application = new AlwaysLockedVaadinSession(
-                null);
+        final private VaadinSession application = new AlwaysLockedVaadinSession(null);
         private UI uI = new UI() {
 
             @Override
@@ -47,8 +46,7 @@ public class RemoveListenersOnDetachTest {
         }
 
         @Override
-        public void readOnlyStatusChange(
-                Property.ReadOnlyStatusChangeEvent event) {
+        public void readOnlyStatusChange(Property.ReadOnlyStatusChangeEvent event) {
             super.readOnlyStatusChange(event);
             numReadOnlyChanges++;
         }
@@ -71,8 +69,7 @@ public class RemoveListenersOnDetachTest {
         }
 
         @Override
-        public void setValue(String newValue) throws ReadOnlyException,
-                ConversionException {
+        public void setValue(String newValue) throws ReadOnlyException, ConversionException {
             fireValueChange();
         }
 

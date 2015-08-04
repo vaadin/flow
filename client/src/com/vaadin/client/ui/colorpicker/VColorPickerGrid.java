@@ -30,8 +30,7 @@ import com.google.gwt.user.client.ui.HTMLTable.Cell;
  * @since 7.0.0
  * 
  */
-public class VColorPickerGrid extends AbsolutePanel implements ClickHandler,
-        HasClickHandlers {
+public class VColorPickerGrid extends AbsolutePanel implements ClickHandler, HasClickHandlers {
 
     private int rows = 1;
     private int columns = 1;
@@ -88,17 +87,12 @@ public class VColorPickerGrid extends AbsolutePanel implements ClickHandler,
      * @param changedX
      * @param changedY
      */
-    protected void updateColor(String[] changedColor, String[] changedX,
-            String[] changedY) {
+    protected void updateColor(String[] changedColor, String[] changedX, String[] changedY) {
         if (changedColor != null && changedX != null && changedY != null) {
-            if (changedColor.length == changedX.length
-                    && changedX.length == changedY.length) {
+            if (changedColor.length == changedX.length && changedX.length == changedY.length) {
                 for (int c = 0; c < changedColor.length; c++) {
-                    Element element = grid.getCellFormatter().getElement(
-                            Integer.parseInt(changedX[c]),
-                            Integer.parseInt(changedY[c]));
-                    element.getStyle().setProperty("background",
-                            changedColor[c]);
+                    Element element = grid.getCellFormatter().getElement(Integer.parseInt(changedX[c]), Integer.parseInt(changedY[c]));
+                    element.getStyle().setProperty("background", changedColor[c]);
                 }
             }
 

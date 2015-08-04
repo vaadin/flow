@@ -319,8 +319,7 @@ public interface Property<T> extends Serializable {
          * @param listener
          *            listener to be removed
          */
-        public void removeValueChangeListener(
-                Property.ValueChangeListener listener);
+        public void removeValueChangeListener(Property.ValueChangeListener listener);
 
         /**
          * @deprecated As of 7.0, replaced by
@@ -365,8 +364,7 @@ public interface Property<T> extends Serializable {
          * @param event
          *            Read-only status change event object
          */
-        public void readOnlyStatusChange(
-                Property.ReadOnlyStatusChangeEvent event);
+        public void readOnlyStatusChange(Property.ReadOnlyStatusChangeEvent event);
     }
 
     /**
@@ -394,8 +392,7 @@ public interface Property<T> extends Serializable {
          * @param listener
          *            the new Listener to be registered
          */
-        public void addReadOnlyStatusChangeListener(
-                Property.ReadOnlyStatusChangeListener listener);
+        public void addReadOnlyStatusChangeListener(Property.ReadOnlyStatusChangeListener listener);
 
         /**
          * @deprecated As of 7.0, replaced by
@@ -410,15 +407,13 @@ public interface Property<T> extends Serializable {
          * @param listener
          *            listener to be removed
          */
-        public void removeReadOnlyStatusChangeListener(
-                Property.ReadOnlyStatusChangeListener listener);
+        public void removeReadOnlyStatusChangeListener(Property.ReadOnlyStatusChangeListener listener);
 
         /**
          * @deprecated As of 7.0, replaced by
          *             {@link #removeReadOnlyStatusChangeListener(ReadOnlyStatusChangeListener)}
          **/
         @Deprecated
-        public void removeListener(
-                Property.ReadOnlyStatusChangeListener listener);
+        public void removeListener(Property.ReadOnlyStatusChangeListener listener);
     }
 }

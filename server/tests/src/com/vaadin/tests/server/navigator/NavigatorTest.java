@@ -99,8 +99,7 @@ public class NavigatorTest extends TestCase {
         private final LinkedList<Boolean> referenceIsCheck = new LinkedList<Boolean>();
         private final LinkedList<Boolean> checkReturnValues = new LinkedList<Boolean>();
 
-        public void addExpectedIsViewChangeAllowed(ViewChangeEvent event,
-                boolean returnValue) {
+        public void addExpectedIsViewChangeAllowed(ViewChangeEvent event, boolean returnValue) {
             referenceIsCheck.add(true);
             referenceEvents.add(event);
             checkReturnValues.add(returnValue);
@@ -115,8 +114,7 @@ public class NavigatorTest extends TestCase {
             return referenceEvents.isEmpty();
         }
 
-        public boolean equalsReferenceEvent(ViewChangeEvent event,
-                ViewChangeEvent reference) {
+        public boolean equalsReferenceEvent(ViewChangeEvent event, ViewChangeEvent reference) {
             if (event == null) {
                 return false;
             }
@@ -190,9 +188,7 @@ public class NavigatorTest extends TestCase {
 
             @Override
             public boolean matches(Object actual) {
-                return actual instanceof ViewChangeEvent
-                        && expected.equals(((ViewChangeEvent) actual)
-                                .getParameters());
+                return actual instanceof ViewChangeEvent && expected.equals(((ViewChangeEvent) actual).getParameters());
             }
         });
         return null;
@@ -205,15 +201,13 @@ public class NavigatorTest extends TestCase {
         return ui;
     }
 
-    private static Navigator createNavigator(NavigationStateManager manager,
-            ViewDisplay display) {
+    private static Navigator createNavigator(NavigationStateManager manager, ViewDisplay display) {
         return new Navigator(createMockUI(), manager, display);
     }
 
     public void testBasicNavigation() {
         IMocksControl control = EasyMock.createControl();
-        NavigationStateManager manager = control
-                .createMock(NavigationStateManager.class);
+        NavigationStateManager manager = control.createMock(NavigationStateManager.class);
         ViewDisplay display = control.createMock(ViewDisplay.class);
         ViewProvider provider = control.createMock(ViewProvider.class);
         View view1 = control.createMock(View.class);
@@ -238,8 +232,7 @@ public class NavigatorTest extends TestCase {
         manager.setState("test2");
         EasyMock.expect(manager.getState()).andReturn("test2");
 
-        EasyMock.expect(provider.getViewName("test1/params"))
-                .andReturn("test1");
+        EasyMock.expect(provider.getViewName("test1/params")).andReturn("test1");
         EasyMock.expect(provider.getView("test1")).andReturn(view1);
         EasyMock.expect(manager.getState()).andReturn("test2");
         view1.enter(eventParametersEqual("params"));
@@ -265,8 +258,7 @@ public class NavigatorTest extends TestCase {
 
     public void testMainView() {
         IMocksControl control = EasyMock.createControl();
-        NavigationStateManager manager = control
-                .createMock(NavigationStateManager.class);
+        NavigationStateManager manager = control.createMock(NavigationStateManager.class);
         ViewDisplay display = control.createMock(ViewDisplay.class);
         ViewProvider provider = control.createMock(ViewProvider.class);
         View view1 = control.createMock(View.class);
@@ -289,8 +281,7 @@ public class NavigatorTest extends TestCase {
         display.showView(view1);
         manager.setState("test1");
 
-        EasyMock.expect(provider.getViewName("test1/params"))
-                .andReturn("test1");
+        EasyMock.expect(provider.getViewName("test1/params")).andReturn("test1");
         EasyMock.expect(provider.getView("test1")).andReturn(view1);
         EasyMock.expect(manager.getState()).andReturn("test2");
         view1.enter(eventParametersEqual("params"));
@@ -310,8 +301,7 @@ public class NavigatorTest extends TestCase {
 
     public void testListeners() {
         IMocksControl control = EasyMock.createControl();
-        NavigationStateManager manager = control
-                .createMock(NavigationStateManager.class);
+        NavigationStateManager manager = control.createMock(NavigationStateManager.class);
         ViewDisplay display = control.createMock(ViewDisplay.class);
         ViewProvider provider = control.createMock(ViewProvider.class);
         View view1 = control.createMock(View.class);
@@ -324,8 +314,7 @@ public class NavigatorTest extends TestCase {
         // prepare mocks: what to expect
         EasyMock.expect(provider.getViewName("test1")).andReturn("test1");
         EasyMock.expect(provider.getView("test1")).andReturn(view1);
-        ViewChangeEvent event1 = new ViewChangeEvent(navigator, null, view1,
-                "test1", "");
+        ViewChangeEvent event1 = new ViewChangeEvent(navigator, null, view1, "test1", "");
         listener.addExpectedIsViewChangeAllowed(event1, true);
         EasyMock.expect(manager.getState()).andReturn("");
         view1.enter(eventParametersEqual(""));
@@ -335,8 +324,7 @@ public class NavigatorTest extends TestCase {
 
         EasyMock.expect(provider.getViewName("test2")).andReturn("test2");
         EasyMock.expect(provider.getView("test2")).andReturn(view2);
-        ViewChangeEvent event2 = new ViewChangeEvent(navigator, view1, view2,
-                "test2", "");
+        ViewChangeEvent event2 = new ViewChangeEvent(navigator, view1, view2, "test2", "");
         listener.addExpectedIsViewChangeAllowed(event2, true);
         EasyMock.expect(manager.getState()).andReturn("test1");
         view2.enter(eventParametersEqual(""));
@@ -367,10 +355,8 @@ public class NavigatorTest extends TestCase {
         EasyMock.replay(tv1, tv2);
 
         VerticalLayout container = new VerticalLayout();
-        ViewDisplay display = new Navigator.ComponentContainerViewDisplay(
-                container);
-        Navigator navigator = createNavigator(new NullFragmentManager(),
-                display);
+        ViewDisplay display = new Navigator.ComponentContainerViewDisplay(container);
+        Navigator navigator = createNavigator(new NullFragmentManager(), display);
 
         navigator.addView("tv1", tv1);
         navigator.addView("tv2", tv2);
@@ -388,8 +374,7 @@ public class NavigatorTest extends TestCase {
 
     public void testBlockNavigation() {
         IMocksControl control = EasyMock.createControl();
-        NavigationStateManager manager = control
-                .createMock(NavigationStateManager.class);
+        NavigationStateManager manager = control.createMock(NavigationStateManager.class);
         ViewDisplay display = control.createMock(ViewDisplay.class);
         ViewProvider provider = control.createMock(ViewProvider.class);
         View view1 = control.createMock(View.class);
@@ -404,16 +389,14 @@ public class NavigatorTest extends TestCase {
         EasyMock.expect(provider.getViewName("test1")).andReturn("test1");
         EasyMock.expect(provider.getView("test1")).andReturn(view1);
         EasyMock.expect(manager.getState()).andReturn("");
-        ViewChangeEvent event1 = new ViewChangeEvent(navigator, null, view1,
-                "test1", "");
+        ViewChangeEvent event1 = new ViewChangeEvent(navigator, null, view1, "test1", "");
         listener1.addExpectedIsViewChangeAllowed(event1, false);
 
         // second listener blocks second view change
         EasyMock.expect(provider.getViewName("test1/test")).andReturn("test1");
         EasyMock.expect(provider.getView("test1")).andReturn(view1);
         EasyMock.expect(manager.getState()).andReturn("");
-        ViewChangeEvent event2 = new ViewChangeEvent(navigator, null, view1,
-                "test1", "test");
+        ViewChangeEvent event2 = new ViewChangeEvent(navigator, null, view1, "test1", "test");
         listener1.addExpectedIsViewChangeAllowed(event2, true);
         listener2.addExpectedIsViewChangeAllowed(event2, false);
 
@@ -421,8 +404,7 @@ public class NavigatorTest extends TestCase {
         EasyMock.expect(provider.getViewName("test1/bar")).andReturn("test1");
         EasyMock.expect(provider.getView("test1")).andReturn(view1);
         EasyMock.expect(manager.getState()).andReturn("");
-        ViewChangeEvent event3 = new ViewChangeEvent(navigator, null, view1,
-                "test1", "bar");
+        ViewChangeEvent event3 = new ViewChangeEvent(navigator, null, view1, "test1", "bar");
         listener1.addExpectedIsViewChangeAllowed(event3, true);
         listener2.addExpectedIsViewChangeAllowed(event3, true);
         view1.enter(EasyMock.isA(ViewChangeEvent.class));
@@ -435,8 +417,7 @@ public class NavigatorTest extends TestCase {
         EasyMock.expect(provider.getViewName("test2")).andReturn("test2");
         EasyMock.expect(provider.getView("test2")).andReturn(view2);
         EasyMock.expect(manager.getState()).andReturn("view1");
-        ViewChangeEvent event4 = new ViewChangeEvent(navigator, view1, view2,
-                "test2", "");
+        ViewChangeEvent event4 = new ViewChangeEvent(navigator, view1, view2, "test2", "");
         listener1.addExpectedIsViewChangeAllowed(event4, true);
         listener2.addExpectedIsViewChangeAllowed(event4, true);
         view2.enter(EasyMock.isA(ViewChangeEvent.class));
@@ -472,8 +453,7 @@ public class NavigatorTest extends TestCase {
 
         navigator.addView("test", view);
 
-        assertEquals("Registered view instance not returned by navigator",
-                view, navigator.getView("test"));
+        assertEquals("Registered view instance not returned by navigator", view, navigator.getView("test"));
     }
 
     public void testAddViewInstanceSameName() throws Exception {
@@ -485,9 +465,7 @@ public class NavigatorTest extends TestCase {
         navigator.addView("test", view1);
         navigator.addView("test", view2);
 
-        assertEquals(
-                "Adding second view with same name should override previous view",
-                view2, navigator.getView("test"));
+        assertEquals("Adding second view with same name should override previous view", view2, navigator.getView("test"));
     }
 
     public void testAddViewClass() throws Exception {
@@ -497,8 +475,7 @@ public class NavigatorTest extends TestCase {
 
         View view = navigator.getView("test");
         assertNotNull("Received null view", view);
-        assertEquals("Received incorrect type of view", TestView.class,
-                view.getClass());
+        assertEquals("Received incorrect type of view", TestView.class, view.getClass());
     }
 
     public void testAddViewClassSameName() throws Exception {
@@ -507,9 +484,7 @@ public class NavigatorTest extends TestCase {
         navigator.addView("test", TestView.class);
         navigator.addView("test", TestView2.class);
 
-        assertEquals(
-                "Adding second view class with same name should override previous view",
-                TestView2.class, navigator.getView("test").getClass());
+        assertEquals("Adding second view class with same name should override previous view", TestView2.class, navigator.getView("test").getClass());
     }
 
     public void testAddViewInstanceAndClassSameName() throws Exception {
@@ -519,15 +494,11 @@ public class NavigatorTest extends TestCase {
         TestView2 view2 = new TestView2();
         navigator.addView("test", view2);
 
-        assertEquals(
-                "Adding second view class with same name should override previous view",
-                view2, navigator.getView("test"));
+        assertEquals("Adding second view class with same name should override previous view", view2, navigator.getView("test"));
 
         navigator.addView("test", TestView.class);
 
-        assertEquals(
-                "Adding second view class with same name should override previous view",
-                TestView.class, navigator.getView("test").getClass());
+        assertEquals("Adding second view class with same name should override previous view", TestView.class, navigator.getView("test").getClass());
     }
 
     public void testAddViewWithNullName() throws Exception {
@@ -605,8 +576,7 @@ public class NavigatorTest extends TestCase {
         navigator.addView("test2", TestView2.class);
         navigator.removeView("test");
 
-        assertEquals("Removed extra views", TestView2.class,
-                navigator.getView("test2").getClass());
+        assertEquals("Removed extra views", TestView2.class, navigator.getView("test2").getClass());
     }
 
     public void testGetViewNestedNames() throws Exception {
@@ -615,24 +585,12 @@ public class NavigatorTest extends TestCase {
         navigator.addView("test/subview", TestView2.class);
         navigator.addView("test", TestView.class);
 
-        assertEquals("Incorrect view name found for subview string",
-                TestView2.class, navigator.getView("test/subview").getClass());
-        assertEquals(
-                "Incorrect view name found for subview string with empty parameters",
-                TestView2.class, navigator.getView("test/subview/").getClass());
-        assertEquals(
-                "Incorrect view name found for subview string with parameters",
-                TestView2.class, navigator.getView("test/subview/parameters")
-                        .getClass());
-        assertEquals("Incorrect view name found for top level view string",
-                TestView.class, navigator.getView("test").getClass());
-        assertEquals(
-                "Incorrect view name found for top level view string with empty parameters",
-                TestView.class, navigator.getView("test/").getClass());
-        assertEquals(
-                "Incorrect view name found for top level view string with parameters starting like subview name",
-                TestView.class, navigator.getView("test/subviewnothere")
-                        .getClass());
+        assertEquals("Incorrect view name found for subview string", TestView2.class, navigator.getView("test/subview").getClass());
+        assertEquals("Incorrect view name found for subview string with empty parameters", TestView2.class, navigator.getView("test/subview/").getClass());
+        assertEquals("Incorrect view name found for subview string with parameters", TestView2.class, navigator.getView("test/subview/parameters").getClass());
+        assertEquals("Incorrect view name found for top level view string", TestView.class, navigator.getView("test").getClass());
+        assertEquals("Incorrect view name found for top level view string with empty parameters", TestView.class, navigator.getView("test/").getClass());
+        assertEquals("Incorrect view name found for top level view string with parameters starting like subview name", TestView.class, navigator.getView("test/subviewnothere").getClass());
     }
 
     public void testGetViewLongestPrefixOrder() throws Exception {
@@ -641,8 +599,7 @@ public class NavigatorTest extends TestCase {
         navigator.addView("test/subview", TestView2.class);
         navigator.addView("test", TestView.class);
 
-        assertEquals("Incorrect view name found", TestView.class, navigator
-                .getView("test").getClass());
+        assertEquals("Incorrect view name found", TestView.class, navigator.getView("test").getClass());
 
         // other order
 
@@ -651,8 +608,7 @@ public class NavigatorTest extends TestCase {
         navigator2.addView("test", TestView.class);
         navigator2.addView("test/subview", TestView2.class);
 
-        assertEquals("Incorrect view name found", TestView.class, navigator2
-                .getView("test").getClass());
+        assertEquals("Incorrect view name found", TestView.class, navigator2.getView("test").getClass());
     }
 
     public void testNavigateToUnknownView() {
@@ -683,10 +639,8 @@ public class NavigatorTest extends TestCase {
         EasyMock.replay(errorView2);
 
         ViewProvider errorProvider = EasyMock.createMock(ViewProvider.class);
-        EasyMock.expect(errorProvider.getView("doesnotexist2")).andReturn(
-                errorView2);
-        EasyMock.expect(errorProvider.getViewName("doesnotexist2")).andReturn(
-                "doesnotexist2");
+        EasyMock.expect(errorProvider.getView("doesnotexist2")).andReturn(errorView2);
+        EasyMock.expect(errorProvider.getViewName("doesnotexist2")).andReturn("doesnotexist2");
         EasyMock.replay(errorProvider);
 
         navigator.setErrorProvider(errorProvider);
@@ -704,8 +658,7 @@ public class NavigatorTest extends TestCase {
 
         control.replay();
 
-        NavigationStateManager manager = EasyMock
-                .createNiceMock(NavigationStateManager.class);
+        NavigationStateManager manager = EasyMock.createNiceMock(NavigationStateManager.class);
         EasyMock.replay(manager);
 
         Navigator navigator = new Navigator(createMockUI(), manager, display);
@@ -715,8 +668,7 @@ public class NavigatorTest extends TestCase {
 
     public void testNullViewProvider() {
         IMocksControl control = EasyMock.createControl();
-        NavigationStateManager manager = control
-                .createMock(NavigationStateManager.class);
+        NavigationStateManager manager = control.createMock(NavigationStateManager.class);
         ViewDisplay display = control.createMock(ViewDisplay.class);
 
         // create navigator to test

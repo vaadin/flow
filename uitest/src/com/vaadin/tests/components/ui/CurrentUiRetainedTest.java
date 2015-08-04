@@ -18,7 +18,6 @@ public class CurrentUiRetainedTest extends MultiBrowserTest {
     }
 
     private void assertLogText(int index, String expected) {
-        Assert.assertEquals("Unexpected log contents,", expected,
-                getLogRow(index));
+        Assert.assertEquals("Unexpected log contents,", expected, getLogRow(index));
     }
 }

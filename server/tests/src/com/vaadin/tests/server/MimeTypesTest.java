@@ -9,8 +9,7 @@ public class MimeTypesTest extends TestCase {
 
     public void testEmbeddedPDF() {
         Embedded e = new Embedded("A pdf", new ClassResource("file.pddf"));
-        assertEquals("Invalid mimetype", "application/octet-stream",
-                e.getMimeType());
+        assertEquals("Invalid mimetype", "application/octet-stream", e.getMimeType());
         e = new Embedded("A pdf", new ClassResource("file.pdf"));
         assertEquals("Invalid mimetype", "application/pdf", e.getMimeType());
     }

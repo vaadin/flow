@@ -41,8 +41,7 @@ public class GridWidthIncreaseTest extends MultiBrowserTest {
 
         double accuracy = 1.0d;
         DesiredCapabilities cap = getDesiredCapabilities();
-        if (BrowserUtil.isIE(cap, 8) || BrowserUtil.isIE(cap, 9)
-                || BrowserUtil.isPhantomJS(cap)) {
+        if (BrowserUtil.isIE(cap, 8) || BrowserUtil.isIE(cap, 9) || BrowserUtil.isPhantomJS(cap)) {
             accuracy = 2.0d;
         }
 
@@ -53,8 +52,7 @@ public class GridWidthIncreaseTest extends MultiBrowserTest {
                 int width = grid.getCell(0, c).getSize().getWidth();
                 if (c > 0) {
                     // check that columns are roughly the same width.
-                    assertEquals("Difference in column widths", prevWidth,
-                            width, accuracy);
+                    assertEquals("Difference in column widths", prevWidth, width, accuracy);
                 }
                 prevWidth = width;
             }
@@ -63,8 +61,7 @@ public class GridWidthIncreaseTest extends MultiBrowserTest {
              * Selenium doesn't support subpixels correctly, we use a rough
              * estimation.
              */
-            assertEquals(grid.getRow(0).getSize().getWidth(), grid
-                    .getTableWrapper().getSize().getWidth(), accuracy);
+            assertEquals(grid.getRow(0).getSize().getWidth(), grid.getTableWrapper().getSize().getWidth(), accuracy);
         }
     }
 }

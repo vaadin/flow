@@ -57,9 +57,7 @@ public class CSSRule {
      * Loops through all current style rules and collects all matching to
      * 'rules' array. The array is reverse ordered (last one found is first).
      */
-    private static native JavaScriptObject searchForRule(
-            final JavaScriptObject sheet, final String selector,
-            final boolean deep)
+    private static native JavaScriptObject searchForRule(final JavaScriptObject sheet, final String selector, final boolean deep)
     /*-{
     if(!$doc.styleSheets)
     return null;

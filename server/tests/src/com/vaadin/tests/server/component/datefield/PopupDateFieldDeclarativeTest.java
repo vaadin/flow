@@ -30,8 +30,7 @@ import com.vaadin.ui.PopupDateField;
  * @since 7.4
  * @author Vaadin Ltd
  */
-public class PopupDateFieldDeclarativeTest extends
-        DeclarativeTestBase<PopupDateField> {
+public class PopupDateFieldDeclarativeTest extends DeclarativeTestBase<PopupDateField> {
 
     private String getBasicDesign() {
         return "<v-popup-date-field assistive-text='at' text-field-enabled='false' show-iso-week-numbers resolution=\"MINUTE\" range-end=\"2019-01-15\" input-prompt=\"Pick a day\" value=\"2003-02-27 07:15\"></v-popup-date-field>";

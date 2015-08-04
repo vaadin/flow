@@ -58,12 +58,9 @@ public class GridDetailsWidthTest extends SingleBrowserTest {
 
     private void checkSpacersHaveNoWidths(int expectedCount) {
         List<WebElement> spacers = findElements(By.className("v-grid-spacer"));
-        Assert.assertEquals("Wrong amount of spacers visible.", expectedCount,
-                spacers.size());
+        Assert.assertEquals("Wrong amount of spacers visible.", expectedCount, spacers.size());
         for (WebElement spacer : spacers) {
-            Assert.assertFalse("Spacer element had an unexpected width set.",
-                    spacer.findElement(By.tagName("td")).getAttribute("style")
-                            .contains("width"));
+            Assert.assertFalse("Spacer element had an unexpected width set.", spacer.findElement(By.tagName("td")).getAttribute("style").contains("width"));
         }
     }
 
@@ -81,11 +78,8 @@ public class GridDetailsWidthTest extends SingleBrowserTest {
 
         cell = grid.getCell(2, 0);
         WebElement spacer = findElement(By.className("v-grid-spacer"));
-        Assert.assertEquals("Grid was not sorted correctly", "Hello 0",
-                cell.getText());
-        Assert.assertEquals("Details row was not in correct location", cell
-                .getLocation().getY() + cell.getSize().getHeight(), spacer
-                .getLocation().getY());
+        Assert.assertEquals("Grid was not sorted correctly", "Hello 0", cell.getText());
+        Assert.assertEquals("Details row was not in correct location", cell.getLocation().getY() + cell.getSize().getHeight(), spacer.getLocation().getY());
 
     }
 

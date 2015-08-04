@@ -26,8 +26,7 @@ public class PreserveCustomDebugSectionOpen extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new Label(
-                "UI for testing that a custom debug window section remains open after refreshging."));
+        addComponent(new Label("UI for testing that a custom debug window section remains open after refreshging."));
     }
 
 }

@@ -37,12 +37,9 @@ import com.vaadin.ui.VerticalLayout;
  */
 public class TestForPreconfiguredComponents extends CustomComponent {
 
-    private static final String[] firstnames = new String[] { "John", "Mary",
-            "Joe", "Sarah", "Jeff", "Jane", "Peter", "Marc", "Josie", "Linus" };
+    private static final String[] firstnames = new String[] { "John", "Mary", "Joe", "Sarah", "Jeff", "Jane", "Peter", "Marc", "Josie", "Linus" };
 
-    private static final String[] lastnames = new String[] { "Torvalds",
-            "Smith", "Jones", "Beck", "Sheridan", "Picard", "Hill", "Fielding",
-            "Einstein" };
+    private static final String[] lastnames = new String[] { "Torvalds", "Smith", "Jones", "Beck", "Sheridan", "Picard", "Hill", "Fielding", "Einstein" };
 
     private final VerticalLayout main = new VerticalLayout();
 
@@ -54,12 +51,7 @@ public class TestForPreconfiguredComponents extends CustomComponent {
 
     public void createNewView() {
         main.removeAllComponents();
-        main.addComponent(new Label(
-                "In Toolkit 5 we introduce new components. Previously we"
-                        + " usually used setStyle or some other methods on possibly "
-                        + "multiple steps to configure component for ones needs. These new "
-                        + "server side components are mostly just classes that in constructor "
-                        + "set base class to state that programmer wants."));
+        main.addComponent(new Label("In Toolkit 5 we introduce new components. Previously we" + " usually used setStyle or some other methods on possibly " + "multiple steps to configure component for ones needs. These new " + "server side components are mostly just classes that in constructor " + "set base class to state that programmer wants."));
 
         main.addComponent(new Button("commit"));
 
@@ -104,9 +96,7 @@ public class TestForPreconfiguredComponents extends CustomComponent {
 
     public static void fillSelect(AbstractSelect s, int items) {
         for (int i = 0; i < items; i++) {
-            final String name = firstnames[(int) (Math.random() * (firstnames.length - 1))]
-                    + " "
-                    + lastnames[(int) (Math.random() * (lastnames.length - 1))];
+            final String name = firstnames[(int) (Math.random() * (firstnames.length - 1))] + " " + lastnames[(int) (Math.random() * (lastnames.length - 1))];
             s.addItem(name);
         }
     }
@@ -115,9 +105,7 @@ public class TestForPreconfiguredComponents extends CustomComponent {
         Tree t = new Tree("Tree");
         final String[] names = new String[100];
         for (int i = 0; i < names.length; i++) {
-            names[i] = firstnames[(int) (Math.random() * (firstnames.length - 1))]
-                    + " "
-                    + lastnames[(int) (Math.random() * (lastnames.length - 1))];
+            names[i] = firstnames[(int) (Math.random() * (firstnames.length - 1))] + " " + lastnames[(int) (Math.random() * (lastnames.length - 1))];
         }
 
         // Create tree
@@ -168,11 +156,9 @@ public class TestForPreconfiguredComponents extends CustomComponent {
         t.addListener(new Listener() {
             @Override
             public void componentEvent(Event event) {
-                statusLayout
-                        .addComponent(new Label(event.getClass().getName()));
+                statusLayout.addComponent(new Label(event.getClass().getName()));
                 // TODO should not use Field.toString()
-                statusLayout.addComponent(new Label("selected: "
-                        + event.getSource().toString()));
+                statusLayout.addComponent(new Label("selected: " + event.getSource().toString()));
             }
         });
 

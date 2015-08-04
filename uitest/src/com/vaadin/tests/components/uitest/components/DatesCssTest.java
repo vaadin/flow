@@ -39,14 +39,12 @@ public class DatesCssTest extends GridLayout {
         addComponent(df);
 
         createDateFieldWith(null, null, "130px");
-        createDateFieldWith("Small 130px", ChameleonTheme.DATEFIELD_SMALL,
-                "130px");
+        createDateFieldWith("Small 130px", ChameleonTheme.DATEFIELD_SMALL, "130px");
         createDateFieldWith("Big 130px", ChameleonTheme.DATEFIELD_BIG, "130px");
 
     }
 
-    private void createDateFieldWith(String caption, String primaryStyleName,
-            String width) {
+    private void createDateFieldWith(String caption, String primaryStyleName, String width) {
         DateField df = new DateField("Date field");
         df.setId("datefield" + debugIdCounter++);
         df.setValue(cal.getTime());

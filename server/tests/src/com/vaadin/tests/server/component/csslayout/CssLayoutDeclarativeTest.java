@@ -46,8 +46,7 @@ public class CssLayoutDeclarativeTest extends DeclarativeTestBase<CssLayout> {
 
     @Test
     public void testFeatures() {
-        String design = "<v-css-layout caption=test-layout><v-label caption=test-label />"
-                + "<v-button>test-button</v-button></v-css-layout>";
+        String design = "<v-css-layout caption=test-layout><v-label caption=test-label />" + "<v-button>test-button</v-button></v-css-layout>";
         CssLayout layout = new CssLayout();
         layout.setCaption("test-layout");
         Label l = new Label();

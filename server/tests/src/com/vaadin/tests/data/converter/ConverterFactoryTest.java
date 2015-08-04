@@ -30,16 +30,12 @@ public class ConverterFactoryTest extends TestCase {
     public static class ConvertTo42 implements Converter<String, Integer> {
 
         @Override
-        public Integer convertToModel(String value,
-                Class<? extends Integer> targetType, Locale locale)
-                throws com.vaadin.data.util.converter.Converter.ConversionException {
+        public Integer convertToModel(String value, Class<? extends Integer> targetType, Locale locale) throws com.vaadin.data.util.converter.Converter.ConversionException {
             return 42;
         }
 
         @Override
-        public String convertToPresentation(Integer value,
-                Class<? extends String> targetType, Locale locale)
-                throws com.vaadin.data.util.converter.Converter.ConversionException {
+        public String convertToPresentation(Integer value, Class<? extends String> targetType, Locale locale) throws com.vaadin.data.util.converter.Converter.ConversionException {
             return "42";
         }
 
@@ -57,8 +53,7 @@ public class ConverterFactoryTest extends TestCase {
 
     public static class ConverterFactory42 extends DefaultConverterFactory {
         @Override
-        public <PRESENTATION, MODEL> Converter<PRESENTATION, MODEL> createConverter(
-                Class<PRESENTATION> presentationType, Class<MODEL> modelType) {
+        public <PRESENTATION, MODEL> Converter<PRESENTATION, MODEL> createConverter(Class<PRESENTATION> presentationType, Class<MODEL> modelType) {
             if (modelType == Integer.class) {
                 return (Converter<PRESENTATION, MODEL>) new ConvertTo42();
             }
@@ -69,10 +64,8 @@ public class ConverterFactoryTest extends TestCase {
 
     public void testApplicationConverterFactoryInBackgroundThread() {
         VaadinSession.setCurrent(null);
-        final VaadinSession appWithCustomIntegerConverter = new AlwaysLockedVaadinSession(
-                null);
-        appWithCustomIntegerConverter
-                .setConverterFactory(new ConverterFactory42());
+        final VaadinSession appWithCustomIntegerConverter = new AlwaysLockedVaadinSession(null);
+        appWithCustomIntegerConverter.setConverterFactory(new ConverterFactory42());
 
         TextField tf = new TextField("", "123") {
             @Override
@@ -87,10 +80,8 @@ public class ConverterFactoryTest extends TestCase {
     }
 
     public void testApplicationConverterFactoryForDetachedComponent() {
-        final VaadinSession appWithCustomIntegerConverter = new AlwaysLockedVaadinSession(
-                null);
-        appWithCustomIntegerConverter
-                .setConverterFactory(new ConverterFactory42());
+        final VaadinSession appWithCustomIntegerConverter = new AlwaysLockedVaadinSession(null);
+        appWithCustomIntegerConverter.setConverterFactory(new ConverterFactory42());
         VaadinSession.setCurrent(appWithCustomIntegerConverter);
 
         TextField tf = new TextField("", "123");
@@ -101,10 +92,8 @@ public class ConverterFactoryTest extends TestCase {
     }
 
     public void testApplicationConverterFactoryForDifferentThanCurrentApplication() {
-        final VaadinSession fieldAppWithCustomIntegerConverter = new AlwaysLockedVaadinSession(
-                null);
-        fieldAppWithCustomIntegerConverter
-                .setConverterFactory(new ConverterFactory42());
+        final VaadinSession fieldAppWithCustomIntegerConverter = new AlwaysLockedVaadinSession(null);
+        fieldAppWithCustomIntegerConverter.setConverterFactory(new ConverterFactory42());
         VaadinSession.setCurrent(new AlwaysLockedVaadinSession(null));
 
         TextField tf = new TextField("", "123") {

@@ -35,8 +35,7 @@ public class VerticalLayoutFocusWithDOMChangesTest extends MultiBrowserTest {
     @Test
     public void inputTextAndChangeFocus() throws InterruptedException {
         openTestURL();
-        List<WebElement> textFields = getDriver().findElements(
-                By.tagName("input"));
+        List<WebElement> textFields = getDriver().findElements(By.tagName("input"));
         WebElement tf1 = textFields.get(0);
         WebElement tf2 = textFields.get(1);
         tf1.sendKeys(initialText);
@@ -47,30 +46,23 @@ public class VerticalLayoutFocusWithDOMChangesTest extends MultiBrowserTest {
         Assert.assertEquals("", activeElement.getAttribute("value"));
 
         tf1.sendKeys(incrementalText);
-        new Actions(getDriver())
-                .moveToElement(
-                        getDriver().findElement(By.className("v-button")))
-                .click().build().perform();
+        new Actions(getDriver()).moveToElement(getDriver().findElement(By.className("v-button"))).click().build().perform();
         activeElement = getFocusedElement();
         Assert.assertEquals("Just a button", activeElement.getText());
 
         DesiredCapabilities capabilities = getDesiredCapabilities();
-        if (BrowserUtil.isIE8(capabilities)
-                || BrowserUtil.isIE(capabilities, 9)) {
+        if (BrowserUtil.isIE8(capabilities) || BrowserUtil.isIE(capabilities, 9)) {
             // IE8 and IE9 insert cursor in the start of input instead of end.
-            Assert.assertEquals(incrementalText + initialText,
-                    tf1.getAttribute("value"));
+            Assert.assertEquals(incrementalText + initialText, tf1.getAttribute("value"));
         } else {
-            Assert.assertEquals(initialText + incrementalText,
-                    tf1.getAttribute("value"));
+            Assert.assertEquals(initialText + incrementalText, tf1.getAttribute("value"));
         }
     }
 
     @Test
     public void moveFocusAndChangeFieldWithValue() {
         openTestURL();
-        List<WebElement> textFields = getDriver().findElements(
-                By.tagName("input"));
+        List<WebElement> textFields = getDriver().findElements(By.tagName("input"));
         WebElement tf1 = textFields.get(0);
         WebElement tf2 = textFields.get(1);
 
@@ -87,14 +79,11 @@ public class VerticalLayoutFocusWithDOMChangesTest extends MultiBrowserTest {
 
         new Actions(getDriver()).sendKeys(secondText).build().perform();
         DesiredCapabilities capabilities = getDesiredCapabilities();
-        if (BrowserUtil.isIE8(capabilities)
-                || BrowserUtil.isIE(capabilities, 9)) {
+        if (BrowserUtil.isIE8(capabilities) || BrowserUtil.isIE(capabilities, 9)) {
             // IE8 and IE9 insert cursor in the start of input instead of end.
-            Assert.assertEquals(secondText + firstText,
-                    tf2.getAttribute("value"));
+            Assert.assertEquals(secondText + firstText, tf2.getAttribute("value"));
         } else {
-            Assert.assertEquals(firstText + secondText,
-                    tf2.getAttribute("value"));
+            Assert.assertEquals(firstText + secondText, tf2.getAttribute("value"));
         }
     }
 }

@@ -28,15 +28,11 @@ public class LayoutRenderTimeTest extends UI {
         // row.setWidth("100%");
         // row.setSpacing(true);
 
-        Embedded icon = new Embedded(null, new ThemeResource(
-                "../runo/icons/32/document.png"));
+        Embedded icon = new Embedded(null, new ThemeResource("../runo/icons/32/document.png"));
         // row.addComponent(icon);
         // row.setComponentAlignment(icon, Alignment.MIDDLE_LEFT);
 
-        Label text = new Label(
-                "Row content #"
-                        + i
-                        + ". In pellentesque faucibus vestibulum. Nulla at nulla justo, eget luctus tortor. Nulla facilisi. Duis aliquet.");
+        Label text = new Label("Row content #" + i + ". In pellentesque faucibus vestibulum. Nulla at nulla justo, eget luctus tortor. Nulla facilisi. Duis aliquet.");
         // row.addComponent(text);
         // row.setExpandRatio(text, 1);
 

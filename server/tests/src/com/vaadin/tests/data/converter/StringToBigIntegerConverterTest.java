@@ -27,31 +27,25 @@ public class StringToBigIntegerConverterTest extends TestCase {
     StringToBigIntegerConverter converter = new StringToBigIntegerConverter();
 
     public void testNullConversion() {
-        assertEquals("Null value was converted incorrectly", null,
-                converter.convertToModel(null, BigInteger.class, null));
+        assertEquals("Null value was converted incorrectly", null, converter.convertToModel(null, BigInteger.class, null));
     }
 
     public void testEmptyStringConversion() {
-        assertEquals("Empty value was converted incorrectly", null,
-                converter.convertToModel("", BigInteger.class, null));
+        assertEquals("Empty value was converted incorrectly", null, converter.convertToModel("", BigInteger.class, null));
     }
 
     public void testValueParsing() {
         String bigInt = "1180591620717411303424"; // 2^70 > 2^63 - 1
-        BigInteger converted = converter.convertToModel(bigInt,
-                BigInteger.class, null);
+        BigInteger converted = converter.convertToModel(bigInt, BigInteger.class, null);
         BigInteger expected = new BigInteger(bigInt);
-        assertEquals("Value bigger than max long was converted incorrectly",
-                expected, converted);
+        assertEquals("Value bigger than max long was converted incorrectly", expected, converted);
     }
 
     public void testValueFormatting() {
         BigInteger bd = new BigInteger("1000");
         String expected = "1.000";
 
-        String converted = converter.convertToPresentation(bd, String.class,
-                Locale.GERMAN);
-        assertEquals("Value with specific locale was converted incorrectly",
-                expected, converted);
+        String converted = converter.convertToPresentation(bd, String.class, Locale.GERMAN);
+        assertEquals("Value with specific locale was converted incorrectly", expected, converted);
     }
 }

@@ -46,33 +46,28 @@ public class GridGeneratedProperties extends AbstractTestUI {
         Grid grid = new Grid(container);
         addComponent(grid);
 
-        container.addGeneratedProperty("miles",
-                new PropertyValueGenerator<Double>() {
+        container.addGeneratedProperty("miles", new PropertyValueGenerator<Double>() {
 
-                    @Override
-                    public Double getValue(Item item, Object itemId,
-                            Object propertyId) {
-                        return (Double) item.getItemProperty("km").getValue()
-                                * MILES_CONVERSION;
-                    }
+            @Override
+            public Double getValue(Item item, Object itemId, Object propertyId) {
+                return (Double) item.getItemProperty("km").getValue() * MILES_CONVERSION;
+            }
 
-                    @Override
-                    public Class<Double> getType() {
-                        return Double.class;
-                    }
+            @Override
+            public Class<Double> getType() {
+                return Double.class;
+            }
 
-                    @Override
-                    public Filter modifyFilter(Filter filter)
-                            throws UnsupportedFilterException {
-                        if (filter instanceof Compare.Greater) {
-                            Double value = (Double) ((Compare.Greater) filter)
-                                    .getValue();
-                            value = value / MILES_CONVERSION;
-                            return new Compare.Greater("km", value);
-                        }
-                        return super.modifyFilter(filter);
-                    }
-                });
+            @Override
+            public Filter modifyFilter(Filter filter) throws UnsupportedFilterException {
+                if (filter instanceof Compare.Greater) {
+                    Double value = (Double) ((Compare.Greater) filter).getValue();
+                    value = value / MILES_CONVERSION;
+                    return new Compare.Greater("km", value);
+                }
+                return super.modifyFilter(filter);
+            }
+        });
 
         final Button filterButton = new Button("Add filter");
         filterButton.addClickListener(new ClickListener() {
@@ -93,42 +88,36 @@ public class GridGeneratedProperties extends AbstractTestUI {
             }
         });
 
-        container.addGeneratedProperty("foo",
-                new PropertyValueGenerator<String>() {
+        container.addGeneratedProperty("foo", new PropertyValueGenerator<String>() {
 
-                    @Override
-                    public String getValue(Item item, Object itemId,
-                            Object propertyId) {
-                        return item.getItemProperty("foo").getValue() + " "
-                                + item.getItemProperty("bar").getValue();
-                    }
+            @Override
+            public String getValue(Item item, Object itemId, Object propertyId) {
+                return item.getItemProperty("foo").getValue() + " " + item.getItemProperty("bar").getValue();
+            }
 
-                    @Override
-                    public Class<String> getType() {
-                        return String.class;
-                    }
-                });
+            @Override
+            public Class<String> getType() {
+                return String.class;
+            }
+        });
         container.removeContainerProperty("bar");
-        container.addGeneratedProperty("baz",
-                new PropertyValueGenerator<Integer>() {
+        container.addGeneratedProperty("baz", new PropertyValueGenerator<Integer>() {
 
-                    @Override
-                    public Integer getValue(Item item, Object itemId,
-                            Object propertyId) {
-                        return (Integer) item.getItemProperty("bar").getValue();
-                    }
+            @Override
+            public Integer getValue(Item item, Object itemId, Object propertyId) {
+                return (Integer) item.getItemProperty("bar").getValue();
+            }
 
-                    @Override
-                    public Class<Integer> getType() {
-                        return Integer.class;
-                    }
+            @Override
+            public Class<Integer> getType() {
+                return Integer.class;
+            }
 
-                    @Override
-                    public SortOrder[] getSortProperties(SortOrder order) {
-                        return Sort.by("bar", order.getDirection()).build()
-                                .toArray(new SortOrder[1]);
-                    }
-                });
+            @Override
+            public SortOrder[] getSortProperties(SortOrder order) {
+                return Sort.by("bar", order.getDirection()).build().toArray(new SortOrder[1]);
+            }
+        });
 
         addComponent(filterButton);
         grid.sort(Sort.by("km").then("bar", SortDirection.DESCENDING));

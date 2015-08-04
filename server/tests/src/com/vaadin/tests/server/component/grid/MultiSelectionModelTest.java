@@ -58,10 +58,8 @@ public class MultiSelectionModelTest {
 
     @After
     public void tearDown() {
-        Assert.assertFalse("Some expected select event did not happen.",
-                expectingEvent);
-        Assert.assertFalse("Some expected deselect event did not happen.",
-                expectingDeselectEvent);
+        Assert.assertFalse("Some expected select event did not happen.", expectingEvent);
+        Assert.assertFalse("Some expected deselect event did not happen.", expectingDeselectEvent);
     }
 
     private IndexedContainer createDataSource() {
@@ -108,14 +106,12 @@ public class MultiSelectionModelTest {
     public void testSettingSelection() throws Throwable {
         try {
             expectSelectEvent(itemId2Present, itemId1Present);
-            model.setSelected(Arrays.asList(new Object[] { itemId1Present,
-                    itemId2Present }));
+            model.setSelected(Arrays.asList(new Object[] { itemId1Present, itemId2Present }));
             verifyCurrentSelection(itemId1Present, itemId2Present);
 
             expectDeselectEvent(itemId1Present);
             expectSelectEvent(itemId3Present);
-            model.setSelected(Arrays.asList(new Object[] { itemId3Present,
-                    itemId2Present }));
+            model.setSelected(Arrays.asList(new Object[] { itemId3Present, itemId2Present }));
             verifyCurrentSelection(itemId3Present, itemId2Present);
         } catch (Exception e) {
             throw e.getCause();
@@ -142,16 +138,12 @@ public class MultiSelectionModelTest {
 
             @Override
             public void select(SelectionEvent event) {
-                Assert.assertTrue("Selection did not contain expected items",
-                        event.getAdded().containsAll(select));
-                Assert.assertTrue("Selection contained unexpected items",
-                        select.containsAll(event.getAdded()));
+                Assert.assertTrue("Selection did not contain expected items", event.getAdded().containsAll(select));
+                Assert.assertTrue("Selection contained unexpected items", select.containsAll(event.getAdded()));
                 select = new ArrayList<Object>();
 
-                Assert.assertTrue("Deselection did not contain expected items",
-                        event.getRemoved().containsAll(deselect));
-                Assert.assertTrue("Deselection contained unexpected items",
-                        deselect.containsAll(event.getRemoved()));
+                Assert.assertTrue("Deselection did not contain expected items", event.getRemoved().containsAll(deselect));
+                Assert.assertTrue("Deselection contained unexpected items", deselect.containsAll(event.getRemoved()));
                 deselect = new ArrayList<Object>();
 
                 grid.removeSelectionListener(this);
@@ -162,8 +154,7 @@ public class MultiSelectionModelTest {
 
     private void verifyCurrentSelection(Object... selection) {
         final List<Object> selected = Arrays.asList(selection);
-        if (model.getSelectedRows().containsAll(selected)
-                && selected.containsAll(model.getSelectedRows())) {
+        if (model.getSelectedRows().containsAll(selected) && selected.containsAll(model.getSelectedRows())) {
             return;
         }
         Assert.fail("Not all items were correctly selected");

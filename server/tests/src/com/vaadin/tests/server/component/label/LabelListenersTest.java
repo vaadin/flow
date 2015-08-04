@@ -16,8 +16,7 @@ import com.vaadin.ui.Label.ValueChangeEvent;
 
 public class LabelListenersTest extends AbstractListenerMethodsTestBase {
     public void testValueChangeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Label.class, ValueChangeEvent.class,
-                ValueChangeListener.class);
+        testListenerAddGetRemove(Label.class, ValueChangeEvent.class, ValueChangeListener.class);
     }
 
     public void testValueChangeFiredWhenSettingValue() {
@@ -26,8 +25,7 @@ public class LabelListenersTest extends AbstractListenerMethodsTestBase {
         // setup the mock listener
         ValueChangeListener mockListener = createStrictMock(ValueChangeListener.class);
         // record
-        mockListener
-                .valueChange(anyObject(com.vaadin.data.Property.ValueChangeEvent.class));
+        mockListener.valueChange(anyObject(com.vaadin.data.Property.ValueChangeEvent.class));
 
         // test
         underTest.addValueChangeListener(mockListener);
@@ -47,8 +45,7 @@ public class LabelListenersTest extends AbstractListenerMethodsTestBase {
 
         ValueChangeListener mockListener = createStrictMock(ValueChangeListener.class);
         // record
-        mockListener
-                .valueChange(anyObject(com.vaadin.data.Property.ValueChangeEvent.class));
+        mockListener.valueChange(anyObject(com.vaadin.data.Property.ValueChangeEvent.class));
 
         expect(mockProperty.getType()).andReturn(String.class).atLeastOnce();
         expect(mockProperty.getValue()).andReturn("Any").atLeastOnce();

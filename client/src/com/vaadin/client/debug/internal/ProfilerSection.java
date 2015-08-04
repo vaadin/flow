@@ -45,8 +45,7 @@ public class ProfilerSection implements Section {
 
     private static final int MAX_ROWS = 10;
 
-    private final DebugButton tabButton = new DebugButton(Icon.RESET_TIMER,
-            "Profiler");
+    private final DebugButton tabButton = new DebugButton(Icon.RESET_TIMER, "Profiler");
 
     private final HorizontalPanel controls = new HorizontalPanel();
     private final FlowPanel content = new FlowPanel();
@@ -68,12 +67,10 @@ public class ProfilerSection implements Section {
                 SimpleTree offendersTree = new SimpleTree("Longest events");
                 for (int i = 0; i < totals.size() && i < 20; i++) {
                     Node node = totals.get(i);
-                    offendersTree.add(new Label(node
-                            .getStringRepresentation("")));
+                    offendersTree.add(new Label(node.getStringRepresentation("")));
                 }
 
-                SimpleTree root = new SimpleTree(eventCount
-                        + " profiler events using " + totalTime + " ms");
+                SimpleTree root = new SimpleTree(eventCount + " profiler events using " + totalTime + " ms");
                 root.add(drillDownTree);
                 root.add(offendersTree);
                 root.open(false);
@@ -84,8 +81,7 @@ public class ProfilerSection implements Section {
 
             @Override
             public void addBootstrapData(LinkedHashMap<String, Double> timings) {
-                SimpleTree tree = new SimpleTree(
-                        "Time since window.performance.timing events");
+                SimpleTree tree = new SimpleTree("Time since window.performance.timing events");
                 Set<Entry<String, Double>> entrySet = timings.entrySet();
                 for (Entry<String, Double> entry : entrySet) {
                     tree.add(new Label(entry.getValue() + " " + entry.getKey()));

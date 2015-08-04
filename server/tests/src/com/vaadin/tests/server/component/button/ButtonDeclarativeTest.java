@@ -69,13 +69,11 @@ public class ButtonDeclarativeTest extends DeclarativeTestBase<Button> {
         testButtonAndNativeButton(design, true, "", expectedWritten);
     }
 
-    public void testButtonAndNativeButton(String design, boolean html,
-            String caption) {
+    public void testButtonAndNativeButton(String design, boolean html, String caption) {
         testButtonAndNativeButton(design, html, caption, design);
     }
 
-    public void testButtonAndNativeButton(String design, boolean html,
-            String caption, String expectedWritten) {
+    public void testButtonAndNativeButton(String design, boolean html, String caption, String expectedWritten) {
         // Test Button
         Button b = new Button();
         b.setCaptionAsHtml(html);
@@ -84,8 +82,7 @@ public class ButtonDeclarativeTest extends DeclarativeTestBase<Button> {
         testWrite(expectedWritten, b);
         // Test NativeButton
         design = design.replace("v-button", "v-native-button");
-        expectedWritten = expectedWritten
-                .replace("v-button", "v-native-button");
+        expectedWritten = expectedWritten.replace("v-button", "v-native-button");
         NativeButton nb = new NativeButton();
         nb.setCaptionAsHtml(html);
         nb.setCaption(caption);
@@ -95,8 +92,7 @@ public class ButtonDeclarativeTest extends DeclarativeTestBase<Button> {
 
     @Test
     public void testAttributes() {
-        String design = "<v-button tabindex=3 plain-text='' icon-alt=OK "
-                + "click-shortcut=ctrl-shift-o></v-button>";
+        String design = "<v-button tabindex=3 plain-text='' icon-alt=OK " + "click-shortcut=ctrl-shift-o></v-button>";
         Button b = new Button("");
         b.setTabIndex(3);
         b.setIconAlternateText("OK");

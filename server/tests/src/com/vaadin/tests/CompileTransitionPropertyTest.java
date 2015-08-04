@@ -31,8 +31,7 @@ public class CompileTransitionPropertyTest {
 
     @Test
     public void testCompilation() throws Exception {
-        ScssStylesheet ss = ScssStylesheet
-                .get("server/tests/src/com/vaadin/tests/styles.scss");
+        ScssStylesheet ss = ScssStylesheet.get("server/tests/src/com/vaadin/tests/styles.scss");
         ss.compile();
         // extract the style rules for .my-label
         String compiled = ss.printState();
@@ -40,30 +39,20 @@ public class CompileTransitionPropertyTest {
         Matcher matcher = pattern.matcher(compiled);
         assertTrue("Could not find style rules for .my-label.", matcher.find());
         String elementStyle = matcher.group();
-        elementStyle = elementStyle.replaceFirst(
-                "(.my-label)(\\s)+(\\{)(\\s)*", "");
+        elementStyle = elementStyle.replaceFirst("(.my-label)(\\s)+(\\{)(\\s)*", "");
         // Check that the correct rules are present
-        Pattern p1 = Pattern
-                .compile("transition-property(\\s*):(\\s*)transform(\\s*);");
-        Pattern p2 = Pattern
-                .compile("-moz-transition-property(\\s*):(\\s*)-moz-transform(\\s*);");
-        Pattern p3 = Pattern
-                .compile("-webkit-transition-property(\\s*):(\\s*)-webkit-transform(\\s*);");
-        assertTrue("The style 'transition-property: transform' is missing.", p1
-                .matcher(elementStyle).find());
-        assertTrue(
-                "The style '-moz-transition-property: -moz-transform' is missing.",
-                p2.matcher(elementStyle).find());
-        assertTrue(
-                "The style '-webkit-transition-property: -webkit-transform' is missing.",
-                p3.matcher(elementStyle).find());
+        Pattern p1 = Pattern.compile("transition-property(\\s*):(\\s*)transform(\\s*);");
+        Pattern p2 = Pattern.compile("-moz-transition-property(\\s*):(\\s*)-moz-transform(\\s*);");
+        Pattern p3 = Pattern.compile("-webkit-transition-property(\\s*):(\\s*)-webkit-transform(\\s*);");
+        assertTrue("The style 'transition-property: transform' is missing.", p1.matcher(elementStyle).find());
+        assertTrue("The style '-moz-transition-property: -moz-transform' is missing.", p2.matcher(elementStyle).find());
+        assertTrue("The style '-webkit-transition-property: -webkit-transform' is missing.", p3.matcher(elementStyle).find());
         // Check that there are no other styles for .my-label
         String modifiedStyle = p1.matcher(elementStyle).replaceFirst("");
         modifiedStyle = p2.matcher(modifiedStyle).replaceFirst("");
         modifiedStyle = p3.matcher(modifiedStyle).replaceFirst("");
         // Only whitespace should remain after removing the style rules
         modifiedStyle = modifiedStyle.replaceAll("(\\s)", "");
-        assertTrue("Unexpected style rules for .my-label: " + modifiedStyle,
-                modifiedStyle.length() == 0);
+        assertTrue("Unexpected style rules for .my-label: " + modifiedStyle, modifiedStyle.length() == 0);
     }
 }

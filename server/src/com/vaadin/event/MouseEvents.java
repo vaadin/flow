@@ -193,8 +193,7 @@ public interface MouseEvents {
      */
     public interface ClickListener extends ConnectorEventListener {
 
-        public static final Method clickMethod = ReflectTools.findMethod(
-                ClickListener.class, "click", ClickEvent.class);
+        public static final Method clickMethod = ReflectTools.findMethod(ClickListener.class, "click", ClickEvent.class);
 
         /**
          * Called when a {@link Component} has been clicked. A reference to the
@@ -231,9 +230,7 @@ public interface MouseEvents {
      */
     public interface DoubleClickListener extends ConnectorEventListener {
 
-        public static final Method doubleClickMethod = ReflectTools.findMethod(
-                DoubleClickListener.class, "doubleClick",
-                DoubleClickEvent.class);
+        public static final Method doubleClickMethod = ReflectTools.findMethod(DoubleClickListener.class, "doubleClick", DoubleClickEvent.class);
 
         /**
          * Called when a {@link Component} has been double clicked. A reference

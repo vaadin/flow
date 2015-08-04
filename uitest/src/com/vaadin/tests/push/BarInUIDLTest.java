@@ -28,17 +28,9 @@ public class BarInUIDLTest extends MultiBrowserTest {
     public void sendBarInUIDL() {
         openTestURL();
         getButton().click();
-        Assert.assertEquals(
-                "Thank you for clicking | bar",
-                vaadinElement(
-                        "/VVerticalLayout[0]/Slot[1]/VVerticalLayout[0]/Slot[1]/VLabel[0]")
-                        .getText());
+        Assert.assertEquals("Thank you for clicking | bar", vaadinElement("/VVerticalLayout[0]/Slot[1]/VVerticalLayout[0]/Slot[1]/VLabel[0]").getText());
         getButton().click();
-        Assert.assertEquals(
-                "Thank you for clicking | bar",
-                vaadinElement(
-                        "/VVerticalLayout[0]/Slot[1]/VVerticalLayout[0]/Slot[2]/VLabel[0]")
-                        .getText());
+        Assert.assertEquals("Thank you for clicking | bar", vaadinElement("/VVerticalLayout[0]/Slot[1]/VVerticalLayout[0]/Slot[2]/VLabel[0]").getText());
     }
 
     private WebElement getButton() {

@@ -45,8 +45,7 @@ public class PopupViews extends VerticalLayout implements View {
                     {
                         setMargin(true);
                         setWidth("300px");
-                        addComponent(new Label(
-                                "Fictum,  deserunt mollit anim laborum astutumque! Magna pars studiorum, prodita quaerimus."));
+                        addComponent(new Label("Fictum,  deserunt mollit anim laborum astutumque! Magna pars studiorum, prodita quaerimus."));
                     }
                 };
             }
@@ -73,11 +72,7 @@ public class PopupViews extends VerticalLayout implements View {
                 return new VerticalLayout() {
                     {
                         setMargin(true);
-                        addComponent(new Label(
-                                "<h3>Thanks for waiting!</h3><p>You've opened this popup <b>"
-                                        + ++count + " time"
-                                        + (count > 1 ? "s" : " only")
-                                        + "</b>.</p>", ContentMode.HTML));
+                        addComponent(new Label("<h3>Thanks for waiting!</h3><p>You've opened this popup <b>" + ++count + " time" + (count > 1 ? "s" : " only") + "</b>.</p>", ContentMode.HTML));
                     }
                 };
             }

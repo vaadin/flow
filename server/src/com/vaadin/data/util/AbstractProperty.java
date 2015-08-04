@@ -30,8 +30,7 @@ import com.vaadin.data.Property;
  * 
  * @since 6.6
  */
-public abstract class AbstractProperty<T> implements Property<T>,
-        Property.ValueChangeNotifier, Property.ReadOnlyStatusChangeNotifier {
+public abstract class AbstractProperty<T> implements Property<T>, Property.ValueChangeNotifier, Property.ReadOnlyStatusChangeNotifier {
 
     /**
      * List of listeners who are interested in the read-only status changes of
@@ -105,8 +104,7 @@ public abstract class AbstractProperty<T> implements Property<T>,
      * An <code>Event</code> object specifying the Property whose read-only
      * status has been changed.
      */
-    protected static class ReadOnlyStatusChangeEvent extends
-            java.util.EventObject implements Property.ReadOnlyStatusChangeEvent {
+    protected static class ReadOnlyStatusChangeEvent extends java.util.EventObject implements Property.ReadOnlyStatusChangeEvent {
 
         /**
          * Constructs a new read-only status change event for this object.
@@ -137,8 +135,7 @@ public abstract class AbstractProperty<T> implements Property<T>,
      *            the new Listener to be registered.
      */
     @Override
-    public void addReadOnlyStatusChangeListener(
-            Property.ReadOnlyStatusChangeListener listener) {
+    public void addReadOnlyStatusChangeListener(Property.ReadOnlyStatusChangeListener listener) {
         if (readOnlyStatusChangeListeners == null) {
             readOnlyStatusChangeListeners = new LinkedList<ReadOnlyStatusChangeListener>();
         }
@@ -162,8 +159,7 @@ public abstract class AbstractProperty<T> implements Property<T>,
      *            the listener to be removed.
      */
     @Override
-    public void removeReadOnlyStatusChangeListener(
-            Property.ReadOnlyStatusChangeListener listener) {
+    public void removeReadOnlyStatusChangeListener(Property.ReadOnlyStatusChangeListener listener) {
         if (readOnlyStatusChangeListeners != null) {
             readOnlyStatusChangeListeners.remove(listener);
         }
@@ -185,11 +181,9 @@ public abstract class AbstractProperty<T> implements Property<T>,
     protected void fireReadOnlyStatusChange() {
         if (readOnlyStatusChangeListeners != null) {
             final Object[] l = readOnlyStatusChangeListeners.toArray();
-            final Property.ReadOnlyStatusChangeEvent event = new ReadOnlyStatusChangeEvent(
-                    this);
+            final Property.ReadOnlyStatusChangeEvent event = new ReadOnlyStatusChangeEvent(this);
             for (int i = 0; i < l.length; i++) {
-                ((Property.ReadOnlyStatusChangeListener) l[i])
-                        .readOnlyStatusChange(event);
+                ((Property.ReadOnlyStatusChangeListener) l[i]).readOnlyStatusChange(event);
             }
         }
     }
@@ -198,8 +192,7 @@ public abstract class AbstractProperty<T> implements Property<T>,
      * An <code>Event</code> object specifying the Property whose value has been
      * changed.
      */
-    private static class ValueChangeEvent extends java.util.EventObject
-            implements Property.ValueChangeEvent {
+    private static class ValueChangeEvent extends java.util.EventObject implements Property.ValueChangeEvent {
 
         /**
          * Constructs a new value change event for this object.
@@ -280,13 +273,11 @@ public abstract class AbstractProperty<T> implements Property<T>,
             } else {
                 return Collections.unmodifiableCollection(valueChangeListeners);
             }
-        } else if (Property.ReadOnlyStatusChangeEvent.class
-                .isAssignableFrom(eventType)) {
+        } else if (Property.ReadOnlyStatusChangeEvent.class.isAssignableFrom(eventType)) {
             if (readOnlyStatusChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return Collections
-                        .unmodifiableCollection(readOnlyStatusChangeListeners);
+                return Collections.unmodifiableCollection(readOnlyStatusChangeListeners);
             }
         }
 

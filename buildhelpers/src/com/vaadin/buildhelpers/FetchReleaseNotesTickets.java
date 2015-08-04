@@ -27,8 +27,7 @@ import org.apache.commons.io.IOUtils;
 
 public class FetchReleaseNotesTickets {
     private static final String queryURL = "https://dev.vaadin.com/query?status=pending-release&amp;status=released&amp;@milestone@&amp;resolution=fixed&amp;col=id&amp;col=summary&amp;col=owner&amp;col=type&amp;col=priority&amp;col=component&amp;col=version&amp;col=bfptime&col=fv&amp;format=tab&amp;order=id";
-    private static final String ticketTemplate = "<tr>"
-            + "@badge@" //
+    private static final String ticketTemplate = "<tr>" + "@badge@" //
             + "<td class=\"ticket\"><a href=\"https://dev.vaadin.com/ticket/@ticket@\">#@ticket@</a></td>" //
             + "<td>@description@</td>" //
             + "</tr>"; //
@@ -79,8 +78,7 @@ public class FetchReleaseNotesTickets {
         return versions;
     }
 
-    private static void printMilestone(String milestone)
-            throws MalformedURLException, IOException {
+    private static void printMilestone(String milestone) throws MalformedURLException, IOException {
 
         URL url = new URL(queryURL.replace("@milestone@", milestone));
         URLConnection connection = url.openConnection();
@@ -109,9 +107,7 @@ public class FetchReleaseNotesTickets {
                 badge = "<td class=\"fv\"><span class=\"fv\">Vote</span></td>";
             }
 
-            System.out.println(ticketTemplate.replace("@ticket@", fields[0])
-                    .replace("@description@", summary)
-                    .replace("@badge@", badge));
+            System.out.println(ticketTemplate.replace("@ticket@", fields[0]).replace("@description@", summary).replace("@badge@", badge));
         }
         urlStream.close();
     }
@@ -163,9 +159,7 @@ public class FetchReleaseNotesTickets {
     }
 
     private static void usage() {
-        System.err.println("Usage: "
-                + FetchReleaseNotesTickets.class.getSimpleName()
-                + " -Dvaadin.version=<version>");
+        System.err.println("Usage: " + FetchReleaseNotesTickets.class.getSimpleName() + " -Dvaadin.version=<version>");
         System.exit(1);
     }
 }

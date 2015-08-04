@@ -51,15 +51,10 @@ public class EncoderResultDisplayConnector extends AbstractExtensionConnector {
         reportEncode(Double.valueOf("2.2"));
 
         reportEncode(new String[] { "One", "Two" });
-        reportEncode(
-                "List",
-                Arrays.asList("Three", "Four"),
-                new Type(List.class.getName(), new Type[] { TypeData
-                        .getType(String.class) }));
+        reportEncode("List", Arrays.asList("Three", "Four"), new Type(List.class.getName(), new Type[] { TypeData.getType(String.class) }));
         reportEncode(new SimpleTestBean(5));
 
-        reportEncode(Void.class.getSimpleName(), null,
-                TypeData.getType(Void.class));
+        reportEncode(Void.class.getSimpleName(), null, TypeData.getType(Void.class));
     }
 
     private void reportEncode(Object value) {
@@ -68,8 +63,7 @@ public class EncoderResultDisplayConnector extends AbstractExtensionConnector {
     }
 
     private void reportEncode(String name, Object value, Type type) {
-        JsonValue encodedValue = JsonEncoder.encode(value, type,
-                getConnection());
+        JsonValue encodedValue = JsonEncoder.encode(value, type, getConnection());
         reporter.report(name, encodedValue.toJson());
     }
 

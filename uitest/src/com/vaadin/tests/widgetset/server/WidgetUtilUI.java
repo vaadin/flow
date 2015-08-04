@@ -39,7 +39,6 @@ public class WidgetUtilUI extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new WidgetUtilTestComponent(
-                request.getParameter("inline") != null));
+        addComponent(new WidgetUtilTestComponent(request.getParameter("inline") != null));
     }
 }

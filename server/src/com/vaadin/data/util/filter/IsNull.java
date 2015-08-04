@@ -46,8 +46,7 @@ public final class IsNull implements Filter {
     }
 
     @Override
-    public boolean passesFilter(Object itemId, Item item)
-            throws UnsupportedOperationException {
+    public boolean passesFilter(Object itemId, Item item) throws UnsupportedOperationException {
         final Property<?> p = item.getItemProperty(getPropertyId());
         if (null == p) {
             return false;
@@ -73,8 +72,7 @@ public final class IsNull implements Filter {
         final IsNull o = (IsNull) obj;
 
         // Checks the properties one by one
-        return (null != getPropertyId()) ? getPropertyId().equals(
-                o.getPropertyId()) : null == o.getPropertyId();
+        return (null != getPropertyId()) ? getPropertyId().equals(o.getPropertyId()) : null == o.getPropertyId();
     }
 
     @Override

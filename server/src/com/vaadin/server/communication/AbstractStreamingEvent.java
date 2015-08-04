@@ -37,8 +37,7 @@ abstract class AbstractStreamingEvent implements StreamingEvent {
         return type;
     }
 
-    protected AbstractStreamingEvent(String filename, String type, long length,
-            long bytesReceived) {
+    protected AbstractStreamingEvent(String filename, String type, long length, long bytesReceived) {
         this.filename = filename;
         this.type = type;
         contentLength = length;

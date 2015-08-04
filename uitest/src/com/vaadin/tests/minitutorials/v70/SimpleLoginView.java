@@ -14,8 +14,7 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.Reindeer;
 
-public class SimpleLoginView extends CustomComponent implements View,
-        Button.ClickListener {
+public class SimpleLoginView extends CustomComponent implements View, Button.ClickListener {
 
     public static final String NAME = "login";
 
@@ -33,8 +32,7 @@ public class SimpleLoginView extends CustomComponent implements View,
         user.setWidth("300px");
         user.setRequired(true);
         user.setInputPrompt("Your username (eg. joe@email.com)");
-        user.addValidator(new EmailValidator(
-                "Username must be an email address"));
+        user.addValidator(new EmailValidator("Username must be an email address"));
         user.setInvalidAllowed(false);
 
         // Create the password input field
@@ -72,8 +70,7 @@ public class SimpleLoginView extends CustomComponent implements View,
     /*
      * Validator for validating the passwords
      */
-    private static final class PasswordValidator extends
-            AbstractValidator<String> {
+    private static final class PasswordValidator extends AbstractValidator<String> {
 
         public PasswordValidator() {
             super("The password provided is not valid");
@@ -85,8 +82,7 @@ public class SimpleLoginView extends CustomComponent implements View,
              * Password must be at least 8 characters long and contain at least
              * one number
              */
-            if (value != null
-                    && (value.length() < 8 || !value.matches(".*\\d.*"))) {
+            if (value != null && (value.length() < 8 || !value.matches(".*\\d.*"))) {
                 return false;
             }
             return true;
@@ -117,8 +113,7 @@ public class SimpleLoginView extends CustomComponent implements View,
          * Validate username and password with database here. For examples sake
          * I use a dummy username and password.
          */
-        boolean isValid = username.equals("test@test.com")
-                && password.equals("passw0rd");
+        boolean isValid = username.equals("test@test.com") && password.equals("passw0rd");
 
         if (isValid) {
             // Store the current user in the service session

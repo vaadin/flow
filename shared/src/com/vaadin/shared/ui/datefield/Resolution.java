@@ -54,8 +54,7 @@ public enum Resolution {
      *            The resolution to start from
      * @return An iterable for the resolutions higher or equal to r
      */
-    public static Iterable<Resolution> getResolutionsHigherOrEqualTo(
-            Resolution r) {
+    public static Iterable<Resolution> getResolutionsHigherOrEqualTo(Resolution r) {
         List<Resolution> resolutions = new ArrayList<Resolution>();
         Resolution[] values = Resolution.values();
         for (int i = r.ordinal(); i < values.length; i++) {

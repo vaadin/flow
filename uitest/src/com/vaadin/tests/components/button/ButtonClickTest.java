@@ -32,11 +32,8 @@ public class ButtonClickTest extends MultiBrowserTest {
         WebElement clickedButton = vaadinElement("/VVerticalLayout[0]/VButton[0]");
         WebElement visitedButton = vaadinElement("/VVerticalLayout[0]/VButton[1]");
 
-        new Actions(driver).moveToElement(clickedButton).clickAndHold()
-                .moveToElement(visitedButton).moveToElement(clickedButton)
-                .release().perform();
+        new Actions(driver).moveToElement(clickedButton).clickAndHold().moveToElement(visitedButton).moveToElement(clickedButton).release().perform();
 
-        assertEquals(ButtonClick.SUCCESS_TEXT,
-                vaadinElement("/VVerticalLayout[0]/VLabel[0]").getText());
+        assertEquals(ButtonClick.SUCCESS_TEXT, vaadinElement("/VVerticalLayout[0]/VLabel[0]").getText());
     }
 }

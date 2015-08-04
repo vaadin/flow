@@ -42,8 +42,7 @@ public abstract class DeclarativeTestBaseBase<T extends Component> {
 
     protected T read(String design) {
         try {
-            return (T) Design.read(new ByteArrayInputStream(design
-                    .getBytes("UTF-8")));
+            return (T) Design.read(new ByteArrayInputStream(design.getBytes("UTF-8")));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
@@ -91,8 +90,7 @@ public abstract class DeclarativeTestBaseBase<T extends Component> {
         if (o1 instanceof Object[]) {
             Object[] a1 = ((Object[]) o1);
             Object[] a2 = ((Object[]) o2);
-            Assert.assertEquals(message + ": array length", a1.length,
-                    a2.length);
+            Assert.assertEquals(message + ": array length", a1.length, a2.length);
             for (int i = 0; i < a1.length; i++) {
                 assertEquals(message + ": element " + i, a1[i], a2[i]);
             }
@@ -135,8 +133,7 @@ public abstract class DeclarativeTestBaseBase<T extends Component> {
     protected abstract <TT> EqualsAsserter<TT> getComparator(Class<TT> c);
 
     private boolean isVaadin(Class<?> c) {
-        return c.getPackage() != null
-                && c.getPackage().getName().startsWith("com.vaadin");
+        return c.getPackage() != null && c.getPackage().getName().startsWith("com.vaadin");
 
     }
 
@@ -185,8 +182,7 @@ public abstract class DeclarativeTestBaseBase<T extends Component> {
 
         sb.append("<" + producedElem.tagName() + "");
         for (String attrName : names) {
-            sb.append(" ").append(attrName).append("=").append("\'")
-                    .append(producedElem.attr(attrName)).append("\'");
+            sb.append(" ").append(attrName).append("=").append("\'").append(producedElem.attr(attrName)).append("\'");
         }
         sb.append(">");
         for (Node child : producedElem.childNodes()) {

@@ -124,7 +124,6 @@ public interface Validatable extends Serializable {
      * @throws UnsupportedOperationException
      *             if the setInvalidAllowed is not supported.
      */
-    public void setInvalidAllowed(boolean invalidValueAllowed)
-            throws UnsupportedOperationException;
+    public void setInvalidAllowed(boolean invalidValueAllowed) throws UnsupportedOperationException;
 
 }

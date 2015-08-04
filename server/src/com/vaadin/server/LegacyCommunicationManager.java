@@ -88,14 +88,12 @@ public class LegacyCommunicationManager implements Serializable {
      * @deprecated As of 7.1. See #11411.
      */
     @Deprecated
-    public static JsonObject encodeState(ClientConnector connector,
-            SharedState state) {
+    public static JsonObject encodeState(ClientConnector connector, SharedState state) {
         UI uI = connector.getUI();
         ConnectorTracker connectorTracker = uI.getConnectorTracker();
         Class<? extends SharedState> stateType = connector.getStateType();
         JsonValue diffState = connectorTracker.getDiffState(connector);
-        boolean supportsDiffState = !JavaScriptConnectorState.class
-                .isAssignableFrom(stateType);
+        boolean supportsDiffState = !JavaScriptConnectorState.class.isAssignableFrom(stateType);
         if (diffState == null && supportsDiffState) {
             // Use an empty state object as reference for full
             // repaints
@@ -105,26 +103,20 @@ public class LegacyCommunicationManager implements Serializable {
                 referenceDiffStates.put(stateType, diffState);
             }
         }
-        EncodeResult encodeResult = JsonCodec.encode(state, diffState,
-                stateType, uI.getConnectorTracker());
+        EncodeResult encodeResult = JsonCodec.encode(state, diffState, stateType, uI.getConnectorTracker());
         if (supportsDiffState) {
-            connectorTracker.setDiffState(connector,
-                    (JsonObject) encodeResult.getEncodedValue());
+            connectorTracker.setDiffState(connector, (JsonObject) encodeResult.getEncodedValue());
         }
         return (JsonObject) encodeResult.getDiff();
     }
 
-    private static JsonValue createReferenceDiffStateState(
-            Class<? extends SharedState> stateType) {
+    private static JsonValue createReferenceDiffStateState(Class<? extends SharedState> stateType) {
         try {
             SharedState referenceState = stateType.newInstance();
-            EncodeResult encodeResult = JsonCodec.encode(referenceState, null,
-                    stateType, null);
+            EncodeResult encodeResult = JsonCodec.encode(referenceState, null, stateType, null);
             return encodeResult.getEncodedValue();
         } catch (Exception e) {
-            getLogger().log(Level.WARNING,
-                    "Error creating reference object for state of type {0}",
-                    stateType.getName());
+            getLogger().log(Level.WARNING, "Error creating reference object for state of type {0}", stateType.getName());
             return null;
         }
     }
@@ -155,8 +147,7 @@ public class LegacyCommunicationManager implements Serializable {
             // Bare path interpreted as published file
             return registerPublishedFile(resourceUri, context);
         } catch (URISyntaxException e) {
-            getLogger().log(Level.WARNING,
-                    "Could not parse resource url " + resourceUri, e);
+            getLogger().log(Level.WARNING, "Could not parse resource url " + resourceUri, e);
             return resourceUri;
         }
     }
@@ -174,10 +165,7 @@ public class LegacyCommunicationManager implements Serializable {
         if (publishedFileContexts.containsKey(name)) {
             Class<?> oldContext = publishedFileContexts.get(name);
             if (oldContext != context) {
-                getLogger()
-                        .log(Level.WARNING,
-                                "{0} published by both {1} and {2}. File from {2} will be used.",
-                                new Object[] { name, context, oldContext });
+                getLogger().log(Level.WARNING, "{0} published by both {1} and {2}. File from {2} will be used.", new Object[] { name, context, oldContext });
             }
         } else {
             publishedFileContexts.put(name, context);
@@ -299,8 +287,7 @@ public class LegacyCommunicationManager implements Serializable {
      * @deprecated As of 7.1. Will be removed in the future.
      */
     @Deprecated
-    public static class InvalidUIDLSecurityKeyException extends
-            GeneralSecurityException {
+    public static class InvalidUIDLSecurityKeyException extends GeneralSecurityException {
 
         public InvalidUIDLSecurityKeyException(String message) {
             super(message);
@@ -320,8 +307,7 @@ public class LegacyCommunicationManager implements Serializable {
             id = nextTypeKey++;
             typeToKey.put(class1, id);
             if (getLogger().isLoggable(Level.FINE)) {
-                getLogger().log(Level.FINE, "Mapping {0} to {1}",
-                        new Object[] { class1.getName(), id });
+                getLogger().log(Level.FINE, "Mapping {0} to {1}", new Object[] { class1.getName(), id });
             }
         }
         return id.toString();
@@ -363,8 +349,7 @@ public class LegacyCommunicationManager implements Serializable {
      * @deprecated As of 7.1. See #11411.
      */
     @Deprecated
-    public String getStreamVariableTargetUrl(ClientConnector owner,
-            String name, StreamVariable value) {
+    public String getStreamVariableTargetUrl(ClientConnector owner, String name, StreamVariable value) {
         /*
          * We will use the same APP/* URI space as ApplicationResources but
          * prefix url with UPLOAD
@@ -386,8 +371,7 @@ public class LegacyCommunicationManager implements Serializable {
         connectorTracker.addStreamVariable(paintableId, name, value);
         String seckey = connectorTracker.getSeckey(value);
 
-        return ApplicationConstants.APP_PROTOCOL_PREFIX
-                + ServletPortletHelper.UPLOAD_URL_PREFIX + key + "/" + seckey;
+        return ApplicationConstants.APP_PROTOCOL_PREFIX + ServletPortletHelper.UPLOAD_URL_PREFIX + key + "/" + seckey;
 
     }
 
@@ -403,8 +387,7 @@ public class LegacyCommunicationManager implements Serializable {
      *            the connector that the exception is related to
      */
     @Deprecated
-    public void handleConnectorRelatedException(ClientConnector connector,
-            Throwable throwable) {
+    public void handleConnectorRelatedException(ClientConnector connector, Throwable throwable) {
         ErrorEvent errorEvent = new ConnectorErrorEvent(connector, throwable);
         ErrorHandler handler = ErrorEvent.findErrorHandler(connector);
         handler.error(errorEvent);

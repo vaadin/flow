@@ -26,8 +26,7 @@ public class CapsLockWarningWithRpc extends AbstractExtension {
         registerRpc(new CapsLockWarningRpc() {
             @Override
             public void isCapsLockEnabled(boolean isCapsLockEnabled) {
-                Notification.show("Caps Lock was "
-                        + (isCapsLockEnabled ? "enabled" : "disabled"));
+                Notification.show("Caps Lock was " + (isCapsLockEnabled ? "enabled" : "disabled"));
             }
         });
     }

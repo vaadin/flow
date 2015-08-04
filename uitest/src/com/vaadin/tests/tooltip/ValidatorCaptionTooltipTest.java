@@ -32,8 +32,7 @@ public class ValidatorCaptionTooltipTest extends TooltipTest {
 
         TextFieldElement field = $(TextFieldElement.class).get(0);
         String fieldValue = field.getAttribute("value");
-        String expected = "Valid value is between 0 and 100. " + fieldValue
-                + " is not.";
+        String expected = "Valid value is between 0 and 100. " + fieldValue + " is not.";
         checkTooltip(field, expected);
     }
 

@@ -46,8 +46,7 @@ import elemental.json.JsonException;
  * @author Vaadin Ltd
  * @since 7.1
  */
-public class UidlRequestHandler extends SynchronizedRequestHandler implements
-        SessionExpiredHandler {
+public class UidlRequestHandler extends SynchronizedRequestHandler implements SessionExpiredHandler {
 
     public static final String UIDL_PATH = "UIDL/";
 
@@ -62,14 +61,12 @@ public class UidlRequestHandler extends SynchronizedRequestHandler implements
     }
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
         UI uI = session.getService().findUI(request);
         if (uI == null) {
             // This should not happen but it will if the UI has been closed. We
             // really don't want to see it in the server logs though
-            UIInitHandler.commitJsonResponse(request, response,
-                    getUINotFoundErrorJSON(session.getService(), request));
+            UIInitHandler.commitJsonResponse(request, response, getUINotFoundErrorJSON(session.getService(), request));
             return true;
         }
 
@@ -85,9 +82,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler implements
             writeRefresh(request, response);
             return true;
         } catch (InvalidUIDLSecurityKeyException e) {
-            getLogger().log(Level.WARNING,
-                    "Invalid security key received from {0}",
-                    request.getRemoteHost());
+            getLogger().log(Level.WARNING, "Invalid security key received from {0}", request.getRemoteHost());
             // Refresh on client side
             writeRefresh(request, response);
             return true;
@@ -95,19 +90,15 @@ public class UidlRequestHandler extends SynchronizedRequestHandler implements
             stringWriter.close();
         }
 
-        return UIInitHandler.commitJsonResponse(request, response,
-                stringWriter.toString());
+        return UIInitHandler.commitJsonResponse(request, response, stringWriter.toString());
     }
 
-    private void writeRefresh(VaadinRequest request, VaadinResponse response)
-            throws IOException {
-        String json = VaadinService.createCriticalNotificationJSON(null, null,
-                null, null);
+    private void writeRefresh(VaadinRequest request, VaadinResponse response) throws IOException {
+        String json = VaadinService.createCriticalNotificationJSON(null, null, null, null);
         UIInitHandler.commitJsonResponse(request, response, json);
     }
 
-    private void writeUidl(VaadinRequest request, VaadinResponse response,
-            UI ui, Writer writer) throws IOException {
+    private void writeUidl(VaadinRequest request, VaadinResponse response, UI ui, Writer writer) throws IOException {
         openJsonMessage(writer, response);
 
         new UidlWriter().write(ui, writer, false);
@@ -126,8 +117,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler implements
      * @param response
      * @throws IOException
      */
-    protected void openJsonMessage(Writer outWriter, VaadinResponse response)
-            throws IOException {
+    protected void openJsonMessage(Writer outWriter, VaadinResponse response) throws IOException {
         // some dirt to prevent cross site scripting
         outWriter.write("for(;;);[{");
     }
@@ -144,20 +134,14 @@ public class UidlRequestHandler extends SynchronizedRequestHandler implements
      * .server.VaadinRequest, com.vaadin.server.VaadinResponse)
      */
     @Override
-    public boolean handleSessionExpired(VaadinRequest request,
-            VaadinResponse response) throws IOException {
+    public boolean handleSessionExpired(VaadinRequest request, VaadinResponse response) throws IOException {
         if (!ServletPortletHelper.isUIDLRequest(request)) {
             return false;
         }
         VaadinService service = request.getService();
-        SystemMessages systemMessages = service.getSystemMessages(
-                ServletPortletHelper.findLocale(null, null, request), request);
+        SystemMessages systemMessages = service.getSystemMessages(ServletPortletHelper.findLocale(null, null, request), request);
 
-        service.writeStringResponse(response, JsonConstants.JSON_CONTENT_TYPE,
-                VaadinService.createCriticalNotificationJSON(
-                        systemMessages.getSessionExpiredCaption(),
-                        systemMessages.getSessionExpiredMessage(), null,
-                        systemMessages.getSessionExpiredURL()));
+        service.writeStringResponse(response, JsonConstants.JSON_CONTENT_TYPE, VaadinService.createCriticalNotificationJSON(systemMessages.getSessionExpiredCaption(), systemMessages.getSessionExpiredMessage(), null, systemMessages.getSessionExpiredURL()));
 
         return true;
     }
@@ -173,17 +157,12 @@ public class UidlRequestHandler extends SynchronizedRequestHandler implements
      * @since 7.1
      * @return A JSON string
      */
-    static String getUINotFoundErrorJSON(VaadinService service,
-            VaadinRequest vaadinRequest) {
-        SystemMessages ci = service.getSystemMessages(
-                vaadinRequest.getLocale(), vaadinRequest);
+    static String getUINotFoundErrorJSON(VaadinService service, VaadinRequest vaadinRequest) {
+        SystemMessages ci = service.getSystemMessages(vaadinRequest.getLocale(), vaadinRequest);
         // Session Expired is not really the correct message as the
         // session exists but the requested UI does not.
         // Using Communication Error for now.
-        String json = VaadinService.createCriticalNotificationJSON(
-                ci.getCommunicationErrorCaption(),
-                ci.getCommunicationErrorMessage(), null,
-                ci.getCommunicationErrorURL());
+        String json = VaadinService.createCriticalNotificationJSON(ci.getCommunicationErrorCaption(), ci.getCommunicationErrorMessage(), null, ci.getCommunicationErrorURL());
 
         return json;
     }

@@ -53,8 +53,7 @@ public interface JSONSerializer<T> {
      * 
      * @return A deserialized object
      */
-    T deserialize(Type type, JsonValue jsonValue,
-            ApplicationConnection connection);
+    T deserialize(Type type, JsonValue jsonValue, ApplicationConnection connection);
 
     /**
      * Serialize the given object into JSON. Must be compatible with

@@ -35,8 +35,7 @@ public class WindowWaiAriaRolesTest extends MultiBrowserTest {
 
         $(ButtonElement.class).caption("Regular").first().click();
         String role = getWindowRole();
-        Assert.assertTrue("Dialog has incorrect role '" + role
-                + "', expected 'dialog'", "dialog".equals(role));
+        Assert.assertTrue("Dialog has incorrect role '" + role + "', expected 'dialog'", "dialog".equals(role));
     }
 
     @Test
@@ -44,8 +43,7 @@ public class WindowWaiAriaRolesTest extends MultiBrowserTest {
         openTestURL();
         $(ButtonElement.class).caption("Alert").first().click();
         String role = getWindowRole();
-        Assert.assertTrue("Dialog has incorrect role '" + role
-                + "', expected 'alertdialog'", "alertdialog".equals(role));
+        Assert.assertTrue("Dialog has incorrect role '" + role + "', expected 'alertdialog'", "alertdialog".equals(role));
     }
 
     public String getWindowRole() {

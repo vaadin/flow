@@ -167,8 +167,7 @@ public class CompositeValidator implements Validator {
      */
     public void setMode(CombinationMode mode) {
         if (mode == null) {
-            throw new IllegalArgumentException(
-                    "The validator can't be set to null");
+            throw new IllegalArgumentException("The validator can't be set to null");
         }
         this.mode = mode;
     }
@@ -243,10 +242,8 @@ public class CompositeValidator implements Validator {
             if (validatorType.isAssignableFrom(v.getClass())) {
                 found.add(v);
             }
-            if (v instanceof CompositeValidator
-                    && ((CompositeValidator) v).getMode() == MODE_AND) {
-                final Collection<Validator> c = ((CompositeValidator) v)
-                        .getSubValidators(validatorType);
+            if (v instanceof CompositeValidator && ((CompositeValidator) v).getMode() == MODE_AND) {
+                final Collection<Validator> c = ((CompositeValidator) v).getSubValidators(validatorType);
                 if (c != null) {
                     found.addAll(c);
                 }

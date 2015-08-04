@@ -56,14 +56,13 @@ public class NavigatorListenerModifiesListeners extends AbstractTestUI {
             label.setId(LABEL_MAINVIEW_ID);
             addComponent(label);
 
-            Button buttonNavToAnotherView = new Button(
-                    "Navigate to another view", new ClickListener() {
+            Button buttonNavToAnotherView = new Button("Navigate to another view", new ClickListener() {
 
-                        @Override
-                        public void buttonClick(ClickEvent event) {
-                            navigator.navigateTo(AnotherView.NAME);
-                        }
-                    });
+                @Override
+                public void buttonClick(ClickEvent event) {
+                    navigator.navigateTo(AnotherView.NAME);
+                }
+            });
             addComponent(buttonNavToAnotherView);
         }
 

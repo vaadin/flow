@@ -11,8 +11,7 @@ public class ButtonHtml extends TestBase {
         Button b = new Button("<b>Plain text button</b>");
         addComponent(b);
 
-        b = new Button(
-                "<span style=\"color: red; font-weight: bold;\">HTML</span> button");
+        b = new Button("<span style=\"color: red; font-weight: bold;\">HTML</span> button");
         b.setHtmlContentAllowed(true);
         addComponent(b);
 
@@ -21,8 +20,7 @@ public class ButtonHtml extends TestBase {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                swapButton.setHtmlContentAllowed(!swapButton
-                        .isHtmlContentAllowed());
+                swapButton.setHtmlContentAllowed(!swapButton.isHtmlContentAllowed());
             }
         });
         addComponent(swapButton);

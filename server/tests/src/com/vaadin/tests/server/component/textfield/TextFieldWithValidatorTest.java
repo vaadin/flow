@@ -26,10 +26,8 @@ public class TextFieldWithValidatorTest extends TestCase {
     }
 
     public void testMultipleValidators() {
-        field.addValidator(new StringLengthValidator(
-                "Length not between 1 and 3", 1, 3, false));
-        field.addValidator(new StringLengthValidator(
-                "Length not between 2 and 4", 2, 4, false));
+        field.addValidator(new StringLengthValidator("Length not between 1 and 3", 1, 3, false));
+        field.addValidator(new StringLengthValidator("Length not between 2 and 4", 2, 4, false));
 
         // fails
         try {
@@ -50,10 +48,8 @@ public class TextFieldWithValidatorTest extends TestCase {
     }
 
     public void testRemoveValidator() {
-        Validator validator1 = new StringLengthValidator(
-                "Length not between 1 and 3", 1, 3, false);
-        Validator validator2 = new StringLengthValidator(
-                "Length not between 2 and 4", 2, 4, false);
+        Validator validator1 = new StringLengthValidator("Length not between 1 and 3", 1, 3, false);
+        Validator validator2 = new StringLengthValidator("Length not between 2 and 4", 2, 4, false);
 
         field.addValidator(validator1);
         field.addValidator(validator2);
@@ -73,10 +69,8 @@ public class TextFieldWithValidatorTest extends TestCase {
     }
 
     public void testRemoveAllValidators() {
-        Validator validator1 = new StringLengthValidator(
-                "Length not between 1 and 3", 1, 3, false);
-        Validator validator2 = new StringLengthValidator(
-                "Length not between 2 and 4", 2, 4, false);
+        Validator validator1 = new StringLengthValidator("Length not between 1 and 3", 1, 3, false);
+        Validator validator2 = new StringLengthValidator("Length not between 2 and 4", 2, 4, false);
 
         field.addValidator(validator1);
         field.addValidator(validator2);
@@ -145,8 +139,7 @@ public class TextFieldWithValidatorTest extends TestCase {
     }
 
     public void testRegexpValidator() {
-        field.addValidator(new RegexpValidator("pattern", true,
-                "Validation failed"));
+        field.addValidator(new RegexpValidator("pattern", true, "Validation failed"));
         field.setRequired(false);
 
         // succeeds

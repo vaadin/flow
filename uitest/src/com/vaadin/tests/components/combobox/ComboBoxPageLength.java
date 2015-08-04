@@ -15,8 +15,7 @@ public class ComboBoxPageLength extends ComboBoxes2<ComboBox> {
             public void valueChange(ValueChangeEvent event) {
                 if (event.getProperty() != null) {
                     if (event.getProperty().getValue() != null) {
-                        Integer value = Integer.parseInt(((String) event
-                                .getProperty().getValue()).split(" ")[1]);
+                        Integer value = Integer.parseInt(((String) event.getProperty().getValue()).split(" ")[1]);
                         getComponent().setPageLength(value);
                     } else {
                         getComponent().setPageLength(0);
@@ -33,8 +32,7 @@ public class ComboBoxPageLength extends ComboBoxes2<ComboBox> {
 
     @Override
     protected String getTestDescription() {
-        return super.getTestDescription()
-                + ", changing ComboBox value will change the ComboBox pageLength to the # of the selected item, or to 0 in null selection.";
+        return super.getTestDescription() + ", changing ComboBox value will change the ComboBox pageLength to the # of the selected item, or to 0 in null selection.";
     }
 
 }

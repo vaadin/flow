@@ -22,14 +22,11 @@ import com.vaadin.shared.ui.JavaScriptComponentState;
 import com.vaadin.ui.AbstractJavaScriptComponent;
 
 @Connect(AbstractJavaScriptComponent.class)
-public final class JavaScriptComponentConnector extends
-        AbstractComponentConnector implements HasJavaScriptConnectorHelper {
+public final class JavaScriptComponentConnector extends AbstractComponentConnector implements HasJavaScriptConnectorHelper {
 
-    private final JavaScriptConnectorHelper helper = new JavaScriptConnectorHelper(
-            this) {
+    private final JavaScriptConnectorHelper helper = new JavaScriptConnectorHelper(this) {
         @Override
-        protected void showInitProblem(
-                java.util.ArrayList<String> attemptedNames) {
+        protected void showInitProblem(java.util.ArrayList<String> attemptedNames) {
             getWidget().showNoInitFound(attemptedNames);
         }
     };

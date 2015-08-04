@@ -108,8 +108,7 @@ public class HtmlInCaption extends AbstractTestUI {
 
     }
 
-    private void createComponent(VerticalLayout components,
-            Class<? extends AbstractComponent> class1) {
+    private void createComponent(VerticalLayout components, Class<? extends AbstractComponent> class1) {
         AbstractComponent ac;
         try {
             ac = class1.newInstance();

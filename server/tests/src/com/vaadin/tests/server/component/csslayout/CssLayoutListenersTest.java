@@ -7,7 +7,6 @@ import com.vaadin.ui.CssLayout;
 
 public class CssLayoutListenersTest extends AbstractListenerMethodsTestBase {
     public void testLayoutClickListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(CssLayout.class, LayoutClickEvent.class,
-                LayoutClickListener.class);
+        testListenerAddGetRemove(CssLayout.class, LayoutClickEvent.class, LayoutClickListener.class);
     }
 }

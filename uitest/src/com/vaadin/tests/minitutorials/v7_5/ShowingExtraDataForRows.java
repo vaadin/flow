@@ -43,8 +43,7 @@ public class ShowingExtraDataForRows extends UI {
             @Override
             public Component getDetails(RowReference rowReference) {
                 // Find the bean to generate details for
-                final GridExampleBean bean = (GridExampleBean) rowReference
-                        .getItemId();
+                final GridExampleBean bean = (GridExampleBean) rowReference.getItemId();
 
                 // A basic label with bean data
                 Label label = new Label("Extra data for " + bean.getName());
@@ -53,19 +52,15 @@ public class ShowingExtraDataForRows extends UI {
                 Image image = new Image();
                 image.setWidth("300px");
                 image.setHeight("150px");
-                image.setSource(new ExternalResource(
-                        "http://dummyimage.com/300x150/000/fff&text="
-                                + bean.getCount()));
+                image.setSource(new ExternalResource("http://dummyimage.com/300x150/000/fff&text=" + bean.getCount()));
 
                 // A button just for the sake of the example
-                Button button = new Button("Click me",
-                        new Button.ClickListener() {
-                            @Override
-                            public void buttonClick(ClickEvent event) {
-                                Notification.show("Button clicked for "
-                                        + bean.getName());
-                            }
-                        });
+                Button button = new Button("Click me", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        Notification.show("Button clicked for " + bean.getName());
+                    }
+                });
 
                 // Wrap up all the parts into a vertical layout
                 VerticalLayout layout = new VerticalLayout(label, image, button);
@@ -80,8 +75,7 @@ public class ShowingExtraDataForRows extends UI {
             public void itemClick(ItemClickEvent event) {
                 if (event.isDoubleClick()) {
                     Object itemId = event.getItemId();
-                    grid.setDetailsVisible(itemId,
-                            !grid.isDetailsVisible(itemId));
+                    grid.setDetailsVisible(itemId, !grid.isDetailsVisible(itemId));
                 }
             }
         });

@@ -63,10 +63,8 @@ public class DynamicallyChangeDateRange extends AbstractTestUI {
      * @param i
      */
     private void setRange(DateField df, int days) {
-        df.setRangeStart(new Date(df.getValue().getTime() - days * 24 * 60 * 60
-                * 1000));
-        df.setRangeEnd(new Date(df.getValue().getTime() + days * 24 * 60 * 60
-                * 1000));
+        df.setRangeStart(new Date(df.getValue().getTime() - days * 24 * 60 * 60 * 1000));
+        df.setRangeEnd(new Date(df.getValue().getTime() + days * 24 * 60 * 60 * 1000));
 
     }
 

@@ -41,8 +41,7 @@ public class MenuBarTooltipsNearEdge extends AbstractTestUI {
         VerticalLayout vlayout = new VerticalLayout();
         vlayout.setSizeFull();
         vlayout.addComponent(buildMenu("Menu"));
-        vlayout.setComponentAlignment(vlayout.getComponent(0),
-                Alignment.BOTTOM_RIGHT);
+        vlayout.setComponentAlignment(vlayout.getComponent(0), Alignment.BOTTOM_RIGHT);
         setContent(vlayout);
 
         getTooltipConfiguration().setOpenDelay(0);

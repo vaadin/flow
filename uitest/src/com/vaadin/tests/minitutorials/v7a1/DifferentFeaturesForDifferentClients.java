@@ -67,9 +67,7 @@ class TouchUI extends UI {
     @Override
     protected void init(VaadinRequest request) {
         WebBrowser webBrowser = getPage().getWebBrowser();
-        String screenSize = "" + webBrowser.getScreenWidth() + "x"
-                + webBrowser.getScreenHeight();
-        setContent(new Label("Using a touch enabled device with screen size"
-                + screenSize));
+        String screenSize = "" + webBrowser.getScreenWidth() + "x" + webBrowser.getScreenHeight();
+        setContent(new Label("Using a touch enabled device with screen size" + screenSize));
     }
 }

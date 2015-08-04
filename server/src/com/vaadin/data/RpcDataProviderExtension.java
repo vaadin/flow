@@ -118,8 +118,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
             for (Object itemId : itemSet) {
                 itemIdToKey.put(itemId, getKey(itemId));
                 if (detailComponentManager.visibleDetails.contains(itemId)) {
-                    detailComponentManager.createDetails(itemId,
-                            indexOf(itemId));
+                    detailComponentManager.createDetails(itemId, indexOf(itemId));
                 }
             }
         }
@@ -186,8 +185,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
             if (itemId != null) {
                 return itemId;
             } else {
-                throw new IllegalStateException("No item id for key " + key
-                        + " found.");
+                throw new IllegalStateException("No item id for key " + key + " found.");
             }
         }
 
@@ -201,8 +199,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
          *             if one or more of keys don't have a corresponding item id
          *             in the cache
          */
-        public Collection<Object> getItemIds(Collection<String> keys)
-                throws IllegalStateException {
+        public Collection<Object> getItemIds(Collection<String> keys) throws IllegalStateException {
             if (keys == null) {
                 throw new IllegalArgumentException("keys may not be null");
             }
@@ -233,8 +230,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
          */
         public void pin(Object itemId) throws IllegalStateException {
             if (isPinned(itemId)) {
-                throw new IllegalStateException("Item id " + itemId
-                        + " was pinned already");
+                throw new IllegalStateException("Item id " + itemId + " was pinned already");
             }
             pinnedItemIds.add(itemId);
         }
@@ -255,8 +251,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
          */
         public void unpin(Object itemId) throws IllegalStateException {
             if (!isPinned(itemId)) {
-                throw new IllegalStateException("Item id " + itemId
-                        + " was not pinned");
+                throw new IllegalStateException("Item id " + itemId + " was not pinned");
             }
 
             pinnedItemIds.remove(itemId);
@@ -338,8 +333,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
              *  Old Range: [1, 2, 3, 4, 5]
              *  Result:    [1, 2][3, 4, 5]      []
              */
-            final Range[] depractionPartition = activeRange
-                    .partitionWith(newActiveRange);
+            final Range[] depractionPartition = activeRange.partitionWith(newActiveRange);
             removeValueChangeListeners(depractionPartition[0]);
             removeValueChangeListeners(depractionPartition[2]);
 
@@ -350,8 +344,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
              *  New Range:       [3, 4, 5, 6, 7]
              *  Result:    []    [3, 4, 5][6, 7]
              */
-            final Range[] activationPartition = newActiveRange
-                    .partitionWith(activeRange);
+            final Range[] activationPartition = newActiveRange.partitionWith(activeRange);
             addValueChangeListeners(activationPartition[0]);
             addValueChangeListeners(activationPartition[2]);
 
@@ -368,16 +361,14 @@ public class RpcDataProviderExtension extends AbstractExtension {
 
                 assert valueChangeListeners.get(i) == null : "Overwriting existing listener";
 
-                GridValueChangeListener listener = new GridValueChangeListener(
-                        itemId, item);
+                GridValueChangeListener listener = new GridValueChangeListener(itemId, item);
                 valueChangeListeners.put(i, listener);
             }
         }
 
         private void removeValueChangeListeners(Range range) {
             for (Integer i = range.getStart(); i < range.getEnd(); i++) {
-                final GridValueChangeListener listener = valueChangeListeners
-                        .remove(i);
+                final GridValueChangeListener listener = valueChangeListeners.remove(i);
 
                 assert listener != null : "Trying to remove nonexisting listener";
 
@@ -398,8 +389,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
                 return;
             }
 
-            for (GridValueChangeListener listener : valueChangeListeners
-                    .values()) {
+            for (GridValueChangeListener listener : valueChangeListeners.values()) {
                 listener.removeColumns(removedColumns);
             }
         }
@@ -417,8 +407,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
                 return;
             }
 
-            for (GridValueChangeListener listener : valueChangeListeners
-                    .values()) {
+            for (GridValueChangeListener listener : valueChangeListeners.values()) {
                 listener.addColumns(addedColumns);
             }
         }
@@ -483,8 +472,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
 
                 // Move remaining listeners to fill the listener map correctly
                 moveListeners(deprecated[2], -deprecated[1].length());
-                activeRange = Range.withLength(activeRange.getStart(),
-                        activeRange.length() - deprecated[1].length());
+                activeRange = Range.withLength(activeRange.getStart(), activeRange.length() - deprecated[1].length());
 
             } else {
                 if (removed.getEnd() < activeRange.getStart()) {
@@ -505,8 +493,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
                     moveListener(i, i + diff);
                 }
             } else if (diff > 0) {
-                for (Integer i = movedRange.getEnd() - 1; i >= movedRange
-                        .getStart(); --i) {
+                for (Integer i = movedRange.getEnd() - 1; i >= movedRange.getStart(); --i) {
                     moveListener(i, i + diff);
                 }
             } else {
@@ -518,8 +505,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
         private void moveListener(Integer oldIndex, Integer newIndex) {
             assert valueChangeListeners.get(newIndex) == null : "Overwriting existing listener";
 
-            GridValueChangeListener listener = valueChangeListeners
-                    .remove(oldIndex);
+            GridValueChangeListener listener = valueChangeListeners.remove(oldIndex);
             assert listener != null : "Moving nonexisting listener.";
             valueChangeListeners.put(newIndex, listener);
         }
@@ -575,22 +561,18 @@ public class RpcDataProviderExtension extends AbstractExtension {
 
         private void internalAddColumns(Collection<Column> addedColumns) {
             for (final Column column : addedColumns) {
-                final Property<?> property = item.getItemProperty(column
-                        .getPropertyId());
+                final Property<?> property = item.getItemProperty(column.getPropertyId());
                 if (property instanceof ValueChangeNotifier) {
-                    ((ValueChangeNotifier) property)
-                            .addValueChangeListener(this);
+                    ((ValueChangeNotifier) property).addValueChangeListener(this);
                 }
             }
         }
 
         public void removeColumns(Collection<Column> removedColumns) {
             for (final Column column : removedColumns) {
-                final Property<?> property = item.getItemProperty(column
-                        .getPropertyId());
+                final Property<?> property = item.getItemProperty(column.getPropertyId());
                 if (property instanceof ValueChangeNotifier) {
-                    ((ValueChangeNotifier) property)
-                            .removeValueChangeListener(this);
+                    ((ValueChangeNotifier) property).removeValueChangeListener(this);
                 }
             }
         }
@@ -619,12 +601,10 @@ public class RpcDataProviderExtension extends AbstractExtension {
          * {@link Collection#isEmpty() empty}, then this field is consistent
          * with the connector hierarchy.
          */
-        private final Map<Object, Component> visibleDetailsComponents = Maps
-                .newHashMap();
+        private final Map<Object, Component> visibleDetailsComponents = Maps.newHashMap();
 
         /** A lookup map for which row contains which details component. */
-        private BiMap<Integer, Component> rowIndexToDetails = HashBiMap
-                .create();
+        private BiMap<Integer, Component> rowIndexToDetails = HashBiMap.create();
 
         /**
          * A copy of {@link #rowIndexToDetails} from its last stable state. Used
@@ -632,8 +612,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
          * 
          * @see #getAndResetConnectorChanges()
          */
-        private BiMap<Integer, Component> prevRowIndexToDetails = HashBiMap
-                .create();
+        private BiMap<Integer, Component> prevRowIndexToDetails = HashBiMap.create();
 
         /**
          * A set keeping track on components that have been created, but not
@@ -676,8 +655,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
          *             that was manually attached, or if the same instance has
          *             already been provided
          */
-        public void createDetails(Object itemId, int rowIndex)
-                throws IllegalStateException {
+        public void createDetails(Object itemId, int rowIndex) throws IllegalStateException {
             assert itemId != null : "itemId was null";
             Integer newRowIndex = Integer.valueOf(rowIndex);
 
@@ -694,29 +672,20 @@ public class RpcDataProviderExtension extends AbstractExtension {
             if (details != null) {
                 String generatorName = detailsGenerator.getClass().getName();
                 if (details.getParent() != null) {
-                    throw new IllegalStateException(generatorName
-                            + " generated a details component that already "
-                            + "was attached. (itemId: " + itemId + ", row: "
-                            + rowIndex + ", component: " + details);
+                    throw new IllegalStateException(generatorName + " generated a details component that already " + "was attached. (itemId: " + itemId + ", row: " + rowIndex + ", component: " + details);
                 }
 
                 if (rowIndexToDetails.containsValue(details)) {
-                    throw new IllegalStateException(generatorName
-                            + " provided a details component that already "
-                            + "exists in Grid. (itemId: " + itemId + ", row: "
-                            + rowIndex + ", component: " + details);
+                    throw new IllegalStateException(generatorName + " provided a details component that already " + "exists in Grid. (itemId: " + itemId + ", row: " + rowIndex + ", component: " + details);
                 }
 
                 visibleDetailsComponents.put(itemId, details);
                 rowIndexToDetails.put(newRowIndex, details);
                 unattachedComponents.add(details);
 
-                assert !emptyDetails.containsKey(itemId) : "Bookeeping thinks "
-                        + "itemId is empty even though we just created a "
-                        + "component for it (" + itemId + ")";
+                assert !emptyDetails.containsKey(itemId) : "Bookeeping thinks " + "itemId is empty even though we just created a " + "component for it (" + itemId + ")";
             } else {
-                assert assertItemIdHasNotMovedAndNothingIsOverwritten(itemId,
-                        newRowIndex);
+                assert assertItemIdHasNotMovedAndNothingIsOverwritten(itemId, newRowIndex);
                 emptyDetails.put(itemId, newRowIndex);
             }
 
@@ -726,21 +695,14 @@ public class RpcDataProviderExtension extends AbstractExtension {
              */
         }
 
-        private boolean assertItemIdHasNotMovedAndNothingIsOverwritten(
-                Object itemId, Integer newRowIndex) {
+        private boolean assertItemIdHasNotMovedAndNothingIsOverwritten(Object itemId, Integer newRowIndex) {
 
             Integer oldRowIndex = emptyDetails.get(itemId);
             if (!SharedUtil.equals(oldRowIndex, newRowIndex)) {
 
-                assert !emptyDetails.containsKey(itemId) : "Unexpected "
-                        + "change of empty details row index for itemId "
-                        + itemId + " from " + oldRowIndex + " to "
-                        + newRowIndex;
+                assert !emptyDetails.containsKey(itemId) : "Unexpected " + "change of empty details row index for itemId " + itemId + " from " + oldRowIndex + " to " + newRowIndex;
 
-                assert !emptyDetails.containsValue(newRowIndex) : "Bookkeeping"
-                        + " already had another itemId for this empty index "
-                        + "(index: " + newRowIndex + ", new itemId: " + itemId
-                        + ")";
+                assert !emptyDetails.containsValue(newRowIndex) : "Bookkeeping" + " already had another itemId for this empty index " + "(index: " + newRowIndex + ", new itemId: " + itemId + ")";
             }
 
             return true;
@@ -758,8 +720,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
         public void destroyDetails(Object itemId) {
             emptyDetails.remove(itemId);
 
-            Component removedComponent = visibleDetailsComponents
-                    .remove(itemId);
+            Component removedComponent = visibleDetailsComponents.remove(itemId);
             if (removedComponent == null) {
                 return;
             }
@@ -779,8 +740,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
          *         grid
          */
         public Collection<Component> getComponents() {
-            Set<Component> components = new HashSet<Component>(
-                    visibleDetailsComponents.values());
+            Set<Component> components = new HashSet<Component>(visibleDetailsComponents.values());
             components.removeAll(unattachedComponents);
             return components;
         }
@@ -805,35 +765,30 @@ public class RpcDataProviderExtension extends AbstractExtension {
                 assert component != null : "rowIndexToDetails contains a null component";
 
                 Integer newIndex = entry.getKey();
-                Integer oldIndex = prevRowIndexToDetails.inverse().get(
-                        component);
+                Integer oldIndex = prevRowIndexToDetails.inverse().get(component);
 
                 /*
                  * only attach components. Detaching already happened in
                  * destroyDetails.
                  */
                 if (newIndex != null && oldIndex == null) {
-                    assert unattachedComponents.contains(component) : "unattachedComponents does not contain component for index "
-                            + newIndex + " (" + component + ")";
+                    assert unattachedComponents.contains(component) : "unattachedComponents does not contain component for index " + newIndex + " (" + component + ")";
                     component.setParent(grid);
                     unattachedComponents.remove(component);
                 }
 
                 if (!SharedUtil.equals(oldIndex, newIndex)) {
-                    changes.add(new DetailsConnectorChange(component, oldIndex,
-                            newIndex, emptyDetails.containsKey(component)));
+                    changes.add(new DetailsConnectorChange(component, oldIndex, newIndex, emptyDetails.containsKey(component)));
                 }
             }
 
             // populate diff with removed
-            for (Entry<Integer, Component> entry : prevRowIndexToDetails
-                    .entrySet()) {
+            for (Entry<Integer, Component> entry : prevRowIndexToDetails.entrySet()) {
                 Integer oldIndex = entry.getKey();
                 Component component = entry.getValue();
                 Integer newIndex = rowIndexToDetails.inverse().get(component);
                 if (newIndex == null) {
-                    changes.add(new DetailsConnectorChange(null, oldIndex,
-                            null, emptyDetails.containsValue(oldIndex)));
+                    changes.add(new DetailsConnectorChange(null, oldIndex, null, emptyDetails.containsValue(oldIndex)));
                 }
             }
 
@@ -853,8 +808,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
                 rowIndex = emptyDetails.remove(itemId);
             }
 
-            assert rowIndex != null : "Given itemId does not map to an "
-                    + "existing detail row (" + itemId + ")";
+            assert rowIndex != null : "Given itemId does not map to an " + "existing detail row (" + itemId + ")";
             createDetails(itemId, rowIndex.intValue());
         }
 
@@ -948,9 +902,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
                 }
 
                 // Wipe clean all details.
-                HashSet<Object> detailItemIds = new HashSet<Object>(
-                        detailComponentManager.visibleDetailsComponents
-                                .keySet());
+                HashSet<Object> detailItemIds = new HashSet<Object>(detailComponentManager.visibleDetailsComponents.keySet());
                 for (Object itemId : detailItemIds) {
                     detailComponentManager.destroyDetails(itemId);
                 }
@@ -998,11 +950,9 @@ public class RpcDataProviderExtension extends AbstractExtension {
 
         registerRpc(new DataRequestRpc() {
             @Override
-            public void requestRows(int firstRow, int numberOfRows,
-                    int firstCachedRowIndex, int cacheSize) {
+            public void requestRows(int firstRow, int numberOfRows, int firstCachedRowIndex, int cacheSize) {
 
-                pushRowData(firstRow, numberOfRows, firstCachedRowIndex,
-                        cacheSize);
+                pushRowData(firstRow, numberOfRows, firstCachedRowIndex, cacheSize);
             }
 
             @Override
@@ -1021,8 +971,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
         });
 
         if (container instanceof ItemSetChangeNotifier) {
-            ((ItemSetChangeNotifier) container)
-                    .addItemSetChangeListener(itemListener);
+            ((ItemSetChangeNotifier) container).addItemSetChangeListener(itemListener);
         }
 
         addDataGenerator(keyMapper);
@@ -1078,8 +1027,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
         super.beforeClientResponse(initial);
     }
 
-    private void pushRowData(int firstRowToPush, int numberOfRows,
-            int firstCachedRowIndex, int cacheSize) {
+    private void pushRowData(int firstRowToPush, int numberOfRows, int firstCachedRowIndex, int cacheSize) {
         Range newRange = Range.withLength(firstRowToPush, numberOfRows);
         Range cached = Range.withLength(firstCachedRowIndex, cacheSize);
         Range fullRange = newRange;
@@ -1087,8 +1035,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
             fullRange = newRange.combineWith(cached);
         }
 
-        List<?> itemIds = container.getItemIds(fullRange.getStart(),
-                fullRange.length());
+        List<?> itemIds = container.getItemIds(fullRange.getStart(), fullRange.length());
         keyMapper.setActiveRows(itemIds);
 
         JsonArray rows = Json.createArray();
@@ -1260,17 +1207,14 @@ public class RpcDataProviderExtension extends AbstractExtension {
         if (parent == null) {
             // We're being detached, release various listeners
 
-            activeRowHandler
-                    .removeValueChangeListeners(activeRowHandler.activeRange);
+            activeRowHandler.removeValueChangeListeners(activeRowHandler.activeRange);
 
             if (container instanceof ItemSetChangeNotifier) {
-                ((ItemSetChangeNotifier) container)
-                        .removeItemSetChangeListener(itemListener);
+                ((ItemSetChangeNotifier) container).removeItemSetChangeListener(itemListener);
             }
 
         } else if (!(parent instanceof Grid)) {
-            throw new IllegalStateException(
-                    "Grid is the only accepted parent type");
+            throw new IllegalStateException("Grid is the only accepted parent type");
         }
         super.setParent(parent);
     }
@@ -1344,8 +1288,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
         }
 
         int rowIndex = indexOf(itemId);
-        boolean modifiedRowIsActive = activeRowHandler.activeRange
-                .contains(rowIndex);
+        boolean modifiedRowIsActive = activeRowHandler.activeRange.contains(rowIndex);
         if (modified && modifiedRowIsActive) {
             updateRowData(itemId);
         }
@@ -1371,8 +1314,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
      * @since 7.5.0
      */
     public void refreshDetails() {
-        for (Object itemId : ImmutableSet
-                .copyOf(detailComponentManager.visibleDetails)) {
+        for (Object itemId : ImmutableSet.copyOf(detailComponentManager.visibleDetails)) {
             detailComponentManager.refresh(itemId);
         }
     }
@@ -1398,8 +1340,7 @@ public class RpcDataProviderExtension extends AbstractExtension {
 
     @Override
     public void detach() {
-        for (Object itemId : ImmutableSet
-                .copyOf(detailComponentManager.visibleDetails)) {
+        for (Object itemId : ImmutableSet.copyOf(detailComponentManager.visibleDetails)) {
             detailComponentManager.destroyDetails(itemId);
         }
 

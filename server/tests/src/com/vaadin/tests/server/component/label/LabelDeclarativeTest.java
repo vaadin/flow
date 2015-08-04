@@ -49,29 +49,23 @@ public class LabelDeclarativeTest extends DeclarativeTestBase<Label> {
     @Test
     public void testRich() {
         String design = "<v-label>This is <b><u>Rich</u></b> content!</v-label>";
-        Label l = createLabel("This is \n<b><u>Rich</u></b> content!", null,
-                true);
+        Label l = createLabel("This is \n<b><u>Rich</u></b> content!", null, true);
         testRead(design, l);
         testWrite(design, l);
     }
 
     @Test
     public void testPlainText() {
-        String design = "<v-label plain-text>This is only <b>text</b>"
-                + " and will contain visible tags</v-label>";
-        Label l = createLabel(
-                "This is only \n<b>text</b> and will contain visible tags",
-                null, false);
+        String design = "<v-label plain-text>This is only <b>text</b>" + " and will contain visible tags</v-label>";
+        Label l = createLabel("This is only \n<b>text</b> and will contain visible tags", null, false);
         testRead(design, l);
         testWrite(design, l);
     }
 
     @Test
     public void testContentAndCaption() {
-        String design = "<v-label caption='This is a label'>This is <b><u>Rich</u></b> "
-                + "content!</v-label>";
-        Label l = createLabel("This is \n<b><u>Rich</u></b> content!",
-                "This is a label", true);
+        String design = "<v-label caption='This is a label'>This is <b><u>Rich</u></b> " + "content!</v-label>";
+        Label l = createLabel("This is \n<b><u>Rich</u></b> content!", "This is a label", true);
         testRead(design, l);
         testWrite(design, l);
     }

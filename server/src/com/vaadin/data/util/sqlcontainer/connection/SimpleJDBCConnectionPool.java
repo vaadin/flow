@@ -44,23 +44,18 @@ public class SimpleJDBCConnectionPool implements JDBCConnectionPool {
 
     private boolean initialized;
 
-    public SimpleJDBCConnectionPool(String driverName, String connectionUri,
-            String userName, String password) throws SQLException {
+    public SimpleJDBCConnectionPool(String driverName, String connectionUri, String userName, String password) throws SQLException {
         if (driverName == null) {
-            throw new IllegalArgumentException(
-                    "JDBC driver class name must be given.");
+            throw new IllegalArgumentException("JDBC driver class name must be given.");
         }
         if (connectionUri == null) {
-            throw new IllegalArgumentException(
-                    "Database connection URI must be given.");
+            throw new IllegalArgumentException("Database connection URI must be given.");
         }
         if (userName == null) {
-            throw new IllegalArgumentException(
-                    "Database username must be given.");
+            throw new IllegalArgumentException("Database username must be given.");
         }
         if (password == null) {
-            throw new IllegalArgumentException(
-                    "Database password must be given.");
+            throw new IllegalArgumentException("Database password must be given.");
         }
         this.driverName = driverName;
         this.connectionUri = connectionUri;
@@ -71,14 +66,11 @@ public class SimpleJDBCConnectionPool implements JDBCConnectionPool {
         try {
             Class.forName(driverName).newInstance();
         } catch (Exception ex) {
-            throw new RuntimeException("Specified JDBC Driver: " + driverName
-                    + " - initialization failed.", ex);
+            throw new RuntimeException("Specified JDBC Driver: " + driverName + " - initialization failed.", ex);
         }
     }
 
-    public SimpleJDBCConnectionPool(String driverName, String connectionUri,
-            String userName, String password, int initialConnections,
-            int maxConnections) throws SQLException {
+    public SimpleJDBCConnectionPool(String driverName, String connectionUri, String userName, String password, int initialConnections, int maxConnections) throws SQLException {
         this(driverName, connectionUri, userName, password);
         this.initialConnections = initialConnections;
         this.maxConnections = maxConnections;
@@ -138,8 +130,7 @@ public class SimpleJDBCConnectionPool implements JDBCConnectionPool {
     }
 
     private Connection createConnection() throws SQLException {
-        Connection c = DriverManager.getConnection(connectionUri, userName,
-                password);
+        Connection c = DriverManager.getConnection(connectionUri, userName, password);
         c.setAutoCommit(false);
         if (driverName.toLowerCase().contains("mysql")) {
             try {

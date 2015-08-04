@@ -22,14 +22,13 @@ public class WindowsCssTest extends VerticalLayout {
         this.parent = parent;
         parent.registerComponent(this);
 
-        Button defWindow = new Button("Default window",
-                new Button.ClickListener() {
+        Button defWindow = new Button("Default window", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        createWindowWith(caption, null, styleName);
-                    }
-                });
+            @Override
+            public void buttonClick(ClickEvent event) {
+                createWindowWith(caption, null, styleName);
+            }
+        });
         defWindow.setId("windButton" + debugIdCounter++);
         Button light = new Button("Light window", new Button.ClickListener() {
 
@@ -59,8 +58,7 @@ public class WindowsCssTest extends VerticalLayout {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                createWindowWith(caption, ChameleonTheme.WINDOW_OPAQUE,
-                        styleName);
+                createWindowWith(caption, ChameleonTheme.WINDOW_OPAQUE, styleName);
             }
         });
         opaque.setId("windButton" + debugIdCounter++);
@@ -82,8 +80,7 @@ public class WindowsCssTest extends VerticalLayout {
      *            - the user defined styleName
      * @return
      */
-    private void createWindowWith(String caption, String primaryStyleName,
-            String styleName) {
+    private void createWindowWith(String caption, String primaryStyleName, String styleName) {
 
         Window window = new Window();
         VerticalLayout layout = new VerticalLayout();

@@ -47,8 +47,7 @@ public class GridScrolling extends AbstractTestUI {
         for (int row = 0; row < 65536; row++) {
             Item item = ds.addItem(Integer.valueOf(row));
             for (int col = 0; col < 5; col++) {
-                item.getItemProperty("col" + col).setValue(
-                        "(" + row + ", " + col + ")");
+                item.getItemProperty("col" + col).setValue("(" + row + ", " + col + ")");
             }
         }
 
@@ -74,14 +73,12 @@ public class GridScrolling extends AbstractTestUI {
 
         for (int i = 1; i < 7; ++i) {
             final int row = (ds.size() / 7) * i;
-            Button scrollButton = new Button("Scroll to row " + row,
-                    new ClickListener() {
-                        @Override
-                        public void buttonClick(ClickEvent event) {
-                            grid.scrollTo(Integer.valueOf(row),
-                                    ScrollDestination.MIDDLE);
-                        }
-                    });
+            Button scrollButton = new Button("Scroll to row " + row, new ClickListener() {
+                @Override
+                public void buttonClick(ClickEvent event) {
+                    grid.scrollTo(Integer.valueOf(row), ScrollDestination.MIDDLE);
+                }
+            });
             scrollButton.setSizeFull();
             vl.addComponent(scrollButton);
         }

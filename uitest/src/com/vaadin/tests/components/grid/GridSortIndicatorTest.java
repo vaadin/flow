@@ -33,21 +33,15 @@ public class GridSortIndicatorTest extends MultiBrowserTest {
         // Clicking the left header cell should set ascending sort order for
         // both columns.
         grid.getHeaderCell(0, 0).click();
-        assertTrue(grid.getHeaderCell(0, 0).getAttribute("class")
-                .contains("sort-asc"));
-        assertTrue(grid.getHeaderCell(0, 1).getAttribute("class")
-                .contains("sort-asc"));
+        assertTrue(grid.getHeaderCell(0, 0).getAttribute("class").contains("sort-asc"));
+        assertTrue(grid.getHeaderCell(0, 1).getAttribute("class").contains("sort-asc"));
         // Click the left column to change the sort direction.
         grid.getHeaderCell(0, 0).click();
-        assertTrue(grid.getHeaderCell(0, 0).getAttribute("class")
-                .contains("sort-desc"));
-        assertTrue(grid.getHeaderCell(0, 1).getAttribute("class")
-                .contains("sort-desc"));
+        assertTrue(grid.getHeaderCell(0, 0).getAttribute("class").contains("sort-desc"));
+        assertTrue(grid.getHeaderCell(0, 1).getAttribute("class").contains("sort-desc"));
         // Clicking on the right column should have no effect.
         grid.getHeaderCell(0, 1).click();
-        assertTrue(grid.getHeaderCell(0, 0).getAttribute("class")
-                .contains("sort-desc"));
-        assertTrue(grid.getHeaderCell(0, 1).getAttribute("class")
-                .contains("sort-desc"));
+        assertTrue(grid.getHeaderCell(0, 0).getAttribute("class").contains("sort-desc"));
+        assertTrue(grid.getHeaderCell(0, 1).getAttribute("class").contains("sort-desc"));
     }
 }

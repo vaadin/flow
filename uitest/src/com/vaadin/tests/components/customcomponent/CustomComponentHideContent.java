@@ -31,13 +31,12 @@ public class CustomComponentHideContent extends AbstractTestUI {
         CustomComponent customComponent = new CustomComponent(content);
         addComponent(customComponent);
 
-        addComponent(new Button("Toggle content visibility",
-                new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        content.setVisible(!content.isVisible());
-                    }
-                }));
+        addComponent(new Button("Toggle content visibility", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                content.setVisible(!content.isVisible());
+            }
+        }));
     }
 
     @Override

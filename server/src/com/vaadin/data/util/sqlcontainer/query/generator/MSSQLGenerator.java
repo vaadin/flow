@@ -52,9 +52,7 @@ public class MSSQLGenerator extends DefaultSQLGenerator {
      * int, java.lang.String)
      */
     @Override
-    public StatementHelper generateSelectQuery(String tableName,
-            List<Filter> filters, List<OrderBy> orderBys, int offset,
-            int pagelength, String toSelect) {
+    public StatementHelper generateSelectQuery(String tableName, List<Filter> filters, List<OrderBy> orderBys, int offset, int pagelength, String toSelect) {
         if (tableName == null || tableName.trim().equals("")) {
             throw new IllegalArgumentException("Table name must be given.");
         }
@@ -67,9 +65,7 @@ public class MSSQLGenerator extends DefaultSQLGenerator {
 
         /* Row count request is handled here */
         if ("COUNT(*)".equalsIgnoreCase(toSelect)) {
-            query.append(String.format(
-                    "SELECT COUNT(*) AS %s FROM (SELECT * FROM %s",
-                    QueryBuilder.quote("rowcount"), tableName));
+            query.append(String.format("SELECT COUNT(*) AS %s FROM (SELECT * FROM %s", QueryBuilder.quote("rowcount"), tableName));
             if (filters != null && !filters.isEmpty()) {
                 query.append(QueryBuilder.getWhereStringForFilters(filters, sh));
             }
@@ -80,8 +76,7 @@ public class MSSQLGenerator extends DefaultSQLGenerator {
 
         /* SELECT without row number constraints */
         if (offset == 0 && pagelength == 0) {
-            query.append("SELECT ").append(toSelect).append(" FROM ")
-                    .append(tableName);
+            query.append("SELECT ").append(toSelect).append(" FROM ").append(tableName);
             if (filters != null) {
                 query.append(QueryBuilder.getWhereStringForFilters(filters, sh));
             }
@@ -105,8 +100,7 @@ public class MSSQLGenerator extends DefaultSQLGenerator {
         if (filters != null) {
             query.append(QueryBuilder.getWhereStringForFilters(filters, sh));
         }
-        query.append(") AS a WHERE a.rownum BETWEEN ").append(offset)
-                .append(" AND ").append(Integer.toString(offset + pagelength));
+        query.append(") AS a WHERE a.rownum BETWEEN ").append(offset).append(" AND ").append(Integer.toString(offset + pagelength));
         sh.setQueryString(query.toString());
         return sh;
     }
