@@ -23,7 +23,7 @@ import java.util.Iterator;
 
 import org.jsoup.nodes.Element;
 
-import com.vaadin.event.ConnectorEventListener;
+import com.vaadin.event.ComponentEventListener;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.server.SizeWithUnit;
 import com.vaadin.server.Sizeable;
@@ -488,7 +488,7 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      * @see SplitterClickEvent
      * @since 6.2
      */
-    public interface SplitterClickListener extends ConnectorEventListener {
+    public interface SplitterClickListener extends ComponentEventListener {
 
         public static final Method clickMethod = ReflectTools.findMethod(SplitterClickListener.class, "splitterClick", SplitterClickEvent.class);
 
@@ -515,7 +515,7 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      * 
      * @since 7.5.0
      */
-    public interface SplitPositionChangeListener extends ConnectorEventListener {
+    public interface SplitPositionChangeListener extends ComponentEventListener {
 
         public static final Method moveMethod = ReflectTools.findMethod(SplitPositionChangeListener.class, "onSplitPositionChanged", SplitPositionChangeEvent.class);
 

@@ -10,7 +10,6 @@ import org.easymock.IMocksControl;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.event.ConnectorEvent;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
@@ -123,7 +122,7 @@ public class AttachDetachListenersTest {
         control.verify();
     }
 
-    public static class EventEquals<E extends ConnectorEvent> implements IArgumentMatcher {
+    public static class EventEquals<E extends Component.Event> implements IArgumentMatcher {
 
         private E expected;
 
@@ -134,17 +133,17 @@ public class AttachDetachListenersTest {
         @Override
         public void appendTo(StringBuffer buffer) {
             buffer.append("EventEquals(");
-            buffer.append("expected " + expected.getClass().getSimpleName() + " with connector " + expected.getConnector());
+            buffer.append("expected " + expected.getClass().getSimpleName() + " with connector " + expected.getComponent());
             buffer.append(")");
         }
 
         @Override
         public boolean matches(Object argument) {
-            return expected.getClass().isInstance(argument) && ((ConnectorEvent) argument).getConnector() == expected.getConnector();
+            return expected.getClass().isInstance(argument) && ((Component.Event) argument).getComponent() == expected.getComponent();
         }
     }
 
-    public static <E extends ConnectorEvent> E eventEquals(E expected) {
+    public static <E extends Component.Event> E eventEquals(E expected) {
         EasyMock.reportMatcher(new EventEquals<E>(expected));
         return null;
     }

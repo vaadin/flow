@@ -18,12 +18,12 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.EventObject;
 import java.util.Locale;
 
 import org.jsoup.nodes.Element;
 
-import com.vaadin.event.ConnectorEvent;
-import com.vaadin.event.ConnectorEventListener;
+import com.vaadin.event.ComponentEventListener;
 import com.vaadin.event.FieldEvents;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.ErrorHandler;
@@ -756,7 +756,7 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * @see Component.Listener
      */
     @SuppressWarnings("serial")
-    public static class Event extends ConnectorEvent {
+    public static class Event extends EventObject {
 
         /**
          * Constructs a new event with the specified source component.
@@ -841,7 +841,7 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * 
      * @see Component#addListener(Listener)
      */
-    public interface Listener extends ConnectorEventListener {
+    public interface Listener extends ComponentEventListener {
 
         /**
          * Notifies the listener of a component event.
@@ -1099,10 +1099,10 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
     /**
      * Event fired after a connector is attached to the application.
      */
-    public static class AttachEvent extends ConnectorEvent {
+    public static class AttachEvent extends Component.Event {
         public static final String ATTACH_EVENT_IDENTIFIER = "clientConnectorAttach";
 
-        public AttachEvent(ClientConnector source) {
+        public AttachEvent(Component source) {
             super(source);
         }
     }
@@ -1111,7 +1111,7 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * Interface for listening {@link DetachEvent connector detach events}.
      * 
      */
-    public static interface AttachListener extends ConnectorEventListener {
+    public static interface AttachListener extends ComponentEventListener {
         public static final Method attachMethod = ReflectTools.findMethod(AttachListener.class, "attach", AttachEvent.class);
 
         /**
@@ -1126,10 +1126,10 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
     /**
      * Event fired before a connector is detached from the application.
      */
-    public static class DetachEvent extends ConnectorEvent {
+    public static class DetachEvent extends Component.Event {
         public static final String DETACH_EVENT_IDENTIFIER = "clientConnectorDetach";
 
-        public DetachEvent(ClientConnector source) {
+        public DetachEvent(Component source) {
             super(source);
         }
     }
@@ -1138,7 +1138,7 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * Interface for listening {@link DetachEvent connector detach events}.
      * 
      */
-    public static interface DetachListener extends ConnectorEventListener {
+    public static interface DetachListener extends ComponentEventListener {
         public static final Method detachMethod = ReflectTools.findMethod(DetachListener.class, "detach", DetachEvent.class);
 
         /**
