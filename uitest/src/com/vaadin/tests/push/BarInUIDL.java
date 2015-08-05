@@ -24,7 +24,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Label;
 
-@Push(transport = Transport.STREAMING)
+@Push(transport = Transport.LONG_POLLING)
 public class BarInUIDL extends AbstractTestUI {
 
     /*

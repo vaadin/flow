@@ -41,7 +41,6 @@ public abstract class PushLargeData extends AbstractTestUIWithLog {
     // Every other second
     static final int DEFAULT_DELAY_MS = 2000;
 
-    // 3 MB is enough for streaming to reconnect
     static final int DEFAULT_DATA_TO_PUSH = 3 * 1000 * 1000;
 
     static final int DEFAULT_DURATION_MS = DEFAULT_DATA_TO_PUSH / DEFAULT_SIZE_BYTES * DEFAULT_DELAY_MS;

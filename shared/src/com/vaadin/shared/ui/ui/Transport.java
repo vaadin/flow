@@ -28,13 +28,6 @@ public enum Transport {
      */
     WEBSOCKET("websocket"),
     /**
-     * HTTP streaming
-     * 
-     * @deprecated Use the more reliable {@link Transport#LONG_POLLING} instead.
-     */
-    @Deprecated
-    STREAMING("streaming"),
-    /**
      * HTTP long polling
      */
     LONG_POLLING("long-polling");

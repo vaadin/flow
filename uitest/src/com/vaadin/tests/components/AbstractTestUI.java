@@ -104,8 +104,8 @@ public abstract class AbstractTestUI extends UI {
     /**
      * Sets the push transport according to the transport= URL parameter if such
      * is given. Supports transport=xhr (disables push), transport=websocket
-     * (forces websocket into use), transport=streaming (forces streaming into
-     * use). Using ?transport=xyz disables the fallback transport.
+     * (forces websocket into use), transport=long-polling(forces long-polling
+     * into use). Using ?transport=xyz disables the fallback transport.
      * 
      * @param request
      *            The UI init request
@@ -118,8 +118,6 @@ public abstract class AbstractTestUI extends UI {
             config.setPushMode(PushMode.DISABLED);
         } else if ("websocket".equals(transport)) {
             enablePush(Transport.WEBSOCKET);
-        } else if ("streaming".equals(transport)) {
-            enablePush(Transport.STREAMING);
         } else if ("long-polling".equals(transport)) {
             enablePush(Transport.LONG_POLLING);
         } else if (transport != null) {

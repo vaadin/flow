@@ -78,7 +78,7 @@ public class PushHandler {
 
             VaadinSession session = ui.getSession();
             if (resource.transport() == TRANSPORT.STREAMING || resource.transport() == TRANSPORT.LONG_POLLING) {
-                // Must ensure that the streaming/long-polling response contains
+                // Must ensure that the long-polling response contains
                 // "Connection: close", otherwise iOS 6 will wait for the
                 // response to this request before sending another request to
                 // the same server (as it will apparently try to reuse the same
