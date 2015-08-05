@@ -26,8 +26,6 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -88,13 +86,6 @@ public abstract class VaadinService implements Serializable {
      */
     // Use the old name.reinitializing value for backwards compatibility
     static final String PRESERVE_UNBOUND_SESSION_ATTRIBUTE = VaadinService.class.getName() + ".reinitializing";
-
-    /**
-     * @deprecated As of 7.1.1, use {@link #PRESERVE_UNBOUND_SESSION_ATTRIBUTE}
-     *             instead
-     */
-    @Deprecated
-    static final String REINITIALIZING_SESSION_MARKER = PRESERVE_UNBOUND_SESSION_ATTRIBUTE;
 
     private static final Method SESSION_INIT_METHOD = ReflectTools.findMethod(SessionInitListener.class, "sessionInit", SessionInitEvent.class);
 
@@ -729,23 +720,6 @@ public abstract class VaadinService implements Serializable {
         onVaadinSessionStarted(request, session);
 
         return session;
-    }
-
-    /**
-     * Get the base URL that should be used for sending requests back to this
-     * service.
-     * <p>
-     * This is only used to support legacy cases.
-     *
-     * @param request
-     * @return
-     * @throws MalformedURLException
-     *
-     * @deprecated As of 7.0. Only used to support {@link LegacyApplication}.
-     */
-    @Deprecated
-    protected URL getApplicationUrl(VaadinRequest request) throws MalformedURLException {
-        return null;
     }
 
     /**
@@ -1503,15 +1477,6 @@ public abstract class VaadinService implements Serializable {
         } else {
             json.put(key, value);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
-     */
-    @Deprecated
-    public void criticalNotification(VaadinRequest request, VaadinResponse response, String caption, String message, String details, String url) throws IOException {
-        writeStringResponse(response, JsonConstants.JSON_CONTENT_TYPE, createCriticalNotificationJSON(caption, message, details, url));
     }
 
     /**

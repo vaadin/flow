@@ -83,37 +83,6 @@ public interface ErrorMessage extends Serializable {
     }
 
     /**
-     * @deprecated As of 7.0, use {@link ErrorLevel#SYSTEMERROR} instead    
-     */
-    @Deprecated
-    public static final ErrorLevel SYSTEMERROR = ErrorLevel.SYSTEMERROR;
-
-    /**
-     * @deprecated As of 7.0, use {@link ErrorLevel#CRITICAL} instead    
-     */
-    @Deprecated
-    public static final ErrorLevel CRITICAL = ErrorLevel.CRITICAL;
-
-    /**
-     * @deprecated As of 7.0, use {@link ErrorLevel#ERROR} instead    
-     */
-
-    @Deprecated
-    public static final ErrorLevel ERROR = ErrorLevel.ERROR;
-
-    /**
-     * @deprecated As of 7.0, use {@link ErrorLevel#WARNING} instead    
-     */
-    @Deprecated
-    public static final ErrorLevel WARNING = ErrorLevel.WARNING;
-
-    /**
-     * @deprecated As of 7.0, use {@link ErrorLevel#INFORMATION} instead    
-     */
-    @Deprecated
-    public static final ErrorLevel INFORMATION = ErrorLevel.INFORMATION;
-
-    /**
      * Gets the errors level.
      * 
      * @return the level of error as an integer.

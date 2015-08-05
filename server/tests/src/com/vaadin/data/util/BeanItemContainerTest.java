@@ -1,8 +1,6 @@
 package com.vaadin.data.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -175,52 +173,12 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         testContainerIndexed(getContainer(), nameToBean.get(sampleData[2]), 2, false, new ClassName("org.vaadin.test.Test", 8888), true);
     }
 
-    @SuppressWarnings("deprecation")
-    public void testCollectionConstructors() {
-        List<ClassName> classNames = new ArrayList<ClassName>();
-        classNames.add(new ClassName("a.b.c.Def", 1));
-        classNames.add(new ClassName("a.b.c.Fed", 2));
-        classNames.add(new ClassName("b.c.d.Def", 3));
-
-        // note that this constructor is problematic, users should use the
-        // version that
-        // takes the bean class as a parameter
-        BeanItemContainer<ClassName> container = new BeanItemContainer<ClassName>(classNames);
-
-        Assert.assertEquals(3, container.size());
-        Assert.assertEquals(classNames.get(0), container.firstItemId());
-        Assert.assertEquals(classNames.get(1), container.getIdByIndex(1));
-        Assert.assertEquals(classNames.get(2), container.lastItemId());
-
-        BeanItemContainer<ClassName> container2 = new BeanItemContainer<ClassName>(ClassName.class, classNames);
-
-        Assert.assertEquals(3, container2.size());
-        Assert.assertEquals(classNames.get(0), container2.firstItemId());
-        Assert.assertEquals(classNames.get(1), container2.getIdByIndex(1));
-        Assert.assertEquals(classNames.get(2), container2.lastItemId());
-    }
-
     // this only applies to the collection constructor with no type parameter
-    @SuppressWarnings("deprecation")
-    public void testEmptyCollectionConstructor() {
-        try {
-            new BeanItemContainer<ClassName>((Collection<ClassName>) null);
-            Assert.fail("Initializing BeanItemContainer from a null collection should not work!");
-        } catch (IllegalArgumentException e) {
-            // success
-        }
-        try {
-            new BeanItemContainer<ClassName>(new ArrayList<ClassName>());
-            Assert.fail("Initializing BeanItemContainer from an empty collection should not work!");
-        } catch (IllegalArgumentException e) {
-            // success
-        }
-    }
 
     public void testItemSetChangeListeners() {
         BeanItemContainer<ClassName> container = getContainer();
         ItemSetChangeCounter counter = new ItemSetChangeCounter();
-        container.addListener(counter);
+        container.addItemSetChangeListener(counter);
 
         ClassName cn1 = new ClassName("com.example.Test", 1111);
         ClassName cn2 = new ClassName("com.example.Test2", 2222);
@@ -300,7 +258,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
     public void testItemSetChangeListenersFiltering() {
         BeanItemContainer<ClassName> container = getContainer();
         ItemSetChangeCounter counter = new ItemSetChangeCounter();
-        container.addListener(counter);
+        container.addItemSetChangeListener(counter);
 
         ClassName cn1 = new ClassName("com.example.Test", 1111);
         ClassName cn2 = new ClassName("com.example.Test2", 2222);

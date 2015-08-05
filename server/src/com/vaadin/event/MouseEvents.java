@@ -45,21 +45,6 @@ public interface MouseEvents {
      * @since 6.2
      */
     public static class ClickEvent extends Component.Event {
-        /**
-         * @deprecated As of 7.0, use {@link Button#LEFT} instead.
-         */
-        @Deprecated
-        public static final MouseButton BUTTON_LEFT = MouseButton.LEFT;
-        /**
-         * @deprecated As of 7.0, use {@link Button#MIDDLE} instead.
-         */
-        @Deprecated
-        public static final MouseButton BUTTON_MIDDLE = MouseButton.MIDDLE;
-        /**
-         * @deprecated As of 7.0, use {@link Button#RIGHT} instead.
-         */
-        @Deprecated
-        public static final MouseButton BUTTON_RIGHT = MouseButton.RIGHT;
         private MouseEventDetails details;
 
         public ClickEvent(Component source, MouseEventDetails mouseEventDetails) {

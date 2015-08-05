@@ -74,11 +74,7 @@ public class LabelTest extends AbstractComponentTest<Label> implements ValueChan
         LinkedHashMap<String, ContentMode> options = new LinkedHashMap<String, ContentMode>();
         options.put("Text", ContentMode.TEXT);
         options.put("Preformatted", ContentMode.PREFORMATTED);
-        options.put("Raw", ContentMode.RAW);
-        options.put("UIDL", ContentMode.XML); // Deprecated UIDL mode still used
-                                              // to avoid breaking old tests
         options.put("XHTML", ContentMode.HTML);
-        options.put("XML", ContentMode.XML);
 
         createSelectAction("Content mode", category, options, "Text", contentModeCommand);
     }

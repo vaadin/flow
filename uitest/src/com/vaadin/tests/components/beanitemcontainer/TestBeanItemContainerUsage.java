@@ -31,7 +31,7 @@ public class TestBeanItemContainerUsage extends TestBase {
         persons.add(new Person("Marc", "Smith", 30));
         persons.add(new Person("Greg", "Sandman", 75));
 
-        BeanItemContainer<Person> bic = new BeanItemContainer<Person>(persons);
+        BeanItemContainer<Person> bic = new BeanItemContainer<Person>(Person.class, persons);
         t.setContainerDataSource(bic);
 
         addComponent(t);

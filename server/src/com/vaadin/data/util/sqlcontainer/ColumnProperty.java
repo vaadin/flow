@@ -59,27 +59,6 @@ final public class ColumnProperty implements Property {
     }
 
     /**
-     * Deprecated constructor for ColumnProperty. If this is used the primary
-     * keys are not identified correctly in some cases for some databases (i.e.
-     * Oracle). See http://dev.vaadin.com/ticket/9145.
-     * 
-     * @param propertyId
-     * @param readOnly
-     * @param allowReadOnlyChange
-     * @param nullable
-     * @param value
-     * @param type
-     * 
-     * @deprecated As of 7.0. Use
-     *             {@link #ColumnProperty(String, boolean, boolean, boolean, boolean, Object, Class)
-     *             instead
-     */
-    @Deprecated
-    public ColumnProperty(String propertyId, boolean readOnly, boolean allowReadOnlyChange, boolean nullable, Object value, Class<?> type) {
-        this(propertyId, readOnly, allowReadOnlyChange, nullable, false, value, type);
-    }
-
-    /**
      * Creates a new ColumnProperty instance.
      * 
      * @param propertyId

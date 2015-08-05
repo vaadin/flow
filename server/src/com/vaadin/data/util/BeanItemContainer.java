@@ -90,53 +90,6 @@ public class BeanItemContainer<BEANTYPE> extends AbstractBeanContainer<BEANTYPE,
 
     /**
      * Constructs a {@code BeanItemContainer} and adds the given beans to it.
-     * The collection must not be empty.
-     * {@link BeanItemContainer#BeanItemContainer(Class)} can be used for
-     * creating an initially empty {@code BeanItemContainer}.
-     * 
-     * Note that when using this constructor, the actual class of the first item
-     * in the collection is used to determine the bean properties supported by
-     * the container instance, and only beans of that class or its subclasses
-     * can be added to the collection. If this is problematic or empty
-     * collections need to be supported, use {@link #BeanItemContainer(Class)}
-     * and {@link #addAll(Collection)} instead.
-     * 
-     * @param collection
-     *            a non empty {@link Collection} of beans.
-     * @throws IllegalArgumentException
-     *             If the collection is null or empty.
-     * 
-     * @deprecated As of 6.5, use {@link #BeanItemContainer(Class, Collection)}
-     *             instead
-     */
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    public BeanItemContainer(Collection<? extends BEANTYPE> collection) throws IllegalArgumentException {
-        // must assume the class is BT
-        // the class information is erased by the compiler
-        this((Class<BEANTYPE>) getBeanClassForCollection(collection), collection);
-    }
-
-    /**
-     * Internal helper method to support the deprecated {@link Collection}
-     * container.
-     * 
-     * @param <BT>
-     * @param collection
-     * @return
-     * @throws IllegalArgumentException
-     */
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    private static <BT> Class<? extends BT> getBeanClassForCollection(Collection<? extends BT> collection) throws IllegalArgumentException {
-        if (collection == null || collection.isEmpty()) {
-            throw new IllegalArgumentException("The collection passed to BeanItemContainer constructor must not be null or empty. Use the other BeanItemContainer constructor.");
-        }
-        return (Class<? extends BT>) collection.iterator().next().getClass();
-    }
-
-    /**
-     * Constructs a {@code BeanItemContainer} and adds the given beans to it.
      * 
      * @param type
      *            the type of the beans that will be added to the container.

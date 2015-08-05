@@ -23,7 +23,7 @@ public class BeanItemContainerTest {
         }
         col.add(new Hello2());
 
-        c = new BeanItemContainer<Hello>(col);
+        c = new BeanItemContainer<Hello>(Hello.class, col);
 
         System.out.println(c + " contains " + c.size() + " objects");
 

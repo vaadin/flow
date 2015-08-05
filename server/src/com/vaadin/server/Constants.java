@@ -86,13 +86,6 @@ public interface Constants {
     // Widget set parameter name
     static final String PARAMETER_WIDGETSET = "widgetset";
 
-    /**
-     * @deprecated As of 7.1, this message is no longer used and might be
-     *             removed from the code.
-     */
-    @Deprecated
-    static final String ERROR_NO_UI_FOUND = "No UIProvider returned a UI for the request.";
-
     static final String DEFAULT_THEME_NAME = "valo";
 
     static final String INVALID_SECURITY_KEY_MSG = "Invalid security key.";

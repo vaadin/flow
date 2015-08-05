@@ -785,16 +785,6 @@ public class TableQuery extends AbstractTransactionalQuery implements QueryDeleg
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addRowIdChangeListener(com.vaadin.data.util.sqlcontainer.query.QueryDelegate.RowIdChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(RowIdChangeListener listener) {
-        addRowIdChangeListener(listener);
-    }
-
-    /**
      * Removes the given RowIdChangeListener from this query
      */
     @Override
@@ -802,16 +792,6 @@ public class TableQuery extends AbstractTransactionalQuery implements QueryDeleg
         if (rowIdChangeListeners != null) {
             rowIdChangeListeners.remove(listener);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeRowIdChangeListener(com.vaadin.data.util.sqlcontainer.query.QueryDelegate.RowIdChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(RowIdChangeListener listener) {
-        removeRowIdChangeListener(listener);
     }
 
     private static final Logger getLogger() {

@@ -1,8 +1,8 @@
 package com.vaadin.tests.components.tree;
 
 import com.vaadin.event.ItemClickEvent;
-import com.vaadin.event.MouseEvents;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.shared.MouseEventDetails.MouseButton;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Tree;
 
@@ -26,7 +26,7 @@ public class TreeScrollingOnRightClick extends AbstractTestUI {
             @SuppressWarnings("deprecation")
             @Override
             public void itemClick(ItemClickEvent event) {
-                if (event.getButton() == MouseEvents.ClickEvent.BUTTON_RIGHT) {
+                if (event.getButton() == MouseButton.RIGHT) {
                     tree.select(event.getItemId());
                 }
             }

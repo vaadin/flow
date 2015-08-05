@@ -35,7 +35,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.RenderInformation.FloatSize;
 import com.vaadin.client.ui.VOverlay;
 import com.vaadin.shared.AbstractComponentState;
-import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.communication.MethodInvocation;
 import com.vaadin.shared.ui.ComponentStateUtil;
 
@@ -664,18 +663,7 @@ public class Util {
      */
     private static String getInvocationDebugString(MethodInvocation invocation) {
         Object[] parameters = invocation.getParameters();
-        String formattedParams = null;
-        if (ApplicationConstants.UPDATE_VARIABLE_METHOD.equals(invocation.getMethodName()) && parameters.length == 2) {
-            // name, value
-            Object value = parameters[1];
-            // TODO paintables inside lists/maps get rendered as
-            // components in the debug console
-            String formattedValue = value instanceof ServerConnector ? ((ServerConnector) value).getConnectorId() : String.valueOf(value);
-            formattedParams = parameters[0] + " : " + formattedValue;
-        }
-        if (null == formattedParams) {
-            formattedParams = (null != parameters) ? Arrays.toString(parameters) : null;
-        }
+        String formattedParams = (null != parameters) ? Arrays.toString(parameters) : null;
         return invocation.getInterfaceName() + "." + invocation.getMethodName() + "(" + formattedParams + ")";
     }
 

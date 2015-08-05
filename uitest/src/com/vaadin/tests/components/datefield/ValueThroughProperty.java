@@ -20,7 +20,7 @@ public class ValueThroughProperty extends TestBase {
 
     @Override
     protected void setup() {
-        addComponent(new Label("Try to input an invalid value to the DateField, for example \"asdf\".<br />" + "Then try to set DateField's value using the first button. It sets the value " + "correctly (as we can see from the Label) but the client-side is not updated.<br/>" + "Using second button updates value correctly on the client-side too.", ContentMode.XML));
+        addComponent(new Label("Try to input an invalid value to the DateField, for example \"asdf\".<br />" + "Then try to set DateField's value using the first button. It sets the value " + "correctly (as we can see from the Label) but the client-side is not updated.<br/>" + "Using second button updates value correctly on the client-side too.", ContentMode.HTML));
 
         final PopupDateField df = new PopupDateField(dateProperty);
         df.setLocale(new Locale("en", "US"));

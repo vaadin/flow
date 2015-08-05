@@ -89,7 +89,7 @@ public class Flash extends AbstractEmbedded {
     public void setCodebase(String codebase) {
         if (codebase != getState().codebase || (codebase != null && !codebase.equals(getState().codebase))) {
             getState().codebase = codebase;
-            requestRepaint();
+            markAsDirty();
         }
     }
 
@@ -117,7 +117,7 @@ public class Flash extends AbstractEmbedded {
     public void setCodetype(String codetype) {
         if (codetype != getState().codetype || (codetype != null && !codetype.equals(getState().codetype))) {
             getState().codetype = codetype;
-            requestRepaint();
+            markAsDirty();
         }
     }
 
@@ -147,7 +147,7 @@ public class Flash extends AbstractEmbedded {
     public void setArchive(String archive) {
         if (archive != getState().archive || (archive != null && !archive.equals(getState().archive))) {
             getState().archive = archive;
-            requestRepaint();
+            markAsDirty();
         }
     }
 
@@ -171,7 +171,7 @@ public class Flash extends AbstractEmbedded {
     public void setStandby(String standby) {
         if (standby != getState().standby || (standby != null && !standby.equals(getState().standby))) {
             getState().standby = standby;
-            requestRepaint();
+            markAsDirty();
         }
     }
 
@@ -201,7 +201,7 @@ public class Flash extends AbstractEmbedded {
             getState().embedParams = new HashMap<String, String>();
         }
         getState().embedParams.put(name, value);
-        requestRepaint();
+        markAsDirty();
     }
 
     /**
@@ -226,7 +226,7 @@ public class Flash extends AbstractEmbedded {
             return;
         }
         getState().embedParams.remove(name);
-        requestRepaint();
+        markAsDirty();
     }
 
     @Override

@@ -404,7 +404,7 @@ public class ServerRpcHandler implements Serializable {
         String interfaceName = invocationJson.getString(1);
         String methodName = invocationJson.getString(2);
 
-        if (connectorTracker.getConnector(connectorId) == null && !connectorId.equals(ApplicationConstants.DRAG_AND_DROP_CONNECTOR_ID)) {
+        if (connectorTracker.getConnector(connectorId) == null) {
 
             if (!connectorTracker.connectorWasPresentAsRequestWasSent(connectorId, lastSyncIdSeenByClient)) {
                 getLogger().log(Level.WARNING, "RPC call to " + interfaceName + "." + methodName + " received for connector " + connectorId + " but no such connector could be found. Resynchronizing client.");

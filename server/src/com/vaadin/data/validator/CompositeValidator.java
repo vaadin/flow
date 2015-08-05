@@ -51,17 +51,6 @@ public class CompositeValidator implements Validator {
         OR;
     }
 
-    /**
-     * @deprecated As of 7.0, use {@link CombinationMode#AND} instead    
-     */
-    @Deprecated
-    public static final CombinationMode MODE_AND = CombinationMode.AND;
-    /**
-     * @deprecated As of 7.0, use {@link CombinationMode#OR} instead    
-     */
-    @Deprecated
-    public static final CombinationMode MODE_OR = CombinationMode.OR;
-
     private String errorMessage;
 
     /**
@@ -242,7 +231,7 @@ public class CompositeValidator implements Validator {
             if (validatorType.isAssignableFrom(v.getClass())) {
                 found.add(v);
             }
-            if (v instanceof CompositeValidator && ((CompositeValidator) v).getMode() == MODE_AND) {
+            if (v instanceof CompositeValidator && ((CompositeValidator) v).getMode() == CombinationMode.AND) {
                 final Collection<Validator> c = ((CompositeValidator) v).getSubValidators(validatorType);
                 if (c != null) {
                     found.addAll(c);

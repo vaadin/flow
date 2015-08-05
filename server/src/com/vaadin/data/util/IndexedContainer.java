@@ -46,7 +46,6 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * <li> {@link Container.Ordered}
  * <li> {@link Container.Sortable}
  * <li> {@link Container.Filterable}
- * <li> {@link Cloneable} (deprecated, might be removed in the future)
  * <li>Sends all needed events on content changes.
  * </ul>
  * 
@@ -59,7 +58,7 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
 @SuppressWarnings("serial")
 // item type is really IndexedContainerItem, but using Item not to show it in
 // public API
-public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, Item> implements Container.PropertySetChangeNotifier, Property.ValueChangeNotifier, Container.Sortable, Cloneable, Container.Filterable, Container.SimpleFilterable {
+public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, Item> implements Container.PropertySetChangeNotifier, Property.ValueChangeNotifier, Container.Sortable, Container.Filterable, Container.SimpleFilterable {
 
     /* Internal structure */
 
@@ -483,29 +482,9 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
         super.addPropertySetChangeListener(listener);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addPropertySetChangeListener(com.vaadin.data.Container.PropertySetChangeListener)}
-     **/
-    @Deprecated
-    @Override
-    public void addListener(Container.PropertySetChangeListener listener) {
-        addPropertySetChangeListener(listener);
-    }
-
     @Override
     public void removePropertySetChangeListener(Container.PropertySetChangeListener listener) {
         super.removePropertySetChangeListener(listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removePropertySetChangeListener(com.vaadin.data.Container.PropertySetChangeListener)}
-     **/
-    @Deprecated
-    @Override
-    public void removeListener(Container.PropertySetChangeListener listener) {
-        removePropertySetChangeListener(listener);
     }
 
     /*
@@ -992,52 +971,6 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
     @Override
     public void setItemSorter(ItemSorter itemSorter) {
         super.setItemSorter(itemSorter);
-    }
-
-    /**
-     * Supports cloning of the IndexedContainer cleanly.
-     * 
-     * @throws CloneNotSupportedException
-     *             if an object cannot be cloned. .
-     * 
-     * @deprecated As of 6.6. Cloning support might be removed from
-     *             IndexedContainer in the future
-     */
-    @Deprecated
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-
-        // Creates the clone
-        final IndexedContainer nc = new IndexedContainer();
-
-        // Clone the shallow properties
-        nc.setAllItemIds(getAllItemIds() != null ? (ListSet<Object>) ((ListSet<Object>) getAllItemIds()).clone() : null);
-        nc.setItemSetChangeListeners(getItemSetChangeListeners() != null ? new LinkedList<Container.ItemSetChangeListener>(getItemSetChangeListeners()) : null);
-        nc.propertyIds = propertyIds != null ? (ArrayList<Object>) propertyIds.clone() : null;
-        nc.setPropertySetChangeListeners(getPropertySetChangeListeners() != null ? new LinkedList<Container.PropertySetChangeListener>(getPropertySetChangeListeners()) : null);
-        nc.propertyValueChangeListeners = propertyValueChangeListeners != null ? (LinkedList<Property.ValueChangeListener>) propertyValueChangeListeners.clone() : null;
-        nc.readOnlyProperties = readOnlyProperties != null ? (HashSet<Property<?>>) readOnlyProperties.clone() : null;
-        nc.singlePropertyValueChangeListeners = singlePropertyValueChangeListeners != null ? (Hashtable<Object, Map<Object, List<Property.ValueChangeListener>>>) singlePropertyValueChangeListeners.clone() : null;
-
-        nc.types = types != null ? (Hashtable<Object, Class<?>>) types.clone() : null;
-
-        nc.setFilters((HashSet<Filter>) ((HashSet<Filter>) getFilters()).clone());
-
-        nc.setFilteredItemIds(getFilteredItemIds() == null ? null : (ListSet<Object>) ((ListSet<Object>) getFilteredItemIds()).clone());
-
-        // Clone property-values
-        if (items == null) {
-            nc.items = null;
-        } else {
-            nc.items = new Hashtable<Object, Map<Object, Object>>();
-            for (final Iterator<?> i = items.keySet().iterator(); i.hasNext();) {
-                final Object id = i.next();
-                final Hashtable<Object, Object> it = (Hashtable<Object, Object>) items.get(id);
-                nc.items.put(id, (Map<Object, Object>) it.clone());
-            }
-        }
-
-        return nc;
     }
 
     @Override

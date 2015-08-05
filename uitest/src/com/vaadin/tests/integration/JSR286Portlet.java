@@ -121,7 +121,7 @@ public class JSR286Portlet extends UI {
         tf.setEnabled(!inViewMode);
 
         // Show notification about current mode and state
-        getPage().showNotification(new Notification("Portlet status", "Mode: " + request.getPortletMode() + " State: " + request.getWindowState(), Type.WARNING_MESSAGE));
+        new Notification("Portlet status", "Mode: " + request.getPortletMode() + " State: " + request.getWindowState(), Type.WARNING_MESSAGE).show(getPage());
 
         // Display current user info
         Map<?, ?> uinfo = (Map<?, ?>) request.getAttribute(PortletRequest.USER_INFO);

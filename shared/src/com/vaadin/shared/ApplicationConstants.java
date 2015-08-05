@@ -47,20 +47,12 @@ public class ApplicationConstants implements Serializable {
 
     public static final String UIDL_SECURITY_TOKEN_ID = "Vaadin-Security-Key";
 
-    @Deprecated
-    public static final String UPDATE_VARIABLE_INTERFACE = "v";
-    @Deprecated
-    public static final String UPDATE_VARIABLE_METHOD = "v";
-
     public static final String SERVICE_URL = "serviceUrl";
 
     public static final String SERVICE_URL_PARAMETER_NAME = "pathParameterName";
 
     // Javadocs in ApplicationConfiguration should be updated if this is changed
     public static final String V_RESOURCE_PATH = "v-resourcePath";
-
-    @Deprecated
-    public static final String DRAG_AND_DROP_CONNECTOR_ID = "DD";
 
     /**
      * URL parameter used in UIDL requests to indicate that the full server-side

@@ -1570,17 +1570,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
     public void addRowIdChangeListener(RowIdChangeListener listener) {
         if (queryDelegate instanceof QueryDelegate.RowIdChangeNotifier) {
-            ((QueryDelegate.RowIdChangeNotifier) queryDelegate).addListener(listener);
+            ((QueryDelegate.RowIdChangeNotifier) queryDelegate).addRowIdChangeListener(listener);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addRowIdChangeListener(RowIdChangeListener)}
-     **/
-    @Deprecated
-    public void addListener(RowIdChangeListener listener) {
-        addRowIdChangeListener(listener);
     }
 
     /**
@@ -1590,17 +1581,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
     public void removeRowIdChangeListener(RowIdChangeListener listener) {
         if (queryDelegate instanceof QueryDelegate.RowIdChangeNotifier) {
-            ((QueryDelegate.RowIdChangeNotifier) queryDelegate).removeListener(listener);
+            ((QueryDelegate.RowIdChangeNotifier) queryDelegate).removeRowIdChangeListener(listener);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeRowIdChangeListener(RowIdChangeListener)}
-     **/
-    @Deprecated
-    public void removeListener(RowIdChangeListener listener) {
-        removeRowIdChangeListener(listener);
     }
 
     /**

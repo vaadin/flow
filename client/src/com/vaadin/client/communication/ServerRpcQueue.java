@@ -28,7 +28,6 @@ import com.vaadin.client.metadata.Method;
 import com.vaadin.client.metadata.NoDataException;
 import com.vaadin.client.metadata.Type;
 import com.vaadin.client.metadata.TypeDataStore;
-import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.json.Json;
@@ -219,10 +218,7 @@ public class ServerRpcQueue {
      */
     public boolean showLoadingIndicator() {
         for (MethodInvocation invocation : getAll()) {
-            if (isLegacyVariableChange(invocation)) {
-                // Always show loading indicator for legacy requests
-                return true;
-            } else if (!isJavascriptRpc(invocation)) {
+            if (!isJavascriptRpc(invocation)) {
                 Type type = new Type(invocation.getInterfaceName(), null);
                 Method method = type.getMethod(invocation.getMethodName());
                 if (!TypeDataStore.isNoLoadingIndicator(method)) {
@@ -259,7 +255,7 @@ public class ServerRpcQueue {
             JsonArray paramJson = Json.createArray();
 
             Type[] parameterTypes = null;
-            if (!isLegacyVariableChange(invocation) && !isJavascriptRpc(invocation)) {
+            if (!isJavascriptRpc(invocation)) {
                 try {
                     Type type = new Type(invocation.getInterfaceName(), null);
                     Method method = type.getMethod(invocation.getMethodName());
@@ -309,19 +305,6 @@ public class ServerRpcQueue {
      */
     public static boolean isJavascriptRpc(MethodInvocation invocation) {
         return invocation instanceof JavaScriptMethodInvocation;
-    }
-
-    /**
-     * Checks if the given method invocation represents a Vaadin 6 variable
-     * change
-     * 
-     * @param invocation
-     *            the invocation to check
-     * @return true if the method invocation is a legacy variable change, false
-     *         otherwise
-     */
-    public static boolean isLegacyVariableChange(MethodInvocation invocation) {
-        return ApplicationConstants.UPDATE_VARIABLE_METHOD.equals(invocation.getInterfaceName()) && ApplicationConstants.UPDATE_VARIABLE_METHOD.equals(invocation.getMethodName());
     }
 
 }

@@ -35,23 +35,6 @@ public enum ContentMode {
     /**
      * Content mode, where the label contains HTML.
      */
-    HTML,
+    HTML
 
-    /**
-     * Content mode, where the label contains well-formed or well-balanced XML.
-     * This is handled in the same way as {@link #HTML}.
-     * 
-     * @deprecated Use {@link #HTML} instead
-     */
-    @Deprecated
-    XML,
-
-    /**
-     * Legacy content mode, where the label contains RAW output. This is handled
-     * in exactly the same way as {@link #HTML}.
-     * 
-     * @deprecated Use {@link #HTML} instead
-     */
-    @Deprecated
-    RAW;
 }

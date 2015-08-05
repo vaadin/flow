@@ -377,7 +377,7 @@ public class Label extends AbstractComponent implements Property<String>, Proper
             stringValue = "";
         }
 
-        if (getContentMode() == ContentMode.HTML || getContentMode() == ContentMode.XML) {
+        if (getContentMode() == ContentMode.HTML) {
             return stripTags(stringValue);
         } else {
             return stringValue;

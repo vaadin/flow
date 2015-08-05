@@ -2,7 +2,6 @@ package com.vaadin.tests.components.tree;
 
 import java.util.Date;
 
-import com.vaadin.server.Sizeable;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.tests.util.LoremIpsum;
@@ -41,7 +40,7 @@ public class TreeWithIcons extends TestBase {
 
         HorizontalLayout hlay = new HorizontalLayout();
         hlay.addComponent(t);
-        hlay.setWidth(-1, Sizeable.UNITS_PIXELS);
+        hlay.setWidth(-1, Unit.PIXELS);
 
         Panel p = new Panel();
         p.setSizeUndefined();

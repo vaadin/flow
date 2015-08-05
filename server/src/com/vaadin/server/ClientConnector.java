@@ -154,12 +154,6 @@ public interface ClientConnector extends Connector {
     public ClientConnector getParent();
 
     /**
-     * @deprecated As of 7.0, use {@link #markAsDirty()} instead
-     */
-    @Deprecated
-    public void requestRepaint();
-
-    /**
      * Marks that this connector's state might have changed. When the framework
      * is about to send new data to the client-side, it will run
      * {@link #beforeClientResponse(boolean)} followed by {@link #encodeState()}
@@ -169,12 +163,6 @@ public interface ClientConnector extends Connector {
      * @since 7.0.0
      */
     public void markAsDirty();
-
-    /**
-     * @deprecated As of 7.0, use {@link #markAsDirtyRecursive()} instead
-     */
-    @Deprecated
-    public void requestRepaintAll();
 
     /**
      * Causes this connector and all connectors below it to be marked as dirty.

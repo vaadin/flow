@@ -135,7 +135,7 @@ public class TabSheet extends AbstractComponentContainer implements Focusable, F
         registerRpc(focusBlurRpc);
 
         // expand horizontally by default
-        setWidth(100, UNITS_PERCENTAGE);
+        setWidth(100, Unit.PERCENTAGE);
         setCloseHandler(new CloseHandler() {
 
             @Override

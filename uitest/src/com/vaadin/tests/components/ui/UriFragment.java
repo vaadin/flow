@@ -17,7 +17,7 @@ public class UriFragment extends AbstractTestUI {
         fragmentLabel.setId("fragmentLabel");
         addComponent(fragmentLabel);
         updateLabel();
-        getPage().addListener(new Page.UriFragmentChangedListener() {
+        getPage().addUriFragmentChangedListener(new Page.UriFragmentChangedListener() {
             @Override
             public void uriFragmentChanged(UriFragmentChangedEvent event) {
                 updateLabel();

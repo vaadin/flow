@@ -184,11 +184,6 @@ public class VaadinServletService extends VaadinService {
         return (!ServletPortletHelper.isAppRequest(request) && !ServletUIInitHandler.isUIInitRequest(request) && !ServletPortletHelper.isFileUploadRequest(request) && !ServletPortletHelper.isHeartbeatRequest(request) && !ServletPortletHelper.isPublishedFileRequest(request) && !ServletPortletHelper.isUIDLRequest(request) && !ServletPortletHelper.isPushRequest(request));
     }
 
-    @Override
-    protected URL getApplicationUrl(VaadinRequest request) throws MalformedURLException {
-        return getServlet().getApplicationUrl((VaadinServletRequest) request);
-    }
-
     public static HttpServletRequest getCurrentServletRequest() {
         VaadinRequest currentRequest = VaadinService.getCurrentRequest();
         if (currentRequest instanceof VaadinServletRequest) {
