@@ -21,7 +21,7 @@ import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Grid;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
 
 /**
@@ -45,8 +45,8 @@ public class BaseLayoutForSpacingMargin extends BaseLayoutTestUI {
     }
 
     private void buildLayout() {
-        Grid t1 = getTestGrid();
-        Grid t2 = getTestGrid();
+        Component t1 = getTestGrid();
+        Component t2 = getTestGrid();
         t1.setSizeFull();
         t2.setSizeFull();
         l2.addComponent(t1);

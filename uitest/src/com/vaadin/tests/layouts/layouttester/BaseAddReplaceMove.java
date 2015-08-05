@@ -22,9 +22,9 @@ import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.NativeButton;
 import com.vaadin.ui.TextField;
 
 /**
@@ -58,7 +58,7 @@ public class BaseAddReplaceMove extends BaseLayoutTestUI {
 
         final AbstractComponent c1 = new Label("<b>LABEL</b>", ContentMode.HTML);
         final AbstractComponent c2 = new Label("<b>LABEL</b>", ContentMode.HTML);
-        final AbstractComponent c3 = new Grid("Grid");
+        final AbstractComponent c3 = new NativeButton("Grid");
         c3.setHeight("100px");
         c3.setWidth("100%");
 

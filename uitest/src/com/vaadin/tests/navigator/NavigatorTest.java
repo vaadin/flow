@@ -11,10 +11,10 @@ import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.util.Log;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Grid;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.RichTextArea;
+import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
@@ -27,21 +27,22 @@ public class NavigatorTest extends UI {
 
     private Navigator navi;
 
-    class ListView extends Grid implements View {
+    class ListView extends TextArea implements View {
 
         public ListView() {
-            addColumn("name", String.class);
-            addColumn("value", String.class);
+            setCaption("FOO");
         }
 
         @Override
         public void enter(ViewChangeEvent event) {
             String params = event.getParameters();
             log.log("Navigated to ListView " + (params.isEmpty() ? "without params" : "with params " + params));
-            getContainerDataSource().removeAllItems();
+            String val = "";
             for (String arg : params.split(",")) {
-                addRow((Object[]) arg.split("=|$", 2));
+                String[] o = arg.split("=|$", 2);
+                val += o[0] + ": " + o[1] + "\n";
             }
+            setValue(val);
         }
     }
 

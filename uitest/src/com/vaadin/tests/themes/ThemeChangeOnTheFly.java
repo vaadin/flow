@@ -19,11 +19,9 @@ import com.vaadin.annotations.Theme;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUIWithLog;
-import com.vaadin.tests.util.PersonContainer;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Grid;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
@@ -61,11 +59,6 @@ public class ThemeChangeOnTheFly extends AbstractTestUIWithLog {
             gl.addComponent(b);
         }
 
-        Grid t = new Grid();
-        PersonContainer pc = PersonContainer.createWithTestData();
-        pc.addNestedContainerBean("address");
-        t.setContainerDataSource(pc);
-        gl.addComponent(t, 0, 3, 1, 3);
         gl.setRowExpandRatio(3, 1);
 
         gl.setWidth("500px");

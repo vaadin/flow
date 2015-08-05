@@ -19,7 +19,6 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Grid;
 
 /**
  *
@@ -62,8 +61,9 @@ public class BaseLayoutExpand extends BaseLayoutTestUI {
                 });
             }
         }
-        Grid t1 = getTestGrid();
-        Grid t2 = getTestGrid();
+        AbstractComponent t1 = getTestGrid();
+        AbstractComponent t2 = getTestGrid();
+
         t1.setSizeFull();
         t2.setSizeFull();
         l2.addComponent(t1);

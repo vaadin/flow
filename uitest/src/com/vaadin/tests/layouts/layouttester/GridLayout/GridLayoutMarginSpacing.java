@@ -17,10 +17,10 @@ package com.vaadin.tests.layouts.layouttester.GridLayout;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Grid;
 import com.vaadin.ui.Label;
 
 /**
@@ -37,8 +37,8 @@ public class GridLayoutMarginSpacing extends GridBaseLayoutTestUI {
     }
 
     private void buildLayout() {
-        Grid t1 = getTestGrid();
-        Grid t2 = getTestGrid();
+        AbstractComponent t1 = getTestGrid();
+        AbstractComponent t2 = getTestGrid();
         t1.setSizeFull();
         t2.setSizeFull();
 
