@@ -30,9 +30,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.server.ClientConnector.DetachEvent;
-import com.vaadin.server.ClientConnector.DetachListener;
 import com.vaadin.server.communication.UIInitHandler;
+import com.vaadin.ui.Component.DetachEvent;
+import com.vaadin.ui.Component.DetachListener;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;

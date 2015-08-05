@@ -17,6 +17,7 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Locale;
 
 import org.jsoup.nodes.Element;
@@ -25,10 +26,12 @@ import com.vaadin.event.ConnectorEvent;
 import com.vaadin.event.ConnectorEventListener;
 import com.vaadin.event.FieldEvents;
 import com.vaadin.server.ClientConnector;
+import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.server.Resource;
 import com.vaadin.server.Sizeable;
 import com.vaadin.ui.declarative.DesignContext;
+import com.vaadin.util.ReflectTools;
 
 /**
  * {@code Component} is the top-level interface that is and must be implemented
@@ -573,8 +576,15 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
     public UI getUI();
 
     /**
-     * {@inheritDoc}
-     * 
+     * Notifies the component that it is connected to a VaadinSession (and
+     * therefore also to a UI).
+     * <p>
+     * The caller of this method is {@link #setParent(ClientConnector)} if the
+     * parent is itself already attached to the session. If not, the parent will
+     * call the {@link #attach()} for all its children when it is attached to
+     * the session. This method is always called before the connector's data is
+     * sent to the client-side for the first time.
+     * </p>
      * <p>
      * Reimplementing the {@code attach()} method is useful for tasks that need
      * to get a reference to the parent, window, or application object with the
@@ -621,8 +631,19 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * }
      * </pre>
      */
-    @Override
     public void attach();
+
+    /**
+     * Notifies the connector that it is detached from its VaadinSession.
+     * 
+     * <p>
+     * The caller of this method is {@link #setParent(ClientConnector)} if the
+     * parent is in the session. When the parent is detached from the session it
+     * is its responsibility to call {@link #detach()} for each of its children.
+     * 
+     * </p>
+     */
+    public void detach();
 
     /**
      * Gets the locale of the component.
@@ -1075,4 +1096,86 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
 
     }
 
+    /**
+     * Event fired after a connector is attached to the application.
+     */
+    public static class AttachEvent extends ConnectorEvent {
+        public static final String ATTACH_EVENT_IDENTIFIER = "clientConnectorAttach";
+
+        public AttachEvent(ClientConnector source) {
+            super(source);
+        }
+    }
+
+    /**
+     * Interface for listening {@link DetachEvent connector detach events}.
+     * 
+     */
+    public static interface AttachListener extends ConnectorEventListener {
+        public static final Method attachMethod = ReflectTools.findMethod(AttachListener.class, "attach", AttachEvent.class);
+
+        /**
+         * Called when a AttachListener is notified of a AttachEvent.
+         * 
+         * @param event
+         *            The attach event that was fired.
+         */
+        public void attach(AttachEvent event);
+    }
+
+    /**
+     * Event fired before a connector is detached from the application.
+     */
+    public static class DetachEvent extends ConnectorEvent {
+        public static final String DETACH_EVENT_IDENTIFIER = "clientConnectorDetach";
+
+        public DetachEvent(ClientConnector source) {
+            super(source);
+        }
+    }
+
+    /**
+     * Interface for listening {@link DetachEvent connector detach events}.
+     * 
+     */
+    public static interface DetachListener extends ConnectorEventListener {
+        public static final Method detachMethod = ReflectTools.findMethod(DetachListener.class, "detach", DetachEvent.class);
+
+        /**
+         * Called when a DetachListener is notified of a DetachEvent.
+         * 
+         * @param event
+         *            The detach event that was fired.
+         */
+        public void detach(DetachEvent event);
+    }
+
+    public void addAttachListener(AttachListener listener);
+
+    public void removeAttachListener(AttachListener listener);
+
+    public void addDetachListener(DetachListener listener);
+
+    public void removeDetachListener(DetachListener listener);
+
+    /**
+     * Gets the error handler for the connector.
+     * 
+     * The error handler is dispatched whenever there is an error processing the
+     * data coming from the client to this connector.
+     * 
+     * @return The error handler or null if not set
+     */
+    public ErrorHandler getErrorHandler();
+
+    /**
+     * Sets the error handler for the connector.
+     * 
+     * The error handler is dispatched whenever there is an error processing the
+     * data coming from the client for this connector.
+     * 
+     * @param errorHandler
+     *            The error handler for this connector
+     */
+    public void setErrorHandler(ErrorHandler errorHandler);
 }

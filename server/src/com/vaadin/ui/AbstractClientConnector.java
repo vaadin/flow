@@ -39,7 +39,6 @@ import com.vaadin.server.ClientConnector;
 import com.vaadin.server.ClientMethodInvocation;
 import com.vaadin.server.ConnectorResource;
 import com.vaadin.server.DownloadStream;
-import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.Resource;
 import com.vaadin.server.ResourceReference;
@@ -48,10 +47,6 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.server.ClientConnector.AttachEvent;
-import com.vaadin.server.ClientConnector.AttachListener;
-import com.vaadin.server.ClientConnector.DetachEvent;
-import com.vaadin.server.ClientConnector.DetachListener;
 import com.vaadin.shared.communication.ClientRpc;
 import com.vaadin.shared.communication.ServerRpc;
 import com.vaadin.shared.communication.SharedState;
@@ -99,29 +94,7 @@ public abstract class AbstractClientConnector implements ClientConnector, Method
      */
     private EventRouter eventRouter = null;
 
-    private ErrorHandler errorHandler = null;
-
     private static final ConcurrentHashMap<Class<? extends AbstractClientConnector>, Class<? extends SharedState>> stateTypeCache = new ConcurrentHashMap<Class<? extends AbstractClientConnector>, Class<? extends SharedState>>();
-
-    @Override
-    public void addAttachListener(AttachListener listener) {
-        addListener(AttachEvent.ATTACH_EVENT_IDENTIFIER, AttachEvent.class, listener, AttachListener.attachMethod);
-    }
-
-    @Override
-    public void removeAttachListener(AttachListener listener) {
-        removeListener(AttachEvent.ATTACH_EVENT_IDENTIFIER, AttachEvent.class, listener);
-    }
-
-    @Override
-    public void addDetachListener(DetachListener listener) {
-        addListener(DetachEvent.DETACH_EVENT_IDENTIFIER, DetachEvent.class, listener, DetachListener.detachMethod);
-    }
-
-    @Override
-    public void removeDetachListener(DetachListener listener) {
-        removeListener(DetachEvent.DETACH_EVENT_IDENTIFIER, DetachEvent.class, listener);
-    }
 
     /* Documentation copied from interface */
     @Override
@@ -464,7 +437,7 @@ public abstract class AbstractClientConnector implements ClientConnector, Method
      *            the connector to get children for
      * @return an Iterable giving all child connectors.
      */
-    public static Iterable<? extends ClientConnector> getAllChildrenIterable(final ClientConnector connector) {
+    public static Iterable<? extends Component> getAllChildrenIterable(final ClientConnector connector) {
 
         boolean hasComponents = connector instanceof HasComponents;
         if (!hasComponents) {
@@ -479,11 +452,11 @@ public abstract class AbstractClientConnector implements ClientConnector, Method
 
         // combine the iterators of extensions and components to a new iterable.
         final Iterator<Component> componentsIterator = ((HasComponents) connector).iterator();
-        Iterable<? extends ClientConnector> combinedIterable = new Iterable<ClientConnector>() {
+        Iterable<Component> combinedIterable = new Iterable<Component>() {
 
             @Override
-            public Iterator<ClientConnector> iterator() {
-                return new Iterator<ClientConnector>() {
+            public Iterator<Component> iterator() {
+                return new Iterator<Component>() {
 
                     @Override
                     public boolean hasNext() {
@@ -491,7 +464,7 @@ public abstract class AbstractClientConnector implements ClientConnector, Method
                     }
 
                     @Override
-                    public ClientConnector next() {
+                    public Component next() {
                         if (componentsIterator.hasNext()) {
                             return componentsIterator.next();
                         }
@@ -517,38 +490,6 @@ public abstract class AbstractClientConnector implements ClientConnector, Method
     @Override
     public boolean isAttached() {
         return getSession() != null;
-    }
-
-    @Override
-    public void attach() {
-        markAsDirty();
-
-        getUI().getConnectorTracker().registerConnector(this);
-
-        fireEvent(new AttachEvent(this));
-
-        for (ClientConnector connector : getAllChildrenIterable(this)) {
-            connector.attach();
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * <p>
-     * The {@link #getSession()} and {@link #getUI()} methods might return
-     * <code>null</code> after this method is called.
-     * </p>
-     */
-    @Override
-    public void detach() {
-        for (ClientConnector connector : getAllChildrenIterable(this)) {
-            connector.detach();
-        }
-
-        fireEvent(new DetachEvent(this));
-
-        getUI().getConnectorTracker().unregisterConnector(this);
     }
 
     @Override
@@ -670,7 +611,7 @@ public abstract class AbstractClientConnector implements ClientConnector, Method
     }
 
     /**
-     * Checks if the given {@link Event} type is listened for this component.
+     * Checks if the given event type is listened for this component.
      * 
      * @param eventType
      *            the event type to be checked
@@ -825,27 +766,6 @@ public abstract class AbstractClientConnector implements ClientConnector, Method
         if (eventRouter != null) {
             eventRouter.fireEvent(event);
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.server.ClientConnector#getErrorHandler()
-     */
-    @Override
-    public ErrorHandler getErrorHandler() {
-        return errorHandler;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.server.ClientConnector#setErrorHandler(com.vaadin.server.
-     * ErrorHandler)
-     */
-    @Override
-    public void setErrorHandler(ErrorHandler errorHandler) {
-        this.errorHandler = errorHandler;
     }
 
     /*

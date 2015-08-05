@@ -16,8 +16,8 @@
 
 package com.vaadin.tests.minitutorials.v7b2;
 
-import com.vaadin.server.ClientConnector.DetachListener;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.Component.DetachListener;
 import com.vaadin.ui.UI;
 
 public class CleanupUI extends UI implements DetachListener {

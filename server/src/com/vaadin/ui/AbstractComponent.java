@@ -33,7 +33,9 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 
+import com.vaadin.event.MethodEventSource;
 import com.vaadin.server.AbstractErrorMessage.ContentMode;
+import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.server.ErrorMessage.ErrorLevel;
 import com.vaadin.server.Resource;
@@ -58,7 +60,7 @@ import com.vaadin.util.ReflectTools;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public abstract class AbstractComponent extends AbstractClientConnector implements Component {
+public abstract class AbstractComponent extends AbstractClientConnector implements Component, MethodEventSource {
 
     /* Private members */
 
@@ -93,6 +95,7 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
     private boolean visible = true;
 
     private HasComponents parent;
+    private ErrorHandler errorHandler = null;
 
     protected static final String DESIGN_ATTR_PLAIN_TEXT = "plain-text";
 
@@ -551,14 +554,18 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         getState().readOnly = readOnly;
     }
 
-    /*
-     * Notify the component that it's attached to a window. Don't add a JavaDoc
-     * comment here, we use the default documentation from implemented
-     * interface.
-     */
     @Override
     public void attach() {
-        super.attach();
+        markAsDirty();
+
+        getUI().getConnectorTracker().registerConnector(this);
+
+        fireEvent(new AttachEvent(this));
+
+        for (Component component : getAllChildrenIterable(this)) {
+            component.attach();
+        }
+
         if (delayedFocus) {
             focus();
         }
@@ -566,6 +573,25 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
             getUI().getLocaleService().addLocale(locale);
         }
 
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * <p>
+     * The {@link #getSession()} and {@link #getUI()} methods might return
+     * <code>null</code> after this method is called.
+     * </p>
+     */
+    @Override
+    public void detach() {
+        for (Component component : getAllChildrenIterable(this)) {
+            component.detach();
+        }
+
+        fireEvent(new DetachEvent(this));
+
+        getUI().getConnectorTracker().unregisterConnector(this);
     }
 
     /**
@@ -1128,6 +1154,47 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
             }
         }
         return false;
+    }
+
+    @Override
+    public void addAttachListener(AttachListener listener) {
+        addListener(AttachEvent.ATTACH_EVENT_IDENTIFIER, AttachEvent.class, listener, AttachListener.attachMethod);
+    }
+
+    @Override
+    public void removeAttachListener(AttachListener listener) {
+        removeListener(AttachEvent.ATTACH_EVENT_IDENTIFIER, AttachEvent.class, listener);
+    }
+
+    @Override
+    public void addDetachListener(DetachListener listener) {
+        addListener(DetachEvent.DETACH_EVENT_IDENTIFIER, DetachEvent.class, listener, DetachListener.detachMethod);
+    }
+
+    @Override
+    public void removeDetachListener(DetachListener listener) {
+        removeListener(DetachEvent.DETACH_EVENT_IDENTIFIER, DetachEvent.class, listener);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.vaadin.server.ClientConnector#getErrorHandler()
+     */
+    @Override
+    public ErrorHandler getErrorHandler() {
+        return errorHandler;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.vaadin.server.ClientConnector#setErrorHandler(com.vaadin.server.
+     * ErrorHandler)
+     */
+    @Override
+    public void setErrorHandler(ErrorHandler errorHandler) {
+        this.errorHandler = errorHandler;
     }
 
     private static final Logger getLogger() {

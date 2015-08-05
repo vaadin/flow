@@ -18,6 +18,8 @@ package com.vaadin.server;
 import java.io.Serializable;
 
 import com.vaadin.shared.Connector;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
 
 /**
@@ -62,13 +64,14 @@ public class ErrorEvent implements Serializable {
      * @return An ErrorHandler for the connector
      */
     public static ErrorHandler findErrorHandler(ClientConnector connector) {
-        if (connector != null) {
-            ErrorHandler errorHandler = connector.getErrorHandler();
+        if (connector != null && connector instanceof Component) {
+            Component component = (Component) connector;
+            ErrorHandler errorHandler = component.getErrorHandler();
             if (errorHandler != null) {
                 return errorHandler;
             }
 
-            ClientConnector parent = connector.getParent();
+            HasComponents parent = component.getParent();
             if (parent != null) {
                 return findErrorHandler(parent);
             }
