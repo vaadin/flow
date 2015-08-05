@@ -133,9 +133,9 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
         @Override
         public void execute(T c, Boolean value, Object data) {
             if (value) {
-                c.addListener((ComponentAttachListener) AbstractComponentContainerTest.this);
+                c.addComponentAttachListener(AbstractComponentContainerTest.this);
             } else {
-                c.removeListener((ComponentAttachListener) AbstractComponentContainerTest.this);
+                c.removeComponentAttachListener(AbstractComponentContainerTest.this);
             }
         }
     };
@@ -145,9 +145,9 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
         @Override
         public void execute(T c, Boolean value, Object data) {
             if (value) {
-                c.addListener((ComponentDetachListener) AbstractComponentContainerTest.this);
+                c.addComponentDetachListener(AbstractComponentContainerTest.this);
             } else {
-                c.removeListener((ComponentDetachListener) AbstractComponentContainerTest.this);
+                c.removeComponentDetachListener(AbstractComponentContainerTest.this);
             }
         }
     };
@@ -215,7 +215,7 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
     }
 
     protected Component getComponentAtIndex(T container, int value) {
-        Iterator<Component> iter = container.getComponentIterator();
+        Iterator<Component> iter = container.iterator();
         for (int i = 0; i < value; i++) {
             iter.next();
         }

@@ -130,22 +130,6 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         return getState(false).id;
     }
 
-    /**
-     * @deprecated As of 7.0. Use {@link #setId(String)}
-     */
-    @Deprecated
-    public void setDebugId(String id) {
-        setId(id);
-    }
-
-    /**
-     * @deprecated As of 7.0. Use {@link #getId()}
-     */
-    @Deprecated
-    public String getDebugId() {
-        return getId();
-    }
-
     /*
      * Gets the component's style. Don't add a JavaDoc comment here, we use the
      * default documentation from implemented interface.
@@ -771,7 +755,11 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         }
         this.height = height;
         heightUnit = unit;
-        markAsDirty();
+        if (height < 0) {
+            getState().height = null;
+        } else {
+            getState().height = height + unit.toString();
+        }
         // ComponentSizeValidator.setHeightLocation(this);
     }
 
@@ -829,7 +817,11 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         }
         this.width = width;
         widthUnit = unit;
-        markAsDirty();
+        if (width < 0) {
+            getState().width = null;
+        } else {
+            getState().width = width + unit.toString();
+        }
         // ComponentSizeValidator.setWidthLocation(this);
     }
 

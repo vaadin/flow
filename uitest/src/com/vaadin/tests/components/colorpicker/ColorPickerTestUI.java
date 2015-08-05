@@ -278,7 +278,7 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
         HorizontalLayout layout1 = createHorizontalLayout();
 
         colorpicker1 = new ColorPicker("Foreground", foregroundColor);
-        colorpicker1.setHtmlContentAllowed(true);
+        colorpicker1.setCaptionAsHtml(true);
         colorpicker1.addColorChangeListener(this);
         colorpicker1.setId("colorpicker1");
         layout1.addComponent(colorpicker1);

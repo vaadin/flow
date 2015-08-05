@@ -28,7 +28,7 @@ public class CheckBoxNullValue extends TestBase {
 
         final Button button = new Button("Validate");
         addComponent(button);
-        button.addListener(new Button.ClickListener() {
+        button.addClickListener(new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 checkbox.setComponentError(null);

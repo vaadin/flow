@@ -505,37 +505,6 @@ public abstract class AbstractColorPicker extends AbstractComponent implements C
         getState().popupVisible = open;
     }
 
-    /**
-     * Set whether the caption text is rendered as HTML or not. You might need
-     * to re-theme component to allow higher content than the original text
-     * style.
-     * 
-     * If set to true, the captions are passed to the browser as html and the
-     * developer is responsible for ensuring no harmful html is used. If set to
-     * false, the content is passed to the browser as plain text.
-     * 
-     * @param htmlContentAllowed
-     *            <code>true</code> if caption is rendered as HTML,
-     *            <code>false</code> otherwise
-     * @deprecated as of , use {@link #setCaptionAsHtml(boolean)} instead
-     */
-    @Deprecated
-    public void setHtmlContentAllowed(boolean htmlContentAllowed) {
-        setCaptionAsHtml(htmlContentAllowed);
-    }
-
-    /**
-     * Return HTML rendering setting
-     * 
-     * @return <code>true</code> if the caption text is to be rendered as HTML,
-     *         <code>false</code> otherwise
-     * @deprecated as of , use {@link #isCaptionAsHtml()} instead
-     */
-    @Deprecated
-    public boolean isHtmlContentAllowed() {
-        return isCaptionAsHtml();
-    }
-
     @Override
     public void readDesign(Element design, DesignContext designContext) {
         super.readDesign(design, designContext);

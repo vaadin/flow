@@ -32,7 +32,7 @@ public class WindowMaximizeRestoreTest extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         Button addButton = new Button("Add new Window");
-        addButton.addListener(addListener);
+        addButton.addClickListener(addListener);
         addComponent(addButton);
 
         addWindowAgain = new ComboBox("Add Window Again");

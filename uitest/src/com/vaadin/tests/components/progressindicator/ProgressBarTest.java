@@ -22,7 +22,6 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.ProgressBar;
-import com.vaadin.ui.ProgressIndicator;
 
 public class ProgressBarTest extends AbstractTestUI {
 
@@ -62,13 +61,6 @@ public class ProgressBarTest extends AbstractTestUI {
             @Override
             public void buttonClick(ClickEvent event) {
                 useComponent(new ProgressBar());
-            }
-        }));
-
-        addComponent(new Button("Use ProgressIndicator", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                useComponent(new ProgressIndicator());
             }
         }));
 

@@ -680,15 +680,6 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addExpandListener(ExpandListener)}
-     **/
-    @Deprecated
-    public void addListener(ExpandListener listener) {
-        addExpandListener(listener);
-    }
-
-    /**
      * Removes the expand listener.
      * 
      * @param listener
@@ -696,15 +687,6 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      */
     public void removeExpandListener(ExpandListener listener) {
         removeListener(ExpandEvent.class, listener, ExpandListener.EXPAND_METHOD);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeExpandListener(ExpandListener)}
-     **/
-    @Deprecated
-    public void removeListener(ExpandListener listener) {
-        removeExpandListener(listener);
     }
 
     /**
@@ -781,15 +763,6 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addCollapseListener(CollapseListener)}
-     **/
-    @Deprecated
-    public void addListener(CollapseListener listener) {
-        addCollapseListener(listener);
-    }
-
-    /**
      * Removes the collapse listener.
      * 
      * @param listener
@@ -797,15 +770,6 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      */
     public void removeCollapseListener(CollapseListener listener) {
         removeListener(CollapseEvent.class, listener, CollapseListener.COLLAPSE_METHOD);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeCollapseListener(CollapseListener)}
-     **/
-    @Deprecated
-    public void removeListener(CollapseListener listener) {
-        removeCollapseListener(listener);
     }
 
     /**
@@ -896,29 +860,9 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
         addListener(TreeConstants.ITEM_CLICK_EVENT_ID, ItemClickEvent.class, listener, ItemClickEvent.ITEM_CLICK_METHOD);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addItemClickListener(ItemClickListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(ItemClickListener listener) {
-        addItemClickListener(listener);
-    }
-
     @Override
     public void removeItemClickListener(ItemClickListener listener) {
         removeListener(TreeConstants.ITEM_CLICK_EVENT_ID, ItemClickEvent.class, listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeItemClickListener(ItemClickListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(ItemClickListener listener) {
-        removeItemClickListener(listener);
     }
 
     /**

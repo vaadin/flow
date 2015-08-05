@@ -62,13 +62,6 @@ public interface FieldEvents {
         public void addFocusListener(FocusListener listener);
 
         /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addFocusListener(FocusListener)}
-         **/
-        @Deprecated
-        public void addListener(FocusListener listener);
-
-        /**
          * Removes a <code>FocusListener</code> from the Component.
          * 
          * @param listener
@@ -76,13 +69,6 @@ public interface FieldEvents {
          * @since 6.2
          */
         public void removeFocusListener(FocusListener listener);
-
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removeFocusListener(FocusListener)}
-         **/
-        @Deprecated
-        public void removeListener(FocusListener listener);
     }
 
     /**
@@ -114,13 +100,6 @@ public interface FieldEvents {
         public void addBlurListener(BlurListener listener);
 
         /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addBlurListener(BlurListener)}
-         **/
-        @Deprecated
-        public void addListener(BlurListener listener);
-
-        /**
          * Removes a <code>BlurListener</code> from the Component.
          * 
          * @param listener
@@ -128,13 +107,6 @@ public interface FieldEvents {
          * @since 6.2
          */
         public void removeBlurListener(BlurListener listener);
-
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removeBlurListener(BlurListener)}
-         **/
-        @Deprecated
-        public void removeListener(BlurListener listener);
     }
 
     /**
@@ -285,21 +257,8 @@ public interface FieldEvents {
     public interface TextChangeNotifier extends Serializable {
         public void addTextChangeListener(TextChangeListener listener);
 
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addTextChangeListener(TextChangeListener)}
-         **/
-        @Deprecated
-        public void addListener(TextChangeListener listener);
-
         public void removeTextChangeListener(TextChangeListener listener);
 
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removeTextChangeListener(TextChangeListener)}
-         **/
-        @Deprecated
-        public void removeListener(TextChangeListener listener);
     }
 
     public static abstract class FocusAndBlurServerRpcImpl implements FocusAndBlurServerRpc {

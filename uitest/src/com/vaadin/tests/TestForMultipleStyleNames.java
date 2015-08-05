@@ -62,7 +62,7 @@ public class TestForMultipleStyleNames extends CustomComponent implements ValueC
         styleNames2.add("italic");
 
         s.setContainerDataSource(new IndexedContainer(styleNames2));
-        s.addListener(this);
+        s.addValueChangeListener(this);
         main.addComponent(s);
 
         l = new Label("Test labele");

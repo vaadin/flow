@@ -65,7 +65,7 @@ public class AbstractComponentDeclarativeTest extends DeclarativeTestBase<Abstra
 
     @Test
     public void testProperties() {
-        String design = "<v-label id=\"testId\" primary-style-name=\"test-style\" " + "caption=\"test-caption\" locale=\"fi_FI\" description=\"test-description\" " + "error=\"<div>test-error</div>\" immediate=\"\"/>";
+        String design = "<v-label id=\"testId\" primary-style-name=\"test-style\" " + "caption=\"test-caption\" locale=\"fi_FI\" " + "error=\"<div>test-error</div>\" immediate=\"\"/>";
         component.setId("testId");
         component.setPrimaryStyleName("test-style");
         component.setCaption("test-caption");

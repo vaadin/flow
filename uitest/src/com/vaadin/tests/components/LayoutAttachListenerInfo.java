@@ -10,6 +10,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.VerticalLayout;
 
@@ -63,7 +64,7 @@ public class LayoutAttachListenerInfo extends TestBase {
                 AbsoluteLayout layout = (AbsoluteLayout) event.getContainer();
                 AbsoluteLayout.ComponentPosition position = layout.getPosition(event.getAttachedComponent());
 
-                showNotification("Attached to " + position.getCSSString(), Notification.TYPE_ERROR_MESSAGE);
+                Notification.show("Attached to " + position.getCSSString(), Type.ERROR_MESSAGE);
             }
         });
         content.addComponent(a);
@@ -86,7 +87,7 @@ public class LayoutAttachListenerInfo extends TestBase {
             @Override
             public void componentAttachedToContainer(ComponentAttachEvent event) {
                 VerticalLayout layout = (VerticalLayout) event.getContainer();
-                showNotification("Attached to index " + layout.getComponentIndex(event.getAttachedComponent()), Notification.TYPE_ERROR_MESSAGE);
+                Notification.show("Attached to index " + layout.getComponentIndex(event.getAttachedComponent()), Type.ERROR_MESSAGE);
             }
         });
         content.addComponent(v);
@@ -112,7 +113,7 @@ public class LayoutAttachListenerInfo extends TestBase {
             public void componentAttachedToContainer(ComponentAttachEvent event) {
                 GridLayout layout = (GridLayout) event.getContainer();
                 GridLayout.Area area = layout.getComponentArea(event.getAttachedComponent());
-                showNotification("Attached to " + area.getColumn1() + "," + area.getRow1(), Notification.TYPE_ERROR_MESSAGE);
+                Notification.show("Attached to " + area.getColumn1() + "," + area.getRow1(), Type.ERROR_MESSAGE);
             }
         });
 

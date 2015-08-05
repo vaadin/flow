@@ -16,7 +16,7 @@ public class TextChangeTimeoutAfterDetach extends TestBase {
         final TextField field = new TextField();
         field.setTextChangeTimeout(2000);
         field.setTextChangeEventMode(TextChangeEventMode.TIMEOUT);
-        field.addListener(new TextChangeListener() {
+        field.addTextChangeListener(new TextChangeListener() {
             @Override
             public void textChange(TextChangeEvent event) {
                 // Need to add a listener for events to occur

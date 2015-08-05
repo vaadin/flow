@@ -120,13 +120,6 @@ public class ItemClickEvent extends ClickEvent implements Serializable {
         public void addItemClickListener(ItemClickListener listener);
 
         /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addItemClickListener(ItemClickListener)}
-         **/
-        @Deprecated
-        public void addListener(ItemClickListener listener);
-
-        /**
          * Removes an ItemClickListener.
          * 
          * @param listener
@@ -134,12 +127,6 @@ public class ItemClickEvent extends ClickEvent implements Serializable {
          */
         public void removeItemClickListener(ItemClickListener listener);
 
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removeItemClickListener(ItemClickListener)}
-         **/
-        @Deprecated
-        public void removeListener(ItemClickListener listener);
     }
 
 }

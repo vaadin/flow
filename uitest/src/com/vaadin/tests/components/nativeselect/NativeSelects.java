@@ -28,15 +28,6 @@ public class NativeSelects extends AbstractSelectTestCase<NativeSelect> {
         options.put("100", 100);
         options.put("1000", 1000);
 
-        super.createSelectAction("Columns", CATEGORY_DATA_SOURCE, options, "-", columnsAction);
-
     }
 
-    private Command<NativeSelect, Integer> columnsAction = new Command<NativeSelect, Integer>() {
-
-        @Override
-        public void execute(NativeSelect c, Integer value, Object data) {
-            c.setColumns(value);
-        }
-    };
 }

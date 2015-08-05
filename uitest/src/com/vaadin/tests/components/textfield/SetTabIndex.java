@@ -26,7 +26,7 @@ public class SetTabIndex extends TestBase {
         addComponent(field0);
 
         final CheckBox readonly = new CheckBox("Readonly");
-        readonly.addListener(new Property.ValueChangeListener() {
+        readonly.addValueChangeListener(new Property.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 boolean readonly = Boolean.valueOf(event.getProperty().getValue().toString());

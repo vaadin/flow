@@ -32,7 +32,7 @@ public class OrderedLayoutTest extends TestCase {
 
         // Iteration should be in indexed order
         int idx = 0;
-        for (Iterator<Component> i = aol.getComponentIterator(); i.hasNext();) {
+        for (Iterator<Component> i = aol.iterator(); i.hasNext();) {
             Component c = i.next();
             assert (aol.getComponentIndex(c) == idx++);
         }

@@ -35,9 +35,6 @@ import com.vaadin.event.FieldEvents.FocusListener;
 @SuppressWarnings("serial")
 public class NativeSelect extends AbstractSelect implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 
-    // width in characters, mimics TextField
-    private int columns = 0;
-
     FocusAndBlurServerRpcImpl focusBlurRpc = new FocusAndBlurServerRpcImpl(this) {
 
         @Override
@@ -66,46 +63,6 @@ public class NativeSelect extends AbstractSelect implements FieldEvents.BlurNoti
         registerRpc(focusBlurRpc);
     }
 
-    /**
-     * Sets the width of the component so that it can display approximately the
-     * given number of letters.
-     * <p>
-     * Calling {@code setColumns(10);} is equivalent to calling
-     * {@code setWidth("10em");}
-     * </p>
-     * 
-     * @deprecated As of 7.0. "Columns" does not reflect the exact number of
-     *             characters that will be displayed. It is better to use
-     *             setWidth together with "em" to control the width of the
-     *             field.
-     * @param columns
-     *            the number of columns to set.
-     */
-    @Deprecated
-    public void setColumns(int columns) {
-        if (columns < 0) {
-            columns = 0;
-        }
-        if (this.columns != columns) {
-            this.columns = columns;
-            markAsDirty();
-        }
-    }
-
-    /**
-     * Gets the number of columns for the component.
-     * 
-     * @see #setColumns(int)
-     * @deprecated As of 7.0. "Columns" does not reflect the exact number of
-     *             characters that will be displayed. It is better to use
-     *             setWidth together with "em" to control the width of the
-     *             field.
-     */
-    @Deprecated
-    public int getColumns() {
-        return columns;
-    }
-
     @Override
     public void setMultiSelect(boolean multiSelect) throws UnsupportedOperationException {
         if (multiSelect == true) {
@@ -125,29 +82,9 @@ public class NativeSelect extends AbstractSelect implements FieldEvents.BlurNoti
         addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addFocusListener(FocusListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(FocusListener listener) {
-        addFocusListener(listener);
-    }
-
     @Override
     public void removeFocusListener(FocusListener listener) {
         removeListener(FocusEvent.EVENT_ID, FocusEvent.class, listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeFocusListener(FocusListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(FocusListener listener) {
-        removeFocusListener(listener);
     }
 
     @Override
@@ -155,28 +92,9 @@ public class NativeSelect extends AbstractSelect implements FieldEvents.BlurNoti
         addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by {@link #addBlurListener(BlurListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(BlurListener listener) {
-        addBlurListener(listener);
-    }
-
     @Override
     public void removeBlurListener(BlurListener listener) {
         removeListener(BlurEvent.EVENT_ID, BlurEvent.class, listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeBlurListener(BlurListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(BlurListener listener) {
-        removeBlurListener(listener);
     }
 
 }

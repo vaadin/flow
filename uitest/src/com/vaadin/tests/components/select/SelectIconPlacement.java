@@ -2,12 +2,12 @@ package com.vaadin.tests.components.select;
 
 import com.vaadin.server.ThemeResource;
 import com.vaadin.tests.components.TestBase;
-import com.vaadin.ui.Select;
+import com.vaadin.ui.ComboBox;
 
 public class SelectIconPlacement extends TestBase {
     private static final long serialVersionUID = 1L;
 
-    private Select mySelect;
+    private ComboBox mySelect;
 
     @Override
     protected void setup() {
@@ -16,7 +16,7 @@ public class SelectIconPlacement extends TestBase {
             if (width == null) {
                 icon = "bullet.png";
             }
-            mySelect = new Select("Width: " + (width == null ? "auto" : width));
+            mySelect = new ComboBox("Width: " + (width == null ? "auto" : width));
             String bar = "Only item";
             mySelect.addItem(bar);
             mySelect.setItemIcon(bar, new ThemeResource("common/icons/" + icon + "?w=" + width));

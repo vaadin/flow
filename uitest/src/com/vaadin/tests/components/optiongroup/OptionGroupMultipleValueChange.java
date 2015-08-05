@@ -30,7 +30,7 @@ public class OptionGroupMultipleValueChange extends TestBase {
         events.setWidth(null);
         addComponent(events);
 
-        og.addListener(new Property.ValueChangeListener() {
+        og.addValueChangeListener(new Property.ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {

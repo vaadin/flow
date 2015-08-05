@@ -45,7 +45,7 @@ public class CssLayoutCustomCss extends TestBase implements ClickListener {
     private Component createMarginsToggle() {
         final CheckBox cb = new CheckBox("Margins");
 
-        cb.addListener(new ValueChangeListener() {
+        cb.addValueChangeListener(new ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -59,7 +59,7 @@ public class CssLayoutCustomCss extends TestBase implements ClickListener {
     private Button createButton(String string) {
         NativeButton button = new NativeButton(string);
         css.put(button, string);
-        button.addListener(this);
+        button.addClickListener(this);
         return button;
     }
 

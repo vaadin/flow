@@ -55,22 +55,6 @@ public class Embedded extends AbstractComponent {
     public static final int TYPE_OBJECT = 0;
 
     /**
-     * Image types.
-     * 
-     * @deprecated As of 7.0, use the {@link Image} component instead.
-     */
-    @Deprecated
-    public static final int TYPE_IMAGE = 1;
-
-    /**
-     * Browser ("iframe") type.
-     * 
-     * @deprecated As of 7.0, use the {@link BrowserFrame} component instead.
-     */
-    @Deprecated
-    public static final int TYPE_BROWSER = 2;
-
-    /**
      * Type of the object.
      */
     private int type = TYPE_OBJECT;
@@ -388,8 +372,6 @@ public class Embedded extends AbstractComponent {
 
             if (mt.equals("image/svg+xml")) {
                 type = TYPE_OBJECT;
-            } else if ((mt.substring(0, mt.indexOf("/")).equalsIgnoreCase("image"))) {
-                type = TYPE_IMAGE;
             } else {
                 // Keep previous type
             }
@@ -412,7 +394,7 @@ public class Embedded extends AbstractComponent {
      *            the type to set.
      */
     public void setType(int type) {
-        if (type != TYPE_OBJECT && type != TYPE_IMAGE && type != TYPE_BROWSER) {
+        if (type != TYPE_OBJECT) {
             throw new IllegalArgumentException("Unsupported type");
         }
         if (type != this.type) {

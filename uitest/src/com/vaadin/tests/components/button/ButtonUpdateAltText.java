@@ -54,7 +54,7 @@ public class ButtonUpdateAltText extends AbstractTestUI {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
-                if (enable.booleanValue()) {
+                if (enable.getValue()) {
                     btn.setIconAlternateText("alt text");
                 } else {
                     btn.setIconAlternateText("");

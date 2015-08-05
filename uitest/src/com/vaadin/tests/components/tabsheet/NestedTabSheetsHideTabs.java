@@ -18,7 +18,7 @@ public class NestedTabSheetsHideTabs extends TestBase {
         addComponent(new Button("Toggle tabs", new Button.ClickListener() {
             @Override
             public void buttonClick(final ClickEvent event) {
-                main.hideTabs(!main.areTabsHidden());
+                main.setTabsVisible(!main.isTabsVisible());
             }
         }));
         sub = new TabSheet();

@@ -6102,7 +6102,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier, SortNo
      *         <code>false</code> otherwise
      */
     public boolean isEditorBuffered() {
-        return getState().editorBuffered;
+        return getState(false).editorBuffered;
     }
 
     @Override
@@ -6111,20 +6111,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier, SortNo
     }
 
     @Override
-    @Deprecated
-    public void addListener(ItemClickListener listener) {
-        addItemClickListener(listener);
-    }
-
-    @Override
     public void removeItemClickListener(ItemClickListener listener) {
         removeListener(GridConstants.ITEM_CLICK_EVENT_ID, ItemClickEvent.class, listener);
-    }
-
-    @Override
-    @Deprecated
-    public void removeListener(ItemClickListener listener) {
-        removeItemClickListener(listener);
     }
 
     /**

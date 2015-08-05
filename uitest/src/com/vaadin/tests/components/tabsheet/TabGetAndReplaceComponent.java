@@ -26,7 +26,7 @@ public class TabGetAndReplaceComponent extends TestBase {
         Button replace2 = new Button("Replace Content 2", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                Iterator<Component> iter = tabs.getComponentIterator();
+                Iterator<Component> iter = tabs.iterator();
                 iter.next();
 
                 Component content2 = iter.next();

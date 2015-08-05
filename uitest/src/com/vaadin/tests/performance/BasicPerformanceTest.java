@@ -93,19 +93,19 @@ public class BasicPerformanceTest extends UI {
         leftBar.addComponent(new Button("Update all labels", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                Iterator<Component> componentIterator = contentLayout.getComponentIterator();
+                Iterator<Component> componentIterator = contentLayout.iterator();
                 while (componentIterator.hasNext()) {
 
                     Iterator<Component> columHolderIterator;
                     Component child = componentIterator.next();
                     if (child instanceof Panel) {
-                        columHolderIterator = ((ComponentContainer) ((Panel) child).getContent()).getComponentIterator();
+                        columHolderIterator = ((ComponentContainer) ((Panel) child).getContent()).iterator();
                     } else {
-                        columHolderIterator = ((ComponentContainer) child).getComponentIterator();
+                        columHolderIterator = ((ComponentContainer) child).iterator();
                     }
                     while (columHolderIterator.hasNext()) {
                         VerticalLayout column = (VerticalLayout) columHolderIterator.next();
-                        Iterator<Component> columnIterator = column.getComponentIterator();
+                        Iterator<Component> columnIterator = column.iterator();
                         while (columnIterator.hasNext()) {
                             Label label = (Label) columnIterator.next();
                             label.setValue("New value");

@@ -129,26 +129,6 @@ public class DesignResourceConverter implements Converter<String, Resource> {
 
             }
         },
-        @Deprecated
-        FONT {
-            @Override
-            public Resource parse(String value) {
-                // Deprecated, 7.4 syntax is
-                // font://"+FontAwesome.valueOf(foo) eg. "font://AMBULANCE"
-                final String iconName = (value.split("://", 2))[1];
-
-                try {
-                    return FontAwesome.valueOf(iconName);
-                } catch (IllegalArgumentException iae) {
-                    throw new ConversionException("Unknown FontIcon constant: " + iconName, iae);
-                }
-            }
-
-            @Override
-            public String format(Resource value) throws Converter.ConversionException {
-                throw new UnsupportedOperationException("Use " + ResourceConverterByProtocol.FONTICON.toString() + " instead");
-            }
-        },
         FILE {
             @Override
             public Resource parse(String value) {

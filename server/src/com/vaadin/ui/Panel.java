@@ -167,15 +167,6 @@ public class Panel extends AbstractSingleComponentContainer implements Scrollabl
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addClickListener(ClickListener)}
-     **/
-    @Deprecated
-    public void addListener(ClickListener listener) {
-        addClickListener(listener);
-    }
-
-    /**
      * Remove a click listener from the Panel. The listener should earlier have
      * been added using {@link #addListener(ClickListener)}.
      * 
@@ -184,15 +175,6 @@ public class Panel extends AbstractSingleComponentContainer implements Scrollabl
      */
     public void removeClickListener(ClickListener listener) {
         removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeClickListener(ClickListener)}
-     **/
-    @Deprecated
-    public void removeListener(ClickListener listener) {
-        removeClickListener(listener);
     }
 
     /**

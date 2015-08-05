@@ -17,7 +17,6 @@
 package com.vaadin.server;
 
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.shared.communication.PushMode;
@@ -46,12 +45,6 @@ public class DefaultDeploymentConfiguration extends AbstractDeploymentConfigurat
     public static final boolean DEFAULT_CLOSE_IDLE_SESSIONS = false;
 
     /**
-     * Default value for {@link #getLegacyPropertyToStringMode()} =
-     * {@link LegacyProperyToStringMode#WARNING}.
-     */
-    public static final LegacyProperyToStringMode DEFAULT_LEGACY_PROPERTY_TO_STRING = LegacyProperyToStringMode.WARNING;
-
-    /**
      * Default value for {@link #isSyncIdCheckEnabled()} = {@value} .
      * 
      * @since 7.3
@@ -68,7 +61,6 @@ public class DefaultDeploymentConfiguration extends AbstractDeploymentConfigurat
     private boolean closeIdleSessions;
     private PushMode pushMode;
     private final Class<?> systemPropertyBaseClass;
-    private LegacyProperyToStringMode legacyPropertyToStringMode;
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
 
@@ -92,24 +84,8 @@ public class DefaultDeploymentConfiguration extends AbstractDeploymentConfigurat
         checkHeartbeatInterval();
         checkCloseIdleSessions();
         checkPushMode();
-        checkLegacyPropertyToString();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
-    }
-
-    private void checkLegacyPropertyToString() {
-        String param = getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_LEGACY_PROPERTY_TOSTRING, DEFAULT_LEGACY_PROPERTY_TO_STRING.getPropertyString());
-
-        for (LegacyProperyToStringMode mode : LegacyProperyToStringMode.values()) {
-            if (mode.getPropertyString().equals(param)) {
-                legacyPropertyToStringMode = mode;
-                return;
-            }
-        }
-
-        getLogger().log(Level.WARNING, Constants.WARNING_UNKNOWN_LEGACY_PROPERTY_TOSTRING_VALUE, param);
-
-        legacyPropertyToStringMode = DEFAULT_LEGACY_PROPERTY_TO_STRING;
     }
 
     @Override
@@ -340,12 +316,6 @@ public class DefaultDeploymentConfiguration extends AbstractDeploymentConfigurat
 
     private Logger getLogger() {
         return Logger.getLogger(getClass().getName());
-    }
-
-    @Override
-    @Deprecated
-    public LegacyProperyToStringMode getLegacyPropertyToStringMode() {
-        return legacyPropertyToStringMode;
     }
 
 }

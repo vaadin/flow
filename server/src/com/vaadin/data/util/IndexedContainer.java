@@ -522,16 +522,6 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
         propertyValueChangeListeners.add(listener);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addValueChangeListener(com.vaadin.data.Property.ValueChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(Property.ValueChangeListener listener) {
-        addValueChangeListener(listener);
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -543,16 +533,6 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
         if (propertyValueChangeListeners != null) {
             propertyValueChangeListeners.remove(listener);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeValueChangeListener(com.vaadin.data.Property.ValueChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(Property.ValueChangeListener listener) {
-        removeValueChangeListener(listener);
     }
 
     /**
@@ -918,35 +898,6 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
             firePropertyValueChange(this);
         }
 
-        /**
-         * Returns a string representation of this object. The returned string
-         * representation depends on if the legacy Property toString mode is
-         * enabled or disabled.
-         * <p>
-         * If legacy Property toString mode is enabled, returns the value of the
-         * <code>Property</code> converted to a String.
-         * </p>
-         * <p>
-         * If legacy Property toString mode is disabled, the string
-         * representation has no special meaning
-         * </p>
-         * 
-         * @return A string representation of the value value stored in the
-         *         Property or a string representation of the Property object.
-         * @deprecated As of 7.0. To get the property value, use
-         *             {@link #getValue()} instead (and possibly toString on
-         *             that)
-         */
-        @Deprecated
-        @Override
-        public String toString() {
-            if (!LegacyPropertyHelper.isLegacyToStringEnabled()) {
-                return super.toString();
-            } else {
-                return LegacyPropertyHelper.legacyPropertyToString(this);
-            }
-        }
-
         private Logger getLogger() {
             return Logger.getLogger(IndexedContainerProperty.class.getName());
         }
@@ -994,16 +945,6 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
             addSinglePropertyChangeListener(propertyId, itemId, listener);
         }
 
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addValueChangeListener(com.vaadin.data.Property.ValueChangeListener)}
-         **/
-        @Override
-        @Deprecated
-        public void addListener(Property.ValueChangeListener listener) {
-            addValueChangeListener(listener);
-        }
-
         /*
          * (non-Javadoc)
          * 
@@ -1013,16 +954,6 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
         @Override
         public void removeValueChangeListener(Property.ValueChangeListener listener) {
             removeSinglePropertyChangeListener(propertyId, itemId, listener);
-        }
-
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removeValueChangeListener(com.vaadin.data.Property.ValueChangeListener)}
-         **/
-        @Override
-        @Deprecated
-        public void removeListener(Property.ValueChangeListener listener) {
-            removeValueChangeListener(listener);
         }
 
         private IndexedContainer getHost() {

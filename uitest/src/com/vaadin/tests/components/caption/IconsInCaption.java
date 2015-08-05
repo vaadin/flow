@@ -36,7 +36,7 @@ public class IconsInCaption extends TestBase {
         iconTypeSelect.addItem(TYPE_EMBEDDED);
         iconTypeSelect.addItem(TYPE_CAPTION);
         iconTypeSelect.setNullSelectionAllowed(false);
-        iconTypeSelect.addListener(new ValueChangeListener() {
+        iconTypeSelect.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 updateContainer();
@@ -47,7 +47,7 @@ public class IconsInCaption extends TestBase {
         for (Class<? extends ComponentContainer> cc : VaadinClasses.getComponentContainersSupportingUnlimitedNumberOfComponents()) {
             containerSelect.addItem(cc);
         }
-        containerSelect.addListener(new ValueChangeListener() {
+        containerSelect.addValueChangeListener(new ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {

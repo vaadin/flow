@@ -14,7 +14,7 @@ public class PopupDateFieldTextEnabled extends TestBase {
     public void setup() {
         final PopupDateField field = new PopupDateField();
         final CheckBox box = new CheckBox(ENABLED, true);
-        box.addListener(new Property.ValueChangeListener() {
+        box.addValueChangeListener(new Property.ValueChangeListener() {
 
             @Override
             public void valueChange(Property.ValueChangeEvent event) {

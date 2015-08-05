@@ -101,49 +101,6 @@ public abstract class AbstractSelect extends AbstractField<Object> implements Co
     }
 
     /**
-     * @deprecated As of 7.0, use {@link ItemCaptionMode#ID} instead
-     */
-    @Deprecated
-    public static final ItemCaptionMode ITEM_CAPTION_MODE_ID = ItemCaptionMode.ID;
-
-    /**
-     * @deprecated As of 7.0, use {@link ItemCaptionMode#ITEM} instead
-     */
-    @Deprecated
-    public static final ItemCaptionMode ITEM_CAPTION_MODE_ITEM = ItemCaptionMode.ITEM;
-
-    /**
-     * @deprecated As of 7.0, use {@link ItemCaptionMode#INDEX} instead
-     */
-    @Deprecated
-    public static final ItemCaptionMode ITEM_CAPTION_MODE_INDEX = ItemCaptionMode.INDEX;
-
-    /**
-     * @deprecated As of 7.0, use {@link ItemCaptionMode#EXPLICIT_DEFAULTS_ID}
-     *             instead
-     */
-    @Deprecated
-    public static final ItemCaptionMode ITEM_CAPTION_MODE_EXPLICIT_DEFAULTS_ID = ItemCaptionMode.EXPLICIT_DEFAULTS_ID;
-
-    /**
-     * @deprecated As of 7.0, use {@link ItemCaptionMode#EXPLICIT} instead
-     */
-    @Deprecated
-    public static final ItemCaptionMode ITEM_CAPTION_MODE_EXPLICIT = ItemCaptionMode.EXPLICIT;
-
-    /**
-     * @deprecated As of 7.0, use {@link ItemCaptionMode#ICON_ONLY} instead
-     */
-    @Deprecated
-    public static final ItemCaptionMode ITEM_CAPTION_MODE_ICON_ONLY = ItemCaptionMode.ICON_ONLY;
-
-    /**
-     * @deprecated As of 7.0, use {@link ItemCaptionMode#PROPERTY} instead
-     */
-    @Deprecated
-    public static final ItemCaptionMode ITEM_CAPTION_MODE_PROPERTY = ItemCaptionMode.PROPERTY;
-
-    /**
      * Interface for option filtering, used to filter options based on user
      * entered value. The value is matched to the item caption.
      * <code>FilteringMode.OFF</code> (0) turns the filtering off.
@@ -152,22 +109,6 @@ public abstract class AbstractSelect extends AbstractField<Object> implements Co
      * caption.
      */
     public interface Filtering extends Serializable {
-
-        /**
-         * @deprecated As of 7.0, use {@link FilteringMode#OFF} instead
-         */
-        @Deprecated
-        public static final FilteringMode FILTERINGMODE_OFF = FilteringMode.OFF;
-        /**
-         * @deprecated As of 7.0, use {@link FilteringMode#STARTSWITH} instead
-         */
-        @Deprecated
-        public static final FilteringMode FILTERINGMODE_STARTSWITH = FilteringMode.STARTSWITH;
-        /**
-         * @deprecated As of 7.0, use {@link FilteringMode#CONTAINS} instead
-         */
-        @Deprecated
-        public static final FilteringMode FILTERINGMODE_CONTAINS = FilteringMode.CONTAINS;
 
         /**
          * Sets the option filtering mode.
@@ -1147,12 +1088,12 @@ public abstract class AbstractSelect extends AbstractField<Object> implements Co
     public void setItemCaptionPropertyId(Object propertyId) {
         if (propertyId != null) {
             itemCaptionPropertyId = propertyId;
-            setItemCaptionMode(ITEM_CAPTION_MODE_PROPERTY);
+            setItemCaptionMode(ItemCaptionMode.PROPERTY);
             markAsDirty();
         } else {
             itemCaptionPropertyId = null;
-            if (getItemCaptionMode() == ITEM_CAPTION_MODE_PROPERTY) {
-                setItemCaptionMode(ITEM_CAPTION_MODE_EXPLICIT_DEFAULTS_ID);
+            if (getItemCaptionMode() == ItemCaptionMode.PROPERTY) {
+                setItemCaptionMode(ItemCaptionMode.EXPLICIT_DEFAULTS_ID);
             }
             markAsDirty();
         }
@@ -1328,16 +1269,6 @@ public abstract class AbstractSelect extends AbstractField<Object> implements Co
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addPropertySetChangeListener(com.vaadin.data.Container.PropertySetChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(Container.PropertySetChangeListener listener) {
-        addPropertySetChangeListener(listener);
-    }
-
-    /**
      * Removes a previously registered Property set change listener.
      * 
      * @see com.vaadin.data.Container.PropertySetChangeNotifier#removeListener(com.vaadin.data.Container.PropertySetChangeListener)
@@ -1350,16 +1281,6 @@ public abstract class AbstractSelect extends AbstractField<Object> implements Co
                 propertySetEventListeners = null;
             }
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removePropertySetChangeListener(com.vaadin.data.Container.PropertySetChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(Container.PropertySetChangeListener listener) {
-        removePropertySetChangeListener(listener);
     }
 
     /**
@@ -1376,16 +1297,6 @@ public abstract class AbstractSelect extends AbstractField<Object> implements Co
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addItemSetChangeListener(com.vaadin.data.Container.ItemSetChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(Container.ItemSetChangeListener listener) {
-        addItemSetChangeListener(listener);
-    }
-
-    /**
      * Removes the Item set change listener from the object.
      * 
      * @see com.vaadin.data.Container.ItemSetChangeNotifier#removeListener(com.vaadin.data.Container.ItemSetChangeListener)
@@ -1398,16 +1309,6 @@ public abstract class AbstractSelect extends AbstractField<Object> implements Co
                 itemSetEventListeners = null;
             }
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeItemSetChangeListener(com.vaadin.data.Container.ItemSetChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(Container.ItemSetChangeListener listener) {
-        removeItemSetChangeListener(listener);
     }
 
     @Override

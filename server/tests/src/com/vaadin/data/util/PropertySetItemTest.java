@@ -151,14 +151,14 @@ public class PropertySetItemTest extends TestCase {
 
     public void testRemoveNonExistentListener() {
         PropertysetItem item = createPropertySetItem();
-        item.removeListener(propertySetListenerMock);
+        item.removePropertySetChangeListener(propertySetListenerMock);
     }
 
     public void testRemoveListenerTwice() {
         PropertysetItem item = createPropertySetItem();
-        item.addListener(propertySetListenerMock);
-        item.removeListener(propertySetListenerMock);
-        item.removeListener(propertySetListenerMock);
+        item.addPropertySetChangeListener(propertySetListenerMock);
+        item.removePropertySetChangeListener(propertySetListenerMock);
+        item.removePropertySetChangeListener(propertySetListenerMock);
     }
 
     public void testAddPropertyNotification() {
@@ -170,7 +170,7 @@ public class PropertySetItemTest extends TestCase {
         EasyMock.replay(propertySetListenerMock);
 
         // Add listener and add a property -> should end up in listener once
-        item.addListener(propertySetListenerMock);
+        item.addPropertySetChangeListener(propertySetListenerMock);
         item.addItemProperty(ID1, prop1);
 
         // Ensure listener was called once
@@ -178,7 +178,7 @@ public class PropertySetItemTest extends TestCase {
 
         // Remove the listener -> should not end up in listener when adding a
         // property
-        item.removeListener(propertySetListenerMock);
+        item.removePropertySetChangeListener(propertySetListenerMock);
         item.addItemProperty(ID2, prop2);
 
         // Ensure listener still has been called only once
@@ -196,14 +196,14 @@ public class PropertySetItemTest extends TestCase {
         EasyMock.replay(propertySetListenerMock);
 
         // Add listener and add a property -> should end up in listener once
-        item.addListener(propertySetListenerMock);
+        item.addPropertySetChangeListener(propertySetListenerMock);
         item.removeItemProperty(ID1);
 
         // Ensure listener was called once
         EasyMock.verify(propertySetListenerMock);
 
         // Remove the listener -> should not end up in listener
-        item.removeListener(propertySetListenerMock);
+        item.removePropertySetChangeListener(propertySetListenerMock);
         item.removeItemProperty(ID2);
 
         // Ensure listener still has been called only once
@@ -284,12 +284,12 @@ public class PropertySetItemTest extends TestCase {
         PropertysetItem item1 = createPropertySetItem();
         PropertysetItem item2 = createPropertySetItem();
 
-        item1.addListener(propertySetListenerMock);
+        item1.addPropertySetChangeListener(propertySetListenerMock);
 
         Assert.assertFalse(item1.equals(item2));
         Assert.assertFalse(item2.equals(item1));
 
-        item2.addListener(propertySetListenerMock);
+        item2.addPropertySetChangeListener(propertySetListenerMock);
 
         Assert.assertTrue(item1.equals(item2));
         Assert.assertTrue(item2.equals(item1));
@@ -299,15 +299,15 @@ public class PropertySetItemTest extends TestCase {
         PropertysetItem item1 = createPropertySetItem();
         PropertysetItem item2 = createPropertySetItem();
 
-        item1.addListener(propertySetListenerMock);
-        item1.addListener(propertySetListenerMock2);
+        item1.addPropertySetChangeListener(propertySetListenerMock);
+        item1.addPropertySetChangeListener(propertySetListenerMock2);
 
-        item2.addListener(propertySetListenerMock);
+        item2.addPropertySetChangeListener(propertySetListenerMock);
 
         Assert.assertFalse(item1.equals(item2));
         Assert.assertFalse(item2.equals(item1));
 
-        item2.addListener(propertySetListenerMock2);
+        item2.addPropertySetChangeListener(propertySetListenerMock2);
 
         Assert.assertTrue(item1.equals(item2));
         Assert.assertTrue(item2.equals(item1));
@@ -317,8 +317,8 @@ public class PropertySetItemTest extends TestCase {
         PropertysetItem item1 = createPropertySetItem();
         PropertysetItem item2 = createPropertySetItem();
 
-        item1.addListener(propertySetListenerMock);
-        item1.removeListener(propertySetListenerMock);
+        item1.addPropertySetChangeListener(propertySetListenerMock);
+        item1.removePropertySetChangeListener(propertySetListenerMock);
 
         Assert.assertTrue(item1.equals(item2));
         Assert.assertTrue(item2.equals(item1));
@@ -353,10 +353,10 @@ public class PropertySetItemTest extends TestCase {
 
         Assert.assertEquals(item1.hashCode(), item2.hashCode());
 
-        item1.addListener(propertySetListenerMock);
+        item1.addPropertySetChangeListener(propertySetListenerMock);
         // hashCodes can be equal even if items are different
 
-        item2.addListener(propertySetListenerMock);
+        item2.addPropertySetChangeListener(propertySetListenerMock);
         // but here hashCodes must be equal
         Assert.assertEquals(item1.hashCode(), item2.hashCode());
     }
@@ -375,8 +375,8 @@ public class PropertySetItemTest extends TestCase {
         PropertysetItem item1 = createPropertySetItem();
         PropertysetItem item2 = createPropertySetItem();
 
-        item1.addListener(propertySetListenerMock);
-        item1.removeListener(propertySetListenerMock);
+        item1.addPropertySetChangeListener(propertySetListenerMock);
+        item1.removePropertySetChangeListener(propertySetListenerMock);
 
         Assert.assertEquals(item1.hashCode(), item2.hashCode());
     }

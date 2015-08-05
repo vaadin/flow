@@ -19,15 +19,15 @@ package com.vaadin.tests.application;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import com.vaadin.event.UIEvents.PollEvent;
+import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.RequestHandler;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.shared.ui.progressindicator.ProgressIndicatorServerRpc;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Link;
-import com.vaadin.ui.ProgressIndicator;
 
 public class NavigateWithOngoingXHR extends AbstractTestUI {
     private final RequestHandler slowRequestHandler = new RequestHandler() {
@@ -62,23 +62,20 @@ public class NavigateWithOngoingXHR extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new ProgressIndicator() {
-            {
-                registerRpc(new ProgressIndicatorServerRpc() {
-                    @Override
-                    public void poll() {
-                        // System.out.println("Pausing poll request");
-                        try {
-                            // Make the XHR request last longer to make it
-                            // easier to click the link at the right moment.
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        // System.out.println("Continuing poll request");
-                    }
-                });
-                setPollingInterval(3000);
+        setPollInterval(3000);
+        addPollListener(new PollListener() {
+
+            @Override
+            public void poll(PollEvent event) {
+                // System.out.println("Pausing poll request");
+                try {
+                    // Make the XHR request last longer to make it
+                    // easier to click the link at the right moment.
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                // System.out.println("Continuing poll request");
             }
         });
 

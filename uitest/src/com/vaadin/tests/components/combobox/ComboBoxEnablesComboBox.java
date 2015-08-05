@@ -13,7 +13,7 @@ public class ComboBoxEnablesComboBox extends TestBase {
     protected void setup() {
         ComboBox cb = new ComboBox("Always enabled");
         populate(cb);
-        cb.addListener(new ValueChangeListener() {
+        cb.addValueChangeListener(new ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {

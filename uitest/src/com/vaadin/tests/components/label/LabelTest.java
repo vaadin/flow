@@ -23,9 +23,9 @@ public class LabelTest extends AbstractComponentTest<Label> implements ValueChan
         @Override
         public void execute(Label c, Boolean value, Object data) {
             if (value) {
-                c.addListener(LabelTest.this);
+                c.addValueChangeListener(LabelTest.this);
             } else {
-                c.removeListener(LabelTest.this);
+                c.removeValueChangeListener(LabelTest.this);
 
             }
         }

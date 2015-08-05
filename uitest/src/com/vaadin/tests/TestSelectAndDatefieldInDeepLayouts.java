@@ -20,12 +20,12 @@ import java.util.Collection;
 import java.util.Vector;
 
 import com.vaadin.ui.AbstractOrderedLayout;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.Panel;
-import com.vaadin.ui.Select;
 import com.vaadin.ui.VerticalLayout;
 
 /**
@@ -95,7 +95,7 @@ public class TestSelectAndDatefieldInDeepLayouts extends CustomComponent {
     }
 
     Component getSelect() {
-        return new Select(getCaption("select"), getSelectOptions());
+        return new ComboBox(getCaption("select"), getSelectOptions());
     }
 
     Component getDateField() {

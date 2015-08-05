@@ -444,7 +444,7 @@ public class TabSheet extends AbstractComponentContainer implements Focusable, F
 
     @Override
     public void moveComponentsFrom(ComponentContainer source) {
-        for (final Iterator<Component> i = source.getComponentIterator(); i.hasNext();) {
+        for (final Iterator<Component> i = source.iterator(); i.hasNext();) {
             final Component c = i.next();
             String caption = null;
             Resource icon = null;
@@ -459,29 +459,6 @@ public class TabSheet extends AbstractComponentContainer implements Focusable, F
             Tab tab = addTab(c, caption, icon);
             tab.setIconAlternateText(iconAltText);
         }
-    }
-
-    /**
-     * Are the tab selection parts ("tabs") hidden.
-     * 
-     * @return true if the tabs are hidden in the UI
-     * @deprecated as of 7.5, use {@link #isTabsVisible()} instead
-     */
-    @Deprecated
-    public boolean areTabsHidden() {
-        return !isTabsVisible();
-    }
-
-    /**
-     * Hides or shows the tab selection parts ("tabs").
-     * 
-     * @param tabsHidden
-     *            true if the tabs should be hidden
-     * @deprecated as of 7.5, use {@link #setTabsVisible(boolean)} instead
-     */
-    @Deprecated
-    public void hideTabs(boolean tabsHidden) {
-        setTabsVisible(!tabsHidden);
     }
 
     /**
@@ -618,7 +595,7 @@ public class TabSheet extends AbstractComponentContainer implements Focusable, F
      */
     private boolean updateSelection() {
         Component originalSelection = selected;
-        for (final Iterator<Component> i = getComponentIterator(); i.hasNext();) {
+        for (final Iterator<Component> i = iterator(); i.hasNext();) {
             final Component component = i.next();
 
             Tab tab = tabs.get(component);
@@ -822,15 +799,6 @@ public class TabSheet extends AbstractComponentContainer implements Focusable, F
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addSelectedTabChangeListener(SelectedTabChangeListener)}
-     **/
-    @Deprecated
-    public void addListener(SelectedTabChangeListener listener) {
-        addSelectedTabChangeListener(listener);
-    }
-
-    /**
      * Removes a tab selection listener
      * 
      * @param listener
@@ -838,15 +806,6 @@ public class TabSheet extends AbstractComponentContainer implements Focusable, F
      */
     public void removeSelectedTabChangeListener(SelectedTabChangeListener listener) {
         removeListener(SelectedTabChangeEvent.class, listener, SELECTED_TAB_CHANGE_METHOD);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeSelectedTabChangeListener(SelectedTabChangeListener)}
-     **/
-    @Deprecated
-    public void removeListener(SelectedTabChangeListener listener) {
-        removeSelectedTabChangeListener(listener);
     }
 
     /**
@@ -1367,28 +1326,9 @@ public class TabSheet extends AbstractComponentContainer implements Focusable, F
         addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by {@link #addBlurListener(BlurListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(BlurListener listener) {
-        addBlurListener(listener);
-    }
-
     @Override
     public void removeBlurListener(BlurListener listener) {
         removeListener(BlurEvent.EVENT_ID, BlurEvent.class, listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeBlurListener(BlurListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(BlurListener listener) {
-        removeBlurListener(listener);
     }
 
     @Override
@@ -1396,29 +1336,9 @@ public class TabSheet extends AbstractComponentContainer implements Focusable, F
         addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addFocusListener(FocusListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(FocusListener listener) {
-        addFocusListener(listener);
-    }
-
     @Override
     public void removeFocusListener(FocusListener listener) {
         removeListener(FocusEvent.EVENT_ID, FocusEvent.class, listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeFocusListener(FocusListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(FocusListener listener) {
-        removeFocusListener(listener);
     }
 
     @Override

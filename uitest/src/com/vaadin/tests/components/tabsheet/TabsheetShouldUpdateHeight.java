@@ -38,7 +38,7 @@ public class TabsheetShouldUpdateHeight extends TestBase {
 
     private VerticalLayout getLayoutWithComponents(final int inAmount, String id) {
         final VerticalLayout v = new VerticalLayout();
-        v.setDebugId(id);
+        v.setId(id);
         v.setSpacing(true);
         v.setMargin(true);
         for (int i = 0; i < inAmount; i++) {

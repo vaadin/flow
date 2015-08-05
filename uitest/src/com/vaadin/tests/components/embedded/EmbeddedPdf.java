@@ -2,9 +2,9 @@ package com.vaadin.tests.components.embedded;
 
 import com.vaadin.server.ClassResource;
 import com.vaadin.tests.components.TestBase;
+import com.vaadin.ui.BrowserFrame;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Embedded;
 import com.vaadin.ui.Window;
 
 public class EmbeddedPdf extends TestBase {
@@ -21,8 +21,7 @@ public class EmbeddedPdf extends TestBase {
 
     @Override
     public void setup() {
-        final Embedded player = new Embedded();
-        player.setType(Embedded.TYPE_BROWSER);
+        final BrowserFrame player = new BrowserFrame();
         player.setWidth("400px");
         player.setHeight("300px");
         player.setSource(new ClassResource(getClass(), "test.pdf"));

@@ -1518,16 +1518,6 @@ public class SQLContainer implements Container, Container.Filterable, Container.
         itemSetChangeListeners.add(listener);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addItemSetChangeListener(com.vaadin.data.Container.ItemSetChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(Container.ItemSetChangeListener listener) {
-        addItemSetChangeListener(listener);
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -1541,16 +1531,6 @@ public class SQLContainer implements Container, Container.Filterable, Container.
         if (itemSetChangeListeners != null) {
             itemSetChangeListeners.remove(listener);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeItemSetChangeListener(com.vaadin.data.Container.ItemSetChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(Container.ItemSetChangeListener listener) {
-        removeItemSetChangeListener(listener);
     }
 
     protected void fireContentsChange() {

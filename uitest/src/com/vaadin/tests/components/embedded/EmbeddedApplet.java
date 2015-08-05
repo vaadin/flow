@@ -2,9 +2,9 @@ package com.vaadin.tests.components.embedded;
 
 import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
+import com.vaadin.ui.BrowserFrame;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Embedded;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
@@ -23,8 +23,7 @@ public class EmbeddedApplet extends TestBase {
 
     @Override
     public void setup() {
-        final Embedded applet = new Embedded();
-        applet.setType(Embedded.TYPE_BROWSER);
+        final BrowserFrame applet = new BrowserFrame();
         applet.setWidth("400px");
         applet.setHeight("300px");
         applet.setSource(new ExternalResource("/statictestfiles/applet.html"));

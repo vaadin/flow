@@ -28,21 +28,21 @@ public class TextFieldFocusAndBlurListeners extends TestBase implements FocusLis
         addComponent(log);
         TextField tf1 = new TextField("TextField 1", "Has focus and blur listeners");
         tf1.setWidth("300px");
-        tf1.addListener((FocusListener) this);
-        tf1.addListener((BlurListener) this);
+        tf1.addFocusListener(this);
+        tf1.addBlurListener(this);
 
         addComponent(tf1);
 
         TextField tf2 = new TextField("TextField 2", "Has focus, blur and valuechange listeners");
         tf2.setWidth("300px");
-        tf2.addListener(new ValueChangeListener() {
+        tf2.addValueChangeListener(new ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
                 TextFieldFocusAndBlurListeners.this.valueChange(event);
             }
         });
-        tf2.addListener(new FocusListener() {
+        tf2.addFocusListener(new FocusListener() {
 
             @Override
             public void focus(FocusEvent event) {
@@ -50,7 +50,7 @@ public class TextFieldFocusAndBlurListeners extends TestBase implements FocusLis
             }
 
         });
-        tf2.addListener(new BlurListener() {
+        tf2.addBlurListener(new BlurListener() {
 
             @Override
             public void blur(BlurEvent event) {
@@ -62,13 +62,13 @@ public class TextFieldFocusAndBlurListeners extends TestBase implements FocusLis
 
         TextField tf3 = new TextField("TextField 3", "Has non-immediate valuechange listener");
         tf3.setWidth("300px");
-        tf3.addListener((ValueChangeListener) this);
+        tf3.addValueChangeListener(this);
 
         addComponent(tf3);
 
         TextField tf4 = new TextField("TextField 4", "Has immediate valuechange listener");
         tf4.setWidth("300px");
-        tf4.addListener((ValueChangeListener) this);
+        tf4.addValueChangeListener(this);
 
         addComponent(tf4);
     }

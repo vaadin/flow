@@ -20,14 +20,15 @@ import java.util.Random;
 
 import com.vaadin.data.Item;
 import com.vaadin.ui.AbstractSelect;
+import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Panel;
-import com.vaadin.ui.Select;
 import com.vaadin.ui.VerticalLayout;
 
 public class UsingCustomNewItemHandlerInSelect extends CustomComponent {
 
-    private final Select select = new Select();
+    private final ComboBox select = new ComboBox();
 
     public static Random random = new Random(1);
 
@@ -42,7 +43,7 @@ public class UsingCustomNewItemHandlerInSelect extends CustomComponent {
 
         select.setCaption("Select component");
         select.addContainerProperty("CAPTION", String.class, "");
-        select.setItemCaptionMode(Select.ITEM_CAPTION_MODE_PROPERTY);
+        select.setItemCaptionMode(ItemCaptionMode.PROPERTY);
         select.setItemCaptionPropertyId("CAPTION");
         select.setNewItemsAllowed(true);
         select.setNewItemHandler(new MyNewItemHandler());

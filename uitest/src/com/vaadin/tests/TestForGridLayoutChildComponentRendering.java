@@ -20,14 +20,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.vaadin.server.ExternalResource;
+import com.vaadin.shared.ui.BorderStyle;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Link;
-import com.vaadin.ui.Select;
 
 /**
  * 
@@ -55,10 +56,10 @@ public class TestForGridLayoutChildComponentRendering extends CustomComponent {
         l.setResource(new ExternalResource("http://www.vaadin.com/"));
         l.setTargetHeight(200);
         l.setTargetWidth(500);
-        l.setTargetBorder(Link.TARGET_BORDER_MINIMAL);
+        l.setTargetBorder(BorderStyle.MINIMAL);
         main.addComponent(l);
 
-        final Select se = new Select("Tästä valitaan");
+        final ComboBox se = new ComboBox("Tästä valitaan");
         se.setCaption("Whattaa select");
         se.addItem("valinta1");
         se.addItem("Valinta 2");
@@ -92,7 +93,7 @@ public class TestForGridLayoutChildComponentRendering extends CustomComponent {
     }
 
     public void randomReorder() {
-        final Iterator<Component> it = main.getComponentIterator();
+        final Iterator<Component> it = main.iterator();
         final ArrayList<Component> components = new ArrayList<Component>();
         while (it.hasNext()) {
             components.add(it.next());
@@ -115,7 +116,7 @@ public class TestForGridLayoutChildComponentRendering extends CustomComponent {
     }
 
     public void removeRandomComponent() {
-        final Iterator<Component> it = main.getComponentIterator();
+        final Iterator<Component> it = main.iterator();
         final ArrayList<Component> components = new ArrayList<Component>();
         while (it.hasNext()) {
             components.add(it.next());

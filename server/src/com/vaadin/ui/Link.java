@@ -37,24 +37,6 @@ import com.vaadin.ui.declarative.DesignContext;
 public class Link extends AbstractComponent {
 
     /**
-     * @deprecated As of 7.0, use {@link BorderStyle#NONE} instead
-     */
-    @Deprecated
-    public static final BorderStyle TARGET_BORDER_NONE = BorderStyle.NONE;
-
-    /**
-     * @deprecated As of 7.0, use {@link BorderStyle#MINIMAL} instead
-     */
-    @Deprecated
-    public static final BorderStyle TARGET_BORDER_MINIMAL = BorderStyle.MINIMAL;
-
-    /**
-     * @deprecated As of 7.0, use {@link BorderStyle#DEFAULT} instead
-     */
-    @Deprecated
-    public static final BorderStyle TARGET_BORDER_DEFAULT = BorderStyle.DEFAULT;
-
-    /**
      * Creates a new link.
      */
     public Link() {

@@ -22,7 +22,7 @@ public class BooleanField extends CustomField {
         layout.addComponent(new Label("Please click the button"));
 
         final Button button = new Button("Click me");
-        button.addListener(new ClickListener() {
+        button.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 Object value = getValue();

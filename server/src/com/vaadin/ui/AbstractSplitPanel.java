@@ -558,26 +558,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
         addListener(EventId.CLICK_EVENT_IDENTIFIER, SplitterClickEvent.class, listener, SplitterClickListener.clickMethod);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addSplitterClickListener(SplitterClickListener)}
-     **/
-    @Deprecated
-    public void addListener(SplitterClickListener listener) {
-        addSplitterClickListener(listener);
-    }
-
     public void removeSplitterClickListener(SplitterClickListener listener) {
         removeListener(EventId.CLICK_EVENT_IDENTIFIER, SplitterClickEvent.class, listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeSplitterClickListener(SplitterClickListener)}
-     **/
-    @Deprecated
-    public void removeListener(SplitterClickListener listener) {
-        removeSplitterClickListener(listener);
     }
 
     /**

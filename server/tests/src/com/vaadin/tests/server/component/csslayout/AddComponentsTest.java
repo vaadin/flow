@@ -116,7 +116,7 @@ public class AddComponentsTest {
      * by indices.
      */
     private void assertOrder(Layout layout, int[] indices) {
-        Iterator<?> i = layout.getComponentIterator();
+        Iterator<?> i = layout.iterator();
         try {
             for (int index : indices) {
                 assertSame(children[index], i.next());

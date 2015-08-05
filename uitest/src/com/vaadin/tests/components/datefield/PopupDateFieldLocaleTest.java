@@ -6,8 +6,8 @@ import java.util.Locale;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.tests.components.AbstractTestUI;
-import com.vaadin.ui.DateField;
 import com.vaadin.ui.PopupDateField;
 
 public class PopupDateFieldLocaleTest extends AbstractTestUI {
@@ -27,7 +27,7 @@ public class PopupDateFieldLocaleTest extends AbstractTestUI {
         pdf.setLocale(Locale.ENGLISH);
         pdf.setValue(cal.getTime());
 
-        pdf.setResolution(DateField.RESOLUTION_SEC);
+        pdf.setResolution(Resolution.SECOND);
         addComponent(pdf);
 
         pdf.addValueChangeListener(new ValueChangeListener() {

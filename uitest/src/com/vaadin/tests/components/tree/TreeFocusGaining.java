@@ -17,7 +17,7 @@ public class TreeFocusGaining extends TestBase {
 
         TextField textField = new TextField("My value should get to server when tree is clicked");
         addComponent(textField);
-        textField.addListener(new Property.ValueChangeListener() {
+        textField.addValueChangeListener(new Property.ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -28,7 +28,7 @@ public class TreeFocusGaining extends TestBase {
         Tree tree = new Tree("Simple selectable tree (immediate)");
         tree.addItem("Item1");
         addComponent(tree);
-        tree.addListener(new Property.ValueChangeListener() {
+        tree.addValueChangeListener(new Property.ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -38,7 +38,7 @@ public class TreeFocusGaining extends TestBase {
 
         tree = new Tree("Simple tree with itemm click listener");
         tree.addItem("Item1");
-        tree.addListener(new ItemClickEvent.ItemClickListener() {
+        tree.addItemClickListener(new ItemClickEvent.ItemClickListener() {
             @Override
             public void itemClick(ItemClickEvent event) {
                 log.log("Item click event");

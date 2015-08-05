@@ -23,7 +23,7 @@ public class TabSheetTest {
         tabSheet.addComponent(c);
         tabSheet.addComponent(c);
 
-        Iterator<Component> iter = tabSheet.getComponentIterator();
+        Iterator<Component> iter = tabSheet.iterator();
 
         assertEquals(c, iter.next());
         assertEquals(false, iter.hasNext());

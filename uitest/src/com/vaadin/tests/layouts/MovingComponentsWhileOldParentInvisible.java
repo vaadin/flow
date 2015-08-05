@@ -52,7 +52,7 @@ public class MovingComponentsWhileOldParentInvisible extends TestBase {
         for (Class<? extends HasComponents> cls : getComponentContainers()) {
             componentContainerSelect.addItem(cls);
         }
-        componentContainerSelect.addListener(new ValueChangeListener() {
+        componentContainerSelect.addValueChangeListener(new ValueChangeListener() {
 
             @Override
             @SuppressWarnings("unchecked")

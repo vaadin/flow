@@ -4,7 +4,7 @@ import com.vaadin.data.Item;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
-import com.vaadin.ui.ProgressIndicator;
+import com.vaadin.ui.ProgressBar;
 import com.vaadin.ui.Slider;
 
 public class SliderValueFromDataSource extends AbstractTestUI {
@@ -40,8 +40,8 @@ public class SliderValueFromDataSource extends AbstractTestUI {
         slider.setPropertyDataSource(item.getItemProperty("doubleValue"));
         addComponent(slider);
 
-        ProgressIndicator pi = new ProgressIndicator();
-        pi.setPollingInterval(60 * 1000);
+        ProgressBar pi = new ProgressBar();
+        setPollInterval(60 * 1000);
         pi.setWidth("200px");
         pi.setPropertyDataSource(item.getItemProperty("floatValue"));
         addComponent(pi);

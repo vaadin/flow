@@ -82,7 +82,7 @@ public class DisableEnableCascadeStyles extends TestBase {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                for (Iterator<Component> i = layout.getComponentIterator(); i.hasNext();) {
+                for (Iterator<Component> i = layout.iterator(); i.hasNext();) {
                     final Component c = i.next();
                     if (c.isEnabled()) {
                         c.setEnabled(false);

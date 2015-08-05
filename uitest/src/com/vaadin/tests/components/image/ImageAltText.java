@@ -11,7 +11,7 @@ public class ImageAltText extends TestBase {
     @Override
     protected void setup() {
         final Image image = new Image("Caption", new ThemeResource("../runo/icons/64/ok.png"));
-        image.setDebugId("image");
+        image.setId("image");
         image.setAlternateText("Original alt text");
         addComponent(image);
 

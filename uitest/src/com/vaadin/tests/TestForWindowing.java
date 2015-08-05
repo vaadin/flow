@@ -23,10 +23,10 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.OptionGroup;
-import com.vaadin.ui.Select;
 import com.vaadin.ui.Slider;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
@@ -34,7 +34,7 @@ import com.vaadin.ui.Window;
 
 public class TestForWindowing extends CustomComponent {
 
-    private Select s2;
+    private ComboBox s2;
 
     public TestForWindowing() {
 
@@ -63,13 +63,13 @@ public class TestForWindowing extends CustomComponent {
                 s1.addItem("CSV plain text");
                 s1.setValue("Excel sheet");
 
-                s2 = new Select();
+                s2 = new ComboBox();
                 s2.addItem("Separate by comma (,)");
                 s2.addItem("Separate by colon (:)");
                 s2.addItem("Separate by semicolon (;)");
                 s2.setEnabled(false);
 
-                s1.addListener(new ValueChangeListener() {
+                s1.addValueChangeListener(new ValueChangeListener() {
 
                     @Override
                     public void valueChange(ValueChangeEvent event) {

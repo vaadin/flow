@@ -18,6 +18,7 @@ package com.vaadin.event;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
+import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.MouseEventDetails;
@@ -79,13 +80,6 @@ public interface LayoutEvents {
         public void addLayoutClickListener(LayoutClickListener listener);
 
         /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addLayoutClickListener(LayoutClickListener)}
-         **/
-        @Deprecated
-        public void addListener(LayoutClickListener listener);
-
-        /**
          * Removes an LayoutClickListener.
          * 
          * @param listener
@@ -93,12 +87,6 @@ public interface LayoutEvents {
          */
         public void removeLayoutClickListener(LayoutClickListener listener);
 
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removeLayoutClickListener(LayoutClickListener)}
-         **/
-        @Deprecated
-        public void removeListener(LayoutClickListener listener);
     }
 
     /**

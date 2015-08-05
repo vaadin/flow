@@ -10,8 +10,8 @@ import com.vaadin.data.util.sqlcontainer.SQLContainer;
 import com.vaadin.data.util.sqlcontainer.connection.JDBCConnectionPool;
 import com.vaadin.data.util.sqlcontainer.connection.SimpleJDBCConnectionPool;
 import com.vaadin.data.util.sqlcontainer.query.TableQuery;
+import com.vaadin.shared.ui.combobox.FilteringMode;
 import com.vaadin.tests.components.TestBase;
-import com.vaadin.ui.AbstractSelect.Filtering;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
@@ -46,10 +46,10 @@ public class ComboBoxSQLContainerFilteredValueChange extends TestBase {
         }
 
         myCombo.setItemCaptionPropertyId("MYFIELD");
-        myCombo.setFilteringMode(Filtering.FILTERINGMODE_CONTAINS);
+        myCombo.setFilteringMode(FilteringMode.CONTAINS);
         myCombo.setWidth("100.0%");
         myCombo.setHeight("-1px");
-        myCombo.addListener(new Property.ValueChangeListener() {
+        myCombo.addValueChangeListener(new Property.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 selectedLabel.setValue("Selected: " + event.getProperty().getValue());

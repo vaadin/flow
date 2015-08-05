@@ -3,6 +3,7 @@ package com.vaadin.tests.components.tree;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUIWithLog;
+import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.Tree;
 
 public class TreeItemClickListening extends AbstractTestUIWithLog {
@@ -21,10 +22,10 @@ public class TreeItemClickListening extends AbstractTestUIWithLog {
             tree.getContainerProperty(item, "caption").setValue("Caption " + i);
             tree.setChildrenAllowed(item, false);
         }
-        tree.setItemCaptionMode(Tree.ITEM_CAPTION_MODE_PROPERTY);
+        tree.setItemCaptionMode(ItemCaptionMode.PROPERTY);
         tree.setItemCaptionPropertyId("caption");
 
-        tree.addListener(new ItemClickEvent.ItemClickListener() {
+        tree.addItemClickListener(new ItemClickEvent.ItemClickListener() {
             @Override
             public void itemClick(ItemClickEvent event) {
                 clickCounter++;

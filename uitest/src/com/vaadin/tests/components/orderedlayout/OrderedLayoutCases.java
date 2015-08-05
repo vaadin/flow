@@ -377,7 +377,7 @@ public class OrderedLayoutCases extends AbstractTestUI {
         NativeSelect selector = new NativeSelect(caption, values);
         selector.setNullSelectionAllowed(false);
 
-        selector.addListener(listener);
+        selector.addValueChangeListener(listener);
         selector.setValue(defaultValue);
         return selector;
     }

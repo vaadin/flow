@@ -63,54 +63,6 @@ import com.vaadin.ui.declarative.DesignContext;
 public class DateField extends AbstractField<Date> implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 
     /**
-     * Resolution identifier: seconds.
-     * 
-     * @deprecated As of 7.0, use {@link Resolution#SECOND}
-     */
-    @Deprecated
-    public static final Resolution RESOLUTION_SEC = Resolution.SECOND;
-
-    /**
-     * Resolution identifier: minutes.
-     * 
-     * @deprecated As of 7.0, use {@link Resolution#MINUTE}
-     */
-    @Deprecated
-    public static final Resolution RESOLUTION_MIN = Resolution.MINUTE;
-
-    /**
-     * Resolution identifier: hours.
-     * 
-     * @deprecated As of 7.0, use {@link Resolution#HOUR}
-     */
-    @Deprecated
-    public static final Resolution RESOLUTION_HOUR = Resolution.HOUR;
-
-    /**
-     * Resolution identifier: days.
-     * 
-     * @deprecated As of 7.0, use {@link Resolution#DAY}
-     */
-    @Deprecated
-    public static final Resolution RESOLUTION_DAY = Resolution.DAY;
-
-    /**
-     * Resolution identifier: months.
-     * 
-     * @deprecated As of 7.0, use {@link Resolution#MONTH}
-     */
-    @Deprecated
-    public static final Resolution RESOLUTION_MONTH = Resolution.MONTH;
-
-    /**
-     * Resolution identifier: years.
-     * 
-     * @deprecated As of 7.0, use {@link Resolution#YEAR}
-     */
-    @Deprecated
-    public static final Resolution RESOLUTION_YEAR = Resolution.YEAR;
-
-    /**
      * Specified smallest modifiable unit for the date field.
      */
     private Resolution resolution = Resolution.DAY;
@@ -627,29 +579,9 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
         addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addFocusListener(FocusListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(FocusListener listener) {
-        addFocusListener(listener);
-    }
-
     @Override
     public void removeFocusListener(FocusListener listener) {
         removeListener(FocusEvent.EVENT_ID, FocusEvent.class, listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeFocusListener(FocusListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(FocusListener listener) {
-        removeFocusListener(listener);
     }
 
     @Override
@@ -657,28 +589,9 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
         addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by {@link #addBlurListener(BlurListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(BlurListener listener) {
-        addBlurListener(listener);
-    }
-
     @Override
     public void removeBlurListener(BlurListener listener) {
         removeListener(BlurEvent.EVENT_ID, BlurEvent.class, listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeBlurListener(BlurListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(BlurListener listener) {
-        removeBlurListener(listener);
     }
 
     /**

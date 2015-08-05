@@ -3,6 +3,7 @@ package com.vaadin.tests.components.datefield;
 import java.util.Calendar;
 import java.util.Locale;
 
+import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.DateField;
 
@@ -16,7 +17,7 @@ public class CustomDateFormat extends TestBase {
         cal.set(2010, 0, 1);
 
         DateField df = new DateField();
-        df.setResolution(DateField.RESOLUTION_DAY);
+        df.setResolution(Resolution.DAY);
         df.setLocale(locale);
         df.setWidth("300px");
 

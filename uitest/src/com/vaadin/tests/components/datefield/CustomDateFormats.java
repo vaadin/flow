@@ -10,6 +10,7 @@ import java.util.Set;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.DateField;
@@ -34,7 +35,7 @@ public class CustomDateFormats extends TestBase {
         addLocale(Locale.UK, s);
         addLocale(new Locale("fi", "FI"), s);
 
-        s.addListener(new Property.ValueChangeListener() {
+        s.addValueChangeListener(new Property.ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -135,7 +136,7 @@ public class CustomDateFormats extends TestBase {
         Label serversideValueLabel = new Label();
 
         DateField df = new DateField();
-        df.setResolution(DateField.RESOLUTION_DAY);
+        df.setResolution(Resolution.DAY);
         df.setLocale(locale);
         df.setWidth("300px");
         df.setDateFormat(pattern);
@@ -150,7 +151,7 @@ public class CustomDateFormats extends TestBase {
 
         df.setData(new Data(serversideValueLabel, pattern));
         df.setValue(cal.getTime());
-        df.addListener(new Property.ValueChangeListener() {
+        df.addValueChangeListener(new Property.ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {

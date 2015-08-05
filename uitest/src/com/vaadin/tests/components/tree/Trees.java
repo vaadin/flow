@@ -307,9 +307,9 @@ public class Trees extends AbstractSelectTestCase<Tree> implements ExpandListene
         @Override
         public void execute(Tree c, Boolean value, Object data) {
             if (value) {
-                c.addListener((ExpandListener) Trees.this);
+                c.addExpandListener(Trees.this);
             } else {
-                c.removeListener((ExpandListener) Trees.this);
+                c.removeExpandListener(Trees.this);
             }
         }
     };
@@ -318,9 +318,9 @@ public class Trees extends AbstractSelectTestCase<Tree> implements ExpandListene
         @Override
         public void execute(Tree c, Boolean value, Object data) {
             if (value) {
-                c.addListener((CollapseListener) Trees.this);
+                c.addCollapseListener(Trees.this);
             } else {
-                c.removeListener((CollapseListener) Trees.this);
+                c.removeCollapseListener(Trees.this);
             }
         }
     };

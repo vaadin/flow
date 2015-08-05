@@ -153,9 +153,9 @@ public abstract class AbstractSelectTestCase<T extends AbstractSelect> extends A
         @Override
         public void execute(T c, Boolean value, Object data) {
             if (value) {
-                ((ItemClickNotifier) c).addListener(AbstractSelectTestCase.this);
+                ((ItemClickNotifier) c).addItemClickListener(AbstractSelectTestCase.this);
             } else {
-                ((ItemClickNotifier) c).removeListener(AbstractSelectTestCase.this);
+                ((ItemClickNotifier) c).removeItemClickListener(AbstractSelectTestCase.this);
             }
 
         }

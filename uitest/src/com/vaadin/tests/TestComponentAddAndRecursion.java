@@ -10,6 +10,7 @@ import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 
@@ -107,9 +108,9 @@ public class TestComponentAddAndRecursion extends CustomComponent {
             public void buttonClick(ClickEvent event) {
                 try {
                     p3l.addComponent(p2);
-                    new Notification("ERROR", "This should have failed", Notification.TYPE_ERROR_MESSAGE).show(Page.getCurrent());
+                    new Notification("ERROR", "This should have failed", Type.ERROR_MESSAGE).show(Page.getCurrent());
                 } catch (Exception e) {
-                    new Notification("OK", "threw, as expected", Notification.TYPE_ERROR_MESSAGE).show(Page.getCurrent());
+                    new Notification("OK", "threw, as expected", Type.ERROR_MESSAGE).show(Page.getCurrent());
                 }
             }
 
@@ -124,9 +125,9 @@ public class TestComponentAddAndRecursion extends CustomComponent {
                 layout.addComponent(p2);
                 try {
                     p3l.addComponent(p);
-                    new Notification("ERROR", "This should have failed", Notification.TYPE_ERROR_MESSAGE).show(Page.getCurrent());
+                    new Notification("ERROR", "This should have failed", Type.ERROR_MESSAGE).show(Page.getCurrent());
                 } catch (Exception e) {
-                    new Notification("OK", "threw, as expected", Notification.TYPE_ERROR_MESSAGE).show(Page.getCurrent());
+                    new Notification("OK", "threw, as expected", Type.ERROR_MESSAGE).show(Page.getCurrent());
                 }
             }
 

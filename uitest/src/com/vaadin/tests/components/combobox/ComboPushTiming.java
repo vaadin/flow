@@ -15,7 +15,6 @@ import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.ProgressIndicator;
 import com.vaadin.ui.TextField;
 
 public class ComboPushTiming extends TestBase {
@@ -37,7 +36,7 @@ public class ComboPushTiming extends TestBase {
 
         final ObjectProperty<String> log = new ObjectProperty<String>("");
 
-        cb.addListener(new FieldEvents.FocusListener() {
+        cb.addFocusListener(new FieldEvents.FocusListener() {
             @Override
             public void focus(FocusEvent event) {
                 log.setValue(log.getValue().toString() + "<br>" + counter + ": Focus event!");
@@ -46,7 +45,7 @@ public class ComboPushTiming extends TestBase {
             }
         });
 
-        cb.addListener(new FieldEvents.BlurListener() {
+        cb.addBlurListener(new FieldEvents.BlurListener() {
             @Override
             public void blur(BlurEvent event) {
                 log.setValue(log.getValue().toString() + "<br>" + counter + ": Blur event!");
@@ -62,10 +61,7 @@ public class ComboPushTiming extends TestBase {
 
         output.setContentMode(ContentMode.HTML);
         addComponent(output);
-
-        ProgressIndicator progressIndicator = new ProgressIndicator();
-        addComponent(progressIndicator);
-        progressIndicator.setPollingInterval(3000);
+        setPollInterval(3000);
     }
 
     private void changeValue(final ComboBox cb) {

@@ -3,6 +3,7 @@ package com.vaadin.tests.components.datefield;
 import java.util.Calendar;
 import java.util.Locale;
 
+import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -70,7 +71,7 @@ public class DateFieldExtendedRange extends TestBase {
 
     private DateField makeDateField(boolean isPopup, Locale locale, String caption) {
         DateField df = isPopup ? new PopupDateField() : new InlineDateField();
-        df.setResolution(DateField.RESOLUTION_DAY);
+        df.setResolution(Resolution.DAY);
         df.setValue(date.getTime());
         df.setLocale(locale);
         df.setCaption(caption);

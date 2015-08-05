@@ -7,6 +7,7 @@ import com.vaadin.data.Property;
 import com.vaadin.data.Validator;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.validator.AbstractValidator;
+import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.DateField;
 
@@ -56,7 +57,7 @@ public class RequiredInvalidDateField extends TestBase {
         Property<Date> dateProperty1 = new ObjectProperty<Date>(date);
         DateField dateField1 = new DateField("Not required", dateProperty1);
         dateField1.setLocale(new Locale("fi", "FI"));
-        dateField1.setResolution(DateField.RESOLUTION_DAY);
+        dateField1.setResolution(Resolution.DAY);
         dateField1.setId("_DF1");
         dateField1.addValidator(dateValidator);
         addComponent(dateField1);
@@ -65,7 +66,7 @@ public class RequiredInvalidDateField extends TestBase {
         Property<Date> dateProperty2 = new ObjectProperty<Date>(date);
         DateField dateField2 = new DateField("Required", dateProperty2);
         dateField2.setLocale(new Locale("fi", "FI"));
-        dateField2.setResolution(DateField.RESOLUTION_DAY);
+        dateField2.setResolution(Resolution.DAY);
         dateField2.setId("_DF2");
         dateField2.setRequired(true);
         dateField2.addValidator(dateValidator);

@@ -23,7 +23,7 @@ public class TreeScrollingOnSelection extends TestBase {
 
         Tree tree = new Tree("alphabets", getContainer());
         tree.expandItem(GREEK_ALPHABET);
-        tree.addListener(new ItemClickListener() {
+        tree.addItemClickListener(new ItemClickListener() {
 
             private static final long serialVersionUID = 5955518276555388126L;
 

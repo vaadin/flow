@@ -212,7 +212,7 @@ public class LayoutPerformanceTests extends TestBase {
                     return;
                 }
 
-                boolean wrapped = wrapInPanel.booleanValue();
+                boolean wrapped = wrapInPanel.getValue();
                 ComponentContainer container = containerType.buildLayout(((Number) levels.getValue()).intValue(), ((Number) childAmount.getValue()).intValue(), leafType, !wrapped);
                 if (wrapped) {
                     Panel panel = new Panel(container);
@@ -224,7 +224,7 @@ public class LayoutPerformanceTests extends TestBase {
             }
         }));
 
-        for (Iterator<Component> i = controls.getComponentIterator(); i.hasNext();) {
+        for (Iterator<Component> i = controls.iterator(); i.hasNext();) {
             Component component = i.next();
             if (component instanceof NativeSelect) {
                 NativeSelect nativeSelect = (NativeSelect) component;

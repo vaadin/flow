@@ -185,7 +185,7 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
         // connectorId unless the component is attached to the application so
         // the String->String map cannot be populated in internal* either.
         Map<String, String> connectorToPosition = new HashMap<String, String>();
-        for (Iterator<Component> ci = getComponentIterator(); ci.hasNext();) {
+        for (Iterator<Component> ci = iterator(); ci.hasNext();) {
             Component c = ci.next();
             connectorToPosition.put(c.getConnectorId(), getPosition(c).getCSSString());
         }
@@ -636,29 +636,9 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
         addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener, LayoutClickListener.clickMethod);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addLayoutClickListener(LayoutClickListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(LayoutClickListener listener) {
-        addLayoutClickListener(listener);
-    }
-
     @Override
     public void removeLayoutClickListener(LayoutClickListener listener) {
         removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeLayoutClickListener(LayoutClickListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(LayoutClickListener listener) {
-        removeLayoutClickListener(listener);
     }
 
     /*

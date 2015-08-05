@@ -109,7 +109,7 @@ public abstract class ComponentTestCase<T extends AbstractComponent> extends Abs
     protected Component createBooleanAction(String caption, boolean initialState, final Command<T, Boolean> command) {
 
         CheckBox checkBox = new CheckBox(caption);
-        checkBox.addListener(new ValueChangeListener() {
+        checkBox.addValueChangeListener(new ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
@@ -131,7 +131,7 @@ public abstract class ComponentTestCase<T extends AbstractComponent> extends Abs
 
         Button button = new Button(caption);
         button.setData(Boolean.FALSE);
-        button.addListener(new Button.ClickListener() {
+        button.addClickListener(new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 Button b = event.getButton();
@@ -155,7 +155,7 @@ public abstract class ComponentTestCase<T extends AbstractComponent> extends Abs
         select.addContainerProperty(VALUE, Object.class, "");
         select.setItemCaptionPropertyId(CAPTION);
         select.setNullSelectionAllowed(false);
-        select.addListener(new Property.ValueChangeListener() {
+        select.addValueChangeListener(new Property.ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {

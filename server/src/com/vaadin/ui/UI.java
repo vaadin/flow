@@ -760,15 +760,6 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addClickListener(ClickListener)}
-     **/
-    @Deprecated
-    public void addListener(ClickListener listener) {
-        addClickListener(listener);
-    }
-
-    /**
      * Remove a click listener from the UI. The listener should earlier have
      * been added using {@link #addListener(ClickListener)}.
      * 
@@ -777,15 +768,6 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      */
     public void removeClickListener(ClickListener listener) {
         removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeClickListener(ClickListener)}
-     **/
-    @Deprecated
-    public void removeListener(ClickListener listener) {
-        removeClickListener(listener);
     }
 
     @Override
@@ -831,158 +813,6 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
     @Deprecated
     public void setCaption(String caption) {
         throw new UnsupportedOperationException("You can not set the title of a UI. To set the title of the HTML page, use Page.setTitle");
-    }
-
-    /**
-     * Shows a notification message on the middle of the UI. The message
-     * automatically disappears ("humanized message").
-     * 
-     * Care should be taken to to avoid XSS vulnerabilities as the caption is
-     * rendered as html.
-     * 
-     * @see #showNotification(Notification)
-     * @see Notification
-     * 
-     * @param caption
-     *            The message
-     * 
-     * @deprecated As of 7.0, use Notification.show instead but be aware that
-     *             Notification.show does not allow HTML.
-     */
-    @Deprecated
-    public void showNotification(String caption) {
-        Notification notification = new Notification(caption);
-        notification.setHtmlContentAllowed(true);// Backwards compatibility
-        getPage().showNotification(notification);
-    }
-
-    /**
-     * Shows a notification message the UI. The position and behavior of the
-     * message depends on the type, which is one of the basic types defined in
-     * {@link Notification}, for instance Notification.TYPE_WARNING_MESSAGE.
-     * 
-     * Care should be taken to to avoid XSS vulnerabilities as the caption is
-     * rendered as html.
-     * 
-     * @see #showNotification(Notification)
-     * @see Notification
-     * 
-     * @param caption
-     *            The message
-     * @param type
-     *            The message type
-     * 
-     * @deprecated As of 7.0, use Notification.show instead but be aware that
-     *             Notification.show does not allow HTML.
-     */
-    @Deprecated
-    public void showNotification(String caption, Notification.Type type) {
-        Notification notification = new Notification(caption, type);
-        notification.setHtmlContentAllowed(true);// Backwards compatibility
-        getPage().showNotification(notification);
-    }
-
-    /**
-     * Shows a notification consisting of a bigger caption and a smaller
-     * description on the middle of the UI. The message automatically disappears
-     * ("humanized message").
-     * 
-     * Care should be taken to to avoid XSS vulnerabilities as the caption and
-     * description are rendered as html.
-     * 
-     * @see #showNotification(Notification)
-     * @see Notification
-     * 
-     * @param caption
-     *            The caption of the message
-     * @param description
-     *            The message description
-     * 
-     * @deprecated As of 7.0, use new Notification(...).show(Page) instead but
-     *             be aware that HTML by default not allowed.
-     */
-    @Deprecated
-    public void showNotification(String caption, String description) {
-        Notification notification = new Notification(caption, description);
-        notification.setHtmlContentAllowed(true);// Backwards compatibility
-        getPage().showNotification(notification);
-    }
-
-    /**
-     * Shows a notification consisting of a bigger caption and a smaller
-     * description. The position and behavior of the message depends on the
-     * type, which is one of the basic types defined in {@link Notification} ,
-     * for instance Notification.TYPE_WARNING_MESSAGE.
-     * 
-     * Care should be taken to to avoid XSS vulnerabilities as the caption and
-     * description are rendered as html.
-     * 
-     * @see #showNotification(Notification)
-     * @see Notification
-     * 
-     * @param caption
-     *            The caption of the message
-     * @param description
-     *            The message description
-     * @param type
-     *            The message type
-     * 
-     * @deprecated As of 7.0, use new Notification(...).show(Page) instead but
-     *             be aware that HTML by default not allowed.
-     */
-    @Deprecated
-    public void showNotification(String caption, String description, Notification.Type type) {
-        Notification notification = new Notification(caption, description, type);
-        notification.setHtmlContentAllowed(true);// Backwards compatibility
-        getPage().showNotification(notification);
-    }
-
-    /**
-     * Shows a notification consisting of a bigger caption and a smaller
-     * description. The position and behavior of the message depends on the
-     * type, which is one of the basic types defined in {@link Notification} ,
-     * for instance Notification.TYPE_WARNING_MESSAGE.
-     * 
-     * Care should be taken to avoid XSS vulnerabilities if html content is
-     * allowed.
-     * 
-     * @see #showNotification(Notification)
-     * @see Notification
-     * 
-     * @param caption
-     *            The message caption
-     * @param description
-     *            The message description
-     * @param type
-     *            The type of message
-     * @param htmlContentAllowed
-     *            Whether html in the caption and description should be
-     *            displayed as html or as plain text
-     * 
-     * @deprecated As of 7.0, use new Notification(...).show(Page).
-     */
-    @Deprecated
-    public void showNotification(String caption, String description, Notification.Type type, boolean htmlContentAllowed) {
-        getPage().showNotification(new Notification(caption, description, type, htmlContentAllowed));
-    }
-
-    /**
-     * Shows a notification message.
-     * 
-     * @see Notification
-     * @see #showNotification(String)
-     * @see #showNotification(String, int)
-     * @see #showNotification(String, String)
-     * @see #showNotification(String, String, int)
-     * 
-     * @param notification
-     *            The notification message to show
-     * 
-     * @deprecated As of 7.0, use Notification.show instead
-     */
-    @Deprecated
-    public void showNotification(Notification notification) {
-        getPage().showNotification(notification);
     }
 
     /**

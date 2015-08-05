@@ -412,8 +412,8 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends AbstractIn
             // avoid multiple notifications for the same property if
             // multiple filters are in use
             ValueChangeNotifier notifier = (ValueChangeNotifier) property;
-            notifier.removeListener(this);
-            notifier.addListener(this);
+            notifier.removeValueChangeListener(this);
+            notifier.addValueChangeListener(this);
         }
     }
 
@@ -428,7 +428,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE> extends AbstractIn
     private void removeValueChangeListener(Item item, Object propertyId) {
         Property<?> property = item.getItemProperty(propertyId);
         if (property instanceof ValueChangeNotifier) {
-            ((ValueChangeNotifier) property).removeListener(this);
+            ((ValueChangeNotifier) property).removeValueChangeListener(this);
         }
     }
 

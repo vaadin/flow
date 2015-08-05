@@ -19,7 +19,6 @@ package com.vaadin.server;
 import java.io.Serializable;
 import java.util.Properties;
 
-import com.vaadin.data.util.AbstractProperty;
 import com.vaadin.shared.communication.PushMode;
 
 /**
@@ -31,44 +30,6 @@ import com.vaadin.shared.communication.PushMode;
  * @since 7.0.0
  */
 public interface DeploymentConfiguration extends Serializable {
-
-    /**
-     * Determines the mode of the "legacyPropertyToString" parameter.
-     * 
-     * @author Vaadin Ltd
-     * @since 7.1
-     */
-    @Deprecated
-    public enum LegacyProperyToStringMode {
-        DISABLED("false"), WARNING("warning"), ENABLED("true");
-
-        private final String propertyString;
-
-        private LegacyProperyToStringMode(String propertyString) {
-            this.propertyString = propertyString;
-        }
-
-        /**
-         * Gets the string that should be used in e.g. web.xml for selecting
-         * this mode.
-         * 
-         * @return the property value
-         */
-        public String getPropertyString() {
-            return propertyString;
-        }
-
-        @Override
-        public String toString() {
-            // Used by VaadinServlet.readConfigurationAnnotation()
-            return getPropertyString();
-        }
-
-        public boolean useLegacyMode() {
-            return this == WARNING || this == ENABLED;
-        }
-
-    }
 
     /**
      * Returns whether Vaadin is in production mode.
@@ -211,14 +172,5 @@ public interface DeploymentConfiguration extends Serializable {
      * @since 7.4
      */
     public String getClassLoaderName();
-
-    /**
-     * Returns to legacy Property.toString() mode used. See
-     * {@link AbstractProperty#isLegacyToStringEnabled()} for more information.
-     * 
-     * @return The Property.toString() mode in use.
-     */
-    @Deprecated
-    public LegacyProperyToStringMode getLegacyPropertyToStringMode();
 
 }

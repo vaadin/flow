@@ -42,7 +42,7 @@ public class EmbeddedImageRefresh extends TestBase {
 
         // The button requests repainting the embedded.
         Button button = new Button("refr");
-        button.addListener(new Button.ClickListener() {
+        button.addClickListener(new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 embedded.markAsDirty();
@@ -50,7 +50,7 @@ public class EmbeddedImageRefresh extends TestBase {
         });
         addComponent(button);
         button = new Button("refr name");
-        button.addListener(new Button.ClickListener() {
+        button.addClickListener(new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 ((StreamResource) embedded.getSource()).setFilename(new Date().getTime() + ".png");
@@ -59,7 +59,7 @@ public class EmbeddedImageRefresh extends TestBase {
         });
         addComponent(button);
         button = new Button("200x200");
-        button.addListener(new Button.ClickListener() {
+        button.addClickListener(new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 embedded.setWidth("200px");
@@ -68,7 +68,7 @@ public class EmbeddedImageRefresh extends TestBase {
         });
         addComponent(button);
         button = new Button("undef");
-        button.addListener(new Button.ClickListener() {
+        button.addClickListener(new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 embedded.setSizeUndefined();

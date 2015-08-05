@@ -24,8 +24,6 @@ import java.util.Objects;
 import org.jsoup.nodes.Element;
 
 import com.vaadin.data.Property;
-import com.vaadin.data.util.AbstractProperty;
-import com.vaadin.data.util.LegacyPropertyHelper;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.ConverterUtil;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -56,42 +54,6 @@ import com.vaadin.ui.declarative.DesignContext;
  */
 @SuppressWarnings("serial")
 public class Label extends AbstractComponent implements Property<String>, Property.Viewer, Property.ValueChangeListener, Property.ValueChangeNotifier, Comparable<Label> {
-
-    /**
-     * @deprecated As of 7.0, use {@link ContentMode#TEXT} instead
-     */
-    @Deprecated
-    public static final ContentMode CONTENT_TEXT = ContentMode.TEXT;
-
-    /**
-     * @deprecated As of 7.0, use {@link ContentMode#PREFORMATTED} instead
-     */
-    @Deprecated
-    public static final ContentMode CONTENT_PREFORMATTED = ContentMode.PREFORMATTED;
-
-    /**
-     * @deprecated As of 7.0, use {@link ContentMode#HTML} instead
-     */
-    @Deprecated
-    public static final ContentMode CONTENT_XHTML = ContentMode.HTML;
-
-    /**
-     * @deprecated As of 7.0, use {@link ContentMode#XML} instead
-     */
-    @Deprecated
-    public static final ContentMode CONTENT_XML = ContentMode.XML;
-
-    /**
-     * @deprecated As of 7.0, use {@link ContentMode#RAW} instead
-     */
-    @Deprecated
-    public static final ContentMode CONTENT_RAW = ContentMode.RAW;
-
-    /**
-     * @deprecated As of 7.0, use {@link ContentMode#TEXT} instead
-     */
-    @Deprecated
-    public static final ContentMode CONTENT_DEFAULT = ContentMode.TEXT;
 
     /**
      * A converter used to convert from the data model type to the field type
@@ -246,7 +208,7 @@ public class Label extends AbstractComponent implements Property<String>, Proper
     public void setPropertyDataSource(Property newDataSource) {
         // Stops listening the old data source changes
         if (dataSource != null && Property.ValueChangeNotifier.class.isAssignableFrom(dataSource.getClass())) {
-            ((Property.ValueChangeNotifier) dataSource).removeListener(this);
+            ((Property.ValueChangeNotifier) dataSource).removeValueChangeListener(this);
         }
 
         // Check if the current converter is compatible.
@@ -266,7 +228,7 @@ public class Label extends AbstractComponent implements Property<String>, Proper
 
         // Listens the new data source if possible
         if (dataSource != null && Property.ValueChangeNotifier.class.isAssignableFrom(dataSource.getClass())) {
-            ((Property.ValueChangeNotifier) dataSource).addListener(this);
+            ((Property.ValueChangeNotifier) dataSource).addValueChangeListener(this);
         }
         markAsDirty();
     }
@@ -353,16 +315,6 @@ public class Label extends AbstractComponent implements Property<String>, Proper
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addValueChangeListener(com.vaadin.data.Property.ValueChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(Property.ValueChangeListener listener) {
-        addValueChangeListener(listener);
-    }
-
-    /**
      * Removes the value change listener.
      * 
      * @param listener
@@ -372,16 +324,6 @@ public class Label extends AbstractComponent implements Property<String>, Proper
     @Override
     public void removeValueChangeListener(Property.ValueChangeListener listener) {
         removeListener(Label.ValueChangeEvent.class, listener, VALUE_CHANGE_METHOD);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeValueChangeListener(com.vaadin.data.Property.ValueChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(Property.ValueChangeListener listener) {
-        removeValueChangeListener(listener);
     }
 
     /**
@@ -524,38 +466,6 @@ public class Label extends AbstractComponent implements Property<String>, Proper
     public void setConverter(Converter<String, ?> converter) {
         this.converter = (Converter<String, Object>) converter;
         markAsDirty();
-    }
-
-    /**
-     * Returns a string representation of this object. The returned string
-     * representation depends on if the legacy Property toString mode is enabled
-     * or disabled.
-     * <p>
-     * If legacy Property toString mode is enabled, returns the value displayed
-     * by this label.
-     * </p>
-     * <p>
-     * If legacy Property toString mode is disabled, the string representation
-     * has no special meaning
-     * </p>
-     * 
-     * @see AbstractProperty#isLegacyToStringEnabled()
-     * 
-     * @return The value displayed by this label or a string representation of
-     *         this Label object.
-     * 
-     * @deprecated As of 7.0, use {@link #getValue()} to get the value of the
-     *             label or {@link #getPropertyDataSource()}.getValue() to get
-     *             the value of the data source.
-     */
-    @Deprecated
-    @Override
-    public String toString() {
-        if (!LegacyPropertyHelper.isLegacyToStringEnabled()) {
-            return super.toString();
-        } else {
-            return LegacyPropertyHelper.legacyPropertyToString(this);
-        }
     }
 
     /*

@@ -22,21 +22,21 @@ public class TextChangeEvents2 extends TestBase {
             final TextField tf = new TextField("Debug");
             getLayout().addComponent(tf);
 
-            tf.addListener(new TextChangeListener() {
+            tf.addTextChangeListener(new TextChangeListener() {
                 @Override
                 public void textChange(TextChangeEvent event) {
                     System.err.println(tf.getCaption() + " textChange");
                 }
             });
 
-            tf.addListener(new ValueChangeListener() {
+            tf.addValueChangeListener(new ValueChangeListener() {
                 @Override
                 public void valueChange(ValueChangeEvent event) {
                     System.err.println(tf.getCaption() + " valueChange");
                 }
             });
 
-            tf.addListener(new BlurListener() {
+            tf.addBlurListener(new BlurListener() {
 
                 @Override
                 public void blur(BlurEvent event) {
@@ -44,7 +44,7 @@ public class TextChangeEvents2 extends TestBase {
                 }
             });
 
-            tf.addListener(new FocusListener() {
+            tf.addFocusListener(new FocusListener() {
                 @Override
                 public void focus(FocusEvent event) {
                     System.err.println(tf.getCaption() + " focus");
@@ -58,14 +58,14 @@ public class TextChangeEvents2 extends TestBase {
             getLayout().addComponent(tf);
             final Label l = new Label();
             getLayout().addComponent(l);
-            tf.addListener(new TextChangeListener() {
+            tf.addTextChangeListener(new TextChangeListener() {
                 @Override
                 public void textChange(TextChangeEvent event) {
                     l.setValue(event.getText());
                 }
             });
 
-            tf.addListener(new ValueChangeListener() {
+            tf.addValueChangeListener(new ValueChangeListener() {
                 @Override
                 public void valueChange(ValueChangeEvent event) {
                     System.err.println(tf.getCaption() + " valueChange");
@@ -81,7 +81,7 @@ public class TextChangeEvents2 extends TestBase {
             getLayout().addComponent(tf);
             final Label l = new Label();
             getLayout().addComponent(l);
-            tf.addListener(new TextChangeListener() {
+            tf.addTextChangeListener(new TextChangeListener() {
 
                 @Override
                 public void textChange(TextChangeEvent event) {
@@ -89,7 +89,7 @@ public class TextChangeEvents2 extends TestBase {
                 }
             });
 
-            tf.addListener(new ValueChangeListener() {
+            tf.addValueChangeListener(new ValueChangeListener() {
                 @Override
                 public void valueChange(ValueChangeEvent event) {
                     System.err.println(tf.getCaption() + " valueChange");
@@ -104,7 +104,7 @@ public class TextChangeEvents2 extends TestBase {
             getLayout().addComponent(tf);
             final Label l = new Label();
             getLayout().addComponent(l);
-            tf.addListener(new TextChangeListener() {
+            tf.addTextChangeListener(new TextChangeListener() {
 
                 @Override
                 public void textChange(TextChangeEvent event) {
@@ -112,7 +112,7 @@ public class TextChangeEvents2 extends TestBase {
                 }
             });
 
-            tf.addListener(new ValueChangeListener() {
+            tf.addValueChangeListener(new ValueChangeListener() {
                 @Override
                 public void valueChange(ValueChangeEvent event) {
                     System.err.println(tf.getCaption() + " valueChange");
@@ -131,7 +131,7 @@ public class TextChangeEvents2 extends TestBase {
                 tf.setTextChangeEventMode(TextChangeEventMode.EAGER);
                 hl.addComponent(tf);
 
-                tf.addListener(new TextChangeListener() {
+                tf.addTextChangeListener(new TextChangeListener() {
 
                     @Override
                     public void textChange(TextChangeEvent event) {
@@ -156,7 +156,7 @@ public class TextChangeEvents2 extends TestBase {
                         }
                     }
                 });
-                tf.addListener(new ValueChangeListener() {
+                tf.addValueChangeListener(new ValueChangeListener() {
 
                     @Override
                     public void valueChange(ValueChangeEvent event) {

@@ -25,27 +25,27 @@ public class TextChangeEvents extends TestBase {
             }
         };
 
-        tf.addListener(inputEventListener);
+        tf.addTextChangeListener(inputEventListener);
 
         getLayout().addComponent(tf);
 
         TextField eager = new TextField("Eager");
-        eager.addListener(inputEventListener);
+        eager.addTextChangeListener(inputEventListener);
         eager.setTextChangeEventMode(TextChangeEventMode.EAGER);
         getLayout().addComponent(eager);
 
         TextField to = new TextField("Timeout 3s");
-        to.addListener(inputEventListener);
+        to.addTextChangeListener(inputEventListener);
         to.setTextChangeEventMode(TextChangeEventMode.TIMEOUT);
         to.setTextChangeTimeout(3000);
         getLayout().addComponent(to);
 
         TextArea ta = new TextArea("Default text area");
-        ta.addListener(inputEventListener);
+        ta.addTextChangeListener(inputEventListener);
         getLayout().addComponent(ta);
 
         VaadinDeveloperNameField vd = new VaadinDeveloperNameField();
-        vd.addListener(inputEventListener);
+        vd.addTextChangeListener(inputEventListener);
         getLayout().addComponent(vd);
 
         getLayout().addComponent(l);
@@ -75,7 +75,7 @@ public class TextChangeEvents extends TestBase {
 
         public VaadinDeveloperNameField() {
             setCaption("Start typing 'old' Vaadin developers.");
-            addListener((TextChangeListener) this);
+            addTextChangeListener(this);
             setStyleName("nomatch");
         }
 

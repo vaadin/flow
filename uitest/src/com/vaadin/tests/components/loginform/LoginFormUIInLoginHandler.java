@@ -12,7 +12,7 @@ public class LoginFormUIInLoginHandler extends TestBase {
     @Override
     protected void setup() {
         LoginForm lf = new LoginForm();
-        lf.addListener(new LoginListener() {
+        lf.addLoginListener(new LoginListener() {
 
             @Override
             public void onLogin(LoginEvent event) {

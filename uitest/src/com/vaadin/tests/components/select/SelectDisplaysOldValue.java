@@ -9,8 +9,8 @@ import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.tests.components.TestBase;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Select;
 
 public class SelectDisplaysOldValue extends TestBase {
 
@@ -24,8 +24,8 @@ public class SelectDisplaysOldValue extends TestBase {
         private static final String CONTROLLER_COMBO_BOX_CAPTION = "Master : ";
         private static final String SLAVE_COMBO_BOX_CAPTION = "Slave :";
 
-        private Select controllerComboBox;
-        private Select slaveComboBox;
+        private ComboBox controllerComboBox;
+        private ComboBox slaveComboBox;
 
         private Map<Integer, String> controllerOptionMap = new HashMap<Integer, String>();
 
@@ -66,16 +66,16 @@ public class SelectDisplaysOldValue extends TestBase {
 
         private void buildAndConfigureComboBoxes() {
             IndexedContainer masterOptionContainer = initMasterOptionContainer();
-            controllerComboBox = new Select(CONTROLLER_COMBO_BOX_CAPTION, masterOptionContainer);
+            controllerComboBox = new ComboBox(CONTROLLER_COMBO_BOX_CAPTION, masterOptionContainer);
             configureMasterOptionDropdown();
-            controllerComboBox.addListener(new ControllerUpdatedListener());
+            controllerComboBox.addValueChangeListener(new ControllerUpdatedListener());
 
             buildSlaveDropdown(1);
         }
 
         private void buildSlaveDropdown(Integer masterId) {
             IndexedContainer slaveOptionContainer = initSlaveOptionContainer(masterId);
-            slaveComboBox = new Select(SLAVE_COMBO_BOX_CAPTION, slaveOptionContainer);
+            slaveComboBox = new ComboBox(SLAVE_COMBO_BOX_CAPTION, slaveOptionContainer);
             configureSlaveOptionDropdown();
         }
 

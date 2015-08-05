@@ -58,7 +58,7 @@ public class LoginForm extends CustomComponent {
     private String passwordCaption = "Password";
     private String loginButtonCaption = "Login";
 
-    private Embedded iframe = new Embedded();
+    private BrowserFrame iframe = new BrowserFrame();
 
     @Override
     public boolean handleConnectorRequest(final VaadinRequest request, final VaadinResponse response, String path) throws IOException {
@@ -108,7 +108,6 @@ public class LoginForm extends CustomComponent {
     }
 
     public LoginForm() {
-        iframe.setType(Embedded.TYPE_BROWSER);
         iframe.setSizeFull();
         setSizeFull();
         setCompositionRoot(iframe);
@@ -204,30 +203,12 @@ public class LoginForm extends CustomComponent {
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addLoginListener(LoginListener)}
-     **/
-    @Deprecated
-    public void addListener(LoginListener listener) {
-        addLoginListener(listener);
-    }
-
-    /**
      * Removes LoginListener
      * 
      * @param listener
      */
     public void removeLoginListener(LoginListener listener) {
         removeListener(LoginEvent.class, listener, ON_LOGIN_METHOD);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeLoginListener(LoginListener)}
-     **/
-    @Deprecated
-    public void removeListener(LoginListener listener) {
-        removeLoginListener(listener);
     }
 
     @Override

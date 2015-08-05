@@ -29,8 +29,8 @@ import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.TransactionalPropertyWrapper;
+import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.AbstractField;
-import com.vaadin.ui.DefaultFieldFactory;
 import com.vaadin.ui.Field;
 import com.vaadin.util.ReflectTools;
 
@@ -931,7 +931,7 @@ public class FieldGroup implements Serializable {
                 if (captionAnnotation != null) {
                     caption = captionAnnotation.value();
                 } else {
-                    caption = DefaultFieldFactory.createCaptionByPropertyId(propertyId);
+                    caption = SharedUtil.propertyIdToHumanFriendly(propertyId);
                 }
 
                 // Create the component (Field)
@@ -1097,7 +1097,7 @@ public class FieldGroup implements Serializable {
      * @return The created and bound field
      */
     public Field<?> buildAndBind(Object propertyId) throws BindException {
-        String caption = DefaultFieldFactory.createCaptionByPropertyId(propertyId);
+        String caption = SharedUtil.propertyIdToHumanFriendly(propertyId);
         return buildAndBind(caption, propertyId);
     }
 

@@ -24,7 +24,7 @@ public class LoginFormTest extends TestBase {
         loginForm.setSizeUndefined();
 
         updateCaption();
-        loginForm.addListener(new LoginListener() {
+        loginForm.addLoginListener(new LoginListener() {
 
             /**
              * 

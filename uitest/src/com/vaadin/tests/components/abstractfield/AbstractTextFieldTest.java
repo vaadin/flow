@@ -45,9 +45,9 @@ public abstract class AbstractTextFieldTest<T extends AbstractTextField> extends
         @Override
         public void execute(T c, Boolean value, Object data) {
             if (value) {
-                c.addListener((TextChangeListener) AbstractTextFieldTest.this);
+                c.addTextChangeListener(AbstractTextFieldTest.this);
             } else {
-                c.removeListener((TextChangeListener) AbstractTextFieldTest.this);
+                c.removeTextChangeListener(AbstractTextFieldTest.this);
             }
         }
     };

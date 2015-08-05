@@ -37,7 +37,7 @@ public class VerticalLayoutWithRelativeSizeComponentsInitiallyHidden extends Tes
         bar.setVisible(false);
 
         Button b = new Button("Click to set bar visible. Button should stay visible.");
-        b.addListener(new ClickListener() {
+        b.addClickListener(new ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {

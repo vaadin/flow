@@ -2,6 +2,7 @@ package com.vaadin.tests.components.datefield;
 
 import java.util.Date;
 
+import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -14,7 +15,7 @@ public class WidthRecalculationOnEnableStateChange extends TestBase {
 
         final DateField df = new DateField();
         df.setValue(new Date(1203910239L));
-        df.setResolution(DateField.RESOLUTION_SEC);
+        df.setResolution(Resolution.SECOND);
         df.setWidth("200px");
         df.addStyleName("enabled-readonly-styled");
         addComponent(df);

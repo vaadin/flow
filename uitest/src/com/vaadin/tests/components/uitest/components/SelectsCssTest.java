@@ -8,7 +8,6 @@ import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.ListSelect;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.OptionGroup;
-import com.vaadin.ui.Select;
 import com.vaadin.ui.TwinColSelect;
 import com.vaadin.ui.themes.ValoTheme;
 
@@ -23,11 +22,11 @@ public class SelectsCssTest extends GridLayout {
         setSpacing(true);
         setWidth(null);
 
-        Select s = new Select("Basic select");
+        ComboBox s = new ComboBox("Basic select");
         s.setId("select" + debugIdCounter++);
         addComponent(s);
 
-        s = new Select("Select with items");
+        s = new ComboBox("Select with items");
         s.setId("select" + debugIdCounter++);
         createDummyData(s);
         addComponent(s);
@@ -62,12 +61,12 @@ public class SelectsCssTest extends GridLayout {
         createDummyData(ls);
         addComponent(ls);
 
-        s = new Select("Basic select");
+        s = new ComboBox("Basic select");
         s.setId("select" + debugIdCounter++);
         s.setWidth("100px");
         addComponent(s);
 
-        s = new Select("Select with items");
+        s = new ComboBox("Select with items");
         s.setWidth("100px");
         s.setId("select" + debugIdCounter++);
         createDummyData(s);

@@ -576,7 +576,7 @@ public class ColorPickerPopup extends Window implements ClickListener, ColorChan
      * @return true if tab is visible, false otherwise
      */
     private boolean tabIsVisible(Component tab) {
-        Iterator<Component> tabIterator = tabs.getComponentIterator();
+        Iterator<Component> tabIterator = tabs.iterator();
         while (tabIterator.hasNext()) {
             if (tabIterator.next() == tab) {
                 return true;
@@ -591,7 +591,7 @@ public class ColorPickerPopup extends Window implements ClickListener, ColorChan
      * @return The number of tabs visible
      */
     private int tabsNumVisible() {
-        Iterator<Component> tabIterator = tabs.getComponentIterator();
+        Iterator<Component> tabIterator = tabs.iterator();
         int tabCounter = 0;
         while (tabIterator.hasNext()) {
             tabIterator.next();
@@ -604,7 +604,7 @@ public class ColorPickerPopup extends Window implements ClickListener, ColorChan
      * Checks if tabs are needed and hides them if not
      */
     private void checkIfTabsNeeded() {
-        tabs.hideTabs(tabsNumVisible() == 1);
+        tabs.setTabsVisible(tabsNumVisible() != 1);
     }
 
     /**

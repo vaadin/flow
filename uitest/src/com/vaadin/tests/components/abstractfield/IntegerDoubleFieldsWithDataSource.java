@@ -31,7 +31,7 @@ public class IntegerDoubleFieldsWithDataSource extends TestBase {
     private TextField createIntegerTextField() {
         final TextField tf = new TextField("Enter an integer");
         tf.setPropertyDataSource(new ObjectProperty<Integer>(new Integer(2)));
-        tf.addListener(new ValueChangeListener() {
+        tf.addValueChangeListener(new ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {

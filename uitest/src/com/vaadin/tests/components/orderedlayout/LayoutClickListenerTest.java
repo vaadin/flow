@@ -5,12 +5,12 @@ import java.util.Arrays;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.tests.components.TestBase;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Link;
-import com.vaadin.ui.Select;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -30,7 +30,7 @@ public class LayoutClickListenerTest extends TestBase {
         layout.addComponent(new TextField(null, "Click here"));
         layout.addComponent(new Link("Click here", null));
 
-        Select select = new Select(null, Arrays.asList("Click here"));
+        ComboBox select = new ComboBox(null, Arrays.asList("Click here"));
         select.select("Click here");
         layout.addComponent(select);
 
@@ -58,7 +58,7 @@ public class LayoutClickListenerTest extends TestBase {
         layout.addComponent(nestedLayout);
 
         // Listen for layout click events
-        layout.addListener(new LayoutClickListener() {
+        layout.addLayoutClickListener(new LayoutClickListener() {
             @Override
             public void layoutClick(LayoutClickEvent event) {
 

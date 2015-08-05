@@ -19,12 +19,12 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Select;
+import com.vaadin.ui.ComboBox;
 
 public class SelectItemCaptionRefresh extends AbstractTestUI {
 
     final Object itemId = new Object();
-    Select select;
+    ComboBox select;
 
     Button.ClickListener clickListener = new Button.ClickListener() {
         Integer i = Integer.valueOf(0);
@@ -43,7 +43,7 @@ public class SelectItemCaptionRefresh extends AbstractTestUI {
      */
     @Override
     protected void setup(VaadinRequest request) {
-        select = new Select("Foo");
+        select = new ComboBox("Foo");
 
         select.addItem(itemId);
         select.setItemCaption(itemId, "start");

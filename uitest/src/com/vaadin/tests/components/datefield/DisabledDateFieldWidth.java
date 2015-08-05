@@ -1,5 +1,6 @@
 package com.vaadin.tests.components.datefield;
 
+import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -11,7 +12,7 @@ public class DisabledDateFieldWidth extends TestBase {
     public void setup() {
 
         final DateField dateField1 = new DateField("DateField");
-        dateField1.setResolution(DateField.RESOLUTION_YEAR);
+        dateField1.setResolution(Resolution.YEAR);
         dateField1.setEnabled(false);
 
         Button button = new Button("Repaint datefield", new Button.ClickListener() {

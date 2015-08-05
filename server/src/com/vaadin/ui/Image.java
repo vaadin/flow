@@ -77,15 +77,6 @@ public class Image extends AbstractEmbedded {
     }
 
     /**
-     * @deprecated As of 7.0, use {@link #addClickListener(ClickListener)}
-     *             instead
-     */
-    @Deprecated
-    public void addListener(ClickListener listener) {
-        addClickListener(listener);
-    }
-
-    /**
      * Add a click listener to the component. The listener is called whenever
      * the user clicks inside the component. Depending on the content the event
      * may be blocked and in that case no event is fired.
@@ -97,15 +88,6 @@ public class Image extends AbstractEmbedded {
      */
     public void addClickListener(ClickListener listener) {
         addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener, ClickListener.clickMethod);
-    }
-
-    /**
-     * @deprecated As of 7.0, use {@link #removeClickListener(ClickListener)}
-     *             instead
-     */
-    @Deprecated
-    public void removeListener(ClickListener listener) {
-        removeClickListener(listener);
     }
 
     /**

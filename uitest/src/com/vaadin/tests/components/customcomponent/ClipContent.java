@@ -21,7 +21,7 @@ public class ClipContent extends TestBase {
 
         final TextField w = new TextField("Width");
         w.setValue("20px");
-        w.addListener(new TextField.ValueChangeListener() {
+        w.addValueChangeListener(new TextField.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 cc.setWidth(w.getValue());
@@ -30,7 +30,7 @@ public class ClipContent extends TestBase {
         addComponent(w);
         final TextField h = new TextField("Height");
         h.setValue("20px");
-        h.addListener(new TextField.ValueChangeListener() {
+        h.addValueChangeListener(new TextField.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 cc.setHeight(h.getValue());

@@ -97,7 +97,7 @@ public class BoxLayoutTest extends AbstractTestUI {
         header.addComponent(title);
 
         final CheckBox vertical = new CheckBox("Vertical", !horizontal);
-        vertical.addListener(new ValueChangeListener() {
+        vertical.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 view.removeAllComponents();
@@ -161,7 +161,7 @@ public class BoxLayoutTest extends AbstractTestUI {
         sizes.addAll(Arrays.asList("100px", "30em", "100%"));
 
         final NativeSelect width = new NativeSelect(null, sizes);
-        width.addListener(new ValueChangeListener() {
+        width.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (width.getValue() != null) {
@@ -174,7 +174,7 @@ public class BoxLayoutTest extends AbstractTestUI {
         layout.addComponent(width);
         layout.addComponent(new Label("&times;", ContentMode.HTML));
         final NativeSelect height = new NativeSelect(null, sizes);
-        height.addListener(new ValueChangeListener() {
+        height.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (height.getValue() != null) {
@@ -187,7 +187,7 @@ public class BoxLayoutTest extends AbstractTestUI {
         layout.addComponent(height);
 
         final CheckBox margin = new CheckBox("Margin", false);
-        margin.addListener(new ValueChangeListener() {
+        margin.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 l.setMargin(margin.getValue().booleanValue());
@@ -197,7 +197,7 @@ public class BoxLayoutTest extends AbstractTestUI {
         layout.addComponent(margin);
 
         final CheckBox spacing = new CheckBox("Spacing", false);
-        spacing.addListener(new ValueChangeListener() {
+        spacing.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 l.setSpacing(spacing.getValue().booleanValue());
@@ -222,7 +222,7 @@ public class BoxLayoutTest extends AbstractTestUI {
         align.setEnabled(false);
         align.setNullSelectionAllowed(false);
         align.select(Alignment.TOP_LEFT);
-        align.addListener(new ValueChangeListener() {
+        align.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (target == null) {
@@ -235,7 +235,7 @@ public class BoxLayoutTest extends AbstractTestUI {
 
         expand = new CheckBox("Expand");
         expand.setEnabled(false);
-        expand.addListener(new ValueChangeListener() {
+        expand.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (target != null) {
@@ -257,7 +257,7 @@ public class BoxLayoutTest extends AbstractTestUI {
 
         componentWidth = new NativeSelect(null, sizes);
         componentWidth.setEnabled(false);
-        componentWidth.addListener(new ValueChangeListener() {
+        componentWidth.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (target == null) {
@@ -275,7 +275,7 @@ public class BoxLayoutTest extends AbstractTestUI {
 
         componentHeight = new NativeSelect(null, sizes);
         componentHeight.setEnabled(false);
-        componentHeight.addListener(new ValueChangeListener() {
+        componentHeight.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (componentHeight.getValue() != null) {
@@ -289,7 +289,7 @@ public class BoxLayoutTest extends AbstractTestUI {
 
         componentCaption = new NativeSelect("Caption", Arrays.asList("Short", "Slightly Longer Caption"));
         componentCaption.setEnabled(false);
-        componentCaption.addListener(new ValueChangeListener() {
+        componentCaption.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (componentCaption.getValue() != null) {
@@ -303,7 +303,7 @@ public class BoxLayoutTest extends AbstractTestUI {
 
         componentIcon = new NativeSelect("Icon", Arrays.asList("../runo/icons/16/folder.png", "../runo/icons/32/document.png"));
         componentIcon.setEnabled(false);
-        componentIcon.addListener(new ValueChangeListener() {
+        componentIcon.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (componentIcon.getValue() != null) {
@@ -317,7 +317,7 @@ public class BoxLayoutTest extends AbstractTestUI {
 
         componentError = new CheckBox("Error");
         componentError.setEnabled(false);
-        componentError.addListener(new ValueChangeListener() {
+        componentError.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (target != null) {
@@ -329,7 +329,7 @@ public class BoxLayoutTest extends AbstractTestUI {
 
         componentRequired = new CheckBox("Required");
         componentRequired.setEnabled(false);
-        componentRequired.addListener(new ValueChangeListener() {
+        componentRequired.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (target != null && target instanceof AbstractField) {
@@ -355,7 +355,7 @@ public class BoxLayoutTest extends AbstractTestUI {
         l.addComponent(label);
         l.addComponent(new Button("Component 2"));
 
-        l.addListener(new LayoutClickListener() {
+        l.addLayoutClickListener(new LayoutClickListener() {
             @Override
             public void layoutClick(LayoutClickEvent event) {
                 if (event.getChildComponent() == null || target == event.getChildComponent()) {

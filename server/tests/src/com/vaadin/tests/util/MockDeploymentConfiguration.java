@@ -18,7 +18,6 @@ public class MockDeploymentConfiguration extends AbstractDeploymentConfiguration
     private PushMode pushMode = PushMode.DISABLED;
     private Properties initParameters = new Properties();
     private Map<String, String> applicationOrSystemProperty = new HashMap<String, String>();
-    private LegacyProperyToStringMode legacyPropertyToStringMode = LegacyProperyToStringMode.DISABLED;
     private boolean syncIdCheckEnabled = true;
     private boolean sendUrlsAsParameters = true;
 
@@ -105,16 +104,6 @@ public class MockDeploymentConfiguration extends AbstractDeploymentConfiguration
         } else {
             return defaultValue;
         }
-    }
-
-    @Override
-    @Deprecated
-    public LegacyProperyToStringMode getLegacyPropertyToStringMode() {
-        return legacyPropertyToStringMode;
-    }
-
-    public void setLegacyPropertyToStringMode(LegacyProperyToStringMode legacyPropertyToStringMode) {
-        this.legacyPropertyToStringMode = legacyPropertyToStringMode;
     }
 
     @Override

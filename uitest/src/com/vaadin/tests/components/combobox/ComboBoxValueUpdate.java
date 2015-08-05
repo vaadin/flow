@@ -26,7 +26,7 @@ public class ComboBoxValueUpdate extends TestBase {
 
         final Label value = new Label();
 
-        select.addListener(new ComboBox.ValueChangeListener() {
+        select.addValueChangeListener(new ComboBox.ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
