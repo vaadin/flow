@@ -1,12 +1,12 @@
 package com.vaadin.tests.components.menubar;
 
-import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.WebBrowser;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.JavaScript;
 import com.vaadin.ui.MenuBar;
+import com.vaadin.ui.Page;
 
 public class MenuItemStyleRemoved extends AbstractTestUI {
 

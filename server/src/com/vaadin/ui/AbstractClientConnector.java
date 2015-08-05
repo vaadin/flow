@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server;
+package com.vaadin.ui;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -35,14 +35,27 @@ import java.util.logging.Logger;
 
 import com.vaadin.event.EventRouter;
 import com.vaadin.event.MethodEventSource;
+import com.vaadin.server.ClientConnector;
+import com.vaadin.server.ClientMethodInvocation;
+import com.vaadin.server.ConnectorResource;
+import com.vaadin.server.DownloadStream;
+import com.vaadin.server.ErrorHandler;
+import com.vaadin.server.LegacyCommunicationManager;
+import com.vaadin.server.Resource;
+import com.vaadin.server.ResourceReference;
+import com.vaadin.server.ServerRpcManager;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinResponse;
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.server.ClientConnector.AttachEvent;
+import com.vaadin.server.ClientConnector.AttachListener;
+import com.vaadin.server.ClientConnector.DetachEvent;
+import com.vaadin.server.ClientConnector.DetachListener;
 import com.vaadin.shared.communication.ClientRpc;
 import com.vaadin.shared.communication.ServerRpc;
 import com.vaadin.shared.communication.SharedState;
 import com.vaadin.shared.ui.ComponentStateUtil;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Component.Event;
-import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;
 
@@ -80,8 +93,6 @@ public abstract class AbstractClientConnector implements ClientConnector, Method
     private ArrayList<ClientMethodInvocation> pendingInvocations = new ArrayList<ClientMethodInvocation>();
 
     private String connectorId;
-
-    private ArrayList<Extension> extensions = new ArrayList<Extension>();
 
     /**
      * The EventRouter used for the event model.
@@ -455,26 +466,19 @@ public abstract class AbstractClientConnector implements ClientConnector, Method
      */
     public static Iterable<? extends ClientConnector> getAllChildrenIterable(final ClientConnector connector) {
 
-        Collection<Extension> extensions = connector.getExtensions();
         boolean hasComponents = connector instanceof HasComponents;
-        boolean hasExtensions = extensions.size() > 0;
-        if (!hasComponents && !hasExtensions) {
+        if (!hasComponents) {
             // If has neither component nor extensions, return immutable empty
             // list as iterable.
             return Collections.emptyList();
         }
-        if (hasComponents && !hasExtensions) {
+        if (hasComponents) {
             // only components
             return (HasComponents) connector;
-        }
-        if (!hasComponents && hasExtensions) {
-            // only extensions
-            return extensions;
         }
 
         // combine the iterators of extensions and components to a new iterable.
         final Iterator<Component> componentsIterator = ((HasComponents) connector).iterator();
-        final Iterator<Extension> extensionsIterator = extensions.iterator();
         Iterable<? extends ClientConnector> combinedIterable = new Iterable<ClientConnector>() {
 
             @Override
@@ -483,16 +487,13 @@ public abstract class AbstractClientConnector implements ClientConnector, Method
 
                     @Override
                     public boolean hasNext() {
-                        return componentsIterator.hasNext() || extensionsIterator.hasNext();
+                        return componentsIterator.hasNext();
                     }
 
                     @Override
                     public ClientConnector next() {
                         if (componentsIterator.hasNext()) {
                             return componentsIterator.next();
-                        }
-                        if (extensionsIterator.hasNext()) {
-                            return extensionsIterator.next();
                         }
                         throw new NoSuchElementException();
                     }
@@ -506,39 +507,6 @@ public abstract class AbstractClientConnector implements ClientConnector, Method
             }
         };
         return combinedIterable;
-    }
-
-    @Override
-    public Collection<Extension> getExtensions() {
-        return Collections.unmodifiableCollection(extensions);
-    }
-
-    /**
-     * Add an extension to this connector. This method is protected to allow
-     * extensions to select which targets they can extend.
-     * 
-     * @param extension
-     *            the extension to add
-     */
-    protected void addExtension(Extension extension) {
-        ClientConnector previousParent = extension.getParent();
-        if (equals(previousParent)) {
-            // Nothing to do, already attached
-            return;
-        } else if (previousParent != null) {
-            throw new IllegalStateException("Moving an extension from one parent to another is not supported");
-        }
-
-        extensions.add(extension);
-        extension.setParent(this);
-        markAsDirty();
-    }
-
-    @Override
-    public void removeExtension(Extension extension) {
-        extension.setParent(null);
-        extensions.remove(extension);
-        markAsDirty();
     }
 
     /*

@@ -32,9 +32,7 @@ import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.server.Page;
 import com.vaadin.server.Resource;
-import com.vaadin.server.Responsive;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -48,6 +46,7 @@ import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.MenuBar;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.UI;
@@ -92,10 +91,6 @@ public class ValoThemeUI extends UI {
 
         if (getPage().getWebBrowser().isIE() && getPage().getWebBrowser().getBrowserMajorVersion() == 9) {
             menu.setWidth("320px");
-        }
-
-        if (!testMode) {
-            Responsive.makeResponsive(this);
         }
 
         getPage().setTitle("Valo Theme Test");

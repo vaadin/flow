@@ -16,6 +16,8 @@
 
 package com.vaadin.server;
 
+import com.vaadin.ui.AbstractClientConnector;
+
 /**
  * A resource that is served through the Connector that is using the resource.
  * 

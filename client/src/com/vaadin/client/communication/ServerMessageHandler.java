@@ -51,7 +51,6 @@ import com.vaadin.client.ServerConnector;
 import com.vaadin.client.Util;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.extensions.AbstractExtensionConnector;
 import com.vaadin.client.metadata.NoDataException;
 import com.vaadin.client.metadata.Property;
 import com.vaadin.client.metadata.Type;
@@ -916,8 +915,8 @@ public class ServerMessageHandler {
                             newChildren.add(childConnector);
                             if (childConnector instanceof ComponentConnector) {
                                 newComponents.add((ComponentConnector) childConnector);
-                            } else if (!(childConnector instanceof AbstractExtensionConnector)) {
-                                throw new IllegalStateException(Util.getConnectorString(childConnector) + " is not a ComponentConnector nor an AbstractExtensionConnector");
+                            } else {
+                                throw new IllegalStateException(Util.getConnectorString(childConnector) + " is not a ComponentConnector");
                             }
                             if (childConnector.getParent() != parentConnector) {
                                 childConnector.setParent(parentConnector);

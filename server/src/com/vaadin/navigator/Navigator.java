@@ -38,14 +38,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.server.Page;
-import com.vaadin.server.Page.UriFragmentChangedEvent;
-import com.vaadin.server.Page.UriFragmentChangedListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.SingleComponentContainer;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.Page.UriFragmentChangedEvent;
+import com.vaadin.ui.Page.UriFragmentChangedListener;
 
 /**
  * A navigator utility that allows switching of views in a part of an

@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.server;
+package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.event.EventRouter;
+import com.vaadin.server.Constants;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.WebBrowser;
 import com.vaadin.shared.ui.ui.PageClientRpc;
 import com.vaadin.shared.ui.ui.PageState;
 import com.vaadin.shared.ui.ui.UIState;
-import com.vaadin.ui.JavaScript;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 
 public class Page implements Serializable {
@@ -456,8 +456,7 @@ public class Page implements Serializable {
     public JavaScript getJavaScript() {
         if (javaScript == null) {
             // Create and attach on first use
-            javaScript = new JavaScript();
-            javaScript.extend(uI);
+            javaScript = new JavaScript(uI);
         }
         return javaScript;
     }

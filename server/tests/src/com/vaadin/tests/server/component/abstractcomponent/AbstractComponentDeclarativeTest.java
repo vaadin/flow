@@ -28,7 +28,6 @@ import org.junit.Test;
 import com.vaadin.server.ErrorMessage.ErrorLevel;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
-import com.vaadin.server.Responsive;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.server.UserError;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -37,7 +36,6 @@ import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.declarative.DesignContext;
 
 /**
  * Test cases for reading and writing the properties of AbstractComponent.
@@ -164,30 +162,6 @@ public class AbstractComponentDeclarativeTest extends DeclarativeTestBase<Abstra
         component.setWidth(null);
         testRead(design, component);
         testWrite(design, component);
-    }
-
-    @Test
-    public void testResponsive() {
-        String design = "<v-label responsive =\"\"/>";
-        Responsive.makeResponsive(component);
-        testRead(design, component);
-        testWrite(design, component);
-    }
-
-    @Test
-    public void testResponsiveFalse() {
-        String design = "<v-label responsive =\"false\"/>";
-        // Only test read as the attribute responsive=false would not be written
-        testRead(design, component);
-    }
-
-    @Test
-    public void testReadAlreadyResponsive() {
-        AbstractComponent component = new Label();
-        Responsive.makeResponsive(component);
-        Element design = createDesign("responsive", "");
-        component.readDesign(design, new DesignContext());
-        assertEquals("Component should have only one extension", 1, component.getExtensions().size());
     }
 
     private Element createDesign(String key, String value) {

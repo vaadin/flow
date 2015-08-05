@@ -425,7 +425,7 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
     /**
      * Gets the URL for a resource that has been added by the server-side
      * connector using
-     * {@link com.vaadin.terminal.AbstractClientConnector#setResource(String, com.vaadin.terminal.Resource)}
+     * {@link com.vaadin.ui.terminal.AbstractClientConnector#setResource(String, com.vaadin.terminal.Resource)}
      * with the same key. <code>null</code> is returned if no corresponding
      * resource is found.
      * 

@@ -18,7 +18,6 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.server.Page;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.Position;
 

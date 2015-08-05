@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.server;
+package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -23,10 +23,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.server.JsonCodec;
 import com.vaadin.shared.JavaScriptConnectorState;
-import com.vaadin.ui.AbstractJavaScriptComponent;
 import com.vaadin.ui.JavaScript.JavaScriptCallbackRpc;
-import com.vaadin.ui.JavaScriptFunction;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.JsonArray;

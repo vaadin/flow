@@ -63,6 +63,7 @@ import com.vaadin.client.communication.StateChangeEvent.StateChangeHandler;
 import com.vaadin.client.ui.AbstractConnector;
 import com.vaadin.client.ui.AbstractHasComponentsConnector;
 import com.vaadin.client.ui.ClickEventHandler;
+import com.vaadin.client.ui.JavaScriptManager;
 import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.VUI;
 import com.vaadin.shared.ApplicationConstants;
@@ -100,6 +101,7 @@ public class UIConnector extends AbstractHasComponentsConnector {
     @Override
     protected void init() {
         super.init();
+        jsManager = new JavaScriptManager(this);
         registerRpc(PageClientRpc.class, new PageClientRpc() {
 
             @Override
@@ -313,6 +315,8 @@ public class UIConnector extends AbstractHasComponentsConnector {
     };
 
     private Timer pollTimer = null;
+
+    private JavaScriptManager jsManager;
 
     @Override
     public VUI getWidget() {
@@ -783,6 +787,11 @@ public class UIConnector extends AbstractHasComponentsConnector {
         } else {
             return null;
         }
+    }
+
+    @OnStateChange("javascriptManager")
+    private void javascriptChange() {
+        jsManager.onStateChanged();
     }
 
 }

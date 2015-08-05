@@ -33,13 +33,10 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 
-import com.vaadin.server.AbstractClientConnector;
 import com.vaadin.server.AbstractErrorMessage.ContentMode;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.server.ErrorMessage.ErrorLevel;
-import com.vaadin.server.Extension;
 import com.vaadin.server.Resource;
-import com.vaadin.server.Responsive;
 import com.vaadin.server.SizeWithUnit;
 import com.vaadin.server.Sizeable;
 import com.vaadin.server.UserError;
@@ -925,45 +922,6 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         default:
             return new Locale(parts[0], parts[1], parts[2]);
         }
-    }
-
-    /**
-     * Toggles responsiveness of this component.
-     * 
-     * @since 7.5.0
-     * @param responsive
-     *            boolean enables responsiveness, false disables
-     */
-    public void setResponsive(boolean responsive) {
-        if (responsive) {
-            // make responsive if necessary
-            if (!isResponsive()) {
-                Responsive.makeResponsive(this);
-            }
-        } else {
-            // remove responsive extensions
-            List<Extension> extensions = new ArrayList<Extension>(getExtensions());
-            for (Extension e : extensions) {
-                if (e instanceof Responsive) {
-                    removeExtension(e);
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns true if the component is responsive
-     * 
-     * @since 7.5.0
-     * @return true if the component is responsive
-     */
-    public boolean isResponsive() {
-        for (Extension e : getExtensions()) {
-            if (e instanceof Responsive) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

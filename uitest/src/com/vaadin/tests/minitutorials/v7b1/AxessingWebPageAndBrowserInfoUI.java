@@ -16,15 +16,15 @@
 
 package com.vaadin.tests.minitutorials.v7b1;
 
-import com.vaadin.server.Page;
-import com.vaadin.server.Page.BrowserWindowResizeEvent;
-import com.vaadin.server.Page.BrowserWindowResizeListener;
-import com.vaadin.server.Page.UriFragmentChangedEvent;
-import com.vaadin.server.Page.UriFragmentChangedListener;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.Page.BrowserWindowResizeEvent;
+import com.vaadin.ui.Page.BrowserWindowResizeListener;
+import com.vaadin.ui.Page.UriFragmentChangedEvent;
+import com.vaadin.ui.Page.UriFragmentChangedListener;
 
 public class AxessingWebPageAndBrowserInfoUI extends AbstractTestUI {
 

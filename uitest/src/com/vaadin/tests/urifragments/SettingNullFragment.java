@@ -1,9 +1,9 @@
 package com.vaadin.tests.urifragments;
 
-import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.Button.ClickEvent;
 
 @SuppressWarnings("serial")

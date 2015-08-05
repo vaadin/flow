@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.vaadin.shared.communication.PushMode;
+import com.vaadin.shared.extension.javascriptmanager.JavaScriptManagerState;
 import com.vaadin.shared.ui.TabIndexState;
 
 public class UIState extends TabIndexState {
@@ -62,6 +63,7 @@ public class UIState extends TabIndexState {
      */
     public String theme;
     public ReconnectDialogConfigurationState reconnectDialog = new ReconnectDialogConfigurationState();
+    public JavaScriptManagerState javascriptManager = new JavaScriptManagerState();
     {
         primaryStyleName = "v-ui";
         // Default is 1 for legacy reasons

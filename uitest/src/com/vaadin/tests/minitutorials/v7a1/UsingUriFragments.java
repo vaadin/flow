@@ -16,11 +16,11 @@
 
 package com.vaadin.tests.minitutorials.v7a1;
 
-import com.vaadin.server.Page.UriFragmentChangedEvent;
-import com.vaadin.server.Page.UriFragmentChangedListener;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Page.UriFragmentChangedEvent;
+import com.vaadin.ui.Page.UriFragmentChangedListener;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;

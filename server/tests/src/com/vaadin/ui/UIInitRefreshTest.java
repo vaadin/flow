@@ -21,11 +21,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.server.Page.BrowserWindowResizeEvent;
-import com.vaadin.server.Page.BrowserWindowResizeListener;
-import com.vaadin.server.Page.UriFragmentChangedEvent;
-import com.vaadin.server.Page.UriFragmentChangedListener;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.Page.BrowserWindowResizeEvent;
+import com.vaadin.ui.Page.BrowserWindowResizeListener;
+import com.vaadin.ui.Page.UriFragmentChangedEvent;
+import com.vaadin.ui.Page.UriFragmentChangedListener;
 
 public class UIInitRefreshTest {
 

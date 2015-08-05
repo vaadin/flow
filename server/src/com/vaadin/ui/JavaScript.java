@@ -19,8 +19,6 @@ package com.vaadin.ui;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vaadin.server.AbstractExtension;
-import com.vaadin.server.Page;
 import com.vaadin.shared.communication.ServerRpc;
 import com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc;
 import com.vaadin.shared.extension.javascriptmanager.JavaScriptManagerState;
@@ -37,8 +35,9 @@ import elemental.json.JsonException;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public class JavaScript extends AbstractExtension {
+public class JavaScript {
     private Map<String, JavaScriptFunction> functions = new HashMap<String, JavaScriptFunction>();
+    private UI ui;
 
     // Can not be defined in client package as this JSONArray is not available
     // in GWT
@@ -51,8 +50,9 @@ public class JavaScript extends AbstractExtension {
      * instead use the JavaScript object already associated with your Page
      * object.
      */
-    public JavaScript() {
-        registerRpc(new JavaScriptCallbackRpc() {
+    public JavaScript(UI ui) {
+        this.ui = ui;
+        ui.registerRpc(new JavaScriptCallbackRpc() {
             @Override
             public void call(String name, JsonArray arguments) {
                 JavaScriptFunction function = functions.get(name);
@@ -66,9 +66,8 @@ public class JavaScript extends AbstractExtension {
         });
     }
 
-    @Override
-    protected JavaScriptManagerState getState() {
-        return (JavaScriptManagerState) super.getState();
+    private JavaScriptManagerState getState() {
+        return ui.getState().javascriptManager;
     }
 
     /**
@@ -120,7 +119,7 @@ public class JavaScript extends AbstractExtension {
      *            The JavaScript code to run.
      */
     public void execute(String script) {
-        getRpcProxy(ExecuteJavaScriptRpc.class).executeJavaScript(script);
+        ui.getRpcProxy(ExecuteJavaScriptRpc.class).executeJavaScript(script);
     }
 
     /**
@@ -148,17 +147,6 @@ public class JavaScript extends AbstractExtension {
             return null;
         }
         return page.getJavaScript();
-    }
-
-    /**
-     * JavaScript is not designed to be removed.
-     * 
-     * @throws UnsupportedOperationException
-     *             when invoked
-     */
-    @Override
-    public void remove() {
-        throw new UnsupportedOperationException("JavaScript is not designed to be removed.");
     }
 
 }

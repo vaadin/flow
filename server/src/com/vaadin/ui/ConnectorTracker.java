@@ -31,7 +31,6 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.server.AbstractClientConnector;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.GlobalResourceHandler;
 import com.vaadin.server.LegacyCommunicationManager;

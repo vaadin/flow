@@ -15,7 +15,6 @@
  */
 package com.vaadin.ui;
 
-import com.vaadin.server.JavaScriptCallbackHelper;
 import com.vaadin.shared.communication.ServerRpc;
 import com.vaadin.shared.ui.JavaScriptComponentState;
 

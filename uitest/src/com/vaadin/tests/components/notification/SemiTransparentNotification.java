@@ -1,10 +1,10 @@
 package com.vaadin.tests.components.notification;
 
-import com.vaadin.server.Page;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.tests.util.LoremIpsum;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.Notification.Type;
 
 public class SemiTransparentNotification extends TestBase {

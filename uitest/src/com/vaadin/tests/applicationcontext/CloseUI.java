@@ -16,12 +16,12 @@
 
 package com.vaadin.tests.applicationcontext;
 
-import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.components.AbstractTestUIWithLog;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.UI;
 

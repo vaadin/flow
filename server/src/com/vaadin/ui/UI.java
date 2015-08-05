@@ -41,7 +41,6 @@ import com.vaadin.server.DefaultErrorHandler;
 import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.ErrorHandlingRunnable;
 import com.vaadin.server.LocaleService;
-import com.vaadin.server.Page;
 import com.vaadin.server.UIProvider;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;

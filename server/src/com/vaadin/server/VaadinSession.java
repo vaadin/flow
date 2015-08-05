@@ -52,6 +52,7 @@ import com.vaadin.data.util.converter.DefaultConverterFactory;
 import com.vaadin.event.EventRouter;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.AbstractField;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 import com.vaadin.util.ReflectTools;

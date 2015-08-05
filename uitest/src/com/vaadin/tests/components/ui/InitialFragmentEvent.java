@@ -1,11 +1,11 @@
 package com.vaadin.tests.components.ui;
 
-import com.vaadin.server.Page.UriFragmentChangedEvent;
-import com.vaadin.server.Page.UriFragmentChangedListener;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUIWithLog;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Page.UriFragmentChangedEvent;
+import com.vaadin.ui.Page.UriFragmentChangedListener;
 
 public class InitialFragmentEvent extends AbstractTestUIWithLog {
 

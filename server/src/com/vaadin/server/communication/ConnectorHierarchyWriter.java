@@ -21,10 +21,10 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.util.Collection;
 
-import com.vaadin.server.AbstractClientConnector;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.PaintException;
+import com.vaadin.ui.AbstractClientConnector;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;

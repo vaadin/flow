@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server;
+package com.vaadin.ui;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -26,6 +26,7 @@ import org.mockito.Mockito;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.communication.FieldRpc.BlurServerRpc;
 import com.vaadin.shared.ui.ClickRpc;
+import com.vaadin.ui.AbstractClientConnector;
 
 /**
  * We test that AbstractClientConnector has a suitable isThis method which is

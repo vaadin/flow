@@ -18,7 +18,6 @@ package com.vaadin.tests.applicationcontext;
 
 import javax.servlet.http.HttpSession;
 
-import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
@@ -26,6 +25,7 @@ import com.vaadin.server.WrappedHttpSession;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.tests.util.Log;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.UI;
 

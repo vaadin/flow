@@ -17,13 +17,13 @@ package com.vaadin.server;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.List;
 
 import com.vaadin.event.ConnectorEvent;
 import com.vaadin.event.ConnectorEventListener;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.communication.SharedState;
+import com.vaadin.ui.AbstractClientConnector;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 
@@ -212,21 +212,6 @@ public interface ClientConnector extends Connector {
      * </p>
      */
     public void detach();
-
-    /**
-     * Get a read-only collection of all extensions attached to this connector.
-     * 
-     * @return a collection of extensions
-     */
-    public Collection<Extension> getExtensions();
-
-    /**
-     * Remove an extension from this connector.
-     * 
-     * @param extension
-     *            the extension to remove.
-     */
-    public void removeExtension(Extension extension);
 
     /**
      * Returns the UI this connector is attached to

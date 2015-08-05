@@ -19,10 +19,11 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.server.Page.BrowserWindowResizeEvent;
-import com.vaadin.server.Page.BrowserWindowResizeListener;
 import com.vaadin.shared.ui.ui.PageState;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.Page.BrowserWindowResizeEvent;
+import com.vaadin.ui.Page.BrowserWindowResizeListener;
 
 /**
  * 

@@ -14,31 +14,27 @@
  * the License.
  */
 
-package com.vaadin.client.extensions.javascriptmanager;
+package com.vaadin.client.ui;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
-import com.vaadin.client.ServerConnector;
 import com.vaadin.client.Util;
 import com.vaadin.client.communication.JavaScriptMethodInvocation;
 import com.vaadin.client.communication.ServerRpcQueue;
-import com.vaadin.client.communication.StateChangeEvent;
-import com.vaadin.client.extensions.AbstractExtensionConnector;
+import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc;
 import com.vaadin.shared.extension.javascriptmanager.JavaScriptManagerState;
-import com.vaadin.shared.ui.Connect;
-import com.vaadin.ui.JavaScript;
 
-@Connect(JavaScript.class)
-public class JavaScriptManagerConnector extends AbstractExtensionConnector {
+public class JavaScriptManager {
     private Set<String> currentNames = new HashSet<String>();
+    private UIConnector ui;
 
-    @Override
-    protected void init() {
-        registerRpc(ExecuteJavaScriptRpc.class, new ExecuteJavaScriptRpc() {
+    public JavaScriptManager(UIConnector ui) {
+        this.ui = ui;
+        ui.registerRpc(ExecuteJavaScriptRpc.class, new ExecuteJavaScriptRpc() {
             @Override
             public void executeJavaScript(String Script) {
                 eval(Script);
@@ -46,10 +42,7 @@ public class JavaScriptManagerConnector extends AbstractExtensionConnector {
         });
     }
 
-    @Override
-    public void onStateChanged(StateChangeEvent stateChangeEvent) {
-        super.onStateChanged(stateChangeEvent);
-
+    public void onStateChanged() {
         Set<String> newNames = getState().names;
 
         // Current names now only contains orphan callbacks
@@ -83,7 +76,7 @@ public class JavaScriptManagerConnector extends AbstractExtensionConnector {
         target[parts[parts.length - 1]] = $entry(function() {
             //Must make a copy because arguments is an array-like object (not instanceof Array), causing suboptimal JSON encoding
             var args = Array.prototype.slice.call(arguments, 0);
-            m.@com.vaadin.client.extensions.javascriptmanager.JavaScriptManagerConnector::sendRpc(Ljava/lang/String;Lcom/google/gwt/core/client/JsArray;)(name, args);
+            m.@com.vaadin.client.ui.JavaScriptManager::sendRpc(Ljava/lang/String;Lcom/google/gwt/core/client/JsArray;)(name, args);
         });
     }-*/;
 
@@ -123,20 +116,13 @@ public class JavaScriptManagerConnector extends AbstractExtensionConnector {
          * Must invoke manually as the RPC interface can't be used in GWT
          * because of the JSONArray parameter
          */
-        ServerRpcQueue rpcQueue = ServerRpcQueue.get(getConnection());
-        rpcQueue.add(new JavaScriptMethodInvocation(getConnectorId(), "com.vaadin.ui.JavaScript$JavaScriptCallbackRpc", "call", parameters), false);
+        ServerRpcQueue rpcQueue = ServerRpcQueue.get(ui.getConnection());
+        rpcQueue.add(new JavaScriptMethodInvocation(ui.getConnectorId(), "com.vaadin.ui.JavaScript$JavaScriptCallbackRpc", "call", parameters), false);
         rpcQueue.flush();
     }
 
-    @Override
     public JavaScriptManagerState getState() {
-        return (JavaScriptManagerState) super.getState();
+        return ui.getState().javascriptManager;
     }
 
-    @Override
-    protected void extend(ServerConnector target) {
-        // Nothing to do there as we are not interested in the connector we
-        // extend (Page i.e. UI)
-
-    }
 }

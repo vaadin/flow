@@ -23,8 +23,8 @@ import org.easymock.IMocksControl;
 
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.Navigator.UriFragmentManager;
-import com.vaadin.server.Page;
-import com.vaadin.server.Page.UriFragmentChangedEvent;
+import com.vaadin.ui.Page;
+import com.vaadin.ui.Page.UriFragmentChangedEvent;
 
 public class UriFragmentManagerTest extends TestCase {
 

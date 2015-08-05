@@ -1,7 +1,6 @@
 package com.vaadin.tests.components.notification;
 
 import com.vaadin.data.Item;
-import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.ui.NotificationRole;
 import com.vaadin.tests.components.AbstractTestUI;
@@ -13,6 +12,7 @@ import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.NotificationConfiguration;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;

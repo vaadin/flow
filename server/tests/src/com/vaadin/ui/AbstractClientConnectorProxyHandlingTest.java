@@ -13,13 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server;
+package com.vaadin.ui;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.ui.AbstractClientConnector;
 
 /**
  * We test that AbstractClientConnector has a suitable isThis method which is
