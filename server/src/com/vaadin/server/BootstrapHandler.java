@@ -78,7 +78,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         private final VaadinResponse response;
         private final BootstrapFragmentResponse bootstrapResponse;
 
-        private String widgetsetName;
         private String themeName;
         private String appId;
         private PushMode pushMode;
@@ -104,13 +103,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         public Class<? extends UI> getUIClass() {
             return bootstrapResponse.getUiClass();
-        }
-
-        public String getWidgetsetName() {
-            if (widgetsetName == null) {
-                widgetsetName = getWidgetsetForUI(this);
-            }
-            return widgetsetName;
         }
 
         public String getThemeName() {
@@ -434,19 +426,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return null;
     }
 
-    public String getWidgetsetForUI(BootstrapContext context) {
-        VaadinRequest request = context.getRequest();
-
-        UICreateEvent event = new UICreateEvent(context.getRequest(), context.getUIClass());
-        String widgetset = context.getBootstrapResponse().getUIProvider().getWidgetset(event);
-        if (widgetset == null) {
-            widgetset = request.getService().getConfiguredWidgetset(request);
-        }
-
-        widgetset = VaadinServlet.stripSpecialChars(widgetset);
-        return widgetset;
-    }
-
     /**
      * Method to write the div element into which that actual Vaadin application
      * is rendered.
@@ -491,6 +470,10 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
 
+        // Client engine
+        fragmentNodes.add(new Element(Tag.valueOf("script"), "").attr("type", "text/javascript").attr("src", vaadinLocation + "gwt/" + Constants.CLIENT_ENGINE_MODULE + "/" + Constants.CLIENT_ENGINE_MODULE + ".nocache.js"));
+
+        // Push
         if (context.getPushMode().isEnabled()) {
             // Load client-side dependencies for push support
             String pushJS = vaadinLocation;
@@ -565,6 +548,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         if (themeName != null) {
             appConfig.put("theme", themeName);
         }
+        appConfig.put("client-engine", Constants.CLIENT_ENGINE_MODULE);
 
         // Ignore restartApplication that might be passed to UI init
         if (request.getParameter(VaadinService.URL_PARAMETER_RESTART_APPLICATION) != null) {
@@ -579,7 +563,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         appConfig.put("versionInfo", versionInfo);
-        appConfig.put("widgetset", context.getWidgetsetName());
 
         // Use locale from session if set, else from the request
         Locale locale = ServletPortletHelper.findLocale(null, context.getSession(), context.getRequest());

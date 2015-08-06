@@ -27,13 +27,7 @@
         <antcall target="common.jar">
             <reference refid="empty.reference" torefid="extra.jar.includes" />
         </antcall>
-        <jar destfile="${jar.file}" update="true">
-            <manifest>
-                <attribute name="Vaadin-Package-Version"
-                    value="1" />
-                <attribute name="Vaadin-Widgetsets" value="com.vaadin.DefaultWidgetSet" />
-            </manifest>
-        </jar>
+        <jar destfile="${jar.file}" update="true" />
         <!-- Hack to add validation dependency with source classifier -->
         <property name="pom.xml"
             location="${result.dir}/lib/${module.name}-${vaadin.version}.pom" />

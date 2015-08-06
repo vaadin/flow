@@ -48,8 +48,8 @@
 # Persisted scss cache files
 /WebContent/VAADIN/themes/*/styles.scss.cache
 
-# /WebContent/VAADIN/widgetsets/
-/WebContent/VAADIN/widgetsets
+# /WebContent/VAADIN/gwt/
+/WebContent/VAADIN/gwt
 /WebContent/VAADIN/gwt-unitCache*
 
 WebContent/VAADIN/vaadinPush.js

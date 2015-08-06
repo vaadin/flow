@@ -80,18 +80,13 @@ public interface Constants {
 
     static final String WIDGETSET_DIR_PATH = "VAADIN/widgetsets";
 
-    // Name of the default widget set, used if not specified in web.xml
-    static final String DEFAULT_WIDGETSET = "com.vaadin.DefaultWidgetSet";
-
-    // Widget set parameter name
-    static final String PARAMETER_WIDGETSET = "widgetset";
+    static final String CLIENT_ENGINE_MODULE = "com.vaadin.ClientEngine";
 
     static final String DEFAULT_THEME_NAME = "valo";
 
     static final String INVALID_SECURITY_KEY_MSG = "Invalid security key.";
 
     // portal configuration parameters
-    static final String PORTAL_PARAMETER_VAADIN_WIDGETSET = "vaadin.widgetset";
     static final String PORTAL_PARAMETER_VAADIN_RESOURCE_PATH = "vaadin.resources.path";
     static final String PORTAL_PARAMETER_VAADIN_THEME = "vaadin.theme";
 

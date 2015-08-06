@@ -85,18 +85,6 @@ public class VaadinPortletService extends VaadinService {
             return appOrSystemProperty;
         }
 
-        String portalProperty = portletRequest.getPortalProperty(name);
-        if (portalProperty != null) {
-
-            // For backwards compatibility - automatically map old portal
-            // default widget set to default widget set
-            if (name.equals(Constants.PORTAL_PARAMETER_VAADIN_WIDGETSET)) {
-                return mapDefaultWidgetset(portalProperty);
-            }
-
-            return portalProperty;
-        }
-
         return defaultValue;
     }
 
@@ -104,26 +92,6 @@ public class VaadinPortletService extends VaadinService {
         DeploymentConfiguration deploymentConfiguration = getDeploymentConfiguration();
 
         return deploymentConfiguration.getApplicationOrSystemProperty(name, defaultValue);
-    }
-
-    @Override
-    public String getConfiguredWidgetset(VaadinRequest request) {
-
-        String widgetset = getDeploymentConfiguration().getWidgetset(null);
-
-        if (widgetset == null) {
-            widgetset = getParameter(request, Constants.PORTAL_PARAMETER_VAADIN_WIDGETSET, Constants.DEFAULT_WIDGETSET);
-        }
-
-        return widgetset;
-    }
-
-    private String mapDefaultWidgetset(String widgetset) {
-        if ("com.vaadin.portal.gwt.PortalDefaultWidgetSet".equals(widgetset)) {
-            return Constants.DEFAULT_WIDGETSET;
-        }
-
-        return widgetset;
     }
 
     @Override

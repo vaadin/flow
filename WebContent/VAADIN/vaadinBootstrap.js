@@ -48,7 +48,7 @@
 		log("load widgetset", url, widgetset);
 		setTimeout(function() {
 			if (!isWidgetsetLoaded(widgetset)) {
-				alert("Failed to load the widgetset: " + url);
+				alert("Failed to load the client engine: " + url);
 			}
 		}, 15000);
 	
@@ -211,12 +211,10 @@
 				var themeUri = vaadinDir + 'themes/' + getConfig('theme');
 				loadTheme(themeUri, versionInfo && versionInfo['vaadinVersion']);
 				
-				var widgetset = getConfig('widgetset');
-				var widgetsetUrl = getConfig('widgetsetUrl');
-				if (!widgetsetUrl) {
-					widgetsetUrl = vaadinDir + 'widgetsets/' + widgetset + "/" + widgetset + ".nocache.js?" + new Date().getTime();
-				}
-				loadWidgetset(widgetsetUrl, widgetset);
+				var widgetset = getConfig('client-engine');
+				widgetsets[widgetset] = {
+						pendingApps: []
+					};		
 				
 				if (getConfig('uidl') === undefined) {
 					if (mayDefer) {
@@ -258,13 +256,13 @@
 		},
 		loadTheme: loadTheme,
 		registerWidgetset: function(widgetset, callback) {
-			log("Widgetset registered", widgetset);
+			log("Client engine registered", widgetset);
 			var ws = widgetsets[widgetset];
 			if (ws && ws.pendingApps) {
 				ws.callback = callback;
 				for(var i = 0; i < ws.pendingApps.length; i++) {
 					var appId = ws.pendingApps[i];
-					log("Starting from register widgetset", appId);
+					log("Starting client engine for app", appId);
 					callback(appId);
 				}
 				ws.pendingApps = null;

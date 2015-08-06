@@ -118,13 +118,4 @@ public @interface VaadinServletConfiguration {
     @InitParameterName(Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS)
     public boolean closeIdleSessions() default DefaultDeploymentConfiguration.DEFAULT_CLOSE_IDLE_SESSIONS;
 
-    /**
-     * The default widgetset to use for the servlet. The default value is
-     * <code>com.vaadin.DefaultWidgetSet</code>.
-     * 
-     * @return the default widgetset name
-     */
-    @InitParameterName(VaadinServlet.PARAMETER_WIDGETSET)
-    public String widgetset() default VaadinServlet.DEFAULT_WIDGETSET;
-
 }

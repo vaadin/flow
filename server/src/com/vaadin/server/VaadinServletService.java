@@ -133,11 +133,6 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public String getConfiguredWidgetset(VaadinRequest request) {
-        return getDeploymentConfiguration().getWidgetset(VaadinServlet.DEFAULT_WIDGETSET);
-    }
-
-    @Override
     public String getConfiguredTheme(VaadinRequest request) {
         // Use the default
         return VaadinServlet.getDefaultTheme();

@@ -15,25 +15,19 @@
     <property name="result.dir" value="result" />
     <property name="gwtar.dir" location="${result.dir}/gwtar" />
     <property name="work.dir" location="${result.dir}/work" />
-    <property name="module.output.dir" location="${result.dir}/VAADIN/widgetsets" />
+    <property name="module.output.dir" location="${result.dir}/VAADIN/gwt" />
     <property name="compiled.jar"
         location="${result.dir}/lib/${module.name}-${vaadin.version}.jar" />
 
     <union id="jar.includes">
         <fileset dir="${result.dir}">
-            <include name="VAADIN/widgetsets/com.vaadin*/**" />
+            <include name="VAADIN/gwt/com.vaadin*/**" />
         </fileset>
     </union>
 
-    <target name="default-widgetset-cache">
-        <antcall target="compile-module-cache">
-            <param name="module" value="com.vaadin.DefaultWidgetSet" />
-        </antcall>
-    </target>
-
-    <target name="default-widgetset">
+    <target name="client-engine">
         <antcall target="compile-module">
-            <param name="module" value="com.vaadin.DefaultWidgetSet" />
+            <param name="module" value="com.vaadin.ClientEngine" />
         </antcall>
     </target>
 
@@ -47,7 +41,7 @@
 
         <ivy:resolve log="download-only" resolveid="common"
             conf="compile-module" />
-        <ivy:cachepath pathid="classpath.compile.widgetset"
+        <ivy:cachepath pathid="classpath.compile.clientengine"
             conf="compile-module" />
 
         <mkdir dir="${module.output.dir}" />
@@ -55,7 +49,7 @@
         <echo>Compiling ${module} to ${module.output.dir}</echo>
 
         <!-- compile the module -->
-        <java classname="com.google.gwt.dev.Compiler" classpathref="classpath.compile.widgetset"
+        <java classname="com.google.gwt.dev.Compiler" classpathref="classpath.compile.clientengine"
             failonerror="yes" fork="yes" maxmemory="512m">
             <arg value="-workDir" />
             <arg value="${work.dir}" />
@@ -82,9 +76,9 @@
 
     </target>
 
-    <target name="jar" depends="default-widgetset">
+    <target name="jar" depends="client-engine">
         <antcall target="common.jar">
-            <param name="osgi.extra.package.prefixes" value="VAADIN/widgetsets/" />
+            <param name="osgi.extra.package.prefixes" value="VAADIN/gwt/" />
             <param name="osgi.includeNumberPackages" value="1" />
             <reference torefid="extra.jar.includes" refid="jar.includes" />
         </antcall>

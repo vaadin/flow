@@ -211,16 +211,6 @@ public abstract class VaadinService implements Serializable {
     public abstract String getStaticFileLocation(VaadinRequest request);
 
     /**
-     * Gets the widgetset that is configured for this deployment, e.g. from a
-     * parameter in web.xml.
-     *
-     * @param request
-     *            the request for which a widgetset is required
-     * @return the name of the widgetset
-     */
-    public abstract String getConfiguredWidgetset(VaadinRequest request);
-
-    /**
      * Gets the theme that is configured for this deployment, e.g. from a portal
      * parameter or just some sensible default value.
      *

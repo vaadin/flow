@@ -36,11 +36,6 @@ public abstract class AbstractDeploymentConfiguration implements DeploymentConfi
     }
 
     @Override
-    public String getWidgetset(String defaultValue) {
-        return getApplicationOrSystemProperty(Constants.PARAMETER_WIDGETSET, defaultValue);
-    }
-
-    @Override
     public String getResourcesPath() {
         return getApplicationOrSystemProperty(Constants.PARAMETER_VAADIN_RESOURCES, null);
     }

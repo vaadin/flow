@@ -33,7 +33,7 @@
         <mkdir dir="${work.dir}" />
         <unjar src="${lib.dir}/hummingbird-client-compiled.jar" dest="${work.dir}">
             <patternset>
-                <include name="VAADIN/widgetsets/**/*" />
+                <include name="VAADIN/gwt/**/*" />
             </patternset>
         </unjar>
         <unjar src="${lib.dir}/hummingbird-themes.jar" dest="${work.dir}">
