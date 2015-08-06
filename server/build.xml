@@ -19,6 +19,8 @@
     <union id="jar.includes">
         <fileset dir="${vaadin.basedir}/WebContent">
             <include name="VAADIN/vaadinBootstrap.js" />
+            <include name="VAADIN/hum.js" />
+            <include name="VAADIN/bower_components/*/**" />
         </fileset>
         <fileset dir="${result.dir}">
             <include name="VAADIN/*" />
