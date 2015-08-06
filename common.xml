@@ -141,6 +141,7 @@
             <fileset dir="${classes}" excludes="${classes.exclude}" erroronmissingdir="false" />
             <fileset dir="${src}" excludes="${jar.exclude}" erroronmissingdir="false" />
             <fileset dir="${common.jarfiles.dir}" />
+            <union refid="extra.jar.includes" />
         </union>
 
         <jar destfile="${result.jar}" duplicate="fail" index="true">

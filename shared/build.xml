@@ -39,14 +39,13 @@
         <antcall target="common.jar">
             <param name="import-package" value="${shared.osgi.import}" />
             <param name="require-bundle" value="${shared.osgi.require-bundle}" />
-            <reference refid="shared.gwt.includes" torefid="extra.jar.includes" />
+            <reference refid="empty.reference" torefid="extra.jar.includes" />
             <param name="osgi.extra.package.prefixes" value="elemental" />
         </antcall>
     </target>
 
     <target name="publish-local" depends="jar">
-        <antcall target="common.sources.jar">
-        </antcall>
+        <antcall target="common.sources.jar" />
         <antcall target="common.javadoc.jar" />
 
         <antcall target="common.publish-local" />

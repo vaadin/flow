@@ -17,7 +17,6 @@
     <path id="classpath.test.custom" />
 
     <union id="jar.includes">
-        <union refid="server.gwt.includes" />
         <fileset dir="${vaadin.basedir}/WebContent">
             <include name="VAADIN/vaadinBootstrap.js" />
         </fileset>
