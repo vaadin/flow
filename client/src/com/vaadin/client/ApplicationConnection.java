@@ -27,7 +27,9 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.LinkElement;
 import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
@@ -694,8 +696,22 @@ public class ApplicationConnection implements HasHandlers {
         ResourceLoader loader = ResourceLoader.get();
         for (int i = 0; i < dependencies.length(); i++) {
             String url = translateVaadinUri(dependencies.get(i));
+            getLogger().info("Loading stylesheet dependency from " + url);
             ApplicationConfiguration.startDependencyLoading();
             loader.loadStylesheet(url, resourceLoadListener);
+        }
+    }
+
+    public void loadHtmlDependencies(JsArrayString dependencies) {
+        // Assuming no reason to interpret in a defined order and no need to
+        // wait for load events
+        for (int i = 0; i < dependencies.length(); i++) {
+            String url = translateVaadinUri(dependencies.get(i));
+            getLogger().info("Loading HTML dependency from " + url);
+            LinkElement l = Document.get().createLinkElement();
+            l.setAttribute("rel", "import");
+            l.setAttribute("href", url);
+            Document.get().getHead().appendChild(l);
         }
     }
 
@@ -730,6 +746,7 @@ public class ApplicationConnection implements HasHandlers {
 
         // Start chain by loading first
         String url = translateVaadinUri(dependencies.shift());
+        getLogger().info("Loading script dependency from " + url);
         ApplicationConfiguration.startDependencyLoading();
         loader.loadScript(url, resourceLoadListener);
 

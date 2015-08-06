@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 
+import com.vaadin.annotations.HTML;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.LayoutEvents.LayoutClickNotifier;
@@ -40,6 +41,7 @@ import com.vaadin.ui.declarative.DesignAttributeHandler;
 import com.vaadin.ui.declarative.DesignContext;
 
 @SuppressWarnings("serial")
+@HTML("vaadin://bower_components/iron-flex-layout/classes/iron-flex-layout.html")
 public abstract class AbstractOrderedLayout extends AbstractLayout implements Layout.AlignmentHandler, Layout.SpacingHandler, LayoutClickNotifier, Layout.MarginHandler {
 
     private AbstractOrderedLayoutServerRpc rpc = new AbstractOrderedLayoutServerRpc() {
@@ -97,6 +99,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
             throw e;
         }
         componentAdded(c);
+
+        getElement().insertChild(getElement().getChildCount(), c.getElement());
     }
 
     /**
@@ -120,6 +124,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
             throw e;
         }
         componentAdded(c);
+
+        getElement().insertChild(0, c.getElement());
 
     }
 
@@ -330,6 +336,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
         }
 
         childData.expandRatio = ratio;
+
+        component.getElement().setAttribute("class", "flex-" + ratio);
     }
 
     /**

@@ -31,7 +31,7 @@ public class HorizontalLayout extends AbstractOrderedLayout {
      * Constructs an empty HorizontalLayout.
      */
     public HorizontalLayout() {
-
+        getElement().setAttribute("class", "layout horizontal");
     }
 
     /**

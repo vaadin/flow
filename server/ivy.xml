@@ -93,7 +93,9 @@
         <!-- <dependency org="postgresql" name="postgresql" rev="9.1-901.jdbc3" 
             conf="test,ide->default" /> -->
 
-		
+		<!-- Kernel deps -->
+		<dependency org="org.json" name="json" rev="20141113" /> <!-- FIXME Remove -->
+		<dependency org="net.bytebuddy" name="byte-buddy" rev="0.6.11" />
     </dependencies>
 
 </ivy-module>

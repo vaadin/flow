@@ -38,6 +38,7 @@ import org.jsoup.nodes.Node;
 import org.jsoup.parser.Tag;
 
 import com.google.gwt.thirdparty.guava.common.net.UrlEscapers;
+import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Viewport;
@@ -47,6 +48,7 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -332,11 +334,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         Element head = document.head();
         head.appendElement("meta").attr("http-equiv", "Content-Type").attr("content", "text/html; charset=utf-8");
 
-        /*
-         * Enable Chrome Frame in all versions of IE if installed.
-         */
-        head.appendElement("meta").attr("http-equiv", "X-UA-Compatible").attr("content", "IE=11;chrome=1");
-
         Class<? extends UI> uiClass = context.getUIClass();
 
         String viewportContent = null;
@@ -376,27 +373,53 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendElement("link").attr("rel", "icon").attr("type", "image/vnd.microsoft.icon").attr("href", themeUri + "/favicon.ico");
         }
 
-        JavaScript javaScript = uiClass.getAnnotation(JavaScript.class);
-        if (javaScript != null) {
-            String[] resources = javaScript.value();
-            for (String resource : resources) {
-                String url = registerDependency(context, uiClass, resource);
-                head.appendElement("script").attr("type", "text/javascript").attr("src", url);
+        List<Class<? extends Component>> uiClassAndParents = getComponentAndParents(uiClass);
+        for (Class<? extends Component> c : uiClassAndParents) {
+            JavaScript javaScript = c.getAnnotation(JavaScript.class);
+            if (javaScript != null) {
+                String[] resources = javaScript.value();
+                for (String resource : resources) {
+                    String url = registerDependency(context, uiClass, resource);
+                    head.appendElement("script").attr("type", "text/javascript").attr("src", url);
+                }
             }
-        }
 
-        StyleSheet styleSheet = uiClass.getAnnotation(StyleSheet.class);
-        if (styleSheet != null) {
-            String[] resources = styleSheet.value();
-            for (String resource : resources) {
-                String url = registerDependency(context, uiClass, resource);
-                head.appendElement("link").attr("rel", "stylesheet").attr("type", "text/css").attr("href", url);
+            HTML html = c.getAnnotation(HTML.class);
+            if (html != null) {
+                String[] resources = html.value();
+                for (String resource : resources) {
+                    String url = registerDependency(context, uiClass, resource);
+                    head.appendElement("link").attr("rel", "import").attr("href", url);
+                }
+            }
+
+            StyleSheet styleSheet = c.getAnnotation(StyleSheet.class);
+            if (styleSheet != null) {
+                String[] resources = styleSheet.value();
+                for (String resource : resources) {
+                    String url = registerDependency(context, uiClass, resource);
+                    head.appendElement("link").attr("rel", "stylesheet").attr("type", "text/css").attr("href", url);
+                }
             }
         }
 
         Element body = document.body();
         body.attr("scroll", "auto");
         body.addClass(ApplicationConstants.GENERATED_BODY_CLASSNAME);
+    }
+
+    /**
+     * @since
+     * @param uiClass
+     * @return
+     */
+    private List<Class<? extends Component>> getComponentAndParents(Class<?> cls) {
+        List<Class<? extends Component>> result = new ArrayList<>();
+        while (Component.class.isAssignableFrom(cls)) {
+            result.add((Class<? extends Component>) cls);
+            cls = cls.getSuperclass();
+        }
+        return result;
     }
 
     private String registerDependency(BootstrapContext context, Class<? extends UI> uiClass, String resource) {
@@ -484,6 +507,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         String bootstrapLocation = vaadinLocation + ApplicationConstants.VAADIN_BOOTSTRAP_JS + versionQueryParam;
         fragmentNodes.add(new Element(Tag.valueOf("script"), "").attr("type", "text/javascript").attr("src", bootstrapLocation));
+
         Element mainScriptTag = new Element(Tag.valueOf("script"), "").attr("type", "text/javascript");
 
         StringBuilder builder = new StringBuilder();

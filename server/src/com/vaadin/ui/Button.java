@@ -23,6 +23,7 @@ import java.util.Collection;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.button.ButtonServerRpc;
@@ -38,6 +39,7 @@ import com.vaadin.util.ReflectTools;
  * @since 3.0
  */
 @SuppressWarnings("serial")
+@Tag("button")
 public class Button extends AbstractFocusable {
 
     private ButtonServerRpc rpc = new ButtonServerRpc() {
@@ -61,7 +63,6 @@ public class Button extends AbstractFocusable {
      * Creates a new push button.
      */
     public Button() {
-        registerRpc(rpc);
     }
 
     /**
@@ -73,6 +74,13 @@ public class Button extends AbstractFocusable {
     public Button(String caption) {
         this();
         setCaption(caption);
+    }
+
+    @Override
+    public void setCaption(String caption) {
+        super.setCaption(caption);
+        getElement().removeAllChildren();
+        getElement().insertChild(0, com.vaadin.hummingbird.kernel.Element.createText(caption));
     }
 
     /**
@@ -500,4 +508,5 @@ public class Button extends AbstractFocusable {
         // icon-alt
         DesignAttributeHandler.writeAttribute("icon-alt", attr, getIconAlternateText(), def.getIconAlternateText(), String.class);
     }
+
 }

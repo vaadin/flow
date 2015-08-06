@@ -22,19 +22,24 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
 import com.vaadin.event.UIEvents.PollEvent;
 import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
+import com.vaadin.hummingbird.kernel.Element;
+import com.vaadin.hummingbird.kernel.RootNode;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.DefaultErrorHandler;
@@ -93,6 +98,7 @@ import com.vaadin.util.CurrentInstance;
  * 
  * @since 7.0
  */
+@JavaScript({ "vaadin://bower_components/webcomponentsjs/webcomponents.min.js", "vaadin://hum.js" })
 public abstract class UI extends AbstractSingleComponentContainer implements PollNotifier, Focusable {
 
     /**
@@ -136,6 +142,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      * Scroll X position
      */
     private int scrollLeft = 0;
+
+    private RootNode rootNode;
 
     private UIServerRpc rpc = new UIServerRpc() {
         @Override
@@ -227,6 +235,10 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      * @see #setContent(Component)
      */
     public UI(Component content) {
+        rootNode = new RootNode();
+        Element body = new Element("body");
+        rootNode.put("body", body.getNode());
+        setElement(body);
         registerRpc(rpc);
         registerRpc(debugRpc);
         setSizeFull();
@@ -484,6 +496,10 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
     private LocaleService localeService = new LocaleService(this, getState(false).localeServiceState);
 
     private String embedId;
+
+    private Set<Integer> sentTemplates;
+
+    private Set<Class<? extends ClientConnector>> resourcesHandled = new HashSet<>();
 
     /**
      * This method is used by Component.Focusable objects to request focus to
@@ -973,6 +989,12 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
             throw new IllegalArgumentException("A Window cannot be added using setContent. Use addWindow(Window window) instead");
         }
         super.setContent(content);
+        if (content == null) {
+            getElement().removeAllChildren();
+        } else {
+            getElement().insertChild(0, content.getElement());
+        }
+
     }
 
     @Override
@@ -1381,4 +1403,37 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
     public void setLastProcessedClientToServerId(int lastProcessedClientToServerId) {
         this.lastProcessedClientToServerId = lastProcessedClientToServerId;
     }
+
+    /**
+     * @return the rootNode
+     */
+    public RootNode getRootNode() {
+        return rootNode;
+    }
+
+    /**
+     * @since
+     * @return
+     */
+    public Set<Integer> getSentTemplates() {
+        return sentTemplates;
+    }
+
+    /**
+     * @since
+     * @param sentTemplates
+     */
+    public void setSentTemplates(Set<Integer> sentTemplates) {
+        this.sentTemplates = sentTemplates;
+
+    }
+
+    /**
+     * @since
+     * @return
+     */
+    public Set<Class<? extends ClientConnector>> getResourcesHandled() {
+        return resourcesHandled;
+    }
+
 }

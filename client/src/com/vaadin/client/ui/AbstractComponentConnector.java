@@ -19,6 +19,7 @@ import java.awt.LayoutManager;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
@@ -73,11 +74,18 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
         try {
             Type widgetType = type.getMethod("getWidget").getReturnType();
             Object instance = widgetType.createInstance();
-            return (Widget) instance;
+            Widget w = (Widget) instance;
+            setConnectorId(w.getElement(), getConnectorId());
+            return w;
         } catch (NoDataException e) {
             throw new IllegalStateException("Default implementation of createWidget() does not work for " + getClass().getSimpleName() + ". This might be caused by explicitely using " + "super.createWidget() or some unspecified " + "problem with the widgetset compilation.", e);
         }
     }
+
+    private static native void setConnectorId(Element el, String id)
+    /*-{
+        el.tkPid = id;
+    }-*/;
 
     /**
      * Returns the widget associated with this paintable. The widget returned by

@@ -29,24 +29,40 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
+import com.vaadin.hummingbird.kernel.AttributeBinding;
+import com.vaadin.hummingbird.kernel.BoundElementTemplate;
+import com.vaadin.hummingbird.kernel.ElementTemplate;
+import com.vaadin.hummingbird.kernel.ForElementTemplate;
+import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
+import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.StaticChildrenElementTemplate;
+import com.vaadin.hummingbird.kernel.change.IdChange;
+import com.vaadin.hummingbird.kernel.change.ListInsertChange;
+import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
+import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
+import com.vaadin.hummingbird.kernel.change.NodeChangeVisitor;
+import com.vaadin.hummingbird.kernel.change.ParentChange;
+import com.vaadin.hummingbird.kernel.change.PutChange;
+import com.vaadin.hummingbird.kernel.change.RemoveChange;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.LegacyCommunicationManager.ClientCache;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.ConnectorTracker;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
-import elemental.json.JsonException;
 import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 
 /**
  * Serializes pending server-side changes to UI state to JSON. This includes
@@ -58,6 +74,9 @@ import elemental.json.impl.JsonUtil;
  */
 public class UidlWriter implements Serializable {
 
+    private static final String DEPENDENCY_JAVASCRIPT = "scriptDependencies";
+    private static final String DEPENDENCY_STYLESHEET = "stylesheetDependencies";
+    private static final String DEPENDENCY_HTML = "htmlDependencies";
     private final Set<Class<? extends ClientConnector>> usedClientConnectors = new HashSet<Class<? extends ClientConnector>>();
 
     /**
@@ -121,139 +140,39 @@ public class UidlWriter implements Serializable {
 
         uiConnectorTracker.setWritingResponse(true);
         try {
+            JSONObject response = new JSONObject();
 
             int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled() ? uiConnectorTracker.getCurrentSyncId() : -1;
-            writer.write("\"" + ApplicationConstants.SERVER_SYNC_ID + "\": " + syncId + ", ");
+            // writer.write("\"" + ApplicationConstants.SERVER_SYNC_ID + "\": "
+            // + syncId + ", ");
+            response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
             if (repaintAll) {
-                writer.write("\"" + ApplicationConstants.RESYNCHRONIZE_ID + "\": true, ");
+                response.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
+                // writer.write("\"" + ApplicationConstants.RESYNCHRONIZE_ID +
+                // "\": true, ");
             }
             int nextClientToServerMessageId = ui.getLastProcessedClientToServerId() + 1;
-            writer.write("\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\": " + nextClientToServerMessageId + ", ");
+            response.put(ApplicationConstants.CLIENT_TO_SERVER_ID, nextClientToServerMessageId);
+            // writer.write("\"" + ApplicationConstants.CLIENT_TO_SERVER_ID +
+            // "\": " + nextClientToServerMessageId);
 
-            // send shared state to client
-
-            // for now, send the complete state of all modified and new
-            // components
-
-            // Ideally, all this would be sent before "changes", but that causes
-            // complications with legacy components that create sub-components
-            // in their paint phase. Nevertheless, this will be processed on the
-            // client after component creation but before legacy UIDL
-            // processing.
-
-            writer.write("\"state\":");
-            new SharedStateWriter().write(ui, writer);
-            writer.write(", "); // close states
-
-            // TODO This should be optimized. The type only needs to be
-            // sent once for each connector id + on refresh. Use the same cache
-            // as
-            // widget mapping
-
-            writer.write("\"types\":");
             Collection<ClientConnector> dirtyVisibleConnectors = ui.getConnectorTracker().getDirtyVisibleConnectors();
-
-            JsonObject connectorTypes = Json.createObject();
-            for (ClientConnector connector : dirtyVisibleConnectors) {
-                String connectorType = getTag(connector, manager);
-                try {
-                    connectorTypes.put(connector.getConnectorId(), connectorType);
-                } catch (JsonException e) {
-                    throw new PaintException("Failed to send connector type for connector " + connector.getConnectorId() + ": " + e.getMessage(), e);
-                }
-            }
-            writer.write(JsonUtil.stringify(connectorTypes));
-            writer.write(", "); // close states
-
-            // Send update hierarchy information to the client.
-
-            // This could be optimized aswell to send only info if hierarchy has
-            // actually changed. Much like with the shared state. Note though
-            // that an empty hierarchy is information aswell (e.g. change from 1
-            // child to 0 children)
-
-            writer.write("\"hierarchy\":");
-            new ConnectorHierarchyWriter().write(ui, writer);
-            writer.write(", "); // close hierarchy
-
-            // send server to client RPC calls for components in the UI, in call
-            // order
-
-            // collect RPC calls from components in the UI in the order in
-            // which they were performed, remove the calls from components
-
-            writer.write("\"rpc\" : ");
-            new ClientRpcWriter().write(ui, writer);
-            writer.write(", "); // close rpc
-
-            uiConnectorTracker.markAllConnectorsClean();
-
-            writer.write("\"meta\" : ");
-
-            SystemMessages messages = ui.getSession().getService().getSystemMessages(ui.getLocale(), null);
-            // TODO hilightedConnector
-            new MetadataWriter().write(ui, writer, repaintAll, async, messages);
-            writer.write(", ");
-
-            boolean typeMappingsOpen = false;
-
-            List<Class<? extends ClientConnector>> newConnectorTypes = new ArrayList<Class<? extends ClientConnector>>();
-
-            for (Class<? extends ClientConnector> class1 : usedClientConnectors) {
-                if (clientCache.cache(class1)) {
-                    // client does not know the mapping key for this type, send
-                    // mapping to client
-                    newConnectorTypes.add(class1);
-
-                    if (!typeMappingsOpen) {
-                        typeMappingsOpen = true;
-                        writer.write("\"typeMappings\" : { ");
-                    } else {
-                        writer.write(" , ");
-                    }
-                    String canonicalName = class1.getCanonicalName();
-                    writer.write("\"");
-                    writer.write(canonicalName);
-                    writer.write("\" : ");
-                    writer.write(manager.getTagForType(class1));
-                }
-            }
-            if (typeMappingsOpen) {
-                writer.write(" }");
-            }
-
-            // TODO PUSH Refactor to TypeInheritanceWriter or something
-            boolean typeInheritanceMapOpen = false;
-            if (typeMappingsOpen) {
-                // send the whole type inheritance map if any new mappings
-                for (Class<? extends ClientConnector> class1 : usedClientConnectors) {
-                    if (!ClientConnector.class.isAssignableFrom(class1.getSuperclass())) {
-                        continue;
-                    }
-                    if (!typeInheritanceMapOpen) {
-                        typeInheritanceMapOpen = true;
-                        writer.write(", \"typeInheritanceMap\" : { ");
-                    } else {
-                        writer.write(" , ");
-                    }
-                    writer.write("\"");
-                    writer.write(manager.getTagForType(class1));
-                    writer.write("\" : ");
-                    writer.write(manager.getTagForType((Class<? extends ClientConnector>) class1.getSuperclass()));
-                }
-                if (typeInheritanceMapOpen) {
-                    writer.write(" }");
+            JsonObject dependencies = Json.createObject();
+            List<Class<? extends ClientConnector>> dependencyClasses = new ArrayList<>();
+            for (ClientConnector c : dirtyVisibleConnectors) {
+                Class<? extends ClientConnector> cls = c.getClass();
+                if (!ui.getResourcesHandled().contains(cls)) {
+                    dependencyClasses.add(cls);
                 }
             }
 
-            // TODO Refactor to DependencyWriter or something
-            /*
-             * Ensure super classes come before sub classes to get script
-             * dependency order right. Sub class @JavaScript might assume that
-             * 
-             * @JavaScript defined by super class is already loaded.
-             */
-            Collections.sort(newConnectorTypes, new Comparator<Class<?>>() {
+            // /*
+            // * Ensure super classes come before sub classes to get script
+            // * dependency order right. Sub class @JavaScript might assume that
+            // *
+            // * @JavaScript defined by super class is already loaded.
+            // */
+            Collections.sort(dependencyClasses, new Comparator<Class<?>>() {
                 @Override
                 public int compare(Class<?> o1, Class<?> o2) {
                     // TODO optimize using Class.isAssignableFrom?
@@ -268,46 +187,233 @@ public class UidlWriter implements Serializable {
                     }
                 }
             });
+            for (Class<? extends ClientConnector> cls : dependencyClasses) {
+                handleDependencies(ui, cls, response);
+            }
 
-            List<String> scriptDependencies = new ArrayList<String>();
-            List<String> styleDependencies = new ArrayList<String>();
+            JSONArray changes = new JSONArray();
+            JSONObject newTemplates = new JSONObject();
 
-            for (Class<? extends ClientConnector> class1 : newConnectorTypes) {
-                JavaScript jsAnnotation = class1.getAnnotation(JavaScript.class);
-                if (jsAnnotation != null) {
-                    for (String uri : jsAnnotation.value()) {
-                        scriptDependencies.add(manager.registerDependency(uri, class1));
-                    }
+            ui.getRootNode().commit(new NodeChangeVisitor() {
+                private JSONObject createChange(StateNode node, String type) {
+                    JSONObject change = new JSONObject();
+                    change.put("type", type);
+                    change.put("id", node.getId());
+                    changes.put(change);
+                    return change;
                 }
 
-                StyleSheet styleAnnotation = class1.getAnnotation(StyleSheet.class);
-                if (styleAnnotation != null) {
-                    for (String uri : styleAnnotation.value()) {
-                        styleDependencies.add(manager.registerDependency(uri, class1));
-                    }
+                @Override
+                public void visitRemoveChange(StateNode node, RemoveChange removeChange) {
+                    JSONObject change = createChange(node, "remove");
+                    change.put("key", removeChange.getKey());
                 }
-            }
 
-            // Include script dependencies in output if there are any
-            if (!scriptDependencies.isEmpty()) {
-                writer.write(", \"scriptDependencies\": " + JsonUtil.stringify(toJsonArray(scriptDependencies)));
-            }
+                @Override
+                public void visitPutChange(StateNode node, PutChange putChange) {
+                    JSONObject change;
+                    Object key = putChange.getKey();
+                    Object value = putChange.getValue();
+                    if (value instanceof StateNode) {
+                        if (key instanceof ElementTemplate) {
+                            change = createChange(node, "putOverride");
 
-            // Include style dependencies in output if there are any
-            if (!styleDependencies.isEmpty()) {
-                writer.write(", \"styleDependencies\": " + JsonUtil.stringify(toJsonArray(styleDependencies)));
-            }
+                            ElementTemplate template = (ElementTemplate) key;
+                            key = Integer.valueOf(template.getId());
+                            ensureTemplateSent(template, ui, newTemplates);
+                        } else {
+                            change = createChange(node, "putNode");
+                        }
+                        change.put("value", ((StateNode) value).getId());
+                    } else {
+                        change = createChange(node, "put");
+                        if (value instanceof ElementTemplate) {
+                            ElementTemplate template = (ElementTemplate) value;
+                            value = Integer.valueOf(template.getId());
+                            ensureTemplateSent(template, ui, newTemplates);
+                        }
+                        change.put("value", value);
+                    }
+                    change.put("key", key);
+                }
 
-            for (ClientConnector connector : processedConnectors) {
-                uiConnectorTracker.markClientSideInitialized(connector);
-            }
+                private void ensureTemplateSent(ElementTemplate template, UI ui, JSONObject newTemplates) {
+                    Set<Integer> sentTemplates = ui.getSentTemplates();
+                    if (sentTemplates == null) {
+                        sentTemplates = new HashSet<>();
+                    }
 
-            assert (uiConnectorTracker.getDirtyConnectors().isEmpty()) : "Connectors have been marked as dirty during the end of the paint phase. This is most certainly not intended.";
+                    if (!sentTemplates.contains(Integer.valueOf(template.getId()))) {
+                        newTemplates.put(Integer.toString(template.getId()), serializeTemplate(template, ui, newTemplates));
+                    }
 
-            writePerformanceData(ui, writer);
+                    ui.setSentTemplates(sentTemplates);
+                }
+
+                private JSONObject serializeTemplate(ElementTemplate template, UI ui, JSONObject newTemplates) {
+                    JSONObject serialized = new JSONObject();
+                    serialized.put("type", template.getClass().getSimpleName());
+                    serialized.put("id", template.getId());
+
+                    if (template.getClass() == BoundElementTemplate.class) {
+                        serializeBoundElementTemplate(serialized, (BoundElementTemplate) template);
+                    } else if (template.getClass() == StaticChildrenElementTemplate.class) {
+                        serializeStaticChildrenElementEmplate(serialized, (StaticChildrenElementTemplate) template, ui, newTemplates);
+                    } else if (template.getClass() == ForElementTemplate.class) {
+                        serializeForTemplate(serialized, (ForElementTemplate) template, ui, newTemplates);
+                    } else {
+                        throw new RuntimeException(template.toString());
+                    }
+                    return serialized;
+                }
+
+                private void serializeForTemplate(JSONObject serialized, ForElementTemplate template, UI ui, JSONObject newTemplates) {
+                    serialized.put("modelKey", template.getModelProperty());
+
+                    ElementTemplate childTemplate = template.getChildTemplate();
+                    ensureTemplateSent(childTemplate, ui, newTemplates);
+                    serialized.put("childTemplate", childTemplate.getId());
+
+                    serializeBoundElementTemplate(serialized, template);
+                }
+
+                private void serializeStaticChildrenElementEmplate(JSONObject serialized, StaticChildrenElementTemplate template, UI ui, JSONObject newTemplates) {
+                    JSONArray children = new JSONArray();
+                    serialized.put("children", children);
+                    for (BoundElementTemplate childTemplate : template.getChildren()) {
+                        ensureTemplateSent(childTemplate, ui, newTemplates);
+                        children.put(childTemplate.getId());
+                    }
+                    serializeBoundElementTemplate(serialized, template);
+                }
+
+                private void serializeBoundElementTemplate(JSONObject serialized, BoundElementTemplate bet) {
+                    JSONObject attributeBindings = new JSONObject();
+                    for (AttributeBinding attributeBinding : bet.getAttributeBindings().values()) {
+                        if (attributeBinding instanceof ModelAttributeBinding) {
+                            ModelAttributeBinding mab = (ModelAttributeBinding) attributeBinding;
+                            attributeBindings.put(mab.getModelPath(), mab.getAttributeName());
+                        } else {
+                            // Not yet supported
+                            throw new RuntimeException(attributeBinding.toString());
+                        }
+                    }
+
+                    JSONObject defaultAttributes = new JSONObject();
+                    bet.getDefaultAttributeValues().forEach(defaultAttributes::put);
+
+                    serialized.put("attributeBindings", attributeBindings).put("defaultAttributes", defaultAttributes).put("tag", bet.getTag());
+                }
+
+                @Override
+                public void visitParentChange(StateNode node, ParentChange parentChange) {
+                    // Ignore
+                }
+
+                @Override
+                public void visitListReplaceChange(StateNode node, ListReplaceChange listReplaceChange) {
+                    JSONObject change;
+                    Object value = listReplaceChange.getNewValue();
+                    if (value instanceof StateNode) {
+                        change = createChange(node, "listReplaceNode");
+                        change.put("value", ((StateNode) value).getId());
+
+                    } else {
+                        change = createChange(node, "listReplace");
+                        change.put("value", value);
+                    }
+                    change.put("index", listReplaceChange.getIndex());
+                    change.put("key", listReplaceChange.getKey());
+                }
+
+                @Override
+                public void visitListRemoveChange(StateNode node, ListRemoveChange listRemoveChange) {
+                    JSONObject change = createChange(node, "listRemove");
+                    change.put("index", listRemoveChange.getIndex());
+                    change.put("key", listRemoveChange.getKey());
+                }
+
+                @Override
+                public void visitListInsertChange(StateNode node, ListInsertChange listInsertChange) {
+                    JSONObject change;
+                    Object value = listInsertChange.getValue();
+                    if (value instanceof StateNode) {
+                        change = createChange(node, "listInsertNode");
+                        change.put("value", ((StateNode) value).getId());
+                    } else {
+                        change = createChange(node, "listInsert");
+                        change.put("value", value);
+                    }
+                    change.put("index", listInsertChange.getIndex());
+                    change.put("key", listInsertChange.getKey());
+                }
+
+                @Override
+                public void visitIdChange(StateNode node, IdChange idChange) {
+                    // Ignore
+                }
+            });
+            response.put("elementTemplates", newTemplates);
+            response.put("elementChanges", changes);
+            String r = response.toString();
+            writer.write(r.substring(1, r.length() - 1));
         } finally {
             uiConnectorTracker.setWritingResponse(false);
             uiConnectorTracker.cleanConnectorMap();
+        }
+    }
+
+    /**
+     * @since
+     * @param cls
+     * @param response
+     */
+    private void handleDependencies(UI ui, Class<? extends ClientConnector> cls, JSONObject response) {
+        if (ui.getResourcesHandled().contains(cls)) {
+            return;
+        }
+
+        ui.getResourcesHandled().add(cls);
+        LegacyCommunicationManager manager = ui.getSession().getCommunicationManager();
+
+        JavaScript jsAnnotation = cls.getAnnotation(JavaScript.class);
+        if (jsAnnotation != null) {
+            if (!response.has(DEPENDENCY_JAVASCRIPT)) {
+                response.put(DEPENDENCY_JAVASCRIPT, new JSONArray());
+            }
+            JSONArray scriptsJson = response.getJSONArray(DEPENDENCY_JAVASCRIPT);
+
+            for (String uri : jsAnnotation.value()) {
+                scriptsJson.put(manager.registerDependency(uri, cls));
+            }
+        }
+
+        StyleSheet styleAnnotation = cls.getAnnotation(StyleSheet.class);
+        if (styleAnnotation != null) {
+            if (!response.has(DEPENDENCY_STYLESHEET)) {
+                response.put(DEPENDENCY_STYLESHEET, new JSONArray());
+            }
+            JSONArray stylesJson = response.getJSONArray(DEPENDENCY_STYLESHEET);
+
+            for (String uri : styleAnnotation.value()) {
+                stylesJson.put(manager.registerDependency(uri, cls));
+            }
+        }
+
+        HTML htmlAnnotation = cls.getAnnotation(HTML.class);
+        if (htmlAnnotation != null) {
+            if (!response.has(DEPENDENCY_HTML)) {
+                response.put(DEPENDENCY_HTML, new JSONArray());
+            }
+            JSONArray htmlJson = response.getJSONArray(DEPENDENCY_HTML);
+
+            for (String uri : htmlAnnotation.value()) {
+                htmlJson.put(manager.registerDependency(uri, cls));
+            }
+        }
+
+        if (Component.class.isAssignableFrom(cls.getSuperclass())) {
+            handleDependencies(ui, (Class<? extends ClientConnector>) cls.getSuperclass(), response);
         }
     }
 

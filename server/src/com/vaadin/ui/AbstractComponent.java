@@ -35,6 +35,7 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.event.EventRouter;
 import com.vaadin.event.MethodEventSource;
 import com.vaadin.server.AbstractErrorMessage.ContentMode;
@@ -63,6 +64,7 @@ import com.vaadin.util.ReflectTools;
  * @since 3.0
  */
 @SuppressWarnings("serial")
+@Tag("div")
 public abstract class AbstractComponent extends AbstractClientConnector implements Component, MethodEventSource {
 
     /* Private members */
@@ -104,6 +106,8 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
      */
     private EventRouter eventRouter = null;
 
+    private com.vaadin.hummingbird.kernel.Element element;
+
     protected static final String DESIGN_ATTR_PLAIN_TEXT = "plain-text";
 
     /* Constructor */
@@ -113,6 +117,7 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
      */
     public AbstractComponent() {
         // ComponentSizeValidator.setCreationLocation(this);
+        setElement(new com.vaadin.hummingbird.kernel.Element(getClass().getAnnotation(Tag.class).value()));
     }
 
     /* Get/Set component properties */
@@ -125,6 +130,7 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
     @Override
     public void setId(String id) {
         getState().id = id;
+        getElement().setAttribute("id", id);
     }
 
     /*
@@ -787,8 +793,10 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         heightUnit = unit;
         if (height < 0) {
             getState().height = null;
+            Style.remove(getElement(), "height");
         } else {
             getState().height = height + unit.toString();
+            Style.add(getElement(), "height", getState().height);
         }
         // ComponentSizeValidator.setHeightLocation(this);
     }
@@ -849,8 +857,10 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         widthUnit = unit;
         if (width < 0) {
             getState().width = null;
+            Style.remove(getElement(), "width");
         } else {
             getState().width = width + unit.toString();
+            Style.add(getElement(), "width", getState().width);
         }
         // ComponentSizeValidator.setWidthLocation(this);
     }
@@ -1404,6 +1414,15 @@ public abstract class AbstractComponent extends AbstractClientConnector implemen
         if (eventRouter != null) {
             eventRouter.fireEvent(event);
         }
+    }
+
+    @Override
+    public com.vaadin.hummingbird.kernel.Element getElement() {
+        return element;
+    }
+
+    protected void setElement(com.vaadin.hummingbird.kernel.Element element) {
+        this.element = element;
     }
 
     private static final Logger getLogger() {

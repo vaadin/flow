@@ -1178,4 +1178,6 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      *            The error handler for this connector
      */
     public void setErrorHandler(ErrorHandler errorHandler);
+
+    public com.vaadin.hummingbird.kernel.Element getElement();
 }

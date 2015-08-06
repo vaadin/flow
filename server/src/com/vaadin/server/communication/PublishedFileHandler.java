@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.Constants;
@@ -40,8 +41,8 @@ import com.vaadin.shared.ApplicationConstants;
  * {@link LegacyCommunicationManager#registerDependency(String, Class)}. Sending
  * arbitrary files from the classpath is prevented by only accepting resource
  * names that have explicitly been registered. Resources can currently only be
- * registered by including a {@link JavaScript} or {@link StyleSheet} annotation
- * on a Connector class.
+ * registered by including a {@link JavaScript}, {@link HTML} or
+ * {@link StyleSheet} annotation on a Connector class.
  * 
  * @author Vaadin Ltd
  * @since 7.1

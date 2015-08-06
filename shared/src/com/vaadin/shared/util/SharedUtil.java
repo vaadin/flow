@@ -125,6 +125,10 @@ public class SharedUtil implements Serializable {
      * @return The constructed string of words and separators
      */
     public static String join(String[] parts, String separator) {
+        if (parts.length == 0) {
+            return "";
+        }
+
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < parts.length; i++) {
             sb.append(parts[i]);

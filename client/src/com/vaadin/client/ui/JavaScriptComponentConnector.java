@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.ui;
 
+import com.vaadin.client.ConnectorHierarchyChangeEvent;
 import com.vaadin.client.JavaScriptConnectorHelper;
 import com.vaadin.client.communication.HasJavaScriptConnectorHelper;
 import com.vaadin.shared.ui.Connect;
@@ -22,13 +23,18 @@ import com.vaadin.shared.ui.JavaScriptComponentState;
 import com.vaadin.ui.AbstractJavaScriptComponent;
 
 @Connect(AbstractJavaScriptComponent.class)
-public final class JavaScriptComponentConnector extends AbstractComponentConnector implements HasJavaScriptConnectorHelper {
+public final class JavaScriptComponentConnector extends AbstractHasComponentsConnector implements HasJavaScriptConnectorHelper {
 
     private final JavaScriptConnectorHelper helper = new JavaScriptConnectorHelper(this) {
         @Override
         protected void showInitProblem(java.util.ArrayList<String> attemptedNames) {
             getWidget().showNoInitFound(attemptedNames);
         }
+    };
+
+    @Override
+    protected com.google.gwt.user.client.ui.Widget createWidget() {
+        return new JavaScriptWidget("div");
     };
 
     @Override
@@ -57,4 +63,10 @@ public final class JavaScriptComponentConnector extends AbstractComponentConnect
         super.onUnregister();
         helper.onUnregister();
     }
+
+    @Override
+    public void onConnectorHierarchyChange(ConnectorHierarchyChangeEvent connectorHierarchyChangeEvent) {
+        // TODO
+    }
+
 }

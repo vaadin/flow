@@ -29,7 +29,7 @@ import java.util.LinkedList;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public abstract class AbstractComponentContainer extends AbstractComponent implements ComponentContainer {
+public abstract class AbstractComponentContainer extends AbstractJavaScriptComponent implements ComponentContainer {
 
     /**
      * Constructs a new component container.

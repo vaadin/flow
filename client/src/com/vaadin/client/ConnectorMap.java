@@ -114,20 +114,8 @@ public class ConnectorMap {
     public void registerConnector(String id, ServerConnector connector) {
         Profiler.enter("ConnectorMap.registerConnector");
         connectors.put(id, connector);
-        if (connector instanceof ComponentConnector) {
-            ComponentConnector pw = (ComponentConnector) connector;
-            Widget widget = pw.getWidget();
-            Profiler.enter("ConnectorMap.setConnectorId");
-            setConnectorId(widget.getElement(), id);
-            Profiler.leave("ConnectorMap.setConnectorId");
-        }
         Profiler.leave("ConnectorMap.registerConnector");
     }
-
-    private static native void setConnectorId(Element el, String id)
-    /*-{
-        el.tkPid = id;
-    }-*/;
 
     /**
      * Gets the connector id using a DOM element - the element should be the

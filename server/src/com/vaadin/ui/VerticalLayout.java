@@ -32,6 +32,7 @@ public class VerticalLayout extends AbstractOrderedLayout {
      * Constructs an empty VerticalLayout.
      */
     public VerticalLayout() {
+        getElement().setAttribute("class", "layout vertical");
         setWidth("100%");
     }
 

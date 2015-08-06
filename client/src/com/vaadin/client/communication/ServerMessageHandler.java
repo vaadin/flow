@@ -16,55 +16,36 @@
 package com.vaadin.client.communication;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Duration;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.MultiStepDuration;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingStartedEvent;
 import com.vaadin.client.ApplicationConnection.State;
-import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.ConnectorHierarchyChangeEvent;
 import com.vaadin.client.ConnectorMap;
 import com.vaadin.client.FastStringSet;
-import com.vaadin.client.HasComponentsConnector;
 import com.vaadin.client.JsArrayObject;
-import com.vaadin.client.LocaleService;
 import com.vaadin.client.Profiler;
-import com.vaadin.client.ServerConnector;
-import com.vaadin.client.Util;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.metadata.NoDataException;
-import com.vaadin.client.metadata.Property;
-import com.vaadin.client.metadata.Type;
-import com.vaadin.client.metadata.TypeData;
-import com.vaadin.client.ui.AbstractConnector;
 import com.vaadin.client.ui.VNotification;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.communication.MethodInvocation;
-import com.vaadin.shared.communication.SharedState;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 /**
  * ServerMessageHandler is responsible for handling all incoming messages (JSON)
@@ -343,32 +324,6 @@ public class ServerMessageHandler {
         if (json.containsKey(ApplicationConstants.UIDL_SECURITY_TOKEN_ID)) {
             csrfToken = json.getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
         }
-        getLogger().info(" * Handling resources from server");
-
-        if (json.containsKey("resources")) {
-            ValueMap resources = json.getValueMap("resources");
-            JsArrayString keyArray = resources.getKeyArray();
-            int l = keyArray.length();
-            for (int i = 0; i < l; i++) {
-                String key = keyArray.get(i);
-                connection.setResource(key, resources.getAsString(key));
-            }
-        }
-        handleUIDLDuration.logDuration(" * Handling resources from server completed", 10);
-
-        getLogger().info(" * Handling type inheritance map from server");
-
-        if (json.containsKey("typeInheritanceMap")) {
-            connection.getConfiguration().addComponentInheritanceInfo(json.getValueMap("typeInheritanceMap"));
-        }
-        handleUIDLDuration.logDuration(" * Handling type inheritance map from server completed", 10);
-
-        getLogger().info("Handling type mappings from server");
-
-        if (json.containsKey("typeMappings")) {
-            connection.getConfiguration().addComponentMappings(json.getValueMap("typeMappings"), connection.getWidgetSet());
-
-        }
 
         getLogger().info("Handling resource dependencies");
         if (json.containsKey("scriptDependencies")) {
@@ -376,6 +331,9 @@ public class ServerMessageHandler {
         }
         if (json.containsKey("styleDependencies")) {
             connection.loadStyleDependencies(json.getJSStringArray("styleDependencies"));
+        }
+        if (json.containsKey("htmlDependencies")) {
+            connection.loadHtmlDependencies(json.getJSStringArray("htmlDependencies"));
         }
 
         handleUIDLDuration.logDuration(" * Handling type mappings from server completed", 10);
@@ -427,48 +385,17 @@ public class ServerMessageHandler {
 
                 double processUidlStart = Duration.currentTimeMillis();
 
-                // Ensure that all connectors that we are about to update exist
-                JsArrayString createdConnectorIds = createConnectorsIfNeeded(json);
-
-                // Update states, do not fire events
-                JsArrayObject<StateChangeEvent> pendingStateChangeEvents = updateConnectorState(json, createdConnectorIds);
-
-                /*
-                 * Doing this here so that locales are available also to the
-                 * connectors which get a state change event before the UI.
-                 */
-                Profiler.enter("Handling locales");
-                getLogger().info(" * Handling locales");
-                // Store locale data
-                LocaleService.addLocales(getUIConnector().getState().localeServiceState.localeData);
-                Profiler.leave("Handling locales");
-
-                // Update hierarchy, do not fire events
-                ConnectorHierarchyUpdateResult connectorHierarchyUpdateResult = updateConnectorHierarchy(json);
-
-                // Fire hierarchy change events
-                sendHierarchyChangeEvents(connectorHierarchyUpdateResult.events);
-
-                delegateToWidget(pendingStateChangeEvents);
-
-                // Fire state change events.
-                sendStateChangeEvents(pendingStateChangeEvents);
-
-                // Handle any RPC invocations done on the server side
-                handleRpcInvocations(json);
-
-                unregisterRemovedConnectors(connectorHierarchyUpdateResult.detachedConnectorIds);
+                Profiler.enter("Handle element update");
+                Element container = getUIConnector().getWidget().getElement();
+                ValueMap elementTemplates = json.getValueMap("elementTemplates");
+                handleTreeTemplates(elementTemplates, container);
+                JsArray<ValueMap> elementChanges = json.getJSValueMapArray("elementChanges");
+                handleElementChanges(elementChanges, container);
+                Profiler.leave("Handle element update");
 
                 getLogger().info("handleUIDLMessage: " + (Duration.currentTimeMillis() - processUidlStart) + " ms");
 
                 updatingState = false;
-
-                if (ApplicationConfiguration.isDebugMode()) {
-                    Profiler.enter("Dumping state changes to the console");
-                    getLogger().info(" * Dumping state changes to the console");
-                    // VConsole.dirUIDL(json, connection);
-                    Profiler.leave("Dumping state changes to the console");
-                }
 
                 if (meta != null) {
                     Profiler.enter("Error handling");
@@ -481,8 +408,6 @@ public class ServerMessageHandler {
                     }
                     Profiler.leave("Error handling");
                 }
-
-                // TODO build profiling for widget impl loading time
 
                 lastProcessingTime = (int) ((new Date().getTime()) - start.getTime());
                 totalProcessingTime += lastProcessingTime;
@@ -510,641 +435,22 @@ public class ServerMessageHandler {
                 }
             }
 
+            private native void handleTreeTemplates(ValueMap elementTemplates, Element containerElement)
+            /*-{
+            $wnd.handleTemplates(elementTemplates, containerElement);
+            }-*/;
+
+            private native void handleElementChanges(JsArray<ValueMap> elementChanges, Element containerElement)
+            /*-{
+            $wnd.handleChanges(elementChanges, containerElement);
+            }-*/;
+
             /**
              * Properly clean up any old stuff to ensure everything is properly
              * reinitialized.
              */
             private void prepareRepaintAll() {
-                String uiConnectorId = getUIConnector().getConnectorId();
-                if (uiConnectorId == null) {
-                    // Nothing to clear yet
-                    return;
-                }
-
-                // Create fake server response that says that the uiConnector
-                // has no children
-                JsonObject fakeHierarchy = Json.createObject();
-                fakeHierarchy.put(uiConnectorId, Json.createArray());
-                JsonObject fakeJson = Json.createObject();
-                fakeJson.put("hierarchy", fakeHierarchy);
-                ValueMap fakeValueMap = ((JavaScriptObject) fakeJson.toNative()).cast();
-
-                // Update hierarchy based on the fake response
-                ConnectorHierarchyUpdateResult connectorHierarchyUpdateResult = updateConnectorHierarchy(fakeValueMap);
-
-                // Send hierarchy events based on the fake update
-                sendHierarchyChangeEvents(connectorHierarchyUpdateResult.events);
-
-                // Unregister all the old connectors that have now been removed
-                unregisterRemovedConnectors(connectorHierarchyUpdateResult.detachedConnectorIds);
-
-            }
-
-            private void delegateToWidget(JsArrayObject<StateChangeEvent> pendingStateChangeEvents) {
-                Profiler.enter("@DelegateToWidget");
-
-                getLogger().info(" * Running @DelegateToWidget");
-
-                // Keep track of types that have no @DelegateToWidget in their
-                // state to optimize performance
-                FastStringSet noOpTypes = FastStringSet.create();
-
-                int size = pendingStateChangeEvents.size();
-                for (int eventIndex = 0; eventIndex < size; eventIndex++) {
-                    StateChangeEvent sce = pendingStateChangeEvents.get(eventIndex);
-                    ServerConnector connector = sce.getConnector();
-                    if (connector instanceof ComponentConnector) {
-                        String className = connector.getClass().getName();
-                        if (noOpTypes.contains(className)) {
-                            continue;
-                        }
-                        ComponentConnector component = (ComponentConnector) connector;
-
-                        Type stateType = AbstractConnector.getStateType(component);
-                        JsArrayString delegateToWidgetProperties = stateType.getDelegateToWidgetProperties();
-                        if (delegateToWidgetProperties == null) {
-                            noOpTypes.add(className);
-                            continue;
-                        }
-
-                        int length = delegateToWidgetProperties.length();
-                        for (int i = 0; i < length; i++) {
-                            String propertyName = delegateToWidgetProperties.get(i);
-                            if (sce.hasPropertyChanged(propertyName)) {
-                                Property property = stateType.getProperty(propertyName);
-                                String method = property.getDelegateToWidgetMethodName();
-                                Profiler.enter("doDelegateToWidget");
-                                doDelegateToWidget(component, property, method);
-                                Profiler.leave("doDelegateToWidget");
-                            }
-                        }
-
-                    }
-                }
-
-                Profiler.leave("@DelegateToWidget");
-            }
-
-            private void doDelegateToWidget(ComponentConnector component, Property property, String methodName) {
-                Type type = TypeData.getType(component.getClass());
-                try {
-                    Type widgetType = type.getMethod("getWidget").getReturnType();
-                    Widget widget = component.getWidget();
-
-                    Object propertyValue = property.getValue(component.getState());
-
-                    widgetType.getMethod(methodName).invoke(widget, propertyValue);
-                } catch (NoDataException e) {
-                    throw new RuntimeException("Missing data needed to invoke @DelegateToWidget for " + component.getClass().getSimpleName(), e);
-                }
-            }
-
-            /**
-             * Sends the state change events created while updating the state
-             * information.
-             * 
-             * This must be called after hierarchy change listeners have been
-             * called. At least caption updates for the parent are strange if
-             * fired from state change listeners and thus calls the parent
-             * BEFORE the parent is aware of the child (through a
-             * ConnectorHierarchyChangedEvent)
-             * 
-             * @param pendingStateChangeEvents
-             *            The events to send
-             */
-            private void sendStateChangeEvents(JsArrayObject<StateChangeEvent> pendingStateChangeEvents) {
-                Profiler.enter("sendStateChangeEvents");
-                getLogger().info(" * Sending state change events");
-
-                int size = pendingStateChangeEvents.size();
-                for (int i = 0; i < size; i++) {
-                    StateChangeEvent sce = pendingStateChangeEvents.get(i);
-                    try {
-                        sce.getConnector().fireEvent(sce);
-                    } catch (final Throwable e) {
-                        getLogger().log(Level.SEVERE, "Error sending state change events", e);
-                    }
-                }
-
-                Profiler.leave("sendStateChangeEvents");
-            }
-
-            private void verifyConnectorHierarchy() {
-                Profiler.enter("verifyConnectorHierarchy - this is only performed in debug mode");
-
-                JsArrayObject<ServerConnector> currentConnectors = getConnectorMap().getConnectorsAsJsArray();
-                int size = currentConnectors.size();
-                for (int i = 0; i < size; i++) {
-                    ServerConnector c = currentConnectors.get(i);
-                    if (c.getParent() != null) {
-                        if (!c.getParent().getChildren().contains(c)) {
-                            getLogger().severe("ERROR: Connector " + c.getConnectorId() + " is connected to a parent but the parent (" + c.getParent().getConnectorId() + ") does not contain the connector");
-                        }
-                    } else if (c == getUIConnector()) {
-                        // UIConnector for this connection, ignore
-                    } else {
-                        // The connector has been detached from the
-                        // hierarchy but was not unregistered.
-                        getLogger().severe("ERROR: Connector " + c.getConnectorId() + " is not attached to a parent but has not been unregistered");
-                    }
-
-                }
-
-                Profiler.leave("verifyConnectorHierarchy - this is only performed in debug mode");
-            }
-
-            private void unregisterRemovedConnectors(FastStringSet detachedConnectors) {
-                Profiler.enter("unregisterRemovedConnectors");
-
-                JsArrayString detachedArray = detachedConnectors.dump();
-                for (int i = 0; i < detachedArray.length(); i++) {
-                    ServerConnector connector = getConnectorMap().getConnector(detachedArray.get(i));
-
-                    Profiler.enter("unregisterRemovedConnectors unregisterConnector");
-                    getConnectorMap().unregisterConnector(connector);
-                    Profiler.leave("unregisterRemovedConnectors unregisterConnector");
-                }
-
-                if (ApplicationConfiguration.isDebugMode()) {
-                    // Do some extra checking if we're in debug mode (i.e. debug
-                    // window is open)
-                    verifyConnectorHierarchy();
-                }
-
-                getLogger().info("* Unregistered " + detachedArray.length() + " connectors");
-                Profiler.leave("unregisterRemovedConnectors");
-            }
-
-            private JsArrayString createConnectorsIfNeeded(ValueMap json) {
-                getLogger().info(" * Creating connectors (if needed)");
-
-                JsArrayString createdConnectors = JavaScriptObject.createArray().cast();
-                if (!json.containsKey("types")) {
-                    return createdConnectors;
-                }
-
-                Profiler.enter("Creating connectors");
-
-                ValueMap types = json.getValueMap("types");
-                JsArrayString keyArray = types.getKeyArray();
-                for (int i = 0; i < keyArray.length(); i++) {
-                    try {
-                        String connectorId = keyArray.get(i);
-                        ServerConnector connector = getConnectorMap().getConnector(connectorId);
-                        if (connector != null) {
-                            continue;
-                        }
-
-                        // Always do layouts if there's at least one new
-                        // connector
-                        onlyNoLayoutUpdates = false;
-
-                        int connectorType = Integer.parseInt(types.getString(connectorId));
-
-                        Class<? extends ServerConnector> connectorClass = connection.getConfiguration().getConnectorClassByEncodedTag(connectorType);
-
-                        // Connector does not exist so we must create it
-                        if (connectorClass != getUIConnector().getClass()) {
-                            // create, initialize and register the paintable
-                            Profiler.enter("ApplicationConnection.getConnector");
-                            connector = connection.getConnector(connectorId, connectorType);
-                            Profiler.leave("ApplicationConnection.getConnector");
-
-                            createdConnectors.push(connectorId);
-                        } else {
-                            // First UIConnector update. Before this the
-                            // UIConnector has been created but not
-                            // initialized as the connector id has not been
-                            // known
-                            getConnectorMap().registerConnector(connectorId, getUIConnector());
-                            getUIConnector().doInit(connectorId, connection);
-                            createdConnectors.push(connectorId);
-                        }
-                    } catch (final Throwable e) {
-                        getLogger().log(Level.SEVERE, "Error handling type data", e);
-                    }
-                }
-
-                Profiler.leave("Creating connectors");
-
-                return createdConnectors;
-            }
-
-            private void sendHierarchyChangeEvents(JsArrayObject<ConnectorHierarchyChangeEvent> events) {
-                int eventCount = events.size();
-                if (eventCount == 0) {
-                    return;
-                }
-                Profiler.enter("sendHierarchyChangeEvents");
-
-                getLogger().info(" * Sending hierarchy change events");
-                for (int i = 0; i < eventCount; i++) {
-                    ConnectorHierarchyChangeEvent event = events.get(i);
-                    try {
-                        logHierarchyChange(event);
-                        event.getConnector().fireEvent(event);
-                    } catch (final Throwable e) {
-                        getLogger().log(Level.SEVERE, "Error sending hierarchy change events", e);
-                    }
-                }
-
-                Profiler.leave("sendHierarchyChangeEvents");
-            }
-
-            private void logHierarchyChange(ConnectorHierarchyChangeEvent event) {
-                if (true) {
-                    // Always disabled for now. Can be enabled manually
-                    return;
-                }
-
-                getLogger().info("Hierarchy changed for " + Util.getConnectorString(event.getConnector()));
-                String oldChildren = "* Old children: ";
-                for (ComponentConnector child : event.getOldChildren()) {
-                    oldChildren += Util.getConnectorString(child) + " ";
-                }
-                getLogger().info(oldChildren);
-
-                String newChildren = "* New children: ";
-                HasComponentsConnector parent = (HasComponentsConnector) event.getConnector();
-                for (ComponentConnector child : parent.getChildComponents()) {
-                    newChildren += Util.getConnectorString(child) + " ";
-                }
-                getLogger().info(newChildren);
-            }
-
-            private JsArrayObject<StateChangeEvent> updateConnectorState(ValueMap json, JsArrayString createdConnectorIds) {
-                JsArrayObject<StateChangeEvent> events = JavaScriptObject.createArray().cast();
-                getLogger().info(" * Updating connector states");
-                if (!json.containsKey("state")) {
-                    return events;
-                }
-
-                Profiler.enter("updateConnectorState");
-
-                FastStringSet remainingNewConnectors = FastStringSet.create();
-                remainingNewConnectors.addAll(createdConnectorIds);
-
-                // set states for all paintables mentioned in "state"
-                ValueMap states = json.getValueMap("state");
-                JsArrayString keyArray = states.getKeyArray();
-                for (int i = 0; i < keyArray.length(); i++) {
-                    try {
-                        String connectorId = keyArray.get(i);
-                        ServerConnector connector = getConnectorMap().getConnector(connectorId);
-                        if (null != connector) {
-                            Profiler.enter("updateConnectorState inner loop");
-                            if (Profiler.isEnabled()) {
-                                Profiler.enter("Decode connector state " + connector.getClass().getSimpleName());
-                            }
-
-                            JavaScriptObject jso = states.getJavaScriptObject(connectorId);
-
-                            if (connector instanceof HasJavaScriptConnectorHelper) {
-                                ((HasJavaScriptConnectorHelper) connector).getJavascriptConnectorHelper().setNativeState(jso);
-                                continue;
-                            }
-
-                            JsonObject stateJson = Util.jso2json(jso);
-                            SharedState state = connector.getState();
-                            Type stateType = new Type(state.getClass().getName(), null);
-
-                            if (onlyNoLayoutUpdates) {
-                                Profiler.enter("updateConnectorState @NoLayout handling");
-                                for (String propertyName : stateJson.keys()) {
-                                    Property property = stateType.getProperty(propertyName);
-                                    if (!property.isNoLayout()) {
-                                        onlyNoLayoutUpdates = false;
-                                        break;
-                                    }
-                                }
-                                Profiler.leave("updateConnectorState @NoLayout handling");
-                            }
-
-                            Profiler.enter("updateConnectorState decodeValue");
-                            JsonDecoder.decodeValue(stateType, stateJson, state, connection);
-                            Profiler.leave("updateConnectorState decodeValue");
-
-                            if (Profiler.isEnabled()) {
-                                Profiler.leave("Decode connector state " + connector.getClass().getSimpleName());
-                            }
-
-                            Profiler.enter("updateConnectorState create event");
-
-                            boolean isNewConnector = remainingNewConnectors.contains(connectorId);
-                            if (isNewConnector) {
-                                remainingNewConnectors.remove(connectorId);
-                            }
-
-                            StateChangeEvent event = new StateChangeEvent(connector, stateJson, isNewConnector);
-                            events.add(event);
-                            Profiler.leave("updateConnectorState create event");
-
-                            Profiler.leave("updateConnectorState inner loop");
-                        }
-                    } catch (final Throwable e) {
-                        getLogger().log(Level.SEVERE, "Error updating connector states", e);
-                    }
-                }
-
-                Profiler.enter("updateConnectorState newWithoutState");
-                // Fire events for properties using the default value for newly
-                // created connectors even if there were no state changes
-                JsArrayString dump = remainingNewConnectors.dump();
-                int length = dump.length();
-                for (int i = 0; i < length; i++) {
-                    String connectorId = dump.get(i);
-                    ServerConnector connector = getConnectorMap().getConnector(connectorId);
-
-                    StateChangeEvent event = new StateChangeEvent(connector, Json.createObject(), true);
-
-                    events.add(event);
-
-                }
-                Profiler.leave("updateConnectorState newWithoutState");
-
-                Profiler.leave("updateConnectorState");
-
-                return events;
-            }
-
-            /**
-             * Updates the connector hierarchy and returns a list of events that
-             * should be fired after update of the hierarchy and the state is
-             * done.
-             * 
-             * @param json
-             *            The JSON containing the hierarchy information
-             * @return A collection of events that should be fired when update
-             *         of hierarchy and state is complete and a list of all
-             *         connectors for which the parent has changed
-             */
-            private ConnectorHierarchyUpdateResult updateConnectorHierarchy(ValueMap json) {
-                ConnectorHierarchyUpdateResult result = new ConnectorHierarchyUpdateResult();
-
-                getLogger().info(" * Updating connector hierarchy");
-                if (!json.containsKey("hierarchy")) {
-                    return result;
-                }
-
-                Profiler.enter("updateConnectorHierarchy");
-
-                FastStringSet maybeDetached = FastStringSet.create();
-
-                ValueMap hierarchies = json.getValueMap("hierarchy");
-                JsArrayString hierarchyKeys = hierarchies.getKeyArray();
-                for (int i = 0; i < hierarchyKeys.length(); i++) {
-                    try {
-                        Profiler.enter("updateConnectorHierarchy hierarchy entry");
-
-                        String connectorId = hierarchyKeys.get(i);
-                        ServerConnector parentConnector = getConnectorMap().getConnector(connectorId);
-                        JsArrayString childConnectorIds = hierarchies.getJSStringArray(connectorId);
-                        int childConnectorSize = childConnectorIds.length();
-
-                        Profiler.enter("updateConnectorHierarchy find new connectors");
-
-                        List<ServerConnector> newChildren = new ArrayList<ServerConnector>();
-                        List<ComponentConnector> newComponents = new ArrayList<ComponentConnector>();
-                        for (int connectorIndex = 0; connectorIndex < childConnectorSize; connectorIndex++) {
-                            String childConnectorId = childConnectorIds.get(connectorIndex);
-                            ServerConnector childConnector = getConnectorMap().getConnector(childConnectorId);
-                            if (childConnector == null) {
-                                getLogger().severe("Hierarchy claims that " + childConnectorId + " is a child for " + connectorId + " (" + parentConnector.getClass().getName() + ") but no connector with id " + childConnectorId + " has been registered. " + "More information might be available in the server-side log if assertions are enabled");
-                                continue;
-                            }
-                            newChildren.add(childConnector);
-                            if (childConnector instanceof ComponentConnector) {
-                                newComponents.add((ComponentConnector) childConnector);
-                            } else {
-                                throw new IllegalStateException(Util.getConnectorString(childConnector) + " is not a ComponentConnector");
-                            }
-                            if (childConnector.getParent() != parentConnector) {
-                                childConnector.setParent(parentConnector);
-                                result.parentChangedIds.add(childConnectorId);
-                                // Not detached even if previously removed from
-                                // parent
-                                maybeDetached.remove(childConnectorId);
-                            }
-                        }
-
-                        Profiler.leave("updateConnectorHierarchy find new connectors");
-
-                        // TODO This check should be done on the server side in
-                        // the future so the hierarchy update is only sent when
-                        // something actually has changed
-                        List<ServerConnector> oldChildren = parentConnector.getChildren();
-                        boolean actuallyChanged = !Util.collectionsEquals(oldChildren, newChildren);
-
-                        if (!actuallyChanged) {
-                            continue;
-                        }
-
-                        Profiler.enter("updateConnectorHierarchy handle HasComponentsConnector");
-
-                        if (parentConnector instanceof HasComponentsConnector) {
-                            HasComponentsConnector ccc = ((HasComponentsConnector) parentConnector);
-                            List<ComponentConnector> oldComponents = ccc.getChildComponents();
-
-                            if (!Util.collectionsEquals(oldComponents, newComponents)) {
-                                // Fire change event if the hierarchy has
-                                // changed
-                                ConnectorHierarchyChangeEvent event = GWT.create(ConnectorHierarchyChangeEvent.class);
-                                event.setOldChildren(oldComponents);
-                                event.setConnector(parentConnector);
-                                ccc.setChildComponents(newComponents);
-                                result.events.add(event);
-                            }
-                        } else if (!newComponents.isEmpty()) {
-                            getLogger().severe("Hierachy claims " + Util.getConnectorString(parentConnector) + " has component children even though it isn't a HasComponentsConnector");
-                        }
-
-                        Profiler.leave("updateConnectorHierarchy handle HasComponentsConnector");
-
-                        Profiler.enter("updateConnectorHierarchy setChildren");
-                        parentConnector.setChildren(newChildren);
-                        Profiler.leave("updateConnectorHierarchy setChildren");
-
-                        Profiler.enter("updateConnectorHierarchy find removed children");
-
-                        /*
-                         * Find children removed from this parent and mark for
-                         * removal unless they are already attached to some
-                         * other parent.
-                         */
-                        for (ServerConnector oldChild : oldChildren) {
-                            if (oldChild.getParent() != parentConnector) {
-                                // Ignore if moved to some other connector
-                                continue;
-                            }
-
-                            if (!newChildren.contains(oldChild)) {
-                                /*
-                                 * Consider child detached for now, will be
-                                 * cleared if it is later on added to some other
-                                 * parent.
-                                 */
-                                maybeDetached.add(oldChild.getConnectorId());
-                            }
-                        }
-
-                        Profiler.leave("updateConnectorHierarchy find removed children");
-                    } catch (final Throwable e) {
-                        getLogger().log(Level.SEVERE, "Error updating connector hierarchy", e);
-                    } finally {
-                        Profiler.leave("updateConnectorHierarchy hierarchy entry");
-                    }
-                }
-
-                Profiler.enter("updateConnectorHierarchy detach removed connectors");
-
-                /*
-                 * Connector is in maybeDetached at this point if it has been
-                 * removed from its parent but not added to any other parent
-                 */
-                JsArrayString maybeDetachedArray = maybeDetached.dump();
-                for (int i = 0; i < maybeDetachedArray.length(); i++) {
-                    ServerConnector removed = getConnectorMap().getConnector(maybeDetachedArray.get(i));
-                    recursivelyDetach(removed, result.events, result.detachedConnectorIds);
-                }
-
-                Profiler.leave("updateConnectorHierarchy detach removed connectors");
-
-                if (result.events.size() != 0) {
-                    onlyNoLayoutUpdates = false;
-                }
-
-                Profiler.leave("updateConnectorHierarchy");
-
-                return result;
-
-            }
-
-            private void recursivelyDetach(ServerConnector connector, JsArrayObject<ConnectorHierarchyChangeEvent> events, FastStringSet detachedConnectors) {
-                detachedConnectors.add(connector.getConnectorId());
-
-                /*
-                 * Reset state in an attempt to keep it consistent with the
-                 * hierarchy. No children and no parent is the initial situation
-                 * for the hierarchy, so changing the state to its initial value
-                 * is the closest we can get without data from the server.
-                 * #10151
-                 */
-                String prefix = getClass().getSimpleName() + " ";
-                Profiler.enter(prefix + "recursivelyDetach reset state");
-                try {
-                    Profiler.enter(prefix + "recursivelyDetach reset state - getStateType");
-                    Type stateType = AbstractConnector.getStateType(connector);
-                    Profiler.leave(prefix + "recursivelyDetach reset state - getStateType");
-
-                    // Empty state instance to get default property values from
-                    Profiler.enter(prefix + "recursivelyDetach reset state - createInstance");
-                    Object defaultState = stateType.createInstance();
-                    Profiler.leave(prefix + "recursivelyDetach reset state - createInstance");
-
-                    if (connector instanceof AbstractConnector) {
-                        // optimization as the loop setting properties is very
-                        // slow, especially on IE8
-                        replaceState((AbstractConnector) connector, defaultState);
-                    } else {
-                        SharedState state = connector.getState();
-
-                        Profiler.enter(prefix + "recursivelyDetach reset state - properties");
-                        JsArrayObject<Property> properties = stateType.getPropertiesAsArray();
-                        int size = properties.size();
-                        for (int i = 0; i < size; i++) {
-                            Property property = properties.get(i);
-                            property.setValue(state, property.getValue(defaultState));
-                        }
-                        Profiler.leave(prefix + "recursivelyDetach reset state - properties");
-                    }
-                } catch (NoDataException e) {
-                    throw new RuntimeException("Can't reset state for " + Util.getConnectorString(connector), e);
-                } finally {
-                    Profiler.leave(prefix + "recursivelyDetach reset state");
-                }
-
-                Profiler.enter(prefix + "recursivelyDetach perform detach");
-                /*
-                 * Recursively detach children to make sure they get
-                 * setParent(null) and hierarchy change events as needed.
-                 */
-                for (ServerConnector child : connector.getChildren()) {
-                    /*
-                     * Server doesn't send updated child data for removed
-                     * connectors -> ignore child that still seems to be a child
-                     * of this connector although it has been moved to some part
-                     * of the hierarchy that is not detached.
-                     */
-                    if (child.getParent() != connector) {
-                        continue;
-                    }
-                    recursivelyDetach(child, events, detachedConnectors);
-                }
-                Profiler.leave(prefix + "recursivelyDetach perform detach");
-
-                /*
-                 * Clear child list and parent
-                 */
-                Profiler.enter(prefix + "recursivelyDetach clear children and parent");
-                connector.setChildren(Collections.<ServerConnector> emptyList());
-                connector.setParent(null);
-                Profiler.leave(prefix + "recursivelyDetach clear children and parent");
-
-                /*
-                 * Create an artificial hierarchy event for containers to give
-                 * it a chance to clean up after its children if it has any
-                 */
-                Profiler.enter(prefix + "recursivelyDetach create hierarchy event");
-                if (connector instanceof HasComponentsConnector) {
-                    HasComponentsConnector ccc = (HasComponentsConnector) connector;
-                    List<ComponentConnector> oldChildren = ccc.getChildComponents();
-                    if (!oldChildren.isEmpty()) {
-                        /*
-                         * HasComponentsConnector has a separate child component
-                         * list that should also be cleared
-                         */
-                        ccc.setChildComponents(Collections.<ComponentConnector> emptyList());
-
-                        // Create event and add it to the list of pending events
-                        ConnectorHierarchyChangeEvent event = GWT.create(ConnectorHierarchyChangeEvent.class);
-                        event.setConnector(connector);
-                        event.setOldChildren(oldChildren);
-                        events.add(event);
-                    }
-                }
-                Profiler.leave(prefix + "recursivelyDetach create hierarchy event");
-            }
-
-            private native void replaceState(AbstractConnector connector, Object defaultState)
-            /*-{
-                connector.@com.vaadin.client.ui.AbstractConnector::state = defaultState;
-            }-*/;
-
-            private void handleRpcInvocations(ValueMap json) {
-                if (json.containsKey("rpc")) {
-                    Profiler.enter("handleRpcInvocations");
-
-                    getLogger().info(" * Performing server to client RPC calls");
-
-                    JsonArray rpcCalls = Util.jso2json(json.getJavaScriptObject("rpc"));
-
-                    int rpcLength = rpcCalls.length();
-                    for (int i = 0; i < rpcLength; i++) {
-                        try {
-                            JsonArray rpcCall = rpcCalls.getArray(i);
-                            MethodInvocation invocation = getRpcManager().parseAndApplyInvocation(rpcCall, connection);
-
-                            if (onlyNoLayoutUpdates && !RpcManager.getMethod(invocation).isNoLayout()) {
-                                onlyNoLayoutUpdates = false;
-                            }
-
-                        } catch (final Throwable e) {
-                            getLogger().log(Level.SEVERE, "Error performing server to client RPC calls", e);
-                        }
-                    }
-
-                    Profiler.leave("handleRpcInvocations");
-                }
+                // FIXME
             }
 
         };

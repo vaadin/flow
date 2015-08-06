@@ -96,6 +96,8 @@ public class Label extends AbstractComponent implements Property<String>, Proper
      * @param contentMode
      */
     public Label(String content, ContentMode contentMode) {
+        setElement(com.vaadin.hummingbird.kernel.Element.createText(""));
+
         setValue(content);
         setContentMode(contentMode);
         setWidth(100, Unit.PERCENTAGE);
@@ -168,6 +170,7 @@ public class Label extends AbstractComponent implements Property<String>, Proper
             String oldTextValue = state.text;
             if (!Objects.equals(oldTextValue, newStringValue)) {
                 getState().text = newStringValue;
+                getElement().setAttribute("content", newStringValue);
                 fireValueChange();
             }
         } else {

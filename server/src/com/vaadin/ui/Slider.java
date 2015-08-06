@@ -21,6 +21,8 @@ import java.util.Collection;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 
+import com.vaadin.annotations.HTML;
+import com.vaadin.annotations.Tag;
 import com.vaadin.shared.ui.slider.SliderOrientation;
 import com.vaadin.shared.ui.slider.SliderServerRpc;
 import com.vaadin.shared.ui.slider.SliderState;
@@ -32,6 +34,8 @@ import com.vaadin.ui.declarative.DesignContext;
  * 
  * @author Vaadin Ltd.
  */
+@Tag("paper-slider")
+@HTML("vaadin://bower_components/paper-slider/paper-slider.html")
 public class Slider extends AbstractField<Double> {
 
     private SliderServerRpc rpc = new SliderServerRpc() {
