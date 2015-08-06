@@ -94,8 +94,9 @@
             conf="test,ide->default" /> -->
 
 		<!-- Kernel deps -->
-		<dependency org="org.json" name="json" rev="20141113" /> <!-- FIXME Remove -->
-		<dependency org="net.bytebuddy" name="byte-buddy" rev="0.6.11" />
+		<dependency org="org.json" name="json" rev="20141113"
+		conf="build,ide->default"/> <!-- FIXME Remove -->
+		<dependency org="net.bytebuddy" name="byte-buddy" rev="0.6.11" conf="build,ide->default"/>
     </dependencies>
 
 </ivy-module>
