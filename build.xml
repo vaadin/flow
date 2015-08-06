@@ -58,7 +58,7 @@
     </target>
 
     <target name="integration-test" depends="buildorder">
-        <property name="war.file" location="result/artifacts/${vaadin.version}/vaadin-uitest/vaadin-uitest-${vaadin.version}.war" />
+        <property name="war.file" location="result/artifacts/${vaadin.version}/hummingbird-uitest/hummingbird-uitest-${vaadin.version}.war" />
 
         <ant antfile="uitest/build.xml" target="test-testbench">
             <property name="war.file" location="${war.file}" />

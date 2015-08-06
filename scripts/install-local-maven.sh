@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ ! -e "vaadin-shared" ]
+if [ ! -e "hummingbird-shared" ]
 then
-        echo "You must run this in the directory containing folders for the various vaadin-* modules."
+        echo "You must run this in the directory containing folders for the various hummingbird-* modules."
         echo "If you run this in the project directory, go to result/artifacts/<version>/"
         echo "If you run this on build artifacts from the build server, run it in the directory where you unzipped the artifacts"
         exit 1
