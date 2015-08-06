@@ -33,6 +33,6 @@ public class AbstractOrderedLayoutState extends AbstractLayoutState {
 
         public int alignmentBitmask = AlignmentInfo.TOP_LEFT.getBitMask();
 
-        public float expandRatio = 0.0f;
+        public int expandRatio = 0;
     }
 }

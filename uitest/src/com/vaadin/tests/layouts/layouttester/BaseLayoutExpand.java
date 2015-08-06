@@ -42,10 +42,10 @@ public class BaseLayoutExpand extends BaseLayoutTestUI {
         class ExpandButton extends Button {
             final private AbstractComponent c1;
             private AbstractComponent c2;
-            private float expandComp1;
-            private float expandComp2;
+            private int expandComp1;
+            private int expandComp2;
 
-            public ExpandButton(final AbstractComponent c1, final AbstractComponent c2, float e1, float e2) {
+            public ExpandButton(final AbstractComponent c1, final AbstractComponent c2, int e1, int e2) {
                 super();
                 this.c1 = c1;
                 this.c2 = c2;
@@ -69,8 +69,8 @@ public class BaseLayoutExpand extends BaseLayoutTestUI {
         l2.addComponent(t1);
         l2.addComponent(t2);
 
-        l1.addComponent(new ExpandButton(t1, t2, 1.0f, 0.0f));
-        l1.addComponent(new ExpandButton(t1, t2, 0.5f, 0.50f));
-        l1.addComponent(new ExpandButton(t1, t2, .25f, 0.75f));
+        l1.addComponent(new ExpandButton(t1, t2, 4, 0));
+        l1.addComponent(new ExpandButton(t1, t2, 2, 2));
+        l1.addComponent(new ExpandButton(t1, t2, 1, 3));
     }
 }

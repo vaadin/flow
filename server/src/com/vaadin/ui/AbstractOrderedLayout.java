@@ -223,7 +223,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
             addComponent(newComponent);
         } else if (newLocation == -1) {
             Alignment alignment = getComponentAlignment(oldComponent);
-            float expandRatio = getExpandRatio(oldComponent);
+            int expandRatio = getExpandRatio(oldComponent);
 
             removeComponent(oldComponent);
             addComponent(newComponent, oldLocation);
@@ -323,7 +323,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
      *            the component in this layout which expand ratio is to be set
      * @param ratio
      */
-    public void setExpandRatio(Component component, float ratio) {
+    public void setExpandRatio(Component component, int ratio) {
         ChildComponentData childData = getState().childData.get(component);
         if (childData == null) {
             throw new IllegalArgumentException("The given component is not a child of this layout");
@@ -339,7 +339,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
      *            which expand ratios is requested
      * @return expand ratio of given component, 0.0f by default.
      */
-    public float getExpandRatio(Component component) {
+    public int getExpandRatio(Component component) {
         ChildComponentData childData = getState(false).childData.get(component);
         if (childData == null) {
             throw new IllegalArgumentException("The given component is not a child of this layout");
@@ -429,7 +429,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
         defaultComponentAlignment = defaultAlignment;
     }
 
-    private void applyLayoutSettings(Component target, Alignment alignment, float expandRatio) {
+    private void applyLayoutSettings(Component target, Alignment alignment, int expandRatio) {
         setComponentAlignment(target, alignment);
         setExpandRatio(target, expandRatio);
     }
@@ -474,13 +474,13 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
                 String value = attr.get(":expand");
                 if (value.length() > 0) {
                     try {
-                        float ratio = Float.valueOf(value);
+                        int ratio = Integer.valueOf(value);
                         setExpandRatio(newChild, ratio);
                     } catch (NumberFormatException nfe) {
                         getLogger().info("Failed to parse expand ratio " + value);
                     }
                 } else {
-                    setExpandRatio(newChild, 1.0f);
+                    setExpandRatio(newChild, 1);
                 }
             }
         }

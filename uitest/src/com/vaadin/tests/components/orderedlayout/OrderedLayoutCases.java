@@ -64,7 +64,7 @@ public class OrderedLayoutCases extends AbstractTestUI {
                         return;
                     }
                     String value = event.getProperty().getValue().toString();
-                    parent.setExpandRatio(SampleChild.this, Float.parseFloat(value));
+                    parent.setExpandRatio(SampleChild.this, Integer.parseInt(value));
                 }
             }, "0", "1", "2"));
 
@@ -155,7 +155,7 @@ public class OrderedLayoutCases extends AbstractTestUI {
                 while (currentLayout.getComponentCount() > 0) {
                     Component child = currentLayout.getComponent(0);
                     Alignment alignment = currentLayout.getComponentAlignment(child);
-                    float expRatio = currentLayout.getExpandRatio(child);
+                    int expRatio = currentLayout.getExpandRatio(child);
                     newLayout.addComponent(child);
                     newLayout.setExpandRatio(child, expRatio);
                     newLayout.setComponentAlignment(child, alignment);

@@ -140,8 +140,8 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
         l2.addComponent(c1);
         l2.addComponent(new Label("<div style='height: 1px'></div><hr /><div style='height: 1px'></div>", ContentMode.HTML));
         l2.addComponent(c2);
-        l2.setExpandRatio(c1, 0.5f);
-        l2.setExpandRatio(c2, 0.5f);
+        l2.setExpandRatio(c1, 1);
+        l2.setExpandRatio(c2, 1);
 
         btn2.addClickListener(new ClickListener() {
 

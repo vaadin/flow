@@ -41,7 +41,7 @@ public class AbstractOrderedLayoutWithCaptions extends AbstractTestUI {
         layout.addComponent(textField);
 
         layout.addComponent(label1);
-        layout.setExpandRatio(label1, 1.0f);
+        layout.setExpandRatio(label1, 1);
 
         layout.addComponent(label2);
 

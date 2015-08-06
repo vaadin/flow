@@ -58,7 +58,7 @@ public class FormLayout extends AbstractOrderedLayout {
      */
     @Override
     @Deprecated
-    public void setExpandRatio(Component component, float ratio) {
+    public void setExpandRatio(Component component, int ratio) {
         super.setExpandRatio(component, ratio);
     }
 
@@ -68,7 +68,7 @@ public class FormLayout extends AbstractOrderedLayout {
      */
     @Override
     @Deprecated
-    public float getExpandRatio(Component component) {
+    public int getExpandRatio(Component component) {
         return super.getExpandRatio(component);
     }
 }

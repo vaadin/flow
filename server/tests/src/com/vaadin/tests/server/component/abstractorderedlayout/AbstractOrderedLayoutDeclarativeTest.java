@@ -49,8 +49,8 @@ public class AbstractOrderedLayoutDeclarativeTest extends DeclarativeMarginTestB
         AbstractOrderedLayout layout = getLayout(1, null);
         testRead(design, layout);
         testWrite(design, layout);
-        design = getDesign(0.25f);
-        layout = getLayout(0.25f, null);
+        design = getDesign(1);
+        layout = getLayout(1, null);
         testRead(design, layout);
         testWrite(design, layout);
     }
@@ -71,10 +71,10 @@ public class AbstractOrderedLayoutDeclarativeTest extends DeclarativeMarginTestB
         testWrite(design, layout);
     }
 
-    private String getDesign(float expandRatio, String... alignments) {
+    private String getDesign(int expandRatio, String... alignments) {
         String result = "<v-vertical-layout caption=test-layout>";
         result += "<v-label caption=test-label ";
-        String ratioString = expandRatio == 1.0f ? "\"\"" : String.valueOf(expandRatio);
+        String ratioString = expandRatio == 1 ? "\"\"" : String.valueOf(expandRatio);
         if (expandRatio != 0) {
             result += ":expand=" + ratioString;
         }
@@ -96,7 +96,7 @@ public class AbstractOrderedLayoutDeclarativeTest extends DeclarativeMarginTestB
         return result;
     }
 
-    private AbstractOrderedLayout getLayout(float expandRatio, Alignment alignment) {
+    private AbstractOrderedLayout getLayout(int expandRatio, Alignment alignment) {
         VerticalLayout layout = new VerticalLayout();
         layout.setCaption("test-layout");
         Label l = new Label();

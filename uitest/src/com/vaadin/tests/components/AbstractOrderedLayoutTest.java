@@ -27,7 +27,7 @@ public abstract class AbstractOrderedLayoutTest<T extends AbstractOrderedLayout>
         @Override
         public void execute(T c, Integer value, Object ratio) {
             Component child = getComponentAtIndex(c, value);
-            c.setExpandRatio(child, (Float) ratio);
+            c.setExpandRatio(child, (Integer) ratio);
         }
     };
 

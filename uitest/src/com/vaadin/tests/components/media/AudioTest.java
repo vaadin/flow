@@ -63,7 +63,7 @@ public class AudioTest extends TestBase {
         });
         addComponent(b);
         getLayout().setHeight("400px");
-        getLayout().setExpandRatio(b, 1.0f);
+        getLayout().setExpandRatio(b, 1);
     }
 
     @Override

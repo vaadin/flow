@@ -34,12 +34,12 @@ public class MarginWithExpandRatio extends AbstractTestUI {
 
         HorizontalLayout hl = new HorizontalLayout();
         addLayoutTest(hl);
-        hl.setExpandRatio(hl.getComponent(0), 1.0f);
-        hl.setExpandRatio(hl.getComponent(2), 0.5f);
+        hl.setExpandRatio(hl.getComponent(0), 2);
+        hl.setExpandRatio(hl.getComponent(2), 1);
         VerticalLayout vl = new VerticalLayout();
         addLayoutTest(vl);
-        vl.setExpandRatio(vl.getComponent(0), 1.0f);
-        vl.setExpandRatio(vl.getComponent(2), 0.5f);
+        vl.setExpandRatio(vl.getComponent(0), 2);
+        vl.setExpandRatio(vl.getComponent(2), 1);
 
         GridLayout gl = new GridLayout(2, 1);
         addLayoutTest(gl);

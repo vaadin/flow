@@ -52,7 +52,7 @@ public class OrderedLayoutInfiniteLayoutPasses extends UI {
         windowContent.addComponent(contentHolder);
         windowContent.addComponent(separator);
         windowContent.addComponent(buttons);
-        windowContent.setExpandRatio(contentHolder, 1.0f);
+        windowContent.setExpandRatio(contentHolder, 1);
 
         Window window = new Window();
         window.setModal(true);
