@@ -46,7 +46,6 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.event.EventRouter;
 import com.vaadin.server.VaadinSession.FutureAccess;
 import com.vaadin.server.VaadinSession.State;
@@ -921,27 +920,6 @@ public abstract class VaadinService implements Serializable {
 
         UI.setCurrent(ui);
         return ui;
-    }
-
-    /**
-     * Check if the given UI should be associated with the
-     * <code>window.name</code> so that it can be re-used if the browser window
-     * is reloaded. This is typically determined by the UI provider which
-     * typically checks the @{@link PreserveOnRefresh} annotation but UI
-     * providers and ultimately VaadinService implementations may choose to
-     * override the defaults.
-     *
-     * @param provider
-     *            the UI provider responsible for the UI
-     * @param event
-     *            the UI create event with details about the UI
-     *
-     * @return <code>true</code> if the UI should be preserved on refresh;
-     *         <code>false</code> if a new UI instance should be initialized on
-     *         refreshed.
-     */
-    public boolean preserveUIOnRefresh(UIProvider provider, UICreateEvent event) {
-        return provider.isPreservedOnRefresh(event);
     }
 
     /**

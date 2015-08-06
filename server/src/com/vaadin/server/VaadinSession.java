@@ -1405,24 +1405,4 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         pendingAccessQueue = new ConcurrentLinkedQueue<FutureAccess>();
     }
 
-    /**
-     * Finds the UI with the corresponding embed id.
-     *
-     * @since 7.2
-     * @param embedId
-     *            the embed id
-     * @return the UI with the corresponding embed id, or <code>null</code> if
-     *         no UI is found
-     *
-     * @see UI#getEmbedId()
-     */
-    public UI getUIByEmbedId(String embedId) {
-        Integer uiId = embedIdMap.get(embedId);
-        if (uiId == null) {
-            return null;
-        } else {
-            return getUIById(uiId.intValue());
-        }
-    }
-
 }

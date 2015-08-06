@@ -281,14 +281,6 @@ public class VaadinPortletService extends VaadinService {
         return getPortlet().getPortletName();
     }
 
-    /**
-     * Always preserve UIs in portlets to make portlet actions work.
-     */
-    @Override
-    public boolean preserveUIOnRefresh(UIProvider provider, UICreateEvent event) {
-        return true;
-    }
-
     @Override
     public InputStream getThemeResourceAsStream(UI uI, String themeName, String resource) {
         VaadinPortletSession session = (VaadinPortletSession) uI.getSession();

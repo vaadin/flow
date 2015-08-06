@@ -19,7 +19,6 @@ package com.vaadin.server;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 
-import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
@@ -120,29 +119,6 @@ public abstract class UIProvider implements Serializable {
         } else {
             return null;
         }
-    }
-
-    /**
-     * Checks whether the same UI state should be reused if the framework can
-     * detect that the application is opened in a browser window where it has
-     * previously been open. The framework attempts to discover this by checking
-     * the value of window.name in the browser.
-     * <p>
-     * Whenever a preserved UI is reused, its
-     * {@link UI#refresh(com.vaadin.server.VaadinRequest) refresh} method is
-     * invoked by the framework first.
-     * 
-     * 
-     * @param event
-     *            the UI create event with information about the UI and the
-     *            current request.
-     * 
-     * @return <code>true</code>if the same UI instance should be reused e.g.
-     *         when the browser window is refreshed.
-     */
-    public boolean isPreservedOnRefresh(UICreateEvent event) {
-        PreserveOnRefresh preserveOnRefresh = getAnnotationFor(event.getUIClass(), PreserveOnRefresh.class);
-        return preserveOnRefresh != null;
     }
 
     public String getPageTitle(UICreateEvent event) {

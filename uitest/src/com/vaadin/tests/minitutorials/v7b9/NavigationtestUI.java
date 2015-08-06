@@ -1,11 +1,9 @@
 package com.vaadin.tests.minitutorials.v7b9;
 
-import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
-@PreserveOnRefresh
 public class NavigationtestUI extends UI {
 
     Navigator navigator;

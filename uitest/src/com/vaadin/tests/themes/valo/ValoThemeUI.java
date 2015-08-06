@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 
-import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.data.Container;
@@ -46,15 +45,14 @@ import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.MenuBar;
-import com.vaadin.ui.Page;
 import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.ui.NativeSelect;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
 
 @Theme("tests-valo")
 @Title("Valo Theme Test")
-@PreserveOnRefresh
 public class ValoThemeUI extends UI {
 
     private boolean testMode = false;

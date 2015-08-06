@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.server.SynchronizedRequestHandler;
 import com.vaadin.server.UIClassSelectionEvent;
 import com.vaadin.server.UICreateEvent;
@@ -143,24 +142,6 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
 
         String embedId = getEmbedId(request);
 
-        UI retainedUI = session.getUIByEmbedId(embedId);
-        if (retainedUI != null) {
-            if (vaadinService.preserveUIOnRefresh(provider, new UICreateEvent(request, uiClass))) {
-                if (uiClass.isInstance(retainedUI)) {
-                    reinitUI(retainedUI, request);
-                    return retainedUI;
-                } else {
-                    getLogger().info("Not using the preserved UI " + embedId + " because it is of type " + retainedUI.getClass() + " but " + uiClass + " is expected for the request.");
-                }
-            }
-            /*
-             * Previous UI without preserve on refresh will be closed when the
-             * new UI gets added to the session.
-             */
-        }
-
-        // No existing UI found - go on by creating and initializing one
-
         Integer uiId = Integer.valueOf(session.getNextUIid());
 
         // Explicit Class.cast to detect if the UIProvider does something
@@ -170,7 +151,7 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
 
         // Initialize some fields for a newly created UI
         if (ui.getSession() != session) {
-            // Session already set for LegacyWindow
+            // Session already set
             ui.setSession(session);
         }
 
@@ -191,11 +172,6 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
         ui.doInit(request, uiId.intValue(), embedId);
 
         session.addUI(ui);
-
-        // Warn if the window can't be preserved
-        if (embedId == null && vaadinService.preserveUIOnRefresh(provider, event)) {
-            getLogger().warning("There is no embed id available for UI " + uiClass + " that should be preserved.");
-        }
 
         return ui;
     }
@@ -221,18 +197,6 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
         } else {
             return null;
         }
-    }
-
-    /**
-     * Updates a UI that has already been initialized but is now loaded again,
-     * e.g. because of {@link PreserveOnRefresh}.
-     * 
-     * @param ui
-     * @param request
-     */
-    private void reinitUI(UI ui, VaadinRequest request) {
-        UI.setCurrent(ui);
-        ui.doRefresh(request);
     }
 
     /**

@@ -3,7 +3,6 @@ package com.vaadin.tests.components.orderedlayout;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.annotations.Theme;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
@@ -29,7 +28,6 @@ import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.VerticalLayout;
 
 @Theme("tests-components")
-@PreserveOnRefresh
 public class BoxLayoutTest extends AbstractTestUI {
 
     protected AbstractOrderedLayout view;

@@ -15,13 +15,11 @@
  */
 package com.vaadin.tests.components.checkbox;
 
-import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.data.Property;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUIWithLog;
 import com.vaadin.ui.CheckBox;
 
-@PreserveOnRefresh
 public class CheckBoxRevertValueChange extends AbstractTestUIWithLog {
 
     @Override
