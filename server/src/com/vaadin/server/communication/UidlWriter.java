@@ -260,8 +260,10 @@ public class UidlWriter implements Serializable {
                         sentTemplates = new HashSet<>();
                     }
 
-                    if (!sentTemplates.contains(Integer.valueOf(template.getId()))) {
+                    Integer templateId = Integer.valueOf(template.getId());
+                    if (!sentTemplates.contains(templateId)) {
                         newTemplates.put(Integer.toString(template.getId()), serializeTemplate(template, ui, newTemplates));
+                        sentTemplates.add(templateId);
                     }
 
                     ui.setSentTemplates(sentTemplates);

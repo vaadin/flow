@@ -1,11 +1,16 @@
 package com.vaadin.hummingbird.parser;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
@@ -83,5 +88,26 @@ public class TemplateParser {
             return new BoundElementTemplate(element.tagName(), bindings, defaultAttributes);
         }
 
+    }
+
+    private static final ConcurrentMap<Class<?>, ElementTemplate> templateCache = new ConcurrentHashMap<>();
+
+    public static ElementTemplate parse(Class<?> type) {
+        return templateCache.computeIfAbsent(type, TemplateParser::getParsedTemplate);
+    }
+
+    private static ElementTemplate getParsedTemplate(Class<?> type) {
+        String fileName = type.getSimpleName() + ".html";
+        InputStream resource = type.getResourceAsStream(fileName);
+        if (resource == null) {
+            throw new RuntimeException("File not found from classpath: " + type.getPackage().getName() + "/" + fileName);
+        }
+
+        try {
+            String templateString = IOUtils.toString(resource);
+            return parse(templateString);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
