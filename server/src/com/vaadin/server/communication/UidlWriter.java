@@ -244,6 +244,14 @@ public class UidlWriter implements Serializable {
                         change.put("value", value);
                     }
                     change.put("key", key);
+
+                    int length = changes.length();
+                    if (length >= 2) {
+                        JSONObject previousChange = changes.getJSONObject(changes.length() - 2);
+                        if ("remove".equals(previousChange.getString("type")) && change.getInt("id") == previousChange.getInt("id") && key.equals(previousChange.getString("key"))) {
+                            changes.remove(changes.length() - 2);
+                        }
+                    }
                 }
 
                 private void ensureTemplateSent(ElementTemplate template, UI ui, JSONObject newTemplates) {
