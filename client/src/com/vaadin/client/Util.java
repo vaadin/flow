@@ -641,13 +641,7 @@ public class Util {
         return WidgetUtil.getChildElementIndex(childElement);
     }
 
-    private static void printConnectorInvocations(ArrayList<MethodInvocation> invocations, String id, ApplicationConnection c) {
-        ServerConnector connector = ConnectorMap.get(c).getConnector(id);
-        if (connector != null) {
-            getLogger().info("\t" + id + " (" + connector.getClass() + ") :");
-        } else {
-            getLogger().warning("\t" + id + ": Warning: no corresponding connector for id " + id);
-        }
+    private static void printConnectorInvocations(ArrayList<MethodInvocation> invocations, ApplicationConnection c) {
         for (MethodInvocation invocation : invocations) {
             getLogger().info("\t\t" + getInvocationDebugString(invocation));
         }
@@ -670,23 +664,8 @@ public class Util {
     public static void logMethodInvocations(ApplicationConnection c, Collection<MethodInvocation> methodInvocations) {
         try {
             getLogger().info("RPC invocations to be sent to the server:");
-            String curId = null;
-            ArrayList<MethodInvocation> invocations = new ArrayList<MethodInvocation>();
-            for (MethodInvocation methodInvocation : methodInvocations) {
-                String id = methodInvocation.getConnectorId();
-
-                if (curId == null) {
-                    curId = id;
-                } else if (!curId.equals(id)) {
-                    printConnectorInvocations(invocations, curId, c);
-                    invocations.clear();
-                    curId = id;
-                }
-                invocations.add(methodInvocation);
-            }
-            if (!invocations.isEmpty()) {
-                printConnectorInvocations(invocations, curId, c);
-            }
+            ArrayList<MethodInvocation> invocations = new ArrayList<MethodInvocation>(methodInvocations);
+            printConnectorInvocations(invocations, c);
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Error logging method invocations", e);
         }

@@ -474,7 +474,7 @@ public class UIConnector extends AbstractHasComponentsConnector {
             pollTimer.scheduleRepeating(getState().pollInterval);
         } else {
             // Ensure no more polls are sent as polling has been disabled
-            getConnection().getServerRpcQueue().removeMatching(new MethodInvocation(getConnectorId(), UIServerRpc.class.getName(), "poll"));
+            getConnection().getServerRpcQueue().removeMatching(new MethodInvocation(UIServerRpc.class.getName(), "poll"));
         }
     }
 

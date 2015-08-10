@@ -44,6 +44,7 @@ import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.CommunicationProblemHandler;
 import com.vaadin.client.communication.Heartbeat;
+import com.vaadin.client.communication.JavaScriptMethodInvocation;
 import com.vaadin.client.communication.ReconnectingCommunicationProblemHandler;
 import com.vaadin.client.communication.RpcManager;
 import com.vaadin.client.communication.ServerCommunicationHandler;
@@ -59,6 +60,9 @@ import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
 
 /**
  * This is the client side communication "engine", managing client-server
@@ -380,6 +384,7 @@ public class ApplicationConnection implements HasHandlers {
      * 
      */
     public void start() {
+        addEventHandlerCallback();
         String jsonText = configuration.getUIDL();
         if (jsonText == null) {
             // initial UIDL not in DOM, request from server
@@ -391,6 +396,31 @@ public class ApplicationConnection implements HasHandlers {
             getServerCommunicationHandler().startRequest();
             getServerMessageHandler().handleMessage(jsonText);
         }
+    }
+
+    private native void addEventHandlerCallback()
+    /*-{
+        var self = this;
+        $wnd.vEvent = $entry(function(elementId, eventName) {
+            self.@ApplicationConnection::sendEvent(*)(elementId, eventName);
+        });
+    }-*/;
+
+    private void sendEvent(String nodeId, String eventName) {
+        // Object[] parameters = new Object[] { name, Util.jso2json(arguments)
+        // };
+        JsonArray arguments = Json.createArray();
+        arguments.set(0, nodeId);
+        arguments.set(1, eventName);
+        Object[] parameters = new Object[] { "vEvent", arguments };
+
+        /*
+         * Must invoke manually as the RPC interface can't be used in GWT
+         * because of the JSONArray parameter
+         */
+        ServerRpcQueue rpcQueue = ServerRpcQueue.get(this);
+        rpcQueue.add(new JavaScriptMethodInvocation("com.vaadin.ui.JavaScript$JavaScriptCallbackRpc", "call", parameters), false);
+        rpcQueue.flush();
     }
 
     /**

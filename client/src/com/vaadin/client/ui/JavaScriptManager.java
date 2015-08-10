@@ -22,7 +22,6 @@ import java.util.Set;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.vaadin.client.Util;
-import com.vaadin.client.communication.JavaScriptMethodInvocation;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc;
@@ -117,8 +116,7 @@ public class JavaScriptManager {
          * because of the JSONArray parameter
          */
         ServerRpcQueue rpcQueue = ServerRpcQueue.get(ui.getConnection());
-        rpcQueue.add(new JavaScriptMethodInvocation(ui.getConnectorId(), "com.vaadin.ui.JavaScript$JavaScriptCallbackRpc", "call", parameters), false);
-        rpcQueue.flush();
+        throw new RuntimeException("Sending JS RPC is no longer supported");
     }
 
     public JavaScriptManagerState getState() {

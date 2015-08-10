@@ -100,21 +100,7 @@ public class RpcManager {
         JsonArray parametersJson = rpcCall.getArray(3);
 
         ServerConnector connector = connectorMap.getConnector(connectorId);
-
-        MethodInvocation invocation = new MethodInvocation(connectorId, interfaceName, methodName);
-        if (connector instanceof HasJavaScriptConnectorHelper) {
-            ((HasJavaScriptConnectorHelper) connector).getJavascriptConnectorHelper().invokeJsRpc(invocation, parametersJson);
-        } else {
-            if (connector == null) {
-                throw new IllegalStateException("Target connector (" + connector + ") not found for RCC to " + getSignature(invocation));
-            }
-
-            parseMethodParameters(invocation, parametersJson, connection);
-            getLogger().info("Server to client RPC call: " + invocation);
-            applyInvocation(invocation, connector);
-        }
-
-        return invocation;
+        throw new RuntimeException("Receiving RPC is no longer supported");
     }
 
     private void parseMethodParameters(MethodInvocation methodInvocation, JsonArray parametersJson, ApplicationConnection connection) {

@@ -115,6 +115,10 @@ public class ConnectorTracker implements Serializable {
         this.uI = uI;
     }
 
+    public UI getUI() {
+        return uI;
+    }
+
     /**
      * Register the given connector.
      * <p>

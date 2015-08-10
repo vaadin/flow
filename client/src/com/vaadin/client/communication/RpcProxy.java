@@ -20,7 +20,6 @@ import com.vaadin.client.metadata.InvokationHandler;
 import com.vaadin.client.metadata.Method;
 import com.vaadin.client.metadata.NoDataException;
 import com.vaadin.client.metadata.TypeData;
-import com.vaadin.shared.communication.MethodInvocation;
 import com.vaadin.shared.communication.ServerRpc;
 
 /**
@@ -49,14 +48,7 @@ public class RpcProxy {
 
         @Override
         public Object invoke(Object target, Method method, Object[] params) {
-            MethodInvocation invocation = new MethodInvocation(connector.getConnectorId(), rpcInterface.getName(), method.getName(), params);
-            ServerRpcQueue serverRpcQueue = ServerRpcQueue.get(connector.getConnection());
-            serverRpcQueue.add(invocation, method.isLastOnly());
-            if (!method.isDelayed()) {
-                serverRpcQueue.flush();
-            }
-            // No RPC iface should have a return value
-            return null;
+            throw new RuntimeException("Sending RPC to the server is no longer supported");
         }
     }
 }

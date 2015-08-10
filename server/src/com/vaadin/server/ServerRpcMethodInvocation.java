@@ -30,8 +30,8 @@ public class ServerRpcMethodInvocation extends MethodInvocation {
 
     private final Class<? extends ServerRpc> interfaceClass;
 
-    public ServerRpcMethodInvocation(String connectorId, Class<? extends ServerRpc> interfaceClass, String methodName, int parameterCount) {
-        super(connectorId, interfaceClass.getName(), methodName);
+    public ServerRpcMethodInvocation(Class<? extends ServerRpc> interfaceClass, String methodName, int parameterCount) {
+        super(interfaceClass.getName(), methodName);
 
         assert ServerRpc.class.isAssignableFrom(interfaceClass);
         this.interfaceClass = interfaceClass;

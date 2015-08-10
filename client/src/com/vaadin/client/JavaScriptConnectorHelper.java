@@ -27,7 +27,6 @@ import java.util.logging.Logger;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
-import com.vaadin.client.communication.JavaScriptMethodInvocation;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.communication.StateChangeEvent.StateChangeHandler;
@@ -295,9 +294,7 @@ public class JavaScriptConnectorHelper {
             parameters[i] = argumentsArray.get(i);
         }
         ServerRpcQueue rpcQueue = ServerRpcQueue.get(connector.getConnection());
-        rpcQueue.add(new JavaScriptMethodInvocation(connector.getConnectorId(),
-                iface, method, parameters), false);
-        rpcQueue.flush();
+        throw new RuntimeException("Sending JS RPC is no longer supported");
     }
 
     private String findWildcardInterface(String method) {
@@ -324,13 +321,7 @@ public class JavaScriptConnectorHelper {
     }
 
     private void fireCallback(String name, JsArray<JavaScriptObject> arguments) {
-        MethodInvocation invocation = new JavaScriptMethodInvocation(
-                connector.getConnectorId(),
-                "com.vaadin.ui.JavaScript$JavaScriptCallbackRpc", "call",
-                new Object[] { name, arguments });
-        ServerRpcQueue rpcQueue = ServerRpcQueue.get(connector.getConnection());
-        rpcQueue.add(invocation, false);
-        rpcQueue.flush();
+        throw new RuntimeException("Sending JS callback is no longer supported");
     }
 
     public void setNativeState(JavaScriptObject state) {

@@ -242,16 +242,9 @@ public class ServerRpcQueue {
         }
 
         for (MethodInvocation invocation : getAll()) {
-            String connectorId = invocation.getConnectorId();
-            if (!connectorExists(connectorId)) {
-                getLogger().info("Ignoring RPC for removed connector: " + connectorId + ": " + invocation.toString());
-                continue;
-            }
-
             JsonArray invocationJson = Json.createArray();
-            invocationJson.set(0, connectorId);
-            invocationJson.set(1, invocation.getInterfaceName());
-            invocationJson.set(2, invocation.getMethodName());
+            invocationJson.set(0, invocation.getInterfaceName());
+            invocationJson.set(1, invocation.getMethodName());
             JsonArray paramJson = Json.createArray();
 
             Type[] parameterTypes = null;
@@ -275,7 +268,7 @@ public class ServerRpcQueue {
                 JsonValue jsonValue = JsonEncoder.encode(value, type, connection);
                 paramJson.set(i, jsonValue);
             }
-            invocationJson.set(3, paramJson);
+            invocationJson.set(2, paramJson);
             json.set(json.length(), invocationJson);
         }
 

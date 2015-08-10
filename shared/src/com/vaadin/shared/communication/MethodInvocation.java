@@ -28,24 +28,18 @@ import java.util.Objects;
  */
 public class MethodInvocation implements Serializable {
 
-    private final String connectorId;
     private final String interfaceName;
     private final String methodName;
     private Object[] parameters;
 
-    public MethodInvocation(String connectorId, String interfaceName, String methodName) {
-        this.connectorId = connectorId;
+    public MethodInvocation(String interfaceName, String methodName) {
         this.interfaceName = interfaceName;
         this.methodName = methodName;
     }
 
-    public MethodInvocation(String connectorId, String interfaceName, String methodName, Object[] parameters) {
-        this(connectorId, interfaceName, methodName);
+    public MethodInvocation(String interfaceName, String methodName, Object[] parameters) {
+        this(interfaceName, methodName);
         setParameters(parameters);
-    }
-
-    public String getConnectorId() {
-        return connectorId;
     }
 
     public String getInterfaceName() {
@@ -66,7 +60,7 @@ public class MethodInvocation implements Serializable {
 
     @Override
     public String toString() {
-        return connectorId + ":" + interfaceName + "." + methodName + "(" + Arrays.toString(parameters) + ")";
+        return interfaceName + "." + methodName + "(" + Arrays.toString(parameters) + ")";
     }
 
     /**
@@ -80,7 +74,7 @@ public class MethodInvocation implements Serializable {
      * @return a string identifying this method invocation
      */
     public String getLastOnlyTag() {
-        return connectorId + "-" + getInterfaceName() + "-" + getMethodName();
+        return getInterfaceName() + "-" + getMethodName();
     }
 
     @Override
@@ -89,9 +83,6 @@ public class MethodInvocation implements Serializable {
             return false;
         }
         MethodInvocation other = (MethodInvocation) obj;
-        if (!Objects.equals(getConnectorId(), other.getConnectorId())) {
-            return false;
-        }
 
         if (!Objects.equals(getInterfaceName(), other.getInterfaceName())) {
             return false;
