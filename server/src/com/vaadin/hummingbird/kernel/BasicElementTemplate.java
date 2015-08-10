@@ -23,8 +23,7 @@ public class BasicElementTemplate extends AbstractElementTemplate {
     }
 
     @Override
-    protected StateNode getElementDataNode(StateNode node,
-            boolean createIfNeeded) {
+    protected StateNode getElementDataNode(StateNode node, boolean createIfNeeded) {
         return node;
     }
 

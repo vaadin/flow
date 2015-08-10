@@ -192,39 +192,25 @@ public abstract class StateNode {
 
     private static Map<Class<? extends NodeChange>, BiConsumer<StateNode, ? extends NodeChange>> rollbackHandlers = new HashMap<>();
 
-    private static <T extends NodeChange> void addRollbackHandler(
-            Class<T> type, BiConsumer<StateNode, T> handler) {
+    private static <T extends NodeChange> void addRollbackHandler(Class<T> type, BiConsumer<StateNode, T> handler) {
         rollbackHandlers.put(type, handler);
     }
 
     static {
-        addRollbackHandler(IdChange.class,
-                (node, change) -> node.id = change.getOldId());
-        addRollbackHandler(ParentChange.class,
-                (node, change) -> node.parent = change.getOldParent());
-        addRollbackHandler(PutChange.class,
-                (node, change) -> node.removeValue(change.getKey()));
-        addRollbackHandler(
-                RemoveChange.class,
-                (node, change) -> node.setValue(change.getKey(),
-                        change.getValue()));
-        addRollbackHandler(ListInsertChange.class, (node, change) -> node.get(
-                change.getKey(), ListView.class).backing.remove(change
-                .getIndex()));
-        addRollbackHandler(ListRemoveChange.class, (node, change) -> node.get(
-                change.getKey(), ListView.class).backing.add(change.getIndex(),
-                change.getValue()));
-        addRollbackHandler(ListReplaceChange.class, (node, change) -> node.get(
-                change.getKey(), ListView.class).backing.set(change.getIndex(),
-                change.getOldValue()));
+        addRollbackHandler(IdChange.class, (node, change) -> node.id = change.getOldId());
+        addRollbackHandler(ParentChange.class, (node, change) -> node.parent = change.getOldParent());
+        addRollbackHandler(PutChange.class, (node, change) -> node.removeValue(change.getKey()));
+        addRollbackHandler(RemoveChange.class, (node, change) -> node.setValue(change.getKey(), change.getValue()));
+        addRollbackHandler(ListInsertChange.class, (node, change) -> node.get(change.getKey(), ListView.class).backing.remove(change.getIndex()));
+        addRollbackHandler(ListRemoveChange.class, (node, change) -> node.get(change.getKey(), ListView.class).backing.add(change.getIndex(), change.getValue()));
+        addRollbackHandler(ListReplaceChange.class, (node, change) -> node.get(change.getKey(), ListView.class).backing.set(change.getIndex(), change.getOldValue()));
     }
 
     private <T extends NodeChange> void rollback(T change) {
         // Can't delegate to change since it doesn't have access to private
         // values
         @SuppressWarnings("unchecked")
-        BiConsumer<StateNode, T> handler = (BiConsumer<StateNode, T>) rollbackHandlers
-                .get(change.getClass());
+        BiConsumer<StateNode, T> handler = (BiConsumer<StateNode, T>) rollbackHandlers.get(change.getClass());
         if (handler == null) {
             throw new IllegalStateException(change.getClass().toString());
         } else {
@@ -360,8 +346,7 @@ public abstract class StateNode {
     }
 
     public Set<String> getStringKeys() {
-        Set<?> filteredKeys = getKeys().filter(k -> k instanceof String)
-                .collect(Collectors.toSet());
+        Set<?> filteredKeys = getKeys().filter(k -> k instanceof String).collect(Collectors.toSet());
 
         @SuppressWarnings("unchecked")
         Set<String> stringKeys = (Set<String>) filteredKeys;

@@ -4,20 +4,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class StaticChildrenElementTemplate extends
-        BoundElementTemplateWithChildren {
+public class StaticChildrenElementTemplate extends BoundElementTemplateWithChildren {
 
     private final List<BoundElementTemplate> children;
 
-    public StaticChildrenElementTemplate(String tag,
-            List<AttributeBinding> boundAttributes,
-            Map<String, String> defaultAttributes,
-            List<BoundElementTemplate> children) {
+    public StaticChildrenElementTemplate(String tag, List<AttributeBinding> boundAttributes, Map<String, String> defaultAttributes, List<BoundElementTemplate> children) {
         super(tag, boundAttributes, defaultAttributes);
         this.children = children;
 
-        children.forEach(c -> c.setParentResolver(node -> Element.getElement(
-                this, node)));
+        children.forEach(c -> c.setParentResolver(node -> Element.getElement(this, node)));
     }
 
     @Override

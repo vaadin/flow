@@ -103,8 +103,7 @@ public class RootNode extends MapStateNode {
 
         if (!commitVisitors.isEmpty()) {
             for (NodeChangeVisitor visitor : new ArrayList<>(commitVisitors)) {
-                for (Entry<StateNode, List<NodeChange>> entry : changes
-                        .entrySet()) {
+                for (Entry<StateNode, List<NodeChange>> entry : changes.entrySet()) {
                     for (NodeChange change : entry.getValue())
                         change.accept(entry.getKey(), visitor);
                 }

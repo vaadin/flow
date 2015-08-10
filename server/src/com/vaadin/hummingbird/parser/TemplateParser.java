@@ -65,8 +65,7 @@ public class TemplateParser {
                     forDefinition = value;
                 }
             } else if (name.startsWith("[")) {
-                bindings.add(new ModelAttributeBinding(name.substring(1,
-                        name.length() - 1), value));
+                bindings.add(new ModelAttributeBinding(name.substring(1, name.length() - 1), value));
             } else {
                 defaultAttributes.put(name, value);
             }
@@ -75,19 +74,13 @@ public class TemplateParser {
 
         if (forDefinition != null) {
             assert element.childNodeSize() == 1;
-            BoundElementTemplate innerTemplate = createTemplate(element
-                    .childNode(0));
-            return new ForElementTemplate(element.tagName(), bindings,
-                    defaultAttributes, forDefinition, innerTemplate);
+            BoundElementTemplate innerTemplate = createTemplate(element.childNode(0));
+            return new ForElementTemplate(element.tagName(), bindings, defaultAttributes, forDefinition, innerTemplate);
         } else if (element.childNodeSize() != 0) {
-            List<BoundElementTemplate> childTemplates = element.childNodes()
-                    .stream().map(TemplateParser::createTemplate)
-                    .collect(Collectors.toList());
-            return new StaticChildrenElementTemplate(element.tagName(),
-                    bindings, defaultAttributes, childTemplates);
+            List<BoundElementTemplate> childTemplates = element.childNodes().stream().map(TemplateParser::createTemplate).collect(Collectors.toList());
+            return new StaticChildrenElementTemplate(element.tagName(), bindings, defaultAttributes, childTemplates);
         } else {
-            return new BoundElementTemplate(element.tagName(), bindings,
-                    defaultAttributes);
+            return new BoundElementTemplate(element.tagName(), bindings, defaultAttributes);
         }
 
     }

@@ -8,10 +8,7 @@ public class ForElementTemplate extends BoundElementTemplateWithChildren {
     private String modelProperty;
     private ElementTemplate childTemplate;
 
-    public ForElementTemplate(String tag,
-            List<AttributeBinding> attributeBindings,
-            Map<String, String> defaultAttributes, String modelProperty,
-            BoundElementTemplate childTemplate) {
+    public ForElementTemplate(String tag, List<AttributeBinding> attributeBindings, Map<String, String> defaultAttributes, String modelProperty, BoundElementTemplate childTemplate) {
         super(tag, attributeBindings, defaultAttributes);
         this.modelProperty = modelProperty;
         this.childTemplate = childTemplate;
