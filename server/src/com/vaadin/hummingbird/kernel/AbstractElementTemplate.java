@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class AbstractElementTemplate implements ElementTemplate {
 
     public enum Keys {
-        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN;
+        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS;
     }
 
     private static final AtomicInteger nextId = new AtomicInteger();
@@ -17,7 +17,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     private int id;
 
     public AbstractElementTemplate() {
-        this.id = nextId.incrementAndGet();
+        id = nextId.incrementAndGet();
     }
 
     @Override
@@ -49,13 +49,60 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     }
 
     @Override
-    public int getChildCount(StateNode node) {
-        return getChildrenList(node).map(List::size).orElse(Integer.valueOf(0))
-                .intValue();
+    public void addListener(String type, EventListener listener, StateNode node) {
+        StateNode listeners = getListenerNode(node, true);
+
+        List<Object> typeListeners = listeners.getMultiValued(type);
+        if (typeListeners.isEmpty()) {
+            // List of listened types going to the client
+            getElementDataNode(node, true).getMultiValued(Keys.LISTENERS).add(type);
+        }
+        // The listener instance list staying on the server
+        typeListeners.add(listener);
     }
 
-    protected abstract StateNode getElementDataNode(StateNode node,
-            boolean createIfNeeded);
+    private StateNode getListenerNode(StateNode node, boolean createIfNeeded) {
+        StateNode dataNode = getElementDataNode(node, createIfNeeded);
+        StateNode listeners = dataNode.get(EventListener.class, StateNode.class);
+        if (listeners == null) {
+            listeners = StateNode.create();
+            dataNode.put(EventListener.class, listeners);
+        }
+        return listeners;
+    }
+
+    @Override
+    public void removeListener(String type, EventListener listener, StateNode node) {
+        StateNode listenerNode = getListenerNode(node, false);
+        if (listenerNode == null) {
+            return;
+        }
+        if (!listenerNode.containsKey(type)) {
+            return;
+        }
+
+        List<Object> listeners = listenerNode.getMultiValued(type);
+        if (listeners.remove(listener)) {
+            if (listeners.isEmpty()) {
+                listenerNode.remove(type);
+                StateNode elementDataNode = getElementDataNode(node, true);
+
+                elementDataNode.getMultiValued(Keys.LISTENERS).remove(type);
+
+                if (listenerNode.getStringKeys().isEmpty()) {
+                    elementDataNode.remove(Keys.LISTENERS);
+                    elementDataNode.remove(EventListener.class);
+                }
+            }
+        }
+    }
+
+    @Override
+    public int getChildCount(StateNode node) {
+        return getChildrenList(node).map(List::size).orElse(Integer.valueOf(0)).intValue();
+    }
+
+    protected abstract StateNode getElementDataNode(StateNode node, boolean createIfNeeded);
 
     private Optional<List<Object>> getChildrenList(StateNode node) {
         return Optional.ofNullable(getChildrenList(node, false));
@@ -76,11 +123,9 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
     @Override
     public Element getChild(int index, StateNode node) {
-        StateNode childState = (StateNode) getChildrenList(node).orElseThrow(
-                IndexOutOfBoundsException::new).get(index);
+        StateNode childState = (StateNode) getChildrenList(node).orElseThrow(IndexOutOfBoundsException::new).get(index);
 
-        ElementTemplate childTemplate = childState.get(Keys.TEMPLATE,
-                ElementTemplate.class);
+        ElementTemplate childTemplate = childState.get(Keys.TEMPLATE, ElementTemplate.class);
         if (childTemplate == null) {
             childTemplate = BasicElementTemplate.get();
         }
@@ -110,8 +155,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
             return null;
         }
 
-        ElementTemplate parentTemplate = node.get(Keys.PARENT_TEMPLATE,
-                ElementTemplate.class);
+        ElementTemplate parentTemplate = node.get(Keys.PARENT_TEMPLATE, ElementTemplate.class);
         if (parentTemplate == null) {
             parentTemplate = BasicElementTemplate.get();
         } else {

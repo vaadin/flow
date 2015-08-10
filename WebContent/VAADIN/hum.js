@@ -55,6 +55,13 @@
 		listRemove : function(node, change) {
 			removeNode(node[change.key][change.index]);
 			node[change.key].splice(change.index, 1);
+		},
+		listInsert : function(node, change) {
+			var value = change.value;
+			if (!(node[change.key] instanceof Array)) {
+				node[change.key] = [];
+			}
+			node[change.key][change.index] = value;
 		}
 	}
 
@@ -219,6 +226,28 @@
 
 			insertElementAtIndex(element, childElement, change.index)
 		}
+		
+		var addListener = function(type) {
+			var listener = function() {
+				console.log("Got event " + type + " from ", element);
+				window.vEvent(ids.get(node), type)
+			}
+			listener.type = type;
+			if (!("listenerCache" in element)) {
+				element.listenerCache = [];
+			}
+			element.listenerCache.push(listener); 
+			element.addEventListener(type, listener);
+		}
+		
+		var removeListener = function(index) {
+			var listener = element.listenerCache[index];
+			element.removeEventListener(listener.type, listener);
+			element.listenerCache.splice(index, 1);
+			if (element.listenerCache.length == 0) {
+				delete element.listenerCache;
+			}
+		}
 
 		return function(change) {
 			switch (change.type) {
@@ -229,7 +258,20 @@
 				handleInsertNode(change);
 				break;
 			case "listRemove":
-				element.childNodes[change.index].remove();
+				if (change.key === "CHILDREN") {
+					element.childNodes[change.index].remove();
+				} else if (change.key === "LISTENERS"){
+					removeListener(change.index);
+				} else {
+					console.log("Unsupported BasicTemplate listRemove", change);
+				}
+				break;
+			case "listInsert":
+				if (change.key === "LISTENERS") {
+					addListener(change.value);
+				} else {
+					console.log("Unsupported BasicTemplate insert", change);
+				}
 				break;
 			default:
 				console.log("Unsupported BasicTemplate change", change);

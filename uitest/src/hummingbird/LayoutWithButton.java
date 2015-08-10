@@ -43,7 +43,7 @@ public class LayoutWithButton extends UI {
         Style.add(b4.getElement(), "color", "black");
         Style.add(b4.getElement(), "background-color", "green");
         Button b5 = new Button("Say Vaadin");
-        b1.addClickListener((e) -> {
+        b1.getElement().addEventListener("click", () -> {
             vl.addComponent(new Label("Hello from the server"));
         });
 

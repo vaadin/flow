@@ -43,6 +43,14 @@ public class Element {
         return template.getAttribute(name, node);
     }
 
+    public void addEventListener(String type, EventListener listener) {
+        template.addListener(type, listener, node);
+    }
+
+    public void removeEventListener(String type, EventListener listener) {
+        template.removeListener(type, listener, node);
+    }
+
     public int getChildCount() {
         return template.getChildCount(node);
     }

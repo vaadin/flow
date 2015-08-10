@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -37,7 +38,9 @@ import com.vaadin.event.UIEvents.PollEvent;
 import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
 import com.vaadin.hummingbird.kernel.Element;
+import com.vaadin.hummingbird.kernel.EventListener;
 import com.vaadin.hummingbird.kernel.RootNode;
+import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.DefaultErrorHandler;
@@ -241,6 +244,14 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
         registerRpc(debugRpc);
         setSizeFull();
         setContent(content);
+
+        getPage().getJavaScript().addFunction("vEvent", json -> {
+            int nodeId = (int) json.getNumber(0);
+            String eventType = json.getString(1);
+
+            List<Object> listeners = getRootNode().getById(nodeId).get(EventListener.class, StateNode.class).getMultiValued(eventType);
+            new ArrayList<>(listeners).forEach(value -> ((EventListener) value).handleEvent());
+        });
     }
 
     @Override

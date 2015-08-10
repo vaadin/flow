@@ -38,6 +38,7 @@ import com.vaadin.annotations.StyleSheet;
 import com.vaadin.hummingbird.kernel.AttributeBinding;
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
+import com.vaadin.hummingbird.kernel.EventListener;
 import com.vaadin.hummingbird.kernel.ForElementTemplate;
 import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
 import com.vaadin.hummingbird.kernel.StateNode;
@@ -198,15 +199,20 @@ public class UidlWriter implements Serializable {
                 private JSONObject createChange(StateNode node, String type) {
                     JSONObject change = new JSONObject();
                     change.put("type", type);
-                    change.put("id", node.getId());
+                    // abs since currently detached nodes have -id
+                    change.put("id", Math.abs(node.getId()));
                     changes.put(change);
                     return change;
                 }
 
                 @Override
                 public void visitRemoveChange(StateNode node, RemoveChange removeChange) {
+                    Object key = removeChange.getKey();
+                    if (key instanceof Class<?>) {
+                        return;
+                    }
                     JSONObject change = createChange(node, "remove");
-                    change.put("key", removeChange.getKey());
+                    change.put("key", key);
                 }
 
                 @Override
@@ -214,7 +220,10 @@ public class UidlWriter implements Serializable {
                     JSONObject change;
                     Object key = putChange.getKey();
                     Object value = putChange.getValue();
-                    if (value instanceof StateNode) {
+                    if (key instanceof Class<?>) {
+                        // Ignore
+                        return;
+                    } else if (value instanceof StateNode) {
                         if (key instanceof ElementTemplate) {
                             change = createChange(node, "putOverride");
 
@@ -317,7 +326,9 @@ public class UidlWriter implements Serializable {
                     if (value instanceof StateNode) {
                         change = createChange(node, "listReplaceNode");
                         change.put("value", ((StateNode) value).getId());
-
+                    } else if (value instanceof EventListener) {
+                        // Ignore
+                        return;
                     } else {
                         change = createChange(node, "listReplace");
                         change.put("value", value);
@@ -328,6 +339,11 @@ public class UidlWriter implements Serializable {
 
                 @Override
                 public void visitListRemoveChange(StateNode node, ListRemoveChange listRemoveChange) {
+                    if (listRemoveChange.getValue() instanceof EventListener) {
+                        // Value never sent to the client, don't remove it
+                        // either
+                        return;
+                    }
                     JSONObject change = createChange(node, "listRemove");
                     change.put("index", listRemoveChange.getIndex());
                     change.put("key", listRemoveChange.getKey());
@@ -340,6 +356,9 @@ public class UidlWriter implements Serializable {
                     if (value instanceof StateNode) {
                         change = createChange(node, "listInsertNode");
                         change.put("value", ((StateNode) value).getId());
+                    } else if (value instanceof EventListener) {
+                        // Ignore
+                        return;
                     } else {
                         change = createChange(node, "listInsert");
                         change.put("value", value);
