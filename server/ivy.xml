@@ -65,6 +65,10 @@
         <dependency org="commons-io" name="commons-io" rev="${commons-io.version}"
             conf="build,ide,test -> default" />
 
+        <!-- Grid, BootstrapHandler, ... uses -->
+ 		<dependency org="com.vaadin.external.google" name="guava"
+     		rev="16.0.1.vaadin1" conf="build,ide,test->default" />
+
         <!-- TESTING DEPENDENCIES -->
 
         <!-- Test frameworks & related -->
