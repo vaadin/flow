@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.vaadin</groupId>
+		<artifactId>hummingbird-parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>hummingbird-uitest</artifactId>
+	<name>Hummingbird UI tests</name>
+	<packaging>war</packaging>
+
+	<properties>
+		<jetty.plugin.version>9.2.3.v20140905</jetty.plugin.version>
+	</properties>
+
+	<dependencies>
+
+		<!-- Project dependencies -->
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-server</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-push</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-client-compiled</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-themes</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<!-- API DEPENDENCIES -->
+		<dependency>
+			<groupId>javax.portlet</groupId>
+			<artifactId>portlet-api</artifactId>
+			<version>2.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>4.2.0.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.jcraft</groupId>
+			<artifactId>jsch</artifactId>
+			<version>0.1.52</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>3.5.1.201410131835-r</version>
+		</dependency>
+
+		<!-- This should be removed once tests have been updated to use lang3 -->
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-testbench</artifactId>
+			<version>4.0.3</version>
+			<scope>provided</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/sass</directory>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>nl.geodienstencentrum.maven</groupId>
+				<artifactId>sass-maven-plugin</artifactId>
+				<version>2.10</version>
+				<configuration>
+					<destination>${project.build.directory}/classes</destination>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>update-stylesheets</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- The Jetty plugin allows us to easily test the development build by 
+				running jetty:run -->
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>${jetty.plugin.version}</version>
+				<configuration>
+					<scanIntervalSeconds>-1</scanIntervalSeconds>
+					<httpConnector>
+						<port>8888</port>
+					</httpConnector>
+					<stopPort>8889</stopPort>
+					<stopKey>foo</stopKey>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

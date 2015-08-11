@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.vaadin</groupId>
+		<artifactId>hummingbird-parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>hummingbird-server</artifactId>
+	<name>Hummingbird Server</name>
+	<packaging>jar</packaging>
+
+	<dependencies>
+
+		<!-- Project dependencies -->
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-shared</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-push</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<!-- API DEPENDENCIES -->
+
+		<dependency>
+			<groupId>com.liferay.portal</groupId>
+			<artifactId>portal-service</artifactId>
+			<version>6.0.2</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!--Servlet API version 3.0.1 -->
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!--Portlet API version 2.0 (JSR-286) -->
+
+		<dependency>
+			<groupId>javax.portlet</groupId>
+			<artifactId>portlet-api</artifactId>
+			<version>2.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Google App Engine -->
+
+		<dependency>
+			<groupId>com.google.appengine</groupId>
+			<artifactId>appengine-api-1.0-sdk</artifactId>
+			<version>1.2.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Bean Validation API -->
+
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>1.0.0.GA</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Library dependencies -->
+
+		<!-- Jsoup for BootstrapHandler, Declarative, Template, ... -->
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.8.1</version>
+		</dependency>
+
+		<!-- JSON -->
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-elemental</artifactId>
+			<version>${gwt.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.gwt</groupId>
+					<artifactId>gwt-user</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>${commons-io.version}</version>
+		</dependency>
+
+		<!-- Grid, BootstrapHandler, ... uses -->
+		<dependency>
+			<groupId>com.vaadin.external.google</groupId>
+			<artifactId>guava</artifactId>
+			<version>16.0.1.vaadin1</version>
+		</dependency>
+
+
+		<!-- Kernel deps -->
+
+		<!-- FIXME Remove -->
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20141113</version>
+		</dependency>
+
+		<dependency>
+			<groupId>net.bytebuddy</groupId>
+			<artifactId>byte-buddy</artifactId>
+			<version>0.6.11</version>
+		</dependency>
+
+
+		<!-- TESTING DEPENDENCIES -->
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.2.6</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.1</version>
+			<scope>test</scope>
+		</dependency>
+
+
+		<!-- Bean Validation implementation -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>4.2.0.Final</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- For manual testing with PostgreSQL (see SQLTestConstants) -->
+		<!-- <dependency> <groupId>postgresql</groupId> <artifactId>postgresql</artifactId> 
+			<version>9.1-901.jdbc3</version> <scope>test</scope> </dependency> -->
+
+	</dependencies>
+
+	<build>
+		<plugins>
+		</plugins>
+	</build>
+
+</project>

@@ -5,6 +5,10 @@
 /.project
 /.tomcatplugin
 /.settings
+/hummingbird-*/.settings
+/hummingbird-*/.classpath
+/hummingbird-*/.project
+/hummingbird-*/target
 /work
 /.gwt-cache
 /.externalToolBuilders

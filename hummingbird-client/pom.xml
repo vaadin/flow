@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.vaadin</groupId>
+		<artifactId>hummingbird-parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>hummingbird-client</artifactId>
+	<name>Hummingbird Client</name>
+	<packaging>jar</packaging>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.google.gwt</groupId>
+				<artifactId>gwt</artifactId>
+				<version>${gwt.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<repositories>
+		<repository>
+			<id>google-snapshots</id>
+			<url>https://oss.sonatype.org/content/repositories/google-snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<dependencies>
+
+		<!-- Project dependencies -->
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-shared</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<!-- FIXME: Remove -->
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-server</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-user</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-dev</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-elemental</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+
+	</build>
+
+</project>

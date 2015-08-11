@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.vaadin</groupId>
+		<artifactId>hummingbird-parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>hummingbird-uitest</artifactId>
+	<name>Hummingbird UI tests</name>
+	<packaging>war</packaging>
+
+	<dependencies>
+
+		<!-- Project dependencies -->
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-server</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-push</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-client-compiled</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-themes</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<!-- Bean Validation implementation -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>4.2.0.Final</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- For manual testing with PostgreSQL (see SQLTestConstants) -->
+		<!-- <dependency> <groupId>postgresql</groupId> <artifactId>postgresql</artifactId> 
+			<version>9.1-901.jdbc3</version> <scope>test</scope> </dependency> -->
+
+	</dependencies>
+
+	<build>
+		<plugins>
+		</plugins>
+	</build>
+
+</project>
