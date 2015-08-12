@@ -16,9 +16,7 @@
 	</properties>
 
 	<dependencies>
-
 		<!-- Project dependencies -->
-
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>hummingbird-server</artifactId>
@@ -105,6 +103,9 @@
 			<resource>
 				<directory>src/main/sass</directory>
 			</resource>
+			<resource>
+				<directory>src/main/generated-resources</directory>
+			</resource>
 		</resources>
 		<plugins>
 			<plugin>
@@ -112,7 +113,11 @@
 				<artifactId>sass-maven-plugin</artifactId>
 				<version>2.10</version>
 				<configuration>
-					<destination>${project.build.directory}/classes</destination>
+					<destination>src/main/generated-resources</destination>
+					<sassOptions>
+						<!-- Hack to be able to import Valo as ../valo/valo -->
+						<load_paths>['../hummingbird-themes/src/main/sass/VAADIN/themes/valo']</load_paths>
+					</sassOptions>
 				</configuration>
 				<executions>
 					<execution>

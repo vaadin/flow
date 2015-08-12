@@ -9,6 +9,7 @@
 /hummingbird-*/.classpath
 /hummingbird-*/.project
 /hummingbird-*/target
+/hummingbird-*/src/main/generated-*
 /work
 /.gwt-cache
 /.externalToolBuilders
