@@ -39,7 +39,8 @@ import com.vaadin.shared.ComponentConstants;
 import com.vaadin.shared.ui.ComponentStateUtil;
 import com.vaadin.shared.ui.TabIndexState;
 
-public abstract class AbstractComponentConnector extends AbstractConnector implements ComponentConnector {
+public abstract class AbstractComponentConnector extends AbstractConnector
+        implements ComponentConnector {
 
     private Widget widget;
 
@@ -78,7 +79,13 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
             setConnectorId(w.getElement(), getConnectorId());
             return w;
         } catch (NoDataException e) {
-            throw new IllegalStateException("Default implementation of createWidget() does not work for " + getClass().getSimpleName() + ". This might be caused by explicitely using " + "super.createWidget() or some unspecified " + "problem with the widgetset compilation.", e);
+            throw new IllegalStateException(
+                    "Default implementation of createWidget() does not work for "
+                            + getClass().getSimpleName()
+                            + ". This might be caused by explicitely using "
+                            + "super.createWidget() or some unspecified "
+                            + "problem with the widgetset compilation.",
+                    e);
         }
     }
 
@@ -97,11 +104,13 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
     public Widget getWidget() {
         if (widget == null) {
             if (Profiler.isEnabled()) {
-                Profiler.enter("AbstractComponentConnector.createWidget for " + getClass().getSimpleName());
+                Profiler.enter("AbstractComponentConnector.createWidget for "
+                        + getClass().getSimpleName());
             }
             widget = createWidget();
             if (Profiler.isEnabled()) {
-                Profiler.leave("AbstractComponentConnector.createWidget for " + getClass().getSimpleName());
+                Profiler.leave("AbstractComponentConnector.createWidget for "
+                        + getClass().getSimpleName());
             }
         }
 
@@ -131,10 +140,12 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
          * first setting tabindex, then enabled state (through super
          * implementation).
          */
-        Profiler.enter("AbstractComponentConnector.onStateChanged update tab index");
+        Profiler.enter(
+                "AbstractComponentConnector.onStateChanged update tab index");
         if (getState() instanceof TabIndexState) {
             if (getWidget() instanceof Focusable) {
-                ((Focusable) getWidget()).setTabIndex(((TabIndexState) getState()).tabIndex);
+                ((Focusable) getWidget())
+                        .setTabIndex(((TabIndexState) getState()).tabIndex);
             } else {
                 /*
                  * TODO Enable this error when all widgets have been fixed to
@@ -145,25 +156,32 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
                 // + " which does not implement Focusable");
             }
         }
-        Profiler.leave("AbstractComponentConnector.onStateChanged update tab index");
+        Profiler.leave(
+                "AbstractComponentConnector.onStateChanged update tab index");
 
-        Profiler.enter("AbstractComponentConnector.onStateChanged AbstractConnector.onStateChanged()");
+        Profiler.enter(
+                "AbstractComponentConnector.onStateChanged AbstractConnector.onStateChanged()");
         super.onStateChanged(stateChangeEvent);
-        Profiler.leave("AbstractComponentConnector.onStateChanged AbstractConnector.onStateChanged()");
+        Profiler.leave(
+                "AbstractComponentConnector.onStateChanged AbstractConnector.onStateChanged()");
 
         // Style names
-        Profiler.enter("AbstractComponentConnector.onStateChanged updateWidgetStyleNames");
+        Profiler.enter(
+                "AbstractComponentConnector.onStateChanged updateWidgetStyleNames");
         updateWidgetStyleNames();
-        Profiler.leave("AbstractComponentConnector.onStateChanged updateWidgetStyleNames");
+        Profiler.leave(
+                "AbstractComponentConnector.onStateChanged updateWidgetStyleNames");
 
         /*
          * updateComponentSize need to be after caption update so caption can be
          * taken into account
          */
 
-        Profiler.enter("AbstractComponentConnector.onStateChanged updateComponentSize");
+        Profiler.enter(
+                "AbstractComponentConnector.onStateChanged updateComponentSize");
         updateComponentSize();
-        Profiler.leave("AbstractComponentConnector.onStateChanged updateComponentSize");
+        Profiler.leave(
+                "AbstractComponentConnector.onStateChanged updateComponentSize");
 
         Profiler.leave("AbstractComponentConnector.onStateChanged");
     }
@@ -182,7 +200,9 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
         if (delegateCaptionHandling()) {
             ServerConnector parent = getParent();
             if (parent == null && !(this instanceof UIConnector)) {
-                VConsole.error("Parent of connector " + Util.getConnectorString(this) + " is null. This is typically an indication of a broken component hierarchy");
+                VConsole.error("Parent of connector "
+                        + Util.getConnectorString(this)
+                        + " is null. This is typically an indication of a broken component hierarchy");
             }
         }
 
@@ -193,7 +213,8 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
      * {@link LayoutManager layout manager} if necessary.
      */
     protected void updateComponentSize() {
-        updateComponentSize(getState().width == null ? "" : getState().width, getState().height == null ? "" : getState().height);
+        updateComponentSize(getState().width == null ? "" : getState().width,
+                getState().height == null ? "" : getState().height);
     }
 
     /**
@@ -211,14 +232,18 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
         // Set defined sizes
         Widget widget = getWidget();
 
-        Profiler.enter("AbstractComponentConnector.updateComponentSize update styleNames");
+        Profiler.enter(
+                "AbstractComponentConnector.updateComponentSize update styleNames");
         widget.setStyleName("v-has-width", !isUndefinedWidth());
         widget.setStyleName("v-has-height", !isUndefinedHeight());
-        Profiler.leave("AbstractComponentConnector.updateComponentSize update styleNames");
+        Profiler.leave(
+                "AbstractComponentConnector.updateComponentSize update styleNames");
 
-        Profiler.enter("AbstractComponentConnector.updateComponentSize update DOM");
+        Profiler.enter(
+                "AbstractComponentConnector.updateComponentSize update DOM");
         updateWidgetSize(newWidth, newHeight);
-        Profiler.leave("AbstractComponentConnector.updateComponentSize update DOM");
+        Profiler.leave(
+                "AbstractComponentConnector.updateComponentSize update DOM");
 
         Profiler.leave("AbstractComponentConnector.updateComponentSize");
     }
@@ -291,7 +316,8 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
         setWidgetStyleName("v-readonly", isReadOnly());
 
         // add / remove error style name
-        setWidgetStyleNameWithPrefix(primaryStyleName, StyleConstants.ERROR_EXT, null != state.errorMessage);
+        setWidgetStyleNameWithPrefix(primaryStyleName, StyleConstants.ERROR_EXT,
+                null != state.errorMessage);
 
         // add additional user defined style names as class names, prefixed with
         // component default class name. remove nonexistent style names.
@@ -300,7 +326,8 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
         for (int i = 0; i < styleNames.length(); i++) {
             String oldStyle = styleNames.get(i);
             setWidgetStyleName(oldStyle, false);
-            setWidgetStyleNameWithPrefix(primaryStyleName + "-", oldStyle, false);
+            setWidgetStyleNameWithPrefix(primaryStyleName + "-", oldStyle,
+                    false);
         }
         styleNames.setLength(0);
 
@@ -308,13 +335,15 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
             // add new style names
             for (String newStyle : state.styles) {
                 setWidgetStyleName(newStyle, true);
-                setWidgetStyleNameWithPrefix(primaryStyleName + "-", newStyle, true);
+                setWidgetStyleNameWithPrefix(primaryStyleName + "-", newStyle,
+                        true);
                 styleNames.push(newStyle);
             }
 
         }
 
-        if (state.primaryStyleName != null && !state.primaryStyleName.equals(primaryStyleName)) {
+        if (state.primaryStyleName != null
+                && !state.primaryStyleName.equals(primaryStyleName)) {
             /*
              * We overwrite the widgets primary stylename if state defines a
              * primary stylename. This has to be done after updating other
@@ -363,7 +392,8 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
      *             prefixes.
      */
     @Deprecated
-    protected void setWidgetStyleNameWithPrefix(String prefix, String styleName, boolean add) {
+    protected void setWidgetStyleNameWithPrefix(String prefix, String styleName,
+            boolean add) {
         if (!styleName.startsWith("-")) {
             if (!prefix.endsWith("-")) {
                 prefix += "-";
@@ -402,7 +432,10 @@ public abstract class AbstractComponentConnector extends AbstractConnector imple
         // at this point.
         if (getWidget() != null && getWidget().isAttached()) {
             getWidget().removeFromParent();
-            VConsole.error("Widget is still attached to the DOM after the connector (" + Util.getConnectorString(this) + ") has been unregistered. Widget was removed.");
+            VConsole.error(
+                    "Widget is still attached to the DOM after the connector ("
+                            + Util.getConnectorString(this)
+                            + ") has been unregistered. Widget was removed.");
         }
     }
 

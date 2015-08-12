@@ -40,7 +40,9 @@ import com.vaadin.shared.ui.combobox.FilteringMode;
  * 
  */
 @SuppressWarnings("serial")
-public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering, FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
+public class ComboBox extends AbstractSelect
+        implements AbstractSelect.Filtering, FieldEvents.BlurNotifier,
+        FieldEvents.FocusNotifier {
 
     private String inputPrompt = null;
 
@@ -144,7 +146,8 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
     }
 
     private boolean isFilteringNeeded() {
-        return filterstring != null && filterstring.length() > 0 && filteringMode != FilteringMode.OFF;
+        return filterstring != null && filterstring.length() > 0
+                && filteringMode != FilteringMode.OFF;
     }
 
     /**
@@ -204,7 +207,9 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
             return new ArrayList<Object>(container.getItemIds());
         }
 
-        if (!(container instanceof Filterable) || !(container instanceof Indexed) || getItemCaptionMode() != ItemCaptionMode.PROPERTY) {
+        if (!(container instanceof Filterable)
+                || !(container instanceof Indexed)
+                || getItemCaptionMode() != ItemCaptionMode.PROPERTY) {
             return null;
         }
 
@@ -230,16 +235,20 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
             // to page with the selected item after filtering if accepted by
             // filter
             Object selection = getValue();
-            if (isScrollToSelectedItem() && !optionRequest && selection != null) {
+            if (isScrollToSelectedItem() && !optionRequest
+                    && selection != null) {
                 // ensure proper page
                 indexToEnsureInView = indexed.indexOfId(selection);
             }
 
             filteredSize = container.size();
             assert filteredSize >= 0;
-            currentPage = adjustCurrentPage(currentPage, needNullSelectOption, indexToEnsureInView, filteredSize);
-            int first = getFirstItemIndexOnCurrentPage(needNullSelectOption, filteredSize);
-            int last = getLastItemIndexOnCurrentPage(needNullSelectOption, filteredSize, first);
+            currentPage = adjustCurrentPage(currentPage, needNullSelectOption,
+                    indexToEnsureInView, filteredSize);
+            int first = getFirstItemIndexOnCurrentPage(needNullSelectOption,
+                    filteredSize);
+            int last = getLastItemIndexOnCurrentPage(needNullSelectOption,
+                    filteredSize, first);
 
             // Compute the number of items to fetch from the indexes given or
             // based on the filtered size of the container
@@ -269,7 +278,8 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
      * @param filteringMode
      * @return
      */
-    protected Filter buildFilter(String filterString, FilteringMode filteringMode) {
+    protected Filter buildFilter(String filterString,
+            FilteringMode filteringMode) {
         Filter filter = null;
 
         if (null != filterString && !"".equals(filterString)) {
@@ -277,10 +287,12 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
             case OFF:
                 break;
             case STARTSWITH:
-                filter = new SimpleStringFilter(getItemCaptionPropertyId(), filterString, true, true);
+                filter = new SimpleStringFilter(getItemCaptionPropertyId(),
+                        filterString, true, true);
                 break;
             case CONTAINS:
-                filter = new SimpleStringFilter(getItemCaptionPropertyId(), filterString, true, false);
+                filter = new SimpleStringFilter(getItemCaptionPropertyId(),
+                        filterString, true, false);
                 break;
             }
         }
@@ -309,7 +321,8 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
      *            flag to indicate if nullselect option needs to be taken into
      *            consideration
      */
-    private List<?> sanitetizeList(List<?> options, boolean needNullSelectOption) {
+    private List<?> sanitetizeList(List<?> options,
+            boolean needNullSelectOption) {
 
         if (pageLength != 0 && options.size() > pageLength) {
 
@@ -319,15 +332,19 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
             // to page with the selected item after filtering if accepted by
             // filter
             Object selection = getValue();
-            if (isScrollToSelectedItem() && !optionRequest && selection != null) {
+            if (isScrollToSelectedItem() && !optionRequest
+                    && selection != null) {
                 // ensure proper page
                 indexToEnsureInView = options.indexOf(selection);
             }
 
             int size = options.size();
-            currentPage = adjustCurrentPage(currentPage, needNullSelectOption, indexToEnsureInView, size);
-            int first = getFirstItemIndexOnCurrentPage(needNullSelectOption, size);
-            int last = getLastItemIndexOnCurrentPage(needNullSelectOption, size, first);
+            currentPage = adjustCurrentPage(currentPage, needNullSelectOption,
+                    indexToEnsureInView, size);
+            int first = getFirstItemIndexOnCurrentPage(needNullSelectOption,
+                    size);
+            int last = getLastItemIndexOnCurrentPage(needNullSelectOption, size,
+                    first);
             return options.subList(first, last + 1);
         } else {
             return options;
@@ -349,7 +366,8 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
      * @return first item to show on the UI (index to the filtered list of
      *         options, not taking the null item into consideration if any)
      */
-    private int getFirstItemIndexOnCurrentPage(boolean needNullSelectOption, int size) {
+    private int getFirstItemIndexOnCurrentPage(boolean needNullSelectOption,
+            int size) {
         // Not all options are visible, find out which ones are on the
         // current "page".
         int first = currentPage * pageLength;
@@ -376,9 +394,11 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
      *            index in the filtered view of the first item of the page
      * @return index in the filtered view of the last item on the page
      */
-    private int getLastItemIndexOnCurrentPage(boolean needNullSelectOption, int size, int first) {
+    private int getLastItemIndexOnCurrentPage(boolean needNullSelectOption,
+            int size, int first) {
         // page length usable for non-null items
-        int effectivePageLength = pageLength - (needNullSelectOption && (currentPage == 0) ? 1 : 0);
+        int effectivePageLength = pageLength
+                - (needNullSelectOption && (currentPage == 0) ? 1 : 0);
         return Math.min(size - 1, first + effectivePageLength - 1);
     }
 
@@ -401,9 +421,11 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
      *            number of items after filtering (not including the null item,
      *            if any)
      */
-    private int adjustCurrentPage(int page, boolean needNullSelectOption, int indexToEnsureInView, int size) {
+    private int adjustCurrentPage(int page, boolean needNullSelectOption,
+            int indexToEnsureInView, int size) {
         if (indexToEnsureInView != -1) {
-            int newPage = (indexToEnsureInView + (needNullSelectOption ? 1 : 0)) / pageLength;
+            int newPage = (indexToEnsureInView + (needNullSelectOption ? 1 : 0))
+                    / pageLength;
             page = newPage;
         }
         // adjust the current page if beyond the end of the list
@@ -434,7 +456,8 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
         }
 
         Collection<?> items;
-        if (prevfilterstring != null && filterstring.startsWith(prevfilterstring)) {
+        if (prevfilterstring != null
+                && filterstring.startsWith(prevfilterstring)) {
             items = filteredOptions;
         } else {
             items = getItemIds();
@@ -480,7 +503,8 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
 
     @Override
     public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
+        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
+                BlurListener.blurMethod);
     }
 
     @Override
@@ -490,7 +514,8 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
 
     @Override
     public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
+        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
+                FocusListener.focusMethod);
     }
 
     @Override
@@ -511,7 +536,8 @@ public class ComboBox extends AbstractSelect implements AbstractSelect.Filtering
     @Override
     public void setMultiSelect(boolean multiSelect) {
         if (multiSelect) {
-            throw new UnsupportedOperationException("Multiselect not supported");
+            throw new UnsupportedOperationException(
+                    "Multiselect not supported");
         }
     }
 

@@ -55,7 +55,8 @@ public class UIPolling extends AbstractTestUIWithLog {
     protected void setup(VaadinRequest request) {
         log = new Log(20);
         log.setNumberLogRows(true);
-        TextField pollingInterval = new TextField("Poll interval", new MethodProperty<Integer>(this, "pollInterval"));
+        TextField pollingInterval = new TextField("Poll interval",
+                new MethodProperty<Integer>(this, "pollInterval"));
         pollingInterval.setValue("-1");
         pollingInterval.addValueChangeListener(new ValueChangeListener() {
 

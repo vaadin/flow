@@ -35,15 +35,19 @@ import com.vaadin.ui.UI;
 
 public class CommErrorEmulatorServlet extends VaadinServlet {
 
-    private Map<UI, Integer> uidlResponseCode = Collections.synchronizedMap(new HashMap<UI, Integer>());
-    private Map<UI, Integer> heartbeatResponseCode = Collections.synchronizedMap(new HashMap<UI, Integer>());
+    private Map<UI, Integer> uidlResponseCode = Collections
+            .synchronizedMap(new HashMap<UI, Integer>());
+    private Map<UI, Integer> heartbeatResponseCode = Collections
+            .synchronizedMap(new HashMap<UI, Integer>());
 
     private final CommErrorUIDLRequestHandler uidlHandler = new CommErrorUIDLRequestHandler();
     private final CommErrorHeartbeatHandler heartbeatHandler = new CommErrorHeartbeatHandler();
 
     public class CommErrorUIDLRequestHandler extends UidlRequestHandler {
         @Override
-        public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+        public boolean synchronizedHandleRequest(VaadinSession session,
+                VaadinRequest request, VaadinResponse response)
+                        throws IOException {
             UI ui = session.getService().findUI(request);
             if (ui != null && uidlResponseCode.containsKey(ui)) {
                 response.sendError(uidlResponseCode.get(ui), "Error set in UI");
@@ -56,10 +60,13 @@ public class CommErrorEmulatorServlet extends VaadinServlet {
 
     public class CommErrorHeartbeatHandler extends HeartbeatHandler {
         @Override
-        public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+        public boolean synchronizedHandleRequest(VaadinSession session,
+                VaadinRequest request, VaadinResponse response)
+                        throws IOException {
             UI ui = session.getService().findUI(request);
             if (ui != null && heartbeatResponseCode.containsKey(ui)) {
-                response.sendError(heartbeatResponseCode.get(ui), "Error set in UI");
+                response.sendError(heartbeatResponseCode.get(ui),
+                        "Error set in UI");
                 return true;
             }
 
@@ -70,12 +77,15 @@ public class CommErrorEmulatorServlet extends VaadinServlet {
 
     public class CommErrorEmulatorService extends VaadinServletService {
 
-        public CommErrorEmulatorService(VaadinServlet servlet, DeploymentConfiguration deploymentConfiguration) throws ServiceException {
+        public CommErrorEmulatorService(VaadinServlet servlet,
+                DeploymentConfiguration deploymentConfiguration)
+                        throws ServiceException {
             super(servlet, deploymentConfiguration);
         }
 
         @Override
-        protected List<RequestHandler> createRequestHandlers() throws ServiceException {
+        protected List<RequestHandler> createRequestHandlers()
+                throws ServiceException {
             List<RequestHandler> handlers = super.createRequestHandlers();
             handlers.add(uidlHandler);
             handlers.add(heartbeatHandler);
@@ -84,15 +94,21 @@ public class CommErrorEmulatorServlet extends VaadinServlet {
     }
 
     @Override
-    protected VaadinServletService createServletService(DeploymentConfiguration deploymentConfiguration) throws ServiceException {
-        CommErrorEmulatorService s = new CommErrorEmulatorService(this, deploymentConfiguration);
+    protected VaadinServletService createServletService(
+            DeploymentConfiguration deploymentConfiguration)
+                    throws ServiceException {
+        CommErrorEmulatorService s = new CommErrorEmulatorService(this,
+                deploymentConfiguration);
         s.init();
         return s;
     }
 
-    public void setUIDLResponseCode(final UI ui, int responseCode, final int delay) {
+    public void setUIDLResponseCode(final UI ui, int responseCode,
+            final int delay) {
         uidlResponseCode.put(ui, responseCode);
-        System.out.println("Responding with " + responseCode + " to UIDL requests for " + ui + " for the next " + delay + "s");
+        System.out.println(
+                "Responding with " + responseCode + " to UIDL requests for "
+                        + ui + " for the next " + delay + "s");
 
         new Thread(new Runnable() {
             @Override
@@ -109,10 +125,13 @@ public class CommErrorEmulatorServlet extends VaadinServlet {
         }).start();
     }
 
-    public void setHeartbeatResponseCode(final UI ui, int responseCode, final int delay) {
+    public void setHeartbeatResponseCode(final UI ui, int responseCode,
+            final int delay) {
         heartbeatResponseCode.put(ui, responseCode);
 
-        System.out.println("Responding with " + responseCode + " to heartbeat requests for " + ui + " for the next " + delay + "s");
+        System.out.println("Responding with " + responseCode
+                + " to heartbeat requests for " + ui + " for the next " + delay
+                + "s");
 
         new Thread(new Runnable() {
 

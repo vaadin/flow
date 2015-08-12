@@ -42,6 +42,7 @@ public interface SessionExpiredHandler extends RequestHandler {
      *             If an IO error occurred
      * @since 7.1
      */
-    boolean handleSessionExpired(VaadinRequest request, VaadinResponse response) throws IOException;
+    boolean handleSessionExpired(VaadinRequest request, VaadinResponse response)
+            throws IOException;
 
 }

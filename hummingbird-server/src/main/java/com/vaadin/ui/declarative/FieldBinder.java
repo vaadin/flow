@@ -66,7 +66,8 @@ public class FieldBinder implements Serializable {
      * @throws IntrospectionException
      *             if the given design class can not be introspected
      */
-    public FieldBinder(Object design, Class<?> classWithFields) throws IntrospectionException {
+    public FieldBinder(Object design, Class<?> classWithFields)
+            throws IntrospectionException {
         if (design == null) {
             throw new IllegalArgumentException("The design must not be null");
         }
@@ -96,7 +97,8 @@ public class FieldBinder implements Serializable {
             }
         }
         if (unboundFields.size() > 0) {
-            getLogger().severe("Found unbound fields in component root :" + unboundFields);
+            getLogger().severe(
+                    "Found unbound fields in component root :" + unboundFields);
         }
         return unboundFields;
     }
@@ -107,7 +109,8 @@ public class FieldBinder implements Serializable {
     private void resolveFields(Class<?> classWithFields) {
         for (Field memberField : getFields(classWithFields)) {
             if (Component.class.isAssignableFrom(memberField.getType())) {
-                fieldMap.put(memberField.getName().toLowerCase(Locale.ENGLISH), memberField);
+                fieldMap.put(memberField.getName().toLowerCase(Locale.ENGLISH),
+                        memberField);
             }
         }
     }
@@ -151,8 +154,10 @@ public class FieldBinder implements Serializable {
             success = bindFieldByIdentifier(instance.getCaption(), instance);
         }
         if (!success) {
-            String idInfo = "localId: " + localId + " id: " + instance.getId() + " caption: " + instance.getCaption();
-            getLogger().finest("Could not bind component to a field " + instance.getClass().getName() + " " + idInfo);
+            String idInfo = "localId: " + localId + " id: " + instance.getId()
+                    + " caption: " + instance.getCaption();
+            getLogger().finest("Could not bind component to a field "
+                    + instance.getClass().getName() + " " + idInfo);
         }
         return success;
     }
@@ -171,7 +176,8 @@ public class FieldBinder implements Serializable {
      * @throws FieldBindingException
      *             if error occurs when trying to bind the instance to a field
      */
-    private boolean bindFieldByIdentifier(String identifier, Component instance) {
+    private boolean bindFieldByIdentifier(String identifier,
+            Component instance) {
         try {
             // create and validate field name
             String fieldName = asFieldName(identifier);
@@ -181,24 +187,30 @@ public class FieldBinder implements Serializable {
             // validate that the field can be found
             Field field = fieldMap.get(fieldName.toLowerCase(Locale.ENGLISH));
             if (field == null) {
-                getLogger().fine("No field was found by identifier " + identifier);
+                getLogger()
+                        .fine("No field was found by identifier " + identifier);
                 return false;
             }
             // validate that the field is not set
-            Object fieldValue = ReflectTools.getJavaFieldValue(bindTarget, field);
+            Object fieldValue = ReflectTools.getJavaFieldValue(bindTarget,
+                    field);
             if (fieldValue != null) {
-                getLogger().fine("The field \"" + fieldName + "\" was already mapped. Ignoring.");
+                getLogger().fine("The field \"" + fieldName
+                        + "\" was already mapped. Ignoring.");
             } else {
                 // set the field value
                 ReflectTools.setJavaFieldValue(bindTarget, field, instance);
             }
             return true;
         } catch (IllegalAccessException e) {
-            throw new FieldBindingException("Field binding failed for " + identifier, e);
+            throw new FieldBindingException(
+                    "Field binding failed for " + identifier, e);
         } catch (IllegalArgumentException e) {
-            throw new FieldBindingException("Field binding failed for " + identifier, e);
+            throw new FieldBindingException(
+                    "Field binding failed for " + identifier, e);
         } catch (InvocationTargetException e) {
-            throw new FieldBindingException("Field binding failed for " + identifier, e);
+            throw new FieldBindingException(
+                    "Field binding failed for " + identifier, e);
         }
     }
 
@@ -237,10 +249,12 @@ public class FieldBinder implements Serializable {
      *            the class to be scanned for fields
      * @return the list of fields in this class
      */
-    protected static List<java.lang.reflect.Field> getFields(Class<?> searchClass) {
+    protected static List<java.lang.reflect.Field> getFields(
+            Class<?> searchClass) {
         ArrayList<java.lang.reflect.Field> memberFields = new ArrayList<java.lang.reflect.Field>();
 
-        for (java.lang.reflect.Field memberField : searchClass.getDeclaredFields()) {
+        for (java.lang.reflect.Field memberField : searchClass
+                .getDeclaredFields()) {
             memberFields.add(memberField);
         }
         return memberFields;

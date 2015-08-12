@@ -19,7 +19,8 @@ public class WindowElement extends com.vaadin.testbench.elements.WindowElement {
         if (isMaximized()) {
             getRestoreButton().click();
         } else {
-            throw new AssertionError("Window is not maximized, cannot be restored.");
+            throw new AssertionError(
+                    "Window is not maximized, cannot be restored.");
         }
     }
 
@@ -35,7 +36,8 @@ public class WindowElement extends com.vaadin.testbench.elements.WindowElement {
         if (!isMaximized()) {
             getMaximizeButton().click();
         } else {
-            throw new AssertionError("Window is already maximized, cannot maximize.");
+            throw new AssertionError(
+                    "Window is already maximized, cannot maximize.");
         }
     }
 
@@ -45,7 +47,9 @@ public class WindowElement extends com.vaadin.testbench.elements.WindowElement {
 
     public void move(int xOffset, int yOffset) {
         Actions action = new Actions(getDriver());
-        action.moveToElement(findElement(org.openqa.selenium.By.className("v-window-wrap")), 5, 5);
+        action.moveToElement(
+                findElement(org.openqa.selenium.By.className("v-window-wrap")),
+                5, 5);
         action.clickAndHold();
         action.moveByOffset(xOffset, yOffset);
         action.release();

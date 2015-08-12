@@ -46,7 +46,8 @@ public class HandlingLogout extends AbstractTestUI {
     }
 
     protected String getLogoutPageLocation() {
-        return VaadinServletService.getCurrentRequest().getContextPath() + "logout.html";
+        return VaadinServletService.getCurrentRequest().getContextPath()
+                + "logout.html";
     }
 
     @Override

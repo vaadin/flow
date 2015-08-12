@@ -44,7 +44,8 @@ import com.vaadin.client.WidgetUtil;
  * @author Vaadin Ltd
  */
 public class HierarchySection implements Section {
-    private final DebugButton tabButton = new DebugButton(Icon.HIERARCHY, "Examine component hierarchy");
+    private final DebugButton tabButton = new DebugButton(Icon.HIERARCHY,
+            "Examine component hierarchy");
 
     private final SimplePanel content = new SimplePanel();
 
@@ -56,10 +57,14 @@ public class HierarchySection implements Section {
 
     private final FlowPanel controls = new FlowPanel();
 
-    private final Button find = new DebugButton(Icon.HIGHLIGHT, "Select a component on the page to inspect it");
-    private final Button generateWS = new DebugButton(Icon.OPTIMIZE, "Show used connectors and how to optimize widgetset");
-    private final Button showHierarchy = new DebugButton(Icon.HIERARCHY, "Show the connector hierarchy tree");
-    private final Button generateDesign = new DebugButton(Icon.SHOW_DESIGN, "Generate a declarative design for the given component sub tree");
+    private final Button find = new DebugButton(Icon.HIGHLIGHT,
+            "Select a component on the page to inspect it");
+    private final Button generateWS = new DebugButton(Icon.OPTIMIZE,
+            "Show used connectors and how to optimize widgetset");
+    private final Button showHierarchy = new DebugButton(Icon.HIERARCHY,
+            "Show the connector hierarchy tree");
+    private final Button generateDesign = new DebugButton(Icon.SHOW_DESIGN,
+            "Generate a declarative design for the given component sub tree");
 
     private HandlerRegistration highlightModeRegistration = null;
 
@@ -111,8 +116,10 @@ public class HierarchySection implements Section {
         @Override
         public void onSelected(ComponentConnector connector) {
             stopFind();
-            connector.getConnection().getUIConnector().showServerDesign(connector);
-            content.setWidget(new HTML("Design file for component sent to server log"));
+            connector.getConnection().getUIConnector()
+                    .showServerDesign(connector);
+            content.setWidget(
+                    new HTML("Design file for component sent to server log"));
         }
 
     };
@@ -152,7 +159,8 @@ public class HierarchySection implements Section {
         generateDesign.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                content.setWidget(new HTML("Select a layout or component to generate the declarative design"));
+                content.setWidget(new HTML(
+                        "Select a layout or component to generate the declarative design"));
                 toggleFind(showComponentDesign);
             }
         });
@@ -171,7 +179,11 @@ public class HierarchySection implements Section {
     }
 
     private void initializeHelpPanel() {
-        HTML info = new HTML(showHierarchy.getHTML() + " " + showHierarchy.getTitle() + "<br/>" + find.getHTML() + " " + find.getTitle() + "<br/>" + generateWS.getHTML() + " " + generateWS.getTitle() + "<br/>" + generateDesign.getHTML() + " " + generateDesign.getTitle() + "<br/>");
+        HTML info = new HTML(showHierarchy.getHTML() + " "
+                + showHierarchy.getTitle() + "<br/>" + find.getHTML() + " "
+                + find.getTitle() + "<br/>" + generateWS.getHTML() + " "
+                + generateWS.getTitle() + "<br/>" + generateDesign.getHTML()
+                + " " + generateDesign.getTitle() + "<br/>");
         info.setStyleName(VDebugWindow.STYLENAME + "-info");
         helpPanel.add(info);
     }
@@ -254,7 +266,8 @@ public class HierarchySection implements Section {
         }
         Highlight.hideAll();
 
-        highlightModeRegistration = Event.addNativePreviewHandler(highlightModeHandler);
+        highlightModeRegistration = Event
+                .addNativePreviewHandler(highlightModeHandler);
         activeFindHandler = handler;
         if (handler == inspectComponent) {
             find.addStyleDependentName(VDebugWindow.STYLENAME_ACTIVE);
@@ -294,14 +307,17 @@ public class HierarchySection implements Section {
         @Override
         public void onPreviewNativeEvent(NativePreviewEvent event) {
 
-            if (event.getTypeInt() == Event.ONKEYDOWN && event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
+            if (event.getTypeInt() == Event.ONKEYDOWN && event.getNativeEvent()
+                    .getKeyCode() == KeyCodes.KEY_ESCAPE) {
                 stopFind();
                 Highlight.hideAll();
                 return;
             }
             if (event.getTypeInt() == Event.ONMOUSEMOVE) {
                 Highlight.hideAll();
-                Element eventTarget = WidgetUtil.getElementFromPoint(event.getNativeEvent().getClientX(), event.getNativeEvent().getClientY());
+                Element eventTarget = WidgetUtil.getElementFromPoint(
+                        event.getNativeEvent().getClientX(),
+                        event.getNativeEvent().getClientY());
 
                 if (VDebugWindow.get().getElement().isOrHasChild(eventTarget)) {
                     // Do not prevent using debug window controls
@@ -309,10 +325,13 @@ public class HierarchySection implements Section {
                     return;
                 }
 
-                for (ApplicationConnection a : ApplicationConfiguration.getRunningApplications()) {
-                    ComponentConnector connector = Util.getConnectorForElement(a, a.getUIConnector().getWidget(), eventTarget);
+                for (ApplicationConnection a : ApplicationConfiguration
+                        .getRunningApplications()) {
+                    ComponentConnector connector = Util.getConnectorForElement(
+                            a, a.getUIConnector().getWidget(), eventTarget);
                     if (connector == null) {
-                        connector = Util.getConnectorForElement(a, RootPanel.get(), eventTarget);
+                        connector = Util.getConnectorForElement(a,
+                                RootPanel.get(), eventTarget);
                     }
                     if (connector != null) {
                         activeFindHandler.onHover(connector);
@@ -330,11 +349,16 @@ public class HierarchySection implements Section {
                 event.cancel();
                 event.consume();
                 event.getNativeEvent().stopPropagation();
-                Element eventTarget = WidgetUtil.getElementFromPoint(event.getNativeEvent().getClientX(), event.getNativeEvent().getClientY());
-                for (ApplicationConnection a : ApplicationConfiguration.getRunningApplications()) {
-                    ComponentConnector connector = Util.getConnectorForElement(a, a.getUIConnector().getWidget(), eventTarget);
+                Element eventTarget = WidgetUtil.getElementFromPoint(
+                        event.getNativeEvent().getClientX(),
+                        event.getNativeEvent().getClientY());
+                for (ApplicationConnection a : ApplicationConfiguration
+                        .getRunningApplications()) {
+                    ComponentConnector connector = Util.getConnectorForElement(
+                            a, a.getUIConnector().getWidget(), eventTarget);
                     if (connector == null) {
-                        connector = Util.getConnectorForElement(a, RootPanel.get(), eventTarget);
+                        connector = Util.getConnectorForElement(a,
+                                RootPanel.get(), eventTarget);
                     }
 
                     if (connector != null) {

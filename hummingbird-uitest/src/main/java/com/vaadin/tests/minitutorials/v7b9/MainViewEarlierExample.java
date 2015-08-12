@@ -18,29 +18,37 @@ public class MainViewEarlierExample extends Panel implements View {
 
         VerticalLayout layout = new VerticalLayout();
 
-        Link lnk = new Link("Count", new ExternalResource("#!" + CountView.NAME));
+        Link lnk = new Link("Count",
+                new ExternalResource("#!" + CountView.NAME));
         layout.addComponent(lnk);
 
-        lnk = new Link("Message: Hello", new ExternalResource("#!" + MessageView.NAME + "/Hello"));
+        lnk = new Link("Message: Hello",
+                new ExternalResource("#!" + MessageView.NAME + "/Hello"));
         layout.addComponent(lnk);
 
-        lnk = new Link("Message: Bye", new ExternalResource("#!" + MessageView.NAME + "/Bye/Goodbye"));
+        lnk = new Link("Message: Bye",
+                new ExternalResource("#!" + MessageView.NAME + "/Bye/Goodbye"));
         layout.addComponent(lnk);
 
-        lnk = new Link("Private message: Secret", new ExternalResource("#!" + SecretView.NAME + "/Secret"));
+        lnk = new Link("Private message: Secret",
+                new ExternalResource("#!" + SecretView.NAME + "/Secret"));
         layout.addComponent(lnk);
 
-        lnk = new Link("Private message: Topsecret", new ExternalResource("#!" + SecretView.NAME + "/Topsecret"));
+        lnk = new Link("Private message: Topsecret",
+                new ExternalResource("#!" + SecretView.NAME + "/Topsecret"));
         layout.addComponent(lnk);
 
         // login/logout toggle so we can test this
-        Button logInOut = new Button("Toggle login", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                Object user = ((NavigationtestUI) UI.getCurrent()).getLoggedInUser();
-                ((NavigationtestUI) UI.getCurrent()).setLoggedInUser(user == null ? "Smee" : null);
-            }
-        });
+        Button logInOut = new Button("Toggle login",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        Object user = ((NavigationtestUI) UI.getCurrent())
+                                .getLoggedInUser();
+                        ((NavigationtestUI) UI.getCurrent())
+                                .setLoggedInUser(user == null ? "Smee" : null);
+                    }
+                });
         layout.addComponent(logInOut);
         setContent(layout);
     }

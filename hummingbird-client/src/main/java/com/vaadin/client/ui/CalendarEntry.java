@@ -29,7 +29,8 @@ public class CalendarEntry {
     private boolean notime;
 
     @SuppressWarnings("deprecation")
-    public CalendarEntry(String styleName, Date start, Date end, String title, String description, boolean notime) {
+    public CalendarEntry(String styleName, Date start, Date end, String title,
+            String description, boolean notime) {
         this.styleName = styleName;
         if (notime) {
             Date d = new Date(start.getTime());
@@ -53,7 +54,8 @@ public class CalendarEntry {
         this.notime = notime;
     }
 
-    public CalendarEntry(String styleName, Date start, Date end, String title, String description) {
+    public CalendarEntry(String styleName, Date start, Date end, String title,
+            String description) {
         this(styleName, start, end, title, description, false);
     }
 
@@ -107,7 +109,8 @@ public class CalendarEntry {
         String s = "";
         if (!notime) {
             if (!DateTimeService.isSameDay(d, start)) {
-                s += (start.getYear() + 1900) + "." + (start.getMonth() + 1) + "." + start.getDate() + " ";
+                s += (start.getYear() + 1900) + "." + (start.getMonth() + 1)
+                        + "." + start.getDate() + " ";
             }
             int i = start.getHours();
             s += (i < 10 ? "0" : "") + i;
@@ -117,7 +120,8 @@ public class CalendarEntry {
             if (!start.equals(end)) {
                 s += " - ";
                 if (!DateTimeService.isSameDay(start, end)) {
-                    s += (end.getYear() + 1900) + "." + (end.getMonth() + 1) + "." + end.getDate() + " ";
+                    s += (end.getYear() + 1900) + "." + (end.getMonth() + 1)
+                            + "." + end.getDate() + " ";
                 }
                 i = end.getHours();
                 s += (i < 10 ? "0" : "") + i;

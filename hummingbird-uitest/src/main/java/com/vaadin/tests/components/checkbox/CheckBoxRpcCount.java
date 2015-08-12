@@ -39,7 +39,8 @@ public class CheckBoxRpcCount extends AbstractTestUI {
                     private int rpcCount = 0;
 
                     @Override
-                    public void setChecked(boolean checked, MouseEventDetails mouseEventDetails) {
+                    public void setChecked(boolean checked,
+                            MouseEventDetails mouseEventDetails) {
                         rpcCount++;
                         countLabel.setValue(rpcCount + " RPC call(s) made.");
                     }

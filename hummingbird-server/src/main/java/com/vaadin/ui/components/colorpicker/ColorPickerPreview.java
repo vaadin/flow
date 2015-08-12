@@ -29,18 +29,22 @@ import com.vaadin.ui.TextField;
  * 
  * @since 7.0.0
  */
-public class ColorPickerPreview extends CssLayout implements ColorSelector, ValueChangeListener {
+public class ColorPickerPreview extends CssLayout
+        implements ColorSelector, ValueChangeListener {
 
     private static final String STYLE_DARK_COLOR = "v-textfield-dark";
     private static final String STYLE_LIGHT_COLOR = "v-textfield-light";
 
     private static final Method COLOR_CHANGE_METHOD;
+
     static {
         try {
-            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod("colorChanged", new Class[] { ColorChangeEvent.class });
+            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod(
+                    "colorChanged", new Class[] { ColorChangeEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
-            throw new java.lang.RuntimeException("Internal error finding methods in ColorPicker");
+            throw new java.lang.RuntimeException(
+                    "Internal error finding methods in ColorPicker");
         }
     }
 
@@ -93,7 +97,8 @@ public class ColorPickerPreview extends CssLayout implements ColorSelector, Valu
         // Set the text color
         field.removeStyleName(STYLE_DARK_COLOR);
         field.removeStyleName(STYLE_LIGHT_COLOR);
-        if (this.color.getRed() + this.color.getGreen() + this.color.getBlue() < 3 * 128) {
+        if (this.color.getRed() + this.color.getGreen()
+                + this.color.getBlue() < 3 * 128) {
             field.addStyleName(STYLE_DARK_COLOR);
         } else {
             field.addStyleName(STYLE_LIGHT_COLOR);
@@ -135,13 +140,15 @@ public class ColorPickerPreview extends CssLayout implements ColorSelector, Valu
 
                 } else if (value.startsWith("rgb")) {
                     // RGB color format rgb/rgba(255,255,255,0.1)
-                    String[] colors = value.substring(value.indexOf("(") + 1, value.length() - 1).split(",");
+                    String[] colors = value.substring(value.indexOf("(") + 1,
+                            value.length() - 1).split(",");
 
                     int red = Integer.parseInt(colors[0]);
                     int green = Integer.parseInt(colors[1]);
                     int blue = Integer.parseInt(colors[2]);
                     if (colors.length > 3) {
-                        int alpha = (int) (Double.parseDouble(colors[3]) * 255d);
+                        int alpha = (int) (Double.parseDouble(colors[3])
+                                * 255d);
                         color = new Color(red, green, blue, alpha);
                     } else {
                         color = new Color(red, green, blue);
@@ -149,15 +156,19 @@ public class ColorPickerPreview extends CssLayout implements ColorSelector, Valu
 
                 } else if (value.startsWith("hsl")) {
                     // HSL color format hsl/hsla(100,50%,50%,1.0)
-                    String[] colors = value.substring(value.indexOf("(") + 1, value.length() - 1).split(",");
+                    String[] colors = value.substring(value.indexOf("(") + 1,
+                            value.length() - 1).split(",");
 
                     int hue = Integer.parseInt(colors[0]);
-                    int saturation = Integer.parseInt(colors[1].replace("%", ""));
-                    int lightness = Integer.parseInt(colors[2].replace("%", ""));
+                    int saturation = Integer
+                            .parseInt(colors[1].replace("%", ""));
+                    int lightness = Integer
+                            .parseInt(colors[2].replace("%", ""));
                     int rgb = Color.HSLtoRGB(hue, saturation, lightness);
 
                     if (colors.length > 3) {
-                        int alpha = (int) (Double.parseDouble(colors[3]) * 255d);
+                        int alpha = (int) (Double.parseDouble(colors[3])
+                                * 255d);
                         color = new Color(rgb);
                         color.setAlpha(alpha);
                     } else {
@@ -166,7 +177,8 @@ public class ColorPickerPreview extends CssLayout implements ColorSelector, Valu
                 }
 
                 oldValue = value;
-                fireEvent(new ColorChangeEvent((Component) field.getData(), color));
+                fireEvent(new ColorChangeEvent((Component) field.getData(),
+                        color));
             }
 
         } catch (NumberFormatException nfe) {

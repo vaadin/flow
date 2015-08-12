@@ -29,11 +29,13 @@ import com.vaadin.shared.annotations.Delayed;
 
 public class ServerRpcVisitor extends TypeVisitor {
     @Override
-    public void visitServerRpc(TreeLogger logger, JClassType type, ConnectorBundle bundle) throws UnableToCompleteException {
+    public void visitServerRpc(TreeLogger logger, JClassType type,
+            ConnectorBundle bundle) throws UnableToCompleteException {
         ClientRpcVisitor.checkGenericType(logger, type);
         bundle.setNeedsProxySupport(type);
 
-        Set<? extends JClassType> superTypes = type.getFlattenedSupertypeHierarchy();
+        Set<? extends JClassType> superTypes = type
+                .getFlattenedSupertypeHierarchy();
         for (JClassType subType : superTypes) {
             if (subType.isInterface() != null) {
                 JMethod[] methods = subType.getMethods();
@@ -42,14 +44,18 @@ public class ServerRpcVisitor extends TypeVisitor {
 
                     Delayed delayed = method.getAnnotation(Delayed.class);
                     if (delayed != null) {
-                        bundle.setMethodAttribute(type, method, MethodAttribute.DELAYED);
+                        bundle.setMethodAttribute(type, method,
+                                MethodAttribute.DELAYED);
                         if (delayed.lastOnly()) {
-                            bundle.setMethodAttribute(type, method, MethodAttribute.LAST_ONLY);
+                            bundle.setMethodAttribute(type, method,
+                                    MethodAttribute.LAST_ONLY);
                         }
                     }
 
-                    if (method.getAnnotation(NoLoadingIndicator.class) != null) {
-                        bundle.setMethodAttribute(type, method, MethodAttribute.NO_LOADING_INDICATOR);
+                    if (method
+                            .getAnnotation(NoLoadingIndicator.class) != null) {
+                        bundle.setMethodAttribute(type, method,
+                                MethodAttribute.NO_LOADING_INDICATOR);
                     }
 
                     bundle.setNeedsParamTypes(type, method);

@@ -27,27 +27,32 @@ public class RpcInvocationHandlerToString extends AbstractTestUIWithLog {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addButton("Exec toString() for an invocation proxy", new Button.ClickListener() {
+        addButton("Exec toString() for an invocation proxy",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                log("An invoation proxy: " + dummyProxy.toString());
-            }
-        });
-        addButton("Exec hashCode() for an invocation proxy", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        log("An invoation proxy: " + dummyProxy.toString());
+                    }
+                });
+        addButton("Exec hashCode() for an invocation proxy",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                log("Invocation proxy.hashCode(): " + dummyProxy.hashCode());
-            }
-        });
-        addButton("Exec equals(false) for an invocation proxy", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        log("Invocation proxy.hashCode(): "
+                                + dummyProxy.hashCode());
+                    }
+                });
+        addButton("Exec equals(false) for an invocation proxy",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                log("Invocation proxy.equals(false): " + dummyProxy.equals(false));
-            }
-        });
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        log("Invocation proxy.equals(false): "
+                                + dummyProxy.equals(false));
+                    }
+                });
     }
 
     @Override

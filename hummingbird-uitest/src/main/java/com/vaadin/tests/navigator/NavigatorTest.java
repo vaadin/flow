@@ -36,7 +36,8 @@ public class NavigatorTest extends UI {
         @Override
         public void enter(ViewChangeEvent event) {
             String params = event.getParameters();
-            log.log("Navigated to ListView " + (params.isEmpty() ? "without params" : "with params " + params));
+            log.log("Navigated to ListView " + (params.isEmpty()
+                    ? "without params" : "with params " + params));
             String val = "";
             for (String arg : params.split(",")) {
                 String[] o = arg.split("=|$", 2);
@@ -51,7 +52,8 @@ public class NavigatorTest extends UI {
         @Override
         public void enter(ViewChangeEvent event) {
             String params = event.getParameters();
-            log.log("Navigated to EditView " + (params.isEmpty() ? "without params" : "with params " + params));
+            log.log("Navigated to EditView " + (params.isEmpty()
+                    ? "without params" : "with params " + params));
             setValue("Displaying edit view with parameters " + params);
         }
     }
@@ -60,7 +62,8 @@ public class NavigatorTest extends UI {
 
         @Override
         public void enter(ViewChangeEvent event) {
-            log.log("Navigated to SpecialCharsView: " + event.getViewName() + "; fragment: " + getPage().getUriFragment());
+            log.log("Navigated to SpecialCharsView: " + event.getViewName()
+                    + "; fragment: " + getPage().getUriFragment());
             setValue(event.getViewName());
         }
 
@@ -71,7 +74,8 @@ public class NavigatorTest extends UI {
         @Override
         public void enter(ViewChangeEvent event) {
             String params = event.getParameters();
-            log.log("Navigated to DefaultView " + (params.isEmpty() ? "without params" : "with params " + params));
+            log.log("Navigated to DefaultView " + (params.isEmpty()
+                    ? "without params" : "with params " + params));
             setValue("Default view: " + event.getParameters());
         }
     }
@@ -88,7 +92,8 @@ public class NavigatorTest extends UI {
         @Override
         public void enter(ViewChangeEvent event) {
             log.log("View '" + event.getViewName() + "' not found!");
-            setValue("Tried to navigate to " + event.getViewName() + " but such a view could not be found :(");
+            setValue("Tried to navigate to " + event.getViewName()
+                    + " but such a view could not be found :(");
         }
     }
 

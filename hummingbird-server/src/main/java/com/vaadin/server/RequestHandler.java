@@ -52,6 +52,7 @@ public interface RequestHandler extends Serializable {
      * @throws IOException
      *             If an IO error occurred
      */
-    boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException;
+    boolean handleRequest(VaadinSession session, VaadinRequest request,
+            VaadinResponse response) throws IOException;
 
 }

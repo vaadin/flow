@@ -21,20 +21,21 @@ public class TabSheetTabStyleNames extends TestBase {
 
         tab1.setStyleName(STYLE_NAME);
 
-        addComponent(new Button("Update style names", new Button.ClickListener() {
-            int counter = 0;
+        addComponent(
+                new Button("Update style names", new Button.ClickListener() {
+                    int counter = 0;
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                if (tab1.getStyleName() == null) {
-                    tab1.setStyleName(STYLE_NAME);
-                } else {
-                    tab1.setStyleName(null);
-                }
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        if (tab1.getStyleName() == null) {
+                            tab1.setStyleName(STYLE_NAME);
+                        } else {
+                            tab1.setStyleName(null);
+                        }
 
-                tab2.setStyleName(STYLE_NAME + "_" + (counter++));
-            }
-        }));
+                        tab2.setStyleName(STYLE_NAME + "_" + (counter++));
+                    }
+                }));
 
         addComponent(tabsheet);
     }

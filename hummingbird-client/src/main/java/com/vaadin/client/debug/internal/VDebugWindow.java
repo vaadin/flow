@@ -73,7 +73,8 @@ public final class VDebugWindow extends VOverlay {
     protected static final String STYLENAME_TABS = STYLENAME + "-tabs";
     protected static final String STYLENAME_TAB = STYLENAME + "-tab";
     protected static final String STYLENAME_CONTROLS = STYLENAME + "-controls";
-    protected static final String STYLENAME_SECTION_HEAD = STYLENAME + "-section-head";
+    protected static final String STYLENAME_SECTION_HEAD = STYLENAME
+            + "-section-head";
     protected static final String STYLENAME_CONTENT = STYLENAME + "-content";
     protected static final String STYLENAME_SELECTED = "selected";
 
@@ -224,8 +225,10 @@ public final class VDebugWindow extends VOverlay {
 
         // move/resize
         final MouseHandler mouseHandler = new MouseHandler();
-        mouseDownHandler = this.addDomHandler(mouseHandler, MouseDownEvent.getType());
-        mouseMoveHandler = this.addDomHandler(mouseHandler, MouseMoveEvent.getType());
+        mouseDownHandler = this.addDomHandler(mouseHandler,
+                MouseDownEvent.getType());
+        mouseMoveHandler = this.addDomHandler(mouseHandler,
+                MouseMoveEvent.getType());
 
     }
 
@@ -237,11 +240,13 @@ public final class VDebugWindow extends VOverlay {
      */
     private void addHandles() {
         Element el = DOM.createDiv();
-        el.setClassName(VDebugWindow.STYLENAME + "-handle " + VDebugWindow.STYLENAME + "-handle-sw");
+        el.setClassName(VDebugWindow.STYLENAME + "-handle "
+                + VDebugWindow.STYLENAME + "-handle-sw");
         content.getElement().appendChild(el);
 
         el = DOM.createDiv();
-        el.setClassName(VDebugWindow.STYLENAME + "-handle " + VDebugWindow.STYLENAME + "-handle-se");
+        el.setClassName(VDebugWindow.STYLENAME + "-handle "
+                + VDebugWindow.STYLENAME + "-handle-se");
         content.getElement().appendChild(el);
     }
 
@@ -561,7 +566,8 @@ public final class VDebugWindow extends VOverlay {
             // update tab styles
             for (int i = 0; i < tabs.getWidgetCount(); i++) {
                 Widget tab = tabs.getWidget(i);
-                tab.setStyleDependentName(STYLENAME_SELECTED, tab == section.getTabButton());
+                tab.setStyleDependentName(STYLENAME_SELECTED,
+                        tab == section.getTabButton());
             }
             // add new stuff
             content.add(section.getContent());
@@ -665,7 +671,8 @@ public final class VDebugWindow extends VOverlay {
     static String getTimingTooltip(int sinceStart, int sinceReset) {
         String title = formatDuration(sinceStart) + " since start";
         title += ", &#10; " + formatDuration(sinceReset) + " since timer reset";
-        title += " &#10; @ " + DateTimeFormat.getFormat("HH:mm:ss.SSS").format(new Date());
+        title += " &#10; @ "
+                + DateTimeFormat.getFormat("HH:mm:ss.SSS").format(new Date());
         return title;
     }
 
@@ -703,7 +710,8 @@ public final class VDebugWindow extends VOverlay {
             public void execute() {
                 readStoredState();
 
-                Window.addResizeHandler(new com.google.gwt.event.logical.shared.ResizeHandler() {
+                Window.addResizeHandler(
+                        new com.google.gwt.event.logical.shared.ResizeHandler() {
 
                     Timer t = new Timer() {
                         @Override
@@ -778,9 +786,18 @@ public final class VDebugWindow extends VOverlay {
     protected class Menu extends VOverlay {
         FlowPanel content = new FlowPanel();
 
-        DebugButton[] sizes = new DebugButton[] { new DebugButton(null, "Small", "A"), new DebugButton(null, "Medium", "A"), new DebugButton(null, "Large", "A") };
+        DebugButton[] sizes = new DebugButton[] {
+                new DebugButton(null, "Small", "A"),
+                new DebugButton(null, "Medium", "A"),
+                new DebugButton(null, "Large", "A") };
 
-        DebugButton[] modes = new DebugButton[] { new DebugButton(Icon.DEVMODE_OFF, "Debug only (causes page reload)"), new DebugButton(Icon.DEVMODE_ON, "DevMode (causes page reload)"), new DebugButton(Icon.DEVMODE_SUPER, "SuperDevMode (causes page reload)") };
+        DebugButton[] modes = new DebugButton[] {
+                new DebugButton(Icon.DEVMODE_OFF,
+                        "Debug only (causes page reload)"),
+                new DebugButton(Icon.DEVMODE_ON,
+                        "DevMode (causes page reload)"),
+                new DebugButton(Icon.DEVMODE_SUPER,
+                        "SuperDevMode (causes page reload)") };
 
         Menu() {
             super(true, true);
@@ -832,7 +849,8 @@ public final class VDebugWindow extends VOverlay {
                 mode.add(b);
             }
 
-            Button reset = new DebugButton(Icon.RESET, "Restore defaults.", " Reset");
+            Button reset = new DebugButton(Icon.RESET, "Restore defaults.",
+                    " Reset");
             reset.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
@@ -895,7 +913,8 @@ public final class VDebugWindow extends VOverlay {
      * @since 7.1
      * @author Vaadin Ltd
      */
-    protected class MouseHandler implements MouseMoveHandler, MouseDownHandler, NativePreviewHandler {
+    protected class MouseHandler implements MouseMoveHandler, MouseDownHandler,
+            NativePreviewHandler {
 
         boolean resizeLeft;
         boolean resizeRight;
@@ -926,7 +945,8 @@ public final class VDebugWindow extends VOverlay {
 
         @Override
         public void onMouseDown(MouseDownEvent event) {
-            if (event.getNativeButton() != NativeEvent.BUTTON_LEFT || dragHandler != null) {
+            if (event.getNativeButton() != NativeEvent.BUTTON_LEFT
+                    || dragHandler != null) {
                 return;
             }
             updateResizeFlags(event);
@@ -955,13 +975,15 @@ public final class VDebugWindow extends VOverlay {
 
         @Override
         public void onPreviewNativeEvent(NativePreviewEvent event) {
-            if (event.getTypeInt() == Event.ONMOUSEMOVE && !stop && hasMoved(event.getNativeEvent())) {
+            if (event.getTypeInt() == Event.ONMOUSEMOVE && !stop
+                    && hasMoved(event.getNativeEvent())) {
 
                 int dx = event.getNativeEvent().getClientX() - startX;
                 int dy = event.getNativeEvent().getClientY() - startY;
 
                 if (sizing) {
-                    int minWidth = tabs.getOffsetWidth() + controls.getOffsetWidth();
+                    int minWidth = tabs.getOffsetWidth()
+                            + controls.getOffsetWidth();
 
                     if (resizeLeft) {
                         int w = startW - dx;
@@ -1036,7 +1058,8 @@ public final class VDebugWindow extends VOverlay {
         }
 
         private boolean hasMoved(NativeEvent event) {
-            return Math.abs(startX - event.getClientX()) > MOVE_TRESHOLD || Math.abs(startY - event.getClientY()) > MOVE_TRESHOLD;
+            return Math.abs(startX - event.getClientX()) > MOVE_TRESHOLD
+                    || Math.abs(startY - event.getClientY()) > MOVE_TRESHOLD;
         }
 
         private void updateCursor() {
@@ -1097,11 +1120,15 @@ public final class VDebugWindow extends VOverlay {
             int y = event.getRelativeY(c);
 
             resizeLeft = x < HANDLE_SIZE && y > tabs.getOffsetHeight();
-            resizeRight = (x > (w - HANDLE_SIZE) && y > tabs.getOffsetHeight()) || (x > (w - 2 * HANDLE_SIZE) && y > (h - 2 * HANDLE_SIZE));
-            resizeUp = y > tabs.getOffsetHeight() && y < tabs.getOffsetHeight() + HANDLE_SIZE;
-            resizeDown = y > (h - HANDLE_SIZE) || (x > (w - 2 * HANDLE_SIZE) && y > (h - 2 * HANDLE_SIZE));
+            resizeRight = (x > (w - HANDLE_SIZE) && y > tabs.getOffsetHeight())
+                    || (x > (w - 2 * HANDLE_SIZE) && y > (h - 2 * HANDLE_SIZE));
+            resizeUp = y > tabs.getOffsetHeight()
+                    && y < tabs.getOffsetHeight() + HANDLE_SIZE;
+            resizeDown = y > (h - HANDLE_SIZE)
+                    || (x > (w - 2 * HANDLE_SIZE) && y > (h - 2 * HANDLE_SIZE));
 
-            move = !resizeDown && !resizeLeft && !resizeRight && !resizeUp && y < head.getOffsetHeight();
+            move = !resizeDown && !resizeLeft && !resizeRight && !resizeUp
+                    && y < head.getOffsetHeight();
 
             sizing = resizeLeft || resizeRight || resizeUp || resizeDown;
 

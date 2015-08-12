@@ -35,7 +35,8 @@ import java.util.Locale;
  * @author Vaadin Ltd
  * @since 7.4
  */
-public class StringToBigIntegerConverter extends AbstractStringToNumberConverter<BigInteger> {
+public class StringToBigIntegerConverter
+        extends AbstractStringToNumberConverter<BigInteger> {
 
     @Override
     protected NumberFormat getFormat(Locale locale) {
@@ -48,11 +49,15 @@ public class StringToBigIntegerConverter extends AbstractStringToNumberConverter
     }
 
     @Override
-    public BigInteger convertToModel(String value, Class<? extends BigInteger> targetType, Locale locale) throws com.vaadin.data.util.converter.Converter.ConversionException {
+    public BigInteger convertToModel(String value,
+            Class<? extends BigInteger> targetType, Locale locale)
+                    throws com.vaadin.data.util.converter.Converter.ConversionException {
 
-        BigDecimal bigDecimalValue = (BigDecimal) convertToNumber(value, BigDecimal.class, locale);
+        BigDecimal bigDecimalValue = (BigDecimal) convertToNumber(value,
+                BigDecimal.class, locale);
 
-        return (bigDecimalValue != null) ? bigDecimalValue.toBigInteger() : null;
+        return (bigDecimalValue != null) ? bigDecimalValue.toBigInteger()
+                : null;
     }
 
     @Override

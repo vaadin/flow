@@ -26,6 +26,7 @@ public class PushLargeDataLongPolling extends PushLargeData {
     @Override
     protected void setup(VaadinRequest request) {
         super.setup(request);
-        getPushConfiguration().setParameter(PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
+        getPushConfiguration().setParameter(
+                PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
     }
 }

@@ -30,11 +30,18 @@ import com.vaadin.testbench.parallel.ParallelTestSuite;
  */
 public class TB3TestSuite extends ParallelTestSuite {
 
-    public TB3TestSuite(Class<?> klass, Class<? extends AbstractTB3Test> baseClass, String basePackage, String[] ignorePackages) throws InitializationError, IOException {
-        this(klass, baseClass, basePackage, ignorePackages, new TB3TestLocator());
+    public TB3TestSuite(Class<?> klass,
+            Class<? extends AbstractTB3Test> baseClass, String basePackage,
+            String[] ignorePackages) throws InitializationError, IOException {
+        this(klass, baseClass, basePackage, ignorePackages,
+                new TB3TestLocator());
     }
 
-    public TB3TestSuite(Class<?> klass, Class<? extends AbstractTB3Test> baseClass, String basePackage, String[] ignorePackages, TB3TestLocator locator) throws InitializationError, IOException {
-        super(klass, locator.findClasses(baseClass, basePackage, ignorePackages).toArray(new Class<?>[] {}));
+    public TB3TestSuite(Class<?> klass,
+            Class<? extends AbstractTB3Test> baseClass, String basePackage,
+            String[] ignorePackages, TB3TestLocator locator)
+                    throws InitializationError, IOException {
+        super(klass, locator.findClasses(baseClass, basePackage, ignorePackages)
+                .toArray(new Class<?>[] {}));
     }
 }

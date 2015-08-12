@@ -29,7 +29,8 @@ public class SelectionAndCursorPosition extends TestBase {
         ml.addValueChangeListener(new Property.ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
-                if (textField.getUI() == null || textField.getUI().getSession() == null) {
+                if (textField.getUI() == null
+                        || textField.getUI().getSession() == null) {
                     replaceComponent(textArea, textField);
                     activeComponent = textField;
                 } else {
@@ -50,7 +51,8 @@ public class SelectionAndCursorPosition extends TestBase {
         fl.addComponent(b);
 
         HorizontalLayout selectRange = new HorizontalLayout();
-        selectRange.setCaption("Select range of text ( setSelectionRange(int start, int lengt) )");
+        selectRange.setCaption(
+                "Select range of text ( setSelectionRange(int start, int lengt) )");
         final TextField start = new TextField("From:");
         final TextField length = new TextField("Selection length:");
         b = new Button("select");
@@ -82,7 +84,8 @@ public class SelectionAndCursorPosition extends TestBase {
 
         setCursorPosition.addComponent(pos);
         setCursorPosition.addComponent(b);
-        setCursorPosition.setCaption("Set cursor position ( setCursorPosition(int pos) )");
+        setCursorPosition.setCaption(
+                "Set cursor position ( setCursorPosition(int pos) )");
         fl.addComponent(setCursorPosition);
 
         getLayout().addComponent(textField);
@@ -111,7 +114,9 @@ public class SelectionAndCursorPosition extends TestBase {
 
     @Override
     protected String getTestDescription() {
-        return "For usability reasons it is often essential that developer " + "can hint how to select the text in the " + "field or where to set the cursor position.";
+        return "For usability reasons it is often essential that developer "
+                + "can hint how to select the text in the "
+                + "field or where to set the cursor position.";
     }
 
     @Override

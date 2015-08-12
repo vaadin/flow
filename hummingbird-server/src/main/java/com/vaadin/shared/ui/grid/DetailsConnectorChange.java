@@ -68,7 +68,8 @@ public class DetailsConnectorChange implements Serializable {
      * @param shouldStillBeVisible
      *            details should be visible regardless of {@code connector}
      */
-    public DetailsConnectorChange(Connector connector, Integer oldIndex, Integer newIndex, boolean shouldStillBeVisible) {
+    public DetailsConnectorChange(Connector connector, Integer oldIndex,
+            Integer newIndex, boolean shouldStillBeVisible) {
         this.connector = connector;
         this.oldIndex = oldIndex;
         this.newIndex = newIndex;
@@ -78,10 +79,16 @@ public class DetailsConnectorChange implements Serializable {
     }
 
     private boolean assertStateIsOk() {
-        boolean connectorAndNewIndexIsNotNull = connector != null && newIndex != null;
-        boolean connectorAndNewIndexIsNullThenOldIndexIsSet = connector == null && newIndex == null && oldIndex != null;
+        boolean connectorAndNewIndexIsNotNull = connector != null
+                && newIndex != null;
+        boolean connectorAndNewIndexIsNullThenOldIndexIsSet = connector == null
+                && newIndex == null && oldIndex != null;
 
-        assert (connectorAndNewIndexIsNotNull || connectorAndNewIndexIsNullThenOldIndexIsSet) : "connector: " + nullityString(connector) + ", oldIndex: " + nullityString(oldIndex) + ", newIndex: " + nullityString(newIndex);
+        assert(connectorAndNewIndexIsNotNull
+                || connectorAndNewIndexIsNullThenOldIndexIsSet) : "connector: "
+                        + nullityString(connector) + ", oldIndex: "
+                        + nullityString(oldIndex) + ", newIndex: "
+                        + nullityString(newIndex);
         return true;
     }
 

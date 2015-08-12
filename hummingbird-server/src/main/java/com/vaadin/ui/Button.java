@@ -55,7 +55,8 @@ public class Button extends AbstractFocusable {
             // Makes sure the enabled=false state is noticed at once - otherwise
             // a following setEnabled(true) call might have no effect. see
             // ticket #10030
-            getUI().getConnectorTracker().getDiffState(Button.this).put("enabled", false);
+            getUI().getConnectorTracker().getDiffState(Button.this)
+                    .put("enabled", false);
         }
     };
 
@@ -80,7 +81,8 @@ public class Button extends AbstractFocusable {
     public void setCaption(String caption) {
         super.setCaption(caption);
         getElement().removeAllChildren();
-        getElement().insertChild(0, com.vaadin.hummingbird.kernel.Element.createText(caption));
+        getElement().insertChild(0,
+                com.vaadin.hummingbird.kernel.Element.createText(caption));
     }
 
     /**
@@ -288,7 +290,9 @@ public class Button extends AbstractFocusable {
      */
     public interface ClickListener extends Serializable {
 
-        public static final Method BUTTON_CLICK_METHOD = ReflectTools.findMethod(ClickListener.class, "buttonClick", ClickEvent.class);
+        public static final Method BUTTON_CLICK_METHOD = ReflectTools
+                .findMethod(ClickListener.class, "buttonClick",
+                        ClickEvent.class);
 
         /**
          * Called when a {@link Button} has been clicked. A reference to the
@@ -308,7 +312,8 @@ public class Button extends AbstractFocusable {
      *            the Listener to be added.
      */
     public void addClickListener(ClickListener listener) {
-        addListener(ClickEvent.class, listener, ClickListener.BUTTON_CLICK_METHOD);
+        addListener(ClickEvent.class, listener,
+                ClickListener.BUTTON_CLICK_METHOD);
     }
 
     /**
@@ -318,7 +323,8 @@ public class Button extends AbstractFocusable {
      *            the Listener to be removed.
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(ClickEvent.class, listener, ClickListener.BUTTON_CLICK_METHOD);
+        removeListener(ClickEvent.class, listener,
+                ClickListener.BUTTON_CLICK_METHOD);
     }
 
     /**
@@ -459,12 +465,14 @@ public class Button extends AbstractFocusable {
         String content = design.html();
         setCaption(content);
         // plain-text (default is html)
-        Boolean plain = DesignAttributeHandler.readAttribute(DESIGN_ATTR_PLAIN_TEXT, attr, Boolean.class);
+        Boolean plain = DesignAttributeHandler
+                .readAttribute(DESIGN_ATTR_PLAIN_TEXT, attr, Boolean.class);
         if (plain == null || !plain) {
             setHtmlContentAllowed(true);
         }
         if (attr.hasKey("icon-alt")) {
-            setIconAlternateText(DesignAttributeHandler.readAttribute("icon-alt", attr, String.class));
+            setIconAlternateText(DesignAttributeHandler
+                    .readAttribute("icon-alt", attr, String.class));
         }
     }
 
@@ -506,7 +514,9 @@ public class Button extends AbstractFocusable {
             design.attr(DESIGN_ATTR_PLAIN_TEXT, "");
         }
         // icon-alt
-        DesignAttributeHandler.writeAttribute("icon-alt", attr, getIconAlternateText(), def.getIconAlternateText(), String.class);
+        DesignAttributeHandler.writeAttribute("icon-alt", attr,
+                getIconAlternateText(), def.getIconAlternateText(),
+                String.class);
     }
 
 }

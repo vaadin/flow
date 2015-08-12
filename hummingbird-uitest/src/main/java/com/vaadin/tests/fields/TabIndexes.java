@@ -73,7 +73,8 @@ public class TabIndexes extends AbstractTestUIWithLog {
                 updateCaptions();
             }
         });
-        Button setTabIndexesInReverseOrder = new Button("Set tab indexes to N..1");
+        Button setTabIndexesInReverseOrder = new Button(
+                "Set tab indexes to N..1");
         setTabIndexesInReverseOrder.addClickListener(new ClickListener() {
 
             @Override
@@ -110,7 +111,8 @@ public class TabIndexes extends AbstractTestUIWithLog {
 
         clearTabIndexes.click();
 
-        buttonLayout.addComponents(clearTabIndexes, setTabIndexesToOne, setTabIndexesInOrder, setTabIndexesInReverseOrder);
+        buttonLayout.addComponents(clearTabIndexes, setTabIndexesToOne,
+                setTabIndexesInOrder, setTabIndexesInReverseOrder);
 
         int fieldId = 1;
         GridLayout gl = new GridLayout(4, 4);
@@ -124,7 +126,8 @@ public class TabIndexes extends AbstractTestUIWithLog {
 
     protected void updateCaptions() {
         for (Field f : fields) {
-            f.setCaption(f.getClass().getSimpleName() + " Tab index: " + f.getTabIndex());
+            f.setCaption(f.getClass().getSimpleName() + " Tab index: "
+                    + f.getTabIndex());
         }
     }
 

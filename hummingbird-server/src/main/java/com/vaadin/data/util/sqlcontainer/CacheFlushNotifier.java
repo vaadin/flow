@@ -54,7 +54,8 @@ class CacheFlushNotifier implements Serializable {
      * Removes dead references from instance list
      */
     private static void removeDeadReferences() {
-        java.lang.ref.Reference<? extends SQLContainer> dead = deadInstances.poll();
+        java.lang.ref.Reference<? extends SQLContainer> dead = deadInstances
+                .poll();
         while (dead != null) {
             allInstances.remove(dead);
             dead = deadInstances.poll();
@@ -86,9 +87,14 @@ class CacheFlushNotifier implements Serializable {
                 /* Compare QueryDelegate types and tableName/queryString */
                 QueryDelegate wrQd = wrc.getQueryDelegate();
                 QueryDelegate qd = c.getQueryDelegate();
-                if (wrQd instanceof TableQuery && qd instanceof TableQuery && ((TableQuery) wrQd).getTableName().equals(((TableQuery) qd).getTableName())) {
+                if (wrQd instanceof TableQuery && qd instanceof TableQuery
+                        && ((TableQuery) wrQd).getTableName()
+                                .equals(((TableQuery) qd).getTableName())) {
                     wrc.refresh();
-                } else if (wrQd instanceof FreeformQuery && qd instanceof FreeformQuery && ((FreeformQuery) wrQd).getQueryString().equals(((FreeformQuery) qd).getQueryString())) {
+                } else if (wrQd instanceof FreeformQuery
+                        && qd instanceof FreeformQuery
+                        && ((FreeformQuery) wrQd).getQueryString().equals(
+                                ((FreeformQuery) qd).getQueryString())) {
                     wrc.refresh();
                 }
             }

@@ -33,7 +33,9 @@ public class LoginFormTest extends TestBase {
 
             @Override
             public void onLogin(LoginEvent event) {
-                login((LoginForm) event.getSource(), event.getLoginParameter("username"), event.getLoginParameter("password"));
+                login((LoginForm) event.getSource(),
+                        event.getLoginParameter("username"),
+                        event.getLoginParameter("password"));
 
             }
         });
@@ -85,13 +87,15 @@ public class LoginFormTest extends TestBase {
     protected void login(LoginForm loginForm, String user, String password) {
         VerticalLayout infoLayout = new VerticalLayout();
 
-        Label info = new Label("User '" + user + "', password='" + password + "' logged in");
+        Label info = new Label(
+                "User '" + user + "', password='" + password + "' logged in");
         Button logoutButton = new Button("Log out", new ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
                 Button b = event.getButton();
-                loginFormLayout.replaceComponent(b.getParent(), (LoginForm) b.getData());
+                loginFormLayout.replaceComponent(b.getParent(),
+                        (LoginForm) b.getData());
             }
 
         });

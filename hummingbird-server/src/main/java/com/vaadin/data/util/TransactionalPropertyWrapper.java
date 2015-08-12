@@ -41,7 +41,8 @@ import com.vaadin.data.Property.ValueChangeNotifier;
  * 
  * @param <T>
  */
-public class TransactionalPropertyWrapper<T> extends AbstractProperty<T> implements ValueChangeNotifier, Property.Transactional<T> {
+public class TransactionalPropertyWrapper<T> extends AbstractProperty<T>
+        implements ValueChangeNotifier, Property.Transactional<T> {
 
     private Property<T> wrappedProperty;
     private boolean inTransaction = false;
@@ -58,7 +59,8 @@ public class TransactionalPropertyWrapper<T> extends AbstractProperty<T> impleme
     public TransactionalPropertyWrapper(Property<T> wrappedProperty) {
         this.wrappedProperty = wrappedProperty;
         if (wrappedProperty instanceof ValueChangeNotifier) {
-            ((ValueChangeNotifier) wrappedProperty).addValueChangeListener(listener);
+            ((ValueChangeNotifier) wrappedProperty)
+                    .addValueChangeListener(listener);
         }
     }
 
@@ -70,7 +72,8 @@ public class TransactionalPropertyWrapper<T> extends AbstractProperty<T> impleme
      */
     public void detachFromProperty() {
         if (wrappedProperty instanceof ValueChangeNotifier) {
-            ((ValueChangeNotifier) wrappedProperty).removeValueChangeListener(listener);
+            ((ValueChangeNotifier) wrappedProperty)
+                    .removeValueChangeListener(listener);
         }
     }
 

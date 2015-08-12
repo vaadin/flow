@@ -39,12 +39,14 @@ public class BootstrapListenerCode {
     public static BootstrapListener listener = new BootstrapListener() {
         @Override
         public void modifyBootstrapPage(BootstrapPageResponse response) {
-            response.getDocument().body().appendChild(new Comment("Powered by Vaadin!", ""));
+            response.getDocument().body()
+                    .appendChild(new Comment("Powered by Vaadin!", ""));
             response.setHeader("X-Powered-By", "Vaadin 7");
         }
 
         @Override
-        public void modifyBootstrapFragment(BootstrapFragmentResponse response) {
+        public void modifyBootstrapFragment(
+                BootstrapFragmentResponse response) {
             // Wrap the fragment in a custom div element
             Element myDiv = new Element(Tag.valueOf("div"), "");
             List<Node> nodes = response.getFragmentNodes();
@@ -63,8 +65,10 @@ class MyVaadinServlet extends VaadinServlet {
         super.servletInitialized();
         getService().addSessionInitListener(new SessionInitListener() {
             @Override
-            public void sessionInit(SessionInitEvent event) throws ServiceException {
-                event.getSession().addBootstrapListener(BootstrapListenerCode.listener);
+            public void sessionInit(SessionInitEvent event)
+                    throws ServiceException {
+                event.getSession()
+                        .addBootstrapListener(BootstrapListenerCode.listener);
             }
         });
     }
@@ -78,8 +82,10 @@ class MyVaadinPortlet extends VaadinPortlet {
         super.portletInitialized();
         getService().addSessionInitListener(new SessionInitListener() {
             @Override
-            public void sessionInit(SessionInitEvent event) throws ServiceException {
-                event.getSession().addBootstrapListener(BootstrapListenerCode.listener);
+            public void sessionInit(SessionInitEvent event)
+                    throws ServiceException {
+                event.getSession()
+                        .addBootstrapListener(BootstrapListenerCode.listener);
             }
         });
     }

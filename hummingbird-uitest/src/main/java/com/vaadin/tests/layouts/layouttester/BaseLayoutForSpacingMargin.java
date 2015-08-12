@@ -33,7 +33,8 @@ public class BaseLayoutForSpacingMargin extends BaseLayoutTestUI {
     /**
      * @param layoutClass
      */
-    public BaseLayoutForSpacingMargin(Class<? extends AbstractLayout> layoutClass) {
+    public BaseLayoutForSpacingMargin(
+            Class<? extends AbstractLayout> layoutClass) {
         super(layoutClass);
     }
 
@@ -53,7 +54,9 @@ public class BaseLayoutForSpacingMargin extends BaseLayoutTestUI {
         l2.setMargin(false);
         l2.setSpacing(false);
         // Must add something around the hr to avoid the margins collapsing
-        l2.addComponent(new Label("<div style='height: 1px'></div><hr /><div style='height: 1px'></div>", ContentMode.HTML));
+        l2.addComponent(new Label(
+                "<div style='height: 1px'></div><hr /><div style='height: 1px'></div>",
+                ContentMode.HTML));
         l2.addComponent(t2);
         final Button btn1 = new Button("Toggle margin on/off");
         btn1.addClickListener(new ClickListener() {

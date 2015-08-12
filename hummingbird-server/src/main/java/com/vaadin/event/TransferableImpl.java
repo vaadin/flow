@@ -30,7 +30,8 @@ public class TransferableImpl implements Transferable {
     private Map<String, Object> rawVariables = new HashMap<String, Object>();
     private Component sourceComponent;
 
-    public TransferableImpl(Component sourceComponent, Map<String, Object> rawVariables) {
+    public TransferableImpl(Component sourceComponent,
+            Map<String, Object> rawVariables) {
         this.sourceComponent = sourceComponent;
         this.rawVariables = rawVariables;
     }

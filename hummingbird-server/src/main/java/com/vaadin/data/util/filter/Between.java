@@ -27,7 +27,8 @@ public class Between implements Filter {
     private final Comparable<?> startValue;
     private final Comparable<?> endValue;
 
-    public Between(Object propertyId, Comparable<?> startValue, Comparable<?> endValue) {
+    public Between(Object propertyId, Comparable<?> startValue,
+            Comparable<?> endValue) {
         this.propertyId = propertyId;
         this.startValue = startValue;
         this.endValue = endValue;
@@ -46,11 +47,13 @@ public class Between implements Filter {
     }
 
     @Override
-    public boolean passesFilter(Object itemId, Item item) throws UnsupportedOperationException {
+    public boolean passesFilter(Object itemId, Item item)
+            throws UnsupportedOperationException {
         Object value = item.getItemProperty(getPropertyId()).getValue();
         if (value instanceof Comparable) {
             Comparable comparable = (Comparable) value;
-            return isAfterStartValue(comparable) && isBeforeEndValue(comparable);
+            return isAfterStartValue(comparable)
+                    && isBeforeEndValue(comparable);
         } else if (value == null) {
             return getStartValue() == null && getEndValue() == null;
         }
@@ -64,7 +67,8 @@ public class Between implements Filter {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(new Object[] { getPropertyId(), getStartValue(), getEndValue() });
+        return Arrays.hashCode(new Object[] { getPropertyId(), getStartValue(),
+                getEndValue() });
     }
 
     @Override
@@ -80,18 +84,22 @@ public class Between implements Filter {
         final Between o = (Between) obj;
 
         // Checks the properties one by one
-        boolean propertyIdEqual = Objects.equals(getPropertyId(), o.getPropertyId());
-        boolean startValueEqual = Objects.equals(getStartValue(), o.getStartValue());
+        boolean propertyIdEqual = Objects.equals(getPropertyId(),
+                o.getPropertyId());
+        boolean startValueEqual = Objects.equals(getStartValue(),
+                o.getStartValue());
         boolean endValueEqual = Objects.equals(getEndValue(), o.getEndValue());
         return propertyIdEqual && startValueEqual && endValueEqual;
 
     }
 
     private boolean isAfterStartValue(Comparable comparable) {
-        return getStartValue() == null || comparable.compareTo(getStartValue()) >= 0;
+        return getStartValue() == null
+                || comparable.compareTo(getStartValue()) >= 0;
     }
 
     private boolean isBeforeEndValue(Comparable comparable) {
-        return getEndValue() == null || comparable.compareTo(getEndValue()) <= 0;
+        return getEndValue() == null
+                || comparable.compareTo(getEndValue()) <= 0;
     }
 }

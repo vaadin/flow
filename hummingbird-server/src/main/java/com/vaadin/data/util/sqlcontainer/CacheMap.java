@@ -25,7 +25,8 @@ import java.util.Map;
  */
 class CacheMap<K, V> extends LinkedHashMap<K, V> {
     private static final long serialVersionUID = 679999766473555231L;
-    private int cacheLimit = SQLContainer.CACHE_RATIO * SQLContainer.DEFAULT_PAGE_LENGTH;
+    private int cacheLimit = SQLContainer.CACHE_RATIO
+            * SQLContainer.DEFAULT_PAGE_LENGTH;
 
     @Override
     protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {

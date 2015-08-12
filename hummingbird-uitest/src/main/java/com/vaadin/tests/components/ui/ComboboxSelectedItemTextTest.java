@@ -46,38 +46,51 @@ public class ComboboxSelectedItemTextTest extends MultiBrowserTest {
     @Override
     public List<DesiredCapabilities> getBrowsersToTest() {
         // Ignoring Chrome 40 because of a regression. See #16636.
-        return getBrowserCapabilities(Browser.IE8, Browser.IE9, Browser.IE10, Browser.IE11, Browser.FIREFOX, Browser.PHANTOMJS);
+        return getBrowserCapabilities(Browser.IE8, Browser.IE9, Browser.IE10,
+                Browser.IE11, Browser.FIREFOX, Browser.PHANTOMJS);
     }
 
     @Test
     public void testCombobox() throws IOException {
-        testCombobox(INDEX_EDITABLE_COMBOBOX, INDEX_NON_EDITABLE_COMBOBOX, SCREENSHOT_NAME_EDITABLE);
+        testCombobox(INDEX_EDITABLE_COMBOBOX, INDEX_NON_EDITABLE_COMBOBOX,
+                SCREENSHOT_NAME_EDITABLE);
     }
 
     @Test
     public void testComboboxNonEditable() throws IOException {
-        testCombobox(INDEX_NON_EDITABLE_COMBOBOX, INDEX_EDITABLE_COMBOBOX, SCREENSHOT_NAME_NON_EDITABLE);
+        testCombobox(INDEX_NON_EDITABLE_COMBOBOX, INDEX_EDITABLE_COMBOBOX,
+                SCREENSHOT_NAME_NON_EDITABLE);
     }
 
-    private void testCombobox(int indexToTest, int indexToFocus, String screenshotIdentifier) throws IOException {
+    private void testCombobox(int indexToTest, int indexToFocus,
+            String screenshotIdentifier) throws IOException {
         openTestURL();
 
-        WebElement comboBox = vaadinElement("/VVerticalLayout[0]/Slot[2]/VVerticalLayout[0]/Slot[" + indexToTest + "]/VFilterSelect[0]");
-        WebElement comboBoxFocus = vaadinElement("/VVerticalLayout[0]/Slot[2]/VVerticalLayout[0]/Slot[" + indexToFocus + "]/VFilterSelect[0]");
+        WebElement comboBox = vaadinElement(
+                "/VVerticalLayout[0]/Slot[2]/VVerticalLayout[0]/Slot["
+                        + indexToTest + "]/VFilterSelect[0]");
+        WebElement comboBoxFocus = vaadinElement(
+                "/VVerticalLayout[0]/Slot[2]/VVerticalLayout[0]/Slot["
+                        + indexToFocus + "]/VFilterSelect[0]");
 
         // Select an element from the first (to test) combobox.
 
         comboBox.findElement(By.className("v-filterselect-button")).click();
         waitForPopup(comboBox);
-        WebElement comboBoxPopup = vaadinElement("/VVerticalLayout[0]/Slot[2]/VVerticalLayout[0]/Slot[" + indexToTest + "]/VFilterSelect[0]#popup");
+        WebElement comboBoxPopup = vaadinElement(
+                "/VVerticalLayout[0]/Slot[2]/VVerticalLayout[0]/Slot["
+                        + indexToTest + "]/VFilterSelect[0]#popup");
         comboBoxPopup.findElements(By.tagName("td")).get(2).click();
 
         // Select an element from the second (to focus) combobox to remove
         // focus from the first combobox
 
-        comboBoxFocus.findElement(By.className("v-filterselect-button")).click();
+        comboBoxFocus.findElement(By.className("v-filterselect-button"))
+                .click();
         waitForPopup(comboBoxFocus);
-        comboBoxPopup = vaadinElement("/VVerticalLayout[0]/Slot[2]/VVerticalLayout[0]/Slot[" + indexToFocus + "]/VFilterSelect[0]#popup");
+        comboBoxPopup = vaadinElement(
+                "/VVerticalLayout[0]/Slot[2]/VVerticalLayout[0]/Slot["
+                        + indexToFocus + "]/VFilterSelect[0]#popup");
         comboBoxPopup.findElements(By.tagName("td")).get(2).click();
 
         // click the button of the first combobox. This would reveal the

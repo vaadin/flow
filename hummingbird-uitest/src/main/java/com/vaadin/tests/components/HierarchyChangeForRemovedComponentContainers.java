@@ -26,12 +26,13 @@ public class HierarchyChangeForRemovedComponentContainers extends TestBase {
 
         compose();
 
-        addComponent(new Button("Replace layout with button", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                compose2();
-            }
-        }));
+        addComponent(new Button("Replace layout with button",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        compose2();
+                    }
+                }));
     }
 
     private void compose() {

@@ -41,7 +41,8 @@ public class TB3TestLocator {
      * @param ignorePackages
      * @return
      */
-    public Class<?>[] findTests(Class<? extends AbstractTB3Test> baseClass, String basePackage, String[] ignorePackages) {
+    public Class<?>[] findTests(Class<? extends AbstractTB3Test> baseClass,
+            String basePackage, String[] ignorePackages) {
         try {
             List<?> l = findClasses(baseClass, basePackage, ignorePackages);
             return l.toArray(new Class[] {});
@@ -64,7 +65,8 @@ public class TB3TestLocator {
      * @return
      * @throws IOException
      */
-    protected <T> List<Class<? extends T>> findClasses(Class<T> baseClass, String basePackage, String[] ignoredPackages) throws IOException {
+    protected <T> List<Class<? extends T>> findClasses(Class<T> baseClass,
+            String basePackage, String[] ignoredPackages) throws IOException {
         List<Class<? extends T>> classes = new ArrayList<Class<? extends T>>();
         String basePackageDirName = "/" + basePackage.replace('.', '/');
         URL location = baseClass.getResource(basePackageDirName);
@@ -72,9 +74,11 @@ public class TB3TestLocator {
             try {
                 File f = new File(location.toURI());
                 if (!f.exists()) {
-                    throw new IOException("Directory " + f.toString() + " does not exist");
+                    throw new IOException(
+                            "Directory " + f.toString() + " does not exist");
                 }
-                findPackages(f, basePackage, baseClass, classes, ignoredPackages);
+                findPackages(f, basePackage, baseClass, classes,
+                        ignoredPackages);
             } catch (URISyntaxException e) {
                 throw new IOException(e.getMessage());
             }
@@ -111,7 +115,9 @@ public class TB3TestLocator {
      * @param ignoredPackages
      *            A collection of packages (including sub packages) to ignore
      */
-    private <T> void findPackages(File parent, String javaPackage, Class<T> baseClass, Collection<Class<? extends T>> result, String[] ignoredPackages) {
+    private <T> void findPackages(File parent, String javaPackage,
+            Class<T> baseClass, Collection<Class<? extends T>> result,
+            String[] ignoredPackages) {
         for (String ignoredPackage : ignoredPackages) {
             if (javaPackage.equals(ignoredPackage)) {
                 return;
@@ -120,9 +126,11 @@ public class TB3TestLocator {
 
         for (File file : parent.listFiles()) {
             if (file.isDirectory()) {
-                findPackages(file, javaPackage + "." + file.getName(), baseClass, result, ignoredPackages);
+                findPackages(file, javaPackage + "." + file.getName(),
+                        baseClass, result, ignoredPackages);
             } else if (file.getName().endsWith(".class")) {
-                String fullyQualifiedClassName = javaPackage + "." + file.getName().replace(".class", "");
+                String fullyQualifiedClassName = javaPackage + "."
+                        + file.getName().replace(".class", "");
                 addClassIfMatches(result, fullyQualifiedClassName, baseClass);
             }
         }
@@ -143,13 +151,17 @@ public class TB3TestLocator {
      *            The collection to which found classes are added
      * @throws IOException
      */
-    private <T> void findClassesInJar(JarURLConnection juc, String javaPackage, Class<T> baseClass, Collection<Class<? extends T>> result) throws IOException {
+    private <T> void findClassesInJar(JarURLConnection juc, String javaPackage,
+            Class<T> baseClass, Collection<Class<? extends T>> result)
+                    throws IOException {
         String javaPackageDir = javaPackage.replace('.', '/');
         Enumeration<JarEntry> ent = juc.getJarFile().entries();
         while (ent.hasMoreElements()) {
             JarEntry e = ent.nextElement();
-            if (e.getName().endsWith(".class") && e.getName().startsWith(javaPackageDir)) {
-                String fullyQualifiedClassName = e.getName().replace('/', '.').replace(".class", "");
+            if (e.getName().endsWith(".class")
+                    && e.getName().startsWith(javaPackageDir)) {
+                String fullyQualifiedClassName = e.getName().replace('/', '.')
+                        .replace(".class", "");
                 addClassIfMatches(result, fullyQualifiedClassName, baseClass);
             }
         }
@@ -168,7 +180,8 @@ public class TB3TestLocator {
      *            The class 'fullyQualifiedClassName' should be assignable to
      */
     @SuppressWarnings("unchecked")
-    protected <T> void addClassIfMatches(Collection<Class<? extends T>> result, String fullyQualifiedClassName, Class<T> baseClass) {
+    protected <T> void addClassIfMatches(Collection<Class<? extends T>> result,
+            String fullyQualifiedClassName, Class<T> baseClass) {
         try {
             // Try to load the class
 
@@ -180,7 +193,8 @@ public class TB3TestLocator {
                 return;
             }
 
-            if (!Modifier.isAbstract(c.getModifiers()) && !c.isAnonymousClass()) {
+            if (!Modifier.isAbstract(c.getModifiers())
+                    && !c.isAnonymousClass()) {
                 result.add((Class<? extends T>) c);
             }
         } catch (Exception e) {

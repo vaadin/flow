@@ -32,7 +32,8 @@ public class SimpleStringTranslator implements FilterTranslator {
         SimpleStringFilter ssf = (SimpleStringFilter) filter;
         // Create a Like filter based on the SimpleStringFilter and execute the
         // LikeTranslator
-        String likeStr = ssf.isOnlyMatchPrefix() ? ssf.getFilterString() + "%" : "%" + ssf.getFilterString() + "%";
+        String likeStr = ssf.isOnlyMatchPrefix() ? ssf.getFilterString() + "%"
+                : "%" + ssf.getFilterString() + "%";
         Like like = new Like(ssf.getPropertyId().toString(), likeStr);
         like.setCaseSensitive(!ssf.isIgnoreCase());
         return new LikeTranslator().getWhereStringForFilter(like, sh);

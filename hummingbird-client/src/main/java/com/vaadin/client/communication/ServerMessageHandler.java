@@ -67,7 +67,8 @@ public class ServerMessageHandler {
         /**
          * Needed at a later point when the created events are fired
          */
-        private JsArrayObject<ConnectorHierarchyChangeEvent> events = JavaScriptObject.createArray().cast();
+        private JsArrayObject<ConnectorHierarchyChangeEvent> events = JavaScriptObject
+                .createArray().cast();
         /**
          * Needed to know where captions might need to get updated
          */
@@ -188,7 +189,8 @@ public class ServerMessageHandler {
     public void setConnection(ApplicationConnection connection) {
         this.connection = connection;
 
-        treeUpdater.init(connection.getUIConnector().getWidget().getElement(), connection.getServerRpcQueue());
+        treeUpdater.init(connection.getUIConnector().getWidget().getElement(),
+                connection.getServerRpcQueue());
     }
 
     public static Logger getLogger() {
@@ -216,13 +218,16 @@ public class ServerMessageHandler {
             // same way as if we do not receive the expected prefix and suffix
             getServerCommunicationHandler().endRequest();
 
-            connection.showCommunicationError(e.getMessage() + " - Original JSON-text:" + jsonText, 200);
+            connection.showCommunicationError(
+                    e.getMessage() + " - Original JSON-text:" + jsonText, 200);
             return;
         }
-        getLogger().info("JSON parsing took " + (new Date().getTime() - start.getTime()) + "ms");
+        getLogger().info("JSON parsing took "
+                + (new Date().getTime() - start.getTime()) + "ms");
 
         if (getServerId(json) == -1) {
-            getLogger().severe("Response didn't contain a server id. " + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
+            getLogger().severe("Response didn't contain a server id. "
+                    + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
         }
 
         if (connection.getState() == State.RUNNING) {
@@ -237,7 +242,8 @@ public class ServerMessageHandler {
                 }
             });
         } else {
-            getLogger().warning("Ignored received message because application has already been stopped");
+            getLogger().warning(
+                    "Ignored received message because application has already been stopped");
             return;
         }
     }
@@ -255,7 +261,8 @@ public class ServerMessageHandler {
             // messages and ensure this is handled next. Otherwise we
             // would keep waiting for an older message forever (if this
             // is triggered by forceHandleMessage)
-            getLogger().info("Received resync message with id " + serverId + " while waiting for " + getExpectedServerId());
+            getLogger().info("Received resync message with id " + serverId
+                    + " while waiting for " + getExpectedServerId());
             lastSeenServerSyncId = serverId - 1;
             removeOldPendingMessages();
         }
@@ -275,13 +282,17 @@ public class ServerMessageHandler {
                 // Unexpected server id
                 if (serverId <= lastSeenServerSyncId) {
                     // Why is the server re-sending an old package? Ignore it
-                    getLogger().warning("Received message with server id " + serverId + " but have already seen " + lastSeenServerSyncId + ". Ignoring it");
+                    getLogger().warning("Received message with server id "
+                            + serverId + " but have already seen "
+                            + lastSeenServerSyncId + ". Ignoring it");
                     endRequestIfResponse(json);
                     return;
                 }
 
                 // We are waiting for an earlier message...
-                getLogger().info("Received message with server id " + serverId + " but expected " + getExpectedServerId() + ". Postponing handling until the missing message(s) have been received");
+                getLogger().info("Received message with server id " + serverId
+                        + " but expected " + getExpectedServerId()
+                        + ". Postponing handling until the missing message(s) have been received");
             }
             pendingUIDLMessages.add(new PendingUIDLMessage(json));
             if (!forceHandleMessage.isRunning()) {
@@ -305,8 +316,10 @@ public class ServerMessageHandler {
         // Client id must be updated before server id, as server id update can
         // cause a resync (which must use the updated id)
         if (json.containsKey(ApplicationConstants.CLIENT_TO_SERVER_ID)) {
-            int serverNextExpected = json.getInt(ApplicationConstants.CLIENT_TO_SERVER_ID);
-            getServerCommunicationHandler().setClientToServerMessageId(serverNextExpected, isResynchronize(json));
+            int serverNextExpected = json
+                    .getInt(ApplicationConstants.CLIENT_TO_SERVER_ID);
+            getServerCommunicationHandler().setClientToServerMessageId(
+                    serverNextExpected, isResynchronize(json));
         }
 
         if (serverId != -1) {
@@ -329,21 +342,26 @@ public class ServerMessageHandler {
 
         // Get security key
         if (json.containsKey(ApplicationConstants.UIDL_SECURITY_TOKEN_ID)) {
-            csrfToken = json.getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
+            csrfToken = json
+                    .getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
         }
 
         getLogger().info("Handling resource dependencies");
         if (json.containsKey("scriptDependencies")) {
-            connection.loadScriptDependencies(json.getJSStringArray("scriptDependencies"));
+            connection.loadScriptDependencies(
+                    json.getJSStringArray("scriptDependencies"));
         }
         if (json.containsKey("styleDependencies")) {
-            connection.loadStyleDependencies(json.getJSStringArray("styleDependencies"));
+            connection.loadStyleDependencies(
+                    json.getJSStringArray("styleDependencies"));
         }
         if (json.containsKey("htmlDependencies")) {
-            connection.loadHtmlDependencies(json.getJSStringArray("htmlDependencies"));
+            connection.loadHtmlDependencies(
+                    json.getJSStringArray("htmlDependencies"));
         }
 
-        handleUIDLDuration.logDuration(" * Handling type mappings from server completed", 10);
+        handleUIDLDuration.logDuration(
+                " * Handling type mappings from server completed", 10);
         /*
          * Hook for e.g. TestBench to get details about server peformance
          */
@@ -358,7 +376,8 @@ public class ServerMessageHandler {
             public void execute() {
                 assert serverId == -1 || serverId == lastSeenServerSyncId;
 
-                handleUIDLDuration.logDuration(" * Loading widgets completed", 10);
+                handleUIDLDuration.logDuration(" * Loading widgets completed",
+                        10);
 
                 Profiler.enter("Handling meta information");
                 ValueMap meta = null;
@@ -369,17 +388,20 @@ public class ServerMessageHandler {
                         prepareRepaintAll();
                     }
                     if (meta.containsKey("timedRedirect")) {
-                        final ValueMap timedRedirect = meta.getValueMap("timedRedirect");
+                        final ValueMap timedRedirect = meta
+                                .getValueMap("timedRedirect");
                         if (redirectTimer != null) {
                             redirectTimer.cancel();
                         }
                         redirectTimer = new Timer() {
                             @Override
                             public void run() {
-                                WidgetUtil.redirect(timedRedirect.getString("url"));
+                                WidgetUtil.redirect(
+                                        timedRedirect.getString("url"));
                             }
                         };
-                        sessionExpirationInterval = timedRedirect.getInt("interval");
+                        sessionExpirationInterval = timedRedirect
+                                .getInt("interval");
                     }
                 }
                 Profiler.leave("Handling meta information");
@@ -394,14 +416,19 @@ public class ServerMessageHandler {
 
                 Profiler.enter("Handle element update");
 
-                ValueMap elementTemplates = json.getValueMap("elementTemplates");
-                JsArray<ValueMap> elementChanges = json.getJSValueMapArray("elementChanges");
+                ValueMap elementTemplates = json
+                        .getValueMap("elementTemplates");
+                JsArray<ValueMap> elementChanges = json
+                        .getJSValueMapArray("elementChanges");
 
-                treeUpdater.update(elementTemplates.<JsJsonObject> cast(), elementChanges.<JsJsonArray> cast());
+                treeUpdater.update(elementTemplates.<JsJsonObject> cast(),
+                        elementChanges.<JsJsonArray> cast());
 
                 Profiler.leave("Handle element update");
 
-                getLogger().info("handleUIDLMessage: " + (Duration.currentTimeMillis() - processUidlStart) + " ms");
+                getLogger().info("handleUIDLMessage: "
+                        + (Duration.currentTimeMillis() - processUidlStart)
+                        + " ms");
 
                 updatingState = false;
 
@@ -410,14 +437,19 @@ public class ServerMessageHandler {
                     if (meta.containsKey("appError")) {
                         ValueMap error = meta.getValueMap("appError");
 
-                        VNotification.showError(connection, error.getString("caption"), error.getString("message"), error.getString("details"), error.getString("url"));
+                        VNotification.showError(connection,
+                                error.getString("caption"),
+                                error.getString("message"),
+                                error.getString("details"),
+                                error.getString("url"));
 
                         connection.setApplicationRunning(false);
                     }
                     Profiler.leave("Error handling");
                 }
 
-                lastProcessingTime = (int) ((new Date().getTime()) - start.getTime());
+                lastProcessingTime = (int) ((new Date().getTime())
+                        - start.getTime());
                 totalProcessingTime += lastProcessingTime;
                 if (bootstrapTime == 0) {
                     bootstrapTime = calculateBootstrapTime();
@@ -426,8 +458,10 @@ public class ServerMessageHandler {
                     }
                 }
 
-                getLogger().info(" Processing time was " + String.valueOf(lastProcessingTime) + "ms");
-                getLogger().info("Referenced paintables: " + getConnectorMap().size());
+                getLogger().info(" Processing time was "
+                        + String.valueOf(lastProcessingTime) + "ms");
+                getLogger().info(
+                        "Referenced paintables: " + getConnectorMap().size());
 
                 endRequestIfResponse(json);
                 resumeResponseHandling(lock);
@@ -516,14 +550,16 @@ public class ServerMessageHandler {
             if (!responseHandlingLocks.isEmpty()) {
                 // Lock which was never release -> bug in locker or things just
                 // too slow
-                getLogger().warning("WARNING: reponse handling was never resumed, forcibly removing locks...");
+                getLogger().warning(
+                        "WARNING: reponse handling was never resumed, forcibly removing locks...");
                 responseHandlingLocks.clear();
             } else {
                 // Waited for out-of-order message which never arrived
                 // Do one final check and resynchronize if the message is not
                 // there. The final check is only a precaution as this timer
                 // should have been cancelled if the message has arrived
-                getLogger().warning("Gave up waiting for message " + getExpectedServerId() + " from the server");
+                getLogger().warning("Gave up waiting for message "
+                        + getExpectedServerId() + " from the server");
 
             }
             if (!handlePendingMessages() && !pendingUIDLMessages.isEmpty()) {
@@ -558,7 +594,8 @@ public class ServerMessageHandler {
             forceHandleMessage.cancel();
 
             if (!pendingUIDLMessages.isEmpty()) {
-                getLogger().info("No more response handling locks, handling pending requests.");
+                getLogger().info(
+                        "No more response handling locks, handling pending requests.");
                 handlePendingMessages();
             }
         }

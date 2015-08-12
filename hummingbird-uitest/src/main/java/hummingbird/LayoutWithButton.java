@@ -35,7 +35,8 @@ public class LayoutWithButton extends UI {
         Button b1 = new Button("Say hello using a <button>");
         PaperButton b2 = new PaperButton("Say foo to the paper-button");
 
-        Label l = new Label("A text does not need any div but will not be laid out correctly using flex then");
+        Label l = new Label(
+                "A text does not need any div but will not be laid out correctly using flex then");
         Slider s = new Slider();
 
         Button b3 = new Button("Say bar");

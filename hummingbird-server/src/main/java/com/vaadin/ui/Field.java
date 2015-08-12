@@ -40,7 +40,9 @@ import com.vaadin.ui.Component.Focusable;
  *
  * @author IT Mill Ltd.
  */
-public interface Field<T> extends Component, BufferedValidatable, Property<T>, Property.ValueChangeNotifier, Property.ValueChangeListener, Property.Editor, Focusable {
+public interface Field<T> extends Component, BufferedValidatable, Property<T>,
+        Property.ValueChangeNotifier, Property.ValueChangeListener,
+        Property.Editor, Focusable {
 
     /**
      * Is this field required.
@@ -88,7 +90,8 @@ public interface Field<T> extends Component, BufferedValidatable, Property<T>, P
      * @since 3.0
      */
     @SuppressWarnings("serial")
-    public static class ValueChangeEvent extends Component.Event implements Property.ValueChangeEvent {
+    public static class ValueChangeEvent extends Component.Event
+            implements Property.ValueChangeEvent {
 
         /**
          * Constructs a new event object with the specified source field object.

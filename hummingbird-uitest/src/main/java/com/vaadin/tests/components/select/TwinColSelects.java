@@ -38,7 +38,8 @@ public class TwinColSelects extends ComponentTestCase<TwinColSelect> {
         TwinColSelect select = new TwinColSelect(caption);
         select.addContainerProperty(CAPTION, String.class, null);
         for (int i = 0; i < 20; i++) {
-            select.addItem("" + i).getItemProperty(CAPTION).setValue("Item " + i);
+            select.addItem("" + i).getItemProperty(CAPTION)
+                    .setValue("Item " + i);
         }
         return select;
     }

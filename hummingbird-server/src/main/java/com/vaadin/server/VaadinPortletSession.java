@@ -78,12 +78,14 @@ public class VaadinPortletSession extends VaadinSession {
 
     public PortletSession getPortletSession() {
         WrappedSession wrappedSession = getSession();
-        PortletSession session = ((WrappedPortletSession) wrappedSession).getPortletSession();
+        PortletSession session = ((WrappedPortletSession) wrappedSession)
+                .getPortletSession();
         return session;
     }
 
     private PortletResponse getCurrentResponse() {
-        VaadinPortletResponse currentResponse = (VaadinPortletResponse) CurrentInstance.get(VaadinResponse.class);
+        VaadinPortletResponse currentResponse = (VaadinPortletResponse) CurrentInstance
+                .get(VaadinResponse.class);
 
         if (currentResponse != null) {
             return currentResponse.getPortletResponse();
@@ -93,7 +95,8 @@ public class VaadinPortletSession extends VaadinSession {
     }
 
     public PortletConfig getPortletConfig() {
-        VaadinPortletResponse response = (VaadinPortletResponse) CurrentInstance.get(VaadinResponse.class);
+        VaadinPortletResponse response = (VaadinPortletResponse) CurrentInstance
+                .get(VaadinResponse.class);
         return response.getService().getPortlet().getPortletConfig();
     }
 
@@ -105,55 +108,70 @@ public class VaadinPortletSession extends VaadinSession {
         portletListeners.remove(listener);
     }
 
-    public void firePortletRenderRequest(UI uI, RenderRequest request, RenderResponse response) {
-        for (PortletListener l : new ArrayList<PortletListener>(portletListeners)) {
-            l.handleRenderRequest(request, new RestrictedRenderResponse(response), uI);
+    public void firePortletRenderRequest(UI uI, RenderRequest request,
+            RenderResponse response) {
+        for (PortletListener l : new ArrayList<PortletListener>(
+                portletListeners)) {
+            l.handleRenderRequest(request,
+                    new RestrictedRenderResponse(response), uI);
         }
     }
 
-    public void firePortletActionRequest(UI uI, ActionRequest request, ActionResponse response) {
+    public void firePortletActionRequest(UI uI, ActionRequest request,
+            ActionResponse response) {
         String key = request.getParameter(ActionRequest.ACTION_NAME);
         if (eventActionDestinationMap.containsKey(key)) {
             // this action request is only to send queued portlet events
-            response.setEvent(eventActionDestinationMap.get(key), eventActionValueMap.get(key));
+            response.setEvent(eventActionDestinationMap.get(key),
+                    eventActionValueMap.get(key));
             // cleanup
             eventActionDestinationMap.remove(key);
             eventActionValueMap.remove(key);
         } else if (sharedParameterActionNameMap.containsKey(key)) {
             // this action request is only to set shared render parameters
-            response.setRenderParameter(sharedParameterActionNameMap.get(key), sharedParameterActionValueMap.get(key));
+            response.setRenderParameter(sharedParameterActionNameMap.get(key),
+                    sharedParameterActionValueMap.get(key));
             // cleanup
             sharedParameterActionNameMap.remove(key);
             sharedParameterActionValueMap.remove(key);
         } else {
             // normal action request, notify listeners
-            for (PortletListener l : new ArrayList<PortletListener>(portletListeners)) {
+            for (PortletListener l : new ArrayList<PortletListener>(
+                    portletListeners)) {
                 l.handleActionRequest(request, response, uI);
             }
         }
     }
 
-    public void firePortletEventRequest(UI uI, EventRequest request, EventResponse response) {
-        for (PortletListener l : new ArrayList<PortletListener>(portletListeners)) {
+    public void firePortletEventRequest(UI uI, EventRequest request,
+            EventResponse response) {
+        for (PortletListener l : new ArrayList<PortletListener>(
+                portletListeners)) {
             l.handleEventRequest(request, response, uI);
         }
     }
 
-    public void firePortletResourceRequest(UI uI, ResourceRequest request, ResourceResponse response) {
-        for (PortletListener l : new ArrayList<PortletListener>(portletListeners)) {
+    public void firePortletResourceRequest(UI uI, ResourceRequest request,
+            ResourceResponse response) {
+        for (PortletListener l : new ArrayList<PortletListener>(
+                portletListeners)) {
             l.handleResourceRequest(request, response, uI);
         }
     }
 
     public interface PortletListener extends Serializable {
 
-        public void handleRenderRequest(RenderRequest request, RenderResponse response, UI uI);
+        public void handleRenderRequest(RenderRequest request,
+                RenderResponse response, UI uI);
 
-        public void handleActionRequest(ActionRequest request, ActionResponse response, UI uI);
+        public void handleActionRequest(ActionRequest request,
+                ActionResponse response, UI uI);
 
-        public void handleEventRequest(EventRequest request, EventResponse response, UI uI);
+        public void handleEventRequest(EventRequest request,
+                EventResponse response, UI uI);
 
-        public void handleResourceRequest(ResourceRequest request, ResourceResponse response, UI uI);
+        public void handleResourceRequest(ResourceRequest request,
+                ResourceResponse response, UI uI);
     }
 
     /**
@@ -196,7 +214,8 @@ public class VaadinPortletSession extends VaadinSession {
      *            event value object that is Serializable and, if appropriate,
      *            has a valid JAXB annotation
      */
-    public void sendPortletEvent(UI uI, QName name, Serializable value) throws IllegalStateException {
+    public void sendPortletEvent(UI uI, QName name, Serializable value)
+            throws IllegalStateException {
         PortletResponse response = getCurrentResponse();
         if (response instanceof MimeResponse) {
             String actionKey = "" + System.currentTimeMillis();
@@ -211,12 +230,14 @@ public class VaadinPortletSession extends VaadinSession {
             } else {
                 // this should never happen as we already know the response is a
                 // MimeResponse
-                throw new IllegalStateException("Portlet events can only be sent from a portlet request");
+                throw new IllegalStateException(
+                        "Portlet events can only be sent from a portlet request");
             }
         } else if (response instanceof StateAwareResponse) {
             ((StateAwareResponse) response).setEvent(name, value);
         } else {
-            throw new IllegalStateException("Portlet events can only be sent from a portlet request");
+            throw new IllegalStateException(
+                    "Portlet events can only be sent from a portlet request");
         }
     }
 
@@ -240,7 +261,8 @@ public class VaadinPortletSession extends VaadinSession {
      * @param value
      *            parameter value
      */
-    public void setSharedRenderParameter(UI uI, String name, String value) throws IllegalStateException {
+    public void setSharedRenderParameter(UI uI, String name, String value)
+            throws IllegalStateException {
         PortletResponse response = getCurrentResponse();
         if (response instanceof MimeResponse) {
             String actionKey = "" + System.currentTimeMillis();
@@ -255,12 +277,14 @@ public class VaadinPortletSession extends VaadinSession {
             } else {
                 // this should never happen as we already know the response is a
                 // MimeResponse
-                throw new IllegalStateException("Shared parameters can only be set from a portlet request");
+                throw new IllegalStateException(
+                        "Shared parameters can only be set from a portlet request");
             }
         } else if (response instanceof StateAwareResponse) {
             ((StateAwareResponse) response).setRenderParameter(name, value);
         } else {
-            throw new IllegalStateException("Shared parameters can only be set from a portlet request");
+            throw new IllegalStateException(
+                    "Shared parameters can only be set from a portlet request");
         }
     }
 
@@ -277,7 +301,8 @@ public class VaadinPortletSession extends VaadinSession {
      *             if the portlet mode is not allowed for some reason
      *             (configuration, permissions etc.)
      */
-    public void setPortletMode(UI uI, PortletMode portletMode) throws IllegalStateException, PortletModeException {
+    public void setPortletMode(UI uI, PortletMode portletMode)
+            throws IllegalStateException, PortletModeException {
         PortletResponse response = getCurrentResponse();
         if (response instanceof MimeResponse) {
             PortletURL url = ((MimeResponse) response).createRenderURL();
@@ -287,7 +312,8 @@ public class VaadinPortletSession extends VaadinSession {
         } else if (response instanceof StateAwareResponse) {
             ((StateAwareResponse) response).setPortletMode(portletMode);
         } else {
-            throw new IllegalStateException("Portlet mode can only be changed from a portlet request");
+            throw new IllegalStateException(
+                    "Portlet mode can only be changed from a portlet request");
         }
     }
 }

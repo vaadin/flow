@@ -48,19 +48,25 @@ public class AccordionRemoveTabTest extends MultiBrowserTest {
     public void testConsoleErrorOnSwitch() {
         setDebug(true);
         openTestURL();
-        WebElement firstItem = driver.findElement(By.className("v-accordion-item-first"));
-        WebElement caption = firstItem.findElement(By.className("v-accordion-item-caption"));
+        WebElement firstItem = driver
+                .findElement(By.className("v-accordion-item-first"));
+        WebElement caption = firstItem
+                .findElement(By.className("v-accordion-item-caption"));
         caption.click();
-        Assert.assertEquals("Errors present in console", 0, findElements(By.className("SEVERE")).size());
+        Assert.assertEquals("Errors present in console", 0,
+                findElements(By.className("SEVERE")).size());
     }
 
     private void checkFirstItemHeight(String text) {
-        WebElement firstItem = driver.findElement(By.className("v-accordion-item-first"));
+        WebElement firstItem = driver
+                .findElement(By.className("v-accordion-item-first"));
         WebElement label = firstItem.findElement(By.className("v-label"));
-        Assert.assertEquals("Unexpected text in first item", text, label.getText());
+        Assert.assertEquals("Unexpected text in first item", text,
+                label.getText());
         int height = firstItem.getSize().getHeight();
         WebElement accordion = driver.findElement(By.className("v-accordion"));
-        Assert.assertTrue("First item in accordion has unexpected height", height > accordion.getSize().getHeight() / 2);
+        Assert.assertTrue("First item in accordion has unexpected height",
+                height > accordion.getSize().getHeight() / 2);
     }
 
 }

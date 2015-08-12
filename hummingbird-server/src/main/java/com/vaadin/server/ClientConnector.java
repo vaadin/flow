@@ -39,7 +39,8 @@ public interface ClientConnector extends Connector {
      * to find the connector where the error occurred or {@link #getComponent()}
      * to find the nearest parent component.
      */
-    public static class ConnectorErrorEvent extends com.vaadin.server.ErrorEvent {
+    public static class ConnectorErrorEvent
+            extends com.vaadin.server.ErrorEvent {
 
         private Connector connector;
 
@@ -178,7 +179,8 @@ public interface ClientConnector extends Connector {
      * @throws IOException
      *             if there is a problem generating a response.
      */
-    public boolean handleConnectorRequest(VaadinRequest request, VaadinResponse response, String path) throws IOException;
+    public boolean handleConnectorRequest(VaadinRequest request,
+            VaadinResponse response, String path) throws IOException;
 
     /**
      * Returns the RPC manager instance to use when receiving calls for an RPC

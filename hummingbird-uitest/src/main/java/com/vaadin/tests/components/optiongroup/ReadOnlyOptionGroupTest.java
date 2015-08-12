@@ -40,7 +40,10 @@ public class ReadOnlyOptionGroupTest extends MultiBrowserTest {
 
         assertNoErrorNotifications();
 
-        Assert.assertFalse("Radio button in option group is still disabled " + "after unset reaonly", isElementPresent(By.className("v-radiobutton-disabled")));
+        Assert.assertFalse(
+                "Radio button in option group is still disabled "
+                        + "after unset reaonly",
+                isElementPresent(By.className("v-radiobutton-disabled")));
     }
 
 }

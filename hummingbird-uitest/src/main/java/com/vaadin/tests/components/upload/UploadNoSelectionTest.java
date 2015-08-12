@@ -42,12 +42,15 @@ public class UploadNoSelectionTest extends MultiBrowserTest {
     }
 
     private WebElement getSubmitButton() {
-        WebElement element = getDriver().findElement(By.id(UploadNoSelection.UPLOAD_ID));
+        WebElement element = getDriver()
+                .findElement(By.id(UploadNoSelection.UPLOAD_ID));
         WebElement submitButton = element.findElement(By.className("v-button"));
         return submitButton;
     }
 
-    private void assertLogRow(int index, int expentedRowNo, String expectedValueWithoutRowNo) {
-        Assert.assertEquals(expentedRowNo + ". " + expectedValueWithoutRowNo, getLogRow(index));
+    private void assertLogRow(int index, int expentedRowNo,
+            String expectedValueWithoutRowNo) {
+        Assert.assertEquals(expentedRowNo + ". " + expectedValueWithoutRowNo,
+                getLogRow(index));
     }
 }

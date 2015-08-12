@@ -47,8 +47,10 @@ public class AbsoluteLayoutRelativeSizeContentTest extends MultiBrowserTest {
         WebElement comparison = findElement(By.id("comparison-table"));
         WebElement full = findElement(By.id("full-table"));
 
-        assertThat("Full table should be as wide as comparison table", full.getSize().width, is(comparison.getSize().width));
-        assertThat("Full table should be as high as comparison table", full.getSize().height, is(comparison.getSize().height));
+        assertThat("Full table should be as wide as comparison table",
+                full.getSize().width, is(comparison.getSize().width));
+        assertThat("Full table should be as high as comparison table",
+                full.getSize().height, is(comparison.getSize().height));
     }
 
     @Test
@@ -56,8 +58,12 @@ public class AbsoluteLayoutRelativeSizeContentTest extends MultiBrowserTest {
         WebElement comparison = findElement(By.id("comparison-table"));
         WebElement half = findElement(By.id("half-table"));
 
-        assertThat("Half-sized table should be half as wide as comparison table", half.getSize().width, is(comparison.getSize().width / 2));
-        assertThat("Half-sized table should be half as high as comparison table", half.getSize().height, is(comparison.getSize().height / 2));
+        assertThat(
+                "Half-sized table should be half as wide as comparison table",
+                half.getSize().width, is(comparison.getSize().width / 2));
+        assertThat(
+                "Half-sized table should be half as high as comparison table",
+                half.getSize().height, is(comparison.getSize().height / 2));
     }
 
     @Test
@@ -65,8 +71,12 @@ public class AbsoluteLayoutRelativeSizeContentTest extends MultiBrowserTest {
         WebElement comparison = findElement(By.id("comparison-table"));
         WebElement half = findElement(By.id("halfwithtiny-table"));
 
-        assertThat("Half-sized table should be half as wide as comparison table even if there are other components in the layout", half.getSize().width, is(comparison.getSize().width / 2));
-        assertThat("Half-sized table should be half as high as comparison table even if there are other components in the layout", half.getSize().height, is(comparison.getSize().height / 2));
+        assertThat(
+                "Half-sized table should be half as wide as comparison table even if there are other components in the layout",
+                half.getSize().width, is(comparison.getSize().width / 2));
+        assertThat(
+                "Half-sized table should be half as high as comparison table even if there are other components in the layout",
+                half.getSize().height, is(comparison.getSize().height / 2));
     }
 
     @Test
@@ -74,8 +84,12 @@ public class AbsoluteLayoutRelativeSizeContentTest extends MultiBrowserTest {
         WebElement layout = findElement(By.id("halfinfull-layout"));
         WebElement half = findElement(By.id("halfinfull-table"));
 
-        assertThat("Half-sized table should be half as wide as full layout", (double) half.getSize().width, closeTo(((double) layout.getSize().width) / 2, 0.5));
-        assertThat("Half-sized table should be half as high as full layout", (double) half.getSize().height, closeTo(((double) layout.getSize().height) / 2, 0.5));
+        assertThat("Half-sized table should be half as wide as full layout",
+                (double) half.getSize().width,
+                closeTo(((double) layout.getSize().width) / 2, 0.5));
+        assertThat("Half-sized table should be half as high as full layout",
+                (double) half.getSize().height,
+                closeTo(((double) layout.getSize().height) / 2, 0.5));
     }
 
     @Test
@@ -83,8 +97,12 @@ public class AbsoluteLayoutRelativeSizeContentTest extends MultiBrowserTest {
         WebElement outer = findElement(By.id("fullonfixed-outer"));
         WebElement inner = findElement(By.id("fullonfixed-inner"));
 
-        assertThat("Inner layout should be as wide as outer layout minus left position", inner.getSize().width, is(outer.getSize().width - 100));
-        assertThat("Inner layout should be as high as outer layout minus top position", inner.getSize().height, is(outer.getSize().height - 50));
+        assertThat(
+                "Inner layout should be as wide as outer layout minus left position",
+                inner.getSize().width, is(outer.getSize().width - 100));
+        assertThat(
+                "Inner layout should be as high as outer layout minus top position",
+                inner.getSize().height, is(outer.getSize().height - 50));
     }
 
     @Test
@@ -92,7 +110,11 @@ public class AbsoluteLayoutRelativeSizeContentTest extends MultiBrowserTest {
         WebElement outer = findElement(By.id("fullonfull-outer"));
         WebElement inner = findElement(By.id("fullonfull-inner"));
 
-        assertThat("Inner layout should be as wide as outer layout minus left position", inner.getSize().width, is(outer.getSize().width - 100));
-        assertThat("Inner layout should be as high as outer layout minus top position", inner.getSize().height, is(outer.getSize().height - 50));
+        assertThat(
+                "Inner layout should be as wide as outer layout minus left position",
+                inner.getSize().width, is(outer.getSize().width - 100));
+        assertThat(
+                "Inner layout should be as high as outer layout minus top position",
+                inner.getSize().height, is(outer.getSize().height - 50));
     }
 }

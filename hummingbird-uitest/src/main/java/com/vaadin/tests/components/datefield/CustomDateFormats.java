@@ -96,10 +96,14 @@ public class CustomDateFormats extends TestBase {
         addDateField(gridLayout, "d M yyy", locale, "d M yyyy");
         addDateField(gridLayout, "d M yyyy", locale);
 
-        addDateField(gridLayout, getDatePattern(locale, DateFormat.FULL), locale);
-        addDateField(gridLayout, getDatePattern(locale, DateFormat.LONG), locale);
-        addDateField(gridLayout, getDatePattern(locale, DateFormat.MEDIUM), locale);
-        addDateField(gridLayout, getDatePattern(locale, DateFormat.SHORT), locale);
+        addDateField(gridLayout, getDatePattern(locale, DateFormat.FULL),
+                locale);
+        addDateField(gridLayout, getDatePattern(locale, DateFormat.LONG),
+                locale);
+        addDateField(gridLayout, getDatePattern(locale, DateFormat.MEDIUM),
+                locale);
+        addDateField(gridLayout, getDatePattern(locale, DateFormat.SHORT),
+                locale);
         addDateField(gridLayout, "EEE d MMMM yyyy", locale);
 
     }
@@ -129,7 +133,8 @@ public class CustomDateFormats extends TestBase {
 
     private Set<String> usedDebugIds = new HashSet<String>();
 
-    private void addDateField(GridLayout gridLayout, String pattern, Locale locale, String expectedDateFormat) {
+    private void addDateField(GridLayout gridLayout, String pattern,
+            Locale locale, String expectedDateFormat) {
         Calendar cal = Calendar.getInstance();
         cal.set(2010, 1, 1);
 
@@ -161,11 +166,13 @@ public class CustomDateFormats extends TestBase {
 
         Label patternLabel = new Label(pattern);
         patternLabel.setWidth(null);
-        SimpleDateFormat expDateFormat = new SimpleDateFormat(expectedDateFormat, locale);
+        SimpleDateFormat expDateFormat = new SimpleDateFormat(
+                expectedDateFormat, locale);
 
         Label expectedLabel = new Label(expDateFormat.format(cal.getTime()));
         if (!pattern.equals(expectedDateFormat)) {
-            expectedLabel.setValue(expectedLabel.getValue() + " (differs from JDK)");
+            expectedLabel
+                    .setValue(expectedLabel.getValue() + " (differs from JDK)");
         }
         expectedLabel.setWidth(null);
 
@@ -187,7 +194,8 @@ public class CustomDateFormats extends TestBase {
         data.label.setValue(newValue);
     }
 
-    private void addDateField(GridLayout gridLayout, String pattern, Locale locale) {
+    private void addDateField(GridLayout gridLayout, String pattern,
+            Locale locale) {
         addDateField(gridLayout, pattern, locale, pattern);
     }
 

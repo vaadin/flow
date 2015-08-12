@@ -13,7 +13,8 @@ public class ComboBoxTextFieldEventOrder extends TestBase {
     @Override
     protected void setup() {
         TextField textField = new TextField("text field");
-        final ComboBox select = new ComboBox("select", Arrays.asList("1", "2", "3", "4"));
+        final ComboBox select = new ComboBox("select",
+                Arrays.asList("1", "2", "3", "4"));
         textField.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {

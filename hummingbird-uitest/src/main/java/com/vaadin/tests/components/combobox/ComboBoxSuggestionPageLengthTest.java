@@ -34,7 +34,8 @@ public class ComboBoxSuggestionPageLengthTest extends MultiBrowserTest {
     public void testSuggestionsPageLength0() {
         openTestURL();
 
-        WebElement textboxPageLength0 = $(ComboBoxElement.class).first().findElement(By.tagName("input"));
+        WebElement textboxPageLength0 = $(ComboBoxElement.class).first()
+                .findElement(By.tagName("input"));
         textboxPageLength0.sendKeys("c");
         assertSuggestions("abc", "cde");
     }
@@ -43,7 +44,8 @@ public class ComboBoxSuggestionPageLengthTest extends MultiBrowserTest {
     public void testSuggestionsPageLength2() {
         openTestURL();
 
-        WebElement textboxPageLength2 = $(ComboBoxElement.class).get(1).findElement(By.tagName("input"));
+        WebElement textboxPageLength2 = $(ComboBoxElement.class).get(1)
+                .findElement(By.tagName("input"));
         textboxPageLength2.sendKeys("e");
         assertSuggestions("cde", "efg");
     }
@@ -53,7 +55,9 @@ public class ComboBoxSuggestionPageLengthTest extends MultiBrowserTest {
     }
 
     private List<String> getSuggestionsOnScreen() {
-        List<WebElement> suggestionElements = getDriver().findElements(By.cssSelector(".v-filterselect-suggestpopup .gwt-MenuItem span"));
+        List<WebElement> suggestionElements = getDriver()
+                .findElements(By.cssSelector(
+                        ".v-filterselect-suggestpopup .gwt-MenuItem span"));
 
         List<String> suggestions = new ArrayList<String>();
         for (WebElement suggestion : suggestionElements) {

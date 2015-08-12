@@ -16,11 +16,19 @@ public class DateFormTest extends MultiBrowserTest {
     @Test
     public void testCorrectDateFormat() throws Exception {
         openTestURL();
-        Assert.assertEquals("Unexpected DateField value,", "1/20/84", getDateFieldValue());
-        Assert.assertEquals("Unexpected PopupDateField value,", "1/20/84", getPopupDateFieldValue());
-        WebElement day20 = getInlineDateFieldCalendarPanel().findElement(By.vaadin("#day20"));
-        Assert.assertTrue("Unexpected InlineDateField state, 20th not selected.", hasCssClass(day20, "v-inline-datefield-calendarpanel-day-selected"));
-        Assert.assertEquals("Unexpected TextField contents,", "Jan 20, 1984 4:34:49 PM", $(TextFieldElement.class).first().getValue());
+        Assert.assertEquals("Unexpected DateField value,", "1/20/84",
+                getDateFieldValue());
+        Assert.assertEquals("Unexpected PopupDateField value,", "1/20/84",
+                getPopupDateFieldValue());
+        WebElement day20 = getInlineDateFieldCalendarPanel()
+                .findElement(By.vaadin("#day20"));
+        Assert.assertTrue(
+                "Unexpected InlineDateField state, 20th not selected.",
+                hasCssClass(day20,
+                        "v-inline-datefield-calendarpanel-day-selected"));
+        Assert.assertEquals("Unexpected TextField contents,",
+                "Jan 20, 1984 4:34:49 PM",
+                $(TextFieldElement.class).first().getValue());
     }
 
     protected String getDateFieldValue() {
@@ -32,7 +40,8 @@ public class DateFormTest extends MultiBrowserTest {
     }
 
     protected WebElement getInlineDateFieldCalendarPanel() {
-        return $(InlineDateFieldElement.class).first().findElement(By.className("v-inline-datefield-calendarpanel"));
+        return $(InlineDateFieldElement.class).first()
+                .findElement(By.className("v-inline-datefield-calendarpanel"));
     }
 
 }

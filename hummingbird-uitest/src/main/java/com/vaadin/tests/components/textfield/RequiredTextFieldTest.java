@@ -35,11 +35,14 @@ public class RequiredTextFieldTest extends MultiBrowserTest {
 
         $(ButtonElement.class).first().click();
 
-        Assert.assertTrue("Text field doesn't contain .v-required style", getStyles().contains("v-required"));
+        Assert.assertTrue("Text field doesn't contain .v-required style",
+                getStyles().contains("v-required"));
 
         $(ButtonElement.class).first().click();
 
-        Assert.assertFalse("Text field contains .v-required style for non-required field", getStyles().contains("v-required"));
+        Assert.assertFalse(
+                "Text field contains .v-required style for non-required field",
+                getStyles().contains("v-required"));
     }
 
     private String getStyles() {

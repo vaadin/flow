@@ -23,12 +23,13 @@ public class AbsoluteLayoutPrimaryStylename extends TestBase {
 
         addComponent(layout);
 
-        addComponent(new Button("Change primary stylename", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                layout.setPrimaryStyleName("my-second-absolute-layout");
-            }
-        }));
+        addComponent(new Button("Change primary stylename",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        layout.setPrimaryStyleName("my-second-absolute-layout");
+                    }
+                }));
     }
 
     @Override

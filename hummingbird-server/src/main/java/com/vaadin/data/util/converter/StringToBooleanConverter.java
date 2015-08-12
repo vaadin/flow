@@ -70,7 +70,9 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
      * java.lang.Class, java.util.Locale)
      */
     @Override
-    public Boolean convertToModel(String value, Class<? extends Boolean> targetType, Locale locale) throws ConversionException {
+    public Boolean convertToModel(String value,
+            Class<? extends Boolean> targetType, Locale locale)
+                    throws ConversionException {
         if (value == null || value.isEmpty()) {
             return null;
         }
@@ -83,7 +85,8 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
         } else if (getFalseString().equals(value)) {
             return false;
         } else {
-            throw new ConversionException("Cannot convert " + value + " to " + getModelType().getName());
+            throw new ConversionException("Cannot convert " + value + " to "
+                    + getModelType().getName());
         }
     }
 
@@ -115,7 +118,9 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
      * .Object, java.lang.Class, java.util.Locale)
      */
     @Override
-    public String convertToPresentation(Boolean value, Class<? extends String> targetType, Locale locale) throws ConversionException {
+    public String convertToPresentation(Boolean value,
+            Class<? extends String> targetType, Locale locale)
+                    throws ConversionException {
         if (value == null) {
             return null;
         }

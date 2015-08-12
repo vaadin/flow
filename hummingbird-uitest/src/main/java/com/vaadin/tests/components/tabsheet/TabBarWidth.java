@@ -71,16 +71,19 @@ public class TabBarWidth extends AbstractTestUI {
         return 12805;
     }
 
-    private void restoreOrRemoveWidths(VerticalLayout layout, boolean removeWidths) {
+    private void restoreOrRemoveWidths(VerticalLayout layout,
+            boolean removeWidths) {
         for (Component component : layout) {
             if (component instanceof TabSheet) {
                 if (removeWidths) {
                     component.setWidth(null);
                     component.setCaption("Width: undefined");
                 } else {
-                    String originalWidth = (String) ((TabSheet) component).getData();
+                    String originalWidth = (String) ((TabSheet) component)
+                            .getData();
                     component.setWidth(originalWidth);
-                    component.setCaption("Width: " + (originalWidth == null ? "undefined" : originalWidth));
+                    component.setCaption("Width: " + (originalWidth == null
+                            ? "undefined" : originalWidth));
                 }
             }
         }

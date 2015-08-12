@@ -73,12 +73,14 @@ public class VUIDLBrowser extends SimpleTree {
                 SimpleTree stateChanges = new SimpleTree("shared state");
 
                 for (String connectorId : stateJson.getKeySet()) {
-                    stateChanges.add(new SharedStateItem(connectorId, stateJson.getValueMap(connectorId)));
+                    stateChanges.add(new SharedStateItem(connectorId,
+                            stateJson.getValueMap(connectorId)));
                 }
                 add(stateChanges);
 
             } else if (key.equals("changes")) {
-                JsArray<UIDL> jsValueMapArray = u.getJSValueMapArray(key).cast();
+                JsArray<UIDL> jsValueMapArray = u.getJSValueMapArray(key)
+                        .cast();
                 for (int i = 0; i < jsValueMapArray.length(); i++) {
                     UIDL uidl = jsValueMapArray.get(i);
                     UIDLItem change = new UIDLItem(uidl);
@@ -117,12 +119,14 @@ public class VUIDLBrowser extends SimpleTree {
             ServerConnector connector = getConnector();
 
             if (connector != null && event != null) {
-                connector.getConnection().getUIConnector().showServerDebugInfo(connector);
+                connector.getConnection().getUIConnector()
+                        .showServerDebugInfo(connector);
             }
 
             // For connectors that do not have a widget, highlight the widget of
             // their ancestor component connector if any
-            while (connector != null && !(connector instanceof ComponentConnector)) {
+            while (connector != null
+                    && !(connector instanceof ComponentConnector)) {
                 connector = connector.getParent();
             }
             if (connector != null) {
@@ -204,7 +208,8 @@ public class VUIDLBrowser extends SimpleTree {
             try {
                 String name = uidl.getTag();
                 try {
-                    name = getNodeName(uidl, client.getConfiguration(), Integer.parseInt(name));
+                    name = getNodeName(uidl, client.getConfiguration(),
+                            Integer.parseInt(name));
                 } catch (Exception e) {
                     // NOP
                 }
@@ -220,10 +225,13 @@ public class VUIDLBrowser extends SimpleTree {
             return uidl.getId();
         }
 
-        private String getNodeName(UIDL uidl, ApplicationConfiguration conf, int tag) {
-            Class<? extends ServerConnector> widgetClassByDecodedTag = conf.getConnectorClassByEncodedTag(tag);
+        private String getNodeName(UIDL uidl, ApplicationConfiguration conf,
+                int tag) {
+            Class<? extends ServerConnector> widgetClassByDecodedTag = conf
+                    .getConnectorClassByEncodedTag(tag);
             if (widgetClassByDecodedTag == UnknownComponentConnector.class) {
-                return conf.getUnknownServerClassNameByTag(tag) + "(NO CLIENT IMPLEMENTATION FOUND)";
+                return conf.getUnknownServerClassNameByTag(tag)
+                        + "(NO CLIENT IMPLEMENTATION FOUND)";
             } else {
                 return widgetClassByDecodedTag.getName();
             }
@@ -231,7 +239,8 @@ public class VUIDLBrowser extends SimpleTree {
 
         @Override
         public void open(boolean recursive) {
-            if (getWidgetCount() == 1 && getWidget(0).getElement().getInnerText().equals("LOADING")) {
+            if (getWidgetCount() == 1 && getWidget(0).getElement()
+                    .getInnerText().equals("LOADING")) {
                 dir();
             }
             super.open(recursive);
@@ -242,7 +251,8 @@ public class VUIDLBrowser extends SimpleTree {
 
             String nodeName = uidl.getTag();
             try {
-                nodeName = getNodeName(uidl, client.getConfiguration(), Integer.parseInt(nodeName));
+                nodeName = getNodeName(uidl, client.getConfiguration(),
+                        Integer.parseInt(nodeName));
             } catch (Exception e) {
                 // NOP
             }
@@ -255,7 +265,8 @@ public class VUIDLBrowser extends SimpleTree {
                         JsArrayString keyArray = map.getKeyArray();
                         nodeName += " " + name + "=" + "{";
                         for (int i = 0; i < keyArray.length(); i++) {
-                            nodeName += keyArray.get(i) + ":" + map.getAsString(keyArray.get(i)) + ",";
+                            nodeName += keyArray.get(i) + ":"
+                                    + map.getAsString(keyArray.get(i)) + ",";
                         }
                         nodeName += "}";
                     } catch (Exception e) {
@@ -277,7 +288,8 @@ public class VUIDLBrowser extends SimpleTree {
                         value = uidl.getVariable(name);
                     } catch (final Exception e) {
                         try {
-                            String[] stringArrayAttribute = uidl.getStringArrayAttribute(name);
+                            String[] stringArrayAttribute = uidl
+                                    .getStringArrayAttribute(name);
                             value = stringArrayAttribute.toString();
                         } catch (final Exception e2) {
                             try {

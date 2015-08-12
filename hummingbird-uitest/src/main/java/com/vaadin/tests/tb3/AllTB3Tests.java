@@ -34,8 +34,10 @@ public class AllTB3Tests {
 
     public static class AllTB3TestsSuite extends TB3TestSuite {
 
-        public AllTB3TestsSuite(Class<?> klass) throws InitializationError, IOException {
-            super(klass, AbstractTB3Test.class, "com.vaadin.tests", new String[] { "com.vaadin.tests.integration" });
+        public AllTB3TestsSuite(Class<?> klass)
+                throws InitializationError, IOException {
+            super(klass, AbstractTB3Test.class, "com.vaadin.tests",
+                    new String[] { "com.vaadin.tests.integration" });
         }
 
     }

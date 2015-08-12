@@ -5,7 +5,8 @@ import java.util.function.Function;
 
 public class DynamicTextTemplate extends StaticChildrenElementTemplate {
     private DynamicTextTemplate(AttributeBinding binding) {
-        super("#text", Collections.singletonList(binding), Collections.emptyMap(), Collections.emptyList());
+        super("#text", Collections.singletonList(binding),
+                Collections.emptyMap(), Collections.emptyList());
     }
 
     public DynamicTextTemplate(Function<StateNode, String> function) {
@@ -16,7 +17,8 @@ public class DynamicTextTemplate extends StaticChildrenElementTemplate {
         this(new ModelAttributeBinding("content", modelPath));
     }
 
-    private static AttributeBinding createBinding(Function<StateNode, String> function) {
+    private static AttributeBinding createBinding(
+            Function<StateNode, String> function) {
         return new AttributeBinding("content") {
             @Override
             public String getValue(StateNode node) {

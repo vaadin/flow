@@ -47,7 +47,8 @@ public class SessionInitEvent extends EventObject {
      * @param request
      *            the request that triggered the initialization
      */
-    public SessionInitEvent(VaadinService service, VaadinSession session, VaadinRequest request) {
+    public SessionInitEvent(VaadinService service, VaadinSession session,
+            VaadinRequest request) {
         super(service);
         this.session = session;
         this.request = request;

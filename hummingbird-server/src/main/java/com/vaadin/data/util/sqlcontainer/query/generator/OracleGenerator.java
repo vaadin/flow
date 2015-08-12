@@ -28,7 +28,8 @@ public class OracleGenerator extends DefaultSQLGenerator {
 
     }
 
-    public OracleGenerator(Class<? extends StatementHelper> statementHelperClazz) {
+    public OracleGenerator(
+            Class<? extends StatementHelper> statementHelperClazz) {
         super(statementHelperClazz);
     }
 
@@ -47,7 +48,8 @@ public class OracleGenerator extends DefaultSQLGenerator {
         super(quoteStart, quoteEnd);
     }
 
-    public OracleGenerator(String quoteStart, String quoteEnd, Class<? extends StatementHelper> statementHelperClazz) {
+    public OracleGenerator(String quoteStart, String quoteEnd,
+            Class<? extends StatementHelper> statementHelperClazz) {
         super(quoteStart, quoteEnd, statementHelperClazz);
     }
 
@@ -60,7 +62,9 @@ public class OracleGenerator extends DefaultSQLGenerator {
      * int, java.lang.String)
      */
     @Override
-    public StatementHelper generateSelectQuery(String tableName, List<Filter> filters, List<OrderBy> orderBys, int offset, int pagelength, String toSelect) {
+    public StatementHelper generateSelectQuery(String tableName,
+            List<Filter> filters, List<OrderBy> orderBys, int offset,
+            int pagelength, String toSelect) {
         if (tableName == null || tableName.trim().equals("")) {
             throw new IllegalArgumentException("Table name must be given.");
         }
@@ -73,9 +77,12 @@ public class OracleGenerator extends DefaultSQLGenerator {
 
         /* Row count request is handled here */
         if ("COUNT(*)".equalsIgnoreCase(toSelect)) {
-            query.append(String.format("SELECT COUNT(*) AS %s FROM (SELECT * FROM %s", QueryBuilder.quote("rowcount"), tableName));
+            query.append(String.format(
+                    "SELECT COUNT(*) AS %s FROM (SELECT * FROM %s",
+                    QueryBuilder.quote("rowcount"), tableName));
             if (filters != null && !filters.isEmpty()) {
-                query.append(QueryBuilder.getWhereStringForFilters(filters, sh));
+                query.append(
+                        QueryBuilder.getWhereStringForFilters(filters, sh));
             }
             query.append(")");
             sh.setQueryString(query.toString());
@@ -84,9 +91,11 @@ public class OracleGenerator extends DefaultSQLGenerator {
 
         /* SELECT without row number constraints */
         if (offset == 0 && pagelength == 0) {
-            query.append("SELECT ").append(toSelect).append(" FROM ").append(tableName);
+            query.append("SELECT ").append(toSelect).append(" FROM ")
+                    .append(tableName);
             if (filters != null) {
-                query.append(QueryBuilder.getWhereStringForFilters(filters, sh));
+                query.append(
+                        QueryBuilder.getWhereStringForFilters(filters, sh));
             }
             if (orderBys != null) {
                 for (OrderBy o : orderBys) {
@@ -98,7 +107,9 @@ public class OracleGenerator extends DefaultSQLGenerator {
         }
 
         /* Remaining SELECT cases are handled here */
-        query.append(String.format("SELECT * FROM (SELECT x.*, ROWNUM AS %s FROM (SELECT %s FROM %s", QueryBuilder.quote("rownum"), toSelect, tableName));
+        query.append(String.format(
+                "SELECT * FROM (SELECT x.*, ROWNUM AS %s FROM (SELECT %s FROM %s",
+                QueryBuilder.quote("rownum"), toSelect, tableName));
         if (filters != null) {
             query.append(QueryBuilder.getWhereStringForFilters(filters, sh));
         }
@@ -107,7 +118,8 @@ public class OracleGenerator extends DefaultSQLGenerator {
                 generateOrderBy(query, o, orderBys.indexOf(o) == 0);
             }
         }
-        query.append(String.format(") x) WHERE %s BETWEEN %d AND %d", QueryBuilder.quote("rownum"), offset, offset + pagelength));
+        query.append(String.format(") x) WHERE %s BETWEEN %d AND %d",
+                QueryBuilder.quote("rownum"), offset, offset + pagelength));
         sh.setQueryString(query.toString());
         return sh;
     }

@@ -51,6 +51,7 @@ import com.vaadin.server.VaadinServlet;
 public class JSR356WebsocketInitializer implements ServletContextListener {
 
     private static boolean atmosphereAvailable = false;
+
     static {
         try {
             org.atmosphere.util.Version.getRawVersion();
@@ -68,7 +69,8 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
         private ServletRegistration servletRegistration;
         private ServletContext servletContext;
 
-        public FakeServletConfig(ServletRegistration servletRegistration, ServletContext servletContext) {
+        public FakeServletConfig(ServletRegistration servletRegistration,
+                ServletContext servletContext) {
             this.servletContext = servletContext;
             this.servletRegistration = servletRegistration;
         }
@@ -90,7 +92,8 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
 
         @Override
         public Enumeration<String> getInitParameterNames() {
-            return Collections.enumeration(servletRegistration.getInitParameters().keySet());
+            return Collections.enumeration(
+                    servletRegistration.getInitParameters().keySet());
         }
 
     }
@@ -106,15 +109,20 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
             return;
         }
 
-        Map<String, ? extends ServletRegistration> regs = servletContext.getServletRegistrations();
+        Map<String, ? extends ServletRegistration> regs = servletContext
+                .getServletRegistrations();
         for (String servletName : regs.keySet()) {
             ServletRegistration servletRegistration = regs.get(servletName);
 
             if (isVaadinServlet(servletRegistration)) {
                 try {
-                    initAtmosphereForVaadinServlet(servletRegistration, servletContext);
+                    initAtmosphereForVaadinServlet(servletRegistration,
+                            servletContext);
                 } catch (Exception e) {
-                    getLogger().log(Level.WARNING, "Failed to initialize Atmosphere for " + servletName, e);
+                    getLogger().log(Level.WARNING,
+                            "Failed to initialize Atmosphere for "
+                                    + servletName,
+                            e);
                 }
             }
         }
@@ -130,7 +138,9 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
      *            The servlet registration info for the servlet
      * @param servletContext
      */
-    public static void initAtmosphereForVaadinServlet(ServletRegistration servletRegistration, ServletContext servletContext) {
+    public static void initAtmosphereForVaadinServlet(
+            ServletRegistration servletRegistration,
+            ServletContext servletContext) {
         String servletName = servletRegistration.getName();
         String attributeName = getAttributeName(servletName);
 
@@ -140,7 +150,8 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
             return;
         }
         getLogger().finer("Creating AtmosphereFramework for " + servletName);
-        AtmosphereFramework framework = PushRequestHandler.initAtmosphere(new FakeServletConfig(servletRegistration, servletContext));
+        AtmosphereFramework framework = PushRequestHandler.initAtmosphere(
+                new FakeServletConfig(servletRegistration, servletContext));
         servletContext.setAttribute(attributeName, framework);
         getLogger().finer("Created AtmosphereFramework for " + servletName);
 

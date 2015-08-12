@@ -54,7 +54,8 @@ import com.vaadin.util.ReflectTools;
  * @since 3.0
  */
 @SuppressWarnings({ "serial", "deprecation" })
-public class Tree extends AbstractSelect implements Container.Hierarchical, ItemClickNotifier {
+public class Tree extends AbstractSelect
+        implements Container.Hierarchical, ItemClickNotifier {
 
     /* Private members */
 
@@ -105,11 +106,11 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
          * may still support selecting text/icons from Tree which can initiate
          * HTML 5 style drag and drop operation.
          */
-        NONE,
-        /**
-         * When drag mode is NODE, users can initiate drag from Tree nodes that
-         * represent {@link Item}s in from the backed {@link Container}.
-         */
+        NONE, /**
+               * When drag mode is NODE, users can initiate drag from Tree nodes
+               * that represent {@link Item}s in from the backed
+               * {@link Container}.
+               */
         NODE
         // , SUBTREE
     }
@@ -439,7 +440,8 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
         final LinkedList<Object> s = new LinkedList<Object>();
         for (int i = 0; i < ka.length; i++) {
             final Object id = itemIdMapper.get(ka[i]);
-            if (!isNullSelectionAllowed() && (id == null || id == getNullSelectionItemId())) {
+            if (!isNullSelectionAllowed()
+                    && (id == null || id == getNullSelectionItemId())) {
                 // skip empty selection if nullselection is not allowed
                 markAsDirty();
             } else if (id != null && containsId(id)) {
@@ -525,8 +527,10 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      *      boolean)
      */
     @Override
-    public boolean setChildrenAllowed(Object itemId, boolean areChildrenAllowed) {
-        final boolean success = ((Container.Hierarchical) items).setChildrenAllowed(itemId, areChildrenAllowed);
+    public boolean setChildrenAllowed(Object itemId,
+            boolean areChildrenAllowed) {
+        final boolean success = ((Container.Hierarchical) items)
+                .setChildrenAllowed(itemId, areChildrenAllowed);
         if (success) {
             markAsDirty();
         }
@@ -541,7 +545,8 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      */
     @Override
     public boolean setParent(Object itemId, Object newParentId) {
-        final boolean success = ((Container.Hierarchical) items).setParent(itemId, newParentId);
+        final boolean success = ((Container.Hierarchical) items)
+                .setParent(itemId, newParentId);
         if (success) {
             markAsDirty();
         }
@@ -563,10 +568,12 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
 
         // Assure that the data source is ordered by making unordered
         // containers ordered by wrapping them
-        if (Container.Hierarchical.class.isAssignableFrom(newDataSource.getClass())) {
+        if (Container.Hierarchical.class
+                .isAssignableFrom(newDataSource.getClass())) {
             super.setContainerDataSource(newDataSource);
         } else {
-            super.setContainerDataSource(new ContainerHierarchicalWrapper(newDataSource));
+            super.setContainerDataSource(
+                    new ContainerHierarchicalWrapper(newDataSource));
         }
 
         /*
@@ -586,10 +593,12 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
     }
 
     @Override
-    public void containerItemSetChange(com.vaadin.data.Container.ItemSetChangeEvent event) {
+    public void containerItemSetChange(
+            com.vaadin.data.Container.ItemSetChangeEvent event) {
         super.containerItemSetChange(event);
         if (getContainerDataSource() instanceof Filterable) {
-            boolean hasFilters = !((Filterable) getContainerDataSource()).getContainerFilters().isEmpty();
+            boolean hasFilters = !((Filterable) getContainerDataSource())
+                    .getContainerFilters().isEmpty();
             if (!hasFilters) {
                 /*
                  * If Container is not filtered then the itemsetchange is caused
@@ -658,7 +667,8 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      */
     public interface ExpandListener extends Serializable {
 
-        public static final Method EXPAND_METHOD = ReflectTools.findMethod(ExpandListener.class, "nodeExpand", ExpandEvent.class);
+        public static final Method EXPAND_METHOD = ReflectTools.findMethod(
+                ExpandListener.class, "nodeExpand", ExpandEvent.class);
 
         /**
          * A node has been expanded.
@@ -686,7 +696,8 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      *            the Listener to be removed.
      */
     public void removeExpandListener(ExpandListener listener) {
-        removeListener(ExpandEvent.class, listener, ExpandListener.EXPAND_METHOD);
+        removeListener(ExpandEvent.class, listener,
+                ExpandListener.EXPAND_METHOD);
     }
 
     /**
@@ -741,7 +752,8 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      */
     public interface CollapseListener extends Serializable {
 
-        public static final Method COLLAPSE_METHOD = ReflectTools.findMethod(CollapseListener.class, "nodeCollapse", CollapseEvent.class);
+        public static final Method COLLAPSE_METHOD = ReflectTools.findMethod(
+                CollapseListener.class, "nodeCollapse", CollapseEvent.class);
 
         /**
          * A node has been collapsed.
@@ -759,7 +771,8 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      *            the Listener to be added.
      */
     public void addCollapseListener(CollapseListener listener) {
-        addListener(CollapseEvent.class, listener, CollapseListener.COLLAPSE_METHOD);
+        addListener(CollapseEvent.class, listener,
+                CollapseListener.COLLAPSE_METHOD);
     }
 
     /**
@@ -769,7 +782,8 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      *            the Listener to be removed.
      */
     public void removeCollapseListener(CollapseListener listener) {
-        removeListener(CollapseEvent.class, listener, CollapseListener.COLLAPSE_METHOD);
+        removeListener(CollapseEvent.class, listener,
+                CollapseListener.COLLAPSE_METHOD);
     }
 
     /**
@@ -832,7 +846,8 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      * @see com.vaadin.ui.AbstractSelect#setNullSelectionItemId(java.lang.Object)
      */
     @Override
-    public void setNullSelectionItemId(Object nullSelectionItemId) throws UnsupportedOperationException {
+    public void setNullSelectionItemId(Object nullSelectionItemId)
+            throws UnsupportedOperationException {
         if (nullSelectionItemId != null) {
             throw new UnsupportedOperationException();
         }
@@ -847,7 +862,8 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      * @see com.vaadin.ui.Select#setNewItemsAllowed(boolean)
      */
     @Override
-    public void setNewItemsAllowed(boolean allowNewOptions) throws UnsupportedOperationException {
+    public void setNewItemsAllowed(boolean allowNewOptions)
+            throws UnsupportedOperationException {
         if (allowNewOptions) {
             throw new UnsupportedOperationException();
         }
@@ -857,12 +873,14 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
 
     @Override
     public void addItemClickListener(ItemClickListener listener) {
-        addListener(TreeConstants.ITEM_CLICK_EVENT_ID, ItemClickEvent.class, listener, ItemClickEvent.ITEM_CLICK_METHOD);
+        addListener(TreeConstants.ITEM_CLICK_EVENT_ID, ItemClickEvent.class,
+                listener, ItemClickEvent.ITEM_CLICK_METHOD);
     }
 
     @Override
     public void removeItemClickListener(ItemClickListener listener) {
-        removeListener(TreeConstants.ITEM_CLICK_EVENT_ID, ItemClickEvent.class, listener);
+        removeListener(TreeConstants.ITEM_CLICK_EVENT_ID, ItemClickEvent.class,
+                listener);
     }
 
     /**
@@ -908,7 +926,8 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
 
     // Overriden so javadoc comes from Container.Hierarchical
     @Override
-    public boolean removeItem(Object itemId) throws UnsupportedOperationException {
+    public boolean removeItem(Object itemId)
+            throws UnsupportedOperationException {
         return super.removeItem(itemId);
     }
 
@@ -953,7 +972,8 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      */
     protected class TreeTransferable extends DataBoundTransferable {
 
-        public TreeTransferable(Component sourceComponent, Map<String, Object> rawVariables) {
+        public TreeTransferable(Component sourceComponent,
+                Map<String, Object> rawVariables) {
             super(sourceComponent, rawVariables);
         }
 
@@ -975,7 +995,8 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      * @param generator
      *            The generator to use or null to disable
      */
-    public void setItemDescriptionGenerator(ItemDescriptionGenerator generator) {
+    public void setItemDescriptionGenerator(
+            ItemDescriptionGenerator generator) {
         if (generator != itemDescriptionGenerator) {
             itemDescriptionGenerator = generator;
             markAsDirty();
@@ -1022,16 +1043,19 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      *             {@code node}.
      */
     @Override
-    protected String readItem(Element node, Set<String> selected, DesignContext context) {
+    protected String readItem(Element node, Set<String> selected,
+            DesignContext context) {
 
         if (!"node".equals(node.tagName())) {
-            throw new DesignException("Unrecognized child element in " + getClass().getSimpleName() + ": " + node.tagName());
+            throw new DesignException("Unrecognized child element in "
+                    + getClass().getSimpleName() + ": " + node.tagName());
         }
 
         String itemId = node.attr("text");
         addItem(itemId);
         if (node.hasAttr("icon")) {
-            Resource icon = DesignAttributeHandler.readAttribute("icon", node.attributes(), Resource.class);
+            Resource icon = DesignAttributeHandler.readAttribute("icon",
+                    node.attributes(), Resource.class);
             setItemIcon(itemId, icon);
         }
         if (node.hasAttr("selected")) {
@@ -1074,14 +1098,16 @@ public class Tree extends AbstractSelect implements Container.Hierarchical, Item
      * @return
      */
     @Override
-    protected Element writeItem(Element design, Object itemId, DesignContext context) {
+    protected Element writeItem(Element design, Object itemId,
+            DesignContext context) {
         Element element = design.appendElement("node");
 
         element.attr("text", itemId.toString());
 
         Resource icon = getItemIcon(itemId);
         if (icon != null) {
-            DesignAttributeHandler.writeAttribute("icon", element.attributes(), icon, null, Resource.class);
+            DesignAttributeHandler.writeAttribute("icon", element.attributes(),
+                    icon, null, Resource.class);
         }
 
         if (isSelected(itemId)) {

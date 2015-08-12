@@ -30,7 +30,8 @@ import java.io.IOException;
 public abstract class SynchronizedRequestHandler implements RequestHandler {
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request,
+            VaadinResponse response) throws IOException {
         if (!canHandleRequest(request)) {
             return false;
         }
@@ -62,7 +63,8 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * @throws IOException
      *             If an IO error occurred
      */
-    public abstract boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException;
+    public abstract boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response) throws IOException;
 
     /**
      * Check whether a request may be handled by this handler. This can be used

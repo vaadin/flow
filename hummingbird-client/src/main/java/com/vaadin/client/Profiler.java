@@ -187,7 +187,8 @@ public class Profiler {
             return Collections.unmodifiableCollection(children.values());
         }
 
-        private void buildRecursiveString(StringBuilder builder, String prefix) {
+        private void buildRecursiveString(StringBuilder builder,
+                String prefix) {
             if (getName() != null) {
                 String msg = getStringRepresentation(prefix);
                 builder.append(msg + '\n');
@@ -207,15 +208,24 @@ public class Profiler {
             if (getName() == null) {
                 return "";
             }
-            String msg = prefix + " " + getName() + " in " + getTimeSpent() + " ms.";
+            String msg = prefix + " " + getName() + " in " + getTimeSpent()
+                    + " ms.";
             if (getCount() > 1) {
-                msg += " Invoked " + getCount() + " times (" + roundToSignificantFigures(getTimeSpent() / getCount()) + " ms per time, min " + roundToSignificantFigures(getMinTimeSpent()) + " ms, max " + roundToSignificantFigures(getMaxTimeSpent()) + " ms).";
+                msg += " Invoked " + getCount() + " times ("
+                        + roundToSignificantFigures(getTimeSpent() / getCount())
+                        + " ms per time, min "
+                        + roundToSignificantFigures(getMinTimeSpent())
+                        + " ms, max "
+                        + roundToSignificantFigures(getMaxTimeSpent())
+                        + " ms).";
             }
             if (!children.isEmpty()) {
                 double ownTime = getOwnTime();
                 msg += " " + ownTime + " ms spent in own code";
                 if (getCount() > 1) {
-                    msg += " (" + roundToSignificantFigures(ownTime / getCount()) + " ms per time)";
+                    msg += " ("
+                            + roundToSignificantFigures(ownTime / getCount())
+                            + " ms per time)";
                 }
                 msg += '.';
             }
@@ -248,8 +258,10 @@ public class Profiler {
 
                 totalNode.time += getOwnTime();
                 totalNode.count += getCount();
-                totalNode.minTime = Math.min(totalNode.minTime, getMinTimeSpent());
-                totalNode.maxTime = Math.max(totalNode.maxTime, getMaxTimeSpent());
+                totalNode.minTime = Math.min(totalNode.minTime,
+                        getMinTimeSpent());
+                totalNode.maxTime = Math.max(totalNode.maxTime,
+                        getMaxTimeSpent());
             }
             for (Node node : children.values()) {
                 node.sumUpTotals(totals);
@@ -411,7 +423,8 @@ public class Profiler {
      */
     public static void logTimings() {
         if (!isEnabled()) {
-            getLogger().warning("Profiler is not enabled, no data has been collected.");
+            getLogger().warning(
+                    "Profiler is not enabled, no data has been collected.");
             return;
         }
 
@@ -420,7 +433,8 @@ public class Profiler {
         stack.add(rootNode);
         JsArray<GwtStatsEvent> gwtStatsEvents = getGwtStatsEvents();
         if (gwtStatsEvents.length() == 0) {
-            getLogger().warning("No profiling events recorded, this might happen if another __gwtStatsEvent handler is installed.");
+            getLogger().warning(
+                    "No profiling events recorded, this might happen if another __gwtStatsEvent handler is installed.");
             return;
         }
 
@@ -431,9 +445,12 @@ public class Profiler {
             boolean isBeginEvent = "begin".equals(type);
 
             Node stackTop = stack.getLast();
-            boolean inEvent = eventName.equals(stackTop.getName()) && !isBeginEvent;
+            boolean inEvent = eventName.equals(stackTop.getName())
+                    && !isBeginEvent;
 
-            if (!inEvent && stack.size() >= 2 && eventName.equals(stack.get(stack.size() - 2).getName()) && !isBeginEvent) {
+            if (!inEvent && stack.size() >= 2
+                    && eventName.equals(stack.get(stack.size() - 2).getName())
+                    && !isBeginEvent) {
                 // back out of sub event
                 stackTop.leave(gwtStatsEvent.getMillis());
                 stack.removeLast();
@@ -444,25 +461,29 @@ public class Profiler {
 
             if (type.equals("end")) {
                 if (!inEvent) {
-                    getLogger().severe("Got end event for " + eventName + " but is currently in " + stackTop.getName());
+                    getLogger().severe("Got end event for " + eventName
+                            + " but is currently in " + stackTop.getName());
                     return;
                 }
                 Node previousStackTop = stack.removeLast();
                 previousStackTop.leave(gwtStatsEvent.getMillis());
             } else {
                 if (!inEvent) {
-                    stackTop = stackTop.enterChild(eventName, gwtStatsEvent.getMillis());
+                    stackTop = stackTop.enterChild(eventName,
+                            gwtStatsEvent.getMillis());
                     stack.add(stackTop);
                 }
                 if (!isBeginEvent) {
                     // Create sub event
-                    stack.add(stackTop.enterChild(eventName + "." + type, gwtStatsEvent.getMillis()));
+                    stack.add(stackTop.enterChild(eventName + "." + type,
+                            gwtStatsEvent.getMillis()));
                 }
             }
         }
 
         if (stack.size() != 1) {
-            getLogger().warning("Not all nodes are left, the last node is " + stack.getLast().getName());
+            getLogger().warning("Not all nodes are left, the last node is "
+                    + stack.getLast().getName());
             return;
         }
 
@@ -501,7 +522,14 @@ public class Profiler {
         if (isEnabled()) {
             double now = Duration.currentTimeMillis();
 
-            String[] keys = new String[] { "navigationStart", "unloadEventStart", "unloadEventEnd", "redirectStart", "redirectEnd", "fetchStart", "domainLookupStart", "domainLookupEnd", "connectStart", "connectEnd", "requestStart", "responseStart", "responseEnd", "domLoading", "domInteractive", "domContentLoadedEventStart", "domContentLoadedEventEnd", "domComplete", "loadEventStart", "loadEventEnd" };
+            String[] keys = new String[] { "navigationStart",
+                    "unloadEventStart", "unloadEventEnd", "redirectStart",
+                    "redirectEnd", "fetchStart", "domainLookupStart",
+                    "domainLookupEnd", "connectStart", "connectEnd",
+                    "requestStart", "responseStart", "responseEnd",
+                    "domLoading", "domInteractive",
+                    "domContentLoadedEventStart", "domContentLoadedEventEnd",
+                    "domComplete", "loadEventStart", "loadEventEnd" };
 
             LinkedHashMap<String, Double> timings = new LinkedHashMap<String, Double>();
 
@@ -515,7 +543,8 @@ public class Profiler {
             }
 
             if (timings.isEmpty()) {
-                getLogger().info("Bootstrap timings not supported, please ensure your browser supports performance.timing");
+                getLogger().info(
+                        "Bootstrap timings not supported, please ensure your browser supports performance.timing");
                 return;
             }
 
@@ -586,9 +615,11 @@ public class Profiler {
      * @param profilerResultConsumer
      *            the consumer that gets profiler data
      */
-    public static void setProfilerResultConsumer(ProfilerResultConsumer profilerResultConsumer) {
+    public static void setProfilerResultConsumer(
+            ProfilerResultConsumer profilerResultConsumer) {
         if (consumer != null) {
-            throw new IllegalStateException("The consumer has already been set");
+            throw new IllegalStateException(
+                    "The consumer has already been set");
         }
         consumer = profilerResultConsumer;
     }

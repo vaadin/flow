@@ -45,20 +45,26 @@ public class BottomComponentScrollsUpTest extends MultiBrowserTest {
 
     @Test
     public void windowScrollTest() throws IOException, InterruptedException {
-        TestBenchElement panelScrollable = (TestBenchElement) getDriver().findElement(By.className("v-panel-content"));
+        TestBenchElement panelScrollable = (TestBenchElement) getDriver()
+                .findElement(By.className("v-panel-content"));
         Dimension panelScrollableSize = panelScrollable.getSize();
 
-        WebElement verticalLayout = panelScrollable.findElement(By.className("v-verticallayout"));
+        WebElement verticalLayout = panelScrollable
+                .findElement(By.className("v-verticallayout"));
         Dimension verticalLayoutSize = verticalLayout.getSize();
 
         panelScrollable.scroll(verticalLayoutSize.height);
 
-        WebElement button = verticalLayout.findElement(By.className("v-button"));
+        WebElement button = verticalLayout
+                .findElement(By.className("v-button"));
 
         button.click();
 
         // Loose the focus from the button.
-        new Actions(getDriver()).moveToElement(panelScrollable, panelScrollableSize.width / 2, panelScrollableSize.height / 2).click().build().perform();
+        new Actions(getDriver())
+                .moveToElement(panelScrollable, panelScrollableSize.width / 2,
+                        panelScrollableSize.height / 2)
+                .click().build().perform();
 
         compareScreen("window");
     }

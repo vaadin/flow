@@ -10,7 +10,8 @@ import com.vaadin.tests.tb3.MultiBrowserTest;
 public class MenuBarNavigationMouseTest extends MultiBrowserTest {
 
     @ServerClass("com.vaadin.ui.MenuBar")
-    public static class MenuBarElement extends com.vaadin.testbench.elements.MenuBarElement {
+    public static class MenuBarElement
+            extends com.vaadin.testbench.elements.MenuBarElement {
 
         public void openMenuPath(String... captions) {
             for (String c : captions) {
@@ -29,7 +30,8 @@ public class MenuBarNavigationMouseTest extends MultiBrowserTest {
         openTestURL();
         MenuBarElement menuBar = $(MenuBarElement.class).first();
         menuBar.openMenuPath("File", "Export..", "As PDF...");
-        Assert.assertEquals("1. MenuItem File/Export../As PDF... selected", getLogRow(0));
+        Assert.assertEquals("1. MenuItem File/Export../As PDF... selected",
+                getLogRow(0));
         menuBar.openMenuPath("Edit", "Copy");
         Assert.assertEquals("2. MenuItem Edit/Copy selected", getLogRow(0));
         menuBar.openMenuPath("Help");

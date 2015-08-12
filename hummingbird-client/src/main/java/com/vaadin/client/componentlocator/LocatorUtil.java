@@ -38,7 +38,8 @@ public class LocatorUtil {
      *            Index where we start
      * @return Index of character. -1 if character not found
      */
-    protected static int indexOfIgnoringQuoted(String str, char find, int startingAt) {
+    protected static int indexOfIgnoringQuoted(String str, char find,
+            int startingAt) {
         boolean quote = false;
         String quoteChars = "'\"";
         char currentQuote = '"';

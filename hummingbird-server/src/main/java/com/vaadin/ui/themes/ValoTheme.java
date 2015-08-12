@@ -929,14 +929,16 @@ public class ValoTheme {
      * Button item = new Button();
      * item.setPrimaryStyleName(ValoTheme.MENU_ITEM);
      * item.setHtmlContentAllowed(true);
-     * item.setCaption(&quot;Item Caption &lt;span class=\&quot;&quot; + ValoTheme.MENU_BADGE + &quot;\&quot;&gt;Badge text&lt;/span&gt;&quot;);
+     * item.setCaption(&quot;Item Caption &lt;span class=\&quot;&quot; + ValoTheme.MENU_BADGE
+     *         + &quot;\&quot;&gt;Badge text&lt;/span&gt;&quot;);
      * </pre>
      * 
      * <pre>
      * Label item = new Label();
      * item.setPrimaryStyleName(ValoTheme.MENU_ITEM);
      * item.setContentMode(ContentMode.HTML);
-     * item.setCaption(&quot;Item Caption &lt;span class=\&quot;&quot; + ValoTheme.MENU_BADGE + &quot;\&quot;&gt;Badge text&lt;/span&gt;&quot;);
+     * item.setCaption(&quot;Item Caption &lt;span class=\&quot;&quot; + ValoTheme.MENU_BADGE
+     *         + &quot;\&quot;&gt;Badge text&lt;/span&gt;&quot;);
      * </pre>
      */
     public static final String MENU_BADGE = "valo-menu-badge";

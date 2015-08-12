@@ -29,12 +29,15 @@ public class ChangeHierarchyBeforeResponseTest extends SingleBrowserTest {
 
         ButtonElement button = $(ButtonElement.class).first();
 
-        Assert.assertEquals("Button caption should change by its own beforeClientResponse", "Add label to layout", button.getText());
+        Assert.assertEquals(
+                "Button caption should change by its own beforeClientResponse",
+                "Add label to layout", button.getText());
 
         button.click();
 
         LabelElement label = $(LabelElement.class).all().get(1);
 
-        Assert.assertEquals("Label should have been considered initial twice", "Initial count: 2", label.getText());
+        Assert.assertEquals("Label should have been considered initial twice",
+                "Initial count: 2", label.getText());
     }
 }

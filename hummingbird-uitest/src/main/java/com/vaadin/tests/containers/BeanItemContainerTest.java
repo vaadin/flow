@@ -13,7 +13,8 @@ public class BeanItemContainerTest {
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public static void main(String[] args) throws InstantiationException, IllegalAccessException {
+    public static void main(String[] args)
+            throws InstantiationException, IllegalAccessException {
         BeanItemContainer<Hello> c = new BeanItemContainer<Hello>(Hello.class);
         c.addItem(new Hello());
 
@@ -28,8 +29,10 @@ public class BeanItemContainerTest {
         System.out.println(c + " contains " + c.size() + " objects");
 
         // test that subclass properties are handled correctly
-        System.out.println(c + " item 0 second = " + c.getContainerProperty(c.getIdByIndex(0), "second"));
-        System.out.println(c + " item 100 second = " + c.getContainerProperty(c.getIdByIndex(100), "second"));
+        System.out.println(c + " item 0 second = "
+                + c.getContainerProperty(c.getIdByIndex(0), "second"));
+        System.out.println(c + " item 100 second = "
+                + c.getContainerProperty(c.getIdByIndex(100), "second"));
 
     }
 

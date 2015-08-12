@@ -63,8 +63,11 @@ public class JSPIntegrationTest extends PrivateTB3Configuration {
             serviceNames.add(uiData.serviceName);
             uiIds.add(uiData.uiId);
         }
-        assertGreaterOrEqual("There should be at least two unique service names", serviceNames.size(), 2);
-        assertGreaterOrEqual("There should be at least two unique ui ids", uiIds.size(), 2);
+        assertGreaterOrEqual(
+                "There should be at least two unique service names",
+                serviceNames.size(), 2);
+        assertGreaterOrEqual("There should be at least two unique ui ids",
+                uiIds.size(), 2);
     }
 
     private static class UIData {
@@ -76,7 +79,8 @@ public class JSPIntegrationTest extends PrivateTB3Configuration {
         List<UIData> uis = new ArrayList<UIData>();
 
         getDriver().get(jspUrl);
-        List<WebElement> rows = getDriver().findElements(By.xpath("//tr[@class='uirow']"));
+        List<WebElement> rows = getDriver()
+                .findElements(By.xpath("//tr[@class='uirow']"));
         for (WebElement row : rows) {
             UIData data = new UIData();
             List<WebElement> tds = row.findElements(By.xpath("./td"));

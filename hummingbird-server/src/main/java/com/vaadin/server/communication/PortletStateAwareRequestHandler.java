@@ -43,11 +43,13 @@ public class PortletStateAwareRequestHandler implements RequestHandler {
      * com.vaadin.server.VaadinResponse)
      */
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request,
+            VaadinResponse response) throws IOException {
         if (!(response instanceof VaadinPortletResponse)) {
             return false;
         }
-        PortletResponse portletResponse = ((VaadinPortletResponse) response).getPortletResponse();
+        PortletResponse portletResponse = ((VaadinPortletResponse) response)
+                .getPortletResponse();
         if (portletResponse instanceof StateAwareResponse) {
             // StateAwareResponse is fully handled by listeners through
             // PortletListenerNotifier

@@ -18,7 +18,8 @@ import com.vaadin.ui.Field;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.NativeSelect;
 
-public abstract class ComponentTestCase<T extends AbstractComponent> extends AbstractComponentTestCase<T> {
+public abstract class ComponentTestCase<T extends AbstractComponent>
+        extends AbstractComponentTestCase<T> {
 
     protected static final Object CAPTION = "caption";
 
@@ -91,7 +92,8 @@ public abstract class ComponentTestCase<T extends AbstractComponent> extends Abs
     }
 
     protected Component createErrorIndicatorAction(boolean initialState) {
-        return createBooleanAction("Error indicators", initialState, errorIndicatorCommand);
+        return createBooleanAction("Error indicators", initialState,
+                errorIndicatorCommand);
     }
 
     protected Component createEnabledAction(boolean initialState) {
@@ -106,7 +108,8 @@ public abstract class ComponentTestCase<T extends AbstractComponent> extends Abs
         return createBooleanAction("Required", initialState, requiredCommand);
     }
 
-    protected Component createBooleanAction(String caption, boolean initialState, final Command<T, Boolean> command) {
+    protected Component createBooleanAction(String caption,
+            boolean initialState, final Command<T, Boolean> command) {
 
         CheckBox checkBox = new CheckBox(caption);
         checkBox.addValueChangeListener(new ValueChangeListener() {
@@ -127,7 +130,8 @@ public abstract class ComponentTestCase<T extends AbstractComponent> extends Abs
         return checkBox;
     }
 
-    protected Component createButtonAction(String caption, final Command<T, Boolean> command) {
+    protected Component createButtonAction(String caption,
+            final Command<T, Boolean> command) {
 
         Button button = new Button(caption);
         button.setData(Boolean.FALSE);
@@ -146,7 +150,9 @@ public abstract class ComponentTestCase<T extends AbstractComponent> extends Abs
         return button;
     }
 
-    protected <TYPE> Component createSelectAction(String caption, LinkedHashMap<String, TYPE> options, String initialValue, final Command<T, TYPE> command) {
+    protected <TYPE> Component createSelectAction(String caption,
+            LinkedHashMap<String, TYPE> options, String initialValue,
+            final Command<T, TYPE> command) {
         final String CAPTION = "caption";
         final String VALUE = "value";
 

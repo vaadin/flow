@@ -44,7 +44,8 @@ import elemental.json.JsonException;
  */
 public class JavaScriptCallbackHelper implements Serializable {
 
-    private static final Method CALL_METHOD = ReflectTools.findMethod(JavaScriptCallbackRpc.class, "call", String.class, JsonArray.class);
+    private static final Method CALL_METHOD = ReflectTools.findMethod(
+            JavaScriptCallbackRpc.class, "call", String.class, JsonArray.class);
     private AbstractClientConnector connector;
 
     private Map<String, JavaScriptFunction> callbacks = new HashMap<String, JavaScriptFunction>();
@@ -54,7 +55,8 @@ public class JavaScriptCallbackHelper implements Serializable {
         this.connector = connector;
     }
 
-    public void registerCallback(String functionName, JavaScriptFunction javaScriptCallback) {
+    public void registerCallback(String functionName,
+            JavaScriptFunction javaScriptCallback) {
         callbacks.put(functionName, javaScriptCallback);
         JavaScriptConnectorState state = getConnectorState();
         state.getCallbackNames().add(functionName);
@@ -62,7 +64,8 @@ public class JavaScriptCallbackHelper implements Serializable {
     }
 
     private JavaScriptConnectorState getConnectorState() {
-        JavaScriptConnectorState state = (JavaScriptConnectorState) connector.getState();
+        JavaScriptConnectorState state = (JavaScriptConnectorState) connector
+                .getState();
         return state;
     }
 
@@ -85,10 +88,15 @@ public class JavaScriptCallbackHelper implements Serializable {
 
     public void invokeCallback(String name, Object... arguments) {
         if (callbacks.containsKey(name)) {
-            throw new IllegalStateException("Can't call callback " + name + " on the client because a callback with the same name is registered on the server.");
+            throw new IllegalStateException("Can't call callback " + name
+                    + " on the client because a callback with the same name is registered on the server.");
         }
-        JsonArray args = (JsonArray) JsonCodec.encode(arguments, null, Object[].class, null).getEncodedValue();
-        connector.addMethodInvocationToQueue(JavaScriptCallbackRpc.class.getName(), CALL_METHOD, new Object[] { name, args });
+        JsonArray args = (JsonArray) JsonCodec
+                .encode(arguments, null, Object[].class, null)
+                .getEncodedValue();
+        connector.addMethodInvocationToQueue(
+                JavaScriptCallbackRpc.class.getName(), CALL_METHOD,
+                new Object[] { name, args });
     }
 
     public void registerRpc(Class<?> rpcInterfaceType) {
@@ -96,7 +104,8 @@ public class JavaScriptCallbackHelper implements Serializable {
             // Ignore
             return;
         }
-        Map<String, Set<String>> rpcInterfaces = getConnectorState().getRpcInterfaces();
+        Map<String, Set<String>> rpcInterfaces = getConnectorState()
+                .getRpcInterfaces();
         String interfaceName = rpcInterfaceType.getName();
         if (!rpcInterfaces.containsKey(interfaceName)) {
             Set<String> methodNames = new HashSet<String>();

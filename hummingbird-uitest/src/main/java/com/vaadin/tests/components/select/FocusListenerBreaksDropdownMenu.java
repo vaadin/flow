@@ -25,7 +25,8 @@ public class FocusListenerBreaksDropdownMenu extends TestBase {
 
     @Override
     protected String getTestDescription() {
-        return "Clicking the dropdown arrow on a not-already-focused ComboBox " + "breaks the dropdown list if a FocusListener adds or removes items";
+        return "Clicking the dropdown arrow on a not-already-focused ComboBox "
+                + "breaks the dropdown list if a FocusListener adds or removes items";
     }
 
     @Override

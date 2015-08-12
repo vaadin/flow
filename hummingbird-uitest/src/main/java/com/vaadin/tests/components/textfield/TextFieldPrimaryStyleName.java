@@ -13,12 +13,13 @@ public class TextFieldPrimaryStyleName extends TestBase {
         field.setPrimaryStyleName("my-textfield");
         addComponent(field);
 
-        addComponent(new Button("Change primary style name", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                field.setPrimaryStyleName("my-dynamic-textfield");
-            }
-        }));
+        addComponent(new Button("Change primary style name",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        field.setPrimaryStyleName("my-dynamic-textfield");
+                    }
+                }));
 
     }
 

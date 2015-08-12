@@ -28,7 +28,8 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import com.vaadin.testbench.parallel.Browser;
 import com.vaadin.tests.tb3.MultiBrowserTest;
 
-public class NativeSelectsAndChromeKeyboardNavigationTest extends MultiBrowserTest {
+public class NativeSelectsAndChromeKeyboardNavigationTest
+        extends MultiBrowserTest {
 
     @Override
     public List<DesiredCapabilities> getBrowsersToTest() {
@@ -36,7 +37,8 @@ public class NativeSelectsAndChromeKeyboardNavigationTest extends MultiBrowserTe
     }
 
     @Test
-    public void testValueChangeListenerWithKeyboardNavigation() throws InterruptedException {
+    public void testValueChangeListenerWithKeyboardNavigation()
+            throws InterruptedException {
         setDebug(true);
         openTestURL();
         Thread.sleep(1000);
@@ -65,12 +67,14 @@ public class NativeSelectsAndChromeKeyboardNavigationTest extends MultiBrowserTe
     }
 
     private void menuSub(String string) {
-        getDriver().findElement(By.xpath("//span[text() = '" + string + "']")).click();
+        getDriver().findElement(By.xpath("//span[text() = '" + string + "']"))
+                .click();
         new Actions(getDriver()).moveByOffset(100, 0).build().perform();
     }
 
     private void menu(String string) {
-        getDriver().findElement(By.xpath("//span[text() = '" + string + "']")).click();
+        getDriver().findElement(By.xpath("//span[text() = '" + string + "']"))
+                .click();
 
     }
 

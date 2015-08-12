@@ -26,13 +26,16 @@ import com.vaadin.ui.JavaScriptFunction;
 import com.vaadin.ui.Notification;
 import elemental.json.JsonArray;
 
-@JavaScript({ "https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js", "jquery.flot.js", "flot_connector.js" })
+@JavaScript({
+        "https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js",
+        "jquery.flot.js", "flot_connector.js" })
 public class Flot extends AbstractJavaScriptComponent {
     public Flot() {
         registerRpc(new FlotClickRpc() {
             @Override
             public void onPlotClick(int seriesIndex, int dataIndex) {
-                Notification.show("Clicked on [" + seriesIndex + ", " + dataIndex + "]");
+                Notification.show(
+                        "Clicked on [" + seriesIndex + ", " + dataIndex + "]");
             }
         });
         addFunction("onPlotClick", new JavaScriptFunction() {
@@ -40,7 +43,8 @@ public class Flot extends AbstractJavaScriptComponent {
             public void call(JsonArray arguments) {
                 int seriesIndex = (int) arguments.getNumber(0);
                 int dataIndex = (int) arguments.getNumber(1);
-                Notification.show("Clicked on [" + seriesIndex + ", " + dataIndex + "]");
+                Notification.show(
+                        "Clicked on [" + seriesIndex + ", " + dataIndex + "]");
             }
         });
     }
@@ -48,7 +52,8 @@ public class Flot extends AbstractJavaScriptComponent {
     public void addSeries(double... points) {
         List<List<Double>> pointList = new ArrayList<List<Double>>();
         for (int i = 0; i < points.length; i++) {
-            pointList.add(Arrays.asList(Double.valueOf(i), Double.valueOf(points[i])));
+            pointList.add(Arrays.asList(Double.valueOf(i),
+                    Double.valueOf(points[i])));
         }
 
         getState().series.add(pointList);

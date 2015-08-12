@@ -79,7 +79,8 @@ public class DateForm extends AbstractTestUIWithLog {
     protected void setup(VaadinRequest request) {
         setLocale(Locale.US);
         addComponent(log);
-        final FieldGroup fieldGroup = new BeanFieldGroup<DateObject>(DateObject.class);
+        final FieldGroup fieldGroup = new BeanFieldGroup<DateObject>(
+                DateObject.class);
         fieldGroup.setBuffered(true);
 
         fieldGroup.buildAndBindMemberFields(this);
@@ -104,27 +105,31 @@ public class DateForm extends AbstractTestUIWithLog {
 
             }
         });
-        Button discardButton = new Button("Discard", new Button.ClickListener() {
+        Button discardButton = new Button("Discard",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                fieldGroup.discard();
-                log("Discarded changes");
-            }
-        });
-        Button showBean = new Button("Show bean values", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        fieldGroup.discard();
+                        log("Discarded changes");
+                    }
+                });
+        Button showBean = new Button("Show bean values",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                log(getPerson(fieldGroup).toString());
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        log(getPerson(fieldGroup).toString());
 
-            }
-        });
+                    }
+                });
         addComponent(commitButton);
         addComponent(discardButton);
         addComponent(showBean);
 
-        DateObject d = new DateObject(new Date(443457289789L), new Date(443457289789L), new Date(443457289789L), new Date(443457289789L));
+        DateObject d = new DateObject(new Date(443457289789L),
+                new Date(443457289789L), new Date(443457289789L),
+                new Date(443457289789L));
         fieldGroup.setItemDataSource(new BeanItem<DateObject>(d));
     }
 

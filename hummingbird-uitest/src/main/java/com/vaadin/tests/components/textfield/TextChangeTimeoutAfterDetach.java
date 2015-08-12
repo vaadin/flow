@@ -24,13 +24,15 @@ public class TextChangeTimeoutAfterDetach extends TestBase {
         });
         addComponent(field);
 
-        Button detachBtn = new Button("detach field", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                removeComponent(field);
-                getLayout().addComponentAsFirst(new Label("Field detached!"));
-            }
-        });
+        Button detachBtn = new Button("detach field",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        removeComponent(field);
+                        getLayout().addComponentAsFirst(
+                                new Label("Field detached!"));
+                    }
+                });
         addComponent(detachBtn);
     }
 

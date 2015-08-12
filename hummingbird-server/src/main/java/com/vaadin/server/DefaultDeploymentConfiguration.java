@@ -28,7 +28,8 @@ import com.vaadin.shared.communication.PushMode;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public class DefaultDeploymentConfiguration extends AbstractDeploymentConfiguration {
+public class DefaultDeploymentConfiguration
+        extends AbstractDeploymentConfiguration {
     /**
      * Default value for {@link #getResourceCacheTime()} = {@value} .
      */
@@ -74,7 +75,8 @@ public class DefaultDeploymentConfiguration extends AbstractDeploymentConfigurat
      *            the init parameters that should make up the foundation for
      *            this configuration
      */
-    public DefaultDeploymentConfiguration(Class<?> systemPropertyBaseClass, Properties initParameters) {
+    public DefaultDeploymentConfiguration(Class<?> systemPropertyBaseClass,
+            Properties initParameters) {
         this.initParameters = initParameters;
         this.systemPropertyBaseClass = systemPropertyBaseClass;
 
@@ -89,7 +91,8 @@ public class DefaultDeploymentConfiguration extends AbstractDeploymentConfigurat
     }
 
     @Override
-    public String getApplicationOrSystemProperty(String propertyName, String defaultValue) {
+    public String getApplicationOrSystemProperty(String propertyName,
+            String defaultValue) {
         String val = null;
 
         // Try application properties
@@ -255,7 +258,9 @@ public class DefaultDeploymentConfiguration extends AbstractDeploymentConfigurat
      * Log a warning if Vaadin is not running in production mode.
      */
     private void checkProductionMode() {
-        productionMode = getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false").equals("true");
+        productionMode = getApplicationOrSystemProperty(
+                Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false")
+                        .equals("true");
         if (!productionMode) {
             getLogger().warning(Constants.NOT_PRODUCTION_MODE_INFO);
         }
@@ -265,7 +270,9 @@ public class DefaultDeploymentConfiguration extends AbstractDeploymentConfigurat
      * Log a warning if cross-site request forgery protection is disabled.
      */
     private void checkXsrfProtection() {
-        xsrfProtectionEnabled = !getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, "false").equals("true");
+        xsrfProtectionEnabled = !getApplicationOrSystemProperty(
+                Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, "false")
+                        .equals("true");
         if (!xsrfProtectionEnabled) {
             getLogger().warning(Constants.WARNING_XSRF_PROTECTION_DISABLED);
         }
@@ -276,28 +283,38 @@ public class DefaultDeploymentConfiguration extends AbstractDeploymentConfigurat
      */
     private void checkResourceCacheTime() {
         try {
-            resourceCacheTime = Integer.parseInt(getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_RESOURCE_CACHE_TIME, Integer.toString(DEFAULT_RESOURCE_CACHE_TIME)));
+            resourceCacheTime = Integer.parseInt(getApplicationOrSystemProperty(
+                    Constants.SERVLET_PARAMETER_RESOURCE_CACHE_TIME,
+                    Integer.toString(DEFAULT_RESOURCE_CACHE_TIME)));
         } catch (NumberFormatException e) {
-            getLogger().warning(Constants.WARNING_RESOURCE_CACHING_TIME_NOT_NUMERIC);
+            getLogger().warning(
+                    Constants.WARNING_RESOURCE_CACHING_TIME_NOT_NUMERIC);
             resourceCacheTime = DEFAULT_RESOURCE_CACHE_TIME;
         }
     }
 
     private void checkHeartbeatInterval() {
         try {
-            heartbeatInterval = Integer.parseInt(getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL, Integer.toString(DEFAULT_HEARTBEAT_INTERVAL)));
+            heartbeatInterval = Integer.parseInt(getApplicationOrSystemProperty(
+                    Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+                    Integer.toString(DEFAULT_HEARTBEAT_INTERVAL)));
         } catch (NumberFormatException e) {
-            getLogger().warning(Constants.WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
+            getLogger()
+                    .warning(Constants.WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
         }
     }
 
     private void checkCloseIdleSessions() {
-        closeIdleSessions = getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS, Boolean.toString(DEFAULT_CLOSE_IDLE_SESSIONS)).equals("true");
+        closeIdleSessions = getApplicationOrSystemProperty(
+                Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
+                Boolean.toString(DEFAULT_CLOSE_IDLE_SESSIONS)).equals("true");
     }
 
     private void checkPushMode() {
-        String mode = getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_PUSH_MODE, PushMode.DISABLED.toString());
+        String mode = getApplicationOrSystemProperty(
+                Constants.SERVLET_PARAMETER_PUSH_MODE,
+                PushMode.DISABLED.toString());
         try {
             pushMode = Enum.valueOf(PushMode.class, mode.toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -307,11 +324,16 @@ public class DefaultDeploymentConfiguration extends AbstractDeploymentConfigurat
     }
 
     private void checkSyncIdCheck() {
-        syncIdCheck = getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_SYNC_ID_CHECK, Boolean.toString(DEFAULT_SYNC_ID_CHECK)).equals("true");
+        syncIdCheck = getApplicationOrSystemProperty(
+                Constants.SERVLET_PARAMETER_SYNC_ID_CHECK,
+                Boolean.toString(DEFAULT_SYNC_ID_CHECK)).equals("true");
     }
 
     private void checkSendUrlsAsParameters() {
-        sendUrlsAsParameters = getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_SENDURLSASPARAMETERS, Boolean.toString(DEFAULT_SEND_URLS_AS_PARAMETERS)).equals("true");
+        sendUrlsAsParameters = getApplicationOrSystemProperty(
+                Constants.SERVLET_PARAMETER_SENDURLSASPARAMETERS,
+                Boolean.toString(DEFAULT_SEND_URLS_AS_PARAMETERS))
+                        .equals("true");
     }
 
     private Logger getLogger() {

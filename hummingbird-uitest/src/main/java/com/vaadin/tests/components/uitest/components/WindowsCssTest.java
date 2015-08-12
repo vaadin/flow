@@ -20,29 +20,34 @@ public class WindowsCssTest extends VerticalLayout {
         this.parent = parent;
         parent.registerComponent(this);
 
-        Button defWindow = new Button("Default window", new Button.ClickListener() {
+        Button defWindow = new Button("Default window",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                createWindowWith(caption, null, styleName);
-            }
-        });
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        createWindowWith(caption, null, styleName);
+                    }
+                });
         defWindow.setId("windButton" + debugIdCounter++);
-        Button topToolbar = new Button("top toolbar window", new Button.ClickListener() {
+        Button topToolbar = new Button("top toolbar window",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                createWindowWith(caption, ValoTheme.WINDOW_TOP_TOOLBAR, styleName);
-            }
-        });
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        createWindowWith(caption, ValoTheme.WINDOW_TOP_TOOLBAR,
+                                styleName);
+                    }
+                });
         topToolbar.setId("windButton" + debugIdCounter++);
-        Button bottomToolbar = new Button("bottom toolbar window", new Button.ClickListener() {
+        Button bottomToolbar = new Button("bottom toolbar window",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                createWindowWith(caption, ValoTheme.WINDOW_BOTTOM_TOOLBAR, styleName);
-            }
-        });
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        createWindowWith(caption,
+                                ValoTheme.WINDOW_BOTTOM_TOOLBAR, styleName);
+                    }
+                });
         bottomToolbar.setId("windButton" + debugIdCounter++);
 
         addComponent(defWindow);
@@ -60,7 +65,8 @@ public class WindowsCssTest extends VerticalLayout {
      *            - the user defined styleName
      * @return
      */
-    private void createWindowWith(String caption, String primaryStyleName, String styleName) {
+    private void createWindowWith(String caption, String primaryStyleName,
+            String styleName) {
 
         Window window = new Window();
         VerticalLayout layout = new VerticalLayout();

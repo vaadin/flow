@@ -45,7 +45,9 @@ public class ThreadMemoryLeaksTest extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Inherited ThreadLocals should not leak memory. Clicking the " + "button starts a new thread, after which memory consumption " + "can be checked with visualvm";
+        return "Inherited ThreadLocals should not leak memory. Clicking the "
+                + "button starts a new thread, after which memory consumption "
+                + "can be checked with visualvm";
     }
 
     @Override

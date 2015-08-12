@@ -37,14 +37,17 @@ public class ArraySerializer extends JsonSerializer {
     }
 
     @Override
-    protected void printDeserializerBody(TreeLogger logger, SourceWriter w, String type, String jsonValue, String connection) {
+    protected void printDeserializerBody(TreeLogger logger, SourceWriter w,
+            String type, String jsonValue, String connection) {
         JType leafType = arrayType.getLeafType();
         int rank = arrayType.getRank();
 
-        w.println(JsonArray.class.getName() + " jsonArray = (" + JsonArray.class.getName() + ")" + jsonValue + ";");
+        w.println(JsonArray.class.getName() + " jsonArray = ("
+                + JsonArray.class.getName() + ")" + jsonValue + ";");
 
         // Type value = new Type[jsonArray.size()][][];
-        w.print(arrayType.getQualifiedSourceName() + " value = new " + leafType.getQualifiedSourceName() + "[jsonArray.length()]");
+        w.print(arrayType.getQualifiedSourceName() + " value = new "
+                + leafType.getQualifiedSourceName() + "[jsonArray.length()]");
         for (int i = 1; i < rank; i++) {
             w.print("[]");
         }
@@ -55,7 +58,9 @@ public class ArraySerializer extends JsonSerializer {
 
         JType componentType = arrayType.getComponentType();
 
-        w.print("value[i] = (" + ConnectorBundleLoaderFactory.getBoxedTypeName(componentType) + ") " + JsonDecoder.class.getName() + ".decodeValue(");
+        w.print("value[i] = ("
+                + ConnectorBundleLoaderFactory.getBoxedTypeName(componentType)
+                + ") " + JsonDecoder.class.getName() + ".decodeValue(");
         ConnectorBundleLoaderFactory.writeTypeCreator(w, componentType);
         w.print(", jsonArray.get(i), null, " + connection + ")");
 
@@ -68,10 +73,12 @@ public class ArraySerializer extends JsonSerializer {
     }
 
     @Override
-    protected void printSerializerBody(TreeLogger logger, SourceWriter w, String value, String applicationConnection) {
+    protected void printSerializerBody(TreeLogger logger, SourceWriter w,
+            String value, String applicationConnection) {
         JType componentType = arrayType.getComponentType();
 
-        w.println(JsonArray.class.getName() + " values = " + Json.class.getName() + ".createArray();");
+        w.println(JsonArray.class.getName() + " values = "
+                + Json.class.getName() + ".createArray();");
         // JPrimitiveType primitive = componentType.isPrimitive();
         w.println("for (int i = 0; i < " + value + ".length; i++) {");
         w.indent();

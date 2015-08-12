@@ -27,8 +27,7 @@ import com.vaadin.shared.ui.image.ImageState;
  * Component for embedding images.
  * 
  * @author Vaadin Ltd.
- * @version
- * @VERSION@
+ * @version @VERSION@
  * @since 7.0
  */
 @SuppressWarnings("serial")
@@ -87,7 +86,8 @@ public class Image extends AbstractEmbedded {
      *            The listener to add
      */
     public void addClickListener(ClickListener listener) {
-        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener, ClickListener.clickMethod);
+        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener,
+                ClickListener.clickMethod);
     }
 
     /**
@@ -98,6 +98,7 @@ public class Image extends AbstractEmbedded {
      *            The listener to remove
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener);
+        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class,
+                listener);
     }
 }

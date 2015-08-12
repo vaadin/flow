@@ -5,7 +5,8 @@ import com.vaadin.data.util.converter.DefaultConverterFactory;
 
 public class MyConverterFactory extends DefaultConverterFactory {
     @Override
-    protected <PRESENTATION, MODEL> Converter<PRESENTATION, MODEL> findConverter(Class<PRESENTATION> presentationType, Class<MODEL> modelType) {
+    protected <PRESENTATION, MODEL> Converter<PRESENTATION, MODEL> findConverter(
+            Class<PRESENTATION> presentationType, Class<MODEL> modelType) {
         // Handle String <-> Double
         if (presentationType == String.class && modelType == Double.class) {
             return (Converter<PRESENTATION, MODEL>) new MyStringToDoubleConverter();

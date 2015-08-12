@@ -38,7 +38,8 @@ public class TreeScrollingOnRightClickTest extends MultiBrowserTest {
         openTestURL();
 
         // Focus tree
-        WebElement tree = getDriver().findElement(By.id(TreeScrollingOnRightClick.TREE_ID));
+        WebElement tree = getDriver()
+                .findElement(By.id(TreeScrollingOnRightClick.TREE_ID));
         tree.click();
 
         // Move selection down 50 items
@@ -53,7 +54,8 @@ public class TreeScrollingOnRightClickTest extends MultiBrowserTest {
 
         // Right click on item 45
         WebElement item45 = getTreeNode("Node 45");
-        new Actions(getDriver()).moveToElement(item45).contextClick(item45).perform();
+        new Actions(getDriver()).moveToElement(item45).contextClick(item45)
+                .perform();
 
         // Ensure location of item 40 is still the same (no scrolling)
         Point item40Location2 = getTreeNode("Node 40").getLocation();
@@ -61,6 +63,7 @@ public class TreeScrollingOnRightClickTest extends MultiBrowserTest {
     }
 
     private WebElement getTreeNode(String caption) {
-        return getDriver().findElement(By.xpath("//span[text() = '" + caption + "']"));
+        return getDriver()
+                .findElement(By.xpath("//span[text() = '" + caption + "']"));
     }
 }

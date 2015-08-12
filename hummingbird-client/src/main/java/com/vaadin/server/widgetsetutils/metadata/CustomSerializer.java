@@ -32,7 +32,8 @@ public class CustomSerializer implements GeneratedSerializer {
     }
 
     @Override
-    public void writeSerializerInstantiator(TreeLogger logger, SourceWriter w) throws UnableToCompleteException {
+    public void writeSerializerInstantiator(TreeLogger logger, SourceWriter w)
+            throws UnableToCompleteException {
         w.print("return ");
         w.print(GWT.class.getCanonicalName());
         w.print(".create(");

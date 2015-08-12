@@ -25,7 +25,8 @@ import com.vaadin.ui.ComboBox;
 
 public class ComboBoxSuggestionPageLength extends AbstractTestUI {
 
-    private static List<String> items = Arrays.asList("abc", "cde", "efg", "ghi", "ijk");
+    private static List<String> items = Arrays.asList("abc", "cde", "efg",
+            "ghi", "ijk");
 
     @Override
     protected void setup(VaadinRequest request) {

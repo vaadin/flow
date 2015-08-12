@@ -9,7 +9,8 @@ import com.vaadin.event.FieldEvents.TextChangeListener;
 import com.vaadin.ui.AbstractTextField;
 import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
 
-public abstract class AbstractTextFieldTest<T extends AbstractTextField> extends AbstractFieldTest<T> implements TextChangeListener {
+public abstract class AbstractTextFieldTest<T extends AbstractTextField>
+        extends AbstractFieldTest<T>implements TextChangeListener {
 
     private Command<T, Integer> maxlengthCommand = new Command<T, Integer>() {
 
@@ -76,7 +77,8 @@ public abstract class AbstractTextFieldTest<T extends AbstractTextField> extends
     private Command<T, Range> selectionRangeCommand = new Command<T, Range>() {
         @Override
         public void execute(T c, Range value, Object data) {
-            c.setSelectionRange(value.getStart(), value.getEnd() - value.getStart());
+            c.setSelectionRange(value.getStart(),
+                    value.getEnd() - value.getStart());
 
         }
     };
@@ -119,7 +121,8 @@ public abstract class AbstractTextFieldTest<T extends AbstractTextField> extends
     }
 
     private void createNullSettingAllowedAction(String category) {
-        createBooleanAction("Null selection allowed", category, true, nullSelectionAllowedCommand);
+        createBooleanAction("Null selection allowed", category, true,
+                nullSelectionAllowedCommand);
     }
 
     private void createNullRepresentationAction(String category) {
@@ -128,13 +131,15 @@ public abstract class AbstractTextFieldTest<T extends AbstractTextField> extends
         options.put("null", "null");
         options.put("This is empty", "This is empty");
         options.put("- Nothing -", "- Nothing -");
-        createSelectAction("Null representation", category, options, "null", nullRepresentationCommand);
+        createSelectAction("Null representation", category, options, "null",
+                nullRepresentationCommand);
     }
 
     private void createMaxLengthAction(String category) {
         LinkedHashMap<String, Integer> options = createIntegerOptions(100);
         options.put("-", -1);
-        createSelectAction("Max length", category, options, "-", maxlengthCommand);
+        createSelectAction("Max length", category, options, "-",
+                maxlengthCommand);
 
     }
 
@@ -174,7 +179,8 @@ public abstract class AbstractTextFieldTest<T extends AbstractTextField> extends
 
         createClickAction("All", "Select range", selectAllCommand, null);
         for (Range range : options) {
-            createClickAction(range.toString(), "Select range", selectionRangeCommand, range);
+            createClickAction(range.toString(), "Select range",
+                    selectionRangeCommand, range);
         }
 
     }
@@ -183,7 +189,8 @@ public abstract class AbstractTextFieldTest<T extends AbstractTextField> extends
         String subCategory = "Set cursor position";
         createCategory(subCategory, category);
         for (int i = 0; i < 20; i++) {
-            createClickAction(String.valueOf(i), subCategory, setCursorPositionCommand, Integer.valueOf(i));
+            createClickAction(String.valueOf(i), subCategory,
+                    setCursorPositionCommand, Integer.valueOf(i));
         }
 
     }
@@ -197,7 +204,8 @@ public abstract class AbstractTextFieldTest<T extends AbstractTextField> extends
         options.put("2s", 2000);
         options.put("5s", 5000);
 
-        createSelectAction("TextChange timeout", category, options, "0", textChangeTimeoutCommand);
+        createSelectAction("TextChange timeout", category, options, "0",
+                textChangeTimeoutCommand);
     }
 
     private void createTextChangeEventModeAction(String category) {
@@ -206,12 +214,15 @@ public abstract class AbstractTextFieldTest<T extends AbstractTextField> extends
             options.put(m.toString(), m);
         }
 
-        createSelectAction("TextChange event mode", category, options, TextChangeEventMode.EAGER.toString(), textChangeEventModeCommand);
+        createSelectAction("TextChange event mode", category, options,
+                TextChangeEventMode.EAGER.toString(),
+                textChangeEventModeCommand);
 
     }
 
     private void createTextChangeListener(String category) {
-        createBooleanAction("Text change listener", category, false, textChangeListenerCommand);
+        createBooleanAction("Text change listener", category, false,
+                textChangeListenerCommand);
 
     }
 
@@ -225,14 +236,17 @@ public abstract class AbstractTextFieldTest<T extends AbstractTextField> extends
         options.put("-", null);
         options.put("Enter a value", "Enter a value");
         options.put("- Click here -", "- Click here -");
-        createSelectAction("Input prompt", category, options, "-", inputPromptCommand);
+        createSelectAction("Input prompt", category, options, "-",
+                inputPromptCommand);
 
     }
 
     @Override
     public void textChange(TextChangeEvent event) {
         AbstractTextField tf = (AbstractTextField) event.getComponent();
-        log("TextChangeEvent: text='" + event.getText() + "', cursor position=" + event.getCursorPosition() + " (field cursor pos: " + tf.getCursorPosition() + ")");
+        log("TextChangeEvent: text='" + event.getText() + "', cursor position="
+                + event.getCursorPosition() + " (field cursor pos: "
+                + tf.getCursorPosition() + ")");
 
     }
 

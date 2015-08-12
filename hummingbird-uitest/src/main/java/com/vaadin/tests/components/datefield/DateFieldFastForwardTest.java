@@ -32,7 +32,8 @@ public class DateFieldFastForwardTest extends MultiBrowserTest {
     public void testFastForwardOnRightMouseClick() throws Exception {
         openTestURL();
         String firstMonth = getSelectedMonth();
-        WebElement nextMonthButton = driver.findElement(By.className("v-button-nextmonth"));
+        WebElement nextMonthButton = driver
+                .findElement(By.className("v-button-nextmonth"));
 
         // Click and hold left mouse button to start fast forwarding.
         new Actions(driver).clickAndHold(nextMonthButton).perform();
@@ -40,7 +41,8 @@ public class DateFieldFastForwardTest extends MultiBrowserTest {
 
         // Right click and release the left button.
 
-        new Actions(driver).contextClick(nextMonthButton).release(nextMonthButton).perform();
+        new Actions(driver).contextClick(nextMonthButton)
+                .release(nextMonthButton).perform();
 
         // Now the fast forwarding should be ended, get the expected month.
         String expectedMonth = getSelectedMonth();
@@ -48,7 +50,8 @@ public class DateFieldFastForwardTest extends MultiBrowserTest {
         // Make browser context menu disappear, since it will crash IE
         $(VerticalLayoutElement.class).first().click();
 
-        Assert.assertFalse("Month did not change during fast forward", firstMonth.equals(expectedMonth));
+        Assert.assertFalse("Month did not change during fast forward",
+                firstMonth.equals(expectedMonth));
 
         // Wait for a while.
         Thread.sleep(1000);
@@ -60,7 +63,10 @@ public class DateFieldFastForwardTest extends MultiBrowserTest {
     }
 
     private String getSelectedMonth() {
-        return driver.findElement(By.className("v-inline-datefield-calendarpanel-month")).getText();
+        return driver
+                .findElement(
+                        By.className("v-inline-datefield-calendarpanel-month"))
+                .getText();
     }
 
 }

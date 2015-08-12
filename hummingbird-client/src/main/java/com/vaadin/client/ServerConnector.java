@@ -72,7 +72,8 @@ public interface ServerConnector extends Connector {
      * @return RPC interface implementations registered for an RPC interface,
      *         not null
      */
-    public <T extends ClientRpc> Collection<T> getRpcImplementations(String rpcInterfaceId);
+    public <T extends ClientRpc> Collection<T> getRpcImplementations(
+            String rpcInterfaceId);
 
     /**
      * Adds a handler that is called whenever any part of the state has been
@@ -83,7 +84,8 @@ public interface ServerConnector extends Connector {
      * @return A handler registration reference that can be used to unregister
      *         the handler
      */
-    public HandlerRegistration addStateChangeHandler(StateChangeHandler handler);
+    public HandlerRegistration addStateChangeHandler(
+            StateChangeHandler handler);
 
     /**
      * Removes a handler that is called whenever any part of the state has been
@@ -106,7 +108,8 @@ public interface ServerConnector extends Connector {
      * @return A handler registration reference that can be used to unregister
      *         the handler
      */
-    public HandlerRegistration addStateChangeHandler(String propertyName, StateChangeHandler handler);
+    public HandlerRegistration addStateChangeHandler(String propertyName,
+            StateChangeHandler handler);
 
     /**
      * Removes a handler that is called whenever any part of the state has been
@@ -118,7 +121,8 @@ public interface ServerConnector extends Connector {
      * @param handler
      *            The handler that should be removed.
      */
-    public void removeStateChangeHandler(String propertyName, StateChangeHandler handler);
+    public void removeStateChangeHandler(String propertyName,
+            StateChangeHandler handler);
 
     /**
      * Sends the given event to all registered handlers.

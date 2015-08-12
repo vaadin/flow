@@ -52,7 +52,9 @@ import elemental.json.JsonValue;
  */
 public class JsonDecoder {
 
-    private static final FastStringSet decodedWithoutReference = FastStringSet.create();
+    private static final FastStringSet decodedWithoutReference = FastStringSet
+            .create();
+
     static {
         decodedWithoutReference.add(String.class.getName());
         decodedWithoutReference.add(Boolean.class.getName());
@@ -79,7 +81,8 @@ public class JsonDecoder {
      *            reference to the current ApplicationConnection
      * @return decoded value (does not contain JSON types)
      */
-    public static Object decodeValue(Type type, JsonValue jsonValue, Object target, ApplicationConnection connection) {
+    public static Object decodeValue(Type type, JsonValue jsonValue,
+            Object target, ApplicationConnection connection) {
         String baseTypeName = type.getBaseTypeName();
         if (baseTypeName.startsWith("elemental.json.Json")) {
             return jsonValue;
@@ -90,9 +93,11 @@ public class JsonDecoder {
             return null;
         }
 
-        if (Map.class.getName().equals(baseTypeName) || HashMap.class.getName().equals(baseTypeName)) {
+        if (Map.class.getName().equals(baseTypeName)
+                || HashMap.class.getName().equals(baseTypeName)) {
             return decodeMap(type, jsonValue, connection);
-        } else if (List.class.getName().equals(baseTypeName) || ArrayList.class.getName().equals(baseTypeName)) {
+        } else if (List.class.getName().equals(baseTypeName)
+                || ArrayList.class.getName().equals(baseTypeName)) {
             assert jsonValue.getType() == JsonType.ARRAY;
             return decodeList(type, (JsonArray) jsonValue, connection);
         } else if (Set.class.getName().equals(baseTypeName)) {
@@ -115,15 +120,18 @@ public class JsonDecoder {
         } else if (Character.class.getName().equals(baseTypeName)) {
             return Character.valueOf(jsonValue.asString().charAt(0));
         } else if (Connector.class.getName().equals(baseTypeName)) {
-            return ConnectorMap.get(connection).getConnector(jsonValue.asString());
+            return ConnectorMap.get(connection)
+                    .getConnector(jsonValue.asString());
         } else {
             return decodeObject(type, jsonValue, target, connection);
         }
     }
 
-    private static Object decodeObject(Type type, JsonValue jsonValue, Object target, ApplicationConnection connection) {
+    private static Object decodeObject(Type type, JsonValue jsonValue,
+            Object target, ApplicationConnection connection) {
         Profiler.enter("JsonDecoder.decodeObject");
-        JSONSerializer<Object> serializer = (JSONSerializer<Object>) type.findSerializer();
+        JSONSerializer<Object> serializer = (JSONSerializer<Object>) type
+                .findSerializer();
         if (serializer != null) {
             if (target != null && serializer instanceof DiffJSONSerializer<?>) {
                 DiffJSONSerializer<Object> diffSerializer = (DiffJSONSerializer<Object>) serializer;
@@ -131,14 +139,16 @@ public class JsonDecoder {
                 Profiler.leave("JsonDecoder.decodeObject");
                 return target;
             } else {
-                Object object = serializer.deserialize(type, jsonValue, connection);
+                Object object = serializer.deserialize(type, jsonValue,
+                        connection);
                 Profiler.leave("JsonDecoder.decodeObject");
                 return object;
             }
         } else {
             try {
                 Profiler.enter("JsonDecoder.decodeObject meta data processing");
-                JsArrayObject<Property> properties = type.getPropertiesAsArray();
+                JsArrayObject<Property> properties = type
+                        .getPropertiesAsArray();
                 if (target == null) {
                     target = type.createInstance();
                 }
@@ -160,10 +170,15 @@ public class JsonDecoder {
                         propertyReference = null;
                     }
 
-                    Profiler.leave("JsonDecoder.decodeObject meta data processing");
-                    JsonValue encodedPropertyValue = jsonObject.get(property.getName());
-                    Object decodedValue = decodeValue(propertyType, encodedPropertyValue, propertyReference, connection);
-                    Profiler.enter("JsonDecoder.decodeObject meta data processing");
+                    Profiler.leave(
+                            "JsonDecoder.decodeObject meta data processing");
+                    JsonValue encodedPropertyValue = jsonObject
+                            .get(property.getName());
+                    Object decodedValue = decodeValue(propertyType,
+                            encodedPropertyValue, propertyReference,
+                            connection);
+                    Profiler.enter(
+                            "JsonDecoder.decodeObject meta data processing");
                     property.setValue(target, decodedValue);
                 }
                 Profiler.leave("JsonDecoder.decodeObject meta data processing");
@@ -172,7 +187,8 @@ public class JsonDecoder {
             } catch (NoDataException e) {
                 Profiler.leave("JsonDecoder.decodeObject meta data processing");
                 Profiler.leave("JsonDecoder.decodeObject");
-                throw new RuntimeException("Can not deserialize " + type.getSignature(), e);
+                throw new RuntimeException(
+                        "Can not deserialize " + type.getSignature(), e);
             }
         }
     }
@@ -181,7 +197,8 @@ public class JsonDecoder {
         return !decodedWithoutReference.contains(type.getBaseTypeName());
     }
 
-    private static Map<Object, Object> decodeMap(Type type, JsonValue jsonMap, ApplicationConnection connection) {
+    private static Map<Object, Object> decodeMap(Type type, JsonValue jsonMap,
+            ApplicationConnection connection) {
         // Client -> server encodes empty map as an empty array because of
         // #8906. Do the same for server -> client to maintain symmetry.
         if (jsonMap.getType() == JsonType.ARRAY) {
@@ -197,26 +214,33 @@ public class JsonDecoder {
         if (keyType.getBaseTypeName().equals(String.class.getName())) {
             assert jsonMap.getType() == JsonType.OBJECT;
             return decodeStringMap(valueType, (JsonObject) jsonMap, connection);
-        } else if (keyType.getBaseTypeName().equals(Connector.class.getName())) {
+        } else
+            if (keyType.getBaseTypeName().equals(Connector.class.getName())) {
             assert jsonMap.getType() == JsonType.OBJECT;
-            return decodeConnectorMap(valueType, (JsonObject) jsonMap, connection);
+            return decodeConnectorMap(valueType, (JsonObject) jsonMap,
+                    connection);
         } else {
             assert jsonMap.getType() == JsonType.ARRAY;
-            return decodeObjectMap(keyType, valueType, (JsonArray) jsonMap, connection);
+            return decodeObjectMap(keyType, valueType, (JsonArray) jsonMap,
+                    connection);
         }
     }
 
-    private static Map<Object, Object> decodeObjectMap(Type keyType, Type valueType, JsonArray jsonValue, ApplicationConnection connection) {
+    private static Map<Object, Object> decodeObjectMap(Type keyType,
+            Type valueType, JsonArray jsonValue,
+            ApplicationConnection connection) {
         Map<Object, Object> map = new HashMap<Object, Object>();
 
         JsonArray keys = jsonValue.get(0);
         JsonArray values = jsonValue.get(1);
 
-        assert (keys.length() == values.length());
+        assert(keys.length() == values.length());
 
         for (int i = 0; i < keys.length(); i++) {
-            Object decodedKey = decodeValue(keyType, keys.get(i), null, connection);
-            Object decodedValue = decodeValue(valueType, values.get(i), null, connection);
+            Object decodedKey = decodeValue(keyType, keys.get(i), null,
+                    connection);
+            Object decodedValue = decodeValue(valueType, values.get(i), null,
+                    connection);
 
             map.put(decodedKey, decodedValue);
         }
@@ -224,43 +248,53 @@ public class JsonDecoder {
         return map;
     }
 
-    private static Map<Object, Object> decodeConnectorMap(Type valueType, JsonObject jsonMap, ApplicationConnection connection) {
+    private static Map<Object, Object> decodeConnectorMap(Type valueType,
+            JsonObject jsonMap, ApplicationConnection connection) {
         Map<Object, Object> map = new HashMap<Object, Object>();
 
         ConnectorMap connectorMap = ConnectorMap.get(connection);
 
         for (String connectorId : jsonMap.keys()) {
-            Object value = decodeValue(valueType, jsonMap.get(connectorId), null, connection);
+            Object value = decodeValue(valueType, jsonMap.get(connectorId),
+                    null, connection);
             map.put(connectorMap.getConnector(connectorId), value);
         }
 
         return map;
     }
 
-    private static Map<Object, Object> decodeStringMap(Type valueType, JsonObject jsonMap, ApplicationConnection connection) {
+    private static Map<Object, Object> decodeStringMap(Type valueType,
+            JsonObject jsonMap, ApplicationConnection connection) {
         Map<Object, Object> map = new HashMap<Object, Object>();
 
         for (String key : jsonMap.keys()) {
-            Object value = decodeValue(valueType, jsonMap.get(key), null, connection);
+            Object value = decodeValue(valueType, jsonMap.get(key), null,
+                    connection);
             map.put(key, value);
         }
 
         return map;
     }
 
-    private static List<Object> decodeList(Type type, JsonArray jsonArray, ApplicationConnection connection) {
+    private static List<Object> decodeList(Type type, JsonArray jsonArray,
+            ApplicationConnection connection) {
         List<Object> tokens = new ArrayList<Object>();
-        decodeIntoCollection(type.getParameterTypes()[0], jsonArray, connection, tokens);
+        decodeIntoCollection(type.getParameterTypes()[0], jsonArray, connection,
+                tokens);
         return tokens;
     }
 
-    private static Set<Object> decodeSet(Type type, JsonArray jsonArray, ApplicationConnection connection) {
+    private static Set<Object> decodeSet(Type type, JsonArray jsonArray,
+            ApplicationConnection connection) {
         Set<Object> tokens = new HashSet<Object>();
-        decodeIntoCollection(type.getParameterTypes()[0], jsonArray, connection, tokens);
+        decodeIntoCollection(type.getParameterTypes()[0], jsonArray, connection,
+                tokens);
         return tokens;
     }
 
-    private static void decodeIntoCollection(Type childType, JsonArray jsonArray, ApplicationConnection connection, Collection<Object> tokens) {
+    private static void decodeIntoCollection(Type childType,
+            JsonArray jsonArray, ApplicationConnection connection,
+            Collection<Object> tokens) {
         for (int i = 0; i < jsonArray.length(); ++i) {
             // each entry always has two elements: type and value
             JsonValue entryValue = jsonArray.get(i);

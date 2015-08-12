@@ -63,11 +63,13 @@ public class ButtonsCssTest extends GridLayout {
         createButtonWith("Large", ValoTheme.BUTTON_LARGE, null);
         createButtonWith("Huge", ValoTheme.BUTTON_HUGE, null);
         createButtonWith("Borderless", ValoTheme.BUTTON_BORDERLESS, null);
-        createButtonWith("Icon only", ValoTheme.BUTTON_ICON_ONLY, parent.ICON_URL);
+        createButtonWith("Icon only", ValoTheme.BUTTON_ICON_ONLY,
+                parent.ICON_URL);
 
     }
 
-    private void createButtonWith(String caption, String primaryStyleName, String iconUrl) {
+    private void createButtonWith(String caption, String primaryStyleName,
+            String iconUrl) {
         Button b = new Button();
         b.setId("button" + debugIdCounter++);
 

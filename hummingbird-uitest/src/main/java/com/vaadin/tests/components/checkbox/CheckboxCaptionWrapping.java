@@ -21,13 +21,16 @@ public class CheckboxCaptionWrapping extends TestBase {
     protected void setup() {
         setTheme("tests-tickets");
         VerticalLayout mainLayout = new VerticalLayout();
-        CheckBox cb = new CheckBox("Checkbox with some Incididunt ut labore et dolore magna aliqua.");
+        CheckBox cb = new CheckBox(
+                "Checkbox with some Incididunt ut labore et dolore magna aliqua.");
         cb.setStyleName("wrap");
         cb.setWidth("100%");
         mainLayout.setStyleName("borders");
         mainLayout.setWidth("300px");
         mainLayout.addComponent(cb);
-        mainLayout.addComponent(new Label("Lorem ipsum dolor sit amet, consectetur adipisicing" + " elit, sed do eiusmod tempor."));
+        mainLayout.addComponent(
+                new Label("Lorem ipsum dolor sit amet, consectetur adipisicing"
+                        + " elit, sed do eiusmod tempor."));
 
         addComponent(mainLayout);
 

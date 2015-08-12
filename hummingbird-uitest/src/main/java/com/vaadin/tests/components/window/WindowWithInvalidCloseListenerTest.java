@@ -11,7 +11,9 @@ public class WindowWithInvalidCloseListenerTest extends MultiBrowserTest {
     @Test
     public void testWindowClosesCorrectly() throws Exception {
         openTestURL();
-        $(WindowElement.class).first().findElement(By.className("v-window-closebox")).click();
-        Assert.assertFalse("Window found when there should be none.", $(WindowElement.class).exists());
+        $(WindowElement.class).first()
+                .findElement(By.className("v-window-closebox")).click();
+        Assert.assertFalse("Window found when there should be none.",
+                $(WindowElement.class).exists());
     }
 }

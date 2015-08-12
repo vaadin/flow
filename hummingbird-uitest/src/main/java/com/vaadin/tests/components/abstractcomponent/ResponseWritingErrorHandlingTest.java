@@ -29,6 +29,7 @@ public class ResponseWritingErrorHandlingTest extends SingleBrowserTest {
 
         $(ButtonElement.class).first().click();
 
-        Assert.assertEquals("Message should be logged by error handler", "1. Button.beforeClientResponse", getLogRow(0));
+        Assert.assertEquals("Message should be logged by error handler",
+                "1. Button.beforeClientResponse", getLogRow(0));
     }
 }

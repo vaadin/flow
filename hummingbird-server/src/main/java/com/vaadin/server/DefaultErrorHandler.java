@@ -38,7 +38,8 @@ public class DefaultErrorHandler implements ErrorHandler {
         Throwable t = event.getThrowable();
         if (t instanceof SocketException) {
             // Most likely client browser closed socket
-            getLogger().info("SocketException in CommunicationManager." + " Most likely client (browser) closed socket.");
+            getLogger().info("SocketException in CommunicationManager."
+                    + " Most likely client (browser) closed socket.");
             return;
         }
 
@@ -48,7 +49,8 @@ public class DefaultErrorHandler implements ErrorHandler {
         AbstractComponent component = findAbstractComponent(event);
         if (component != null) {
             // Shows the error in AbstractComponent
-            ErrorMessage errorMessage = AbstractErrorMessage.getErrorMessageForException(t);
+            ErrorMessage errorMessage = AbstractErrorMessage
+                    .getErrorMessageForException(t);
             component.setComponentError(errorMessage);
         }
 
@@ -69,7 +71,8 @@ public class DefaultErrorHandler implements ErrorHandler {
      */
     public static Throwable findRelevantThrowable(Throwable t) {
         try {
-            if ((t instanceof RpcInvocationException) && (t.getCause() instanceof InvocationTargetException)) {
+            if ((t instanceof RpcInvocationException)
+                    && (t.getCause() instanceof InvocationTargetException)) {
                 /*
                  * RpcInvocationException (that always wraps irrelevant
                  * java.lang.reflect.InvocationTargetException) might only be
@@ -103,9 +106,11 @@ public class DefaultErrorHandler implements ErrorHandler {
      *         could not be determined or if the error does not relate to any
      *         AbstractComponent.
      */
-    public static AbstractComponent findAbstractComponent(com.vaadin.server.ErrorEvent event) {
+    public static AbstractComponent findAbstractComponent(
+            com.vaadin.server.ErrorEvent event) {
         if (event instanceof ConnectorErrorEvent) {
-            Component c = findComponent(((ConnectorErrorEvent) event).getConnector());
+            Component c = findComponent(
+                    ((ConnectorErrorEvent) event).getConnector());
             if (c instanceof AbstractComponent) {
                 return (AbstractComponent) c;
             }

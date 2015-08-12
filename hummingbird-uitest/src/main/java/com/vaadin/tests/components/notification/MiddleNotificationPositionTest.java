@@ -35,46 +35,64 @@ public class MiddleNotificationPositionTest extends MultiBrowserTest {
     public void testMiddleLeft() {
         openTestURL();
 
-        WebElement webElement = driver.findElement(By.className("show-middle-left"));
+        WebElement webElement = driver
+                .findElement(By.className("show-middle-left"));
         webElement.click();
 
-        WebElement notification = driver.findElement(By.className("v-Notification"));
+        WebElement notification = driver
+                .findElement(By.className("v-Notification"));
 
         Assert.assertNotNull(notification);
         String left = notification.getCssValue("left");
-        Assert.assertEquals("Left position of notification element should be 0px", "0px", left);
+        Assert.assertEquals(
+                "Left position of notification element should be 0px", "0px",
+                left);
         Point location = notification.getLocation();
-        Assert.assertEquals("X coordinate of notifiation element should be 0", 0, location.getX());
+        Assert.assertEquals("X coordinate of notifiation element should be 0",
+                0, location.getX());
 
         WebElement body = driver.findElement(By.tagName("body"));
         int height = body.getSize().height;
 
-        Assert.assertTrue("Y coordinate of notification element is too small", height / 2 - notification.getSize().height / 2 - 1 <= location.getY());
-        Assert.assertTrue("Y coordinate of notification element is too big", height / 2 + 1 >= location.getY());
+        Assert.assertTrue("Y coordinate of notification element is too small",
+                height / 2 - notification.getSize().height / 2 - 1 <= location
+                        .getY());
+        Assert.assertTrue("Y coordinate of notification element is too big",
+                height / 2 + 1 >= location.getY());
     }
 
     @Test
     public void testMiddleRight() {
         openTestURL();
 
-        WebElement webElement = driver.findElement(By.className("show-middle-right"));
+        WebElement webElement = driver
+                .findElement(By.className("show-middle-right"));
         webElement.click();
 
-        WebElement notification = driver.findElement(By.className("v-Notification"));
+        WebElement notification = driver
+                .findElement(By.className("v-Notification"));
 
         Assert.assertNotNull(notification);
         String right = notification.getCssValue("right");
-        Assert.assertEquals("Right position of notification element should be 0px", "0px", right);
+        Assert.assertEquals(
+                "Right position of notification element should be 0px", "0px",
+                right);
 
         WebElement body = driver.findElement(By.tagName("body"));
         int height = body.getSize().height;
         int width = body.getSize().width;
 
         Point location = notification.getLocation();
-        Assert.assertTrue("Notification right border should be in the rightmost position", width - 1 <= location.getX() + notification.getSize().getWidth());
+        Assert.assertTrue(
+                "Notification right border should be in the rightmost position",
+                width - 1 <= location.getX()
+                        + notification.getSize().getWidth());
 
-        Assert.assertTrue("Y coordinate of notification element is too small", height / 2 - notification.getSize().height / 2 - 1 <= location.getY());
-        Assert.assertTrue("Y coordinate of notification element is too big", height / 2 + 1 >= location.getY());
+        Assert.assertTrue("Y coordinate of notification element is too small",
+                height / 2 - notification.getSize().height / 2 - 1 <= location
+                        .getY());
+        Assert.assertTrue("Y coordinate of notification element is too big",
+                height / 2 + 1 >= location.getY());
     }
 
 }

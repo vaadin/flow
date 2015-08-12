@@ -73,9 +73,9 @@ import com.vaadin.client.WidgetUtil;
  * </p>
  * 
  * <p>
- * Read more about the DropShadow filter from <a
- * href="http://msdn.microsoft.com/en-us/library/ms532985(v=vs.85).aspx"
- * >Microsoft Developer Network</a>
+ * Read more about the DropShadow filter from
+ * <a href="http://msdn.microsoft.com/en-us/library/ms532985(v=vs.85).aspx" >
+ * Microsoft Developer Network</a>
  * </p>
  */
 public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
@@ -484,14 +484,16 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
 
         // Don't animate if already visible or browser is IE8 or IE9 (no CSS
         // animation support)
-        if (isAttached || BrowserInfo.get().isIE8() || BrowserInfo.get().isIE9()) {
+        if (isAttached || BrowserInfo.get().isIE8()
+                || BrowserInfo.get().isIE9()) {
             return false;
         } else {
             // Check if animations are used
             setVisible(false);
             addStyleDependentName(ADDITIONAL_CLASSNAME_ANIMATE_IN);
             if (isShadowEnabled()) {
-                shadow.addClassName(CLASSNAME_SHADOW + "-" + ADDITIONAL_CLASSNAME_ANIMATE_IN);
+                shadow.addClassName(CLASSNAME_SHADOW + "-"
+                        + ADDITIONAL_CLASSNAME_ANIMATE_IN);
             }
 
             ComputedStyle cs = new ComputedStyle(getElement());
@@ -504,24 +506,32 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
             if (animationName.contains(ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
                 // Disable GWT PopupPanel animation if used
                 setAnimationEnabled(false);
-                animateInListener = AnimationUtil.addAnimationEndListener(getElement(), new AnimationEndListener() {
-                    @Override
-                    public void onAnimationEnd(NativeEvent event) {
-                        String animationName = AnimationUtil.getAnimationName(event);
-                        if (animationName.contains(ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
-                            AnimationUtil.removeAnimationEndListener(getElement(), animateInListener);
-                            removeStyleDependentName(ADDITIONAL_CLASSNAME_ANIMATE_IN);
-                            if (isShadowEnabled()) {
-                                shadow.removeClassName(CLASSNAME_SHADOW + "-" + ADDITIONAL_CLASSNAME_ANIMATE_IN);
+                animateInListener = AnimationUtil.addAnimationEndListener(
+                        getElement(), new AnimationEndListener() {
+                            @Override
+                            public void onAnimationEnd(NativeEvent event) {
+                                String animationName = AnimationUtil
+                                        .getAnimationName(event);
+                                if (animationName.contains(
+                                        ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
+                                    AnimationUtil.removeAnimationEndListener(
+                                            getElement(), animateInListener);
+                                    removeStyleDependentName(
+                                            ADDITIONAL_CLASSNAME_ANIMATE_IN);
+                                    if (isShadowEnabled()) {
+                                        shadow.removeClassName(CLASSNAME_SHADOW
+                                                + "-"
+                                                + ADDITIONAL_CLASSNAME_ANIMATE_IN);
+                                    }
+                                }
                             }
-                        }
-                    }
-                });
+                        });
                 return true;
             } else {
                 removeStyleDependentName(ADDITIONAL_CLASSNAME_ANIMATE_IN);
                 if (isShadowEnabled()) {
-                    shadow.removeClassName(CLASSNAME_SHADOW + "-" + ADDITIONAL_CLASSNAME_ANIMATE_IN);
+                    shadow.removeClassName(CLASSNAME_SHADOW + "-"
+                            + ADDITIONAL_CLASSNAME_ANIMATE_IN);
                 }
                 return false;
             }
@@ -541,10 +551,12 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
     public void setVisible(boolean visible) {
         super.setVisible(visible);
         if (isShadowEnabled()) {
-            shadow.getStyle().setProperty("visibility", visible ? "visible" : "hidden");
+            shadow.getStyle().setProperty("visibility",
+                    visible ? "visible" : "hidden");
         }
         if (isShimElementEnabled()) {
-            shimElement.getStyle().setProperty("visibility", visible ? "visible" : "hidden");
+            shimElement.getStyle().setProperty("visibility",
+                    visible ? "visible" : "hidden");
         }
     }
 
@@ -634,7 +646,9 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
 
         if (isShadowEnabled() || needsShimElement()) {
 
-            PositionAndSize positionAndSize = new PositionAndSize(getActualLeft(), getActualTop(), getOffsetWidth(), getOffsetHeight());
+            PositionAndSize positionAndSize = new PositionAndSize(
+                    getActualLeft(), getActualTop(), getOffsetWidth(),
+                    getOffsetHeight());
 
             // Animate the size
             positionAndSize.setAnimationFromCenterProgress(progress);
@@ -668,7 +682,8 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
      * @deprecated See main JavaDoc for VOverlay
      */
     @Deprecated
-    private void updateShadowPosition(final double progress, int zIndex, PositionAndSize positionAndSize) {
+    private void updateShadowPosition(final double progress, int zIndex,
+            PositionAndSize positionAndSize) {
         // Opera needs some shaking to get parts of the shadow showing
         // properly (ticket #2704)
         if (BrowserInfo.get().isOpera()) {
@@ -685,9 +700,12 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
         // Opera fix, part 2 (ticket #2704)
         if (BrowserInfo.get().isOpera()) {
             // We'll fix the height of all the middle elements
-            DOM.getChild(shadow, 3).getStyle().setPropertyPx("height", DOM.getChild(shadow, 3).getOffsetHeight());
-            DOM.getChild(shadow, 4).getStyle().setPropertyPx("height", DOM.getChild(shadow, 4).getOffsetHeight());
-            DOM.getChild(shadow, 5).getStyle().setPropertyPx("height", DOM.getChild(shadow, 5).getOffsetHeight());
+            DOM.getChild(shadow, 3).getStyle().setPropertyPx("height",
+                    DOM.getChild(shadow, 3).getOffsetHeight());
+            DOM.getChild(shadow, 4).getStyle().setPropertyPx("height",
+                    DOM.getChild(shadow, 4).getOffsetHeight());
+            DOM.getChild(shadow, 5).getStyle().setPropertyPx("height",
+                    DOM.getChild(shadow, 5).getOffsetHeight());
         }
     }
 
@@ -707,7 +725,8 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
         return info.isIE() && info.isBrowserVersionNewerOrEqual(8, 0);
     }
 
-    private void updatePositionAndSize(Element e, PositionAndSize positionAndSize) {
+    private void updatePositionAndSize(Element e,
+            PositionAndSize positionAndSize) {
         e.getStyle().setLeft(positionAndSize.getLeft(), Unit.PX);
         e.getStyle().setTop(positionAndSize.getTop(), Unit.PX);
         e.getStyle().setWidth(positionAndSize.getWidth(), Unit.PX);
@@ -841,7 +860,8 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
         if (ac == null) {
             // could not figure out which one we belong to, styling will
             // probably fail
-            Logger.getLogger(getClass().getSimpleName()).log(Level.WARNING, "Could not determine ApplicationConnection for Overlay. Overlay will be attached directly to the root panel");
+            Logger.getLogger(getClass().getSimpleName()).log(Level.WARNING,
+                    "Could not determine ApplicationConnection for Overlay. Overlay will be attached directly to the root panel");
             return RootPanel.get().getElement();
         } else {
             return getOverlayContainer(ac);
@@ -858,14 +878,16 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
      *            A reference to {@link ApplicationConnection}
      * @return The overlay container
      */
-    public static com.google.gwt.user.client.Element getOverlayContainer(ApplicationConnection ac) {
+    public static com.google.gwt.user.client.Element getOverlayContainer(
+            ApplicationConnection ac) {
         String id = ac.getConfiguration().getRootPanelId();
         id = id += "-overlays";
         Element container = DOM.getElementById(id);
         if (container == null) {
             container = DOM.createDiv();
             container.setId(id);
-            String styles = ac.getUIConnector().getWidget().getParent().getStyleName();
+            String styles = ac.getUIConnector().getWidget().getParent()
+                    .getStyleName();
             if (styles != null && !styles.equals("")) {
                 container.addClassName(styles);
             }
@@ -884,8 +906,12 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
      * @param overlayContainerLabel
      *            label for the container
      */
-    public static void setOverlayContainerLabel(ApplicationConnection applicationConnection, String overlayContainerLabel) {
-        Roles.getAlertRole().setAriaLabelProperty(VOverlay.getOverlayContainer(applicationConnection), overlayContainerLabel);
+    public static void setOverlayContainerLabel(
+            ApplicationConnection applicationConnection,
+            String overlayContainerLabel) {
+        Roles.getAlertRole().setAriaLabelProperty(
+                VOverlay.getOverlayContainer(applicationConnection),
+                overlayContainerLabel);
     }
 
     @Override
@@ -898,7 +924,8 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
         if (b.isAndroid() || b.isIOS()) {
             int left = (getVisualViewportWidth() - getOffsetWidth()) >> 1;
             int top = (getVisualViewportHeight() - getOffsetHeight()) >> 1;
-            setPopupPosition(Math.max(Window.getScrollLeft() + left, 0), Math.max(Window.getScrollTop() + top, 0));
+            setPopupPosition(Math.max(Window.getScrollLeft() + left, 0),
+                    Math.max(Window.getScrollTop() + top, 0));
         }
 
     }
@@ -989,24 +1016,30 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
      *            enable/disable animate-out animation
      * @since 7.3.7
      */
-    public void hide(final boolean autoClosed, final boolean animateIn, final boolean animateOut) {
+    public void hide(final boolean autoClosed, final boolean animateIn,
+            final boolean animateOut) {
         if (BrowserInfo.get().isIE8() || BrowserInfo.get().isIE9()) {
             super.hide(autoClosed);
         } else {
-            if (animateIn && getStyleName().contains(ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
-                AnimationUtil.addAnimationEndListener(getElement(), new AnimationEndListener() {
-                    @Override
-                    public void onAnimationEnd(NativeEvent event) {
-                        if (AnimationUtil.getAnimationName(event).contains(ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
-                            VOverlay.this.hide(autoClosed);
-                        }
-                    }
-                });
+            if (animateIn && getStyleName()
+                    .contains(ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
+                AnimationUtil.addAnimationEndListener(getElement(),
+                        new AnimationEndListener() {
+                            @Override
+                            public void onAnimationEnd(NativeEvent event) {
+                                if (AnimationUtil.getAnimationName(event)
+                                        .contains(
+                                                ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
+                                    VOverlay.this.hide(autoClosed);
+                                }
+                            }
+                        });
             } else {
                 // Check if animations are used
                 addStyleDependentName(ADDITIONAL_CLASSNAME_ANIMATE_OUT);
                 if (isShadowEnabled()) {
-                    shadow.addClassName(CLASSNAME_SHADOW + "-" + ADDITIONAL_CLASSNAME_ANIMATE_OUT);
+                    shadow.addClassName(CLASSNAME_SHADOW + "-"
+                            + ADDITIONAL_CLASSNAME_ANIMATE_OUT);
                 }
                 ComputedStyle cs = new ComputedStyle(getElement());
                 String animationName = AnimationUtil.getAnimationName(cs);
@@ -1014,35 +1047,48 @@ public class VOverlay extends PopupPanel implements CloseHandler<PopupPanel> {
                     animationName = "";
                 }
 
-                if (animateOut && animationName.contains(ADDITIONAL_CLASSNAME_ANIMATE_OUT)) {
+                if (animateOut && animationName
+                        .contains(ADDITIONAL_CLASSNAME_ANIMATE_OUT)) {
                     // Disable GWT PopupPanel closing animation if used
                     setAnimationEnabled(false);
 
-                    AnimationUtil.addAnimationEndListener(getElement(), new AnimationEndListener() {
-                        @Override
-                        public void onAnimationEnd(NativeEvent event) {
-                            String animationName = AnimationUtil.getAnimationName(event);
-                            if (animationName.contains(ADDITIONAL_CLASSNAME_ANIMATE_OUT)) {
-                                AnimationUtil.removeAllAnimationEndListeners(getElement());
-                                // Remove both animation styles just in
-                                // case
-                                removeStyleDependentName(ADDITIONAL_CLASSNAME_ANIMATE_IN);
-                                removeStyleDependentName(ADDITIONAL_CLASSNAME_ANIMATE_OUT);
-                                if (isShadowEnabled()) {
-                                    shadow.removeClassName(CLASSNAME_SHADOW + "-" + ADDITIONAL_CLASSNAME_ANIMATE_IN);
-                                    shadow.removeClassName(CLASSNAME_SHADOW + "-" + ADDITIONAL_CLASSNAME_ANIMATE_OUT);
+                    AnimationUtil.addAnimationEndListener(getElement(),
+                            new AnimationEndListener() {
+                                @Override
+                                public void onAnimationEnd(NativeEvent event) {
+                                    String animationName = AnimationUtil
+                                            .getAnimationName(event);
+                                    if (animationName.contains(
+                                            ADDITIONAL_CLASSNAME_ANIMATE_OUT)) {
+                                        AnimationUtil
+                                                .removeAllAnimationEndListeners(
+                                                        getElement());
+                                        // Remove both animation styles just in
+                                        // case
+                                        removeStyleDependentName(
+                                                ADDITIONAL_CLASSNAME_ANIMATE_IN);
+                                        removeStyleDependentName(
+                                                ADDITIONAL_CLASSNAME_ANIMATE_OUT);
+                                        if (isShadowEnabled()) {
+                                            shadow.removeClassName(
+                                                    CLASSNAME_SHADOW + "-"
+                                                            + ADDITIONAL_CLASSNAME_ANIMATE_IN);
+                                            shadow.removeClassName(
+                                                    CLASSNAME_SHADOW + "-"
+                                                            + ADDITIONAL_CLASSNAME_ANIMATE_OUT);
+                                        }
+                                        VOverlay.super.hide(autoClosed);
+                                    }
                                 }
-                                VOverlay.super.hide(autoClosed);
-                            }
-                        }
-                    });
+                            });
                     // No event previews should happen after the animation has
                     // started
                     VOverlay.this.setPreviewingAllNativeEvents(false);
                 } else {
                     removeStyleDependentName(ADDITIONAL_CLASSNAME_ANIMATE_OUT);
                     if (isShadowEnabled()) {
-                        shadow.removeClassName(CLASSNAME_SHADOW + "-" + ADDITIONAL_CLASSNAME_ANIMATE_OUT);
+                        shadow.removeClassName(CLASSNAME_SHADOW + "-"
+                                + ADDITIONAL_CLASSNAME_ANIMATE_OUT);
                     }
                     super.hide(autoClosed);
                 }

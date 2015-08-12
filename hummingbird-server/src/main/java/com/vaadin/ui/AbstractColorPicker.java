@@ -40,14 +40,18 @@ import com.vaadin.ui.declarative.DesignContext;
  * 
  * @since 7.0.0
  */
-public abstract class AbstractColorPicker extends AbstractComponent implements CloseListener, ColorSelector {
+public abstract class AbstractColorPicker extends AbstractComponent
+        implements CloseListener, ColorSelector {
     private static final Method COLOR_CHANGE_METHOD;
+
     static {
         try {
-            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod("colorChanged", new Class[] { ColorChangeEvent.class });
+            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod(
+                    "colorChanged", new Class[] { ColorChangeEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
-            throw new java.lang.RuntimeException("Internal error finding methods in ColorPicker");
+            throw new java.lang.RuntimeException(
+                    "Internal error finding methods in ColorPicker");
         }
     }
 
@@ -512,15 +516,19 @@ public abstract class AbstractColorPicker extends AbstractComponent implements C
         Attributes attributes = design.attributes();
         if (design.hasAttr("color")) {
             // Ignore the # character
-            String hexColor = DesignAttributeHandler.readAttribute("color", attributes, String.class).substring(1);
+            String hexColor = DesignAttributeHandler
+                    .readAttribute("color", attributes, String.class)
+                    .substring(1);
             setColor(new Color(Integer.parseInt(hexColor, 16)));
         }
         if (design.hasAttr("popup-style")) {
-            setPopupStyle(PopupStyle.valueOf("POPUP_" + attributes.get("popup-style").toUpperCase()));
+            setPopupStyle(PopupStyle.valueOf(
+                    "POPUP_" + attributes.get("popup-style").toUpperCase()));
         }
         if (design.hasAttr("position")) {
             String[] position = attributes.get("position").split(",");
-            setPosition(Integer.parseInt(position[0]), Integer.parseInt(position[1]));
+            setPosition(Integer.parseInt(position[0]),
+                    Integer.parseInt(position[1]));
         }
     }
 
@@ -529,9 +537,13 @@ public abstract class AbstractColorPicker extends AbstractComponent implements C
         super.writeDesign(design, designContext);
 
         Attributes attribute = design.attributes();
-        DesignAttributeHandler.writeAttribute("color", attribute, color.getCSS(), Color.WHITE.getCSS(), String.class);
-        DesignAttributeHandler.writeAttribute("popup-style", attribute, (popupStyle == PopupStyle.POPUP_NORMAL ? "normal" : "simple"), "normal", String.class);
-        DesignAttributeHandler.writeAttribute("position", attribute, positionX + "," + positionY, "0,0", String.class);
+        DesignAttributeHandler.writeAttribute("color", attribute,
+                color.getCSS(), Color.WHITE.getCSS(), String.class);
+        DesignAttributeHandler.writeAttribute("popup-style", attribute,
+                (popupStyle == PopupStyle.POPUP_NORMAL ? "normal" : "simple"),
+                "normal", String.class);
+        DesignAttributeHandler.writeAttribute("position", attribute,
+                positionX + "," + positionY, "0,0", String.class);
     }
 
     @Override

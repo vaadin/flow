@@ -60,7 +60,8 @@ import com.vaadin.ui.declarative.DesignContext;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class DateField extends AbstractField<Date> implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
+public class DateField extends AbstractField<Date>
+        implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 
     /**
      * Specified smallest modifiable unit for the date field.
@@ -161,7 +162,9 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
      */
     public DateField(Property dataSource) throws IllegalArgumentException {
         if (!Date.class.isAssignableFrom(dataSource.getType())) {
-            throw new IllegalArgumentException("Can't use " + dataSource.getType().getName() + " typed property as datasource");
+            throw new IllegalArgumentException(
+                    "Can't use " + dataSource.getType().getName()
+                            + " typed property as datasource");
         }
 
         setPropertyDataSource(dataSource);
@@ -211,13 +214,16 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
      *            - the allowed range's start date
      */
     public void setRangeStart(Date startDate) {
-        if (startDate != null && getState().rangeEnd != null && startDate.after(getState().rangeEnd)) {
-            throw new IllegalStateException("startDate cannot be later than endDate");
+        if (startDate != null && getState().rangeEnd != null
+                && startDate.after(getState().rangeEnd)) {
+            throw new IllegalStateException(
+                    "startDate cannot be later than endDate");
         }
 
         // Create a defensive copy against issues when using java.sql.Date (and
         // also against mutable Date).
-        getState().rangeStart = startDate != null ? new Date(startDate.getTime()) : null;
+        getState().rangeStart = startDate != null
+                ? new Date(startDate.getTime()) : null;
         updateRangeValidator();
     }
 
@@ -261,9 +267,11 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
             endCal.set(endCal.get(Calendar.YEAR) + 1, 0, 1, 0, 0, 0);
         } else if (forResolution == Resolution.MONTH) {
             // Adding one month (minresolution) and clearing the rest.
-            endCal.set(endCal.get(Calendar.YEAR), endCal.get(Calendar.MONTH) + 1, 1, 0, 0, 0);
+            endCal.set(endCal.get(Calendar.YEAR),
+                    endCal.get(Calendar.MONTH) + 1, 1, 0, 0, 0);
         } else {
-            endCal.set(endCal.get(Calendar.YEAR), endCal.get(Calendar.MONTH), endCal.get(Calendar.DATE) + 1, 0, 0, 0);
+            endCal.set(endCal.get(Calendar.YEAR), endCal.get(Calendar.MONTH),
+                    endCal.get(Calendar.DATE) + 1, 0, 0, 0);
         }
         // removing one millisecond will now get the endDate to return to
         // current resolution's set time span (year or month)
@@ -291,9 +299,12 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
         if (forResolution == Resolution.YEAR) {
             startCal.set(startCal.get(Calendar.YEAR), 0, 1, 0, 0, 0);
         } else if (forResolution == Resolution.MONTH) {
-            startCal.set(startCal.get(Calendar.YEAR), startCal.get(Calendar.MONTH), 1, 0, 0, 0);
+            startCal.set(startCal.get(Calendar.YEAR),
+                    startCal.get(Calendar.MONTH), 1, 0, 0, 0);
         } else {
-            startCal.set(startCal.get(Calendar.YEAR), startCal.get(Calendar.MONTH), startCal.get(Calendar.DATE), 0, 0, 0);
+            startCal.set(startCal.get(Calendar.YEAR),
+                    startCal.get(Calendar.MONTH), startCal.get(Calendar.DATE),
+                    0, 0, 0);
         }
 
         startCal.set(Calendar.MILLISECOND, 0);
@@ -306,7 +317,9 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
             currentRangeValidator = null;
         }
         if (getRangeStart() != null || getRangeEnd() != null) {
-            currentRangeValidator = new DateRangeValidator(dateOutOfRangeMessage, getRangeStart(resolution), getRangeEnd(resolution), null);
+            currentRangeValidator = new DateRangeValidator(
+                    dateOutOfRangeMessage, getRangeStart(resolution),
+                    getRangeEnd(resolution), null);
             addValidator(currentRangeValidator);
         }
     }
@@ -322,13 +335,16 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
      *            current resolution)
      */
     public void setRangeEnd(Date endDate) {
-        if (endDate != null && getState().rangeStart != null && getState().rangeStart.after(endDate)) {
-            throw new IllegalStateException("endDate cannot be earlier than startDate");
+        if (endDate != null && getState().rangeStart != null
+                && getState().rangeStart.after(endDate)) {
+            throw new IllegalStateException(
+                    "endDate cannot be earlier than startDate");
         }
 
         // Create a defensive copy against issues when using java.sql.Date (and
         // also against mutable Date).
-        getState().rangeEnd = endDate != null ? new Date(endDate.getTime()) : null;
+        getState().rangeEnd = endDate != null ? new Date(endDate.getTime())
+                : null;
         updateRangeValidator();
     }
 
@@ -376,7 +392,8 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
      * @throws Converter.ConversionException
      *             to keep the old value and indicate an error
      */
-    protected Date handleUnparsableDateString(String dateString) throws Converter.ConversionException {
+    protected Date handleUnparsableDateString(String dateString)
+            throws Converter.ConversionException {
         currentParseErrorMessage = null;
         throw new Converter.ConversionException(getParseErrorMessage());
     }
@@ -398,7 +415,8 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
      * @see com.vaadin.ui.AbstractField#setValue(java.lang.Object, boolean)
      */
     @Override
-    protected void setValue(Date newValue, boolean repaintIsNotNeeded) throws Property.ReadOnlyException {
+    protected void setValue(Date newValue, boolean repaintIsNotNeeded)
+            throws Property.ReadOnlyException {
 
         /*
          * First handle special case when the client side component have a date
@@ -495,7 +513,8 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
             // Start by a zeroed calendar to avoid having values for lower
             // resolution variables e.g. time when resolution is day
             int min, field;
-            for (Resolution r : Resolution.getResolutionsLowerThan(resolution)) {
+            for (Resolution r : Resolution
+                    .getResolutionsLowerThan(resolution)) {
                 field = r.getCalendarField();
                 min = calendar.getActualMinimum(field);
                 calendar.set(field, min);
@@ -576,7 +595,8 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
 
     @Override
     public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
+        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
+                FocusListener.focusMethod);
     }
 
     @Override
@@ -586,7 +606,8 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
 
     @Override
     public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
+        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
+                BlurListener.blurMethod);
     }
 
     @Override
@@ -699,7 +720,8 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
         return timeZone;
     }
 
-    public static class UnparsableDateString extends Validator.InvalidValueException {
+    public static class UnparsableDateString
+            extends Validator.InvalidValueException {
 
         public UnparsableDateString(String message) {
             super(message);
@@ -711,10 +733,12 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
     public void readDesign(Element design, DesignContext designContext) {
         super.readDesign(design, designContext);
         if (design.hasAttr("value") && !design.attr("value").isEmpty()) {
-            Date date = DesignAttributeHandler.getFormatter().parse(design.attr("value"), Date.class);
+            Date date = DesignAttributeHandler.getFormatter()
+                    .parse(design.attr("value"), Date.class);
             // formatting will return null if it cannot parse the string
             if (date == null) {
-                Logger.getLogger(DateField.class.getName()).info("cannot parse " + design.attr("value") + " as date");
+                Logger.getLogger(DateField.class.getName()).info(
+                        "cannot parse " + design.attr("value") + " as date");
             }
             this.setValue(date);
         }
@@ -724,7 +748,8 @@ public class DateField extends AbstractField<Date> implements FieldEvents.BlurNo
     public void writeDesign(Element design, DesignContext designContext) {
         super.writeDesign(design, designContext);
         if (getValue() != null) {
-            design.attr("value", DesignAttributeHandler.getFormatter().format(getValue()));
+            design.attr("value",
+                    DesignAttributeHandler.getFormatter().format(getValue()));
         }
     }
 

@@ -49,13 +49,15 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     }
 
     @Override
-    public void addListener(String type, EventListener listener, StateNode node) {
+    public void addListener(String type, EventListener listener,
+            StateNode node) {
         StateNode listeners = getListenerNode(node, true);
 
         List<Object> typeListeners = listeners.getMultiValued(type);
         if (typeListeners.isEmpty()) {
             // List of listened types going to the client
-            getElementDataNode(node, true).getMultiValued(Keys.LISTENERS).add(type);
+            getElementDataNode(node, true).getMultiValued(Keys.LISTENERS)
+                    .add(type);
         }
         // The listener instance list staying on the server
         typeListeners.add(listener);
@@ -63,7 +65,8 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
     private StateNode getListenerNode(StateNode node, boolean createIfNeeded) {
         StateNode dataNode = getElementDataNode(node, createIfNeeded);
-        StateNode listeners = dataNode.get(EventListener.class, StateNode.class);
+        StateNode listeners = dataNode.get(EventListener.class,
+                StateNode.class);
         if (listeners == null) {
             listeners = StateNode.create();
             listeners.put(Keys.SERVER_ONLY, Keys.SERVER_ONLY);
@@ -73,7 +76,8 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     }
 
     @Override
-    public void removeListener(String type, EventListener listener, StateNode node) {
+    public void removeListener(String type, EventListener listener,
+            StateNode node) {
         StateNode listenerNode = getListenerNode(node, false);
         if (listenerNode == null) {
             return;
@@ -100,10 +104,12 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
     @Override
     public int getChildCount(StateNode node) {
-        return getChildrenList(node).map(List::size).orElse(Integer.valueOf(0)).intValue();
+        return getChildrenList(node).map(List::size).orElse(Integer.valueOf(0))
+                .intValue();
     }
 
-    protected abstract StateNode getElementDataNode(StateNode node, boolean createIfNeeded);
+    protected abstract StateNode getElementDataNode(StateNode node,
+            boolean createIfNeeded);
 
     private Optional<List<Object>> getChildrenList(StateNode node) {
         return Optional.ofNullable(getChildrenList(node, false));
@@ -124,9 +130,11 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
     @Override
     public Element getChild(int index, StateNode node) {
-        StateNode childState = (StateNode) getChildrenList(node).orElseThrow(IndexOutOfBoundsException::new).get(index);
+        StateNode childState = (StateNode) getChildrenList(node)
+                .orElseThrow(IndexOutOfBoundsException::new).get(index);
 
-        ElementTemplate childTemplate = childState.get(Keys.TEMPLATE, ElementTemplate.class);
+        ElementTemplate childTemplate = childState.get(Keys.TEMPLATE,
+                ElementTemplate.class);
         if (childTemplate == null) {
             childTemplate = BasicElementTemplate.get();
         }
@@ -156,7 +164,8 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
             return null;
         }
 
-        ElementTemplate parentTemplate = node.get(Keys.PARENT_TEMPLATE, ElementTemplate.class);
+        ElementTemplate parentTemplate = node.get(Keys.PARENT_TEMPLATE,
+                ElementTemplate.class);
         if (parentTemplate == null) {
             parentTemplate = BasicElementTemplate.get();
         } else {

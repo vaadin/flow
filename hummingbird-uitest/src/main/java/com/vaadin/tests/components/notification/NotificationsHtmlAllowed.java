@@ -11,7 +11,8 @@ import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 
-public class NotificationsHtmlAllowed extends TestBase implements ClickListener {
+public class NotificationsHtmlAllowed extends TestBase
+        implements ClickListener {
 
     private TextArea messageField;
     private CheckBox htmlAllowedBox;
@@ -23,7 +24,8 @@ public class NotificationsHtmlAllowed extends TestBase implements ClickListener 
         addComponent(captionField);
         captionField.focus();
 
-        messageField = new TextArea("Message", "Hello <i>world</i>\nWith a newline <br/>And a html line break");
+        messageField = new TextArea("Message",
+                "Hello <i>world</i>\nWith a newline <br/>And a html line break");
         messageField.setRows(10);
         addComponent(messageField);
 
@@ -51,7 +53,9 @@ public class NotificationsHtmlAllowed extends TestBase implements ClickListener 
     }
 
     private Notification makeNotification() {
-        Notification n = new Notification(captionField.getValue(), messageField.getValue(), Type.HUMANIZED_MESSAGE, htmlAllowedBox.getValue());
+        Notification n = new Notification(captionField.getValue(),
+                messageField.getValue(), Type.HUMANIZED_MESSAGE,
+                htmlAllowedBox.getValue());
         return n;
     }
 }

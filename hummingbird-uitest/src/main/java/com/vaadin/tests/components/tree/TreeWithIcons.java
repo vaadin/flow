@@ -13,9 +13,12 @@ public class TreeWithIcons extends TestBase {
 
     @Override
     protected void setup() {
-        ThemeResource notCachedFolderIconHuge = new ThemeResource("../runo/icons/64/folder.png?" + new Date().getTime());
-        ThemeResource notCachedFolderIconLarge = new ThemeResource("../runo/icons/32/folder.png?" + new Date().getTime());
-        ThemeResource notCachedFolderIconLargeOther = new ThemeResource("../runo/icons/32/ok.png?" + new Date().getTime());
+        ThemeResource notCachedFolderIconHuge = new ThemeResource(
+                "../runo/icons/64/folder.png?" + new Date().getTime());
+        ThemeResource notCachedFolderIconLarge = new ThemeResource(
+                "../runo/icons/32/folder.png?" + new Date().getTime());
+        ThemeResource notCachedFolderIconLargeOther = new ThemeResource(
+                "../runo/icons/32/ok.png?" + new Date().getTime());
         Tree t = new Tree();
 
         t.addItem("Root 1");

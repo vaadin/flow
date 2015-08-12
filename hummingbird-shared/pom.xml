@@ -15,7 +15,7 @@
 	</dependencies>
 
 	<build>
-	<!--  Temporary to make client engine compilation work in Eclipse -->
+		<!-- Temporary to make client engine compilation work in Eclipse -->
 		<resources>
 			<resource>
 				<directory>src/main/java</directory>

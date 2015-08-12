@@ -60,8 +60,10 @@ public class RequiredIndicatorForFieldsWithoutCaption extends AbstractTestUI {
         container.addComponent(new Label(container.getClass().getSimpleName()));
         container.addComponent(tf);
         if (container instanceof AbsoluteLayout) {
-            ((AbsoluteLayout) container).getPosition(tf).setLeft(100.0f, Unit.PIXELS);
-            ((AbsoluteLayout) container).getPosition(tf).setTop(50.0f, Unit.PIXELS);
+            ((AbsoluteLayout) container).getPosition(tf).setLeft(100.0f,
+                    Unit.PIXELS);
+            ((AbsoluteLayout) container).getPosition(tf).setTop(50.0f,
+                    Unit.PIXELS);
         }
 
         return container;

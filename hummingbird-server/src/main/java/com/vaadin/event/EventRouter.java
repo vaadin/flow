@@ -82,7 +82,8 @@ public class EventRouter implements MethodEventSource {
      * implemented interface.
      */
     @Override
-    public void removeListener(Class<?> eventType, Object target, Method method) {
+    public void removeListener(Class<?> eventType, Object target,
+            Method method) {
         if (listenerList != null) {
             final Iterator<ListenerMethod> i = listenerList.iterator();
             while (i.hasNext()) {

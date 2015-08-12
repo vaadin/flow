@@ -31,6 +31,7 @@ public class GridLayoutState extends AbstractLayoutState {
     {
         primaryStyleName = "v-gridlayout";
     }
+
     public boolean spacing = false;
     public int rows = 0;
     public int columns = 0;

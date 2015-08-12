@@ -33,7 +33,8 @@ public abstract class JsonSerializer implements GeneratedSerializer {
     }
 
     @Override
-    public void writeSerializerInstantiator(TreeLogger logger, SourceWriter w) throws UnableToCompleteException {
+    public void writeSerializerInstantiator(TreeLogger logger, SourceWriter w)
+            throws UnableToCompleteException {
 
         w.print("return new ");
         w.print(JSONSerializer.class.getCanonicalName());
@@ -50,10 +51,13 @@ public abstract class JsonSerializer implements GeneratedSerializer {
 
     protected void writeSerializerBody(TreeLogger logger, SourceWriter w) {
         String qualifiedSourceName = type.getQualifiedSourceName();
-        w.println("public " + JsonValue.class.getName() + " serialize(" + qualifiedSourceName + " value, " + ApplicationConnection.class.getName() + " connection) {");
+        w.println("public " + JsonValue.class.getName() + " serialize("
+                + qualifiedSourceName + " value, "
+                + ApplicationConnection.class.getName() + " connection) {");
         w.indent();
         // MouseEventDetails castedValue = (MouseEventDetails) value;
-        w.println(qualifiedSourceName + " castedValue = (" + qualifiedSourceName + ") value;");
+        w.println(qualifiedSourceName + " castedValue = (" + qualifiedSourceName
+                + ") value;");
 
         printSerializerBody(logger, w, "castedValue", "connection");
 
@@ -64,7 +68,9 @@ public abstract class JsonSerializer implements GeneratedSerializer {
         // Deserializer
         // T deserialize(Type type, JSONValue jsonValue, ApplicationConnection
         // connection);
-        w.println("public " + qualifiedSourceName + " deserialize(Type type, " + JsonValue.class.getName() + " jsonValue, " + ApplicationConnection.class.getName() + " connection) {");
+        w.println("public " + qualifiedSourceName + " deserialize(Type type, "
+                + JsonValue.class.getName() + " jsonValue, "
+                + ApplicationConnection.class.getName() + " connection) {");
         w.indent();
 
         printDeserializerBody(logger, w, "type", "jsonValue", "connection");
@@ -73,8 +79,10 @@ public abstract class JsonSerializer implements GeneratedSerializer {
         w.println("}");
     }
 
-    protected abstract void printDeserializerBody(TreeLogger logger, SourceWriter w, String type, String jsonValue, String connection);
+    protected abstract void printDeserializerBody(TreeLogger logger,
+            SourceWriter w, String type, String jsonValue, String connection);
 
-    protected abstract void printSerializerBody(TreeLogger logger, SourceWriter w, String value, String applicationConnection);
+    protected abstract void printSerializerBody(TreeLogger logger,
+            SourceWriter w, String value, String applicationConnection);
 
 }

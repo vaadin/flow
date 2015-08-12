@@ -38,10 +38,9 @@ public abstract class AbstractErrorMessage implements ErrorMessage {
         /**
          * Content mode, where the error contains only plain text.
          */
-        TEXT,
-        /**
-         * Content mode, where the error contains preformatted text.
-         */
+        TEXT, /**
+               * Content mode, where the error contains preformatted text.
+               */
         PREFORMATTED,
 
         /**
@@ -114,7 +113,8 @@ public abstract class AbstractErrorMessage implements ErrorMessage {
             result = VaadinServlet.safeEscapeForHtml(getMessage());
             break;
         case PREFORMATTED:
-            result = "<pre>" + VaadinServlet.safeEscapeForHtml(getMessage()) + "</pre>";
+            result = "<pre>" + VaadinServlet.safeEscapeForHtml(getMessage())
+                    + "</pre>";
             break;
         case HTML:
             result = getMessage();
@@ -150,8 +150,11 @@ public abstract class AbstractErrorMessage implements ErrorMessage {
             // legacy case for custom error messages
             return (ErrorMessage) t;
         } else if (t instanceof Validator.InvalidValueException) {
-            UserError error = new UserError(((Validator.InvalidValueException) t).getHtmlMessage(), ContentMode.HTML, ErrorLevel.ERROR);
-            for (Validator.InvalidValueException nestedException : ((Validator.InvalidValueException) t).getCauses()) {
+            UserError error = new UserError(
+                    ((Validator.InvalidValueException) t).getHtmlMessage(),
+                    ContentMode.HTML, ErrorLevel.ERROR);
+            for (Validator.InvalidValueException nestedException : ((Validator.InvalidValueException) t)
+                    .getCauses()) {
                 error.addCause(getErrorMessageForException(nestedException));
             }
             return error;
@@ -162,7 +165,8 @@ public abstract class AbstractErrorMessage implements ErrorMessage {
             // custom exceptions implementing ErrorMessage
             error.setErrorLevel(ErrorLevel.ERROR);
             // causes
-            for (Throwable nestedException : ((Buffered.SourceException) t).getCauses()) {
+            for (Throwable nestedException : ((Buffered.SourceException) t)
+                    .getCauses()) {
                 error.addCause(getErrorMessageForException(nestedException));
             }
             return error;

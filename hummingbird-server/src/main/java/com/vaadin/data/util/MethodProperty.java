@@ -94,7 +94,8 @@ public class MethodProperty<T> extends AbstractProperty<T> {
     private static final Object[] DEFAULT_SET_ARGS = new Object[1];
 
     /* Special serialization to handle method references */
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    private void writeObject(java.io.ObjectOutputStream out)
+            throws IOException {
         out.defaultWriteObject();
         SerializerHelper.writeClass(out, type);
         out.writeObject(instance);
@@ -102,14 +103,16 @@ public class MethodProperty<T> extends AbstractProperty<T> {
         out.writeObject(getArgs);
         if (setMethod != null) {
             out.writeObject(setMethod.getName());
-            SerializerHelper.writeClassArray(out, setMethod.getParameterTypes());
+            SerializerHelper.writeClassArray(out,
+                    setMethod.getParameterTypes());
         } else {
             out.writeObject(null);
             out.writeObject(null);
         }
         if (getMethod != null) {
             out.writeObject(getMethod.getName());
-            SerializerHelper.writeClassArray(out, getMethod.getParameterTypes());
+            SerializerHelper.writeClassArray(out,
+                    getMethod.getParameterTypes());
         } else {
             out.writeObject(null);
             out.writeObject(null);
@@ -117,7 +120,8 @@ public class MethodProperty<T> extends AbstractProperty<T> {
     }
 
     /* Special serialization to handle method references */
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         try {
             @SuppressWarnings("unchecked")
@@ -194,7 +198,8 @@ public class MethodProperty<T> extends AbstractProperty<T> {
         try {
             getMethod = initGetterMethod(beanPropertyName, beanClass);
         } catch (final java.lang.NoSuchMethodException ignored) {
-            throw new MethodException(this, "Bean property " + beanPropertyName + " can not be found");
+            throw new MethodException(this,
+                    "Bean property " + beanPropertyName + " can not be found");
         }
 
         // In case the get method is found, resolve the type
@@ -203,7 +208,8 @@ public class MethodProperty<T> extends AbstractProperty<T> {
         // Finds the set method
         setMethod = null;
         try {
-            setMethod = beanClass.getMethod("set" + beanPropertyName, new Class[] { returnType });
+            setMethod = beanClass.getMethod("set" + beanPropertyName,
+                    new Class[] { returnType });
         } catch (final java.lang.NoSuchMethodException skipped) {
         }
 
@@ -211,7 +217,9 @@ public class MethodProperty<T> extends AbstractProperty<T> {
         if (returnType.isPrimitive()) {
             type = (Class<T>) convertPrimitiveType(returnType);
             if (type.isPrimitive()) {
-                throw new MethodException(this, "Bean property " + beanPropertyName + " getter return type must not be void");
+                throw new MethodException(this,
+                        "Bean property " + beanPropertyName
+                                + " getter return type must not be void");
             }
         } else {
             type = (Class<T>) returnType;
@@ -245,8 +253,10 @@ public class MethodProperty<T> extends AbstractProperty<T> {
      *            the name of the setter method.
      * 
      */
-    public MethodProperty(Class<? extends T> type, Object instance, String getMethodName, String setMethodName) {
-        this(type, instance, getMethodName, setMethodName, new Object[] {}, new Object[] { null }, 0);
+    public MethodProperty(Class<? extends T> type, Object instance,
+            String getMethodName, String setMethodName) {
+        this(type, instance, getMethodName, setMethodName, new Object[] {},
+                new Object[] { null }, 0);
     }
 
     /**
@@ -272,8 +282,10 @@ public class MethodProperty<T> extends AbstractProperty<T> {
      * @param setMethod
      *            the setter method.
      */
-    public MethodProperty(Class<? extends T> type, Object instance, Method getMethod, Method setMethod) {
-        this(type, instance, getMethod, setMethod, new Object[] {}, new Object[] { null }, 0);
+    public MethodProperty(Class<? extends T> type, Object instance,
+            Method getMethod, Method setMethod) {
+        this(type, instance, getMethod, setMethod, new Object[] {},
+                new Object[] { null }, 0);
     }
 
     /**
@@ -313,14 +325,18 @@ public class MethodProperty<T> extends AbstractProperty<T> {
      *            {@link #setValue(Object newValue)} is called.
      */
     @SuppressWarnings("unchecked")
-    public MethodProperty(Class<? extends T> type, Object instance, String getMethodName, String setMethodName, Object[] getArgs, Object[] setArgs, int setArgumentIndex) {
+    public MethodProperty(Class<? extends T> type, Object instance,
+            String getMethodName, String setMethodName, Object[] getArgs,
+            Object[] setArgs, int setArgumentIndex) {
 
         // Check the setargs and setargs index
         if (setMethodName != null && setArgs == null) {
             throw new IndexOutOfBoundsException("The setArgs can not be null");
         }
-        if (setMethodName != null && (setArgumentIndex < 0 || setArgumentIndex >= setArgs.length)) {
-            throw new IndexOutOfBoundsException("The setArgumentIndex must be >= 0 and < setArgs.length");
+        if (setMethodName != null && (setArgumentIndex < 0
+                || setArgumentIndex >= setArgs.length)) {
+            throw new IndexOutOfBoundsException(
+                    "The setArgumentIndex must be >= 0 and < setArgs.length");
         }
 
         // Set type
@@ -354,7 +370,8 @@ public class MethodProperty<T> extends AbstractProperty<T> {
             }
             int j = 0;
             while (j < c.length) {
-                if (getArgs[j] != null && !c[j].isAssignableFrom(getArgs[j].getClass())) {
+                if (getArgs[j] != null
+                        && !c[j].isAssignableFrom(getArgs[j].getClass())) {
 
                     // parameter type does not match, try next method
                     break;
@@ -365,7 +382,9 @@ public class MethodProperty<T> extends AbstractProperty<T> {
 
                 // all paramteters matched
                 if (found == true) {
-                    throw new MethodException(this, "Could not uniquely identify " + getMethodName + "-method");
+                    throw new MethodException(this,
+                            "Could not uniquely identify " + getMethodName
+                                    + "-method");
                 } else {
                     found = true;
                     getMethod = m[i];
@@ -373,7 +392,8 @@ public class MethodProperty<T> extends AbstractProperty<T> {
             }
         }
         if (found != true) {
-            throw new MethodException(this, "Could not find " + getMethodName + "-method");
+            throw new MethodException(this,
+                    "Could not find " + getMethodName + "-method");
         }
 
         // Finds set method
@@ -399,7 +419,8 @@ public class MethodProperty<T> extends AbstractProperty<T> {
                 }
                 int j = 0;
                 while (j < c.length) {
-                    if (setArgs[j] != null && !c[j].isAssignableFrom(setArgs[j].getClass())) {
+                    if (setArgs[j] != null
+                            && !c[j].isAssignableFrom(setArgs[j].getClass())) {
 
                         // parameter type does not match, try next method
                         break;
@@ -414,7 +435,9 @@ public class MethodProperty<T> extends AbstractProperty<T> {
 
                     // all parameters match
                     if (found == true) {
-                        throw new MethodException(this, "Could not identify unique " + setMethodName + "-method");
+                        throw new MethodException(this,
+                                "Could not identify unique " + setMethodName
+                                        + "-method");
                     } else {
                         found = true;
                         setMethod = m[i];
@@ -422,7 +445,8 @@ public class MethodProperty<T> extends AbstractProperty<T> {
                 }
             }
             if (found != true) {
-                throw new MethodException(this, "Could not identify " + setMethodName + "-method");
+                throw new MethodException(this,
+                        "Could not identify " + setMethodName + "-method");
             }
         }
 
@@ -465,23 +489,29 @@ public class MethodProperty<T> extends AbstractProperty<T> {
     @SuppressWarnings("unchecked")
     // cannot use "Class<? extends T>" because of automatic primitive type
     // conversions
-    public MethodProperty(Class<?> type, Object instance, Method getMethod, Method setMethod, Object[] getArgs, Object[] setArgs, int setArgumentIndex) {
+    public MethodProperty(Class<?> type, Object instance, Method getMethod,
+            Method setMethod, Object[] getArgs, Object[] setArgs,
+            int setArgumentIndex) {
 
         if (getMethod == null) {
-            throw new MethodException(this, "Property GET-method cannot not be null: " + type);
+            throw new MethodException(this,
+                    "Property GET-method cannot not be null: " + type);
         }
 
         if (setMethod != null) {
             if (setArgs == null) {
-                throw new IndexOutOfBoundsException("The setArgs can not be null");
+                throw new IndexOutOfBoundsException(
+                        "The setArgs can not be null");
             }
             if (setArgumentIndex < 0 || setArgumentIndex >= setArgs.length) {
-                throw new IndexOutOfBoundsException("The setArgumentIndex must be >= 0 and < setArgs.length");
+                throw new IndexOutOfBoundsException(
+                        "The setArgumentIndex must be >= 0 and < setArgs.length");
             }
         }
 
         // Gets the return type from get method
-        Class<? extends T> convertedType = (Class<? extends T>) convertPrimitiveType(type);
+        Class<? extends T> convertedType = (Class<? extends T>) convertPrimitiveType(
+                type);
 
         this.getMethod = getMethod;
         this.setMethod = setMethod;
@@ -501,17 +531,21 @@ public class MethodProperty<T> extends AbstractProperty<T> {
      * @throws NoSuchMethodException
      *             if no getter found
      */
-    static Method initGetterMethod(String propertyName, final Class<?> beanClass) throws NoSuchMethodException {
+    static Method initGetterMethod(String propertyName,
+            final Class<?> beanClass) throws NoSuchMethodException {
         propertyName = SharedUtil.capitalize(propertyName);
 
         Method getMethod = null;
         try {
-            getMethod = beanClass.getMethod("get" + propertyName, new Class[] {});
+            getMethod = beanClass.getMethod("get" + propertyName,
+                    new Class[] {});
         } catch (final java.lang.NoSuchMethodException ignored) {
             try {
-                getMethod = beanClass.getMethod("is" + propertyName, new Class[] {});
+                getMethod = beanClass.getMethod("is" + propertyName,
+                        new Class[] {});
             } catch (final java.lang.NoSuchMethodException ignoredAsWell) {
-                getMethod = beanClass.getMethod("are" + propertyName, new Class[] {});
+                getMethod = beanClass.getMethod("are" + propertyName,
+                        new Class[] {});
             }
         }
         return getMethod;
@@ -577,7 +611,8 @@ public class MethodProperty<T> extends AbstractProperty<T> {
      *            replaced with <code>newValue</code> when
      *            {@link #setValue(Object newValue)} is called.
      */
-    public void setArguments(Object[] getArgs, Object[] setArgs, int setArgumentIndex) {
+    public void setArguments(Object[] getArgs, Object[] setArgs,
+            int setArgumentIndex) {
         if (getArgs.length == 0) {
             this.getArgs = DEFAULT_GET_ARGS;
         } else {
@@ -599,8 +634,8 @@ public class MethodProperty<T> extends AbstractProperty<T> {
      * 
      * @param newValue
      *            the New value of the property.
-     * @throws <code>Property.ReadOnlyException</code> if the object is in
-     *         read-only mode.
+     * @throws <code>Property.ReadOnlyException</code>
+     *             if the object is in read-only mode.
      * @see #invokeSetMethod(Object)
      */
     @Override
@@ -707,7 +742,8 @@ public class MethodProperty<T> extends AbstractProperty<T> {
          * @return MethodProperty or null if not a valid MethodProperty
          */
         public MethodProperty getMethodProperty() {
-            return (property instanceof MethodProperty) ? (MethodProperty) property : null;
+            return (property instanceof MethodProperty)
+                    ? (MethodProperty) property : null;
         }
 
         /**

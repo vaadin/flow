@@ -8,7 +8,8 @@ import com.vaadin.tests.components.ComponentTestCase;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Notification;
 
-public class ComboBoxScrollingToPageDisabled extends ComponentTestCase<ComboBox> {
+public class ComboBoxScrollingToPageDisabled
+        extends ComponentTestCase<ComboBox> {
 
     private static final Object CAPTION = "caption";
 
@@ -49,7 +50,8 @@ public class ComboBoxScrollingToPageDisabled extends ComponentTestCase<ComboBox>
 
             @Override
             public void valueChange(ValueChangeEvent event) {
-                Notification.show("Value now:" + cb.getValue() + " " + cb.getItemCaption(cb.getValue()));
+                Notification.show("Value now:" + cb.getValue() + " "
+                        + cb.getItemCaption(cb.getValue()));
 
             }
         });
@@ -58,7 +60,9 @@ public class ComboBoxScrollingToPageDisabled extends ComponentTestCase<ComboBox>
 
     @Override
     protected String getTestDescription() {
-        return "Test that selected value appears on the client " + "side even though setScrollToSelectedItem(false) " + "has been called. Textbox should containe 'Item 50'.";
+        return "Test that selected value appears on the client "
+                + "side even though setScrollToSelectedItem(false) "
+                + "has been called. Textbox should containe 'Item 50'.";
     }
 
     @Override

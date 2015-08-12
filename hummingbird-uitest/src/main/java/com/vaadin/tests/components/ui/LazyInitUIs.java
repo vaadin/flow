@@ -48,7 +48,8 @@ public class LazyInitUIs extends AbstractTestUIProvider {
                     layout.setMargin(true);
                     setContent(layout);
 
-                    layout.addComponent(getRequestInfo("LazyCreateUI", request));
+                    layout.addComponent(
+                            getRequestInfo("LazyCreateUI", request));
                 }
             };
             return uI;
@@ -67,11 +68,15 @@ public class LazyInitUIs extends AbstractTestUIProvider {
                     layout.addComponent(getRequestInfo("NormalUI", request));
 
                     String location = getPage().getLocation().toString();
-                    Link lazyCreateLink = new Link("Open lazyCreate UI", new ExternalResource(location.replaceFirst("(\\?|#|$).*", "?lazyCreate#lazyCreate")));
+                    Link lazyCreateLink = new Link("Open lazyCreate UI",
+                            new ExternalResource(location.replaceFirst(
+                                    "(\\?|#|$).*", "?lazyCreate#lazyCreate")));
                     lazyCreateLink.setTargetName("_blank");
                     layout.addComponent(lazyCreateLink);
 
-                    Link lazyInitLink = new Link("Open eagerInit UI", new ExternalResource(location.replaceFirst("(\\?|#|$).*", "?eagerInit#eagerInit")));
+                    Link lazyInitLink = new Link("Open eagerInit UI",
+                            new ExternalResource(location.replaceFirst(
+                                    "(\\?|#|$).*", "?eagerInit#eagerInit")));
                     lazyInitLink.setTargetName("_blank");
                     layout.addComponent(lazyInitLink);
                 }
@@ -85,7 +90,8 @@ public class LazyInitUIs extends AbstractTestUIProvider {
         String info = name;
         info += "<br />pathInfo: " + request.getPathInfo();
         info += "<br />parameters: " + request.getParameterMap().keySet();
-        info += "<br />uri fragment: " + Page.getCurrent().getLocation().getFragment();
+        info += "<br />uri fragment: "
+                + Page.getCurrent().getLocation().getFragment();
         return new Label(info, ContentMode.HTML);
     }
 

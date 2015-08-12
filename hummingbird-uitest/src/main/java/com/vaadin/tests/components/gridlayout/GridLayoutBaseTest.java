@@ -43,12 +43,15 @@ public abstract class GridLayoutBaseTest extends MultiBrowserTest {
         for (int i = 0; i < slots5x5.size(); i++) {
             WebElement compared = slots5x5.get(i);
             WebElement actual = slots4x4.get(i);
-            assertEquals("Different top coordinate for element " + i, compared.getCssValue("top"), actual.getCssValue("top"));
-            assertEquals("Different left coordinate for element " + i, compared.getCssValue("left"), actual.getCssValue("left"));
+            assertEquals("Different top coordinate for element " + i,
+                    compared.getCssValue("top"), actual.getCssValue("top"));
+            assertEquals("Different left coordinate for element " + i,
+                    compared.getCssValue("left"), actual.getCssValue("left"));
         }
     }
 
-    private void waitUntilColumnAndRowAreHidden(final List<WebElement> slots4x4) {
+    private void waitUntilColumnAndRowAreHidden(
+            final List<WebElement> slots4x4) {
         waitUntil(new ExpectedCondition<Boolean>() {
             @Override
             public Boolean apply(WebDriver input) {

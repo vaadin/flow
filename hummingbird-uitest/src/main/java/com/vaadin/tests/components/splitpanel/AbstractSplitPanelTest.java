@@ -6,7 +6,9 @@ import com.vaadin.ui.AbstractSplitPanel;
 import com.vaadin.ui.AbstractSplitPanel.SplitterClickEvent;
 import com.vaadin.ui.AbstractSplitPanel.SplitterClickListener;
 
-public abstract class AbstractSplitPanelTest<T extends AbstractSplitPanel> extends AbstractComponentContainerTest<T> implements SplitterClickListener {
+public abstract class AbstractSplitPanelTest<T extends AbstractSplitPanel>
+        extends AbstractComponentContainerTest<T>
+        implements SplitterClickListener {
 
     private Command<T, Boolean> splitterClickListenerCommand = new Command<T, Boolean>() {
 
@@ -48,7 +50,8 @@ public abstract class AbstractSplitPanelTest<T extends AbstractSplitPanel> exten
     }
 
     private void createSplitterLockAction(String categoryFeatures) {
-        createBooleanAction("Splitter locked", categoryFeatures, false, splitterLockCommand);
+        createBooleanAction("Splitter locked", categoryFeatures, false,
+                splitterLockCommand);
 
     }
 
@@ -91,27 +94,39 @@ public abstract class AbstractSplitPanelTest<T extends AbstractSplitPanel> exten
         String subCategory = "Set splitter position";
         createCategory(subCategory, categoryFeatures);
 
-        createClickAction("0px from left/top", subCategory, setSplitPositionCommand, new SplitPosition("0px"));
-        createClickAction("200px from left/top", subCategory, setSplitPositionCommand, new SplitPosition("200px"));
-        createClickAction("0px from right/bottom", subCategory, setSplitPositionCommand, new SplitPosition("-0px"));
-        createClickAction("200px from right/bottom", subCategory, setSplitPositionCommand, new SplitPosition("-200px"));
+        createClickAction("0px from left/top", subCategory,
+                setSplitPositionCommand, new SplitPosition("0px"));
+        createClickAction("200px from left/top", subCategory,
+                setSplitPositionCommand, new SplitPosition("200px"));
+        createClickAction("0px from right/bottom", subCategory,
+                setSplitPositionCommand, new SplitPosition("-0px"));
+        createClickAction("200px from right/bottom", subCategory,
+                setSplitPositionCommand, new SplitPosition("-200px"));
 
-        createClickAction("0% from left/top", subCategory, setSplitPositionCommand, new SplitPosition("0%"));
-        createClickAction("0% from right/bottom", subCategory, setSplitPositionCommand, new SplitPosition("-0%"));
-        createClickAction("50% from left/top", subCategory, setSplitPositionCommand, new SplitPosition("50%"));
-        createClickAction("50% from right/bottom", subCategory, setSplitPositionCommand, new SplitPosition("-50%"));
-        createClickAction("100% from left/top", subCategory, setSplitPositionCommand, new SplitPosition("100%"));
-        createClickAction("100% from right/bottom", subCategory, setSplitPositionCommand, new SplitPosition("-100%"));
+        createClickAction("0% from left/top", subCategory,
+                setSplitPositionCommand, new SplitPosition("0%"));
+        createClickAction("0% from right/bottom", subCategory,
+                setSplitPositionCommand, new SplitPosition("-0%"));
+        createClickAction("50% from left/top", subCategory,
+                setSplitPositionCommand, new SplitPosition("50%"));
+        createClickAction("50% from right/bottom", subCategory,
+                setSplitPositionCommand, new SplitPosition("-50%"));
+        createClickAction("100% from left/top", subCategory,
+                setSplitPositionCommand, new SplitPosition("100%"));
+        createClickAction("100% from right/bottom", subCategory,
+                setSplitPositionCommand, new SplitPosition("-100%"));
 
     }
 
     private void createSplitterClickListenerAction(String category) {
-        createBooleanAction("SplitterClickListener", category, false, splitterClickListenerCommand);
+        createBooleanAction("SplitterClickListener", category, false,
+                splitterClickListenerCommand);
 
     }
 
     @Override
     public void splitterClick(SplitterClickEvent event) {
-        log(event.getClass().getSimpleName() + ": " + event.getButtonName() + " at " + event.getRelativeX() + "," + event.getRelativeY());
+        log(event.getClass().getSimpleName() + ": " + event.getButtonName()
+                + " at " + event.getRelativeX() + "," + event.getRelativeY());
     }
 }

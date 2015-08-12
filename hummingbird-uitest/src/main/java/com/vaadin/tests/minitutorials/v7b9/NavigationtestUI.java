@@ -17,7 +17,8 @@ public class NavigationtestUI extends UI {
 
         // Add some Views
         // no fragment for main view
-        navigator.addView(MainView__LastNavigatorExample.NAME, new MainView__LastNavigatorExample(navigator));
+        navigator.addView(MainView__LastNavigatorExample.NAME,
+                new MainView__LastNavigatorExample(navigator));
 
         // #settings
         navigator.addView(SettingsView.NAME, new SettingsView(navigator));

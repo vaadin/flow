@@ -23,18 +23,21 @@ public class WindowShouldRemoveActionHandlerTest extends MultiBrowserTest {
         removeActionHandler();
         removeActionHandler();
 
-        assertState("An UI with 3 action handlers - Removed handler - Removed handler");
+        assertState(
+                "An UI with 3 action handlers - Removed handler - Removed handler");
         addActionHandler();
 
         assertState("An UI with 2 action handlers");
     }
 
     private void removeActionHandler() {
-        $(ButtonElement.class).caption("Remove an action handler").first().click();
+        $(ButtonElement.class).caption("Remove an action handler").first()
+                .click();
     }
 
     private void addAnotherActionHandler() {
-        $(ButtonElement.class).caption("Add another action handler").first().click();
+        $(ButtonElement.class).caption("Add another action handler").first()
+                .click();
     }
 
     private void addActionHandler() {
@@ -42,6 +45,7 @@ public class WindowShouldRemoveActionHandlerTest extends MultiBrowserTest {
     }
 
     private void assertState(String expected) {
-        Assert.assertEquals("Unexpected state,", expected, $(LabelElement.class).id("state").getText());
+        Assert.assertEquals("Unexpected state,", expected,
+                $(LabelElement.class).id("state").getText());
     }
 }

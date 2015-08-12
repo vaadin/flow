@@ -49,7 +49,8 @@ public class ComplexTypesComponent extends AbstractJavaScriptComponent {
 
         boolean[] bits = { true, true, false, true };
 
-        List<List<Double>> matrix = Arrays.asList(Arrays.asList(1d, 2d), Arrays.asList(3d, 4d));
+        List<List<Double>> matrix = Arrays.asList(Arrays.asList(1d, 2d),
+                Arrays.asList(3d, 4d));
 
         ComplexTypesBean innerBean = new ComplexTypesBean();
         innerBean.setInteger(-42);
@@ -58,6 +59,7 @@ public class ComplexTypesComponent extends AbstractJavaScriptComponent {
         bean.setInteger(42);
         bean.setBean(innerBean);
 
-        getRpcProxy(ComplexTypesRpc.class).sendComplexTypes(list, stringMap, otherMap, connectorMap, bits, matrix, bean);
+        getRpcProxy(ComplexTypesRpc.class).sendComplexTypes(list, stringMap,
+                otherMap, connectorMap, bits, matrix, bean);
     }
 }

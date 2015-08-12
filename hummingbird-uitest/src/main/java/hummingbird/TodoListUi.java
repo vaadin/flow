@@ -29,7 +29,8 @@ public class TodoListUi extends UI {
         todoList.addTodo("Make hummingbird work");
 
         Button button = new Button("Add another todo");
-        button.getElement().addEventListener("click", () -> todoList.addTodo("Another todo"));
+        button.getElement().addEventListener("click",
+                () -> todoList.addTodo("Another todo"));
 
         layout.addComponent(todoList);
         layout.addComponent(button);

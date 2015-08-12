@@ -32,5 +32,5 @@ public @interface CustomDeploymentConfiguration {
         public String value();
     }
 
-    public CustomDeploymentConfiguration.Conf[] value();
+    public CustomDeploymentConfiguration.Conf[]value();
 }

@@ -32,7 +32,8 @@ public class DateFieldKeyboardInput extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         Calendar c = new GregorianCalendar(Locale.ENGLISH);
         c.set(2014, 0, 15);
-        final PopupDateField dateField = new PopupDateField("Select date", c.getTime());
+        final PopupDateField dateField = new PopupDateField("Select date",
+                c.getTime());
         dateField.setDateFormat("dd.MM.yyyy");
         addComponent(dateField);
         dateField.addValueChangeListener(new ValueChangeListener() {
@@ -51,6 +52,7 @@ public class DateFieldKeyboardInput extends AbstractTestUI {
 
     @Override
     public String getTestDescription() {
-        return "When a new date is entered in the text field using the keyboard, pressing the return key after typing the date, " + "a label with the text 'Date has been changed' should appear.";
+        return "When a new date is entered in the text field using the keyboard, pressing the return key after typing the date, "
+                + "a label with the text 'Date has been changed' should appear.";
     }
 }

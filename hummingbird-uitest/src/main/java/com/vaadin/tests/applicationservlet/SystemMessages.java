@@ -24,12 +24,14 @@ public class SystemMessages extends AbstractTestUI {
         @Override
         public JsonObject encodeState() {
             // Set the error message to contain the current locale.
-            VaadinService.getCurrentRequest().setAttribute(ApplicationRunnerServlet.CUSTOM_SYSTEM_MESSAGES_PROPERTY, new CustomizedSystemMessages() {
-                @Override
-                public String getInternalErrorMessage() {
-                    return "MessagesInfo locale: " + getLocale();
-                }
-            });
+            VaadinService.getCurrentRequest().setAttribute(
+                    ApplicationRunnerServlet.CUSTOM_SYSTEM_MESSAGES_PROPERTY,
+                    new CustomizedSystemMessages() {
+                        @Override
+                        public String getInternalErrorMessage() {
+                            return "MessagesInfo locale: " + getLocale();
+                        }
+                    });
             if (fail) {
                 throw new RuntimeException("Failed on purpose");
             } else {

@@ -39,9 +39,13 @@ public class DisabledDateFieldPopupTest extends MultiBrowserTest {
     public void testPopup() throws IOException {
         openTestURL();
 
-        WebElement button = driver.findElement(By.className("v-datefield-button"));
-        new Actions(driver).moveToElement(button).click().sendKeys(Keys.ARROW_DOWN).perform();
+        WebElement button = driver
+                .findElement(By.className("v-datefield-button"));
+        new Actions(driver).moveToElement(button).click()
+                .sendKeys(Keys.ARROW_DOWN).perform();
 
-        Assert.assertFalse("Calendar popup should not be opened for disabled date field", isElementPresent(By.className("v-datefield-popup")));
+        Assert.assertFalse(
+                "Calendar popup should not be opened for disabled date field",
+                isElementPresent(By.className("v-datefield-popup")));
     }
 }

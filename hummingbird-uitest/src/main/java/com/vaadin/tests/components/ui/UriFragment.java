@@ -17,19 +17,22 @@ public class UriFragment extends AbstractTestUI {
         fragmentLabel.setId("fragmentLabel");
         addComponent(fragmentLabel);
         updateLabel();
-        getPage().addUriFragmentChangedListener(new Page.UriFragmentChangedListener() {
-            @Override
-            public void uriFragmentChanged(UriFragmentChangedEvent event) {
-                updateLabel();
-            }
-        });
+        getPage().addUriFragmentChangedListener(
+                new Page.UriFragmentChangedListener() {
+                    @Override
+                    public void uriFragmentChanged(
+                            UriFragmentChangedEvent event) {
+                        updateLabel();
+                    }
+                });
 
         addComponent(createButton("test", "Navigate to #test", "test"));
         addComponent(createButton("empty", "Navigate to #", ""));
         addComponent(createButton("null", "setUriFragment(null)", null));
     }
 
-    private Button createButton(String id, String caption, final String fragment) {
+    private Button createButton(String id, String caption,
+            final String fragment) {
         Button button = new Button(caption, new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {

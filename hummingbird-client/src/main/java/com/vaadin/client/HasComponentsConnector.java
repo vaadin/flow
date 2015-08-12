@@ -65,6 +65,7 @@ public interface HasComponentsConnector extends ServerConnector {
      * @return A handler registration reference that can be used to unregister
      *         the handler
      */
-    public HandlerRegistration addConnectorHierarchyChangeHandler(ConnectorHierarchyChangeHandler handler);
+    public HandlerRegistration addConnectorHierarchyChangeHandler(
+            ConnectorHierarchyChangeHandler handler);
 
 }

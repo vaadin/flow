@@ -41,7 +41,8 @@ public class SplitPanelStyleLeak extends AbstractTestUI {
     }
 
     private AbstractSplitPanel getSplit(boolean horizontal, String style) {
-        AbstractSplitPanel split = horizontal ? new HorizontalSplitPanel() : new VerticalSplitPanel();
+        AbstractSplitPanel split = horizontal ? new HorizontalSplitPanel()
+                : new VerticalSplitPanel();
 
         if (style != null) {
             split.addStyleName(style);
@@ -49,18 +50,21 @@ public class SplitPanelStyleLeak extends AbstractTestUI {
         split.setWidth("300px");
         split.setHeight("300px");
 
-        AbstractSplitPanel content = horizontal ? new VerticalSplitPanel() : new HorizontalSplitPanel();
+        AbstractSplitPanel content = horizontal ? new VerticalSplitPanel()
+                : new HorizontalSplitPanel();
         content.addComponent(new Label("First"));
         content.addComponent(new Label("Second"));
         split.addComponent(content);
 
-        content = horizontal ? new VerticalSplitPanel() : new HorizontalSplitPanel();
+        content = horizontal ? new VerticalSplitPanel()
+                : new HorizontalSplitPanel();
         content.addComponent(new Label("First"));
         split.addComponent(content);
 
         // Inception level nesting, but we need to test that the first level
         // styles don't leak to a nested split panel with the same orientation
-        AbstractSplitPanel content2 = horizontal ? new HorizontalSplitPanel() : new VerticalSplitPanel();
+        AbstractSplitPanel content2 = horizontal ? new HorizontalSplitPanel()
+                : new VerticalSplitPanel();
         content2.addComponent(new Label("First"));
         content2.addComponent(new Label("Second"));
         content.addComponent(content2);

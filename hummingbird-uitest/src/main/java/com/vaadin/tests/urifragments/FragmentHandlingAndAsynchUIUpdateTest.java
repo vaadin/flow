@@ -38,13 +38,17 @@ public class FragmentHandlingAndAsynchUIUpdateTest extends MultiBrowserTest {
      * go forward 9 times
      */
     @Test
-    public void testBackwardForwardHistoryWithWaitingForSettingFrag() throws Exception {
+    public void testBackwardForwardHistoryWithWaitingForSettingFrag()
+            throws Exception {
         openTestURL();
 
         for (int i = 0; i < 10; i++) {
             // here we wait for setting fragment in URI. If not to do it -
             // history will be "loss"
-            getDriver().findElement(By.id(FragmentHandlingAndAsynchUIUpdate.BUTTON_ID)).click();
+            getDriver()
+                    .findElement(
+                            By.id(FragmentHandlingAndAsynchUIUpdate.BUTTON_ID))
+                    .click();
             assertFragment(String.format(FRAG_NAME_TPL, START_FRAG_ID + i));
         }
 
@@ -63,7 +67,8 @@ public class FragmentHandlingAndAsynchUIUpdateTest extends MultiBrowserTest {
      * The case when it seems than history is loss
      */
     @Test
-    public void testBackwardForwardHistoryWithoutWaitingForSettingFrag() throws Exception {
+    public void testBackwardForwardHistoryWithoutWaitingForSettingFrag()
+            throws Exception {
         openTestURL();
 
         // begin to wait for setting 3th fragment and then click backward
@@ -94,7 +99,10 @@ public class FragmentHandlingAndAsynchUIUpdateTest extends MultiBrowserTest {
             @Override
             public void run() {
                 for (int i = 0; i < 10; i++) {
-                    getDriver().findElement(By.id(FragmentHandlingAndAsynchUIUpdate.BUTTON_ID)).click();
+                    getDriver()
+                            .findElement(
+                                    By.id(FragmentHandlingAndAsynchUIUpdate.BUTTON_ID))
+                            .click();
                 }
 
             }

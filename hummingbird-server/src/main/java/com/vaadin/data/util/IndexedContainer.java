@@ -38,14 +38,15 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
 
 /**
  * An implementation of the <code>{@link Container.Indexed}</code> interface
- * with all important features.</p>
+ * with all important features.
+ * </p>
  * 
  * Features:
  * <ul>
- * <li> {@link Container.Indexed}
- * <li> {@link Container.Ordered}
- * <li> {@link Container.Sortable}
- * <li> {@link Container.Filterable}
+ * <li>{@link Container.Indexed}
+ * <li>{@link Container.Ordered}
+ * <li>{@link Container.Sortable}
+ * <li>{@link Container.Filterable}
  * <li>Sends all needed events on content changes.
  * </ul>
  * 
@@ -58,7 +59,10 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
 @SuppressWarnings("serial")
 // item type is really IndexedContainerItem, but using Item not to show it in
 // public API
-public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, Item> implements Container.PropertySetChangeNotifier, Property.ValueChangeNotifier, Container.Sortable, Container.Filterable, Container.SimpleFilterable {
+public class IndexedContainer
+        extends AbstractInMemoryContainer<Object, Object, Item>implements
+        Container.PropertySetChangeNotifier, Property.ValueChangeNotifier,
+        Container.Sortable, Container.Filterable, Container.SimpleFilterable {
 
     /* Internal structure */
 
@@ -112,7 +116,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
         if (items != null) {
             for (final Iterator<?> i = itemIds.iterator(); i.hasNext();) {
                 Object itemId = i.next();
-                internalAddItemAtEnd(itemId, new IndexedContainerItem(itemId), false);
+                internalAddItemAtEnd(itemId, new IndexedContainerItem(itemId),
+                        false);
             }
             filterAll();
         }
@@ -160,7 +165,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
     public Property getContainerProperty(Object itemId, Object propertyId) {
         // map lookup more efficient than propertyIds if there are many
         // properties
-        if (!containsId(itemId) || propertyId == null || !types.containsKey(propertyId)) {
+        if (!containsId(itemId) || propertyId == null
+                || !types.containsKey(propertyId)) {
             return null;
         }
 
@@ -174,7 +180,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
      * java.lang.Class, java.lang.Object)
      */
     @Override
-    public boolean addContainerProperty(Object propertyId, Class<?> type, Object defaultValue) {
+    public boolean addContainerProperty(Object propertyId, Class<?> type,
+            Object defaultValue) {
 
         // Fails, if nulls are given
         if (propertyId == null || type == null) {
@@ -193,8 +200,10 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
         // If default value is given, set it
         if (defaultValue != null) {
             // for existing rows
-            for (final Iterator<?> i = getAllItemIds().iterator(); i.hasNext();) {
-                getItem(i.next()).getItemProperty(propertyId).setValue(defaultValue);
+            for (final Iterator<?> i = getAllItemIds().iterator(); i
+                    .hasNext();) {
+                getItem(i.next()).getItemProperty(propertyId)
+                        .setValue(defaultValue);
             }
             // store for next rows
             if (defaultPropertyValues == null) {
@@ -258,7 +267,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
      */
     @Override
     public Item addItem(Object itemId) {
-        Item item = internalAddItemAtEnd(itemId, new IndexedContainerItem(itemId), false);
+        Item item = internalAddItemAtEnd(itemId,
+                new IndexedContainerItem(itemId), false);
         if (!isFiltered()) {
             // always the last item
             fireItemAdded(size() - 1, itemId, item);
@@ -330,7 +340,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
         }
 
         // If remove the Property from all Items
-        for (final Iterator<Object> i = getAllItemIds().iterator(); i.hasNext();) {
+        for (final Iterator<Object> i = getAllItemIds().iterator(); i
+                .hasNext();) {
             items.get(i.next()).remove(propertyId);
         }
 
@@ -350,7 +361,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
      */
     @Override
     public Item addItemAfter(Object previousItemId, Object newItemId) {
-        return internalAddItemAfter(previousItemId, newItemId, new IndexedContainerItem(newItemId), true);
+        return internalAddItemAfter(previousItemId, newItemId,
+                new IndexedContainerItem(newItemId), true);
     }
 
     /**
@@ -379,7 +391,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
      */
     @Override
     public Item addItemAt(int index, Object newItemId) {
-        return internalAddItemAt(index, newItemId, new IndexedContainerItem(newItemId), true);
+        return internalAddItemAt(index, newItemId,
+                new IndexedContainerItem(newItemId), true);
     }
 
     /**
@@ -435,7 +448,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
 
         private final int addedItemIndex;
 
-        private ItemSetChangeEvent(IndexedContainer source, int addedItemIndex) {
+        private ItemSetChangeEvent(IndexedContainer source,
+                int addedItemIndex) {
             super(source);
             this.addedItemIndex = addedItemIndex;
         }
@@ -459,7 +473,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
      * @author Vaadin Ltd.
      * @since 3.0
      */
-    private static class PropertyValueChangeEvent extends EventObject implements Property.ValueChangeEvent, Serializable {
+    private static class PropertyValueChangeEvent extends EventObject
+            implements Property.ValueChangeEvent, Serializable {
 
         private PropertyValueChangeEvent(Property source) {
             super(source);
@@ -478,12 +493,14 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
     }
 
     @Override
-    public void addPropertySetChangeListener(Container.PropertySetChangeListener listener) {
+    public void addPropertySetChangeListener(
+            Container.PropertySetChangeListener listener) {
         super.addPropertySetChangeListener(listener);
     }
 
     @Override
-    public void removePropertySetChangeListener(Container.PropertySetChangeListener listener) {
+    public void removePropertySetChangeListener(
+            Container.PropertySetChangeListener listener) {
         super.removePropertySetChangeListener(listener);
     }
 
@@ -508,7 +525,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
      * .vaadin.data.Property.ValueChangeListener)
      */
     @Override
-    public void removeValueChangeListener(Property.ValueChangeListener listener) {
+    public void removeValueChangeListener(
+            Property.ValueChangeListener listener) {
         if (propertyValueChangeListeners != null) {
             propertyValueChangeListeners.remove(listener);
         }
@@ -525,7 +543,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
         // Sends event to listeners listening all value changes
         if (propertyValueChangeListeners != null) {
             final Object[] l = propertyValueChangeListeners.toArray();
-            final Property.ValueChangeEvent event = new IndexedContainer.PropertyValueChangeEvent(source);
+            final Property.ValueChangeEvent event = new IndexedContainer.PropertyValueChangeEvent(
+                    source);
             for (int i = 0; i < l.length; i++) {
                 ((Property.ValueChangeListener) l[i]).valueChange(event);
             }
@@ -533,14 +552,18 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
 
         // Sends event to single property value change listeners
         if (singlePropertyValueChangeListeners != null) {
-            final Map<Object, List<Property.ValueChangeListener>> propertySetToListenerListMap = singlePropertyValueChangeListeners.get(source.propertyId);
+            final Map<Object, List<Property.ValueChangeListener>> propertySetToListenerListMap = singlePropertyValueChangeListeners
+                    .get(source.propertyId);
             if (propertySetToListenerListMap != null) {
-                final List<Property.ValueChangeListener> listenerList = propertySetToListenerListMap.get(source.itemId);
+                final List<Property.ValueChangeListener> listenerList = propertySetToListenerListMap
+                        .get(source.itemId);
                 if (listenerList != null) {
-                    final Property.ValueChangeEvent event = new IndexedContainer.PropertyValueChangeEvent(source);
+                    final Property.ValueChangeEvent event = new IndexedContainer.PropertyValueChangeEvent(
+                            source);
                     Object[] listeners = listenerList.toArray();
                     for (int i = 0; i < listeners.length; i++) {
-                        ((Property.ValueChangeListener) listeners[i]).valueChange(event);
+                        ((Property.ValueChangeListener) listeners[i])
+                                .valueChange(event);
                     }
                 }
             }
@@ -554,7 +577,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
             if (propertyValueChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return Collections.unmodifiableCollection(propertyValueChangeListeners);
+                return Collections
+                        .unmodifiableCollection(propertyValueChangeListeners);
             }
         }
         return super.getListeners(eventType);
@@ -582,17 +606,21 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
      * @param listener
      *            the listener to be added.
      */
-    private void addSinglePropertyChangeListener(Object propertyId, Object itemId, Property.ValueChangeListener listener) {
+    private void addSinglePropertyChangeListener(Object propertyId,
+            Object itemId, Property.ValueChangeListener listener) {
         if (listener != null) {
             if (singlePropertyValueChangeListeners == null) {
                 singlePropertyValueChangeListeners = new Hashtable<Object, Map<Object, List<Property.ValueChangeListener>>>();
             }
-            Map<Object, List<Property.ValueChangeListener>> propertySetToListenerListMap = singlePropertyValueChangeListeners.get(propertyId);
+            Map<Object, List<Property.ValueChangeListener>> propertySetToListenerListMap = singlePropertyValueChangeListeners
+                    .get(propertyId);
             if (propertySetToListenerListMap == null) {
                 propertySetToListenerListMap = new Hashtable<Object, List<Property.ValueChangeListener>>();
-                singlePropertyValueChangeListeners.put(propertyId, propertySetToListenerListMap);
+                singlePropertyValueChangeListeners.put(propertyId,
+                        propertySetToListenerListMap);
             }
-            List<Property.ValueChangeListener> listenerList = propertySetToListenerListMap.get(itemId);
+            List<Property.ValueChangeListener> listenerList = propertySetToListenerListMap
+                    .get(itemId);
             if (listenerList == null) {
                 listenerList = new LinkedList<Property.ValueChangeListener>();
                 propertySetToListenerListMap.put(itemId, listenerList);
@@ -611,11 +639,14 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
      * @param listener
      *            the listener to be removed.
      */
-    private void removeSinglePropertyChangeListener(Object propertyId, Object itemId, Property.ValueChangeListener listener) {
+    private void removeSinglePropertyChangeListener(Object propertyId,
+            Object itemId, Property.ValueChangeListener listener) {
         if (listener != null && singlePropertyValueChangeListeners != null) {
-            final Map<Object, List<Property.ValueChangeListener>> propertySetToListenerListMap = singlePropertyValueChangeListeners.get(propertyId);
+            final Map<Object, List<Property.ValueChangeListener>> propertySetToListenerListMap = singlePropertyValueChangeListeners
+                    .get(propertyId);
             if (propertySetToListenerListMap != null) {
-                final List<Property.ValueChangeListener> listenerList = propertySetToListenerListMap.get(itemId);
+                final List<Property.ValueChangeListener> listenerList = propertySetToListenerListMap
+                        .get(itemId);
                 if (listenerList != null) {
                     listenerList.remove(listener);
                     if (listenerList.isEmpty()) {
@@ -728,7 +759,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
          */
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !obj.getClass().equals(IndexedContainerItem.class)) {
+            if (obj == null
+                    || !obj.getClass().equals(IndexedContainerItem.class)) {
                 return false;
             }
             final IndexedContainerItem li = (IndexedContainerItem) obj;
@@ -747,8 +779,10 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
          * @see com.vaadin.data.Item#addProperty(Object, Property)
          */
         @Override
-        public boolean addItemProperty(Object id, Property property) throws UnsupportedOperationException {
-            throw new UnsupportedOperationException("Indexed container item " + "does not support adding new properties");
+        public boolean addItemProperty(Object id, Property property)
+                throws UnsupportedOperationException {
+            throw new UnsupportedOperationException("Indexed container item "
+                    + "does not support adding new properties");
         }
 
         /**
@@ -759,8 +793,10 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
          * @see com.vaadin.data.Item#removeProperty(Object)
          */
         @Override
-        public boolean removeItemProperty(Object id) throws UnsupportedOperationException {
-            throw new UnsupportedOperationException("Indexed container item does not support property removal");
+        public boolean removeItemProperty(Object id)
+                throws UnsupportedOperationException {
+            throw new UnsupportedOperationException(
+                    "Indexed container item does not support property removal");
         }
 
     }
@@ -774,7 +810,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
      * 
      * @since 3.0
      */
-    private class IndexedContainerProperty<T> implements Property<T>, Property.ValueChangeNotifier {
+    private class IndexedContainerProperty<T>
+            implements Property<T>, Property.ValueChangeNotifier {
 
         /**
          * ID of the Item, where this property resides.
@@ -800,7 +837,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
         private IndexedContainerProperty(Object itemId, Object propertyId) {
             if (itemId == null || propertyId == null) {
                 // Null ids are not accepted
-                throw new NullPointerException("Container item or property ids can not be null");
+                throw new NullPointerException(
+                        "Container item or property ids can not be null");
             }
             this.propertyId = propertyId;
             this.itemId = itemId;
@@ -856,7 +894,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
          * @see com.vaadin.data.Property#setValue(java.lang.Object)
          */
         @Override
-        public void setValue(Object newValue) throws Property.ReadOnlyException {
+        public void setValue(Object newValue)
+                throws Property.ReadOnlyException {
             // Gets the Property set
             final Map<Object, Object> propertySet = items.get(itemId);
 
@@ -866,7 +905,10 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
             } else if (getType().isAssignableFrom(newValue.getClass())) {
                 propertySet.put(propertyId, newValue);
             } else {
-                throw new IllegalArgumentException("Value is of invalid type, got " + newValue.getClass().getName() + " but " + getType().getName() + " was expected");
+                throw new IllegalArgumentException(
+                        "Value is of invalid type, got "
+                                + newValue.getClass().getName() + " but "
+                                + getType().getName() + " was expected");
             }
 
             // update the container filtering if this property is being filtered
@@ -906,11 +948,13 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
          */
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !obj.getClass().equals(IndexedContainerProperty.class)) {
+            if (obj == null
+                    || !obj.getClass().equals(IndexedContainerProperty.class)) {
                 return false;
             }
             final IndexedContainerProperty lp = (IndexedContainerProperty) obj;
-            return lp.getHost() == getHost() && lp.propertyId.equals(propertyId) && lp.itemId.equals(itemId);
+            return lp.getHost() == getHost() && lp.propertyId.equals(propertyId)
+                    && lp.itemId.equals(itemId);
         }
 
         /*
@@ -920,7 +964,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
          * com.vaadin.data.Property.ValueChangeListener)
          */
         @Override
-        public void addValueChangeListener(Property.ValueChangeListener listener) {
+        public void addValueChangeListener(
+                Property.ValueChangeListener listener) {
             addSinglePropertyChangeListener(propertyId, itemId, listener);
         }
 
@@ -931,7 +976,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
          * (com.vaadin.data.Property.ValueChangeListener)
          */
         @Override
-        public void removeValueChangeListener(Property.ValueChangeListener listener) {
+        public void removeValueChangeListener(
+                Property.ValueChangeListener listener) {
             removeSinglePropertyChangeListener(propertyId, itemId, listener);
         }
 
@@ -974,9 +1020,11 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
     }
 
     @Override
-    public void addContainerFilter(Object propertyId, String filterString, boolean ignoreCase, boolean onlyMatchPrefix) {
+    public void addContainerFilter(Object propertyId, String filterString,
+            boolean ignoreCase, boolean onlyMatchPrefix) {
         try {
-            addFilter(new SimpleStringFilter(propertyId, filterString, ignoreCase, onlyMatchPrefix));
+            addFilter(new SimpleStringFilter(propertyId, filterString,
+                    ignoreCase, onlyMatchPrefix));
         } catch (UnsupportedFilterException e) {
             // the filter instance created here is always valid for in-memory
             // containers
@@ -994,7 +1042,8 @@ public class IndexedContainer extends AbstractInMemoryContainer<Object, Object, 
     }
 
     @Override
-    public void addContainerFilter(Filter filter) throws UnsupportedFilterException {
+    public void addContainerFilter(Filter filter)
+            throws UnsupportedFilterException {
         addFilter(filter);
     }
 

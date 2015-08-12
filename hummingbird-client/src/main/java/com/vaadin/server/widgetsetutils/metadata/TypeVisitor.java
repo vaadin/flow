@@ -26,15 +26,18 @@ public abstract class TypeVisitor {
         // Default does nothing
     }
 
-    public void visitConnector(TreeLogger logger, JClassType type, ConnectorBundle bundle) throws UnableToCompleteException {
+    public void visitConnector(TreeLogger logger, JClassType type,
+            ConnectorBundle bundle) throws UnableToCompleteException {
         // Default does nothing
     }
 
-    public void visitClientRpc(TreeLogger logger, JClassType type, ConnectorBundle bundle) throws UnableToCompleteException {
+    public void visitClientRpc(TreeLogger logger, JClassType type,
+            ConnectorBundle bundle) throws UnableToCompleteException {
         // Default does nothing
     }
 
-    public void visitServerRpc(TreeLogger logger, JClassType type, ConnectorBundle bundle) throws UnableToCompleteException {
+    public void visitServerRpc(TreeLogger logger, JClassType type,
+            ConnectorBundle bundle) throws UnableToCompleteException {
         // Default does nothing
     }
 

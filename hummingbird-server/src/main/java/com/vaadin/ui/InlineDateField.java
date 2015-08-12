@@ -37,7 +37,8 @@ public class InlineDateField extends DateField {
         super();
     }
 
-    public InlineDateField(Property dataSource) throws IllegalArgumentException {
+    public InlineDateField(Property dataSource)
+            throws IllegalArgumentException {
         super(dataSource);
     }
 

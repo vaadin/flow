@@ -11,7 +11,8 @@ import com.vaadin.event.ItemClickEvent.ItemClickNotifier;
 import com.vaadin.tests.components.abstractfield.AbstractFieldTest;
 import com.vaadin.ui.AbstractSelect;
 
-public abstract class AbstractSelectTestCase<T extends AbstractSelect> extends AbstractFieldTest<T> implements ItemClickListener {
+public abstract class AbstractSelectTestCase<T extends AbstractSelect>
+        extends AbstractFieldTest<T>implements ItemClickListener {
 
     public static final String CATEGORY_DATA_SOURCE = "Data source";
 
@@ -30,22 +31,26 @@ public abstract class AbstractSelectTestCase<T extends AbstractSelect> extends A
     }
 
     protected void createNullSelectAllowedCheckbox(String category) {
-        createBooleanAction("Null Selection Allowed", category, false, nullSelectionAllowedCommand);
+        createBooleanAction("Null Selection Allowed", category, false,
+                nullSelectionAllowedCommand);
 
     }
 
     protected void createMultiSelectCheckbox(String category) {
-        createBooleanAction("Multi select", category, false, multiselectCommand);
+        createBooleanAction("Multi select", category, false,
+                multiselectCommand);
 
     }
 
     protected void createNullSelectItemId(String category) {
         LinkedHashMap<String, Object> options = new LinkedHashMap<String, Object>();
         options.put("- None -", null);
-        for (Object id : (getComponent()).getContainerDataSource().getContainerPropertyIds()) {
+        for (Object id : (getComponent()).getContainerDataSource()
+                .getContainerPropertyIds()) {
             options.put(id.toString(), id);
         }
-        createSelectAction("Null Selection Item Id", category, options, "- None -", nullSelectItemIdCommand);
+        createSelectAction("Null Selection Item Id", category, options,
+                "- None -", nullSelectItemIdCommand);
     }
 
     protected Container createContainer(int properties, int items) {
@@ -67,7 +72,8 @@ public abstract class AbstractSelectTestCase<T extends AbstractSelect> extends A
         for (int i = 1; i <= items; i++) {
             Item item = c.addItem("Item " + i);
             for (int j = 1; j <= properties; j++) {
-                item.getItemProperty("Property " + j).setValue("Item " + i + "," + j);
+                item.getItemProperty("Property " + j)
+                        .setValue("Item " + i + "," + j);
             }
         }
 
@@ -84,7 +90,8 @@ public abstract class AbstractSelectTestCase<T extends AbstractSelect> extends A
         options.put("10000", 10000);
         options.put("100000", 100000);
 
-        createSelectAction("Items in container", category, options, "20", itemsInContainerCommand);
+        createSelectAction("Items in container", category, options, "20",
+                itemsInContainerCommand);
     }
 
     protected void createPropertiesInContainerSelect(String category) {
@@ -97,11 +104,13 @@ public abstract class AbstractSelectTestCase<T extends AbstractSelect> extends A
         options.put("100", 100);
         options.put("1000", 1000);
 
-        createSelectAction("Properties in container", category, options, "10", propertiesInContainerCommand);
+        createSelectAction("Properties in container", category, options, "10",
+                propertiesInContainerCommand);
     }
 
     protected void createItemClickListener(String category) {
-        createBooleanAction("Item click listener", category, false, itemClickListenerCommand);
+        createBooleanAction("Item click listener", category, false,
+                itemClickListenerCommand);
     }
 
     /* COMMANDS */
@@ -153,9 +162,11 @@ public abstract class AbstractSelectTestCase<T extends AbstractSelect> extends A
         @Override
         public void execute(T c, Boolean value, Object data) {
             if (value) {
-                ((ItemClickNotifier) c).addItemClickListener(AbstractSelectTestCase.this);
+                ((ItemClickNotifier) c)
+                        .addItemClickListener(AbstractSelectTestCase.this);
             } else {
-                ((ItemClickNotifier) c).removeItemClickListener(AbstractSelectTestCase.this);
+                ((ItemClickNotifier) c)
+                        .removeItemClickListener(AbstractSelectTestCase.this);
             }
 
         }
@@ -182,8 +193,10 @@ public abstract class AbstractSelectTestCase<T extends AbstractSelect> extends A
         }
 
         String target = "source: " + event.getSource();
-        target += ", client: [" + event.getClientX() + "," + event.getClientY() + "];";
-        target += ", relative: [" + event.getRelativeX() + "," + event.getRelativeY() + "]";
+        target += ", client: [" + event.getClientX() + "," + event.getClientY()
+                + "];";
+        target += ", relative: [" + event.getRelativeX() + ","
+                + event.getRelativeY() + "]";
         target += ", itemId: " + event.getItemId();
         target += ", propertyId: " + event.getPropertyId();
 

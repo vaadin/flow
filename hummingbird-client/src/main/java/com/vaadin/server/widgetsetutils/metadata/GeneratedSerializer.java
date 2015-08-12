@@ -21,5 +21,6 @@ import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.user.rebind.SourceWriter;
 
 public interface GeneratedSerializer {
-    public void writeSerializerInstantiator(TreeLogger logger, SourceWriter w) throws UnableToCompleteException;
+    public void writeSerializerInstantiator(TreeLogger logger, SourceWriter w)
+            throws UnableToCompleteException;
 }

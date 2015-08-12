@@ -39,7 +39,8 @@ public class FloatRangeValidator extends RangeValidator<Float> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public FloatRangeValidator(String errorMessage, Float minValue, Float maxValue) {
+    public FloatRangeValidator(String errorMessage, Float minValue,
+            Float maxValue) {
         super(errorMessage, Float.class, minValue, maxValue);
     }
 

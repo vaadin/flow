@@ -36,13 +36,14 @@ public class SliderResize extends AbstractTestUI {
         slider.setValue(100.0);
         slider.setWidth("100%");
 
-        Button changeWidth = new Button("Set layout width to 300px", new Button.ClickListener() {
+        Button changeWidth = new Button("Set layout width to 300px",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                layout.setWidth("300px");
-            }
-        });
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        layout.setWidth("300px");
+                    }
+                });
         layout.addComponents(slider, changeWidth);
     }
 

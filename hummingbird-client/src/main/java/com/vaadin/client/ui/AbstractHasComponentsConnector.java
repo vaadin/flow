@@ -24,7 +24,9 @@ import com.vaadin.client.ConnectorHierarchyChangeEvent;
 import com.vaadin.client.ConnectorHierarchyChangeEvent.ConnectorHierarchyChangeHandler;
 import com.vaadin.client.HasComponentsConnector;
 
-public abstract class AbstractHasComponentsConnector extends AbstractComponentConnector implements HasComponentsConnector, ConnectorHierarchyChangeHandler {
+public abstract class AbstractHasComponentsConnector
+        extends AbstractComponentConnector
+        implements HasComponentsConnector, ConnectorHierarchyChangeHandler {
 
     List<ComponentConnector> childComponents;
 
@@ -61,7 +63,9 @@ public abstract class AbstractHasComponentsConnector extends AbstractComponentCo
     }
 
     @Override
-    public HandlerRegistration addConnectorHierarchyChangeHandler(ConnectorHierarchyChangeHandler handler) {
-        return ensureHandlerManager().addHandler(ConnectorHierarchyChangeEvent.TYPE, handler);
+    public HandlerRegistration addConnectorHierarchyChangeHandler(
+            ConnectorHierarchyChangeHandler handler) {
+        return ensureHandlerManager()
+                .addHandler(ConnectorHierarchyChangeEvent.TYPE, handler);
     }
 }

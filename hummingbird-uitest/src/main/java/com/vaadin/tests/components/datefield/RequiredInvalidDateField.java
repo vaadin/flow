@@ -36,7 +36,8 @@ public class RequiredInvalidDateField extends TestBase {
 
         Date date = new Date(2011 - 1900, 9 - 1, 1);
 
-        Validator dateValidator = new AbstractValidator<Date>("Day of month must be an even number") {
+        Validator dateValidator = new AbstractValidator<Date>(
+                "Day of month must be an even number") {
 
             @Override
             protected boolean isValidValue(Date value) {
@@ -75,7 +76,8 @@ public class RequiredInvalidDateField extends TestBase {
 
     @Override
     protected String getTestDescription() {
-        return "Error indicator should be shown for a DateField with an " + "invalid value, also when the field is required";
+        return "Error indicator should be shown for a DateField with an "
+                + "invalid value, also when the field is required";
     }
 
     @Override

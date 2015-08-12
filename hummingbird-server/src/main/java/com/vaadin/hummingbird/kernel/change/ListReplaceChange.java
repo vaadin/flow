@@ -9,7 +9,8 @@ public class ListReplaceChange extends NodeChange {
     private Object newValue;
     private Object key;
 
-    public ListReplaceChange(int index, Object key, Object oldValue, Object newValue) {
+    public ListReplaceChange(int index, Object key, Object oldValue,
+            Object newValue) {
         this.index = index;
         this.key = key;
         this.oldValue = oldValue;

@@ -42,27 +42,31 @@ public class UsingUriFragments extends UI {
         layout.setMargin(true);
         setContent(layout);
 
-        Label label = new Label("Hello, your fragment is " + getPage().getUriFragment());
+        Label label = new Label(
+                "Hello, your fragment is " + getPage().getUriFragment());
         layout.addComponent(label);
 
         // React to fragment changes
-        getPage().addUriFragmentChangedListener(new UriFragmentChangedListener() {
-            @Override
-            public void uriFragmentChanged(UriFragmentChangedEvent source) {
-                handleFragment(source.getUriFragment());
-            }
-        });
+        getPage().addUriFragmentChangedListener(
+                new UriFragmentChangedListener() {
+                    @Override
+                    public void uriFragmentChanged(
+                            UriFragmentChangedEvent source) {
+                        handleFragment(source.getUriFragment());
+                    }
+                });
 
         // Handle the fragment received in the initial request
         handleFragment(getPage().getUriFragment());
 
-        layout.addComponent(new Button("Show and set fragment", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                handleFragment(getPage().getUriFragment());
-                getPage().setUriFragment("customFragment");
-            }
-        }));
+        layout.addComponent(
+                new Button("Show and set fragment", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        handleFragment(getPage().getUriFragment());
+                        getPage().setUriFragment("customFragment");
+                    }
+                }));
     }
 
     private void handleFragment(String uriFragment) {

@@ -55,7 +55,8 @@ public class UICreateEvent extends UIProviderEvent {
      *            the id reserved for the UI; or <code>null</code> if no id has
      *            yet been allocated.
      */
-    public UICreateEvent(VaadinRequest request, Class<? extends UI> uiClass, Integer uiId) {
+    public UICreateEvent(VaadinRequest request, Class<? extends UI> uiClass,
+            Integer uiId) {
         super(request);
         this.uiClass = uiClass;
         this.uiId = uiId;

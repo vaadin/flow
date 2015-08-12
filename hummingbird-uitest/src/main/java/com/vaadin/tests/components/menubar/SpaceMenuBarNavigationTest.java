@@ -42,7 +42,8 @@ public class SpaceMenuBarNavigationTest extends MultiBrowserTest {
         menu.sendKeys(Keys.ARROW_RIGHT);
         menu.sendKeys(Keys.ENTER);
 
-        List<WebElement> captions = driver.findElements(By.className("v-menubar-menuitem-caption"));
+        List<WebElement> captions = driver
+                .findElements(By.className("v-menubar-menuitem-caption"));
         boolean found = false;
 
         for (WebElement caption : captions) {
@@ -54,7 +55,8 @@ public class SpaceMenuBarNavigationTest extends MultiBrowserTest {
 
         menu.sendKeys(Keys.SPACE);
 
-        Assert.assertTrue("No result of action triggered by SPACE key", isElementPresent(By.className("action-result")));
+        Assert.assertTrue("No result of action triggered by SPACE key",
+                isElementPresent(By.className("action-result")));
     }
 
 }

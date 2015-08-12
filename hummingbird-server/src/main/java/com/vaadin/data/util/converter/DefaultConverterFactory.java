@@ -25,7 +25,8 @@ import com.vaadin.server.VaadinSession;
 
 /**
  * Default implementation of {@link ConverterFactory}. Provides converters for
- * standard types like {@link String}, {@link Double} and {@link Date}. </p>
+ * standard types like {@link String}, {@link Double} and {@link Date}.
+ * </p>
  * <p>
  * Custom converters can be provided by extending this class and using
  * {@link VaadinSession#setConverterFactory(ConverterFactory)}.
@@ -36,38 +37,49 @@ import com.vaadin.server.VaadinSession;
  */
 public class DefaultConverterFactory implements ConverterFactory {
 
-    private final static Logger log = Logger.getLogger(DefaultConverterFactory.class.getName());
+    private final static Logger log = Logger
+            .getLogger(DefaultConverterFactory.class.getName());
 
     @Override
-    public <PRESENTATION, MODEL> Converter<PRESENTATION, MODEL> createConverter(Class<PRESENTATION> presentationType, Class<MODEL> modelType) {
-        Converter<PRESENTATION, MODEL> converter = findConverter(presentationType, modelType);
+    public <PRESENTATION, MODEL> Converter<PRESENTATION, MODEL> createConverter(
+            Class<PRESENTATION> presentationType, Class<MODEL> modelType) {
+        Converter<PRESENTATION, MODEL> converter = findConverter(
+                presentationType, modelType);
         if (converter != null) {
-            log.finest(getClass().getName() + " created a " + converter.getClass());
+            log.finest(getClass().getName() + " created a "
+                    + converter.getClass());
             return converter;
         }
 
         // Try to find a reverse converter
-        Converter<MODEL, PRESENTATION> reverseConverter = findConverter(modelType, presentationType);
+        Converter<MODEL, PRESENTATION> reverseConverter = findConverter(
+                modelType, presentationType);
         if (reverseConverter != null) {
-            log.finest(getClass().getName() + " created a reverse " + reverseConverter.getClass());
+            log.finest(getClass().getName() + " created a reverse "
+                    + reverseConverter.getClass());
             return new ReverseConverter<PRESENTATION, MODEL>(reverseConverter);
         }
 
-        log.finest(getClass().getName() + " could not find a converter for " + presentationType.getName() + " to " + modelType.getName() + " conversion");
+        log.finest(getClass().getName() + " could not find a converter for "
+                + presentationType.getName() + " to " + modelType.getName()
+                + " conversion");
         return null;
 
     }
 
-    protected <PRESENTATION, MODEL> Converter<PRESENTATION, MODEL> findConverter(Class<PRESENTATION> presentationType, Class<MODEL> modelType) {
+    protected <PRESENTATION, MODEL> Converter<PRESENTATION, MODEL> findConverter(
+            Class<PRESENTATION> presentationType, Class<MODEL> modelType) {
         if (presentationType == String.class) {
             // TextField converters and more
-            Converter<PRESENTATION, MODEL> converter = (Converter<PRESENTATION, MODEL>) createStringConverter(modelType);
+            Converter<PRESENTATION, MODEL> converter = (Converter<PRESENTATION, MODEL>) createStringConverter(
+                    modelType);
             if (converter != null) {
                 return converter;
             }
         } else if (presentationType == Date.class) {
             // DateField converters and more
-            Converter<PRESENTATION, MODEL> converter = (Converter<PRESENTATION, MODEL>) createDateConverter(modelType);
+            Converter<PRESENTATION, MODEL> converter = (Converter<PRESENTATION, MODEL>) createDateConverter(
+                    modelType);
             if (converter != null) {
                 return converter;
             }

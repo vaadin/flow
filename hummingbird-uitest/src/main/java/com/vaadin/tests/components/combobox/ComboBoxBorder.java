@@ -14,7 +14,8 @@ public class ComboBoxBorder extends TestBase {
     protected void setup() {
         setTheme("tests-tickets");
 
-        final ComboBox cb = new ComboBox("All errors", Arrays.asList("Error", "Error 2"));
+        final ComboBox cb = new ComboBox("All errors",
+                Arrays.asList("Error", "Error 2"));
         cb.setStyleName("ComboBoxBorder");
         cb.setWidth("200px"); // must have with to reproduce
 

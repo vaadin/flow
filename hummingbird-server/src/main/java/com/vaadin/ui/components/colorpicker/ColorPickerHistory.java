@@ -31,17 +31,21 @@ import com.vaadin.ui.CustomComponent;
  * 
  * @since 7.0.0
  */
-public class ColorPickerHistory extends CustomComponent implements ColorSelector, ColorChangeListener {
+public class ColorPickerHistory extends CustomComponent
+        implements ColorSelector, ColorChangeListener {
 
     private static final String STYLENAME = "v-colorpicker-history";
 
     private static final Method COLOR_CHANGE_METHOD;
+
     static {
         try {
-            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod("colorChanged", new Class[] { ColorChangeEvent.class });
+            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod(
+                    "colorChanged", new Class[] { ColorChangeEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
-            throw new java.lang.RuntimeException("Internal error finding methods in ColorPicker");
+            throw new java.lang.RuntimeException(
+                    "Internal error finding methods in ColorPicker");
         }
     }
 
@@ -52,7 +56,8 @@ public class ColorPickerHistory extends CustomComponent implements ColorSelector
     private static final int columns = 15;
 
     /** Temporary color history for when the component is detached. */
-    private ArrayBlockingQueue<Color> tempHistory = new ArrayBlockingQueue<Color>(rows * columns);
+    private ArrayBlockingQueue<Color> tempHistory = new ArrayBlockingQueue<Color>(
+            rows * columns);
 
     /** The grid. */
     private final ColorPickerGrid grid;
@@ -80,7 +85,8 @@ public class ColorPickerHistory extends CustomComponent implements ColorSelector
     private void createColorHistoryIfNecessary() {
         List<Color> tempColors = new ArrayList<Color>(tempHistory);
         if (getSession().getAttribute("colorPickerHistory") == null) {
-            getSession().setAttribute("colorPickerHistory", new ArrayBlockingQueue<Color>(rows * columns));
+            getSession().setAttribute("colorPickerHistory",
+                    new ArrayBlockingQueue<Color>(rows * columns));
         }
         for (Color color : tempColors) {
             setColor(color);
@@ -91,7 +97,8 @@ public class ColorPickerHistory extends CustomComponent implements ColorSelector
     @SuppressWarnings("unchecked")
     private ArrayBlockingQueue<Color> getColorHistory() {
         if (isAttached()) {
-            Object colorHistory = getSession().getAttribute("colorPickerHistory");
+            Object colorHistory = getSession()
+                    .getAttribute("colorPickerHistory");
             if (colorHistory instanceof ArrayBlockingQueue<?>) {
                 return (ArrayBlockingQueue<Color>) colorHistory;
             }

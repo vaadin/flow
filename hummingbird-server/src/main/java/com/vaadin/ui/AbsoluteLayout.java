@@ -43,7 +43,8 @@ import com.vaadin.ui.declarative.DesignContext;
  * 
  */
 @SuppressWarnings("serial")
-public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifier {
+public class AbsoluteLayout extends AbstractLayout
+        implements LayoutClickNotifier {
 
     // constants for design attributes
     private static final String ATTR_TOP = ":top";
@@ -55,8 +56,10 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
     private AbsoluteLayoutServerRpc rpc = new AbsoluteLayoutServerRpc() {
 
         @Override
-        public void layoutClick(MouseEventDetails mouseDetails, Connector clickedConnector) {
-            fireEvent(LayoutClickEvent.createEvent(AbsoluteLayout.this, mouseDetails, clickedConnector));
+        public void layoutClick(MouseEventDetails mouseDetails,
+                Connector clickedConnector) {
+            fireEvent(LayoutClickEvent.createEvent(AbsoluteLayout.this,
+                    mouseDetails, clickedConnector));
         }
     };
     // Maps each component to a position
@@ -100,7 +103,8 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
      * old components position.
      */
     @Override
-    public void replaceComponent(Component oldComponent, Component newComponent) {
+    public void replaceComponent(Component oldComponent,
+            Component newComponent) {
         ComponentPosition position = getPosition(oldComponent);
         removeComponent(oldComponent);
         addComponent(newComponent, position);
@@ -109,9 +113,8 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * com.vaadin.ui.AbstractComponentContainer#addComponent(com.vaadin.ui.Component
-     * )
+     * @see com.vaadin.ui.AbstractComponentContainer#addComponent(com.vaadin.ui.
+     * Component )
      */
     @Override
     public void addComponent(Component c) {
@@ -149,7 +152,8 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
      * @throws IllegalArgumentException
      *             If adding the component failed
      */
-    private void addComponent(Component c, ComponentPosition position) throws IllegalArgumentException {
+    private void addComponent(Component c, ComponentPosition position)
+            throws IllegalArgumentException {
         /*
          * Create position instance and add it to componentToCoordinates map. We
          * need to do this before we call addComponent so the attachListeners
@@ -187,7 +191,8 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
         Map<String, String> connectorToPosition = new HashMap<String, String>();
         for (Iterator<Component> ci = iterator(); ci.hasNext();) {
             Component c = ci.next();
-            connectorToPosition.put(c.getConnectorId(), getPosition(c).getCSSString());
+            connectorToPosition.put(c.getConnectorId(),
+                    getPosition(c).getCSSString());
         }
         getState().connectorToCssPosition = connectorToPosition;
 
@@ -233,7 +238,8 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
      */
     public void setPosition(Component component, ComponentPosition position) {
         if (!componentToCoordinates.containsKey(component)) {
-            throw new IllegalArgumentException("Component must be a child of this layout");
+            throw new IllegalArgumentException(
+                    "Component must be a child of this layout");
         }
         internalSetPosition(component, position);
     }
@@ -247,7 +253,8 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
      * @param position
      *            New position. Must not be null.
      */
-    private void internalSetPosition(Component component, ComponentPosition position) {
+    private void internalSetPosition(Component component,
+            ComponentPosition position) {
         componentToCoordinates.put(component, position);
         markAsDirty();
     }
@@ -306,7 +313,8 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
                     }
                     String symbol = value.replaceAll("[0-9\\.\\-]+", "");
                     if (!symbol.equals("")) {
-                        value = value.substring(0, value.indexOf(symbol)).trim();
+                        value = value.substring(0, value.indexOf(symbol))
+                                .trim();
                     }
                     float v = Float.parseFloat(value);
                     Unit unit = Unit.getUnitFromSymbol(symbol);
@@ -633,12 +641,15 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
 
     @Override
     public void addLayoutClickListener(LayoutClickListener listener) {
-        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener, LayoutClickListener.clickMethod);
+        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
+                LayoutClickEvent.class, listener,
+                LayoutClickListener.clickMethod);
     }
 
     @Override
     public void removeLayoutClickListener(LayoutClickListener listener) {
-        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener);
+        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
+                LayoutClickEvent.class, listener);
     }
 
     /*
@@ -669,7 +680,8 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
                 css.append("left:").append(attr.get(ATTR_LEFT)).append(";");
             }
             if (attr.hasKey(ATTR_Z_INDEX)) {
-                css.append("z-index:").append(attr.get(ATTR_Z_INDEX)).append(";");
+                css.append("z-index:").append(attr.get(ATTR_Z_INDEX))
+                        .append(";");
             }
             addComponent(newChild, css.toString());
         }
@@ -695,14 +707,22 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
 
             // handle position
             ComponentPosition position = getPosition(child);
-            writePositionAttribute(childElement, ATTR_TOP, position.getTopUnits().getSymbol(), position.getTopValue());
-            writePositionAttribute(childElement, ATTR_RIGHT, position.getRightUnits().getSymbol(), position.getRightValue());
-            writePositionAttribute(childElement, ATTR_BOTTOM, position.getBottomUnits().getSymbol(), position.getBottomValue());
-            writePositionAttribute(childElement, ATTR_LEFT, position.getLeftUnits().getSymbol(), position.getLeftValue());
+            writePositionAttribute(childElement, ATTR_TOP,
+                    position.getTopUnits().getSymbol(), position.getTopValue());
+            writePositionAttribute(childElement, ATTR_RIGHT,
+                    position.getRightUnits().getSymbol(),
+                    position.getRightValue());
+            writePositionAttribute(childElement, ATTR_BOTTOM,
+                    position.getBottomUnits().getSymbol(),
+                    position.getBottomValue());
+            writePositionAttribute(childElement, ATTR_LEFT,
+                    position.getLeftUnits().getSymbol(),
+                    position.getLeftValue());
 
             // handle z-index
             if (position.getZIndex() >= 0) {
-                childElement.attr(ATTR_Z_INDEX, String.valueOf(position.zIndex));
+                childElement.attr(ATTR_Z_INDEX,
+                        String.valueOf(position.zIndex));
             }
         }
     }
@@ -720,9 +740,11 @@ public class AbsoluteLayout extends AbstractLayout implements LayoutClickNotifie
      * @param value
      *            the value
      */
-    private void writePositionAttribute(Node node, String key, String symbol, Float value) {
+    private void writePositionAttribute(Node node, String key, String symbol,
+            Float value) {
         if (value != null) {
-            String valueString = DesignAttributeHandler.getFormatter().format(value);
+            String valueString = DesignAttributeHandler.getFormatter()
+                    .format(value);
             node.attr(key, valueString + symbol);
         }
     }

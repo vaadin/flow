@@ -187,7 +187,8 @@ public class WidgetUtil {
         return element.cloneNode(deep);
     }-*/;
 
-    public static int measureHorizontalPaddingAndBorder(Element element, int paddingGuess) {
+    public static int measureHorizontalPaddingAndBorder(Element element,
+            int paddingGuess) {
         String originalWidth = DOM.getStyleAttribute(element, "width");
 
         int originalOffsetWidth = element.getOffsetWidth();
@@ -203,7 +204,8 @@ public class WidgetUtil {
         return padding;
     }
 
-    public static int measureVerticalPaddingAndBorder(Element element, int paddingGuess) {
+    public static int measureVerticalPaddingAndBorder(Element element,
+            int paddingGuess) {
         String originalHeight = DOM.getStyleAttribute(element, "height");
         int originalOffsetHeight = element.getOffsetHeight();
         int widthGuess = (originalOffsetHeight - paddingGuess);
@@ -240,7 +242,8 @@ public class WidgetUtil {
             element.getStyle().setProperty("width", width);
             element.getStyle().setProperty("height", height);
         } else {
-            borders = element.getOffsetWidth() - element.getPropertyInt("clientWidth");
+            borders = element.getOffsetWidth()
+                    - element.getPropertyInt("clientWidth");
         }
         assert borders >= 0;
 
@@ -265,12 +268,14 @@ public class WidgetUtil {
 
             element.getStyle().setPropertyPx("height", offsetHeight);
 
-            borders = element.getOffsetHeight() - element.getPropertyInt("clientHeight");
+            borders = element.getOffsetHeight()
+                    - element.getPropertyInt("clientHeight");
 
             element.getStyle().setProperty("height", height);
             element.getStyle().setProperty("width", width);
         } else {
-            borders = element.getOffsetHeight() - element.getPropertyInt("clientHeight");
+            borders = element.getOffsetHeight()
+                    - element.getPropertyInt("clientHeight");
         }
         assert borders >= 0;
 
@@ -278,21 +283,26 @@ public class WidgetUtil {
     }
 
     public static int measureMarginLeft(Element element) {
-        return element.getAbsoluteLeft() - element.getParentElement().getAbsoluteLeft();
+        return element.getAbsoluteLeft()
+                - element.getParentElement().getAbsoluteLeft();
     }
 
-    public static int setHeightExcludingPaddingAndBorder(Widget widget, String height, int paddingBorderGuess) {
+    public static int setHeightExcludingPaddingAndBorder(Widget widget,
+            String height, int paddingBorderGuess) {
         if (height.equals("")) {
             setHeight(widget, "");
             return paddingBorderGuess;
         } else if (height.endsWith("px")) {
-            int pixelHeight = Integer.parseInt(height.substring(0, height.length() - 2));
-            return setHeightExcludingPaddingAndBorder(widget.getElement(), pixelHeight, paddingBorderGuess, false);
+            int pixelHeight = Integer
+                    .parseInt(height.substring(0, height.length() - 2));
+            return setHeightExcludingPaddingAndBorder(widget.getElement(),
+                    pixelHeight, paddingBorderGuess, false);
         } else {
             // Set the height in unknown units
             setHeight(widget, height);
             // Use the offsetWidth
-            return setHeightExcludingPaddingAndBorder(widget.getElement(), widget.getOffsetHeight(), paddingBorderGuess, true);
+            return setHeightExcludingPaddingAndBorder(widget.getElement(),
+                    widget.getOffsetHeight(), paddingBorderGuess, true);
         }
     }
 
@@ -304,20 +314,26 @@ public class WidgetUtil {
         widget.getElement().getStyle().setProperty("height", height);
     }
 
-    public static int setWidthExcludingPaddingAndBorder(Widget widget, String width, int paddingBorderGuess) {
+    public static int setWidthExcludingPaddingAndBorder(Widget widget,
+            String width, int paddingBorderGuess) {
         if (width.equals("")) {
             setWidth(widget, "");
             return paddingBorderGuess;
         } else if (width.endsWith("px")) {
-            int pixelWidth = Integer.parseInt(width.substring(0, width.length() - 2));
-            return setWidthExcludingPaddingAndBorder(widget.getElement(), pixelWidth, paddingBorderGuess, false);
+            int pixelWidth = Integer
+                    .parseInt(width.substring(0, width.length() - 2));
+            return setWidthExcludingPaddingAndBorder(widget.getElement(),
+                    pixelWidth, paddingBorderGuess, false);
         } else {
             setWidth(widget, width);
-            return setWidthExcludingPaddingAndBorder(widget.getElement(), widget.getOffsetWidth(), paddingBorderGuess, true);
+            return setWidthExcludingPaddingAndBorder(widget.getElement(),
+                    widget.getOffsetWidth(), paddingBorderGuess, true);
         }
     }
 
-    public static int setWidthExcludingPaddingAndBorder(Element element, int requestedWidth, int horizontalPaddingBorderGuess, boolean requestedWidthIncludesPaddingBorder) {
+    public static int setWidthExcludingPaddingAndBorder(Element element,
+            int requestedWidth, int horizontalPaddingBorderGuess,
+            boolean requestedWidthIncludesPaddingBorder) {
 
         int widthGuess = requestedWidth - horizontalPaddingBorderGuess;
         if (widthGuess < 0) {
@@ -325,7 +341,8 @@ public class WidgetUtil {
         }
 
         element.getStyle().setWidth(widthGuess, Unit.PX);
-        int captionOffsetWidth = DOM.getElementPropertyInt(element, "offsetWidth");
+        int captionOffsetWidth = DOM.getElementPropertyInt(element,
+                "offsetWidth");
 
         int actualPadding = captionOffsetWidth - widthGuess;
 
@@ -347,7 +364,9 @@ public class WidgetUtil {
 
     }
 
-    public static int setHeightExcludingPaddingAndBorder(Element element, int requestedHeight, int verticalPaddingBorderGuess, boolean requestedHeightIncludesPaddingBorder) {
+    public static int setHeightExcludingPaddingAndBorder(Element element,
+            int requestedHeight, int verticalPaddingBorderGuess,
+            boolean requestedHeightIncludesPaddingBorder) {
 
         int heightGuess = requestedHeight - verticalPaddingBorderGuess;
         if (heightGuess < 0) {
@@ -355,7 +374,8 @@ public class WidgetUtil {
         }
 
         element.getStyle().setHeight(heightGuess, Unit.PX);
-        int captionOffsetHeight = DOM.getElementPropertyInt(element, "offsetHeight");
+        int captionOffsetHeight = DOM.getElementPropertyInt(element,
+                "offsetHeight");
 
         int actualPadding = captionOffsetHeight - heightGuess;
 
@@ -397,7 +417,8 @@ public class WidgetUtil {
             scroller.getStyle().setProperty("position", "absolute");
             scroller.getStyle().setProperty("marginLeft", "-5000px");
             RootPanel.getBodyElement().appendChild(scroller);
-            detectedScrollbarSize = scroller.getOffsetWidth() - scroller.getPropertyInt("clientWidth");
+            detectedScrollbarSize = scroller.getOffsetWidth()
+                    - scroller.getPropertyInt("clientWidth");
 
             RootPanel.getBodyElement().removeChild(scroller);
         }
@@ -434,10 +455,15 @@ public class WidgetUtil {
         // Add max version if fix lands sometime to Webkit
         // Starting from Opera 11.00, also a problem in Opera
         if (BrowserInfo.get().requiresOverflowAutoFix()) {
-            final String originalOverflow = elem.getStyle().getProperty("overflow");
-            final String originalOverflowX = elem.getStyle().getProperty("overflowX");
-            final String originalOverflowY = elem.getStyle().getProperty("overflowY");
-            if ("hidden".equals(originalOverflow) || "hidden".equals(originalOverflowX) || "hidden".equals(originalOverflowY)) {
+            final String originalOverflow = elem.getStyle()
+                    .getProperty("overflow");
+            final String originalOverflowX = elem.getStyle()
+                    .getProperty("overflowX");
+            final String originalOverflowY = elem.getStyle()
+                    .getProperty("overflowY");
+            if ("hidden".equals(originalOverflow)
+                    || "hidden".equals(originalOverflowX)
+                    || "hidden".equals(originalOverflowY)) {
                 return;
             }
 
@@ -452,10 +478,12 @@ public class WidgetUtil {
                     // Dough, Safari scroll auto means actually just a moped
                     elem.getStyle().setProperty("overflow", originalOverflow);
                     if (!originalOverflowX.isEmpty()) {
-                        elem.getStyle().setProperty("overflowX", originalOverflowX);
+                        elem.getStyle().setProperty("overflowX",
+                                originalOverflowX);
                     }
                     if (!originalOverflowY.isEmpty()) {
-                        elem.getStyle().setProperty("overflowY", originalOverflowY);
+                        elem.getStyle().setProperty("overflowY",
+                                originalOverflowY);
                     }
 
                     if (scrolltop > 0 || elem.getScrollTop() > 0) {
@@ -476,7 +504,10 @@ public class WidgetUtil {
                     // fix for #6940 : Table horizontal scroll sometimes not
                     // updated when collapsing/expanding columns
                     // Also appeared in Safari 5.1 with webkit 534 (#7667)
-                    if ((BrowserInfo.get().isChrome() || (BrowserInfo.get().isSafari() && BrowserInfo.get().getWebkitVersion() >= 534)) && (scrollleft > 0 || elem.getScrollLeft() > 0)) {
+                    if ((BrowserInfo.get().isChrome() || (BrowserInfo.get()
+                            .isSafari()
+                            && BrowserInfo.get().getWebkitVersion() >= 534))
+                            && (scrollleft > 0 || elem.getScrollLeft() > 0)) {
                         int scrollvalue = scrollleft;
 
                         if (scrollvalue == 0) {
@@ -511,7 +542,8 @@ public class WidgetUtil {
      *            The element to check
      * @return The border-box width for the element
      */
-    public static int getRequiredWidth(com.google.gwt.dom.client.Element element) {
+    public static int getRequiredWidth(
+            com.google.gwt.dom.client.Element element) {
         int reqWidth = getRequiredWidthBoundingClientRect(element);
         if (BrowserInfo.get().isIE() && !BrowserInfo.get().isIE8()) {
             int csSize = getRequiredWidthComputedStyle(element);
@@ -536,7 +568,8 @@ public class WidgetUtil {
      *            The element to check
      * @return The border-box width for the element
      */
-    public static double getRequiredWidthDouble(com.google.gwt.dom.client.Element element) {
+    public static double getRequiredWidthDouble(
+            com.google.gwt.dom.client.Element element) {
         double reqWidth = getRequiredWidthBoundingClientRectDouble(element);
         if (BrowserInfo.get().isIE() && !BrowserInfo.get().isIE8()) {
             double csWidth = getRequiredWidthComputedStyleDouble(element);
@@ -559,7 +592,8 @@ public class WidgetUtil {
      *            The element to check
      * @return The border-box height for the element
      */
-    public static int getRequiredHeight(com.google.gwt.dom.client.Element element) {
+    public static int getRequiredHeight(
+            com.google.gwt.dom.client.Element element) {
         int reqHeight = getRequiredHeightBoundingClientRect(element);
         if (BrowserInfo.get().isIE() && !BrowserInfo.get().isIE8()) {
             int csSize = getRequiredHeightComputedStyle(element);
@@ -584,7 +618,8 @@ public class WidgetUtil {
      *            The element to check
      * @return The border-box height for the element
      */
-    public static double getRequiredHeightDouble(com.google.gwt.dom.client.Element element) {
+    public static double getRequiredHeightDouble(
+            com.google.gwt.dom.client.Element element) {
         double reqHeight = getRequiredHeightBoundingClientRectDouble(element);
         if (BrowserInfo.get().isIE() && !BrowserInfo.get().isIE8()) {
             double csHeight = getRequiredHeightComputedStyleDouble(element);
@@ -612,8 +647,10 @@ public class WidgetUtil {
      *            the element of which to calculate the width
      * @return the width of the element
      */
-    public static int getRequiredWidthBoundingClientRect(com.google.gwt.dom.client.Element element) {
-        return (int) Math.ceil(getRequiredWidthBoundingClientRectDouble(element));
+    public static int getRequiredWidthBoundingClientRect(
+            com.google.gwt.dom.client.Element element) {
+        return (int) Math
+                .ceil(getRequiredWidthBoundingClientRectDouble(element));
     }
 
     /**
@@ -628,51 +665,56 @@ public class WidgetUtil {
      * @return the subpixel-accurate width of the element
      * @since 7.4
      */
-    public static native double getRequiredWidthBoundingClientRectDouble(com.google.gwt.dom.client.Element element)
-    /*-{
-        if (element.getBoundingClientRect) {
-          var rect = element.getBoundingClientRect();
-          return rect.right - rect.left;
-        } else {
-          return element.offsetWidth;
-        }
-    }-*/;
+    public static native double getRequiredWidthBoundingClientRectDouble(
+            com.google.gwt.dom.client.Element element)
+            /*-{
+                if (element.getBoundingClientRect) {
+                  var rect = element.getBoundingClientRect();
+                  return rect.right - rect.left;
+                } else {
+                  return element.offsetWidth;
+                }
+            }-*/;
 
-    public static int getRequiredHeightComputedStyle(com.google.gwt.dom.client.Element element) {
+    public static int getRequiredHeightComputedStyle(
+            com.google.gwt.dom.client.Element element) {
         return (int) Math.ceil(getRequiredHeightComputedStyleDouble(element));
     }
 
-    public static native double getRequiredHeightComputedStyleDouble(com.google.gwt.dom.client.Element element)
-    /*-{
-         var cs = element.ownerDocument.defaultView.getComputedStyle(element);
-         var heightPx = cs.height;
-         if(heightPx == 'auto'){
-             // Fallback for inline elements
-             return @com.vaadin.client.WidgetUtil::getRequiredHeightBoundingClientRectDouble(Lcom/google/gwt/dom/client/Element;)(element);
-         }
-         var height = parseFloat(heightPx); // Will automatically skip "px" suffix
-         var border = parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth); // Will automatically skip "px" suffix 
-         var padding = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom); // Will automatically skip "px" suffix
-         return height+border+padding;
-     }-*/;
+    public static native double getRequiredHeightComputedStyleDouble(
+            com.google.gwt.dom.client.Element element)
+            /*-{
+                 var cs = element.ownerDocument.defaultView.getComputedStyle(element);
+                 var heightPx = cs.height;
+                 if(heightPx == 'auto'){
+                     // Fallback for inline elements
+                     return @com.vaadin.client.WidgetUtil::getRequiredHeightBoundingClientRectDouble(Lcom/google/gwt/dom/client/Element;)(element);
+                 }
+                 var height = parseFloat(heightPx); // Will automatically skip "px" suffix
+                 var border = parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth); // Will automatically skip "px" suffix 
+                 var padding = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom); // Will automatically skip "px" suffix
+                 return height+border+padding;
+             }-*/;
 
-    public static int getRequiredWidthComputedStyle(com.google.gwt.dom.client.Element element) {
+    public static int getRequiredWidthComputedStyle(
+            com.google.gwt.dom.client.Element element) {
         return (int) Math.ceil(getRequiredWidthComputedStyleDouble(element));
     }
 
-    public static native int getRequiredWidthComputedStyleDouble(com.google.gwt.dom.client.Element element)
-    /*-{
-         var cs = element.ownerDocument.defaultView.getComputedStyle(element);
-         var widthPx = cs.width;
-         if(widthPx == 'auto'){
-             // Fallback for inline elements
-             return @com.vaadin.client.WidgetUtil::getRequiredWidthBoundingClientRectDouble(Lcom/google/gwt/dom/client/Element;)(element);
-         }
-         var width = parseFloat(widthPx); // Will automatically skip "px" suffix
-         var border = parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth); // Will automatically skip "px" suffix
-         var padding = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight); // Will automatically skip "px" suffix
-         return width+border+padding;
-     }-*/;
+    public static native int getRequiredWidthComputedStyleDouble(
+            com.google.gwt.dom.client.Element element)
+            /*-{
+                 var cs = element.ownerDocument.defaultView.getComputedStyle(element);
+                 var widthPx = cs.width;
+                 if(widthPx == 'auto'){
+                     // Fallback for inline elements
+                     return @com.vaadin.client.WidgetUtil::getRequiredWidthBoundingClientRectDouble(Lcom/google/gwt/dom/client/Element;)(element);
+                 }
+                 var width = parseFloat(widthPx); // Will automatically skip "px" suffix
+                 var border = parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth); // Will automatically skip "px" suffix
+                 var padding = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight); // Will automatically skip "px" suffix
+                 return width+border+padding;
+             }-*/;
 
     /**
      * Calculates the height of the element's bounding rectangle.
@@ -684,8 +726,10 @@ public class WidgetUtil {
      *            the element of which to calculate the height
      * @return the height of the element
      */
-    public static int getRequiredHeightBoundingClientRect(com.google.gwt.dom.client.Element element) {
-        return (int) Math.ceil(getRequiredHeightBoundingClientRectDouble(element));
+    public static int getRequiredHeightBoundingClientRect(
+            com.google.gwt.dom.client.Element element) {
+        return (int) Math
+                .ceil(getRequiredHeightBoundingClientRectDouble(element));
     }
 
     /**
@@ -700,17 +744,18 @@ public class WidgetUtil {
      * @return the subpixel-accurate height of the element
      * @since 7.4
      */
-    public static native double getRequiredHeightBoundingClientRectDouble(com.google.gwt.dom.client.Element element)
-    /*-{
-        var height;
-        if (element.getBoundingClientRect != null) {
-          var rect = element.getBoundingClientRect();
-          height = rect.bottom - rect.top;
-        } else {
-          height = element.offsetHeight;
-        }
-        return height;
-    }-*/;
+    public static native double getRequiredHeightBoundingClientRectDouble(
+            com.google.gwt.dom.client.Element element)
+            /*-{
+                var height;
+                if (element.getBoundingClientRect != null) {
+                  var rect = element.getBoundingClientRect();
+                  height = rect.bottom - rect.top;
+                } else {
+                  height = element.offsetHeight;
+                }
+                return height;
+            }-*/;
 
     public static int getRequiredWidth(Widget widget) {
         return getRequiredWidth(widget.getElement());
@@ -727,7 +772,8 @@ public class WidgetUtil {
      *            the element to detect
      * @return true if auto or scroll
      */
-    public static boolean mayHaveScrollBars(com.google.gwt.dom.client.Element pe) {
+    public static boolean mayHaveScrollBars(
+            com.google.gwt.dom.client.Element pe) {
         String overflow = getComputedStyle(pe, "overflow");
         if (overflow != null) {
             if (overflow.equals("auto") || overflow.equals("scroll")) {
@@ -751,26 +797,27 @@ public class WidgetUtil {
      *            the property to detect
      * @return String value of style property
      */
-    private static native String getComputedStyle(com.google.gwt.dom.client.Element el, String p)
-    /*-{
-        try {
-
-        if (el.currentStyle) {
-            // IE
-            return el.currentStyle[p];
-        } else if (window.getComputedStyle) {
-            // Sa, FF, Opera
-            var view = el.ownerDocument.defaultView;
-            return view.getComputedStyle(el,null).getPropertyValue(p);
-        } else {
-            // fall back for non IE, Sa, FF, Opera
-            return "";
-        }
-        } catch (e) {
-            return "";
-        }
-
-     }-*/;
+    private static native String getComputedStyle(
+            com.google.gwt.dom.client.Element el, String p)
+            /*-{
+                try {
+            
+                if (el.currentStyle) {
+                    // IE
+                    return el.currentStyle[p];
+                } else if (window.getComputedStyle) {
+                    // Sa, FF, Opera
+                    var view = el.ownerDocument.defaultView;
+                    return view.getComputedStyle(el,null).getPropertyValue(p);
+                } else {
+                    // fall back for non IE, Sa, FF, Opera
+                    return "";
+                }
+                } catch (e) {
+                    return "";
+                }
+            
+             }-*/;
 
     /**
      * Will (attempt) to focus the given DOM Element.
@@ -783,7 +830,7 @@ public class WidgetUtil {
         try {
             el.focus();
         } catch (e) {
-
+    
         }
     }-*/;
 
@@ -804,7 +851,8 @@ public class WidgetUtil {
      *            the Widget type to seek for
      */
     @SuppressWarnings("unchecked")
-    public static <T> T findWidget(Element element, Class<? extends Widget> class1) {
+    public static <T> T findWidget(Element element,
+            Class<? extends Widget> class1) {
         if (element != null) {
             /* First seek for the first EventListener (~Widget) from dom */
             EventListener eventListener = null;
@@ -906,7 +954,8 @@ public class WidgetUtil {
     }
 
     public static void sinkOnloadForImages(Element element) {
-        NodeList<com.google.gwt.dom.client.Element> imgElements = element.getElementsByTagName("img");
+        NodeList<com.google.gwt.dom.client.Element> imgElements = element
+                .getElementsByTagName("img");
         for (int i = 0; i < imgElements.getLength(); i++) {
             DOM.sinkEvents(imgElements.getItem(i), Event.ONLOAD);
         }
@@ -941,7 +990,8 @@ public class WidgetUtil {
      * @param tempValue
      *            The temporary value
      */
-    public static void setStyleTemporarily(Element element, final String styleProperty, String tempValue) {
+    public static void setStyleTemporarily(Element element,
+            final String styleProperty, String tempValue) {
         final Style style = element.getStyle();
         final String currentValue = style.getProperty(styleProperty);
 
@@ -1027,17 +1077,28 @@ public class WidgetUtil {
         return isTouchEvent(Event.as(event));
     }
 
-    public static void simulateClickFromTouchEvent(Event touchevent, Widget widget) {
+    public static void simulateClickFromTouchEvent(Event touchevent,
+            Widget widget) {
         Touch touch = touchevent.getChangedTouches().get(0);
-        final NativeEvent createMouseUpEvent = Document.get().createMouseUpEvent(0, touch.getScreenX(), touch.getScreenY(), touch.getClientX(), touch.getClientY(), false, false, false, false, NativeEvent.BUTTON_LEFT);
-        final NativeEvent createMouseDownEvent = Document.get().createMouseDownEvent(0, touch.getScreenX(), touch.getScreenY(), touch.getClientX(), touch.getClientY(), false, false, false, false, NativeEvent.BUTTON_LEFT);
-        final NativeEvent createMouseClickEvent = Document.get().createClickEvent(0, touch.getScreenX(), touch.getScreenY(), touch.getClientX(), touch.getClientY(), false, false, false, false);
+        final NativeEvent createMouseUpEvent = Document.get()
+                .createMouseUpEvent(0, touch.getScreenX(), touch.getScreenY(),
+                        touch.getClientX(), touch.getClientY(), false, false,
+                        false, false, NativeEvent.BUTTON_LEFT);
+        final NativeEvent createMouseDownEvent = Document.get()
+                .createMouseDownEvent(0, touch.getScreenX(), touch.getScreenY(),
+                        touch.getClientX(), touch.getClientY(), false, false,
+                        false, false, NativeEvent.BUTTON_LEFT);
+        final NativeEvent createMouseClickEvent = Document.get()
+                .createClickEvent(0, touch.getScreenX(), touch.getScreenY(),
+                        touch.getClientX(), touch.getClientY(), false, false,
+                        false, false);
 
         /*
          * Get target with element from point as we want the actual element, not
          * the one that sunk the event.
          */
-        final Element target = getElementFromPoint(touch.getClientX(), touch.getClientY());
+        final Element target = getElementFromPoint(touch.getClientX(),
+                touch.getClientY());
 
         /*
          * Fixes infocusable form fields in Safari of iOS 5.x and some Android
@@ -1076,7 +1137,7 @@ public class WidgetUtil {
        if ($wnd.document.activeElement) {
            return $wnd.document.activeElement;
        }
-
+    
        return null;
      }-*/;
 
@@ -1091,9 +1152,12 @@ public class WidgetUtil {
         Element focusedElement = WidgetUtil.getFocusedElement();
         if (focusedElement != null) {
             String tagName = focusedElement.getTagName();
-            String contenteditable = focusedElement.getAttribute("contenteditable");
+            String contenteditable = focusedElement
+                    .getAttribute("contenteditable");
 
-            return "textarea".equalsIgnoreCase(tagName) || "input".equalsIgnoreCase(tagName) || "true".equalsIgnoreCase(contenteditable);
+            return "textarea".equalsIgnoreCase(tagName)
+                    || "input".equalsIgnoreCase(tagName)
+                    || "true".equalsIgnoreCase(contenteditable);
         }
         return false;
     }
@@ -1112,7 +1176,8 @@ public class WidgetUtil {
             /*
              * Failfast using offset size, then by iterating the widget tree
              */
-            boolean notZeroSized = widget.getOffsetHeight() > 0 || widget.getOffsetWidth() > 0;
+            boolean notZeroSized = widget.getOffsetHeight() > 0
+                    || widget.getOffsetWidth() > 0;
             return notZeroSized || checkVisibilityRecursively(widget);
         } else {
             return false;
@@ -1143,11 +1208,11 @@ public class WidgetUtil {
     /*-{
         var top = elem.offsetTop;
         var height = elem.offsetHeight;
-
+    
         if (elem.parentNode != elem.offsetParent) {
           top -= elem.parentNode.offsetTop;
         }
-
+    
         var cur = elem.parentNode;
         while (cur && (cur.nodeType == 1)) {
           if (top < cur.scrollTop) {
@@ -1156,12 +1221,12 @@ public class WidgetUtil {
           if (top + height > cur.scrollTop + cur.clientHeight) {
             cur.scrollTop = (top + height) - cur.clientHeight;
           }
-
+    
           var offsetTop = cur.offsetTop;
           if (cur.parentNode != cur.offsetParent) {
             offsetTop -= cur.parentNode.offsetTop;
           }
-
+    
           top += offsetTop - cur.scrollTop;
           cur = cur.parentNode;
         }
@@ -1195,7 +1260,8 @@ public class WidgetUtil {
             divElement.getStyle().setDisplay(Display.NONE);
 
             RootPanel.getBodyElement().appendChild(divElement);
-            divElement.setInnerHTML("<a href='" + escapeAttribute(url) + "' ></a>");
+            divElement.setInnerHTML(
+                    "<a href='" + escapeAttribute(url) + "' ></a>");
 
             AnchorElement a = divElement.getChild(0).cast();
             String href = a.getHref();
@@ -1230,14 +1296,15 @@ public class WidgetUtil {
      * 
      * @since 7.3
      */
-    public native static void setSelectionRange(Element elem, int pos, int length, String direction)
-    /*-{
-       try {
-           elem.setSelectionRange(pos, pos + length, direction);
-       } catch (e) {
-          // Firefox throws exception if TextBox is not visible, even if attached
-       }
-    }-*/;
+    public native static void setSelectionRange(Element elem, int pos,
+            int length, String direction)
+            /*-{
+               try {
+                   elem.setSelectionRange(pos, pos + length, direction);
+               } catch (e) {
+                  // Firefox throws exception if TextBox is not visible, even if attached
+               }
+            }-*/;
 
     /**
      * The allowed value inaccuracy when comparing two double-typed pixel
@@ -1260,7 +1327,8 @@ public class WidgetUtil {
      * 
      * @return true if the values are considered equals; false otherwise
      */
-    public static boolean pixelValuesEqual(final double num1, final double num2) {
+    public static boolean pixelValuesEqual(final double num1,
+            final double num2) {
         return Math.abs(num1 - num2) <= PIXEL_EPSILON;
     }
 
@@ -1319,6 +1387,7 @@ public class WidgetUtil {
          * Map the size units with their type.
          */
         private static Map<String, Unit> type2Unit = new HashMap<String, Style.Unit>();
+
         static {
             for (Unit unit : Unit.values()) {
                 type2Unit.put(unit.getType(), unit);
@@ -1339,7 +1408,8 @@ public class WidgetUtil {
         /*
          * Regex to parse the size.
          */
-        private static final RegExp sizePattern = RegExp.compile(SharedUtil.SIZE_PATTERN);
+        private static final RegExp sizePattern = RegExp
+                .compile(SharedUtil.SIZE_PATTERN);
 
         /**
          * Parse the size from string format to {@link CssSize}.
@@ -1374,7 +1444,9 @@ public class WidgetUtil {
                     unit = unitByType(symbol);
                 }
             } else {
-                throw new IllegalArgumentException("Invalid size argument: \"" + s + "\" (should match " + sizePattern.getSource() + ")");
+                throw new IllegalArgumentException(
+                        "Invalid size argument: \"" + s + "\" (should match "
+                                + sizePattern.getSource() + ")");
             }
             return new CssSize(size, unit);
         }
@@ -1450,7 +1522,8 @@ public class WidgetUtil {
          * @return true if the two sizes are equals, otherwise false.
          */
         public static boolean equals(String cssSize1, String cssSize2) {
-            return CssSize.fromString(cssSize1).equals(CssSize.fromString(cssSize2));
+            return CssSize.fromString(cssSize1)
+                    .equals(CssSize.fromString(cssSize2));
         }
 
     }
@@ -1486,7 +1559,8 @@ public class WidgetUtil {
      * @return the bottom border thickness
      */
     public static double getBorderBottomThickness(Element element) {
-        return getBorderThickness(element, new String[] { "borderBottomWidth" });
+        return getBorderThickness(element,
+                new String[] { "borderBottomWidth" });
     }
 
     /**
@@ -1502,7 +1576,8 @@ public class WidgetUtil {
      * @return the top and bottom border thickness
      */
     public static double getBorderTopAndBottomThickness(Element element) {
-        return getBorderThickness(element, new String[] { "borderTopWidth", "borderBottomWidth" });
+        return getBorderThickness(element,
+                new String[] { "borderTopWidth", "borderBottomWidth" });
     }
 
     /**
@@ -1547,35 +1622,37 @@ public class WidgetUtil {
      * @return the top border thickness
      */
     public static double getBorderLeftAndRightThickness(Element element) {
-        return getBorderThickness(element, new String[] { "borderLeftWidth", "borderRightWidth" });
+        return getBorderThickness(element,
+                new String[] { "borderLeftWidth", "borderRightWidth" });
     }
 
-    private static native double getBorderThickness(com.google.gwt.dom.client.Element element, String[] borderNames)
-    /*-{
-        if (typeof $wnd.getComputedStyle === 'function') {
-            var computedStyle = $wnd.getComputedStyle(element);
-            var width = 0;
-            for (i=0; i< borderNames.length; i++) {
-                var borderWidth = computedStyle[borderNames[i]];
-                width += parseFloat(borderWidth);
-            }
-            return width;
-        } else {
-            var parentElement = element.offsetParent;
-            var cloneElement = element.cloneNode(false);
-            cloneElement.style.boxSizing ="content-box";
-            parentElement.appendChild(cloneElement);
-            cloneElement.style.height = "10px"; // IE8 wants the height to be set to something...
-            var heightWithBorder = cloneElement.offsetHeight;
-            for (i=0; i< borderNames.length; i++) {
-                cloneElement.style[borderNames[i]] = "0";
-            }
-            var heightWithoutBorder = cloneElement.offsetHeight;
-            parentElement.removeChild(cloneElement);
-            
-            return heightWithBorder - heightWithoutBorder;
-        }
-    }-*/;
+    private static native double getBorderThickness(
+            com.google.gwt.dom.client.Element element, String[] borderNames)
+            /*-{
+                if (typeof $wnd.getComputedStyle === 'function') {
+                    var computedStyle = $wnd.getComputedStyle(element);
+                    var width = 0;
+                    for (i=0; i< borderNames.length; i++) {
+                        var borderWidth = computedStyle[borderNames[i]];
+                        width += parseFloat(borderWidth);
+                    }
+                    return width;
+                } else {
+                    var parentElement = element.offsetParent;
+                    var cloneElement = element.cloneNode(false);
+                    cloneElement.style.boxSizing ="content-box";
+                    parentElement.appendChild(cloneElement);
+                    cloneElement.style.height = "10px"; // IE8 wants the height to be set to something...
+                    var heightWithBorder = cloneElement.offsetHeight;
+                    for (i=0; i< borderNames.length; i++) {
+                        cloneElement.style[borderNames[i]] = "0";
+                    }
+                    var heightWithoutBorder = cloneElement.offsetHeight;
+                    parentElement.removeChild(cloneElement);
+                    
+                    return heightWithBorder - heightWithoutBorder;
+                }
+            }-*/;
 
     /**
      * Rounds the given size up to a value which the browser will accept.
@@ -1661,7 +1738,8 @@ public class WidgetUtil {
         if (computedHeight < probeSize) {
             // Rounded down by browser, all browsers but Firefox do this
             // today
-            detectedSubPixelRoundingFactor = (int) Math.round(1.0 / (1.0 - computedHeight));
+            detectedSubPixelRoundingFactor = (int) Math
+                    .round(1.0 / (1.0 - computedHeight));
         } else {
             // Rounded up / to nearest by browser
             probeSize = 1;
@@ -1672,7 +1750,8 @@ public class WidgetUtil {
                 div.getStyle().setHeight(probeSize, Unit.PX);
             }
 
-            detectedSubPixelRoundingFactor = (int) Math.round(1.0 / computedHeight);
+            detectedSubPixelRoundingFactor = (int) Math
+                    .round(1.0 / computedHeight);
         }
 
         div.removeFromParent();

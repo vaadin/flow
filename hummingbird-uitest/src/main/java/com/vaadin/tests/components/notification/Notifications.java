@@ -26,10 +26,14 @@ public class Notifications extends TestBase implements ClickListener {
         type.setNullSelectionAllowed(false);
         type.addContainerProperty(CAPTION, String.class, "");
         type.setItemCaptionPropertyId(CAPTION);
-        type.addItem(Type.HUMANIZED_MESSAGE).getItemProperty(CAPTION).setValue("Humanized");
-        type.addItem(Type.ERROR_MESSAGE).getItemProperty(CAPTION).setValue("Error");
-        type.addItem(Type.WARNING_MESSAGE).getItemProperty(CAPTION).setValue("Warning");
-        type.addItem(Type.TRAY_NOTIFICATION).getItemProperty(CAPTION).setValue("Tray");
+        type.addItem(Type.HUMANIZED_MESSAGE).getItemProperty(CAPTION)
+                .setValue("Humanized");
+        type.addItem(Type.ERROR_MESSAGE).getItemProperty(CAPTION)
+                .setValue("Error");
+        type.addItem(Type.WARNING_MESSAGE).getItemProperty(CAPTION)
+                .setValue("Warning");
+        type.addItem(Type.TRAY_NOTIFICATION).getItemProperty(CAPTION)
+                .setValue("Tray");
         type.setValue(type.getItemIds().iterator().next());
         addComponent(type);
         Button showNotification = new Button("Show notification", this);
@@ -49,7 +53,8 @@ public class Notifications extends TestBase implements ClickListener {
 
     @Override
     public void buttonClick(ClickEvent event) {
-        Notification n = new Notification(tf.getValue(), (Type) type.getValue());
+        Notification n = new Notification(tf.getValue(),
+                (Type) type.getValue());
         n.setHtmlContentAllowed(true);
         n.show(Page.getCurrent());
     }

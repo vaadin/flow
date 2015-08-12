@@ -35,7 +35,8 @@ public class FilteringTurkishLocaleTest extends MultiBrowserTest {
 
         List<String> suggestions = getFilterSuggestions("i");
 
-        Assert.assertEquals("Both suggestions should be present", 2, suggestions.size());
+        Assert.assertEquals("Both suggestions should be present", 2,
+                suggestions.size());
     }
 
     @Test
@@ -46,7 +47,8 @@ public class FilteringTurkishLocaleTest extends MultiBrowserTest {
 
         List<String> suggestions = getFilterSuggestions("i");
 
-        Assert.assertEquals("There should be only one suggestion", 1, suggestions.size());
+        Assert.assertEquals("There should be only one suggestion", 1,
+                suggestions.size());
         Assert.assertEquals("İ with dot", suggestions.get(0));
     }
 
@@ -58,7 +60,8 @@ public class FilteringTurkishLocaleTest extends MultiBrowserTest {
 
         List<String> suggestions = getFilterSuggestions("ı");
 
-        Assert.assertEquals("There should be only one suggestion", 1, suggestions.size());
+        Assert.assertEquals("There should be only one suggestion", 1,
+                suggestions.size());
         Assert.assertEquals("I without dot", suggestions.get(0));
     }
 

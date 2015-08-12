@@ -34,25 +34,27 @@ public class DefaultCaptionWidth extends AbstractTestUI {
         addComponent(colorPicker);
         colorPicker.setDefaultCaptionEnabled(true);
 
-        Button setWidth = new Button("Set explicit width", new Button.ClickListener() {
+        Button setWidth = new Button("Set explicit width",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                colorPicker.setCaption(null);
-                colorPicker.setWidth("150px");
-            }
-        });
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        colorPicker.setCaption(null);
+                        colorPicker.setWidth("150px");
+                    }
+                });
         setWidth.addStyleName("set-width");
         addComponent(setWidth);
 
-        Button setCaption = new Button("Set explicit caption", new Button.ClickListener() {
+        Button setCaption = new Button("Set explicit caption",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                colorPicker.setCaption("caption");
-                colorPicker.setWidthUndefined();
-            }
-        });
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        colorPicker.setCaption("caption");
+                        colorPicker.setWidthUndefined();
+                    }
+                });
         setCaption.addStyleName("set-caption");
         addComponent(setCaption);
 

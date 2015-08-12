@@ -135,7 +135,8 @@ public class TestSampler extends TabSheet {
         createComponentLayout(caption, hl);
     }
 
-    private void createComponentLayout(String caption, ComponentContainer layout) {
+    private void createComponentLayout(String caption,
+            ComponentContainer layout) {
         addTab(layout, caption);
         currentTab = layout;
     }
@@ -160,7 +161,8 @@ public class TestSampler extends TabSheet {
         UI.getCurrent().addWindow(window);
     }
 
-    public void setCustomStyleNameToComponents(String oldStyleName, String newStyleName) {
+    public void setCustomStyleNameToComponents(String oldStyleName,
+            String newStyleName) {
         for (Component c : components) {
             if (oldStyleName != null) {
                 c.removeStyleName(oldStyleName);

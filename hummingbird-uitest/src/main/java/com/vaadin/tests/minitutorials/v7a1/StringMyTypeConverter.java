@@ -28,7 +28,8 @@ public class StringMyTypeConverter extends AbstractTestUI {
             public void buttonClick(ClickEvent event) {
                 try {
                     Name name = (Name) textField.getConvertedValue();
-                    Notification.show("First name: " + name.getFirstName() + "<br />Last name: " + name.getLastName());
+                    Notification.show("First name: " + name.getFirstName()
+                            + "<br />Last name: " + name.getLastName());
                 } catch (ConversionException e) {
                     e.printStackTrace();
                     Notification.show(e.getCause().getMessage());
@@ -51,19 +52,23 @@ public class StringMyTypeConverter extends AbstractTestUI {
 
 class StringToNameConverter implements Converter<String, Name> {
     @Override
-    public Name convertToModel(String text, Class<? extends Name> targetType, Locale locale) throws ConversionException {
+    public Name convertToModel(String text, Class<? extends Name> targetType,
+            Locale locale) throws ConversionException {
         if (text == null) {
             return null;
         }
         String[] parts = text.split(" ");
         if (parts.length != 2) {
-            throw new ConversionException("Can not convert text to a name: " + text);
+            throw new ConversionException(
+                    "Can not convert text to a name: " + text);
         }
         return new Name(parts[0], parts[1]);
     }
 
     @Override
-    public String convertToPresentation(Name name, Class<? extends String> targetType, Locale locale) throws ConversionException {
+    public String convertToPresentation(Name name,
+            Class<? extends String> targetType, Locale locale)
+                    throws ConversionException {
         if (name == null) {
             return null;
         } else {

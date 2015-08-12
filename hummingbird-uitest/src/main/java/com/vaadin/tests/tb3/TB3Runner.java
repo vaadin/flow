@@ -48,23 +48,29 @@ public class TB3Runner extends ParallelRunner {
 
         // reduce socket timeout to avoid tests hanging for three hours
         try {
-            Field field = HttpCommandExecutor.class.getDeclaredField("httpClientFactory");
-            assert (Modifier.isStatic(field.getModifiers()));
+            Field field = HttpCommandExecutor.class
+                    .getDeclaredField("httpClientFactory");
+            assert(Modifier.isStatic(field.getModifiers()));
             field.setAccessible(true);
             field.set(null, new HttpClientFactory() {
                 @Override
-                public HttpClient getGridHttpClient(int connection_timeout, int socket_timeout) {
+                public HttpClient getGridHttpClient(int connection_timeout,
+                        int socket_timeout) {
 
-                    if (socket_timeout == 0 || socket_timeout > SOCKET_TIMEOUT) {
-                        return super.getGridHttpClient(connection_timeout, SOCKET_TIMEOUT);
+                    if (socket_timeout == 0
+                            || socket_timeout > SOCKET_TIMEOUT) {
+                        return super.getGridHttpClient(connection_timeout,
+                                SOCKET_TIMEOUT);
                     }
 
-                    return super.getGridHttpClient(connection_timeout, socket_timeout);
+                    return super.getGridHttpClient(connection_timeout,
+                            socket_timeout);
                 }
             });
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Changing socket timeout for TestBench failed", e);
+            throw new RuntimeException(
+                    "Changing socket timeout for TestBench failed", e);
         }
     }
 

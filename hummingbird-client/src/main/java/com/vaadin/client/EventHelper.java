@@ -66,8 +66,10 @@ public class EventHelper {
      * @return a new registration handler that can be used to unregister the
      *         handler later
      */
-    public static <T extends ComponentConnector & FocusHandler> HandlerRegistration updateFocusHandler(T connector, HandlerRegistration handlerRegistration) {
-        return updateHandler(connector, connector, FOCUS, handlerRegistration, FocusEvent.getType(), connector.getWidget());
+    public static <T extends ComponentConnector & FocusHandler> HandlerRegistration updateFocusHandler(
+            T connector, HandlerRegistration handlerRegistration) {
+        return updateHandler(connector, connector, FOCUS, handlerRegistration,
+                FocusEvent.getType(), connector.getWidget());
     }
 
     /**
@@ -84,8 +86,11 @@ public class EventHelper {
      * @return a new registration handler that can be used to unregister the
      *         handler later
      */
-    public static <T extends ComponentConnector & FocusHandler> HandlerRegistration updateFocusHandler(T connector, HandlerRegistration handlerRegistration, Widget widget) {
-        return updateHandler(connector, connector, FOCUS, handlerRegistration, FocusEvent.getType(), widget);
+    public static <T extends ComponentConnector & FocusHandler> HandlerRegistration updateFocusHandler(
+            T connector, HandlerRegistration handlerRegistration,
+            Widget widget) {
+        return updateHandler(connector, connector, FOCUS, handlerRegistration,
+                FocusEvent.getType(), widget);
     }
 
     /**
@@ -100,8 +105,10 @@ public class EventHelper {
      * @return a new registration handler that can be used to unregister the
      *         handler later
      */
-    public static <T extends ComponentConnector & BlurHandler> HandlerRegistration updateBlurHandler(T connector, HandlerRegistration handlerRegistration) {
-        return updateHandler(connector, connector, BLUR, handlerRegistration, BlurEvent.getType(), connector.getWidget());
+    public static <T extends ComponentConnector & BlurHandler> HandlerRegistration updateBlurHandler(
+            T connector, HandlerRegistration handlerRegistration) {
+        return updateHandler(connector, connector, BLUR, handlerRegistration,
+                BlurEvent.getType(), connector.getWidget());
     }
 
     /**
@@ -119,11 +126,17 @@ public class EventHelper {
      * @return a new registration handler that can be used to unregister the
      *         handler later
      */
-    public static <T extends ComponentConnector & BlurHandler> HandlerRegistration updateBlurHandler(T connector, HandlerRegistration handlerRegistration, Widget widget) {
-        return updateHandler(connector, connector, BLUR, handlerRegistration, BlurEvent.getType(), widget);
+    public static <T extends ComponentConnector & BlurHandler> HandlerRegistration updateBlurHandler(
+            T connector, HandlerRegistration handlerRegistration,
+            Widget widget) {
+        return updateHandler(connector, connector, BLUR, handlerRegistration,
+                BlurEvent.getType(), widget);
     }
 
-    public static <H extends EventHandler> HandlerRegistration updateHandler(ComponentConnector connector, H handler, String eventIdentifier, HandlerRegistration handlerRegistration, Type<H> type, Widget widget) {
+    public static <H extends EventHandler> HandlerRegistration updateHandler(
+            ComponentConnector connector, H handler, String eventIdentifier,
+            HandlerRegistration handlerRegistration, Type<H> type,
+            Widget widget) {
         if (connector.hasEventListener(eventIdentifier)) {
             if (handlerRegistration == null) {
                 handlerRegistration = widget.addDomHandler(handler, type);

@@ -54,13 +54,17 @@ public class TestBenchSection implements Section {
     /**
      * Selector widget showing a selector in a program-usable form.
      */
-    private static class SelectorWidget extends HTML implements MouseOverHandler, MouseOutHandler {
+    private static class SelectorWidget extends HTML
+            implements MouseOverHandler, MouseOutHandler {
         private final SelectorPath path;
 
         public SelectorWidget(final SelectorPath path) {
             this.path = path;
 
-            String html = "<div class=\"" + VDebugWindow.STYLENAME + "-selector\"><span class=\"tb-selector\">" + WidgetUtil.escapeHTML(path.getElementQuery()) + "</span></div>";
+            String html = "<div class=\"" + VDebugWindow.STYLENAME
+                    + "-selector\"><span class=\"tb-selector\">"
+                    + WidgetUtil.escapeHTML(path.getElementQuery())
+                    + "</span></div>";
             setHTML(html);
 
             addMouseOverHandler(this);
@@ -83,7 +87,8 @@ public class TestBenchSection implements Section {
         }
     }
 
-    private final DebugButton tabButton = new DebugButton(Icon.TESTBENCH, "Pick Vaadin TestBench selectors");
+    private final DebugButton tabButton = new DebugButton(Icon.TESTBENCH,
+            "Pick Vaadin TestBench selectors");
 
     private final FlowPanel content = new FlowPanel();
 
@@ -93,9 +98,11 @@ public class TestBenchSection implements Section {
 
     private final FlowPanel controls = new FlowPanel();
 
-    private final Button find = new DebugButton(Icon.HIGHLIGHT, "Pick an element and generate a query for it");
+    private final Button find = new DebugButton(Icon.HIGHLIGHT,
+            "Pick an element and generate a query for it");
 
-    private final Button clear = new DebugButton(Icon.CLEAR, "Clear current elements");
+    private final Button clear = new DebugButton(Icon.CLEAR,
+            "Clear current elements");
 
     private HandlerRegistration highlightModeRegistration = null;
 
@@ -173,7 +180,8 @@ public class TestBenchSection implements Section {
     private void startFind() {
         Highlight.hideAll();
         if (!isFindMode()) {
-            highlightModeRegistration = Event.addNativePreviewHandler(highlightModeHandler);
+            highlightModeRegistration = Event
+                    .addNativePreviewHandler(highlightModeHandler);
             find.addStyleDependentName(VDebugWindow.STYLENAME_ACTIVE);
         }
     }
@@ -189,7 +197,9 @@ public class TestBenchSection implements Section {
 
     private void pickSelector(ServerConnector connector, Element element) {
 
-        SelectorPath p = new SelectorPath(connector, Util.findPaintable(connector.getConnection(), element).getWidget().getElement());
+        SelectorPath p = new SelectorPath(connector,
+                Util.findPaintable(connector.getConnection(), element)
+                        .getWidget().getElement());
         SelectorWidget w = new SelectorWidget(p);
 
         content.add(w);
@@ -200,13 +210,17 @@ public class TestBenchSection implements Section {
         @Override
         public void onPreviewNativeEvent(NativePreviewEvent event) {
 
-            if (event.getTypeInt() == Event.ONKEYDOWN && event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
+            if (event.getTypeInt() == Event.ONKEYDOWN && event.getNativeEvent()
+                    .getKeyCode() == KeyCodes.KEY_ESCAPE) {
                 stopFind();
                 Highlight.hideAll();
                 return;
             }
-            if (event.getTypeInt() == Event.ONMOUSEMOVE || event.getTypeInt() == Event.ONCLICK) {
-                Element eventTarget = WidgetUtil.getElementFromPoint(event.getNativeEvent().getClientX(), event.getNativeEvent().getClientY());
+            if (event.getTypeInt() == Event.ONMOUSEMOVE
+                    || event.getTypeInt() == Event.ONCLICK) {
+                Element eventTarget = WidgetUtil.getElementFromPoint(
+                        event.getNativeEvent().getClientX(),
+                        event.getNativeEvent().getClientY());
                 if (VDebugWindow.get().getElement().isOrHasChild(eventTarget)) {
                     if (isFindMode() && event.getTypeInt() == Event.ONCLICK) {
                         stopFind();
@@ -218,7 +232,9 @@ public class TestBenchSection implements Section {
                 // make sure that not finding the highlight element only
                 Highlight.hideAll();
 
-                eventTarget = WidgetUtil.getElementFromPoint(event.getNativeEvent().getClientX(), event.getNativeEvent().getClientY());
+                eventTarget = WidgetUtil.getElementFromPoint(
+                        event.getNativeEvent().getClientX(),
+                        event.getNativeEvent().getClientY());
                 ComponentConnector connector = findConnector(eventTarget);
 
                 if (event.getTypeInt() == Event.ONMOUSEMOVE) {
@@ -246,10 +262,13 @@ public class TestBenchSection implements Section {
     };
 
     private ComponentConnector findConnector(Element element) {
-        for (ApplicationConnection a : ApplicationConfiguration.getRunningApplications()) {
-            ComponentConnector connector = Util.getConnectorForElement(a, a.getUIConnector().getWidget(), element);
+        for (ApplicationConnection a : ApplicationConfiguration
+                .getRunningApplications()) {
+            ComponentConnector connector = Util.getConnectorForElement(a,
+                    a.getUIConnector().getWidget(), element);
             if (connector == null) {
-                connector = Util.getConnectorForElement(a, RootPanel.get(), element);
+                connector = Util.getConnectorForElement(a, RootPanel.get(),
+                        element);
             }
             if (connector != null) {
                 return connector;

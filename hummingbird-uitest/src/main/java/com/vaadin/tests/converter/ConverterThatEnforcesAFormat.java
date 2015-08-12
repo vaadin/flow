@@ -12,7 +12,8 @@ public class ConverterThatEnforcesAFormat extends AbstractTestUIWithLog {
 
     @Override
     protected void setup(VaadinRequest request) {
-        final TextField tf = new TextField("This field should always be formatted with 3 digits");
+        final TextField tf = new TextField(
+                "This field should always be formatted with 3 digits");
         tf.setLocale(Locale.ENGLISH);
         // this is needed so that IE tests pass
         tf.setNullRepresentation("");
@@ -20,7 +21,14 @@ public class ConverterThatEnforcesAFormat extends AbstractTestUIWithLog {
         tf.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
-                log("Value changed to " + event.getProperty().getValue() + "(converted value is " + tf.getConvertedValue() + "). Two-way conversion gives: " + tf.getConverter().convertToPresentation(tf.getConverter().convertToModel(tf.getValue(), Double.class, tf.getLocale()), String.class, tf.getLocale()) + ")");
+                log("Value changed to " + event.getProperty().getValue()
+                        + "(converted value is " + tf.getConvertedValue()
+                        + "). Two-way conversion gives: "
+                        + tf.getConverter().convertToPresentation(
+                                tf.getConverter().convertToModel(tf.getValue(),
+                                        Double.class, tf.getLocale()),
+                                String.class, tf.getLocale())
+                        + ")");
             }
         });
         addComponent(tf);

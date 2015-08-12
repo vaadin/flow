@@ -91,7 +91,9 @@ public abstract class GridBaseLayoutTestUI extends BaseLayoutTestUI {
         layout.addComponent(btn3);
         layout.addComponent(btn4);
         layout.addComponent(c1);
-        layout.addComponent(new Label("<div style='height: 1px'></div><hr /><div style='height: 1px'></div>", ContentMode.HTML));
+        layout.addComponent(new Label(
+                "<div style='height: 1px'></div><hr /><div style='height: 1px'></div>",
+                ContentMode.HTML));
         layout.addComponent(c2);
         btn2.addClickListener(new ClickListener() {
 

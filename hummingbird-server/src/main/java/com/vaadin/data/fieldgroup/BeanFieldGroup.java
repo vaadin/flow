@@ -50,13 +50,19 @@ public class BeanFieldGroup<T> extends FieldGroup {
              * method declaration comes from parent.
              */
             try {
-                Class<?> type = BeanUtil.getPropertyType(beanType, propertyId.toString());
+                Class<?> type = BeanUtil.getPropertyType(beanType,
+                        propertyId.toString());
                 if (type == null) {
-                    throw new BindException("Cannot determine type of propertyId '" + propertyId + "'. The propertyId was not found in " + beanType.getName());
+                    throw new BindException(
+                            "Cannot determine type of propertyId '" + propertyId
+                                    + "'. The propertyId was not found in "
+                                    + beanType.getName());
                 }
                 return type;
             } catch (IntrospectionException e) {
-                throw new BindException("Cannot determine type of propertyId '" + propertyId + "'. Unable to introspect " + beanType, e);
+                throw new BindException("Cannot determine type of propertyId '"
+                        + propertyId + "'. Unable to introspect " + beanType,
+                        e);
             }
         }
     }
@@ -65,7 +71,8 @@ public class BeanFieldGroup<T> extends FieldGroup {
     protected Object findPropertyId(java.lang.reflect.Field memberField) {
         String fieldName = memberField.getName();
         Item dataSource = getItemDataSource();
-        if (dataSource != null && dataSource.getItemProperty(fieldName) != null) {
+        if (dataSource != null
+                && dataSource.getItemProperty(fieldName) != null) {
             return fieldName;
         } else {
             String minifiedFieldName = minifyFieldName(fieldName);
@@ -78,7 +85,8 @@ public class BeanFieldGroup<T> extends FieldGroup {
         return null;
     }
 
-    private static String getFieldName(Class<?> cls, String propertyId) throws SecurityException, NoSuchFieldException {
+    private static String getFieldName(Class<?> cls, String propertyId)
+            throws SecurityException, NoSuchFieldException {
         for (java.lang.reflect.Field field1 : cls.getDeclaredFields()) {
             if (propertyId.equals(minifyFieldName(field1.getName()))) {
                 return field1.getName();
@@ -117,7 +125,8 @@ public class BeanFieldGroup<T> extends FieldGroup {
         if (item == null || (item instanceof BeanItem)) {
             super.setItemDataSource(item);
         } else {
-            throw new RuntimeException(getClass().getSimpleName() + " only supports BeanItems as item data source");
+            throw new RuntimeException(getClass().getSimpleName()
+                    + " only supports BeanItems as item data source");
         }
     }
 
@@ -147,7 +156,8 @@ public class BeanFieldGroup<T> extends FieldGroup {
     }
 
     @Override
-    public <T extends Field> T buildAndBind(String caption, Object propertyId, Class<T> fieldType) throws BindException {
+    public <T extends Field> T buildAndBind(String caption, Object propertyId,
+            Class<T> fieldType) throws BindException {
         ensureNestedPropertyAdded(propertyId);
         return super.buildAndBind(caption, propertyId, fieldType);
     }
@@ -166,8 +176,10 @@ public class BeanFieldGroup<T> extends FieldGroup {
     protected void configureField(Field<?> field) {
         super.configureField(field);
         // Add Bean validators if there are annotations
-        if (isBeanValidationImplementationAvailable() && !defaultValidators.containsKey(field)) {
-            BeanValidator validator = new BeanValidator(beanType, getPropertyId(field).toString());
+        if (isBeanValidationImplementationAvailable()
+                && !defaultValidators.containsKey(field)) {
+            BeanValidator validator = new BeanValidator(beanType,
+                    getPropertyId(field).toString());
             field.addValidator(validator);
             if (field.getLocale() != null) {
                 validator.setLocale(field.getLocale());
@@ -189,8 +201,10 @@ public class BeanFieldGroup<T> extends FieldGroup {
             return beanValidationImplementationAvailable;
         }
         try {
-            Class<?> validationClass = Class.forName("javax.validation.Validation");
-            Method buildFactoryMethod = validationClass.getMethod("buildDefaultValidatorFactory");
+            Class<?> validationClass = Class
+                    .forName("javax.validation.Validation");
+            Method buildFactoryMethod = validationClass
+                    .getMethod("buildDefaultValidatorFactory");
             Object factory = buildFactoryMethod.invoke(null);
             beanValidationImplementationAvailable = (factory != null);
         } catch (Exception e) {
@@ -216,7 +230,8 @@ public class BeanFieldGroup<T> extends FieldGroup {
      *            the class that contains {@link Field}s for bean properties
      * @return the bean field group used to make binding
      */
-    public static <T> BeanFieldGroup<T> bindFieldsUnbuffered(T bean, Object objectWithMemberFields) {
+    public static <T> BeanFieldGroup<T> bindFieldsUnbuffered(T bean,
+            Object objectWithMemberFields) {
         return createAndBindFields(bean, objectWithMemberFields, false);
     }
 
@@ -236,13 +251,16 @@ public class BeanFieldGroup<T> extends FieldGroup {
      *            the class that contains {@link Field}s for bean properties
      * @return the bean field group used to make binding
      */
-    public static <T> BeanFieldGroup<T> bindFieldsBuffered(T bean, Object objectWithMemberFields) {
+    public static <T> BeanFieldGroup<T> bindFieldsBuffered(T bean,
+            Object objectWithMemberFields) {
         return createAndBindFields(bean, objectWithMemberFields, true);
     }
 
-    private static <T> BeanFieldGroup<T> createAndBindFields(T bean, Object objectWithMemberFields, boolean buffered) {
+    private static <T> BeanFieldGroup<T> createAndBindFields(T bean,
+            Object objectWithMemberFields, boolean buffered) {
         @SuppressWarnings("unchecked")
-        BeanFieldGroup<T> beanFieldGroup = new BeanFieldGroup<T>((Class<T>) bean.getClass());
+        BeanFieldGroup<T> beanFieldGroup = new BeanFieldGroup<T>(
+                (Class<T>) bean.getClass());
         beanFieldGroup.setItemDataSource(bean);
         beanFieldGroup.setBuffered(buffered);
         beanFieldGroup.bindMemberFields(objectWithMemberFields);

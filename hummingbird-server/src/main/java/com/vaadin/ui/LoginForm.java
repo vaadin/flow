@@ -61,7 +61,8 @@ public class LoginForm extends CustomComponent {
     private BrowserFrame iframe = new BrowserFrame();
 
     @Override
-    public boolean handleConnectorRequest(final VaadinRequest request, final VaadinResponse response, String path) throws IOException {
+    public boolean handleConnectorRequest(final VaadinRequest request,
+            final VaadinResponse response, String path) throws IOException {
         if (!path.equals("login")) {
             return super.handleConnectorRequest(request, response, path);
         }
@@ -70,7 +71,8 @@ public class LoginForm extends CustomComponent {
         getUI().accessSynchronously(new Runnable() {
             @Override
             public void run() {
-                String method = VaadinServletService.getCurrentServletRequest().getMethod();
+                String method = VaadinServletService.getCurrentServletRequest()
+                        .getMethod();
                 if (method.equalsIgnoreCase("post")) {
                     responseBuilder.append(handleLogin(request));
                 } else {
@@ -92,11 +94,13 @@ public class LoginForm extends CustomComponent {
     private String handleLogin(VaadinRequest request) {
         // Ensure UI.getCurrent() works in listeners
 
-        Map<String, String[]> parameters = VaadinService.getCurrentRequest().getParameterMap();
+        Map<String, String[]> parameters = VaadinService.getCurrentRequest()
+                .getParameterMap();
 
         HashMap<String, String> params = new HashMap<String, String>();
         // expecting single params
-        for (Iterator<String> it = parameters.keySet().iterator(); it.hasNext();) {
+        for (Iterator<String> it = parameters.keySet().iterator(); it
+                .hasNext();) {
             String key = it.next();
             String value = (parameters.get(key))[0];
             params.put(key, value);
@@ -104,7 +108,9 @@ public class LoginForm extends CustomComponent {
         LoginEvent event = new LoginEvent(LoginForm.this, params);
         fireEvent(event);
 
-        return "<html><body>Login form handled." + "<script type='text/javascript'>parent.parent.vaadin.forceSync();" + "</script></body></html>";
+        return "<html><body>Login form handled."
+                + "<script type='text/javascript'>parent.parent.vaadin.forceSync();"
+                + "</script></body></html>";
     }
 
     public LoginForm() {
@@ -117,7 +123,12 @@ public class LoginForm extends CustomComponent {
     @Override
     public void beforeClientResponse(boolean initial) {
         // Generate magic URL now when UI id and connectorId are known
-        iframe.setSource(new ExternalResource(ApplicationConstants.APP_PROTOCOL_PREFIX + ApplicationConstants.APP_PATH + '/' + ConnectorResource.CONNECTOR_PATH + '/' + getUI().getUIId() + '/' + getConnectorId() + "/login"));
+        iframe.setSource(
+                new ExternalResource(ApplicationConstants.APP_PROTOCOL_PREFIX
+                        + ApplicationConstants.APP_PATH + '/'
+                        + ConnectorResource.CONNECTOR_PATH + '/'
+                        + getUI().getUIId() + '/' + getConnectorId()
+                        + "/login"));
         super.beforeClientResponse(initial);
     }
 
@@ -129,7 +140,37 @@ public class LoginForm extends CustomComponent {
      * @return byte array containing login page html
      */
     protected String getLoginHTML() {
-        return "<!DOCTYPE html>\n" + "<html>" + "<head><script type='text/javascript'>" + "var setTarget = function() {" + "var uri = window.location;" + "var f = document.getElementById('loginf');" + "document.forms[0].action = uri;document.forms[0].username.focus();};" + "" + "var styles = window.parent.document.styleSheets;" + "for(var j = 0; j < styles.length; j++) {\n" + "if(styles[j].href) {" + "var stylesheet = document.createElement('link');\n" + "stylesheet.setAttribute('rel', 'stylesheet');\n" + "stylesheet.setAttribute('type', 'text/css');\n" + "stylesheet.setAttribute('href', styles[j].href);\n" + "document.getElementsByTagName('head')[0].appendChild(stylesheet);\n" + "}" + "}\n" + "function submitOnEnter(e) { var keycode = e.keyCode || e.which;" + " if (keycode == 13) {document.forms[0].submit();}  } \n" + "</script>" + "</head><body onload='setTarget();' style='margin:0;padding:0; background:transparent;' class=\"" + ApplicationConstants.GENERATED_BODY_CLASSNAME + "\">" + "<div class='v-app v-app-loginpage " + getUIThemeClassName() + "' style=\"background:transparent;\">" + "<iframe name='logintarget' style='width:0;height:0;" + "border:0;margin:0;padding:0;display:block'></iframe>" + "<form id='loginf' target='logintarget' onkeypress=\"submitOnEnter(event)\" method=\"post\">" + "<div>" + usernameCaption + "</div><div >" + "<input class='v-textfield v-widget' style='display:block;' type='text' name='username'></div>" + "<div>" + passwordCaption + "</div>" + "<div><input class='v-textfield v-widget' style='display:block;' type='password' name='password'></div>" + "<div><div onclick=\"document.forms[0].submit();\" tabindex=\"0\" class=\"v-button\" role=\"button\" ><span class=\"v-button-wrap\"><span class=\"v-button-caption\">" + loginButtonCaption + "</span></span></div></div></form></div>" + "</body></html>";
+        return "<!DOCTYPE html>\n" + "<html>"
+                + "<head><script type='text/javascript'>"
+                + "var setTarget = function() {" + "var uri = window.location;"
+                + "var f = document.getElementById('loginf');"
+                + "document.forms[0].action = uri;document.forms[0].username.focus();};"
+                + "" + "var styles = window.parent.document.styleSheets;"
+                + "for(var j = 0; j < styles.length; j++) {\n"
+                + "if(styles[j].href) {"
+                + "var stylesheet = document.createElement('link');\n"
+                + "stylesheet.setAttribute('rel', 'stylesheet');\n"
+                + "stylesheet.setAttribute('type', 'text/css');\n"
+                + "stylesheet.setAttribute('href', styles[j].href);\n"
+                + "document.getElementsByTagName('head')[0].appendChild(stylesheet);\n"
+                + "}" + "}\n"
+                + "function submitOnEnter(e) { var keycode = e.keyCode || e.which;"
+                + " if (keycode == 13) {document.forms[0].submit();}  } \n"
+                + "</script>"
+                + "</head><body onload='setTarget();' style='margin:0;padding:0; background:transparent;' class=\""
+                + ApplicationConstants.GENERATED_BODY_CLASSNAME + "\">"
+                + "<div class='v-app v-app-loginpage " + getUIThemeClassName()
+                + "' style=\"background:transparent;\">"
+                + "<iframe name='logintarget' style='width:0;height:0;"
+                + "border:0;margin:0;padding:0;display:block'></iframe>"
+                + "<form id='loginf' target='logintarget' onkeypress=\"submitOnEnter(event)\" method=\"post\">"
+                + "<div>" + usernameCaption + "</div><div >"
+                + "<input class='v-textfield v-widget' style='display:block;' type='text' name='username'></div>"
+                + "<div>" + passwordCaption + "</div>"
+                + "<div><input class='v-textfield v-widget' style='display:block;' type='password' name='password'></div>"
+                + "<div><div onclick=\"document.forms[0].submit();\" tabindex=\"0\" class=\"v-button\" role=\"button\" ><span class=\"v-button-wrap\"><span class=\"v-button-caption\">"
+                + loginButtonCaption + "</span></span></div></div></form></div>"
+                + "</body></html>";
     }
 
     private String getUIThemeClassName() {
@@ -186,10 +227,12 @@ public class LoginForm extends CustomComponent {
 
     static {
         try {
-            ON_LOGIN_METHOD = LoginListener.class.getDeclaredMethod("onLogin", new Class[] { LoginEvent.class });
+            ON_LOGIN_METHOD = LoginListener.class.getDeclaredMethod("onLogin",
+                    new Class[] { LoginEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
-            throw new java.lang.RuntimeException("Internal error finding methods in LoginForm");
+            throw new java.lang.RuntimeException(
+                    "Internal error finding methods in LoginForm");
         }
     }
 

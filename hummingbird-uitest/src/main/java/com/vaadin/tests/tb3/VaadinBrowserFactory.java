@@ -46,8 +46,10 @@ public class VaadinBrowserFactory extends DefaultBrowserFactory {
     }
 
     private DesiredCapabilities createIE(Browser browser, String version) {
-        DesiredCapabilities capabilities = create(browser, version, Platform.WINDOWS);
-        capabilities.setCapability(InternetExplorerDriver.IE_ENSURE_CLEAN_SESSION, true);
+        DesiredCapabilities capabilities = create(browser, version,
+                Platform.WINDOWS);
+        capabilities.setCapability(
+                InternetExplorerDriver.IE_ENSURE_CLEAN_SESSION, true);
         return capabilities;
     }
 

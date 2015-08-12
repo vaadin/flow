@@ -37,30 +37,59 @@ import elemental.json.JsonArray;
 @JavaScript("vaadin://vaadinPush.debug.js")
 public class TrackMessageSizeUI extends AbstractTestUIWithLog {
 
-    private String testMethod = "function testSequence(expected, data) {\n" + "    var request = {trackMessageLength: true, messageDelimiter: '|'};\n" + "    _request = {trackMessageLength: true, messageDelimiter: '|'};\n" + "    _handleProtocol = function(a,message) {return message;};" + "    var response = {partialMessage: ''};\n" + "    var messages = [];\n" + "    for(var i = 0; i < data.length; i++) {\n" + "        if (!_trackMessageSize(data[i], request, response))\n" + "            messages = messages.concat(response.messages);\n" + "    }\n" + "    if (JSON.stringify(expected) != JSON.stringify(messages)) {\n" + "        if (console && typeof console.error == 'function') console.error('Expected', expected, 'but got', messages, 'for', data);\n" + "        logToServer('Test failed, see javascript console for details.');\n" + "    }" + "}\n";
+    private String testMethod = "function testSequence(expected, data) {\n"
+            + "    var request = {trackMessageLength: true, messageDelimiter: '|'};\n"
+            + "    _request = {trackMessageLength: true, messageDelimiter: '|'};\n"
+            + "    _handleProtocol = function(a,message) {return message;};"
+            + "    var response = {partialMessage: ''};\n"
+            + "    var messages = [];\n"
+            + "    for(var i = 0; i < data.length; i++) {\n"
+            + "        if (!_trackMessageSize(data[i], request, response))\n"
+            + "            messages = messages.concat(response.messages);\n"
+            + "    }\n"
+            + "    if (JSON.stringify(expected) != JSON.stringify(messages)) {\n"
+            + "        if (console && typeof console.error == 'function') console.error('Expected', expected, 'but got', messages, 'for', data);\n"
+            + "        logToServer('Test failed, see javascript console for details.');\n"
+            + "    }" + "}\n";
 
     @Override
     protected void setup(VaadinRequest request) {
         String methodImplementation = findMethodImplementation();
-        getPage().getJavaScript().addFunction("logToServer", new JavaScriptFunction() {
-            @Override
-            public void call(JsonArray arguments) {
-                String message = arguments.getString(0);
-                log(message);
-            }
-        });
+        getPage().getJavaScript().addFunction("logToServer",
+                new JavaScriptFunction() {
+                    @Override
+                    public void call(JsonArray arguments) {
+                        String message = arguments.getString(0);
+                        log(message);
+                    }
+                });
 
-        getPage().getJavaScript().execute(methodImplementation + testMethod + buildTestCase());
+        getPage().getJavaScript()
+                .execute(methodImplementation + testMethod + buildTestCase());
     }
 
     private String buildTestCase() {
         // Could maybe express the cases in java and generate JS?
-        return "testSequence(['a', 'b'], ['1|a1|b', '']);\n" + "testSequence(['a', 'b'], ['1|a1|', 'b']);\n" + "testSequence(['a', 'b'], ['1|a1', '|b']);\n" + "testSequence(['a', 'b'], ['1|a', '1|b']);\n" + "testSequence(['a', 'b'], ['1|a', '', '1|b']);\n" + "testSequence(['a|', '|b'], ['2|a|2||b']);\n" + "testSequence(['a|', 'b'], ['2|a|', '', '1|b']);\n" + "testSequence(['a|', 'b'], ['2|a|', '1|b']);\n" + "testSequence(['a|', 'b'], ['2|a|1', '|b']);\n" + "testSequence(['a|', 'b'], ['2|a|1|', 'b']);\n" + "testSequence([' ', 'b'], ['1| 1|b']);\n" + "testSequence([' ', 'b'], ['1| ','1|b']);\n" + "testSequence([' ', 'b'], ['1|',' 1|b']);\n" + "logToServer('All tests run')\n";
+        return "testSequence(['a', 'b'], ['1|a1|b', '']);\n"
+                + "testSequence(['a', 'b'], ['1|a1|', 'b']);\n"
+                + "testSequence(['a', 'b'], ['1|a1', '|b']);\n"
+                + "testSequence(['a', 'b'], ['1|a', '1|b']);\n"
+                + "testSequence(['a', 'b'], ['1|a', '', '1|b']);\n"
+                + "testSequence(['a|', '|b'], ['2|a|2||b']);\n"
+                + "testSequence(['a|', 'b'], ['2|a|', '', '1|b']);\n"
+                + "testSequence(['a|', 'b'], ['2|a|', '1|b']);\n"
+                + "testSequence(['a|', 'b'], ['2|a|1', '|b']);\n"
+                + "testSequence(['a|', 'b'], ['2|a|1|', 'b']);\n"
+                + "testSequence([' ', 'b'], ['1| 1|b']);\n"
+                + "testSequence([' ', 'b'], ['1| ','1|b']);\n"
+                + "testSequence([' ', 'b'], ['1|',' 1|b']);\n"
+                + "logToServer('All tests run')\n";
     }
 
     private String findMethodImplementation() {
         String filename = "/VAADIN/vaadinPush.debug.js";
-        URL resourceURL = findResourceURL(filename, (VaadinServletService) VaadinService.getCurrent());
+        URL resourceURL = findResourceURL(filename,
+                (VaadinServletService) VaadinService.getCurrent());
         if (resourceURL == null) {
             log("Can't find " + filename);
             return null;

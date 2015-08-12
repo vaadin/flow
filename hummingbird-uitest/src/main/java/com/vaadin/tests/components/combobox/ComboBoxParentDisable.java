@@ -43,12 +43,13 @@ public class ComboBoxParentDisable extends AbstractTestUIWithLog {
 
         layout.addComponent(formLayout);
 
-        Button btn = new Button("Enable/Disable combobox", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                combo.setEnabled(!combo.isEnabled());
-            }
-        });
+        Button btn = new Button("Enable/Disable combobox",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        combo.setEnabled(!combo.isEnabled());
+                    }
+                });
         layout.addComponent(btn);
         btn = new Button("Enable/Disable parent", new Button.ClickListener() {
             @Override
@@ -60,7 +61,8 @@ public class ComboBoxParentDisable extends AbstractTestUIWithLog {
 
     }
 
-    private class MyValueChangeListener implements Property.ValueChangeListener {
+    private class MyValueChangeListener
+            implements Property.ValueChangeListener {
         @Override
         public void valueChange(Property.ValueChangeEvent event) {
             log.log("you made a selection change");

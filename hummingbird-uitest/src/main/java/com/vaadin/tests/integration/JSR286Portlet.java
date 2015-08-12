@@ -58,9 +58,13 @@ public class JSR286Portlet extends UI {
     @Override
     protected void init(VaadinRequest request) {
         setContent(main);
-        Embedded appResourceTest = new Embedded("Test of ApplicationResources with full path", new FlagSeResource());
+        Embedded appResourceTest = new Embedded(
+                "Test of ApplicationResources with full path",
+                new FlagSeResource());
         main.addComponent(appResourceTest);
-        Embedded specialNameResourceTest = new Embedded("Test ApplicationResources with special names", new SpecialNameResource());
+        Embedded specialNameResourceTest = new Embedded(
+                "Test ApplicationResources with special names",
+                new SpecialNameResource());
         specialNameResourceTest.addStyleName("hugeBorder");
         main.addComponent(specialNameResourceTest);
 
@@ -79,7 +83,8 @@ public class JSR286Portlet extends UI {
         Upload upload = new Upload("Upload a file", new Receiver() {
 
             @Override
-            public OutputStream receiveUpload(String filename, String mimeType) {
+            public OutputStream receiveUpload(String filename,
+                    String mimeType) {
                 return new ByteArrayOutputStream();
             }
         });
@@ -109,10 +114,12 @@ public class JSR286Portlet extends UI {
 
         userAgent.setValue(getPage().getWebBrowser().getBrowserApplication());
         screenWidth.setValue(String.valueOf(getPage().getBrowserWindowWidth()));
-        screenHeight.setValue(String.valueOf(getPage().getBrowserWindowHeight()));
+        screenHeight
+                .setValue(String.valueOf(getPage().getBrowserWindowHeight()));
 
         boolean inViewMode = (request.getPortletMode() == PortletMode.VIEW);
-        boolean inNormalState = (request.getWindowState() == WindowState.NORMAL);
+        boolean inNormalState = (request
+                .getWindowState() == WindowState.NORMAL);
         // Portlet up-and-running, enable stuff
         portletEdit.setEnabled(true);
         portletMax.setEnabled(true);
@@ -121,10 +128,14 @@ public class JSR286Portlet extends UI {
         tf.setEnabled(!inViewMode);
 
         // Show notification about current mode and state
-        new Notification("Portlet status", "Mode: " + request.getPortletMode() + " State: " + request.getWindowState(), Type.WARNING_MESSAGE).show(getPage());
+        new Notification("Portlet status",
+                "Mode: " + request.getPortletMode() + " State: "
+                        + request.getWindowState(),
+                Type.WARNING_MESSAGE).show(getPage());
 
         // Display current user info
-        Map<?, ?> uinfo = (Map<?, ?>) request.getAttribute(PortletRequest.USER_INFO);
+        Map<?, ?> uinfo = (Map<?, ?>) request
+                .getAttribute(PortletRequest.USER_INFO);
         if (uinfo != null) {
             String s = "";
             for (Iterator<?> it = uinfo.keySet().iterator(); it.hasNext();) {
@@ -153,7 +164,8 @@ public class JSR286Portlet extends UI {
             portletEdit.setResource(new ExternalResource(url.toString()));
         } catch (Exception e) {
             portletEdit.setEnabled(false);
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Error creating edit mode link", e);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE,
+                    "Error creating edit mode link", e);
         }
 
         // Create Maximize/Normal link (actionUrl)
@@ -170,13 +182,15 @@ public class JSR286Portlet extends UI {
             portletMax.setResource(new ExternalResource(url.toString()));
         } catch (Exception e) {
             portletMax.setEnabled(false);
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Error creating state change link", e);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE,
+                    "Error creating state change link", e);
         }
 
         if (someAction == null) {
             url = getSession().generateActionURL("someAction");
             try {
-                someAction = new Link("An action", new ExternalResource(url.toString()));
+                someAction = new Link("An action",
+                        new ExternalResource(url.toString()));
                 main.addComponent(someAction);
             } catch (Exception e) {
                 // Oops
@@ -189,22 +203,28 @@ public class JSR286Portlet extends UI {
     private class DemoPortletListener implements PortletListener {
 
         @Override
-        public void handleActionRequest(ActionRequest request, ActionResponse response, UI window) {
-            main.addComponent(new Label("Action '" + request.getParameter("javax.portlet.action") + "' received"));
+        public void handleActionRequest(ActionRequest request,
+                ActionResponse response, UI window) {
+            main.addComponent(new Label(
+                    "Action '" + request.getParameter("javax.portlet.action")
+                            + "' received"));
         }
 
         @Override
-        public void handleRenderRequest(RenderRequest request, RenderResponse response, UI window) {
+        public void handleRenderRequest(RenderRequest request,
+                RenderResponse response, UI window) {
             possiblyChangedModeOrState();
         }
 
         @Override
-        public void handleEventRequest(EventRequest request, EventResponse response, UI window) {
+        public void handleEventRequest(EventRequest request,
+                EventResponse response, UI window) {
             // events not used by this test
         }
 
         @Override
-        public void handleResourceRequest(ResourceRequest request, ResourceResponse response, UI window) {
+        public void handleResourceRequest(ResourceRequest request,
+                ResourceResponse response, UI window) {
             // nothing special to do here
         }
     }

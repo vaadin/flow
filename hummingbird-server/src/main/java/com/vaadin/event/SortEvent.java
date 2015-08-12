@@ -46,7 +46,8 @@ public class SortEvent extends Component.Event {
      *            <code>true</code> if event is a result of user interaction,
      *            <code>false</code> if from API call
      */
-    public SortEvent(Component source, List<SortOrder> sortOrder, boolean userOriginated) {
+    public SortEvent(Component source, List<SortOrder> sortOrder,
+            boolean userOriginated) {
         super(source);
         this.sortOrder = sortOrder;
         this.userOriginated = userOriginated;

@@ -11,14 +11,20 @@ public class IfElementTemplate extends BoundElementTemplateWithChildren {
     private final List<BoundElementTemplate> trueChildren;
     private final List<BoundElementTemplate> falseChildren;
 
-    public IfElementTemplate(String tag, List<AttributeBinding> boundAttributes, Map<String, String> defaultAttributes, Predicate<StateNode> predicate, List<BoundElementTemplate> trueChildren, List<BoundElementTemplate> falseChildren) {
+    public IfElementTemplate(String tag, List<AttributeBinding> boundAttributes,
+            Map<String, String> defaultAttributes,
+            Predicate<StateNode> predicate,
+            List<BoundElementTemplate> trueChildren,
+            List<BoundElementTemplate> falseChildren) {
         super(tag, boundAttributes, defaultAttributes);
         this.predicate = predicate;
         this.trueChildren = trueChildren;
         this.falseChildren = falseChildren;
 
-        trueChildren.forEach(c -> c.setParentResolver(createParentResolver(true)));
-        falseChildren.forEach(c -> c.setParentResolver(createParentResolver(false)));
+        trueChildren
+                .forEach(c -> c.setParentResolver(createParentResolver(true)));
+        falseChildren
+                .forEach(c -> c.setParentResolver(createParentResolver(false)));
     }
 
     private Function<StateNode, Element> createParentResolver(boolean value) {

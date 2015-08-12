@@ -40,7 +40,8 @@ public interface FreeformStatementDelegate extends FreeformQueryDelegate {
      *            the number of records (rows) to fetch. 0 means all records
      *            starting from offset.
      */
-    public StatementHelper getQueryStatement(int offset, int limit) throws UnsupportedOperationException;
+    public StatementHelper getQueryStatement(int offset, int limit)
+            throws UnsupportedOperationException;
 
     /**
      * Should return a new instance of StatementHelper that contains the query
@@ -48,7 +49,8 @@ public interface FreeformStatementDelegate extends FreeformQueryDelegate {
      * will fetch the row count from the DB. Row count should be fetched using
      * filters that are currently set to the QueryDelegate.
      */
-    public StatementHelper getCountStatement() throws UnsupportedOperationException;
+    public StatementHelper getCountStatement()
+            throws UnsupportedOperationException;
 
     /**
      * Should return a new instance of StatementHelper that contains the query
@@ -62,5 +64,6 @@ public interface FreeformStatementDelegate extends FreeformQueryDelegate {
      * @throws UnsupportedOperationException
      *             to use the default logic in FreeformQuery
      */
-    public StatementHelper getContainsRowQueryStatement(Object... keys) throws UnsupportedOperationException;
+    public StatementHelper getContainsRowQueryStatement(Object... keys)
+            throws UnsupportedOperationException;
 }

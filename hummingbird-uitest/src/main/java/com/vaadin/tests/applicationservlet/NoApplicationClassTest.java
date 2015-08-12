@@ -26,9 +26,14 @@ public class NoApplicationClassTest extends SingleBrowserTest {
     @Test
     public void testInvalidApplicationClass() {
         openTestURL();
-        String exceptionMessage = getDriver().findElement(By.xpath("//pre[2]")).getText();
+        String exceptionMessage = getDriver().findElement(By.xpath("//pre[2]"))
+                .getText();
         String expected = "ServletException: java.lang.ClassNotFoundException: ClassThatIsNotPresent";
-        Assert.assertTrue(String.format("Unexpected error message.\n expected to contain: '%s'\n was: %s", expected, exceptionMessage), exceptionMessage.contains(expected));
+        Assert.assertTrue(
+                String.format(
+                        "Unexpected error message.\n expected to contain: '%s'\n was: %s",
+                        expected, exceptionMessage),
+                exceptionMessage.contains(expected));
     }
 
     @Override

@@ -79,7 +79,7 @@ public @interface VaadinServletConfiguration {
      * @return the default UI class
      */
     @InitParameterName(VaadinSession.UI_PARAMETER)
-    public Class<? extends UI> ui();
+    public Class<? extends UI>ui();
 
     /**
      * The time resources can be cached in the browser, in seconds. The default

@@ -31,7 +31,8 @@ import elemental.json.JsonValue;
 public class DateSerializer implements JSONSerializer<Date> {
 
     @Override
-    public Date deserialize(Type type, JsonValue jsonValue, ConnectorTracker connectorTracker) {
+    public Date deserialize(Type type, JsonValue jsonValue,
+            ConnectorTracker connectorTracker) {
         return new Date((long) jsonValue.asNumber());
     }
 

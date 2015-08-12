@@ -58,19 +58,24 @@ public class PopupDateFieldValueChangeEventsTest extends MultiBrowserTest {
     }
 
     public WebElement getCalendarDayElement(int row, int col) {
-        return findElement(By.xpath("//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[2]/td/table/tbody/tr[" + (row + 2) + "]/td[" + (col + 2) + "]/span"));
+        return findElement(By
+                .xpath("//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[2]/td/table/tbody/tr["
+                        + (row + 2) + "]/td[" + (col + 2) + "]/span"));
     }
 
     public WebElement getHoursSelect() {
-        return findElement(By.xpath("//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[3]/td/div/select"));
+        return findElement(By.xpath(
+                "//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[3]/td/div/select"));
     }
 
     public WebElement getMinutesSelect() {
-        return findElement(By.xpath("//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[3]/td/div/select[2]"));
+        return findElement(By.xpath(
+                "//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[3]/td/div/select[2]"));
     }
 
     public WebElement getSecondsSelect() {
-        return findElement(By.xpath("//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[3]/td/div/select[3]"));
+        return findElement(By.xpath(
+                "//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[3]/td/div/select[3]"));
     }
 
     public NativeSelectElement getResolutionSelect() {

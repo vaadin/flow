@@ -19,14 +19,16 @@ public class TabsheetScrolling extends TestBase {
         fixedSizeTabSheet.setWidth("400px");
 
         for (int i = 0; i < 100; i++) {
-            Button b = new Button("Hide this tab (" + i + ")", new ClickListener() {
+            Button b = new Button("Hide this tab (" + i + ")",
+                    new ClickListener() {
 
-                @Override
-                public void buttonClick(ClickEvent event) {
-                    fixedSizeTabSheet.getTab(event.getButton()).setVisible(false);
-                }
+                        @Override
+                        public void buttonClick(ClickEvent event) {
+                            fixedSizeTabSheet.getTab(event.getButton())
+                                    .setVisible(false);
+                        }
 
-            });
+                    });
             Tab t = fixedSizeTabSheet.addTab(b, "Tab " + i, null);
             if (i % 2 == 0) {
                 t.setVisible(false);
@@ -40,13 +42,15 @@ public class TabsheetScrolling extends TestBase {
         autoWideTabSheet.setWidth(null);
 
         for (int i = 0; i < 10; i++) {
-            Button b = new Button("Hide this tab (" + i + ")", new ClickListener() {
+            Button b = new Button("Hide this tab (" + i + ")",
+                    new ClickListener() {
 
-                @Override
-                public void buttonClick(ClickEvent event) {
-                    autoWideTabSheet.getTab(event.getButton()).setVisible(false);
-                }
-            });
+                        @Override
+                        public void buttonClick(ClickEvent event) {
+                            autoWideTabSheet.getTab(event.getButton())
+                                    .setVisible(false);
+                        }
+                    });
 
             Tab t = autoWideTabSheet.addTab(b, "Tab " + i, null);
             if (i % 2 == 0) {

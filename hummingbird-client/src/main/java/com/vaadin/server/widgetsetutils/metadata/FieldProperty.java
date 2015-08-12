@@ -43,13 +43,18 @@ public class FieldProperty extends Property {
     }
 
     @Override
-    public void writeSetterBody(TreeLogger logger, SourceWriter w, String beanVariable, String valueVariable) {
-        w.println("%s.@%s::%s = %s;", beanVariable, getBeanType().getQualifiedSourceName(), getName(), unboxValue(valueVariable));
+    public void writeSetterBody(TreeLogger logger, SourceWriter w,
+            String beanVariable, String valueVariable) {
+        w.println("%s.@%s::%s = %s;", beanVariable,
+                getBeanType().getQualifiedSourceName(), getName(),
+                unboxValue(valueVariable));
     }
 
     @Override
-    public void writeGetterBody(TreeLogger logger, SourceWriter w, String beanVariable) {
-        String value = String.format("%s.@%s::%s", beanVariable, getBeanType().getQualifiedSourceName(), getName());
+    public void writeGetterBody(TreeLogger logger, SourceWriter w,
+            String beanVariable) {
+        String value = String.format("%s.@%s::%s", beanVariable,
+                getBeanType().getQualifiedSourceName(), getName());
         w.print("return ");
         w.print(boxValue(value));
         w.println(";");
@@ -72,7 +77,8 @@ public class FieldProperty extends Property {
         for (JClassType subType : type.getFlattenedSupertypeHierarchy()) {
             JField[] subFields = subType.getFields();
             for (JField field : subFields) {
-                if (field.isPublic() && !field.isStatic() && names.add(field.getName())) {
+                if (field.isPublic() && !field.isStatic()
+                        && names.add(field.getName())) {
                     fields.add(field);
                 }
             }

@@ -36,16 +36,24 @@ public class HiddenHorizontalLayout extends TestBase {
         hl.addComponent(new Label("label4"));
         vl.addComponent(hl);
 
-        Label l = new Label("Steps to reproduce with Vaadin 6.0.1:<br/>" + "1. set browser size smaller than fullscreen<br/>" + "2. Refresh page with browser<br/>" + "3. Click \"toggle layout visibility\"<br>" + "4. Resize browser window to full <br/>" + "5. Click \"toggle layout visibility\"<br/>", ContentMode.HTML);
+        Label l = new Label(
+                "Steps to reproduce with Vaadin 6.0.1:<br/>"
+                        + "1. set browser size smaller than fullscreen<br/>"
+                        + "2. Refresh page with browser<br/>"
+                        + "3. Click \"toggle layout visibility\"<br>"
+                        + "4. Resize browser window to full <br/>"
+                        + "5. Click \"toggle layout visibility\"<br/>",
+                ContentMode.HTML);
         vl.addComponent(l);
-        Button b = new Button("toggle layout visibility", new Button.ClickListener() {
+        Button b = new Button("toggle layout visibility",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                hl.setVisible(!hl.isVisible());
-            }
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        hl.setVisible(!hl.isVisible());
+                    }
 
-        });
+                });
         vl.addComponent(b);
     }
 

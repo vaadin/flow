@@ -41,8 +41,10 @@ public class SplitPositionChangeTest extends MultiBrowserTest {
 
     @Test
     public void testHorizontalSplit() {
-        HorizontalSplitPanelElement split = $(HorizontalSplitPanelElement.class).first();
-        WebElement splitter = split.findElement(By.className("v-splitpanel-hsplitter"));
+        HorizontalSplitPanelElement split = $(HorizontalSplitPanelElement.class)
+                .first();
+        WebElement splitter = split
+                .findElement(By.className("v-splitpanel-hsplitter"));
         int position = splitter.getLocation().getX();
         Actions actions = new Actions(driver);
         actions.clickAndHold(splitter).moveByOffset(50, 0).release().perform();
@@ -52,8 +54,10 @@ public class SplitPositionChangeTest extends MultiBrowserTest {
 
     @Test
     public void testVerticalSplit() {
-        VerticalSplitPanelElement split = $(VerticalSplitPanelElement.class).first();
-        WebElement splitter = split.findElement(By.className("v-splitpanel-vsplitter"));
+        VerticalSplitPanelElement split = $(VerticalSplitPanelElement.class)
+                .first();
+        WebElement splitter = split
+                .findElement(By.className("v-splitpanel-vsplitter"));
         int position = splitter.getLocation().getY();
         Actions actions = new Actions(driver);
         actions.clickAndHold(splitter).moveByOffset(0, 50).release().perform();
@@ -66,8 +70,12 @@ public class SplitPositionChangeTest extends MultiBrowserTest {
     }
 
     private void assertLogText(boolean horizontal) {
-        String expected = String.format("1. Split position changed: %s, position: .*", horizontal ? "horizontal" : "vertical");
+        String expected = String.format(
+                "1. Split position changed: %s, position: .*",
+                horizontal ? "horizontal" : "vertical");
         String actual = getLogRow(0);
-        Assert.assertTrue(String.format("Log content didn't match the expected format.\nexpected: '%s'\nwas: '%s'", expected, actual), actual.matches(expected));
+        Assert.assertTrue(String.format(
+                "Log content didn't match the expected format.\nexpected: '%s'\nwas: '%s'",
+                expected, actual), actual.matches(expected));
     }
 }

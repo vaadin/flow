@@ -23,7 +23,8 @@ package com.vaadin.server;
  * 
  * @author Vaadin Ltd
  */
-public abstract class AbstractDeploymentConfiguration implements DeploymentConfiguration {
+public abstract class AbstractDeploymentConfiguration
+        implements DeploymentConfiguration {
 
     @Override
     public String getUIClassName() {
@@ -32,12 +33,14 @@ public abstract class AbstractDeploymentConfiguration implements DeploymentConfi
 
     @Override
     public String getUIProviderClassName() {
-        return getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_UI_PROVIDER, null);
+        return getApplicationOrSystemProperty(
+                Constants.SERVLET_PARAMETER_UI_PROVIDER, null);
     }
 
     @Override
     public String getResourcesPath() {
-        return getApplicationOrSystemProperty(Constants.PARAMETER_VAADIN_RESOURCES, null);
+        return getApplicationOrSystemProperty(
+                Constants.PARAMETER_VAADIN_RESOURCES, null);
     }
 
     @Override

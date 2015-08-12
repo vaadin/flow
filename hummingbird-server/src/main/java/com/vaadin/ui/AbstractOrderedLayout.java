@@ -42,13 +42,17 @@ import com.vaadin.ui.declarative.DesignContext;
 
 @SuppressWarnings("serial")
 @HTML("vaadin://bower_components/iron-flex-layout/classes/iron-flex-layout.html")
-public abstract class AbstractOrderedLayout extends AbstractLayout implements Layout.AlignmentHandler, Layout.SpacingHandler, LayoutClickNotifier, Layout.MarginHandler {
+public abstract class AbstractOrderedLayout extends AbstractLayout
+        implements Layout.AlignmentHandler, Layout.SpacingHandler,
+        LayoutClickNotifier, Layout.MarginHandler {
 
     private AbstractOrderedLayoutServerRpc rpc = new AbstractOrderedLayoutServerRpc() {
 
         @Override
-        public void layoutClick(MouseEventDetails mouseDetails, Connector clickedConnector) {
-            fireEvent(LayoutClickEvent.createEvent(AbstractOrderedLayout.this, mouseDetails, clickedConnector));
+        public void layoutClick(MouseEventDetails mouseDetails,
+                Connector clickedConnector) {
+            fireEvent(LayoutClickEvent.createEvent(AbstractOrderedLayout.this,
+                    mouseDetails, clickedConnector));
         }
     };
 
@@ -206,13 +210,15 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
 
     /* Documented in superclass */
     @Override
-    public void replaceComponent(Component oldComponent, Component newComponent) {
+    public void replaceComponent(Component oldComponent,
+            Component newComponent) {
 
         // Gets the locations
         int oldLocation = -1;
         int newLocation = -1;
         int location = 0;
-        for (final Iterator<Component> i = components.iterator(); i.hasNext();) {
+        for (final Iterator<Component> i = components.iterator(); i
+                .hasNext();) {
             final Component component = i.next();
 
             if (component == oldComponent) {
@@ -253,13 +259,15 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
     }
 
     @Override
-    public void setComponentAlignment(Component childComponent, Alignment alignment) {
+    public void setComponentAlignment(Component childComponent,
+            Alignment alignment) {
         ChildComponentData childData = getState().childData.get(childComponent);
         if (childData != null) {
             // Alignments are bit masks
             childData.alignmentBitmask = alignment.getBitMask();
         } else {
-            throw new IllegalArgumentException("Component must be added to layout before using setComponentAlignment()");
+            throw new IllegalArgumentException(
+                    "Component must be added to layout before using setComponentAlignment()");
         }
 
     }
@@ -274,7 +282,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
     public Alignment getComponentAlignment(Component childComponent) {
         ChildComponentData childData = getState().childData.get(childComponent);
         if (childData == null) {
-            throw new IllegalArgumentException("The given component is not a child of this layout");
+            throw new IllegalArgumentException(
+                    "The given component is not a child of this layout");
         }
 
         return new Alignment(childData.alignmentBitmask);
@@ -332,7 +341,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
     public void setExpandRatio(Component component, int ratio) {
         ChildComponentData childData = getState().childData.get(component);
         if (childData == null) {
-            throw new IllegalArgumentException("The given component is not a child of this layout");
+            throw new IllegalArgumentException(
+                    "The given component is not a child of this layout");
         }
 
         childData.expandRatio = ratio;
@@ -350,7 +360,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
     public int getExpandRatio(Component component) {
         ChildComponentData childData = getState(false).childData.get(component);
         if (childData == null) {
-            throw new IllegalArgumentException("The given component is not a child of this layout");
+            throw new IllegalArgumentException(
+                    "The given component is not a child of this layout");
         }
 
         return childData.expandRatio;
@@ -358,12 +369,15 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
 
     @Override
     public void addLayoutClickListener(LayoutClickListener listener) {
-        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener, LayoutClickListener.clickMethod);
+        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
+                LayoutClickEvent.class, listener,
+                LayoutClickListener.clickMethod);
     }
 
     @Override
     public void removeLayoutClickListener(LayoutClickListener listener) {
-        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener);
+        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
+                LayoutClickEvent.class, listener);
     }
 
     /**
@@ -437,7 +451,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
         defaultComponentAlignment = defaultAlignment;
     }
 
-    private void applyLayoutSettings(Component target, Alignment alignment, int expandRatio) {
+    private void applyLayoutSettings(Component target, Alignment alignment,
+            int expandRatio) {
         setComponentAlignment(target, alignment);
         setExpandRatio(target, expandRatio);
     }
@@ -485,7 +500,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
                         int ratio = Integer.valueOf(value);
                         setExpandRatio(newChild, ratio);
                     } catch (NumberFormatException nfe) {
-                        getLogger().info("Failed to parse expand ratio " + value);
+                        getLogger()
+                                .info("Failed to parse expand ratio " + value);
                     }
                 } else {
                     setExpandRatio(newChild, 1);
@@ -505,7 +521,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
         // write default attributes
         super.writeDesign(design, designContext);
 
-        AbstractOrderedLayout def = (AbstractOrderedLayout) designContext.getDefaultInstance(this);
+        AbstractOrderedLayout def = (AbstractOrderedLayout) designContext
+                .getDefaultInstance(this);
 
         writeMargin(design, getMargin(), def.getMargin(), designContext);
 
@@ -534,7 +551,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout implements La
             if (expandRatio == 1.0f) {
                 childElement.attr(":expand", "");
             } else if (expandRatio > 0) {
-                childElement.attr(":expand", DesignAttributeHandler.getFormatter().format(expandRatio));
+                childElement.attr(":expand", DesignAttributeHandler
+                        .getFormatter().format(expandRatio));
             }
         }
     }

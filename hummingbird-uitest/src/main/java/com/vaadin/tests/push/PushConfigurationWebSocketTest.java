@@ -36,13 +36,16 @@ public class PushConfigurationWebSocketTest extends PushConfigurationTest {
         getTransportSelect().selectByText("Websocket");
         getPushModeSelect().selectByText("Automatic");
 
-        assertThat(getStatusText(), containsString("fallbackTransport: long-polling"));
+        assertThat(getStatusText(),
+                containsString("fallbackTransport: long-polling"));
         assertThat(getStatusText(), containsString("transport: websocket"));
 
         waitForServerCounterToUpdate();
 
         // Use debug console to verify we used the correct transport type
-        assertThat(driver.getPageSource(), containsString("Push connection established using websocket"));
-        assertThat(driver.getPageSource(), not(containsString("Push connection established using long-polling")));
+        assertThat(driver.getPageSource(),
+                containsString("Push connection established using websocket"));
+        assertThat(driver.getPageSource(), not(containsString(
+                "Push connection established using long-polling")));
     }
 }

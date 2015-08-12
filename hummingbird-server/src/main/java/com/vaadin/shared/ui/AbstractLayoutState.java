@@ -15,7 +15,6 @@
  */
 package com.vaadin.shared.ui;
 
-
 public class AbstractLayoutState extends JavaScriptComponentState {
 
 }

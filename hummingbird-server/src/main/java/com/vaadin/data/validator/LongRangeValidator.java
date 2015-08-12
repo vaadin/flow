@@ -39,7 +39,8 @@ public class LongRangeValidator extends RangeValidator<Long> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public LongRangeValidator(String errorMessage, Long minValue, Long maxValue) {
+    public LongRangeValidator(String errorMessage, Long minValue,
+            Long maxValue) {
         super(errorMessage, Long.class, minValue, maxValue);
     }
 

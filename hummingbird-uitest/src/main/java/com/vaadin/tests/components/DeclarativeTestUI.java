@@ -80,10 +80,12 @@ public class DeclarativeTestUI extends AbstractTestUI {
         } else {
             // This is rather nasty.. but it works well enough for now.
             String userDir = System.getProperty("user.dir");
-            designFilePath = userDir + "/uitest/src/" + clazz.getPackage().getName().replace('.', '/') + "/";
+            designFilePath = userDir + "/uitest/src/"
+                    + clazz.getPackage().getName().replace('.', '/') + "/";
         }
 
-        String designFileName = clazz.getAnnotation(DeclarativeUI.class).value();
+        String designFileName = clazz.getAnnotation(DeclarativeUI.class)
+                .value();
 
         return designFilePath + designFileName;
     }
@@ -119,20 +121,24 @@ public class DeclarativeTestUI extends AbstractTestUI {
                     try {
                         m.invoke(this, (Object[]) null);
                     } catch (IllegalAccessException e) {
-                        getLogger().log(Level.SEVERE, "Error invoking @OnLoad method", e);
+                        getLogger().log(Level.SEVERE,
+                                "Error invoking @OnLoad method", e);
                         return;
                     } catch (IllegalArgumentException e) {
-                        getLogger().log(Level.SEVERE, "Error invoking @OnLoad method", e);
+                        getLogger().log(Level.SEVERE,
+                                "Error invoking @OnLoad method", e);
                         return;
                     } catch (InvocationTargetException e) {
-                        getLogger().log(Level.SEVERE, "Error invoking @OnLoad method", e);
+                        getLogger().log(Level.SEVERE,
+                                "Error invoking @OnLoad method", e);
                         return;
                     }
                 }
             }
 
         } else {
-            throw new IllegalStateException("Cannot find declarative UI annotation");
+            throw new IllegalStateException(
+                    "Cannot find declarative UI annotation");
         }
     }
 
@@ -149,7 +155,8 @@ public class DeclarativeTestUI extends AbstractTestUI {
         try {
             return (T) component;
         } catch (ClassCastException ex) {
-            getLogger().log(Level.SEVERE, "Component code/design type mismatch", ex);
+            getLogger().log(Level.SEVERE, "Component code/design type mismatch",
+                    ex);
         }
         return null;
     }

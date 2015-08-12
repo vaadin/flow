@@ -35,7 +35,8 @@ public class CriticalNotifications extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        systemMessages = VaadinService.getCurrent().getSystemMessages(getLocale(), request);
+        systemMessages = VaadinService.getCurrent()
+                .getSystemMessages(getLocale(), request);
 
         includeDetails = new CheckBox("Include details");
         addComponent(includeDetails);
@@ -45,7 +46,11 @@ public class CriticalNotifications extends AbstractTestUI {
         sessionExpired.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                showCriticalNotification(systemMessages.getSessionExpiredCaption(), systemMessages.getSessionExpiredMessage(), getDetailsMessage(), systemMessages.getSessionExpiredURL());
+                showCriticalNotification(
+                        systemMessages.getSessionExpiredCaption(),
+                        systemMessages.getSessionExpiredMessage(),
+                        getDetailsMessage(),
+                        systemMessages.getSessionExpiredURL());
 
             }
         });
@@ -55,7 +60,11 @@ public class CriticalNotifications extends AbstractTestUI {
         authenticationError.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                showCriticalNotification(systemMessages.getAuthenticationErrorCaption(), systemMessages.getAuthenticationErrorMessage(), getDetailsMessage(), systemMessages.getAuthenticationErrorURL());
+                showCriticalNotification(
+                        systemMessages.getAuthenticationErrorCaption(),
+                        systemMessages.getAuthenticationErrorMessage(),
+                        getDetailsMessage(),
+                        systemMessages.getAuthenticationErrorURL());
 
             }
         });
@@ -65,7 +74,11 @@ public class CriticalNotifications extends AbstractTestUI {
         communicationError.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                showCriticalNotification(systemMessages.getCommunicationErrorCaption(), systemMessages.getCommunicationErrorMessage(), getDetailsMessage(), systemMessages.getCommunicationErrorURL());
+                showCriticalNotification(
+                        systemMessages.getCommunicationErrorCaption(),
+                        systemMessages.getCommunicationErrorMessage(),
+                        getDetailsMessage(),
+                        systemMessages.getCommunicationErrorURL());
 
             }
         });
@@ -75,7 +88,11 @@ public class CriticalNotifications extends AbstractTestUI {
         internalError.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                showCriticalNotification(systemMessages.getInternalErrorCaption(), systemMessages.getInternalErrorMessage(), getDetailsMessage(), systemMessages.getInternalErrorURL());
+                showCriticalNotification(
+                        systemMessages.getInternalErrorCaption(),
+                        systemMessages.getInternalErrorMessage(),
+                        getDetailsMessage(),
+                        systemMessages.getInternalErrorURL());
 
             }
         });
@@ -85,7 +102,11 @@ public class CriticalNotifications extends AbstractTestUI {
         cookiesDisabled.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                showCriticalNotification(systemMessages.getCookiesDisabledCaption(), systemMessages.getCookiesDisabledMessage(), getDetailsMessage(), systemMessages.getCookiesDisabledURL());
+                showCriticalNotification(
+                        systemMessages.getCookiesDisabledCaption(),
+                        systemMessages.getCookiesDisabledMessage(),
+                        getDetailsMessage(),
+                        systemMessages.getCookiesDisabledURL());
 
             }
         });
@@ -94,7 +115,8 @@ public class CriticalNotifications extends AbstractTestUI {
         custom.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                showCriticalNotification("Custom caption", "Custom message", "Custom details", "custom url");
+                showCriticalNotification("Custom caption", "Custom message",
+                        "Custom details", "custom url");
 
             }
         });
@@ -108,12 +130,16 @@ public class CriticalNotifications extends AbstractTestUI {
         }
     }
 
-    protected void showCriticalNotification(String caption, String message, String details, String url) {
+    protected void showCriticalNotification(String caption, String message,
+            String details, String url) {
         VaadinService service = VaadinService.getCurrent();
         VaadinResponse response = VaadinService.getCurrentResponse();
 
         try {
-            service.writeStringResponse(response, JsonConstants.JSON_CONTENT_TYPE, VaadinService.createCriticalNotificationJSON(caption, message, details, url));
+            service.writeStringResponse(response,
+                    JsonConstants.JSON_CONTENT_TYPE,
+                    VaadinService.createCriticalNotificationJSON(caption,
+                            message, details, url));
         } catch (IOException e) {
             e.printStackTrace();
         }

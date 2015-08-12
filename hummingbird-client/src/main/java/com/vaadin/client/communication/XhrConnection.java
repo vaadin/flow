@@ -78,20 +78,23 @@ public class XhrConnection {
     public void setConnection(ApplicationConnection connection) {
         this.connection = connection;
 
-        connection.addHandler(ResponseHandlingEndedEvent.TYPE, new CommunicationHandler() {
-            @Override
-            public void onRequestStarting(RequestStartingEvent e) {
-            }
+        connection.addHandler(ResponseHandlingEndedEvent.TYPE,
+                new CommunicationHandler() {
+                    @Override
+                    public void onRequestStarting(RequestStartingEvent e) {
+                    }
 
-            @Override
-            public void onResponseHandlingStarted(ResponseHandlingStartedEvent e) {
-            }
+                    @Override
+                    public void onResponseHandlingStarted(
+                            ResponseHandlingStartedEvent e) {
+                    }
 
-            @Override
-            public void onResponseHandlingEnded(ResponseHandlingEndedEvent e) {
-                webkitMaybeIgnoringRequests = false;
-            }
-        });
+                    @Override
+                    public void onResponseHandlingEnded(
+                            ResponseHandlingEndedEvent e) {
+                        webkitMaybeIgnoringRequests = false;
+                    }
+                });
 
     }
 
@@ -123,7 +126,8 @@ public class XhrConnection {
 
         @Override
         public void onError(Request request, Throwable exception) {
-            getCommunicationProblemHandler().xhrException(new CommunicationProblemEvent(request, payload, exception));
+            getCommunicationProblemHandler().xhrException(
+                    new CommunicationProblemEvent(request, payload, exception));
         }
 
         private ServerCommunicationHandler getServerCommunicationHandler() {
@@ -136,27 +140,38 @@ public class XhrConnection {
 
             if (statusCode != 200) {
                 // There was a problem
-                CommunicationProblemEvent problemEvent = new CommunicationProblemEvent(request, payload, response);
+                CommunicationProblemEvent problemEvent = new CommunicationProblemEvent(
+                        request, payload, response);
 
-                getCommunicationProblemHandler().xhrInvalidStatusCode(problemEvent);
+                getCommunicationProblemHandler()
+                        .xhrInvalidStatusCode(problemEvent);
                 return;
             }
 
-            getLogger().info("Server visit took " + String.valueOf((new Date()).getTime() - requestStartTime.getTime()) + "ms");
+            getLogger().info("Server visit took "
+                    + String.valueOf(
+                            (new Date()).getTime() - requestStartTime.getTime())
+                    + "ms");
 
             String contentType = response.getHeader("Content-Type");
-            if (contentType == null || !contentType.startsWith("application/json")) {
-                getCommunicationProblemHandler().xhrInvalidContent(new CommunicationProblemEvent(request, payload, response));
+            if (contentType == null
+                    || !contentType.startsWith("application/json")) {
+                getCommunicationProblemHandler().xhrInvalidContent(
+                        new CommunicationProblemEvent(request, payload,
+                                response));
                 return;
             }
 
             // for(;;);["+ realJson +"]"
             String responseText = response.getText();
 
-            final String jsonText = ServerCommunicationHandler.stripJSONWrapping(responseText);
+            final String jsonText = ServerCommunicationHandler
+                    .stripJSONWrapping(responseText);
             if (jsonText == null) {
                 // Invalid string (not wrapped as expected)
-                getCommunicationProblemHandler().xhrInvalidContent(new CommunicationProblemEvent(request, payload, response));
+                getCommunicationProblemHandler().xhrInvalidContent(
+                        new CommunicationProblemEvent(request, payload,
+                                response));
                 return;
             }
 
@@ -209,7 +224,8 @@ public class XhrConnection {
                     @Override
                     public void run() {
                         // Use native js to access private field in Request
-                        if (resendRequest(request) && webkitMaybeIgnoringRequests) {
+                        if (resendRequest(request)
+                                && webkitMaybeIgnoringRequests) {
                             // Schedule retry if still needed
                             schedule(retryTimeout);
                         }
@@ -217,7 +233,8 @@ public class XhrConnection {
                 }.schedule(retryTimeout);
             }
         } catch (RequestException e) {
-            getCommunicationProblemHandler().xhrException(new CommunicationProblemEvent(null, payload, e));
+            getCommunicationProblemHandler().xhrException(
+                    new CommunicationProblemEvent(null, payload, e));
         }
     }
 
@@ -227,9 +244,12 @@ public class XhrConnection {
      * @return The URI to use for server messages.
      */
     protected String getUri() {
-        String uri = connection.translateVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX + ApplicationConstants.UIDL_PATH + '/');
+        String uri = connection
+                .translateVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX
+                        + ApplicationConstants.UIDL_PATH + '/');
 
-        uri = SharedUtil.addGetParameters(uri, UIConstants.UI_ID_PARAMETER + "=" + connection.getConfiguration().getUIId());
+        uri = SharedUtil.addGetParameters(uri, UIConstants.UI_ID_PARAMETER + "="
+                + connection.getConfiguration().getUIId());
 
         return uri;
 

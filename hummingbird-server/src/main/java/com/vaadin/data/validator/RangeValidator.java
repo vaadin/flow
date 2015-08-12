@@ -55,7 +55,8 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
      * @param maxValue
      *            The maximum value that should be accepted or null for no limit
      */
-    public RangeValidator(String errorMessage, Class<T> type, T minValue, T maxValue) {
+    public RangeValidator(String errorMessage, Class<T> type, T minValue,
+            T maxValue) {
         super(errorMessage);
         this.type = type;
         this.minValue = minValue;
@@ -153,7 +154,8 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
      */
     @Override
     protected boolean isValidValue(T value) {
-        if (value == null || (String.class.equals(getType()) && "".equals(value))) {
+        if (value == null
+                || (String.class.equals(getType()) && "".equals(value))) {
             return true;
         }
 

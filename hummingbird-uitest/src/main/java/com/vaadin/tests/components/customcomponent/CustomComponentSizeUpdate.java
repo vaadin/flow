@@ -10,7 +10,8 @@ public class CustomComponentSizeUpdate extends TestBase {
 
     @Override
     protected void setup() {
-        NativeButton nb = new NativeButton("100%x100% button. Click to reduce CustomComponent size");
+        NativeButton nb = new NativeButton(
+                "100%x100% button. Click to reduce CustomComponent size");
         nb.setSizeFull();
 
         final CustomComponent cc = new CustomComponent(nb);

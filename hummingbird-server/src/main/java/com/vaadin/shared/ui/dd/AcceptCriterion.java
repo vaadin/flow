@@ -40,6 +40,6 @@ public @interface AcceptCriterion {
      * @return the class of the server side counterpart for the annotated
      *         criterion
      */
-    Class<?> value();
+    Class<?>value();
 
 }

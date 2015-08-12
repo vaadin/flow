@@ -16,7 +16,11 @@ public class TreeHorizontalResize extends TestBase {
     public static final Object hw_PROPERTY_NAME = "name";
     public static final Object hw_PROPERTY_ICON = "icon";
     private static final String[][] hardware = { //
-    { "Desktops", "Dell OptiPlex GX240", "Dell OptiPlex GX260", "Dell OptiPlex GX280" }, { "Monitors", "Benq T190HD", "Benq T220HD", "Benq T240HD" }, { "Laptops", "IBM ThinkPad T40", "IBM ThinkPad T43", "IBM ThinkPad T60" } };
+            { "Desktops", "Dell OptiPlex GX240", "Dell OptiPlex GX260",
+                    "Dell OptiPlex GX280" },
+            { "Monitors", "Benq T190HD", "Benq T220HD", "Benq T240HD" },
+            { "Laptops", "IBM ThinkPad T40", "IBM ThinkPad T43",
+                    "IBM ThinkPad T60" } };
 
     @Override
     protected void setup() {
@@ -56,7 +60,8 @@ public class TreeHorizontalResize extends TestBase {
         // Create containerproperty for name
         hwContainer.addContainerProperty(hw_PROPERTY_NAME, String.class, null);
         // Create containerproperty for icon
-        hwContainer.addContainerProperty(hw_PROPERTY_ICON, ThemeResource.class, new ThemeResource("../runo/icons/16/document.png"));
+        hwContainer.addContainerProperty(hw_PROPERTY_ICON, ThemeResource.class,
+                new ThemeResource("../runo/icons/16/document.png"));
         for (int i = 0; i < hardware.length; i++) {
             // Add new item
             item = hwContainer.addItem(itemId);
@@ -67,7 +72,8 @@ public class TreeHorizontalResize extends TestBase {
             itemId++;
             for (int j = 1; j < hardware[i].length; j++) {
                 if (j == 1) {
-                    item.getItemProperty(hw_PROPERTY_ICON).setValue(new ThemeResource("../runo/icons/16/folder.png"));
+                    item.getItemProperty(hw_PROPERTY_ICON).setValue(
+                            new ThemeResource("../runo/icons/16/folder.png"));
                 }
                 // Add child items
                 item = hwContainer.addItem(itemId);

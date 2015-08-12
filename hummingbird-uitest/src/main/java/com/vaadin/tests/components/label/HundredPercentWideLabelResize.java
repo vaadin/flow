@@ -20,22 +20,24 @@ public class HundredPercentWideLabelResize extends TestBase {
     @Override
     protected void setup() {
         getLayout().setWidth("500px");
-        Label text = new Label("This is a fairly long text that will wrap if the width of the layout is narrow enough. Directly below the text is a Button - however, when the layout changes size, the Label re-wraps w/o moving the button, causing eiter clipping or a big space.");
+        Label text = new Label(
+                "This is a fairly long text that will wrap if the width of the layout is narrow enough. Directly below the text is a Button - however, when the layout changes size, the Label re-wraps w/o moving the button, causing eiter clipping or a big space.");
         text.setWidth("100%");
         getLayout().addComponent(text);
 
-        getLayout().addComponent(new Button("toggle width", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                if (getLayout().getWidth() == 500) {
-                    getLayout().setWidth("100px");
-                } else {
-                    getLayout().setWidth("500px");
-                }
+        getLayout().addComponent(
+                new Button("toggle width", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        if (getLayout().getWidth() == 500) {
+                            getLayout().setWidth("100px");
+                        } else {
+                            getLayout().setWidth("500px");
+                        }
 
-            }
+                    }
 
-        }));
+                }));
     }
 
 }

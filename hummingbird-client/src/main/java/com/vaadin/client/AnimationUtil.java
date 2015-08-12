@@ -59,28 +59,30 @@ public class AnimationUtil {
     }
 
     /** For internal use only. May be removed or replaced in the future. */
-    public static native JavaScriptObject addAnimationEndListener(Element elem, AnimationEndListener listener)
-    /*-{
-      var callbackFunc = $entry(function(e) {
-        listener.@com.vaadin.client.AnimationUtil.AnimationEndListener::onAnimationEnd(Lcom/google/gwt/dom/client/NativeEvent;)(e);
-      });
-
-      elem.addEventListener(@com.vaadin.client.AnimationUtil::ANIMATION_END_EVENT_NAME, callbackFunc, false);
-      
-      // Store function reference for later removal
-      if(!elem._vaadin_animationend_callbacks) {
-        elem._vaadin_animationend_callbacks = [];
-      }
-      elem._vaadin_animationend_callbacks.push(callbackFunc);
-      
-      return callbackFunc;
-    }-*/;
+    public static native JavaScriptObject addAnimationEndListener(Element elem,
+            AnimationEndListener listener)
+            /*-{
+              var callbackFunc = $entry(function(e) {
+                listener.@com.vaadin.client.AnimationUtil.AnimationEndListener::onAnimationEnd(Lcom/google/gwt/dom/client/NativeEvent;)(e);
+              });
+            
+              elem.addEventListener(@com.vaadin.client.AnimationUtil::ANIMATION_END_EVENT_NAME, callbackFunc, false);
+              
+              // Store function reference for later removal
+              if(!elem._vaadin_animationend_callbacks) {
+                elem._vaadin_animationend_callbacks = [];
+              }
+              elem._vaadin_animationend_callbacks.push(callbackFunc);
+              
+              return callbackFunc;
+            }-*/;
 
     /** For internal use only. May be removed or replaced in the future. */
-    public static native void removeAnimationEndListener(Element elem, JavaScriptObject listener)
-    /*-{
-      elem.removeEventListener(@com.vaadin.client.AnimationUtil::ANIMATION_END_EVENT_NAME, listener, false);
-    }-*/;
+    public static native void removeAnimationEndListener(Element elem,
+            JavaScriptObject listener)
+            /*-{
+              elem.removeEventListener(@com.vaadin.client.AnimationUtil::ANIMATION_END_EVENT_NAME, listener, false);
+            }-*/;
 
     /** For internal use only. May be removed or replaced in the future. */
     public static native void removeAllAnimationEndListeners(Element elem)
@@ -109,7 +111,7 @@ public class AnimationUtil {
             return event.mozAnimationName;
         else if(event.oAnimationName)
             return event.oAnimationName;
-
+    
         return "";
     }-*/;
 
@@ -117,22 +119,22 @@ public class AnimationUtil {
     public static native String getAnimationName(ComputedStyle cstyle)
     /*-{
         var cs = cstyle.@com.vaadin.client.ComputedStyle::computedStyle;
-
+    
         if(!cs.getPropertyValue)
             return "";
-
+    
         if(cs.getPropertyValue("-webkit-animation-name"))
             return cs.getPropertyValue("-webkit-animation-name");
-
+    
         else if(cs.getPropertyValue("animation-name"))
             return cs.getPropertyValue("animation-name");
-
+    
         else if(cs.getPropertyValue("-moz-animation-name"))
             return cs.getPropertyValue("-moz-animation-name");
-
+    
         else if(cs.getPropertyValue("-o-animation-name"))
             return cs.getPropertyValue("-o-animation-name");
-
+    
         return "";
     }-*/;
 

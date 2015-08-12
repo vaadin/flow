@@ -45,6 +45,7 @@ public class AlignTopIconInButton extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Icon in the button with 'icon-align-top' style is not " + "centered when image is used.";
+        return "Icon in the button with 'icon-align-top' style is not "
+                + "centered when image is used.";
     }
 }

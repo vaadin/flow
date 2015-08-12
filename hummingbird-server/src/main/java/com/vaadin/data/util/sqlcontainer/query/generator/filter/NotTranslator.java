@@ -34,7 +34,8 @@ public class NotTranslator implements FilterTranslator {
             IsNull in = (IsNull) not.getFilter();
             return QueryBuilder.quote(in.getPropertyId()) + " IS NOT NULL";
         }
-        return "NOT " + QueryBuilder.getWhereStringForFilter(not.getFilter(), sh);
+        return "NOT "
+                + QueryBuilder.getWhereStringForFilter(not.getFilter(), sh);
     }
 
 }

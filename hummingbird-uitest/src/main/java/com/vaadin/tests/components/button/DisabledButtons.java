@@ -9,7 +9,8 @@ import com.vaadin.ui.VerticalLayout;
 
 public class DisabledButtons extends TestBase {
 
-    private static final ThemeResource ICON = new ThemeResource("../runo/icons/16/ok.png");
+    private static final ThemeResource ICON = new ThemeResource(
+            "../runo/icons/16/ok.png");
     private String CAPTION = "Caption";
 
     @Override

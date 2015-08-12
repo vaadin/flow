@@ -461,7 +461,8 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * <pre>
      * RichTextArea area = new RichTextArea();
      * area.setCaption(&quot;You can edit stuff here&quot;);
-     * area.setValue(&quot;&lt;h1&gt;Helpful Heading&lt;/h1&gt;&quot; + &quot;&lt;p&gt;All this is for you to edit.&lt;/p&gt;&quot;);
+     * area.setValue(&quot;&lt;h1&gt;Helpful Heading&lt;/h1&gt;&quot;
+     *         + &quot;&lt;p&gt;All this is for you to edit.&lt;/p&gt;&quot;);
      * </pre>
      * 
      * <p>
@@ -598,7 +599,8 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * public class AttachExample extends CustomComponent {
      *     public AttachExample() {
      *         // ERROR: We can't access the application object yet.
-     *         ClassResource r = new ClassResource(&quot;smiley.jpg&quot;, getApplication());
+     *         ClassResource r = new ClassResource(&quot;smiley.jpg&quot;,
+     *                 getApplication());
      *         Embedded image = new Embedded(&quot;Image:&quot;, r);
      *         setCompositionRoot(image);
      *     }
@@ -624,7 +626,8 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      *         super.attach(); // Must call.
      * 
      *         // Now we know who ultimately owns us.
-     *         ClassResource r = new ClassResource(&quot;smiley.jpg&quot;, getApplication());
+     *         ClassResource r = new ClassResource(&quot;smiley.jpg&quot;,
+     *                 getApplication());
      *         Embedded image = new Embedded(&quot;Image:&quot;, r);
      *         setCompositionRoot(image);
      *     }
@@ -827,11 +830,14 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * 
      *     public void componentEvent(Event event) {
      *         // Act according to the source of the event
-     *         if (event.getSource() == ok &amp;&amp; event.getClass() == Button.ClickEvent.class)
+     *         if (event.getSource() == ok
+     *                 &amp;&amp; event.getClass() == Button.ClickEvent.class)
      *             getWindow().showNotification(&quot;Click!&quot;);
      * 
      *         // Display source component and event class names
-     *         status.setValue(&quot;Event from &quot; + event.getSource().getClass().getName() + &quot;: &quot; + event.getClass().getName());
+     *         status.setValue(
+     *                 &quot;Event from &quot; + event.getSource().getClass().getName()
+     *                         + &quot;: &quot; + event.getClass().getName());
      *     }
      * }
      * 
@@ -855,11 +861,14 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
          * <pre>
          * public void componentEvent(Event event) {
          *     // Act according to the source of the event
-         *     if (event.getSource() == ok &amp;&amp; event.getClass() == Button.ClickEvent.class)
+         *     if (event.getSource() == ok
+         *             &amp;&amp; event.getClass() == Button.ClickEvent.class)
          *         getWindow().showNotification(&quot;Click!&quot;);
          * 
          *     // Display source component and event class names
-         *     status.setValue(&quot;Event from &quot; + event.getSource().getClass().getName() + &quot;: &quot; + event.getClass().getName());
+         *     status.setValue(
+         *             &quot;Event from &quot; + event.getSource().getClass().getName() + &quot;: &quot;
+         *                     + event.getClass().getName());
          * }
          * </pre>
          * 
@@ -905,7 +914,9 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      *         if (event.getSource() == ok)
      *             getWindow().showNotification(&quot;Click!&quot;);
      * 
-     *         status.setValue(&quot;Event from &quot; + event.getSource().getClass().getName() + &quot;: &quot; + event.getClass().getName());
+     *         status.setValue(
+     *                 &quot;Event from &quot; + event.getSource().getClass().getName()
+     *                         + &quot;: &quot; + event.getClass().getName());
      *     }
      * }
      * 
@@ -1112,7 +1123,8 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * 
      */
     public static interface AttachListener extends ComponentEventListener {
-        public static final Method attachMethod = ReflectTools.findMethod(AttachListener.class, "attach", AttachEvent.class);
+        public static final Method attachMethod = ReflectTools
+                .findMethod(AttachListener.class, "attach", AttachEvent.class);
 
         /**
          * Called when a AttachListener is notified of a AttachEvent.
@@ -1139,7 +1151,8 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * 
      */
     public static interface DetachListener extends ComponentEventListener {
-        public static final Method detachMethod = ReflectTools.findMethod(DetachListener.class, "detach", DetachEvent.class);
+        public static final Method detachMethod = ReflectTools
+                .findMethod(DetachListener.class, "detach", DetachEvent.class);
 
         /**
          * Called when a DetachListener is notified of a DetachEvent.

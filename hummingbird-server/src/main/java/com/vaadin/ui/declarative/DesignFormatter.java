@@ -67,7 +67,8 @@ public class DesignFormatter implements Serializable {
      */
     protected void mapDefaultTypes() {
         // numbers use standard toString/valueOf approach
-        for (Class<?> c : new Class<?>[] { Byte.class, Short.class, Integer.class, Long.class }) {
+        for (Class<?> c : new Class<?>[] { Byte.class, Short.class,
+                Integer.class, Long.class }) {
             DesignToStringConverter<?> conv = new DesignToStringConverter(c);
             converterMap.put(c, conv);
             try {
@@ -81,12 +82,16 @@ public class DesignFormatter implements Serializable {
         Converter<String, Boolean> booleanConverter = new Converter<String, Boolean>() {
 
             @Override
-            public Boolean convertToModel(String value, Class<? extends Boolean> targetType, Locale locale) throws Converter.ConversionException {
+            public Boolean convertToModel(String value,
+                    Class<? extends Boolean> targetType, Locale locale)
+                            throws Converter.ConversionException {
                 return !value.equalsIgnoreCase("false");
             }
 
             @Override
-            public String convertToPresentation(Boolean value, Class<? extends String> targetType, Locale locale) throws Converter.ConversionException {
+            public String convertToPresentation(Boolean value,
+                    Class<? extends String> targetType, Locale locale)
+                            throws Converter.ConversionException {
                 if (value.booleanValue()) {
                     return "";
                 } else {
@@ -109,7 +114,8 @@ public class DesignFormatter implements Serializable {
         converterMap.put(boolean.class, booleanConverter);
 
         // floats and doubles use formatters
-        final DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("en_US"));
+        final DecimalFormatSymbols symbols = new DecimalFormatSymbols(
+                new Locale("en_US"));
         final DecimalFormat fmt = new DecimalFormat("0.###", symbols);
         fmt.setGroupingUsed(false);
 
@@ -145,12 +151,16 @@ public class DesignFormatter implements Serializable {
         converterMap.put(String.class, new Converter<String, String>() {
 
             @Override
-            public String convertToModel(String value, Class<? extends String> targetType, Locale locale) throws Converter.ConversionException {
+            public String convertToModel(String value,
+                    Class<? extends String> targetType, Locale locale)
+                            throws Converter.ConversionException {
                 return value;
             }
 
             @Override
-            public String convertToPresentation(String value, Class<? extends String> targetType, Locale locale) throws Converter.ConversionException {
+            public String convertToPresentation(String value,
+                    Class<? extends String> targetType, Locale locale)
+                            throws Converter.ConversionException {
                 return value;
             }
 
@@ -167,10 +177,13 @@ public class DesignFormatter implements Serializable {
         });
 
         // char takes the first character from the string
-        Converter<String, Character> charConverter = new DesignToStringConverter<Character>(Character.class) {
+        Converter<String, Character> charConverter = new DesignToStringConverter<Character>(
+                Character.class) {
 
             @Override
-            public Character convertToModel(String value, Class<? extends Character> targetType, Locale locale) throws Converter.ConversionException {
+            public Character convertToModel(String value,
+                    Class<? extends Character> targetType, Locale locale)
+                            throws Converter.ConversionException {
                 return value.charAt(0);
             }
 
@@ -201,7 +214,8 @@ public class DesignFormatter implements Serializable {
      * @param converter
      *            Converter.
      */
-    protected <T> void addConverter(Class<?> type, Converter<String, ?> converter) {
+    protected <T> void addConverter(Class<?> type,
+            Converter<String, ?> converter) {
         converterMap.put(type, converter);
     }
 
@@ -254,7 +268,8 @@ public class DesignFormatter implements Serializable {
      *         registered converter.
      */
     public String format(Object object) {
-        return format(object, object == null ? Object.class : object.getClass());
+        return format(object,
+                object == null ? Object.class : object.getClass());
     }
 
     /**
@@ -303,7 +318,8 @@ public class DesignFormatter implements Serializable {
      *         if it was not found.
      */
     @SuppressWarnings("unchecked")
-    protected <T> Converter<String, T> findConverterFor(Class<? extends T> sourceType, boolean strict) {
+    protected <T> Converter<String, T> findConverterFor(
+            Class<? extends T> sourceType, boolean strict) {
         if (sourceType == Object.class) {
             // Use for propertyIds, itemIds and such. Only string type objects
             // are really supported if no special logic is implemented in the
@@ -336,7 +352,8 @@ public class DesignFormatter implements Serializable {
      * @return A valid converter for a given type or its subtype, <b>null</b> if
      *         it was not found.
      */
-    protected <T> Converter<String, T> findConverterFor(Class<? extends T> sourceType) {
+    protected <T> Converter<String, T> findConverterFor(
+            Class<? extends T> sourceType) {
         return findConverterFor(sourceType, false);
     }
 

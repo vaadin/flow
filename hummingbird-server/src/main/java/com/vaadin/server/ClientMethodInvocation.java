@@ -33,7 +33,8 @@ import elemental.json.impl.JsonUtil;
  * 
  * @since 7.0
  */
-public class ClientMethodInvocation implements Serializable, Comparable<ClientMethodInvocation> {
+public class ClientMethodInvocation
+        implements Serializable, Comparable<ClientMethodInvocation> {
     private final ClientConnector connector;
     private final String interfaceName;
     private final String methodName;
@@ -45,7 +46,8 @@ public class ClientMethodInvocation implements Serializable, Comparable<ClientMe
     // TODO may cause problems when clustering etc.
     private static long counter = 0;
 
-    public ClientMethodInvocation(ClientConnector connector, String interfaceName, Method method, Object[] parameters) {
+    public ClientMethodInvocation(ClientConnector connector,
+            String interfaceName, Method method, Object[] parameters) {
         this.connector = connector;
         this.interfaceName = interfaceName;
         methodName = method.getName();
@@ -107,14 +109,16 @@ public class ClientMethodInvocation implements Serializable, Comparable<ClientMe
             if (type instanceof Class<?>) {
                 Class<?> clazz = (Class<?>) type;
                 if (JsonArray.class.isAssignableFrom(clazz)) {
-                    parameters[i] = JsonUtil.stringify((JsonArray) parameters[i]);
+                    parameters[i] = JsonUtil
+                            .stringify((JsonArray) parameters[i]);
                 }
             }
         }
         stream.defaultWriteObject();
     }
 
-    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
         // Reverses the serialization done in writeObject. Basically just
         // parsing the serialized type back to the non-serializable type.
         stream.defaultReadObject();
@@ -124,7 +128,8 @@ public class ClientMethodInvocation implements Serializable, Comparable<ClientMe
                 Class<?> clazz = (Class<?>) type;
                 if (JsonArray.class.isAssignableFrom(clazz)) {
                     try {
-                        parameters[i] = JsonUtil.<JsonArray> parse((String) parameters[i]);
+                        parameters[i] = JsonUtil
+                                .<JsonArray> parse((String) parameters[i]);
                     } catch (JsonException e) {
                         throw new IOException(e);
                     }

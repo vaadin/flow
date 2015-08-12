@@ -36,7 +36,8 @@ import com.vaadin.shared.ui.textfield.TextFieldConstants;
 import com.vaadin.ui.declarative.DesignAttributeHandler;
 import com.vaadin.ui.declarative.DesignContext;
 
-public abstract class AbstractTextField extends AbstractField<String> implements BlurNotifier, FocusNotifier, TextChangeNotifier {
+public abstract class AbstractTextField extends AbstractField<String>
+        implements BlurNotifier, FocusNotifier, TextChangeNotifier {
 
     /**
      * Null representation.
@@ -322,11 +323,13 @@ public abstract class AbstractTextField extends AbstractField<String> implements
              * case textChangeEventPending flag is already on and text change
              * event will be fired after the value change event.
              */
-            if (newValue == null && lastKnownTextContent != null && !lastKnownTextContent.equals(getNullRepresentation())) {
+            if (newValue == null && lastKnownTextContent != null
+                    && !lastKnownTextContent.equals(getNullRepresentation())) {
                 // Value was changed from something to null representation
                 lastKnownTextContent = getNullRepresentation();
                 textChangeEventPending = true;
-            } else if (newValue != null && !newValue.toString().equals(lastKnownTextContent)) {
+            } else if (newValue != null
+                    && !newValue.toString().equals(lastKnownTextContent)) {
                 // Value was changed to something else than null representation
                 lastKnownTextContent = newValue.toString();
                 textChangeEventPending = true;
@@ -393,41 +396,43 @@ public abstract class AbstractTextField extends AbstractField<String> implements
          * An event is triggered on each text content change, most commonly key
          * press events.
          */
-        EAGER,
-        /**
-         * Each text change event in the UI causes the event to be communicated
-         * to the application after a timeout. The length of the timeout can be
-         * controlled with {@link TextField#setInputEventTimeout(int)}. Only the
-         * last input event is reported to the server side if several text
-         * change events happen during the timeout.
-         * <p>
-         * In case of a {@link ValueChangeEvent} the schedule is not kept
-         * strictly. Before a {@link ValueChangeEvent} a {@link TextChangeEvent}
-         * is triggered if the text content has changed since the previous
-         * TextChangeEvent regardless of the schedule.
-         */
-        TIMEOUT,
-        /**
-         * An event is triggered when there is a pause of text modifications.
-         * The length of the pause can be modified with
-         * {@link TextField#setInputEventTimeout(int)}. Like with the
-         * {@link #TIMEOUT} mode, an event is forced before
-         * {@link ValueChangeEvent}s, even if the user did not keep a pause
-         * while entering the text.
-         * <p>
-         * This is the default mode.
-         */
+        EAGER, /**
+                * Each text change event in the UI causes the event to be
+                * communicated to the application after a timeout. The length of
+                * the timeout can be controlled with
+                * {@link TextField#setInputEventTimeout(int)}. Only the last
+                * input event is reported to the server side if several text
+                * change events happen during the timeout.
+                * <p>
+                * In case of a {@link ValueChangeEvent} the schedule is not kept
+                * strictly. Before a {@link ValueChangeEvent} a
+                * {@link TextChangeEvent} is triggered if the text content has
+                * changed since the previous TextChangeEvent regardless of the
+                * schedule.
+                */
+        TIMEOUT, /**
+                  * An event is triggered when there is a pause of text
+                  * modifications. The length of the pause can be modified with
+                  * {@link TextField#setInputEventTimeout(int)}. Like with the
+                  * {@link #TIMEOUT} mode, an event is forced before
+                  * {@link ValueChangeEvent}s, even if the user did not keep a
+                  * pause while entering the text.
+                  * <p>
+                  * This is the default mode.
+                  */
         LAZY
     }
 
     @Override
     public void addTextChangeListener(TextChangeListener listener) {
-        addListener(TextChangeListener.EVENT_ID, TextChangeEvent.class, listener, TextChangeListener.EVENT_METHOD);
+        addListener(TextChangeListener.EVENT_ID, TextChangeEvent.class,
+                listener, TextChangeListener.EVENT_METHOD);
     }
 
     @Override
     public void removeTextChangeListener(TextChangeListener listener) {
-        removeListener(TextChangeListener.EVENT_ID, TextChangeEvent.class, listener);
+        removeListener(TextChangeListener.EVENT_ID, TextChangeEvent.class,
+                listener);
     }
 
     /**
@@ -545,7 +550,7 @@ public abstract class AbstractTextField extends AbstractField<String> implements
      * 
      * @param pos
      *            the position for the cursor
-     * */
+     */
     public void setCursorPosition(int pos) {
         setSelectionRange(pos, 0);
         lastKnownCursorPosition = pos;
@@ -569,7 +574,8 @@ public abstract class AbstractTextField extends AbstractField<String> implements
 
     @Override
     public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
+        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
+                FocusListener.focusMethod);
     }
 
     @Override
@@ -579,7 +585,8 @@ public abstract class AbstractTextField extends AbstractField<String> implements
 
     @Override
     public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
+        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
+                BlurListener.blurMethod);
     }
 
     @Override
@@ -598,7 +605,8 @@ public abstract class AbstractTextField extends AbstractField<String> implements
         super.readDesign(design, designContext);
         Attributes attr = design.attributes();
         if (attr.hasKey("maxlength")) {
-            setMaxLength(DesignAttributeHandler.readAttribute("maxlength", attr, Integer.class));
+            setMaxLength(DesignAttributeHandler.readAttribute("maxlength", attr,
+                    Integer.class));
         }
     }
 
@@ -626,9 +634,11 @@ public abstract class AbstractTextField extends AbstractField<String> implements
     @Override
     public void writeDesign(Element design, DesignContext designContext) {
         super.writeDesign(design, designContext);
-        AbstractTextField def = (AbstractTextField) designContext.getDefaultInstance(this);
+        AbstractTextField def = (AbstractTextField) designContext
+                .getDefaultInstance(this);
         Attributes attr = design.attributes();
-        DesignAttributeHandler.writeAttribute("maxlength", attr, getMaxLength(), def.getMaxLength(), Integer.class);
+        DesignAttributeHandler.writeAttribute("maxlength", attr, getMaxLength(),
+                def.getMaxLength(), Integer.class);
     }
 
 }

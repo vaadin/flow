@@ -95,7 +95,8 @@ public class BasicJavaScriptComponent extends AbstractTestUI {
                     HasComponents parent = getParent();
                     int i = 1;
                     while (parent != null) {
-                        if (!parentIds.getString(i).equals(parent.getConnectorId())) {
+                        if (!parentIds.getString(i)
+                                .equals(parent.getConnectorId())) {
                             log.log("parentIds[" + i + "] doesn't match");
                         }
                         i++;
@@ -112,14 +113,19 @@ public class BasicJavaScriptComponent extends AbstractTestUI {
                         JsonValue arg = arguments.get(i);
                         if (arg instanceof JsonObject) {
                             JsonObject o = (JsonObject) arg;
-                            log.log("Argument[" + i + "] type: " + arg.getClass().getName());
+                            log.log("Argument[" + i + "] type: "
+                                    + arg.getClass().getName());
                             for (String key : o.keys()) {
                                 JsonValue v = o.get(key);
-                                log.log("Argument[" + i + "][" + key + "] type: " + v.getClass().getName() + ", value: " + v.asString());
+                                log.log("Argument[" + i + "][" + key
+                                        + "] type: " + v.getClass().getName()
+                                        + ", value: " + v.asString());
 
                             }
                         } else {
-                            log.log("Argument[" + i + "] type: " + arg.getClass().getName() + ", value: " + arg.asString());
+                            log.log("Argument[" + i + "] type: "
+                                    + arg.getClass().getName() + ", value: "
+                                    + arg.asString());
                         }
                     }
                 }
@@ -128,7 +134,8 @@ public class BasicJavaScriptComponent extends AbstractTestUI {
             getRpcProxy(TestRpc.class).sendRpc("RPC message");
             callFunction("messageToClient", "Callback message");
 
-            getState().setMessages(Arrays.asList("First state message", "Second state message"));
+            getState().setMessages(Arrays.asList("First state message",
+                    "Second state message"));
             // Dummy resource used to test URL translation
             Resource resource = new ConnectorResource() {
                 @Override
@@ -165,12 +172,13 @@ public class BasicJavaScriptComponent extends AbstractTestUI {
         c.setCaption("Component caption");
         addComponent(c);
 
-        Button removeButton = new Button("Remove component", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                removeComponent(c);
-            }
-        });
+        Button removeButton = new Button("Remove component",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        removeComponent(c);
+                    }
+                });
         removeButton.setId("RemoveButton");
         addComponent(removeButton);
     }

@@ -86,7 +86,8 @@ public class ServerRpcQueue {
      *            The invocation to remove
      */
     public void removeMatching(MethodInvocation invocation) {
-        Iterator<MethodInvocation> iter = pendingInvocations.values().iterator();
+        Iterator<MethodInvocation> iter = pendingInvocations.values()
+                .iterator();
         while (iter.hasNext()) {
             MethodInvocation mi = iter.next();
             if (mi.equals(invocation)) {
@@ -115,13 +116,15 @@ public class ServerRpcQueue {
      */
     public void add(MethodInvocation invocation, boolean lastOnly) {
         if (!connection.isApplicationRunning()) {
-            getLogger().warning("Trying to invoke method on not yet started or stopped application");
+            getLogger().warning(
+                    "Trying to invoke method on not yet started or stopped application");
             return;
         }
         String tag;
         if (lastOnly) {
             tag = invocation.getLastOnlyTag();
-            assert !tag.matches("\\d+") : "getLastOnlyTag value must have at least one non-digit character";
+            assert!tag.matches(
+                    "\\d+") : "getLastOnlyTag value must have at least one non-digit character";
             pendingInvocations.remove(tag);
         } else {
             tag = Integer.toString(lastInvocationTag++);
@@ -197,7 +200,8 @@ public class ServerRpcQueue {
                 // Somebody else cleared the queue before we had the chance
                 return;
             }
-            connection.getServerCommunicationHandler().sendInvocationsToServer();
+            connection.getServerCommunicationHandler()
+                    .sendInvocationsToServer();
         }
     };
 
@@ -254,7 +258,8 @@ public class ServerRpcQueue {
                     Method method = type.getMethod(invocation.getMethodName());
                     parameterTypes = method.getParameterTypes();
                 } catch (NoDataException e) {
-                    throw new RuntimeException("No type data for " + invocation.toString(), e);
+                    throw new RuntimeException(
+                            "No type data for " + invocation.toString(), e);
                 }
             }
 
@@ -265,7 +270,8 @@ public class ServerRpcQueue {
                     type = parameterTypes[i];
                 }
                 Object value = invocation.getParameters()[i];
-                JsonValue jsonValue = JsonEncoder.encode(value, type, connection);
+                JsonValue jsonValue = JsonEncoder.encode(value, type,
+                        connection);
                 paramJson.set(i, jsonValue);
             }
             invocationJson.set(2, paramJson);
@@ -285,7 +291,8 @@ public class ServerRpcQueue {
      */
     private boolean connectorExists(String connectorId) {
         ConnectorMap connectorMap = ConnectorMap.get(connection);
-        return connectorMap.hasConnector(connectorId) || connectorMap.isDragAndDropPaintable(connectorId);
+        return connectorMap.hasConnector(connectorId)
+                || connectorMap.isDragAndDropPaintable(connectorId);
     }
 
     /**

@@ -29,12 +29,15 @@ public class ChangeSessionId extends AbstractTestUIWithLog {
             @Override
             public void buttonClick(ClickEvent event) {
                 String oldSessionId = getSessionId();
-                VaadinService.reinitializeSession(VaadinService.getCurrentRequest());
+                VaadinService
+                        .reinitializeSession(VaadinService.getCurrentRequest());
                 String newSessionId = getSessionId();
                 if (oldSessionId.equals(newSessionId)) {
-                    log.log("FAILED! Both old and new session id is " + newSessionId);
+                    log.log("FAILED! Both old and new session id is "
+                            + newSessionId);
                 } else {
-                    log.log("Session id changed successfully from " + oldSessionId + " to " + newSessionId);
+                    log.log("Session id changed successfully from "
+                            + oldSessionId + " to " + newSessionId);
                 }
 
             }

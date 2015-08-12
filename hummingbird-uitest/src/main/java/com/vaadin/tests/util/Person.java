@@ -14,7 +14,9 @@ public class Person implements Serializable {
         address = new Address();
     }
 
-    public Person(String firstName, String lastName, String email, String phoneNumber, String streetAddress, int postalCode, String city) {
+    public Person(String firstName, String lastName, String email,
+            String phoneNumber, String streetAddress, int postalCode,
+            String city) {
         setFirstName(firstName);
         setLastName(lastName);
         setEmail(email);

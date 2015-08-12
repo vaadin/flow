@@ -33,7 +33,8 @@ import com.vaadin.client.ui.AbstractConnector;
 
 import elemental.json.JsonObject;
 
-public class StateChangeEvent extends AbstractServerConnectorEvent<StateChangeHandler> {
+public class StateChangeEvent
+        extends AbstractServerConnectorEvent<StateChangeHandler> {
     /**
      * Type of this event, used by the event bus.
      */
@@ -74,7 +75,8 @@ public class StateChangeEvent extends AbstractServerConnectorEvent<StateChangeHa
      *             instead for improved performance.
      */
     @Deprecated
-    public StateChangeEvent(ServerConnector connector, Set<String> changedPropertiesSet) {
+    public StateChangeEvent(ServerConnector connector,
+            Set<String> changedPropertiesSet) {
         setConnector(connector);
         // Keep instance around for caching
         this.changedPropertiesSet = changedPropertiesSet;
@@ -97,7 +99,8 @@ public class StateChangeEvent extends AbstractServerConnectorEvent<StateChangeHa
      *             instead for improved performance.
      */
     @Deprecated
-    public StateChangeEvent(ServerConnector connector, FastStringSet changedProperties) {
+    public StateChangeEvent(ServerConnector connector,
+            FastStringSet changedProperties) {
         setConnector(connector);
         this.changedProperties = changedProperties;
     }
@@ -113,7 +116,8 @@ public class StateChangeEvent extends AbstractServerConnectorEvent<StateChangeHa
      *            <code>true</code> if the state change is for a new connector,
      *            otherwise <code>false</code>
      */
-    public StateChangeEvent(ServerConnector connector, JsonObject stateJson, boolean initialStateChange) {
+    public StateChangeEvent(ServerConnector connector, JsonObject stateJson,
+            boolean initialStateChange) {
         setConnector(connector);
         this.stateJson = stateJson;
         this.initialStateChange = initialStateChange;
@@ -172,15 +176,19 @@ public class StateChangeEvent extends AbstractServerConnectorEvent<StateChangeHa
     @Deprecated
     public FastStringSet getChangedPropertiesFastSet() {
         if (changedProperties == null) {
-            Profiler.enter("StateChangeEvent.getChangedPropertiesFastSet populate");
+            Profiler.enter(
+                    "StateChangeEvent.getChangedPropertiesFastSet populate");
             changedProperties = FastStringSet.create();
 
             addJsonFields(stateJson, changedProperties, "");
             if (isInitialStateChange()) {
-                addAllStateFields(AbstractConnector.getStateType(getConnector()), changedProperties, "");
+                addAllStateFields(
+                        AbstractConnector.getStateType(getConnector()),
+                        changedProperties, "");
             }
 
-            Profiler.leave("StateChangeEvent.getChangedPropertiesFastSet populate");
+            Profiler.leave(
+                    "StateChangeEvent.getChangedPropertiesFastSet populate");
         }
         return changedProperties;
     }
@@ -209,7 +217,8 @@ public class StateChangeEvent extends AbstractServerConnectorEvent<StateChangeHa
                 // Check legacy stuff
                 return changedPropertiesSet.contains(property);
             } else {
-                throw new IllegalStateException("StateChangeEvent should have either stateJson, changedProperties or changePropertiesSet");
+                throw new IllegalStateException(
+                        "StateChangeEvent should have either stateJson, changedProperties or changePropertiesSet");
             }
         }
     }
@@ -225,25 +234,26 @@ public class StateChangeEvent extends AbstractServerConnectorEvent<StateChangeHa
      *            the JavaScript object to check
      * @return true if the property is defined
      */
-    private static native final boolean isInJson(String property, JavaScriptObject target)
-    /*-{
-        var segments = property.split('.');
-        while (typeof target == 'object') {
-            var nextSegment = segments.shift();
-            if (!(nextSegment in target)) {
-                // Abort if segment is not found
+    private static native final boolean isInJson(String property,
+            JavaScriptObject target)
+            /*-{
+                var segments = property.split('.');
+                while (typeof target == 'object') {
+                    var nextSegment = segments.shift();
+                    if (!(nextSegment in target)) {
+                        // Abort if segment is not found
+                        return false;
+                    } else if (segments.length == 0) {
+                        // Done if there are no more segments
+                        return true;
+                    } else {
+                        // Else just go deeper
+                        target = target[nextSegment];
+                    }
+                }
+                // Not defined if we reach something that isn't an object 
                 return false;
-            } else if (segments.length == 0) {
-                // Done if there are no more segments
-                return true;
-            } else {
-                // Else just go deeper
-                target = target[nextSegment];
-            }
-        }
-        // Not defined if we reach something that isn't an object 
-        return false;
-    }-*/;
+            }-*/;
 
     /**
      * Recursively adds the names of all properties in the provided state type.
@@ -256,7 +266,8 @@ public class StateChangeEvent extends AbstractServerConnectorEvent<StateChangeHa
      *            the base name of the current object
      */
     @Deprecated
-    private static void addAllStateFields(com.vaadin.client.metadata.Type type, FastStringSet changedProperties, String context) {
+    private static void addAllStateFields(com.vaadin.client.metadata.Type type,
+            FastStringSet changedProperties, String context) {
         try {
             JsArrayObject<Property> properties = type.getPropertiesAsArray();
             int size = properties.size();
@@ -265,13 +276,18 @@ public class StateChangeEvent extends AbstractServerConnectorEvent<StateChangeHa
                 String propertyName = context + property.getName();
                 changedProperties.add(propertyName);
 
-                com.vaadin.client.metadata.Type propertyType = property.getType();
+                com.vaadin.client.metadata.Type propertyType = property
+                        .getType();
                 if (propertyType.hasProperties()) {
-                    addAllStateFields(propertyType, changedProperties, propertyName + ".");
+                    addAllStateFields(propertyType, changedProperties,
+                            propertyName + ".");
                 }
             }
         } catch (NoDataException e) {
-            throw new IllegalStateException("No property info for " + type + ". Did you remember to compile the right widgetset?", e);
+            throw new IllegalStateException(
+                    "No property info for " + type
+                            + ". Did you remember to compile the right widgetset?",
+                    e);
         }
     }
 
@@ -287,7 +303,8 @@ public class StateChangeEvent extends AbstractServerConnectorEvent<StateChangeHa
      *            the base name of the current object
      */
     @Deprecated
-    private static void addJsonFields(JsonObject json, FastStringSet changedProperties, String context) {
+    private static void addJsonFields(JsonObject json,
+            FastStringSet changedProperties, String context) {
         for (String key : json.keys()) {
             String fieldName = context + key;
             changedProperties.add(fieldName);

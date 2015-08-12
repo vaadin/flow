@@ -152,7 +152,8 @@ public interface PushConfiguration extends Serializable {
      * @param alwaysUseXhrForServerRequests
      *            true to always use XHR for server requests, false otherwise
      */
-    public void setAlwaysUseXhrForServerRequests(boolean alwaysUseXhrForServerRequests);
+    public void setAlwaysUseXhrForServerRequests(
+            boolean alwaysUseXhrForServerRequests);
 
     /**
      * Checks whether to force the use of XHR when sending data from the client
@@ -187,9 +188,8 @@ class PushConfigurationImpl implements PushConfiguration {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * com.vaadin.ui.PushConfiguration#setPushMode(com.vaadin.shared.communication
-     * .PushMode)
+     * @see com.vaadin.ui.PushConfiguration#setPushMode(com.vaadin.shared.
+     * communication .PushMode)
      */
     @Override
     public void setPushMode(PushMode pushMode) {
@@ -200,13 +200,16 @@ class PushConfigurationImpl implements PushConfiguration {
         VaadinSession session = ui.getSession();
 
         if (session == null) {
-            throw new UIDetachedException("Cannot set the push mode for a detached UI");
+            throw new UIDetachedException(
+                    "Cannot set the push mode for a detached UI");
         }
 
         assert session.hasLock();
 
-        if (pushMode.isEnabled() && !session.getService().ensurePushAvailable()) {
-            throw new IllegalStateException("Push is not available. See previous log messages for more information.");
+        if (pushMode.isEnabled()
+                && !session.getService().ensurePushAvailable()) {
+            throw new IllegalStateException(
+                    "Push is not available. See previous log messages for more information.");
         }
 
         PushMode oldMode = getState().mode;
@@ -231,7 +234,8 @@ class PushConfigurationImpl implements PushConfiguration {
     @Override
     public Transport getTransport() {
         try {
-            return Transport.getByIdentifier(getParameter(PushConfigurationState.TRANSPORT_PARAM));
+            return Transport.getByIdentifier(
+                    getParameter(PushConfigurationState.TRANSPORT_PARAM));
         } catch (IllegalArgumentException e) {
             return null;
         }
@@ -246,7 +250,8 @@ class PushConfigurationImpl implements PushConfiguration {
      */
     @Override
     public void setTransport(Transport transport) {
-        setParameter(PushConfigurationState.TRANSPORT_PARAM, transport.getIdentifier());
+        setParameter(PushConfigurationState.TRANSPORT_PARAM,
+                transport.getIdentifier());
     }
 
     /*
@@ -257,7 +262,8 @@ class PushConfigurationImpl implements PushConfiguration {
     @Override
     public Transport getFallbackTransport() {
         try {
-            return Transport.valueOf(getParameter(PushConfigurationState.FALLBACK_TRANSPORT_PARAM));
+            return Transport.valueOf(getParameter(
+                    PushConfigurationState.FALLBACK_TRANSPORT_PARAM));
         } catch (IllegalArgumentException e) {
             return null;
         }
@@ -272,7 +278,8 @@ class PushConfigurationImpl implements PushConfiguration {
      */
     @Override
     public void setFallbackTransport(Transport fallbackTransport) {
-        setParameter(PushConfigurationState.FALLBACK_TRANSPORT_PARAM, fallbackTransport.getIdentifier());
+        setParameter(PushConfigurationState.FALLBACK_TRANSPORT_PARAM,
+                fallbackTransport.getIdentifier());
     }
 
     /*
@@ -307,11 +314,13 @@ class PushConfigurationImpl implements PushConfiguration {
 
     @Override
     public Collection<String> getParameterNames() {
-        return Collections.unmodifiableCollection(getState(false).parameters.keySet());
+        return Collections
+                .unmodifiableCollection(getState(false).parameters.keySet());
     }
 
     @Override
-    public void setAlwaysUseXhrForServerRequests(boolean alwaysUseXhrForServerRequests) {
+    public void setAlwaysUseXhrForServerRequests(
+            boolean alwaysUseXhrForServerRequests) {
         getState().alwaysUseXhrForServerRequests = alwaysUseXhrForServerRequests;
     }
 

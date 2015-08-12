@@ -25,7 +25,8 @@ import com.vaadin.testbench.elements.LabelElement;
 import com.vaadin.testbench.parallel.BrowserUtil;
 import com.vaadin.tests.tb3.MultiBrowserTest;
 
-public class EmbeddedClickListenerRelativeCoordinatesTest extends MultiBrowserTest {
+public class EmbeddedClickListenerRelativeCoordinatesTest
+        extends MultiBrowserTest {
 
     @Before
     @Override
@@ -63,11 +64,15 @@ public class EmbeddedClickListenerRelativeCoordinatesTest extends MultiBrowserTe
         int x = Integer.parseInt(xLabel.getText());
         int y = Integer.parseInt(yLabel.getText());
 
-        Assert.assertEquals("Reported X-coordinate from Embedded does not match click location", expectedX, x);
+        Assert.assertEquals(
+                "Reported X-coordinate from Embedded does not match click location",
+                expectedX, x);
 
         // IE10 and IE11 sometimes click one pixel below the given position
         int tolerance = isIE() ? 1 : 0;
-        Assert.assertTrue("Reported Y-coordinate from Embedded does not match click location", Math.abs(expectedY - y) <= tolerance);
+        Assert.assertTrue(
+                "Reported Y-coordinate from Embedded does not match click location",
+                Math.abs(expectedY - y) <= tolerance);
     }
 
     private boolean isIE() {

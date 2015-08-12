@@ -78,7 +78,8 @@ public class FileUploadHandler implements RequestHandler {
 
         private final InputStream realInputStream;
 
-        public SimpleMultiPartInputStream(InputStream realInputStream, String boundaryString) {
+        public SimpleMultiPartInputStream(InputStream realInputStream,
+                String boundaryString) {
             boundary = (CRLF + DASHDASH + boundaryString).toCharArray();
             this.realInputStream = realInputStream;
         }
@@ -101,7 +102,8 @@ public class FileUploadHandler implements RequestHandler {
                 int fromActualStream = realInputStream.read();
                 if (fromActualStream == -1) {
                     // unexpected end of stream
-                    throw new IOException("The multipart stream ended unexpectedly");
+                    throw new IOException(
+                            "The multipart stream ended unexpectedly");
                 }
                 if (boundary[0] == fromActualStream) {
                     /*
@@ -190,7 +192,8 @@ public class FileUploadHandler implements RequestHandler {
                 }
             }
             if (b == -1) {
-                throw new IOException("The multipart stream ended unexpectedly");
+                throw new IOException(
+                        "The multipart stream ended unexpectedly");
             }
             return b;
         }
@@ -225,14 +228,17 @@ public class FileUploadHandler implements RequestHandler {
 
     private static final String DASHDASH = "--";
 
-    /* Same as in apache commons file upload library that was previously used. */
+    /*
+     * Same as in apache commons file upload library that was previously used.
+     */
     private static final int MAX_UPLOAD_BUFFER_SIZE = 4 * 1024;
 
     /* Minimum interval which will be used for streaming progress events. */
     public static final int DEFAULT_STREAMING_PROGRESS_EVENT_INTERVAL_MS = 500;
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request,
+            VaadinResponse response) throws IOException {
         if (!ServletPortletHelper.isFileUploadRequest(request)) {
             return false;
         }
@@ -244,7 +250,9 @@ public class FileUploadHandler implements RequestHandler {
 
         String pathInfo = request.getPathInfo();
         // strip away part until the data we are interested starts
-        int startOfData = pathInfo.indexOf(ServletPortletHelper.UPLOAD_URL_PREFIX) + ServletPortletHelper.UPLOAD_URL_PREFIX.length();
+        int startOfData = pathInfo
+                .indexOf(ServletPortletHelper.UPLOAD_URL_PREFIX)
+                + ServletPortletHelper.UPLOAD_URL_PREFIX.length();
         String uppUri = pathInfo.substring(startOfData);
         String[] parts = uppUri.split("/", 4); // 0= UIid, 1 = cid, 2= name, 3
                                                // = sec key
@@ -261,7 +269,8 @@ public class FileUploadHandler implements RequestHandler {
             UI uI = session.getUIById(Integer.parseInt(uiId));
             UI.setCurrent(uI);
 
-            streamVariable = uI.getConnectorTracker().getStreamVariable(connectorId, variableName);
+            streamVariable = uI.getConnectorTracker()
+                    .getStreamVariable(connectorId, variableName);
             String secKey = uI.getConnectorTracker().getSeckey(streamVariable);
             if (!secKey.equals(parts[3])) {
                 // TODO Should rethink error handling
@@ -276,11 +285,14 @@ public class FileUploadHandler implements RequestHandler {
         String contentType = request.getContentType();
         if (contentType.contains("boundary")) {
             // Multipart requests contain boundary string
-            doHandleSimpleMultipartFileUpload(session, request, response, streamVariable, variableName, source, contentType.split("boundary=")[1]);
+            doHandleSimpleMultipartFileUpload(session, request, response,
+                    streamVariable, variableName, source,
+                    contentType.split("boundary=")[1]);
         } else {
             // if boundary string does not exist, the posted file is from
             // XHR2.post(File)
-            doHandleXhrFilePost(session, request, response, streamVariable, variableName, source, getContentLength(request));
+            doHandleXhrFilePost(session, request, response, streamVariable,
+                    variableName, source, getContentLength(request));
         }
         return true;
     }
@@ -290,7 +302,8 @@ public class FileUploadHandler implements RequestHandler {
         int readByte = stream.read();
         while (readByte != LF) {
             if (readByte == -1) {
-                throw new IOException("The multipart stream ended unexpectedly");
+                throw new IOException(
+                        "The multipart stream ended unexpectedly");
             }
             bout.write(readByte);
             readByte = stream.read();
@@ -326,7 +339,10 @@ public class FileUploadHandler implements RequestHandler {
      *             If there is a problem reading the request or writing the
      *             response
      */
-    protected void doHandleSimpleMultipartFileUpload(VaadinSession session, VaadinRequest request, VaadinResponse response, StreamVariable streamVariable, String variableName, ClientConnector owner, String boundary) throws IOException {
+    protected void doHandleSimpleMultipartFileUpload(VaadinSession session,
+            VaadinRequest request, VaadinResponse response,
+            StreamVariable streamVariable, String variableName,
+            ClientConnector owner, String boundary) throws IOException {
         // multipart parsing, supports only one file for request, but that is
         // fine for our current terminal
 
@@ -347,11 +363,13 @@ public class FileUploadHandler implements RequestHandler {
         while (!atStart) {
             String readLine = readLine(inputStream);
             contentLength -= (readLine.getBytes(UTF8).length + CRLF.length());
-            if (readLine.startsWith("Content-Disposition:") && readLine.indexOf("filename=") > 0) {
+            if (readLine.startsWith("Content-Disposition:")
+                    && readLine.indexOf("filename=") > 0) {
                 rawfilename = readLine.replaceAll(".*filename=", "");
                 char quote = rawfilename.charAt(0);
                 rawfilename = rawfilename.substring(1);
-                rawfilename = rawfilename.substring(0, rawfilename.indexOf(quote));
+                rawfilename = rawfilename.substring(0,
+                        rawfilename.indexOf(quote));
                 firstFileFieldFound = true;
             } else if (firstFileFieldFound && readLine.equals("")) {
                 atStart = true;
@@ -360,7 +378,8 @@ public class FileUploadHandler implements RequestHandler {
             }
         }
 
-        contentLength -= (boundary.length() + CRLF.length() + 2 * DASHDASH.length() + CRLF.length());
+        contentLength -= (boundary.length() + CRLF.length()
+                + 2 * DASHDASH.length() + CRLF.length());
 
         /*
          * Reads bytes from the underlying stream. Compares the read bytes to
@@ -375,7 +394,8 @@ public class FileUploadHandler implements RequestHandler {
          * Note, if this is someday needed elsewhere, don't shoot yourself to
          * foot and split to a top level helper class.
          */
-        InputStream simpleMultiPartReader = new SimpleMultiPartInputStream(inputStream, boundary);
+        InputStream simpleMultiPartReader = new SimpleMultiPartInputStream(
+                inputStream, boundary);
 
         /*
          * Should report only the filename even if the browser sends the path
@@ -384,9 +404,12 @@ public class FileUploadHandler implements RequestHandler {
         final String mimeType = rawMimeType;
 
         try {
-            handleFileUploadValidationAndData(session, simpleMultiPartReader, streamVariable, filename, mimeType, contentLength, owner, variableName);
+            handleFileUploadValidationAndData(session, simpleMultiPartReader,
+                    streamVariable, filename, mimeType, contentLength, owner,
+                    variableName);
         } catch (UploadException e) {
-            session.getCommunicationManager().handleConnectorRelatedException(owner, e);
+            session.getCommunicationManager()
+                    .handleConnectorRelatedException(owner, e);
         }
         sendUploadResponse(request, response);
 
@@ -405,31 +428,42 @@ public class FileUploadHandler implements RequestHandler {
         }
     }
 
-    private void handleFileUploadValidationAndData(VaadinSession session, InputStream inputStream, StreamVariable streamVariable, String filename, String mimeType, long contentLength, ClientConnector connector, String variableName) throws UploadException {
+    private void handleFileUploadValidationAndData(VaadinSession session,
+            InputStream inputStream, StreamVariable streamVariable,
+            String filename, String mimeType, long contentLength,
+            ClientConnector connector, String variableName)
+                    throws UploadException {
         session.lock();
         try {
             if (connector == null) {
-                throw new UploadException("File upload ignored because the connector for the stream variable was not found");
+                throw new UploadException(
+                        "File upload ignored because the connector for the stream variable was not found");
             }
             if (!connector.isConnectorEnabled()) {
-                throw new UploadException("Warning: file upload ignored for " + connector.getConnectorId() + " because the component was disabled");
+                throw new UploadException("Warning: file upload ignored for "
+                        + connector.getConnectorId()
+                        + " because the component was disabled");
             }
-            if ((connector instanceof Component) && ((Component) connector).isReadOnly()) {
+            if ((connector instanceof Component)
+                    && ((Component) connector).isReadOnly()) {
                 // Only checked for legacy reasons
-                throw new UploadException("File upload ignored because the component is read-only");
+                throw new UploadException(
+                        "File upload ignored because the component is read-only");
             }
         } finally {
             session.unlock();
         }
         try {
-            boolean forgetVariable = streamToReceiver(session, inputStream, streamVariable, filename, mimeType, contentLength);
+            boolean forgetVariable = streamToReceiver(session, inputStream,
+                    streamVariable, filename, mimeType, contentLength);
             if (forgetVariable) {
                 cleanStreamVariable(session, connector, variableName);
             }
         } catch (Exception e) {
             session.lock();
             try {
-                session.getCommunicationManager().handleConnectorRelatedException(connector, e);
+                session.getCommunicationManager()
+                        .handleConnectorRelatedException(connector, e);
             } finally {
                 session.unlock();
             }
@@ -462,7 +496,10 @@ public class FileUploadHandler implements RequestHandler {
      *             If there is a problem reading the request or writing the
      *             response
      */
-    protected void doHandleXhrFilePost(VaadinSession session, VaadinRequest request, VaadinResponse response, StreamVariable streamVariable, String variableName, ClientConnector owner, long contentLength) throws IOException {
+    protected void doHandleXhrFilePost(VaadinSession session,
+            VaadinRequest request, VaadinResponse response,
+            StreamVariable streamVariable, String variableName,
+            ClientConnector owner, long contentLength) throws IOException {
 
         // These are unknown in filexhr ATM, maybe add to Accept header that
         // is accessible in portlets
@@ -471,9 +508,11 @@ public class FileUploadHandler implements RequestHandler {
         final InputStream stream = request.getInputStream();
 
         try {
-            handleFileUploadValidationAndData(session, stream, streamVariable, filename, mimeType, contentLength, owner, variableName);
+            handleFileUploadValidationAndData(session, stream, streamVariable,
+                    filename, mimeType, contentLength, owner, variableName);
         } catch (UploadException e) {
-            session.getCommunicationManager().handleConnectorRelatedException(owner, e);
+            session.getCommunicationManager()
+                    .handleConnectorRelatedException(owner, e);
         }
         sendUploadResponse(request, response);
     }
@@ -488,14 +527,19 @@ public class FileUploadHandler implements RequestHandler {
      *         forget this variable
      * @throws UploadException
      */
-    protected final boolean streamToReceiver(VaadinSession session, final InputStream in, StreamVariable streamVariable, String filename, String type, long contentLength) throws UploadException {
+    protected final boolean streamToReceiver(VaadinSession session,
+            final InputStream in, StreamVariable streamVariable,
+            String filename, String type, long contentLength)
+                    throws UploadException {
         if (streamVariable == null) {
-            throw new IllegalStateException("StreamVariable for the post not found");
+            throw new IllegalStateException(
+                    "StreamVariable for the post not found");
         }
 
         OutputStream out = null;
         long totalBytes = 0;
-        StreamingStartEventImpl startedEvent = new StreamingStartEventImpl(filename, type, contentLength);
+        StreamingStartEventImpl startedEvent = new StreamingStartEventImpl(
+                filename, type, contentLength);
         try {
             boolean listenProgress;
             session.lock();
@@ -530,11 +574,13 @@ public class FileUploadHandler implements RequestHandler {
                     long now = System.currentTimeMillis();
                     // to avoid excessive session locking and event storms,
                     // events are sent in intervals, or at the end of the file.
-                    if (lastStreamingEvent + getProgressEventInterval() <= now || bytesReadToBuffer <= 0) {
+                    if (lastStreamingEvent + getProgressEventInterval() <= now
+                            || bytesReadToBuffer <= 0) {
                         lastStreamingEvent = now;
                         session.lock();
                         try {
-                            StreamingProgressEventImpl progressEvent = new StreamingProgressEventImpl(filename, type, contentLength, totalBytes);
+                            StreamingProgressEventImpl progressEvent = new StreamingProgressEventImpl(
+                                    filename, type, contentLength, totalBytes);
                             streamVariable.onProgress(progressEvent);
                         } finally {
                             session.unlock();
@@ -548,7 +594,8 @@ public class FileUploadHandler implements RequestHandler {
 
             // upload successful
             out.close();
-            StreamingEndEvent event = new StreamingEndEventImpl(filename, type, totalBytes);
+            StreamingEndEvent event = new StreamingEndEventImpl(filename, type,
+                    totalBytes);
             session.lock();
             try {
                 streamVariable.streamingFinished(event);
@@ -559,7 +606,8 @@ public class FileUploadHandler implements RequestHandler {
         } catch (UploadInterruptedException e) {
             // Download interrupted by application code
             tryToCloseStream(out);
-            StreamingErrorEvent event = new StreamingErrorEventImpl(filename, type, contentLength, totalBytes, e);
+            StreamingErrorEvent event = new StreamingErrorEventImpl(filename,
+                    type, contentLength, totalBytes, e);
             session.lock();
             try {
                 streamVariable.streamingFailed(event);
@@ -572,7 +620,8 @@ public class FileUploadHandler implements RequestHandler {
             tryToCloseStream(out);
             session.lock();
             try {
-                StreamingErrorEvent event = new StreamingErrorEventImpl(filename, type, contentLength, totalBytes, e);
+                StreamingErrorEvent event = new StreamingErrorEventImpl(
+                        filename, type, contentLength, totalBytes, e);
                 streamVariable.streamingFailed(event);
                 // throw exception for terminal to be handled (to be passed to
                 // terminalErrorHandler)
@@ -628,20 +677,24 @@ public class FileUploadHandler implements RequestHandler {
      * @param response
      * @throws IOException
      */
-    protected void sendUploadResponse(VaadinRequest request, VaadinResponse response) throws IOException {
+    protected void sendUploadResponse(VaadinRequest request,
+            VaadinResponse response) throws IOException {
         response.setContentType("text/html");
         final OutputStream out = response.getOutputStream();
-        final PrintWriter outWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out, "UTF-8")));
+        final PrintWriter outWriter = new PrintWriter(
+                new BufferedWriter(new OutputStreamWriter(out, "UTF-8")));
         outWriter.print("<html><body>download handled</body></html>");
         outWriter.flush();
         out.close();
     }
 
-    private void cleanStreamVariable(VaadinSession session, final ClientConnector owner, final String variableName) {
+    private void cleanStreamVariable(VaadinSession session,
+            final ClientConnector owner, final String variableName) {
         session.accessSynchronously(new Runnable() {
             @Override
             public void run() {
-                owner.getUI().getConnectorTracker().cleanStreamVariable(owner.getConnectorId(), variableName);
+                owner.getUI().getConnectorTracker().cleanStreamVariable(
+                        owner.getConnectorId(), variableName);
             }
         });
     }

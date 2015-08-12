@@ -30,7 +30,8 @@ import com.vaadin.ui.declarative.DesignContext;
  * @author Vaadin Ltd.
  * @since 5.0
  */
-public abstract class AbstractLayout extends AbstractComponentContainer implements Layout {
+public abstract class AbstractLayout extends AbstractComponentContainer
+        implements Layout {
 
     @Override
     protected AbstractLayoutState getState() {
@@ -54,19 +55,26 @@ public abstract class AbstractLayout extends AbstractComponentContainer implemen
      *            the DesignContext instance used for parsing the design
      * @return the margin info
      */
-    protected MarginInfo readMargin(Element design, MarginInfo defMargin, DesignContext context) {
+    protected MarginInfo readMargin(Element design, MarginInfo defMargin,
+            DesignContext context) {
 
         if (design.hasAttr("margin")) {
-            boolean margin = DesignAttributeHandler.readAttribute("margin", design.attributes(), boolean.class);
+            boolean margin = DesignAttributeHandler.readAttribute("margin",
+                    design.attributes(), boolean.class);
             return new MarginInfo(margin);
         } else {
-            boolean left = DesignAttributeHandler.readAttribute("margin-left", design.attributes(), defMargin.hasLeft(), boolean.class);
+            boolean left = DesignAttributeHandler.readAttribute("margin-left",
+                    design.attributes(), defMargin.hasLeft(), boolean.class);
 
-            boolean right = DesignAttributeHandler.readAttribute("margin-right", design.attributes(), defMargin.hasRight(), boolean.class);
+            boolean right = DesignAttributeHandler.readAttribute("margin-right",
+                    design.attributes(), defMargin.hasRight(), boolean.class);
 
-            boolean top = DesignAttributeHandler.readAttribute("margin-top", design.attributes(), defMargin.hasTop(), boolean.class);
+            boolean top = DesignAttributeHandler.readAttribute("margin-top",
+                    design.attributes(), defMargin.hasTop(), boolean.class);
 
-            boolean bottom = DesignAttributeHandler.readAttribute("margin-bottom", design.attributes(), defMargin.hasBottom(), boolean.class);
+            boolean bottom = DesignAttributeHandler.readAttribute(
+                    "margin-bottom", design.attributes(), defMargin.hasBottom(),
+                    boolean.class);
 
             return new MarginInfo(top, right, bottom, left);
         }
@@ -90,18 +98,28 @@ public abstract class AbstractLayout extends AbstractComponentContainer implemen
      * @param context
      *            the DesignContext instance used for parsing the design
      */
-    protected void writeMargin(Element design, MarginInfo margin, MarginInfo defMargin, DesignContext context) {
+    protected void writeMargin(Element design, MarginInfo margin,
+            MarginInfo defMargin, DesignContext context) {
         if (margin.hasAll()) {
-            DesignAttributeHandler.writeAttribute("margin", design.attributes(), margin.hasAll(), defMargin.hasAll(), boolean.class);
+            DesignAttributeHandler.writeAttribute("margin", design.attributes(),
+                    margin.hasAll(), defMargin.hasAll(), boolean.class);
         } else {
 
-            DesignAttributeHandler.writeAttribute("margin-left", design.attributes(), margin.hasLeft(), defMargin.hasLeft(), boolean.class);
+            DesignAttributeHandler.writeAttribute("margin-left",
+                    design.attributes(), margin.hasLeft(), defMargin.hasLeft(),
+                    boolean.class);
 
-            DesignAttributeHandler.writeAttribute("margin-right", design.attributes(), margin.hasRight(), defMargin.hasRight(), boolean.class);
+            DesignAttributeHandler.writeAttribute("margin-right",
+                    design.attributes(), margin.hasRight(),
+                    defMargin.hasRight(), boolean.class);
 
-            DesignAttributeHandler.writeAttribute("margin-top", design.attributes(), margin.hasTop(), defMargin.hasTop(), boolean.class);
+            DesignAttributeHandler.writeAttribute("margin-top",
+                    design.attributes(), margin.hasTop(), defMargin.hasTop(),
+                    boolean.class);
 
-            DesignAttributeHandler.writeAttribute("margin-bottom", design.attributes(), margin.hasBottom(), defMargin.hasBottom(), boolean.class);
+            DesignAttributeHandler.writeAttribute("margin-bottom",
+                    design.attributes(), margin.hasBottom(),
+                    defMargin.hasBottom(), boolean.class);
         }
     }
 }

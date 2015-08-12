@@ -33,6 +33,7 @@ public class CssLayoutAbsoluteUrlTest extends SingleBrowserTest {
 
         // Not testing string equality since some browsers return the style with
         // quotes around the url argument and some without quotes.
-        Assert.assertTrue(backgroundImage + " does not contain 'about:blank'", backgroundImage.contains("about:blank"));
+        Assert.assertTrue(backgroundImage + " does not contain 'about:blank'",
+                backgroundImage.contains("about:blank"));
     }
 }

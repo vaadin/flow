@@ -99,8 +99,10 @@ import com.vaadin.util.CurrentInstance;
  * 
  * @since 7.0
  */
-@JavaScript({ "vaadin://bower_components/webcomponentsjs/webcomponents.min.js" })
-public abstract class UI extends AbstractSingleComponentContainer implements PollNotifier, Focusable {
+@JavaScript({
+        "vaadin://bower_components/webcomponentsjs/webcomponents.min.js" })
+public abstract class UI extends AbstractSingleComponentContainer
+        implements PollNotifier, Focusable {
 
     /**
      * The application to which this UI belongs
@@ -132,7 +134,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
 
     private Page page = new Page(this, getState(false).pageState);
 
-    private LoadingIndicatorConfiguration loadingIndicatorConfiguration = new LoadingIndicatorConfigurationImpl(this);
+    private LoadingIndicatorConfiguration loadingIndicatorConfiguration = new LoadingIndicatorConfigurationImpl(
+            this);
 
     /**
      * Scroll Y position.
@@ -153,7 +156,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
         }
 
         @Override
-        public void resize(int viewWidth, int viewHeight, int windowWidth, int windowHeight) {
+        public void resize(int viewWidth, int viewHeight, int windowWidth,
+                int windowHeight) {
             // TODO We're not doing anything with the view dimensions
             getPage().updateBrowserWindowSize(windowWidth, windowHeight, true);
         }
@@ -172,14 +176,16 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
     private DebugWindowServerRpc debugRpc = new DebugWindowServerRpc() {
         @Override
         public void showServerDebugInfo(Connector connector) {
-            String info = ConnectorHelper.getDebugInformation((ClientConnector) connector);
+            String info = ConnectorHelper
+                    .getDebugInformation((ClientConnector) connector);
             getLogger().info(info);
         }
 
         @Override
         public void showServerDesign(Connector connector) {
             if (!(connector instanceof Component)) {
-                getLogger().severe("Tried to output declarative design for " + connector + ", which is not a component");
+                getLogger().severe("Tried to output declarative design for "
+                        + connector + ", which is not a component");
                 return;
             }
             if (connector instanceof UI) {
@@ -190,9 +196,12 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try {
                 Design.write((Component) connector, baos);
-                getLogger().info("Design for " + connector + " requested from debug window:\n" + baos.toString("UTF-8"));
+                getLogger().info("Design for " + connector
+                        + " requested from debug window:\n"
+                        + baos.toString("UTF-8"));
             } catch (IOException e) {
-                getLogger().log(Level.WARNING, "Error producing design for " + connector, e);
+                getLogger().log(Level.WARNING,
+                        "Error producing design for " + connector, e);
             }
 
         }
@@ -207,10 +216,13 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
 
     private boolean closing = false;
 
-    private PushConfiguration pushConfiguration = new PushConfigurationImpl(this);
-    private ReconnectDialogConfiguration reconnectDialogConfiguration = new ReconnectDialogConfigurationImpl(this);
+    private PushConfiguration pushConfiguration = new PushConfigurationImpl(
+            this);
+    private ReconnectDialogConfiguration reconnectDialogConfiguration = new ReconnectDialogConfigurationImpl(
+            this);
 
-    private NotificationConfiguration notificationConfiguration = new NotificationConfigurationImpl(this);
+    private NotificationConfiguration notificationConfiguration = new NotificationConfigurationImpl(
+            this);
 
     /**
      * Tracks which message from the client should come next. First message from
@@ -249,8 +261,11 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
             int nodeId = (int) json.getNumber(0);
             String eventType = json.getString(1);
 
-            List<Object> listeners = getRootNode().getById(nodeId).get(EventListener.class, StateNode.class).getMultiValued(eventType);
-            new ArrayList<>(listeners).forEach(value -> ((EventListener) value).handleEvent());
+            List<Object> listeners = getRootNode().getById(nodeId)
+                    .get(EventListener.class, StateNode.class)
+                    .getMultiValued(eventType);
+            new ArrayList<>(listeners)
+                    .forEach(value -> ((EventListener) value).handleEvent());
         });
     }
 
@@ -315,7 +330,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      *            The raw "value" of the variable change from the client side.
      */
     private void fireClick(Map<String, Object> parameters) {
-        MouseEventDetails mouseDetails = MouseEventDetails.deSerialize((String) parameters.get("mouseDetails"));
+        MouseEventDetails mouseDetails = MouseEventDetails
+                .deSerialize((String) parameters.get("mouseDetails"));
         fireEvent(new ClickEvent(this, mouseDetails));
     }
 
@@ -366,15 +382,21 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      */
     public void setSession(VaadinSession session) {
         if (session == null && this.session == null) {
-            throw new IllegalStateException("Session should never be set to null when UI.session is already null");
+            throw new IllegalStateException(
+                    "Session should never be set to null when UI.session is already null");
         } else if (session != null && this.session != null) {
-            throw new IllegalStateException("Session has already been set. Old session: " + getSessionDetails(this.session) + ". New session: " + getSessionDetails(session) + ".");
+            throw new IllegalStateException(
+                    "Session has already been set. Old session: "
+                            + getSessionDetails(this.session)
+                            + ". New session: " + getSessionDetails(session)
+                            + ".");
         } else {
             if (session == null) {
                 try {
                     detach();
                 } catch (Exception e) {
-                    getLogger().log(Level.WARNING, "Error while detaching UI from session", e);
+                    getLogger().log(Level.WARNING,
+                            "Error while detaching UI from session", e);
                 }
                 // Disable push when the UI is detached. Otherwise the
                 // push connection and possibly VaadinSession will live on.
@@ -393,7 +415,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
         if (session == null) {
             return null;
         } else {
-            return session.toString() + " for " + session.getService().getServiceName();
+            return session.toString() + " for "
+                    + session.getService().getServiceName();
         }
     }
 
@@ -424,14 +447,16 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      * @throws NullPointerException
      *             if the given <code>Window</code> is <code>null</code>.
      */
-    public void addWindow(Window window) throws IllegalArgumentException, NullPointerException {
+    public void addWindow(Window window)
+            throws IllegalArgumentException, NullPointerException {
 
         if (window == null) {
             throw new NullPointerException("Argument must not be null");
         }
 
         if (window.isAttached()) {
-            throw new IllegalArgumentException("Window is already attached to an application.");
+            throw new IllegalArgumentException(
+                    "Window is already attached to an application.");
         }
 
         attachWindow(window);
@@ -502,7 +527,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
 
     private PushConnection pushConnection = null;
 
-    private LocaleService localeService = new LocaleService(this, getState(false).localeServiceState);
+    private LocaleService localeService = new LocaleService(this,
+            getState(false).localeServiceState);
 
     private String embedId;
 
@@ -538,9 +564,11 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      * @throws IllegalArgumentException
      *             if {@code component} does not belong to this UI
      */
-    public void scrollIntoView(Component component) throws IllegalArgumentException {
+    public void scrollIntoView(Component component)
+            throws IllegalArgumentException {
         if (component.getUI() != this) {
-            throw new IllegalArgumentException("The component where to scroll must belong to this UI.");
+            throw new IllegalArgumentException(
+                    "The component where to scroll must belong to this UI.");
         }
         scrollIntoView = component;
         markAsDirty();
@@ -564,9 +592,13 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      */
     public void doInit(VaadinRequest request, int uiId, String embedId) {
         if (this.uiId != -1) {
-            String message = "This UI instance is already initialized (as UI id " + this.uiId + ") and can therefore not be initialized again (as UI id " + uiId + "). ";
+            String message = "This UI instance is already initialized (as UI id "
+                    + this.uiId
+                    + ") and can therefore not be initialized again (as UI id "
+                    + uiId + "). ";
 
-            if (getSession() != null && !getSession().equals(VaadinSession.getCurrent())) {
+            if (getSession() != null
+                    && !getSession().equals(VaadinSession.getCurrent())) {
                 message += "Furthermore, it is already attached to another VaadinSession. ";
             }
             message += "Please make sure you are not accidentally reusing an old UI instance.";
@@ -651,7 +683,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      */
     public void setScrollTop(int scrollTop) {
         if (scrollTop < 0) {
-            throw new IllegalArgumentException("Scroll offset must be at least 0");
+            throw new IllegalArgumentException(
+                    "Scroll offset must be at least 0");
         }
         if (this.scrollTop != scrollTop) {
             this.scrollTop = scrollTop;
@@ -670,7 +703,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      */
     public void setScrollLeft(int scrollLeft) {
         if (scrollLeft < 0) {
-            throw new IllegalArgumentException("Scroll offset must be at least 0");
+            throw new IllegalArgumentException(
+                    "Scroll offset must be at least 0");
         }
         if (this.scrollLeft != scrollLeft) {
             this.scrollLeft = scrollLeft;
@@ -726,7 +760,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      *            The listener to add
      */
     public void addClickListener(ClickListener listener) {
-        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener, ClickListener.clickMethod);
+        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener,
+                ClickListener.clickMethod);
     }
 
     /**
@@ -737,7 +772,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      *            The listener to remove
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener);
+        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class,
+                listener);
     }
 
     @Override
@@ -782,7 +818,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
     @Override
     @Deprecated
     public void setCaption(String caption) {
-        throw new UnsupportedOperationException("You can not set the title of a UI. To set the title of the HTML page, use Page.setTitle");
+        throw new UnsupportedOperationException(
+                "You can not set the title of a UI. To set the title of the HTML page, use Page.setTitle");
     }
 
     /**
@@ -870,7 +907,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
     public void close() {
         closing = true;
 
-        boolean sessionExpired = (session == null || session.getState() != State.OPEN);
+        boolean sessionExpired = (session == null
+                || session.getState() != State.OPEN);
         getRpcProxy(UIClientRpc.class).uiClosed(sessionExpired);
         if (getPushConnection() != null) {
             // Push the Rpc to the client. The connection will be closed when
@@ -941,7 +979,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
     @Override
     public void setContent(Component content) {
         if (content instanceof Window) {
-            throw new IllegalArgumentException("A Window cannot be added using setContent. Use addWindow(Window window) instead");
+            throw new IllegalArgumentException(
+                    "A Window cannot be added using setContent. Use addWindow(Window window) instead");
         }
         super.setContent(content);
         if (content == null) {
@@ -998,7 +1037,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      * @see #access(Runnable)
      * @see VaadinSession#accessSynchronously(Runnable)
      */
-    public void accessSynchronously(Runnable runnable) throws UIDetachedException {
+    public void accessSynchronously(Runnable runnable)
+            throws UIDetachedException {
         Map<Class<?>, CurrentInstance> old = null;
 
         VaadinSession session = getSession();
@@ -1094,9 +1134,11 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
 
                         errorHandlingRunnable.handleError(exception);
                     } else {
-                        ConnectorErrorEvent errorEvent = new ConnectorErrorEvent(UI.this, exception);
+                        ConnectorErrorEvent errorEvent = new ConnectorErrorEvent(
+                                UI.this, exception);
 
-                        ErrorHandler errorHandler = com.vaadin.server.ErrorEvent.findErrorHandler(UI.this);
+                        ErrorHandler errorHandler = com.vaadin.server.ErrorEvent
+                                .findErrorHandler(UI.this);
 
                         if (errorHandler == null) {
                             errorHandler = new DefaultErrorHandler();
@@ -1191,7 +1233,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      *         not available.
      */
     public PushConnection getPushConnection() {
-        assert !(getPushConfiguration().getPushMode().isEnabled() && pushConnection == null);
+        assert!(getPushConfiguration().getPushMode().isEnabled()
+                && pushConnection == null);
         return pushConnection;
     }
 
@@ -1208,7 +1251,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
     public void setPushConnection(PushConnection pushConnection) {
         // If pushMode is disabled then there should never be a pushConnection;
         // if enabled there should always be
-        assert (pushConnection == null) ^ getPushConfiguration().getPushMode().isEnabled();
+        assert(pushConnection == null)
+                ^ getPushConfiguration().getPushMode().isEnabled();
 
         if (pushConnection == this.pushConnection) {
             return;
@@ -1254,7 +1298,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
 
     @Override
     public void addPollListener(PollListener listener) {
-        addListener(EventId.POLL, PollEvent.class, listener, PollListener.POLL_METHOD);
+        addListener(EventId.POLL, PollEvent.class, listener,
+                PollListener.POLL_METHOD);
     }
 
     @Override
@@ -1355,7 +1400,8 @@ public abstract class UI extends AbstractSingleComponentContainer implements Pol
      * @param lastProcessedServerMessageId
      *            the id of the last processed server message
      */
-    public void setLastProcessedClientToServerId(int lastProcessedClientToServerId) {
+    public void setLastProcessedClientToServerId(
+            int lastProcessedClientToServerId) {
         this.lastProcessedClientToServerId = lastProcessedClientToServerId;
     }
 

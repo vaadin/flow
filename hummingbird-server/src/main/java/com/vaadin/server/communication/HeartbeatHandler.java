@@ -40,7 +40,8 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  * @since 7.1
  */
-public class HeartbeatHandler extends SynchronizedRequestHandler implements SessionExpiredHandler {
+public class HeartbeatHandler extends SynchronizedRequestHandler
+        implements SessionExpiredHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -55,7 +56,8 @@ public class HeartbeatHandler extends SynchronizedRequestHandler implements Sess
      * time. Otherwise, writes a HTTP Not Found error to the response.
      */
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response) throws IOException {
         UI ui = session.getService().findUI(request);
         if (ui != null) {
             ui.setLastHeartbeatTimestamp(System.currentTimeMillis());
@@ -66,7 +68,8 @@ public class HeartbeatHandler extends SynchronizedRequestHandler implements Sess
             // complain about the empty response body (#12182)
             response.setHeader("Content-Type", "text/plain");
         } else {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "UI not found");
+            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                    "UI not found");
         }
 
         return true;
@@ -80,7 +83,8 @@ public class HeartbeatHandler extends SynchronizedRequestHandler implements Sess
      * .server.VaadinRequest, com.vaadin.server.VaadinResponse)
      */
     @Override
-    public boolean handleSessionExpired(VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean handleSessionExpired(VaadinRequest request,
+            VaadinResponse response) throws IOException {
         if (!ServletPortletHelper.isHeartbeatRequest(request)) {
             return false;
         }

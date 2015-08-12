@@ -52,53 +52,65 @@ public class DisableEnableCascadeStyles extends TestBase {
 
         addComponent(outerPanel);
 
-        enableDisablePanelButton = new Button("Disable panel", new ClickListener() {
+        enableDisablePanelButton = new Button("Disable panel",
+                new ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                enableDisable(outerPanel, enableDisablePanelButton);
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        enableDisable(outerPanel, enableDisablePanelButton);
 
-            }
-        });
-
-        enableDisableTabSheetButton = new Button("Disable TabSheet", new ClickListener() {
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                enableDisable(innerTabsheet, enableDisableTabSheetButton);
-
-            }
-        });
-
-        enableDisableLayoutButton = new Button("Disable Tab content (Layout)", new ClickListener() {
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                enableDisable(layout, enableDisableLayoutButton);
-
-            }
-        });
-        enableDisableComponentsButton = new Button("Disable Layout Components", new ClickListener() {
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                for (Iterator<Component> i = layout.iterator(); i.hasNext();) {
-                    final Component c = i.next();
-                    if (c.isEnabled()) {
-                        c.setEnabled(false);
-                        c.setCaption(c.getCaption().replace("enabled", "disabled"));
-                    } else {
-                        c.setEnabled(true);
-                        c.setCaption(c.getCaption().replace("disabled", "enabled"));
                     }
-                }
-                if (layout.getComponent(0).isEnabled()) {
-                    enableDisableComponentsButton.setCaption(enableDisableComponentsButton.getCaption().replace("Enable", "Disable"));
-                } else {
-                    enableDisableComponentsButton.setCaption(enableDisableComponentsButton.getCaption().replace("Disable", "Enable"));
-                }
-            }
-        });
+                });
+
+        enableDisableTabSheetButton = new Button("Disable TabSheet",
+                new ClickListener() {
+
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        enableDisable(innerTabsheet,
+                                enableDisableTabSheetButton);
+
+                    }
+                });
+
+        enableDisableLayoutButton = new Button("Disable Tab content (Layout)",
+                new ClickListener() {
+
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        enableDisable(layout, enableDisableLayoutButton);
+
+                    }
+                });
+        enableDisableComponentsButton = new Button("Disable Layout Components",
+                new ClickListener() {
+
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        for (Iterator<Component> i = layout.iterator(); i
+                                .hasNext();) {
+                            final Component c = i.next();
+                            if (c.isEnabled()) {
+                                c.setEnabled(false);
+                                c.setCaption(c.getCaption().replace("enabled",
+                                        "disabled"));
+                            } else {
+                                c.setEnabled(true);
+                                c.setCaption(c.getCaption().replace("disabled",
+                                        "enabled"));
+                            }
+                        }
+                        if (layout.getComponent(0).isEnabled()) {
+                            enableDisableComponentsButton.setCaption(
+                                    enableDisableComponentsButton.getCaption()
+                                            .replace("Enable", "Disable"));
+                        } else {
+                            enableDisableComponentsButton.setCaption(
+                                    enableDisableComponentsButton.getCaption()
+                                            .replace("Disable", "Enable"));
+                        }
+                    }
+                });
         addComponent(enableDisablePanelButton);
         addComponent(enableDisableTabSheetButton);
         addComponent(enableDisableLayoutButton);
@@ -109,11 +121,13 @@ public class DisableEnableCascadeStyles extends TestBase {
         if (target.isEnabled()) {
             target.setEnabled(false);
             button.setCaption(button.getCaption().replace("Disable", "Enable"));
-            target.setCaption(target.getCaption().replace("enabled", "disabled"));
+            target.setCaption(
+                    target.getCaption().replace("enabled", "disabled"));
         } else {
             target.setEnabled(true);
             button.setCaption(button.getCaption().replace("Enable", "Disable"));
-            target.setCaption(target.getCaption().replace("disabled", "enabled"));
+            target.setCaption(
+                    target.getCaption().replace("disabled", "enabled"));
         }
     }
 

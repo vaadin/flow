@@ -31,7 +31,8 @@ public final class ComponentStateUtil implements Serializable {
         return state.width == null || "".equals(state.width);
     }
 
-    public static final boolean isUndefinedHeight(AbstractComponentState state) {
+    public static final boolean isUndefinedHeight(
+            AbstractComponentState state) {
         return state.height == null || "".equals(state.height);
     }
 
@@ -53,7 +54,8 @@ public final class ComponentStateUtil implements Serializable {
      * @param eventListenerId
      *            The event identifier to remove
      */
-    public static final void removeRegisteredEventListener(SharedState state, String eventIdentifier) {
+    public static final void removeRegisteredEventListener(SharedState state,
+            String eventIdentifier) {
         if (state.registeredEventListeners == null) {
             return;
         }
@@ -69,7 +71,8 @@ public final class ComponentStateUtil implements Serializable {
      * @param eventListenerId
      *            The event identifier to add
      */
-    public static final void addRegisteredEventListener(SharedState state, String eventListenerId) {
+    public static final void addRegisteredEventListener(SharedState state,
+            String eventListenerId) {
         if (state.registeredEventListeners == null) {
             state.registeredEventListeners = new HashSet<String>();
         }

@@ -74,7 +74,8 @@ public class UsingBeanValidation extends UI {
         Person person = new Person("John", 26);
         BeanItem<Person> item = new BeanItem<Person>(person);
 
-        TextField firstName = new TextField("First name", item.getItemProperty("name"));
+        TextField firstName = new TextField("First name",
+                item.getItemProperty("name"));
 
         setContent(firstName);
 

@@ -53,11 +53,13 @@ public class ModalWindowFocusTest extends MultiBrowserTest {
         button.click();
 
         waitForElementPresent(By.id("windowButton"));
-        assertTrue("Second window should be opened", findElements(By.id("windowButton")).size() == 1);
+        assertTrue("Second window should be opened",
+                findElements(By.id("windowButton")).size() == 1);
 
         pressEscAndWait();
         pressEscAndWait();
-        assertTrue("All windows should be closed", findElements(By.className("v-window")).size() == 0);
+        assertTrue("All windows should be closed",
+                findElements(By.className("v-window")).size() == 0);
 
     }
 
@@ -78,12 +80,14 @@ public class ModalWindowFocusTest extends MultiBrowserTest {
         buttonInWindow.click();
 
         waitForElementPresent(By.id("window3"));
-        assertTrue("Third window should be opened", findElements(By.id("window3")).size() == 1);
+        assertTrue("Third window should be opened",
+                findElements(By.id("window3")).size() == 1);
 
         pressEscAndWait();
         pressEscAndWait();
         pressEscAndWait();
-        assertTrue("All windows should be closed", findElements(By.className("v-window")).size() == 0);
+        assertTrue("All windows should be closed",
+                findElements(By.className("v-window")).size() == 0);
 
     }
 

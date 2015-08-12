@@ -200,13 +200,15 @@ public class DateFields extends VerticalLayout implements View {
         row.addComponent(date);
 
         PropertysetItem item = new PropertysetItem();
-        item.addItemProperty("date", new ObjectProperty<Date>(getDefaultDate()));
+        item.addItemProperty("date",
+                new ObjectProperty<Date>(getDefaultDate()));
 
         FormLayout form = new FormLayout();
         form.setMargin(false);
 
         FieldGroup binder = new FieldGroup(item);
-        form.addComponent(binder.buildAndBind("Picker in read-only field group", "date"));
+        form.addComponent(
+                binder.buildAndBind("Picker in read-only field group", "date"));
         binder.setReadOnly(true);
 
         row.addComponent(form);

@@ -34,7 +34,8 @@ public class BrowserFrameIsVisible extends TestBase {
         browser.setHeight("300px");
         browser.setAlternateText("Browser alternative text");
         final TextSource textSource = new TextSource("initial");
-        final StreamResource textResource = new StreamResource(textSource, "initial.txt");
+        final StreamResource textResource = new StreamResource(textSource,
+                "initial.txt");
         textResource.setMIMEType("text/plain");
         browser.setSource(textResource);
         addComponent(browser);
@@ -44,7 +45,8 @@ public class BrowserFrameIsVisible extends TestBase {
             @Override
             public void buttonClick(ClickEvent event) {
                 TextSource helloSource = new TextSource("Hello World");
-                StreamResource helloResource = new StreamResource(helloSource, "helloworld.txt");
+                StreamResource helloResource = new StreamResource(helloSource,
+                        "helloworld.txt");
                 helloResource.setMIMEType("text/plain");
                 browser.setSource(helloResource);
             }
@@ -55,7 +57,8 @@ public class BrowserFrameIsVisible extends TestBase {
             @Override
             public void buttonClick(ClickEvent event) {
                 TextSource helloSource = new TextSource("Lorem Ipsum");
-                StreamResource helloResource = new StreamResource(helloSource, "loremipsum.txt");
+                StreamResource helloResource = new StreamResource(helloSource,
+                        "loremipsum.txt");
                 helloResource.setMIMEType("text/plain");
                 browser.setSource(helloResource);
             }
@@ -98,7 +101,8 @@ public class BrowserFrameIsVisible extends TestBase {
 
             ByteArrayInputStream istream;
             try {
-                istream = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+                istream = new ByteArrayInputStream(
+                        sb.toString().getBytes("UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

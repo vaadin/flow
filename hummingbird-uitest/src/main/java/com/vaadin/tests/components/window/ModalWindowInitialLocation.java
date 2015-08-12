@@ -67,7 +67,8 @@ public class ModalWindowInitialLocation extends AbstractTestUI {
 
     @Override
     public String getTestDescription() {
-        return "When the button is clicked, a window should appear in the center of the browser window without " + "flashing first in the upper left corner.";
+        return "When the button is clicked, a window should appear in the center of the browser window without "
+                + "flashing first in the upper left corner.";
     }
 
     @Override

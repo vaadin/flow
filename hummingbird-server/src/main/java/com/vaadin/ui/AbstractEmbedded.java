@@ -28,8 +28,7 @@ import com.vaadin.ui.declarative.DesignContext;
  * Abstract base for embedding components.
  * 
  * @author Vaadin Ltd.
- * @version
- * @VERSION@
+ * @version @VERSION@
  * @since 7.0
  */
 @SuppressWarnings("serial")
@@ -91,7 +90,8 @@ public abstract class AbstractEmbedded extends AbstractComponent {
     public void readDesign(Element design, DesignContext designContext) {
         super.readDesign(design, designContext);
         if (design.hasAttr("alt")) {
-            setAlternateText(DesignAttributeHandler.readAttribute("alt", design.attributes(), String.class));
+            setAlternateText(DesignAttributeHandler.readAttribute("alt",
+                    design.attributes(), String.class));
         }
     }
 
@@ -99,7 +99,8 @@ public abstract class AbstractEmbedded extends AbstractComponent {
     public void writeDesign(Element design, DesignContext designContext) {
         super.writeDesign(design, designContext);
         AbstractEmbedded def = designContext.getDefaultInstance(this);
-        DesignAttributeHandler.writeAttribute("alt", design.attributes(), getAlternateText(), def.getAlternateText(), String.class);
+        DesignAttributeHandler.writeAttribute("alt", design.attributes(),
+                getAlternateText(), def.getAlternateText(), String.class);
     }
 
     @Override

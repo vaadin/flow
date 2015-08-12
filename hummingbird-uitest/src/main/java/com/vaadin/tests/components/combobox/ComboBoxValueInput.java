@@ -14,18 +14,21 @@ public class ComboBoxValueInput extends AbstractTestUI {
         ComboBox cb = getComboBox("A combobox", false, "default");
         addComponent(cb);
 
-        cb = getComboBox("A combobox with input prompt", false, "default-prompt");
+        cb = getComboBox("A combobox with input prompt", false,
+                "default-prompt");
         cb.setInputPrompt("Please select");
         addComponent(cb);
 
         cb = getComboBox("A combobox with null item", true, "null");
         addComponent(cb);
 
-        cb = getComboBox("A combobox with null item and input prompt", true, "null-prompt");
+        cb = getComboBox("A combobox with null item and input prompt", true,
+                "null-prompt");
         cb.setInputPrompt("Please select");
         addComponent(cb);
 
-        cb = getComboBox("A combobox with filteringMode off", false, "filtering-off");
+        cb = getComboBox("A combobox with filteringMode off", false,
+                "filtering-off");
         cb.setFilteringMode(FilteringMode.OFF);
         addComponent(cb);
 
@@ -41,7 +44,8 @@ public class ComboBoxValueInput extends AbstractTestUI {
         return 3268;
     }
 
-    private ComboBox getComboBox(String caption, boolean addNullItem, String id) {
+    private ComboBox getComboBox(String caption, boolean addNullItem,
+            String id) {
         ComboBox cb = new ComboBox(caption);
         if (addNullItem) {
             cb.addItem("Null item");

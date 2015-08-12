@@ -77,7 +77,7 @@ public class RootNode extends MapStateNode {
     }
 
     public void commit(NodeChangeVisitor visitor) {
-        assert !commitVisitors.contains(visitor);
+        assert!commitVisitors.contains(visitor);
         commitVisitors.add(visitor);
         commit();
         commitVisitors.remove(visitor);
@@ -103,7 +103,8 @@ public class RootNode extends MapStateNode {
 
         if (!commitVisitors.isEmpty()) {
             for (NodeChangeVisitor visitor : new ArrayList<>(commitVisitors)) {
-                for (Entry<StateNode, List<NodeChange>> entry : changes.entrySet()) {
+                for (Entry<StateNode, List<NodeChange>> entry : changes
+                        .entrySet()) {
                     for (NodeChange change : entry.getValue())
                         change.accept(entry.getKey(), visitor);
                 }
@@ -123,7 +124,7 @@ public class RootNode extends MapStateNode {
         // become attached
         assert node.isAttached() || node.getId() == 0;
         assert node.getRoot() == this;
-        assert !dirtyInTransaction.containsKey(node);
+        assert!dirtyInTransaction.containsKey(node);
 
         dirtyInTransaction.put(node, handler);
     }

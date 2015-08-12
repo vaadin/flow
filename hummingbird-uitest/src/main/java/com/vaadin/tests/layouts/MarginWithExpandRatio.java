@@ -30,7 +30,8 @@ public class MarginWithExpandRatio extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        TestUtils.injectCSS(this, ".hugemargin { margin: 10px 20px !important; }");
+        TestUtils.injectCSS(this,
+                ".hugemargin { margin: 10px 20px !important; }");
 
         HorizontalLayout hl = new HorizontalLayout();
         addLayoutTest(hl);

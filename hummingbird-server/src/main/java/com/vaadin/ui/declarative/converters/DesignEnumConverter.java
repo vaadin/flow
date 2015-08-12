@@ -30,7 +30,9 @@ import com.vaadin.ui.declarative.DesignAttributeHandler;
 public class DesignEnumConverter implements Converter<String, Enum> {
 
     @Override
-    public Enum convertToModel(String value, Class<? extends Enum> targetType, Locale locale) throws com.vaadin.data.util.converter.Converter.ConversionException {
+    public Enum convertToModel(String value, Class<? extends Enum> targetType,
+            Locale locale)
+                    throws com.vaadin.data.util.converter.Converter.ConversionException {
         if (value == null || value.trim().equals("")) {
             return null;
         }
@@ -38,7 +40,9 @@ public class DesignEnumConverter implements Converter<String, Enum> {
     }
 
     @Override
-    public String convertToPresentation(Enum value, Class<? extends String> targetType, Locale locale) throws com.vaadin.data.util.converter.Converter.ConversionException {
+    public String convertToPresentation(Enum value,
+            Class<? extends String> targetType, Locale locale)
+                    throws com.vaadin.data.util.converter.Converter.ConversionException {
         if (value == null) {
             return null;
         }

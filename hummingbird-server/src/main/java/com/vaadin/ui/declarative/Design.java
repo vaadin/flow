@@ -83,7 +83,8 @@ public class Design implements Serializable {
          * 
          * @return a newly created component
          */
-        public Component createComponent(String fullyQualifiedClassName, DesignContext context);
+        public Component createComponent(String fullyQualifiedClassName,
+                DesignContext context);
     }
 
     /**
@@ -115,7 +116,8 @@ public class Design implements Serializable {
          *            the design context for which the component is created
          * @return a newly created component
          */
-        public Component tagToComponent(String tag, ComponentFactory componentFactory, DesignContext context);
+        public Component tagToComponent(String tag,
+                ComponentFactory componentFactory, DesignContext context);
 
         /**
          * Resolves a tag name from a component.
@@ -126,7 +128,8 @@ public class Design implements Serializable {
          *            the design context for which the tag name is needed
          * @return the tag name corresponding to the component
          */
-        public String componentToTag(Component component, DesignContext context);
+        public String componentToTag(Component component,
+                DesignContext context);
     }
 
     /**
@@ -138,15 +141,22 @@ public class Design implements Serializable {
      */
     public static class DefaultComponentFactory implements ComponentFactory {
         @Override
-        public Component createComponent(String fullyQualifiedClassName, DesignContext context) {
-            Class<? extends Component> componentClass = resolveComponentClass(fullyQualifiedClassName, context);
+        public Component createComponent(String fullyQualifiedClassName,
+                DesignContext context) {
+            Class<? extends Component> componentClass = resolveComponentClass(
+                    fullyQualifiedClassName, context);
 
-            assert Component.class.isAssignableFrom(componentClass) : "resolveComponentClass returned " + componentClass + " which is not a Vaadin Component class";
+            assert Component.class.isAssignableFrom(
+                    componentClass) : "resolveComponentClass returned "
+                            + componentClass
+                            + " which is not a Vaadin Component class";
 
             try {
                 return componentClass.newInstance();
             } catch (Exception e) {
-                throw new DesignException("Could not create component " + fullyQualifiedClassName, e);
+                throw new DesignException(
+                        "Could not create component " + fullyQualifiedClassName,
+                        e);
             }
         }
 
@@ -160,12 +170,14 @@ public class Design implements Serializable {
          *            the design context for which the class is resolved
          * @return a component class object representing the provided class name
          */
-        protected Class<? extends Component> resolveComponentClass(String qualifiedClassName, DesignContext context) {
+        protected Class<? extends Component> resolveComponentClass(
+                String qualifiedClassName, DesignContext context) {
             try {
                 Class<?> componentClass = Class.forName(qualifiedClassName);
                 return componentClass.asSubclass(Component.class);
             } catch (ClassNotFoundException e) {
-                throw new DesignException("Unable to load component for design", e);
+                throw new DesignException("Unable to load component for design",
+                        e);
             }
         }
 
@@ -179,14 +191,16 @@ public class Design implements Serializable {
     public static class DefaultComponentMapper implements ComponentMapper {
 
         @Override
-        public Component tagToComponent(String tagName, ComponentFactory componentFactory, DesignContext context) {
+        public Component tagToComponent(String tagName,
+                ComponentFactory componentFactory, DesignContext context) {
             // Extract the package and class names.
             // Otherwise, get the full class name using the prefix to package
             // mapping. Example: "v-vertical-layout" ->
             // "com.vaadin.ui.VerticalLayout"
             String[] parts = tagName.split("-", 2);
             if (parts.length < 2) {
-                throw new DesignException("The tagname '" + tagName + "' is invalid: missing prefix.");
+                throw new DesignException("The tagname '" + tagName
+                        + "' is invalid: missing prefix.");
             }
             String prefixName = parts[0];
             String packageName = context.getPackage(prefixName);
@@ -205,17 +219,21 @@ public class Design implements Serializable {
             }
             String qualifiedClassName = packageName + "." + className;
 
-            Component component = componentFactory.createComponent(qualifiedClassName, context);
+            Component component = componentFactory
+                    .createComponent(qualifiedClassName, context);
 
             if (component == null) {
-                throw new DesignException("Got unexpected null component from " + componentFactory.getClass().getName() + " for class " + qualifiedClassName);
+                throw new DesignException("Got unexpected null component from "
+                        + componentFactory.getClass().getName() + " for class "
+                        + qualifiedClassName);
             }
 
             return component;
         }
 
         @Override
-        public String componentToTag(Component component, DesignContext context) {
+        public String componentToTag(Component component,
+                DesignContext context) {
             Class<?> componentClass = component.getClass();
             String packageName = componentClass.getPackage().getName();
             String prefix = context.getPackagePrefix(packageName);
@@ -224,7 +242,8 @@ public class Design implements Serializable {
                 context.addPackagePrefix(prefix, packageName);
             }
             prefix = prefix + "-";
-            String className = classNameToElementName(componentClass.getSimpleName());
+            String className = classNameToElementName(
+                    componentClass.getSimpleName());
             String tagName = prefix + className;
 
             return tagName;
@@ -274,7 +293,8 @@ public class Design implements Serializable {
      */
     public static void setComponentFactory(ComponentFactory componentFactory) {
         if (componentFactory == null) {
-            throw new IllegalArgumentException("Cannot set null component factory");
+            throw new IllegalArgumentException(
+                    "Cannot set null component factory");
         }
         Design.componentFactory = componentFactory;
     }
@@ -306,7 +326,8 @@ public class Design implements Serializable {
      */
     public static void setComponentMapper(ComponentMapper componentMapper) {
         if (componentMapper == null) {
-            throw new IllegalArgumentException("Cannot set null component mapper");
+            throw new IllegalArgumentException(
+                    "Cannot set null component mapper");
         }
         Design.componentMapper = componentMapper;
     }
@@ -363,7 +384,8 @@ public class Design implements Serializable {
      *         object returned by this method.
      * @throws IOException
      */
-    private static DesignContext parse(InputStream html, Component rootInstance) {
+    private static DesignContext parse(InputStream html,
+            Component rootInstance) {
         Document doc = parse(html);
         return designToComponentTree(doc, rootInstance);
     }
@@ -412,11 +434,13 @@ public class Design implements Serializable {
      *            type is assignable from {@link Component} are bound to fields
      *            in the design based on id/local id/caption
      */
-    private static DesignContext designToComponentTree(Document doc, Component componentRoot) {
+    private static DesignContext designToComponentTree(Document doc,
+            Component componentRoot) {
         if (componentRoot == null) {
             return designToComponentTree(doc, null, null);
         } else {
-            return designToComponentTree(doc, componentRoot, componentRoot.getClass());
+            return designToComponentTree(doc, componentRoot,
+                    componentRoot.getClass());
         }
 
     }
@@ -441,7 +465,8 @@ public class Design implements Serializable {
      *            {@link Component} are bound to fields in the design based on
      *            id/local id/caption
      */
-    private static DesignContext designToComponentTree(Document doc, Component componentRoot, Class<?> classWithFields) {
+    private static DesignContext designToComponentTree(Document doc,
+            Component componentRoot, Class<?> classWithFields) {
         DesignContext designContext = new DesignContext(doc);
         designContext.readPackageMappings(doc);
         // No special handling for a document without a body element - should be
@@ -449,12 +474,16 @@ public class Design implements Serializable {
         Element root = doc.body();
         Elements children = root.children();
         if (children.size() > 1) {
-            throw new DesignException("The first level of a component hierarchy should contain at most one root component, but found " + children.size() + ".");
+            throw new DesignException(
+                    "The first level of a component hierarchy should contain at most one root component, but found "
+                            + children.size() + ".");
         }
         Element element = children.size() == 0 ? null : children.first();
         if (componentRoot != null) {
             if (element == null) {
-                throw new DesignException("The root element cannot be null when the specified root Component is" + " not null.");
+                throw new DesignException(
+                        "The root element cannot be null when the specified root Component is"
+                                + " not null.");
             }
             // user has specified root instance that may have member fields that
             // should be bound
@@ -462,7 +491,8 @@ public class Design implements Serializable {
             try {
                 binder = new FieldBinder(componentRoot, classWithFields);
             } catch (IntrospectionException e) {
-                throw new DesignException("Could not bind fields of the root component", e);
+                throw new DesignException(
+                        "Could not bind fields of the root component", e);
             }
             // create listener for component creations that binds the created
             // components to the componentRoot instance fields
@@ -478,13 +508,16 @@ public class Design implements Serializable {
             // make sure that all the member fields are bound
             Collection<String> unboundFields = binder.getUnboundFields();
             if (!unboundFields.isEmpty()) {
-                throw new DesignException("Found unbound fields from component root " + unboundFields);
+                throw new DesignException(
+                        "Found unbound fields from component root "
+                                + unboundFields);
             }
             // no need to listen anymore
             designContext.removeComponentCreationListener(creationListener);
         } else {
             // createChild creates the entire component hierarchy
-            componentRoot = element == null ? null : designContext.readDesign(element);
+            componentRoot = element == null ? null
+                    : designContext.readDesign(element);
         }
         designContext.setRootComponent(componentRoot);
         return designContext;
@@ -547,15 +580,20 @@ public class Design implements Serializable {
      * @throws DesignException
      *             If the design could not be loaded
      */
-    public static DesignContext read(Component rootComponent) throws DesignException {
+    public static DesignContext read(Component rootComponent)
+            throws DesignException {
         // Try to find an @DesignRoot annotation on the class or any parent
         // class
-        Class<? extends Component> annotatedClass = findClassWithAnnotation(rootComponent.getClass(), DesignRoot.class);
+        Class<? extends Component> annotatedClass = findClassWithAnnotation(
+                rootComponent.getClass(), DesignRoot.class);
         if (annotatedClass == null) {
-            throw new IllegalArgumentException("The class " + rootComponent.getClass().getName() + " or any of its superclasses do not have an @DesignRoot annotation");
+            throw new IllegalArgumentException("The class "
+                    + rootComponent.getClass().getName()
+                    + " or any of its superclasses do not have an @DesignRoot annotation");
         }
 
-        DesignRoot designAnnotation = annotatedClass.getAnnotation(DesignRoot.class);
+        DesignRoot designAnnotation = annotatedClass
+                .getAnnotation(DesignRoot.class);
         String filename = designAnnotation.value();
         if (filename.equals("")) {
             // No value, assume the html file is named as the class
@@ -564,11 +602,13 @@ public class Design implements Serializable {
 
         InputStream stream = annotatedClass.getResourceAsStream(filename);
         if (stream == null) {
-            throw new DesignException("Unable to find design file " + filename + " in " + annotatedClass.getPackage().getName());
+            throw new DesignException("Unable to find design file " + filename
+                    + " in " + annotatedClass.getPackage().getName());
         }
 
         Document doc = parse(stream);
-        DesignContext context = designToComponentTree(doc, rootComponent, annotatedClass);
+        DesignContext context = designToComponentTree(doc, rootComponent,
+                annotatedClass);
 
         return context;
 
@@ -585,7 +625,9 @@ public class Design implements Serializable {
      * @return the first class with the given annotation or null if no class
      *         with the annotation was found
      */
-    private static Class<? extends Component> findClassWithAnnotation(Class<? extends Component> componentClass, Class<? extends Annotation> annotationClass) {
+    private static Class<? extends Component> findClassWithAnnotation(
+            Class<? extends Component> componentClass,
+            Class<? extends Annotation> annotationClass) {
         if (componentClass == null) {
             return null;
         }
@@ -599,7 +641,8 @@ public class Design implements Serializable {
             return null;
         }
 
-        return findClassWithAnnotation((Class<? extends Component>) superClass, annotationClass);
+        return findClassWithAnnotation((Class<? extends Component>) superClass,
+                annotationClass);
     }
 
     /**
@@ -621,10 +664,14 @@ public class Design implements Serializable {
      * @throws DesignException
      *             If the design could not be loaded
      */
-    public static DesignContext read(String filename, Component rootComponent) throws DesignException {
-        InputStream stream = rootComponent.getClass().getResourceAsStream(filename);
+    public static DesignContext read(String filename, Component rootComponent)
+            throws DesignException {
+        InputStream stream = rootComponent.getClass()
+                .getResourceAsStream(filename);
         if (stream == null) {
-            throw new DesignException("File " + filename + " was not found in the package " + rootComponent.getClass().getPackage().getName());
+            throw new DesignException(
+                    "File " + filename + " was not found in the package "
+                            + rootComponent.getClass().getPackage().getName());
         }
         return read(stream, rootComponent);
     }
@@ -649,7 +696,8 @@ public class Design implements Serializable {
      * @throws DesignException
      *             If the design could not be loaded
      */
-    public static DesignContext read(InputStream design, Component rootComponent) {
+    public static DesignContext read(InputStream design,
+            Component rootComponent) {
         if (design == null) {
             throw new DesignException("Stream cannot be null");
         }
@@ -683,7 +731,8 @@ public class Design implements Serializable {
      *            written as UTF-8
      * @throws IOException
      */
-    public static void write(Component component, OutputStream outputStream) throws IOException {
+    public static void write(Component component, OutputStream outputStream)
+            throws IOException {
         DesignContext dc = new DesignContext();
         dc.setRootComponent(component);
         write(dc, outputStream);
@@ -705,7 +754,8 @@ public class Design implements Serializable {
      * @throws IOException
      *             if writing fails
      */
-    public static void write(DesignContext designContext, OutputStream outputStream) throws IOException {
+    public static void write(DesignContext designContext,
+            OutputStream outputStream) throws IOException {
         Document doc = createHtml(designContext);
         write(doc, outputStream);
     }
@@ -720,7 +770,8 @@ public class Design implements Serializable {
      * @throws IOException
      *             if writing fails
      */
-    private static void write(Document doc, OutputStream outputStream) throws IOException {
+    private static void write(Document doc, OutputStream outputStream)
+            throws IOException {
         doc.outputSettings().indentAmount(4);
         doc.outputSettings().syntax(Syntax.html);
         doc.outputSettings().prettyPrint(true);

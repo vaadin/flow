@@ -31,6 +31,7 @@ public class ExtraWindowShownTest extends MultiBrowserTest {
     }
 
     private void assertNoWindow() {
-        Assert.assertFalse("Window found when there should be none.", $(WindowElement.class).exists());
+        Assert.assertFalse("Window found when there should be none.",
+                $(WindowElement.class).exists());
     }
 }

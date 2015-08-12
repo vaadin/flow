@@ -15,7 +15,8 @@ public class DateFieldIsValid extends AbstractTestUIWithLog {
 
     @Override
     protected String getTestDescription() {
-        return "A dateField with invalid text should return false in isValid both when " + "handling ValueChange event and after value is changed.";
+        return "A dateField with invalid text should return false in isValid both when "
+                + "handling ValueChange event and after value is changed.";
     }
 
     @Override
@@ -35,7 +36,8 @@ public class DateFieldIsValid extends AbstractTestUIWithLog {
         dateField.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
-                log("valueChange: value: " + format(dateField.getValue()) + ", is valid: " + dateField.isValid());
+                log("valueChange: value: " + format(dateField.getValue())
+                        + ", is valid: " + dateField.isValid());
             }
         });
         addComponent(dateField);
@@ -43,7 +45,8 @@ public class DateFieldIsValid extends AbstractTestUIWithLog {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                log("buttonClick: value: " + format(dateField.getValue()) + ", is valid: " + dateField.isValid());
+                log("buttonClick: value: " + format(dateField.getValue())
+                        + ", is valid: " + dateField.isValid());
             }
         });
     }

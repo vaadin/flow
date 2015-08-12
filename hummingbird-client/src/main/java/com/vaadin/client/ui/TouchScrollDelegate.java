@@ -100,7 +100,8 @@ public class TouchScrollDelegate implements NativePreviewHandler {
 
     private static TouchScrollDelegate activeScrollDelegate;
 
-    private static final boolean androidWithBrokenScrollTop = BrowserInfo.get().isAndroidWithBrokenScrollTop();
+    private static final boolean androidWithBrokenScrollTop = BrowserInfo.get()
+            .isAndroidWithBrokenScrollTop();
 
     /**
      * A helper class for making a widget scrollable. Uses native scrolling if
@@ -112,7 +113,8 @@ public class TouchScrollDelegate implements NativePreviewHandler {
         private static final String SCROLLABLE_CLASSNAME = "v-scrollable";
 
         private TouchScrollDelegate delegate;
-        private final boolean requiresDelegate = BrowserInfo.get().requiresTouchScrollDelegate();
+        private final boolean requiresDelegate = BrowserInfo.get()
+                .requiresTouchScrollDelegate();
 
         private Widget widget;
 
@@ -170,7 +172,9 @@ public class TouchScrollDelegate implements NativePreviewHandler {
         }
 
         public void debug(Element e) {
-            VConsole.log("Classes: " + e.getClassName() + " overflow: " + e.getStyle().getProperty("overflow") + " w-o-s: " + e.getStyle().getProperty("WebkitOverflowScrolling"));
+            VConsole.log("Classes: " + e.getClassName() + " overflow: "
+                    + e.getStyle().getProperty("overflow") + " w-o-s: "
+                    + e.getStyle().getProperty("WebkitOverflowScrolling"));
         }
 
         /**
@@ -245,7 +249,8 @@ public class TouchScrollDelegate implements NativePreviewHandler {
      *            The elements inside the widget that should be scrollable
      * @return A scroll handler for the given widget.
      */
-    public static TouchScrollHandler enableTouchScrolling(Widget widget, Element... scrollables) {
+    public static TouchScrollHandler enableTouchScrolling(Widget widget,
+            Element... scrollables) {
         TouchScrollHandler handler = GWT.create(TouchScrollHandler.class);
         handler.init(widget, scrollables);
         return handler;
@@ -401,7 +406,8 @@ public class TouchScrollDelegate implements NativePreviewHandler {
     private boolean detectScrolledElement(Touch touch) {
         Element target = touch.getTarget().cast();
         for (Element el : scrollableElements) {
-            if (el.isOrHasChild(target) && el.getScrollHeight() > el.getClientHeight()) {
+            if (el.isOrHasChild(target)
+                    && el.getScrollHeight() > el.getClientHeight()) {
                 scrolledElement = el;
                 layers = getElements(scrolledElement);
                 return true;
@@ -434,7 +440,8 @@ public class TouchScrollDelegate implements NativePreviewHandler {
             int finalPos = origScrollTop + deltaScrollTop;
             if (finalPos > getMaxFinalY()) {
                 // spring effect at the end
-                int overscroll = (deltaScrollTop + origScrollTop) - getMaxFinalY();
+                int overscroll = (deltaScrollTop + origScrollTop)
+                        - getMaxFinalY();
                 overscroll = overscroll / 2;
                 if (overscroll > getMaxOverScroll()) {
                     overscroll = getMaxOverScroll();
@@ -488,7 +495,8 @@ public class TouchScrollDelegate implements NativePreviewHandler {
     }
 
     private boolean isMovedSignificantly() {
-        return moved ? moved : Math.abs(origY - lastClientY) >= SIGNIFICANT_MOVE_THRESHOLD;
+        return moved ? moved
+                : Math.abs(origY - lastClientY) >= SIGNIFICANT_MOVE_THRESHOLD;
     }
 
     private void onTouchEnd(NativeEvent event) {
@@ -553,7 +561,8 @@ public class TouchScrollDelegate implements NativePreviewHandler {
         finalScrollTop = finalY;
 
         if (Math.abs(pixelsToMove) < 3 || duration < 20) {
-            VConsole.log("Small 'momentum' " + pixelsToMove + " |  " + duration + " Skipping animation,");
+            VConsole.log("Small 'momentum' " + pixelsToMove + " |  " + duration
+                    + " Skipping animation,");
             moveTransformationToScrolloffset();
             return;
         }
@@ -593,7 +602,8 @@ public class TouchScrollDelegate implements NativePreviewHandler {
     private void translateTo(double translateY) {
         for (Element el : layers) {
             Style style = el.getStyle();
-            style.setProperty("webkitTransform", "translate3d(0px," + translateY + "px,0px)");
+            style.setProperty("webkitTransform",
+                    "translate3d(0px," + translateY + "px,0px)");
         }
     }
 
@@ -611,7 +621,8 @@ public class TouchScrollDelegate implements NativePreviewHandler {
 
                 @Override
                 protected void onUpdate(double progress) {
-                    lastAnimatedTranslateY = (fromY + (finalY - fromY) * progress);
+                    lastAnimatedTranslateY = (fromY
+                            + (finalY - fromY) * progress);
                     translateTo(lastAnimatedTranslateY);
                 }
 
@@ -640,11 +651,13 @@ public class TouchScrollDelegate implements NativePreviewHandler {
     }
 
     private int getMaxOverScroll() {
-        return androidWithBrokenScrollTop ? 0 : scrolledElement.getClientHeight() / 3;
+        return androidWithBrokenScrollTop ? 0
+                : scrolledElement.getClientHeight() / 3;
     }
 
     private int getMaxFinalY() {
-        return scrolledElement.getScrollHeight() - scrolledElement.getClientHeight();
+        return scrolledElement.getScrollHeight()
+                - scrolledElement.getClientHeight();
     }
 
     @Override

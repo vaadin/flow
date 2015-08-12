@@ -41,7 +41,8 @@ public class TextFieldsCssTest extends GridLayout {
 
     }
 
-    private void createTextFieldWith(String caption, String primaryStyleName, String inputPrompt) {
+    private void createTextFieldWith(String caption, String primaryStyleName,
+            String inputPrompt) {
         TextField tf = new TextField();
         tf.setId("textfield" + debugIdCounter++);
         if (caption != null) {
@@ -67,7 +68,9 @@ public class TextFieldsCssTest extends GridLayout {
     }
 
     @Override
-    public void addComponent(Component component, int column1, int row1, int column2, int row2) throws OverlapsException, OutOfBoundsException {
+    public void addComponent(Component component, int column1, int row1,
+            int column2, int row2)
+                    throws OverlapsException, OutOfBoundsException {
 
         parent.registerComponent(component);
         super.addComponent(component, column1, row1, column2, row2);

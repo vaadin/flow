@@ -43,6 +43,7 @@ public class EmailValidator extends RegexpValidator {
      *            the message to display in case the value does not validate.
      */
     public EmailValidator(String errorMessage) {
-        super("^([a-zA-Z0-9_\\.\\-+])+@(([a-zA-Z0-9-])+\\.)+([a-zA-Z0-9]{2,4})+$", true, errorMessage);
+        super("^([a-zA-Z0-9_\\.\\-+])+@(([a-zA-Z0-9-])+\\.)+([a-zA-Z0-9]{2,4})+$",
+                true, errorMessage);
     }
 }

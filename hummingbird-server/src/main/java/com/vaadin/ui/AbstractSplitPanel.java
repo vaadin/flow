@@ -57,13 +57,15 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
 
         @Override
         public void splitterClick(MouseEventDetails mouseDetails) {
-            fireEvent(new SplitterClickEvent(AbstractSplitPanel.this, mouseDetails));
+            fireEvent(new SplitterClickEvent(AbstractSplitPanel.this,
+                    mouseDetails));
         }
 
         @Override
         public void setSplitterPosition(float position) {
             getSplitterState().position = position;
-            fireEvent(new SplitPositionChangeEvent(AbstractSplitPanel.this, position, getSplitPositionUnit()));
+            fireEvent(new SplitPositionChangeEvent(AbstractSplitPanel.this,
+                    position, getSplitPositionUnit()));
         }
     };
 
@@ -77,7 +79,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      * Modifiable and Serializable Iterator for the components, used by
      * {@link AbstractSplitPanel#getComponentIterator()}.
      */
-    private class ComponentIterator implements Iterator<Component>, Serializable {
+    private class ComponentIterator
+            implements Iterator<Component>, Serializable {
 
         int i = 0;
 
@@ -96,7 +99,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
             }
             i++;
             if (i == 1) {
-                return (getFirstComponent() == null ? getSecondComponent() : getFirstComponent());
+                return (getFirstComponent() == null ? getSecondComponent()
+                        : getFirstComponent());
             } else if (i == 2) {
                 return getSecondComponent();
             }
@@ -133,7 +137,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
         } else if (getSecondComponent() == null) {
             setSecondComponent(c);
         } else {
-            throw new UnsupportedOperationException("Split panel can contain only two components");
+            throw new UnsupportedOperationException(
+                    "Split panel can contain only two components");
         }
     }
 
@@ -253,7 +258,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
     /* Documented in superclass */
 
     @Override
-    public void replaceComponent(Component oldComponent, Component newComponent) {
+    public void replaceComponent(Component oldComponent,
+            Component newComponent) {
         if (oldComponent == getFirstComponent()) {
             setFirstComponent(newComponent);
         } else if (oldComponent == getSecondComponent()) {
@@ -317,7 +323,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      */
     public void setSplitPosition(float pos, Unit unit, boolean reverse) {
         if (unit != Unit.PERCENTAGE && unit != Unit.PIXELS) {
-            throw new IllegalArgumentException("Only percentage and pixel units are allowed");
+            throw new IllegalArgumentException(
+                    "Only percentage and pixel units are allowed");
         }
         if (unit != Unit.PERCENTAGE) {
             pos = Math.round(pos);
@@ -327,7 +334,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
         splitterState.positionUnit = unit.getSymbol();
         splitterState.positionReversed = reverse;
         posUnit = unit;
-        fireEvent(new SplitPositionChangeEvent(AbstractSplitPanel.this, pos, posUnit));
+        fireEvent(new SplitPositionChangeEvent(AbstractSplitPanel.this, pos,
+                posUnit));
     }
 
     /**
@@ -374,7 +382,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      *            Allowed units are UNITS_PERCENTAGE and UNITS_PIXELS
      */
     public void setMinSplitPosition(float pos, Unit unit) {
-        setSplitPositionLimits(pos, unit, getSplitterState(false).maxPosition, posMaxUnit);
+        setSplitPositionLimits(pos, unit, getSplitterState(false).maxPosition,
+                posMaxUnit);
     }
 
     /**
@@ -407,7 +416,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      *            Allowed units are UNITS_PERCENTAGE and UNITS_PIXELS
      */
     public void setMaxSplitPosition(float pos, Unit unit) {
-        setSplitPositionLimits(getSplitterState(false).minPosition, posMinUnit, pos, unit);
+        setSplitPositionLimits(getSplitterState(false).minPosition, posMinUnit,
+                pos, unit);
     }
 
     /**
@@ -444,9 +454,13 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      *            the unit (from {@link Sizeable}) in which the maximum position
      *            is given.
      */
-    private void setSplitPositionLimits(float minPos, Unit minPosUnit, float maxPos, Unit maxPosUnit) {
-        if ((minPosUnit != Unit.PERCENTAGE && minPosUnit != Unit.PIXELS) || (maxPosUnit != Unit.PERCENTAGE && maxPosUnit != Unit.PIXELS)) {
-            throw new IllegalArgumentException("Only percentage and pixel units are allowed");
+    private void setSplitPositionLimits(float minPos, Unit minPosUnit,
+            float maxPos, Unit maxPosUnit) {
+        if ((minPosUnit != Unit.PERCENTAGE && minPosUnit != Unit.PIXELS)
+                || (maxPosUnit != Unit.PERCENTAGE
+                        && maxPosUnit != Unit.PIXELS)) {
+            throw new IllegalArgumentException(
+                    "Only percentage and pixel units are allowed");
         }
 
         SplitterState state = getSplitterState();
@@ -490,7 +504,9 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      */
     public interface SplitterClickListener extends ComponentEventListener {
 
-        public static final Method clickMethod = ReflectTools.findMethod(SplitterClickListener.class, "splitterClick", SplitterClickEvent.class);
+        public static final Method clickMethod = ReflectTools.findMethod(
+                SplitterClickListener.class, "splitterClick",
+                SplitterClickEvent.class);
 
         /**
          * SplitPanel splitter has been clicked
@@ -503,7 +519,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
 
     public static class SplitterClickEvent extends ClickEvent {
 
-        public SplitterClickEvent(Component source, MouseEventDetails mouseEventDetails) {
+        public SplitterClickEvent(Component source,
+                MouseEventDetails mouseEventDetails) {
             super(source, mouseEventDetails);
         }
 
@@ -515,9 +532,12 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      * 
      * @since 7.5.0
      */
-    public interface SplitPositionChangeListener extends ComponentEventListener {
+    public interface SplitPositionChangeListener
+            extends ComponentEventListener {
 
-        public static final Method moveMethod = ReflectTools.findMethod(SplitPositionChangeListener.class, "onSplitPositionChanged", SplitPositionChangeEvent.class);
+        public static final Method moveMethod = ReflectTools.findMethod(
+                SplitPositionChangeListener.class, "onSplitPositionChanged",
+                SplitPositionChangeEvent.class);
 
         /**
          * SplitPanel splitter position has been changed.
@@ -538,7 +558,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
         private final float position;
         private final Unit unit;
 
-        public SplitPositionChangeEvent(final Component source, final float position, final Unit unit) {
+        public SplitPositionChangeEvent(final Component source,
+                final float position, final Unit unit) {
             super(source);
             this.position = position;
             this.unit = unit;
@@ -555,11 +576,13 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
     }
 
     public void addSplitterClickListener(SplitterClickListener listener) {
-        addListener(EventId.CLICK_EVENT_IDENTIFIER, SplitterClickEvent.class, listener, SplitterClickListener.clickMethod);
+        addListener(EventId.CLICK_EVENT_IDENTIFIER, SplitterClickEvent.class,
+                listener, SplitterClickListener.clickMethod);
     }
 
     public void removeSplitterClickListener(SplitterClickListener listener) {
-        removeListener(EventId.CLICK_EVENT_IDENTIFIER, SplitterClickEvent.class, listener);
+        removeListener(EventId.CLICK_EVENT_IDENTIFIER, SplitterClickEvent.class,
+                listener);
     }
 
     /**
@@ -569,8 +592,10 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      * @param listener
      *            {@link SplitPositionChangeListener} to be registered.
      */
-    public void addSplitPositionChangeListener(SplitPositionChangeListener listener) {
-        addListener(SplitPositionChangeEvent.class, listener, SplitPositionChangeListener.moveMethod);
+    public void addSplitPositionChangeListener(
+            SplitPositionChangeListener listener) {
+        addListener(SplitPositionChangeEvent.class, listener,
+                SplitPositionChangeListener.moveMethod);
     }
 
     /**
@@ -580,7 +605,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      * @param listener
      *            SplitPositionChangeListener to be removed.
      */
-    public void removeSplitPositionChangeListener(SplitPositionChangeListener listener) {
+    public void removeSplitPositionChangeListener(
+            SplitPositionChangeListener listener) {
         removeListener(SplitPositionChangeEvent.class, listener);
     }
 
@@ -599,7 +625,8 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
     }
 
     private SplitterState getSplitterState(boolean markAsDirty) {
-        return ((AbstractSplitPanelState) super.getState(markAsDirty)).splitterState;
+        return ((AbstractSplitPanelState) super.getState(
+                markAsDirty)).splitterState;
     }
 
     /*
@@ -618,24 +645,32 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
         // setSplitPosition.
         boolean reversed = false;
         if (design.hasAttr("reversed")) {
-            reversed = DesignAttributeHandler.readAttribute("reversed", design.attributes(), Boolean.class);
+            reversed = DesignAttributeHandler.readAttribute("reversed",
+                    design.attributes(), Boolean.class);
             setSplitPosition(getSplitPosition(), reversed);
         }
         if (design.hasAttr("split-position")) {
-            SizeWithUnit splitPosition = SizeWithUnit.parseStringSize(design.attr("split-position"), Unit.PERCENTAGE);
-            setSplitPosition(splitPosition.getSize(), splitPosition.getUnit(), reversed);
+            SizeWithUnit splitPosition = SizeWithUnit.parseStringSize(
+                    design.attr("split-position"), Unit.PERCENTAGE);
+            setSplitPosition(splitPosition.getSize(), splitPosition.getUnit(),
+                    reversed);
         }
         if (design.hasAttr("min-split-position")) {
-            SizeWithUnit minSplitPosition = SizeWithUnit.parseStringSize(design.attr("min-split-position"), Unit.PERCENTAGE);
-            setMinSplitPosition(minSplitPosition.getSize(), minSplitPosition.getUnit());
+            SizeWithUnit minSplitPosition = SizeWithUnit.parseStringSize(
+                    design.attr("min-split-position"), Unit.PERCENTAGE);
+            setMinSplitPosition(minSplitPosition.getSize(),
+                    minSplitPosition.getUnit());
         }
         if (design.hasAttr("max-split-position")) {
-            SizeWithUnit maxSplitPosition = SizeWithUnit.parseStringSize(design.attr("max-split-position"), Unit.PERCENTAGE);
-            setMaxSplitPosition(maxSplitPosition.getSize(), maxSplitPosition.getUnit());
+            SizeWithUnit maxSplitPosition = SizeWithUnit.parseStringSize(
+                    design.attr("max-split-position"), Unit.PERCENTAGE);
+            setMaxSplitPosition(maxSplitPosition.getSize(),
+                    maxSplitPosition.getUnit());
         }
         // handle children
         if (design.children().size() > 2) {
-            throw new DesignException("A split panel can contain at most two components.");
+            throw new DesignException(
+                    "A split panel can contain at most two components.");
         }
         for (Element childElement : design.children()) {
             Component childComponent = designContext.readDesign(childElement);
@@ -665,16 +700,23 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
         super.writeDesign(design, designContext);
         // handle custom attributes (write only if a value is not the
         // default value)
-        AbstractSplitPanel def = (AbstractSplitPanel) designContext.getDefaultInstance(this);
-        if (getSplitPosition() != def.getSplitPosition() || !def.getSplitPositionUnit().equals(getSplitPositionUnit())) {
-            String splitPositionString = asString(getSplitPosition()) + getSplitPositionUnit();
+        AbstractSplitPanel def = (AbstractSplitPanel) designContext
+                .getDefaultInstance(this);
+        if (getSplitPosition() != def.getSplitPosition()
+                || !def.getSplitPositionUnit().equals(getSplitPositionUnit())) {
+            String splitPositionString = asString(getSplitPosition())
+                    + getSplitPositionUnit();
             design.attr("split-position", splitPositionString);
         }
-        if (getMinSplitPosition() != def.getMinSplitPosition() || !def.getMinSplitPositionUnit().equals(getMinSplitPositionUnit())) {
-            design.attr("min-split-position", asString(getMinSplitPosition()) + getMinSplitPositionUnit());
+        if (getMinSplitPosition() != def.getMinSplitPosition() || !def
+                .getMinSplitPositionUnit().equals(getMinSplitPositionUnit())) {
+            design.attr("min-split-position", asString(getMinSplitPosition())
+                    + getMinSplitPositionUnit());
         }
-        if (getMaxSplitPosition() != def.getMaxSplitPosition() || !def.getMaxSplitPositionUnit().equals(getMaxSplitPositionUnit())) {
-            design.attr("max-split-position", asString(getMaxSplitPosition()) + getMaxSplitPositionUnit());
+        if (getMaxSplitPosition() != def.getMaxSplitPosition() || !def
+                .getMaxSplitPositionUnit().equals(getMaxSplitPositionUnit())) {
+            design.attr("max-split-position", asString(getMaxSplitPosition())
+                    + getMaxSplitPositionUnit());
         }
         if (getSplitterState().positionReversed) {
             design.attr("reversed", "");

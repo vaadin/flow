@@ -38,7 +38,8 @@ import java.util.Locale;
  * 
  * @author Vaadin Ltd
  */
-public class StringToCollectionConverter implements Converter<String, Collection> {
+public class StringToCollectionConverter
+        implements Converter<String, Collection> {
 
     private final String delimiter;
     private final Converter<String, ?> tokenConverter;
@@ -76,7 +77,8 @@ public class StringToCollectionConverter implements Converter<String, Collection
      * @param tokenType
      *            expected token model type
      */
-    public StringToCollectionConverter(Converter<String, ?> tokenConverter, Class<?> tokenType) {
+    public StringToCollectionConverter(Converter<String, ?> tokenConverter,
+            Class<?> tokenType) {
         this(", ", tokenConverter, tokenType);
     }
 
@@ -94,8 +96,10 @@ public class StringToCollectionConverter implements Converter<String, Collection
      * @param delimiter
      *            delimiter in presentation string
      */
-    public StringToCollectionConverter(String delimiter, Converter<String, ?> tokenConverter, Class<?> tokenClass) {
-        this(delimiter, tokenConverter, tokenClass, new DefaultCollectionFactory());
+    public StringToCollectionConverter(String delimiter,
+            Converter<String, ?> tokenConverter, Class<?> tokenClass) {
+        this(delimiter, tokenConverter, tokenClass,
+                new DefaultCollectionFactory());
     }
 
     /**
@@ -114,9 +118,12 @@ public class StringToCollectionConverter implements Converter<String, Collection
      * @param factory
      *            factory to create resulting collection
      */
-    public StringToCollectionConverter(String delimiter, Converter<String, ?> tokenConverter, Class<?> tokenClass, CollectionFactory factory) {
+    public StringToCollectionConverter(String delimiter,
+            Converter<String, ?> tokenConverter, Class<?> tokenClass,
+            CollectionFactory factory) {
         if (delimiter == null || delimiter.isEmpty()) {
-            throw new IllegalArgumentException("Delimiter should be non-empty string");
+            throw new IllegalArgumentException(
+                    "Delimiter should be non-empty string");
         }
         this.delimiter = delimiter;
         this.tokenConverter = tokenConverter;
@@ -135,13 +142,16 @@ public class StringToCollectionConverter implements Converter<String, Collection
     }
 
     @Override
-    public Collection convertToModel(String value, Class<? extends Collection> targetType, Locale locale) throws Converter.ConversionException {
+    public Collection convertToModel(String value,
+            Class<? extends Collection> targetType, Locale locale)
+                    throws Converter.ConversionException {
         int index = value.indexOf(delimiter);
         int previous = 0;
         Collection result = factory.createCollection(targetType);
         Converter converter = tokenConverter;
         while (index != -1) {
-            collectToken(value.substring(previous, index), result, converter, locale);
+            collectToken(value.substring(previous, index), result, converter,
+                    locale);
             previous = index + delimiter.length();
             index = value.indexOf(delimiter, previous);
         }
@@ -150,14 +160,17 @@ public class StringToCollectionConverter implements Converter<String, Collection
     }
 
     @Override
-    public String convertToPresentation(Collection value, Class<? extends String> targetType, Locale locale) throws Converter.ConversionException {
+    public String convertToPresentation(Collection value,
+            Class<? extends String> targetType, Locale locale)
+                    throws Converter.ConversionException {
         StringBuilder builder = new StringBuilder();
         Converter converter = tokenConverter;
         for (Iterator<?> iterator = value.iterator(); iterator.hasNext();) {
             if (converter == null) {
                 builder.append(iterator.next());
             } else {
-                builder.append(converter.convertToPresentation(iterator.next(), targetType, locale));
+                builder.append(converter.convertToPresentation(iterator.next(),
+                        targetType, locale));
             }
             builder.append(delimiter);
         }
@@ -168,7 +181,8 @@ public class StringToCollectionConverter implements Converter<String, Collection
         }
     }
 
-    private void collectToken(String token, Collection collection, Converter converter, Locale locale) {
+    private void collectToken(String token, Collection collection,
+            Converter converter, Locale locale) {
         if (converter == null) {
             collection.add(token);
         } else {
@@ -184,12 +198,14 @@ public class StringToCollectionConverter implements Converter<String, Collection
     public static class DefaultCollectionFactory implements CollectionFactory {
 
         @Override
-        public Collection<?> createCollection(Class<? extends Collection> type) {
+        public Collection<?> createCollection(
+                Class<? extends Collection> type) {
             if (type.isAssignableFrom(ArrayList.class)) {
                 return new ArrayList();
             } else if (type.isAssignableFrom(HashSet.class)) {
                 return new HashSet();
-            } else if (!type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {
+            } else if (!type.isInterface()
+                    && !Modifier.isAbstract(type.getModifiers())) {
                 try {
                     return type.newInstance();
                 } catch (InstantiationException ignore) {

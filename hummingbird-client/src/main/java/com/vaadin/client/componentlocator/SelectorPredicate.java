@@ -33,7 +33,8 @@ public class SelectorPredicate {
     private boolean wildcard = false;
     private int index = -1;
 
-    public static List<SelectorPredicate> extractPostFilterPredicates(String path) {
+    public static List<SelectorPredicate> extractPostFilterPredicates(
+            String path) {
         if (path.startsWith("(")) {
             return extractPredicates(path.substring(path.lastIndexOf(')')));
         }
@@ -140,9 +141,11 @@ public class SelectorPredicate {
      *         found.
      */
     private static String extractPredicateString(String pathFragment) {
-        int ixOpenBracket = LocatorUtil.indexOfIgnoringQuoted(pathFragment, '[');
+        int ixOpenBracket = LocatorUtil.indexOfIgnoringQuoted(pathFragment,
+                '[');
         if (ixOpenBracket >= 0) {
-            int ixCloseBracket = LocatorUtil.indexOfIgnoringQuoted(pathFragment, ']', ixOpenBracket);
+            int ixCloseBracket = LocatorUtil.indexOfIgnoringQuoted(pathFragment,
+                    ']', ixOpenBracket);
             return pathFragment.substring(ixOpenBracket + 1, ixCloseBracket);
         }
         return "";
@@ -156,7 +159,8 @@ public class SelectorPredicate {
      * @return an unquoted version of str
      */
     private static String unquote(String str) {
-        if ((str.startsWith("\"") && str.endsWith("\"")) || (str.startsWith("'") && str.endsWith("'"))) {
+        if ((str.startsWith("\"") && str.endsWith("\""))
+                || (str.startsWith("'") && str.endsWith("'"))) {
             return str.substring(1, str.length() - 1);
         }
         return str;

@@ -29,13 +29,20 @@ public final class AlignmentInfo implements Serializable {
         public static final int ALIGNMENT_VERTICAL_CENTER = 32;
     }
 
-    public static final AlignmentInfo LEFT = new AlignmentInfo(Bits.ALIGNMENT_LEFT);
-    public static final AlignmentInfo RIGHT = new AlignmentInfo(Bits.ALIGNMENT_RIGHT);
-    public static final AlignmentInfo TOP = new AlignmentInfo(Bits.ALIGNMENT_TOP);
-    public static final AlignmentInfo BOTTOM = new AlignmentInfo(Bits.ALIGNMENT_BOTTOM);
-    public static final AlignmentInfo CENTER = new AlignmentInfo(Bits.ALIGNMENT_HORIZONTAL_CENTER);
-    public static final AlignmentInfo MIDDLE = new AlignmentInfo(Bits.ALIGNMENT_VERTICAL_CENTER);
-    public static final AlignmentInfo TOP_LEFT = new AlignmentInfo(Bits.ALIGNMENT_TOP + Bits.ALIGNMENT_LEFT);
+    public static final AlignmentInfo LEFT = new AlignmentInfo(
+            Bits.ALIGNMENT_LEFT);
+    public static final AlignmentInfo RIGHT = new AlignmentInfo(
+            Bits.ALIGNMENT_RIGHT);
+    public static final AlignmentInfo TOP = new AlignmentInfo(
+            Bits.ALIGNMENT_TOP);
+    public static final AlignmentInfo BOTTOM = new AlignmentInfo(
+            Bits.ALIGNMENT_BOTTOM);
+    public static final AlignmentInfo CENTER = new AlignmentInfo(
+            Bits.ALIGNMENT_HORIZONTAL_CENTER);
+    public static final AlignmentInfo MIDDLE = new AlignmentInfo(
+            Bits.ALIGNMENT_VERTICAL_CENTER);
+    public static final AlignmentInfo TOP_LEFT = new AlignmentInfo(
+            Bits.ALIGNMENT_TOP + Bits.ALIGNMENT_LEFT);
 
     private final int bitMask;
 
@@ -68,11 +75,13 @@ public final class AlignmentInfo implements Serializable {
     }
 
     public boolean isVerticalCenter() {
-        return (bitMask & Bits.ALIGNMENT_VERTICAL_CENTER) == Bits.ALIGNMENT_VERTICAL_CENTER;
+        return (bitMask
+                & Bits.ALIGNMENT_VERTICAL_CENTER) == Bits.ALIGNMENT_VERTICAL_CENTER;
     }
 
     public boolean isHorizontalCenter() {
-        return (bitMask & Bits.ALIGNMENT_HORIZONTAL_CENTER) == Bits.ALIGNMENT_HORIZONTAL_CENTER;
+        return (bitMask
+                & Bits.ALIGNMENT_HORIZONTAL_CENTER) == Bits.ALIGNMENT_HORIZONTAL_CENTER;
     }
 
     public String getVerticalAlignment() {

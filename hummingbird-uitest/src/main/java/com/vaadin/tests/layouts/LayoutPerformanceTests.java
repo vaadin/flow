@@ -26,51 +26,64 @@ public class LayoutPerformanceTests extends TestBase {
     private enum ContainerType {
         SIMPLE_WRAPS {
             @Override
-            public ComponentContainer buildLayout(int depth, int leafs, SampleType leafType, boolean fullHeight) {
+            public ComponentContainer buildLayout(int depth, int leafs,
+                    SampleType leafType, boolean fullHeight) {
                 if (depth == 0) {
                     return buildInnerLayout(leafs, leafType, fullHeight);
                 }
 
-                AbstractOrderedLayout layout = createOrderedLayout(depth, fullHeight);
-                layout.addComponent(buildLayout(depth - 1, leafs, leafType, fullHeight));
+                AbstractOrderedLayout layout = createOrderedLayout(depth,
+                        fullHeight);
+                layout.addComponent(
+                        buildLayout(depth - 1, leafs, leafType, fullHeight));
                 return layout;
             }
         },
         BORDER_LAYOUT {
             @Override
-            public ComponentContainer buildLayout(int depth, int leafs, SampleType leafType, boolean fullHeight) {
+            public ComponentContainer buildLayout(int depth, int leafs,
+                    SampleType leafType, boolean fullHeight) {
                 if (depth == 0) {
                     return buildInnerLayout(leafs, leafType, fullHeight);
                 }
 
-                AbstractOrderedLayout layout = createOrderedLayout(depth, fullHeight);
+                AbstractOrderedLayout layout = createOrderedLayout(depth,
+                        fullHeight);
                 Component content = leafType.createContent();
                 content.setSizeUndefined();
                 layout.addComponent(content);
-                layout.addComponent(buildLayout(depth - 1, leafs, leafType, fullHeight));
+                layout.addComponent(
+                        buildLayout(depth - 1, leafs, leafType, fullHeight));
                 layout.setExpandRatio(layout.getComponent(1), 1);
                 return layout;
             }
         },
         FRACTAL {
             @Override
-            public ComponentContainer buildLayout(int depth, int leafs, SampleType leafType, boolean fullHeight) {
+            public ComponentContainer buildLayout(int depth, int leafs,
+                    SampleType leafType, boolean fullHeight) {
                 if (depth == 0) {
                     return buildInnerLayout(leafs, leafType, fullHeight);
                 }
 
-                AbstractOrderedLayout layout = createOrderedLayout(depth, fullHeight);
-                layout.addComponent(buildLayout(depth - 1, leafs, leafType, fullHeight));
-                layout.addComponent(buildLayout(depth - 1, leafs, leafType, fullHeight));
+                AbstractOrderedLayout layout = createOrderedLayout(depth,
+                        fullHeight);
+                layout.addComponent(
+                        buildLayout(depth - 1, leafs, leafType, fullHeight));
+                layout.addComponent(
+                        buildLayout(depth - 1, leafs, leafType, fullHeight));
                 layout.setExpandRatio(layout.getComponent(0), 1);
                 layout.setExpandRatio(layout.getComponent(1), 2);
                 return layout;
             }
         };
-        public abstract ComponentContainer buildLayout(int depth, int leafs, SampleType leafType, boolean fullHeight);
+        public abstract ComponentContainer buildLayout(int depth, int leafs,
+                SampleType leafType, boolean fullHeight);
 
-        protected AbstractOrderedLayout createOrderedLayout(int depth, boolean fullHeight) {
-            AbstractOrderedLayout layout = (depth % 2) == 0 ? new VerticalLayout() : new HorizontalLayout();
+        protected AbstractOrderedLayout createOrderedLayout(int depth,
+                boolean fullHeight) {
+            AbstractOrderedLayout layout = (depth % 2) == 0
+                    ? new VerticalLayout() : new HorizontalLayout();
             layout.setWidth("100%");
             if (fullHeight) {
                 layout.setHeight("100%");
@@ -81,7 +94,8 @@ public class LayoutPerformanceTests extends TestBase {
             return layout;
         }
 
-        public ComponentContainer buildInnerLayout(int leafs, SampleType leafType, boolean fullHeight) {
+        public ComponentContainer buildInnerLayout(int leafs,
+                SampleType leafType, boolean fullHeight) {
             VerticalLayout layout = new VerticalLayout();
             if (fullHeight) {
                 layout.setHeight("100%");
@@ -133,7 +147,8 @@ public class LayoutPerformanceTests extends TestBase {
                 HorizontalLayout layout = new HorizontalLayout();
                 layout.addComponent(new Label("Left"));
                 layout.addComponent(new Label("Right"));
-                layout.setComponentAlignment(layout.getComponent(1), Alignment.BOTTOM_RIGHT);
+                layout.setComponentAlignment(layout.getComponent(1),
+                        Alignment.BOTTOM_RIGHT);
 
                 return layout;
             }
@@ -174,12 +189,17 @@ public class LayoutPerformanceTests extends TestBase {
     private Component testLayout = new Label("");
 
     private final CheckBox wrapInPanel = new CheckBox("Wrap in Panel");
-    private final NativeSelect containerSelector = new NativeSelect("Wrapping structure", EnumSet.allOf(ContainerType.class));
+    private final NativeSelect containerSelector = new NativeSelect(
+            "Wrapping structure", EnumSet.allOf(ContainerType.class));
     @SuppressWarnings("boxing")
-    private final NativeSelect levels = new NativeSelect("Wrapping depth", Arrays.asList(0, 1, 2, 3, 4, 5, 10, 15, 20, 25));
-    private final NativeSelect leafSelector = new NativeSelect("Leaf type", EnumSet.allOf(SampleType.class));
+    private final NativeSelect levels = new NativeSelect("Wrapping depth",
+            Arrays.asList(0, 1, 2, 3, 4, 5, 10, 15, 20, 25));
+    private final NativeSelect leafSelector = new NativeSelect("Leaf type",
+            EnumSet.allOf(SampleType.class));
     @SuppressWarnings("boxing")
-    private final NativeSelect childAmount = new NativeSelect("Leaf count", Arrays.asList(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384));
+    private final NativeSelect childAmount = new NativeSelect("Leaf count",
+            Arrays.asList(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
+                    4096, 8192, 16384));
 
     @Override
     protected void setup() {
@@ -207,13 +227,17 @@ public class LayoutPerformanceTests extends TestBase {
                     return;
                 }
 
-                ContainerType containerType = (ContainerType) containerSelector.getValue();
+                ContainerType containerType = (ContainerType) containerSelector
+                        .getValue();
                 if (containerType == null) {
                     return;
                 }
 
                 boolean wrapped = wrapInPanel.getValue();
-                ComponentContainer container = containerType.buildLayout(((Number) levels.getValue()).intValue(), ((Number) childAmount.getValue()).intValue(), leafType, !wrapped);
+                ComponentContainer container = containerType.buildLayout(
+                        ((Number) levels.getValue()).intValue(),
+                        ((Number) childAmount.getValue()).intValue(), leafType,
+                        !wrapped);
                 if (wrapped) {
                     Panel panel = new Panel(container);
                     panel.setSizeFull();
@@ -229,7 +253,9 @@ public class LayoutPerformanceTests extends TestBase {
             if (component instanceof NativeSelect) {
                 NativeSelect nativeSelect = (NativeSelect) component;
                 nativeSelect.setNullSelectionAllowed(false);
-                nativeSelect.setValue(new ArrayList<Object>(nativeSelect.getItemIds()).get(0));
+                nativeSelect.setValue(
+                        new ArrayList<Object>(nativeSelect.getItemIds())
+                                .get(0));
             }
             controls.setComponentAlignment(component, Alignment.BOTTOM_LEFT);
         }

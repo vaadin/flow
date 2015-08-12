@@ -39,7 +39,11 @@ public class ComboBoxIdenticalItems extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Keyboard selecting of a value is broken in combobox if two " + "items have the same caption. The first item's id is \"One-1\" " + "while the second one is \"One-2\". Selecting with mouse works " + "as expected but selecting with keyboard always returns the " + "object \"One-1\".";
+        return "Keyboard selecting of a value is broken in combobox if two "
+                + "items have the same caption. The first item's id is \"One-1\" "
+                + "while the second one is \"One-2\". Selecting with mouse works "
+                + "as expected but selecting with keyboard always returns the "
+                + "object \"One-1\".";
     }
 
     @Override

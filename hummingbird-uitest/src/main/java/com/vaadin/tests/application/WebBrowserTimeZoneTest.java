@@ -18,7 +18,10 @@ public class WebBrowserTimeZoneTest extends MultiBrowserTest {
     }
 
     private void assertLabelText(String caption, String expected) {
-        String actual = $(LabelElement.class).caption(caption).first().getText();
-        Assert.assertEquals(String.format("Unexpected text in label '%s',", caption), expected, actual);
+        String actual = $(LabelElement.class).caption(caption).first()
+                .getText();
+        Assert.assertEquals(
+                String.format("Unexpected text in label '%s',", caption),
+                expected, actual);
     }
 }

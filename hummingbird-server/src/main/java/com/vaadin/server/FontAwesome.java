@@ -552,7 +552,8 @@ public enum FontAwesome implements FontIcon {
      */
     @Override
     public String getMIMEType() {
-        throw new UnsupportedOperationException(FontIcon.class.getSimpleName() + " should not be used where a MIME type is needed.");
+        throw new UnsupportedOperationException(FontIcon.class.getSimpleName()
+                + " should not be used where a MIME type is needed.");
     }
 
     /*
@@ -594,7 +595,8 @@ public enum FontAwesome implements FontIcon {
                 return f;
             }
         }
-        throw new IllegalArgumentException("Codepoint " + codepoint + " not found in FontAwesome");
+        throw new IllegalArgumentException(
+                "Codepoint " + codepoint + " not found in FontAwesome");
     }
 
 }

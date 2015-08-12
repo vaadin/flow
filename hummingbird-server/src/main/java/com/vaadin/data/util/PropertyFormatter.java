@@ -52,7 +52,9 @@ import com.vaadin.data.util.converter.Converter;
  */
 @SuppressWarnings("serial")
 @Deprecated
-public abstract class PropertyFormatter<T> extends AbstractProperty<String> implements Property.Viewer, Property.ValueChangeListener, Property.ReadOnlyStatusChangeListener {
+public abstract class PropertyFormatter<T> extends AbstractProperty<String>
+        implements Property.Viewer, Property.ValueChangeListener,
+        Property.ReadOnlyStatusChangeListener {
 
     /** Datasource that stores the actual value. */
     Property<T> dataSource;
@@ -110,10 +112,12 @@ public abstract class PropertyFormatter<T> extends AbstractProperty<String> impl
 
         if (dataSource != null) {
             if (dataSource instanceof Property.ValueChangeNotifier) {
-                ((Property.ValueChangeNotifier) dataSource).removeValueChangeListener(this);
+                ((Property.ValueChangeNotifier) dataSource)
+                        .removeValueChangeListener(this);
             }
             if (dataSource instanceof Property.ReadOnlyStatusChangeListener) {
-                ((Property.ReadOnlyStatusChangeNotifier) dataSource).removeReadOnlyStatusChangeListener(this);
+                ((Property.ReadOnlyStatusChangeNotifier) dataSource)
+                        .removeReadOnlyStatusChangeListener(this);
             }
             readOnly = isReadOnly();
             prevValue = getValue();
@@ -123,10 +127,12 @@ public abstract class PropertyFormatter<T> extends AbstractProperty<String> impl
 
         if (dataSource != null) {
             if (dataSource instanceof Property.ValueChangeNotifier) {
-                ((Property.ValueChangeNotifier) dataSource).addValueChangeListener(this);
+                ((Property.ValueChangeNotifier) dataSource)
+                        .addValueChangeListener(this);
             }
             if (dataSource instanceof Property.ReadOnlyStatusChangeListener) {
-                ((Property.ReadOnlyStatusChangeNotifier) dataSource).addReadOnlyStatusChangeListener(this);
+                ((Property.ReadOnlyStatusChangeNotifier) dataSource)
+                        .addReadOnlyStatusChangeListener(this);
             }
         }
 
@@ -134,7 +140,8 @@ public abstract class PropertyFormatter<T> extends AbstractProperty<String> impl
             fireReadOnlyStatusChange();
         }
         String newVal = getValue();
-        if ((prevValue == null && newVal != null) || (prevValue != null && !prevValue.equals(newVal))) {
+        if ((prevValue == null && newVal != null)
+                || (prevValue != null && !prevValue.equals(newVal))) {
             fireValueChange();
         }
     }
@@ -243,7 +250,8 @@ public abstract class PropertyFormatter<T> extends AbstractProperty<String> impl
      * This should not be called directly.
      */
     @Override
-    public void readOnlyStatusChange(com.vaadin.data.Property.ReadOnlyStatusChangeEvent event) {
+    public void readOnlyStatusChange(
+            com.vaadin.data.Property.ReadOnlyStatusChangeEvent event) {
         fireReadOnlyStatusChange();
     }
 

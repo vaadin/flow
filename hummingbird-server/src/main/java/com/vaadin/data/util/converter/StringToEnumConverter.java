@@ -32,7 +32,8 @@ import java.util.Locale;
 public class StringToEnumConverter implements Converter<String, Enum> {
 
     @Override
-    public Enum convertToModel(String value, Class<? extends Enum> targetType, Locale locale) throws ConversionException {
+    public Enum convertToModel(String value, Class<? extends Enum> targetType,
+            Locale locale) throws ConversionException {
         if (value == null || value.trim().equals("")) {
             return null;
         }
@@ -56,7 +57,8 @@ public class StringToEnumConverter implements Converter<String, Enum> {
      * @throws ConversionException
      *             if the conversion fails
      */
-    public static <T extends Enum<T>> T stringToEnum(String value, Class<T> enumType, Locale locale) throws ConversionException {
+    public static <T extends Enum<T>> T stringToEnum(String value,
+            Class<T> enumType, Locale locale) throws ConversionException {
         if (locale == null) {
             locale = Locale.getDefault();
         }
@@ -114,7 +116,9 @@ public class StringToEnumConverter implements Converter<String, Enum> {
     }
 
     @Override
-    public String convertToPresentation(Enum value, Class<? extends String> targetType, Locale locale) throws ConversionException {
+    public String convertToPresentation(Enum value,
+            Class<? extends String> targetType, Locale locale)
+                    throws ConversionException {
         if (value == null) {
             return null;
         }

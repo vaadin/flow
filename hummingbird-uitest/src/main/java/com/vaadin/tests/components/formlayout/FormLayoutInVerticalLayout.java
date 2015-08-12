@@ -58,7 +58,8 @@ public class FormLayoutInVerticalLayout extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "FormLayout 'margin-top' value should take precedence over " + "the rule defined in any other selector.";
+        return "FormLayout 'margin-top' value should take precedence over "
+                + "the rule defined in any other selector.";
     }
 
     private Label createLabel() {

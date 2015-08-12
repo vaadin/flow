@@ -60,7 +60,9 @@ public class StatementHelper implements Serializable {
             parameters.add(parameter);
             dataTypes.put(parameters.size() - 1, parameter.getClass());
         } else {
-            throw new IllegalArgumentException("You cannot add null parameters using addParamaters(Object). " + "Use addParameters(Object,Class) instead");
+            throw new IllegalArgumentException(
+                    "You cannot add null parameters using addParamaters(Object). "
+                            + "Use addParameters(Object,Class) instead");
         }
     }
 
@@ -69,7 +71,8 @@ public class StatementHelper implements Serializable {
         dataTypes.put(parameters.size() - 1, type);
     }
 
-    public void setParameterValuesToStatement(PreparedStatement pstmt) throws SQLException {
+    public void setParameterValuesToStatement(PreparedStatement pstmt)
+            throws SQLException {
         for (int i = 0; i < parameters.size(); i++) {
             if (parameters.get(i) == null) {
                 handleNullValue(i, pstmt);
@@ -114,7 +117,8 @@ public class StatementHelper implements Serializable {
          */
     }
 
-    private void handleNullValue(int i, PreparedStatement pstmt) throws SQLException {
+    private void handleNullValue(int i, PreparedStatement pstmt)
+            throws SQLException {
         Class<?> dataType = dataTypes.get(i);
         int index = i + 1;
         if (BigDecimal.class.equals(dataType)) {
@@ -149,7 +153,8 @@ public class StatementHelper implements Serializable {
                 return;
             }
 
-            throw new SQLException("Data type not supported by SQLContainer: " + dataType.getClass().toString());
+            throw new SQLException("Data type not supported by SQLContainer: "
+                    + dataType.getClass().toString());
         }
     }
 
@@ -166,7 +171,9 @@ public class StatementHelper implements Serializable {
      * 
      * @see {@link http://dev.vaadin.com/ticket/9148}
      */
-    protected boolean handleUnrecognizedTypeNullValue(int i, PreparedStatement pstmt, Map<Integer, Class<?>> dataTypes) throws SQLException {
+    protected boolean handleUnrecognizedTypeNullValue(int i,
+            PreparedStatement pstmt, Map<Integer, Class<?>> dataTypes)
+                    throws SQLException {
         return false;
     }
 }

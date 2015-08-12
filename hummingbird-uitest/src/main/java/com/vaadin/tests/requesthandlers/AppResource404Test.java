@@ -12,7 +12,8 @@ public class AppResource404Test extends MultiBrowserTest {
         openTestURL();
         $(LinkElement.class).first().click(5, 5);
         disableWaitingAndWait();
-        Assert.assertFalse("Page contains the given text", driver.getPageSource().contains("404"));
+        Assert.assertFalse("Page contains the given text",
+                driver.getPageSource().contains("404"));
     }
 
     @Test
@@ -20,7 +21,9 @@ public class AppResource404Test extends MultiBrowserTest {
         openTestURL();
         $(LinkElement.class).get(1).click(5, 5);
         disableWaitingAndWait();
-        Assert.assertTrue("Page does not contain the given text", driver.getPageSource().contains("/APP/connector/0/4/asdfasdf can not be found"));
+        Assert.assertTrue("Page does not contain the given text",
+                driver.getPageSource().contains(
+                        "/APP/connector/0/4/asdfasdf can not be found"));
     }
 
     @Test
@@ -28,8 +31,10 @@ public class AppResource404Test extends MultiBrowserTest {
         openTestURL();
         $(LinkElement.class).get(2).click(5, 5);
         disableWaitingAndWait();
-        Assert.assertTrue("Page does not contain the given text", driver.getPageSource().contains("HTTP ERROR 404"));
-        Assert.assertTrue("Page does not contain the given text", driver.getPageSource().contains("Problem accessing /run/APP/"));
+        Assert.assertTrue("Page does not contain the given text",
+                driver.getPageSource().contains("HTTP ERROR 404"));
+        Assert.assertTrue("Page does not contain the given text",
+                driver.getPageSource().contains("Problem accessing /run/APP/"));
     }
 
     @Test
@@ -37,7 +42,8 @@ public class AppResource404Test extends MultiBrowserTest {
         openTestURL();
         $(LinkElement.class).get(3).click(5, 5);
         disableWaitingAndWait();
-        Assert.assertFalse("Page contains the given text", driver.getPageSource().contains("can not be found"));
+        Assert.assertFalse("Page contains the given text",
+                driver.getPageSource().contains("can not be found"));
     }
 
     protected void disableWaitingAndWait() {

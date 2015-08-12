@@ -76,8 +76,10 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
     private CssLayoutServerRpc rpc = new CssLayoutServerRpc() {
 
         @Override
-        public void layoutClick(MouseEventDetails mouseDetails, Connector clickedConnector) {
-            fireEvent(LayoutClickEvent.createEvent(CssLayout.this, mouseDetails, clickedConnector));
+        public void layoutClick(MouseEventDetails mouseDetails,
+                Connector clickedConnector) {
+            fireEvent(LayoutClickEvent.createEvent(CssLayout.this, mouseDetails,
+                    clickedConnector));
         }
     };
     /**
@@ -257,13 +259,15 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
 
     /* Documented in superclass */
     @Override
-    public void replaceComponent(Component oldComponent, Component newComponent) {
+    public void replaceComponent(Component oldComponent,
+            Component newComponent) {
 
         // Gets the locations
         int oldLocation = -1;
         int newLocation = -1;
         int location = 0;
-        for (final Iterator<Component> i = components.iterator(); i.hasNext();) {
+        for (final Iterator<Component> i = components.iterator(); i
+                .hasNext();) {
             final Component component = i.next();
 
             if (component == oldComponent) {
@@ -300,12 +304,15 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
 
     @Override
     public void addLayoutClickListener(LayoutClickListener listener) {
-        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener, LayoutClickListener.clickMethod);
+        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
+                LayoutClickEvent.class, listener,
+                LayoutClickListener.clickMethod);
     }
 
     @Override
     public void removeLayoutClickListener(LayoutClickListener listener) {
-        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER, LayoutClickEvent.class, listener);
+        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
+                LayoutClickEvent.class, listener);
     }
 
     /**

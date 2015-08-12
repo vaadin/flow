@@ -40,7 +40,7 @@ public @interface Connect {
     /**
      * @return the server side counterpart for the annotated component connector
      */
-    Class<? extends Connector> value();
+    Class<? extends Connector>value();
 
     /**
      * Depending on the used WidgetMap generator, these optional hints may be
@@ -88,16 +88,14 @@ public @interface Connect {
         /**
          * The widget is included in the initial JS sent to the client.
          */
-        EAGER,
-        /**
-         * Not included in the initial set of widgets, but added to queue from
-         * which it will be loaded when network is not busy or the
-         * implementation is required.
-         */
-        DEFERRED,
-        /**
-         * Loaded to the client only if needed.
-         */
+        EAGER, /**
+                * Not included in the initial set of widgets, but added to queue
+                * from which it will be loaded when network is not busy or the
+                * implementation is required.
+                */
+        DEFERRED, /**
+                   * Loaded to the client only if needed.
+                   */
         LAZY
     }
 }

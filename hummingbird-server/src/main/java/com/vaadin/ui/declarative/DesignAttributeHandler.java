@@ -97,27 +97,33 @@ public class DesignAttributeHandler implements Serializable {
      *            the string value of the attribute
      * @return true on success
      */
-    public static boolean assignValue(Object target, String attribute, String value) {
+    public static boolean assignValue(Object target, String attribute,
+            String value) {
         if (target == null || attribute == null || value == null) {
-            throw new IllegalArgumentException("Parameters with null value not allowed");
+            throw new IllegalArgumentException(
+                    "Parameters with null value not allowed");
         }
         boolean success = false;
         try {
-            Method setter = findSetterForAttribute(target.getClass(), attribute);
+            Method setter = findSetterForAttribute(target.getClass(),
+                    attribute);
             if (setter == null) {
                 // if we don't have the setter, there is no point in continuing
                 success = false;
             } else {
                 // we have a value from design attributes, let's use that
-                Object param = getFormatter().parse(value, setter.getParameterTypes()[0]);
+                Object param = getFormatter().parse(value,
+                        setter.getParameterTypes()[0]);
                 setter.invoke(target, param);
                 success = true;
             }
         } catch (Exception e) {
-            getLogger().log(Level.WARNING, "Failed to set attribute " + attribute, e);
+            getLogger().log(Level.WARNING,
+                    "Failed to set attribute " + attribute, e);
         }
         if (!success) {
-            getLogger().info("property " + attribute + " ignored by default attribute handler");
+            getLogger().info("property " + attribute
+                    + " ignored by default attribute handler");
         }
         return success;
     }
@@ -155,13 +161,17 @@ public class DesignAttributeHandler implements Serializable {
         try {
             beanInfo = Introspector.getBeanInfo(clazz);
         } catch (IntrospectionException e) {
-            throw new RuntimeException("Could not get supported attributes for class " + clazz.getName());
+            throw new RuntimeException(
+                    "Could not get supported attributes for class "
+                            + clazz.getName());
         }
         AttributeCacheEntry entry = new AttributeCacheEntry();
-        for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
+        for (PropertyDescriptor descriptor : beanInfo
+                .getPropertyDescriptors()) {
             Method getter = descriptor.getReadMethod();
             Method setter = descriptor.getWriteMethod();
-            if (getter != null && setter != null && getFormatter().canConvert(descriptor.getPropertyType())) {
+            if (getter != null && setter != null && getFormatter()
+                    .canConvert(descriptor.getPropertyType())) {
                 String attribute = toAttributeName(descriptor.getName());
                 entry.addAttribute(attribute, getter, setter);
             }
@@ -182,10 +192,12 @@ public class DesignAttributeHandler implements Serializable {
      * @param defaultInstance
      *            the default instance for comparing default values
      */
-    public static void writeAttribute(Object component, String attribute, Attributes attr, Object defaultInstance) {
+    public static void writeAttribute(Object component, String attribute,
+            Attributes attr, Object defaultInstance) {
         Method getter = findGetterForAttribute(component.getClass(), attribute);
         if (getter == null) {
-            getLogger().warning("Could not find getter for attribute " + attribute);
+            getLogger().warning(
+                    "Could not find getter for attribute " + attribute);
         } else {
             try {
                 // compare the value with default value
@@ -193,11 +205,14 @@ public class DesignAttributeHandler implements Serializable {
                 Object defaultValue = getter.invoke(defaultInstance);
                 // if the values are not equal, write the data
                 if (!Objects.equals(value, defaultValue)) {
-                    String attributeValue = toAttributeValue(getter.getReturnType(), value);
+                    String attributeValue = toAttributeValue(
+                            getter.getReturnType(), value);
                     attr.put(attribute, attributeValue);
                 }
             } catch (Exception e) {
-                getLogger().log(Level.SEVERE, "Failed to invoke getter for attribute " + attribute, e);
+                getLogger().log(Level.SEVERE,
+                        "Failed to invoke getter for attribute " + attribute,
+                        e);
             }
         }
     }
@@ -217,9 +232,12 @@ public class DesignAttributeHandler implements Serializable {
      * @param inputType
      *            the type of the input value
      */
-    public static <T> void writeAttribute(String attribute, Attributes attributes, T value, T defaultValue, Class<T> inputType) {
+    public static <T> void writeAttribute(String attribute,
+            Attributes attributes, T value, T defaultValue,
+            Class<T> inputType) {
         if (!getFormatter().canConvert(inputType)) {
-            throw new IllegalArgumentException("input type: " + inputType.getName() + " not supported");
+            throw new IllegalArgumentException(
+                    "input type: " + inputType.getName() + " not supported");
         }
         if (!Objects.equals(value, defaultValue)) {
             String attributeValue = toAttributeValue(inputType, value);
@@ -242,7 +260,8 @@ public class DesignAttributeHandler implements Serializable {
      * @return the attribute value or the default value if the attribute is not
      *         found
      */
-    public static <T> T readAttribute(String attribute, Attributes attributes, T defaultValue, Class<T> outputType) {
+    public static <T> T readAttribute(String attribute, Attributes attributes,
+            T defaultValue, Class<T> outputType) {
         T value = readAttribute(attribute, attributes, outputType);
         if (value != null) {
             return value;
@@ -261,9 +280,11 @@ public class DesignAttributeHandler implements Serializable {
      *            the output type for the attribute
      * @return the attribute value or null
      */
-    public static <T> T readAttribute(String attribute, Attributes attributes, Class<T> outputType) {
+    public static <T> T readAttribute(String attribute, Attributes attributes,
+            Class<T> outputType) {
         if (!getFormatter().canConvert(outputType)) {
-            throw new IllegalArgumentException("output type: " + outputType.getName() + " not supported");
+            throw new IllegalArgumentException(
+                    "output type: " + outputType.getName() + " not supported");
         }
         if (!attributes.hasKey(attribute)) {
             return null;
@@ -272,7 +293,8 @@ public class DesignAttributeHandler implements Serializable {
                 String value = attributes.get(attribute);
                 return getFormatter().parse(value, outputType);
             } catch (Exception e) {
-                throw new DesignException("Failed to read attribute " + attribute, e);
+                throw new DesignException(
+                        "Failed to read attribute " + attribute, e);
             }
         }
     }
@@ -319,11 +341,15 @@ public class DesignAttributeHandler implements Serializable {
             // if this is a beginning of the string, the whole matched group is
             // written in lower case
             if (matcher.group(1).isEmpty()) {
-                matcher.appendReplacement(result, matched.toLowerCase() + matcher.group(3));
+                matcher.appendReplacement(result,
+                        matched.toLowerCase() + matcher.group(3));
                 // otherwise the first character of the group stays uppercase,
                 // while the others are lower case
             } else {
-                matcher.appendReplacement(result, matcher.group(1) + matched.substring(0, 1) + matched.substring(1).toLowerCase() + matcher.group(3));
+                matcher.appendReplacement(result,
+                        matcher.group(1) + matched.substring(0, 1)
+                                + matched.substring(1).toLowerCase()
+                                + matcher.group(3));
             }
             // in both cases the uppercase letter of the next word (or string's
             // end) is added
@@ -349,7 +375,8 @@ public class DesignAttributeHandler implements Serializable {
             // value is not null. How to represent null value in attributes?
             return "";
         }
-        Converter<String, Object> converter = getFormatter().findConverterFor(sourceType);
+        Converter<String, Object> converter = getFormatter()
+                .findConverterFor(sourceType);
         if (converter != null) {
             return converter.convertToPresentation(value, String.class, null);
         } else {
@@ -367,7 +394,8 @@ public class DesignAttributeHandler implements Serializable {
      *            the design attribute to find setter for
      * @return the setter method or null if not found
      */
-    private static Method findSetterForAttribute(Class<?> clazz, String attribute) {
+    private static Method findSetterForAttribute(Class<?> clazz,
+            String attribute) {
         resolveSupportedAttributes(clazz);
         return cache.get(clazz).getSetter(attribute);
     }
@@ -382,7 +410,8 @@ public class DesignAttributeHandler implements Serializable {
      *            the design attribute to find getter for
      * @return the getter method or null if not found
      */
-    private static Method findGetterForAttribute(Class<?> clazz, String attribute) {
+    private static Method findGetterForAttribute(Class<?> clazz,
+            String attribute) {
         resolveSupportedAttributes(clazz);
         return cache.get(clazz).getGetter(attribute);
     }
@@ -396,7 +425,8 @@ public class DesignAttributeHandler implements Serializable {
     private static class AttributeCacheEntry implements Serializable {
         private Map<String, Method[]> accessMethods = new ConcurrentHashMap<String, Method[]>();
 
-        private void addAttribute(String attribute, Method getter, Method setter) {
+        private void addAttribute(String attribute, Method getter,
+                Method setter) {
             Method[] methods = new Method[2];
             methods[0] = getter;
             methods[1] = setter;

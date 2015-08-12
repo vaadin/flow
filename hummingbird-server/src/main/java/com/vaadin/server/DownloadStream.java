@@ -69,7 +69,8 @@ public class DownloadStream implements Serializable {
     /**
      * Creates a new instance of DownloadStream.
      */
-    public DownloadStream(InputStream stream, String contentType, String fileName) {
+    public DownloadStream(InputStream stream, String contentType,
+            String fileName) {
         setStream(stream);
         setContentType(contentType);
         setFileName(fileName);
@@ -248,7 +249,8 @@ public class DownloadStream implements Serializable {
      * 
      * @since 7.0
      */
-    public void writeResponse(VaadinRequest request, VaadinResponse response) throws IOException {
+    public void writeResponse(VaadinRequest request, VaadinResponse response)
+            throws IOException {
         if (getParameter("Location") != null) {
             response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
             response.setHeader("Location", getParameter("Location"));
@@ -285,7 +287,8 @@ public class DownloadStream implements Serializable {
                 // Content-Disposition: attachment generally forces download
                 String contentDisposition = getParameter(CONTENT_DISPOSITION);
                 if (contentDisposition == null) {
-                    contentDisposition = getContentDispositionFilename(getFileName());
+                    contentDisposition = getContentDispositionFilename(
+                            getFileName());
                 }
 
                 response.setHeader(CONTENT_DISPOSITION, contentDisposition);
@@ -328,7 +331,8 @@ public class DownloadStream implements Serializable {
     public static String getContentDispositionFilename(String filename) {
         try {
             String encodedFilename = URLEncoder.encode(filename, "UTF-8");
-            return String.format("filename=\"%s\"; filename*=utf-8''%s", encodedFilename, encodedFilename);
+            return String.format("filename=\"%s\"; filename*=utf-8''%s",
+                    encodedFilename, encodedFilename);
         } catch (UnsupportedEncodingException e) {
             return null;
         }

@@ -25,7 +25,8 @@ public class TestUploadFilename extends TestBase {
         upload.addFinishedListener(new Upload.FinishedListener() {
             @Override
             public void uploadFinished(FinishedEvent event) {
-                result.setValue("Got file (should not contain path): " + receiver.getFilename());
+                result.setValue("Got file (should not contain path): "
+                        + receiver.getFilename());
             }
         });
 

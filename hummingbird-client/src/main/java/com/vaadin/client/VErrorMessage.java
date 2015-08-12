@@ -71,7 +71,13 @@ public class VErrorMessage extends FlowPanel {
             errorContainer.setWidget(this);
             errorContainer.setOwner(owner);
         }
-        errorContainer.setPopupPosition(DOM.getAbsoluteLeft(indicatorElement) + 2 * DOM.getElementPropertyInt(indicatorElement, "offsetHeight"), DOM.getAbsoluteTop(indicatorElement) + 2 * DOM.getElementPropertyInt(indicatorElement, "offsetHeight"));
+        errorContainer.setPopupPosition(
+                DOM.getAbsoluteLeft(indicatorElement)
+                        + 2 * DOM.getElementPropertyInt(indicatorElement,
+                                "offsetHeight"),
+                DOM.getAbsoluteTop(indicatorElement)
+                        + 2 * DOM.getElementPropertyInt(indicatorElement,
+                                "offsetHeight"));
         errorContainer.show();
 
     }

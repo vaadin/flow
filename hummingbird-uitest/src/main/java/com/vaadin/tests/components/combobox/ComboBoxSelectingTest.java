@@ -111,7 +111,8 @@ public class ComboBoxSelectingTest extends MultiBrowserTest {
         assertThatSelectedValueIs("z5");
         // longer delay for this one because otherwise it keeps failing when run
         // on local machine
-        comboBoxElement.sendKeys(200, Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.TAB);
+        comboBoxElement.sendKeys(200, Keys.BACK_SPACE, Keys.BACK_SPACE,
+                Keys.TAB);
         assertThatSelectedValueIs("", "null");
 
         sendKeysToInput("z5");
@@ -189,7 +190,8 @@ public class ComboBoxSelectingTest extends MultiBrowserTest {
         assertThatSelectedValueIs(value, value);
     }
 
-    private void assertThatSelectedValueIs(final String value, final String labelValue) {
+    private void assertThatSelectedValueIs(final String value,
+            final String labelValue) {
         assertThat(comboBoxElement.getText(), is(value));
 
         waitUntil(new ExpectedCondition<Boolean>() {
@@ -204,7 +206,8 @@ public class ComboBoxSelectingTest extends MultiBrowserTest {
             @Override
             public String toString() {
                 // Timed out after 10 seconds waiting for ...
-                return String.format("label value to match '%s' (was: '%s')", labelValue, actualValue);
+                return String.format("label value to match '%s' (was: '%s')",
+                        labelValue, actualValue);
             }
         });
     }

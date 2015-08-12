@@ -50,7 +50,8 @@ public abstract class DateFieldPopupPositionTest extends MultiBrowserTest {
 
     private void adjustBrowserWindow(int height) {
         Dimension size = getDriver().manage().window().getSize();
-        getDriver().manage().window().setSize(new Dimension(size.getWidth(), height));
+        getDriver().manage().window()
+                .setSize(new Dimension(size.getWidth(), height));
     }
 
     private int getFieldBottom() {

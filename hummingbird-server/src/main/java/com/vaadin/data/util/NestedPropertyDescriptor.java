@@ -29,7 +29,8 @@ import com.vaadin.data.Property;
  * 
  * @since 6.6
  */
-public class NestedPropertyDescriptor<BT> implements VaadinPropertyDescriptor<BT> {
+public class NestedPropertyDescriptor<BT>
+        implements VaadinPropertyDescriptor<BT> {
 
     private final String name;
     private final Class<?> propertyType;
@@ -45,9 +46,11 @@ public class NestedPropertyDescriptor<BT> implements VaadinPropertyDescriptor<BT
      * @throws IllegalArgumentException
      *             if the property name is invalid
      */
-    public NestedPropertyDescriptor(String name, Class<BT> beanType) throws IllegalArgumentException {
+    public NestedPropertyDescriptor(String name, Class<BT> beanType)
+            throws IllegalArgumentException {
         this.name = name;
-        NestedMethodProperty<?> property = new NestedMethodProperty<Object>(beanType, name);
+        NestedMethodProperty<?> property = new NestedMethodProperty<Object>(
+                beanType, name);
         this.propertyType = property.getType();
     }
 

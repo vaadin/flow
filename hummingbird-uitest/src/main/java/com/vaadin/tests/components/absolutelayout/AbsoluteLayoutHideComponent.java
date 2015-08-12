@@ -80,13 +80,15 @@ public class AbsoluteLayoutHideComponent extends AbstractTestUI {
         layoutLogin.addComponent(btnLogin);
 
         for (int index = 0; index < layoutLogin.getComponentCount(); index++) {
-            layoutLogin.setComponentAlignment(layoutLogin.getComponent(index), Alignment.MIDDLE_CENTER);
+            layoutLogin.setComponentAlignment(layoutLogin.getComponent(index),
+                    Alignment.MIDDLE_CENTER);
         }
 
         // =====> THIS CODE generates error
         // WITHOUT THIS CODE works fine
 
-        Embedded e = new Embedded("", new ThemeResource("../runo/icons/64/ok.png"));
+        Embedded e = new Embedded("",
+                new ThemeResource("../runo/icons/64/ok.png"));
         // e.setMimeType("image/jpg");
         e.setWidth("100%");
         e.setHeight("100%");

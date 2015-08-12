@@ -34,8 +34,10 @@ public class CaptionLeak extends AbstractTestUI {
 
         HorizontalLayout layout = new HorizontalLayout();
         Panel parent = new Panel();
-        Button setLeakyContent = makeButton("Set leaky content", parent, VerticalLayout.class);
-        Button setNonLeakyContent = makeButton("Set non leaky content", parent, CssLayout.class);
+        Button setLeakyContent = makeButton("Set leaky content", parent,
+                VerticalLayout.class);
+        Button setNonLeakyContent = makeButton("Set non leaky content", parent,
+                CssLayout.class);
         layout.addComponent(setLeakyContent);
         layout.addComponent(setNonLeakyContent);
         root.addComponent(layout);
@@ -43,7 +45,8 @@ public class CaptionLeak extends AbstractTestUI {
         setContent(root);
     }
 
-    private Button makeButton(String caption, final Panel parent, final Class<? extends ComponentContainer> targetClass) {
+    private Button makeButton(String caption, final Panel parent,
+            final Class<? extends ComponentContainer> targetClass) {
         Button btn = new Button(caption);
         btn.setId(caption);
         btn.addClickListener(new Button.ClickListener() {

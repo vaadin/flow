@@ -14,12 +14,13 @@ public class SliderPrimaryStyleName extends TestBase {
         slider.setPrimaryStyleName("my-slider");
         addComponent(slider);
 
-        addComponent(new Button("Change primary style", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                slider.setPrimaryStyleName("my-second-slider");
-            }
-        }));
+        addComponent(
+                new Button("Change primary style", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        slider.setPrimaryStyleName("my-second-slider");
+                    }
+                }));
     }
 
     @Override

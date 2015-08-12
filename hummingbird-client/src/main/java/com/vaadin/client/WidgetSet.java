@@ -41,7 +41,8 @@ public class WidgetSet {
      * @return New uninitialized and unregistered connector that can paint given
      *         UIDL.
      */
-    public ServerConnector createConnector(int tag, ApplicationConfiguration conf) {
+    public ServerConnector createConnector(int tag,
+            ApplicationConfiguration conf) {
         /*
          * Yes, this (including the generated code in WidgetMap) may look very
          * odd code, but due the nature of GWT, we cannot do this any cleaner.
@@ -51,11 +52,13 @@ public class WidgetSet {
          */
         Profiler.enter("WidgetSet.createConnector");
 
-        Class<? extends ServerConnector> classType = resolveInheritedConnectorType(conf, tag);
+        Class<? extends ServerConnector> classType = resolveInheritedConnectorType(
+                conf, tag);
 
         if (classType == null || classType == UnknownComponentConnector.class) {
             String serverSideName = conf.getUnknownServerClassNameByTag(tag);
-            UnknownComponentConnector c = GWT.create(UnknownComponentConnector.class);
+            UnknownComponentConnector c = GWT
+                    .create(UnknownComponentConnector.class);
             c.setServerSideClassName(serverSideName);
             Profiler.leave("WidgetSet.createConnector");
             return c;
@@ -64,20 +67,26 @@ public class WidgetSet {
              * let the auto generated code instantiate this type
              */
             try {
-                ServerConnector connector = (ServerConnector) TypeData.getType(classType).createInstance();
+                ServerConnector connector = (ServerConnector) TypeData
+                        .getType(classType).createInstance();
                 if (connector instanceof HasJavaScriptConnectorHelper) {
-                    ((HasJavaScriptConnectorHelper) connector).getJavascriptConnectorHelper().setTag(tag);
+                    ((HasJavaScriptConnectorHelper) connector)
+                            .getJavascriptConnectorHelper().setTag(tag);
                 }
                 Profiler.leave("WidgetSet.createConnector");
                 return connector;
             } catch (NoDataException e) {
                 Profiler.leave("WidgetSet.createConnector");
-                throw new IllegalStateException("There is no information about " + classType + ". Did you remember to compile the right widgetset?", e);
+                throw new IllegalStateException(
+                        "There is no information about " + classType
+                                + ". Did you remember to compile the right widgetset?",
+                        e);
             }
         }
     }
 
-    private Class<? extends ServerConnector> resolveInheritedConnectorType(ApplicationConfiguration conf, int tag) {
+    private Class<? extends ServerConnector> resolveInheritedConnectorType(
+            ApplicationConfiguration conf, int tag) {
         Class<? extends ServerConnector> classType = null;
         Integer t = tag;
         do {
@@ -87,8 +96,10 @@ public class WidgetSet {
         return classType;
     }
 
-    protected Class<? extends ServerConnector> resolveConnectorType(int tag, ApplicationConfiguration conf) {
-        Class<? extends ServerConnector> connectorClass = conf.getConnectorClassByEncodedTag(tag);
+    protected Class<? extends ServerConnector> resolveConnectorType(int tag,
+            ApplicationConfiguration conf) {
+        Class<? extends ServerConnector> connectorClass = conf
+                .getConnectorClassByEncodedTag(tag);
 
         return connectorClass;
     }
@@ -123,7 +134,8 @@ public class WidgetSet {
 
                 @Override
                 public void failed(Throwable reason) {
-                    getLogger().log(Level.SEVERE, "Error loading bundle", reason);
+                    getLogger().log(Level.SEVERE, "Error loading bundle",
+                            reason);
                     ApplicationConfiguration.endDependencyLoading();
                 }
             });

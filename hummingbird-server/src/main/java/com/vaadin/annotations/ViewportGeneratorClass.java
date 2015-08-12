@@ -50,5 +50,5 @@ public @interface ViewportGeneratorClass {
      * 
      * @return the viewport generator class
      */
-    public Class<? extends ViewportGenerator> value();
+    public Class<? extends ViewportGenerator>value();
 }

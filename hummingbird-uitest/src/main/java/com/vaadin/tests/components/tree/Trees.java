@@ -17,7 +17,8 @@ import com.vaadin.ui.Tree.ExpandEvent;
 import com.vaadin.ui.Tree.ExpandListener;
 import com.vaadin.ui.Tree.ItemStyleGenerator;
 
-public class Trees extends AbstractSelectTestCase<Tree> implements ExpandListener, CollapseListener {
+public class Trees extends AbstractSelectTestCase<Tree>
+        implements ExpandListener, CollapseListener {
 
     private int rootItemIds = 3;
 
@@ -25,7 +26,8 @@ public class Trees extends AbstractSelectTestCase<Tree> implements ExpandListene
 
         @Override
         public String getStyle(Tree source, Object itemId) {
-            Hierarchical c = (Container.Hierarchical) getComponent().getContainerDataSource();
+            Hierarchical c = (Container.Hierarchical) getComponent()
+                    .getContainerDataSource();
             if (c.isRoot(itemId)) {
                 return "green";
             }
@@ -49,7 +51,8 @@ public class Trees extends AbstractSelectTestCase<Tree> implements ExpandListene
 
         @Override
         public String getStyle(Tree source, Object itemId) {
-            Hierarchical c = (Container.Hierarchical) getComponent().getContainerDataSource();
+            Hierarchical c = (Container.Hierarchical) getComponent()
+                    .getContainerDataSource();
             int idx = 0;
 
             for (Iterator<?> i = c.getItemIds().iterator(); i.hasNext();) {
@@ -101,17 +104,22 @@ public class Trees extends AbstractSelectTestCase<Tree> implements ExpandListene
         LinkedHashMap<String, com.vaadin.ui.Tree.ItemStyleGenerator> options = new LinkedHashMap<String, com.vaadin.ui.Tree.ItemStyleGenerator>();
 
         options.put("-", null);
-        options.put(rootGreenSecondLevelRed.toString(), rootGreenSecondLevelRed);
+        options.put(rootGreenSecondLevelRed.toString(),
+                rootGreenSecondLevelRed);
         options.put(evenItemsBold.toString(), evenItemsBold);
 
-        createSelectAction("Item Style generator", category, options, "-", itemStyleGeneratorCommand);
+        createSelectAction("Item Style generator", category, options, "-",
+                itemStyleGeneratorCommand);
 
     }
 
     private void createListeners(String category) {
-        createBooleanAction("Expand listener", category, false, expandListenerCommand);
-        createBooleanAction("Collapse listener", category, false, collapseListenerCommand);
-        createBooleanAction("Item click listener", category, false, itemClickListenerCommand);
+        createBooleanAction("Expand listener", category, false,
+                expandListenerCommand);
+        createBooleanAction("Collapse listener", category, false,
+                collapseListenerCommand);
+        createBooleanAction("Item click listener", category, false,
+                itemClickListenerCommand);
 
     }
 
@@ -126,31 +134,32 @@ public class Trees extends AbstractSelectTestCase<Tree> implements ExpandListene
         options.put("Multi - simple", SelectMode.MULTI_SIMPLE);
         options.put("Multi - ctrl/shift", SelectMode.MULTI);
 
-        createSelectAction("Selection Mode", category, options, "Multi - ctrl/shift", new Command<Tree, SelectMode>() {
+        createSelectAction("Selection Mode", category, options,
+                "Multi - ctrl/shift", new Command<Tree, SelectMode>() {
 
-            @Override
-            public void execute(Tree t, SelectMode value, Object data) {
-                switch (value) {
-                case NONE:
-                    t.setSelectable(false);
-                    break;
-                case SINGLE:
-                    t.setMultiSelect(false);
-                    t.setSelectable(true);
-                    break;
-                case MULTI_SIMPLE:
-                    t.setSelectable(true);
-                    t.setMultiSelect(true);
-                    t.setMultiselectMode(MultiSelectMode.SIMPLE);
-                    break;
-                case MULTI:
-                    t.setSelectable(true);
-                    t.setMultiSelect(true);
-                    t.setMultiselectMode(MultiSelectMode.DEFAULT);
-                    break;
-                }
-            }
-        });
+                    @Override
+                    public void execute(Tree t, SelectMode value, Object data) {
+                        switch (value) {
+                        case NONE:
+                            t.setSelectable(false);
+                            break;
+                        case SINGLE:
+                            t.setMultiSelect(false);
+                            t.setSelectable(true);
+                            break;
+                        case MULTI_SIMPLE:
+                            t.setSelectable(true);
+                            t.setMultiSelect(true);
+                            t.setMultiselectMode(MultiSelectMode.SIMPLE);
+                            break;
+                        case MULTI:
+                            t.setSelectable(true);
+                            t.setMultiSelect(true);
+                            t.setMultiselectMode(MultiSelectMode.DEFAULT);
+                            break;
+                        }
+                    }
+                });
     }
 
     @Override
@@ -158,7 +167,8 @@ public class Trees extends AbstractSelectTestCase<Tree> implements ExpandListene
         return createHierarchicalContainer(properties, items, rootItemIds);
     }
 
-    private Container.Hierarchical createHierarchicalContainer(int properties, int items, int roots) {
+    private Container.Hierarchical createHierarchicalContainer(int properties,
+            int items, int roots) {
         Container.Hierarchical c = new HierarchicalContainer();
 
         populateContainer(c, properties, items);
@@ -235,7 +245,8 @@ public class Trees extends AbstractSelectTestCase<Tree> implements ExpandListene
         options.put("50", 50);
         options.put("100", 100);
 
-        createSelectAction("Number of root items", category, options, "3", rootItemIdsCommand);
+        createSelectAction("Number of root items", category, options, "3",
+                rootItemIdsCommand);
     }
 
     private void createExpandCollapseActions(String category) {
@@ -244,9 +255,12 @@ public class Trees extends AbstractSelectTestCase<Tree> implements ExpandListene
         for (Object id : getComponent().getItemIds()) {
             options.put(id.toString(), id);
         }
-        createMultiClickAction("Expand", category, options, expandItemCommand, null);
-        createMultiClickAction("Expand recursively", category, options, expandItemRecursivelyCommand, null);
-        createMultiClickAction("Collapse", category, options, collapseItemCommand, null);
+        createMultiClickAction("Expand", category, options, expandItemCommand,
+                null);
+        createMultiClickAction("Expand recursively", category, options,
+                expandItemRecursivelyCommand, null);
+        createMultiClickAction("Collapse", category, options,
+                collapseItemCommand, null);
 
     }
 
@@ -256,7 +270,8 @@ public class Trees extends AbstractSelectTestCase<Tree> implements ExpandListene
         for (Object id : getComponent().getItemIds()) {
             options.put(id.toString(), id);
         }
-        createMultiToggleAction("Children allowed", category, options, setChildrenAllowedCommand, true);
+        createMultiToggleAction("Children allowed", category, options,
+                setChildrenAllowedCommand, true);
 
     }
 
@@ -328,7 +343,8 @@ public class Trees extends AbstractSelectTestCase<Tree> implements ExpandListene
     private Command<Tree, com.vaadin.ui.Tree.ItemStyleGenerator> itemStyleGeneratorCommand = new Command<Tree, com.vaadin.ui.Tree.ItemStyleGenerator>() {
 
         @Override
-        public void execute(Tree c, com.vaadin.ui.Tree.ItemStyleGenerator value, Object data) {
+        public void execute(Tree c, com.vaadin.ui.Tree.ItemStyleGenerator value,
+                Object data) {
             c.setItemStyleGenerator(value);
 
         }

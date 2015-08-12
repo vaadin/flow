@@ -34,7 +34,8 @@ public class TextFieldEmptyingPrompt extends AbstractTestUI {
 
     @Override
     public String getTestDescription() {
-        return "Type something, then erase it, then click on the button.<br>" + "Input prompt should dissapear.<br>";
+        return "Type something, then erase it, then click on the button.<br>"
+                + "Input prompt should dissapear.<br>";
     }
 
     @Override

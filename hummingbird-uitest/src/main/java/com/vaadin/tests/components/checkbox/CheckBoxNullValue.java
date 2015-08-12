@@ -36,14 +36,18 @@ public class CheckBoxNullValue extends TestBase {
                 try {
                     checkbox.validate();
                 } catch (InvalidValueException e) {
-                    checkbox.setComponentError(AbstractErrorMessage.getErrorMessageForException(e));
+                    checkbox.setComponentError(AbstractErrorMessage
+                            .getErrorMessageForException(e));
                 }
                 try {
                     requiredCheckbox.validate();
                 } catch (InvalidValueException e) {
-                    requiredCheckbox.setComponentError(AbstractErrorMessage.getErrorMessageForException(e));
+                    requiredCheckbox.setComponentError(AbstractErrorMessage
+                            .getErrorMessageForException(e));
                 }
-                valueLabel.setValue("Checkbox: " + checkbox.getValue() + "; Required checkbox: " + requiredCheckbox.getValue());
+                valueLabel.setValue("Checkbox: " + checkbox.getValue()
+                        + "; Required checkbox: "
+                        + requiredCheckbox.getValue());
             }
         });
         addComponent(valueLabel);

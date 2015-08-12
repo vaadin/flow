@@ -54,7 +54,8 @@ public abstract class PrivateTB3Configuration extends ScreenshotTB3Test {
     private static final String DEPLOYMENT_PROPERTY = "com.vaadin.testbench.deployment.url";
     private static final String HUB_URL = "com.vaadin.testbench.hub.url";
     private static final Properties properties = new Properties();
-    private static final File propertiesFile = new File("work", "eclipse-run-selected-test.properties");
+    private static final File propertiesFile = new File("work",
+            "eclipse-run-selected-test.properties");
     private static final String FIREFOX_PATH = "firefox.path";
     private static final String PHANTOMJS_PATH = "phantomjs.binary.path";
 
@@ -65,13 +66,17 @@ public abstract class PrivateTB3Configuration extends ScreenshotTB3Test {
                 if (properties.containsKey(RUN_LOCALLY_PROPERTY)) {
                     System.setProperty("useLocalWebDriver", "true");
                     DesiredCapabilities localBrowser = getRunLocallyCapabilities();
-                    System.setProperty("browsers.include", localBrowser.getBrowserName() + localBrowser.getVersion());
+                    System.setProperty("browsers.include",
+                            localBrowser.getBrowserName()
+                                    + localBrowser.getVersion());
                 }
                 if (properties.containsKey(FIREFOX_PATH)) {
-                    System.setProperty(FIREFOX_PATH, properties.getProperty(FIREFOX_PATH));
+                    System.setProperty(FIREFOX_PATH,
+                            properties.getProperty(FIREFOX_PATH));
                 }
                 if (properties.containsKey(PHANTOMJS_PATH)) {
-                    System.setProperty(PHANTOMJS_PATH, properties.getProperty(PHANTOMJS_PATH));
+                    System.setProperty(PHANTOMJS_PATH,
+                            properties.getProperty(PHANTOMJS_PATH));
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -82,8 +87,11 @@ public abstract class PrivateTB3Configuration extends ScreenshotTB3Test {
     @Override
     public void setup() throws Exception {
         String allowRunLocally = getProperty(ALLOW_RUN_LOCALLY_PROPERTY);
-        if ((allowRunLocally == null || !allowRunLocally.equals("" + true)) && getClass().getAnnotation(RunLocally.class) != null) {
-            Assert.fail("@RunLocally annotation is not allowed by default in framework tests. " + "See file uitest/eclipse-run-selected-test.properties for more information.");
+        if ((allowRunLocally == null || !allowRunLocally.equals("" + true))
+                && getClass().getAnnotation(RunLocally.class) != null) {
+            Assert.fail(
+                    "@RunLocally annotation is not allowed by default in framework tests. "
+                            + "See file uitest/eclipse-run-selected-test.properties for more information.");
         }
 
         super.setup();
@@ -92,7 +100,8 @@ public abstract class PrivateTB3Configuration extends ScreenshotTB3Test {
     protected static DesiredCapabilities getRunLocallyCapabilities() {
         VaadinBrowserFactory factory = new VaadinBrowserFactory();
         try {
-            return factory.create(Browser.valueOf(properties.getProperty(RUN_LOCALLY_PROPERTY).toUpperCase()));
+            return factory.create(Browser.valueOf(properties
+                    .getProperty(RUN_LOCALLY_PROPERTY).toUpperCase()));
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.err.println("Falling back to FireFox");
@@ -113,7 +122,8 @@ public abstract class PrivateTB3Configuration extends ScreenshotTB3Test {
     protected String getScreenshotDirectory() {
         String screenshotDirectory = getProperty(SCREENSHOT_DIRECTORY);
         if (screenshotDirectory == null) {
-            throw new RuntimeException("No screenshot directory defined. Use -D" + SCREENSHOT_DIRECTORY + "=<path>");
+            throw new RuntimeException("No screenshot directory defined. Use -D"
+                    + SCREENSHOT_DIRECTORY + "=<path>");
         }
         return screenshotDirectory;
     }
@@ -153,7 +163,9 @@ public abstract class PrivateTB3Configuration extends ScreenshotTB3Test {
             return true;
         }
 
-        if (properties.containsKey(ALLOW_RUN_LOCALLY_PROPERTY) && properties.get(ALLOW_RUN_LOCALLY_PROPERTY).equals("true") && getClass().getAnnotation(RunLocally.class) != null) {
+        if (properties.containsKey(ALLOW_RUN_LOCALLY_PROPERTY)
+                && properties.get(ALLOW_RUN_LOCALLY_PROPERTY).equals("true")
+                && getClass().getAnnotation(RunLocally.class) != null) {
             return true;
         }
 
@@ -206,13 +218,16 @@ public abstract class PrivateTB3Configuration extends ScreenshotTB3Test {
      */
     private static String findAutoHostname() {
         try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            Enumeration<NetworkInterface> interfaces = NetworkInterface
+                    .getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface nwInterface = interfaces.nextElement();
-                if (!nwInterface.isUp() || nwInterface.isLoopback() || nwInterface.isVirtual()) {
+                if (!nwInterface.isUp() || nwInterface.isLoopback()
+                        || nwInterface.isVirtual()) {
                     continue;
                 }
-                Enumeration<InetAddress> addresses = nwInterface.getInetAddresses();
+                Enumeration<InetAddress> addresses = nwInterface
+                        .getInetAddresses();
                 while (addresses.hasMoreElements()) {
                     InetAddress address = addresses.nextElement();
                     if (address.isLoopbackAddress()) {
@@ -227,6 +242,7 @@ public abstract class PrivateTB3Configuration extends ScreenshotTB3Test {
             throw new RuntimeException("Could not enumerate ");
         }
 
-        throw new RuntimeException("No compatible (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) ip address found.");
+        throw new RuntimeException(
+                "No compatible (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) ip address found.");
     }
 }

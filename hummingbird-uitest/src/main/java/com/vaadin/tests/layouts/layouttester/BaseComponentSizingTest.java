@@ -29,7 +29,8 @@ public abstract class BaseComponentSizingTest extends MultiBrowserTest {
         openTestURL();
         sleep(500);
         compareScreen("initial");
-        String[] states = { "setSize350px", "setSize_-1px", "setSize75Percent", "setSize100Percent" };
+        String[] states = { "setSize350px", "setSize_-1px", "setSize75Percent",
+                "setSize100Percent" };
         List<ButtonElement> buttons = $(ButtonElement.class).all();
         int index = 0;
         // go through all buttons click them and see result

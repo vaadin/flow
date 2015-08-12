@@ -66,28 +66,34 @@ import elemental.json.impl.JreJsonArray;
 public class JsonCodec implements Serializable {
 
     /* Immutable Encode Result representing null */
-    private static final EncodeResult ENCODE_RESULT_NULL = new EncodeResult(Json.createNull());
+    private static final EncodeResult ENCODE_RESULT_NULL = new EncodeResult(
+            Json.createNull());
 
     /* Immutable empty JSONArray */
-    private static final JsonArray EMPTY_JSON_ARRAY = new JreJsonArray(Json.instance()) {
+    private static final JsonArray EMPTY_JSON_ARRAY = new JreJsonArray(
+            Json.instance()) {
         @Override
         public void set(int index, JsonValue value) {
-            throw new UnsupportedOperationException("Immutable empty JsonArray.");
+            throw new UnsupportedOperationException(
+                    "Immutable empty JsonArray.");
         }
 
         @Override
         public void set(int index, String string) {
-            throw new UnsupportedOperationException("Immutable empty JsonArray.");
+            throw new UnsupportedOperationException(
+                    "Immutable empty JsonArray.");
         }
 
         @Override
         public void set(int index, double number) {
-            throw new UnsupportedOperationException("Immutable empty JsonArray.");
+            throw new UnsupportedOperationException(
+                    "Immutable empty JsonArray.");
         }
 
         @Override
         public void set(int index, boolean bool) {
-            throw new UnsupportedOperationException("Immutable empty JsonArray.");
+            throw new UnsupportedOperationException(
+                    "Immutable empty JsonArray.");
         }
     };
 
@@ -128,9 +134,11 @@ public class JsonCodec implements Serializable {
             return field.getGenericType();
         }
 
-        public static Collection<FieldProperty> find(Class<?> type) throws IntrospectionException {
+        public static Collection<FieldProperty> find(Class<?> type)
+                throws IntrospectionException {
             Field[] fields = type.getFields();
-            Collection<FieldProperty> properties = new ArrayList<FieldProperty>(fields.length);
+            Collection<FieldProperty> properties = new ArrayList<FieldProperty>(
+                    fields.length);
             for (Field field : fields) {
                 if (!Modifier.isStatic(field.getModifiers())) {
                     properties.add(new FieldProperty(field));
@@ -163,14 +171,17 @@ public class JsonCodec implements Serializable {
         @Override
         public String getName() {
             String fieldName = pd.getWriteMethod().getName().substring(3);
-            fieldName = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
+            fieldName = Character.toLowerCase(fieldName.charAt(0))
+                    + fieldName.substring(1);
             return fieldName;
         }
 
-        public static Collection<MethodProperty> find(Class<?> type) throws IntrospectionException {
+        public static Collection<MethodProperty> find(Class<?> type)
+                throws IntrospectionException {
             Collection<MethodProperty> properties = new ArrayList<MethodProperty>();
 
-            for (PropertyDescriptor pd : Introspector.getBeanInfo(type).getPropertyDescriptors()) {
+            for (PropertyDescriptor pd : Introspector.getBeanInfo(type)
+                    .getPropertyDescriptors()) {
                 if (pd.getReadMethod() == null || pd.getWriteMethod() == null) {
                     continue;
                 }
@@ -204,6 +215,7 @@ public class JsonCodec implements Serializable {
     private static Map<String, Class<?>> transportTypeToType = new HashMap<String, Class<?>>();
 
     private static Map<Class<?>, JSONSerializer<?>> customSerializers = new HashMap<Class<?>, JSONSerializer<?>>();
+
     static {
         customSerializers.put(Date.class, new DateSerializer());
     }
@@ -271,17 +283,21 @@ public class JsonCodec implements Serializable {
         return transportTypeToType.get(transportType);
     }
 
-    public static Object decodeInternalOrCustomType(Type targetType, JsonValue value, ConnectorTracker connectorTracker) {
+    public static Object decodeInternalOrCustomType(Type targetType,
+            JsonValue value, ConnectorTracker connectorTracker) {
         if (isInternalType(targetType)) {
-            return decodeInternalType(targetType, false, value, connectorTracker);
+            return decodeInternalType(targetType, false, value,
+                    connectorTracker);
         } else {
             return decodeCustomType(targetType, value, connectorTracker);
         }
     }
 
-    public static Object decodeCustomType(Type targetType, JsonValue value, ConnectorTracker connectorTracker) {
+    public static Object decodeCustomType(Type targetType, JsonValue value,
+            ConnectorTracker connectorTracker) {
         if (isInternalType(targetType)) {
-            throw new JsonException("decodeCustomType cannot be used for " + targetType + ", which is an internal type");
+            throw new JsonException("decodeCustomType cannot be used for "
+                    + targetType + ", which is an internal type");
         }
 
         // Try to decode object using fields
@@ -293,35 +309,46 @@ public class JsonCodec implements Serializable {
             return Byte.valueOf((byte) value.asNumber());
         } else if (targetType == char.class || targetType == Character.class) {
             return Character.valueOf(value.asString().charAt(0));
-        } else if (targetType instanceof Class<?> && ((Class<?>) targetType).isArray()) {
+        } else if (targetType instanceof Class<?>
+                && ((Class<?>) targetType).isArray()) {
             // Legacy Object[] and String[] handled elsewhere, this takes care
             // of generic arrays
             Class<?> componentType = ((Class<?>) targetType).getComponentType();
-            return decodeArray(componentType, (JsonArray) value, connectorTracker);
+            return decodeArray(componentType, (JsonArray) value,
+                    connectorTracker);
         } else if (targetType instanceof GenericArrayType) {
-            Type componentType = ((GenericArrayType) targetType).getGenericComponentType();
-            return decodeArray(componentType, (JsonArray) value, connectorTracker);
-        } else if (JsonValue.class.isAssignableFrom(getClassForType(targetType))) {
+            Type componentType = ((GenericArrayType) targetType)
+                    .getGenericComponentType();
+            return decodeArray(componentType, (JsonArray) value,
+                    connectorTracker);
+        } else
+            if (JsonValue.class.isAssignableFrom(getClassForType(targetType))) {
             return value;
         } else if (Enum.class.isAssignableFrom(getClassForType(targetType))) {
             Class<?> classForType = getClassForType(targetType);
-            return decodeEnum(classForType.asSubclass(Enum.class), (JsonString) value);
+            return decodeEnum(classForType.asSubclass(Enum.class),
+                    (JsonString) value);
         } else if (customSerializers.containsKey(getClassForType(targetType))) {
-            return customSerializers.get(getClassForType(targetType)).deserialize(targetType, value, connectorTracker);
+            return customSerializers.get(getClassForType(targetType))
+                    .deserialize(targetType, value, connectorTracker);
         } else {
-            return decodeObject(targetType, (JsonObject) value, connectorTracker);
+            return decodeObject(targetType, (JsonObject) value,
+                    connectorTracker);
         }
     }
 
     private static boolean isJsonType(Type type) {
-        return type instanceof Class<?> && JsonValue.class.isAssignableFrom((Class<?>) type);
+        return type instanceof Class<?>
+                && JsonValue.class.isAssignableFrom((Class<?>) type);
     }
 
-    private static Object decodeArray(Type componentType, JsonArray value, ConnectorTracker connectorTracker) {
+    private static Object decodeArray(Type componentType, JsonArray value,
+            ConnectorTracker connectorTracker) {
         Class<?> componentClass = getClassForType(componentType);
         Object array = Array.newInstance(componentClass, value.length());
         for (int i = 0; i < value.length(); i++) {
-            Object decodedValue = decodeInternalOrCustomType(componentType, value.get(i), connectorTracker);
+            Object decodedValue = decodeInternalOrCustomType(componentType,
+                    value.get(i), connectorTracker);
             Array.set(array, i, decodedValue);
         }
         return array;
@@ -350,39 +377,49 @@ public class JsonCodec implements Serializable {
      *            internal types in collections
      * @return
      */
-    public static Object decodeInternalType(Type targetType, boolean restrictToInternalTypes, JsonValue encodedJsonValue, ConnectorTracker connectorTracker) {
+    public static Object decodeInternalType(Type targetType,
+            boolean restrictToInternalTypes, JsonValue encodedJsonValue,
+            ConnectorTracker connectorTracker) {
         if (!isInternalType(targetType)) {
-            throw new JsonException("Type " + targetType + " is not a supported internal type.");
+            throw new JsonException("Type " + targetType
+                    + " is not a supported internal type.");
         }
         String transportType = getInternalTransportType(targetType);
 
         if (encodedJsonValue.getType() == JsonType.NULL) {
             return null;
         } else if (targetType == Void.class) {
-            throw new JsonException("Something other than null was encoded for a null type");
+            throw new JsonException(
+                    "Something other than null was encoded for a null type");
         }
 
         // UidlValue
         if (targetType == UidlValue.class) {
-            return decodeUidlValue((JsonArray) encodedJsonValue, connectorTracker);
+            return decodeUidlValue((JsonArray) encodedJsonValue,
+                    connectorTracker);
         }
 
         // Collections
         if (JsonConstants.VTYPE_LIST.equals(transportType)) {
-            return decodeList(targetType, restrictToInternalTypes, (JsonArray) encodedJsonValue, connectorTracker);
+            return decodeList(targetType, restrictToInternalTypes,
+                    (JsonArray) encodedJsonValue, connectorTracker);
         } else if (JsonConstants.VTYPE_SET.equals(transportType)) {
-            return decodeSet(targetType, restrictToInternalTypes, (JsonArray) encodedJsonValue, connectorTracker);
+            return decodeSet(targetType, restrictToInternalTypes,
+                    (JsonArray) encodedJsonValue, connectorTracker);
         } else if (JsonConstants.VTYPE_MAP.equals(transportType)) {
-            return decodeMap(targetType, restrictToInternalTypes, encodedJsonValue, connectorTracker);
+            return decodeMap(targetType, restrictToInternalTypes,
+                    encodedJsonValue, connectorTracker);
         }
 
         // Arrays
         if (JsonConstants.VTYPE_ARRAY.equals(transportType)) {
 
-            return decodeObjectArray(targetType, (JsonArray) encodedJsonValue, connectorTracker);
+            return decodeObjectArray(targetType, (JsonArray) encodedJsonValue,
+                    connectorTracker);
 
         } else if (JsonConstants.VTYPE_STRINGARRAY.equals(transportType)) {
-            return decodeArray(String.class, (JsonArray) encodedJsonValue, null);
+            return decodeArray(String.class, (JsonArray) encodedJsonValue,
+                    null);
         }
 
         // Special Vaadin types
@@ -410,14 +447,18 @@ public class JsonCodec implements Serializable {
         throw new JsonException("Unknown type " + transportType);
     }
 
-    private static UidlValue decodeUidlValue(JsonArray encodedJsonValue, ConnectorTracker connectorTracker) {
+    private static UidlValue decodeUidlValue(JsonArray encodedJsonValue,
+            ConnectorTracker connectorTracker) {
         String type = encodedJsonValue.getString(0);
 
-        Object decodedValue = decodeInternalType(getType(type), true, encodedJsonValue.get(1), connectorTracker);
+        Object decodedValue = decodeInternalType(getType(type), true,
+                encodedJsonValue.get(1), connectorTracker);
         return new UidlValue(decodedValue);
     }
 
-    private static Map<Object, Object> decodeMap(Type targetType, boolean restrictToInternalTypes, JsonValue jsonMap, ConnectorTracker connectorTracker) {
+    private static Map<Object, Object> decodeMap(Type targetType,
+            boolean restrictToInternalTypes, JsonValue jsonMap,
+            ConnectorTracker connectorTracker) {
         if (jsonMap.getType() == JsonType.ARRAY) {
             // Client-side has no declared type information to determine
             // encoding method for empty maps, so these are handled separately.
@@ -428,32 +469,44 @@ public class JsonCodec implements Serializable {
             }
         }
 
-        if (!restrictToInternalTypes && targetType instanceof ParameterizedType) {
-            Type keyType = ((ParameterizedType) targetType).getActualTypeArguments()[0];
-            Type valueType = ((ParameterizedType) targetType).getActualTypeArguments()[1];
+        if (!restrictToInternalTypes
+                && targetType instanceof ParameterizedType) {
+            Type keyType = ((ParameterizedType) targetType)
+                    .getActualTypeArguments()[0];
+            Type valueType = ((ParameterizedType) targetType)
+                    .getActualTypeArguments()[1];
             if (keyType == String.class) {
-                return decodeStringMap(valueType, (JsonObject) jsonMap, connectorTracker);
+                return decodeStringMap(valueType, (JsonObject) jsonMap,
+                        connectorTracker);
             } else if (keyType == Connector.class) {
-                return decodeConnectorMap(valueType, (JsonObject) jsonMap, connectorTracker);
+                return decodeConnectorMap(valueType, (JsonObject) jsonMap,
+                        connectorTracker);
             } else {
-                return decodeObjectMap(keyType, valueType, (JsonArray) jsonMap, connectorTracker);
+                return decodeObjectMap(keyType, valueType, (JsonArray) jsonMap,
+                        connectorTracker);
             }
         } else {
-            return decodeStringMap(UidlValue.class, (JsonObject) jsonMap, connectorTracker);
+            return decodeStringMap(UidlValue.class, (JsonObject) jsonMap,
+                    connectorTracker);
         }
     }
 
-    private static Map<Object, Object> decodeObjectMap(Type keyType, Type valueType, JsonArray jsonMap, ConnectorTracker connectorTracker) {
+    private static Map<Object, Object> decodeObjectMap(Type keyType,
+            Type valueType, JsonArray jsonMap,
+            ConnectorTracker connectorTracker) {
 
         JsonArray keys = jsonMap.getArray(0);
         JsonArray values = jsonMap.getArray(1);
 
-        assert (keys.length() == values.length());
+        assert(keys.length() == values.length());
 
-        Map<Object, Object> map = new HashMap<Object, Object>(keys.length() * 2);
+        Map<Object, Object> map = new HashMap<Object, Object>(
+                keys.length() * 2);
         for (int i = 0; i < keys.length(); i++) {
-            Object key = decodeInternalOrCustomType(keyType, keys.get(i), connectorTracker);
-            Object value = decodeInternalOrCustomType(valueType, values.get(i), connectorTracker);
+            Object key = decodeInternalOrCustomType(keyType, keys.get(i),
+                    connectorTracker);
+            Object value = decodeInternalOrCustomType(valueType, values.get(i),
+                    connectorTracker);
 
             map.put(key, value);
         }
@@ -461,11 +514,13 @@ public class JsonCodec implements Serializable {
         return map;
     }
 
-    private static Map<Object, Object> decodeConnectorMap(Type valueType, JsonObject jsonMap, ConnectorTracker connectorTracker) {
+    private static Map<Object, Object> decodeConnectorMap(Type valueType,
+            JsonObject jsonMap, ConnectorTracker connectorTracker) {
         Map<Object, Object> map = new HashMap<Object, Object>();
 
         for (String key : jsonMap.keys()) {
-            Object value = decodeInternalOrCustomType(valueType, jsonMap.get(key), connectorTracker);
+            Object value = decodeInternalOrCustomType(valueType,
+                    jsonMap.get(key), connectorTracker);
             if (valueType == UidlValue.class) {
                 value = ((UidlValue) value).getValue();
             }
@@ -475,11 +530,13 @@ public class JsonCodec implements Serializable {
         return map;
     }
 
-    private static Map<Object, Object> decodeStringMap(Type valueType, JsonObject jsonMap, ConnectorTracker connectorTracker) {
+    private static Map<Object, Object> decodeStringMap(Type valueType,
+            JsonObject jsonMap, ConnectorTracker connectorTracker) {
         Map<Object, Object> map = new HashMap<Object, Object>();
 
         for (String key : jsonMap.keys()) {
-            Object value = decodeInternalOrCustomType(valueType, jsonMap.get(key), connectorTracker);
+            Object value = decodeInternalOrCustomType(valueType,
+                    jsonMap.get(key), connectorTracker);
             if (valueType == UidlValue.class) {
                 value = ((UidlValue) value).getValue();
             }
@@ -499,47 +556,63 @@ public class JsonCodec implements Serializable {
      * @param application
      * @return
      */
-    private static Object decodeParametrizedType(Type targetType, boolean restrictToInternalTypes, int typeIndex, JsonValue value, ConnectorTracker connectorTracker) {
-        if (!restrictToInternalTypes && targetType instanceof ParameterizedType) {
-            Type childType = ((ParameterizedType) targetType).getActualTypeArguments()[typeIndex];
+    private static Object decodeParametrizedType(Type targetType,
+            boolean restrictToInternalTypes, int typeIndex, JsonValue value,
+            ConnectorTracker connectorTracker) {
+        if (!restrictToInternalTypes
+                && targetType instanceof ParameterizedType) {
+            Type childType = ((ParameterizedType) targetType)
+                    .getActualTypeArguments()[typeIndex];
             // Only decode the given type
-            return decodeInternalOrCustomType(childType, value, connectorTracker);
+            return decodeInternalOrCustomType(childType, value,
+                    connectorTracker);
         } else {
             // Only UidlValue when not enforcing a given type to avoid security
             // issues
-            UidlValue decodeInternalType = (UidlValue) decodeInternalType(UidlValue.class, true, value, connectorTracker);
+            UidlValue decodeInternalType = (UidlValue) decodeInternalType(
+                    UidlValue.class, true, value, connectorTracker);
             return decodeInternalType.getValue();
         }
     }
 
-    private static Object decodeEnum(Class<? extends Enum> cls, JsonString value) {
+    private static Object decodeEnum(Class<? extends Enum> cls,
+            JsonString value) {
         return Enum.valueOf(cls, value.getString());
     }
 
-    private static Object[] decodeObjectArray(Type targetType, JsonArray jsonArray, ConnectorTracker connectorTracker) {
-        List<Object> list = decodeList(List.class, true, jsonArray, connectorTracker);
+    private static Object[] decodeObjectArray(Type targetType,
+            JsonArray jsonArray, ConnectorTracker connectorTracker) {
+        List<Object> list = decodeList(List.class, true, jsonArray,
+                connectorTracker);
         return list.toArray(new Object[list.size()]);
     }
 
-    private static List<Object> decodeList(Type targetType, boolean restrictToInternalTypes, JsonArray jsonArray, ConnectorTracker connectorTracker) {
+    private static List<Object> decodeList(Type targetType,
+            boolean restrictToInternalTypes, JsonArray jsonArray,
+            ConnectorTracker connectorTracker) {
         int arrayLength = jsonArray.length();
         List<Object> list = new ArrayList<Object>(arrayLength);
         for (int i = 0; i < arrayLength; ++i) {
             // each entry always has two elements: type and value
             JsonValue encodedValue = jsonArray.get(i);
-            Object decodedChild = decodeParametrizedType(targetType, restrictToInternalTypes, 0, encodedValue, connectorTracker);
+            Object decodedChild = decodeParametrizedType(targetType,
+                    restrictToInternalTypes, 0, encodedValue, connectorTracker);
             list.add(decodedChild);
         }
         return list;
     }
 
-    private static Set<Object> decodeSet(Type targetType, boolean restrictToInternalTypes, JsonArray jsonArray, ConnectorTracker connectorTracker) {
+    private static Set<Object> decodeSet(Type targetType,
+            boolean restrictToInternalTypes, JsonArray jsonArray,
+            ConnectorTracker connectorTracker) {
         HashSet<Object> set = new HashSet<Object>();
-        set.addAll(decodeList(targetType, restrictToInternalTypes, jsonArray, connectorTracker));
+        set.addAll(decodeList(targetType, restrictToInternalTypes, jsonArray,
+                connectorTracker));
         return set;
     }
 
-    private static Object decodeObject(Type targetType, JsonObject serializedObject, ConnectorTracker connectorTracker) {
+    private static Object decodeObject(Type targetType,
+            JsonObject serializedObject, ConnectorTracker connectorTracker) {
 
         Class<?> targetClass = getClassForType(targetType);
 
@@ -550,7 +623,8 @@ public class JsonCodec implements Serializable {
                 String fieldName = property.getName();
                 JsonValue encodedFieldValue = serializedObject.get(fieldName);
                 Type fieldType = property.getType();
-                Object decodedFieldValue = decodeInternalOrCustomType(fieldType, encodedFieldValue, connectorTracker);
+                Object decodedFieldValue = decodeInternalOrCustomType(fieldType,
+                        encodedFieldValue, connectorTracker);
 
                 property.setValue(decodedObject, decodedFieldValue);
             }
@@ -561,7 +635,8 @@ public class JsonCodec implements Serializable {
         }
     }
 
-    public static EncodeResult encode(Object value, JsonValue diffState, Type valueType, ConnectorTracker connectorTracker) {
+    public static EncodeResult encode(Object value, JsonValue diffState,
+            Type valueType, ConnectorTracker connectorTracker) {
 
         if (null == value) {
             return ENCODE_RESULT_NULL;
@@ -583,11 +658,14 @@ public class JsonCodec implements Serializable {
         } else if (value instanceof Character) {
             toReturn = Json.create(Character.toString((Character) value));
         } else if (value instanceof Collection) {
-            toReturn = encodeCollection(valueType, (Collection<?>) value, connectorTracker);
+            toReturn = encodeCollection(valueType, (Collection<?>) value,
+                    connectorTracker);
         } else if (value instanceof Map) {
-            toReturn = encodeMap(valueType, (Map<?, ?>) value, connectorTracker);
+            toReturn = encodeMap(valueType, (Map<?, ?>) value,
+                    connectorTracker);
         } else if (value instanceof Connector) {
-            if (value instanceof Component && !(LegacyCommunicationManager.isComponentVisibleToClient((Component) value))) {
+            if (value instanceof Component && !(LegacyCommunicationManager
+                    .isComponentVisibleToClient((Component) value))) {
                 // an encoded null is cached, return it directly.
                 return ENCODE_RESULT_NULL;
             }
@@ -598,15 +676,20 @@ public class JsonCodec implements Serializable {
         } else if (customSerializers.containsKey(value.getClass())) {
             toReturn = serializeJson(value, connectorTracker);
         } else if (valueType instanceof GenericArrayType) {
-            toReturn = encodeArrayContents(((GenericArrayType) valueType).getGenericComponentType(), value, connectorTracker);
+            toReturn = encodeArrayContents(
+                    ((GenericArrayType) valueType).getGenericComponentType(),
+                    value, connectorTracker);
         } else if (valueType instanceof Class<?>) {
             if (((Class<?>) valueType).isArray()) {
-                toReturn = encodeArrayContents(((Class<?>) valueType).getComponentType(), value, connectorTracker);
+                toReturn = encodeArrayContents(
+                        ((Class<?>) valueType).getComponentType(), value,
+                        connectorTracker);
             } else {
                 // encodeObject returns an EncodeResult with a diff, thus it
                 // needs to return it directly rather than assigning it to
                 // toReturn.
-                return encodeObject(value, (Class<?>) valueType, (JsonObject) diffState, connectorTracker);
+                return encodeObject(value, (Class<?>) valueType,
+                        (JsonObject) diffState, connectorTracker);
             }
         } else {
             throw new JsonException("Can not encode type " + valueType);
@@ -614,7 +697,8 @@ public class JsonCodec implements Serializable {
         return new EncodeResult(toReturn);
     }
 
-    public static Collection<BeanProperty> getProperties(Class<?> type) throws IntrospectionException {
+    public static Collection<BeanProperty> getProperties(Class<?> type)
+            throws IntrospectionException {
         Collection<BeanProperty> cachedProperties = typePropertyCache.get(type);
         if (cachedProperties != null) {
             return cachedProperties;
@@ -633,7 +717,8 @@ public class JsonCodec implements Serializable {
     /*
      * Loops through the fields of value and encodes them.
      */
-    private static EncodeResult encodeObject(Object value, Class<?> valueType, JsonObject referenceValue, ConnectorTracker connectorTracker) {
+    private static EncodeResult encodeObject(Object value, Class<?> valueType,
+            JsonObject referenceValue, ConnectorTracker connectorTracker) {
         JsonObject encoded = Json.createObject();
         JsonObject diff = Json.createObject();
 
@@ -646,7 +731,11 @@ public class JsonCodec implements Serializable {
                 Object fieldValue = property.getValue(value);
 
                 if (encoded.hasKey(fieldName)) {
-                    throw new RuntimeException("Can't encode " + valueType.getName() + " as it has multiple properties with the name " + fieldName.toLowerCase() + ". This can happen if there are getters and setters for a public field (the framework can't know which to ignore) or if there are properties with only casing distinguishing between the names (e.g. getFoo() and getFOO())");
+                    throw new RuntimeException("Can't encode "
+                            + valueType.getName()
+                            + " as it has multiple properties with the name "
+                            + fieldName.toLowerCase()
+                            + ". This can happen if there are getters and setters for a public field (the framework can't know which to ignore) or if there are properties with only casing distinguishing between the names (e.g. getFoo() and getFOO())");
                 }
 
                 JsonValue fieldReference;
@@ -659,10 +748,12 @@ public class JsonCodec implements Serializable {
                     fieldReference = null;
                 }
 
-                EncodeResult encodeResult = encode(fieldValue, fieldReference, fieldType, connectorTracker);
+                EncodeResult encodeResult = encode(fieldValue, fieldReference,
+                        fieldType, connectorTracker);
                 encoded.put(fieldName, encodeResult.getEncodedValue());
 
-                if (valueChanged(encodeResult.getEncodedValue(), fieldReference)) {
+                if (valueChanged(encodeResult.getEncodedValue(),
+                        fieldReference)) {
                     diff.put(fieldName, encodeResult.getDiffOrValue());
                 }
             }
@@ -680,7 +771,8 @@ public class JsonCodec implements Serializable {
      * @param referenceValue
      * @return
      */
-    private static boolean valueChanged(JsonValue fieldValue, JsonValue referenceValue) {
+    private static boolean valueChanged(JsonValue fieldValue,
+            JsonValue referenceValue) {
         if (fieldValue instanceof JsonNull) {
             fieldValue = null;
         }
@@ -770,40 +862,49 @@ public class JsonCodec implements Serializable {
         return true;
     }
 
-    private static JsonArray encodeArrayContents(Type componentType, Object array, ConnectorTracker connectorTracker) {
+    private static JsonArray encodeArrayContents(Type componentType,
+            Object array, ConnectorTracker connectorTracker) {
         JsonArray jsonArray = Json.createArray();
         for (int i = 0; i < Array.getLength(array); i++) {
-            EncodeResult encodeResult = encode(Array.get(array, i), null, componentType, connectorTracker);
+            EncodeResult encodeResult = encode(Array.get(array, i), null,
+                    componentType, connectorTracker);
             jsonArray.set(i, encodeResult.getEncodedValue());
         }
         return jsonArray;
     }
 
-    private static JsonArray encodeCollection(Type targetType, Collection<?> collection, ConnectorTracker connectorTracker) {
+    private static JsonArray encodeCollection(Type targetType,
+            Collection<?> collection, ConnectorTracker connectorTracker) {
         JsonArray jsonArray = Json.createArray();
         for (Object o : collection) {
-            jsonArray.set(jsonArray.length(), encodeChild(targetType, 0, o, connectorTracker));
+            jsonArray.set(jsonArray.length(),
+                    encodeChild(targetType, 0, o, connectorTracker));
         }
         return jsonArray;
     }
 
-    private static JsonValue encodeChild(Type targetType, int typeIndex, Object o, ConnectorTracker connectorTracker) {
+    private static JsonValue encodeChild(Type targetType, int typeIndex,
+            Object o, ConnectorTracker connectorTracker) {
         if (targetType instanceof ParameterizedType) {
-            Type childType = ((ParameterizedType) targetType).getActualTypeArguments()[typeIndex];
+            Type childType = ((ParameterizedType) targetType)
+                    .getActualTypeArguments()[typeIndex];
             // Encode using the given type
-            EncodeResult encodeResult = encode(o, null, childType, connectorTracker);
+            EncodeResult encodeResult = encode(o, null, childType,
+                    connectorTracker);
             return encodeResult.getEncodedValue();
         } else {
             throw new JsonException("Collection is missing generics");
         }
     }
 
-    private static JsonValue encodeMap(Type mapType, Map<?, ?> map, ConnectorTracker connectorTracker) {
+    private static JsonValue encodeMap(Type mapType, Map<?, ?> map,
+            ConnectorTracker connectorTracker) {
         Type keyType, valueType;
 
         if (mapType instanceof ParameterizedType) {
             keyType = ((ParameterizedType) mapType).getActualTypeArguments()[0];
-            valueType = ((ParameterizedType) mapType).getActualTypeArguments()[1];
+            valueType = ((ParameterizedType) mapType)
+                    .getActualTypeArguments()[1];
         } else {
             throw new JsonException("Map is missing generics");
         }
@@ -823,13 +924,16 @@ public class JsonCodec implements Serializable {
         }
     }
 
-    private static JsonArray encodeObjectMap(Type keyType, Type valueType, Map<?, ?> map, ConnectorTracker connectorTracker) {
+    private static JsonArray encodeObjectMap(Type keyType, Type valueType,
+            Map<?, ?> map, ConnectorTracker connectorTracker) {
         JsonArray keys = Json.createArray();
         JsonArray values = Json.createArray();
 
         for (Entry<?, ?> entry : map.entrySet()) {
-            EncodeResult encodedKey = encode(entry.getKey(), null, keyType, connectorTracker);
-            EncodeResult encodedValue = encode(entry.getValue(), null, valueType, connectorTracker);
+            EncodeResult encodedKey = encode(entry.getKey(), null, keyType,
+                    connectorTracker);
+            EncodeResult encodedValue = encode(entry.getValue(), null,
+                    valueType, connectorTracker);
 
             keys.set(keys.length(), encodedKey.getEncodedValue());
             values.set(values.length(), encodedValue.getEncodedValue());
@@ -845,26 +949,31 @@ public class JsonCodec implements Serializable {
     /*
      * Encodes a connector map. Invisible connectors are skipped.
      */
-    private static JsonObject encodeConnectorMap(Type valueType, Map<?, ?> map, ConnectorTracker connectorTracker) {
+    private static JsonObject encodeConnectorMap(Type valueType, Map<?, ?> map,
+            ConnectorTracker connectorTracker) {
         JsonObject jsonMap = Json.createObject();
 
         for (Entry<?, ?> entry : map.entrySet()) {
             ClientConnector key = (ClientConnector) entry.getKey();
             if (LegacyCommunicationManager.isConnectorVisibleToClient(key)) {
-                EncodeResult encodedValue = encode(entry.getValue(), null, valueType, connectorTracker);
-                jsonMap.put(key.getConnectorId(), encodedValue.getEncodedValue());
+                EncodeResult encodedValue = encode(entry.getValue(), null,
+                        valueType, connectorTracker);
+                jsonMap.put(key.getConnectorId(),
+                        encodedValue.getEncodedValue());
             }
         }
 
         return jsonMap;
     }
 
-    private static JsonObject encodeStringMap(Type valueType, Map<?, ?> map, ConnectorTracker connectorTracker) {
+    private static JsonObject encodeStringMap(Type valueType, Map<?, ?> map,
+            ConnectorTracker connectorTracker) {
         JsonObject jsonMap = Json.createObject();
 
         for (Entry<?, ?> entry : map.entrySet()) {
             String key = (String) entry.getKey();
-            EncodeResult encodedValue = encode(entry.getValue(), null, valueType, connectorTracker);
+            EncodeResult encodedValue = encode(entry.getValue(), null,
+                    valueType, connectorTracker);
             jsonMap.put(key, encodedValue.getEncodedValue());
         }
 
@@ -880,7 +989,8 @@ public class JsonCodec implements Serializable {
         return typeToTransportType.get(getClassForType(valueType));
     }
 
-    private static JsonValue serializeJson(Object value, ConnectorTracker connectorTracker) {
+    private static JsonValue serializeJson(Object value,
+            ConnectorTracker connectorTracker) {
         JSONSerializer serializer = customSerializers.get(value.getClass());
         return serializer.serialize(value, connectorTracker);
     }

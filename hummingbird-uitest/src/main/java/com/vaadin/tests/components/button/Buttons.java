@@ -21,20 +21,29 @@ public class Buttons extends ComponentTestCase<Button> {
             l.setWidth(null);
             addTestComponent(l);
 
-            l = createButton("This is an undefined wide button with fixed 100px height", nat);
+            l = createButton(
+                    "This is an undefined wide button with fixed 100px height",
+                    nat);
             l.setWidth(null);
             l.setHeight("100px");
             addTestComponent(l);
 
-            l = createButton("This is a 200px wide simple button with a much longer caption", nat);
+            l = createButton(
+                    "This is a 200px wide simple button with a much longer caption",
+                    nat);
             l.setWidth("200px");
             addTestComponent(l);
 
-            l = createButton("This is a 100% wide simple button " + LoremIpsum.get(1500), nat);
+            l = createButton(
+                    "This is a 100% wide simple button " + LoremIpsum.get(1500),
+                    nat);
             l.setWidth("100%");
             addTestComponent(l);
 
-            l = createButton("This is a 100% wide button with fixed 65px height. " + LoremIpsum.get(5000), nat);
+            l = createButton(
+                    "This is a 100% wide button with fixed 65px height. "
+                            + LoremIpsum.get(5000),
+                    nat);
             l.setWidth("100%");
             l.setHeight("65px");
 

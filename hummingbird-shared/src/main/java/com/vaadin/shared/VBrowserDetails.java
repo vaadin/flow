@@ -70,7 +70,9 @@ public class VBrowserDetails implements Serializable {
         userAgent = userAgent.toLowerCase();
 
         // browser engine name
-        isGecko = userAgent.indexOf("gecko") != -1 && userAgent.indexOf("webkit") == -1 && userAgent.indexOf("trident/") == -1;
+        isGecko = userAgent.indexOf("gecko") != -1
+                && userAgent.indexOf("webkit") == -1
+                && userAgent.indexOf("trident/") == -1;
         isPresto = userAgent.indexOf(" presto/") != -1;
         isTrident = userAgent.indexOf("trident/") != -1;
         isWebKit = !isTrident && userAgent.indexOf("applewebkit") != -1;
@@ -78,7 +80,8 @@ public class VBrowserDetails implements Serializable {
         // browser name
         isChrome = userAgent.indexOf(" chrome/") != -1;
         isOpera = userAgent.indexOf("opera") != -1;
-        isIE = userAgent.indexOf("msie") != -1 && !isOpera && (userAgent.indexOf("webtv") == -1);
+        isIE = userAgent.indexOf("msie") != -1 && !isOpera
+                && (userAgent.indexOf("webtv") == -1);
         // IE 11 no longer contains MSIE in the user agent
         isIE = isIE || isTrident;
 
@@ -100,20 +103,23 @@ public class VBrowserDetails implements Serializable {
                     browserEngineVersion = Float.parseFloat(tmp);
                 }
             } else if (isWebKit) {
-                String tmp = userAgent.substring(userAgent.indexOf("webkit/") + 7);
+                String tmp = userAgent
+                        .substring(userAgent.indexOf("webkit/") + 7);
                 tmp = tmp.replaceFirst("([0-9]+)[^0-9].+", "$1");
                 browserEngineVersion = Float.parseFloat(tmp);
             } else if (isIE) {
                 int tridentPos = userAgent.indexOf("trident/");
                 if (tridentPos >= 0) {
-                    String tmp = userAgent.substring(tridentPos + "Trident/".length());
+                    String tmp = userAgent
+                            .substring(tridentPos + "Trident/".length());
                     tmp = tmp.replaceFirst("([0-9]+\\.[0-9]+).*", "$1");
                     browserEngineVersion = Float.parseFloat(tmp);
                 }
             }
         } catch (Exception e) {
             // Browser engine version parsing failed
-            System.err.println("Browser engine version parsing failed for: " + userAgent);
+            System.err.println(
+                    "Browser engine version parsing failed for: " + userAgent);
         }
 
         // Browser version
@@ -128,8 +134,10 @@ public class VBrowserDetails implements Serializable {
                         parseVersionString(tmp);
                     }
                 } else {
-                    String ieVersionString = userAgent.substring(userAgent.indexOf("msie ") + 5);
-                    ieVersionString = safeSubstring(ieVersionString, 0, ieVersionString.indexOf(";"));
+                    String ieVersionString = userAgent
+                            .substring(userAgent.indexOf("msie ") + 5);
+                    ieVersionString = safeSubstring(ieVersionString, 0,
+                            ieVersionString.indexOf(";"));
                     parseVersionString(ieVersionString);
                 }
             } else if (isFirefox) {
@@ -153,7 +161,8 @@ public class VBrowserDetails implements Serializable {
             }
         } catch (Exception e) {
             // Browser version parsing failed
-            System.err.println("Browser version parsing failed for: " + userAgent);
+            System.err.println(
+                    "Browser version parsing failed for: " + userAgent);
         }
 
         // Operating system
@@ -165,7 +174,9 @@ public class VBrowserDetails implements Serializable {
             parseAndroidVersion(userAgent);
         } else if (userAgent.contains("linux")) {
             os = OperatingSystem.LINUX;
-        } else if (userAgent.contains("macintosh") || userAgent.contains("mac osx") || userAgent.contains("mac os x")) {
+        } else
+            if (userAgent.contains("macintosh") || userAgent.contains("mac osx")
+                    || userAgent.contains("mac os x")) {
             isIPad = userAgent.contains("ipad");
             isIPhone = userAgent.contains("iphone");
             if (isIPad || userAgent.contains("ipod") || isIPhone) {
@@ -183,8 +194,11 @@ public class VBrowserDetails implements Serializable {
             return;
         }
 
-        String osVersionString = safeSubstring(userAgent, userAgent.indexOf("android ") + "android ".length(), userAgent.length());
-        osVersionString = safeSubstring(osVersionString, 0, osVersionString.indexOf(";"));
+        String osVersionString = safeSubstring(userAgent,
+                userAgent.indexOf("android ") + "android ".length(),
+                userAgent.length());
+        osVersionString = safeSubstring(osVersionString, 0,
+                osVersionString.indexOf(";"));
         String[] parts = osVersionString.split("\\.");
         parseOsVersion(parts);
     }
@@ -195,7 +209,8 @@ public class VBrowserDetails implements Serializable {
             return;
         }
 
-        String osVersionString = safeSubstring(userAgent, userAgent.indexOf("os ") + 3, userAgent.indexOf(" like mac"));
+        String osVersionString = safeSubstring(userAgent,
+                userAgent.indexOf("os ") + 3, userAgent.indexOf(" like mac"));
         String[] parts = osVersionString.split("_");
         parseOsVersion(parts);
     }
@@ -218,7 +233,8 @@ public class VBrowserDetails implements Serializable {
             // Some Androids report version numbers as "2.1-update1"
             if (osMinorVersion == -1 && parts[1].contains("-")) {
                 try {
-                    osMinorVersion = Integer.parseInt(parts[1].substring(0, parts[1].indexOf('-')));
+                    osMinorVersion = Integer.parseInt(
+                            parts[1].substring(0, parts[1].indexOf('-')));
                 } catch (Exception ee) {
                 }
             }
@@ -231,14 +247,17 @@ public class VBrowserDetails implements Serializable {
         if (idx < 0) {
             idx = versionString.length();
         }
-        browserMajorVersion = Integer.parseInt(safeSubstring(versionString, 0, idx));
+        browserMajorVersion = Integer
+                .parseInt(safeSubstring(versionString, 0, idx));
 
         int idx2 = versionString.indexOf('.', idx + 1);
         if (idx2 < 0) {
             idx2 = versionString.length();
         }
         try {
-            browserMinorVersion = Integer.parseInt(safeSubstring(versionString, idx + 1, idx2).replaceAll("[^0-9].*", ""));
+            browserMinorVersion = Integer
+                    .parseInt(safeSubstring(versionString, idx + 1, idx2)
+                            .replaceAll("[^0-9].*", ""));
         } catch (NumberFormatException e) {
             // leave the minor version unmodified (-1 = unknown)
         }
@@ -517,7 +536,8 @@ public class VBrowserDetails implements Serializable {
      */
     public boolean isTooOldToFunctionProperly() {
         // Check Trident version to detect compatibility mode
-        if (isIE() && getBrowserMajorVersion() < 8 && getBrowserEngineVersion() < 4) {
+        if (isIE() && getBrowserMajorVersion() < 8
+                && getBrowserEngineVersion() < 4) {
             return true;
         }
         // Webkit 533 in Safari 4.1+, Android 2.2+, iOS 4+

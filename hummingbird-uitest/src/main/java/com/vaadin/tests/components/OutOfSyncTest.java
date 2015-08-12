@@ -35,11 +35,14 @@ public class OutOfSyncTest extends MultiBrowserTest {
         // it to be out of sync) the test UI calls markClean() on the Button to
         // make it not update with the response.
         $(ButtonElement.class).first().click();
-        Assert.assertTrue("Button should not have disappeared on the first click.", $(ButtonElement.class).exists());
+        Assert.assertTrue(
+                "Button should not have disappeared on the first click.",
+                $(ButtonElement.class).exists());
 
         // Truly out of sync, full resync is forced.
         $(ButtonElement.class).first().click();
-        Assert.assertFalse("Button should disappear with the second click.", $(ButtonElement.class).exists());
+        Assert.assertFalse("Button should disappear with the second click.",
+                $(ButtonElement.class).exists());
     }
 
 }

@@ -37,7 +37,8 @@ public class MethodInvocation implements Serializable {
         this.methodName = methodName;
     }
 
-    public MethodInvocation(String interfaceName, String methodName, Object[] parameters) {
+    public MethodInvocation(String interfaceName, String methodName,
+            Object[] parameters) {
         this(interfaceName, methodName);
         setParameters(parameters);
     }
@@ -60,7 +61,8 @@ public class MethodInvocation implements Serializable {
 
     @Override
     public String toString() {
-        return interfaceName + "." + methodName + "(" + Arrays.toString(parameters) + ")";
+        return interfaceName + "." + methodName + "("
+                + Arrays.toString(parameters) + ")";
     }
 
     /**

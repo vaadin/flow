@@ -42,8 +42,8 @@ import com.vaadin.ui.declarative.DesignContext;
  * >Mozilla Developer Network</a>.
  * 
  * Multiple sources can be specified. Which of the sources is used is selected
- * by the browser depending on which file formats it supports. See <a
- * href="http://en.wikipedia.org/wiki/HTML5_video#Table">wikipedia</a> for a
+ * by the browser depending on which file formats it supports. See
+ * <a href="http://en.wikipedia.org/wiki/HTML5_video#Table">wikipedia</a> for a
  * table of formats supported by different browsers.
  * 
  * @author Vaadin Ltd
@@ -102,7 +102,8 @@ public class Video extends AbstractMedia {
         Elements elems = design.getElementsByTag("poster");
         for (Element poster : elems) {
             if (getPoster() == null && poster.hasAttr("href")) {
-                setPoster(DesignAttributeHandler.readAttribute("href", poster.attributes(), Resource.class));
+                setPoster(DesignAttributeHandler.readAttribute("href",
+                        poster.attributes(), Resource.class));
             }
             poster.remove();
         }
@@ -116,7 +117,8 @@ public class Video extends AbstractMedia {
         super.writeDesign(design, designContext);
         if (getPoster() != null) {
             Attributes attr = design.appendElement("poster").attributes();
-            DesignAttributeHandler.writeAttribute("href", attr, getPoster(), null, Resource.class);
+            DesignAttributeHandler.writeAttribute("href", attr, getPoster(),
+                    null, Resource.class);
         }
     }
 

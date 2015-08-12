@@ -96,7 +96,7 @@ public class JavaScriptManager {
             }
             target = target[part];
         }
-
+    
         $wnd.console.log('removing',parts[parts.length - 1],'from',target);
         delete target[parts[parts.length - 1]];
     }-*/;

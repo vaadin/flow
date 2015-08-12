@@ -24,11 +24,14 @@ public class DefaultUIProvider extends UIProvider {
     public Class<? extends UI> getUIClass(UIClassSelectionEvent event) {
         VaadinRequest request = event.getRequest();
 
-        String uiClassName = request.getService().getDeploymentConfiguration().getUIClassName();
+        String uiClassName = request.getService().getDeploymentConfiguration()
+                .getUIClassName();
         if (uiClassName != null) {
             ClassLoader classLoader = request.getService().getClassLoader();
             try {
-                Class<? extends UI> uiClass = Class.forName(uiClassName, true, classLoader).asSubclass(UI.class);
+                Class<? extends UI> uiClass = Class
+                        .forName(uiClassName, true, classLoader)
+                        .asSubclass(UI.class);
 
                 return uiClass;
             } catch (ClassNotFoundException e) {

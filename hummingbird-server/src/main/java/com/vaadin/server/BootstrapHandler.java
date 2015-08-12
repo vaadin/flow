@@ -84,7 +84,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         private JsonObject applicationParameters;
         private VaadinUriResolver uriResolver;
 
-        public BootstrapContext(VaadinResponse response, BootstrapFragmentResponse bootstrapResponse) {
+        public BootstrapContext(VaadinResponse response,
+                BootstrapFragmentResponse bootstrapResponse) {
             this.response = response;
             this.bootstrapResponse = bootstrapResponse;
         }
@@ -114,14 +115,18 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         public PushMode getPushMode() {
             if (pushMode == null) {
-                UICreateEvent event = new UICreateEvent(getRequest(), getUIClass());
+                UICreateEvent event = new UICreateEvent(getRequest(),
+                        getUIClass());
 
-                pushMode = getBootstrapResponse().getUIProvider().getPushMode(event);
+                pushMode = getBootstrapResponse().getUIProvider()
+                        .getPushMode(event);
                 if (pushMode == null) {
-                    pushMode = getRequest().getService().getDeploymentConfiguration().getPushMode();
+                    pushMode = getRequest().getService()
+                            .getDeploymentConfiguration().getPushMode();
                 }
 
-                if (pushMode.isEnabled() && !getRequest().getService().ensurePushAvailable()) {
+                if (pushMode.isEnabled()
+                        && !getRequest().getService().ensurePushAvailable()) {
                     /*
                      * Fall back if not supported (ensurePushAvailable will log
                      * information to the developer the first time this happens)
@@ -134,7 +139,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         public String getAppId() {
             if (appId == null) {
-                appId = getRequest().getService().getMainDivId(getSession(), getRequest(), getUIClass());
+                appId = getRequest().getService().getMainDivId(getSession(),
+                        getRequest(), getUIClass());
             }
             return appId;
         }
@@ -145,7 +151,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         public JsonObject getApplicationParameters() {
             if (applicationParameters == null) {
-                applicationParameters = BootstrapHandler.this.getApplicationParameters(this);
+                applicationParameters = BootstrapHandler.this
+                        .getApplicationParameters(this);
             }
 
             return applicationParameters;
@@ -169,7 +176,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         @Override
         protected String getVaadinDirUrl() {
-            return context.getApplicationParameters().getString(ApplicationConstants.VAADIN_DIR_URL);
+            return context.getApplicationParameters()
+                    .getString(ApplicationConstants.VAADIN_DIR_URL);
         }
 
         @Override
@@ -179,12 +187,14 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         @Override
         protected String getServiceUrlParameterName() {
-            return getConfigOrNull(ApplicationConstants.SERVICE_URL_PARAMETER_NAME);
+            return getConfigOrNull(
+                    ApplicationConstants.SERVICE_URL_PARAMETER_NAME);
         }
 
         @Override
         protected String getServiceUrl() {
-            String serviceUrl = getConfigOrNull(ApplicationConstants.SERVICE_URL);
+            String serviceUrl = getConfigOrNull(
+                    ApplicationConstants.SERVICE_URL);
             if (serviceUrl == null) {
                 return "./";
             } else if (!serviceUrl.endsWith("/")) {
@@ -216,11 +226,13 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response) throws IOException {
         try {
             List<UIProvider> uiProviders = session.getUIProviders();
 
-            UIClassSelectionEvent classSelectionEvent = new UIClassSelectionEvent(request);
+            UIClassSelectionEvent classSelectionEvent = new UIClassSelectionEvent(
+                    request);
 
             // Find UI provider and UI class
             Class<? extends UI> uiClass = null;
@@ -239,11 +251,14 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 return false;
             }
 
-            BootstrapContext context = new BootstrapContext(response, new BootstrapFragmentResponse(this, request, session, uiClass, new ArrayList<Node>(), provider));
+            BootstrapContext context = new BootstrapContext(response,
+                    new BootstrapFragmentResponse(this, request, session,
+                            uiClass, new ArrayList<Node>(), provider));
 
             setupMainDiv(context);
 
-            BootstrapFragmentResponse fragmentResponse = context.getBootstrapResponse();
+            BootstrapFragmentResponse fragmentResponse = context
+                    .getBootstrapResponse();
             session.modifyBootstrapResponse(fragmentResponse);
 
             String html = getBootstrapHtml(context);
@@ -261,12 +276,15 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         VaadinResponse response = context.getResponse();
         VaadinService vaadinService = request.getService();
 
-        BootstrapFragmentResponse fragmentResponse = context.getBootstrapResponse();
+        BootstrapFragmentResponse fragmentResponse = context
+                .getBootstrapResponse();
 
         if (vaadinService.isStandalone(request)) {
             Map<String, Object> headers = new LinkedHashMap<String, Object>();
             Document document = Document.createShell("");
-            BootstrapPageResponse pageResponse = new BootstrapPageResponse(this, request, context.getSession(), context.getUIClass(), document, headers, fragmentResponse.getUIProvider());
+            BootstrapPageResponse pageResponse = new BootstrapPageResponse(this,
+                    request, context.getSession(), context.getUIClass(),
+                    document, headers, fragmentResponse.getUIProvider());
             List<Node> fragmentNodes = fragmentResponse.getFragmentNodes();
             Element body = document.body();
             for (Node node : fragmentNodes) {
@@ -292,87 +310,114 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    private void sendBootstrapHeaders(VaadinResponse response, Map<String, Object> headers) {
+    private void sendBootstrapHeaders(VaadinResponse response,
+            Map<String, Object> headers) {
         Set<Entry<String, Object>> entrySet = headers.entrySet();
         for (Entry<String, Object> header : entrySet) {
             Object value = header.getValue();
             if (value instanceof String) {
                 response.setHeader(header.getKey(), (String) value);
             } else if (value instanceof Long) {
-                response.setDateHeader(header.getKey(), ((Long) value).longValue());
+                response.setDateHeader(header.getKey(),
+                        ((Long) value).longValue());
             } else {
-                throw new RuntimeException("Unsupported header value: " + value);
+                throw new RuntimeException(
+                        "Unsupported header value: " + value);
             }
         }
     }
 
-    private void writeBootstrapPage(VaadinResponse response, String html) throws IOException {
+    private void writeBootstrapPage(VaadinResponse response, String html)
+            throws IOException {
         response.setContentType("text/html");
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
+        BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
         writer.append(html);
         writer.close();
     }
 
-    private void setupStandaloneDocument(BootstrapContext context, BootstrapPageResponse response) {
+    private void setupStandaloneDocument(BootstrapContext context,
+            BootstrapPageResponse response) {
         response.setHeader("Cache-Control", "no-cache");
         response.setHeader("Pragma", "no-cache");
         response.setDateHeader("Expires", 0);
 
         Document document = response.getDocument();
 
-        DocumentType doctype = new DocumentType("html", "", "", document.baseUri());
+        DocumentType doctype = new DocumentType("html", "", "",
+                document.baseUri());
         document.child(0).before(doctype);
 
         Element head = document.head();
-        head.appendElement("meta").attr("http-equiv", "Content-Type").attr("content", "text/html; charset=utf-8");
+        head.appendElement("meta").attr("http-equiv", "Content-Type")
+                .attr("content", "text/html; charset=utf-8");
 
         Class<? extends UI> uiClass = context.getUIClass();
 
         String viewportContent = null;
         Viewport viewportAnnotation = uiClass.getAnnotation(Viewport.class);
-        ViewportGeneratorClass viewportGeneratorClassAnnotation = uiClass.getAnnotation(ViewportGeneratorClass.class);
-        if (viewportAnnotation != null && viewportGeneratorClassAnnotation != null) {
-            throw new IllegalStateException(uiClass.getCanonicalName() + " cannot be annotated with both @" + Viewport.class.getSimpleName() + " and @" + ViewportGeneratorClass.class.getSimpleName());
+        ViewportGeneratorClass viewportGeneratorClassAnnotation = uiClass
+                .getAnnotation(ViewportGeneratorClass.class);
+        if (viewportAnnotation != null
+                && viewportGeneratorClassAnnotation != null) {
+            throw new IllegalStateException(uiClass.getCanonicalName()
+                    + " cannot be annotated with both @"
+                    + Viewport.class.getSimpleName() + " and @"
+                    + ViewportGeneratorClass.class.getSimpleName());
         }
 
         if (viewportAnnotation != null) {
             viewportContent = viewportAnnotation.value();
         } else if (viewportGeneratorClassAnnotation != null) {
-            Class<? extends ViewportGenerator> viewportGeneratorClass = viewportGeneratorClassAnnotation.value();
+            Class<? extends ViewportGenerator> viewportGeneratorClass = viewportGeneratorClassAnnotation
+                    .value();
             try {
-                viewportContent = viewportGeneratorClass.newInstance().getViewport(context.getRequest());
+                viewportContent = viewportGeneratorClass.newInstance()
+                        .getViewport(context.getRequest());
             } catch (Exception e) {
-                throw new RuntimeException("Error processing viewport generator " + viewportGeneratorClass.getCanonicalName(), e);
+                throw new RuntimeException(
+                        "Error processing viewport generator "
+                                + viewportGeneratorClass.getCanonicalName(),
+                        e);
             }
         }
 
         if (viewportContent != null) {
-            head.appendElement("meta").attr("name", "viewport").attr("content", viewportContent);
+            head.appendElement("meta").attr("name", "viewport").attr("content",
+                    viewportContent);
         }
 
-        String title = response.getUIProvider().getPageTitle(new UICreateEvent(context.getRequest(), context.getUIClass()));
+        String title = response.getUIProvider().getPageTitle(
+                new UICreateEvent(context.getRequest(), context.getUIClass()));
         if (title != null) {
             head.appendElement("title").appendText(title);
         }
 
-        head.appendElement("style").attr("type", "text/css").appendText("html, body {height:100%;margin:0;}");
+        head.appendElement("style").attr("type", "text/css")
+                .appendText("html, body {height:100%;margin:0;}");
 
         // Add favicon links
         String themeName = context.getThemeName();
         if (themeName != null) {
             String themeUri = getThemeUri(context, themeName);
-            head.appendElement("link").attr("rel", "shortcut icon").attr("type", "image/vnd.microsoft.icon").attr("href", themeUri + "/favicon.ico");
-            head.appendElement("link").attr("rel", "icon").attr("type", "image/vnd.microsoft.icon").attr("href", themeUri + "/favicon.ico");
+            head.appendElement("link").attr("rel", "shortcut icon")
+                    .attr("type", "image/vnd.microsoft.icon")
+                    .attr("href", themeUri + "/favicon.ico");
+            head.appendElement("link").attr("rel", "icon")
+                    .attr("type", "image/vnd.microsoft.icon")
+                    .attr("href", themeUri + "/favicon.ico");
         }
 
-        List<Class<? extends Component>> uiClassAndParents = getComponentAndParents(uiClass);
+        List<Class<? extends Component>> uiClassAndParents = getComponentAndParents(
+                uiClass);
         for (Class<? extends Component> c : uiClassAndParents) {
             JavaScript javaScript = c.getAnnotation(JavaScript.class);
             if (javaScript != null) {
                 String[] resources = javaScript.value();
                 for (String resource : resources) {
                     String url = registerDependency(context, uiClass, resource);
-                    head.appendElement("script").attr("type", "text/javascript").attr("src", url);
+                    head.appendElement("script").attr("type", "text/javascript")
+                            .attr("src", url);
                 }
             }
 
@@ -381,7 +426,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 String[] resources = html.value();
                 for (String resource : resources) {
                     String url = registerDependency(context, uiClass, resource);
-                    head.appendElement("link").attr("rel", "import").attr("href", url);
+                    head.appendElement("link").attr("rel", "import")
+                            .attr("href", url);
                 }
             }
 
@@ -390,7 +436,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 String[] resources = styleSheet.value();
                 for (String resource : resources) {
                     String url = registerDependency(context, uiClass, resource);
-                    head.appendElement("link").attr("rel", "stylesheet").attr("type", "text/css").attr("href", url);
+                    head.appendElement("link").attr("rel", "stylesheet")
+                            .attr("type", "text/css").attr("href", url);
                 }
             }
         }
@@ -405,7 +452,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
      * @param uiClass
      * @return
      */
-    private List<Class<? extends Component>> getComponentAndParents(Class<?> cls) {
+    private List<Class<? extends Component>> getComponentAndParents(
+            Class<?> cls) {
         List<Class<? extends Component>> result = new ArrayList<>();
         while (Component.class.isAssignableFrom(cls)) {
             result.add((Class<? extends Component>) cls);
@@ -414,8 +462,10 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return result;
     }
 
-    private String registerDependency(BootstrapContext context, Class<? extends UI> uiClass, String resource) {
-        String url = context.getSession().getCommunicationManager().registerDependency(resource, uiClass);
+    private String registerDependency(BootstrapContext context,
+            Class<? extends UI> uiClass, String resource) {
+        String url = context.getSession().getCommunicationManager()
+                .registerDependency(resource, uiClass);
 
         url = context.getUriResolver().resolveVaadinUri(url);
 
@@ -448,36 +498,45 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
          *      <themeName, remove non-alphanum>
          */
 
-        List<Node> fragmentNodes = context.getBootstrapResponse().getFragmentNodes();
+        List<Node> fragmentNodes = context.getBootstrapResponse()
+                .getFragmentNodes();
 
         Element mainDiv = new Element(Tag.valueOf("div"), "");
         mainDiv.attr("id", context.getAppId());
         mainDiv.addClass("v-app");
         mainDiv.addClass(context.getThemeName());
-        mainDiv.addClass(context.getUIClass().getSimpleName().toLowerCase(Locale.ENGLISH));
+        mainDiv.addClass(context.getUIClass().getSimpleName()
+                .toLowerCase(Locale.ENGLISH));
         if (style != null && style.length() != 0) {
             mainDiv.attr("style", style);
         }
         mainDiv.appendElement("div").addClass("v-app-loading");
-        mainDiv.appendElement("noscript").append("You have to enable javascript in your browser to use an application built with Vaadin.");
+        mainDiv.appendElement("noscript").append(
+                "You have to enable javascript in your browser to use an application built with Vaadin.");
         fragmentNodes.add(mainDiv);
 
         VaadinRequest request = context.getRequest();
 
         VaadinService vaadinService = request.getService();
-        String vaadinLocation = vaadinService.getStaticFileLocation(request) + "/VAADIN/";
+        String vaadinLocation = vaadinService.getStaticFileLocation(request)
+                + "/VAADIN/";
 
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
 
         // Client engine
-        fragmentNodes.add(new Element(Tag.valueOf("script"), "").attr("type", "text/javascript").attr("src", vaadinLocation + "gwt/" + Constants.CLIENT_ENGINE_MODULE + "/" + Constants.CLIENT_ENGINE_MODULE + ".nocache.js"));
+        fragmentNodes.add(new Element(Tag.valueOf("script"), "")
+                .attr("type", "text/javascript").attr("src",
+                        vaadinLocation + "gwt/" + Constants.CLIENT_ENGINE_MODULE
+                                + "/" + Constants.CLIENT_ENGINE_MODULE
+                                + ".nocache.js"));
 
         // Push
         if (context.getPushMode().isEnabled()) {
             // Load client-side dependencies for push support
             String pushJS = vaadinLocation;
-            if (context.getRequest().getService().getDeploymentConfiguration().isProductionMode()) {
+            if (context.getRequest().getService().getDeploymentConfiguration()
+                    .isProductionMode()) {
                 pushJS += ApplicationConstants.VAADIN_PUSH_JS;
             } else {
                 pushJS += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
@@ -485,30 +544,40 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
             pushJS += versionQueryParam;
 
-            fragmentNodes.add(new Element(Tag.valueOf("script"), "").attr("type", "text/javascript").attr("src", pushJS));
+            fragmentNodes.add(new Element(Tag.valueOf("script"), "")
+                    .attr("type", "text/javascript").attr("src", pushJS));
         }
 
-        String bootstrapLocation = vaadinLocation + ApplicationConstants.VAADIN_BOOTSTRAP_JS + versionQueryParam;
-        fragmentNodes.add(new Element(Tag.valueOf("script"), "").attr("type", "text/javascript").attr("src", bootstrapLocation));
+        String bootstrapLocation = vaadinLocation
+                + ApplicationConstants.VAADIN_BOOTSTRAP_JS + versionQueryParam;
+        fragmentNodes.add(new Element(Tag.valueOf("script"), "")
+                .attr("type", "text/javascript")
+                .attr("src", bootstrapLocation));
 
-        Element mainScriptTag = new Element(Tag.valueOf("script"), "").attr("type", "text/javascript");
+        Element mainScriptTag = new Element(Tag.valueOf("script"), "")
+                .attr("type", "text/javascript");
 
         StringBuilder builder = new StringBuilder();
         builder.append("//<![CDATA[\n");
-        builder.append("if (!window.vaadin) alert(" + JsonUtil.quote("Failed to load the bootstrap javascript: " + bootstrapLocation) + ");\n");
+        builder.append("if (!window.vaadin) alert(" + JsonUtil.quote(
+                "Failed to load the bootstrap javascript: " + bootstrapLocation)
+                + ");\n");
 
         appendMainScriptTagContents(context, builder);
 
         builder.append("//]]>");
-        mainScriptTag.appendChild(new DataNode(builder.toString(), mainScriptTag.baseUri()));
+        mainScriptTag.appendChild(
+                new DataNode(builder.toString(), mainScriptTag.baseUri()));
         fragmentNodes.add(mainScriptTag);
 
     }
 
-    protected void appendMainScriptTagContents(BootstrapContext context, StringBuilder builder) throws IOException {
+    protected void appendMainScriptTagContents(BootstrapContext context,
+            StringBuilder builder) throws IOException {
         JsonObject appConfig = context.getApplicationParameters();
 
-        boolean isDebug = !context.getSession().getConfiguration().isProductionMode();
+        boolean isDebug = !context.getSession().getConfiguration()
+                .isProductionMode();
 
         if (isDebug) {
             /*
@@ -516,9 +585,11 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
              * side Profiler if another implementation hasn't already been
              * added.
              */
-            builder.append("if (typeof window.__gwtStatsEvent != 'function') {\n");
+            builder.append(
+                    "if (typeof window.__gwtStatsEvent != 'function') {\n");
             builder.append("vaadin.gwtStatsEvents = [];\n");
-            builder.append("window.__gwtStatsEvent = function(event) {vaadin.gwtStatsEvents.push(event); return true;};\n");
+            builder.append(
+                    "window.__gwtStatsEvent = function(event) {vaadin.gwtStatsEvents.push(event); return true;};\n");
             builder.append("}\n");
         }
 
@@ -529,7 +600,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         builder.append(");\n");
     }
 
-    private static void appendJsonObject(StringBuilder builder, JsonObject jsonObject, boolean isDebug) {
+    private static void appendJsonObject(StringBuilder builder,
+            JsonObject jsonObject, boolean isDebug) {
         if (isDebug) {
             builder.append(JsonUtil.stringify(jsonObject, 4));
         } else {
@@ -551,13 +623,15 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         appConfig.put("client-engine", Constants.CLIENT_ENGINE_MODULE);
 
         // Ignore restartApplication that might be passed to UI init
-        if (request.getParameter(VaadinService.URL_PARAMETER_RESTART_APPLICATION) != null) {
+        if (request.getParameter(
+                VaadinService.URL_PARAMETER_RESTART_APPLICATION) != null) {
             appConfig.put("extraParams", "&" + IGNORE_RESTART_PARAM + "=1");
         }
 
         JsonObject versionInfo = Json.createObject();
         versionInfo.put("vaadinVersion", Version.getFullVersion());
-        String atmosphereVersion = AtmospherePushConnection.getAtmosphereVersion();
+        String atmosphereVersion = AtmospherePushConnection
+                .getAtmosphereVersion();
         if (atmosphereVersion != null) {
             versionInfo.put("atmosphereVersion", atmosphereVersion);
         }
@@ -565,36 +639,48 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         appConfig.put("versionInfo", versionInfo);
 
         // Use locale from session if set, else from the request
-        Locale locale = ServletPortletHelper.findLocale(null, context.getSession(), context.getRequest());
+        Locale locale = ServletPortletHelper.findLocale(null,
+                context.getSession(), context.getRequest());
         // Get system messages
-        SystemMessages systemMessages = vaadinService.getSystemMessages(locale, request);
+        SystemMessages systemMessages = vaadinService.getSystemMessages(locale,
+                request);
         if (systemMessages != null) {
             // Write the CommunicationError -message to client
             JsonObject comErrMsg = Json.createObject();
-            putValueOrNull(comErrMsg, "caption", systemMessages.getCommunicationErrorCaption());
-            putValueOrNull(comErrMsg, "message", systemMessages.getCommunicationErrorMessage());
-            putValueOrNull(comErrMsg, "url", systemMessages.getCommunicationErrorURL());
+            putValueOrNull(comErrMsg, "caption",
+                    systemMessages.getCommunicationErrorCaption());
+            putValueOrNull(comErrMsg, "message",
+                    systemMessages.getCommunicationErrorMessage());
+            putValueOrNull(comErrMsg, "url",
+                    systemMessages.getCommunicationErrorURL());
 
             appConfig.put("comErrMsg", comErrMsg);
 
             JsonObject authErrMsg = Json.createObject();
-            putValueOrNull(authErrMsg, "caption", systemMessages.getAuthenticationErrorCaption());
-            putValueOrNull(authErrMsg, "message", systemMessages.getAuthenticationErrorMessage());
-            putValueOrNull(authErrMsg, "url", systemMessages.getAuthenticationErrorURL());
+            putValueOrNull(authErrMsg, "caption",
+                    systemMessages.getAuthenticationErrorCaption());
+            putValueOrNull(authErrMsg, "message",
+                    systemMessages.getAuthenticationErrorMessage());
+            putValueOrNull(authErrMsg, "url",
+                    systemMessages.getAuthenticationErrorURL());
 
             appConfig.put("authErrMsg", authErrMsg);
 
             JsonObject sessExpMsg = Json.createObject();
-            putValueOrNull(sessExpMsg, "caption", systemMessages.getSessionExpiredCaption());
-            putValueOrNull(sessExpMsg, "message", systemMessages.getSessionExpiredMessage());
-            putValueOrNull(sessExpMsg, "url", systemMessages.getSessionExpiredURL());
+            putValueOrNull(sessExpMsg, "caption",
+                    systemMessages.getSessionExpiredCaption());
+            putValueOrNull(sessExpMsg, "message",
+                    systemMessages.getSessionExpiredMessage());
+            putValueOrNull(sessExpMsg, "url",
+                    systemMessages.getSessionExpiredURL());
 
             appConfig.put("sessExpMsg", sessExpMsg);
         }
 
         // getStaticFileLocation documented to never end with a slash
         // vaadinDir should always end with a slash
-        String vaadinDir = vaadinService.getStaticFileLocation(request) + "/VAADIN/";
+        String vaadinDir = vaadinService.getStaticFileLocation(request)
+                + "/VAADIN/";
         appConfig.put(ApplicationConstants.VAADIN_DIR_URL, vaadinDir);
 
         if (!session.getConfiguration().isProductionMode()) {
@@ -605,14 +691,16 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             appConfig.put("standalone", true);
         }
 
-        appConfig.put("heartbeatInterval", vaadinService.getDeploymentConfiguration().getHeartbeatInterval());
+        appConfig.put("heartbeatInterval", vaadinService
+                .getDeploymentConfiguration().getHeartbeatInterval());
 
         String serviceUrl = getServiceUrl(context);
         if (serviceUrl != null) {
             appConfig.put(ApplicationConstants.SERVICE_URL, serviceUrl);
         }
 
-        boolean sendUrlsAsParameters = vaadinService.getDeploymentConfiguration().isSendUrlsAsParameters();
+        boolean sendUrlsAsParameters = vaadinService
+                .getDeploymentConfiguration().isSendUrlsAsParameters();
         if (!sendUrlsAsParameters) {
             appConfig.put("sendUrlsAsParameters", false);
         }
@@ -635,8 +723,10 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
      */
     public String getThemeUri(BootstrapContext context, String themeName) {
         VaadinRequest request = context.getRequest();
-        final String staticFilePath = request.getService().getStaticFileLocation(request);
-        return staticFilePath + "/" + VaadinServlet.THEME_DIR_PATH + '/' + themeName;
+        final String staticFilePath = request.getService()
+                .getStaticFileLocation(request);
+        return staticFilePath + "/" + VaadinServlet.THEME_DIR_PATH + '/'
+                + themeName;
     }
 
     /**
@@ -646,7 +736,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
      * @return
      */
     public String getThemeName(BootstrapContext context) {
-        UICreateEvent event = new UICreateEvent(context.getRequest(), context.getUIClass());
+        UICreateEvent event = new UICreateEvent(context.getRequest(),
+                context.getUIClass());
         return context.getBootstrapResponse().getUIProvider().getTheme(event);
     }
 
@@ -670,8 +761,10 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return themeName;
     }
 
-    protected void writeError(VaadinResponse response, Throwable e) throws IOException {
-        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+    protected void writeError(VaadinResponse response, Throwable e)
+            throws IOException {
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                e.getLocalizedMessage());
     }
 
     private void putValueOrNull(JsonObject object, String key, String value) {

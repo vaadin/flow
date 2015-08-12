@@ -66,7 +66,8 @@ public interface Item extends Serializable {
      * @throws UnsupportedOperationException
      *             if the operation is not supported.
      */
-    public boolean addItemProperty(Object id, Property property) throws UnsupportedOperationException;
+    public boolean addItemProperty(Object id, Property property)
+            throws UnsupportedOperationException;
 
     /**
      * Removes the Property identified by ID from the Item.
@@ -81,7 +82,8 @@ public interface Item extends Serializable {
      * @throws UnsupportedOperationException
      *             if the operation is not supported. <code>false</code> if not
      */
-    public boolean removeItemProperty(Object id) throws UnsupportedOperationException;
+    public boolean removeItemProperty(Object id)
+            throws UnsupportedOperationException;
 
     /**
      * Interface implemented by viewer classes capable of using an Item as a
@@ -175,7 +177,8 @@ public interface Item extends Serializable {
          * @param listener
          *            The new Listener to be registered.
          */
-        public void addPropertySetChangeListener(Item.PropertySetChangeListener listener);
+        public void addPropertySetChangeListener(
+                Item.PropertySetChangeListener listener);
 
         /**
          * Removes a previously registered property set change listener.
@@ -183,7 +186,8 @@ public interface Item extends Serializable {
          * @param listener
          *            Listener to be removed.
          */
-        public void removePropertySetChangeListener(Item.PropertySetChangeListener listener);
+        public void removePropertySetChangeListener(
+                Item.PropertySetChangeListener listener);
 
     }
 }

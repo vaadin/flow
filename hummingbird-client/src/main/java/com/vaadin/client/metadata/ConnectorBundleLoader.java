@@ -41,7 +41,8 @@ public abstract class ConnectorBundleLoader {
 
     private static ConnectorBundleLoader impl;
 
-    private FastStringMap<AsyncBundleLoader> asyncBlockLoaders = FastStringMap.create();
+    private FastStringMap<AsyncBundleLoader> asyncBlockLoaders = FastStringMap
+            .create();
     private FastStringMap<String> identifierToBundle = FastStringMap.create();
 
     private final TypeDataStore datStore = new TypeDataStore();
@@ -85,13 +86,15 @@ public abstract class ConnectorBundleLoader {
     public boolean isBundleLoaded(String bundleName) {
         AsyncBundleLoader loader = asyncBlockLoaders.get(bundleName);
         if (loader == null) {
-            throw new IllegalArgumentException("Bundle " + bundleName + " not recognized");
+            throw new IllegalArgumentException(
+                    "Bundle " + bundleName + " not recognized");
         }
         return loader.getState() == State.LOADED;
     }
 
     public void setLoaded(String packageName) {
-        List<BundleLoadCallback> callbacks = asyncBlockLoaders.get(packageName).setLoaded();
+        List<BundleLoadCallback> callbacks = asyncBlockLoaders.get(packageName)
+                .setLoaded();
         for (BundleLoadCallback callback : callbacks) {
             if (callback != null) {
                 callback.loaded();
@@ -100,8 +103,10 @@ public abstract class ConnectorBundleLoader {
     }
 
     public void setLoadFailure(String bundleName, Throwable reason) {
-        reason = new RuntimeException("Failed to load bundle " + bundleName + ": " + reason.getMessage(), reason);
-        List<BundleLoadCallback> callbacks = asyncBlockLoaders.get(bundleName).setError(reason);
+        reason = new RuntimeException("Failed to load bundle " + bundleName
+                + ": " + reason.getMessage(), reason);
+        List<BundleLoadCallback> callbacks = asyncBlockLoaders.get(bundleName)
+                .setError(reason);
         for (BundleLoadCallback callback : callbacks) {
             callback.failed(reason);
         }

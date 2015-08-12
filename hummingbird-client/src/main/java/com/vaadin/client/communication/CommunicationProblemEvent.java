@@ -35,7 +35,8 @@ public class CommunicationProblemEvent {
     /**
      * @param exception
      */
-    public CommunicationProblemEvent(Request request, JsonObject payload, Throwable exception) {
+    public CommunicationProblemEvent(Request request, JsonObject payload,
+            Throwable exception) {
         this.request = request;
         this.exception = exception;
         this.payload = payload;
@@ -45,7 +46,8 @@ public class CommunicationProblemEvent {
      * @param request
      * @param statusCode
      */
-    public CommunicationProblemEvent(Request request, JsonObject payload, Response response) {
+    public CommunicationProblemEvent(Request request, JsonObject payload,
+            Response response) {
         this.request = request;
         this.response = response;
         this.payload = payload;

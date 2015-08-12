@@ -35,7 +35,8 @@ import com.vaadin.ui.declarative.DesignException;
  * 
  * @since 7.0
  */
-public abstract class AbstractSingleComponentContainer extends AbstractComponent implements SingleComponentContainer {
+public abstract class AbstractSingleComponentContainer extends AbstractComponent
+        implements SingleComponentContainer {
 
     private Component content;
 
@@ -56,26 +57,32 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
     /* documented in interface */
     @Override
     public void addComponentAttachListener(ComponentAttachListener listener) {
-        addListener(ComponentAttachEvent.class, listener, ComponentAttachListener.attachMethod);
+        addListener(ComponentAttachEvent.class, listener,
+                ComponentAttachListener.attachMethod);
 
     }
 
     /* documented in interface */
     @Override
-    public void removeComponentAttachListener(ComponentAttachListener listener) {
-        removeListener(ComponentAttachEvent.class, listener, ComponentAttachListener.attachMethod);
+    public void removeComponentAttachListener(
+            ComponentAttachListener listener) {
+        removeListener(ComponentAttachEvent.class, listener,
+                ComponentAttachListener.attachMethod);
     }
 
     /* documented in interface */
     @Override
     public void addComponentDetachListener(ComponentDetachListener listener) {
-        addListener(ComponentDetachEvent.class, listener, ComponentDetachListener.detachMethod);
+        addListener(ComponentDetachEvent.class, listener,
+                ComponentDetachListener.detachMethod);
     }
 
     /* documented in interface */
     @Override
-    public void removeComponentDetachListener(ComponentDetachListener listener) {
-        removeListener(ComponentDetachEvent.class, listener, ComponentDetachListener.detachMethod);
+    public void removeComponentDetachListener(
+            ComponentDetachListener listener) {
+        removeListener(ComponentDetachEvent.class, listener,
+                ComponentDetachListener.detachMethod);
     }
 
     /**
@@ -124,7 +131,8 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
     public void setContent(Component content) {
         // Make sure we're not adding the component inside it's own content
         if (isOrHasAncestor(content)) {
-            throw new IllegalArgumentException("Component cannot be added inside it's own content");
+            throw new IllegalArgumentException(
+                    "Component cannot be added inside it's own content");
         }
 
         Component oldContent = getContent();
@@ -154,7 +162,8 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
      *            component to remove
      */
     // TODO move utility method elsewhere?
-    public static void removeFromParent(Component content) throws IllegalArgumentException {
+    public static void removeFromParent(Component content)
+            throws IllegalArgumentException {
         // Verify the appropriate session is locked
         UI parentUI = content.getUI();
         if (parentUI != null) {
@@ -179,7 +188,8 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
                 oldParent.setContent(null);
             }
         } else if (parent != null) {
-            throw new IllegalArgumentException("Content is already attached to another parent");
+            throw new IllegalArgumentException(
+                    "Content is already attached to another parent");
         }
     }
 
@@ -215,9 +225,12 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
      * @throws DesignException
      *             if a child element could not be parsed as a Component
      */
-    protected void readDesignChildren(Elements children, DesignContext context) {
+    protected void readDesignChildren(Elements children,
+            DesignContext context) {
         if (children.size() > 1) {
-            throw new DesignException("The container of type " + getClass().toString() + " can have only one child component.");
+            throw new DesignException(
+                    "The container of type " + getClass().toString()
+                            + " can have only one child component.");
         } else if (children.size() == 1) {
             setContent(context.readDesign(children.first()));
         }
@@ -233,7 +246,8 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
     public void writeDesign(Element design, DesignContext designContext) {
         // write default attributes (also clears children and attributes)
         super.writeDesign(design, designContext);
-        AbstractSingleComponentContainer def = designContext.getDefaultInstance(this);
+        AbstractSingleComponentContainer def = designContext
+                .getDefaultInstance(this);
         if (!designContext.shouldWriteChildren(this, def)) {
             return;
         }

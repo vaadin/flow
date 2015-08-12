@@ -47,7 +47,9 @@ public class LocaleChangeTest extends MultiBrowserTest {
     }
 
     private void assertPopupOpen(boolean open) {
-        assertEquals("Date popup was not " + (open ? "open" : "closed") + ".", (open ? 1 : 0), driver.findElements(By.className("v-datefield-popup")).size());
+        assertEquals("Date popup was not " + (open ? "open" : "closed") + ".",
+                (open ? 1 : 0),
+                driver.findElements(By.className("v-datefield-popup")).size());
     }
 
     private void toggleDatePopup() {
@@ -62,9 +64,13 @@ public class LocaleChangeTest extends MultiBrowserTest {
         if (!BrowserUtil.isIE(getDesiredCapabilities())) {
             driver.findElement(By.className("v-datefield-button")).click();
         } else {
-            boolean popupOpen = driver.findElements(By.className("v-datefield-popup")).size() == 1;
+            boolean popupOpen = driver
+                    .findElements(By.className("v-datefield-popup"))
+                    .size() == 1;
             if (popupOpen) {
-                driver.findElement(By.className("v-datefield-calendarpanel-day-selected")).click();
+                driver.findElement(
+                        By.className("v-datefield-calendarpanel-day-selected"))
+                        .click();
             } else {
                 driver.findElement(By.className("v-datefield-button")).click();
             }
@@ -72,6 +78,7 @@ public class LocaleChangeTest extends MultiBrowserTest {
     }
 
     private String getDateValue() {
-        return driver.findElement(By.className("v-datefield-textfield")).getAttribute("value");
+        return driver.findElement(By.className("v-datefield-textfield"))
+                .getAttribute("value");
     }
 }

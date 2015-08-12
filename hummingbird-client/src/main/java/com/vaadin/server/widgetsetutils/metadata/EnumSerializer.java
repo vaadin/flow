@@ -33,12 +33,14 @@ public class EnumSerializer extends JsonSerializer {
     }
 
     @Override
-    protected void printDeserializerBody(TreeLogger logger, SourceWriter w, String type, String jsonValue, String connection) {
+    protected void printDeserializerBody(TreeLogger logger, SourceWriter w,
+            String type, String jsonValue, String connection) {
         w.println("String enumIdentifier = " + jsonValue + ".asString();");
         for (JEnumConstant e : enumType.getEnumConstants()) {
             w.println("if (\"" + e.getName() + "\".equals(enumIdentifier)) {");
             w.indent();
-            w.println("return " + enumType.getQualifiedSourceName() + "." + e.getName() + ";");
+            w.println("return " + enumType.getQualifiedSourceName() + "."
+                    + e.getName() + ";");
             w.outdent();
             w.println("}");
         }
@@ -46,9 +48,11 @@ public class EnumSerializer extends JsonSerializer {
     }
 
     @Override
-    protected void printSerializerBody(TreeLogger logger, SourceWriter w, String value, String applicationConnection) {
+    protected void printSerializerBody(TreeLogger logger, SourceWriter w,
+            String value, String applicationConnection) {
         // return Json.create(castedValue.name());
-        w.println("return " + Json.class.getName() + ".create(" + value + ".name());");
+        w.println("return " + Json.class.getName() + ".create(" + value
+                + ".name());");
     }
 
 }

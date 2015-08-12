@@ -27,13 +27,15 @@ public class BasicPerformanceTest extends UI {
     private int serverLimit;
     private boolean reportBootstap = true;
     private String performanceTopic;
-    private final Button reportPerformanceButton = new Button("Report some performance", new Button.ClickListener() {
-        @Override
-        public void buttonClick(ClickEvent event) {
-            TestUtils.reportPerformance(performanceTopic, serverLimit, clientLimit, reportBootstap);
-            event.getButton().setEnabled(false);
-        }
-    });
+    private final Button reportPerformanceButton = new Button(
+            "Report some performance", new Button.ClickListener() {
+                @Override
+                public void buttonClick(ClickEvent event) {
+                    TestUtils.reportPerformance(performanceTopic, serverLimit,
+                            clientLimit, reportBootstap);
+                    event.getButton().setEnabled(false);
+                }
+            });
 
     @Override
     public void init(VaadinRequest request) {
@@ -42,11 +44,13 @@ public class BasicPerformanceTest extends UI {
         reportBootstap = true;
     }
 
-    private void updatePerformanceReporting(String performanceTopic, int serverLimit, int clientLimit) {
+    private void updatePerformanceReporting(String performanceTopic,
+            int serverLimit, int clientLimit) {
         this.performanceTopic = performanceTopic;
         this.serverLimit = serverLimit;
         this.clientLimit = clientLimit;
-        reportPerformanceButton.setCaption("Report performance for " + performanceTopic);
+        reportPerformanceButton
+                .setCaption("Report performance for " + performanceTopic);
         reportPerformanceButton.setEnabled(true);
         reportBootstap = false;
     }
@@ -68,80 +72,92 @@ public class BasicPerformanceTest extends UI {
         leftBar.addComponent(performanceReportArea);
         leftBar.addComponent(reportPerformanceButton);
 
-        leftBar.addComponent(new Button("Set 20 panels as content", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                popupateContent(contentLayout, 20, true);
-                updatePerformanceReporting("20 panels", 100, 100);
-            }
-        }));
-        leftBar.addComponent(new Button("Set 40 panels as content", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                popupateContent(contentLayout, 40, true);
-                updatePerformanceReporting("40 panels", 100, 100);
-            }
-        }));
-        leftBar.addComponent(new Button("Set 40 layouts as content", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                popupateContent(contentLayout, 40, false);
-                updatePerformanceReporting("40 layouts", 100, 100);
-            }
-        }));
-
-        leftBar.addComponent(new Button("Update all labels", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                Iterator<Component> componentIterator = contentLayout.iterator();
-                while (componentIterator.hasNext()) {
-
-                    Iterator<Component> columHolderIterator;
-                    Component child = componentIterator.next();
-                    if (child instanceof Panel) {
-                        columHolderIterator = ((ComponentContainer) ((Panel) child).getContent()).iterator();
-                    } else {
-                        columHolderIterator = ((ComponentContainer) child).iterator();
+        leftBar.addComponent(new Button("Set 20 panels as content",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        popupateContent(contentLayout, 20, true);
+                        updatePerformanceReporting("20 panels", 100, 100);
                     }
-                    while (columHolderIterator.hasNext()) {
-                        VerticalLayout column = (VerticalLayout) columHolderIterator.next();
-                        Iterator<Component> columnIterator = column.iterator();
-                        while (columnIterator.hasNext()) {
-                            Label label = (Label) columnIterator.next();
-                            label.setValue("New value");
+                }));
+        leftBar.addComponent(new Button("Set 40 panels as content",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        popupateContent(contentLayout, 40, true);
+                        updatePerformanceReporting("40 panels", 100, 100);
+                    }
+                }));
+        leftBar.addComponent(new Button("Set 40 layouts as content",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        popupateContent(contentLayout, 40, false);
+                        updatePerformanceReporting("40 layouts", 100, 100);
+                    }
+                }));
+
+        leftBar.addComponent(
+                new Button("Update all labels", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        Iterator<Component> componentIterator = contentLayout
+                                .iterator();
+                        while (componentIterator.hasNext()) {
+
+                            Iterator<Component> columHolderIterator;
+                            Component child = componentIterator.next();
+                            if (child instanceof Panel) {
+                                columHolderIterator = ((ComponentContainer) ((Panel) child)
+                                        .getContent()).iterator();
+                            } else {
+                                columHolderIterator = ((ComponentContainer) child)
+                                        .iterator();
+                            }
+                            while (columHolderIterator.hasNext()) {
+                                VerticalLayout column = (VerticalLayout) columHolderIterator
+                                        .next();
+                                Iterator<Component> columnIterator = column
+                                        .iterator();
+                                while (columnIterator.hasNext()) {
+                                    Label label = (Label) columnIterator.next();
+                                    label.setValue("New value");
+                                }
+                            }
                         }
+                        updatePerformanceReporting("Update labels", 100, 100);
                     }
-                }
-                updatePerformanceReporting("Update labels", 100, 100);
-            }
-        }));
+                }));
 
-        leftBar.addComponent(new Button("Update one label", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                Component child = contentLayout.getComponent(0);
-                if (child instanceof Panel) {
-                    Panel panel = (Panel) child;
-                    child = panel.getContent();
-                }
+        leftBar.addComponent(
+                new Button("Update one label", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        Component child = contentLayout.getComponent(0);
+                        if (child instanceof Panel) {
+                            Panel panel = (Panel) child;
+                            child = panel.getContent();
+                        }
 
-                AbstractOrderedLayout layout = (AbstractOrderedLayout) ((AbstractOrderedLayout) child).getComponent(0);
-                Label label = (Label) layout.getComponent(0);
+                        AbstractOrderedLayout layout = (AbstractOrderedLayout) ((AbstractOrderedLayout) child)
+                                .getComponent(0);
+                        Label label = (Label) layout.getComponent(0);
 
-                label.setValue("New value " + updateOneCount++);
+                        label.setValue("New value " + updateOneCount++);
 
-                updatePerformanceReporting("Update one", 10, 10);
-            }
-        }));
+                        updatePerformanceReporting("Update one", 10, 10);
+                    }
+                }));
 
-        leftBar.addComponent(new Button("Clear content", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                contentLayout.removeAllComponents();
-                contentLayout.addComponent(new Label("No content"));
-                updatePerformanceReporting("No content", 100, 100);
-            }
-        }));
+        leftBar.addComponent(
+                new Button("Clear content", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        contentLayout.removeAllComponents();
+                        contentLayout.addComponent(new Label("No content"));
+                        updatePerformanceReporting("No content", 100, 100);
+                    }
+                }));
 
         HorizontalLayout intermediateLayout = new HorizontalLayout();
         intermediateLayout.setSizeFull();
@@ -158,7 +174,8 @@ public class BasicPerformanceTest extends UI {
         return mainLayout;
     }
 
-    private void popupateContent(VerticalLayout contentLayout, int childCount, boolean wrapInPanel) {
+    private void popupateContent(VerticalLayout contentLayout, int childCount,
+            boolean wrapInPanel) {
         contentLayout.removeAllComponents();
         for (int i = 0; i < childCount; i++) {
             VerticalLayout left = new VerticalLayout();

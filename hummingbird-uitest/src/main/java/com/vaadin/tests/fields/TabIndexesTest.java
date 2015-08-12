@@ -57,7 +57,8 @@ public class TabIndexesTest extends MultiBrowserTest {
     }
 
     private void setTabIndexesTo(String expected) {
-        String caption = String.format("Set %stab indexes to %s", (expected.contains("N") ? "" : "all "), expected);
+        String caption = String.format("Set %stab indexes to %s",
+                (expected.contains("N") ? "" : "all "), expected);
         $(ButtonElement.class).caption(caption).first().click();
         assertLogText("2. Setting tab indexes to " + expected);
     }
@@ -67,7 +68,8 @@ public class TabIndexesTest extends MultiBrowserTest {
     }
 
     private void assertTabIndex(String expected, WebElement element) {
-        Assert.assertEquals("Unexpected tab index,", expected, element.getAttribute("tabIndex"));
+        Assert.assertEquals("Unexpected tab index,", expected,
+                element.getAttribute("tabIndex"));
     }
 
     private List<WebElement> getFieldElements() {

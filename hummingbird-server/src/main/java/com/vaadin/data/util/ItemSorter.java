@@ -26,7 +26,8 @@ import com.vaadin.data.Container.Sortable;
  * The <code>ItemSorter</code> interface can be used in <code>Sortable</code>
  * implementations to provide a custom sorting method.
  */
-public interface ItemSorter extends Comparator<Object>, Cloneable, Serializable {
+public interface ItemSorter
+        extends Comparator<Object>, Cloneable, Serializable {
 
     /**
      * Sets the parameters for an upcoming sort operation. The parameters
@@ -49,7 +50,8 @@ public interface ItemSorter extends Comparator<Object>, Cloneable, Serializable 
      *            {@link Sortable#sort(Object[], boolean[])} for more
      *            information.
      */
-    void setSortProperties(Container.Sortable container, Object[] propertyId, boolean[] ascending);
+    void setSortProperties(Container.Sortable container, Object[] propertyId,
+            boolean[] ascending);
 
     /**
      * Compares its two arguments for order. Returns a negative integer, zero,

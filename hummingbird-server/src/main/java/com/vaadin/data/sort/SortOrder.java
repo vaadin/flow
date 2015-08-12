@@ -45,7 +45,8 @@ public class SortOrder implements Serializable {
             throw new IllegalArgumentException("Property ID can not be null!");
         }
         if (direction == null) {
-            throw new IllegalArgumentException("Direction value can not be null!");
+            throw new IllegalArgumentException(
+                    "Direction value can not be null!");
         }
         this.propertyId = propertyId;
         this.direction = direction;

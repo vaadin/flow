@@ -51,7 +51,8 @@ public class WebSpherePortalIntegrationTest extends PrivateTB3Configuration {
         session.disconnect();
     }
 
-    private static void uploadDemoApplication(Session session) throws JSchException, SftpException {
+    private static void uploadDemoApplication(Session session)
+            throws JSchException, SftpException {
         ChannelSftp sftpChannel = (ChannelSftp) session.openChannel("sftp");
         sftpChannel.connect();
 
@@ -61,16 +62,19 @@ public class WebSpherePortalIntegrationTest extends PrivateTB3Configuration {
             sftpChannel.disconnect();
         } else {
             sftpChannel.disconnect();
-            throw new AssertionError("Demo application not found at " + applicationPath);
+            throw new AssertionError(
+                    "Demo application not found at " + applicationPath);
         }
     }
 
-    private static void sendCommand(Session session, String command) throws JSchException {
+    private static void sendCommand(Session session, String command)
+            throws JSchException {
         ChannelExec channel = (ChannelExec) session.openChannel("exec");
         channel.setCommand(command);
         BufferedReader in;
         try {
-            in = new BufferedReader(new InputStreamReader(channel.getInputStream()));
+            in = new BufferedReader(
+                    new InputStreamReader(channel.getInputStream()));
 
             channel.connect();
 
@@ -88,7 +92,8 @@ public class WebSpherePortalIntegrationTest extends PrivateTB3Configuration {
 
     private static Session openSession() throws JSchException {
         JSch jsch = new JSch();
-        Session session = jsch.getSession("integration", "websphereportal8.devnet.vaadin.com", 22);
+        Session session = jsch.getSession("integration",
+                "websphereportal8.devnet.vaadin.com", 22);
         jsch.addIdentity("~/.ssh/id_dsa");
         session.setConfig("StrictHostKeyChecking", "no");
 
@@ -125,7 +130,8 @@ public class WebSpherePortalIntegrationTest extends PrivateTB3Configuration {
 
     private void waitUntilPortletIsLoaded() {
         WebDriverWait wait = new WebDriverWait(driver, 15);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("v-app")));
+        wait.until(ExpectedConditions
+                .visibilityOfElementLocated(By.className("v-app")));
     }
 
     private boolean isLoggedIn() {
@@ -149,7 +155,8 @@ public class WebSpherePortalIntegrationTest extends PrivateTB3Configuration {
     public void viewModeIsSetToEdit() throws IOException {
         driver.findElement(By.linkText("Edit")).click();
 
-        assertThat(driver.findElement(By.tagName("input")).isEnabled(), is(true));
+        assertThat(driver.findElement(By.tagName("input")).isEnabled(),
+                is(true));
 
     }
 

@@ -22,13 +22,14 @@ public class MoveComponentsFromGridLayoutToInnerLayout extends AbstractTestUI {
         gl.setWidth("200px");
         gl.setHeight("200px");
 
-        testButton = new Button("Click to move to inner layout", new Button.ClickListener() {
+        testButton = new Button("Click to move to inner layout",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                vl.addComponent(testButton);
-            }
-        });
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        vl.addComponent(testButton);
+                    }
+                });
 
         gl.addComponent(testButton);
 
@@ -38,13 +39,14 @@ public class MoveComponentsFromGridLayoutToInnerLayout extends AbstractTestUI {
 
         addComponent(gl);
 
-        Button b = new Button("Repaint inner layout", new Button.ClickListener() {
+        Button b = new Button("Repaint inner layout",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                vl.markAsDirty();
-            }
-        });
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        vl.markAsDirty();
+                    }
+                });
 
         addComponent(b);
     }

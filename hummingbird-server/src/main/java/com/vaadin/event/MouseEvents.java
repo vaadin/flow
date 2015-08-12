@@ -47,7 +47,8 @@ public interface MouseEvents {
     public static class ClickEvent extends Component.Event {
         private MouseEventDetails details;
 
-        public ClickEvent(Component source, MouseEventDetails mouseEventDetails) {
+        public ClickEvent(Component source,
+                MouseEventDetails mouseEventDetails) {
             super(source);
             details = mouseEventDetails;
         }
@@ -178,7 +179,8 @@ public interface MouseEvents {
      */
     public interface ClickListener extends ComponentEventListener {
 
-        public static final Method clickMethod = ReflectTools.findMethod(ClickListener.class, "click", ClickEvent.class);
+        public static final Method clickMethod = ReflectTools
+                .findMethod(ClickListener.class, "click", ClickEvent.class);
 
         /**
          * Called when a {@link Component} has been clicked. A reference to the
@@ -215,7 +217,9 @@ public interface MouseEvents {
      */
     public interface DoubleClickListener extends ComponentEventListener {
 
-        public static final Method doubleClickMethod = ReflectTools.findMethod(DoubleClickListener.class, "doubleClick", DoubleClickEvent.class);
+        public static final Method doubleClickMethod = ReflectTools.findMethod(
+                DoubleClickListener.class, "doubleClick",
+                DoubleClickEvent.class);
 
         /**
          * Called when a {@link Component} has been double clicked. A reference

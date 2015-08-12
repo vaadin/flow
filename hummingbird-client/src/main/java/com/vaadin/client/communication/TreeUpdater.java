@@ -71,11 +71,13 @@ public class TreeUpdater {
         public ForElementTemplate(JsonObject templateDescription) {
             super(templateDescription);
 
-            childTemplateId = (int) templateDescription.getNumber("childTemplate");
+            childTemplateId = (int) templateDescription
+                    .getNumber("childTemplate");
         }
 
         @Override
-        protected void listInsertNode(JsonObject node, Element element, ListInsertNodeChange change) {
+        protected void listInsertNode(JsonObject node, Element element,
+                ListInsertNodeChange change) {
             JsonObject childNode = idToNode.get(change.getValue());
             Node child = createTemplateElement(childNode, childTemplateId);
             insertNodeAtIndex(element, child, change.getIndex());
@@ -91,9 +93,11 @@ public class TreeUpdater {
         public BoundElementTemplate(JsonObject templateDescription) {
             tag = templateDescription.getString("tag");
 
-            defaultAttributeValues = readStringMap(templateDescription.getObject("defaultAttributes"));
+            defaultAttributeValues = readStringMap(
+                    templateDescription.getObject("defaultAttributes"));
 
-            propertyToAttribute = readStringMap(templateDescription.getObject("attributeBindings"));
+            propertyToAttribute = readStringMap(
+                    templateDescription.getObject("attributeBindings"));
         }
 
         private Map<String, String> readStringMap(JsonObject json) {
@@ -133,7 +137,8 @@ public class TreeUpdater {
 
                 @Override
                 public void listInsertNode(ListInsertNodeChange change) {
-                    BoundElementTemplate.this.listInsertNode(node, element, change);
+                    BoundElementTemplate.this.listInsertNode(node, element,
+                            change);
                 }
 
                 @Override
@@ -149,20 +154,25 @@ public class TreeUpdater {
             String key = change.getKey();
             String targetAttribute = propertyToAttribute.get(key);
             if (targetAttribute != null) {
-                element.setAttribute(targetAttribute, change.getValue().asString());
+                element.setAttribute(targetAttribute,
+                        change.getValue().asString());
             } else if (!"TEMPLATE".equals(change.getKey())) {
-                throw new RuntimeException("Unsupported property change: " + change.getKey());
+                throw new RuntimeException(
+                        "Unsupported property change: " + change.getKey());
             }
         }
 
         protected void initElement(JsonObject node, Element element) {
-            for (Entry<String, String> entry : defaultAttributeValues.entrySet()) {
+            for (Entry<String, String> entry : defaultAttributeValues
+                    .entrySet()) {
                 element.setAttribute(entry.getKey(), entry.getValue());
             }
         }
 
-        protected void listInsertNode(JsonObject node, Element element, ListInsertNodeChange change) {
-            throw new RuntimeException("Not implemented for " + getClass().getSimpleName());
+        protected void listInsertNode(JsonObject node, Element element,
+                ListInsertNodeChange change) {
+            throw new RuntimeException(
+                    "Not implemented for " + getClass().getSimpleName());
         }
     }
 
@@ -234,7 +244,8 @@ public class TreeUpdater {
         private String tag;
         private Element element;
 
-        public BasicElementListener(JsonObject node, String tag, Element element) {
+        public BasicElementListener(JsonObject node, String tag,
+                Element element) {
             this.node = node;
             this.tag = tag;
             this.element = element;
@@ -306,7 +317,8 @@ public class TreeUpdater {
                 }
             };
 
-            JavaScriptObject wrappedListener = addDomListener(element, type, listener);
+            JavaScriptObject wrappedListener = addDomListener(element, type,
+                    listener);
 
             Map<String, JavaScriptObject> nodeListeners = domListeners.get(id);
             if (nodeListeners == null) {
@@ -314,7 +326,7 @@ public class TreeUpdater {
                 domListeners.put(id, nodeListeners);
             }
 
-            assert !nodeListeners.containsKey(type);
+            assert!nodeListeners.containsKey(type);
             nodeListeners.put(type, wrappedListener);
 
         }
@@ -355,7 +367,9 @@ public class TreeUpdater {
          * Must invoke manually as the RPC interface can't be used in GWT
          * because of the JSONArray parameter
          */
-        rpcQueue.add(new JavaScriptMethodInvocation("com.vaadin.ui.JavaScript$JavaScriptCallbackRpc", "call", parameters), false);
+        rpcQueue.add(new JavaScriptMethodInvocation(
+                "com.vaadin.ui.JavaScript$JavaScriptCallbackRpc", "call",
+                parameters), false);
         rpcQueue.flush();
     }
 
@@ -416,7 +430,8 @@ public class TreeUpdater {
         private String template;
         private Element element;
 
-        public DynamicTemplateListener(JsonObject node, String template, Element element) {
+        public DynamicTemplateListener(JsonObject node, String template,
+                Element element) {
             this.node = node;
             this.template = template;
             this.element = element;
@@ -611,21 +626,24 @@ public class TreeUpdater {
         this.rpcQueue = rpcQueue;
     }
 
-    private static native JavaScriptObject addDomListener(Element element, String type, DomListener listener)
-    /*-{
-        var f = $entry(listener);
-        element.addEventListener(type, f);
-        return f;
-    }-*/;
+    private static native JavaScriptObject addDomListener(Element element,
+            String type, DomListener listener)
+            /*-{
+                var f = $entry(listener);
+                element.addEventListener(type, f);
+                return f;
+            }-*/;
 
-    private static native void removeDomListener(Element element, String type, JavaScriptObject listener)
-    /*-{
-        element.removeEventListener(type, listener);
-    }-*/;
+    private static native void removeDomListener(Element element, String type,
+            JavaScriptObject listener)
+            /*-{
+                element.removeEventListener(type, listener);
+            }-*/;
 
     private Node createElement(JsonObject node) {
         if (node.hasKey("TEMPLATE")) {
-            return createTemplateElement(node, (int) node.getNumber("TEMPLATE"));
+            return createTemplateElement(node,
+                    (int) node.getNumber("TEMPLATE"));
         } else {
             String tag = node.getString("TAG");
             if ("#text".equals(tag)) {
@@ -634,7 +652,8 @@ public class TreeUpdater {
                 return textNode;
             } else {
                 Element element = Document.get().createElement(tag);
-                addNodeListener(node, new BasicElementListener(node, tag, element));
+                addNodeListener(node,
+                        new BasicElementListener(node, tag, element));
                 return element;
             }
         }
@@ -647,7 +666,8 @@ public class TreeUpdater {
         return template.createElement(node);
     }
 
-    private static void insertNodeAtIndex(Element parent, Node child, int index) {
+    private static void insertNodeAtIndex(Element parent, Node child,
+            int index) {
         if (parent.getChildCount() == index) {
             parent.appendChild(child);
         } else {
@@ -711,14 +731,16 @@ public class TreeUpdater {
             nodeListener.remove((RemoveChange) change);
             break;
         default:
-            throw new RuntimeException("Unsupported change type: " + change.getType());
+            throw new RuntimeException(
+                    "Unsupported change type: " + change.getType());
         }
     }
 
     private void initRoot() {
         JsonObject rootNode = idToNode.get(Integer.valueOf(1));
         JsonObject bodyNode = rootNode.get("body");
-        addNodeListener(bodyNode, new BasicElementListener(bodyNode, bodyNode.getString("TAG"), rootElement));
+        addNodeListener(bodyNode, new BasicElementListener(bodyNode,
+                bodyNode.getString("TAG"), rootElement));
     }
 
     private void addNodeListener(JsonObject node, NodeListener listener) {
@@ -755,7 +777,8 @@ public class TreeUpdater {
     private void extractTemplates(JsonObject elementTemplates) {
         String[] keys = elementTemplates.keys();
         for (String keyString : keys) {
-            JsonObject templateDescription = elementTemplates.getObject(keyString);
+            JsonObject templateDescription = elementTemplates
+                    .getObject(keyString);
             Template template = createTemplate(templateDescription);
             templates.put(Integer.valueOf(keyString), template);
         }

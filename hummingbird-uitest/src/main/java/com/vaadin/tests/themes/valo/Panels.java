@@ -144,7 +144,8 @@ public class Panels extends VerticalLayout implements View {
         layout.setSizeFull();
         layout.setMargin(true);
         layout.setSpacing(true);
-        Label content = new Label("Suspendisse dictum feugiat nisl ut dapibus. Mauris iaculis porttitor posuere. Praesent id metus massa, ut blandit odio.");
+        Label content = new Label(
+                "Suspendisse dictum feugiat nisl ut dapibus. Mauris iaculis porttitor posuere. Praesent id metus massa, ut blandit odio.");
         content.setWidth("10em");
         layout.addComponent(content);
         Button button = new Button("Button");
@@ -157,7 +158,8 @@ public class Panels extends VerticalLayout implements View {
         VerticalLayout layout = new VerticalLayout();
         layout.setMargin(true);
         layout.setSpacing(true);
-        Label content = new Label("Suspendisse dictum feugiat nisl ut dapibus. Mauris iaculis porttitor posuere. Praesent id metus massa, ut blandit odio. Suspendisse dictum feugiat nisl ut dapibus. Mauris iaculis porttitor posuere. Praesent id metus massa, ut blandit odio.");
+        Label content = new Label(
+                "Suspendisse dictum feugiat nisl ut dapibus. Mauris iaculis porttitor posuere. Praesent id metus massa, ut blandit odio. Suspendisse dictum feugiat nisl ut dapibus. Mauris iaculis porttitor posuere. Praesent id metus massa, ut blandit odio.");
         content.setWidth("10em");
         layout.addComponent(content);
         Button button = new Button("Button");

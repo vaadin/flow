@@ -39,7 +39,8 @@ public class DateFieldExtendedRange extends TestBase {
 
         fields[4] = makeDateField(true, fi, "Finnish locale with week numbers");
         fields[4].setShowISOWeekNumbers(true);
-        fields[5] = makeDateField(false, fi, "Finnish locale with week numbers");
+        fields[5] = makeDateField(false, fi,
+                "Finnish locale with week numbers");
         fields[5].setShowISOWeekNumbers(true);
 
         for (DateField f : fields) {
@@ -69,7 +70,8 @@ public class DateFieldExtendedRange extends TestBase {
         return 6718;
     }
 
-    private DateField makeDateField(boolean isPopup, Locale locale, String caption) {
+    private DateField makeDateField(boolean isPopup, Locale locale,
+            String caption) {
         DateField df = isPopup ? new PopupDateField() : new InlineDateField();
         df.setResolution(Resolution.DAY);
         df.setValue(date.getTime());

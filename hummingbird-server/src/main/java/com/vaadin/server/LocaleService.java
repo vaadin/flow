@@ -143,9 +143,11 @@ public class LocaleService implements Serializable {
          * Date formatting (MM/DD/YYYY etc.)
          */
 
-        DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
+        DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT,
+                DateFormat.SHORT, locale);
         if (!(dateFormat instanceof SimpleDateFormat)) {
-            getLogger().warning("Unable to get default date pattern for locale " + locale.toString());
+            getLogger().warning("Unable to get default date pattern for locale "
+                    + locale.toString());
             dateFormat = new SimpleDateFormat();
         }
         final String df = ((SimpleDateFormat) dateFormat).toPattern();
@@ -188,7 +190,8 @@ public class LocaleService implements Serializable {
         final boolean twelve_hour_clock = timeformat.indexOf("a") > -1;
         // TODO there are other possibilities as well, like 'h' in french
         // (ignore them, too complicated)
-        final String hour_min_delimiter = timeformat.indexOf(".") > -1 ? "." : ":";
+        final String hour_min_delimiter = timeformat.indexOf(".") > -1 ? "."
+                : ":";
         // outWriter.print("\"tf\":\"" + timeformat + "\",");
         localeData.twelveHourClock = twelve_hour_clock;
         localeData.hourMinuteDelimiter = hour_min_delimiter;

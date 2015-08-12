@@ -68,7 +68,8 @@ public class TextFieldEmptyingPromptTest extends MultiBrowserTest {
             @Override
             public String toString() {
                 // Timed out after 10 seconds waiting for ...
-                return "the server to get updated with the entered value: '" + expectedValue + "' (was: '" + label.getText() + "')";
+                return "the server to get updated with the entered value: '"
+                        + expectedValue + "' (was: '" + label.getText() + "')";
             }
         });
     }
@@ -84,7 +85,9 @@ public class TextFieldEmptyingPromptTest extends MultiBrowserTest {
             @Override
             public String toString() {
                 // Timed out after 10 seconds waiting for ...
-                return "the server to get updated with the entered value: '" + expectedValue + "' (was: '" + textfield.getValue() + "')";
+                return "the server to get updated with the entered value: '"
+                        + expectedValue + "' (was: '" + textfield.getValue()
+                        + "')";
             }
         });
     }

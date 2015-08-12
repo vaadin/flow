@@ -43,7 +43,8 @@ public final class And extends AbstractJunctionFilter {
     }
 
     @Override
-    public boolean passesFilter(Object itemId, Item item) throws UnsupportedFilterException {
+    public boolean passesFilter(Object itemId, Item item)
+            throws UnsupportedFilterException {
         for (Filter filter : getFilters()) {
             if (!filter.passesFilter(itemId, item)) {
                 return false;

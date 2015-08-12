@@ -28,7 +28,8 @@ import java.io.Serializable;
  * @author Vaadin Ltd.
  * @since 3.0
  */
-public interface BufferedValidatable extends Buffered, Validatable, Serializable {
+public interface BufferedValidatable
+        extends Buffered, Validatable, Serializable {
 
     /**
      * Tests if the invalid data is committed to datasource. The default is

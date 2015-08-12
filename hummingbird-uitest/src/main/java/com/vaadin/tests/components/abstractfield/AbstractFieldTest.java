@@ -18,7 +18,9 @@ import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.MenuItem;
 
-public abstract class AbstractFieldTest<T extends AbstractField> extends AbstractComponentTest<T> implements ValueChangeListener, ReadOnlyStatusChangeListener {
+public abstract class AbstractFieldTest<T extends AbstractField>
+        extends AbstractComponentTest<T>
+        implements ValueChangeListener, ReadOnlyStatusChangeListener {
 
     private boolean sortValueChanges = true;
 
@@ -52,24 +54,28 @@ public abstract class AbstractFieldTest<T extends AbstractField> extends Abstrac
         super.populateSettingsMenu(settingsMenu);
 
         if (AbstractField.class.isAssignableFrom(getTestClass())) {
-            MenuItem abstractField = settingsMenu.addItem("AbstractField", null);
+            MenuItem abstractField = settingsMenu.addItem("AbstractField",
+                    null);
             abstractField.addItem("Show value", new MenuBar.Command() {
 
                 @Override
                 public void menuSelected(MenuItem selectedItem) {
                     for (T a : getTestComponents()) {
-                        log(a.getClass().getSimpleName() + " value: " + getValue(a));
+                        log(a.getClass().getSimpleName() + " value: "
+                                + getValue(a));
                     }
                 }
             });
 
-            MenuItem sortValueChangesItem = abstractField.addItem("Show sorted value changes", new MenuBar.Command() {
-                @Override
-                public void menuSelected(MenuItem selectedItem) {
-                    sortValueChanges = selectedItem.isChecked();
-                    log("Show sorted value changes: " + sortValueChanges);
-                }
-            });
+            MenuItem sortValueChangesItem = abstractField.addItem(
+                    "Show sorted value changes", new MenuBar.Command() {
+                        @Override
+                        public void menuSelected(MenuItem selectedItem) {
+                            sortValueChanges = selectedItem.isChecked();
+                            log("Show sorted value changes: "
+                                    + sortValueChanges);
+                        }
+                    });
             sortValueChangesItem.setCheckable(true);
             sortValueChangesItem.setChecked(true);
         }
@@ -82,18 +88,21 @@ public abstract class AbstractFieldTest<T extends AbstractField> extends Abstrac
         options.put("Medium", TEXT_MEDIUM);
         options.put("Long", TEXT_LONG);
         options.put("Very long", TEXT_VERY_LONG);
-        createSelectAction("Required error message", category, options, "-", requiredErrorMessageCommand);
+        createSelectAction("Required error message", category, options, "-",
+                requiredErrorMessageCommand);
 
     }
 
     private void createValueChangeListener(String category) {
 
-        createBooleanAction("Value change listener", category, false, valueChangeListenerCommand);
+        createBooleanAction("Value change listener", category, false,
+                valueChangeListenerCommand);
     }
 
     private void createReadOnlyStatusChangeListener(String category) {
 
-        createBooleanAction("Read only status change listener", category, false, readonlyStatusChangeListenerCommand);
+        createBooleanAction("Read only status change listener", category, false,
+                readonlyStatusChangeListenerCommand);
     }
 
     protected Command<T, Boolean> valueChangeListenerCommand = new Command<T, Boolean>() {
@@ -129,7 +138,8 @@ public abstract class AbstractFieldTest<T extends AbstractField> extends Abstrac
 
     @Override
     public void valueChange(com.vaadin.data.Property.ValueChangeEvent event) {
-        log(event.getClass().getSimpleName() + ", new value: " + getValue(event.getProperty()));
+        log(event.getClass().getSimpleName() + ", new value: "
+                + getValue(event.getProperty()));
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -139,7 +149,8 @@ public abstract class AbstractFieldTest<T extends AbstractField> extends Abstrac
             // Sort collections to avoid problems with values printed in
             // different order
             try {
-                ArrayList<Comparable> c = new ArrayList<Comparable>((Collection) o);
+                ArrayList<Comparable> c = new ArrayList<Comparable>(
+                        (Collection) o);
                 Collections.sort(c);
                 o = c;
             } catch (Exception e) {
@@ -155,7 +166,8 @@ public abstract class AbstractFieldTest<T extends AbstractField> extends Abstrac
                 Date d = (Date) o;
                 // Dec 31, 2068 23:09:26.531
                 String pattern = "MMM d, yyyy HH:mm:ss.SSS";
-                SimpleDateFormat format = new SimpleDateFormat(pattern, new Locale("en", "US"));
+                SimpleDateFormat format = new SimpleDateFormat(pattern,
+                        new Locale("en", "US"));
                 value = format.format(d);
             } else {
                 value = "'" + o.toString() + "'";
@@ -177,7 +189,8 @@ public abstract class AbstractFieldTest<T extends AbstractField> extends Abstrac
         List<String> values = new ArrayList<String>();
         values.add("Test");
         values.add("A little longer value");
-        values.add("A very long value with very much text. All in all it is 74 characters long");
+        values.add(
+                "A very long value with very much text. All in all it is 74 characters long");
 
         createClickAction("(empty string)", subCategory, setValueCommand, "");
         createClickAction("(null)", subCategory, setValueCommand, null);

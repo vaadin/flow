@@ -39,7 +39,8 @@ public class SerializerHelper {
      * @throws IOException
      *             Rethrows any IOExceptions from the ObjectOutputStream
      */
-    public static void writeClass(ObjectOutputStream out, Class<?> cls) throws IOException {
+    public static void writeClass(ObjectOutputStream out, Class<?> cls)
+            throws IOException {
         if (cls == null) {
             out.writeObject(null);
         } else {
@@ -60,7 +61,8 @@ public class SerializerHelper {
      * @throws IOException
      *             Rethrows any IOExceptions from the ObjectOutputStream
      */
-    public static void writeClassArray(ObjectOutputStream out, Class<?>[] classes) throws IOException {
+    public static void writeClassArray(ObjectOutputStream out,
+            Class<?>[] classes) throws IOException {
         if (classes == null) {
             out.writeObject(null);
         } else {
@@ -85,7 +87,8 @@ public class SerializerHelper {
      * @throws IOException
      *             Rethrows IOExceptions from the ObjectInputStream
      */
-    public static Class<?>[] readClassArray(ObjectInputStream in) throws ClassNotFoundException, IOException {
+    public static Class<?>[] readClassArray(ObjectInputStream in)
+            throws ClassNotFoundException, IOException {
         String[] classNames = (String[]) in.readObject();
         if (classNames == null) {
             return null;
@@ -102,7 +105,9 @@ public class SerializerHelper {
      * List of primitive classes. Google App Engine has problems
      * serializing/deserializing these (#3064).
      */
-    private static Class<?>[] primitiveClasses = new Class<?>[] { byte.class, short.class, int.class, long.class, float.class, double.class, boolean.class, char.class };
+    private static Class<?>[] primitiveClasses = new Class<?>[] { byte.class,
+            short.class, int.class, long.class, float.class, double.class,
+            boolean.class, char.class };
 
     /**
      * Resolves the class given by {@code className}.
@@ -113,7 +118,8 @@ public class SerializerHelper {
      * @throws ClassNotFoundException
      *             If the class could not be resolved.
      */
-    public static Class<?> resolveClass(String className) throws ClassNotFoundException {
+    public static Class<?> resolveClass(String className)
+            throws ClassNotFoundException {
         for (Class<?> c : primitiveClasses) {
             if (className.equals(c.getName())) {
                 return c;
@@ -136,7 +142,8 @@ public class SerializerHelper {
      * @throws IOException
      *             Rethrows IOExceptions from the ObjectInputStream
      */
-    public static Class<?> readClass(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    public static Class<?> readClass(ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
         String className = (String) in.readObject();
         if (className == null) {
             return null;

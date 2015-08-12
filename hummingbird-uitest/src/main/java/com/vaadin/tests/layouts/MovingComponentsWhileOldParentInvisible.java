@@ -52,33 +52,40 @@ public class MovingComponentsWhileOldParentInvisible extends TestBase {
         for (Class<? extends HasComponents> cls : getComponentContainers()) {
             componentContainerSelect.addItem(cls);
         }
-        componentContainerSelect.addValueChangeListener(new ValueChangeListener() {
+        componentContainerSelect
+                .addValueChangeListener(new ValueChangeListener() {
 
-            @Override
-            @SuppressWarnings("unchecked")
-            public void valueChange(ValueChangeEvent event) {
-                HasComponents oldCC = cc;
-                cc = createComponentContainer((Class<? extends HasComponents>) event.getProperty().getValue());
-                addToCC(lab);
-                replaceComponent(oldCC, cc);
-            }
-        });
+                    @Override
+                    @SuppressWarnings("unchecked")
+                    public void valueChange(ValueChangeEvent event) {
+                        HasComponents oldCC = cc;
+                        cc = createComponentContainer(
+                                (Class<? extends HasComponents>) event
+                                        .getProperty().getValue());
+                        addToCC(lab);
+                        replaceComponent(oldCC, cc);
+                    }
+                });
 
-        componentContainerSelect.setValue(componentContainerSelect.getItemIds().iterator().next());
-        Button but1 = new Button("Move in and out of component container", new Button.ClickListener() {
+        componentContainerSelect.setValue(
+                componentContainerSelect.getItemIds().iterator().next());
+        Button but1 = new Button("Move in and out of component container",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                cc.setVisible(!cc.isVisible());
-                if (!cc.isVisible()) {
-                    getLayout().addComponent(lab);
-                    lab.setValue(lab.getValue().replace("inside", "outside"));
-                } else {
-                    addToCC(lab);
-                    lab.setValue(lab.getValue().replace("outside", "inside"));
-                }
-            }
-        });
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        cc.setVisible(!cc.isVisible());
+                        if (!cc.isVisible()) {
+                            getLayout().addComponent(lab);
+                            lab.setValue(lab.getValue().replace("inside",
+                                    "outside"));
+                        } else {
+                            addToCC(lab);
+                            lab.setValue(lab.getValue().replace("outside",
+                                    "inside"));
+                        }
+                    }
+                });
 
         addComponent(componentContainerSelect);
         addComponent(cc);
@@ -91,7 +98,8 @@ public class MovingComponentsWhileOldParentInvisible extends TestBase {
         } else if (cc instanceof SingleComponentContainer) {
             ((SingleComponentContainer) cc).setContent(lab);
         } else {
-            throw new RuntimeException("Don't know how to add to " + cc.getClass().getName());
+            throw new RuntimeException(
+                    "Don't know how to add to " + cc.getClass().getName());
         }
     }
 
@@ -111,7 +119,8 @@ public class MovingComponentsWhileOldParentInvisible extends TestBase {
         return list;
     }
 
-    protected HasComponents createComponentContainer(Class<? extends HasComponents> value) {
+    protected HasComponents createComponentContainer(
+            Class<? extends HasComponents> value) {
         try {
             HasComponents cc = value.newInstance();
             cc.setWidth("300px");

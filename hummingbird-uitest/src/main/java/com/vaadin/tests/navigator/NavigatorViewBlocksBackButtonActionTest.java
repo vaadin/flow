@@ -47,9 +47,11 @@ public class NavigatorViewBlocksBackButtonActionTest extends MultiBrowserTest {
             buttonConfirmView.click();
 
             // verify we are in main view and url is correct
-            waitForElementPresent(By.id(NavigatorViewBlocksBackButtonAction.LABEL_MAINVIEW_ID));
+            waitForElementPresent(By
+                    .id(NavigatorViewBlocksBackButtonAction.LABEL_MAINVIEW_ID));
             String currentUrl = driver.getCurrentUrl();
-            assertEquals("Current URL should be equal to initial main view URL", initialUrl, currentUrl);
+            assertEquals("Current URL should be equal to initial main view URL",
+                    initialUrl, currentUrl);
         }
     }
 
@@ -68,18 +70,23 @@ public class NavigatorViewBlocksBackButtonActionTest extends MultiBrowserTest {
         driver.navigate().back();
 
         // verify url is correct (is not changed)
-        waitForElementPresent(By.id(NavigatorViewBlocksBackButtonAction.LABEL_PROMPTEDVIEW_ID));
+        waitForElementPresent(By
+                .id(NavigatorViewBlocksBackButtonAction.LABEL_PROMPTEDVIEW_ID));
         String currentUrl = driver.getCurrentUrl();
-        assertEquals("Current URL should be equal to initial prompted view URL", initialPromptedUrl, currentUrl);
+        assertEquals("Current URL should be equal to initial prompted view URL",
+                initialPromptedUrl, currentUrl);
 
-        WebElement cancelButton = driver.findElement(By.className("v-window-closebox"));
+        WebElement cancelButton = driver
+                .findElement(By.className("v-window-closebox"));
 
         // click cancel button
         cancelButton.click();
 
         // verify we leave in prompted view and url is correct
-        waitForElementPresent(By.id(NavigatorViewBlocksBackButtonAction.LABEL_PROMPTEDVIEW_ID));
+        waitForElementPresent(By
+                .id(NavigatorViewBlocksBackButtonAction.LABEL_PROMPTEDVIEW_ID));
         currentUrl = driver.getCurrentUrl();
-        assertEquals("Current URL should be equal to initial prompted view URL", initialPromptedUrl, currentUrl);
+        assertEquals("Current URL should be equal to initial prompted view URL",
+                initialPromptedUrl, currentUrl);
     }
 }

@@ -32,7 +32,8 @@ public class Style {
      * @param string
      * @param width
      */
-    public static void add(com.vaadin.hummingbird.kernel.Element element, String styleAttribute, String styleValue) {
+    public static void add(com.vaadin.hummingbird.kernel.Element element,
+            String styleAttribute, String styleValue) {
         String currentStyleAttribute = element.getAttribute(STYLE);
         String[] currentStyles;
         if (currentStyleAttribute == null) {
@@ -66,7 +67,8 @@ public class Style {
      * @param element
      * @param string
      */
-    public static void remove(com.vaadin.hummingbird.kernel.Element element, String styleProperty) {
+    public static void remove(com.vaadin.hummingbird.kernel.Element element,
+            String styleProperty) {
         // TODO Auto-generated method stub
 
     }
@@ -78,7 +80,8 @@ public class Style {
      * @param string2
      * @param visible
      */
-    public static void set(com.vaadin.hummingbird.kernel.Element element, String styleProperty, String styleValue, boolean set) {
+    public static void set(com.vaadin.hummingbird.kernel.Element element,
+            String styleProperty, String styleValue, boolean set) {
         if (set) {
             add(element, styleProperty, styleValue);
         } else {

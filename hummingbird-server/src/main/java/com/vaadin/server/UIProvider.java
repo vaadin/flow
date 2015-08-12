@@ -51,7 +51,8 @@ public abstract class UIProvider implements Serializable {
      * @return an annotation of the given type, or <code>null</code> if the
      *         annotation is not present on the class
      */
-    protected static <T extends Annotation> T getAnnotationFor(Class<?> clazz, Class<T> annotationType) {
+    protected static <T extends Annotation> T getAnnotationFor(Class<?> clazz,
+            Class<T> annotationType) {
         // Find from the class hierarchy
         Class<?> currentType = clazz;
         while (currentType != Object.class) {
@@ -98,7 +99,8 @@ public abstract class UIProvider implements Serializable {
     }
 
     public String getPageTitle(UICreateEvent event) {
-        Title titleAnnotation = getAnnotationFor(event.getUIClass(), Title.class);
+        Title titleAnnotation = getAnnotationFor(event.getUIClass(),
+                Title.class);
         if (titleAnnotation == null) {
             return null;
         } else {

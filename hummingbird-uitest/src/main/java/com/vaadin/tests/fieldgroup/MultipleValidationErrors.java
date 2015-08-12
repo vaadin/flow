@@ -21,7 +21,8 @@ public class MultipleValidationErrors extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        BeanItem<PersonBeanWithValidationAnnotations> item = new BeanItem<PersonBeanWithValidationAnnotations>(new PersonBeanWithValidationAnnotations());
+        BeanItem<PersonBeanWithValidationAnnotations> item = new BeanItem<PersonBeanWithValidationAnnotations>(
+                new PersonBeanWithValidationAnnotations());
         final FieldGroup fieldGroup = new FieldGroup(item);
 
         bindTextField(item, fieldGroup, "First Name", "firstName");
@@ -38,8 +39,13 @@ public class MultipleValidationErrors extends AbstractTestUI {
                 try {
                     fieldGroup.commit();
                 } catch (FieldGroup.CommitException e) {
-                    if (e.getCause() != null && e.getCause() instanceof Validator.InvalidValueException) {
-                        validationErrors.setValue(StringEscapeUtils.unescapeHtml(AbstractErrorMessage.getErrorMessageForException(e.getCause()).getFormattedHtmlMessage()));
+                    if (e.getCause() != null && e
+                            .getCause() instanceof Validator.InvalidValueException) {
+                        validationErrors.setValue(StringEscapeUtils
+                                .unescapeHtml(AbstractErrorMessage
+                                        .getErrorMessageForException(
+                                                e.getCause())
+                                        .getFormattedHtmlMessage()));
                     }
                 }
 
@@ -47,9 +53,13 @@ public class MultipleValidationErrors extends AbstractTestUI {
         });
     }
 
-    private void bindTextField(BeanItem<PersonBeanWithValidationAnnotations> item, FieldGroup fieldGroup, String caption, String propertyId) {
-        TextField textfield = new TextField(caption, item.getItemProperty(propertyId));
-        textfield.addValidator(new BeanValidator(PersonBeanWithValidationAnnotations.class, propertyId));
+    private void bindTextField(
+            BeanItem<PersonBeanWithValidationAnnotations> item,
+            FieldGroup fieldGroup, String caption, String propertyId) {
+        TextField textfield = new TextField(caption,
+                item.getItemProperty(propertyId));
+        textfield.addValidator(new BeanValidator(
+                PersonBeanWithValidationAnnotations.class, propertyId));
 
         fieldGroup.bind(textfield, propertyId);
 

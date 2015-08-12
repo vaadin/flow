@@ -31,7 +31,8 @@ public class PushFromInitTest extends MultiBrowserTest {
         waitUntil(new ExpectedCondition<Boolean>() {
             @Override
             public Boolean apply(WebDriver input) {
-                return ("3. " + PushFromInit.LOG_AFTER_INIT).equals(getLogRow(0));
+                return ("3. " + PushFromInit.LOG_AFTER_INIT)
+                        .equals(getLogRow(0));
             }
         });
 

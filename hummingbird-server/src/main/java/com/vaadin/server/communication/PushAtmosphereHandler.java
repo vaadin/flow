@@ -33,7 +33,8 @@ import org.atmosphere.handler.AbstractReflectorAtmosphereHandler;
  * @since 7.5.0
  * @author Vaadin Ltd
  */
-public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler implements Serializable {
+public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
+        implements Serializable {
 
     private PushHandler pushHandler = null;
 
@@ -46,10 +47,12 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler im
     }
 
     @Override
-    public void onStateChange(AtmosphereResourceEvent event) throws IOException {
+    public void onStateChange(AtmosphereResourceEvent event)
+            throws IOException {
         super.onStateChange(event);
         if (pushHandler == null) {
-            getLogger().warning("AtmosphereHandler.onStateChange called before PushHandler has been set. This should really not happen");
+            getLogger().warning(
+                    "AtmosphereHandler.onStateChange called before PushHandler has been set. This should really not happen");
             return;
         }
 
@@ -61,7 +64,8 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler im
     @Override
     public void onRequest(AtmosphereResource resource) {
         if (pushHandler == null) {
-            getLogger().warning("AtmosphereHandler.onRequest called before PushHandler has been set. This should really not happen");
+            getLogger().warning(
+                    "AtmosphereHandler.onRequest called before PushHandler has been set. This should really not happen");
             return;
         }
 
@@ -95,7 +99,8 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler im
         pushHandler.onConnect(resource);
     }
 
-    private class AtmosphereResourceListener extends AtmosphereResourceEventListenerAdapter implements Serializable {
+    private class AtmosphereResourceListener extends
+            AtmosphereResourceEventListenerAdapter implements Serializable {
 
         @Override
         public void onDisconnect(AtmosphereResourceEvent event) {
@@ -106,7 +111,8 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler im
 
         @Override
         public void onThrowable(AtmosphereResourceEvent event) {
-            getLogger().log(Level.SEVERE, "Exception in push connection", event.throwable());
+            getLogger().log(Level.SEVERE, "Exception in push connection",
+                    event.throwable());
             pushHandler.connectionLost(event);
         }
     }

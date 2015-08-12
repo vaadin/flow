@@ -18,7 +18,8 @@ package com.vaadin.client.ui;
 import com.vaadin.client.StyleConstants;
 import com.vaadin.shared.AbstractFieldState;
 
-public abstract class AbstractFieldConnector extends AbstractComponentConnector {
+public abstract class AbstractFieldConnector
+        extends AbstractComponentConnector {
 
     @Override
     public AbstractFieldState getState() {
@@ -54,7 +55,8 @@ public abstract class AbstractFieldConnector extends AbstractComponentConnector 
         setWidgetStyleName(StyleConstants.MODIFIED, isModified());
 
         // add / remove error style name to Fields
-        setWidgetStyleNameWithPrefix(getWidget().getStylePrimaryName(), StyleConstants.REQUIRED_EXT, isRequired());
+        setWidgetStyleNameWithPrefix(getWidget().getStylePrimaryName(),
+                StyleConstants.REQUIRED_EXT, isRequired());
 
         getWidget().setStyleName(StyleConstants.REQUIRED, isRequired());
     }

@@ -45,7 +45,9 @@ public class NativeButtonIconAndTextTest extends MultiBrowserTest {
         assertAltText(NATIVE_BUTTON_TEXT_ICON, "");
         assertAltText(NATIVE_BUTTON_TEXT_ICON_ALT, INITIAL_ALTERNATE_TEXT);
 
-        clickElements(BUTTON_TEXT, BUTTON_TEXT_ICON, BUTTON_TEXT_ICON_ALT, NATIVE_BUTTON_TEXT, NATIVE_BUTTON_TEXT_ICON, NATIVE_BUTTON_TEXT_ICON_ALT);
+        clickElements(BUTTON_TEXT, BUTTON_TEXT_ICON, BUTTON_TEXT_ICON_ALT,
+                NATIVE_BUTTON_TEXT, NATIVE_BUTTON_TEXT_ICON,
+                NATIVE_BUTTON_TEXT_ICON_ALT);
 
         // Button without icon - should not get alt text
         assertAltText(BUTTON_TEXT, "");

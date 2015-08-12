@@ -57,7 +57,8 @@ public class GenericFontIcon implements FontIcon {
      */
     @Override
     public String getMIMEType() {
-        throw new UnsupportedOperationException(FontIcon.class.getSimpleName() + " should not be used where a MIME type is needed.");
+        throw new UnsupportedOperationException(FontIcon.class.getSimpleName()
+                + " should not be used where a MIME type is needed.");
     }
 
     /*
@@ -91,7 +92,8 @@ public class GenericFontIcon implements FontIcon {
      * @return
      */
     public static String getHtml(String fontFamily, int codePoint) {
-        return "<span class=\"v-icon\" style=\"font-family: " + fontFamily + ";\">&#x" + Integer.toHexString(codePoint) + ";</span>";
+        return "<span class=\"v-icon\" style=\"font-family: " + fontFamily
+                + ";\">&#x" + Integer.toHexString(codePoint) + ";</span>";
     }
 
     /*
@@ -104,7 +106,8 @@ public class GenericFontIcon implements FontIcon {
         final int prime = 31;
         int result = 1;
         result = prime * result + codePoint;
-        result = prime * result + ((fontFamily == null) ? 0 : fontFamily.hashCode());
+        result = prime * result
+                + ((fontFamily == null) ? 0 : fontFamily.hashCode());
         return result;
     }
 

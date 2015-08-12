@@ -116,7 +116,9 @@ public class UidlWriter implements Serializable {
         while (true) {
             ArrayList<ClientConnector> connectorsToProcess = new ArrayList<ClientConnector>();
             for (ClientConnector c : uiConnectorTracker.getDirtyConnectors()) {
-                if (!processedConnectors.contains(c) && LegacyCommunicationManager.isConnectorVisibleToClient(c)) {
+                if (!processedConnectors.contains(c)
+                        && LegacyCommunicationManager
+                                .isConnectorVisibleToClient(c)) {
                     connectorsToProcess.add(c);
                 }
             }
@@ -126,7 +128,8 @@ public class UidlWriter implements Serializable {
             }
 
             for (ClientConnector connector : connectorsToProcess) {
-                boolean initialized = uiConnectorTracker.isClientSideInitialized(connector);
+                boolean initialized = uiConnectorTracker
+                        .isClientSideInitialized(connector);
                 processedConnectors.add(connector);
 
                 try {
@@ -137,13 +140,16 @@ public class UidlWriter implements Serializable {
             }
         }
 
-        getLogger().log(Level.FINE, "Found " + processedConnectors.size() + " dirty connectors to paint");
+        getLogger().log(Level.FINE, "Found " + processedConnectors.size()
+                + " dirty connectors to paint");
 
         uiConnectorTracker.setWritingResponse(true);
         try {
             JSONObject response = new JSONObject();
 
-            int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled() ? uiConnectorTracker.getCurrentSyncId() : -1;
+            int syncId = service.getDeploymentConfiguration()
+                    .isSyncIdCheckEnabled()
+                            ? uiConnectorTracker.getCurrentSyncId() : -1;
             // writer.write("\"" + ApplicationConstants.SERVER_SYNC_ID + "\": "
             // + syncId + ", ");
             response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
@@ -152,12 +158,15 @@ public class UidlWriter implements Serializable {
                 // writer.write("\"" + ApplicationConstants.RESYNCHRONIZE_ID +
                 // "\": true, ");
             }
-            int nextClientToServerMessageId = ui.getLastProcessedClientToServerId() + 1;
-            response.put(ApplicationConstants.CLIENT_TO_SERVER_ID, nextClientToServerMessageId);
+            int nextClientToServerMessageId = ui
+                    .getLastProcessedClientToServerId() + 1;
+            response.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
+                    nextClientToServerMessageId);
             // writer.write("\"" + ApplicationConstants.CLIENT_TO_SERVER_ID +
             // "\": " + nextClientToServerMessageId);
 
-            Collection<ClientConnector> dirtyVisibleConnectors = ui.getConnectorTracker().getDirtyVisibleConnectors();
+            Collection<ClientConnector> dirtyVisibleConnectors = ui
+                    .getConnectorTracker().getDirtyVisibleConnectors();
             JsonObject dependencies = Json.createObject();
             List<Class<? extends ClientConnector>> dependencyClasses = new ArrayList<>();
             for (ClientConnector c : dirtyVisibleConnectors) {
@@ -199,7 +208,8 @@ public class UidlWriter implements Serializable {
                 private boolean isServerOnly(StateNode node) {
                     if (node == null) {
                         return false;
-                    } else if (node.containsKey(AbstractElementTemplate.Keys.SERVER_ONLY)) {
+                    } else if (node.containsKey(
+                            AbstractElementTemplate.Keys.SERVER_ONLY)) {
                         return true;
                     } else {
                         return isServerOnly(node.getParent());
@@ -207,7 +217,7 @@ public class UidlWriter implements Serializable {
                 }
 
                 private JSONObject createChange(StateNode node, String type) {
-                    assert !isServerOnly(node);
+                    assert!isServerOnly(node);
 
                     JSONObject change = new JSONObject();
                     change.put("type", type);
@@ -218,11 +228,14 @@ public class UidlWriter implements Serializable {
                 }
 
                 @Override
-                public void visitRemoveChange(StateNode node, RemoveChange removeChange) {
+                public void visitRemoveChange(StateNode node,
+                        RemoveChange removeChange) {
                     if (isServerOnly(node)) {
                         return;
                     }
-                    if (removeChange.getValue() instanceof StateNode && isServerOnly((StateNode) removeChange.getValue())) {
+                    if (removeChange.getValue() instanceof StateNode
+                            && isServerOnly(
+                                    (StateNode) removeChange.getValue())) {
                         return;
                     }
                     Object key = removeChange.getKey();
@@ -231,7 +244,8 @@ public class UidlWriter implements Serializable {
                 }
 
                 @Override
-                public void visitPutChange(StateNode node, PutChange putChange) {
+                public void visitPutChange(StateNode node,
+                        PutChange putChange) {
                     if (isServerOnly(node)) {
                         return;
                     }
@@ -266,14 +280,20 @@ public class UidlWriter implements Serializable {
 
                     int length = changes.length();
                     if (length >= 2) {
-                        JSONObject previousChange = changes.getJSONObject(changes.length() - 2);
-                        if ("remove".equals(previousChange.getString("type")) && change.getInt("id") == previousChange.getInt("id") && key.equals(previousChange.getString("key"))) {
+                        JSONObject previousChange = changes
+                                .getJSONObject(changes.length() - 2);
+                        if ("remove".equals(previousChange.getString("type"))
+                                && change.getInt("id") == previousChange
+                                        .getInt("id")
+                                && key.equals(
+                                        previousChange.getString("key"))) {
                             changes.remove(changes.length() - 2);
                         }
                     }
                 }
 
-                private void ensureTemplateSent(ElementTemplate template, UI ui, JSONObject newTemplates) {
+                private void ensureTemplateSent(ElementTemplate template, UI ui,
+                        JSONObject newTemplates) {
                     Set<Integer> sentTemplates = ui.getSentTemplates();
                     if (sentTemplates == null) {
                         sentTemplates = new HashSet<>();
@@ -281,31 +301,42 @@ public class UidlWriter implements Serializable {
 
                     Integer templateId = Integer.valueOf(template.getId());
                     if (!sentTemplates.contains(templateId)) {
-                        newTemplates.put(Integer.toString(template.getId()), serializeTemplate(template, ui, newTemplates));
+                        newTemplates.put(Integer.toString(template.getId()),
+                                serializeTemplate(template, ui, newTemplates));
                         sentTemplates.add(templateId);
                     }
 
                     ui.setSentTemplates(sentTemplates);
                 }
 
-                private JSONObject serializeTemplate(ElementTemplate template, UI ui, JSONObject newTemplates) {
+                private JSONObject serializeTemplate(ElementTemplate template,
+                        UI ui, JSONObject newTemplates) {
                     JSONObject serialized = new JSONObject();
                     serialized.put("type", template.getClass().getSimpleName());
                     serialized.put("id", template.getId());
 
                     if (template.getClass() == BoundElementTemplate.class) {
-                        serializeBoundElementTemplate(serialized, (BoundElementTemplate) template);
-                    } else if (template.getClass() == StaticChildrenElementTemplate.class) {
-                        serializeStaticChildrenElementEmplate(serialized, (StaticChildrenElementTemplate) template, ui, newTemplates);
-                    } else if (template.getClass() == ForElementTemplate.class) {
-                        serializeForTemplate(serialized, (ForElementTemplate) template, ui, newTemplates);
+                        serializeBoundElementTemplate(serialized,
+                                (BoundElementTemplate) template);
+                    } else if (template
+                            .getClass() == StaticChildrenElementTemplate.class) {
+                        serializeStaticChildrenElementEmplate(serialized,
+                                (StaticChildrenElementTemplate) template, ui,
+                                newTemplates);
+                    } else
+                        if (template.getClass() == ForElementTemplate.class) {
+                        serializeForTemplate(serialized,
+                                (ForElementTemplate) template, ui,
+                                newTemplates);
                     } else {
                         throw new RuntimeException(template.toString());
                     }
                     return serialized;
                 }
 
-                private void serializeForTemplate(JSONObject serialized, ForElementTemplate template, UI ui, JSONObject newTemplates) {
+                private void serializeForTemplate(JSONObject serialized,
+                        ForElementTemplate template, UI ui,
+                        JSONObject newTemplates) {
                     serialized.put("modelKey", template.getModelProperty());
 
                     ElementTemplate childTemplate = template.getChildTemplate();
@@ -315,41 +346,54 @@ public class UidlWriter implements Serializable {
                     serializeBoundElementTemplate(serialized, template);
                 }
 
-                private void serializeStaticChildrenElementEmplate(JSONObject serialized, StaticChildrenElementTemplate template, UI ui, JSONObject newTemplates) {
+                private void serializeStaticChildrenElementEmplate(
+                        JSONObject serialized,
+                        StaticChildrenElementTemplate template, UI ui,
+                        JSONObject newTemplates) {
                     JSONArray children = new JSONArray();
                     serialized.put("children", children);
-                    for (BoundElementTemplate childTemplate : template.getChildren()) {
+                    for (BoundElementTemplate childTemplate : template
+                            .getChildren()) {
                         ensureTemplateSent(childTemplate, ui, newTemplates);
                         children.put(childTemplate.getId());
                     }
                     serializeBoundElementTemplate(serialized, template);
                 }
 
-                private void serializeBoundElementTemplate(JSONObject serialized, BoundElementTemplate bet) {
+                private void serializeBoundElementTemplate(
+                        JSONObject serialized, BoundElementTemplate bet) {
                     JSONObject attributeBindings = new JSONObject();
-                    for (AttributeBinding attributeBinding : bet.getAttributeBindings().values()) {
+                    for (AttributeBinding attributeBinding : bet
+                            .getAttributeBindings().values()) {
                         if (attributeBinding instanceof ModelAttributeBinding) {
                             ModelAttributeBinding mab = (ModelAttributeBinding) attributeBinding;
-                            attributeBindings.put(mab.getModelPath(), mab.getAttributeName());
+                            attributeBindings.put(mab.getModelPath(),
+                                    mab.getAttributeName());
                         } else {
                             // Not yet supported
-                            throw new RuntimeException(attributeBinding.toString());
+                            throw new RuntimeException(
+                                    attributeBinding.toString());
                         }
                     }
 
                     JSONObject defaultAttributes = new JSONObject();
-                    bet.getDefaultAttributeValues().forEach(defaultAttributes::put);
+                    bet.getDefaultAttributeValues()
+                            .forEach(defaultAttributes::put);
 
-                    serialized.put("attributeBindings", attributeBindings).put("defaultAttributes", defaultAttributes).put("tag", bet.getTag());
+                    serialized.put("attributeBindings", attributeBindings)
+                            .put("defaultAttributes", defaultAttributes)
+                            .put("tag", bet.getTag());
                 }
 
                 @Override
-                public void visitParentChange(StateNode node, ParentChange parentChange) {
+                public void visitParentChange(StateNode node,
+                        ParentChange parentChange) {
                     // Ignore
                 }
 
                 @Override
-                public void visitListReplaceChange(StateNode node, ListReplaceChange listReplaceChange) {
+                public void visitListReplaceChange(StateNode node,
+                        ListReplaceChange listReplaceChange) {
                     if (isServerOnly(node)) {
                         return;
                     }
@@ -367,7 +411,8 @@ public class UidlWriter implements Serializable {
                 }
 
                 @Override
-                public void visitListRemoveChange(StateNode node, ListRemoveChange listRemoveChange) {
+                public void visitListRemoveChange(StateNode node,
+                        ListRemoveChange listRemoveChange) {
                     if (isServerOnly(node)) {
                         return;
                     }
@@ -377,7 +422,8 @@ public class UidlWriter implements Serializable {
                 }
 
                 @Override
-                public void visitListInsertChange(StateNode node, ListInsertChange listInsertChange) {
+                public void visitListInsertChange(StateNode node,
+                        ListInsertChange listInsertChange) {
                     if (isServerOnly(node)) {
                         return;
                     }
@@ -414,20 +460,23 @@ public class UidlWriter implements Serializable {
      * @param cls
      * @param response
      */
-    private void handleDependencies(UI ui, Class<? extends ClientConnector> cls, JSONObject response) {
+    private void handleDependencies(UI ui, Class<? extends ClientConnector> cls,
+            JSONObject response) {
         if (ui.getResourcesHandled().contains(cls)) {
             return;
         }
 
         ui.getResourcesHandled().add(cls);
-        LegacyCommunicationManager manager = ui.getSession().getCommunicationManager();
+        LegacyCommunicationManager manager = ui.getSession()
+                .getCommunicationManager();
 
         JavaScript jsAnnotation = cls.getAnnotation(JavaScript.class);
         if (jsAnnotation != null) {
             if (!response.has(DEPENDENCY_JAVASCRIPT)) {
                 response.put(DEPENDENCY_JAVASCRIPT, new JSONArray());
             }
-            JSONArray scriptsJson = response.getJSONArray(DEPENDENCY_JAVASCRIPT);
+            JSONArray scriptsJson = response
+                    .getJSONArray(DEPENDENCY_JAVASCRIPT);
 
             for (String uri : jsAnnotation.value()) {
                 scriptsJson.put(manager.registerDependency(uri, cls));
@@ -459,7 +508,9 @@ public class UidlWriter implements Serializable {
         }
 
         if (Component.class.isAssignableFrom(cls.getSuperclass())) {
-            handleDependencies(ui, (Class<? extends ClientConnector>) cls.getSuperclass(), response);
+            handleDependencies(ui,
+                    (Class<? extends ClientConnector>) cls.getSuperclass(),
+                    response);
         }
     }
 
@@ -479,17 +530,24 @@ public class UidlWriter implements Serializable {
      * @throws IOException
      */
     private void writePerformanceData(UI ui, Writer writer) throws IOException {
-        writer.write(String.format(", \"timings\":[%d, %d]", ui.getSession().getCumulativeRequestDuration(), ui.getSession().getLastRequestDuration()));
+        writer.write(String.format(", \"timings\":[%d, %d]",
+                ui.getSession().getCumulativeRequestDuration(),
+                ui.getSession().getLastRequestDuration()));
     }
 
     @SuppressWarnings("unchecked")
-    public String getTag(ClientConnector clientConnector, LegacyCommunicationManager manager) {
-        Class<? extends ClientConnector> clientConnectorClass = clientConnector.getClass();
+    public String getTag(ClientConnector clientConnector,
+            LegacyCommunicationManager manager) {
+        Class<? extends ClientConnector> clientConnectorClass = clientConnector
+                .getClass();
         while (clientConnectorClass.isAnonymousClass()) {
-            clientConnectorClass = (Class<? extends ClientConnector>) clientConnectorClass.getSuperclass();
+            clientConnectorClass = (Class<? extends ClientConnector>) clientConnectorClass
+                    .getSuperclass();
         }
         Class<?> clazz = clientConnectorClass;
-        while (!usedClientConnectors.contains(clazz) && clazz.getSuperclass() != null && ClientConnector.class.isAssignableFrom(clazz)) {
+        while (!usedClientConnectors.contains(clazz)
+                && clazz.getSuperclass() != null
+                && ClientConnector.class.isAssignableFrom(clazz)) {
             usedClientConnectors.add((Class<? extends ClientConnector>) clazz);
             clazz = clazz.getSuperclass();
         }

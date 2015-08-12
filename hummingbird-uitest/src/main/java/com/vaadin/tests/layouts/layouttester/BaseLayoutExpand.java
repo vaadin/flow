@@ -45,7 +45,8 @@ public class BaseLayoutExpand extends BaseLayoutTestUI {
             private int expandComp1;
             private int expandComp2;
 
-            public ExpandButton(final AbstractComponent c1, final AbstractComponent c2, int e1, int e2) {
+            public ExpandButton(final AbstractComponent c1,
+                    final AbstractComponent c2, int e1, int e2) {
                 super();
                 this.c1 = c1;
                 this.c2 = c2;

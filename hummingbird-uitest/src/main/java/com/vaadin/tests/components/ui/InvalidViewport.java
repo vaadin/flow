@@ -28,7 +28,8 @@ public class InvalidViewport extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new Label("I shouldn't load because of conflicting viewport definitions"));
+        addComponent(new Label(
+                "I shouldn't load because of conflicting viewport definitions"));
 
     }
 

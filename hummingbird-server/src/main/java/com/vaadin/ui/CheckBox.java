@@ -38,7 +38,8 @@ public class CheckBox extends AbstractField<Boolean> {
     private CheckBoxServerRpc rpc = new CheckBoxServerRpc() {
 
         @Override
-        public void setChecked(boolean checked, MouseEventDetails mouseEventDetails) {
+        public void setChecked(boolean checked,
+                MouseEventDetails mouseEventDetails) {
             if (isReadOnly()) {
                 return;
             }
@@ -51,7 +52,8 @@ public class CheckBox extends AbstractField<Boolean> {
              * 
              * See #11028, #10030.
              */
-            getUI().getConnectorTracker().getDiffState(CheckBox.this).put("checked", checked);
+            getUI().getConnectorTracker().getDiffState(CheckBox.this)
+                    .put("checked", checked);
 
             final Boolean oldValue = getValue();
             final Boolean newValue = checked;
@@ -64,7 +66,8 @@ public class CheckBox extends AbstractField<Boolean> {
         }
     };
 
-    FocusAndBlurServerRpcImpl focusBlurRpc = new FocusAndBlurServerRpcImpl(this) {
+    FocusAndBlurServerRpcImpl focusBlurRpc = new FocusAndBlurServerRpcImpl(
+            this) {
         @Override
         protected void fireEvent(Event event) {
             CheckBox.this.fireEvent(event);
@@ -143,7 +146,8 @@ public class CheckBox extends AbstractField<Boolean> {
     }
 
     public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
+        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
+                BlurListener.blurMethod);
     }
 
     public void removeBlurListener(BlurListener listener) {
@@ -151,7 +155,8 @@ public class CheckBox extends AbstractField<Boolean> {
     }
 
     public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
+        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
+                FocusListener.focusMethod);
     }
 
     public void removeFocusListener(FocusListener listener) {
@@ -168,7 +173,8 @@ public class CheckBox extends AbstractField<Boolean> {
     public void readDesign(Element design, DesignContext designContext) {
         super.readDesign(design, designContext);
         if (design.hasAttr("checked")) {
-            this.setValue(DesignAttributeHandler.readAttribute("checked", design.attributes(), Boolean.class));
+            this.setValue(DesignAttributeHandler.readAttribute("checked",
+                    design.attributes(), Boolean.class));
         }
     }
 
@@ -195,7 +201,8 @@ public class CheckBox extends AbstractField<Boolean> {
         super.writeDesign(design, designContext);
         CheckBox def = (CheckBox) designContext.getDefaultInstance(this);
         Attributes attr = design.attributes();
-        DesignAttributeHandler.writeAttribute("checked", attr, getValue(), def.getValue(), Boolean.class);
+        DesignAttributeHandler.writeAttribute("checked", attr, getValue(),
+                def.getValue(), Boolean.class);
     }
 
     @Override

@@ -36,7 +36,8 @@ public class AxessingWebPageAndBrowserInfoUI extends AbstractTestUI {
         page.addBrowserWindowResizeListener(new BrowserWindowResizeListener() {
             @Override
             public void browserWindowResized(BrowserWindowResizeEvent event) {
-                Notification.show("Window width=" + event.getWidth() + ", height=" + event.getHeight());
+                Notification.show("Window width=" + event.getWidth()
+                        + ", height=" + event.getHeight());
             }
         });
 

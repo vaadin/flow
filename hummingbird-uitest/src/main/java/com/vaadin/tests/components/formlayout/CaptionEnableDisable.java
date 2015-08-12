@@ -35,15 +35,16 @@ public class CaptionEnableDisable extends AbstractTestUI {
         checkBox.setEnabled(false);
         layout.addComponent(checkBox);
 
-        layout.addComponent(new Button("Toggle components enabled", new Button.ClickListener() {
-            @Override
-            public void buttonClick(Button.ClickEvent event) {
-                combobox.setEnabled(!combobox.isEnabled());
-                textField.setEnabled(!textField.isEnabled());
-                checkBox.setEnabled(!checkBox.isEnabled());
-                nativeSelect.setEnabled(!nativeSelect.isEnabled());
-            }
-        }));
+        layout.addComponent(new Button("Toggle components enabled",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(Button.ClickEvent event) {
+                        combobox.setEnabled(!combobox.isEnabled());
+                        textField.setEnabled(!textField.isEnabled());
+                        checkBox.setEnabled(!checkBox.isEnabled());
+                        nativeSelect.setEnabled(!nativeSelect.isEnabled());
+                    }
+                }));
         return layout;
     }
 

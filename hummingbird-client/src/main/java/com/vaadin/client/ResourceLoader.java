@@ -65,7 +65,8 @@ public class ResourceLoader {
          *            true if the resource has only been preloaded, false if
          *            it's fully loaded
          */
-        public ResourceLoadEvent(ResourceLoader loader, String resourceUrl, boolean preload) {
+        public ResourceLoadEvent(ResourceLoader loader, String resourceUrl,
+                boolean preload) {
             this.loader = loader;
             this.resourceUrl = resourceUrl;
             this.preload = preload;
@@ -136,7 +137,8 @@ public class ResourceLoader {
         public void onError(ResourceLoadEvent event);
     }
 
-    private static final ResourceLoader INSTANCE = GWT.create(ResourceLoader.class);
+    private static final ResourceLoader INSTANCE = GWT
+            .create(ResourceLoader.class);
 
     private ApplicationConnection connection;
 
@@ -172,7 +174,8 @@ public class ResourceLoader {
             LinkElement linkElement = LinkElement.as(links.getItem(i));
             String rel = linkElement.getRel();
             String href = linkElement.getHref();
-            if ("stylesheet".equalsIgnoreCase(rel) && href != null && href.length() != 0) {
+            if ("stylesheet".equalsIgnoreCase(rel) && href != null
+                    && href.length() != 0) {
                 loadedResources.add(href);
             }
         }
@@ -199,8 +202,10 @@ public class ResourceLoader {
      * @param resourceLoadListener
      *            the listener that will get notified when the script is loaded
      */
-    public void loadScript(final String scriptUrl, final ResourceLoadListener resourceLoadListener) {
-        loadScript(scriptUrl, resourceLoadListener, !supportsInOrderScriptExecution());
+    public void loadScript(final String scriptUrl,
+            final ResourceLoadListener resourceLoadListener) {
+        loadScript(scriptUrl, resourceLoadListener,
+                !supportsInOrderScriptExecution());
     }
 
     /**
@@ -218,7 +223,8 @@ public class ResourceLoader {
      *            What mode the script.async attribute should be set to
      * @since 7.2.4
      */
-    public void loadScript(final String scriptUrl, final ResourceLoadListener resourceLoadListener, boolean async) {
+    public void loadScript(final String scriptUrl,
+            final ResourceLoadListener resourceLoadListener, boolean async) {
         final String url = WidgetUtil.getAbsoluteUrl(scriptUrl);
         ResourceLoadEvent event = new ResourceLoadEvent(this, url, false);
         if (loadedResources.contains(url)) {
@@ -277,7 +283,8 @@ public class ResourceLoader {
      * @since 7.2.4
      */
     public static boolean supportsInOrderScriptExecution() {
-        return BrowserInfo.get().isIE() && BrowserInfo.get().getBrowserMajorVersion() >= 11;
+        return BrowserInfo.get().isIE()
+                && BrowserInfo.get().getBrowserMajorVersion() >= 11;
     }
 
     /**
@@ -298,7 +305,8 @@ public class ResourceLoader {
      *            the listener that will get notified when the resource is
      *            preloaded
      */
-    public void preloadResource(String url, ResourceLoadListener resourceLoadListener) {
+    public void preloadResource(String url,
+            ResourceLoadListener resourceLoadListener) {
         url = WidgetUtil.getAbsoluteUrl(url);
         ResourceLoadEvent event = new ResourceLoadEvent(this, url, true);
         if (loadedResources.contains(url) || preloadedResources.contains(url)) {
@@ -309,7 +317,8 @@ public class ResourceLoader {
             return;
         }
 
-        if (addListener(url, resourceLoadListener, preloadListeners) && !loadListeners.containsKey(url)) {
+        if (addListener(url, resourceLoadListener, preloadListeners)
+                && !loadListeners.containsKey(url)) {
             // Inject loader element if this is the first time this is preloaded
             // AND the resources isn't already being loaded in the normal way
 
@@ -345,7 +354,8 @@ public class ResourceLoader {
         if (BrowserInfo.get().isIE()) {
             // If ie11+ for some reason gets a preload request
             if (BrowserInfo.get().getBrowserMajorVersion() >= 11) {
-                throw new RuntimeException("Browser doesn't support preloading with text/cache");
+                throw new RuntimeException(
+                        "Browser doesn't support preloading with text/cache");
             }
             ScriptElement element = Document.get().createScriptElement();
             element.setSrc(url);
@@ -378,26 +388,27 @@ public class ResourceLoader {
      * @param event
      *            the event passed to the listener
      */
-    public static native void addOnloadHandler(Element element, ResourceLoadListener listener, ResourceLoadEvent event)
-    /*-{
-        element.onload = $entry(function() {
-            element.onload = null;
-            element.onerror = null;
-            element.onreadystatechange = null;
-            listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onLoad(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
-        });
-        element.onerror = $entry(function() {
-            element.onload = null;
-            element.onerror = null;
-            element.onreadystatechange = null;
-            listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onError(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
-        });
-        element.onreadystatechange = function() {
-            if ("loaded" === element.readyState || "complete" === element.readyState ) {
-                element.onload(arguments[0]);
-            }
-        };
-    }-*/;
+    public static native void addOnloadHandler(Element element,
+            ResourceLoadListener listener, ResourceLoadEvent event)
+            /*-{
+                element.onload = $entry(function() {
+                    element.onload = null;
+                    element.onerror = null;
+                    element.onreadystatechange = null;
+                    listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onLoad(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
+                });
+                element.onerror = $entry(function() {
+                    element.onload = null;
+                    element.onerror = null;
+                    element.onreadystatechange = null;
+                    listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onError(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
+                });
+                element.onreadystatechange = function() {
+                    if ("loaded" === element.readyState || "complete" === element.readyState ) {
+                        element.onload(arguments[0]);
+                    }
+                };
+            }-*/;
 
     /**
      * Load a stylesheet and notify a listener when the stylesheet is loaded.
@@ -411,7 +422,8 @@ public class ResourceLoader {
      *            the listener that will get notified when the stylesheet is
      *            loaded
      */
-    public void loadStylesheet(final String stylesheetUrl, final ResourceLoadListener resourceLoadListener) {
+    public void loadStylesheet(final String stylesheetUrl,
+            final ResourceLoadListener resourceLoadListener) {
         final String url = WidgetUtil.getAbsoluteUrl(stylesheetUrl);
         final ResourceLoadEvent event = new ResourceLoadEvent(this, url, false);
         if (loadedResources.contains(url)) {
@@ -476,7 +488,8 @@ public class ResourceLoader {
                     public void onLoad(ResourceLoadEvent event) {
                         // Chrome && IE fires load for errors, must check
                         // stylesheet data
-                        if (BrowserInfo.get().isChrome() || BrowserInfo.get().isIE()) {
+                        if (BrowserInfo.get().isChrome()
+                                || BrowserInfo.get().isIE()) {
                             int styleSheetLength = getStyleSheetLength(url);
                             // Error if there's an empty stylesheet
                             if (styleSheetLength == 0) {
@@ -537,7 +550,9 @@ public class ResourceLoader {
         return -1;
     }-*/;
 
-    private static boolean addListener(String url, ResourceLoadListener listener, Map<String, Collection<ResourceLoadListener>> listenerMap) {
+    private static boolean addListener(String url,
+            ResourceLoadListener listener,
+            Map<String, Collection<ResourceLoadListener>> listenerMap) {
         Collection<ResourceLoadListener> listeners = listenerMap.get(url);
         if (listeners == null) {
             listeners = new HashSet<ResourceLoader.ResourceLoadListener>();

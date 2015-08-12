@@ -32,8 +32,11 @@ public class AudioTest extends TestBase {
 
         // Public domain sounds from pdsounds.org 27.2.2013
 
-        final Resource[] s1 = { new ClassResource(getClass(), "bip.mp3"), new ClassResource(getClass(), "bip.ogg") };
-        final Resource[] s2 = { new ClassResource(getClass(), "toyphone_dialling.mp3"), new ClassResource(getClass(), "toyphone_dialling.ogg") };
+        final Resource[] s1 = { new ClassResource(getClass(), "bip.mp3"),
+                new ClassResource(getClass(), "bip.ogg") };
+        final Resource[] s2 = {
+                new ClassResource(getClass(), "toyphone_dialling.mp3"),
+                new ClassResource(getClass(), "toyphone_dialling.ogg") };
 
         final Audio audio = new Audio();
 
@@ -45,13 +48,17 @@ public class AudioTest extends TestBase {
 
         addComponent(audio);
 
-        CheckBox checkBox = new CheckBox("Show controls", new MethodProperty<Boolean>(audio, "showControls"));
+        CheckBox checkBox = new CheckBox("Show controls",
+                new MethodProperty<Boolean>(audio, "showControls"));
         addComponent(checkBox);
-        checkBox = new CheckBox("HtmlContentAllowed", new MethodProperty<Boolean>(audio, "htmlContentAllowed"));
+        checkBox = new CheckBox("HtmlContentAllowed",
+                new MethodProperty<Boolean>(audio, "htmlContentAllowed"));
         addComponent(checkBox);
-        checkBox = new CheckBox("muted", new MethodProperty<Boolean>(audio, "muted"));
+        checkBox = new CheckBox("muted",
+                new MethodProperty<Boolean>(audio, "muted"));
         addComponent(checkBox);
-        checkBox = new CheckBox("autoplay", new MethodProperty<Boolean>(audio, "autoplay"));
+        checkBox = new CheckBox("autoplay",
+                new MethodProperty<Boolean>(audio, "autoplay"));
         addComponent(checkBox);
 
         Button b = new Button("Change", new Button.ClickListener() {

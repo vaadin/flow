@@ -39,7 +39,8 @@ public class RichTextAreaTest extends AbstractFieldTest<RichTextArea> {
     }
 
     private void createNullSettingAllowedAction(String category) {
-        createBooleanAction("Null selection allowed", category, true, nullSelectionAllowedCommand);
+        createBooleanAction("Null selection allowed", category, true,
+                nullSelectionAllowedCommand);
     }
 
     private void createNullRepresentationAction(String category) {
@@ -48,7 +49,8 @@ public class RichTextAreaTest extends AbstractFieldTest<RichTextArea> {
         options.put("null", "null");
         options.put("This is empty", "This is empty");
         options.put("- Nothing -", "- Nothing -");
-        createSelectAction("Null representation", category, options, "null", nullRepresentationCommand);
+        createSelectAction("Null representation", category, options, "null",
+                nullRepresentationCommand);
     }
 
 }

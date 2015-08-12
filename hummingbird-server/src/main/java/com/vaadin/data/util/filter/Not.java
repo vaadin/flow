@@ -49,7 +49,8 @@ public final class Not implements Filter {
     }
 
     @Override
-    public boolean passesFilter(Object itemId, Item item) throws UnsupportedOperationException {
+    public boolean passesFilter(Object itemId, Item item)
+            throws UnsupportedOperationException {
         return !filter.passesFilter(itemId, item);
     }
 

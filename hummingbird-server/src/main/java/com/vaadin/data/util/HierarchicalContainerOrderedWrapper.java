@@ -27,7 +27,8 @@ import com.vaadin.data.Container.Hierarchical;
  * @see ContainerOrderedWrapper
  */
 @SuppressWarnings({ "serial" })
-public class HierarchicalContainerOrderedWrapper extends ContainerOrderedWrapper implements Hierarchical {
+public class HierarchicalContainerOrderedWrapper extends ContainerOrderedWrapper
+        implements Hierarchical {
 
     private Hierarchical hierarchical;
 
@@ -67,12 +68,14 @@ public class HierarchicalContainerOrderedWrapper extends ContainerOrderedWrapper
     }
 
     @Override
-    public boolean setChildrenAllowed(Object itemId, boolean areChildrenAllowed) throws UnsupportedOperationException {
+    public boolean setChildrenAllowed(Object itemId, boolean areChildrenAllowed)
+            throws UnsupportedOperationException {
         return hierarchical.setChildrenAllowed(itemId, areChildrenAllowed);
     }
 
     @Override
-    public boolean setParent(Object itemId, Object newParentId) throws UnsupportedOperationException {
+    public boolean setParent(Object itemId, Object newParentId)
+            throws UnsupportedOperationException {
         return hierarchical.setParent(itemId, newParentId);
     }
 

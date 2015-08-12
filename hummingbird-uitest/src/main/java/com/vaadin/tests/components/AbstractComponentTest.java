@@ -23,16 +23,21 @@ import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.MenuItem;
 
-public abstract class AbstractComponentTest<T extends AbstractComponent> extends AbstractComponentTestCase<T> implements FocusListener, BlurListener {
+public abstract class AbstractComponentTest<T extends AbstractComponent> extends
+        AbstractComponentTestCase<T>implements FocusListener, BlurListener {
 
     protected static final String TEXT_SHORT = "Short";
     protected static final String TEXT_MEDIUM = "This is a semi-long text that might wrap.";
-    protected static final String TEXT_LONG = "This is a long text. " + LoremIpsum.get(500);
-    protected static final String TEXT_VERY_LONG = "This is a very, very long text. " + LoremIpsum.get(5000);
+    protected static final String TEXT_LONG = "This is a long text. "
+            + LoremIpsum.get(500);
+    protected static final String TEXT_VERY_LONG = "This is a very, very long text. "
+            + LoremIpsum.get(5000);
 
-    private static final Resource SELECTED_ICON = new ThemeResource("../runo/icons/16/ok.png");
+    private static final Resource SELECTED_ICON = new ThemeResource(
+            "../runo/icons/16/ok.png");
 
     private static final LinkedHashMap<String, String> sizeOptions = new LinkedHashMap<String, String>();
+
     static {
         sizeOptions.put("auto", null);
         sizeOptions.put("50%", "50%");
@@ -112,16 +117,17 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
      */
     protected void populateSettingsMenu(MenuItem settingsMenu) {
 
-        MenuItem showEventLog = settingsMenu.addItem("Show event log", new MenuBar.Command() {
+        MenuItem showEventLog = settingsMenu.addItem("Show event log",
+                new MenuBar.Command() {
 
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                boolean selected = !isSelected(selectedItem);
-                setLogVisible(selected);
-                setSelected(selectedItem, selected);
-            }
+                    @Override
+                    public void menuSelected(MenuItem selectedItem) {
+                        boolean selected = !isSelected(selectedItem);
+                        setLogVisible(selected);
+                        setSelected(selectedItem, selected);
+                    }
 
-        });
+                });
         setSelected(showEventLog, true);
 
         settingsMenu.addItem("Clear log", new MenuBar.Command() {
@@ -138,14 +144,16 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
             layoutWidth.addItem(name, new MenuBar.Command() {
                 @Override
                 public void menuSelected(MenuItem selectedItem) {
-                    getTestComponents().get(0).getParent().setWidth(sizeOptions.get(name));
+                    getTestComponents().get(0).getParent()
+                            .setWidth(sizeOptions.get(name));
                     log("Parent layout width set to " + name);
                 }
             });
             layoutHeight.addItem(name, new MenuBar.Command() {
                 @Override
                 public void menuSelected(MenuItem selectedItem) {
-                    getTestComponents().get(0).getParent().setHeight(sizeOptions.get(name));
+                    getTestComponents().get(0).getParent()
+                            .setHeight(sizeOptions.get(name));
                     log("Parent layout height set to " + name);
                 }
             });
@@ -205,7 +213,8 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         try {
             return getTestClass().newInstance();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to instantiate " + getTestClass(), e);
+            throw new RuntimeException(
+                    "Failed to instantiate " + getTestClass(), e);
         }
     }
 
@@ -217,7 +226,8 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         createBooleanAction("Enabled", CATEGORY_STATE, true, enabledCommand);
         createBooleanAction("Readonly", CATEGORY_STATE, false, readonlyCommand);
         createBooleanAction("Visible", CATEGORY_STATE, true, visibleCommand);
-        createBooleanAction("Error indicator", CATEGORY_STATE, false, errorIndicatorCommand);
+        createBooleanAction("Error indicator", CATEGORY_STATE, false,
+                errorIndicatorCommand);
         createLocaleSelect(CATEGORY_STATE);
         createErrorMessageSelect(CATEGORY_DECORATIONS);
 
@@ -257,12 +267,14 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
     };
 
     protected void createFocusListener(String category) {
-        createBooleanAction("Focus listener", category, false, focusListenerCommand);
+        createBooleanAction("Focus listener", category, false,
+                focusListenerCommand);
 
     }
 
     protected void createBlurListener(String category) {
-        createBooleanAction("Blur listener", category, false, blurListenerCommand);
+        createBooleanAction("Blur listener", category, false,
+                blurListenerCommand);
 
     }
 
@@ -278,12 +290,14 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
             tabIndexes.put("0", 0);
             tabIndexes.put("-1", -1);
             tabIndexes.put("10", 10);
-            createSelectAction("Tab index", "State", tabIndexes, "0", new Command<T, Integer>() {
-                @Override
-                public void execute(T c, Integer tabIndex, Object data) {
-                    ((Focusable) c).setTabIndex(tabIndex);
-                }
-            });
+            createSelectAction("Tab index", "State", tabIndexes, "0",
+                    new Command<T, Integer>() {
+                        @Override
+                        public void execute(T c, Integer tabIndex,
+                                Object data) {
+                            ((Focusable) c).setTabIndex(tabIndex);
+                        }
+                    });
 
             createClickAction("Set focus", "State", new Command<T, Void>() {
                 @Override
@@ -297,15 +311,18 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
     private void createStyleNameSelect(String category) {
         LinkedHashMap<String, String> options = new LinkedHashMap<String, String>();
         options.put("-", null);
-        options.put("Light blue background (background-lightblue)", "background-lightblue");
+        options.put("Light blue background (background-lightblue)",
+                "background-lightblue");
         options.put("1px red border (border-red-1px)", "border-red-1px");
         options.put("2px blue border (border-blue-2px)", "border-blue-2px");
         createComponentStyleNames(options);
-        createSelectAction("Style name", category, options, "-", styleNameCommand);
+        createSelectAction("Style name", category, options, "-",
+                styleNameCommand);
 
     }
 
-    protected void createComponentStyleNames(LinkedHashMap<String, String> options) {
+    protected void createComponentStyleNames(
+            LinkedHashMap<String, String> options) {
 
     }
 
@@ -316,12 +333,14 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         options.put("Medium", TEXT_MEDIUM);
         options.put("Long", TEXT_LONG);
         options.put("Very long", TEXT_VERY_LONG);
-        createSelectAction("Error message", category, options, "-", errorMessageCommand);
+        createSelectAction("Error message", category, options, "-",
+                errorMessageCommand);
 
     }
 
     private void createCaptionSelect(String category) {
-        createSelectAction("Caption", category, createCaptionOptions(), "Short", captionCommand);
+        createSelectAction("Caption", category, createCaptionOptions(), "Short",
+                captionCommand);
 
     }
 
@@ -343,8 +362,10 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         createCategory(heightCategory, category);
 
         for (String name : sizeOptions.keySet()) {
-            createClickAction(name, widthCategory, widthCommand, sizeOptions.get(name));
-            createClickAction(name, heightCategory, heightCommand, sizeOptions.get(name));
+            createClickAction(name, widthCategory, widthCommand,
+                    sizeOptions.get(name));
+            createClickAction(name, heightCategory, heightCommand,
+                    sizeOptions.get(name));
         }
 
         // Default to undefined size
@@ -372,25 +393,32 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         options.put("zh_CN", Locale.SIMPLIFIED_CHINESE);
         options.put("fr_FR", Locale.FRANCE);
 
-        createSelectAction("Locale", category, options, "en_US", localeCommand, null);
+        createSelectAction("Locale", category, options, "en_US", localeCommand,
+                null);
     }
 
-    protected void createBooleanAction(String caption, String category, boolean initialState, final Command<T, Boolean> command) {
+    protected void createBooleanAction(String caption, String category,
+            boolean initialState, final Command<T, Boolean> command) {
         createBooleanAction(caption, category, initialState, command, null);
     }
 
-    protected <DATATYPE> void createBooleanAction(String caption, String category, boolean initialState, final Command<T, Boolean> command, Object data) {
+    protected <DATATYPE> void createBooleanAction(String caption,
+            String category, boolean initialState,
+            final Command<T, Boolean> command, Object data) {
         MenuItem categoryItem = getCategoryMenuItem(category);
-        MenuItem item = categoryItem.addItem(caption, menuBooleanCommand(command, data));
+        MenuItem item = categoryItem.addItem(caption,
+                menuBooleanCommand(command, data));
         setSelected(item, initialState);
         doCommand(caption, command, initialState, data);
     }
 
-    protected <DATATYPE> void createClickAction(String caption, String category, final Command<T, DATATYPE> command, DATATYPE value) {
+    protected <DATATYPE> void createClickAction(String caption, String category,
+            final Command<T, DATATYPE> command, DATATYPE value) {
         createClickAction(caption, category, command, value, null);
     }
 
-    protected <DATATYPE> void createClickAction(String caption, String category, final Command<T, DATATYPE> command, DATATYPE value, Object data) {
+    protected <DATATYPE> void createClickAction(String caption, String category,
+            final Command<T, DATATYPE> command, DATATYPE value, Object data) {
         MenuItem categoryItem = getCategoryMenuItem(category);
         categoryItem.addItem(caption, menuClickCommand(command, value, data));
     }
@@ -438,7 +466,8 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
 
     protected void removeCategory(String categoryId) {
         if (!hasCategory(categoryId)) {
-            throw new IllegalArgumentException("Category '" + categoryId + "' does not exist");
+            throw new IllegalArgumentException(
+                    "Category '" + categoryId + "' does not exist");
         }
 
         MenuItem item = getCategoryMenuItem(categoryId);
@@ -456,20 +485,25 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
 
     }
 
-    private MenuBar.Command menuBooleanCommand(final com.vaadin.tests.components.ComponentTestCase.Command<T, Boolean> booleanCommand, final Object data) {
+    private MenuBar.Command menuBooleanCommand(
+            final com.vaadin.tests.components.ComponentTestCase.Command<T, Boolean> booleanCommand,
+            final Object data) {
 
         return new MenuBar.Command() {
             @Override
             public void menuSelected(MenuItem selectedItem) {
                 boolean selected = !isSelected(selectedItem);
-                doCommand(getText(selectedItem), booleanCommand, selected, data);
+                doCommand(getText(selectedItem), booleanCommand, selected,
+                        data);
                 setSelected(selectedItem, selected);
             }
 
         };
     }
 
-    private <DATATYPE> MenuBar.Command menuClickCommand(final com.vaadin.tests.components.ComponentTestCase.Command<T, DATATYPE> command, final DATATYPE value, final Object data) {
+    private <DATATYPE> MenuBar.Command menuClickCommand(
+            final com.vaadin.tests.components.ComponentTestCase.Command<T, DATATYPE> command,
+            final DATATYPE value, final Object data) {
 
         return new MenuBar.Command() {
             @Override
@@ -492,13 +526,16 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         return (item.getIcon() != null);
     }
 
-    private <VALUETYPE> MenuBar.Command singleSelectMenuCommand(final com.vaadin.tests.components.ComponentTestCase.Command<T, VALUETYPE> cmd, final VALUETYPE object, final Object data) {
+    private <VALUETYPE> MenuBar.Command singleSelectMenuCommand(
+            final com.vaadin.tests.components.ComponentTestCase.Command<T, VALUETYPE> cmd,
+            final VALUETYPE object, final Object data) {
         return new MenuBar.Command() {
             @Override
             public void menuSelected(MenuItem selectedItem) {
                 doCommand(getText(selectedItem), cmd, object, data);
 
-                if (parentOfSelectableMenuItem.contains(selectedItem.getParent())) {
+                if (parentOfSelectableMenuItem
+                        .contains(selectedItem.getParent())) {
                     unselectChildren(selectedItem.getParent());
                     setSelected(selectedItem, true);
                 }
@@ -539,23 +576,33 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         return item.getParent() == mainMenu;
     }
 
-    protected <TYPE> void createSelectAction(String caption, String category, LinkedHashMap<String, TYPE> options, String initialValue, com.vaadin.tests.components.ComponentTestCase.Command<T, TYPE> command) {
-        createSelectAction(caption, category, options, initialValue, command, null);
+    protected <TYPE> void createSelectAction(String caption, String category,
+            LinkedHashMap<String, TYPE> options, String initialValue,
+            com.vaadin.tests.components.ComponentTestCase.Command<T, TYPE> command) {
+        createSelectAction(caption, category, options, initialValue, command,
+                null);
 
     }
 
-    protected <TYPE> void createMultiClickAction(String caption, String category, LinkedHashMap<String, TYPE> options, com.vaadin.tests.components.ComponentTestCase.Command<T, TYPE> command, Object data) {
+    protected <TYPE> void createMultiClickAction(String caption,
+            String category, LinkedHashMap<String, TYPE> options,
+            com.vaadin.tests.components.ComponentTestCase.Command<T, TYPE> command,
+            Object data) {
 
         MenuItem categoryItem = getCategoryMenuItem(category);
         MenuItem mainItem = categoryItem.addItem(caption, null);
 
         for (String option : options.keySet()) {
-            MenuBar.Command cmd = menuClickCommand(command, options.get(option), data);
+            MenuBar.Command cmd = menuClickCommand(command, options.get(option),
+                    data);
             mainItem.addItem(option, cmd);
         }
     }
 
-    protected <TYPE> void createMultiToggleAction(String caption, String category, LinkedHashMap<String, TYPE> options, com.vaadin.tests.components.ComponentTestCase.Command<T, Boolean> command, boolean defaultValue) {
+    protected <TYPE> void createMultiToggleAction(String caption,
+            String category, LinkedHashMap<String, TYPE> options,
+            com.vaadin.tests.components.ComponentTestCase.Command<T, Boolean> command,
+            boolean defaultValue) {
 
         LinkedHashMap<String, Boolean> defaultValues = new LinkedHashMap<String, Boolean>();
 
@@ -563,27 +610,36 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
             defaultValues.put(option, defaultValue);
         }
 
-        createMultiToggleAction(caption, category, options, command, defaultValues);
+        createMultiToggleAction(caption, category, options, command,
+                defaultValues);
     }
 
-    protected <TYPE> void createMultiToggleAction(String caption, String category, LinkedHashMap<String, TYPE> options, com.vaadin.tests.components.ComponentTestCase.Command<T, Boolean> command, LinkedHashMap<String, Boolean> defaultValues) {
+    protected <TYPE> void createMultiToggleAction(String caption,
+            String category, LinkedHashMap<String, TYPE> options,
+            com.vaadin.tests.components.ComponentTestCase.Command<T, Boolean> command,
+            LinkedHashMap<String, Boolean> defaultValues) {
 
         createCategory(caption, category);
 
         for (String option : options.keySet()) {
-            createBooleanAction(option, caption, defaultValues.get(option), command, options.get(option));
+            createBooleanAction(option, caption, defaultValues.get(option),
+                    command, options.get(option));
 
         }
     }
 
-    protected <TYPE> void createSelectAction(String caption, String category, LinkedHashMap<String, TYPE> options, String initialValue, com.vaadin.tests.components.ComponentTestCase.Command<T, TYPE> command, Object data) {
+    protected <TYPE> void createSelectAction(String caption, String category,
+            LinkedHashMap<String, TYPE> options, String initialValue,
+            com.vaadin.tests.components.ComponentTestCase.Command<T, TYPE> command,
+            Object data) {
 
         MenuItem parentItem = getCategoryMenuItem(category);
         MenuItem mainItem = parentItem.addItem(caption, null);
 
         parentOfSelectableMenuItem.add(mainItem);
         for (String option : options.keySet()) {
-            MenuBar.Command cmd = singleSelectMenuCommand(command, options.get(option), data);
+            MenuBar.Command cmd = singleSelectMenuCommand(command,
+                    options.get(option), data);
             MenuItem item = mainItem.addItem(option, cmd);
             if (option.equals(initialValue)) {
                 cmd.menuSelected(item);
@@ -627,7 +683,8 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         return options;
     }
 
-    protected LinkedHashMap<String, Resource> createIconOptions(boolean cacheable) {
+    protected LinkedHashMap<String, Resource> createIconOptions(
+            boolean cacheable) {
         LinkedHashMap<String, Resource> options = new LinkedHashMap<String, Resource>();
         options.put("-", null);
         if (cacheable) {
@@ -652,7 +709,9 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
     }
 
     @Override
-    protected <VALUET> void doCommand(String commandName, AbstractComponentTestCase.Command<T, VALUET> command, VALUET value, Object data) {
+    protected <VALUET> void doCommand(String commandName,
+            AbstractComponentTestCase.Command<T, VALUET> command, VALUET value,
+            Object data) {
         if (hasLog()) {
             log("Command: " + commandName + "(" + value + ")");
         }
@@ -660,9 +719,11 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
     }
 
     public void error(com.vaadin.server.ErrorEvent event) {
-        final Throwable throwable = DefaultErrorHandler.findRelevantThrowable(event.getThrowable());
+        final Throwable throwable = DefaultErrorHandler
+                .findRelevantThrowable(event.getThrowable());
 
-        log.log("Exception occured, " + throwable.getClass().getName() + ": " + throwable.getMessage());
+        log.log("Exception occured, " + throwable.getClass().getName() + ": "
+                + throwable.getMessage());
         throwable.printStackTrace();
     }
 

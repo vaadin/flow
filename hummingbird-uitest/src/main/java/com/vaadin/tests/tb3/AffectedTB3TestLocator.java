@@ -30,18 +30,24 @@ public class AffectedTB3TestLocator extends TB3TestLocator {
     }
 
     @Override
-    protected <T> List<Class<? extends T>> findClasses(Class<T> baseClass, String basePackage, String[] ignoredPackages) throws IOException {
-        List<Class<? extends T>> allTestClasses = super.findClasses(baseClass, basePackage, ignoredPackages);
+    protected <T> List<Class<? extends T>> findClasses(Class<T> baseClass,
+            String basePackage, String[] ignoredPackages) throws IOException {
+        List<Class<? extends T>> allTestClasses = super.findClasses(baseClass,
+                basePackage, ignoredPackages);
 
-        List<Class<? extends T>> changedTestClasses = changedTB3TestLocator.findClasses(baseClass, basePackage, ignoredPackages);
+        List<Class<? extends T>> changedTestClasses = changedTB3TestLocator
+                .findClasses(baseClass, basePackage, ignoredPackages);
 
         return getAffectedTestClasses(allTestClasses, changedTestClasses);
     }
 
-    private <T> List<Class<? extends T>> getAffectedTestClasses(List<Class<? extends T>> allTestClasses, List<Class<? extends T>> changedTestClasses) throws IOException {
+    private <T> List<Class<? extends T>> getAffectedTestClasses(
+            List<Class<? extends T>> allTestClasses,
+            List<Class<? extends T>> changedTestClasses) throws IOException {
 
         Set testClasses = new HashSet(changedTestClasses);
-        testClasses.addAll(getTestClassesWithAffectedPackageName(allTestClasses));
+        testClasses
+                .addAll(getTestClassesWithAffectedPackageName(allTestClasses));
 
         List<Class<? extends T>> affectedTestClasses = new ArrayList<Class<? extends T>>();
         affectedTestClasses.addAll(testClasses);
@@ -49,7 +55,8 @@ public class AffectedTB3TestLocator extends TB3TestLocator {
         return affectedTestClasses;
     }
 
-    private <T> List<Class<? extends T>> getTestClassesWithAffectedPackageName(List<Class<? extends T>> classes) {
+    private <T> List<Class<? extends T>> getTestClassesWithAffectedPackageName(
+            List<Class<? extends T>> classes) {
         List<Class<? extends T>> affectedTestClasses = new ArrayList<Class<? extends T>>();
         List<String> affectedFiles = getAffectedFiles();
 

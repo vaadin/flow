@@ -41,7 +41,8 @@ import com.vaadin.server.VaadinSession;
 public class PortletDummyRequestHandler implements RequestHandler {
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request,
+            VaadinResponse response) throws IOException {
         if (!isDummyRequest(request)) {
             return false;
         }
@@ -51,13 +52,16 @@ public class PortletDummyRequestHandler implements RequestHandler {
          * to prevent the boot strap code from being rendered into strange
          * places such as iframes.
          */
-        PortletResponse portletResponse = ((VaadinPortletResponse) response).getPortletResponse();
+        PortletResponse portletResponse = ((VaadinPortletResponse) response)
+                .getPortletResponse();
         if (portletResponse instanceof ResourceResponse) {
             ((ResourceResponse) portletResponse).setContentType("text/html");
         }
 
-        final OutputStream out = ((ResourceResponse) response).getPortletOutputStream();
-        final PrintWriter outWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out, "UTF-8")));
+        final OutputStream out = ((ResourceResponse) response)
+                .getPortletOutputStream();
+        final PrintWriter outWriter = new PrintWriter(
+                new BufferedWriter(new OutputStreamWriter(out, "UTF-8")));
         outWriter.print("<html><body>dummy page</body></html>");
         outWriter.close();
 
@@ -65,12 +69,14 @@ public class PortletDummyRequestHandler implements RequestHandler {
     }
 
     public static boolean isDummyRequest(VaadinRequest request) {
-        ResourceRequest resourceRequest = PortletUIInitHandler.getResourceRequest(request);
+        ResourceRequest resourceRequest = PortletUIInitHandler
+                .getResourceRequest(request);
         if (resourceRequest == null) {
             return false;
         }
 
-        return resourceRequest.getResourceID() != null && resourceRequest.getResourceID().equals("DUMMY");
+        return resourceRequest.getResourceID() != null
+                && resourceRequest.getResourceID().equals("DUMMY");
     }
 
 }

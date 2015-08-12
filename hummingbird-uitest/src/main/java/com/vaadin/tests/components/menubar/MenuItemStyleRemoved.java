@@ -27,12 +27,17 @@ public class MenuItemStyleRemoved extends AbstractTestUI {
         addButton("Add styles", new Button.ClickListener() {
             @Override
             public void buttonClick(Button.ClickEvent event) {
-                String method = "getElementsByClassName('" + MENUITEM_CLASS + "')";
+                String method = "getElementsByClassName('" + MENUITEM_CLASS
+                        + "')";
                 WebBrowser webBrowser = Page.getCurrent().getWebBrowser();
-                if (webBrowser.isIE() && webBrowser.getBrowserMajorVersion() == 8) {
+                if (webBrowser.isIE()
+                        && webBrowser.getBrowserMajorVersion() == 8) {
                     method = "querySelectorAll('." + MENUITEM_CLASS + "')";
                 }
-                JavaScript.getCurrent().execute("var x=document." + method + ";" + " var i; for(i=0; i < x.length; i++)" + " {x[i].className += ' custom-menu-item'};");
+                JavaScript.getCurrent()
+                        .execute("var x=document." + method + ";"
+                                + " var i; for(i=0; i < x.length; i++)"
+                                + " {x[i].className += ' custom-menu-item'};");
             }
         });
     }

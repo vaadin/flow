@@ -30,32 +30,36 @@ public class DisableEnableCascade extends TestBase {
 
         addComponent(outerPanel);
 
-        enableDisablePanelButton = new Button("Disable panel", new ClickListener() {
+        enableDisablePanelButton = new Button("Disable panel",
+                new ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                enableDisable(outerPanel, enableDisablePanelButton);
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        enableDisable(outerPanel, enableDisablePanelButton);
 
-            }
-        });
+                    }
+                });
 
-        enableDisableTabSheetButton = new Button("Disable TabSheet", new ClickListener() {
+        enableDisableTabSheetButton = new Button("Disable TabSheet",
+                new ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                enableDisable(innerTabsheet, enableDisableTabSheetButton);
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        enableDisable(innerTabsheet,
+                                enableDisableTabSheetButton);
 
-            }
-        });
+                    }
+                });
 
-        enableDisableButtonButton = new Button("Disable Button", new ClickListener() {
+        enableDisableButtonButton = new Button("Disable Button",
+                new ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                enableDisable(button, enableDisableButtonButton);
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        enableDisable(button, enableDisableButtonButton);
 
-            }
-        });
+                    }
+                });
 
         addComponent(enableDisablePanelButton);
         addComponent(enableDisableTabSheetButton);
@@ -66,11 +70,13 @@ public class DisableEnableCascade extends TestBase {
         if (target.isEnabled()) {
             target.setEnabled(false);
             button.setCaption(button.getCaption().replace("Disable", "Enable"));
-            target.setCaption(target.getCaption().replace("enabled", "disabled"));
+            target.setCaption(
+                    target.getCaption().replace("enabled", "disabled"));
         } else {
             target.setEnabled(true);
             button.setCaption(button.getCaption().replace("Enable", "Disable"));
-            target.setCaption(target.getCaption().replace("disabled", "enabled"));
+            target.setCaption(
+                    target.getCaption().replace("disabled", "enabled"));
         }
     }
 

@@ -12,27 +12,39 @@ import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.Layout.SpacingHandler;
 
-public abstract class AbstractComponentTestCase<T extends AbstractComponent> extends TestBase {
+public abstract class AbstractComponentTestCase<T extends AbstractComponent>
+        extends TestBase {
 
-    protected static final ThemeResource ICON_16_HELP_PNG_CACHEABLE = cacheableThemeResource("../runo/icons/16/help.png");
-    protected static final ThemeResource ICON_16_FOLDER_PNG_CACHEABLE = cacheableThemeResource("../runo/icons/16/folder.png");
-    protected static final ThemeResource ICON_16_ERROR_PNG_CACHEABLE = cacheableThemeResource("../runo/icons/16/error.png");
-    protected static final ThemeResource ICON_16_USER_PNG_CACHEABLE = cacheableThemeResource("../runo/icons/16/user.png");
-    protected static final ThemeResource ICON_16_USER_PNG_UNCACHEABLE = uncacheableThemeResource("../runo/icons/16/user.png");
-    protected static final ThemeResource ICON_32_ATTENTION_PNG_CACHEABLE = cacheableThemeResource("../runo/icons/32/attention.png");
-    protected static final ThemeResource ICON_32_ATTENTION_PNG_UNCACHEABLE = uncacheableThemeResource("../runo/icons/32/attention.png");
-    protected static final ThemeResource ICON_64_EMAIL_REPLY_PNG_CACHEABLE = cacheableThemeResource("../runo/icons/64/email-reply.png");
-    protected static final ThemeResource ICON_64_EMAIL_REPLY_PNG_UNCACHEABLE = uncacheableThemeResource("../runo/icons/64/email-reply.png");
+    protected static final ThemeResource ICON_16_HELP_PNG_CACHEABLE = cacheableThemeResource(
+            "../runo/icons/16/help.png");
+    protected static final ThemeResource ICON_16_FOLDER_PNG_CACHEABLE = cacheableThemeResource(
+            "../runo/icons/16/folder.png");
+    protected static final ThemeResource ICON_16_ERROR_PNG_CACHEABLE = cacheableThemeResource(
+            "../runo/icons/16/error.png");
+    protected static final ThemeResource ICON_16_USER_PNG_CACHEABLE = cacheableThemeResource(
+            "../runo/icons/16/user.png");
+    protected static final ThemeResource ICON_16_USER_PNG_UNCACHEABLE = uncacheableThemeResource(
+            "../runo/icons/16/user.png");
+    protected static final ThemeResource ICON_32_ATTENTION_PNG_CACHEABLE = cacheableThemeResource(
+            "../runo/icons/32/attention.png");
+    protected static final ThemeResource ICON_32_ATTENTION_PNG_UNCACHEABLE = uncacheableThemeResource(
+            "../runo/icons/32/attention.png");
+    protected static final ThemeResource ICON_64_EMAIL_REPLY_PNG_CACHEABLE = cacheableThemeResource(
+            "../runo/icons/64/email-reply.png");
+    protected static final ThemeResource ICON_64_EMAIL_REPLY_PNG_UNCACHEABLE = uncacheableThemeResource(
+            "../runo/icons/64/email-reply.png");
 
     private List<T> testComponents = new ArrayList<T>();
 
     abstract protected Class<T> getTestClass();
 
-    protected static ThemeResource uncacheableThemeResource(String resourceLocation) {
+    protected static ThemeResource uncacheableThemeResource(
+            String resourceLocation) {
         return new ThemeResource(resourceLocation + "?" + new Date().getTime());
     }
 
-    protected static ThemeResource cacheableThemeResource(String resourceLocation) {
+    protected static ThemeResource cacheableThemeResource(
+            String resourceLocation) {
         return new ThemeResource(resourceLocation);
     }
 
@@ -124,7 +136,8 @@ public abstract class AbstractComponentTestCase<T extends AbstractComponent> ext
             if (c instanceof Field) {
                 ((Field<?>) c).setRequired(enabled);
             } else {
-                throw new IllegalArgumentException(c.getClass().getName() + " is not a field and cannot be set to required");
+                throw new IllegalArgumentException(c.getClass().getName()
+                        + " is not a field and cannot be set to required");
             }
         }
     };
@@ -179,21 +192,25 @@ public abstract class AbstractComponentTestCase<T extends AbstractComponent> ext
 
     };
 
-    protected <VALUET> void doCommand(Command<T, VALUET> command, VALUET value) {
+    protected <VALUET> void doCommand(Command<T, VALUET> command,
+            VALUET value) {
         doCommand(command, value, null);
     }
 
-    protected <VALUET> void doCommand(Command<T, VALUET> command, VALUET value, Object data) {
+    protected <VALUET> void doCommand(Command<T, VALUET> command, VALUET value,
+            Object data) {
         for (T c : getTestComponents()) {
             command.execute(c, value, data);
         }
     }
 
-    protected <VALUET> void doCommand(String commandName, Command<T, VALUET> command, VALUET value) {
+    protected <VALUET> void doCommand(String commandName,
+            Command<T, VALUET> command, VALUET value) {
         doCommand(commandName, command, value, null);
     }
 
-    protected <VALUET> void doCommand(String commandName, Command<T, VALUET> command, VALUET value, Object data) {
+    protected <VALUET> void doCommand(String commandName,
+            Command<T, VALUET> command, VALUET value, Object data) {
         doCommand(command, value, data);
     }
 

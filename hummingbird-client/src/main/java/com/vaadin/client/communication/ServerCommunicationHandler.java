@@ -83,7 +83,8 @@ public class ServerCommunicationHandler {
 
     public void sendInvocationsToServer() {
         if (!connection.isApplicationRunning()) {
-            getLogger().warning("Trying to send RPC from not yet started or stopped application");
+            getLogger().warning(
+                    "Trying to send RPC from not yet started or stopped application");
             return;
         }
 
@@ -117,13 +118,15 @@ public class ServerCommunicationHandler {
         if (reqJson.length() == 0) {
             // Nothing to send, all invocations were filtered out (for
             // non-existing connectors)
-            getLogger().warning("All RPCs filtered out, not sending anything to the server");
+            getLogger().warning(
+                    "All RPCs filtered out, not sending anything to the server");
             return;
         }
 
         JsonObject extraJson = Json.createObject();
         if (!connection.getConfiguration().isWidgetsetVersionSent()) {
-            extraJson.put(ApplicationConstants.WIDGETSET_VERSION_ID, Version.getFullVersion());
+            extraJson.put(ApplicationConstants.WIDGETSET_VERSION_ID,
+                    Version.getFullVersion());
             connection.getConfiguration().setWidgetsetVersionSent();
         }
         if (showLoadingIndicator) {
@@ -144,7 +147,8 @@ public class ServerCommunicationHandler {
      * @param extraParams
      *            Parameters that are added to the payload
      */
-    protected void send(final JsonArray reqInvocations, final JsonObject extraJson) {
+    protected void send(final JsonArray reqInvocations,
+            final JsonObject extraJson) {
         startRequest();
 
         JsonObject payload = Json.createObject();
@@ -153,8 +157,10 @@ public class ServerCommunicationHandler {
             payload.put(ApplicationConstants.CSRF_TOKEN, csrfToken);
         }
         payload.put(ApplicationConstants.RPC_INVOCATIONS, reqInvocations);
-        payload.put(ApplicationConstants.SERVER_SYNC_ID, getServerMessageHandler().getLastSeenServerSyncId());
-        payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID, clientToServerMessageId++);
+        payload.put(ApplicationConstants.SERVER_SYNC_ID,
+                getServerMessageHandler().getLastSeenServerSyncId());
+        payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
+                clientToServerMessageId++);
 
         if (extraJson != null) {
             for (String key : extraJson.keys()) {
@@ -192,7 +198,8 @@ public class ServerCommunicationHandler {
      *            <code>false</code> to disable the push connection.
      */
     public void setPushEnabled(boolean enabled) {
-        final PushConfigurationState pushState = connection.getUIConnector().getState().pushConfiguration;
+        final PushConfigurationState pushState = connection.getUIConnector()
+                .getState().pushConfiguration;
 
         if (enabled && push == null) {
             push = GWT.create(PushConnection.class);
@@ -225,7 +232,8 @@ public class ServerCommunicationHandler {
 
     public void startRequest() {
         if (hasActiveRequest) {
-            getLogger().severe("Trying to start a new request while another is active");
+            getLogger().severe(
+                    "Trying to start a new request while another is active");
         }
         hasActiveRequest = true;
         connection.fireEvent(new RequestStartingEvent(connection));
@@ -244,14 +252,16 @@ public class ServerCommunicationHandler {
             if (getServerRpcQueue().isFlushPending()) {
                 sendInvocationsToServer();
             }
-            ApplicationConnection.runPostRequestHooks(connection.getConfiguration().getRootPanelId());
+            ApplicationConnection.runPostRequestHooks(
+                    connection.getConfiguration().getRootPanelId());
         }
 
         // deferring to avoid flickering
         Scheduler.get().scheduleDeferred(new Command() {
             @Override
             public void execute() {
-                if (!connection.isApplicationRunning() || !(hasActiveRequest() || getServerRpcQueue().isFlushPending())) {
+                if (!connection.isApplicationRunning() || !(hasActiveRequest()
+                        || getServerRpcQueue().isFlushPending())) {
                     getLoadingIndicator().hide();
 
                     // If on Liferay and session expiration management is in
@@ -328,7 +338,8 @@ public class ServerCommunicationHandler {
             return;
         }
         if (force) {
-            getLogger().info("Forced update of clientId to " + clientToServerMessageId);
+            getLogger().info(
+                    "Forced update of clientId to " + clientToServerMessageId);
             clientToServerMessageId = nextExpectedId;
             return;
         }
@@ -338,9 +349,14 @@ public class ServerCommunicationHandler {
                 // We have never sent a message to the server, so likely the
                 // server knows better (typical case is that we refreshed a
                 // @PreserveOnRefresh UI)
-                getLogger().info("Updating client-to-server id to " + nextExpectedId + " based on server");
+                getLogger().info("Updating client-to-server id to "
+                        + nextExpectedId + " based on server");
             } else {
-                getLogger().warning("Server expects next client-to-server id to be " + nextExpectedId + " but we were going to use " + clientToServerMessageId + ". Will use " + nextExpectedId + ".");
+                getLogger().warning(
+                        "Server expects next client-to-server id to be "
+                                + nextExpectedId + " but we were going to use "
+                                + clientToServerMessageId + ". Will use "
+                                + nextExpectedId + ".");
             }
             clientToServerMessageId = nextExpectedId;
         } else {
@@ -361,9 +377,16 @@ public class ServerCommunicationHandler {
      *         wrapped
      */
     public static String stripJSONWrapping(String jsonWithWrapping) {
-        if (!jsonWithWrapping.startsWith(ServerCommunicationHandler.JSON_COMMUNICATION_PREFIX) || !jsonWithWrapping.endsWith(ServerCommunicationHandler.JSON_COMMUNICATION_SUFFIX)) {
+        if (!jsonWithWrapping.startsWith(
+                ServerCommunicationHandler.JSON_COMMUNICATION_PREFIX)
+                || !jsonWithWrapping.endsWith(
+                        ServerCommunicationHandler.JSON_COMMUNICATION_SUFFIX)) {
             return null;
         }
-        return jsonWithWrapping.substring(ServerCommunicationHandler.JSON_COMMUNICATION_PREFIX.length(), jsonWithWrapping.length() - ServerCommunicationHandler.JSON_COMMUNICATION_SUFFIX.length());
+        return jsonWithWrapping.substring(
+                ServerCommunicationHandler.JSON_COMMUNICATION_PREFIX.length(),
+                jsonWithWrapping.length()
+                        - ServerCommunicationHandler.JSON_COMMUNICATION_SUFFIX
+                                .length());
     }
 }

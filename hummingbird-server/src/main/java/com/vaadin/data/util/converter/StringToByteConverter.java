@@ -30,7 +30,8 @@ import java.util.Locale;
  * @author Vaadin Ltd
  * @since 7.4
  */
-public class StringToByteConverter extends AbstractStringToNumberConverter<Byte> {
+public class StringToByteConverter
+        extends AbstractStringToNumberConverter<Byte> {
 
     /**
      * Returns the format used by
@@ -57,7 +58,8 @@ public class StringToByteConverter extends AbstractStringToNumberConverter<Byte>
      * java.lang.Class, java.util.Locale)
      */
     @Override
-    public Byte convertToModel(String value, Class<? extends Byte> targetType, Locale locale) throws ConversionException {
+    public Byte convertToModel(String value, Class<? extends Byte> targetType,
+            Locale locale) throws ConversionException {
         Number n = convertToNumber(value, targetType, locale);
 
         if (n == null) {
@@ -69,7 +71,8 @@ public class StringToByteConverter extends AbstractStringToNumberConverter<Byte>
             return byteValue;
         }
 
-        throw new ConversionException("Could not convert '" + value + "' to " + Byte.class.getName() + ": value out of range");
+        throw new ConversionException("Could not convert '" + value + "' to "
+                + Byte.class.getName() + ": value out of range");
 
     }
 

@@ -26,7 +26,8 @@ public abstract class TestBase extends AbstractTestCase {
             // to detect real problems when introducing IE font-size/line-height
             // fixes
             label.setValue("&nbsp;");
-            if (getBrowser().isIE() && getBrowser().getBrowserMajorVersion() == 9) {
+            if (getBrowser().isIE()
+                    && getBrowser().getBrowserMajorVersion() == 9) {
                 label.setHeight("13.8px");
             } else {
                 label.setHeight("15px");
@@ -61,7 +62,8 @@ public abstract class TestBase extends AbstractTestCase {
         getLayout().removeComponent(c);
     }
 
-    protected void replaceComponent(Component oldComponent, Component newComponent) {
+    protected void replaceComponent(Component oldComponent,
+            Component newComponent) {
         getLayout().replaceComponent(oldComponent, newComponent);
     }
 

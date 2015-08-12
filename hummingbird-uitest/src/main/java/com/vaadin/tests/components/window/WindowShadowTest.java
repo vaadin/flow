@@ -34,14 +34,17 @@ import com.vaadin.tests.tb3.MultiBrowserTest;
 public class WindowShadowTest extends MultiBrowserTest {
 
     @Test
-    public void dragBackgroundWindow() throws AWTException, IOException, InterruptedException {
+    public void dragBackgroundWindow()
+            throws AWTException, IOException, InterruptedException {
         openTestURL();
         WebElement wnd = getDriver().findElement(By.id("topwindow"));
         // There is some bug in Selenium. Can't move window using header
         // need use footer instead.
-        WebElement wnd1Footer = wnd.findElement(By.className("v-window-footer"));
+        WebElement wnd1Footer = wnd
+                .findElement(By.className("v-window-footer"));
         Point startLoc = wnd.getLocation();
-        Coordinates footerCoordinates = ((Locatable) wnd1Footer).getCoordinates();
+        Coordinates footerCoordinates = ((Locatable) wnd1Footer)
+                .getCoordinates();
         Mouse mouse = ((HasInputDevices) getDriver()).getMouse();
         mouse.mouseDown(footerCoordinates);
         mouse.mouseMove(footerCoordinates, 200, 200);

@@ -47,7 +47,9 @@ public class TwinColSelectTest extends AbstractSelectTestCase<TwinColSelect> {
     }
 
     private void createCaptionActions(String category) {
-        createSelectAction("Left column caption", category, createCaptionOptions(), "-", leftColumnCaptionCommand);
-        createSelectAction("Right column caption", category, createCaptionOptions(), "-", rightColumnCaptionCommand);
+        createSelectAction("Left column caption", category,
+                createCaptionOptions(), "-", leftColumnCaptionCommand);
+        createSelectAction("Right column caption", category,
+                createCaptionOptions(), "-", rightColumnCaptionCommand);
     }
 }

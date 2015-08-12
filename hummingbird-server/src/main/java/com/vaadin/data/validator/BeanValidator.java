@@ -110,13 +110,20 @@ public class BeanValidator implements Validator {
      */
     @Override
     public void validate(final Object value) throws InvalidValueException {
-        Set<?> violations = getJavaxBeanValidator().validateValue(beanClass, propertyName, value);
+        Set<?> violations = getJavaxBeanValidator().validateValue(beanClass,
+                propertyName, value);
         if (violations.size() > 0) {
-            InvalidValueException[] causes = new InvalidValueException[violations.size()];
+            InvalidValueException[] causes = new InvalidValueException[violations
+                    .size()];
             int i = 0;
             for (Object v : violations) {
                 final ConstraintViolation<?> violation = (ConstraintViolation<?>) v;
-                String msg = getJavaxBeanValidatorFactory().getMessageInterpolator().interpolate(violation.getMessageTemplate(), new SimpleContext(value, violation.getConstraintDescriptor()), locale);
+                String msg = getJavaxBeanValidatorFactory()
+                        .getMessageInterpolator()
+                        .interpolate(violation.getMessageTemplate(),
+                                new SimpleContext(value,
+                                        violation.getConstraintDescriptor()),
+                                locale);
                 causes[i] = new InvalidValueException(msg);
                 ++i;
             }

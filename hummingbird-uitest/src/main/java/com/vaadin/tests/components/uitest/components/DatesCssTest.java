@@ -44,7 +44,8 @@ public class DatesCssTest extends GridLayout {
 
     }
 
-    private void createDateFieldWith(String caption, String primaryStyleName, String width) {
+    private void createDateFieldWith(String caption, String primaryStyleName,
+            String width) {
         DateField df = new DateField("Date field");
         df.setId("datefield" + debugIdCounter++);
         df.setValue(cal.getTime());

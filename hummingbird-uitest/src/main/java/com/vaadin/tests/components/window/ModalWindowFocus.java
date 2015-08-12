@@ -62,7 +62,8 @@ public class ModalWindowFocus extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Topmost modal window should be focused on opening " + "and on closing an overlying window";
+        return "Topmost modal window should be focused on opening "
+                + "and on closing an overlying window";
     }
 
     @Override

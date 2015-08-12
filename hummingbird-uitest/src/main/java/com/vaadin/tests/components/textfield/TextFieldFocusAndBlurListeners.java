@@ -10,7 +10,8 @@ import com.vaadin.tests.components.TestBase;
 import com.vaadin.tests.util.Log;
 import com.vaadin.ui.TextField;
 
-public class TextFieldFocusAndBlurListeners extends TestBase implements FocusListener, BlurListener, ValueChangeListener {
+public class TextFieldFocusAndBlurListeners extends TestBase
+        implements FocusListener, BlurListener, ValueChangeListener {
     private Log log = new Log(5).setNumberLogRows(false);
 
     @Override
@@ -26,14 +27,16 @@ public class TextFieldFocusAndBlurListeners extends TestBase implements FocusLis
     @Override
     public void setup() {
         addComponent(log);
-        TextField tf1 = new TextField("TextField 1", "Has focus and blur listeners");
+        TextField tf1 = new TextField("TextField 1",
+                "Has focus and blur listeners");
         tf1.setWidth("300px");
         tf1.addFocusListener(this);
         tf1.addBlurListener(this);
 
         addComponent(tf1);
 
-        TextField tf2 = new TextField("TextField 2", "Has focus, blur and valuechange listeners");
+        TextField tf2 = new TextField("TextField 2",
+                "Has focus, blur and valuechange listeners");
         tf2.setWidth("300px");
         tf2.addValueChangeListener(new ValueChangeListener() {
 
@@ -60,13 +63,15 @@ public class TextFieldFocusAndBlurListeners extends TestBase implements FocusLis
 
         addComponent(tf2);
 
-        TextField tf3 = new TextField("TextField 3", "Has non-immediate valuechange listener");
+        TextField tf3 = new TextField("TextField 3",
+                "Has non-immediate valuechange listener");
         tf3.setWidth("300px");
         tf3.addValueChangeListener(this);
 
         addComponent(tf3);
 
-        TextField tf4 = new TextField("TextField 4", "Has immediate valuechange listener");
+        TextField tf4 = new TextField("TextField 4",
+                "Has immediate valuechange listener");
         tf4.setWidth("300px");
         tf4.addValueChangeListener(this);
 
@@ -82,7 +87,8 @@ public class TextFieldFocusAndBlurListeners extends TestBase implements FocusLis
     @Override
     public void blur(BlurEvent event) {
         TextField tf = (TextField) event.getComponent();
-        log.log(tf.getCaption() + ": Blur. Value is: " + tf.getValue().toString());
+        log.log(tf.getCaption() + ": Blur. Value is: "
+                + tf.getValue().toString());
 
     }
 

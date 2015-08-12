@@ -67,7 +67,8 @@ public class AtmospherePushConnection implements PushConnection {
             // delimiter
             String length = "";
             int c;
-            while ((c = reader.read()) != -1 && c != PushConstants.MESSAGE_DELIMITER) {
+            while ((c = reader.read()) != -1
+                    && c != PushConstants.MESSAGE_DELIMITER) {
                 length += (char) c;
             }
             try {
@@ -91,7 +92,8 @@ public class AtmospherePushConnection implements PushConnection {
             int read;
             while ((read = reader.read(buffer)) != -1) {
                 message.append(buffer, 0, read);
-                assert message.length() <= messageLength : "Received message " + message.length() + "chars, expected " + messageLength;
+                assert message.length() <= messageLength : "Received message "
+                        + message.length() + "chars, expected " + messageLength;
             }
             return message.length() == messageLength;
         }
@@ -177,9 +179,10 @@ public class AtmospherePushConnection implements PushConnection {
      *            The message to send
      */
     void sendMessage(String message) {
-        assert (isConnected());
+        assert(isConnected());
         // "Broadcast" the changes to the single client only
-        outgoingMessage = getResource().getBroadcaster().broadcast(message, getResource());
+        outgoingMessage = getResource().getBroadcaster().broadcast(message,
+                getResource());
     }
 
     /**
@@ -219,15 +222,15 @@ public class AtmospherePushConnection implements PushConnection {
     @Override
     public boolean isConnected() {
         assert state != null;
-        assert (state == State.CONNECTED) ^ (resource == null);
+        assert(state == State.CONNECTED) ^ (resource == null);
         return state == State.CONNECTED;
     }
 
     /**
      * Associates this {@code AtmospherePushConnection} with the given
-     * {@AtmosphereResource} representing an established
-     * push connection. If already connected, calls {@link #disconnect()} first.
-     * If there is a deferred push, carries it out via the new connection.
+     * {@AtmosphereResource} representing an established push connection. If
+     * already connected, calls {@link #disconnect()} first. If there is a
+     * deferred push, carries it out via the new connection.
      * 
      * @since 7.2
      */
@@ -244,7 +247,8 @@ public class AtmospherePushConnection implements PushConnection {
         State oldState = state;
         state = State.CONNECTED;
 
-        if (oldState == State.PUSH_PENDING || oldState == State.RESPONSE_PENDING) {
+        if (oldState == State.PUSH_PENDING
+                || oldState == State.RESPONSE_PENDING) {
             // Sending a "response" message (async=false) also takes care of a
             // pending push, but not vice versa
             push(oldState == State.PUSH_PENDING);
@@ -284,9 +288,11 @@ public class AtmospherePushConnection implements PushConnection {
             try {
                 outgoingMessage.get(1000, TimeUnit.MILLISECONDS);
             } catch (TimeoutException e) {
-                getLogger().log(Level.INFO, "Timeout waiting for messages to be sent to client before disconnect");
+                getLogger().log(Level.INFO,
+                        "Timeout waiting for messages to be sent to client before disconnect");
             } catch (Exception e) {
-                getLogger().log(Level.INFO, "Error waiting for messages to be sent to client before disconnect");
+                getLogger().log(Level.INFO,
+                        "Error waiting for messages to be sent to client before disconnect");
             }
             outgoingMessage = null;
         }
@@ -294,7 +300,8 @@ public class AtmospherePushConnection implements PushConnection {
         try {
             resource.close();
         } catch (IOException e) {
-            getLogger().log(Level.INFO, "Error when closing push connection", e);
+            getLogger().log(Level.INFO, "Error when closing push connection",
+                    e);
         }
         connectionLost();
     }
@@ -327,7 +334,8 @@ public class AtmospherePushConnection implements PushConnection {
      * is initially in disconnected state; the client will handle the
      * reconnecting.
      */
-    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         state = State.DISCONNECTED;
     }

@@ -46,7 +46,8 @@ import com.vaadin.data.util.sqlcontainer.query.TableQuery;
 import com.vaadin.data.util.sqlcontainer.query.generator.MSSQLGenerator;
 import com.vaadin.data.util.sqlcontainer.query.generator.OracleGenerator;
 
-public class SQLContainer implements Container, Container.Filterable, Container.Indexed, Container.Sortable, Container.ItemSetChangeNotifier {
+public class SQLContainer implements Container, Container.Filterable,
+        Container.Indexed, Container.Sortable, Container.ItemSetChangeNotifier {
 
     /** Query delegate */
     private QueryDelegate queryDelegate;
@@ -99,7 +100,9 @@ public class SQLContainer implements Container, Container.Filterable, Container.
     /** ItemSetChangeListeners */
     private LinkedList<Container.ItemSetChangeListener> itemSetChangeListeners;
 
-    /** Temporary storage for modified items and items to be removed and added */
+    /**
+     * Temporary storage for modified items and items to be removed and added
+     */
     private final Map<RowId, RowItem> removedItems = new HashMap<RowId, RowItem>();
     private final List<RowItem> addedItems = new ArrayList<RowItem>();
     private final List<RowItem> modifiedItems = new ArrayList<RowItem>();
@@ -126,7 +129,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
     public SQLContainer(QueryDelegate delegate) throws SQLException {
         if (delegate == null) {
-            throw new IllegalArgumentException("QueryDelegate must not be null.");
+            throw new IllegalArgumentException(
+                    "QueryDelegate must not be null.");
         }
         queryDelegate = delegate;
         getPropertyIds();
@@ -148,13 +152,19 @@ public class SQLContainer implements Container, Container.Filterable, Container.
 
     @Override
     public Object addItem() throws UnsupportedOperationException {
-        Object emptyKey[] = new Object[queryDelegate.getPrimaryKeyColumns().size()];
+        Object emptyKey[] = new Object[queryDelegate.getPrimaryKeyColumns()
+                .size()];
         RowId itemId = new TemporaryRowId(emptyKey);
         // Create new empty column properties for the row item.
         List<ColumnProperty> itemProperties = new ArrayList<ColumnProperty>();
         for (String propertyId : propertyIds) {
             /* Default settings for new item properties. */
-            ColumnProperty cp = new ColumnProperty(propertyId, propertyReadOnly.get(propertyId), propertyPersistable.get(propertyId), propertyNullable.get(propertyId), propertyPrimaryKey.get(propertyId), null, getType(propertyId));
+            ColumnProperty cp = new ColumnProperty(propertyId,
+                    propertyReadOnly.get(propertyId),
+                    propertyPersistable.get(propertyId),
+                    propertyNullable.get(propertyId),
+                    propertyPrimaryKey.get(propertyId), null,
+                    getType(propertyId));
 
             itemProperties.add(cp);
         }
@@ -164,7 +174,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
             /* Add and commit instantly */
             try {
                 if (queryDelegate instanceof TableQuery) {
-                    itemId = ((TableQuery) queryDelegate).storeRowImmediately(newRowItem);
+                    itemId = ((TableQuery) queryDelegate)
+                            .storeRowImmediately(newRowItem);
                 } else {
                     queryDelegate.beginTransaction();
                     queryDelegate.storeRow(newRowItem);
@@ -177,11 +188,13 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                 getLogger().log(Level.FINER, "Row added to DB...");
                 return itemId;
             } catch (SQLException e) {
-                getLogger().log(Level.WARNING, "Failed to add row to DB. Rolling back.", e);
+                getLogger().log(Level.WARNING,
+                        "Failed to add row to DB. Rolling back.", e);
                 try {
                     queryDelegate.rollback();
                 } catch (SQLException ee) {
-                    getLogger().log(Level.SEVERE, "Failed to roll back row addition", e);
+                    getLogger().log(Level.SEVERE,
+                            "Failed to roll back row addition", e);
                 }
                 return null;
             }
@@ -224,7 +237,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
 
         if (itemId instanceof RowId && !(itemId instanceof TemporaryRowId)) {
             try {
-                return queryDelegate.containsRowWithKey(((RowId) itemId).getId());
+                return queryDelegate
+                        .containsRowWithKey(((RowId) itemId).getId());
             } catch (Exception e) {
                 /* Query failed, just return false. */
                 getLogger().log(Level.WARNING, "containsId query failed", e);
@@ -345,7 +359,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
             rs.close();
             queryDelegate.commit();
         } catch (SQLException e) {
-            getLogger().log(Level.WARNING, "getItemIds() failed, rolling back.", e);
+            getLogger().log(Level.WARNING, "getItemIds() failed, rolling back.",
+                    e);
             try {
                 queryDelegate.rollback();
             } catch (SQLException e1) {
@@ -398,7 +413,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
 
     @Override
-    public boolean removeItem(Object itemId) throws UnsupportedOperationException {
+    public boolean removeItem(Object itemId)
+            throws UnsupportedOperationException {
         if (!containsId(itemId)) {
             return false;
         }
@@ -429,21 +445,25 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                 }
                 return success;
             } catch (SQLException e) {
-                getLogger().log(Level.WARNING, "Failed to remove row, rolling back", e);
+                getLogger().log(Level.WARNING,
+                        "Failed to remove row, rolling back", e);
                 try {
                     queryDelegate.rollback();
                 } catch (SQLException ee) {
                     /* Nothing can be done here */
-                    getLogger().log(Level.SEVERE, "Failed to rollback row removal", ee);
+                    getLogger().log(Level.SEVERE,
+                            "Failed to rollback row removal", ee);
                 }
                 return false;
             } catch (OptimisticLockException e) {
-                getLogger().log(Level.WARNING, "Failed to remove row, rolling back", e);
+                getLogger().log(Level.WARNING,
+                        "Failed to remove row, rolling back", e);
                 try {
                     queryDelegate.rollback();
                 } catch (SQLException ee) {
                     /* Nothing can be done here */
-                    getLogger().log(Level.SEVERE, "Failed to rollback row removal", ee);
+                    getLogger().log(Level.SEVERE,
+                            "Failed to rollback row removal", ee);
                 }
                 throw e;
             }
@@ -485,7 +505,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                 }
                 return success;
             } catch (SQLException e) {
-                getLogger().log(Level.WARNING, "removeAllItems() failed, rolling back", e);
+                getLogger().log(Level.WARNING,
+                        "removeAllItems() failed, rolling back", e);
                 try {
                     queryDelegate.rollback();
                 } catch (SQLException ee) {
@@ -494,7 +515,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                 }
                 return false;
             } catch (OptimisticLockException e) {
-                getLogger().log(Level.WARNING, "removeAllItems() failed, rolling back", e);
+                getLogger().log(Level.WARNING,
+                        "removeAllItems() failed, rolling back", e);
                 try {
                     queryDelegate.rollback();
                 } catch (SQLException ee) {
@@ -522,7 +544,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
 
     @Override
-    public void addContainerFilter(Filter filter) throws UnsupportedFilterException {
+    public void addContainerFilter(Filter filter)
+            throws UnsupportedFilterException {
         // filter.setCaseSensitive(!ignoreCase);
 
         filters.add(filter);
@@ -542,13 +565,15 @@ public class SQLContainer implements Container, Container.Filterable, Container.
     /**
      * {@inheritDoc}
      */
-    public void addContainerFilter(Object propertyId, String filterString, boolean ignoreCase, boolean onlyMatchPrefix) {
+    public void addContainerFilter(Object propertyId, String filterString,
+            boolean ignoreCase, boolean onlyMatchPrefix) {
         if (propertyId == null || !propertyIds.contains(propertyId)) {
             return;
         }
 
         /* Generate Filter -object */
-        String likeStr = onlyMatchPrefix ? filterString + "%" : "%" + filterString + "%";
+        String likeStr = onlyMatchPrefix ? filterString + "%"
+                : "%" + filterString + "%";
         Like like = new Like(propertyId.toString(), likeStr);
         like.setCaseSensitive(!ignoreCase);
         filters.add(like);
@@ -599,6 +624,7 @@ public class SQLContainer implements Container, Container.Filterable, Container.
     }
 
     /**********************************************/
+
     /** Methods from interface Container.Indexed **/
     /**********************************************/
 
@@ -642,7 +668,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
             }
             oldIndex = currentOffset;
             // load in the next page.
-            int nextIndex = currentOffset + pageLength * CACHE_RATIO + cacheOverlap;
+            int nextIndex = currentOffset + pageLength * CACHE_RATIO
+                    + cacheOverlap;
             if (nextIndex >= size) {
                 // Container wrapped around, start from index 0.
                 nextIndex = 0;
@@ -669,7 +696,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
     @Override
     public Object getIdByIndex(int index) {
         if (index < 0) {
-            throw new IndexOutOfBoundsException("Index is negative! index=" + index);
+            throw new IndexOutOfBoundsException(
+                    "Index is negative! index=" + index);
         }
         // make sure the size field is valid
         updateCount();
@@ -691,10 +719,12 @@ public class SQLContainer implements Container, Container.Filterable, Container.
     @Override
     public List<Object> getItemIds(int startIndex, int numberOfIds) {
         // TODO create a better implementation
-        return (List<Object>) ContainerHelpers.getItemIdsUsingGetIdByIndex(startIndex, numberOfIds, this);
+        return (List<Object>) ContainerHelpers
+                .getItemIdsUsingGetIdByIndex(startIndex, numberOfIds, this);
     }
 
     /**********************************************/
+
     /** Methods from interface Container.Ordered **/
     /**********************************************/
 
@@ -746,7 +776,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                 int ix = -1;
                 do {
                     ix++;
-                } while (!itemPassesFilters(addedItems.get(ix)) && ix < addedItems.size());
+                } while (!itemPassesFilters(addedItems.get(ix))
+                        && ix < addedItems.size());
                 if (ix < addedItems.size()) {
                     return addedItems.get(ix).getId();
                 }
@@ -808,6 +839,7 @@ public class SQLContainer implements Container, Container.Filterable, Container.
     }
 
     /***********************************************/
+
     /** Methods from interface Container.Sortable **/
     /***********************************************/
 
@@ -829,7 +861,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
         boolean asc = true;
         for (int i = 0; i < propertyId.length; i++) {
             /* Check that the property id is valid */
-            if (propertyId[i] instanceof String && propertyIds.contains(propertyId[i])) {
+            if (propertyId[i] instanceof String
+                    && propertyIds.contains(propertyId[i])) {
                 try {
                     asc = ascending[i];
                 } catch (Exception e) {
@@ -888,7 +921,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      * @return true if contents of this container have been modified
      */
     public boolean isModified() {
-        return !removedItems.isEmpty() || !addedItems.isEmpty() || !modifiedItems.isEmpty();
+        return !removedItems.isEmpty() || !addedItems.isEmpty()
+                || !modifiedItems.isEmpty();
     }
 
     /**
@@ -962,7 +996,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
             return;
         }
         if (!propertyIds.contains(orderBy.getColumn())) {
-            throw new IllegalArgumentException("The column given for sorting does not exist in this container.");
+            throw new IllegalArgumentException(
+                    "The column given for sorting does not exist in this container.");
         }
         sorters.add(orderBy);
         refresh();
@@ -977,16 +1012,21 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
     public void commit() throws UnsupportedOperationException, SQLException {
         try {
-            getLogger().log(Level.FINER, "Commiting changes through delegate...");
+            getLogger().log(Level.FINER,
+                    "Commiting changes through delegate...");
             queryDelegate.beginTransaction();
             /* Perform buffered deletions */
             for (RowItem item : removedItems.values()) {
                 try {
                     if (!queryDelegate.removeRow(item)) {
-                        throw new SQLException("Removal failed for row with ID: " + item.getId());
+                        throw new SQLException(
+                                "Removal failed for row with ID: "
+                                        + item.getId());
                     }
                 } catch (IllegalArgumentException e) {
-                    throw new SQLException("Removal failed for row with ID: " + item.getId(), e);
+                    throw new SQLException(
+                            "Removal failed for row with ID: " + item.getId(),
+                            e);
                 }
             }
             /* Perform buffered modifications */
@@ -1001,7 +1041,9 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                     } else {
                         queryDelegate.rollback();
                         refresh();
-                        throw new ConcurrentModificationException("Item with the ID '" + item.getId() + "' has been externally modified.");
+                        throw new ConcurrentModificationException(
+                                "Item with the ID '" + item.getId()
+                                        + "' has been externally modified.");
                     }
                 }
             }
@@ -1056,7 +1098,9 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                 if (queryDelegate.storeRow(changedItem) == 0) {
                     queryDelegate.rollback();
                     refresh();
-                    throw new ConcurrentModificationException("Item with the ID '" + changedItem.getId() + "' has been externally modified.");
+                    throw new ConcurrentModificationException(
+                            "Item with the ID '" + changedItem.getId()
+                                    + "' has been externally modified.");
                 }
                 queryDelegate.commit();
                 if (notificationsEnabled) {
@@ -1064,7 +1108,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                 }
                 getLogger().log(Level.FINER, "Row updated to DB...");
             } catch (SQLException e) {
-                getLogger().log(Level.WARNING, "itemChangeNotification failed, rolling back...", e);
+                getLogger().log(Level.WARNING,
+                        "itemChangeNotification failed, rolling back...", e);
                 try {
                     queryDelegate.rollback();
                 } catch (SQLException ee) {
@@ -1074,7 +1119,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                 throw new RuntimeException(e);
             }
         } else {
-            if (!(changedItem.getId() instanceof TemporaryRowId) && !modifiedItems.contains(changedItem)) {
+            if (!(changedItem.getId() instanceof TemporaryRowId)
+                    && !modifiedItems.contains(changedItem)) {
                 modifiedItems.add(changedItem);
             }
         }
@@ -1109,19 +1155,22 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      * Fetches new count of rows from the data source, if needed.
      */
     private void updateCount() {
-        if (!sizeDirty && new Date().getTime() < sizeUpdated.getTime() + sizeValidMilliSeconds) {
+        if (!sizeDirty && new Date().getTime() < sizeUpdated.getTime()
+                + sizeValidMilliSeconds) {
             return;
         }
         try {
             try {
                 queryDelegate.setFilters(filters);
             } catch (UnsupportedOperationException e) {
-                getLogger().log(Level.FINE, "The query delegate doesn't support filtering", e);
+                getLogger().log(Level.FINE,
+                        "The query delegate doesn't support filtering", e);
             }
             try {
                 queryDelegate.setOrderBy(sorters);
             } catch (UnsupportedOperationException e) {
-                getLogger().log(Level.FINE, "The query delegate doesn't support sorting", e);
+                getLogger().log(Level.FINE,
+                        "The query delegate doesn't support sorting", e);
             }
             int newSize = queryDelegate.getCount();
             sizeUpdated = new Date();
@@ -1131,7 +1180,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                 // Size is up to date so don't set it back to dirty in refresh()
                 refresh(false);
             }
-            getLogger().log(Level.FINER, "Updated row count. New count is: {0}", size);
+            getLogger().log(Level.FINER, "Updated row count. New count is: {0}",
+                    size);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to update item set size.", e);
         }
@@ -1186,20 +1236,25 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                  * auto increment by the database, and also it is set as the
                  * version column in a TableQuery delegate.
                  */
-                boolean readOnly = rsmd.isAutoIncrement(i) || rsmd.isReadOnly(i);
+                boolean readOnly = rsmd.isAutoIncrement(i)
+                        || rsmd.isReadOnly(i);
 
                 boolean persistable = !rsmd.isReadOnly(i);
 
                 if (queryDelegate instanceof TableQuery) {
-                    if (rsmd.getColumnLabel(i).equals(((TableQuery) queryDelegate).getVersionColumn())) {
+                    if (rsmd.getColumnLabel(i).equals(
+                            ((TableQuery) queryDelegate).getVersionColumn())) {
                         readOnly = true;
                     }
                 }
 
                 propertyReadOnly.put(colName, readOnly);
                 propertyPersistable.put(colName, persistable);
-                propertyNullable.put(colName, rsmd.isNullable(i) == ResultSetMetaData.columnNullable);
-                propertyPrimaryKey.put(colName, queryDelegate.getPrimaryKeyColumns().contains(rsmd.getColumnLabel(i)));
+                propertyNullable.put(colName,
+                        rsmd.isNullable(i) == ResultSetMetaData.columnNullable);
+                propertyPrimaryKey.put(colName,
+                        queryDelegate.getPrimaryKeyColumns()
+                                .contains(rsmd.getColumnLabel(i)));
                 propertyTypes.put(colName, type);
             }
             rs.getStatement().close();
@@ -1207,7 +1262,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
             queryDelegate.commit();
             getLogger().log(Level.FINER, "Property IDs fetched.");
         } catch (SQLException e) {
-            getLogger().log(Level.WARNING, "Failed to fetch property ids, rolling back", e);
+            getLogger().log(Level.WARNING,
+                    "Failed to fetch property ids, rolling back", e);
             try {
                 queryDelegate.rollback();
             } catch (SQLException e1) {
@@ -1244,7 +1300,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
             } catch (UnsupportedOperationException e) {
                 /* The query delegate doesn't support sorting. */
                 /* No need to do anything. */
-                getLogger().log(Level.FINE, "The query delegate doesn't support sorting", e);
+                getLogger().log(Level.FINE,
+                        "The query delegate doesn't support sorting", e);
             }
             queryDelegate.beginTransaction();
             int fetchedRows = pageLength * CACHE_RATIO + cacheOverlap;
@@ -1272,7 +1329,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                 } else {
                     id = new RowId(itemId);
                 }
-                List<String> propertiesToAdd = new ArrayList<String>(propertyIds);
+                List<String> propertiesToAdd = new ArrayList<String>(
+                        propertyIds);
                 if (!removedItems.containsKey(id)) {
                     for (int i = 1; i <= rsmd.getColumnCount(); i++) {
                         if (!isColumnIdentifierValid(rsmd.getColumnLabel(i))) {
@@ -1280,7 +1338,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                         }
                         String colName = rsmd.getColumnLabel(i);
                         Object value = rs.getObject(i);
-                        Class<?> type = value != null ? value.getClass() : Object.class;
+                        Class<?> type = value != null ? value.getClass()
+                                : Object.class;
                         if (value == null) {
                             for (String propName : propertyTypes.keySet()) {
                                 if (propName.equals(rsmd.getColumnLabel(i))) {
@@ -1297,7 +1356,12 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                          */
                         if (propertiesToAdd.contains(colName)) {
 
-                            cp = new ColumnProperty(colName, propertyReadOnly.get(colName), propertyPersistable.get(colName), propertyNullable.get(colName), propertyPrimaryKey.get(colName), value, type);
+                            cp = new ColumnProperty(colName,
+                                    propertyReadOnly.get(colName),
+                                    propertyPersistable.get(colName),
+                                    propertyNullable.get(colName),
+                                    propertyPrimaryKey.get(colName), value,
+                                    type);
                             itemProperties.add(cp);
                             propertiesToAdd.remove(colName);
                         }
@@ -1312,7 +1376,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
                     if (modifiedIndex != -1) {
                         cachedItems.put(id, modifiedItems.get(modifiedIndex));
                     } else {
-                        cachedItems.put(id, new RowItem(this, id, itemProperties));
+                        cachedItems.put(id,
+                                new RowItem(this, id, itemProperties));
                     }
 
                     rowCount++;
@@ -1321,9 +1386,11 @@ public class SQLContainer implements Container, Container.Filterable, Container.
             rs.getStatement().close();
             rs.close();
             queryDelegate.commit();
-            getLogger().log(Level.FINER, "Fetched {0} rows starting from {1}", new Object[] { fetchedRows, currentOffset });
+            getLogger().log(Level.FINER, "Fetched {0} rows starting from {1}",
+                    new Object[] { fetchedRows, currentOffset });
         } catch (SQLException e) {
-            getLogger().log(Level.WARNING, "Failed to fetch rows, rolling back", e);
+            getLogger().log(Level.WARNING, "Failed to fetch rows, rolling back",
+                    e);
             try {
                 queryDelegate.rollback();
             } catch (SQLException e1) {
@@ -1397,9 +1464,11 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      * @return true if the identifier is valid
      */
     private boolean isColumnIdentifierValid(String identifier) {
-        if (identifier.equalsIgnoreCase("rownum") && queryDelegate instanceof TableQuery) {
+        if (identifier.equalsIgnoreCase("rownum")
+                && queryDelegate instanceof TableQuery) {
             TableQuery tq = (TableQuery) queryDelegate;
-            if (tq.getSqlGenerator() instanceof MSSQLGenerator || tq.getSqlGenerator() instanceof OracleGenerator) {
+            if (tq.getSqlGenerator() instanceof MSSQLGenerator
+                    || tq.getSqlGenerator() instanceof OracleGenerator) {
                 return false;
             }
         }
@@ -1416,6 +1485,7 @@ public class SQLContainer implements Container, Container.Filterable, Container.
     }
 
     /************************************/
+
     /** UNSUPPORTED CONTAINER FEATURES **/
     /************************************/
 
@@ -1427,7 +1497,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
 
     @Override
-    public boolean addContainerProperty(Object propertyId, Class<?> type, Object defaultValue) throws UnsupportedOperationException {
+    public boolean addContainerProperty(Object propertyId, Class<?> type,
+            Object defaultValue) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -1438,7 +1509,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
 
     @Override
-    public boolean removeContainerProperty(Object propertyId) throws UnsupportedOperationException {
+    public boolean removeContainerProperty(Object propertyId)
+            throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -1461,7 +1533,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
 
     @Override
-    public Item addItemAfter(Object previousItemId, Object newItemId) throws UnsupportedOperationException {
+    public Item addItemAfter(Object previousItemId, Object newItemId)
+            throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -1472,7 +1545,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
 
     @Override
-    public Item addItemAt(int index, Object newItemId) throws UnsupportedOperationException {
+    public Item addItemAt(int index, Object newItemId)
+            throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -1494,11 +1568,13 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
 
     @Override
-    public Object addItemAfter(Object previousItemId) throws UnsupportedOperationException {
+    public Object addItemAfter(Object previousItemId)
+            throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
     /******************************************/
+
     /** ITEMSETCHANGENOTIFIER IMPLEMENTATION **/
     /******************************************/
 
@@ -1511,7 +1587,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
 
     @Override
-    public void addItemSetChangeListener(Container.ItemSetChangeListener listener) {
+    public void addItemSetChangeListener(
+            Container.ItemSetChangeListener listener) {
         if (itemSetChangeListeners == null) {
             itemSetChangeListeners = new LinkedList<Container.ItemSetChangeListener>();
         }
@@ -1527,7 +1604,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
 
     @Override
-    public void removeItemSetChangeListener(Container.ItemSetChangeListener listener) {
+    public void removeItemSetChangeListener(
+            Container.ItemSetChangeListener listener) {
         if (itemSetChangeListeners != null) {
             itemSetChangeListeners.remove(listener);
         }
@@ -1536,9 +1614,11 @@ public class SQLContainer implements Container, Container.Filterable, Container.
     protected void fireContentsChange() {
         if (itemSetChangeListeners != null) {
             final Object[] l = itemSetChangeListeners.toArray();
-            final Container.ItemSetChangeEvent event = new SQLContainer.ItemSetChangeEvent(this);
+            final Container.ItemSetChangeEvent event = new SQLContainer.ItemSetChangeEvent(
+                    this);
             for (int i = 0; i < l.length; i++) {
-                ((Container.ItemSetChangeListener) l[i]).containerItemSetChange(event);
+                ((Container.ItemSetChangeListener) l[i])
+                        .containerItemSetChange(event);
             }
         }
     }
@@ -1547,7 +1627,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      * Simple ItemSetChangeEvent implementation.
      */
     @SuppressWarnings("serial")
-    public static class ItemSetChangeEvent extends EventObject implements Container.ItemSetChangeEvent {
+    public static class ItemSetChangeEvent extends EventObject
+            implements Container.ItemSetChangeEvent {
 
         private ItemSetChangeEvent(SQLContainer source) {
             super(source);
@@ -1570,7 +1651,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
     public void addRowIdChangeListener(RowIdChangeListener listener) {
         if (queryDelegate instanceof QueryDelegate.RowIdChangeNotifier) {
-            ((QueryDelegate.RowIdChangeNotifier) queryDelegate).addRowIdChangeListener(listener);
+            ((QueryDelegate.RowIdChangeNotifier) queryDelegate)
+                    .addRowIdChangeListener(listener);
         }
     }
 
@@ -1581,7 +1663,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
     public void removeRowIdChangeListener(RowIdChangeListener listener) {
         if (queryDelegate instanceof QueryDelegate.RowIdChangeNotifier) {
-            ((QueryDelegate.RowIdChangeNotifier) queryDelegate).removeRowIdChangeListener(listener);
+            ((QueryDelegate.RowIdChangeNotifier) queryDelegate)
+                    .removeRowIdChangeListener(listener);
         }
     }
 
@@ -1617,18 +1700,27 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      *            Column (property) name in the referenced container storing the
      *            referenced key
      */
-    public void addReference(SQLContainer refdCont, String refingCol, String refdCol) {
+    public void addReference(SQLContainer refdCont, String refingCol,
+            String refdCol) {
         if (refdCont == null) {
-            throw new IllegalArgumentException("Referenced SQLContainer can not be null.");
+            throw new IllegalArgumentException(
+                    "Referenced SQLContainer can not be null.");
         }
         if (!getContainerPropertyIds().contains(refingCol)) {
-            throw new IllegalArgumentException("Given referencing column name is invalid." + " Please ensure that this container" + " contains a property ID named: " + refingCol);
+            throw new IllegalArgumentException(
+                    "Given referencing column name is invalid."
+                            + " Please ensure that this container"
+                            + " contains a property ID named: " + refingCol);
         }
         if (!refdCont.getContainerPropertyIds().contains(refdCol)) {
-            throw new IllegalArgumentException("Given referenced column name is invalid." + " Please ensure that the referenced container" + " contains a property ID named: " + refdCol);
+            throw new IllegalArgumentException(
+                    "Given referenced column name is invalid."
+                            + " Please ensure that the referenced container"
+                            + " contains a property ID named: " + refdCol);
         }
         if (references.keySet().contains(refdCont)) {
-            throw new IllegalArgumentException("An SQLContainer instance can only be referenced once.");
+            throw new IllegalArgumentException(
+                    "An SQLContainer instance can only be referenced once.");
         }
         references.put(refdCont, new Reference(refdCont, refingCol, refdCol));
     }
@@ -1642,7 +1734,8 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
     public boolean removeReference(SQLContainer refdCont) {
         if (refdCont == null) {
-            throw new IllegalArgumentException("Referenced SQLContainer can not be null.");
+            throw new IllegalArgumentException(
+                    "Referenced SQLContainer can not be null.");
         }
         return references.remove(refdCont) == null ? false : true;
     }
@@ -1660,19 +1753,25 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      * @return true if the referenced item was successfully set, false on
      *         failure
      */
-    public boolean setReferencedItem(Object itemId, Object refdItemId, SQLContainer refdCont) {
+    public boolean setReferencedItem(Object itemId, Object refdItemId,
+            SQLContainer refdCont) {
         if (refdCont == null) {
-            throw new IllegalArgumentException("Referenced SQLContainer can not be null.");
+            throw new IllegalArgumentException(
+                    "Referenced SQLContainer can not be null.");
         }
         Reference r = references.get(refdCont);
         if (r == null) {
-            throw new IllegalArgumentException("Reference to the given SQLContainer not defined.");
+            throw new IllegalArgumentException(
+                    "Reference to the given SQLContainer not defined.");
         }
         try {
-            getContainerProperty(itemId, r.getReferencingColumn()).setValue(refdCont.getContainerProperty(refdItemId, r.getReferencedColumn()));
+            getContainerProperty(itemId, r.getReferencingColumn())
+                    .setValue(refdCont.getContainerProperty(refdItemId,
+                            r.getReferencedColumn()));
             return true;
         } catch (Exception e) {
-            getLogger().log(Level.WARNING, "Setting referenced item failed.", e);
+            getLogger().log(Level.WARNING, "Setting referenced item failed.",
+                    e);
             return false;
         }
     }
@@ -1688,13 +1787,16 @@ public class SQLContainer implements Container, Container.Filterable, Container.
      */
     public Object getReferencedItemId(Object itemId, SQLContainer refdCont) {
         if (refdCont == null) {
-            throw new IllegalArgumentException("Referenced SQLContainer can not be null.");
+            throw new IllegalArgumentException(
+                    "Referenced SQLContainer can not be null.");
         }
         Reference r = references.get(refdCont);
         if (r == null) {
-            throw new IllegalArgumentException("Reference to the given SQLContainer not defined.");
+            throw new IllegalArgumentException(
+                    "Reference to the given SQLContainer not defined.");
         }
-        Object refKey = getContainerProperty(itemId, r.getReferencingColumn()).getValue();
+        Object refKey = getContainerProperty(itemId, r.getReferencingColumn())
+                .getValue();
 
         refdCont.removeAllContainerFilters();
         refdCont.addContainerFilter(new Equal(r.getReferencedColumn(), refKey));
@@ -1716,11 +1818,13 @@ public class SQLContainer implements Container, Container.Filterable, Container.
         return refdCont.getItem(getReferencedItemId(itemId, refdCont));
     }
 
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    private void writeObject(java.io.ObjectOutputStream out)
+            throws IOException {
         out.defaultWriteObject();
     }
 
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         if (notificationsEnabled) {
             /*

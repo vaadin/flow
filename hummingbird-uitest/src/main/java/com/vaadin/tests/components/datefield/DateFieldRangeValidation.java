@@ -72,8 +72,10 @@ public class DateFieldRangeValidation extends TestBase {
 
         PopupDateField fromField = createDateField();
         fromField.setPropertyDataSource(bi.getItemProperty("from"));
-        CheckBox fromInclusive = new CheckBox("From inclusive", bi.getItemProperty("fromInclusive"));
-        CheckBox toInclusive = new CheckBox("To inclusive", bi.getItemProperty("toInclusive"));
+        CheckBox fromInclusive = new CheckBox("From inclusive",
+                bi.getItemProperty("fromInclusive"));
+        CheckBox toInclusive = new CheckBox("To inclusive",
+                bi.getItemProperty("toInclusive"));
         fromInclusive.addValueChangeListener(refreshField);
         toInclusive.addValueChangeListener(refreshField);
 
@@ -82,32 +84,34 @@ public class DateFieldRangeValidation extends TestBase {
 
         actualDateField = createDateField();
         actualDateField.setValue(new Date(2011 - 1900, 12 - 1, 1));
-        actualDateField.addValidator(new RangeValidator<Date>("", Date.class, null, null) {
-            @Override
-            public boolean isMinValueIncluded() {
-                return range.isFromInclusive();
-            }
+        actualDateField.addValidator(
+                new RangeValidator<Date>("", Date.class, null, null) {
+                    @Override
+                    public boolean isMinValueIncluded() {
+                        return range.isFromInclusive();
+                    }
 
-            @Override
-            public boolean isMaxValueIncluded() {
-                return range.isToInclusive();
-            }
+                    @Override
+                    public boolean isMaxValueIncluded() {
+                        return range.isToInclusive();
+                    }
 
-            @Override
-            public Date getMaxValue() {
-                return range.getTo();
-            }
+                    @Override
+                    public Date getMaxValue() {
+                        return range.getTo();
+                    }
 
-            @Override
-            public Date getMinValue() {
-                return range.getFrom();
-            }
+                    @Override
+                    public Date getMinValue() {
+                        return range.getFrom();
+                    }
 
-            @Override
-            public String getErrorMessage() {
-                return "Date must be in range " + getMinValue() + " - " + getMaxValue();
-            }
-        });
+                    @Override
+                    public String getErrorMessage() {
+                        return "Date must be in range " + getMinValue() + " - "
+                                + getMaxValue();
+                    }
+                });
         addComponent(fromField);
         addComponent(fromInclusive);
         addComponent(toField);

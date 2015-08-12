@@ -137,7 +137,8 @@ public class JavaScriptConnectorHelper {
         return rpcName.replace('$', '.');
     }
 
-    protected JavaScriptObject createRpcObject(String iface, Set<String> methods) {
+    protected JavaScriptObject createRpcObject(String iface,
+            Set<String> methods) {
         JavaScriptObject object = JavaScriptObject.createObject();
 
         for (String method : methods) {
@@ -154,19 +155,16 @@ public class JavaScriptConnectorHelper {
         Integer tag = Integer.valueOf(this.tag);
         while (tag != null) {
             String serverSideClassName = conf.getServerSideClassNameForTag(tag);
-            String initFunctionName = serverSideClassName
-                    .replaceAll("\\.", "_");
+            String initFunctionName = serverSideClassName.replaceAll("\\.",
+                    "_");
             if (tryInitJs(initFunctionName, getConnectorWrapper())) {
-                getLogger().info(
-                        "JavaScript connector initialized using "
-                                + initFunctionName);
+                getLogger().info("JavaScript connector initialized using "
+                        + initFunctionName);
                 this.initFunctionName = initFunctionName;
                 return true;
             } else {
-                getLogger()
-                        .warning(
-                                "No JavaScript function " + initFunctionName
-                                        + " found");
+                getLogger().warning("No JavaScript function " + initFunctionName
+                        + " found");
                 attemptedNames.add(initFunctionName);
                 tag = conf.getParentTag(tag.intValue());
             }
@@ -182,14 +180,14 @@ public class JavaScriptConnectorHelper {
 
     private static native boolean tryInitJs(String initFunctionName,
             JavaScriptObject connectorWrapper)
-    /*-{
-        if (typeof $wnd[initFunctionName] == 'function') {
-            $wnd[initFunctionName].apply(connectorWrapper);
-            return true;
-        } else {
-            return false;
-        }
-    }-*/;
+            /*-{
+                if (typeof $wnd[initFunctionName] == 'function') {
+                    $wnd[initFunctionName].apply(connectorWrapper);
+                    return true;
+                } else {
+                    return false;
+                }
+            }-*/;
 
     public JavaScriptObject getConnectorWrapper() {
         if (connectorWrapper == null) {
@@ -205,51 +203,51 @@ public class JavaScriptConnectorHelper {
             JavaScriptConnectorHelper h, ApplicationConnection c,
             JavaScriptObject nativeState, JavaScriptObject registeredRpc,
             String connectorId, Map<String, JavaScriptObject> rpcObjects)
-    /*-{
-        return {
-            'getConnectorId': function() {
-                return connectorId;
-            },
-            'getParentId': $entry(function(connectorId) {
-                return h.@com.vaadin.client.JavaScriptConnectorHelper::getParentId(Ljava/lang/String;)(connectorId);
-            }),
-            'getState': function() {
-                return nativeState;
-            },
-            'getRpcProxy': $entry(function(iface) {
-                if (!iface) {
-                    iface = '';
-                }
-                return rpcObjects.@java.util.Map::get(Ljava/lang/Object;)(iface);
-            }),
-            'getElement': $entry(function(connectorId) {
-                return h.@com.vaadin.client.JavaScriptConnectorHelper::getWidgetElement(Ljava/lang/String;)(connectorId);
-            }),
-            'registerRpc': function(iface, rpcHandler) {
-                //registerRpc(handler) -> registerRpc('', handler);
-                if (!rpcHandler) {
-                    rpcHandler = iface;
-                    iface = '';
-                }
-                if (!registeredRpc[iface]) {
-                    registeredRpc[iface] = [];
-                }
-                registeredRpc[iface].push(rpcHandler);
-            },
-            'translateVaadinUri': $entry(function(uri) {
-                return c.@com.vaadin.client.ApplicationConnection::translateVaadinUri(Ljava/lang/String;)(uri);
-            }),
-        };
-    }-*/;
+            /*-{
+                return {
+                    'getConnectorId': function() {
+                        return connectorId;
+                    },
+                    'getParentId': $entry(function(connectorId) {
+                        return h.@com.vaadin.client.JavaScriptConnectorHelper::getParentId(Ljava/lang/String;)(connectorId);
+                    }),
+                    'getState': function() {
+                        return nativeState;
+                    },
+                    'getRpcProxy': $entry(function(iface) {
+                        if (!iface) {
+                            iface = '';
+                        }
+                        return rpcObjects.@java.util.Map::get(Ljava/lang/Object;)(iface);
+                    }),
+                    'getElement': $entry(function(connectorId) {
+                        return h.@com.vaadin.client.JavaScriptConnectorHelper::getWidgetElement(Ljava/lang/String;)(connectorId);
+                    }),
+                    'registerRpc': function(iface, rpcHandler) {
+                        //registerRpc(handler) -> registerRpc('', handler);
+                        if (!rpcHandler) {
+                            rpcHandler = iface;
+                            iface = '';
+                        }
+                        if (!registeredRpc[iface]) {
+                            registeredRpc[iface] = [];
+                        }
+                        registeredRpc[iface].push(rpcHandler);
+                    },
+                    'translateVaadinUri': $entry(function(uri) {
+                        return c.@com.vaadin.client.ApplicationConnection::translateVaadinUri(Ljava/lang/String;)(uri);
+                    }),
+                };
+            }-*/;
 
     private native void attachRpcMethod(JavaScriptObject rpc, String iface,
             String method)
-    /*-{
-        var self = this;
-        rpc[method] = $entry(function() {
-            self.@com.vaadin.client.JavaScriptConnectorHelper::fireRpc(Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JsArray;)(iface, method, arguments);
-        });
-    }-*/;
+            /*-{
+                var self = this;
+                rpc[method] = $entry(function() {
+                    self.@com.vaadin.client.JavaScriptConnectorHelper::fireRpc(Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JsArray;)(iface, method, arguments);
+                });
+            }-*/;
 
     private String getParentId(String connectorId) {
         ServerConnector target = getConnector(connectorId);
@@ -278,8 +276,8 @@ public class JavaScriptConnectorHelper {
             return connector;
         }
 
-        return ConnectorMap.get(connector.getConnection()).getConnector(
-                connectorId);
+        return ConnectorMap.get(connector.getConnection())
+                .getConnector(connectorId);
     }
 
     private void fireRpc(String iface, String method,
@@ -311,17 +309,17 @@ public class JavaScriptConnectorHelper {
                 interfaceList += getJsInterfaceName(iface);
             }
 
-            throw new IllegalStateException(
-                    "Can not call method "
-                            + method
-                            + " for wildcard rpc proxy because the function is defined for multiple rpc interfaces: "
-                            + interfaceList
-                            + ". Retrieve a rpc proxy for a specific interface using getRpcProxy(interfaceName) to use the function.");
+            throw new IllegalStateException("Can not call method " + method
+                    + " for wildcard rpc proxy because the function is defined for multiple rpc interfaces: "
+                    + interfaceList
+                    + ". Retrieve a rpc proxy for a specific interface using getRpcProxy(interfaceName) to use the function.");
         }
     }
 
-    private void fireCallback(String name, JsArray<JavaScriptObject> arguments) {
-        throw new RuntimeException("Sending JS callback is no longer supported");
+    private void fireCallback(String name,
+            JsArray<JavaScriptObject> arguments) {
+        throw new RuntimeException(
+                "Sending JS callback is no longer supported");
     }
 
     public void setNativeState(JavaScriptObject state) {
@@ -330,20 +328,20 @@ public class JavaScriptConnectorHelper {
 
     private static native void updateNativeState(JavaScriptObject state,
             JavaScriptObject input)
-    /*-{
-        // Copy all fields to existing state object 
-        for(var key in state) {
-            if (state.hasOwnProperty(key)) {
-                delete state[key];
-            }
-        }
-        
-        for(var key in input) {
-            if (input.hasOwnProperty(key)) {
-                state[key] = input[key];
-            }
-        }
-    }-*/;
+            /*-{
+                // Copy all fields to existing state object 
+                for(var key in state) {
+                    if (state.hasOwnProperty(key)) {
+                        delete state[key];
+                    }
+                }
+                
+                for(var key in input) {
+                    if (input.hasOwnProperty(key)) {
+                        state[key] = input[key];
+                    }
+                }
+            }-*/;
 
     public Object[] decodeRpcParameters(JsonArray parametersJson) {
         return new Object[] { Util.json2jso(parametersJson) };
@@ -372,31 +370,32 @@ public class JavaScriptConnectorHelper {
 
     private static native void invokeCallback(JavaScriptObject connector,
             String name, JavaScriptObject arguments)
-    /*-{
-        connector[name].apply(connector, arguments);
-    }-*/;
+            /*-{
+                connector[name].apply(connector, arguments);
+            }-*/;
 
     private static native void invokeJsRpc(JavaScriptObject rpcMap,
-            String interfaceName, String methodName, JavaScriptObject parameters)
-    /*-{
-        var targets = rpcMap[interfaceName];
-        if (!targets) {
-            return;
-        }
-        for(var i = 0; i < targets.length; i++) {
-            var target = targets[i];
-            target[methodName].apply(target, parameters);
-        }
-    }-*/;
+            String interfaceName, String methodName,
+            JavaScriptObject parameters)
+            /*-{
+                var targets = rpcMap[interfaceName];
+                if (!targets) {
+                    return;
+                }
+                for(var i = 0; i < targets.length; i++) {
+                    var target = targets[i];
+                    target[methodName].apply(target, parameters);
+                }
+            }-*/;
 
     private static native void ensureCallback(JavaScriptConnectorHelper h,
             JavaScriptObject connector, String name)
-    /*-{
-        connector[name] = $entry(function() {
-            var args = Array.prototype.slice.call(arguments, 0);
-            h.@com.vaadin.client.JavaScriptConnectorHelper::fireCallback(Ljava/lang/String;Lcom/google/gwt/core/client/JsArray;)(name, args);
-        });
-    }-*/;
+            /*-{
+                connector[name] = $entry(function() {
+                    var args = Array.prototype.slice.call(arguments, 0);
+                    h.@com.vaadin.client.JavaScriptConnectorHelper::fireCallback(Ljava/lang/String;Lcom/google/gwt/core/client/JsArray;)(name, args);
+                });
+            }-*/;
 
     private JavaScriptConnectorState getConnectorState() {
         return (JavaScriptConnectorState) connector.getState();
@@ -408,11 +407,11 @@ public class JavaScriptConnectorHelper {
 
     private static native void invokeIfPresent(
             JavaScriptObject connectorWrapper, String functionName)
-    /*-{
-        if (typeof connectorWrapper[functionName] == 'function') {
-            connectorWrapper[functionName].apply(connectorWrapper, arguments);
-        }
-    }-*/;
+            /*-{
+                if (typeof connectorWrapper[functionName] == 'function') {
+                    connectorWrapper[functionName].apply(connectorWrapper, arguments);
+                }
+            }-*/;
 
     public String getInitFunctionName() {
         return initFunctionName;

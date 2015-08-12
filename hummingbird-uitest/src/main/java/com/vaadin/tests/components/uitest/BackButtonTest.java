@@ -31,20 +31,22 @@ public class BackButtonTest extends AbstractTestUI {
         addComponent(p1);
 
         p2 = new Page2();
-        getPage().addUriFragmentChangedListener(new UriFragmentChangedListener() {
+        getPage().addUriFragmentChangedListener(
+                new UriFragmentChangedListener() {
 
-            @Override
-            public void uriFragmentChanged(UriFragmentChangedEvent event) {
-                String f = event.getUriFragment();
-                if ("page2".equals(f)) {
-                    showPage2();
-                }
+                    @Override
+                    public void uriFragmentChanged(
+                            UriFragmentChangedEvent event) {
+                        String f = event.getUriFragment();
+                        if ("page2".equals(f)) {
+                            showPage2();
+                        }
 
-                if ("page1".equals(f)) {
-                    showPage1();
-                }
-            }
-        });
+                        if ("page1".equals(f)) {
+                            showPage1();
+                        }
+                    }
+                });
     }
 
     class Page1 extends VerticalLayout {
@@ -99,7 +101,8 @@ public class BackButtonTest extends AbstractTestUI {
                 }
             });
             addComponent(b);
-            addComponent(new Label("Go back with the back button without creating a blur event on the text field. Text should transfer to page1 label."));
+            addComponent(new Label(
+                    "Go back with the back button without creating a blur event on the text field. Text should transfer to page1 label."));
         }
 
     }

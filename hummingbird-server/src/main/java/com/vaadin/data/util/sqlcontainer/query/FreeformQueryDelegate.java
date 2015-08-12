@@ -38,7 +38,8 @@ public interface FreeformQueryDelegate extends Serializable {
      *             instead of {@link FreeformQueryDelegate}
      */
     @Deprecated
-    public String getQueryString(int offset, int limit) throws UnsupportedOperationException;
+    public String getQueryString(int offset, int limit)
+            throws UnsupportedOperationException;
 
     /**
      * Generates and executes a query to determine the current row count from
@@ -62,7 +63,8 @@ public interface FreeformQueryDelegate extends Serializable {
      * @throws UnsupportedOperationException
      *             if the implementation doesn't support filtering.
      */
-    public void setFilters(List<Filter> filters) throws UnsupportedOperationException;
+    public void setFilters(List<Filter> filters)
+            throws UnsupportedOperationException;
 
     /**
      * Sets the order in which to retrieve rows from the database. The result
@@ -75,7 +77,8 @@ public interface FreeformQueryDelegate extends Serializable {
      * @throws UnsupportedOperationException
      *             if the implementation doesn't support ordering.
      */
-    public void setOrderBy(List<OrderBy> orderBys) throws UnsupportedOperationException;
+    public void setOrderBy(List<OrderBy> orderBys)
+            throws UnsupportedOperationException;
 
     /**
      * Stores a row in the database. The implementation of this interface
@@ -90,7 +93,8 @@ public interface FreeformQueryDelegate extends Serializable {
      *             if the implementation is read only.
      * @throws SQLException
      */
-    public int storeRow(Connection conn, RowItem row) throws UnsupportedOperationException, SQLException;
+    public int storeRow(Connection conn, RowItem row)
+            throws UnsupportedOperationException, SQLException;
 
     /**
      * Removes the given RowItem from the database.
@@ -103,7 +107,8 @@ public interface FreeformQueryDelegate extends Serializable {
      * @throws UnsupportedOperationException
      * @throws SQLException
      */
-    public boolean removeRow(Connection conn, RowItem row) throws UnsupportedOperationException, SQLException;
+    public boolean removeRow(Connection conn, RowItem row)
+            throws UnsupportedOperationException, SQLException;
 
     /**
      * Generates an SQL Query string that allows the user of the FreeformQuery
@@ -120,5 +125,6 @@ public interface FreeformQueryDelegate extends Serializable {
      *             instead of {@link FreeformQueryDelegate}
      */
     @Deprecated
-    public String getContainsRowQueryString(Object... keys) throws UnsupportedOperationException;
+    public String getContainsRowQueryString(Object... keys)
+            throws UnsupportedOperationException;
 }

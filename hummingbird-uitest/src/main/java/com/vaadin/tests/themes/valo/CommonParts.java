@@ -73,7 +73,8 @@ public class CommonParts extends VerticalLayout implements View {
         p.setContent(content);
         content.setSpacing(true);
         content.setMargin(true);
-        content.addComponent(new Label("You can test the loading indicator by pressing the buttons."));
+        content.addComponent(new Label(
+                "You can test the loading indicator by pressing the buttons."));
 
         CssLayout group = new CssLayout();
         group.setCaption("Show the loading indicator for…");
@@ -119,7 +120,8 @@ public class CommonParts extends VerticalLayout implements View {
         label.setSizeUndefined();
         group.addComponent(label);
 
-        Label spinnerDesc = new Label("The theme also provides a mixin that you can use to include a spinner anywhere in your application. Below is a Label with a custom style name, for which the spinner mixin is added.");
+        Label spinnerDesc = new Label(
+                "The theme also provides a mixin that you can use to include a spinner anywhere in your application. Below is a Label with a custom style name, for which the spinner mixin is added.");
         spinnerDesc.addStyleName("small");
         spinnerDesc.setCaption("Spinner");
         content.addComponent(spinnerDesc);
@@ -144,6 +146,7 @@ public class CommonParts extends VerticalLayout implements View {
             String typeString = "";
             String styleString = "";
             TextField delay = new TextField();
+
             {
                 setSpacing(true);
                 setMargin(true);
@@ -152,7 +155,8 @@ public class CommonParts extends VerticalLayout implements View {
                 title.addValueChangeListener(new ValueChangeListener() {
                     @Override
                     public void valueChange(ValueChangeEvent event) {
-                        if (title.getValue() == null || title.getValue().length() == 0) {
+                        if (title.getValue() == null
+                                || title.getValue().length() == 0) {
                             notification.setCaption(null);
                         } else {
                             notification.setCaption(title.getValue());
@@ -168,14 +172,16 @@ public class CommonParts extends VerticalLayout implements View {
                 description.addValueChangeListener(new ValueChangeListener() {
                     @Override
                     public void valueChange(ValueChangeEvent event) {
-                        if (description.getValue() == null || description.getValue().length() == 0) {
+                        if (description.getValue() == null
+                                || description.getValue().length() == 0) {
                             notification.setDescription(null);
                         } else {
                             notification.setDescription(description.getValue());
                         }
                     }
                 });
-                description.setValue("A more informative message about what has happened. Nihil hic munitissimus habendi senatus locus, nihil horum? Inmensae subtilitatis, obscuris et malesuada fames. Hi omnes lingua, institutis, legibus inter se differunt.");
+                description.setValue(
+                        "A more informative message about what has happened. Nihil hic munitissimus habendi senatus locus, nihil horum? Inmensae subtilitatis, obscuris et malesuada fames. Hi omnes lingua, institutis, legibus inter se differunt.");
                 description.setWidth("100%");
                 addComponent(description);
 
@@ -187,7 +193,9 @@ public class CommonParts extends VerticalLayout implements View {
                             notification.setStyleName(styleString.trim());
                         } else {
                             typeString = selectedItem.getText().toLowerCase();
-                            notification.setStyleName((typeString + " " + styleString.trim()).trim());
+                            notification.setStyleName(
+                                    (typeString + " " + styleString.trim())
+                                            .trim());
                         }
                         for (MenuItem item : type.getItems()) {
                             item.setChecked(false);
@@ -213,11 +221,14 @@ public class CommonParts extends VerticalLayout implements View {
                         styleString = "";
                         for (MenuItem item : style.getItems()) {
                             if (item.isChecked()) {
-                                styleString += " " + item.getText().toLowerCase();
+                                styleString += " "
+                                        + item.getText().toLowerCase();
                             }
                         }
                         if (styleString.trim().length() > 0) {
-                            notification.setStyleName((typeString + " " + styleString.trim()).trim());
+                            notification.setStyleName(
+                                    (typeString + " " + styleString.trim())
+                                            .trim());
                         } else if (typeString.length() > 0) {
                             notification.setStyleName(typeString.trim());
                         } else {
@@ -249,7 +260,8 @@ public class CommonParts extends VerticalLayout implements View {
                     @Override
                     public void valueChange(ValueChangeEvent event) {
                         try {
-                            notification.setDelayMsec(Integer.parseInt(delay.getValue()));
+                            notification.setDelayMsec(
+                                    Integer.parseInt(delay.getValue()));
                         } catch (Exception e) {
                             notification.setDelayMsec(-1);
                             delay.setValue("");
@@ -405,7 +417,8 @@ public class CommonParts extends VerticalLayout implements View {
                         label.setSizeUndefined();
                         toolbarLayout.addComponents(label, menuBar);
                         toolbarLayout.setExpandRatio(menuBar, 1);
-                        toolbarLayout.setComponentAlignment(menuBar, Alignment.TOP_RIGHT);
+                        toolbarLayout.setComponentAlignment(menuBar,
+                                Alignment.TOP_RIGHT);
                         toolbar = toolbarLayout;
                     }
                     toolbar.addStyleName("v-window-top-toolbar");
@@ -418,15 +431,21 @@ public class CommonParts extends VerticalLayout implements View {
                     TabSheet tabs = new TabSheet();
                     tabs.setSizeFull();
                     VerticalLayout l = new VerticalLayout();
-                    l.addComponent(new Label("<h2>Subtitle</h2><p>Normal type for plain text. Etiam at risus et justo dignissim congue. Phasellus laoreet lorem vel dolor tempus vehicula.</p><p>Quisque ut dolor gravida, placerat libero vel, euismod. Etiam habebis sem dicantur magna mollis euismod. Nihil hic munitissimus habendi senatus locus, nihil horum? Curabitur est gravida et libero vitae dictum. Ullamco laboris nisi ut aliquid ex ea commodi consequat. Morbi odio eros, volutpat ut pharetra vitae, lobortis sed nibh.</p>", ContentMode.HTML));
+                    l.addComponent(new Label(
+                            "<h2>Subtitle</h2><p>Normal type for plain text. Etiam at risus et justo dignissim congue. Phasellus laoreet lorem vel dolor tempus vehicula.</p><p>Quisque ut dolor gravida, placerat libero vel, euismod. Etiam habebis sem dicantur magna mollis euismod. Nihil hic munitissimus habendi senatus locus, nihil horum? Curabitur est gravida et libero vitae dictum. Ullamco laboris nisi ut aliquid ex ea commodi consequat. Morbi odio eros, volutpat ut pharetra vitae, lobortis sed nibh.</p>",
+                            ContentMode.HTML));
                     l.setMargin(true);
                     tabs.addTab(l, "Selected");
-                    tabs.addTab(new Label("&nbsp;", ContentMode.HTML), "Another");
-                    tabs.addTab(new Label("&nbsp;", ContentMode.HTML), "One more");
+                    tabs.addTab(new Label("&nbsp;", ContentMode.HTML),
+                            "Another");
+                    tabs.addTab(new Label("&nbsp;", ContentMode.HTML),
+                            "One more");
                     tabs.addStyleName("padded-tabbar");
-                    tabs.addSelectedTabChangeListener(new SelectedTabChangeListener() {
+                    tabs.addSelectedTabChangeListener(
+                            new SelectedTabChangeListener() {
                         @Override
-                        public void selectedTabChange(SelectedTabChangeEvent event) {
+                        public void selectedTabChange(
+                                SelectedTabChangeEvent event) {
                             try {
                                 Thread.sleep(600);
                             } catch (InterruptedException e) {
@@ -443,12 +462,16 @@ public class CommonParts extends VerticalLayout implements View {
                         p.addStyleName("scroll-divider");
                     }
                     VerticalLayout l = new VerticalLayout();
-                    l.addComponent(new Label("<h2>Subtitle</h2><p>Normal type for plain text. Etiam at risus et justo dignissim congue. Phasellus laoreet lorem vel dolor tempus vehicula.</p><p>Quisque ut dolor gravida, placerat libero vel, euismod. Etiam habebis sem dicantur magna mollis euismod. Nihil hic munitissimus habendi senatus locus, nihil horum? Curabitur est gravida et libero vitae dictum. Ullamco laboris nisi ut aliquid ex ea commodi consequat. Morbi odio eros, volutpat ut pharetra vitae, lobortis sed nibh.</p>", ContentMode.HTML));
+                    l.addComponent(new Label(
+                            "<h2>Subtitle</h2><p>Normal type for plain text. Etiam at risus et justo dignissim congue. Phasellus laoreet lorem vel dolor tempus vehicula.</p><p>Quisque ut dolor gravida, placerat libero vel, euismod. Etiam habebis sem dicantur magna mollis euismod. Nihil hic munitissimus habendi senatus locus, nihil horum? Curabitur est gravida et libero vitae dictum. Ullamco laboris nisi ut aliquid ex ea commodi consequat. Morbi odio eros, volutpat ut pharetra vitae, lobortis sed nibh.</p>",
+                            ContentMode.HTML));
                     l.setMargin(true);
                     p.setContent(l);
                     content = p;
                 } else {
-                    content = new Label("<h2>Subtitle</h2><p>Normal type for plain text. Etiam at risus et justo dignissim congue. Phasellus laoreet lorem vel dolor tempus vehicula.</p><p>Quisque ut dolor gravida, placerat libero vel, euismod. Etiam habebis sem dicantur magna mollis euismod. Nihil hic munitissimus habendi senatus locus, nihil horum? Curabitur est gravida et libero vitae dictum. Ullamco laboris nisi ut aliquid ex ea commodi consequat. Morbi odio eros, volutpat ut pharetra vitae, lobortis sed nibh.</p>", ContentMode.HTML);
+                    content = new Label(
+                            "<h2>Subtitle</h2><p>Normal type for plain text. Etiam at risus et justo dignissim congue. Phasellus laoreet lorem vel dolor tempus vehicula.</p><p>Quisque ut dolor gravida, placerat libero vel, euismod. Etiam habebis sem dicantur magna mollis euismod. Nihil hic munitissimus habendi senatus locus, nihil horum? Curabitur est gravida et libero vitae dictum. Ullamco laboris nisi ut aliquid ex ea commodi consequat. Morbi odio eros, volutpat ut pharetra vitae, lobortis sed nibh.</p>",
+                            ContentMode.HTML);
                     root.setMargin(true);
                 }
 
@@ -510,7 +533,8 @@ public class CommonParts extends VerticalLayout implements View {
                             if (!autoHeight) {
                                 win.setHeight(prevHeight);
                             } else {
-                                prevHeight = win.getHeight() + win.getHeightUnits().toString();
+                                prevHeight = win.getHeight()
+                                        + win.getHeightUnits().toString();
                                 win.setHeight(null);
                             }
                         }
@@ -526,12 +550,15 @@ public class CommonParts extends VerticalLayout implements View {
                             footerToolbar = selectedItem.isChecked();
                         }
 
-                        if (selectedItem.getText().equals("Top Toolbar layout")) {
+                        if (selectedItem.getText()
+                                .equals("Top Toolbar layout")) {
                             toolbarLayout = selectedItem.isChecked();
                         }
 
-                        if (selectedItem.getText().equals("Borderless Toolbars")) {
-                            toolbarStyle = selectedItem.isChecked() ? "borderless" : null;
+                        if (selectedItem.getText()
+                                .equals("Borderless Toolbars")) {
+                            toolbarStyle = selectedItem.isChecked()
+                                    ? "borderless" : null;
                         }
 
                         win.setContent(windowContent());
@@ -540,7 +567,8 @@ public class CommonParts extends VerticalLayout implements View {
 
                 MenuBar options = new MenuBar();
                 options.setCaption("Content");
-                options.addItem("Auto Height", optionsCommand).setCheckable(true);
+                options.addItem("Auto Height", optionsCommand)
+                        .setCheckable(true);
                 options.addItem("Tabs", optionsCommand).setCheckable(true);
                 MenuItem option = options.addItem("Footer", optionsCommand);
                 option.setCheckable(true);
@@ -550,10 +578,14 @@ public class CommonParts extends VerticalLayout implements View {
 
                 options = new MenuBar();
                 options.setCaption("Toolbars");
-                options.addItem("Footer Toolbar", optionsCommand).setCheckable(true);
-                options.addItem("Top Toolbar", optionsCommand).setCheckable(true);
-                options.addItem("Top Toolbar layout", optionsCommand).setCheckable(true);
-                options.addItem("Borderless Toolbars", optionsCommand).setCheckable(true);
+                options.addItem("Footer Toolbar", optionsCommand)
+                        .setCheckable(true);
+                options.addItem("Top Toolbar", optionsCommand)
+                        .setCheckable(true);
+                options.addItem("Top Toolbar layout", optionsCommand)
+                        .setCheckable(true);
+                options.addItem("Borderless Toolbars", optionsCommand)
+                        .setCheckable(true);
                 options.addStyleName("small");
                 addComponent(options);
 
@@ -561,7 +593,8 @@ public class CommonParts extends VerticalLayout implements View {
                     @Override
                     public void menuSelected(MenuItem selectedItem) {
                         if (selectedItem.getText().equals("Caption")) {
-                            win.setCaption(selectedItem.isChecked() ? "Window Caption" : null);
+                            win.setCaption(selectedItem.isChecked()
+                                    ? "Window Caption" : null);
                         } else if (selectedItem.getText().equals("Closable")) {
                             win.setClosable(selectedItem.isChecked());
                         } else if (selectedItem.getText().equals("Resizable")) {
@@ -578,12 +611,14 @@ public class CommonParts extends VerticalLayout implements View {
                 caption.setCheckable(true);
                 caption.setChecked(true);
                 options.addItem("Closable", optionsCommand2).setCheckable(true);
-                options.addItem("Resizable", optionsCommand2).setCheckable(true);
+                options.addItem("Resizable", optionsCommand2)
+                        .setCheckable(true);
                 options.addItem("Modal", optionsCommand2).setCheckable(true);
                 options.addStyleName("small");
                 addComponent(options);
 
-                final Button show = new Button("Open Window", new ClickListener() {
+                final Button show = new Button("Open Window",
+                        new ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
                         getUI().addWindow(win);

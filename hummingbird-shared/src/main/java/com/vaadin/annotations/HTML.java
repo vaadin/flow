@@ -57,5 +57,5 @@ public @interface HTML {
      * 
      * @return an array of HMTL file urls
      */
-    public String[] value();
+    public String[]value();
 }

@@ -64,7 +64,9 @@ public class Sort implements Serializable {
         Sort s = previous;
         while (s != null) {
             if (s.order.getPropertyId() == propertyId) {
-                throw new IllegalStateException("Can not sort along the same property (" + propertyId + ") twice!");
+                throw new IllegalStateException(
+                        "Can not sort along the same property (" + propertyId
+                                + ") twice!");
             }
             s = s.previous;
         }

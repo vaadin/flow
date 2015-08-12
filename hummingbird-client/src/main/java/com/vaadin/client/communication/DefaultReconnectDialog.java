@@ -33,7 +33,8 @@ import com.vaadin.client.ui.VOverlay;
  * @since 7.6
  * @author Vaadin Ltd
  */
-public class DefaultReconnectDialog extends VOverlay implements ReconnectDialog {
+public class DefaultReconnectDialog extends VOverlay
+        implements ReconnectDialog {
     interface MyUiBinder extends UiBinder<HTMLPanel, DefaultReconnectDialog> {
     }
 

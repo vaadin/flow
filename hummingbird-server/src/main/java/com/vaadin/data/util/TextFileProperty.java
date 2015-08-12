@@ -93,7 +93,8 @@ public class TextFileProperty extends AbstractProperty<String> {
         }
         try {
             FileInputStream fis = new FileInputStream(file);
-            InputStreamReader isr = charset == null ? new InputStreamReader(fis) : new InputStreamReader(fis, charset);
+            InputStreamReader isr = charset == null ? new InputStreamReader(fis)
+                    : new InputStreamReader(fis, charset);
             BufferedReader r = new BufferedReader(isr);
             StringBuilder b = new StringBuilder();
             char buf[] = new char[8 * 1024];
@@ -138,7 +139,9 @@ public class TextFileProperty extends AbstractProperty<String> {
 
         try {
             FileOutputStream fos = new FileOutputStream(file);
-            OutputStreamWriter osw = charset == null ? new OutputStreamWriter(fos) : new OutputStreamWriter(fos, charset);
+            OutputStreamWriter osw = charset == null
+                    ? new OutputStreamWriter(fos)
+                    : new OutputStreamWriter(fos, charset);
             BufferedWriter w = new BufferedWriter(osw);
             w.append(newValue.toString());
             w.flush();

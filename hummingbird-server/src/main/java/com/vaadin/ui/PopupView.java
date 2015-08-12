@@ -44,12 +44,16 @@ public class PopupView extends AbstractComponent implements HasComponents {
     private Component visibleComponent;
 
     private static final Method POPUP_VISIBILITY_METHOD;
+
     static {
         try {
-            POPUP_VISIBILITY_METHOD = PopupVisibilityListener.class.getDeclaredMethod("popupVisibilityChange", new Class[] { PopupVisibilityEvent.class });
+            POPUP_VISIBILITY_METHOD = PopupVisibilityListener.class
+                    .getDeclaredMethod("popupVisibilityChange",
+                            new Class[] { PopupVisibilityEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
-            throw new java.lang.RuntimeException("Internal error finding methods in PopupView");
+            throw new java.lang.RuntimeException(
+                    "Internal error finding methods in PopupView");
         }
     }
 
@@ -113,7 +117,8 @@ public class PopupView extends AbstractComponent implements HasComponents {
      *            popup content
      * @return content with given data
      */
-    protected static Content createContent(final String minimizedValue, final Component popupContent) {
+    protected static Content createContent(final String minimizedValue,
+            final Component popupContent) {
         return new Content() {
             @Override
             public String getMinimizedValueAsHTML() {
@@ -137,7 +142,8 @@ public class PopupView extends AbstractComponent implements HasComponents {
      *             if the method is passed a null value, or if one of the
      *             content methods returns null
      */
-    public void setContent(PopupView.Content newContent) throws IllegalArgumentException {
+    public void setContent(PopupView.Content newContent)
+            throws IllegalArgumentException {
         if (newContent == null) {
             throw new IllegalArgumentException("Content must not be null");
         }
@@ -165,11 +171,13 @@ public class PopupView extends AbstractComponent implements HasComponents {
             if (visible) {
                 visibleComponent = content.getPopupComponent();
                 if (visibleComponent == null) {
-                    throw new java.lang.IllegalStateException("PopupView.Content did not return Component to set visible");
+                    throw new java.lang.IllegalStateException(
+                            "PopupView.Content did not return Component to set visible");
                 }
                 if (visibleComponent.getParent() != null) {
                     // If the component already has a parent, try to remove it
-                    AbstractSingleComponentContainer.removeFromParent(visibleComponent);
+                    AbstractSingleComponentContainer
+                            .removeFromParent(visibleComponent);
                 }
                 visibleComponent.setParent(this);
             } else {
@@ -281,7 +289,8 @@ public class PopupView extends AbstractComponent implements HasComponents {
         super.writeDesign(design, designContext);
 
         Element popupContent = new Element(Tag.valueOf("popup-content"), "");
-        popupContent.appendChild(designContext.createElement(content.getPopupComponent()));
+        popupContent.appendChild(
+                designContext.createElement(content.getPopupComponent()));
 
         String minimizedHTML = content.getMinimizedValueAsHTML();
         if (minimizedHTML != null && !minimizedHTML.isEmpty()) {
@@ -334,7 +343,8 @@ public class PopupView extends AbstractComponent implements HasComponents {
      * 
      */
     public void addPopupVisibilityListener(PopupVisibilityListener listener) {
-        addListener(PopupVisibilityEvent.class, listener, POPUP_VISIBILITY_METHOD);
+        addListener(PopupVisibilityEvent.class, listener,
+                POPUP_VISIBILITY_METHOD);
     }
 
     /**
@@ -346,8 +356,10 @@ public class PopupView extends AbstractComponent implements HasComponents {
      * @see PopupVisibilityListener
      * @see #addListener(PopupVisibilityListener)
      */
-    public void removePopupVisibilityListener(PopupVisibilityListener listener) {
-        removeListener(PopupVisibilityEvent.class, listener, POPUP_VISIBILITY_METHOD);
+    public void removePopupVisibilityListener(
+            PopupVisibilityListener listener) {
+        removeListener(PopupVisibilityEvent.class, listener,
+                POPUP_VISIBILITY_METHOD);
     }
 
     /**

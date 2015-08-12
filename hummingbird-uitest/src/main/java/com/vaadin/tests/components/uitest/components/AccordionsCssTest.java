@@ -18,7 +18,8 @@ public class AccordionsCssTest {
         Accordion def = createAccordionWith("Def Accordion", null);
         parent.addComponent(def);
 
-        Accordion light = createAccordionWith("Borderless Accordion", ValoTheme.ACCORDION_BORDERLESS);
+        Accordion light = createAccordionWith("Borderless Accordion",
+                ValoTheme.ACCORDION_BORDERLESS);
         parent.addComponent(light);
 
     }

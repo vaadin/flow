@@ -11,15 +11,19 @@ public class DoubleInTextField extends AbstractComponentDataBindingTest {
 
     @Override
     protected void createFields() {
-        Person person = new Person("John", "Doe", "john@doe.com", 78, Sex.MALE, new Address("Dovestreet 12", 12233, "Johnston", Country.SOUTH_AFRICA));
+        Person person = new Person("John", "Doe", "john@doe.com", 78, Sex.MALE,
+                new Address("Dovestreet 12", 12233, "Johnston",
+                        Country.SOUTH_AFRICA));
 
         TextField salary = new TextField("Vaadin 7 - TextField with Double");
         addComponent(salary);
-        salary.setPropertyDataSource(new MethodProperty<Double>(person, "salaryDouble"));
+        salary.setPropertyDataSource(
+                new MethodProperty<Double>(person, "salaryDouble"));
 
         TextField salary6 = new TextField("Vaadin 6 - TextField with Double");
         addComponent(salary6);
-        salary6.setPropertyDataSource(new MethodProperty<Double>(person, "salaryDouble"));
+        salary6.setPropertyDataSource(
+                new MethodProperty<Double>(person, "salaryDouble"));
         salary6.setConverter(new Vaadin6ImplicitDoubleConverter());
 
     }

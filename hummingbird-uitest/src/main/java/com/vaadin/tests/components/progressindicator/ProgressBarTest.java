@@ -64,12 +64,13 @@ public class ProgressBarTest extends AbstractTestUI {
             }
         }));
 
-        addComponent(new Button("Stop background thread", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                stopUpdateThread();
-            }
-        }));
+        addComponent(new Button("Stop background thread",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        stopUpdateThread();
+                    }
+                }));
         updateThread.setDaemon(true);
         updateThread.start();
     }

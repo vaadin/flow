@@ -8,7 +8,8 @@ public class Element {
     private StateNode node;
 
     public Element(String tag) {
-        this(BasicElementTemplate.get(), BasicElementTemplate.createBasicElementModel(tag));
+        this(BasicElementTemplate.get(),
+                BasicElementTemplate.createBasicElementModel(tag));
     }
 
     private Element(ElementTemplate template, StateNode node) {
@@ -38,7 +39,8 @@ public class Element {
 
     private boolean validAttribute(String name) {
         if ("#text".equals(getTag())) {
-            assert "content".equals(name) : "Attribute " + name + " is not supported for text nodes";
+            assert"content".equals(name) : "Attribute " + name
+                    + " is not supported for text nodes";
         }
         return true;
     }

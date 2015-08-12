@@ -31,22 +31,18 @@ public interface ErrorMessage extends Serializable {
         /**
          * Error code for informational messages.
          */
-        INFORMATION("info", 0),
-        /**
-         * Error code for warning messages.
-         */
-        WARNING("warning", 1),
-        /**
-         * Error code for regular error messages.
-         */
-        ERROR("error", 2),
-        /**
-         * Error code for critical error messages.
-         */
-        CRITICAL("critical", 3),
-        /**
-         * Error code for system errors and bugs.
-         */
+        INFORMATION("info", 0), /**
+                                 * Error code for warning messages.
+                                 */
+        WARNING("warning", 1), /**
+                                * Error code for regular error messages.
+                                */
+        ERROR("error", 2), /**
+                            * Error code for critical error messages.
+                            */
+        CRITICAL("critical", 3), /**
+                                  * Error code for system errors and bugs.
+                                  */
         SYSTEMERROR("system", 4);
 
         String text;

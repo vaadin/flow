@@ -40,7 +40,8 @@ public class ServletIntegrationWebsocketUI extends ServletIntegrationUI {
     protected void init(VaadinRequest request) {
         super.init(request);
         // Ensure no fallback is used
-        getPushConfiguration().setParameter(PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
+        getPushConfiguration().setParameter(
+                PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
 
     }
 

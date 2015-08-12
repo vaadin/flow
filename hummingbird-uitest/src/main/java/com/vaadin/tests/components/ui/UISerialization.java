@@ -49,13 +49,17 @@ public class UISerialization extends AbstractTestUI {
                 try {
                     byte[] result = serialize(UISerialization.this);
                     long elapsed = new Date().getTime() - d.getTime();
-                    log.log("Serialized UI in " + elapsed + "ms into " + result.length + " bytes");
-                    Object diffStateBefore = getConnectorTracker().getDiffState(UISerialization.this);
+                    log.log("Serialized UI in " + elapsed + "ms into "
+                            + result.length + " bytes");
+                    Object diffStateBefore = getConnectorTracker()
+                            .getDiffState(UISerialization.this);
                     UISerialization app = (UISerialization) deserialize(result);
                     log.log("Deserialized UI in " + elapsed + "ms");
-                    Object diffStateAfter = getConnectorTracker().getDiffState(UISerialization.this);
+                    Object diffStateAfter = getConnectorTracker()
+                            .getDiffState(UISerialization.this);
                     if (diffStateBefore.equals(diffStateAfter)) {
-                        log.log("Diff states match, size: " + diffStateBefore.toString().length());
+                        log.log("Diff states match, size: "
+                                + diffStateBefore.toString().length());
                     } else {
                         log.log("Diff states do not match");
                     }
@@ -63,14 +67,16 @@ public class UISerialization extends AbstractTestUI {
                     log.log("Exception caught: " + e.getMessage());
                     StringWriter sw = new StringWriter();
                     e.printStackTrace(new PrintWriter(sw));
-                    addComponent(new Label(sw.toString(), ContentMode.PREFORMATTED));
+                    addComponent(
+                            new Label(sw.toString(), ContentMode.PREFORMATTED));
                 }
 
             }
         }));
     }
 
-    protected void serializeInstance(Class<?> cls) throws InstantiationException, IllegalAccessException, IOException {
+    protected void serializeInstance(Class<?> cls)
+            throws InstantiationException, IllegalAccessException, IOException {
         serialize((Serializable) cls.newInstance());
     }
 

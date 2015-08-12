@@ -39,8 +39,10 @@ public class GridLayoutScrollPositionTest extends MultiBrowserTest {
 
         testBenchElement(ui).scroll(SCROLLTOP);
 
-        driver.findElement(By.id("visibility-toggle")).findElement(By.tagName("input")).click();
+        driver.findElement(By.id("visibility-toggle"))
+                .findElement(By.tagName("input")).click();
 
-        assertEquals("UI scroll position", String.valueOf(SCROLLTOP), ui.getAttribute("scrollTop"));
+        assertEquals("UI scroll position", String.valueOf(SCROLLTOP),
+                ui.getAttribute("scrollTop"));
     }
 }

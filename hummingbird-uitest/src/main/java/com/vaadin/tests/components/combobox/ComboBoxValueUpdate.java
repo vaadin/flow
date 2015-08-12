@@ -30,7 +30,8 @@ public class ComboBoxValueUpdate extends TestBase {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
-                System.err.println("Selected " + event.getProperty().getValue());
+                System.err
+                        .println("Selected " + event.getProperty().getValue());
                 value.setValue("Selected " + event.getProperty().getValue());
 
             }

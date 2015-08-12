@@ -55,7 +55,9 @@ public class PopupDateFieldInputPrompt extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Write something to the TextField and use tabulator to move to PopupDateField." + "<br>PopupDateField shouldn't get input prompt back before focus leaves the input field," + "<br>even if TextField's value change updates PopupDateField's state.";
+        return "Write something to the TextField and use tabulator to move to PopupDateField."
+                + "<br>PopupDateField shouldn't get input prompt back before focus leaves the input field,"
+                + "<br>even if TextField's value change updates PopupDateField's state.";
     }
 
     @Override

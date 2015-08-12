@@ -36,7 +36,8 @@ public class DateFieldIsValidTest extends MultiBrowserTest {
 
         waitForElementVisible(By.id("Log"));
         waitForElementVisible(By.className("v-datefield"));
-        WebElement dateTextbox = $(DateFieldElement.class).first().findElement(By.className("v-textfield"));
+        WebElement dateTextbox = $(DateFieldElement.class).first()
+                .findElement(By.className("v-textfield"));
         ButtonElement button = $(ButtonElement.class).first();
 
         dateTextbox.sendKeys("01/01/01", Keys.TAB);
@@ -58,6 +59,7 @@ public class DateFieldIsValidTest extends MultiBrowserTest {
 
     private void assertLogText(String expected) throws Exception {
         String text = findElement(By.vaadin("PID_SLog_row_0")).getText();
-        Assert.assertTrue("Expected '" + expected + "' found '" + text + "'", text.equals(expected));
+        Assert.assertTrue("Expected '" + expected + "' found '" + text + "'",
+                text.equals(expected));
     }
 }

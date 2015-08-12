@@ -22,7 +22,11 @@ public class MultipleUIUploadTest extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Using Upload with multiple UIs causes NPE." + " Open test in first browser window and open the file selection window." + " Then open test in second browser window (without ?restartApplication) and click the notification button." + " Then go back to the first window, select a file, and click Upload." + " Click notification button to ensure the upload was received successfully.";
+        return "Using Upload with multiple UIs causes NPE."
+                + " Open test in first browser window and open the file selection window."
+                + " Then open test in second browser window (without ?restartApplication) and click the notification button."
+                + " Then go back to the first window, select a file, and click Upload."
+                + " Click notification button to ensure the upload was received successfully.";
     }
 
     @Override
@@ -54,7 +58,8 @@ public class MultipleUIUploadTest extends AbstractTestUI {
 
     }
 
-    public class MemoryBuffer implements StreamResource.StreamSource, Upload.Receiver {
+    public class MemoryBuffer
+            implements StreamResource.StreamSource, Upload.Receiver {
         ByteArrayOutputStream outputBuffer = null;
 
         String mimeType;

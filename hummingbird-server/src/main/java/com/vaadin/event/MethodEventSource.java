@@ -99,6 +99,7 @@ public interface MethodEventSource extends Serializable {
      *            the method owned by the target that's registered to listen to
      *            events of type eventType.
      */
-    public void removeListener(Class<?> eventType, Object target, Method method);
+    public void removeListener(Class<?> eventType, Object target,
+            Method method);
 
 }

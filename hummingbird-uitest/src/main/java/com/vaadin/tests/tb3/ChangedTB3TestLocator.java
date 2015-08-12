@@ -47,7 +47,8 @@ import org.eclipse.jgit.util.io.DisabledOutputStream;
 public class ChangedTB3TestLocator extends TB3TestLocator {
 
     @Override
-    protected <T> List<Class<? extends T>> findClasses(Class<T> baseClass, String basePackage, String[] ignoredPackages) throws IOException {
+    protected <T> List<Class<? extends T>> findClasses(Class<T> baseClass,
+            String basePackage, String[] ignoredPackages) throws IOException {
 
         return getChangedTestClasses(baseClass);
     }
@@ -68,14 +69,16 @@ public class ChangedTB3TestLocator extends TB3TestLocator {
     private List<DiffEntry> getDiffs() {
         try {
             FileRepositoryBuilder builder = new FileRepositoryBuilder();
-            Repository repository = builder.setWorkTree(new File(".")).readEnvironment() // scan
-                                                                                         // environment
-                                                                                         // GIT_*
-                                                                                         // variables
+            Repository repository = builder.setWorkTree(new File("."))
+                    .readEnvironment() // scan
+                                       // environment
+                                       // GIT_*
+                                       // variables
                     .findGitDir() // scan up the file system tree
                     .build();
 
-            List<DiffEntry> diffsInWorkingTree = getDiffsInWorkingTree(repository);
+            List<DiffEntry> diffsInWorkingTree = getDiffsInWorkingTree(
+                    repository);
 
             if (diffsInWorkingTree.isEmpty()) {
                 return getDiffsInHead(repository);
@@ -95,7 +98,8 @@ public class ChangedTB3TestLocator extends TB3TestLocator {
         return null;
     }
 
-    private List<DiffEntry> getDiffsInWorkingTree(Repository repository) throws GitAPIException {
+    private List<DiffEntry> getDiffsInWorkingTree(Repository repository)
+            throws GitAPIException {
         Git git = new Git(repository);
         DiffCommand diffCommand = git.diff();
 
@@ -114,14 +118,18 @@ public class ChangedTB3TestLocator extends TB3TestLocator {
 
     private boolean pathIsExcluded(String path) {
         // Exclude temporary junit files and screenshots.
-        return path.startsWith("uitest/junit") || getScreenshotDirectory().contains(path);
+        return path.startsWith("uitest/junit")
+                || getScreenshotDirectory().contains(path);
     }
 
     private String getScreenshotDirectory() {
-        return PrivateTB3Configuration.getProperty(PrivateTB3Configuration.SCREENSHOT_DIRECTORY);
+        return PrivateTB3Configuration
+                .getProperty(PrivateTB3Configuration.SCREENSHOT_DIRECTORY);
     }
 
-    private List<DiffEntry> getDiffsInHead(Repository repository) throws AmbiguousObjectException, IncorrectObjectTypeException, IOException, MissingObjectException {
+    private List<DiffEntry> getDiffsInHead(Repository repository)
+            throws AmbiguousObjectException, IncorrectObjectTypeException,
+            IOException, MissingObjectException {
         RevWalk rw = new RevWalk(repository);
         ObjectId head = repository.resolve(Constants.HEAD);
         RevCommit commit = rw.parseCommit(head);
@@ -135,12 +143,14 @@ public class ChangedTB3TestLocator extends TB3TestLocator {
         return diffs;
     }
 
-    private <T> List<Class<? extends T>> getChangedTestClasses(Class<T> baseClass) {
+    private <T> List<Class<? extends T>> getChangedTestClasses(
+            Class<T> baseClass) {
         List<String> changedTestFilePaths = getTestFilePaths();
         List<Class<? extends T>> testClasses = new ArrayList<Class<? extends T>>();
 
         for (String filePath : changedTestFilePaths) {
-            String path = filePath.replace("uitest/src/", "").replace(".java", "");
+            String path = filePath.replace("uitest/src/", "").replace(".java",
+                    "");
             String className = path.replace("/", ".");
             addClassIfMatches(testClasses, className, baseClass);
         }
@@ -152,7 +162,8 @@ public class ChangedTB3TestLocator extends TB3TestLocator {
         List<String> changedTestFilePaths = new ArrayList<String>();
 
         for (String filePath : getChangedFilePaths()) {
-            if (filePath.toLowerCase().startsWith("uitest") && filePath.toLowerCase().endsWith(".java")) {
+            if (filePath.toLowerCase().startsWith("uitest")
+                    && filePath.toLowerCase().endsWith(".java")) {
                 changedTestFilePaths.add(filePath);
             }
         }

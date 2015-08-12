@@ -59,7 +59,8 @@ public class HierarchyPanel extends FlowPanel {
 
         SimplePanel trees = new SimplePanel();
 
-        for (ApplicationConnection application : ApplicationConfiguration.getRunningApplications()) {
+        for (ApplicationConnection application : ApplicationConfiguration
+                .getRunningApplications()) {
             ServerConnector uiConnector = application.getUIConnector();
             Widget connectorTree = buildConnectorTree(uiConnector, openNodes);
 
@@ -96,7 +97,8 @@ public class HierarchyPanel extends FlowPanel {
         }
     }
 
-    private Widget buildConnectorTree(final ServerConnector connector, FastStringSet openNodes) {
+    private Widget buildConnectorTree(final ServerConnector connector,
+            FastStringSet openNodes) {
         String connectorString = Util.getConnectorString(connector);
 
         List<ServerConnector> children = connector.getChildren();
@@ -168,7 +170,8 @@ public class HierarchyPanel extends FlowPanel {
      */
     static void showServerDebugInfo(ServerConnector connector) {
         if (connector != null) {
-            connector.getConnection().getUIConnector().showServerDebugInfo(connector);
+            connector.getConnection().getUIConnector()
+                    .showServerDebugInfo(connector);
         }
     }
 

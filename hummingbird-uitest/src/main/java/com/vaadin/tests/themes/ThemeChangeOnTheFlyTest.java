@@ -43,7 +43,8 @@ public class ThemeChangeOnTheFlyTest extends MultiBrowserTest {
     @Test
     public void injectedStyleAndThemeChange() throws IOException {
         openTestURL();
-        $(ButtonElement.class).caption("Inject blue background").first().click();
+        $(ButtonElement.class).caption("Inject blue background").first()
+                .click();
         changeTheme("runo");
         compareScreen("runo-blue-background");
     }
@@ -92,7 +93,8 @@ public class ThemeChangeOnTheFlyTest extends MultiBrowserTest {
 
     private void waitForThemeToChange(final String theme) {
 
-        final WebElement rootDiv = findElement(By.xpath("//div[contains(@class,'v-app')]"));
+        final WebElement rootDiv = findElement(
+                By.xpath("//div[contains(@class,'v-app')]"));
         waitUntil(new ExpectedCondition<Boolean>() {
 
             @Override
@@ -105,7 +107,8 @@ public class ThemeChangeOnTheFlyTest extends MultiBrowserTest {
     }
 
     private void assertOverlayTheme(String theme) {
-        final WebElement overlayContainerDiv = findElement(By.xpath("//div[contains(@class,'v-overlay-container')]"));
+        final WebElement overlayContainerDiv = findElement(
+                By.xpath("//div[contains(@class,'v-overlay-container')]"));
         String overlayClass = overlayContainerDiv.getAttribute("class").trim();
 
         assertThat(overlayClass, containsString(theme));

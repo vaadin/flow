@@ -50,19 +50,22 @@ public class WebkitScrollbarTest extends AbstractTestUI {
         gl.addComponent(listSelect);
         gl.setMargin(true);
 
-        final Button testButton = new Button("Open Window", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                UI.getCurrent().addWindow(testWindow);
-            }
-        });
+        final Button testButton = new Button("Open Window",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        UI.getCurrent().addWindow(testWindow);
+                    }
+                });
         uiLayout.addComponent(testButton);
 
     }
 
     @Override
     protected String getTestDescription() {
-        return "When opening the window, it should NOT contain a horizontal" + " scrollbar and the vertical height should be proportional" + " to the list select component inside it.";
+        return "When opening the window, it should NOT contain a horizontal"
+                + " scrollbar and the vertical height should be proportional"
+                + " to the list select component inside it.";
     }
 
     @Override

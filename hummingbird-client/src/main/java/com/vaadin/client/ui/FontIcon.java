@@ -43,7 +43,10 @@ public class FontIcon extends Icon {
 
     @Override
     public void setUri(String uri) {
-        String[] parts = uri.substring(ApplicationConstants.FONTICON_PROTOCOL_PREFIX.length()).split("/");
+        String[] parts = uri
+                .substring(
+                        ApplicationConstants.FONTICON_PROTOCOL_PREFIX.length())
+                .split("/");
         setFontFamily(URL.decode(parts[0]));
         setCodepoint(Integer.parseInt(parts[1], 16));
     }
@@ -132,7 +135,8 @@ public class FontIcon extends Icon {
      * @return true if it's a fonticon uri
      */
     public static boolean isFontIconUri(String uri) {
-        return uri != null && uri.startsWith(ApplicationConstants.FONTICON_PROTOCOL_PREFIX);
+        return uri != null && uri
+                .startsWith(ApplicationConstants.FONTICON_PROTOCOL_PREFIX);
     }
 
     @Override
@@ -140,6 +144,7 @@ public class FontIcon extends Icon {
         if (fontFamily == null) {
             return null;
         }
-        return ApplicationConstants.FONTICON_PROTOCOL_PREFIX + fontFamily + "/" + codepoint;
+        return ApplicationConstants.FONTICON_PROTOCOL_PREFIX + fontFamily + "/"
+                + codepoint;
     }
 }

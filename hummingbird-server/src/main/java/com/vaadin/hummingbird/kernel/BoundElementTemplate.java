@@ -17,7 +17,9 @@ public class BoundElementTemplate extends AbstractElementTemplate {
 
     private Function<StateNode, Element> parentResolver;
 
-    public BoundElementTemplate(String tag, Collection<AttributeBinding> attributeBindings, Map<String, String> defaultAttributeValues) {
+    public BoundElementTemplate(String tag,
+            Collection<AttributeBinding> attributeBindings,
+            Map<String, String> defaultAttributeValues) {
 
         this.attributeBindings = new HashMap<String, AttributeBinding>();
         for (AttributeBinding b : attributeBindings) {
@@ -55,14 +57,16 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     public void setAttribute(String name, String value, StateNode node) {
         AttributeBinding binding = attributeBindings.get(name);
         if (binding != null) {
-            throw new IllegalStateException("Attribute " + name + " is bound through a template");
+            throw new IllegalStateException(
+                    "Attribute " + name + " is bound through a template");
         }
 
         super.setAttribute(name, value, node);
     }
 
     @Override
-    protected StateNode getElementDataNode(StateNode node, boolean createIfNeeded) {
+    protected StateNode getElementDataNode(StateNode node,
+            boolean createIfNeeded) {
         StateNode elementData = node.get(this, StateNode.class);
         if (createIfNeeded && elementData == null) {
             elementData = StateNode.create();
@@ -101,7 +105,11 @@ public class BoundElementTemplate extends AbstractElementTemplate {
 
         // TODO Ignore defaultAttributes that have been explicitly cleared and
         // bindings that resolve to null
-        return Collections.unmodifiableCollection(Stream.concat(Stream.concat(superAttributes.stream(), attributeBindings.keySet().stream()), defaultAttributeValues.keySet().stream()).collect(Collectors.toSet()));
+        return Collections.unmodifiableCollection(Stream
+                .concat(Stream.concat(superAttributes.stream(),
+                        attributeBindings.keySet().stream()),
+                defaultAttributeValues.keySet().stream())
+                .collect(Collectors.toSet()));
     }
 
     public Map<String, AttributeBinding> getAttributeBindings() {

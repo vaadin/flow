@@ -56,7 +56,8 @@ public class SharedUtil implements Serializable {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < camelCaseString.length(); i++) {
             char c = camelCaseString.charAt(i);
-            if (Character.isUpperCase(c) && isWordComplete(camelCaseString, i)) {
+            if (Character.isUpperCase(c)
+                    && isWordComplete(camelCaseString, i)) {
                 sb.append(' ');
             }
             sb.append(c);
@@ -71,7 +72,8 @@ public class SharedUtil implements Serializable {
         } else if (!Character.isUpperCase(camelCaseString.charAt(i - 1))) {
             // Word ends if previous char wasn't upper case
             return true;
-        } else if (i + 1 < camelCaseString.length() && !Character.isUpperCase(camelCaseString.charAt(i + 1))) {
+        } else if (i + 1 < camelCaseString.length()
+                && !Character.isUpperCase(camelCaseString.charAt(i + 1))) {
             // Word ends if next char isn't upper case
             return true;
         } else {
@@ -155,7 +157,8 @@ public class SharedUtil implements Serializable {
             return string.toUpperCase();
         }
 
-        return string.substring(0, 1).toUpperCase(Locale.ENGLISH) + string.substring(1);
+        return string.substring(0, 1).toUpperCase(Locale.ENGLISH)
+                + string.substring(1);
     }
 
     /**

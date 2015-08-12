@@ -51,9 +51,11 @@ public class TestIcon {
             }
             return ICONS.get(iconCount);
         }
-        return new ThemeResource("../runo/icons/" + imageSize + "/document.png");
+        return new ThemeResource(
+                "../runo/icons/" + imageSize + "/document.png");
     }
 
-    static List<FontAwesome> ICONS = Collections.unmodifiableList(Arrays.asList(FontAwesome.values()));
+    static List<FontAwesome> ICONS = Collections
+            .unmodifiableList(Arrays.asList(FontAwesome.values()));
 
 }

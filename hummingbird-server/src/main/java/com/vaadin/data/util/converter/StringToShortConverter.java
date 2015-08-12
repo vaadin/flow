@@ -30,7 +30,8 @@ import java.util.Locale;
  * @author Vaadin Ltd
  * @since 7.4
  */
-public class StringToShortConverter extends AbstractStringToNumberConverter<Short> {
+public class StringToShortConverter
+        extends AbstractStringToNumberConverter<Short> {
 
     /**
      * Returns the format used by
@@ -57,7 +58,8 @@ public class StringToShortConverter extends AbstractStringToNumberConverter<Shor
      * java.lang.Class, java.util.Locale)
      */
     @Override
-    public Short convertToModel(String value, Class<? extends Short> targetType, Locale locale) throws ConversionException {
+    public Short convertToModel(String value, Class<? extends Short> targetType,
+            Locale locale) throws ConversionException {
         Number n = convertToNumber(value, targetType, locale);
 
         if (n == null) {
@@ -69,7 +71,8 @@ public class StringToShortConverter extends AbstractStringToNumberConverter<Shor
             return shortValue;
         }
 
-        throw new ConversionException("Could not convert '" + value + "' to " + Short.class.getName() + ": value out of range");
+        throw new ConversionException("Could not convert '" + value + "' to "
+                + Short.class.getName() + ": value out of range");
 
     }
 

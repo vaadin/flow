@@ -26,7 +26,9 @@ public interface ElementTemplate {
 
     public abstract int getId();
 
-    public void addListener(String type, EventListener listener, StateNode node);
+    public void addListener(String type, EventListener listener,
+            StateNode node);
 
-    public void removeListener(String type, EventListener listener, StateNode node);
+    public void removeListener(String type, EventListener listener,
+            StateNode node);
 }

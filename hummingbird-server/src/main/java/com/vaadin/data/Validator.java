@@ -104,10 +104,12 @@ public interface Validator extends Serializable {
          *            One or more {@code InvalidValueException}s that caused
          *            this exception.
          */
-        public InvalidValueException(String message, InvalidValueException... causes) {
+        public InvalidValueException(String message,
+                InvalidValueException... causes) {
             super(message);
             if (causes == null) {
-                throw new NullPointerException("Possible causes array must not be null");
+                throw new NullPointerException(
+                        "Possible causes array must not be null");
             }
 
             this.causes = causes;

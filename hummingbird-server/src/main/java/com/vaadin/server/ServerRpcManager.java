@@ -70,9 +70,12 @@ public class ServerRpcManager<T extends ServerRpc> implements Serializable {
     }
 
     private static final Map<Class<?>, Class<?>> boxedTypes = new HashMap<Class<?>, Class<?>>();
+
     static {
         try {
-            Class<?>[] boxClasses = new Class<?>[] { Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Long.class, Float.class, Double.class };
+            Class<?>[] boxClasses = new Class<?>[] { Boolean.class, Byte.class,
+                    Short.class, Character.class, Integer.class, Long.class,
+                    Float.class, Double.class };
             for (Class<?> boxClass : boxClasses) {
                 Field typeField = boxClass.getField("TYPE");
                 Class<?> primitiveType = (Class<?>) typeField.get(boxClass);
@@ -108,12 +111,17 @@ public class ServerRpcManager<T extends ServerRpc> implements Serializable {
      *            method invocation to perform
      * @throws RpcInvocationException
      */
-    public static void applyInvocation(ClientConnector target, ServerRpcMethodInvocation invocation) throws RpcInvocationException {
-        ServerRpcManager<?> manager = target.getRpcManager(invocation.getInterfaceName());
+    public static void applyInvocation(ClientConnector target,
+            ServerRpcMethodInvocation invocation)
+                    throws RpcInvocationException {
+        ServerRpcManager<?> manager = target
+                .getRpcManager(invocation.getInterfaceName());
         if (manager != null) {
             manager.applyInvocation(invocation);
         } else {
-            getLogger().log(Level.WARNING, "RPC call received for RpcTarget {0} but the target has not registered any RPC interfaces", new Object[] { target.getClass().getName() });
+            getLogger().log(Level.WARNING,
+                    "RPC call received for RpcTarget {0} but the target has not registered any RPC interfaces",
+                    new Object[] { target.getClass().getName() });
         }
     }
 
@@ -142,13 +150,17 @@ public class ServerRpcManager<T extends ServerRpc> implements Serializable {
      * @param invocation
      *            method invocation to perform
      */
-    public void applyInvocation(ServerRpcMethodInvocation invocation) throws RpcInvocationException {
+    public void applyInvocation(ServerRpcMethodInvocation invocation)
+            throws RpcInvocationException {
         Method method = invocation.getMethod();
         Object[] arguments = invocation.getParameters();
         try {
             method.invoke(implementation, arguments);
         } catch (Exception e) {
-            throw new RpcInvocationException("Unable to invoke method " + invocation.getMethodName() + " in " + invocation.getInterfaceName(), e);
+            throw new RpcInvocationException(
+                    "Unable to invoke method " + invocation.getMethodName()
+                            + " in " + invocation.getInterfaceName(),
+                    e);
         }
     }
 

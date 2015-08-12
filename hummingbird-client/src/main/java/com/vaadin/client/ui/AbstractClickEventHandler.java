@@ -35,7 +35,8 @@ import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.VConsole;
 
-public abstract class AbstractClickEventHandler implements MouseDownHandler, MouseUpHandler, DoubleClickHandler, ContextMenuHandler {
+public abstract class AbstractClickEventHandler implements MouseDownHandler,
+        MouseUpHandler, DoubleClickHandler, ContextMenuHandler {
 
     private HandlerRegistration mouseDownHandlerRegistration;
     private HandlerRegistration mouseUpHandlerRegistration;
@@ -71,17 +72,21 @@ public abstract class AbstractClickEventHandler implements MouseDownHandler, Mou
 
                 // Event's reported target not always correct if event
                 // capture is in use
-                Element elementUnderMouse = WidgetUtil.getElementUnderMouse(event.getNativeEvent());
-                if (lastMouseDownTarget != null && elementUnderMouse == lastMouseDownTarget) {
+                Element elementUnderMouse = WidgetUtil
+                        .getElementUnderMouse(event.getNativeEvent());
+                if (lastMouseDownTarget != null
+                        && elementUnderMouse == lastMouseDownTarget) {
                     mouseUpPreviewMatched = true;
                 } else {
-                    VConsole.log("Ignoring mouseup from " + elementUnderMouse + " when mousedown was on " + lastMouseDownTarget);
+                    VConsole.log("Ignoring mouseup from " + elementUnderMouse
+                            + " when mousedown was on " + lastMouseDownTarget);
                 }
             }
         }
     };
 
-    public AbstractClickEventHandler(ComponentConnector connector, String clickEventIdentifier) {
+    public AbstractClickEventHandler(ComponentConnector connector,
+            String clickEventIdentifier) {
         this.connector = connector;
         this.clickEventIdentifier = clickEventIdentifier;
     }
@@ -91,10 +96,14 @@ public abstract class AbstractClickEventHandler implements MouseDownHandler, Mou
         // server side listeners have been added or removed.
         if (hasEventListener()) {
             if (mouseDownHandlerRegistration == null) {
-                mouseDownHandlerRegistration = registerHandler(this, MouseDownEvent.getType());
-                mouseUpHandlerRegistration = registerHandler(this, MouseUpEvent.getType());
-                doubleClickHandlerRegistration = registerHandler(this, DoubleClickEvent.getType());
-                contextMenuHandlerRegistration = registerHandler(this, ContextMenuEvent.getType());
+                mouseDownHandlerRegistration = registerHandler(this,
+                        MouseDownEvent.getType());
+                mouseUpHandlerRegistration = registerHandler(this,
+                        MouseUpEvent.getType());
+                doubleClickHandlerRegistration = registerHandler(this,
+                        DoubleClickEvent.getType());
+                contextMenuHandlerRegistration = registerHandler(this,
+                        ContextMenuEvent.getType());
             }
         } else {
             if (mouseDownHandlerRegistration != null) {
@@ -127,7 +136,8 @@ public abstract class AbstractClickEventHandler implements MouseDownHandler, Mou
      *            The type of the handler.
      * @return A reference for the registration of the handler.
      */
-    protected <H extends EventHandler> HandlerRegistration registerHandler(final H handler, DomEvent.Type<H> type) {
+    protected <H extends EventHandler> HandlerRegistration registerHandler(
+            final H handler, DomEvent.Type<H> type) {
         return connector.getWidget().addDomHandler(handler, type);
     }
 
@@ -161,9 +171,11 @@ public abstract class AbstractClickEventHandler implements MouseDownHandler, Mou
          * When getting a mousedown event, we must detect where the
          * corresponding mouseup event if it's on a different part of the page.
          */
-        lastMouseDownTarget = WidgetUtil.getElementUnderMouse(event.getNativeEvent());
+        lastMouseDownTarget = WidgetUtil
+                .getElementUnderMouse(event.getNativeEvent());
         mouseUpPreviewMatched = false;
-        mouseUpEventPreviewRegistration = Event.addNativePreviewHandler(mouseUpPreviewHandler);
+        mouseUpEventPreviewRegistration = Event
+                .addNativePreviewHandler(mouseUpPreviewHandler);
     }
 
     @Override
@@ -174,7 +186,11 @@ public abstract class AbstractClickEventHandler implements MouseDownHandler, Mou
          * but we can't fire the even there as the event might get canceled
          * before it gets here.
          */
-        if (hasEventListener() && mouseUpPreviewMatched && lastMouseDownTarget != null && WidgetUtil.getElementUnderMouse(event.getNativeEvent()) == lastMouseDownTarget && shouldFireEvent(event)) {
+        if (hasEventListener() && mouseUpPreviewMatched
+                && lastMouseDownTarget != null
+                && WidgetUtil.getElementUnderMouse(
+                        event.getNativeEvent()) == lastMouseDownTarget
+                && shouldFireEvent(event)) {
             // "Click" with left, right or middle button
             fireClick(event.getNativeEvent());
         }

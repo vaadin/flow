@@ -18,10 +18,13 @@ public class TabSheetsCssTest {
         TabSheet basic = createTabSheetWith("Basic TabSheet", null);
         parent.addComponent(basic);
 
-        TabSheet bar = createTabSheetWith("A small/bar TabSheet", ValoTheme.TABSHEET_COMPACT_TABBAR);
+        TabSheet bar = createTabSheetWith("A small/bar TabSheet",
+                ValoTheme.TABSHEET_COMPACT_TABBAR);
         parent.addComponent(bar);
 
-        TabSheet selectedClosable = createTabSheetWith("A selected-closable TabSheet", ValoTheme.TABSHEET_ONLY_SELECTED_TAB_IS_CLOSABLE);
+        TabSheet selectedClosable = createTabSheetWith(
+                "A selected-closable TabSheet",
+                ValoTheme.TABSHEET_ONLY_SELECTED_TAB_IS_CLOSABLE);
         parent.addComponent(selectedClosable);
 
     }

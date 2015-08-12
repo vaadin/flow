@@ -20,6 +20,8 @@ public class ChangeSessionIdTest extends MultiBrowserTest {
 
     private void checkLogMatches(String expected) {
         String actual = getLogRow(0);
-        Assert.assertTrue(String.format("Unexpected log row.\n expected format: '%s'\n was: '%s'", expected, actual), actual.matches(expected));
+        Assert.assertTrue(String.format(
+                "Unexpected log row.\n expected format: '%s'\n was: '%s'",
+                expected, actual), actual.matches(expected));
     }
 }

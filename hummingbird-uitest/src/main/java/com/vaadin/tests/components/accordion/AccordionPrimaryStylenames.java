@@ -16,12 +16,13 @@ public class AccordionPrimaryStylenames extends TestBase {
         acc.setPrimaryStyleName("my-accordion");
         addComponent(acc);
 
-        addComponent(new Button("Set primary stylename", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                acc.setPrimaryStyleName("my-second-accordion");
-            }
-        }));
+        addComponent(
+                new Button("Set primary stylename", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        acc.setPrimaryStyleName("my-second-accordion");
+                    }
+                }));
     }
 
     @Override

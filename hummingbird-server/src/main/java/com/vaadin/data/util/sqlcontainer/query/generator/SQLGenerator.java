@@ -49,7 +49,9 @@ public interface SQLGenerator extends Serializable {
      * @return StatementHelper instance containing the query string for a
      *         PreparedStatement and the values required for the parameters
      */
-    public StatementHelper generateSelectQuery(String tableName, List<Filter> filters, List<OrderBy> orderBys, int offset, int pagelength, String toSelect);
+    public StatementHelper generateSelectQuery(String tableName,
+            List<Filter> filters, List<OrderBy> orderBys, int offset,
+            int pagelength, String toSelect);
 
     /**
      * Generates an UPDATE query with the provided parameters.
@@ -93,5 +95,6 @@ public interface SQLGenerator extends Serializable {
      * @return StatementHelper instance containing the query string for a
      *         PreparedStatement and the values required for the parameters
      */
-    public StatementHelper generateDeleteQuery(String tableName, List<String> primaryKeyColumns, String versionColumn, RowItem item);
+    public StatementHelper generateDeleteQuery(String tableName,
+            List<String> primaryKeyColumns, String versionColumn, RowItem item);
 }

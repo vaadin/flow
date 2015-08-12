@@ -53,7 +53,8 @@ import java.util.Iterator;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class CustomComponent extends AbstractComponent implements HasComponents {
+public class CustomComponent extends AbstractComponent
+        implements HasComponents {
 
     /**
      * The root component implementing the custom component.
@@ -115,7 +116,8 @@ public class CustomComponent extends AbstractComponent implements HasComponents 
                 // set new component
                 if (compositionRoot.getParent() != null) {
                     // If the component already has a parent, try to remove it
-                    AbstractSingleComponentContainer.removeFromParent(compositionRoot);
+                    AbstractSingleComponentContainer
+                            .removeFromParent(compositionRoot);
                 }
                 compositionRoot.setParent(this);
             }

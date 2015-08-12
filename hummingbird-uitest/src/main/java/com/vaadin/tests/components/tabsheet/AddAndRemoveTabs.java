@@ -17,14 +17,15 @@ public class AddAndRemoveTabs extends TestBase {
         addTab();
         addComponent(tabSheet);
 
-        Button addTabBtn = new Button("Add new tab", new Button.ClickListener() {
+        Button addTabBtn = new Button("Add new tab",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                addTab();
-            }
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        addTab();
+                    }
 
-        });
+                });
         addComponent(addTabBtn);
     }
 

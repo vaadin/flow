@@ -32,16 +32,18 @@ public class ReadOnlyOptionGroup extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        final OptionGroup optionGroup = new OptionGroup("test field", Collections.singletonList("Option"));
+        final OptionGroup optionGroup = new OptionGroup("test field",
+                Collections.singletonList("Option"));
         optionGroup.setNewItemsAllowed(true);
 
         final CheckBox readOnlyCheckbox = new CheckBox("read-only");
-        readOnlyCheckbox.addValueChangeListener(new Property.ValueChangeListener() {
-            @Override
-            public void valueChange(Property.ValueChangeEvent event) {
-                optionGroup.setReadOnly(readOnlyCheckbox.getValue());
-            }
-        });
+        readOnlyCheckbox
+                .addValueChangeListener(new Property.ValueChangeListener() {
+                    @Override
+                    public void valueChange(Property.ValueChangeEvent event) {
+                        optionGroup.setReadOnly(readOnlyCheckbox.getValue());
+                    }
+                });
         readOnlyCheckbox.setValue(Boolean.TRUE);
 
         addComponent(optionGroup);

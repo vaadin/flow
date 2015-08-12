@@ -23,20 +23,22 @@ public class TabsheetShouldUpdateHeight extends TestBase {
         tabsOuter.addTab(tabsInner, "Inner tabs");
         tabsOuter.addTab(getLayoutWithComponents(10, "tab1"), "Tab 1");
 
-        final Button btnSwitch = new Button("switch to Tab2", new Button.ClickListener() {
+        final Button btnSwitch = new Button("switch to Tab2",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(final ClickEvent inEvent) {
-                tabsOuter.setSelectedTab(tabsInner);
-                tabsInner.setSelectedTab(tab2);
-            }
-        });
+                    @Override
+                    public void buttonClick(final ClickEvent inEvent) {
+                        tabsOuter.setSelectedTab(tabsInner);
+                        tabsInner.setSelectedTab(tab2);
+                    }
+                });
 
         addComponent(tabsOuter);
         addComponent(btnSwitch);
     }
 
-    private VerticalLayout getLayoutWithComponents(final int inAmount, String id) {
+    private VerticalLayout getLayoutWithComponents(final int inAmount,
+            String id) {
         final VerticalLayout v = new VerticalLayout();
         v.setId(id);
         v.setSpacing(true);

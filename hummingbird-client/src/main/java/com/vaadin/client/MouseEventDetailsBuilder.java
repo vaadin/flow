@@ -53,7 +53,8 @@ public class MouseEventDetailsBuilder {
      *            {@link MouseEventDetails#getRelativeY()} are relative to.
      * @return a MouseEventDetails containing information from the event
      */
-    public static MouseEventDetails buildMouseEventDetails(NativeEvent evt, Element relativeToElement) {
+    public static MouseEventDetails buildMouseEventDetails(NativeEvent evt,
+            Element relativeToElement) {
         MouseEventDetails mouseEventDetails = new MouseEventDetails();
         mouseEventDetails.setType(Event.getTypeInt(evt.getType()));
         mouseEventDetails.setClientX(WidgetUtil.getTouchOrMouseClientX(evt));
@@ -73,19 +74,23 @@ public class MouseEventDetailsBuilder {
         mouseEventDetails.setMetaKey(evt.getMetaKey());
         mouseEventDetails.setShiftKey(evt.getShiftKey());
         if (relativeToElement != null) {
-            mouseEventDetails.setRelativeX(getRelativeX(mouseEventDetails.getClientX(), relativeToElement));
-            mouseEventDetails.setRelativeY(getRelativeY(mouseEventDetails.getClientY(), relativeToElement));
+            mouseEventDetails.setRelativeX(getRelativeX(
+                    mouseEventDetails.getClientX(), relativeToElement));
+            mouseEventDetails.setRelativeY(getRelativeY(
+                    mouseEventDetails.getClientY(), relativeToElement));
         }
         return mouseEventDetails;
 
     }
 
     private static int getRelativeX(int clientX, Element target) {
-        return clientX - target.getAbsoluteLeft() + target.getScrollLeft() + target.getOwnerDocument().getScrollLeft();
+        return clientX - target.getAbsoluteLeft() + target.getScrollLeft()
+                + target.getOwnerDocument().getScrollLeft();
     }
 
     private static int getRelativeY(int clientY, Element target) {
-        return clientY - target.getAbsoluteTop() + target.getScrollTop() + target.getOwnerDocument().getScrollTop();
+        return clientY - target.getAbsoluteTop() + target.getScrollTop()
+                + target.getOwnerDocument().getScrollTop();
     }
 
 }

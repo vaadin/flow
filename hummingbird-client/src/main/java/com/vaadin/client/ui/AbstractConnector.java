@@ -54,7 +54,8 @@ import com.vaadin.shared.communication.URLReference;
  * @since 7.0.0
  * 
  */
-public abstract class AbstractConnector implements ServerConnector, StateChangeHandler {
+public abstract class AbstractConnector
+        implements ServerConnector, StateChangeHandler {
 
     private ApplicationConnection connection;
     private String id;
@@ -111,18 +112,21 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
      * Connector classes should override {@link #init()} instead of this method.
      */
     @Override
-    public final void doInit(String connectorId, ApplicationConnection connection) {
+    public final void doInit(String connectorId,
+            ApplicationConnection connection) {
         Profiler.enter("AbstractConnector.doInit");
         this.connection = connection;
         id = connectorId;
 
         addStateChangeHandler(this);
         if (Profiler.isEnabled()) {
-            Profiler.enter("AbstractConnector.init " + getClass().getSimpleName());
+            Profiler.enter(
+                    "AbstractConnector.init " + getClass().getSimpleName());
         }
         init();
         if (Profiler.isEnabled()) {
-            Profiler.leave("AbstractConnector.init " + getClass().getSimpleName());
+            Profiler.leave(
+                    "AbstractConnector.init " + getClass().getSimpleName());
         }
         Profiler.leave("AbstractConnector.doInit");
     }
@@ -151,7 +155,8 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
      * @param <T>
      *            The type of the RPC interface that is being registered
      */
-    protected <T extends ClientRpc> void registerRpc(Class<T> rpcInterface, T implementation) {
+    protected <T extends ClientRpc> void registerRpc(Class<T> rpcInterface,
+            T implementation) {
         String rpcInterfaceId = rpcInterface.getName().replaceAll("\\$", ".");
         if (null == rpcImplementations) {
             rpcImplementations = FastStringMap.create();
@@ -170,9 +175,11 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
      * @param implementation
      *            implementation to unregister
      */
-    protected <T extends ClientRpc> void unregisterRpc(Class<T> rpcInterface, T implementation) {
+    protected <T extends ClientRpc> void unregisterRpc(Class<T> rpcInterface,
+            T implementation) {
         String rpcInterfaceId = rpcInterface.getName().replaceAll("\\$", ".");
-        if (null != rpcImplementations && null != rpcImplementations.get(rpcInterfaceId)) {
+        if (null != rpcImplementations
+                && null != rpcImplementations.get(rpcInterfaceId)) {
             rpcImplementations.get(rpcInterfaceId).remove(implementation);
         }
     }
@@ -197,7 +204,8 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
     }
 
     @Override
-    public <T extends ClientRpc> Collection<T> getRpcImplementations(String rpcInterfaceId) {
+    public <T extends ClientRpc> Collection<T> getRpcImplementations(
+            String rpcInterfaceId) {
         if (null == rpcImplementations) {
             return Collections.emptyList();
         }
@@ -208,14 +216,17 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
     public void fireEvent(GwtEvent<?> event) {
         String profilerKey = null;
         if (Profiler.isEnabled()) {
-            profilerKey = "Fire " + event.getClass().getSimpleName() + " for " + getClass().getSimpleName();
+            profilerKey = "Fire " + event.getClass().getSimpleName() + " for "
+                    + getClass().getSimpleName();
             Profiler.enter(profilerKey);
         }
         if (handlerManager != null) {
             handlerManager.fireEvent(event);
         }
-        if (statePropertyHandlerManagers != null && event instanceof StateChangeEvent) {
-            Profiler.enter("AbstractConnector.fireEvent statePropertyHandlerManagers");
+        if (statePropertyHandlerManagers != null
+                && event instanceof StateChangeEvent) {
+            Profiler.enter(
+                    "AbstractConnector.fireEvent statePropertyHandlerManagers");
             StateChangeEvent stateChangeEvent = (StateChangeEvent) event;
             JsArrayString keys = statePropertyHandlerManagers.getKeys();
             for (int i = 0; i < keys.length(); i++) {
@@ -224,7 +235,8 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
                     statePropertyHandlerManagers.get(property).fireEvent(event);
                 }
             }
-            Profiler.leave("AbstractConnector.fireEvent statePropertyHandlerManagers");
+            Profiler.leave(
+                    "AbstractConnector.fireEvent statePropertyHandlerManagers");
         }
         if (Profiler.isEnabled()) {
             Profiler.leave(profilerKey);
@@ -241,8 +253,10 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
     }
 
     @Override
-    public HandlerRegistration addStateChangeHandler(StateChangeHandler handler) {
-        return ensureHandlerManager().addHandler(StateChangeEvent.TYPE, handler);
+    public HandlerRegistration addStateChangeHandler(
+            StateChangeHandler handler) {
+        return ensureHandlerManager().addHandler(StateChangeEvent.TYPE,
+                handler);
     }
 
     @Override
@@ -251,13 +265,17 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
     }
 
     @Override
-    public HandlerRegistration addStateChangeHandler(String propertyName, StateChangeHandler handler) {
-        return ensureHandlerManager(propertyName).addHandler(StateChangeEvent.TYPE, handler);
+    public HandlerRegistration addStateChangeHandler(String propertyName,
+            StateChangeHandler handler) {
+        return ensureHandlerManager(propertyName)
+                .addHandler(StateChangeEvent.TYPE, handler);
     }
 
     @Override
-    public void removeStateChangeHandler(String propertyName, StateChangeHandler handler) {
-        ensureHandlerManager(propertyName).removeHandler(StateChangeEvent.TYPE, handler);
+    public void removeStateChangeHandler(String propertyName,
+            StateChangeHandler handler) {
+        ensureHandlerManager(propertyName).removeHandler(StateChangeEvent.TYPE,
+                handler);
     }
 
     private HandlerManager ensureHandlerManager(String propertyName) {
@@ -276,12 +294,15 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
     public void onStateChanged(StateChangeEvent stateChangeEvent) {
         Profiler.enter("AbstractConnector.onStateChanged");
         if (debugLogging) {
-            VConsole.log("State change event for " + Util.getConnectorString(stateChangeEvent.getConnector()) + " received by " + Util.getConnectorString(this));
+            VConsole.log("State change event for "
+                    + Util.getConnectorString(stateChangeEvent.getConnector())
+                    + " received by " + Util.getConnectorString(this));
         }
 
         updateEnabledState(isEnabled());
 
-        FastStringMap<JsArrayObject<OnStateChangeMethod>> handlers = TypeDataStore.getOnStateChangeMethods(getClass());
+        FastStringMap<JsArrayObject<OnStateChangeMethod>> handlers = TypeDataStore
+                .getOnStateChangeMethods(getClass());
         if (handlers != null) {
             Profiler.enter("AbstractConnector.onStateChanged @OnStateChange");
 
@@ -292,7 +313,8 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
                 String propertyName = propertyNames.get(i);
 
                 if (stateChangeEvent.hasPropertyChanged(propertyName)) {
-                    JsArrayObject<OnStateChangeMethod> propertyMethods = handlers.get(propertyName);
+                    JsArrayObject<OnStateChangeMethod> propertyMethods = handlers
+                            .get(propertyName);
 
                     for (int j = 0; j < propertyMethods.size(); j++) {
                         OnStateChangeMethod method = propertyMethods.get(j);
@@ -320,7 +342,8 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
     @Override
     public void onUnregister() {
         if (debugLogging) {
-            VConsole.log("Unregistered connector " + Util.getConnectorString(this));
+            VConsole.log(
+                    "Unregistered connector " + Util.getConnectorString(this));
         }
 
     }
@@ -357,16 +380,25 @@ public abstract class AbstractConnector implements ServerConnector, StateChangeH
             Object stateInstance = stateType.createInstance();
             return (SharedState) stateInstance;
         } catch (NoDataException e) {
-            throw new IllegalStateException("There is no information about the state for " + getClass().getSimpleName() + ". Did you remember to compile the right widgetset?", e);
+            throw new IllegalStateException(
+                    "There is no information about the state for "
+                            + getClass().getSimpleName()
+                            + ". Did you remember to compile the right widgetset?",
+                    e);
         }
 
     }
 
     public static Type getStateType(ServerConnector connector) {
         try {
-            return TypeData.getType(connector.getClass()).getMethod("getState").getReturnType();
+            return TypeData.getType(connector.getClass()).getMethod("getState")
+                    .getReturnType();
         } catch (NoDataException e) {
-            throw new IllegalStateException("There is no information about the state for " + connector.getClass().getSimpleName() + ". Did you remember to compile the right widgetset?", e);
+            throw new IllegalStateException(
+                    "There is no information about the state for "
+                            + connector.getClass().getSimpleName()
+                            + ". Did you remember to compile the right widgetset?",
+                    e);
         }
     }
 

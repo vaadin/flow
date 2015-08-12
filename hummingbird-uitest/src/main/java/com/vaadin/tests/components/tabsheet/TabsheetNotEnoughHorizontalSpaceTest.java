@@ -34,7 +34,8 @@ import com.vaadin.tests.tb3.MultiBrowserTest;
 public class TabsheetNotEnoughHorizontalSpaceTest extends MultiBrowserTest {
 
     @Test
-    public void testThatTabScrollButtonsAreRenderedCorrectly() throws IOException {
+    public void testThatTabScrollButtonsAreRenderedCorrectly()
+            throws IOException {
         openTestURL();
 
         driver.findElement(By.className("v-tabsheet-scrollerPrev-disabled"));

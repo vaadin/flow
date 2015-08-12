@@ -20,12 +20,16 @@ public class UIScrolling extends AbstractTestUI {
                 UI.getCurrent().setScrollTop(1000);
             }
         }));
-        addComponent(new Button("This button is halfway down. Click to report scroll position.", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                Notification.show("Scrolled to " + event.getButton().getUI().getScrollTop() + " px");
-            }
-        }));
+        addComponent(new Button(
+                "This button is halfway down. Click to report scroll position.",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        Notification.show("Scrolled to "
+                                + event.getButton().getUI().getScrollTop()
+                                + " px");
+                    }
+                }));
     }
 
     @Override

@@ -15,7 +15,8 @@ import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 
-public abstract class AbstractComponentDataBindingTest extends TestBase implements ValueChangeListener {
+public abstract class AbstractComponentDataBindingTest extends TestBase
+        implements ValueChangeListener {
     private static final Object CAPTION = "CAPTION";
     private Log log = new Log(5);
     private ComboBox localeSelect;
@@ -37,9 +38,11 @@ public abstract class AbstractComponentDataBindingTest extends TestBase implemen
         cb.setNullSelectionAllowed(false);
         for (Locale l : Locale.getAvailableLocales()) {
             Item i = cb.addItem(l);
-            i.getItemProperty(CAPTION).setValue(l.getDisplayName(Locale.ENGLISH));
+            i.getItemProperty(CAPTION)
+                    .setValue(l.getDisplayName(Locale.ENGLISH));
         }
-        ((Container.Sortable) cb.getContainerDataSource()).sort(new Object[] { CAPTION }, new boolean[] { true });
+        ((Container.Sortable) cb.getContainerDataSource())
+                .sort(new Object[] { CAPTION }, new boolean[] { true });
         cb.addValueChangeListener(new ValueChangeListener() {
 
             @Override
@@ -100,11 +103,13 @@ public abstract class AbstractComponentDataBindingTest extends TestBase implemen
             newValue = newValue + " (" + newValue.getClass().getName() + ")";
         }
 
-        String message = "Value of " + field.getCaption() + " changed to " + newValue + ".";
+        String message = "Value of " + field.getCaption() + " changed to "
+                + newValue + ".";
         if (field.getPropertyDataSource() != null) {
             Object dataSourceValue = field.getPropertyDataSource().getValue();
             message += "Data model value is " + dataSourceValue;
-            message += " (" + field.getPropertyDataSource().getType().getName() + ")";
+            message += " (" + field.getPropertyDataSource().getType().getName()
+                    + ")";
         }
         log.log(message);
 

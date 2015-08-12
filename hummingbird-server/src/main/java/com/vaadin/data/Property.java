@@ -304,7 +304,8 @@ public interface Property<T> extends Serializable {
          * @param listener
          *            the new Listener to be registered
          */
-        public void addValueChangeListener(Property.ValueChangeListener listener);
+        public void addValueChangeListener(
+                Property.ValueChangeListener listener);
 
         /**
          * Removes a previously registered value change listener.
@@ -312,7 +313,8 @@ public interface Property<T> extends Serializable {
          * @param listener
          *            listener to be removed
          */
-        public void removeValueChangeListener(Property.ValueChangeListener listener);
+        public void removeValueChangeListener(
+                Property.ValueChangeListener listener);
 
     }
 
@@ -351,7 +353,8 @@ public interface Property<T> extends Serializable {
          * @param event
          *            Read-only status change event object
          */
-        public void readOnlyStatusChange(Property.ReadOnlyStatusChangeEvent event);
+        public void readOnlyStatusChange(
+                Property.ReadOnlyStatusChangeEvent event);
     }
 
     /**
@@ -379,7 +382,8 @@ public interface Property<T> extends Serializable {
          * @param listener
          *            the new Listener to be registered
          */
-        public void addReadOnlyStatusChangeListener(Property.ReadOnlyStatusChangeListener listener);
+        public void addReadOnlyStatusChangeListener(
+                Property.ReadOnlyStatusChangeListener listener);
 
         /**
          * Removes a previously registered read-only status change listener.
@@ -387,7 +391,8 @@ public interface Property<T> extends Serializable {
          * @param listener
          *            listener to be removed
          */
-        public void removeReadOnlyStatusChangeListener(Property.ReadOnlyStatusChangeListener listener);
+        public void removeReadOnlyStatusChangeListener(
+                Property.ReadOnlyStatusChangeListener listener);
 
     }
 }

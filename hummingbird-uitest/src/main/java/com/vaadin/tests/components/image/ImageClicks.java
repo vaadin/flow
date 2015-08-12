@@ -30,14 +30,16 @@ public class ImageClicks extends TestBase {
 
         final Image image = new Image();
         final MyImageSource imageSource = new MyImageSource();
-        final StreamResource imageResource = new StreamResource(imageSource, "testimage.png");
+        final StreamResource imageResource = new StreamResource(imageSource,
+                "testimage.png");
         image.setSource(imageResource);
         image.addClickListener(new ClickListener() {
 
             @Override
             public void click(ClickEvent event) {
                 ++clickCounter;
-                imageResource.setFilename("testimage.png?" + new Date().getTime());
+                imageResource
+                        .setFilename("testimage.png?" + new Date().getTime());
                 image.markAsDirty();
                 label.setValue(labelText());
             }
@@ -76,7 +78,8 @@ public class ImageClicks extends TestBase {
         @Override
         public InputStream getStream() {
             // Create an image and draw some background on it.
-            BufferedImage image = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
+            BufferedImage image = new BufferedImage(300, 300,
+                    BufferedImage.TYPE_INT_RGB);
             Graphics drawable = image.getGraphics();
 
             // Background
@@ -115,7 +118,8 @@ public class ImageClicks extends TestBase {
                         drawable.setColor(Color.white);
                     }
 
-                    drawable.fillRect(gridx + 1, gridy + 1, gridxnext - gridx - 1, gridynext - gridy - 1);
+                    drawable.fillRect(gridx + 1, gridy + 1,
+                            gridxnext - gridx - 1, gridynext - gridy - 1);
                 }
             }
 
@@ -125,7 +129,8 @@ public class ImageClicks extends TestBase {
                 ImageIO.write(image, "png", imagebuffer);
 
                 // Return a stream from the buffer.
-                ByteArrayInputStream istream = new ByteArrayInputStream(imagebuffer.toByteArray());
+                ByteArrayInputStream istream = new ByteArrayInputStream(
+                        imagebuffer.toByteArray());
                 return istream; // new DownloadStream (istream,null,null);
             } catch (IOException e) {
                 return null;

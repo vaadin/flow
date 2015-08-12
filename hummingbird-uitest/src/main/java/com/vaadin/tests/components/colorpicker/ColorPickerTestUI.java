@@ -46,7 +46,8 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.components.colorpicker.ColorChangeEvent;
 import com.vaadin.ui.components.colorpicker.ColorChangeListener;
 
-public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeListener {
+public class ColorPickerTestUI extends AbstractTestUI
+        implements ColorChangeListener {
 
     @Override
     public String getTestDescription() {
@@ -119,7 +120,8 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
         public InputStream getStream() {
 
             /* Create an image and draw something on it. */
-            BufferedImage image = new BufferedImage(270, 270, BufferedImage.TYPE_INT_RGB);
+            BufferedImage image = new BufferedImage(270, 270,
+                    BufferedImage.TYPE_INT_RGB);
             Graphics drawable = image.getGraphics();
             drawable.setColor(bgColor);
             drawable.fillRect(0, 0, 270, 270);
@@ -128,8 +130,12 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
             drawable.setColor(java.awt.Color.blue);
             drawable.drawRect(0, 0, 269, 269);
             drawable.setColor(java.awt.Color.black);
-            drawable.drawString("r=" + String.valueOf(fgColor.getRed()) + ",g=" + String.valueOf(fgColor.getGreen()) + ",b=" + String.valueOf(fgColor.getBlue()), 50, 100);
-            drawable.drawString("r=" + String.valueOf(bgColor.getRed()) + ",g=" + String.valueOf(bgColor.getGreen()) + ",b=" + String.valueOf(bgColor.getBlue()), 5, 15);
+            drawable.drawString("r=" + String.valueOf(fgColor.getRed()) + ",g="
+                    + String.valueOf(fgColor.getGreen()) + ",b="
+                    + String.valueOf(fgColor.getBlue()), 50, 100);
+            drawable.drawString("r=" + String.valueOf(bgColor.getRed()) + ",g="
+                    + String.valueOf(bgColor.getGreen()) + ",b="
+                    + String.valueOf(bgColor.getBlue()), 5, 15);
 
             try {
                 /* Write the image to a buffer. */
@@ -272,7 +278,8 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
         txtBox.setId("txtBox");
         optLayout.addComponent(txtBox);
 
-        Panel optPanel = new Panel("Customize the color picker popup window", optLayout);
+        Panel optPanel = new Panel("Customize the color picker popup window",
+                optLayout);
         layoutLeft.addComponent(optPanel);
 
         HorizontalLayout layout1 = createHorizontalLayout();
@@ -290,7 +297,9 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
         layout1.addComponent(colorpicker2);
         layout1.setComponentAlignment(colorpicker2, Alignment.MIDDLE_CENTER);
 
-        Panel panel1 = new Panel("Button-like colorpicker with current color and CSS code", layout1);
+        Panel panel1 = new Panel(
+                "Button-like colorpicker with current color and CSS code",
+                layout1);
         layoutLeft.addComponent(panel1);
 
         HorizontalLayout layout2 = createHorizontalLayout();
@@ -311,7 +320,9 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
         layout2.addComponent(colorpicker4);
         layout2.setComponentAlignment(colorpicker4, Alignment.MIDDLE_CENTER);
 
-        Panel panel2 = new Panel("Button-like colorpicker with current color and custom caption", layout2);
+        Panel panel2 = new Panel(
+                "Button-like colorpicker with current color and custom caption",
+                layout2);
         layoutLeft.addComponent(panel2);
 
         HorizontalLayout layout3 = createHorizontalLayout();
@@ -331,7 +342,8 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
         layout3.addComponent(colorpicker6);
         layout3.setComponentAlignment(colorpicker6, Alignment.MIDDLE_CENTER);
 
-        Panel panel3 = new Panel("Color area colorpicker with caption", layout3);
+        Panel panel3 = new Panel("Color area colorpicker with caption",
+                layout3);
         panel3.setWidth("100%");
         panel3.setHeight(null);
         layoutLeft.addComponent(panel3);
@@ -351,7 +363,9 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
         addShadeButton(new Color(Integer.parseInt("cccccc", 16)), layout4);
         addShadeButton(new Color(Integer.parseInt("ffffff", 16)), layout4);
 
-        Panel panel4 = new Panel("Button-like colorpickers with disabled caption (no effect on fg/bg colors)", layout4);
+        Panel panel4 = new Panel(
+                "Button-like colorpickers with disabled caption (no effect on fg/bg colors)",
+                layout4);
         layoutLeft.addComponent(panel4);
 
         HorizontalLayout layout5 = createHorizontalLayout();
@@ -373,7 +387,9 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
         addShadeArea(new Color(Integer.parseInt("eeeeee", 16)), layout5);
         addShadeArea(new Color(Integer.parseInt("ffffff", 16)), layout5);
 
-        Panel panel5 = new Panel("Area colorpickers with no given caption (no effect on fg/bg colors)", layout5);
+        Panel panel5 = new Panel(
+                "Area colorpickers with no given caption (no effect on fg/bg colors)",
+                layout5);
         layoutLeft.addComponent(panel5);
 
         mainLayout.addComponent(layoutLeft);
@@ -394,7 +410,8 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
     private int shadeButtonCounter = 1;
 
     private void addShadeButton(Color color, HorizontalLayout layout) {
-        AbstractColorPicker colorPicker = new ColorPicker(color.toString(), color);
+        AbstractColorPicker colorPicker = new ColorPicker(color.toString(),
+                color);
         colorPicker.setDefaultCaptionEnabled(false);
         colorPicker.setWidth("41px");
         colorPicker.setId("shadebutton_" + shadeButtonCounter);
@@ -407,7 +424,8 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
     private int shadeAreaCounter = 1;
 
     private void addShadeArea(Color color, HorizontalLayout layout) {
-        AbstractColorPicker colorPicker = new ColorPickerArea(color.toString(), color);
+        AbstractColorPicker colorPicker = new ColorPickerArea(color.toString(),
+                color);
         colorPicker.setWidth("20px");
         colorPicker.setHeight("20px");
         colorPicker.setId("shadearea_" + shadeAreaCounter);
@@ -427,14 +445,18 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
      *            the bg
      */
     public void updateDisplay(Color fg, Color bg) {
-        java.awt.Color awtFg = new java.awt.Color(fg.getRed(), fg.getGreen(), fg.getBlue());
-        java.awt.Color awtBg = new java.awt.Color(bg.getRed(), bg.getGreen(), bg.getBlue());
-        StreamResource.StreamSource imagesource = new MyImageSource(awtFg, awtBg);
+        java.awt.Color awtFg = new java.awt.Color(fg.getRed(), fg.getGreen(),
+                fg.getBlue());
+        java.awt.Color awtBg = new java.awt.Color(bg.getRed(), bg.getGreen(),
+                bg.getBlue());
+        StreamResource.StreamSource imagesource = new MyImageSource(awtFg,
+                awtBg);
 
         Date now = new Date();
         SimpleDateFormat format = new SimpleDateFormat("hhmmss");
 
-        StreamResource imageresource = new StreamResource(imagesource, "myimage" + format.format(now) + ".png");
+        StreamResource imageresource = new StreamResource(imagesource,
+                "myimage" + format.format(now) + ".png");
         imageresource.setCacheTime(0);
 
         display.setSource(imageresource);
@@ -442,7 +464,9 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
 
     @Override
     public void colorChanged(ColorChangeEvent event) {
-        if (event.getSource() == colorpicker1 || event.getSource() == colorpicker3 || event.getSource() == colorpicker5) {
+        if (event.getSource() == colorpicker1
+                || event.getSource() == colorpicker3
+                || event.getSource() == colorpicker5) {
             foregroundColor = event.getColor();
 
             if (event.getSource() != colorpicker1) {
@@ -455,7 +479,9 @@ public class ColorPickerTestUI extends AbstractTestUI implements ColorChangeList
                 colorpicker5.setColor(event.getColor());
             }
 
-        } else if (event.getSource() == colorpicker2 || event.getSource() == colorpicker4 || event.getSource() == colorpicker6) {
+        } else if (event.getSource() == colorpicker2
+                || event.getSource() == colorpicker4
+                || event.getSource() == colorpicker6) {
             backgroundColor = event.getColor();
 
             if (event.getSource() != colorpicker2) {

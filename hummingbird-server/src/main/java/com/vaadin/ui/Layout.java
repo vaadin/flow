@@ -50,7 +50,8 @@ public interface Layout extends ComponentContainer, Serializable {
          * @param alignment
          *            the Alignment value to be set
          */
-        public void setComponentAlignment(Component childComponent, Alignment alignment);
+        public void setComponentAlignment(Component childComponent,
+                Alignment alignment);
 
         /**
          * Returns the current Alignment of given component.
@@ -67,7 +68,8 @@ public interface Layout extends ComponentContainer, Serializable {
          * @param defaultComponentAlignment
          *            The new default alignment
          */
-        public void setDefaultComponentAlignment(Alignment defaultComponentAlignment);
+        public void setDefaultComponentAlignment(
+                Alignment defaultComponentAlignment);
 
         /**
          * Returns the alignment used for new components added to this layout

@@ -76,7 +76,9 @@ final public class ColumnProperty implements Property {
      * @param type
      *            The type of this property.
      */
-    public ColumnProperty(String propertyId, boolean readOnly, boolean allowReadOnlyChange, boolean nullable, boolean primaryKey, Object value, Class<?> type) {
+    public ColumnProperty(String propertyId, boolean readOnly,
+            boolean allowReadOnlyChange, boolean nullable, boolean primaryKey,
+            Object value, Class<?> type) {
 
         if (propertyId == null) {
             throw new IllegalArgumentException("Properties must be named.");
@@ -120,16 +122,21 @@ final public class ColumnProperty implements Property {
     }
 
     @Override
-    public void setValue(Object newValue) throws ReadOnlyException, ConversionException {
+    public void setValue(Object newValue)
+            throws ReadOnlyException, ConversionException {
         if (newValue == null && !nullable) {
-            throw new NotNullableException("Null values are not allowed for this property.");
+            throw new NotNullableException(
+                    "Null values are not allowed for this property.");
         }
         if (readOnly) {
-            throw new ReadOnlyException("Cannot set value for read-only property.");
+            throw new ReadOnlyException(
+                    "Cannot set value for read-only property.");
         }
 
         /* Check if this property is a date property. */
-        boolean isDateProperty = Time.class.equals(getType()) || Date.class.equals(getType()) || Timestamp.class.equals(getType());
+        boolean isDateProperty = Time.class.equals(getType())
+                || Date.class.equals(getType())
+                || Timestamp.class.equals(getType());
 
         if (newValue != null) {
             /* Handle SQL dates, times and Timestamps given as java.util.Date */
@@ -156,7 +163,8 @@ final public class ColumnProperty implements Property {
             }
 
             if (!getType().isAssignableFrom(newValue.getClass())) {
-                throw new IllegalArgumentException("Illegal value type for ColumnProperty");
+                throw new IllegalArgumentException(
+                        "Illegal value type for ColumnProperty");
             }
 
             /*
@@ -177,7 +185,8 @@ final public class ColumnProperty implements Property {
     private boolean isValueAlreadySet(Object newValue) {
         Object referenceValue = isModified() ? changedValue : value;
 
-        return (isNullable() && newValue == null && referenceValue == null) || newValue.equals(referenceValue);
+        return (isNullable() && newValue == null && referenceValue == null)
+                || newValue.equals(referenceValue);
     }
 
     @Override
@@ -229,7 +238,8 @@ final public class ColumnProperty implements Property {
             throw new IllegalArgumentException("Owner can not be set to null.");
         }
         if (this.owner != null) {
-            throw new IllegalStateException("ColumnProperties can only be bound once.");
+            throw new IllegalStateException(
+                    "ColumnProperties can only be bound once.");
         }
         this.owner = owner;
     }

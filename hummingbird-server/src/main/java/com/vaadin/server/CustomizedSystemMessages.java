@@ -55,7 +55,8 @@ import java.io.Serializable;
  * </p>
  */
 
-public class CustomizedSystemMessages extends SystemMessages implements Serializable {
+public class CustomizedSystemMessages extends SystemMessages
+        implements Serializable {
 
     /**
      * Sets the URL to go to when the session has expired.
@@ -75,7 +76,8 @@ public class CustomizedSystemMessages extends SystemMessages implements Serializ
      * @param sessionExpiredNotificationEnabled
      *            true = enabled, false = disabled
      */
-    public void setSessionExpiredNotificationEnabled(boolean sessionExpiredNotificationEnabled) {
+    public void setSessionExpiredNotificationEnabled(
+            boolean sessionExpiredNotificationEnabled) {
         this.sessionExpiredNotificationEnabled = sessionExpiredNotificationEnabled;
     }
 
@@ -122,7 +124,8 @@ public class CustomizedSystemMessages extends SystemMessages implements Serializ
      * @param authenticationErrorNotificationEnabled
      *            true = enabled, false = disabled
      */
-    public void setAuthenticationErrorNotificationEnabled(boolean authenticationErrorNotificationEnabled) {
+    public void setAuthenticationErrorNotificationEnabled(
+            boolean authenticationErrorNotificationEnabled) {
         this.authenticationErrorNotificationEnabled = authenticationErrorNotificationEnabled;
     }
 
@@ -133,7 +136,8 @@ public class CustomizedSystemMessages extends SystemMessages implements Serializ
      * @param authenticationErrorCaption
      *            the caption
      */
-    public void setAuthenticationErrorCaption(String authenticationErrorCaption) {
+    public void setAuthenticationErrorCaption(
+            String authenticationErrorCaption) {
         this.authenticationErrorCaption = authenticationErrorCaption;
     }
 
@@ -144,7 +148,8 @@ public class CustomizedSystemMessages extends SystemMessages implements Serializ
      * @param authenticationErrorMessage
      *            the message
      */
-    public void setAuthenticationErrorMessage(String authenticationErrorMessage) {
+    public void setAuthenticationErrorMessage(
+            String authenticationErrorMessage) {
         this.authenticationErrorMessage = authenticationErrorMessage;
     }
 
@@ -165,7 +170,8 @@ public class CustomizedSystemMessages extends SystemMessages implements Serializ
      * @param communicationErrorNotificationEnabled
      *            true = enabled, false = disabled
      */
-    public void setCommunicationErrorNotificationEnabled(boolean communicationErrorNotificationEnabled) {
+    public void setCommunicationErrorNotificationEnabled(
+            boolean communicationErrorNotificationEnabled) {
         this.communicationErrorNotificationEnabled = communicationErrorNotificationEnabled;
     }
 
@@ -208,7 +214,8 @@ public class CustomizedSystemMessages extends SystemMessages implements Serializ
      * @param internalErrorNotificationEnabled
      *            true = enabled, false = disabled
      */
-    public void setInternalErrorNotificationEnabled(boolean internalErrorNotificationEnabled) {
+    public void setInternalErrorNotificationEnabled(
+            boolean internalErrorNotificationEnabled) {
         this.internalErrorNotificationEnabled = internalErrorNotificationEnabled;
     }
 
@@ -252,7 +259,8 @@ public class CustomizedSystemMessages extends SystemMessages implements Serializ
      * @param cookiesDisabledNotificationEnabled
      *            true to enable "cookies disabled" messages, false otherwise
      */
-    public void setCookiesDisabledNotificationEnabled(boolean cookiesDisabledNotificationEnabled) {
+    public void setCookiesDisabledNotificationEnabled(
+            boolean cookiesDisabledNotificationEnabled) {
         this.cookiesDisabledNotificationEnabled = cookiesDisabledNotificationEnabled;
     }
 

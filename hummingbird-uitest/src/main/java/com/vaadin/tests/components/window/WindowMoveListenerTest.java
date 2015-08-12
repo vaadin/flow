@@ -23,15 +23,19 @@ public class WindowMoveListenerTest extends MultiBrowserTest {
 
         // I'd loved to use the header, but that doesn't work. Footer works
         // fine, though :)
-        WebElement windowFooter = getDriver().findElement(By.className("v-window-footer"));
+        WebElement windowFooter = getDriver()
+                .findElement(By.className("v-window-footer"));
 
         final Point winPos = window.getLocation();
 
         // move window
-        Action a = new Actions(driver).clickAndHold(windowFooter).moveByOffset(100, 100).release().build();
+        Action a = new Actions(driver).clickAndHold(windowFooter)
+                .moveByOffset(100, 100).release().build();
         a.perform();
-        assertNotEquals("Window was not dragged correctly.", winPos.x, window.getLocation().x);
-        assertNotEquals("Window was not dragged correctly.", winPos.y, window.getLocation().y);
+        assertNotEquals("Window was not dragged correctly.", winPos.x,
+                window.getLocation().x);
+        assertNotEquals("Window was not dragged correctly.", winPos.y,
+                window.getLocation().y);
 
         // re-set window
         button.click();
@@ -39,11 +43,13 @@ public class WindowMoveListenerTest extends MultiBrowserTest {
         waitUntilWindowHasReseted(window, winPos);
     }
 
-    private void waitUntilWindowHasReseted(final WebElement window, final Point winPos) {
+    private void waitUntilWindowHasReseted(final WebElement window,
+            final Point winPos) {
         waitUntil(new ExpectedCondition<Boolean>() {
             @Override
             public Boolean apply(WebDriver input) {
-                return winPos.x == window.getLocation().x && winPos.y == window.getLocation().y;
+                return winPos.x == window.getLocation().x
+                        && winPos.y == window.getLocation().y;
             }
         }, 5);
     }

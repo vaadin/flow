@@ -35,7 +35,8 @@ public class GridLayoutExpand extends GridBaseLayoutTestUI {
     private void buildLayout() {
         class ExpandButton extends Button {
 
-            public ExpandButton(final int i1, final int i2, final float e1, final float e2) {
+            public ExpandButton(final int i1, final int i2, final float e1,
+                    final float e2) {
                 super();
                 setCaption("Expand ratio: " + e1 * 100 + " /" + e2 * 100);
                 addClickListener(new ClickListener() {

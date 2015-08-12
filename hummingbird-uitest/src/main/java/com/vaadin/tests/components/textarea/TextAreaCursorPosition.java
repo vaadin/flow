@@ -17,7 +17,8 @@ public class TextAreaCursorPosition extends TestBase {
 
     @Override
     public void setup() {
-        Label label = new Label("Test of calculation of cursor position of TextArea");
+        Label label = new Label(
+                "Test of calculation of cursor position of TextArea");
         TextArea textArea = new TextArea();
         addListener(textArea);
         addComponent(label);
@@ -34,8 +35,10 @@ public class TextAreaCursorPosition extends TestBase {
         newTextField.addTextChangeListener(new TextChangeListener() {
             @Override
             public void textChange(TextChangeEvent event) {
-                AbstractTextField component = (AbstractTextField) event.getComponent();
-                cursorPosition.setValue(String.valueOf(component.getCursorPosition()));
+                AbstractTextField component = (AbstractTextField) event
+                        .getComponent();
+                cursorPosition.setValue(
+                        String.valueOf(component.getCursorPosition()));
             }
         });
     }

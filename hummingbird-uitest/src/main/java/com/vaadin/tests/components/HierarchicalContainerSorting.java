@@ -82,13 +82,15 @@ public class HierarchicalContainerSorting extends TestBase {
     private static int index = 0;
     private static Map<String, Integer> nameToId = new HashMap<String, Integer>();
 
-    public static void addItem(IndexedContainer container, String string, String parent) {
+    public static void addItem(IndexedContainer container, String string,
+            String parent) {
         nameToId.put(string, index);
         Item item = container.addItem(index);
         item.getItemProperty("name").setValue(string);
 
         if (parent != null && container instanceof HierarchicalContainer) {
-            ((HierarchicalContainer) container).setParent(index, nameToId.get(parent));
+            ((HierarchicalContainer) container).setParent(index,
+                    nameToId.get(parent));
         }
 
         index++;

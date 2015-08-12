@@ -66,7 +66,9 @@ public class GridLayoutMarginSpacing extends GridBaseLayoutTestUI {
         layout.setMargin(false);
         layout.setSpacing(false);
         // Must add something around the hr to avoid the margins collapsing
-        layout.addComponent(new Label("<div style='height: 1px'></div><hr /><div style='height: 1px'></div>", ContentMode.HTML));
+        layout.addComponent(new Label(
+                "<div style='height: 1px'></div><hr /><div style='height: 1px'></div>",
+                ContentMode.HTML));
         layout.addComponent(t2);
     }
 }

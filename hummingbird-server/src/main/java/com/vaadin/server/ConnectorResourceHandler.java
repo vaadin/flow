@@ -30,8 +30,11 @@ import com.vaadin.util.CurrentInstance;
 
 public class ConnectorResourceHandler implements RequestHandler {
     // APP/connector/[uiid]/[cid]/[filename.xyz]
-    private static final String CONNECTOR_RESOURCE_PREFIX = "/" + ApplicationConstants.APP_PATH + "/" + ConnectorResource.CONNECTOR_PATH + "/";
-    private static final Pattern CONNECTOR_RESOURCE_PATTERN = Pattern.compile("^" + CONNECTOR_RESOURCE_PREFIX + "(\\d+)/(\\d+)/(.*)");
+    private static final String CONNECTOR_RESOURCE_PREFIX = "/"
+            + ApplicationConstants.APP_PATH + "/"
+            + ConnectorResource.CONNECTOR_PATH + "/";
+    private static final Pattern CONNECTOR_RESOURCE_PATTERN = Pattern
+            .compile("^" + CONNECTOR_RESOURCE_PREFIX + "(\\d+)/(\\d+)/(.*)");
 
     private static Logger getLogger() {
         return Logger.getLogger(ConnectorResourceHandler.class.getName());
@@ -39,9 +42,11 @@ public class ConnectorResourceHandler implements RequestHandler {
     }
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request,
+            VaadinResponse response) throws IOException {
         String requestPath = request.getPathInfo();
-        if (requestPath == null || !requestPath.startsWith(CONNECTOR_RESOURCE_PREFIX)) {
+        if (requestPath == null
+                || !requestPath.startsWith(CONNECTOR_RESOURCE_PREFIX)) {
             return false;
         }
         Matcher matcher = CONNECTOR_RESOURCE_PATTERN.matcher(requestPath);
@@ -49,7 +54,8 @@ public class ConnectorResourceHandler implements RequestHandler {
             // This is a connector resource request based on the prefix but the
             // pattern did not match
             warnAboutInvalidURLEncoding(requestPath);
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Connector resource not found");
+            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                    "Connector resource not found");
             return true;
         }
         String uiId = matcher.group(1);
@@ -62,27 +68,37 @@ public class ConnectorResourceHandler implements RequestHandler {
         try {
             ui = session.getUIById(Integer.parseInt(uiId));
             if (ui == null) {
-                return error(request, response, "Ignoring connector request for no-existent root " + uiId);
+                return error(request, response,
+                        "Ignoring connector request for no-existent root "
+                                + uiId);
             }
 
             connector = ui.getConnectorTracker().getConnector(cid);
             if (connector == null) {
-                return error(request, response, "Ignoring connector request for no-existent connector " + cid + " in root " + uiId);
+                return error(request, response,
+                        "Ignoring connector request for no-existent connector "
+                                + cid + " in root " + uiId);
             }
 
         } finally {
             session.unlock();
         }
 
-        Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance.setCurrent(ui);
+        Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
+                .setCurrent(ui);
         try {
             if (!connector.handleConnectorRequest(request, response, key)) {
-                return error(request, response, connector.getClass().getSimpleName() + " (" + connector.getConnectorId() + ") did not handle connector request for " + key);
+                return error(request, response,
+                        connector.getClass().getSimpleName() + " ("
+                                + connector.getConnectorId()
+                                + ") did not handle connector request for "
+                                + key);
             }
         } catch (Exception e) {
             session.lock();
             try {
-                session.getCommunicationManager().handleConnectorRelatedException(connector, e);
+                session.getCommunicationManager()
+                        .handleConnectorRelatedException(connector, e);
             } finally {
                 session.unlock();
             }
@@ -104,14 +120,18 @@ public class ConnectorResourceHandler implements RequestHandler {
 
             if (!loggedDecodingWarning) {
                 loggedDecodingWarning = true;
-                getLogger().warning("Request path contains a new line character. This typically means that the server is incorrectly configured to use something else than UTF-8 for URL decoding (requestPath: " + requestPath + ")");
+                getLogger().warning(
+                        "Request path contains a new line character. This typically means that the server is incorrectly configured to use something else than UTF-8 for URL decoding (requestPath: "
+                                + requestPath + ")");
             }
         }
     }
 
-    private static boolean error(VaadinRequest request, VaadinResponse response, String logMessage) throws IOException {
+    private static boolean error(VaadinRequest request, VaadinResponse response,
+            String logMessage) throws IOException {
         getLogger().log(Level.WARNING, logMessage);
-        response.sendError(HttpServletResponse.SC_NOT_FOUND, request.getPathInfo() + " can not be found");
+        response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                request.getPathInfo() + " can not be found");
 
         // Request handled (though not in a nice way)
         return true;

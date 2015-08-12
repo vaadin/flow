@@ -36,7 +36,8 @@ public class PopupClosingWithEscTest extends MultiBrowserTest {
 
         // Send ESC to the select element to simulate user being
         // focused on the select while hitting the ESC key.
-        WebElement select = driver.findElement(By.cssSelector(".v-datefield-popup select:first-child"));
+        WebElement select = driver.findElement(
+                By.cssSelector(".v-datefield-popup select:first-child"));
         select.sendKeys(Keys.ESCAPE);
         assertFalse(isPopupVisible());
     }
@@ -66,15 +67,18 @@ public class PopupClosingWithEscTest extends MultiBrowserTest {
     }
 
     private void openPopup(String dateFieldId) {
-        driver.findElement(vaadinLocator("PID_S" + dateFieldId + "#popupButton")).click();
+        driver.findElement(
+                vaadinLocator("PID_S" + dateFieldId + "#popupButton")).click();
     }
 
     private boolean isPopupVisible() {
-        return !(driver.findElements(By.cssSelector(".v-datefield-popup")).isEmpty());
+        return !(driver.findElements(By.cssSelector(".v-datefield-popup"))
+                .isEmpty());
     }
 
     private void sendEscToCalendarPanel() {
-        driver.findElement(By.cssSelector(".v-datefield-calendarpanel")).sendKeys(Keys.ESCAPE);
+        driver.findElement(By.cssSelector(".v-datefield-calendarpanel"))
+                .sendKeys(Keys.ESCAPE);
     }
 
 }

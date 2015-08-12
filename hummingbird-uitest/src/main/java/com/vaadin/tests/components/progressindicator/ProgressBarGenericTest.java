@@ -23,7 +23,8 @@ public class ProgressBarGenericTest extends AbstractFieldTest<ProgressBar> {
     @Override
     protected void createActions() {
         super.createActions();
-        createBooleanAction("Indeterminate", CATEGORY_FEATURES, false, indeterminate, null);
+        createBooleanAction("Indeterminate", CATEGORY_FEATURES, false,
+                indeterminate, null);
         createValueSelection(CATEGORY_FEATURES);
         createPrimaryStyleNameSelect();
     }
@@ -37,7 +38,8 @@ public class ProgressBarGenericTest extends AbstractFieldTest<ProgressBar> {
         options.put(primaryStyle, primaryStyle);
         options.put(primaryStyle + "-foo", primaryStyle + "-foo");
         options.put("foo", "foo");
-        createSelectAction("Primary style name", CATEGORY_DECORATIONS, options, primaryStyle, primaryStyleNameCommand);
+        createSelectAction("Primary style name", CATEGORY_DECORATIONS, options,
+                primaryStyle, primaryStyleNameCommand);
 
     }
 
@@ -47,6 +49,7 @@ public class ProgressBarGenericTest extends AbstractFieldTest<ProgressBar> {
         for (float f = 0; f <= 1; f += 0.1) {
             options.put("" + f, f);
         }
-        createSelectAction("Value", categorySelection, options, null, setValueCommand);
+        createSelectAction("Value", categorySelection, options, null,
+                setValueCommand);
     }
 }

@@ -53,14 +53,19 @@ public class TestFileUploadTest extends MultiBrowserTest {
 
         getSubmitButton().click();
 
-        String expected = String.format("1. Upload finished. Name: %s, Size: %s, md5: %s", tempFile.getName(), getTempFileContents().length(), md5(getTempFileContents()));
+        String expected = String.format(
+                "1. Upload finished. Name: %s, Size: %s, md5: %s",
+                tempFile.getName(), getTempFileContents().length(),
+                md5(getTempFileContents()));
 
         String actual = getLogRow(0);
-        Assert.assertEquals("Upload log row does not match expected", expected, actual);
+        Assert.assertEquals("Upload log row does not match expected", expected,
+                actual);
     }
 
     private String md5(String string) throws NoSuchAlgorithmException {
-        byte[] digest = MessageDigest.getInstance("MD5").digest(string.getBytes());
+        byte[] digest = MessageDigest.getInstance("MD5")
+                .digest(string.getBytes());
         BigInteger bigInt = new BigInteger(1, digest);
         String hashtext = bigInt.toString(16);
         return hashtext;
@@ -110,9 +115,12 @@ public class TestFileUploadTest extends MultiBrowserTest {
             element = ((WrapsElement) element).getWrappedElement();
         }
         if (element instanceof RemoteWebElement) {
-            ((RemoteWebElement) element).setFileDetector(new LocalFileDetector());
+            ((RemoteWebElement) element)
+                    .setFileDetector(new LocalFileDetector());
         } else {
-            throw new IllegalArgumentException("Expected argument of type RemoteWebElement, received " + element.getClass().getName());
+            throw new IllegalArgumentException(
+                    "Expected argument of type RemoteWebElement, received "
+                            + element.getClass().getName());
         }
     }
 }

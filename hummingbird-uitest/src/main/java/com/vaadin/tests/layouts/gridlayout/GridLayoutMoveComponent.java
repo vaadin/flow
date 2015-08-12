@@ -29,31 +29,34 @@ public class GridLayoutMoveComponent extends AbstractTestUI {
         grid.addComponent(b, 0, 1);
         grid.addComponent(tf, 0, 2);
 
-        addComponent(new Button("Shift label right", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                // Moving component from 0,0 -> 1,0
-                grid.removeComponent(l);
-                grid.addComponent(l, 1, 0);
-            }
-        }));
+        addComponent(
+                new Button("Shift label right", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        // Moving component from 0,0 -> 1,0
+                        grid.removeComponent(l);
+                        grid.addComponent(l, 1, 0);
+                    }
+                }));
 
-        addComponent(new Button("Shift button right", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                grid.removeComponent(b);
-                grid.addComponent(b, 1, 1);
-            }
-        }));
+        addComponent(
+                new Button("Shift button right", new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        grid.removeComponent(b);
+                        grid.addComponent(b, 1, 1);
+                    }
+                }));
 
-        addComponent(new Button("Shift text field right", new Button.ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                grid.removeComponent(tf);
-                grid.addComponent(new Label("I'm on left"), 0, 2);
-                grid.addComponent(tf, 1, 2);
-            }
-        }));
+        addComponent(new Button("Shift text field right",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        grid.removeComponent(tf);
+                        grid.addComponent(new Label("I'm on left"), 0, 2);
+                        grid.addComponent(tf, 1, 2);
+                    }
+                }));
     }
 
     @Override

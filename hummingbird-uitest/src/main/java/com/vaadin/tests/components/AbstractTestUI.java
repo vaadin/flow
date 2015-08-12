@@ -57,7 +57,9 @@ public abstract class AbstractTestUI extends UI {
         } else if ("long-polling".equals(transport)) {
             enablePush(Transport.LONG_POLLING);
         } else if (transport != null) {
-            throw new IllegalArgumentException("Unknown transport value '" + transport + "'. Supported are xhr,websocket,streaming,long-polling");
+            throw new IllegalArgumentException("Unknown transport value '"
+                    + transport
+                    + "'. Supported are xhr,websocket,streaming,long-polling");
         }
     }
 
@@ -68,7 +70,8 @@ public abstract class AbstractTestUI extends UI {
         }
         config.setTransport(transport);
         // Ensure no fallback is used
-        getPushConfiguration().setParameter(PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
+        getPushConfiguration().setParameter(
+                PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
     }
 
     /**
@@ -108,7 +111,8 @@ public abstract class AbstractTestUI extends UI {
         getLayout().removeComponent(c);
     }
 
-    public void replaceComponent(Component oldComponent, Component newComponent) {
+    public void replaceComponent(Component oldComponent,
+            Component newComponent) {
         getLayout().replaceComponent(oldComponent, newComponent);
     }
 

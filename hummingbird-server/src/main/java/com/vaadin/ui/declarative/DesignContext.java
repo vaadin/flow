@@ -183,7 +183,8 @@ public class DesignContext implements Serializable {
      *         returns false.
      */
     public boolean setComponentLocalId(Component component, String localId) {
-        return twoWayMap(localId, component, localIdToComponent, componentToLocalId);
+        return twoWayMap(localId, component, localIdToComponent,
+                componentToLocalId);
     }
 
     /**
@@ -242,7 +243,8 @@ public class DesignContext implements Serializable {
      * @return whether there already was some mapping from key to a value or
      *         from value to a key.
      */
-    private <S, T> boolean twoWayMap(S key, T value, Map<S, T> keyToValue, Map<T, S> valueToKey) {
+    private <S, T> boolean twoWayMap(S key, T value, Map<S, T> keyToValue,
+            Map<T, S> valueToKey) {
         T oldValue = keyToValue.put(key, value);
         if (oldValue != null && !oldValue.equals(value)) {
             valueToKey.remove(oldValue);
@@ -330,13 +332,16 @@ public class DesignContext implements Serializable {
 
         // If the root component in some other way initializes itself in the
         // constructor
-        if (getRootComponent() == component && component.getClass().isAnnotationPresent(DesignRoot.class)) {
-            return (T) getDefaultInstance((Class<? extends Component>) component.getClass().getSuperclass());
+        if (getRootComponent() == component
+                && component.getClass().isAnnotationPresent(DesignRoot.class)) {
+            return (T) getDefaultInstance((Class<? extends Component>) component
+                    .getClass().getSuperclass());
         }
         return (T) getDefaultInstance(component.getClass());
     }
 
-    private Component getDefaultInstance(Class<? extends Component> componentClass) {
+    private Component getDefaultInstance(
+            Class<? extends Component> componentClass) {
         Component instance = instanceCache.get(componentClass);
         if (instance == null) {
             instance = instantiateClass(componentClass.getName());
@@ -359,11 +364,14 @@ public class DesignContext implements Serializable {
                 Element childElement = (Element) child;
                 if ("meta".equals(childElement.tagName())) {
                     Attributes attributes = childElement.attributes();
-                    if (attributes.hasKey("name") && attributes.hasKey("content") && "package-mapping".equals(attributes.get("name"))) {
+                    if (attributes.hasKey("name")
+                            && attributes.hasKey("content") && "package-mapping"
+                                    .equals(attributes.get("name"))) {
                         String contentString = attributes.get("content");
                         String[] parts = contentString.split(":");
                         if (parts.length != 2) {
-                            throw new DesignException("The meta tag '" + child.toString() + "' cannot be parsed.");
+                            throw new DesignException("The meta tag '"
+                                    + child.toString() + "' cannot be parsed.");
                         }
                         String prefixName = parts[0];
                         String packageName = parts[1];
@@ -467,7 +475,8 @@ public class DesignContext implements Serializable {
         if (id != null && id.length() > 0) {
             boolean mappingExists = mapId(id, component);
             if (mappingExists) {
-                throw new DesignException("The following global id is not unique: " + id);
+                throw new DesignException(
+                        "The following global id is not unique: " + id);
             }
         }
         // local id: this is not a property of a component, so need to fetch it
@@ -476,7 +485,8 @@ public class DesignContext implements Serializable {
             String localId = attributes.get(LOCAL_ID_ATTRIBUTE);
             boolean mappingExists = setComponentLocalId(component, localId);
             if (mappingExists) {
-                throw new DesignException("the following local id is not unique: " + localId);
+                throw new DesignException(
+                        "the following local id is not unique: " + localId);
             }
         }
         // caption: a property of a component, possibly not unique
@@ -498,7 +508,8 @@ public class DesignContext implements Serializable {
         String tag = node.nodeName();
 
         ComponentMapper componentMapper = Design.getComponentMapper();
-        Component component = componentMapper.tagToComponent(tag, Design.getComponentFactory(), this);
+        Component component = componentMapper.tagToComponent(tag,
+                Design.getComponentFactory(), this);
 
         assert tag.equals(componentMapper.componentToTag(component, this));
 
@@ -517,7 +528,9 @@ public class DesignContext implements Serializable {
         Component component = factory.createComponent(qualifiedClassName, this);
 
         if (component == null) {
-            throw new DesignException("Got unexpected null component from " + factory.getClass().getName() + " for class " + qualifiedClassName);
+            throw new DesignException("Got unexpected null component from "
+                    + factory.getClass().getName() + " for class "
+                    + qualifiedClassName);
         }
 
         return component;
@@ -549,7 +562,8 @@ public class DesignContext implements Serializable {
      * @param listener
      *            the component creation listener to be added
      */
-    public void addComponentCreationListener(ComponentCreationListener listener) {
+    public void addComponentCreationListener(
+            ComponentCreationListener listener) {
         listeners.add(listener);
     }
 
@@ -559,7 +573,8 @@ public class DesignContext implements Serializable {
      * @param listener
      *            the component creation listener to be removed
      */
-    public void removeComponentCreationListener(ComponentCreationListener listener) {
+    public void removeComponentCreationListener(
+            ComponentCreationListener listener) {
         listeners.remove(listener);
     }
 
@@ -571,8 +586,10 @@ public class DesignContext implements Serializable {
      * @param component
      *            the component that was created
      */
-    private void fireComponentCreatedEvent(String localId, Component component) {
-        ComponentCreatedEvent event = new ComponentCreatedEvent(localId, component);
+    private void fireComponentCreatedEvent(String localId,
+            Component component) {
+        ComponentCreatedEvent event = new ComponentCreatedEvent(localId,
+                component);
         for (ComponentCreationListener listener : listeners) {
             listener.componentCreated(event);
         }
@@ -656,7 +673,8 @@ public class DesignContext implements Serializable {
             return true;
         }
 
-        if (defaultC instanceof HasComponents && ((HasComponents) defaultC).iterator().hasNext()) {
+        if (defaultC instanceof HasComponents
+                && ((HasComponents) defaultC).iterator().hasNext()) {
             // Easy version which assumes that this is a custom component if the
             // constructor adds children
             return false;
@@ -695,7 +713,8 @@ public class DesignContext implements Serializable {
      * @throws IllegalArgumentException
      *             if the provided delegate is <code>null</code>
      */
-    public void setShouldWriteDataDelegate(ShouldWriteDataDelegate shouldWriteDataDelegate) {
+    public void setShouldWriteDataDelegate(
+            ShouldWriteDataDelegate shouldWriteDataDelegate) {
         if (shouldWriteDataDelegate == null) {
             throw new IllegalArgumentException("Delegate cannot be null");
         }

@@ -66,16 +66,20 @@ public class SelectDisplaysOldValue extends TestBase {
 
         private void buildAndConfigureComboBoxes() {
             IndexedContainer masterOptionContainer = initMasterOptionContainer();
-            controllerComboBox = new ComboBox(CONTROLLER_COMBO_BOX_CAPTION, masterOptionContainer);
+            controllerComboBox = new ComboBox(CONTROLLER_COMBO_BOX_CAPTION,
+                    masterOptionContainer);
             configureMasterOptionDropdown();
-            controllerComboBox.addValueChangeListener(new ControllerUpdatedListener());
+            controllerComboBox
+                    .addValueChangeListener(new ControllerUpdatedListener());
 
             buildSlaveDropdown(1);
         }
 
         private void buildSlaveDropdown(Integer masterId) {
-            IndexedContainer slaveOptionContainer = initSlaveOptionContainer(masterId);
-            slaveComboBox = new ComboBox(SLAVE_COMBO_BOX_CAPTION, slaveOptionContainer);
+            IndexedContainer slaveOptionContainer = initSlaveOptionContainer(
+                    masterId);
+            slaveComboBox = new ComboBox(SLAVE_COMBO_BOX_CAPTION,
+                    slaveOptionContainer);
             configureSlaveOptionDropdown();
         }
 
@@ -84,11 +88,13 @@ public class SelectDisplaysOldValue extends TestBase {
             Object defaultValue = null;
             Item itemAdded;
 
-            containerToReturn.addContainerProperty(NAME_PROPERTY_ID, String.class, defaultValue);
+            containerToReturn.addContainerProperty(NAME_PROPERTY_ID,
+                    String.class, defaultValue);
 
             for (Integer optionId : controllerOptionMap.keySet()) {
                 itemAdded = containerToReturn.addItem(optionId);
-                itemAdded.getItemProperty(NAME_PROPERTY_ID).setValue(controllerOptionMap.get(optionId));
+                itemAdded.getItemProperty(NAME_PROPERTY_ID)
+                        .setValue(controllerOptionMap.get(optionId));
             }
 
             return containerToReturn;
@@ -101,7 +107,8 @@ public class SelectDisplaysOldValue extends TestBase {
             List<String> options;
 
             options = slaveOptionMapping.get(controllerOptionMap.get(masterId));
-            containerToReturn.addContainerProperty(NAME_PROPERTY_ID, String.class, defaultValue);
+            containerToReturn.addContainerProperty(NAME_PROPERTY_ID,
+                    String.class, defaultValue);
 
             for (String option : options) {
                 itemAdded = containerToReturn.addItem(option);
@@ -127,14 +134,18 @@ public class SelectDisplaysOldValue extends TestBase {
         }
 
         private void refreshSlaveDropdown(Integer masterId) {
-            slaveComboBox.setContainerDataSource(initSlaveOptionContainer(masterId));
+            slaveComboBox
+                    .setContainerDataSource(initSlaveOptionContainer(masterId));
             System.out.println("Slave value: " + slaveComboBox.getValue());
         }
 
-        private class ControllerUpdatedListener implements Property.ValueChangeListener {
+        private class ControllerUpdatedListener
+                implements Property.ValueChangeListener {
             @Override
-            public void valueChange(Property.ValueChangeEvent valueChangeEvent) {
-                refreshSlaveDropdown((Integer) valueChangeEvent.getProperty().getValue());
+            public void valueChange(
+                    Property.ValueChangeEvent valueChangeEvent) {
+                refreshSlaveDropdown(
+                        (Integer) valueChangeEvent.getProperty().getValue());
             }
         }
     }

@@ -57,7 +57,8 @@ public final class BeanUtil implements Serializable {
      * @return
      * @throws IntrospectionException
      */
-    public static List<PropertyDescriptor> getBeanPropertyDescriptor(final Class<?> beanClass) throws IntrospectionException {
+    public static List<PropertyDescriptor> getBeanPropertyDescriptor(
+            final Class<?> beanClass) throws IntrospectionException {
         // Oracle bug 4275879: Introspector does not consider superinterfaces of
         // an interface
         if (beanClass.isInterface()) {
@@ -90,7 +91,8 @@ public final class BeanUtil implements Serializable {
      * @return class of the property
      * @throws IntrospectionException
      */
-    public static Class<?> getPropertyType(Class<?> clazz, String propertyId) throws IntrospectionException {
+    public static Class<?> getPropertyType(Class<?> clazz, String propertyId)
+            throws IntrospectionException {
         if (propertyId.contains(".")) {
             String[] parts = propertyId.split("\\.", 2);
             // Get the type of the field in the "cls" class
@@ -98,11 +100,13 @@ public final class BeanUtil implements Serializable {
             // Find the rest from the sub type
             return getPropertyType(propertyBean, parts[1]);
         } else {
-            List<PropertyDescriptor> descriptors = getBeanPropertyDescriptor(clazz);
+            List<PropertyDescriptor> descriptors = getBeanPropertyDescriptor(
+                    clazz);
 
             for (PropertyDescriptor descriptor : descriptors) {
                 final Method getMethod = descriptor.getReadMethod();
-                if (descriptor.getName().equals(propertyId) && getMethod != null && getMethod.getDeclaringClass() != Object.class) {
+                if (descriptor.getName().equals(propertyId) && getMethod != null
+                        && getMethod.getDeclaringClass() != Object.class) {
                     return descriptor.getPropertyType();
                 }
             }
@@ -111,18 +115,24 @@ public final class BeanUtil implements Serializable {
     }
 
     // Workaround for Java6 bug JDK-6788525. Do nothing for JDK7+.
-    private static List<PropertyDescriptor> getPropertyDescriptors(BeanInfo beanInfo) {
+    private static List<PropertyDescriptor> getPropertyDescriptors(
+            BeanInfo beanInfo) {
         PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
-        List<PropertyDescriptor> result = new ArrayList<PropertyDescriptor>(descriptors.length);
+        List<PropertyDescriptor> result = new ArrayList<PropertyDescriptor>(
+                descriptors.length);
         for (PropertyDescriptor descriptor : descriptors) {
             try {
-                Method readMethod = getMethodFromBridge(descriptor.getReadMethod());
+                Method readMethod = getMethodFromBridge(
+                        descriptor.getReadMethod());
                 if (readMethod != null) {
-                    Method writeMethod = getMethodFromBridge(descriptor.getWriteMethod(), readMethod.getReturnType());
+                    Method writeMethod = getMethodFromBridge(
+                            descriptor.getWriteMethod(),
+                            readMethod.getReturnType());
                     if (writeMethod == null) {
                         writeMethod = descriptor.getWriteMethod();
                     }
-                    PropertyDescriptor descr = new PropertyDescriptor(descriptor.getName(), readMethod, writeMethod);
+                    PropertyDescriptor descr = new PropertyDescriptor(
+                            descriptor.getName(), readMethod, writeMethod);
                     result.add(descr);
                 } else {
                     result.add(descriptor);
@@ -140,11 +150,13 @@ public final class BeanUtil implements Serializable {
      * Return declared method for which {@code bridgeMethod} is generated. If
      * {@code bridgeMethod} is not a bridge method then return null.
      */
-    private static Method getMethodFromBridge(Method bridgeMethod) throws SecurityException {
+    private static Method getMethodFromBridge(Method bridgeMethod)
+            throws SecurityException {
         if (bridgeMethod == null) {
             return null;
         }
-        return getMethodFromBridge(bridgeMethod, bridgeMethod.getParameterTypes());
+        return getMethodFromBridge(bridgeMethod,
+                bridgeMethod.getParameterTypes());
     }
 
     /**
@@ -152,12 +164,14 @@ public final class BeanUtil implements Serializable {
      * its {@code paramTypes}. If {@code bridgeMethod} is not a bridge method
      * then return null.
      */
-    private static Method getMethodFromBridge(Method bridgeMethod, Class<?>... paramTypes) throws SecurityException {
+    private static Method getMethodFromBridge(Method bridgeMethod,
+            Class<?>... paramTypes) throws SecurityException {
         if (bridgeMethod == null || !bridgeMethod.isBridge()) {
             return null;
         }
         try {
-            return bridgeMethod.getDeclaringClass().getMethod(bridgeMethod.getName(), paramTypes);
+            return bridgeMethod.getDeclaringClass()
+                    .getMethod(bridgeMethod.getName(), paramTypes);
         } catch (NoSuchMethodException e) {
             return null;
         }

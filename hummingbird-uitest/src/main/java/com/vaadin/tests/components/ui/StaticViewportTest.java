@@ -28,8 +28,10 @@ public class StaticViewportTest extends SingleBrowserTest {
     public void testStaticViewport() {
         openTestURL();
 
-        WebElement viewportElement = findElement(By.cssSelector("meta[name=viewport]"));
+        WebElement viewportElement = findElement(
+                By.cssSelector("meta[name=viewport]"));
 
-        Assert.assertEquals("myViewport", viewportElement.getAttribute("content"));
+        Assert.assertEquals("myViewport",
+                viewportElement.getAttribute("content"));
     }
 }

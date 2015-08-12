@@ -32,7 +32,8 @@ import com.vaadin.shared.util.SharedUtil;
 public class SizeWithUnit implements Serializable {
     private float size;
     private Unit unit;
-    private static final Pattern sizePattern = Pattern.compile(SharedUtil.SIZE_PATTERN);
+    private static final Pattern sizePattern = Pattern
+            .compile(SharedUtil.SIZE_PATTERN);
 
     /**
      * Constructs a new SizeWithUnit object representing the pair (size, unit).
@@ -97,14 +98,16 @@ public class SizeWithUnit implements Serializable {
                 unit = Unit.PIXELS;
             } else {
                 String symbol = matcher.group(2);
-                if ((symbol != null && symbol.length() > 0) || defaultUnit == null) {
+                if ((symbol != null && symbol.length() > 0)
+                        || defaultUnit == null) {
                     unit = Unit.getUnitFromSymbol(symbol);
                 } else {
                     unit = defaultUnit;
                 }
             }
         } else {
-            throw new IllegalArgumentException("Invalid size argument: \"" + s + "\" (should match " + sizePattern.pattern() + ")");
+            throw new IllegalArgumentException("Invalid size argument: \"" + s
+                    + "\" (should match " + sizePattern.pattern() + ")");
         }
         return new SizeWithUnit(size, unit);
     }

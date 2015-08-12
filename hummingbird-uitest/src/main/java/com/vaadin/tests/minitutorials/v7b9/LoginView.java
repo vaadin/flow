@@ -17,7 +17,8 @@ public class LoginView extends Panel implements View {
 
     public static final String NAME = "login";
 
-    public LoginView(final Navigator navigator, final String fragmentAndParameters) {
+    public LoginView(final Navigator navigator,
+            final String fragmentAndParameters) {
         Layout layout = new VerticalLayout();
 
         final TextField email = new TextField("Email");
@@ -32,7 +33,8 @@ public class LoginView extends Panel implements View {
                 Notification.show("Ok, let's pretend you're " + email);
 
                 // indicate the user is logged in
-                ((NavigationtestUI) UI.getCurrent()).setLoggedInUser(email.getValue());
+                ((NavigationtestUI) UI.getCurrent())
+                        .setLoggedInUser(email.getValue());
 
                 // navigate back to the intended place
                 navigator.navigateTo(fragmentAndParameters);

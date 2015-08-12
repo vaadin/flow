@@ -30,9 +30,11 @@ public class HtmlCaptionInFormLayoutTest extends SingleBrowserTest {
     public void testHtmlCaptions() {
         openTestURL();
 
-        List<WebElement> captions = getDriver().findElements(By.cssSelector(".v-formlayout-captioncell span"));
+        List<WebElement> captions = getDriver()
+                .findElements(By.cssSelector(".v-formlayout-captioncell span"));
 
-        Assert.assertEquals("Should be two formlayout captions", 2, captions.size());
+        Assert.assertEquals("Should be two formlayout captions", 2,
+                captions.size());
 
         Assert.assertEquals("Contains HTML", captions.get(0).getText());
         Assert.assertEquals("Contains <b>HTML</b>", captions.get(1).getText());
@@ -44,9 +46,11 @@ public class HtmlCaptionInFormLayoutTest extends SingleBrowserTest {
 
         $(ButtonElement.class).caption("Toggle").first().click();
 
-        List<WebElement> captions = getDriver().findElements(By.cssSelector(".v-formlayout-captioncell span"));
+        List<WebElement> captions = getDriver()
+                .findElements(By.cssSelector(".v-formlayout-captioncell span"));
 
-        Assert.assertEquals("Should be two formlayout captions", 2, captions.size());
+        Assert.assertEquals("Should be two formlayout captions", 2,
+                captions.size());
 
         Assert.assertEquals("Contains <b>HTML</b>", captions.get(0).getText());
         Assert.assertEquals("Contains HTML", captions.get(1).getText());

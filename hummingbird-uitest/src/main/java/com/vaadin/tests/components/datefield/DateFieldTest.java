@@ -31,8 +31,10 @@ public class DateFieldTest<T extends DateField> extends AbstractFieldTest<T> {
     protected void createActions() {
         super.createActions();
         createResolutionSelectAction(CATEGORY_FEATURES);
-        createBooleanAction("Lenient", CATEGORY_FEATURES, false, lenientCommand);
-        createBooleanAction("Show week numbers", CATEGORY_FEATURES, false, weekNumberCommand);
+        createBooleanAction("Lenient", CATEGORY_FEATURES, false,
+                lenientCommand);
+        createBooleanAction("Show week numbers", CATEGORY_FEATURES, false,
+                weekNumberCommand);
         createDateFormatSelectAction(CATEGORY_FEATURES);
         createSetValueAction(CATEGORY_FEATURES);
 
@@ -69,12 +71,17 @@ public class DateFieldTest<T extends DateField> extends AbstractFieldTest<T> {
         options.put("d M yyy", "d M yyy");
         options.put("d M yyyy", "d M yyyy");
         options.put("d M 'custom text' yyyy", "d M 'custom text' yyyy");
-        options.put("'day:'d', month:'M', year: 'yyyy", "'day:'d', month:'M', year: 'yyyy");
-        options.put(getDatePattern(new Locale("fi", "FI"), DateFormat.LONG), getDatePattern(new Locale("fi", "FI"), DateFormat.LONG));
-        options.put(getDatePattern(new Locale("fi", "FI"), DateFormat.MEDIUM), getDatePattern(new Locale("fi", "FI"), DateFormat.MEDIUM));
-        options.put(getDatePattern(new Locale("fi", "FI"), DateFormat.SHORT), getDatePattern(new Locale("fi", "FI"), DateFormat.SHORT));
+        options.put("'day:'d', month:'M', year: 'yyyy",
+                "'day:'d', month:'M', year: 'yyyy");
+        options.put(getDatePattern(new Locale("fi", "FI"), DateFormat.LONG),
+                getDatePattern(new Locale("fi", "FI"), DateFormat.LONG));
+        options.put(getDatePattern(new Locale("fi", "FI"), DateFormat.MEDIUM),
+                getDatePattern(new Locale("fi", "FI"), DateFormat.MEDIUM));
+        options.put(getDatePattern(new Locale("fi", "FI"), DateFormat.SHORT),
+                getDatePattern(new Locale("fi", "FI"), DateFormat.SHORT));
 
-        createSelectAction("Date format", category, options, "-", dateFormatCommand);
+        createSelectAction("Date format", category, options, "-",
+                dateFormatCommand);
 
     }
 
@@ -98,7 +105,8 @@ public class DateFieldTest<T extends DateField> extends AbstractFieldTest<T> {
         options.put("Min", Resolution.MINUTE);
         options.put("Sec", Resolution.SECOND);
 
-        createSelectAction("Resolution", category, options, "Year", resolutionCommand);
+        createSelectAction("Resolution", category, options, "Year",
+                resolutionCommand);
     }
 
     private Command<T, Resolution> resolutionCommand = new Command<T, Resolution>() {

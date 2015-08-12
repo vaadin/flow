@@ -24,7 +24,8 @@ public class NavigatorViewBlocksBackButtonAction extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         navigator = new Navigator(this, this);
         navigator.addView(MainView.NAME, new MainView());
-        navigator.addView(ViewWithPromptedLeave.NAME, new ViewWithPromptedLeave());
+        navigator.addView(ViewWithPromptedLeave.NAME,
+                new ViewWithPromptedLeave());
         navigator.navigateTo(MainView.NAME);
     }
 
@@ -37,13 +38,14 @@ public class NavigatorViewBlocksBackButtonAction extends AbstractTestUI {
             label.setId(LABEL_MAINVIEW_ID);
             addComponent(label);
 
-            Button buttonNavToAnotherView = new Button("Navigate to another view", new ClickListener() {
+            Button buttonNavToAnotherView = new Button(
+                    "Navigate to another view", new ClickListener() {
 
-                @Override
-                public void buttonClick(ClickEvent event) {
-                    navigator.navigateTo(ViewWithPromptedLeave.NAME);
-                }
-            });
+                        @Override
+                        public void buttonClick(ClickEvent event) {
+                            navigator.navigateTo(ViewWithPromptedLeave.NAME);
+                        }
+                    });
             addComponent(buttonNavToAnotherView);
         }
 
@@ -53,7 +55,8 @@ public class NavigatorViewBlocksBackButtonAction extends AbstractTestUI {
 
     }
 
-    class ViewWithPromptedLeave extends VerticalLayout implements View, ViewChangeListener {
+    class ViewWithPromptedLeave extends VerticalLayout
+            implements View, ViewChangeListener {
 
         public static final String NAME = "prompted";
 
@@ -63,7 +66,8 @@ public class NavigatorViewBlocksBackButtonAction extends AbstractTestUI {
             Label label = new Label("ViewWithPromptedLeave content");
             label.setId(LABEL_PROMPTEDVIEW_ID);
             addComponent(label);
-            addComponent(new Label("Try to navigate back to first view with browser back button."));
+            addComponent(new Label(
+                    "Try to navigate back to first view with browser back button."));
         }
 
         @Override
@@ -85,16 +89,20 @@ public class NavigatorViewBlocksBackButtonAction extends AbstractTestUI {
                 confirmationWindow.setContent(confirmationWindowLayout);
                 confirmationWindowLayout.setMargin(true);
                 confirmationWindowLayout.setSpacing(true);
-                confirmationWindowLayout.addComponent(new Label("Really exit this view?"));
-                confirmationWindowLayout.addComponent(new Button("Yeah, sure!", new Button.ClickListener() {
+                confirmationWindowLayout
+                        .addComponent(new Label("Really exit this view?"));
+                confirmationWindowLayout.addComponent(
+                        new Button("Yeah, sure!", new Button.ClickListener() {
 
-                    @Override
-                    public void buttonClick(ClickEvent buttonEvent) {
-                        okToLeave = true;
-                        getUI().removeWindow(confirmationWindow);
-                        event.getNavigator().navigateTo(event.getViewName() + "/" + event.getParameters());
-                    }
-                }));
+                            @Override
+                            public void buttonClick(ClickEvent buttonEvent) {
+                                okToLeave = true;
+                                getUI().removeWindow(confirmationWindow);
+                                event.getNavigator()
+                                        .navigateTo(event.getViewName() + "/"
+                                                + event.getParameters());
+                            }
+                        }));
                 getUI().addWindow(confirmationWindow);
                 return false;
             }

@@ -55,7 +55,8 @@ public class MetadataWriter implements Serializable {
      *             If the serialization fails.
      * 
      */
-    public void write(UI ui, Writer writer, boolean repaintAll, boolean async, SystemMessages messages) throws IOException {
+    public void write(UI ui, Writer writer, boolean repaintAll, boolean async,
+            SystemMessages messages) throws IOException {
 
         writer.write("{");
 
@@ -75,14 +76,21 @@ public class MetadataWriter implements Serializable {
 
         // meta instruction for client to enable auto-forward to
         // sessionExpiredURL after timer expires.
-        if (messages != null && messages.getSessionExpiredMessage() == null && messages.getSessionExpiredCaption() == null && messages.isSessionExpiredNotificationEnabled() && ui.getSession().getSession() != null) {
-            int newTimeoutInterval = ui.getSession().getSession().getMaxInactiveInterval();
+        if (messages != null && messages.getSessionExpiredMessage() == null
+                && messages.getSessionExpiredCaption() == null
+                && messages.isSessionExpiredNotificationEnabled()
+                && ui.getSession().getSession() != null) {
+            int newTimeoutInterval = ui.getSession().getSession()
+                    .getMaxInactiveInterval();
             if (repaintAll || (timeoutInterval != newTimeoutInterval)) {
-                String escapedURL = messages.getSessionExpiredURL() == null ? "" : messages.getSessionExpiredURL().replace("/", "\\/");
+                String escapedURL = messages.getSessionExpiredURL() == null ? ""
+                        : messages.getSessionExpiredURL().replace("/", "\\/");
                 if (metaOpen) {
                     writer.write(",");
                 }
-                writer.write("\"timedRedirect\":{\"interval\":" + (newTimeoutInterval + 15) + ",\"url\":\"" + escapedURL + "\"}");
+                writer.write("\"timedRedirect\":{\"interval\":"
+                        + (newTimeoutInterval + 15) + ",\"url\":\"" + escapedURL
+                        + "\"}");
                 metaOpen = true;
             }
             timeoutInterval = newTimeoutInterval;

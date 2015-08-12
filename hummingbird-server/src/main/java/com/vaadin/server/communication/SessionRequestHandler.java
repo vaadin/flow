@@ -48,12 +48,14 @@ import com.vaadin.server.VaadinSession;
 public class SessionRequestHandler implements RequestHandler {
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request,
+            VaadinResponse response) throws IOException {
         // Use a copy to avoid ConcurrentModificationException
         session.lock();
         ArrayList<RequestHandler> requestHandlers;
         try {
-            requestHandlers = new ArrayList<RequestHandler>(session.getRequestHandlers());
+            requestHandlers = new ArrayList<RequestHandler>(
+                    session.getRequestHandlers());
         } finally {
             session.unlock();
         }

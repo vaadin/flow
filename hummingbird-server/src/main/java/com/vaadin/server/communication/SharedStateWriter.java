@@ -52,7 +52,8 @@ public class SharedStateWriter implements Serializable {
      */
     public void write(UI ui, Writer writer) throws IOException {
 
-        Collection<ClientConnector> dirtyVisibleConnectors = ui.getConnectorTracker().getDirtyVisibleConnectors();
+        Collection<ClientConnector> dirtyVisibleConnectors = ui
+                .getConnectorTracker().getDirtyVisibleConnectors();
 
         JsonObject sharedStates = Json.createObject();
         for (ClientConnector connector : dirtyVisibleConnectors) {
@@ -64,7 +65,12 @@ public class SharedStateWriter implements Serializable {
                     sharedStates.put(connector.getConnectorId(), stateJson);
                 }
             } catch (JsonException e) {
-                throw new PaintException("Failed to serialize shared state for connector " + connector.getClass().getName() + " (" + connector.getConnectorId() + "): " + e.getMessage(), e);
+                throw new PaintException(
+                        "Failed to serialize shared state for connector "
+                                + connector.getClass().getName() + " ("
+                                + connector.getConnectorId() + "): "
+                                + e.getMessage(),
+                        e);
             }
         }
         writer.write(JsonUtil.stringify(sharedStates));

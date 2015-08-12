@@ -58,7 +58,8 @@ public class JsonEncoder {
      * @param connection
      * @return JSON representation of the value
      */
-    public static JsonValue encode(Object value, Type type, ApplicationConnection connection) {
+    public static JsonValue encode(Object value, Type type,
+            ApplicationConnection connection) {
         if (null == value) {
             return Json.createNull();
         } else if (value instanceof JsonValue) {
@@ -109,7 +110,8 @@ public class JsonEncoder {
             } else if (type != null) {
                 // And finally try using bean serialization logic
                 try {
-                    JsArrayObject<Property> properties = type.getPropertiesAsArray();
+                    JsArrayObject<Property> properties = type
+                            .getPropertiesAsArray();
 
                     JsonObject jsonObject = Json.createObject();
 
@@ -118,22 +120,27 @@ public class JsonEncoder {
                         Property property = properties.get(i);
                         Object propertyValue = property.getValue(value);
                         Type propertyType = property.getType();
-                        JsonValue encodedPropertyValue = encode(propertyValue, propertyType, connection);
-                        jsonObject.put(property.getName(), encodedPropertyValue);
+                        JsonValue encodedPropertyValue = encode(propertyValue,
+                                propertyType, connection);
+                        jsonObject.put(property.getName(),
+                                encodedPropertyValue);
                     }
                     return jsonObject;
 
                 } catch (NoDataException e) {
-                    throw new RuntimeException("Can not encode " + type.getSignature(), e);
+                    throw new RuntimeException(
+                            "Can not encode " + type.getSignature(), e);
                 }
 
             } else {
-                throw new RuntimeException("Can't encode " + value.getClass() + " without type information");
+                throw new RuntimeException("Can't encode " + value.getClass()
+                        + " without type information");
             }
         }
     }
 
-    private static JsonValue encodeVariableChange(UidlValue uidlValue, ApplicationConnection connection) {
+    private static JsonValue encodeVariableChange(UidlValue uidlValue,
+            ApplicationConnection connection) {
         Object value = uidlValue.getValue();
 
         JsonArray jsonArray = Json.createArray();
@@ -147,7 +154,8 @@ public class JsonEncoder {
             if (value != null) {
                 valueType = value.getClass().getName();
             }
-            throw new IllegalArgumentException("Cannot encode object of type " + valueType);
+            throw new IllegalArgumentException(
+                    "Cannot encode object of type " + valueType);
         }
         jsonArray.set(0, Json.create(transportType));
         jsonArray.set(1, encode(value, null, connection));
@@ -155,7 +163,8 @@ public class JsonEncoder {
         return jsonArray;
     }
 
-    private static JsonValue encodeMap(Map<Object, Object> map, Type type, ApplicationConnection connection) {
+    private static JsonValue encodeMap(Map<Object, Object> map, Type type,
+            ApplicationConnection connection) {
         /*
          * As we have no info about declared types, we instead select encoding
          * scheme based on actual type of first key. We can't do this if there's
@@ -170,7 +179,8 @@ public class JsonEncoder {
         if (firstKey instanceof String) {
             return encodeStringMap(map, type, connection);
         } else if (type == null) {
-            throw new IllegalStateException("Only string keys supported for legacy maps");
+            throw new IllegalStateException(
+                    "Only string keys supported for legacy maps");
         } else if (firstKey instanceof Connector) {
             return encodeConnectorMap(map, type, connection);
         } else {
@@ -178,25 +188,33 @@ public class JsonEncoder {
         }
     }
 
-    private static JsonValue encodeChildValue(Object value, Type collectionType, int typeIndex, ApplicationConnection connection) {
+    private static JsonValue encodeChildValue(Object value, Type collectionType,
+            int typeIndex, ApplicationConnection connection) {
         if (collectionType == null) {
             return encode(new UidlValue(value), null, connection);
         } else {
-            assert collectionType.getParameterTypes() != null && collectionType.getParameterTypes().length > typeIndex && collectionType.getParameterTypes()[typeIndex] != null : "Proper generics required for encoding child value, assertion failed for " + collectionType;
+            assert collectionType.getParameterTypes() != null
+                    && collectionType.getParameterTypes().length > typeIndex
+                    && collectionType
+                            .getParameterTypes()[typeIndex] != null : "Proper generics required for encoding child value, assertion failed for "
+                                    + collectionType;
             Type childType = collectionType.getParameterTypes()[typeIndex];
             return encode(value, childType, connection);
         }
     }
 
-    private static JsonArray encodeObjectMap(Map<Object, Object> map, Type type, ApplicationConnection connection) {
+    private static JsonArray encodeObjectMap(Map<Object, Object> map, Type type,
+            ApplicationConnection connection) {
         JsonArray keys = Json.createArray();
         JsonArray values = Json.createArray();
 
         assert type != null : "Should only be used for non-legacy types";
 
         for (Entry<?, ?> entry : map.entrySet()) {
-            keys.set(keys.length(), encodeChildValue(entry.getKey(), type, 0, connection));
-            values.set(values.length(), encodeChildValue(entry.getValue(), type, 1, connection));
+            keys.set(keys.length(),
+                    encodeChildValue(entry.getKey(), type, 0, connection));
+            values.set(values.length(),
+                    encodeChildValue(entry.getValue(), type, 1, connection));
         }
 
         JsonArray keysAndValues = Json.createArray();
@@ -206,13 +224,15 @@ public class JsonEncoder {
         return keysAndValues;
     }
 
-    private static JsonValue encodeConnectorMap(Map<Object, Object> map, Type type, ApplicationConnection connection) {
+    private static JsonValue encodeConnectorMap(Map<Object, Object> map,
+            Type type, ApplicationConnection connection) {
         JsonObject jsonMap = Json.createObject();
 
         for (Entry<?, ?> entry : map.entrySet()) {
             Connector connector = (Connector) entry.getKey();
 
-            JsonValue encodedValue = encodeChildValue(entry.getValue(), type, 1, connection);
+            JsonValue encodedValue = encodeChildValue(entry.getValue(), type, 1,
+                    connection);
 
             jsonMap.put(connector.getConnectorId(), encodedValue);
         }
@@ -220,7 +240,8 @@ public class JsonEncoder {
         return jsonMap;
     }
 
-    private static JsonValue encodeStringMap(Map<Object, Object> map, Type type, ApplicationConnection connection) {
+    private static JsonValue encodeStringMap(Map<Object, Object> map, Type type,
+            ApplicationConnection connection) {
         JsonObject jsonMap = Json.createObject();
 
         for (Entry<?, ?> entry : map.entrySet()) {
@@ -233,11 +254,13 @@ public class JsonEncoder {
         return jsonMap;
     }
 
-    private static JsonValue encodeEnum(Enum<?> e, ApplicationConnection connection) {
+    private static JsonValue encodeEnum(Enum<?> e,
+            ApplicationConnection connection) {
         return Json.create(e.toString());
     }
 
-    private static JsonValue encodeLegacyObjectArray(Object[] array, ApplicationConnection connection) {
+    private static JsonValue encodeLegacyObjectArray(Object[] array,
+            ApplicationConnection connection) {
         JsonArray jsonArray = Json.createArray();
         for (int i = 0; i < array.length; ++i) {
             // TODO handle object graph loops?
@@ -247,7 +270,8 @@ public class JsonEncoder {
         return jsonArray;
     }
 
-    private static JsonArray encodeCollection(Collection collection, Type type, ApplicationConnection connection) {
+    private static JsonArray encodeCollection(Collection collection, Type type,
+            ApplicationConnection connection) {
         JsonArray jsonArray = Json.createArray();
         int idx = 0;
         for (Object o : collection) {
@@ -259,7 +283,8 @@ public class JsonEncoder {
         } else if (collection instanceof List) {
             return jsonArray;
         } else {
-            throw new RuntimeException("Unsupport collection type: " + collection.getClass().getName());
+            throw new RuntimeException("Unsupport collection type: "
+                    + collection.getClass().getName());
         }
 
     }

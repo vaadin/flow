@@ -26,9 +26,11 @@ public class ComboBoxItemIcon extends TestBase {
             cb.setItemIconPropertyId("icon");
 
             Item item = cb.addItem("FI");
-            item.getItemProperty("icon").setValue(new ThemeResource("../tests-tickets/icons/fi.gif"));
+            item.getItemProperty("icon").setValue(
+                    new ThemeResource("../tests-tickets/icons/fi.gif"));
             item = cb.addItem("SE");
-            item.getItemProperty("icon").setValue(new ThemeResource("../tests-tickets/icons/se.gif"));
+            item.getItemProperty("icon").setValue(
+                    new ThemeResource("../tests-tickets/icons/se.gif"));
 
             addComponent(cb);
         }
@@ -38,11 +40,14 @@ public class ComboBoxItemIcon extends TestBase {
             cb.setItemIconPropertyId("icon");
 
             Item item = cb.addItem("Finland");
-            item.getItemProperty("icon").setValue(new ThemeResource("../tests-tickets/icons/fi.gif"));
+            item.getItemProperty("icon").setValue(
+                    new ThemeResource("../tests-tickets/icons/fi.gif"));
             item = cb.addItem("Australia");
-            item.getItemProperty("icon").setValue(new ThemeResource("../tests-tickets/icons/au.gif"));
+            item.getItemProperty("icon").setValue(
+                    new ThemeResource("../tests-tickets/icons/au.gif"));
             item = cb.addItem("Hungary");
-            item.getItemProperty("icon").setValue(new ThemeResource("../tests-tickets/icons/hu.gif"));
+            item.getItemProperty("icon").setValue(
+                    new ThemeResource("../tests-tickets/icons/hu.gif"));
 
             cb.setValue("Hungary");
             addComponent(cb);

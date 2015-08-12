@@ -98,7 +98,8 @@ public abstract class AbstractValidator<T> implements Validator {
     public void validate(Object value) throws InvalidValueException {
         // isValidType ensures that value can safely be cast to TYPE
         if (!isValidType(value) || !isValidValue((T) value)) {
-            String message = getErrorMessage().replace("{0}", String.valueOf(value));
+            String message = getErrorMessage().replace("{0}",
+                    String.valueOf(value));
             throw new InvalidValueException(message);
         }
     }

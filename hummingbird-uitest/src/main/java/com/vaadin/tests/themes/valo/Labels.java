@@ -49,7 +49,8 @@ public class Labels extends VerticalLayout implements View {
         huge.addStyleName("huge");
         left.addComponent(huge);
 
-        Label large = new Label("Large type for introductory text. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.");
+        Label large = new Label(
+                "Large type for introductory text. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.");
         large.addStyleName("large");
         left.addComponent(large);
 
@@ -57,14 +58,17 @@ public class Labels extends VerticalLayout implements View {
         h2.addStyleName("h2");
         left.addComponent(h2);
 
-        Label normal = new Label("Normal type for plain text, with a <a href=\"https://vaadin.com\">regular link</a>. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.", ContentMode.HTML);
+        Label normal = new Label(
+                "Normal type for plain text, with a <a href=\"https://vaadin.com\">regular link</a>. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.",
+                ContentMode.HTML);
         left.addComponent(normal);
 
         Label h3 = new Label("Small Title");
         h3.addStyleName("h3");
         left.addComponent(h3);
 
-        Label small = new Label("Small type for additional text. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.");
+        Label small = new Label(
+                "Small type for additional text. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.");
         small.addStyleName("small");
         left.addComponent(small);
 
@@ -76,7 +80,8 @@ public class Labels extends VerticalLayout implements View {
         h4.addStyleName("h4");
         left.addComponent(h4);
 
-        normal = new Label("Normal type for plain text. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.");
+        normal = new Label(
+                "Normal type for plain text. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.");
         left.addComponent(normal);
 
         Panel p = new Panel("Additional Label Styles");
@@ -87,15 +92,18 @@ public class Labels extends VerticalLayout implements View {
         right.setMargin(true);
         p.setContent(right);
 
-        Label label = new Label("Bold type for prominent text. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.");
+        Label label = new Label(
+                "Bold type for prominent text. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.");
         label.addStyleName("bold");
         right.addComponent(label);
 
-        label = new Label("Light type for subtle text. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.");
+        label = new Label(
+                "Light type for subtle text. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.");
         label.addStyleName("light");
         right.addComponent(label);
 
-        label = new Label("Colored type for highlighted text. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.");
+        label = new Label(
+                "Colored type for highlighted text. Etiam at risus et justo dignissim congue. Donec congue lacinia dui, a porttitor lectus condimentum laoreet. Nunc eu.");
         label.addStyleName("colored");
         right.addComponent(label);
 

@@ -42,13 +42,15 @@ public class TreeFiltering extends TestBase {
             ccTree.expandItem(o);
         }
 
-        final CheckBox filterType = new CheckBox("Include parent when filtering", true);
+        final CheckBox filterType = new CheckBox(
+                "Include parent when filtering", true);
 
         filterType.addValueChangeListener(new ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
-                cont.setIncludeParentsWhenFiltering(((CheckBox) event.getProperty()).getValue());
+                cont.setIncludeParentsWhenFiltering(
+                        ((CheckBox) event.getProperty()).getValue());
                 ccTree.markAsDirty();
             }
         });
@@ -89,22 +91,25 @@ public class TreeFiltering extends TestBase {
         });
 
         addComponent(num2);
-        final Button num3 = new Button("Add filter 'Number 4'", new ClickListener() {
-            @Override
-            public void buttonClick(final ClickEvent event) {
-                cont.addContainerFilter("caption", "Number 4", true, false);
+        final Button num3 = new Button("Add filter 'Number 4'",
+                new ClickListener() {
+                    @Override
+                    public void buttonClick(final ClickEvent event) {
+                        cont.addContainerFilter("caption", "Number 4", true,
+                                false);
 
-            }
-        });
+                    }
+                });
 
         addComponent(num3);
-        final Button p1 = new Button("Set Number 3 parent to Number 0", new ClickListener() {
-            @Override
-            public void buttonClick(final ClickEvent event) {
-                cont.setParent(3, 0);
+        final Button p1 = new Button("Set Number 3 parent to Number 0",
+                new ClickListener() {
+                    @Override
+                    public void buttonClick(final ClickEvent event) {
+                        cont.setParent(3, 0);
 
-            }
-        });
+                    }
+                });
         addComponent(p1);
         final Button r = new Button("Remove filters", new ClickListener() {
             @Override

@@ -41,12 +41,17 @@ public class MenuBarsWithNesting extends AbstractTestUI {
     private final Label label = new Label("Initial content");
 
     // The captions and icons used in the second MenuBar.
-    public final static String[] itemNames = { "Icon item", "Arrow down", "Arrow up", "Warning" };
-    private final static Resource[] itemIcons = { new ThemeResource("window/img/restore.png"), FontAwesome.ARROW_DOWN, FontAwesome.ARROW_UP, FontAwesome.WARNING };
+    public final static String[] itemNames = { "Icon item", "Arrow down",
+            "Arrow up", "Warning" };
+    private final static Resource[] itemIcons = {
+            new ThemeResource("window/img/restore.png"), FontAwesome.ARROW_DOWN,
+            FontAwesome.ARROW_UP, FontAwesome.WARNING };
 
     // The last menu item is nested with the following submenu items.
-    public final static String[] nestedItemnames = { "No icon", "Font icon", "Image icon" };
-    private final static Resource[] nestedItemIcons = { null, FontAwesome.LINK, new ThemeResource("window/img/restore.png") };
+    public final static String[] nestedItemnames = { "No icon", "Font icon",
+            "Image icon" };
+    private final static Resource[] nestedItemIcons = { null, FontAwesome.LINK,
+            new ThemeResource("window/img/restore.png") };
 
     private MenuBar.Command selectionCommand;
 
@@ -98,16 +103,19 @@ public class MenuBarsWithNesting extends AbstractTestUI {
         for (int i = 0; i < n - 1; i++) {
             menuBar.addItem(itemNames[i], itemIcons[i], selectionCommand);
         }
-        MenuItem last = menuBar.addItem(itemNames[n - 1], itemIcons[n - 1], null);
+        MenuItem last = menuBar.addItem(itemNames[n - 1], itemIcons[n - 1],
+                null);
         for (int i = 0; i < nestedItemnames.length; i++) {
-            last.addItem(nestedItemnames[i], nestedItemIcons[i], selectionCommand);
+            last.addItem(nestedItemnames[i], nestedItemIcons[i],
+                    selectionCommand);
         }
         return menuBar;
     }
 
     @Override
     protected String getTestDescription() {
-        return "This UI is used for testing subpart functionality of MenuBar. The " + "functionality is used in TestBench tests.";
+        return "This UI is used for testing subpart functionality of MenuBar. The "
+                + "functionality is used in TestBench tests.";
     }
 
     @Override

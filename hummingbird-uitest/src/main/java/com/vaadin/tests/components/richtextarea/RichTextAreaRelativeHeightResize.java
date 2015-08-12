@@ -46,7 +46,8 @@ public class RichTextAreaRelativeHeightResize extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Tests that a RichTextArea with dynamic height " + "updates its editor elements height on resize";
+        return "Tests that a RichTextArea with dynamic height "
+                + "updates its editor elements height on resize";
     }
 
     @Override

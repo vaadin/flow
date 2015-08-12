@@ -32,7 +32,8 @@ import java.util.Locale;
  * @author Vaadin Ltd
  * @since 7.1
  */
-public abstract class AbstractStringToNumberConverter<T> implements Converter<String, T> {
+public abstract class AbstractStringToNumberConverter<T>
+        implements Converter<String, T> {
 
     /**
      * Returns the format used by {@link #convertToPresentation(Object, Locale)}
@@ -64,7 +65,9 @@ public abstract class AbstractStringToNumberConverter<T> implements Converter<St
      *             If there was a problem converting the value
      * @since 7.1
      */
-    protected Number convertToNumber(String value, Class<? extends Number> targetType, Locale locale) throws ConversionException {
+    protected Number convertToNumber(String value,
+            Class<? extends Number> targetType, Locale locale)
+                    throws ConversionException {
         if (value == null) {
             return null;
         }
@@ -77,7 +80,8 @@ public abstract class AbstractStringToNumberConverter<T> implements Converter<St
         ParsePosition parsePosition = new ParsePosition(0);
         Number parsedValue = getFormat(locale).parse(value, parsePosition);
         if (parsePosition.getIndex() != value.length()) {
-            throw new ConversionException("Could not convert '" + value + "' to " + getModelType().getName());
+            throw new ConversionException("Could not convert '" + value
+                    + "' to " + getModelType().getName());
         }
 
         if (parsedValue == null) {
@@ -96,7 +100,9 @@ public abstract class AbstractStringToNumberConverter<T> implements Converter<St
      * .Object, java.util.Locale)
      */
     @Override
-    public String convertToPresentation(T value, Class<? extends String> targetType, Locale locale) throws ConversionException {
+    public String convertToPresentation(T value,
+            Class<? extends String> targetType, Locale locale)
+                    throws ConversionException {
         if (value == null) {
             return null;
         }

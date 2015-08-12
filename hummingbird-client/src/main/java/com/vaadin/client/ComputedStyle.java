@@ -286,9 +286,12 @@ public class ComputedStyle {
     }-*/;
 
     public double getOuterWidth() {
-        double padding = getDoubleProperty("paddingRight") + getDoubleProperty("paddingLeft");
-        double margin = getDoubleProperty("marginRight") + getDoubleProperty("marginLeft");
-        double border = getDoubleProperty("borderRightWidth") + getDoubleProperty("borderLeftWidth");
+        double padding = getDoubleProperty("paddingRight")
+                + getDoubleProperty("paddingLeft");
+        double margin = getDoubleProperty("marginRight")
+                + getDoubleProperty("marginLeft");
+        double border = getDoubleProperty("borderRightWidth")
+                + getDoubleProperty("borderLeftWidth");
 
         return getWidth() + padding + margin + border;
     }

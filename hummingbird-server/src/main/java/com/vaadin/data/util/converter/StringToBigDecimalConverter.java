@@ -34,7 +34,8 @@ import java.util.Locale;
  * @author Vaadin Ltd
  * @since 7.2
  */
-public class StringToBigDecimalConverter extends AbstractStringToNumberConverter<BigDecimal> {
+public class StringToBigDecimalConverter
+        extends AbstractStringToNumberConverter<BigDecimal> {
     @Override
     protected NumberFormat getFormat(Locale locale) {
         NumberFormat numberFormat = super.getFormat(locale);
@@ -46,7 +47,9 @@ public class StringToBigDecimalConverter extends AbstractStringToNumberConverter
     }
 
     @Override
-    public BigDecimal convertToModel(String value, Class<? extends BigDecimal> targetType, Locale locale) throws com.vaadin.data.util.converter.Converter.ConversionException {
+    public BigDecimal convertToModel(String value,
+            Class<? extends BigDecimal> targetType, Locale locale)
+                    throws com.vaadin.data.util.converter.Converter.ConversionException {
         return (BigDecimal) convertToNumber(value, BigDecimal.class, locale);
     }
 

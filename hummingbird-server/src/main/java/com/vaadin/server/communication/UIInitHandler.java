@@ -61,7 +61,8 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
     }
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response) throws IOException {
         try {
             assert UI.getCurrent() == null;
 
@@ -77,7 +78,8 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
             String initialUIDL = getInitialUidl(request, uI);
             params.put("uidl", initialUIDL);
 
-            return commitJsonResponse(request, response, JsonUtil.stringify(params));
+            return commitJsonResponse(request, response,
+                    JsonUtil.stringify(params));
         } catch (JsonException e) {
             throw new IOException("Error producing initial UIDL", e);
         }
@@ -98,7 +100,8 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
      * @throws IOException
      *             If there was an exception while writing to the output
      */
-    static boolean commitJsonResponse(VaadinRequest request, VaadinResponse response, String json) throws IOException {
+    static boolean commitJsonResponse(VaadinRequest request,
+            VaadinResponse response, String json) throws IOException {
         // The response was produced without errors so write it to the client
         response.setContentType(JsonConstants.JSON_CONTENT_TYPE);
 
@@ -117,12 +120,14 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
         return true;
     }
 
-    private UI getBrowserDetailsUI(VaadinRequest request, VaadinSession session) {
+    private UI getBrowserDetailsUI(VaadinRequest request,
+            VaadinSession session) {
         VaadinService vaadinService = request.getService();
 
         List<UIProvider> uiProviders = session.getUIProviders();
 
-        UIClassSelectionEvent classSelectionEvent = new UIClassSelectionEvent(request);
+        UIClassSelectionEvent classSelectionEvent = new UIClassSelectionEvent(
+                request);
 
         UIProvider provider = null;
         Class<? extends UI> uiClass = null;
@@ -157,7 +162,8 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
 
         PushMode pushMode = provider.getPushMode(event);
         if (pushMode == null) {
-            pushMode = session.getService().getDeploymentConfiguration().getPushMode();
+            pushMode = session.getService().getDeploymentConfiguration()
+                    .getPushMode();
         }
         ui.getPushConfiguration().setPushMode(pushMode);
 
@@ -210,7 +216,8 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
      * @return a string with the initial UIDL message
      * @throws IOException
      */
-    protected String getInitialUidl(VaadinRequest request, UI uI) throws IOException {
+    protected String getInitialUidl(VaadinRequest request, UI uI)
+            throws IOException {
         StringWriter writer = new StringWriter();
         try {
             writer.write("{");
@@ -240,7 +247,8 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
     private static String getSecurityKeyUIDL(VaadinSession session) {
         String seckey = session.getCsrfToken();
 
-        return "\"" + ApplicationConstants.UIDL_SECURITY_TOKEN_ID + "\":\"" + seckey + "\",";
+        return "\"" + ApplicationConstants.UIDL_SECURITY_TOKEN_ID + "\":\""
+                + seckey + "\",";
     }
 
     private static final Logger getLogger() {

@@ -48,7 +48,9 @@ public abstract class BootstrapResponse extends EventObject {
      * @param uiProvider
      *            the UI provider for the bootstrap
      */
-    public BootstrapResponse(BootstrapHandler handler, VaadinRequest request, VaadinSession session, Class<? extends UI> uiClass, UIProvider uiProvider) {
+    public BootstrapResponse(BootstrapHandler handler, VaadinRequest request,
+            VaadinSession session, Class<? extends UI> uiClass,
+            UIProvider uiProvider) {
         super(handler);
         this.request = request;
         this.session = session;

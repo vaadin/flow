@@ -39,5 +39,6 @@ public interface SystemMessagesProvider extends Serializable {
      *            Locale, current request and other information available.
      * @return a system messages object
      */
-    public SystemMessages getSystemMessages(SystemMessagesInfo systemMessagesInfo);
+    public SystemMessages getSystemMessages(
+            SystemMessagesInfo systemMessagesInfo);
 }

@@ -16,27 +16,32 @@ public class NotificationsCssTest extends VerticalLayout {
         this.parent = parent;
         parent.registerComponent(this);
 
-        Button humanized = new Button("Humanized message", new Button.ClickListener() {
+        Button humanized = new Button("Humanized message",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                createNotification("A message", "A description", Notification.Type.HUMANIZED_MESSAGE);
-            }
-        });
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        createNotification("A message", "A description",
+                                Notification.Type.HUMANIZED_MESSAGE);
+                    }
+                });
         humanized.setId("notifButt" + debugIdCounter++);
-        Button warning = new Button("Warning message", new Button.ClickListener() {
+        Button warning = new Button("Warning message",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                createNotification("A message", "A description", Notification.Type.WARNING_MESSAGE);
-            }
-        });
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        createNotification("A message", "A description",
+                                Notification.Type.WARNING_MESSAGE);
+                    }
+                });
         warning.setId("notifButt" + debugIdCounter++);
         Button error = new Button("Error message", new Button.ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                createNotification("A message", "A description", Notification.Type.ERROR_MESSAGE);
+                createNotification("A message", "A description",
+                        Notification.Type.ERROR_MESSAGE);
             }
         });
         error.setId("notifButt" + debugIdCounter++);
@@ -44,7 +49,8 @@ public class NotificationsCssTest extends VerticalLayout {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                createNotification("A message", "A description", Notification.Type.TRAY_NOTIFICATION);
+                createNotification("A message", "A description",
+                        Notification.Type.TRAY_NOTIFICATION);
             }
         });
         tray.setId("notifButt" + debugIdCounter++);
@@ -55,7 +61,8 @@ public class NotificationsCssTest extends VerticalLayout {
         addComponent(tray);
     }
 
-    private void createNotification(String caption, String message, Notification.Type type) {
+    private void createNotification(String caption, String message,
+            Notification.Type type) {
 
         Notification notification;
 

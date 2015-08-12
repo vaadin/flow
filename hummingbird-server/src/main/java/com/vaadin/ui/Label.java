@@ -53,7 +53,9 @@ import com.vaadin.ui.declarative.DesignContext;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class Label extends AbstractComponent implements Property<String>, Property.Viewer, Property.ValueChangeListener, Property.ValueChangeNotifier, Comparable<Label> {
+public class Label extends AbstractComponent implements Property<String>,
+        Property.Viewer, Property.ValueChangeListener,
+        Property.ValueChangeNotifier, Comparable<Label> {
 
     /**
      * A converter used to convert from the data model type to the field type
@@ -152,7 +154,9 @@ public class Label extends AbstractComponent implements Property<String>, Proper
      * @return
      */
     private String getDataSourceValue() {
-        return ConverterUtil.convertFromModel(getPropertyDataSource().getValue(), String.class, getConverter(), getLocale());
+        return ConverterUtil.convertFromModel(
+                getPropertyDataSource().getValue(), String.class,
+                getConverter(), getLocale());
     }
 
     /**
@@ -175,7 +179,8 @@ public class Label extends AbstractComponent implements Property<String>, Proper
                 fireValueChange();
             }
         } else {
-            throw new IllegalStateException("Label is only a Property.Viewer and cannot update its data source");
+            throw new IllegalStateException(
+                    "Label is only a Property.Viewer and cannot update its data source");
         }
     }
 
@@ -211,15 +216,20 @@ public class Label extends AbstractComponent implements Property<String>, Proper
     @Override
     public void setPropertyDataSource(Property newDataSource) {
         // Stops listening the old data source changes
-        if (dataSource != null && Property.ValueChangeNotifier.class.isAssignableFrom(dataSource.getClass())) {
-            ((Property.ValueChangeNotifier) dataSource).removeValueChangeListener(this);
+        if (dataSource != null && Property.ValueChangeNotifier.class
+                .isAssignableFrom(dataSource.getClass())) {
+            ((Property.ValueChangeNotifier) dataSource)
+                    .removeValueChangeListener(this);
         }
 
         // Check if the current converter is compatible.
-        if (newDataSource != null && !ConverterUtil.canConverterPossiblyHandle(getConverter(), getType(), newDataSource.getType())) {
+        if (newDataSource != null
+                && !ConverterUtil.canConverterPossiblyHandle(getConverter(),
+                        getType(), newDataSource.getType())) {
             // There is no converter set or there is no way the current
             // converter can be compatible.
-            Converter<String, ?> c = ConverterUtil.getConverter(String.class, newDataSource.getType(), getSession());
+            Converter<String, ?> c = ConverterUtil.getConverter(String.class,
+                    newDataSource.getType(), getSession());
             setConverter(c);
         }
 
@@ -231,8 +241,10 @@ public class Label extends AbstractComponent implements Property<String>, Proper
         }
 
         // Listens the new data source if possible
-        if (dataSource != null && Property.ValueChangeNotifier.class.isAssignableFrom(dataSource.getClass())) {
-            ((Property.ValueChangeNotifier) dataSource).addValueChangeListener(this);
+        if (dataSource != null && Property.ValueChangeNotifier.class
+                .isAssignableFrom(dataSource.getClass())) {
+            ((Property.ValueChangeNotifier) dataSource)
+                    .addValueChangeListener(this);
         }
         markAsDirty();
     }
@@ -270,10 +282,13 @@ public class Label extends AbstractComponent implements Property<String>, Proper
 
     static {
         try {
-            VALUE_CHANGE_METHOD = Property.ValueChangeListener.class.getDeclaredMethod("valueChange", new Class[] { Property.ValueChangeEvent.class });
+            VALUE_CHANGE_METHOD = Property.ValueChangeListener.class
+                    .getDeclaredMethod("valueChange",
+                            new Class[] { Property.ValueChangeEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
-            throw new java.lang.RuntimeException("Internal error finding methods in Label");
+            throw new java.lang.RuntimeException(
+                    "Internal error finding methods in Label");
         }
     }
 
@@ -283,7 +298,8 @@ public class Label extends AbstractComponent implements Property<String>, Proper
      * @author Vaadin Ltd.
      * @since 3.0
      */
-    public static class ValueChangeEvent extends Component.Event implements Property.ValueChangeEvent {
+    public static class ValueChangeEvent extends Component.Event
+            implements Property.ValueChangeEvent {
 
         /**
          * New instance of text change event
@@ -315,7 +331,8 @@ public class Label extends AbstractComponent implements Property<String>, Proper
      */
     @Override
     public void addValueChangeListener(Property.ValueChangeListener listener) {
-        addListener(Label.ValueChangeEvent.class, listener, VALUE_CHANGE_METHOD);
+        addListener(Label.ValueChangeEvent.class, listener,
+                VALUE_CHANGE_METHOD);
     }
 
     /**
@@ -326,8 +343,10 @@ public class Label extends AbstractComponent implements Property<String>, Proper
      * @see com.vaadin.data.Property.ValueChangeNotifier#removeListener(com.vaadin.data.Property.ValueChangeListener)
      */
     @Override
-    public void removeValueChangeListener(Property.ValueChangeListener listener) {
-        removeListener(Label.ValueChangeEvent.class, listener, VALUE_CHANGE_METHOD);
+    public void removeValueChangeListener(
+            Property.ValueChangeListener listener) {
+        removeListener(Label.ValueChangeEvent.class, listener,
+                VALUE_CHANGE_METHOD);
     }
 
     /**

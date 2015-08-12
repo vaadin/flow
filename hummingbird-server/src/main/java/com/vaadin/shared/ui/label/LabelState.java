@@ -21,6 +21,7 @@ public class LabelState extends AbstractComponentState {
     {
         primaryStyleName = "v-label";
     }
+
     public ContentMode contentMode = ContentMode.TEXT;
     public String text = "";
 }

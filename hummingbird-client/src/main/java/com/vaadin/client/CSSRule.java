@@ -57,52 +57,54 @@ public class CSSRule {
      * Loops through all current style rules and collects all matching to
      * 'rules' array. The array is reverse ordered (last one found is first).
      */
-    private static native JavaScriptObject searchForRule(final JavaScriptObject sheet, final String selector, final boolean deep)
-    /*-{
-    if(!$doc.styleSheets)
-    return null;
-
-    selector = selector.toLowerCase();
-
-    var allMatches = [];
-
-    // IE handles imported sheet differently
-    if(deep && sheet.imports && sheet.imports.length > 0) {
-    for(var i=0; i < sheet.imports.length; i++) {
-    // $entry not needed as function is not exported
-    var imports = @com.vaadin.client.CSSRule::searchForRule(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Z)(sheet.imports[i], selector, deep);
-    allMatches.concat(imports);
-    }
-    }
-
-    var theRules = new Array();
-    if (sheet.cssRules)
-    theRules = sheet.cssRules
-    else if (sheet.rules)
-    theRules = sheet.rules
-
-    var j = theRules.length;
-    for(var i=0; i<j; i++) {
-    var r = theRules[i];
-    if(r.type == 1 || sheet.imports) {
-    var selectors = r.selectorText.toLowerCase().split(",");
-    var n = selectors.length;
-    for(var m=0; m<n; m++) {
-    if(selectors[m].replace(/^\s+|\s+$/g, "") == selector) {
-    allMatches.unshift(r);
-    break; // No need to loop other selectors for this rule
-    }
-    }
-    } else if(deep && r.type == 3) {
-    // Search @import stylesheet
-    // $entry not needed as function is not exported
-    var imports = @com.vaadin.client.CSSRule::searchForRule(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Z)(r.styleSheet, selector, deep);
-    allMatches = allMatches.concat(imports);
-    }
-    }
-
-    return allMatches;
-    }-*/;
+    private static native JavaScriptObject searchForRule(
+            final JavaScriptObject sheet, final String selector,
+            final boolean deep)
+            /*-{
+            if(!$doc.styleSheets)
+            return null;
+            
+            selector = selector.toLowerCase();
+            
+            var allMatches = [];
+            
+            // IE handles imported sheet differently
+            if(deep && sheet.imports && sheet.imports.length > 0) {
+            for(var i=0; i < sheet.imports.length; i++) {
+            // $entry not needed as function is not exported
+            var imports = @com.vaadin.client.CSSRule::searchForRule(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Z)(sheet.imports[i], selector, deep);
+            allMatches.concat(imports);
+            }
+            }
+            
+            var theRules = new Array();
+            if (sheet.cssRules)
+            theRules = sheet.cssRules
+            else if (sheet.rules)
+            theRules = sheet.rules
+            
+            var j = theRules.length;
+            for(var i=0; i<j; i++) {
+            var r = theRules[i];
+            if(r.type == 1 || sheet.imports) {
+            var selectors = r.selectorText.toLowerCase().split(",");
+            var n = selectors.length;
+            for(var m=0; m<n; m++) {
+            if(selectors[m].replace(/^\s+|\s+$/g, "") == selector) {
+            allMatches.unshift(r);
+            break; // No need to loop other selectors for this rule
+            }
+            }
+            } else if(deep && r.type == 3) {
+            // Search @import stylesheet
+            // $entry not needed as function is not exported
+            var imports = @com.vaadin.client.CSSRule::searchForRule(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Z)(r.styleSheet, selector, deep);
+            allMatches = allMatches.concat(imports);
+            }
+            }
+            
+            return allMatches;
+            }-*/;
 
     /**
      * Returns a specific property value from this CSS rule.

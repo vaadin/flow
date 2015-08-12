@@ -80,7 +80,8 @@ import com.vaadin.shared.ui.JavaScriptComponentState;
  * functions is described bellow.</li>
  * <li><code>translateVaadinUri(uri)</code> - Translates a Vaadin URI to a URL
  * that can be used in the browser. This is just way of accessing
- * {@link com.vaadin.client.ApplicationConnection#translateVaadinUri(String)}</li>
+ * {@link com.vaadin.client.ApplicationConnection#translateVaadinUri(String)}
+ * </li>
  * <li><code>addResizeListener(element, callbackFunction)</code> - Registers a
  * listener that gets notified whenever the size of the provided element
  * changes. The listener is called with one parameter: an event object with the
@@ -102,7 +103,8 @@ import com.vaadin.shared.ui.JavaScriptComponentState;
  * automatically be present as a function that triggers the registered function
  * on the server.</li>
  * <li>Any field name referred to using {@link #callFunction(String, Object...)}
- * on the server will be called if a function has been assigned to the field.</li>
+ * on the server will be called if a function has been assigned to the field.
+ * </li>
  * </ul>
  * <p>
  * 
@@ -117,7 +119,8 @@ import com.vaadin.shared.ui.JavaScriptComponentState;
  * <li>Java Strings are represented by JavaScript strings.</li>
  * <li>Java Dates are represented by JavaScript numbers containing the timestamp
  * </li>
- * <li>List, Set and all arrays in Java are represented by JavaScript arrays.</li>
+ * <li>List, Set and all arrays in Java are represented by JavaScript arrays.
+ * </li>
  * <li>Map&lt;String, ?&gt; in Java is represented by JavaScript object with
  * fields corresponding to the map keys.</li>
  * <li>Any other Java Map is represented by a JavaScript array containing two
@@ -136,10 +139,12 @@ import com.vaadin.shared.ui.JavaScriptComponentState;
  * @since 7.0.0
  */
 public abstract class AbstractJavaScriptComponent extends AbstractComponent {
-    private JavaScriptCallbackHelper callbackHelper = new JavaScriptCallbackHelper(this);
+    private JavaScriptCallbackHelper callbackHelper = new JavaScriptCallbackHelper(
+            this);
 
     @Override
-    protected <T extends ServerRpc> void registerRpc(T implementation, Class<T> rpcInterfaceType) {
+    protected <T extends ServerRpc> void registerRpc(T implementation,
+            Class<T> rpcInterfaceType) {
         super.registerRpc(implementation, rpcInterfaceType);
         callbackHelper.registerRpc(rpcInterfaceType);
     }
@@ -158,7 +163,8 @@ public abstract class AbstractJavaScriptComponent extends AbstractComponent {
      *            the {@link JavaScriptFunction} object that will be invoked
      *            when the JavaScript function is called
      */
-    protected void addFunction(String functionName, JavaScriptFunction function) {
+    protected void addFunction(String functionName,
+            JavaScriptFunction function) {
         callbackHelper.registerCallback(functionName, function);
     }
 

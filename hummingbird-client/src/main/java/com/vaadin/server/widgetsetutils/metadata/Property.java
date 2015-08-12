@@ -58,7 +58,9 @@ public abstract class Property implements Comparable<Property> {
         if (primitive == null) {
             return codeSnippet;
         } else {
-            return String.format("@%s::valueOf(%s)(%s)", primitive.getQualifiedBoxedSourceName(), propertyType.getJNISignature(), codeSnippet);
+            return String.format("@%s::valueOf(%s)(%s)",
+                    primitive.getQualifiedBoxedSourceName(),
+                    propertyType.getJNISignature(), codeSnippet);
         }
     }
 
@@ -67,7 +69,9 @@ public abstract class Property implements Comparable<Property> {
         if (primitive == null) {
             return codeSnippet;
         } else {
-            return String.format("%s.@%s::%sValue()()", codeSnippet, primitive.getQualifiedBoxedSourceName(), primitive.getSimpleSourceName());
+            return String.format("%s.@%s::%sValue()()", codeSnippet,
+                    primitive.getQualifiedBoxedSourceName(),
+                    primitive.getSimpleSourceName());
         }
     }
 
@@ -75,9 +79,11 @@ public abstract class Property implements Comparable<Property> {
         return beanType;
     }
 
-    public abstract void writeSetterBody(TreeLogger logger, SourceWriter w, String beanVariable, String valueVariable);
+    public abstract void writeSetterBody(TreeLogger logger, SourceWriter w,
+            String beanVariable, String valueVariable);
 
-    public abstract void writeGetterBody(TreeLogger logger, SourceWriter w, String beanVariable);
+    public abstract void writeGetterBody(TreeLogger logger, SourceWriter w,
+            String beanVariable);
 
     public abstract boolean hasAccessorMethods();
 
@@ -87,7 +93,9 @@ public abstract class Property implements Comparable<Property> {
             return true;
         } else if (obj instanceof Property) {
             Property other = (Property) obj;
-            return other.getClass() == getClass() && other.getBeanType().equals(getBeanType()) && other.getName().equals(getName());
+            return other.getClass() == getClass()
+                    && other.getBeanType().equals(getBeanType())
+                    && other.getName().equals(getName());
         } else {
             return false;
         }
@@ -95,21 +103,25 @@ public abstract class Property implements Comparable<Property> {
 
     @Override
     public int hashCode() {
-        return getClass().hashCode() * 31 ^ 2 + getBeanType().hashCode() * 31 + getName().hashCode();
+        return getClass().hashCode() * 31
+                ^ 2 + getBeanType().hashCode() * 31 + getName().hashCode();
     }
 
     @Override
     public int compareTo(Property o) {
         int comp = getName().compareTo(o.getName());
         if (comp == 0) {
-            comp = getBeanType().getQualifiedSourceName().compareTo(o.getBeanType().getQualifiedSourceName());
+            comp = getBeanType().getQualifiedSourceName()
+                    .compareTo(o.getBeanType().getQualifiedSourceName());
         }
         if (comp == 0) {
-            comp = getClass().getCanonicalName().compareTo(o.getClass().getCanonicalName());
+            comp = getClass().getCanonicalName()
+                    .compareTo(o.getClass().getCanonicalName());
         }
         return comp;
     }
 
-    public abstract <T extends Annotation> T getAnnotation(Class<T> annotationClass);
+    public abstract <T extends Annotation> T getAnnotation(
+            Class<T> annotationClass);
 
 }

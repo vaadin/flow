@@ -77,6 +77,7 @@ public abstract class Action implements Command {
      */
     @Override
     public String toString() {
-        return "Action [owner=" + owner + ", iconUrl=" + iconUrl + ", caption=" + caption + "]";
+        return "Action [owner=" + owner + ", iconUrl=" + iconUrl + ", caption="
+                + caption + "]";
     }
 }

@@ -33,6 +33,9 @@ public class ContrastFontColorTest extends MultiBrowserTest {
         openTestURL();
 
         String color = $(TextFieldElement.class).first().getCssValue("color");
-        Assert.assertEquals("Unexpected text color value using 0.1 as defualt contrast value :" + color, "rgba(230, 230, 230, 1)", color);
+        Assert.assertEquals(
+                "Unexpected text color value using 0.1 as defualt contrast value :"
+                        + color,
+                "rgba(230, 230, 230, 1)", color);
     }
 }

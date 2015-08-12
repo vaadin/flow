@@ -36,7 +36,8 @@ import com.vaadin.ui.Component;
  */
 public abstract class DataBoundTransferable extends TransferableImpl {
 
-    public DataBoundTransferable(Component sourceComponent, Map<String, Object> rawVariables) {
+    public DataBoundTransferable(Component sourceComponent,
+            Map<String, Object> rawVariables) {
         super(sourceComponent, rawVariables);
     }
 
@@ -67,7 +68,8 @@ public abstract class DataBoundTransferable extends TransferableImpl {
     public Container getSourceContainer() {
         Component sourceComponent = getSourceComponent();
         if (sourceComponent instanceof Container.Viewer) {
-            return ((Container.Viewer) sourceComponent).getContainerDataSource();
+            return ((Container.Viewer) sourceComponent)
+                    .getContainerDataSource();
         } else {
             // this should not happen
             return null;

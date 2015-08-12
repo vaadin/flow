@@ -53,11 +53,16 @@ public class UsingXyzWhenInitializing extends UI {
         }
 
         WebBrowser browser = getPage().getWebBrowser();
-        String resolution = "Your browser window on startup was " + browser.getScreenWidth() + "x" + browser.getScreenHeight();
+        String resolution = "Your browser window on startup was "
+                + browser.getScreenWidth() + "x" + browser.getScreenHeight();
         if (browser.getScreenWidth() > 1024) {
-            layout.addComponent(new Label("The is the large version of the application. " + resolution));
+            layout.addComponent(
+                    new Label("The is the large version of the application. "
+                            + resolution));
         } else {
-            layout.addComponent(new Label("This is the small version of the application. " + resolution));
+            layout.addComponent(
+                    new Label("This is the small version of the application. "
+                            + resolution));
         }
     }
 

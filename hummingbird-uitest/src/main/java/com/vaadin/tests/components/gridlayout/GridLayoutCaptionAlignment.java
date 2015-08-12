@@ -53,7 +53,8 @@ public class GridLayoutCaptionAlignment extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "Test alignment of component captions inside GridLayout – " + "all captions should be aligned directly above the TextField components.";
+        return "Test alignment of component captions inside GridLayout – "
+                + "all captions should be aligned directly above the TextField components.";
     }
 
 }

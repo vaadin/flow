@@ -24,7 +24,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class ConnectorMap {
 
-    public static ConnectorMap get(ApplicationConnection applicationConnection) {
+    public static ConnectorMap get(
+            ApplicationConnection applicationConnection) {
         return applicationConnection.getConnectorMap();
     }
 
@@ -209,7 +210,8 @@ public class ConnectorMap {
     }
 
     public JsArrayObject<ComponentConnector> getComponentConnectorsAsJsArray() {
-        JsArrayObject<ComponentConnector> result = JavaScriptObject.createArray().cast();
+        JsArrayObject<ComponentConnector> result = JavaScriptObject
+                .createArray().cast();
 
         JsArrayObject<ServerConnector> connectors = getConnectorsAsJsArray();
         int size = connectors.size();

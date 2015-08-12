@@ -9,7 +9,9 @@ import com.vaadin.ui.OptionGroup;
 
 public class DisabledOptionGroupItems extends ComponentTestCase<OptionGroup> {
 
-    private static final List<String> cities = Arrays.asList(new String[] { "Berlin", "Brussels", "Helsinki", "Madrid", "Oslo", "Paris", "Stockholm" });
+    private static final List<String> cities = Arrays
+            .asList(new String[] { "Berlin", "Brussels", "Helsinki", "Madrid",
+                    "Oslo", "Paris", "Stockholm" });
 
     private static final String NULL_SELECTION_ID = "Berlin";
 
@@ -47,31 +49,35 @@ public class DisabledOptionGroupItems extends ComponentTestCase<OptionGroup> {
     }
 
     private Component createToggleSelectionModeAction() {
-        return createButtonAction("Toggle selection mode", new Command<OptionGroup, Boolean>() {
+        return createButtonAction("Toggle selection mode",
+                new Command<OptionGroup, Boolean>() {
 
-            @Override
-            public void execute(OptionGroup og, Boolean value, Object data) {
-                if (og.isMultiSelect()) {
-                    og.setMultiSelect(false);
-                    og.setNullSelectionItemId(NULL_SELECTION_ID);
-                } else {
-                    og.setNullSelectionItemId(null);
-                    og.setMultiSelect(true);
-                }
-            }
-        });
+                    @Override
+                    public void execute(OptionGroup og, Boolean value,
+                            Object data) {
+                        if (og.isMultiSelect()) {
+                            og.setMultiSelect(false);
+                            og.setNullSelectionItemId(NULL_SELECTION_ID);
+                        } else {
+                            og.setNullSelectionItemId(null);
+                            og.setMultiSelect(true);
+                        }
+                    }
+                });
     }
 
     private Component createInvertDisabledItemsAction() {
-        return createButtonAction("Invert disabled items", new Command<OptionGroup, Boolean>() {
+        return createButtonAction("Invert disabled items",
+                new Command<OptionGroup, Boolean>() {
 
-            @Override
-            public void execute(OptionGroup c, Boolean value, Object data) {
-                for (Object itemId : c.getItemIds()) {
-                    c.setItemEnabled(itemId, !c.isItemEnabled(itemId));
-                }
-            }
-        });
+                    @Override
+                    public void execute(OptionGroup c, Boolean value,
+                            Object data) {
+                        for (Object itemId : c.getItemIds()) {
+                            c.setItemEnabled(itemId, !c.isItemEnabled(itemId));
+                        }
+                    }
+                });
     }
 
     private OptionGroup createOptionGroup(String caption) {

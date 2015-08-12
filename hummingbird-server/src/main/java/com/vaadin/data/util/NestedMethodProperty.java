@@ -62,14 +62,16 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
     private Class<? extends T> type;
 
     /* Special serialization to handle method references */
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    private void writeObject(java.io.ObjectOutputStream out)
+            throws IOException {
         out.defaultWriteObject();
         // getMethods and setMethod are reconstructed on read based on
         // propertyName
     }
 
     /* Special serialization to handle method references */
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
         in.defaultReadObject();
 
         initialize(instance.getClass(), propertyName);
@@ -119,7 +121,8 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
      * @throws IllegalArgumentException
      *             if the property name is invalid
      */
-    private void initialize(Class<?> beanClass, String propertyName) throws IllegalArgumentException {
+    private void initialize(Class<?> beanClass, String propertyName)
+            throws IllegalArgumentException {
 
         List<Method> getMethods = new ArrayList<Method>();
 
@@ -130,7 +133,8 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
         Class<?> propertyClass = beanClass;
         String[] simplePropertyNames = propertyName.split("\\.");
         if (propertyName.endsWith(".") || 0 == simplePropertyNames.length) {
-            throw new IllegalArgumentException("Invalid property name '" + propertyName + "'");
+            throw new IllegalArgumentException(
+                    "Invalid property name '" + propertyName + "'");
         }
         for (int i = 0; i < simplePropertyNames.length; i++) {
             String simplePropertyName = simplePropertyNames[i].trim();
@@ -138,14 +142,18 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
                 lastSimplePropertyName = simplePropertyName;
                 lastClass = propertyClass;
                 try {
-                    Method getter = MethodProperty.initGetterMethod(simplePropertyName, propertyClass);
+                    Method getter = MethodProperty.initGetterMethod(
+                            simplePropertyName, propertyClass);
                     propertyClass = getter.getReturnType();
                     getMethods.add(getter);
                 } catch (final java.lang.NoSuchMethodException e) {
-                    throw new IllegalArgumentException("Bean property '" + simplePropertyName + "' not found", e);
+                    throw new IllegalArgumentException("Bean property '"
+                            + simplePropertyName + "' not found", e);
                 }
             } else {
-                throw new IllegalArgumentException("Empty or invalid bean property identifier in '" + propertyName + "'");
+                throw new IllegalArgumentException(
+                        "Empty or invalid bean property identifier in '"
+                                + propertyName + "'");
             }
         }
 
@@ -158,9 +166,11 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
         try {
             // Assure that the first letter is upper cased (it is a common
             // mistake to write firstName, not FirstName).
-            lastSimplePropertyName = SharedUtil.capitalize(lastSimplePropertyName);
+            lastSimplePropertyName = SharedUtil
+                    .capitalize(lastSimplePropertyName);
 
-            setMethod = lastClass.getMethod("set" + lastSimplePropertyName, new Class[] { type });
+            setMethod = lastClass.getMethod("set" + lastSimplePropertyName,
+                    new Class[] { type });
         } catch (final NoSuchMethodException skipped) {
         }
 
@@ -208,8 +218,8 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
      * 
      * @param newValue
      *            the New value of the property.
-     * @throws <code>Property.ReadOnlyException</code> if the object is in
-     *         read-only mode.
+     * @throws <code>Property.ReadOnlyException</code>
+     *             if the object is in read-only mode.
      * @see #invokeSetMethod(Object)
      */
     @Override

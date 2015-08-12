@@ -52,7 +52,8 @@ public class CheckBoxRpcCountTest extends MultiBrowserTest {
         waitUntilLabelIsUpdated(countElem, "3 RPC call(s) made.");
     }
 
-    private void waitUntilLabelIsUpdated(final WebElement countElem, final String expectedText) {
+    private void waitUntilLabelIsUpdated(final WebElement countElem,
+            final String expectedText) {
         waitUntil(new ExpectedCondition<Boolean>() {
             @Override
             public Boolean apply(WebDriver input) {

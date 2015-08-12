@@ -35,7 +35,8 @@ public class CleanupBrokenUI extends AbstractTestUIWithLog {
         addComponent(new Label("Label with broken detach") {
             @Override
             public void detach() {
-                throw new IllegalStateException("Detach does not work for this component");
+                throw new IllegalStateException(
+                        "Detach does not work for this component");
             }
         });
 

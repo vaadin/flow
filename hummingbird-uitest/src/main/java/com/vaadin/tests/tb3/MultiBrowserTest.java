@@ -51,69 +51,78 @@ public abstract class MultiBrowserTest extends PrivateTB3Configuration {
 
     protected List<DesiredCapabilities> getBrowsersSupportingWebSocket() {
         // No WebSocket support in IE8-9 and PhantomJS
-        return getBrowserCapabilities(Browser.IE10, Browser.IE11, Browser.FIREFOX, Browser.CHROME);
+        return getBrowserCapabilities(Browser.IE10, Browser.IE11,
+                Browser.FIREFOX, Browser.CHROME);
     }
 
     protected List<DesiredCapabilities> getBrowsersExcludingPhantomJS() {
-        return getBrowserCapabilities(Browser.IE8, Browser.IE9, Browser.IE10, Browser.IE11, Browser.CHROME, Browser.FIREFOX);
+        return getBrowserCapabilities(Browser.IE8, Browser.IE9, Browser.IE10,
+                Browser.IE11, Browser.CHROME, Browser.FIREFOX);
     }
 
     protected List<DesiredCapabilities> getBrowsersExcludingIE() {
-        return getBrowserCapabilities(Browser.FIREFOX, Browser.CHROME, Browser.PHANTOMJS);
+        return getBrowserCapabilities(Browser.FIREFOX, Browser.CHROME,
+                Browser.PHANTOMJS);
     }
 
     protected List<DesiredCapabilities> getBrowsersExcludingIE8() {
-        return getBrowserCapabilities(Browser.IE9, Browser.IE10, Browser.IE11, Browser.FIREFOX, Browser.CHROME, Browser.PHANTOMJS);
+        return getBrowserCapabilities(Browser.IE9, Browser.IE10, Browser.IE11,
+                Browser.FIREFOX, Browser.CHROME, Browser.PHANTOMJS);
     }
 
     protected List<DesiredCapabilities> getBrowsersSupportingShiftClick() {
-        return getBrowserCapabilities(Browser.IE8, Browser.IE9, Browser.IE10, Browser.IE11, Browser.CHROME);
+        return getBrowserCapabilities(Browser.IE8, Browser.IE9, Browser.IE10,
+                Browser.IE11, Browser.CHROME);
     }
 
     protected List<DesiredCapabilities> getIEBrowsersOnly() {
-        return getBrowserCapabilities(Browser.IE8, Browser.IE9, Browser.IE10, Browser.IE11);
+        return getBrowserCapabilities(Browser.IE8, Browser.IE9, Browser.IE10,
+                Browser.IE11);
     }
 
     protected List<DesiredCapabilities> getBrowsersSupportingContextMenu() {
         // context menu doesn't work in phantom JS and works weirdly with IE8
         // and selenium.
-        return getBrowserCapabilities(Browser.IE9, Browser.IE10, Browser.IE11, Browser.FIREFOX, Browser.CHROME);
+        return getBrowserCapabilities(Browser.IE9, Browser.IE10, Browser.IE11,
+                Browser.FIREFOX, Browser.CHROME);
     }
 
     @Override
-    public void setDesiredCapabilities(DesiredCapabilities desiredCapabilities) {
+    public void setDesiredCapabilities(
+            DesiredCapabilities desiredCapabilities) {
         super.setDesiredCapabilities(desiredCapabilities);
 
         if (BrowserUtil.isIE(desiredCapabilities)) {
             if (requireWindowFocusForIE()) {
-                desiredCapabilities.setCapability(InternetExplorerDriver.REQUIRE_WINDOW_FOCUS, true);
+                desiredCapabilities.setCapability(
+                        InternetExplorerDriver.REQUIRE_WINDOW_FOCUS, true);
             }
             if (!usePersistentHoverForIE()) {
-                desiredCapabilities.setCapability(InternetExplorerDriver.ENABLE_PERSISTENT_HOVERING, false);
+                desiredCapabilities.setCapability(
+                        InternetExplorerDriver.ENABLE_PERSISTENT_HOVERING,
+                        false);
             }
         }
 
         desiredCapabilities.setCapability("project", "Vaadin Framework");
-        desiredCapabilities.setCapability("build", String.format("%s / %s", getDeploymentHostname(), Calendar.getInstance().getTime()));
-        desiredCapabilities.setCapability("name", String.format("%s.%s", getClass().getCanonicalName(), testName.getMethodName()));
+        desiredCapabilities.setCapability("build", String.format("%s / %s",
+                getDeploymentHostname(), Calendar.getInstance().getTime()));
+        desiredCapabilities.setCapability("name", String.format("%s.%s",
+                getClass().getCanonicalName(), testName.getMethodName()));
     }
 
     @Override
     public List<DesiredCapabilities> getBrowsersToTest() {
         // Uncomment Safari and Opera if those become tested browsers again.
-        return getBrowserCapabilities(Browser.IE8, Browser.IE9, Browser.IE10, Browser.IE11, Browser.FIREFOX, Browser.CHROME, Browser.PHANTOMJS /*
-                                                                                                                                                * ,
-                                                                                                                                                * Browser
-                                                                                                                                                * .
-                                                                                                                                                * SAFARI
-                                                                                                                                                * ,
-                                                                                                                                                * Browser
-                                                                                                                                                * .
-                                                                                                                                                * OPERA
-                                                                                                                                                */);
+        return getBrowserCapabilities(Browser.IE8, Browser.IE9, Browser.IE10,
+                Browser.IE11, Browser.FIREFOX, Browser.CHROME,
+                Browser.PHANTOMJS /*
+                                   * , Browser . SAFARI , Browser . OPERA
+                                   */);
     }
 
-    protected List<DesiredCapabilities> getBrowserCapabilities(Browser... browsers) {
+    protected List<DesiredCapabilities> getBrowserCapabilities(
+            Browser... browsers) {
         List<DesiredCapabilities> capabilities = new ArrayList<DesiredCapabilities>();
         for (Browser browser : browsers) {
             capabilities.add(browser.getDesiredCapabilities());

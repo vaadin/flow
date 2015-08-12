@@ -3,8 +3,11 @@ package com.vaadin.hummingbird.kernel;
 import java.util.Collection;
 import java.util.Map;
 
-public abstract class BoundElementTemplateWithChildren extends BoundElementTemplate {
-    public BoundElementTemplateWithChildren(String tag, Collection<AttributeBinding> attributeBindings, Map<String, String> defaultAttributeValues) {
+public abstract class BoundElementTemplateWithChildren
+        extends BoundElementTemplate {
+    public BoundElementTemplateWithChildren(String tag,
+            Collection<AttributeBinding> attributeBindings,
+            Map<String, String> defaultAttributeValues) {
         super(tag, attributeBindings, defaultAttributeValues);
     }
 
@@ -12,7 +15,8 @@ public abstract class BoundElementTemplateWithChildren extends BoundElementTempl
 
     protected abstract StateNode getChildNode(int childIndex, StateNode node);
 
-    protected abstract ElementTemplate getChildTemplate(int childIndex, StateNode node);
+    protected abstract ElementTemplate getChildTemplate(int childIndex,
+            StateNode node);
 
     @Override
     public int getChildCount(StateNode node) {

@@ -49,10 +49,12 @@ public class EmbeddedAltTextTest extends MultiBrowserTest {
 
     private void assertHtmlSource(String html) {
         String pageSource = driver.getPageSource();
-        Assert.assertTrue("Page source does not contain '" + html + "'", pageSource.contains(html));
+        Assert.assertTrue("Page source does not contain '" + html + "'",
+                pageSource.contains(html));
     }
 
     private String getAltText(EmbeddedElement embedded) {
-        return embedded.findElement(By.vaadin("/domChild[0]")).getAttribute("alt");
+        return embedded.findElement(By.vaadin("/domChild[0]"))
+                .getAttribute("alt");
     }
 }

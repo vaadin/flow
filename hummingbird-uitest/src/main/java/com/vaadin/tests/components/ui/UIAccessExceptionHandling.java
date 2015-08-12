@@ -30,7 +30,8 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
-public class UIAccessExceptionHandling extends AbstractTestUIWithLog implements ErrorHandler {
+public class UIAccessExceptionHandling extends AbstractTestUIWithLog
+        implements ErrorHandler {
 
     private Future<Void> future;
 
@@ -38,71 +39,78 @@ public class UIAccessExceptionHandling extends AbstractTestUIWithLog implements 
     protected void setup(VaadinRequest request) {
         getSession().setErrorHandler(this);
 
-        addComponent(new Button("Throw RuntimeException on UI.access", new Button.ClickListener() {
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                log.clear();
-
-                // Ensure beforeClientResponse is invoked
-                markAsDirty();
-
-                future = access(new Runnable() {
-                    @Override
-                    public void run() {
-                        throw new RuntimeException();
-                    }
-                });
-            }
-        }));
-
-        addComponent(new Button("Throw RuntimeException on Session.access", new Button.ClickListener() {
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                log.clear();
-
-                // Ensure beforeClientResponse is invoked
-                markAsDirty();
-
-                VaadinService service = VaadinService.getCurrent();
-
-                future = service.accessSession(getSession(), new Runnable() {
+        addComponent(new Button("Throw RuntimeException on UI.access",
+                new Button.ClickListener() {
 
                     @Override
-                    public void run() {
-                        throw new RuntimeException();
+                    public void buttonClick(ClickEvent event) {
+                        log.clear();
+
+                        // Ensure beforeClientResponse is invoked
+                        markAsDirty();
+
+                        future = access(new Runnable() {
+                            @Override
+                            public void run() {
+                                throw new RuntimeException();
+                            }
+                        });
                     }
-                });
-            }
-        }));
+                }));
 
-        addComponent(new Button("Throw RuntimeException after removing instances", new Button.ClickListener() {
+        addComponent(new Button("Throw RuntimeException on Session.access",
+                new Button.ClickListener() {
 
-            @Override
-            public void buttonClick(ClickEvent event) {
-                log.clear();
-
-                // Ensure beforeClientResponse is invoked
-                markAsDirty();
-
-                assert UI.getCurrent() == UIAccessExceptionHandling.this;
-
-                Map<Class<?>, CurrentInstance> instances = CurrentInstance.getInstances(false);
-                CurrentInstance.clearAll();
-
-                assert UI.getCurrent() == null;
-
-                future = access(new Runnable() {
                     @Override
-                    public void run() {
-                        throw new RuntimeException();
-                    }
-                });
+                    public void buttonClick(ClickEvent event) {
+                        log.clear();
 
-                CurrentInstance.restoreInstances(instances);
-            }
-        }));
+                        // Ensure beforeClientResponse is invoked
+                        markAsDirty();
+
+                        VaadinService service = VaadinService.getCurrent();
+
+                        future = service.accessSession(getSession(),
+                                new Runnable() {
+
+                            @Override
+                            public void run() {
+                                throw new RuntimeException();
+                            }
+                        });
+                    }
+                }));
+
+        addComponent(
+                new Button("Throw RuntimeException after removing instances",
+                        new Button.ClickListener() {
+
+                            @Override
+                            public void buttonClick(ClickEvent event) {
+                                log.clear();
+
+                                // Ensure beforeClientResponse is invoked
+                                markAsDirty();
+
+                                assert UI
+                                        .getCurrent() == UIAccessExceptionHandling.this;
+
+                                Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                                        .getInstances(false);
+                                CurrentInstance.clearAll();
+
+                                assert UI.getCurrent() == null;
+
+                                future = access(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        throw new RuntimeException();
+                                    }
+                                });
+
+                                CurrentInstance.restoreInstances(instances);
+                            }
+                        }));
 
         addComponent(new Button("Clear", new Button.ClickListener() {
 
@@ -130,7 +138,9 @@ public class UIAccessExceptionHandling extends AbstractTestUIWithLog implements 
 
     @Override
     public void error(com.vaadin.server.ErrorEvent event) {
-        log("Exception caught on execution with " + event.getClass().getSimpleName() + " : " + event.getThrowable().getClass().getName());
+        log("Exception caught on execution with "
+                + event.getClass().getSimpleName() + " : "
+                + event.getThrowable().getClass().getName());
 
         DefaultErrorHandler.doDefault(event);
     }

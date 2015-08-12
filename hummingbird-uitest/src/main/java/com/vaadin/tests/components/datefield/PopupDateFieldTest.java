@@ -25,24 +25,28 @@ public class PopupDateFieldTest extends DateFieldTest<PopupDateField> {
         options.put("Please enter date", "Please enter date");
         options.put("åäöÅÄÖ", "åäöÅÄÖ");
 
-        createSelectAction("Input prompt", category, options, "<none>", new Command<PopupDateField, String>() {
+        createSelectAction("Input prompt", category, options, "<none>",
+                new Command<PopupDateField, String>() {
 
-            @Override
-            public void execute(PopupDateField c, String value, Object data) {
-                c.setInputPrompt(value);
+                    @Override
+                    public void execute(PopupDateField c, String value,
+                            Object data) {
+                        c.setInputPrompt(value);
 
-            }
-        });
+                    }
+                });
     }
 
     private void createTextEnabledAction(String category) {
-        this.createBooleanAction("Text field enabled", category, true, new Command<PopupDateField, Boolean>() {
+        this.createBooleanAction("Text field enabled", category, true,
+                new Command<PopupDateField, Boolean>() {
 
-            @Override
-            public void execute(PopupDateField c, Boolean value, Object data) {
-                c.setTextFieldEnabled(value);
-            }
+                    @Override
+                    public void execute(PopupDateField c, Boolean value,
+                            Object data) {
+                        c.setTextFieldEnabled(value);
+                    }
 
-        });
+                });
     }
 }

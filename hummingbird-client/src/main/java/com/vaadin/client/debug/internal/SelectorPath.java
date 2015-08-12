@@ -78,7 +78,8 @@ public class SelectorPath {
 
         String[] fragments;
         String tmpPath = path;
-        List<SelectorPredicate> postFilters = SelectorPredicate.extractPostFilterPredicates(path);
+        List<SelectorPredicate> postFilters = SelectorPredicate
+                .extractPostFilterPredicates(path);
         if (postFilters.size() > 0) {
             tmpPath = tmpPath.substring(1, tmpPath.lastIndexOf(')'));
             if (tmpPath.contains("#")) {
@@ -109,7 +110,8 @@ public class SelectorPath {
             // if elementQueryString is not empty, join the next query with .
             String queryFragment = (!elementQueryString.isEmpty() ? "." : "");
             // if search is not recursive, add another $ in front of fragment
-            queryFragment += (!recursive ? "$" : "") + generateFragment(fragments[i]);
+            queryFragment += (!recursive ? "$" : "")
+                    + generateFragment(fragments[i]);
 
             elementQueryString += queryFragment;
         }
@@ -123,7 +125,8 @@ public class SelectorPath {
         }
 
         // Return full Java variable assignment and eQuery
-        return generateJavaVariable(fragments[fragments.length - 1]) + elementQueryString + ";";
+        return generateJavaVariable(fragments[fragments.length - 1])
+                + elementQueryString + ";";
     }
 
     /**
@@ -134,7 +137,8 @@ public class SelectorPath {
      * @return true if has id
      */
     private boolean hasId(String fragment) {
-        for (SelectorPredicate p : SelectorPredicate.extractPredicates(fragment)) {
+        for (SelectorPredicate p : SelectorPredicate
+                .extractPredicates(fragment)) {
             if (p.getName().equals("id")) {
                 return true;
             }
@@ -155,7 +159,8 @@ public class SelectorPath {
 
         String queryFragment = "$(" + elementClass + ")";
 
-        for (SelectorPredicate p : SelectorPredicate.extractPredicates(fragment)) {
+        for (SelectorPredicate p : SelectorPredicate
+                .extractPredicates(fragment)) {
             // Add in predicates like .caption and .id
             queryFragment += "." + p.getName() + "(\"" + p.getValue() + "\")";
         }
@@ -194,7 +199,9 @@ public class SelectorPath {
         name = getNameWithCount(name);
 
         // Use direct path and elementX naming style.
-        return "WebElement " + name.substring(0, 1).toLowerCase() + name.substring(1) + " = getDriver().findElement(By.vaadin(\"" + path + "\"));";
+        return "WebElement " + name.substring(0, 1).toLowerCase()
+                + name.substring(1) + " = getDriver().findElement(By.vaadin(\""
+                + path + "\"));";
     }
 
     /**
@@ -222,7 +229,8 @@ public class SelectorPath {
      */
     private String generateJavaVariable(String pathFragment) {
         // Get element type and predicates from fragment
-        List<SelectorPredicate> predicates = SelectorPredicate.extractPredicates(pathFragment);
+        List<SelectorPredicate> predicates = SelectorPredicate
+                .extractPredicates(pathFragment);
         String elementType = pathFragment.split("\\[")[0];
         String name = getNameFromPredicates(predicates, elementType);
 
@@ -234,7 +242,8 @@ public class SelectorPath {
         name = name.replaceAll("\\W", "");
 
         // Lowercase the first character of name
-        return elementType + "Element " + name.substring(0, 1).toLowerCase() + name.substring(1) + " = ";
+        return elementType + "Element " + name.substring(0, 1).toLowerCase()
+                + name.substring(1) + " = ";
     }
 
     /**
@@ -246,7 +255,8 @@ public class SelectorPath {
      *            Element type
      * @return name for Variable
      */
-    private String getNameFromPredicates(List<SelectorPredicate> predicates, String elementType) {
+    private String getNameFromPredicates(List<SelectorPredicate> predicates,
+            String elementType) {
         String name = elementType;
         for (SelectorPredicate p : predicates) {
             if ("caption".equals(p.getName())) {

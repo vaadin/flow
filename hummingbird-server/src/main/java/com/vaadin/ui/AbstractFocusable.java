@@ -32,7 +32,8 @@ import com.vaadin.ui.Component.Focusable;
  * @since 7.6
  * @author Vaadin Ltd
  */
-public abstract class AbstractFocusable extends AbstractComponent implements Focusable, FocusNotifier, BlurNotifier {
+public abstract class AbstractFocusable extends AbstractComponent
+        implements Focusable, FocusNotifier, BlurNotifier {
 
     protected AbstractFocusable() {
         registerRpc(new FocusAndBlurServerRpcImpl(this) {
@@ -45,7 +46,8 @@ public abstract class AbstractFocusable extends AbstractComponent implements Foc
 
     @Override
     public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
+        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
+                BlurListener.blurMethod);
     }
 
     @Override
@@ -55,7 +57,8 @@ public abstract class AbstractFocusable extends AbstractComponent implements Foc
 
     @Override
     public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
+        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
+                FocusListener.focusMethod);
 
     }
 

@@ -33,7 +33,8 @@ import com.vaadin.client.communication.AbstractServerConnectorEvent;
  * @since 7.0.0
  * 
  */
-public class ConnectorHierarchyChangeEvent extends AbstractServerConnectorEvent<ConnectorHierarchyChangeHandler> {
+public class ConnectorHierarchyChangeEvent
+        extends AbstractServerConnectorEvent<ConnectorHierarchyChangeHandler> {
     /**
      * Type of this event, used by the event bus.
      */
@@ -86,8 +87,10 @@ public class ConnectorHierarchyChangeEvent extends AbstractServerConnectorEvent<
         this.parent = parent;
     }
 
-    public interface ConnectorHierarchyChangeHandler extends Serializable, EventHandler {
-        public void onConnectorHierarchyChange(ConnectorHierarchyChangeEvent connectorHierarchyChangeEvent);
+    public interface ConnectorHierarchyChangeHandler
+            extends Serializable, EventHandler {
+        public void onConnectorHierarchyChange(
+                ConnectorHierarchyChangeEvent connectorHierarchyChangeEvent);
     }
 
     @Override

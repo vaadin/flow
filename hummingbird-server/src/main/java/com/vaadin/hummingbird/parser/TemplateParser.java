@@ -50,7 +50,8 @@ public class TemplateParser {
             if (!text.endsWith("}}")) {
                 throw new RuntimeException();
             }
-            return new DynamicTextTemplate(text.substring(2, text.length() - 2));
+            return new DynamicTextTemplate(
+                    text.substring(2, text.length() - 2));
         } else {
             return new StaticTextTemplate(text);
         }
@@ -70,7 +71,8 @@ public class TemplateParser {
                     forDefinition = value;
                 }
             } else if (name.startsWith("[")) {
-                bindings.add(new ModelAttributeBinding(name.substring(1, name.length() - 1), value));
+                bindings.add(new ModelAttributeBinding(
+                        name.substring(1, name.length() - 1), value));
             } else {
                 defaultAttributes.put(name, value);
             }
@@ -79,13 +81,19 @@ public class TemplateParser {
 
         if (forDefinition != null) {
             assert element.childNodeSize() == 1;
-            BoundElementTemplate innerTemplate = createTemplate(element.childNode(0));
-            return new ForElementTemplate(element.tagName(), bindings, defaultAttributes, forDefinition, innerTemplate);
+            BoundElementTemplate innerTemplate = createTemplate(
+                    element.childNode(0));
+            return new ForElementTemplate(element.tagName(), bindings,
+                    defaultAttributes, forDefinition, innerTemplate);
         } else if (element.childNodeSize() != 0) {
-            List<BoundElementTemplate> childTemplates = element.childNodes().stream().map(TemplateParser::createTemplate).collect(Collectors.toList());
-            return new StaticChildrenElementTemplate(element.tagName(), bindings, defaultAttributes, childTemplates);
+            List<BoundElementTemplate> childTemplates = element.childNodes()
+                    .stream().map(TemplateParser::createTemplate)
+                    .collect(Collectors.toList());
+            return new StaticChildrenElementTemplate(element.tagName(),
+                    bindings, defaultAttributes, childTemplates);
         } else {
-            return new BoundElementTemplate(element.tagName(), bindings, defaultAttributes);
+            return new BoundElementTemplate(element.tagName(), bindings,
+                    defaultAttributes);
         }
 
     }
@@ -93,14 +101,16 @@ public class TemplateParser {
     private static final ConcurrentMap<Class<?>, ElementTemplate> templateCache = new ConcurrentHashMap<>();
 
     public static ElementTemplate parse(Class<?> type) {
-        return templateCache.computeIfAbsent(type, TemplateParser::getParsedTemplate);
+        return templateCache.computeIfAbsent(type,
+                TemplateParser::getParsedTemplate);
     }
 
     private static ElementTemplate getParsedTemplate(Class<?> type) {
         String fileName = type.getSimpleName() + ".html";
         InputStream resource = type.getResourceAsStream(fileName);
         if (resource == null) {
-            throw new RuntimeException("File not found from classpath: " + type.getPackage().getName() + "/" + fileName);
+            throw new RuntimeException("File not found from classpath: "
+                    + type.getPackage().getName() + "/" + fileName);
         }
 
         try {

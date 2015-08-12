@@ -31,7 +31,8 @@ public class IntegerFieldWithoutDataSource extends TestBase {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 try {
-                    log.log("Value for " + tf.getCaption() + " changed to " + tf.getValue());
+                    log.log("Value for " + tf.getCaption() + " changed to "
+                            + tf.getValue());
                     log.log("Converted value is " + tf.getConvertedValue());
                 } catch (Exception e) {
                     // TODO: handle exception

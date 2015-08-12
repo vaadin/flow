@@ -69,7 +69,8 @@ public class ComboboxMenuBarAutoopen extends AbstractTestUI {
 
             @Override
             public void menuSelected(MenuItem selectedItem) {
-                Notification notification = new Notification("Test", Type.HUMANIZED_MESSAGE);
+                Notification notification = new Notification("Test",
+                        Type.HUMANIZED_MESSAGE);
                 notification.show(Page.getCurrent());
             }
         });

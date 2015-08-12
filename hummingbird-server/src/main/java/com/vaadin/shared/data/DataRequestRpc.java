@@ -41,7 +41,8 @@ public interface DataRequestRpc extends ServerRpc {
      *            the number of cached rows
      */
     @NoLoadingIndicator
-    public void requestRows(int firstRowIndex, int numberOfRows, int firstCachedRowIndex, int cacheSize);
+    public void requestRows(int firstRowIndex, int numberOfRows,
+            int firstCachedRowIndex, int cacheSize);
 
     /**
      * Informs the server that an item referenced with a key pinned status has

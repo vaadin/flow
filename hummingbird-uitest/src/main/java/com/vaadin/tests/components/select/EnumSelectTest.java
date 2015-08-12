@@ -53,7 +53,9 @@ public class EnumSelectTest extends SingleBrowserTest {
         ComboBoxElement cb = $(ComboBoxElement.class).first();
         cb.findElement(By.vaadin("#textbox")).sendKeys(" other ");
         List<String> options = cb.getPopupSuggestions();
-        Assert.assertEquals("Only one item should match filter", 1, options.size());
-        Assert.assertEquals("Invalid option matched filter", "Some other value", options.get(0));
+        Assert.assertEquals("Only one item should match filter", 1,
+                options.size());
+        Assert.assertEquals("Invalid option matched filter", "Some other value",
+                options.get(0));
     }
 }

@@ -65,11 +65,13 @@ public class OnStateChangeMethod {
      * @param properties
      *            an array of state property names to listen to
      */
-    public OnStateChangeMethod(Class<?> declaringClass, String methodName, String[] properties) {
+    public OnStateChangeMethod(Class<?> declaringClass, String methodName,
+            String[] properties) {
 
         this.methodName = methodName;
 
-        this.properties = Collections.unmodifiableList(Arrays.asList(properties));
+        this.properties = Collections
+                .unmodifiableList(Arrays.asList(properties));
 
         this.declaringClass = declaringClass;
     }
@@ -81,7 +83,8 @@ public class OnStateChangeMethod {
      *            the state change event
      */
     public void invoke(StateChangeEvent stateChangeEvent) {
-        ServerConnector connector = (ServerConnector) stateChangeEvent.getSource();
+        ServerConnector connector = (ServerConnector) stateChangeEvent
+                .getSource();
 
         Class<?> declaringClass = this.declaringClass;
         if (declaringClass == null) {
@@ -92,7 +95,10 @@ public class OnStateChangeMethod {
         try {
             declaringType.getMethod(methodName).invoke(connector);
         } catch (NoDataException e) {
-            throw new RuntimeException("Couldn't invoke @OnStateChange method " + declaringType.getSignature() + "." + methodName, e);
+            throw new RuntimeException(
+                    "Couldn't invoke @OnStateChange method "
+                            + declaringType.getSignature() + "." + methodName,
+                    e);
         }
     }
 

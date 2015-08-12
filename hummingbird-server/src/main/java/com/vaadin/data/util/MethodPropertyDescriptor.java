@@ -33,7 +33,8 @@ import com.vaadin.util.SerializerHelper;
  * 
  * @since 6.6
  */
-public class MethodPropertyDescriptor<BT> implements VaadinPropertyDescriptor<BT> {
+public class MethodPropertyDescriptor<BT>
+        implements VaadinPropertyDescriptor<BT> {
 
     private final String name;
     private Class<?> propertyType;
@@ -54,7 +55,8 @@ public class MethodPropertyDescriptor<BT> implements VaadinPropertyDescriptor<BT
      *            setter {@link Method} for the property or null if read-only
      *            property
      */
-    public MethodPropertyDescriptor(String name, Class<?> propertyType, Method readMethod, Method writeMethod) {
+    public MethodPropertyDescriptor(String name, Class<?> propertyType,
+            Method readMethod, Method writeMethod) {
         this.name = name;
         this.propertyType = ReflectTools.convertPrimitiveType(propertyType);
         this.readMethod = readMethod;
@@ -62,14 +64,16 @@ public class MethodPropertyDescriptor<BT> implements VaadinPropertyDescriptor<BT
     }
 
     /* Special serialization to handle method references */
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    private void writeObject(java.io.ObjectOutputStream out)
+            throws IOException {
         out.defaultWriteObject();
         SerializerHelper.writeClass(out, propertyType);
 
         if (writeMethod != null) {
             out.writeObject(writeMethod.getName());
             SerializerHelper.writeClass(out, writeMethod.getDeclaringClass());
-            SerializerHelper.writeClassArray(out, writeMethod.getParameterTypes());
+            SerializerHelper.writeClassArray(out,
+                    writeMethod.getParameterTypes());
         } else {
             out.writeObject(null);
             out.writeObject(null);
@@ -79,7 +83,8 @@ public class MethodPropertyDescriptor<BT> implements VaadinPropertyDescriptor<BT
         if (readMethod != null) {
             out.writeObject(readMethod.getName());
             SerializerHelper.writeClass(out, readMethod.getDeclaringClass());
-            SerializerHelper.writeClassArray(out, readMethod.getParameterTypes());
+            SerializerHelper.writeClassArray(out,
+                    readMethod.getParameterTypes());
         } else {
             out.writeObject(null);
             out.writeObject(null);
@@ -88,7 +93,8 @@ public class MethodPropertyDescriptor<BT> implements VaadinPropertyDescriptor<BT
     }
 
     /* Special serialization to handle method references */
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         try {
             @SuppressWarnings("unchecked")
@@ -132,7 +138,8 @@ public class MethodPropertyDescriptor<BT> implements VaadinPropertyDescriptor<BT
 
     @Override
     public Property<?> createProperty(Object bean) {
-        return new MethodProperty<Object>(propertyType, bean, readMethod, writeMethod);
+        return new MethodProperty<Object>(propertyType, bean, readMethod,
+                writeMethod);
     }
 
     private static final Logger getLogger() {

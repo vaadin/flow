@@ -50,7 +50,8 @@ public class DateFieldTestTest extends MultiBrowserTest {
     }
 
     @Test
-    public void testValueAfterOpeningPopupInRequiredField() throws InterruptedException {
+    public void testValueAfterOpeningPopupInRequiredField()
+            throws InterruptedException {
         setDebug(true);
         openTestURL();
         Thread.sleep(1000);
@@ -82,7 +83,9 @@ public class DateFieldTestTest extends MultiBrowserTest {
 
     private void openPopup() throws InterruptedException {
         Dimension size = getInput().getSize();
-        new Actions(getDriver()).moveToElement(getInput(), 0, 0).moveByOffset(size.getWidth() + 5, size.getHeight() / 2).click();
+        new Actions(getDriver()).moveToElement(getInput(), 0, 0)
+                .moveByOffset(size.getWidth() + 5, size.getHeight() / 2)
+                .click();
         // This fails in Opera for some weird reason
         // getDriver().findElement(By.className("v-datefield-button")).click();
     }
@@ -100,7 +103,8 @@ public class DateFieldTestTest extends MultiBrowserTest {
      * @param string
      */
     private void menuSub(String string) {
-        getDriver().findElement(By.xpath("//span[text() = '" + string + "']")).click();
+        getDriver().findElement(By.xpath("//span[text() = '" + string + "']"))
+                .click();
         new Actions(getDriver()).moveByOffset(100, 0).build().perform();
     }
 
@@ -109,7 +113,8 @@ public class DateFieldTestTest extends MultiBrowserTest {
      * @param string
      */
     private void menu(String string) {
-        getDriver().findElement(By.xpath("//span[text() = '" + string + "']")).click();
+        getDriver().findElement(By.xpath("//span[text() = '" + string + "']"))
+                .click();
 
     }
 

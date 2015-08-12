@@ -49,13 +49,15 @@ public class PushLargeDataLongPollingTest extends MultiBrowserTest {
 
         vaadinElementById("startButton").click();
         // Wait for push to start
-        waitUntil(ExpectedConditions.textToBePresentInElement(logRow0, "Package "));
+        waitUntil(ExpectedConditions.textToBePresentInElement(logRow0,
+                "Package "));
 
         // Wait for until push should be done
         sleep(PushLargeData.DEFAULT_DURATION_MS);
 
         // Wait until push is actually done
-        waitUntil(ExpectedConditions.textToBePresentInElement(logRow0, "Push complete"));
+        waitUntil(ExpectedConditions.textToBePresentInElement(logRow0,
+                "Push complete"));
     }
 
 }

@@ -35,7 +35,8 @@ abstract class WidgetMap {
      *            {@link ComponentConnector} class to instantiate
      * @return new instance of the connector
      */
-    public ServerConnector instantiate(Class<? extends ServerConnector> classType) {
+    public ServerConnector instantiate(
+            Class<? extends ServerConnector> classType) {
         return instmap.get(classType).get();
     }
 
@@ -47,7 +48,8 @@ abstract class WidgetMap {
      *            fully qualified name of the server side component class
      * @return component connector class to use
      */
-    public abstract Class<? extends ServerConnector> getConnectorClassForServerSideClassName(String fullyqualifiedName);
+    public abstract Class<? extends ServerConnector> getConnectorClassForServerSideClassName(
+            String fullyqualifiedName);
 
     /**
      * Return the connector classes to load after the initial widgetset load and
@@ -66,6 +68,7 @@ abstract class WidgetMap {
      * @param classType
      *            component connector class
      */
-    public abstract void ensureInstantiator(Class<? extends ServerConnector> classType);
+    public abstract void ensureInstantiator(
+            Class<? extends ServerConnector> classType);
 
 }

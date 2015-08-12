@@ -26,7 +26,10 @@ public class SystemMessagesTest extends MultiBrowserTest {
     private void verifyError(String locale) {
         $(ButtonElement.class).first().click();
         NotificationElement notification = $(NotificationElement.class).first();
-        Assert.assertEquals("Incorrect notification caption,", notification.getCaption(), "Internal error");
-        Assert.assertEquals("Incorrect notification description,", notification.getDescription(), "MessagesInfo locale: " + locale);
+        Assert.assertEquals("Incorrect notification caption,",
+                notification.getCaption(), "Internal error");
+        Assert.assertEquals("Incorrect notification description,",
+                notification.getDescription(),
+                "MessagesInfo locale: " + locale);
     }
 }

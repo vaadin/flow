@@ -421,7 +421,9 @@ public class WebBrowser implements Serializable {
      *            the current date in milliseconds since the epoch
      * @param touchDevice
      */
-    void updateClientSideDetails(String sw, String sh, String tzo, String rtzo, String dstSavings, String dstInEffect, String curDate, boolean touchDevice) {
+    void updateClientSideDetails(String sw, String sh, String tzo, String rtzo,
+            String dstSavings, String dstInEffect, String curDate,
+            boolean touchDevice) {
         if (sw != null) {
             try {
                 screenHeight = Integer.parseInt(sh);
@@ -488,7 +490,13 @@ public class WebBrowser implements Serializable {
         }
 
         if (request.getParameter("v-sw") != null) {
-            updateClientSideDetails(request.getParameter("v-sw"), request.getParameter("v-sh"), request.getParameter("v-tzo"), request.getParameter("v-rtzo"), request.getParameter("v-dstd"), request.getParameter("v-dston"), request.getParameter("v-curdate"), request.getParameter("v-td") != null);
+            updateClientSideDetails(request.getParameter("v-sw"),
+                    request.getParameter("v-sh"), request.getParameter("v-tzo"),
+                    request.getParameter("v-rtzo"),
+                    request.getParameter("v-dstd"),
+                    request.getParameter("v-dston"),
+                    request.getParameter("v-curdate"),
+                    request.getParameter("v-td") != null);
         }
     }
 

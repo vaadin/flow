@@ -88,7 +88,10 @@ public class PushConfiguration extends AbstractTestUI {
 
     @Override
     protected String getTestDescription() {
-        return "This test tests the very basic operations of push. " + "It tests that client initiated changes are " + "recieved back to the client as well as server " + "initiated changes are correctly updated to the client.";
+        return "This test tests the very basic operations of push. "
+                + "It tests that client initiated changes are "
+                + "recieved back to the client as well as server "
+                + "initiated changes are correctly updated to the client.";
     }
 
     @Override

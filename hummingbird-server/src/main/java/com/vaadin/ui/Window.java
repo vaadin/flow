@@ -46,7 +46,8 @@ import com.vaadin.util.ReflectTools;
 /**
  * A component that represents a floating popup window that can be added to a
  * {@link UI}. A window is added to a {@code UI} using
- * {@link UI#addWindow(Window)}. </p>
+ * {@link UI#addWindow(Window)}.
+ * </p>
  * <p>
  * The contents of a window is set using {@link #setContent(Component)} or by
  * using the {@link #Window(String, Component)} constructor.
@@ -128,16 +129,16 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * com.vaadin.ui.AbstractComponent#setParent(com.vaadin.server.ClientConnector
-     * )
+     * @see com.vaadin.ui.AbstractComponent#setParent(com.vaadin.server.
+     * ClientConnector )
      */
     @Override
     public void setParent(HasComponents parent) {
         if (parent == null || parent instanceof UI) {
             super.setParent(parent);
         } else {
-            throw new IllegalArgumentException("A Window can only be added to a UI using UI.addWindow(Window window)");
+            throw new IllegalArgumentException(
+                    "A Window can only be added to a UI using UI.addWindow(Window window)");
         }
     }
 
@@ -237,12 +238,15 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
     }
 
     private static final Method WINDOW_CLOSE_METHOD;
+
     static {
         try {
-            WINDOW_CLOSE_METHOD = CloseListener.class.getDeclaredMethod("windowClose", new Class[] { CloseEvent.class });
+            WINDOW_CLOSE_METHOD = CloseListener.class.getDeclaredMethod(
+                    "windowClose", new Class[] { CloseEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
-            throw new java.lang.RuntimeException("Internal error, window close method not found");
+            throw new java.lang.RuntimeException(
+                    "Internal error, window close method not found");
         }
     }
 
@@ -379,7 +383,9 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      */
     public interface WindowModeChangeListener extends Serializable {
 
-        public static final Method windowModeChangeMethod = ReflectTools.findMethod(WindowModeChangeListener.class, "windowModeChanged", WindowModeChangeEvent.class);
+        public static final Method windowModeChangeMethod = ReflectTools
+                .findMethod(WindowModeChangeListener.class, "windowModeChanged",
+                        WindowModeChangeEvent.class);
 
         /**
          * Called when the user maximizes / restores a window. Use
@@ -405,7 +411,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      *            the WindowModeChangeListener to add.
      */
     public void addWindowModeChangeListener(WindowModeChangeListener listener) {
-        addListener(WindowModeChangeEvent.class, listener, WindowModeChangeListener.windowModeChangeMethod);
+        addListener(WindowModeChangeEvent.class, listener,
+                WindowModeChangeListener.windowModeChangeMethod);
     }
 
     /**
@@ -414,24 +421,30 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      * @param listener
      *            the WindowModeChangeListener to remove.
      */
-    public void removeWindowModeChangeListener(WindowModeChangeListener listener) {
-        removeListener(WindowModeChangeEvent.class, listener, WindowModeChangeListener.windowModeChangeMethod);
+    public void removeWindowModeChangeListener(
+            WindowModeChangeListener listener) {
+        removeListener(WindowModeChangeEvent.class, listener,
+                WindowModeChangeListener.windowModeChangeMethod);
     }
 
     protected void fireWindowWindowModeChange() {
-        fireEvent(new Window.WindowModeChangeEvent(this, getState().windowMode));
+        fireEvent(
+                new Window.WindowModeChangeEvent(this, getState().windowMode));
     }
 
     /**
      * Method for the resize event.
      */
     private static final Method WINDOW_RESIZE_METHOD;
+
     static {
         try {
-            WINDOW_RESIZE_METHOD = ResizeListener.class.getDeclaredMethod("windowResized", new Class[] { ResizeEvent.class });
+            WINDOW_RESIZE_METHOD = ResizeListener.class.getDeclaredMethod(
+                    "windowResized", new Class[] { ResizeEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
-            throw new java.lang.RuntimeException("Internal error, window resized method not found");
+            throw new java.lang.RuntimeException(
+                    "Internal error, window resized method not found");
         }
     }
 
@@ -514,15 +527,18 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
     public void bringToFront() {
         UI uI = getUI();
         if (uI == null) {
-            throw new IllegalStateException("Window must be attached to parent before calling bringToFront method.");
+            throw new IllegalStateException(
+                    "Window must be attached to parent before calling bringToFront method.");
         }
         int maxBringToFront = -1;
         for (Window w : uI.getWindows()) {
             if (!isModal() && w.isModal()) {
-                throw new IllegalStateException("The UI contains modal windows, non-modal window cannot be brought to front.");
+                throw new IllegalStateException(
+                        "The UI contains modal windows, non-modal window cannot be brought to front.");
             }
             if (w.bringToFront != null) {
-                maxBringToFront = Math.max(maxBringToFront, w.bringToFront.intValue());
+                maxBringToFront = Math.max(maxBringToFront,
+                        w.bringToFront.intValue());
             }
         }
         bringToFront = Integer.valueOf(maxBringToFront + 1);
@@ -699,7 +715,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      */
     @Override
     public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
+        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
+                FocusListener.focusMethod);
     }
 
     @Override
@@ -716,7 +733,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      */
     @Override
     public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
+        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
+                BlurListener.blurMethod);
     }
 
     @Override
@@ -761,7 +779,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      */
     public void setAssistiveDescription(Component... components) {
         if (components == null) {
-            throw new IllegalArgumentException("Parameter connectors must be non-null");
+            throw new IllegalArgumentException(
+                    "Parameter connectors must be non-null");
         } else {
             getState().contentDescription = components;
         }
@@ -781,7 +800,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
         }
 
         Component[] target = new Component[contentDescription.length];
-        System.arraycopy(contentDescription, 0, target, 0, contentDescription.length);
+        System.arraycopy(contentDescription, 0, target, 0,
+                contentDescription.length);
 
         return target;
     }
@@ -840,8 +860,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      * Sets the WAI-ARIA role the window.
      * 
      * This role defines how an assistive device handles a window. Available
-     * roles are alertdialog and dialog (@see <a
-     * href="http://www.w3.org/TR/2011/CR-wai-aria-20110118/roles">Roles
+     * roles are alertdialog and dialog (@see
+     * <a href="http://www.w3.org/TR/2011/CR-wai-aria-20110118/roles">Roles
      * Model</a>).
      * 
      * The default role is dialog.
@@ -857,8 +877,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      * Gets the WAI-ARIA role the window.
      * 
      * This role defines how an assistive device handles a window. Available
-     * roles are alertdialog and dialog (@see <a
-     * href="http://www.w3.org/TR/2011/CR-wai-aria-20110118/roles">Roles
+     * roles are alertdialog and dialog (@see
+     * <a href="http://www.w3.org/TR/2011/CR-wai-aria-20110118/roles">Roles
      * Model</a>).
      * 
      * @return WAI-ARIA role set for the window
@@ -983,7 +1003,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      * @see #setAssistiveDescription(Component...)
      */
     @Override
-    protected void readDesignChildren(Elements children, DesignContext context) {
+    protected void readDesignChildren(Elements children,
+            DesignContext context) {
         List<Component> descriptions = new ArrayList<Component>();
         Elements content = new Elements();
 
@@ -1008,10 +1029,12 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
             design.attr("center", "");
         }
 
-        DesignAttributeHandler.writeAttribute("position", design.attributes(), getPosition(), def.getPosition(), String.class);
+        DesignAttributeHandler.writeAttribute("position", design.attributes(),
+                getPosition(), def.getPosition(), String.class);
 
         for (Component c : getAssistiveDescription()) {
-            Element child = context.createElement(c).attr(":assistive-description", "");
+            Element child = context.createElement(c)
+                    .attr(":assistive-description", "");
             design.appendChild(child);
         }
     }

@@ -65,8 +65,10 @@ public class CurrentUiRetained extends AbstractTestUIWithLog {
                 try {
                     thread.join();
 
-                    log("Correct UI.getCurrent before GC: " + (uiLog.get(0) == CurrentUiRetained.this));
-                    log("Correct UI.getCurrent after GC: " + (uiLog.get(1) == CurrentUiRetained.this));
+                    log("Correct UI.getCurrent before GC: "
+                            + (uiLog.get(0) == CurrentUiRetained.this));
+                    log("Correct UI.getCurrent after GC: "
+                            + (uiLog.get(1) == CurrentUiRetained.this));
 
                     log("GC probe available before GC: " + probeLog.get(0));
                     log("GC probe available after GC: " + probeLog.get(1));

@@ -16,14 +16,16 @@ public class DateFieldUnparsableDate extends TestBase {
             super(caption);
             addValueChangeListener(new Property.ValueChangeListener() {
                 @Override
-                public void valueChange(com.vaadin.data.Property.ValueChangeEvent event) {
+                public void valueChange(
+                        com.vaadin.data.Property.ValueChangeEvent event) {
                     oldDate = getValue();
                 }
             });
         }
 
         @Override
-        protected Date handleUnparsableDateString(String dateString) throws Converter.ConversionException {
+        protected Date handleUnparsableDateString(String dateString)
+                throws Converter.ConversionException {
             return oldDate;
         }
     }
@@ -34,7 +36,8 @@ public class DateFieldUnparsableDate extends TestBase {
         }
 
         @Override
-        protected Date handleUnparsableDateString(String dateString) throws Converter.ConversionException {
+        protected Date handleUnparsableDateString(String dateString)
+                throws Converter.ConversionException {
             return null;
         }
     }
@@ -45,8 +48,10 @@ public class DateFieldUnparsableDate extends TestBase {
         }
 
         @Override
-        protected Date handleUnparsableDateString(String dateString) throws Converter.ConversionException {
-            throw new Converter.ConversionException("You should not enter invalid dates!");
+        protected Date handleUnparsableDateString(String dateString)
+                throws Converter.ConversionException {
+            throw new Converter.ConversionException(
+                    "You should not enter invalid dates!");
         }
     }
 
@@ -56,23 +61,27 @@ public class DateFieldUnparsableDate extends TestBase {
         }
 
         @Override
-        protected Date handleUnparsableDateString(String dateString) throws Converter.ConversionException {
+        protected Date handleUnparsableDateString(String dateString)
+                throws Converter.ConversionException {
             if (dateString != null && dateString.equals("today")) {
                 return new Date();
             }
-            throw new Converter.ConversionException("You should not enter invalid dates!");
+            throw new Converter.ConversionException(
+                    "You should not enter invalid dates!");
         }
     }
 
     @Override
     protected void setup() {
-        MyDateField df = new MyDateField("Returns the old value for invalid dates");
+        MyDateField df = new MyDateField(
+                "Returns the old value for invalid dates");
         addComponent(df);
 
         MyDateField2 df2 = new MyDateField2("Returns empty for invalid dates");
         addComponent(df2);
 
-        MyDateField3 df3 = new MyDateField3("Throws an exception for invalid dates");
+        MyDateField3 df3 = new MyDateField3(
+                "Throws an exception for invalid dates");
         addComponent(df3);
 
         MyDateField4 df4 = new MyDateField4("Can convert 'today'");

@@ -121,9 +121,12 @@ public class Color implements Serializable {
      * @param alpha
      */
     private void checkRange(int red, int green, int blue, int alpha) {
-        if (!withinRange(red) || !withinRange(green) || !withinRange(blue) || !withinRange(alpha)) {
+        if (!withinRange(red) || !withinRange(green) || !withinRange(blue)
+                || !withinRange(alpha)) {
 
-            String errorMessage = "All values must fall within range [0-255]. (red: " + red + ", green: " + green + ", blue: " + blue + ", alpha: " + alpha + ")";
+            String errorMessage = "All values must fall within range [0-255]. (red: "
+                    + red + ", green: " + green + ", blue: " + blue
+                    + ", alpha: " + alpha + ")";
             throw new IllegalArgumentException(errorMessage);
         }
     }
@@ -240,7 +243,8 @@ public class Color implements Serializable {
         redString = redString.length() < 2 ? "0" + redString : redString;
 
         String greenString = Integer.toHexString(green);
-        greenString = greenString.length() < 2 ? "0" + greenString : greenString;
+        greenString = greenString.length() < 2 ? "0" + greenString
+                : greenString;
 
         String blueString = Integer.toHexString(blue);
         blueString = blueString.length() < 2 ? "0" + blueString : blueString;
@@ -252,7 +256,8 @@ public class Color implements Serializable {
      * Returns RGB value of the color.
      */
     public int getRGB() {
-        return ((alpha & 0xFF) << 24) | ((red & 0xFF) << 16) | ((green & 0xFF) << 8) | ((blue & 0xFF) << 0);
+        return ((alpha & 0xFF) << 24) | ((red & 0xFF) << 16)
+                | ((green & 0xFF) << 8) | ((blue & 0xFF) << 0);
     }
 
     /**
@@ -280,9 +285,12 @@ public class Color implements Serializable {
 
         float hue = 0;
         if (saturation != 0) {
-            float redF = ((float) (maxColor - red)) / ((float) (maxColor - minColor));
-            float greenF = ((float) (maxColor - green)) / ((float) (maxColor - minColor));
-            float blueF = ((float) (maxColor - blue)) / ((float) (maxColor - minColor));
+            float redF = ((float) (maxColor - red))
+                    / ((float) (maxColor - minColor));
+            float greenF = ((float) (maxColor - green))
+                    / ((float) (maxColor - minColor));
+            float blueF = ((float) (maxColor - blue))
+                    / ((float) (maxColor - minColor));
 
             if (red == maxColor) {
                 hue = blueF - greenF;
@@ -409,7 +417,10 @@ public class Color implements Serializable {
         if (saturationRatio == 0) {
             red = green = blue = (int) (lightnessRatio * 255.0f + 0.5f);
         } else {
-            float p = lightnessRatio < 0.5f ? lightnessRatio * (1f + saturationRatio) : lightnessRatio + saturationRatio - lightnessRatio * saturationRatio;
+            float p = lightnessRatio < 0.5f
+                    ? lightnessRatio * (1f + saturationRatio)
+                    : lightnessRatio + saturationRatio
+                            - lightnessRatio * saturationRatio;
             float q = 2 * lightnessRatio - p;
 
             red = hslComponentToRgbComponent(p, q, hueRatio + (1f / 3f));
@@ -419,7 +430,8 @@ public class Color implements Serializable {
         return 0xff000000 | (red << 16) | (green << 8) | (blue << 0);
     }
 
-    private static int hslComponentToRgbComponent(float p, float q, float ratio) {
+    private static int hslComponentToRgbComponent(float p, float q,
+            float ratio) {
         if (ratio < 0) {
             ratio += 1;
         } else if (ratio > 1) {
@@ -431,7 +443,8 @@ public class Color implements Serializable {
         } else if (2f * ratio < 1f) {
             return (int) (p * 255f + 0.5f);
         } else if (3f * ratio < 2f) {
-            return (int) ((q + (p - q) * ((2f / 3f) - ratio) * 6f) * 255f + 0.5f);
+            return (int) ((q + (p - q) * ((2f / 3f) - ratio) * 6f) * 255f
+                    + 0.5f);
         }
 
         return (int) (q * 255f + 0.5f);

@@ -22,7 +22,8 @@ public class TabsheetMinimalClosableTabs extends TestBase {
             t.setClosable(true);
 
             if (tab % 2 == 0) {
-                t.setIcon(new ExternalResource("/VAADIN/themes/tests-tickets/icons/fi.gif"));
+                t.setIcon(new ExternalResource(
+                        "/VAADIN/themes/tests-tickets/icons/fi.gif"));
             }
         }
 

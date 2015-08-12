@@ -26,10 +26,9 @@ public enum Transport {
     /**
      * Websockets
      */
-    WEBSOCKET("websocket"),
-    /**
-     * HTTP long polling
-     */
+    WEBSOCKET("websocket"), /**
+                             * HTTP long polling
+                             */
     LONG_POLLING("long-polling");
 
     private String identifier;

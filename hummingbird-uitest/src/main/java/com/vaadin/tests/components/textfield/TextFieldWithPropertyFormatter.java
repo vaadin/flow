@@ -56,7 +56,9 @@ public class TextFieldWithPropertyFormatter extends TestBase {
 
         formatter = new PropertyFormatter<BigDecimal>(property) {
 
-            private final DecimalFormat df = new DecimalFormat("#,##0.00", new DecimalFormatSymbols(new Locale("en", "UK")));
+            private final DecimalFormat df = new DecimalFormat("#,##0.00",
+                    new DecimalFormatSymbols(new Locale("en", "UK")));
+
             {
                 df.setParseBigDecimal(true);
                 // df.setRoundingMode(RoundingMode.HALF_UP);
@@ -76,7 +78,8 @@ public class TextFieldWithPropertyFormatter extends TestBase {
 
             @Override
             public BigDecimal parse(String formattedValue) throws Exception {
-                if (formattedValue != null && formattedValue.trim().length() != 0) {
+                if (formattedValue != null
+                        && formattedValue.trim().length() != 0) {
                     BigDecimal value = (BigDecimal) df.parse(formattedValue);
                     value = value.setScale(2, BigDecimal.ROUND_HALF_UP);
                     return value;
@@ -91,7 +94,8 @@ public class TextFieldWithPropertyFormatter extends TestBase {
 
         addComponent(tf1);
 
-        Button b = new Button("Sync (typing 12345.6789 and clicking this should format field)");
+        Button b = new Button(
+                "Sync (typing 12345.6789 and clicking this should format field)");
         b.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {

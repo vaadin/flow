@@ -71,7 +71,8 @@ public abstract class ClassBackedStateNode extends StateNode {
     protected Object removeValue(Object key) {
         Field field = getField(key);
         if (field != null) {
-            throw new IllegalArgumentException("Can't remove explicitly defined value");
+            throw new IllegalArgumentException(
+                    "Can't remove explicitly defined value");
         } else {
             Map<Object, Object> map = getMap(false);
             if (map != null) {
@@ -126,7 +127,9 @@ public abstract class ClassBackedStateNode extends StateNode {
     private static final ConcurrentMap<Map<Object, Class<?>>, Class<? extends ClassBackedStateNode>> typeCache = new ConcurrentHashMap<>();
 
     public static StateNode create(Map<Object, Class<?>> explicitTypes) {
-        Class<? extends ClassBackedStateNode> typeDescriptor = typeCache.computeIfAbsent(explicitTypes, ClassBackedStateNode::createMapping);
+        Class<? extends ClassBackedStateNode> typeDescriptor = typeCache
+                .computeIfAbsent(explicitTypes,
+                        ClassBackedStateNode::createMapping);
         try {
             return typeDescriptor.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
@@ -134,8 +137,15 @@ public abstract class ClassBackedStateNode extends StateNode {
         }
     }
 
-    private static Class<? extends ClassBackedStateNode> createMapping(Map<Object, Class<?>> explicitTypes) {
-        FieldValueTarget<ClassBackedStateNode> buddy = new ByteBuddy().subclass(ClassBackedStateNode.class).defineMethod("getFieldMap", Map.class, Collections.emptyList(), Visibility.PUBLIC).intercept(FieldAccessor.ofField("fieldMap")).defineField("fieldMap", Map.class, Visibility.PUBLIC, Ownership.STATIC);
+    private static Class<? extends ClassBackedStateNode> createMapping(
+            Map<Object, Class<?>> explicitTypes) {
+        FieldValueTarget<ClassBackedStateNode> buddy = new ByteBuddy()
+                .subclass(ClassBackedStateNode.class)
+                .defineMethod("getFieldMap", Map.class, Collections.emptyList(),
+                        Visibility.PUBLIC)
+                .intercept(FieldAccessor.ofField("fieldMap"))
+                .defineField("fieldMap", Map.class, Visibility.PUBLIC,
+                        Ownership.STATIC);
 
         HashMap<Object, String> fieldNames = new HashMap<>();
         Map<String, Integer> usedNames = new HashMap<>();
@@ -144,15 +154,20 @@ public abstract class ClassBackedStateNode extends StateNode {
             String name = getFieldName(entry.getKey().toString(), usedNames);
 
             fieldNames.put(entry.getKey(), name);
-            buddy = buddy.defineField(name, entry.getValue(), Visibility.PUBLIC);
+            buddy = buddy.defineField(name, entry.getValue(),
+                    Visibility.PUBLIC);
         }
 
-        Class<? extends ClassBackedStateNode> type = buddy.make().load(ClassBackedStateNode.class.getClassLoader(), ClassLoadingStrategy.Default.WRAPPER).getLoaded();
+        Class<? extends ClassBackedStateNode> type = buddy.make()
+                .load(ClassBackedStateNode.class.getClassLoader(),
+                        ClassLoadingStrategy.Default.WRAPPER)
+                .getLoaded();
 
         try {
             HashMap<Object, Field> fields = new HashMap<>();
             for (Entry<Object, Class<?>> entry : explicitTypes.entrySet()) {
-                fields.put(entry.getKey(), type.getDeclaredField(fieldNames.get(entry.getKey())));
+                fields.put(entry.getKey(),
+                        type.getDeclaredField(fieldNames.get(entry.getKey())));
             }
 
             type.getDeclaredField("fieldMap").set(null, fields);
@@ -163,7 +178,8 @@ public abstract class ClassBackedStateNode extends StateNode {
         }
     }
 
-    private static String getFieldName(String baseName, Map<String, Integer> usedNames) {
+    private static String getFieldName(String baseName,
+            Map<String, Integer> usedNames) {
         if (baseName.indexOf('@') >= 0) {
             // Probably a package.ClassName@identityHash, extract ClassName
             baseName = baseName.replaceAll("(.*)\\.([^.]+)@.*", "$2");
@@ -171,8 +187,12 @@ public abstract class ClassBackedStateNode extends StateNode {
 
         // Make lower case and remove anything that can't be in a java
         // identifier
-        baseName = baseName.chars().filter(Character::isJavaIdentifierPart).map(Character::toLowerCase).collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
-        if (baseName.length() == 0 || !Character.isJavaIdentifierStart(baseName.charAt(0))) {
+        baseName = baseName.chars().filter(Character::isJavaIdentifierPart)
+                .map(Character::toLowerCase).collect(StringBuilder::new,
+                        StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+        if (baseName.length() == 0
+                || !Character.isJavaIdentifierStart(baseName.charAt(0))) {
             baseName = "f" + baseName;
         }
 

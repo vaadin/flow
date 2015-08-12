@@ -32,10 +32,13 @@ public class SliderFeedbackTest extends MultiBrowserTest {
         new Actions(driver).dragAndDropBy(handle, 400, 0).perform();
         testBench().waitForVaadin();
 
-        double value = Double.valueOf(findElement(By.className("v-slider-feedback")).getText());
+        double value = Double.valueOf(
+                findElement(By.className("v-slider-feedback")).getText());
 
         // Allow for some tolerance due to, you guessed it, IE8
-        assertLessThan("Unexpected feedback value {1} < {0}", 505000000000.0, value);
-        assertGreater("Unexpected feedback value {1} > {0}", 510000000000.0, value);
+        assertLessThan("Unexpected feedback value {1} < {0}", 505000000000.0,
+                value);
+        assertGreater("Unexpected feedback value {1} > {0}", 510000000000.0,
+                value);
     }
 }

@@ -55,21 +55,25 @@ public class PublishedFileHandler implements RequestHandler {
      * found, writes a HTTP Not Found error to the response.
      */
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request,
+            VaadinResponse response) throws IOException {
         if (!ServletPortletHelper.isPublishedFileRequest(request)) {
             return false;
         }
 
         String pathInfo = request.getPathInfo();
         // + 2 to also remove beginning and ending slashes
-        String fileName = pathInfo.substring(ApplicationConstants.PUBLISHED_FILE_PATH.length() + 2);
+        String fileName = pathInfo.substring(
+                ApplicationConstants.PUBLISHED_FILE_PATH.length() + 2);
 
         final String mimetype = response.getService().getMimeType(fileName);
 
         // Security check: avoid accidentally serving from the UI of the
         // classpath instead of relative to the context class
         if (fileName.startsWith("/")) {
-            getLogger().warning("Published file request starting with / rejected: " + fileName);
+            getLogger()
+                    .warning("Published file request starting with / rejected: "
+                            + fileName);
             response.sendError(HttpServletResponse.SC_NOT_FOUND, fileName);
             return true;
         }
@@ -78,7 +82,8 @@ public class PublishedFileHandler implements RequestHandler {
         session.lock();
         Class<?> context;
         try {
-            context = session.getCommunicationManager().getDependencies().get(fileName);
+            context = session.getCommunicationManager().getDependencies()
+                    .get(fileName);
         } finally {
             session.unlock();
         }
@@ -86,7 +91,9 @@ public class PublishedFileHandler implements RequestHandler {
         // Security check: don't serve resource if the name hasn't been
         // registered in the map
         if (context == null) {
-            getLogger().warning("Rejecting published file request for file that has not been published: " + fileName);
+            getLogger().warning(
+                    "Rejecting published file request for file that has not been published: "
+                            + fileName);
             response.sendError(HttpServletResponse.SC_NOT_FOUND, fileName);
             return true;
         }
@@ -94,14 +101,18 @@ public class PublishedFileHandler implements RequestHandler {
         // Resolve file relative to the location of the context class
         InputStream in = context.getResourceAsStream(fileName);
         if (in == null) {
-            getLogger().warning(fileName + " published by " + context.getName() + " not found. Verify that the file " + context.getPackage().getName().replace('.', '/') + '/' + fileName + " is available on the classpath.");
+            getLogger().warning(fileName + " published by " + context.getName()
+                    + " not found. Verify that the file "
+                    + context.getPackage().getName().replace('.', '/') + '/'
+                    + fileName + " is available on the classpath.");
             response.sendError(HttpServletResponse.SC_NOT_FOUND, fileName);
             return true;
         }
 
         // Set caching for the published file
         String cacheControl = "public, max-age=0, must-revalidate";
-        int resourceCacheTime = request.getService().getDeploymentConfiguration().getResourceCacheTime();
+        int resourceCacheTime = request.getService()
+                .getDeploymentConfiguration().getResourceCacheTime();
         if (resourceCacheTime > 0) {
             cacheControl = "max-age=" + String.valueOf(resourceCacheTime);
         }

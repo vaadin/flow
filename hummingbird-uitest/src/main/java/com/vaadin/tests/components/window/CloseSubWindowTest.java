@@ -25,7 +25,8 @@ public class CloseSubWindowTest extends MultiBrowserTest {
 
     @Test
     public void testClosingFromTitleBar() throws Exception {
-        $(WindowElement.class).first().findElement(By.className("v-window-closebox")).click();
+        $(WindowElement.class).first()
+                .findElement(By.className("v-window-closebox")).click();
         assertLogText();
     }
 
@@ -40,6 +41,7 @@ public class CloseSubWindowTest extends MultiBrowserTest {
     }
 
     private void assertLogText() {
-        Assert.assertEquals("Unexpected log contents,", "1. Window 'Sub-window' closed", getLogRow(0));
+        Assert.assertEquals("Unexpected log contents,",
+                "1. Window 'Sub-window' closed", getLogRow(0));
     }
 }

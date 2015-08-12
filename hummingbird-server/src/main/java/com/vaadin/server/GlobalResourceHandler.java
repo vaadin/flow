@@ -60,10 +60,13 @@ public class GlobalResourceHandler implements RequestHandler {
     private int nextLegacyId = 0;
 
     // APP/global/[uiid]/[type]/[id]
-    private static final Pattern pattern = Pattern.compile("^/?" + ApplicationConstants.APP_PATH + '/' + RESOURCE_REQUEST_PATH + "(\\d+)/(([^/]+)(/.*))");
+    private static final Pattern pattern = Pattern
+            .compile("^/?" + ApplicationConstants.APP_PATH + '/'
+                    + RESOURCE_REQUEST_PATH + "(\\d+)/(([^/]+)(/.*))");
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request,
+            VaadinResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         if (pathInfo == null) {
             return false;
@@ -79,7 +82,8 @@ public class GlobalResourceHandler implements RequestHandler {
         String key = matcher.group(2);
 
         if (key == null) {
-            return error(request, response, pathInfo + " is not a valid global resource path");
+            return error(request, response,
+                    pathInfo + " is not a valid global resource path");
         }
         session.lock();
         Map<Class<?>, CurrentInstance> oldInstances = null;
@@ -94,16 +98,19 @@ public class GlobalResourceHandler implements RequestHandler {
             if (LEGACY_TYPE.equals(type)) {
                 resource = legacyResources.get(key);
             } else {
-                return error(request, response, "Unknown global resource type " + type + " in requested path " + pathInfo);
+                return error(request, response, "Unknown global resource type "
+                        + type + " in requested path " + pathInfo);
             }
 
             if (resource == null) {
-                return error(request, response, "Global resource " + key + " not found");
+                return error(request, response,
+                        "Global resource " + key + " not found");
             }
 
             stream = resource.getStream();
             if (stream == null) {
-                return error(request, response, "Resource " + resource + " didn't produce any stream.");
+                return error(request, response,
+                        "Resource " + resource + " didn't produce any stream.");
             }
         } finally {
             session.unlock();
@@ -132,7 +139,8 @@ public class GlobalResourceHandler implements RequestHandler {
         if (resource instanceof ConnectorResource) {
             ConnectorResource connectorResource = (ConnectorResource) resource;
             if (!legacyResourceKeys.containsKey(resource)) {
-                String uri = LEGACY_TYPE + '/' + Integer.toString(nextLegacyId++);
+                String uri = LEGACY_TYPE + '/'
+                        + Integer.toString(nextLegacyId++);
                 String filename = connectorResource.getFilename();
                 if (filename != null && !filename.isEmpty()) {
                     uri += '/' + filename;
@@ -151,7 +159,8 @@ public class GlobalResourceHandler implements RequestHandler {
         }
     }
 
-    private void registerResourceUsage(Resource resource, ClientConnector connector) {
+    private void registerResourceUsage(Resource resource,
+            ClientConnector connector) {
         ensureInSet(resourceUsers, resource, connector);
         ensureInSet(usedResources, connector, resource);
     }
@@ -175,11 +184,15 @@ public class GlobalResourceHandler implements RequestHandler {
      * @return an URI string, or <code>null</code> if the resource is not
      *         registered.
      */
-    public String getUri(ClientConnector connector, ConnectorResource resource) {
+    public String getUri(ClientConnector connector,
+            ConnectorResource resource) {
         // app://APP/global/[ui]/[type]/[id]
         String uri = legacyResourceKeys.get(resource);
         if (uri != null && !uri.isEmpty()) {
-            return ApplicationConstants.APP_PROTOCOL_PREFIX + ApplicationConstants.APP_PATH + '/' + RESOURCE_REQUEST_PATH + connector.getUI().getUIId() + '/' + uri;
+            return ApplicationConstants.APP_PROTOCOL_PREFIX
+                    + ApplicationConstants.APP_PATH + '/'
+                    + RESOURCE_REQUEST_PATH + connector.getUI().getUIId() + '/'
+                    + uri;
         } else {
             return null;
         }
@@ -213,9 +226,11 @@ public class GlobalResourceHandler implements RequestHandler {
         return Logger.getLogger(GlobalResourceHandler.class.getName());
     }
 
-    private static boolean error(VaadinRequest request, VaadinResponse response, String logMessage) throws IOException {
+    private static boolean error(VaadinRequest request, VaadinResponse response,
+            String logMessage) throws IOException {
         getLogger().log(Level.WARNING, logMessage);
-        response.sendError(HttpServletResponse.SC_NOT_FOUND, request.getPathInfo() + " can not be found");
+        response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                request.getPathInfo() + " can not be found");
 
         // Request handled (though not in a nice way)
         return true;

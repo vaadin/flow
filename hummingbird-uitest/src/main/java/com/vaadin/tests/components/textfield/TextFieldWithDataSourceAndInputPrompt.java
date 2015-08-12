@@ -41,7 +41,8 @@ public class TextFieldWithDataSourceAndInputPrompt extends AbstractTestUI {
         textField.setValue(null);
         addComponent(textField);
 
-        TextField textField2 = new TextField("TextField with null data source value");
+        TextField textField2 = new TextField(
+                "TextField with null data source value");
         textField2.setInputPrompt("Me is input prompt");
         textField2.setNullRepresentation(null);
         BeanItem<Pojo> beanItem = new BeanItem<Pojo>(new Pojo());

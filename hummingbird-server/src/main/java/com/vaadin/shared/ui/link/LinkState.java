@@ -22,6 +22,7 @@ public class LinkState extends AbstractComponentState {
     {
         primaryStyleName = "v-link";
     }
+
     public String name = "";
     public String target = null;
     public BorderStyle targetBorder = BorderStyle.DEFAULT;

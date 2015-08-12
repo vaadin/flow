@@ -29,9 +29,11 @@ import com.vaadin.shared.annotations.NoLayout;
 
 public class ClientRpcVisitor extends TypeVisitor {
     @Override
-    public void visitClientRpc(TreeLogger logger, JClassType type, ConnectorBundle bundle) throws UnableToCompleteException {
+    public void visitClientRpc(TreeLogger logger, JClassType type,
+            ConnectorBundle bundle) throws UnableToCompleteException {
         checkGenericType(logger, type);
-        Set<? extends JClassType> hierarchy = type.getFlattenedSupertypeHierarchy();
+        Set<? extends JClassType> hierarchy = type
+                .getFlattenedSupertypeHierarchy();
         for (JClassType subType : hierarchy) {
             JMethod[] methods = subType.getMethods();
             for (JMethod method : methods) {
@@ -40,7 +42,8 @@ public class ClientRpcVisitor extends TypeVisitor {
                 bundle.setNeedsInvoker(type, method);
                 bundle.setNeedsParamTypes(type, method);
                 if (method.getAnnotation(NoLayout.class) != null) {
-                    bundle.setMethodAttribute(type, method, MethodAttribute.NO_LAYOUT);
+                    bundle.setMethodAttribute(type, method,
+                            MethodAttribute.NO_LAYOUT);
                 }
 
                 JType[] parameterTypes = method.getParameterTypes();
@@ -51,16 +54,27 @@ public class ClientRpcVisitor extends TypeVisitor {
         }
     }
 
-    public static void checkGenericType(TreeLogger logger, JClassType type) throws UnableToCompleteException {
+    public static void checkGenericType(TreeLogger logger, JClassType type)
+            throws UnableToCompleteException {
         if (type.isGenericType() != null) {
-            logger.log(Type.ERROR, "Type " + type.getParameterizedQualifiedSourceName() + "is parameterizied generic. RPC proxy " + "for parameterizied types is not supported.");
+            logger.log(Type.ERROR,
+                    "Type " + type.getParameterizedQualifiedSourceName()
+                            + "is parameterizied generic. RPC proxy "
+                            + "for parameterizied types is not supported.");
             throw new UnableToCompleteException();
         }
     }
 
-    public static void checkReturnType(TreeLogger logger, JMethod method) throws UnableToCompleteException {
+    public static void checkReturnType(TreeLogger logger, JMethod method)
+            throws UnableToCompleteException {
         if (!method.getReturnType().getQualifiedSourceName().equals("void")) {
-            logger.log(Type.ERROR, "The method " + method.getEnclosingType().getQualifiedSourceName() + "." + method.getName() + " returns " + method.getReturnType().getQualifiedSourceName() + " but only void is supported for methods in RPC interfaces.");
+            logger.log(Type.ERROR,
+                    "The method "
+                            + method.getEnclosingType().getQualifiedSourceName()
+                            + "." + method.getName() + " returns "
+                            + method.getReturnType()
+                                    .getQualifiedSourceName()
+                    + " but only void is supported for methods in RPC interfaces.");
             throw new UnableToCompleteException();
         }
     }

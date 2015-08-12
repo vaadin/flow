@@ -50,7 +50,10 @@ import com.vaadin.shared.ApplicationConstants;
 /**
  * 
  */
-public class VUI extends SimplePanel implements ResizeHandler, Window.ClosingHandler, Focusable, com.google.gwt.user.client.ui.Focusable, HasResizeHandlers, HasScrollHandlers {
+public class VUI extends SimplePanel
+        implements ResizeHandler, Window.ClosingHandler, Focusable,
+        com.google.gwt.user.client.ui.Focusable, HasResizeHandlers,
+        HasScrollHandlers {
 
     private static int MONITOR_PARENT_TIMER_INTERVAL = 1000;
 
@@ -127,7 +130,10 @@ public class VUI extends SimplePanel implements ResizeHandler, Window.ClosingHan
                  * createUrlBuilder does not properly pass an empty fragment to
                  * UrlBuilder on Webkit browsers so do it manually (#11686)
                  */
-                String location = Window.Location.createUrlBuilder().setHash(URL.decodeQueryString(Window.Location.getHash())).buildString();
+                String location = Window.Location.createUrlBuilder()
+                        .setHash(URL
+                                .decodeQueryString(Window.Location.getHash()))
+                        .buildString();
 
                 currentFragment = newFragment;
                 connection.flushActiveConnector();
@@ -136,14 +142,15 @@ public class VUI extends SimplePanel implements ResizeHandler, Window.ClosingHan
         }
     };
 
-    private VLazyExecutor delayedResizeExecutor = new VLazyExecutor(200, new ScheduledCommand() {
+    private VLazyExecutor delayedResizeExecutor = new VLazyExecutor(200,
+            new ScheduledCommand() {
 
-        @Override
-        public void execute() {
-            performSizeCheck();
-        }
+                @Override
+                public void execute() {
+                    performSizeCheck();
+                }
 
-    });
+            });
 
     private Element storedFocus;
 
@@ -180,7 +187,8 @@ public class VUI extends SimplePanel implements ResizeHandler, Window.ClosingHan
     @Override
     protected void onAttach() {
         super.onAttach();
-        historyHandlerRegistration = History.addValueChangeHandler(historyChangeHandler);
+        historyHandlerRegistration = History
+                .addValueChangeHandler(historyChangeHandler);
         currentFragment = History.getToken();
     }
 
@@ -211,7 +219,8 @@ public class VUI extends SimplePanel implements ResizeHandler, Window.ClosingHan
      * monitoring it) and triggers layout recalculation if they have changed.
      */
     protected void performSizeCheck() {
-        windowSizeMaybeChanged(Window.getClientWidth(), Window.getClientHeight());
+        windowSizeMaybeChanged(Window.getClientWidth(),
+                Window.getClientHeight());
     }
 
     /**
@@ -228,7 +237,8 @@ public class VUI extends SimplePanel implements ResizeHandler, Window.ClosingHan
      * @deprecated use {@link #performSizeCheck()}
      */
     @Deprecated
-    protected void windowSizeMaybeChanged(int newWindowWidth, int newWindowHeight) {
+    protected void windowSizeMaybeChanged(int newWindowWidth,
+            int newWindowHeight) {
         if (connection == null) {
             // Connection is null if the timer fires before the first UIDL
             // update
@@ -236,7 +246,8 @@ public class VUI extends SimplePanel implements ResizeHandler, Window.ClosingHan
         }
 
         boolean changed = false;
-        ComponentConnector connector = ConnectorMap.get(connection).getConnector(this);
+        ComponentConnector connector = ConnectorMap.get(connection)
+                .getConnector(this);
         if (windowWidth != newWindowWidth) {
             windowWidth = newWindowWidth;
             changed = true;
@@ -271,7 +282,8 @@ public class VUI extends SimplePanel implements ResizeHandler, Window.ClosingHan
              * should shrink as the content's size is fixed and would thus not
              * automatically shrink.)
              */
-            VConsole.log("Running layout functions due to window or parent resize");
+            VConsole.log(
+                    "Running layout functions due to window or parent resize");
 
             // update size to avoid (most) redundant re-layout passes
             // there can still be an extra layout recalculation if webkit
@@ -292,7 +304,8 @@ public class VUI extends SimplePanel implements ResizeHandler, Window.ClosingHan
      */
     @Deprecated
     public String getTheme() {
-        return ((UIConnector) ConnectorMap.get(connection).getConnector(this)).getActiveTheme();
+        return ((UIConnector) ConnectorMap.get(connection).getConnector(this))
+                .getActiveTheme();
     }
 
     /**
@@ -303,7 +316,8 @@ public class VUI extends SimplePanel implements ResizeHandler, Window.ClosingHan
      * @return true if we're running embedded
      */
     public boolean isEmbedded() {
-        return !getElement().getOwnerDocument().getBody().getClassName().contains(ApplicationConstants.GENERATED_BODY_CLASSNAME);
+        return !getElement().getOwnerDocument().getBody().getClassName()
+                .contains(ApplicationConstants.GENERATED_BODY_CLASSNAME);
     }
 
     /**
