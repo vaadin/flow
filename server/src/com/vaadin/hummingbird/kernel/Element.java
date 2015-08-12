@@ -32,10 +32,19 @@ public class Element {
     }
 
     public void setAttribute(String name, String value) {
+        assert validAttribute(name);
         template.setAttribute(name, value, node);
     }
 
+    private boolean validAttribute(String name) {
+        if ("#text".equals(getTag())) {
+            assert "content".equals(name) : "Attribute " + name + " is not supported for text nodes";
+        }
+        return true;
+    }
+
     public void setAttribute(String name, boolean value) {
+        assert validAttribute(name);
         template.setAttribute(name, Boolean.toString(value), node);
     }
 

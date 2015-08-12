@@ -100,7 +100,8 @@ public class Label extends AbstractComponent implements Property<String>, Proper
 
         setValue(content);
         setContentMode(contentMode);
-        setWidth(100, Unit.PERCENTAGE);
+        // XXX can't set width of a text node
+        // setWidth(100, Unit.PERCENTAGE);
     }
 
     /**
