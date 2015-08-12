@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
@@ -34,9 +35,136 @@ import com.google.gwt.dom.client.Text;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 public class TreeUpdater {
+
+    public class StaticChildrenElementTemplate extends BoundElementTemplate {
+
+        private final int[] childElementTemplates;
+
+        public StaticChildrenElementTemplate(JsonObject templateDescription) {
+            super(templateDescription);
+
+            JsonArray children = templateDescription.getArray("children");
+            childElementTemplates = new int[children.length()];
+            for (int i = 0; i < childElementTemplates.length; i++) {
+                childElementTemplates[i] = (int) children.getNumber(i);
+            }
+        }
+
+        @Override
+        protected void initElement(JsonObject node, Element element) {
+            super.initElement(node, element);
+
+            for (int templateId : childElementTemplates) {
+                element.appendChild(createTemplateElement(node, templateId));
+            }
+        }
+
+    }
+
+    public class ForElementTemplate extends BoundElementTemplate {
+        private final int childTemplateId;
+
+        public ForElementTemplate(JsonObject templateDescription) {
+            super(templateDescription);
+
+            childTemplateId = (int) templateDescription.getNumber("childTemplate");
+        }
+
+        @Override
+        protected void listInsertNode(JsonObject node, Element element, ListInsertNodeChange change) {
+            JsonObject childNode = idToNode.get(change.getValue());
+            Node child = createTemplateElement(childNode, childTemplateId);
+            insertNodeAtIndex(element, child, change.getIndex());
+        }
+    }
+
+    public class BoundElementTemplate implements Template {
+
+        private final String tag;
+        private final Map<String, String> defaultAttributeValues;
+        private final Map<String, String> propertyToAttribute;
+
+        public BoundElementTemplate(JsonObject templateDescription) {
+            tag = templateDescription.getString("tag");
+
+            defaultAttributeValues = readStringMap(templateDescription.getObject("defaultAttributes"));
+
+            propertyToAttribute = readStringMap(templateDescription.getObject("attributeBindings"));
+        }
+
+        private Map<String, String> readStringMap(JsonObject json) {
+            Map<String, String> values = new HashMap<>();
+            for (String name : json.keys()) {
+                assert json.get(name).getType() == JsonType.STRING;
+                values.put(name, json.getString(name));
+            }
+            return values;
+        }
+
+        @Override
+        public Node createElement(final JsonObject node) {
+            final Element element = Document.get().createElement(tag);
+            initElement(node, element);
+
+            addNodeListener(node, new NodeListener() {
+                @Override
+                public void remove(RemoveChange change) {
+                    throw new RuntimeException("Not yet implemented");
+                }
+
+                @Override
+                public void putNode(PutNodeChange change) {
+                    throw new RuntimeException("Not yet implemented");
+                }
+
+                @Override
+                public void put(PutChange change) {
+                    BoundElementTemplate.this.put(node, element, change);
+                }
+
+                @Override
+                public void listRemove(ListRemoveChange change) {
+                    throw new RuntimeException("Not yet implemented");
+                }
+
+                @Override
+                public void listInsertNode(ListInsertNodeChange change) {
+                    BoundElementTemplate.this.listInsertNode(node, element, change);
+                }
+
+                @Override
+                public void listInsert(ListInsertChange change) {
+                    throw new RuntimeException("Not yet implemented");
+                }
+            });
+
+            return element;
+        }
+
+        protected void put(JsonObject node, Element element, PutChange change) {
+            String key = change.getKey();
+            String targetAttribute = propertyToAttribute.get(key);
+            if (targetAttribute != null) {
+                element.setAttribute(targetAttribute, change.getValue().asString());
+            } else if (!"TEMPLATE".equals(change.getKey())) {
+                throw new RuntimeException("Unsupported property change: " + change.getKey());
+            }
+        }
+
+        protected void initElement(JsonObject node, Element element) {
+            for (Entry<String, String> entry : defaultAttributeValues.entrySet()) {
+                element.setAttribute(entry.getKey(), entry.getValue());
+            }
+        }
+
+        protected void listInsertNode(JsonObject node, Element element, ListInsertNodeChange change) {
+            throw new RuntimeException("Not implemented for " + getClass().getSimpleName());
+        }
+    }
 
     @JsType
     public interface RemoveChange extends Change {
@@ -357,9 +485,8 @@ public class TreeUpdater {
 
     }
 
-    @JsType
-    public interface Template {
-
+    private interface Template {
+        public Node createElement(JsonObject node);
     }
 
     @JsType
@@ -498,7 +625,7 @@ public class TreeUpdater {
 
     private Node createElement(JsonObject node) {
         if (node.hasKey("TEMPLATE")) {
-            throw new RuntimeException("Not yet supported");
+            return createTemplateElement(node, (int) node.getNumber("TEMPLATE"));
         } else {
             String tag = node.getString("TAG");
             if ("#text".equals(tag)) {
@@ -511,6 +638,13 @@ public class TreeUpdater {
                 return element;
             }
         }
+    }
+
+    private Node createTemplateElement(JsonObject node, int templateId) {
+        Template template = templates.get(Integer.valueOf(templateId));
+        assert template != null;
+
+        return template.createElement(node);
     }
 
     private static void insertNodeAtIndex(Element parent, Node child, int index) {
@@ -621,13 +755,23 @@ public class TreeUpdater {
     private void extractTemplates(JsonObject elementTemplates) {
         String[] keys = elementTemplates.keys();
         for (String keyString : keys) {
-            Integer key = Integer.valueOf(keyString);
-            templates.put(key, asTemplate(elementTemplates.get(keyString)));
+            JsonObject templateDescription = elementTemplates.getObject(keyString);
+            Template template = createTemplate(templateDescription);
+            templates.put(Integer.valueOf(keyString), template);
         }
     }
 
-    private static native Template asTemplate(JsonValue value)
-    /*-{
-        return value;
-    }-*/;
+    private Template createTemplate(JsonObject templateDescription) {
+        String type = templateDescription.getString("type");
+        switch (type) {
+        case "BoundElementTemplate":
+            return new BoundElementTemplate(templateDescription);
+        case "ForElementTemplate":
+            return new ForElementTemplate(templateDescription);
+        case "StaticChildrenElementTemplate":
+            return new StaticChildrenElementTemplate(templateDescription);
+        default:
+            throw new RuntimeException("Unsupported template type: " + type);
+        }
+    }
 }
