@@ -12,6 +12,10 @@
 	<packaging>jar</packaging>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-elemental</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

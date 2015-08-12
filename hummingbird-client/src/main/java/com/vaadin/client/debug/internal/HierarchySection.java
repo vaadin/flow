@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -39,7 +39,7 @@ import com.vaadin.client.WidgetUtil;
 
 /**
  * Provides functionality for examining the UI component hierarchy.
- * 
+ *
  * @since 7.1
  * @author Vaadin Ltd
  */
@@ -53,14 +53,11 @@ public class HierarchySection implements Section {
     private final FlowPanel helpPanel = new FlowPanel();
     private final ConnectorInfoPanel infoPanel = new ConnectorInfoPanel();
     private final HierarchyPanel hierarchyPanel = new HierarchyPanel();
-    private final OptimizedWidgetsetPanel widgetsetPanel = new OptimizedWidgetsetPanel();
 
     private final FlowPanel controls = new FlowPanel();
 
     private final Button find = new DebugButton(Icon.HIGHLIGHT,
             "Select a component on the page to inspect it");
-    private final Button generateWS = new DebugButton(Icon.OPTIMIZE,
-            "Show used connectors and how to optimize widgetset");
     private final Button showHierarchy = new DebugButton(Icon.HIERARCHY,
             "Show the connector hierarchy tree");
     private final Button generateDesign = new DebugButton(Icon.SHOW_DESIGN,
@@ -74,14 +71,14 @@ public class HierarchySection implements Section {
          * Called when the user hovers over a connector, which is highlighted.
          * Also called when hovering outside the tree, e.g. over the debug
          * console, but in this case the connector is null
-         * 
+         *
          * @param connector
          */
         void onHover(ComponentConnector connector);
 
         /**
          * Called when the user clicks on a highlighted connector.
-         * 
+         *
          * @param connector
          */
         void onSelected(ComponentConnector connector);
@@ -145,15 +142,6 @@ public class HierarchySection implements Section {
             }
         });
 
-        controls.add(generateWS);
-        generateWS.setStylePrimaryName(VDebugWindow.STYLENAME_BUTTON);
-        generateWS.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                generateWidgetset();
-            }
-        });
-
         controls.add(generateDesign);
         generateDesign.setStylePrimaryName(VDebugWindow.STYLENAME_BUTTON);
         generateDesign.addClickHandler(new ClickHandler() {
@@ -181,9 +169,8 @@ public class HierarchySection implements Section {
     private void initializeHelpPanel() {
         HTML info = new HTML(showHierarchy.getHTML() + " "
                 + showHierarchy.getTitle() + "<br/>" + find.getHTML() + " "
-                + find.getTitle() + "<br/>" + generateWS.getHTML() + " "
-                + generateWS.getTitle() + "<br/>" + generateDesign.getHTML()
-                + " " + generateDesign.getTitle() + "<br/>");
+                + find.getTitle() + "<br/>" + generateDesign.getHTML() + " "
+                + generateDesign.getTitle() + "<br/>");
         info.setStyleName(VDebugWindow.STYLENAME + "-info");
         helpPanel.add(info);
     }
@@ -217,11 +204,6 @@ public class HierarchySection implements Section {
     @Override
     public void hide() {
         stopFind();
-    }
-
-    private void generateWidgetset() {
-        widgetsetPanel.update();
-        content.setWidget(widgetsetPanel);
     }
 
     @Override

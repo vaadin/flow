@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -18,30 +18,23 @@ package com.vaadin.client.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerManager;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.FastStringMap;
 import com.vaadin.client.FastStringSet;
-import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ServerConnector;
 import com.vaadin.client.Util;
 import com.vaadin.client.VConsole;
-import com.vaadin.client.communication.RpcProxy;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.communication.StateChangeEvent.StateChangeHandler;
-import com.vaadin.client.metadata.NoDataException;
-import com.vaadin.client.metadata.OnStateChangeMethod;
-import com.vaadin.client.metadata.Type;
-import com.vaadin.client.metadata.TypeData;
-import com.vaadin.client.metadata.TypeDataStore;
 import com.vaadin.shared.communication.ClientRpc;
 import com.vaadin.shared.communication.ServerRpc;
 import com.vaadin.shared.communication.SharedState;
@@ -49,10 +42,10 @@ import com.vaadin.shared.communication.URLReference;
 
 /**
  * An abstract implementation of Connector.
- * 
+ *
  * @author Vaadin Ltd
  * @since 7.0.0
- * 
+ *
  */
 public abstract class AbstractConnector
         implements ServerConnector, StateChangeHandler {
@@ -85,7 +78,7 @@ public abstract class AbstractConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.VPaintable#getConnection()
      */
     @Override
@@ -95,7 +88,7 @@ public abstract class AbstractConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.Connector#getId()
      */
     @Override
@@ -144,10 +137,10 @@ public abstract class AbstractConnector
 
     /**
      * Registers an implementation for a server to client RPC interface.
-     * 
+     *
      * Multiple registrations can be made for a single interface, in which case
      * all of them receive corresponding RPC calls.
-     * 
+     *
      * @param rpcInterface
      *            RPC interface
      * @param implementation
@@ -169,7 +162,7 @@ public abstract class AbstractConnector
 
     /**
      * Unregisters an implementation for a server to client RPC interface.
-     * 
+     *
      * @param rpcInterface
      *            RPC interface
      * @param implementation
@@ -187,7 +180,7 @@ public abstract class AbstractConnector
     /**
      * Returns an RPC proxy object which can be used to invoke the RPC method on
      * the server.
-     * 
+     *
      * @param <T>
      *            The type of the ServerRpc interface
      * @param rpcInterface
@@ -196,11 +189,7 @@ public abstract class AbstractConnector
      *         server.
      */
     protected <T extends ServerRpc> T getRpcProxy(Class<T> rpcInterface) {
-        String name = rpcInterface.getName();
-        if (!rpcProxyMap.containsKey(name)) {
-            rpcProxyMap.put(name, RpcProxy.create(rpcInterface, this));
-        }
-        return (T) rpcProxyMap.get(name);
+        return null;
     }
 
     @Override
@@ -301,42 +290,12 @@ public abstract class AbstractConnector
 
         updateEnabledState(isEnabled());
 
-        FastStringMap<JsArrayObject<OnStateChangeMethod>> handlers = TypeDataStore
-                .getOnStateChangeMethods(getClass());
-        if (handlers != null) {
-            Profiler.enter("AbstractConnector.onStateChanged @OnStateChange");
-
-            HashSet<OnStateChangeMethod> invokedMethods = new HashSet<OnStateChangeMethod>();
-
-            JsArrayString propertyNames = handlers.getKeys();
-            for (int i = 0; i < propertyNames.length(); i++) {
-                String propertyName = propertyNames.get(i);
-
-                if (stateChangeEvent.hasPropertyChanged(propertyName)) {
-                    JsArrayObject<OnStateChangeMethod> propertyMethods = handlers
-                            .get(propertyName);
-
-                    for (int j = 0; j < propertyMethods.size(); j++) {
-                        OnStateChangeMethod method = propertyMethods.get(j);
-
-                        if (invokedMethods.add(method)) {
-
-                            method.invoke(stateChangeEvent);
-
-                        }
-                    }
-                }
-            }
-
-            Profiler.leave("AbstractConnector.onStateChanged @OnStateChange");
-        }
-
         Profiler.leave("AbstractConnector.onStateChanged");
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.ServerConnector#onUnregister()
      */
     @Override
@@ -350,9 +309,9 @@ public abstract class AbstractConnector
 
     /**
      * Returns the shared state object for this connector.
-     * 
+     *
      * Override this method to define the shared state type for your connector.
-     * 
+     *
      * @return the current shared state (never null)
      */
     @Override
@@ -371,35 +330,11 @@ public abstract class AbstractConnector
      * created state object must be compatible with the return type of
      * {@link #getState()}. The default implementation creates a state object
      * using GWT.create() using the defined return type of {@link #getState()}.
-     * 
+     *
      * @return A new state object
      */
     protected SharedState createState() {
-        try {
-            Type stateType = getStateType(this);
-            Object stateInstance = stateType.createInstance();
-            return (SharedState) stateInstance;
-        } catch (NoDataException e) {
-            throw new IllegalStateException(
-                    "There is no information about the state for "
-                            + getClass().getSimpleName()
-                            + ". Did you remember to compile the right widgetset?",
-                    e);
-        }
-
-    }
-
-    public static Type getStateType(ServerConnector connector) {
-        try {
-            return TypeData.getType(connector.getClass()).getMethod("getState")
-                    .getReturnType();
-        } catch (NoDataException e) {
-            throw new IllegalStateException(
-                    "There is no information about the state for "
-                            + connector.getClass().getSimpleName()
-                            + ". Did you remember to compile the right widgetset?",
-                    e);
-        }
+        return GWT.create(SharedState.class);
     }
 
     @Override
@@ -460,7 +395,7 @@ public abstract class AbstractConnector
      * {@link com.vaadin.ui.terminal.AbstractClientConnector#setResource(String, com.vaadin.terminal.Resource)}
      * with the same key. <code>null</code> is returned if no corresponding
      * resource is found.
-     * 
+     *
      * @param key
      *            a string identifying the resource.
      * @return the resource URL as a string, or <code>null</code> if no
@@ -477,7 +412,7 @@ public abstract class AbstractConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.ServerConnector#hasEventListener(java.lang.String)
      */
     @Override
@@ -489,7 +424,7 @@ public abstract class AbstractConnector
     /**
      * Force the connector to recheck its state variables as the variables or
      * their meaning might have changed.
-     * 
+     *
      * @since 7.3
      */
     public void forceStateChange() {

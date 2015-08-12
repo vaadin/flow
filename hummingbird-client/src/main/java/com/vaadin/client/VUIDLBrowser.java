@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -14,7 +14,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package com.vaadin.client;
 
@@ -35,7 +35,6 @@ import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.vaadin.client.ui.UnknownComponentConnector;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -44,7 +43,7 @@ import elemental.json.JsonValue;
 
 /**
  * @author Vaadin Ltd
- * 
+ *
  * @deprecated as of 7.1. This class was mainly used by the old debug console
  *             but is retained for now for backwards compatibility.
  */
@@ -227,14 +226,7 @@ public class VUIDLBrowser extends SimpleTree {
 
         private String getNodeName(UIDL uidl, ApplicationConfiguration conf,
                 int tag) {
-            Class<? extends ServerConnector> widgetClassByDecodedTag = conf
-                    .getConnectorClassByEncodedTag(tag);
-            if (widgetClassByDecodedTag == UnknownComponentConnector.class) {
-                return conf.getUnknownServerClassNameByTag(tag)
-                        + "(NO CLIENT IMPLEMENTATION FOUND)";
-            } else {
-                return widgetClassByDecodedTag.getName();
-            }
+            return "" + tag;
         }
 
         @Override

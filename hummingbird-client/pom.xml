@@ -14,17 +14,6 @@
 	<properties>
 		<gwt.module.output>${project.build.outputDirectory}/VAADIN/gwt</gwt.module.output>
 	</properties>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>com.google.gwt</groupId>
-				<artifactId>gwt</artifactId>
-				<version>${gwt.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<repositories>
 		<repository>

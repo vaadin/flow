@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -21,6 +21,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Focusable;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.ComponentConnector;
@@ -30,9 +31,6 @@ import com.vaadin.client.StyleConstants;
 import com.vaadin.client.Util;
 import com.vaadin.client.VConsole;
 import com.vaadin.client.communication.StateChangeEvent;
-import com.vaadin.client.metadata.NoDataException;
-import com.vaadin.client.metadata.Type;
-import com.vaadin.client.metadata.TypeData;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.AbstractComponentState;
 import com.vaadin.shared.ComponentConstants;
@@ -67,26 +65,13 @@ public abstract class AbstractComponentConnector extends AbstractConnector
      * can't call <code>super.createWidget()</code> since the metadata needed
      * for that implementation is not generated if there's an override of the
      * method.
-     * 
+     *
      * @return a new widget instance to use for this component connector
      */
     protected Widget createWidget() {
-        Type type = TypeData.getType(getClass());
-        try {
-            Type widgetType = type.getMethod("getWidget").getReturnType();
-            Object instance = widgetType.createInstance();
-            Widget w = (Widget) instance;
-            setConnectorId(w.getElement(), getConnectorId());
-            return w;
-        } catch (NoDataException e) {
-            throw new IllegalStateException(
-                    "Default implementation of createWidget() does not work for "
-                            + getClass().getSimpleName()
-                            + ". This might be caused by explicitely using "
-                            + "super.createWidget() or some unspecified "
-                            + "problem with the widgetset compilation.",
-                    e);
-        }
+        HTML w = new HTML();
+        setConnectorId(w.getElement(), getConnectorId());
+        return w;
     }
 
     private static native void setConnectorId(Element el, String id)
@@ -97,7 +82,7 @@ public abstract class AbstractComponentConnector extends AbstractConnector
     /**
      * Returns the widget associated with this paintable. The widget returned by
      * this method must not changed during the life time of the paintable.
-     * 
+     *
      * @return The widget associated with this paintable
      */
     @Override
@@ -220,7 +205,7 @@ public abstract class AbstractComponentConnector extends AbstractConnector
     /**
      * Updates the component size, invoking the {@link LayoutManager layout
      * manager} if necessary.
-     * 
+     *
      * @param newWidth
      *            The new width as a CSS string. Cannot be null.
      * @param newHeight
@@ -250,7 +235,7 @@ public abstract class AbstractComponentConnector extends AbstractConnector
 
     /**
      * Updates the DOM size of this connector's {@link #getWidget() widget}.
-     * 
+     *
      * @since 7.1.15
      * @param newWidth
      *            The new width as a CSS string. Cannot be null.
@@ -284,7 +269,7 @@ public abstract class AbstractComponentConnector extends AbstractConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.ComponentConnector#delegateCaptionHandling ()
      */
     @Override
@@ -361,7 +346,7 @@ public abstract class AbstractComponentConnector extends AbstractConnector
      * updated in another widget in addition to the one returned by the
      * {@link #getWidget()}.
      * </p>
-     * 
+     *
      * @param styleName
      *            the style name to be added or removed
      * @param add
@@ -382,7 +367,7 @@ public abstract class AbstractComponentConnector extends AbstractConnector
      * different. For example see
      * {@link com.vaadin.client.ui.datefield.DateFieldConnector#setWidgetStyleNameWithPrefix(String, String, boolean)}
      * </p>
-     * 
+     *
      * @param styleName
      *            the style name to be added or removed
      * @param add
@@ -408,7 +393,7 @@ public abstract class AbstractComponentConnector extends AbstractConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.ComponentConnector#isReadOnly()
      */
     @Override
@@ -441,7 +426,7 @@ public abstract class AbstractComponentConnector extends AbstractConnector
 
     /**
      * Gets the URI of the icon set for this component.
-     * 
+     *
      * @return the URI of the icon, or <code>null</code> if no icon has been
      *         defined.
      */
@@ -451,7 +436,7 @@ public abstract class AbstractComponentConnector extends AbstractConnector
 
     /**
      * Gets the icon set for this component.
-     * 
+     *
      * @return the icon, or <code>null</code> if no icon has been defined.
      */
     protected Icon getIcon() {
@@ -460,7 +445,7 @@ public abstract class AbstractComponentConnector extends AbstractConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.ComponentConnector#flush()
      */
     @Override

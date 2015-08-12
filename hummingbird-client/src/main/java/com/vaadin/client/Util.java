@@ -17,7 +17,6 @@
 package com.vaadin.client;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -39,15 +38,16 @@ import com.vaadin.shared.communication.MethodInvocation;
 import com.vaadin.shared.ui.ComponentStateUtil;
 
 import elemental.js.json.JsJsonValue;
+import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 
 public class Util {
 
     /**
      * Helper method for debugging purposes.
-     * 
+     *
      * Stops execution on firefox browsers on a breakpoint.
-     * 
+     *
      * @deprecated As of 7.4.0, use {@link WidgetUtil#browserDebugger()}
      *             instead.
      */
@@ -60,10 +60,10 @@ public class Util {
      * Helper method for a bug fix #14041. For mozilla getKeyCode return 0 for
      * space bar (because space is considered as char). If return 0 use
      * getCharCode.
-     * 
+     *
      * @deprecated As of 7.4.0, use {@link WidgetUtil#getKeyCode(KeyEvent)}
      *             instead.
-     * 
+     *
      * @param event
      * @return return key code
      * @since 7.2.4
@@ -74,15 +74,15 @@ public class Util {
     }
 
     /**
-     * 
+     *
      * Returns the topmost element of from given coordinates.
-     * 
+     *
      * TODO fix crossplat issues clientX vs pageX. See quircksmode. Not critical
      * for vaadin as we scroll div istead of page.
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#getElementFromPoint(int, int)} instead.
-     * 
+     *
      * @param x
      * @param y
      * @return the element at given coordinates
@@ -121,10 +121,10 @@ public class Util {
 
     /**
      * Converts html entities to text.
-     * 
+     *
      * @deprecated As of 7.4.0, use {@link WidgetUtil#escapeHTML(String)}
      *             instead.
-     * 
+     *
      * @param html
      * @return escaped string presentation of given html
      */
@@ -135,10 +135,10 @@ public class Util {
 
     /**
      * Escapes the string so it is safe to write inside an HTML attribute.
-     * 
+     *
      * @deprecated As of 7.4.0, use {@link WidgetUtil#escapeAttribute(String)}
      *             instead.
-     * 
+     *
      * @param attribute
      *            The string to escape
      * @return An escaped version of <literal>attribute</literal>.
@@ -150,12 +150,12 @@ public class Util {
 
     /**
      * Clones given element as in JavaScript.
-     * 
+     *
      * Deprecate this if there appears similar method into GWT someday.
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#cloneNode(Element, boolean)} instead.
-     * 
+     *
      * @param element
      * @param deep
      *            clone child tree also
@@ -303,11 +303,11 @@ public class Util {
 
     /**
      * Defers the execution of {@link #runWebkitOverflowAutoFix(Element)}
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#runWebkitOverflowAutoFixDeferred(Element)}
      *             instead.
-     * 
+     *
      * @since 7.2.6
      * @param elem
      *            with overflow auto
@@ -319,12 +319,12 @@ public class Util {
 
     /**
      * Run workaround for webkits overflow auto issue.
-     * 
+     *
      * See: our bug #2138 and https://bugs.webkit.org/show_bug.cgi?id=21462
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#runWebkitOverflowAutoFix(Element)} instead.
-     * 
+     *
      * @param elem
      *            with overflow auto
      */
@@ -338,7 +338,7 @@ public class Util {
      * dimension is not specified as relative it will return -1. If the shared
      * state does not contain width or height specifications this will return
      * null.
-     * 
+     *
      * @param state
      * @return
      */
@@ -372,10 +372,10 @@ public class Util {
     /**
      * Gets the border-box width for the given element, i.e. element width +
      * border + padding. Always rounds up to nearest integer.
-     * 
+     *
      * @deprecated As of 7.4.0, use {@link WidgetUtil#getRequiredWidth(Element)}
      *             instead.
-     * 
+     *
      * @param element
      *            The element to check
      * @return The border-box width for the element
@@ -389,10 +389,10 @@ public class Util {
     /**
      * Gets the border-box height for the given element, i.e. element height +
      * border + padding. Always rounds up to nearest integer.
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#getRequiredHeight(Element)} instead.
-     * 
+     *
      * @param element
      *            The element to check
      * @return The border-box height for the element
@@ -467,10 +467,10 @@ public class Util {
 
     /**
      * Detects what is currently the overflow style attribute in given element.
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#mayHaveScrollBars(Element)} instead.
-     * 
+     *
      * @param pe
      *            the element to detect
      * @return true if auto or scroll
@@ -487,9 +487,9 @@ public class Util {
      * also returned if "element" is part of its caption. If
      * <literal>element</literal> is not part of any child component, null is
      * returned.
-     * 
+     *
      * This method returns the deepest nested VPaintableWidget.
-     * 
+     *
      * @param client
      *            A reference to ApplicationConnection
      * @param parent
@@ -540,9 +540,9 @@ public class Util {
 
     /**
      * Will (attempt) to focus the given DOM Element.
-     * 
+     *
      * @deprecated As of 7.4.0, use {@link WidgetUtil#focus(Element)} instead.
-     * 
+     *
      * @param el
      *            the element to focus
      */
@@ -554,7 +554,7 @@ public class Util {
     /**
      * Helper method to find the nearest parent paintable instance by traversing
      * the DOM upwards from given element.
-     * 
+     *
      * @param element
      *            the element to start from
      */
@@ -572,10 +572,10 @@ public class Util {
     /**
      * Helper method to find first instance of given Widget type found by
      * traversing DOM upwards from given element.
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#findWidget(Element, Class)} instead.
-     * 
+     *
      * @param element
      *            the element where to start seeking of Widget
      * @param class1
@@ -589,10 +589,10 @@ public class Util {
 
     /**
      * Force webkit to redraw an element
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#forceWebkitRedraw(Element)} instead.
-     * 
+     *
      * @param element
      *            The element that should be redrawn
      */
@@ -605,10 +605,10 @@ public class Util {
      * Performs a hack to trigger a re-layout in the IE8. This is usually
      * necessary in cases where IE8 "forgets" to update child elements when they
      * resize.
-     * 
+     *
      * @deprecated As of 7.4.0, use {@link WidgetUtil#forceIE8Redraw(Element)}
      *             instead.
-     * 
+     *
      * @param e
      *            The element to perform the hack on
      */
@@ -621,10 +621,10 @@ public class Util {
      * Performs a hack to trigger a re-layout in the IE browser. This is usually
      * necessary in cases where IE "forgets" to update child elements when they
      * resize.
-     * 
+     *
      * @deprecated As of 7.4.0, use {@link WidgetUtil#forceIERedraw(Element)}
      *             instead.
-     * 
+     *
      * @since 7.3
      * @param e
      *            The element to perform the hack on
@@ -637,12 +637,12 @@ public class Util {
     /**
      * Detaches and re-attaches the element from its parent. The element is
      * reattached at the same position in the DOM as it was before.
-     * 
+     *
      * Does nothing if the element is not attached to the DOM.
-     * 
+     *
      * @deprecated As of 7.4.0, use {@link WidgetUtil#detachAttach(Element)}
      *             instead.
-     * 
+     *
      * @param element
      *            The element to detach and re-attach
      */
@@ -662,10 +662,10 @@ public class Util {
 
     /**
      * Returns the index of the childElement within its parent.
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#getChildElementIndex(Element)} instead.
-     * 
+     *
      * @param subElement
      * @return
      */
@@ -684,18 +684,16 @@ public class Util {
     /**
      * Produces a string representation of a method invocation, suitable for
      * debug output
-     * 
+     *
      * @since 7.5
      * @param invocation
      * @return
      */
     private static String getInvocationDebugString(
             MethodInvocation invocation) {
-        Object[] parameters = invocation.getParameters();
-        String formattedParams = (null != parameters)
-                ? Arrays.toString(parameters) : null;
+        JsonArray parameters = invocation.getParameters();
         return invocation.getInterfaceName() + "." + invocation.getMethodName()
-                + "(" + formattedParams + ")";
+                + "(" + parameters + ")";
     }
 
     public static void logMethodInvocations(ApplicationConnection c,
@@ -715,11 +713,11 @@ public class Util {
      * Temporarily sets the {@code styleProperty} to {@code tempValue} and then
      * resets it to its current value. Used mainly to work around rendering
      * issues in IE (and possibly in other browsers)
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#setStyleTemporarily(Element, String, String)}
      *             instead.
-     * 
+     *
      * @param element
      *            The target element
      * @param styleProperty
@@ -737,10 +735,10 @@ public class Util {
      * A helper method to return the client position from an event. Returns
      * position from either first changed touch (if touch event) or from the
      * event itself.
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#getTouchOrMouseClientX(Event)} instead.
-     * 
+     *
      * @param event
      * @return
      */
@@ -753,10 +751,10 @@ public class Util {
      * Find the element corresponding to the coordinates in the passed mouse
      * event. Please note that this is not always the same as the target of the
      * event e.g. if event capture is used.
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#getElementUnderMouse(NativeEvent)} instead.
-     * 
+     *
      * @param event
      *            the mouse event to get coordinates from
      * @return the element at the coordinates of the event
@@ -771,10 +769,10 @@ public class Util {
      * A helper method to return the client position from an event. Returns
      * position from either first changed touch (if touch event) or from the
      * event itself.
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#getTouchOrMouseClientY(Event)} instead.
-     * 
+     *
      * @param event
      * @return
      */
@@ -787,7 +785,7 @@ public class Util {
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#getTouchOrMouseClientY(NativeEvent)}
      *             instead.
-     * 
+     *
      * @see #getTouchOrMouseClientY(Event)
      * @param currentGwtEvent
      * @return
@@ -801,9 +799,9 @@ public class Util {
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#getTouchOrMouseClientX(NativeEvent)}
      *             instead.
-     * 
+     *
      * @see #getTouchOrMouseClientX(Event)
-     * 
+     *
      * @param event
      * @return
      */
@@ -843,10 +841,10 @@ public class Util {
 
     /**
      * Gets the currently focused element.
-     * 
+     *
      * @deprecated As of 7.4.0, use {@link WidgetUtil#getFocusedElement()}
      *             instead.
-     * 
+     *
      * @return The active element or null if no active element could be found.
      */
     @Deprecated
@@ -856,7 +854,7 @@ public class Util {
 
     /**
      * Gets the currently focused element for Internet Explorer.
-     * 
+     *
      * @return The currently focused element
      * @deprecated Use #getFocusedElement instead
      */
@@ -867,12 +865,12 @@ public class Util {
 
     /**
      * Gets currently focused element and checks if it's editable
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#isFocusedElementEditable()} instead.
-     * 
+     *
      * @since 7.4
-     * 
+     *
      * @return true if focused element is editable
      */
     @Deprecated
@@ -885,10 +883,10 @@ public class Util {
      * this method checks that this widget nor any of its parents is hidden. Can
      * be e.g used to check whether component should react to some events or
      * not.
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#isAttachedAndDisplayed(Widget)} instead.
-     * 
+     *
      * @param widget
      * @return true if attached and displayed
      */
@@ -900,10 +898,10 @@ public class Util {
     /**
      * Scrolls an element into view vertically only. Modified version of
      * Element.scrollIntoView.
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#scrollIntoViewVertically(Element)} instead.
-     * 
+     *
      * @param elem
      *            The element to scroll into view
      */
@@ -915,11 +913,11 @@ public class Util {
     /**
      * Checks if the given event is either a touch event or caused by the left
      * mouse button
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#isTouchEventOrLeftMouseButton(Event)}
      *             instead.
-     * 
+     *
      * @param event
      * @return true if the event is a touch event or caused by the left mouse
      *         button, false otherwise
@@ -931,7 +929,7 @@ public class Util {
 
     /**
      * Performs a shallow comparison of the collections.
-     * 
+     *
      * @param collection1
      *            The first collection
      * @param collection2
@@ -976,10 +974,10 @@ public class Util {
     /**
      * Resolve a relative URL to an absolute URL based on the current document's
      * location.
-     * 
+     *
      * @deprecated As of 7.4.0, use {@link WidgetUtil#getAbsoluteUrl(String)}
      *             instead.
-     * 
+     *
      * @param url
      *            a string with the relative URL to resolve
      * @return the corresponding absolute URL as a string
@@ -991,16 +989,16 @@ public class Util {
 
     /**
      * Sets the selection range of an input element.
-     * 
+     *
      * We need this JSNI function to set selection range so that we can use the
      * optional direction attribute to set the anchor to the end and the focus
      * to the start. This makes Firefox work the same way as other browsers
      * (#13477)
-     * 
+     *
      * @deprecated As of 7.4.0, use
      *             {@link WidgetUtil#setSelectionRange(Element, int, int, String)}
      *             instead.
-     * 
+     *
      * @param elem
      *            the html input element.
      * @param pos
@@ -1011,7 +1009,7 @@ public class Util {
      *            a string indicating the direction in which the selection was
      *            performed. This may be "forward" or "backward", or "none" if
      *            the direction is unknown or irrelevant.
-     * 
+     *
      * @since 7.3
      */
     @Deprecated
@@ -1024,7 +1022,7 @@ public class Util {
      * Converts a native {@link JavaScriptObject} into a {@link JsonValue}. This
      * is a no-op in GWT code compiled to javascript, but needs some special
      * handling to work when run in JVM.
-     * 
+     *
      * @param jso
      *            the java script object to represent as json
      * @return the json representation
@@ -1041,7 +1039,7 @@ public class Util {
      * Converts a {@link JsonValue} into a native {@link JavaScriptObject}. This
      * is a no-op in GWT code compiled to javascript, but needs some special
      * handling to work when run in JVM.
-     * 
+     *
      * @param jsonValue
      *            the json value
      * @return a native javascript object representation of the json value
@@ -1056,7 +1054,7 @@ public class Util {
 
     /**
      * Convert a {@link JavaScriptObject} into a string representation.
-     * 
+     *
      * @param json
      *            a JavaScript object to be converted to a string
      * @return JSON in string representation
@@ -1068,7 +1066,7 @@ public class Util {
 
     /**
      * Parse a string containing JSON into a {@link JavaScriptObject}.
-     * 
+     *
      * @param <T>
      *            the overlay type to expect from the parse
      * @param jsonAsString
@@ -1077,7 +1075,7 @@ public class Util {
     public native static <T extends JavaScriptObject> T parse(
             String jsonAsString)
             /*-{
-                return JSON.parse(jsonAsString);
+            return JSON.parse(jsonAsString);
             }-*/;
 
     private static Logger getLogger() {

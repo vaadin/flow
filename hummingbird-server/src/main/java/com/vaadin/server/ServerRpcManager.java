@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -27,13 +27,15 @@ import java.util.logging.Logger;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.communication.ServerRpc;
 
+import elemental.json.JsonArray;
+
 /**
  * Server side RPC manager that handles RPC calls coming from the client.
- * 
+ *
  * Each {@link RpcTarget} (typically a {@link ClientConnector}) should have its
  * own instance of {@link ServerRpcManager} if it wants to receive RPC calls
  * from the client.
- * 
+ *
  * @since 7.0
  */
 public class ServerRpcManager<T extends ServerRpc> implements Serializable {
@@ -44,10 +46,10 @@ public class ServerRpcManager<T extends ServerRpc> implements Serializable {
     /**
      * Wrapper exception for exceptions which occur during invocation of an RPC
      * call
-     * 
+     *
      * @author Vaadin Ltd
      * @since 7.0
-     * 
+     *
      */
     public static class RpcInvocationException extends Exception {
 
@@ -88,7 +90,7 @@ public class ServerRpcManager<T extends ServerRpc> implements Serializable {
 
     /**
      * Create a RPC manager for an RPC target.
-     * 
+     *
      * @param target
      *            RPC call target (normally a {@link Connector})
      * @param implementation
@@ -104,7 +106,7 @@ public class ServerRpcManager<T extends ServerRpc> implements Serializable {
     /**
      * Invoke a method in a server side RPC target class. This method is to be
      * used by the RPC framework and unit testing tools only.
-     * 
+     *
      * @param target
      *            non-null target of the RPC call
      * @param invocation
@@ -127,7 +129,7 @@ public class ServerRpcManager<T extends ServerRpc> implements Serializable {
 
     /**
      * Returns the RPC interface implementation for the RPC target.
-     * 
+     *
      * @return RPC interface implementation
      */
     protected T getImplementation() {
@@ -136,7 +138,7 @@ public class ServerRpcManager<T extends ServerRpc> implements Serializable {
 
     /**
      * Returns the RPC interface type managed by this RPC manager instance.
-     * 
+     *
      * @return RPC interface type
      */
     public Class<T> getRpcInterface() {
@@ -146,16 +148,17 @@ public class ServerRpcManager<T extends ServerRpc> implements Serializable {
     /**
      * Invoke a method in a server side RPC target class. This method is to be
      * used by the RPC framework and unit testing tools only.
-     * 
+     *
      * @param invocation
      *            method invocation to perform
      */
     public void applyInvocation(ServerRpcMethodInvocation invocation)
             throws RpcInvocationException {
         Method method = invocation.getMethod();
-        Object[] arguments = invocation.getParameters();
+        String param1 = invocation.getJavaScriptCallbackRpcName();
+        JsonArray arguments = invocation.getParameters();
         try {
-            method.invoke(implementation, arguments);
+            method.invoke(implementation, param1, arguments);
         } catch (Exception e) {
             throw new RpcInvocationException(
                     "Unable to invoke method " + invocation.getMethodName()

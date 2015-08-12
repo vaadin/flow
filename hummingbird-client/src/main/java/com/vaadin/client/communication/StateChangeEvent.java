@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,20 +16,14 @@
 package com.vaadin.client.communication;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.shared.EventHandler;
 import com.vaadin.client.FastStringSet;
-import com.vaadin.client.JsArrayObject;
-import com.vaadin.client.Profiler;
 import com.vaadin.client.ServerConnector;
 import com.vaadin.client.Util;
 import com.vaadin.client.communication.StateChangeEvent.StateChangeHandler;
-import com.vaadin.client.metadata.NoDataException;
-import com.vaadin.client.metadata.Property;
-import com.vaadin.client.ui.AbstractConnector;
 
 import elemental.json.JsonObject;
 
@@ -65,7 +59,7 @@ public class StateChangeEvent
 
     /**
      * Creates a new state change event.
-     * 
+     *
      * @param connector
      *            the event whose state has changed
      * @param changedPropertiesSet
@@ -89,7 +83,7 @@ public class StateChangeEvent
 
     /**
      * Creates a new state change event.
-     * 
+     *
      * @param connector
      *            the event whose state has changed
      * @param changedProperties
@@ -107,7 +101,7 @@ public class StateChangeEvent
 
     /**
      * /** Creates a new state change event.
-     * 
+     *
      * @param connector
      *            the event whose state has changed
      * @param stateJson
@@ -131,7 +125,7 @@ public class StateChangeEvent
     /**
      * Event handler that gets notified whenever any part of the state has been
      * updated by the server.
-     * 
+     *
      * @author Vaadin Ltd
      * @version @VERSION@
      * @since 7.0.0
@@ -139,7 +133,7 @@ public class StateChangeEvent
     public interface StateChangeHandler extends Serializable, EventHandler {
         /**
          * Notifies the event handler that the state has changed.
-         * 
+         *
          * @param stateChangeEvent
          *            the state change event with details about the change
          */
@@ -147,55 +141,8 @@ public class StateChangeEvent
     }
 
     /**
-     * Gets the properties that have changed.
-     * 
-     * @return a set of names of the changed properties
-     * 
-     * @deprecated As of 7.0.1, use {@link #hasPropertyChanged(String)} instead
-     *             for improved performance.
-     */
-    @Deprecated
-    public Set<String> getChangedProperties() {
-        if (changedPropertiesSet == null) {
-            Profiler.enter("StateChangeEvent.getChangedProperties populate");
-            changedPropertiesSet = new HashSet<String>();
-            getChangedPropertiesFastSet().addAllTo(changedPropertiesSet);
-            Profiler.leave("StateChangeEvent.getChangedProperties populate");
-        }
-        return changedPropertiesSet;
-    }
-
-    /**
-     * Gets the properties that have changed.
-     * 
-     * @return a set of names of the changed properties
-     * 
-     * @deprecated As of 7.0.1, use {@link #hasPropertyChanged(String)} instead
-     *             for improved performance.
-     */
-    @Deprecated
-    public FastStringSet getChangedPropertiesFastSet() {
-        if (changedProperties == null) {
-            Profiler.enter(
-                    "StateChangeEvent.getChangedPropertiesFastSet populate");
-            changedProperties = FastStringSet.create();
-
-            addJsonFields(stateJson, changedProperties, "");
-            if (isInitialStateChange()) {
-                addAllStateFields(
-                        AbstractConnector.getStateType(getConnector()),
-                        changedProperties, "");
-            }
-
-            Profiler.leave(
-                    "StateChangeEvent.getChangedPropertiesFastSet populate");
-        }
-        return changedProperties;
-    }
-
-    /**
      * Checks whether the give property has changed.
-     * 
+     *
      * @param property
      *            the name of the property to check
      * @return <code>true</code> if the property has changed, else
@@ -226,7 +173,7 @@ public class StateChangeEvent
     /**
      * Checks whether the given property name (which might contains dots) is
      * defined in some JavaScript object.
-     * 
+     *
      * @param property
      *            the name of the property, might include dots to reference
      *            inner objects
@@ -237,64 +184,28 @@ public class StateChangeEvent
     private static native final boolean isInJson(String property,
             JavaScriptObject target)
             /*-{
-                var segments = property.split('.');
-                while (typeof target == 'object') {
-                    var nextSegment = segments.shift();
-                    if (!(nextSegment in target)) {
-                        // Abort if segment is not found
-                        return false;
-                    } else if (segments.length == 0) {
-                        // Done if there are no more segments
-                        return true;
-                    } else {
-                        // Else just go deeper
-                        target = target[nextSegment];
-                    }
-                }
-                // Not defined if we reach something that isn't an object 
+            var segments = property.split('.');
+            while (typeof target == 'object') {
+            var nextSegment = segments.shift();
+            if (!(nextSegment in target)) {
+                // Abort if segment is not found
                 return false;
-            }-*/;
-
-    /**
-     * Recursively adds the names of all properties in the provided state type.
-     * 
-     * @param type
-     *            the type to process
-     * @param changedProperties
-     *            a set of all currently added properties
-     * @param context
-     *            the base name of the current object
-     */
-    @Deprecated
-    private static void addAllStateFields(com.vaadin.client.metadata.Type type,
-            FastStringSet changedProperties, String context) {
-        try {
-            JsArrayObject<Property> properties = type.getPropertiesAsArray();
-            int size = properties.size();
-            for (int i = 0; i < size; i++) {
-                Property property = properties.get(i);
-                String propertyName = context + property.getName();
-                changedProperties.add(propertyName);
-
-                com.vaadin.client.metadata.Type propertyType = property
-                        .getType();
-                if (propertyType.hasProperties()) {
-                    addAllStateFields(propertyType, changedProperties,
-                            propertyName + ".");
-                }
+            } else if (segments.length == 0) {
+                // Done if there are no more segments
+                return true;
+            } else {
+                // Else just go deeper
+                target = target[nextSegment];
             }
-        } catch (NoDataException e) {
-            throw new IllegalStateException(
-                    "No property info for " + type
-                            + ". Did you remember to compile the right widgetset?",
-                    e);
-        }
-    }
+            }
+            // Not defined if we reach something that isn't an object
+            return false;
+            }-*/;
 
     /**
      * Recursively adds the names of all fields in all objects in the provided
      * json object.
-     * 
+     *
      * @param json
      *            the json object to process
      * @param changedProperties
@@ -319,7 +230,7 @@ public class StateChangeEvent
     /**
      * Checks if the state change event is the first one for the given
      * connector.
-     * 
+     *
      * @since 7.1
      * @return true if this is the first state change event for the connector,
      *         false otherwise

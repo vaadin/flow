@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -23,21 +23,15 @@ import java.util.logging.Logger;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.ConnectorMap;
-import com.vaadin.client.metadata.Method;
-import com.vaadin.client.metadata.NoDataException;
-import com.vaadin.client.metadata.Type;
-import com.vaadin.client.metadata.TypeDataStore;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
-import elemental.json.JsonValue;
 
 /**
  * Manages the queue of server invocations (RPC) which are waiting to be sent to
  * the server.
- * 
+ *
  * @since
  * @author Vaadin Ltd
  */
@@ -81,7 +75,7 @@ public class ServerRpcQueue {
 
     /**
      * Removes any pending invocation of the given method from the queue
-     * 
+     *
      * @param invocation
      *            The invocation to remove
      */
@@ -98,7 +92,7 @@ public class ServerRpcQueue {
 
     /**
      * Adds an explicit RPC method invocation to the send queue.
-     * 
+     *
      * @param invocation
      *            RPC method invocation
      * @param delayed
@@ -134,7 +128,7 @@ public class ServerRpcQueue {
 
     /**
      * Returns a collection of all queued method invocations
-     * 
+     *
      * @return a collection of all queued method invocations
      */
     public Collection<MethodInvocation> getAll() {
@@ -153,7 +147,7 @@ public class ServerRpcQueue {
 
     /**
      * Returns the current size of the queue
-     * 
+     *
      * @return the number of invocations in the queue
      */
     public int size() {
@@ -162,7 +156,7 @@ public class ServerRpcQueue {
 
     /**
      * Returns the server RPC queue for the given application
-     * 
+     *
      * @param connection
      *            the application connection which owns the queue
      * @return the server rpc queue for the given application
@@ -173,7 +167,7 @@ public class ServerRpcQueue {
 
     /**
      * Checks if the queue is empty
-     * 
+     *
      * @return true if the queue is empty, false otherwise
      */
     public boolean isEmpty() {
@@ -207,7 +201,7 @@ public class ServerRpcQueue {
 
     /**
      * Checks if a flush operation is pending
-     * 
+     *
      * @return true if a flush is pending, false otherwise
      */
     public boolean isFlushPending() {
@@ -217,25 +211,16 @@ public class ServerRpcQueue {
     /**
      * Checks if a loading indicator should be shown when the RPCs have been
      * sent to the server and we are waiting for a response
-     * 
+     *
      * @return true if a loading indicator should be shown, false otherwise
      */
     public boolean showLoadingIndicator() {
-        for (MethodInvocation invocation : getAll()) {
-            if (!isJavascriptRpc(invocation)) {
-                Type type = new Type(invocation.getInterfaceName(), null);
-                Method method = type.getMethod(invocation.getMethodName());
-                if (!TypeDataStore.isNoLoadingIndicator(method)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return true;
     }
 
     /**
      * Returns the current invocations as JSON
-     * 
+     *
      * @return the current invocations in a JSON format ready to be sent to the
      *         server
      */
@@ -249,62 +234,12 @@ public class ServerRpcQueue {
             JsonArray invocationJson = Json.createArray();
             invocationJson.set(0, invocation.getInterfaceName());
             invocationJson.set(1, invocation.getMethodName());
-            JsonArray paramJson = Json.createArray();
-
-            Type[] parameterTypes = null;
-            if (!isJavascriptRpc(invocation)) {
-                try {
-                    Type type = new Type(invocation.getInterfaceName(), null);
-                    Method method = type.getMethod(invocation.getMethodName());
-                    parameterTypes = method.getParameterTypes();
-                } catch (NoDataException e) {
-                    throw new RuntimeException(
-                            "No type data for " + invocation.toString(), e);
-                }
-            }
-
-            for (int i = 0; i < invocation.getParameters().length; ++i) {
-                // TODO non-static encoder?
-                Type type = null;
-                if (parameterTypes != null) {
-                    type = parameterTypes[i];
-                }
-                Object value = invocation.getParameters()[i];
-                JsonValue jsonValue = JsonEncoder.encode(value, type,
-                        connection);
-                paramJson.set(i, jsonValue);
-            }
-            invocationJson.set(2, paramJson);
+            invocationJson.set(2, invocation.getJavaScriptCallbackRpcName());
+            invocationJson.set(3, invocation.getParameters());
             json.set(json.length(), invocationJson);
         }
 
         return json;
-    }
-
-    /**
-     * Checks if the connector with the given id is still ok to use (has not
-     * been removed)
-     * 
-     * @param connectorId
-     *            the connector id to check
-     * @return true if the connector exists, false otherwise
-     */
-    private boolean connectorExists(String connectorId) {
-        ConnectorMap connectorMap = ConnectorMap.get(connection);
-        return connectorMap.hasConnector(connectorId)
-                || connectorMap.isDragAndDropPaintable(connectorId);
-    }
-
-    /**
-     * Checks if the given method invocation originates from Javascript
-     * 
-     * @param invocation
-     *            the invocation to check
-     * @return true if the method invocation originates from javascript, false
-     *         otherwise
-     */
-    public static boolean isJavascriptRpc(MethodInvocation invocation) {
-        return invocation instanceof JavaScriptMethodInvocation;
     }
 
 }

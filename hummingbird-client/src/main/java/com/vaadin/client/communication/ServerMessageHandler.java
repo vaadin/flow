@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -54,7 +54,7 @@ import elemental.js.json.JsJsonObject;
  * ServerMessageHandler is responsible for handling all incoming messages (JSON)
  * from the server (state changes, RPCs and other updates) and ensuring that the
  * connectors are updated accordingly.
- * 
+ *
  * @since
  * @author Vaadin Ltd
  */
@@ -128,7 +128,7 @@ public class ServerMessageHandler {
      * has not yet been rendered (or that your browser is very fast). -1 means
      * that the browser does not support the performance.timing feature used to
      * get this measurement.
-     * 
+     *
      * Note: also used for tracking whether the first UIDL has been handled
      */
     private int bootstrapTime = 0;
@@ -200,7 +200,7 @@ public class ServerMessageHandler {
     /**
      * Handles a received UIDL JSON text, parsing it, and passing it on to the
      * appropriate handlers, while logging timing information.
-     * 
+     *
      * @param jsonText
      *            The JSON to handle
      */
@@ -575,7 +575,7 @@ public class ServerMessageHandler {
     /**
      * This method can be used to postpone rendering of a response for a short
      * period of time (e.g. to avoid the rendering process during animation).
-     * 
+     *
      * @param lock
      */
     public void suspendReponseHandling(Object lock) {
@@ -584,7 +584,7 @@ public class ServerMessageHandler {
 
     /**
      * Resumes the rendering process once all locks have been removed.
-     * 
+     *
      * @param lock
      */
     public void resumeResponseHandling(Object lock) {
@@ -614,7 +614,7 @@ public class ServerMessageHandler {
     /**
      * Finds the next pending UIDL message and handles it (next pending is
      * decided based on the server id)
-     * 
+     *
      * @return true if a message was handled, false otherwise
      */
     private boolean handlePendingMessages() {
@@ -667,7 +667,7 @@ public class ServerMessageHandler {
      * server is received.
      * <p>
      * The initial id when no request has yet been processed is -1.
-     * 
+     *
      * @return an id identifying the response
      */
     public int getLastSeenServerSyncId() {
@@ -677,7 +677,7 @@ public class ServerMessageHandler {
     /**
      * Gets the token (aka double submit cookie) that the server uses to protect
      * against Cross Site Request Forgery attacks.
-     * 
+     *
      * @return the CSRF token string
      */
     public String getCsrfToken() {
@@ -689,7 +689,7 @@ public class ServerMessageHandler {
      * operations are not allowed when the internal state of the application
      * might be in an inconsistent state because some state changes have been
      * applied but others not. This includes running layotus.
-     * 
+     *
      * @return <code>true</code> if the internal state might be inconsistent
      *         because changes are being processed; <code>false</code> if the
      *         state should be consistent
@@ -700,7 +700,7 @@ public class ServerMessageHandler {
 
     /**
      * Checks if the first UIDL has been handled
-     * 
+     *
      * @return true if the initial UIDL has already been processed, false
      *         otherwise
      */
@@ -714,10 +714,6 @@ public class ServerMessageHandler {
 
     private UIConnector getUIConnector() {
         return connection.getUIConnector();
-    }
-
-    private RpcManager getRpcManager() {
-        return connection.getRpcManager();
     }
 
     private ServerCommunicationHandler getServerCommunicationHandler() {

@@ -19,14 +19,12 @@ package com.vaadin.server.communication;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.Constants;
-import com.vaadin.server.JsonCodec;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.LegacyCommunicationManager.InvalidUIDLSecurityKeyException;
 import com.vaadin.server.ServerRpcManager;
@@ -400,16 +398,18 @@ public class ServerRpcHandler implements Serializable {
             UI ui) {
         String interfaceName = invocationJson.getString(0);
         String methodName = invocationJson.getString(1);
+        String javascriptCallbackRpcName = invocationJson.getString(2);
 
-        JsonArray parametersJson = invocationJson.getArray(2);
+        JsonArray parametersJson = invocationJson.getArray(3);
 
         return parseServerRpcInvocation(ui, interfaceName, methodName,
-                parametersJson, connectorTracker);
+                javascriptCallbackRpcName, parametersJson, connectorTracker);
 
     }
 
     private ServerRpcMethodInvocation parseServerRpcInvocation(UI connector,
-            String interfaceName, String methodName, JsonArray parametersJson,
+            String interfaceName, String methodName,
+            String javascriptCallbackRpcName, JsonArray parametersJson,
             ConnectorTracker connectorTracker) throws JsonException {
 
         ServerRpcManager<?> rpcManager = connector.getRpcManager(interfaceName);
@@ -429,19 +429,10 @@ public class ServerRpcHandler implements Serializable {
         Class<? extends ServerRpc> rpcInterface = rpcManager.getRpcInterface();
 
         ServerRpcMethodInvocation invocation = new ServerRpcMethodInvocation(
-                rpcInterface, methodName, parametersJson.length());
+                parametersJson.length());
 
-        Object[] parameters = new Object[parametersJson.length()];
-        Type[] declaredRpcMethodParameterTypes = invocation.getMethod()
-                .getGenericParameterTypes();
-
-        for (int j = 0; j < parametersJson.length(); ++j) {
-            JsonValue parameterValue = parametersJson.get(j);
-            Type parameterType = declaredRpcMethodParameterTypes[j];
-            parameters[j] = JsonCodec.decodeInternalOrCustomType(parameterType,
-                    parameterValue, connectorTracker);
-        }
-        invocation.setParameters(parameters);
+        invocation.setJavaScriptCallbackRpcName(javascriptCallbackRpcName);
+        invocation.setParameters(parametersJson);
         return invocation;
     }
 

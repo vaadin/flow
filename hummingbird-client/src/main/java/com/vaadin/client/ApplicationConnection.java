@@ -40,17 +40,16 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
+import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.CommunicationProblemHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.ReconnectingCommunicationProblemHandler;
-import com.vaadin.client.communication.RpcManager;
 import com.vaadin.client.communication.ServerCommunicationHandler;
 import com.vaadin.client.communication.ServerMessageHandler;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.componentlocator.ComponentLocator;
-import com.vaadin.client.metadata.ConnectorBundleLoader;
 import com.vaadin.client.ui.FontIcon;
 import com.vaadin.client.ui.Icon;
 import com.vaadin.client.ui.ImageIcon;
@@ -64,14 +63,14 @@ import com.vaadin.shared.Version;
  * This is the client side communication "engine", managing client-server
  * communication with its server side counterpart
  * com.vaadin.server.VaadinService.
- * 
+ *
  * Client-side connectors receive updates from the corresponding server-side
  * connector (typically component) as state updates or RPC calls. The connector
  * has the possibility to communicate back with its server side counter part
  * through RPC calls.
- * 
+ *
  * TODO document better
- * 
+ *
  * Entry point classes (widgetsets) define <code>onModuleLoad()</code>.
  */
 public class ApplicationConnection implements HasHandlers {
@@ -80,12 +79,12 @@ public class ApplicationConnection implements HasHandlers {
      * A string that, if found in a non-JSON response to a UIDL request, will
      * cause the browser to refresh the page. If followed by a colon, optional
      * whitespace, and a URI, causes the browser to synchronously load the URI.
-     * 
+     *
      * <p>
      * This allows, for instance, a servlet filter to redirect the application
      * to a custom login page when the session expires. For example:
      * </p>
-     * 
+     *
      * <pre>
      * if (sessionExpired) {
      *     response.setHeader(&quot;Content-Type&quot;, &quot;text/html&quot;);
@@ -98,16 +97,12 @@ public class ApplicationConnection implements HasHandlers {
 
     private final HashMap<String, String> resourcesMap = new HashMap<String, String>();
 
-    private WidgetSet widgetSet;
-
     private final UIConnector uIConnector;
 
     protected boolean cssLoaded = false;
 
     /** Parameters for this application connection loaded from the web-page */
     private ApplicationConfiguration configuration;
-
-    private final RpcManager rpcManager;
 
     /** Event bus for communication events */
     private EventBus eventBus = GWT.create(SimpleEventBus.class);
@@ -209,12 +204,12 @@ public class ApplicationConnection implements HasHandlers {
     /**
      * Event triggered when a application is stopped by calling
      * {@link ApplicationConnection#setApplicationRunning(false)}.
-     * 
+     *
      * To listen for the event add a {@link ApplicationStoppedHandler} by
      * invoking
      * {@link ApplicationConnection#addHandler(ApplicationConnection.ApplicationStoppedEvent.Type, ApplicationStoppedHandler)}
      * to the {@link ApplicationConnection}
-     * 
+     *
      * @since 7.1.8
      * @author Vaadin Ltd
      */
@@ -241,7 +236,7 @@ public class ApplicationConnection implements HasHandlers {
         /**
          * Called when a communication error has occurred. Returning
          * <code>true</code> from this method suppresses error handling.
-         * 
+         *
          * @param details
          *            A string describing the error.
          * @param statusCode
@@ -256,7 +251,7 @@ public class ApplicationConnection implements HasHandlers {
      * A listener for listening to application stopped events. The listener can
      * be added to a {@link ApplicationConnection} by invoking
      * {@link ApplicationConnection#addHandler(ApplicationStoppedEvent.Type, ApplicationStoppedHandler)}
-     * 
+     *
      * @since 7.1.8
      * @author Vaadin Ltd
      */
@@ -266,7 +261,7 @@ public class ApplicationConnection implements HasHandlers {
          * Triggered when the {@link ApplicationConnection} marks a previously
          * running application as stopped by invoking
          * {@link ApplicationConnection#setApplicationRunning(false)}
-         * 
+         *
          * @param event
          *            the event triggered by the {@link ApplicationConnection}
          */
@@ -325,10 +320,7 @@ public class ApplicationConnection implements HasHandlers {
 
     public ApplicationConnection() {
         // Assuming UI data is eagerly loaded
-        ConnectorBundleLoader.get()
-                .loadBundle(ConnectorBundleLoader.EAGER_BUNDLE_NAME, null);
         uIConnector = GWT.create(UIConnector.class);
-        rpcManager = GWT.create(RpcManager.class);
         loadingIndicator = GWT.create(VLoadingIndicator.class);
         loadingIndicator.setConnection(this);
         serverRpcQueue = GWT.create(ServerRpcQueue.class);
@@ -343,7 +335,7 @@ public class ApplicationConnection implements HasHandlers {
         serverCommunicationHandler.setConnection(this);
     }
 
-    public void init(WidgetSet widgetSet, ApplicationConfiguration cnf) {
+    public void init(ApplicationConfiguration cnf) {
         getLogger().info("Starting application " + cnf.getRootPanelId());
         getLogger().info("Using theme: " + cnf.getThemeName());
 
@@ -357,7 +349,6 @@ public class ApplicationConnection implements HasHandlers {
                             + "behavior may occur.");
         }
 
-        this.widgetSet = widgetSet;
         configuration = cnf;
 
         ComponentLocator componentLocator = new ComponentLocator(this);
@@ -393,7 +384,7 @@ public class ApplicationConnection implements HasHandlers {
      * called once this application has started (first response received) or
      * failed to start. This ensures that the applications are started in order,
      * to avoid session-id problems.
-     * 
+     *
      */
     public void start() {
         String jsonText = configuration.getUIDL();
@@ -411,7 +402,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Checks if there is some work to be done on the client side
-     * 
+     *
      * @return true if the client has some work to be done, false otherwise
      */
     private boolean isActive() {
@@ -424,47 +415,47 @@ public class ApplicationConnection implements HasHandlers {
     private native void initializeTestbenchHooks(
             ComponentLocator componentLocator, String TTAppId)
             /*-{
-                var ap = this;
-                var client = {};
-                client.isActive = $entry(function() {
-                    return ap.@com.vaadin.client.ApplicationConnection::isActive()();
-                });
-                var vi = ap.@com.vaadin.client.ApplicationConnection::getVersionInfo()();
-                if (vi) {
-                    client.getVersionInfo = function() {
-                        return vi;
-                    }
-                }
+            var ap = this;
+            var client = {};
+            client.isActive = $entry(function() {
+            return ap.@com.vaadin.client.ApplicationConnection::isActive()();
+            });
+            var vi = ap.@com.vaadin.client.ApplicationConnection::getVersionInfo()();
+            if (vi) {
+            client.getVersionInfo = function() {
+            return vi;
+            }
+            }
             
-                client.getProfilingData = $entry(function() {
-                    var smh = ap.@com.vaadin.client.ApplicationConnection::getServerMessageHandler();
-                    var pd = [
-                        smh.@com.vaadin.client.communication.ServerMessageHandler::lastProcessingTime,
-                            smh.@com.vaadin.client.communication.ServerMessageHandler::totalProcessingTime
-                        ];
-                    pd = pd.concat(smh.@com.vaadin.client.communication.ServerMessageHandler::serverTimingInfo);
-                    pd[pd.length] = smh.@com.vaadin.client.communication.ServerMessageHandler::bootstrapTime;
-                    return pd;
-                });
+            client.getProfilingData = $entry(function() {
+            var smh = ap.@com.vaadin.client.ApplicationConnection::getServerMessageHandler();
+            var pd = [
+            smh.@com.vaadin.client.communication.ServerMessageHandler::lastProcessingTime,
+            smh.@com.vaadin.client.communication.ServerMessageHandler::totalProcessingTime
+            ];
+            pd = pd.concat(smh.@com.vaadin.client.communication.ServerMessageHandler::serverTimingInfo);
+            pd[pd.length] = smh.@com.vaadin.client.communication.ServerMessageHandler::bootstrapTime;
+            return pd;
+            });
             
-                client.getElementByPath = $entry(function(id) {
-                    return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getElementByPath(Ljava/lang/String;)(id);
-                });
-                client.getElementByPathStartingAt = $entry(function(id, element) {
-                    return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getElementByPathStartingAt(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;)(id, element);
-                });
-                client.getElementsByPath = $entry(function(id) {
-                    return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getElementsByPath(Ljava/lang/String;)(id);
-                });
-                client.getElementsByPathStartingAt = $entry(function(id, element) {
-                    return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getElementsByPathStartingAt(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;)(id, element);
-                });
-                client.getPathForElement = $entry(function(element) {
-                    return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getPathForElement(Lcom/google/gwt/dom/client/Element;)(element);
-                });
-                client.initializing = false;
+            client.getElementByPath = $entry(function(id) {
+            return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getElementByPath(Ljava/lang/String;)(id);
+            });
+            client.getElementByPathStartingAt = $entry(function(id, element) {
+            return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getElementByPathStartingAt(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;)(id, element);
+            });
+            client.getElementsByPath = $entry(function(id) {
+            return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getElementsByPath(Ljava/lang/String;)(id);
+            });
+            client.getElementsByPathStartingAt = $entry(function(id, element) {
+            return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getElementsByPathStartingAt(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;)(id, element);
+            });
+            client.getPathForElement = $entry(function(element) {
+            return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getPathForElement(Lcom/google/gwt/dom/client/Element;)(element);
+            });
+            client.initializing = false;
             
-                $wnd.vaadin.clients[TTAppId] = client;
+            $wnd.vaadin.clients[TTAppId] = client;
             }-*/;
 
     /**
@@ -483,7 +474,7 @@ public class ApplicationConnection implements HasHandlers {
      * <li><code>vaadin.postRequestHooks</code> is a map of functions which gets
      * called after each XHR made by vaadin application. Note, that it is
      * attaching js functions responsibility to create the variable like this:
-     * 
+     *
      * <code><pre>
      * if(!vaadin.postRequestHooks) {vaadin.postRequestHooks = new Object();}
      * postRequestHooks.myHook = function(appId) {
@@ -494,7 +485,7 @@ public class ApplicationConnection implements HasHandlers {
      * </pre></code> First parameter passed to these functions is the identifier
      * of Vaadin application that made the request.
      * </ul>
-     * 
+     *
      * TODO make this multi-app aware
      */
     private native void initializeClientHooks()
@@ -515,7 +506,7 @@ public class ApplicationConnection implements HasHandlers {
     /**
      * Runs possibly registered client side post request hooks. This is expected
      * to be run after each uidl request made by Vaadin application.
-     * 
+     *
      * @param appId
      */
     public static native void runPostRequestHooks(String appId)
@@ -535,7 +526,7 @@ public class ApplicationConnection implements HasHandlers {
     /**
      * If on Liferay and logged in, ask the client side session management
      * JavaScript to extend the session duration.
-     * 
+     *
      * Otherwise, Liferay client side JavaScript will explicitly expire the
      * session even though the server side considers the session to be active.
      * See ticket #8305 for more information.
@@ -588,7 +579,7 @@ public class ApplicationConnection implements HasHandlers {
     /**
      * Checks whether or not the CSS is loaded. By default checks the size of
      * the loading indicator element.
-     * 
+     *
      * @return
      */
     protected boolean isCSSLoaded() {
@@ -598,12 +589,12 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Shows the communication error notification.
-     * 
+     *
      * @param details
      *            Optional details.
      * @param statusCode
      *            The status code returned for the request
-     * 
+     *
      */
     public void showCommunicationError(String details, int statusCode) {
         getLogger().severe("Communication error: " + details);
@@ -612,7 +603,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Shows the authentication error notification.
-     * 
+     *
      * @param details
      *            Optional details.
      */
@@ -623,7 +614,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Shows the session expiration notification.
-     * 
+     *
      * @param details
      *            Optional details.
      */
@@ -634,7 +625,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Shows an error notification.
-     * 
+     *
      * @param details
      *            Optional details.
      * @param message
@@ -682,7 +673,7 @@ public class ApplicationConnection implements HasHandlers {
      * <p>
      * Used by the native "client.isActive" function.
      * </p>
-     * 
+     *
      * @return true if deferred commands are (potentially) being executed, false
      *         otherwise
      */
@@ -697,7 +688,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Returns the loading indicator used by this ApplicationConnection
-     * 
+     *
      * @return The loading indicator for this ApplicationConnection
      */
     public VLoadingIndicator getLoadingIndicator() {
@@ -795,16 +786,16 @@ public class ApplicationConnection implements HasHandlers {
     /**
      * Get either an existing ComponentConnector or create a new
      * ComponentConnector with the given type and id.
-     * 
+     *
      * If a ComponentConnector with the given id already exists, returns it.
      * Otherwise creates and registers a new ComponentConnector of the given
      * type.
-     * 
+     *
      * @param connectorId
      *            Id of the paintable
      * @param connectorType
      *            Type of the connector, as passed from the server side
-     * 
+     *
      * @return Either an existing ComponentConnector or a new ComponentConnector
      *         of the given type
      */
@@ -817,35 +808,26 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Creates a new ServerConnector with the given type and id.
-     * 
+     *
      * Creates and registers a new ServerConnector of the given type. Should
      * never be called with the connector id of an existing connector.
-     * 
+     *
      * @param connectorId
      *            Id of the new connector
      * @param connectorType
      *            Type of the connector, as passed from the server side
-     * 
+     *
      * @return A new ServerConnector of the given type
      */
     private ServerConnector createAndRegisterConnector(String connectorId,
             int connectorType) {
-        Profiler.enter("ApplicationConnection.createAndRegisterConnector");
-
-        // Create and register a new connector with the given type
-        ServerConnector p = widgetSet.createConnector(connectorType,
-                configuration);
-        connectorMap.registerConnector(connectorId, p);
-        p.doInit(connectorId, this);
-
-        Profiler.leave("ApplicationConnection.createAndRegisterConnector");
-        return p;
+        return null;
     }
 
     /**
      * Gets a resource that has been pre-loaded via UIDL, such as custom
      * layouts.
-     * 
+     *
      * @param name
      *            identifier of the resource to get
      * @return the resource
@@ -857,7 +839,7 @@ public class ApplicationConnection implements HasHandlers {
     /**
      * Sets a resource that has been pre-loaded via UIDL, such as custom
      * layouts.
-     * 
+     *
      * @param name
      *            identifier of the resource to Set
      * @param resource
@@ -869,7 +851,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Gets an {@link Icon} instance corresponding to a URI.
-     * 
+     *
      * @since 7.2
      * @param uri
      * @return Icon object
@@ -891,7 +873,7 @@ public class ApplicationConnection implements HasHandlers {
      * Translates custom protocols in UIDL URI's to be recognizable by browser.
      * All uri's from UIDL should be routed via this method before giving them
      * to browser due URI's in UIDL may contain custom protocols like theme://.
-     * 
+     *
      * @param uidlUri
      *            Vaadin URI from uidl
      * @return translated URI ready for browser
@@ -903,7 +885,7 @@ public class ApplicationConnection implements HasHandlers {
     /**
      * Gets the URI for the current theme. Can be used to reference theme
      * resources.
-     * 
+     *
      * @return URI to the current theme
      */
     public String getThemeUri() {
@@ -915,7 +897,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Gets the main view
-     * 
+     *
      * @return the main view
      */
     public UIConnector getUIConnector() {
@@ -924,7 +906,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Gets the {@link ApplicationConfiguration} for the current application.
-     * 
+     *
      * @see ApplicationConfiguration
      * @return the configuration for this application
      */
@@ -951,7 +933,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Sets the delegate that is called whenever a communication error occurrs.
-     * 
+     *
      * @param delegate
      *            the delegate.
      */
@@ -990,7 +972,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Checks if the application is in the {@link State#RUNNING} state.
-     * 
+     *
      * @since
      * @return true if the application is in the running state, false otherwise
      */
@@ -1022,7 +1004,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Gets the active connector for focused element in browser.
-     * 
+     *
      * @return Connector for focused element or null.
      */
     private ComponentConnector getActiveConnector() {
@@ -1050,7 +1032,7 @@ public class ApplicationConnection implements HasHandlers {
      * "initializing" to "running" to "stopped". There is no way for an
      * application to go back to a previous state, i.e. a stopped application
      * can never be re-started
-     * 
+     *
      * @since
      * @return the current state of this application
      */
@@ -1060,7 +1042,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Gets the server RPC queue for this application
-     * 
+     *
      * @return the server RPC queue
      */
     public ServerRpcQueue getServerRpcQueue() {
@@ -1069,7 +1051,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Gets the communication error handler for this application
-     * 
+     *
      * @return the server RPC queue
      */
     public CommunicationProblemHandler getCommunicationProblemHandler() {
@@ -1078,7 +1060,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Gets the server message handler for this application
-     * 
+     *
      * @return the server message handler
      */
     public ServerMessageHandler getServerMessageHandler() {
@@ -1086,28 +1068,12 @@ public class ApplicationConnection implements HasHandlers {
     }
 
     /**
-     * Gets the server rpc manager for this application
-     * 
-     * @return the server rpc manager
-     */
-    public RpcManager getRpcManager() {
-        return rpcManager;
-    }
-
-    /**
      * Gets the server communication handler for this application
-     * 
+     *
      * @return the server communication handler
      */
     public ServerCommunicationHandler getServerCommunicationHandler() {
         return serverCommunicationHandler;
-    }
-
-    /**
-     * @return the widget set
-     */
-    public WidgetSet getWidgetSet() {
-        return widgetSet;
     }
 
     public int getLastSeenServerSyncId() {
