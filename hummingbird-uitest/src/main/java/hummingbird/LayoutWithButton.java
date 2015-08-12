@@ -15,7 +15,6 @@
  */
 package hummingbird;
 
-import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
@@ -26,12 +25,12 @@ import com.vaadin.ui.Style;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
-@Theme("valo")
 public class LayoutWithButton extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
         final VerticalLayout vl = new VerticalLayout();
+        vl.setSpacing(true);
         Button b1 = new Button("Say hello using a <button>");
         PaperButton b2 = new PaperButton("Say foo to the paper-button");
 
@@ -49,6 +48,7 @@ public class LayoutWithButton extends UI {
         });
 
         final HorizontalLayout hl = new HorizontalLayout(b3, b4, b5);
+        hl.setSpacing(true);
         vl.addComponent(b2);
         vl.addComponent(l);
         vl.addComponent(new Label("Paper slider, just because"));

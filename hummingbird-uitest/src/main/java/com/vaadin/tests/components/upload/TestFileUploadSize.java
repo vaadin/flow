@@ -3,7 +3,6 @@ package com.vaadin.tests.components.upload;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
@@ -23,7 +22,7 @@ public class TestFileUploadSize extends TestBase implements Receiver {
 
     @Override
     protected void setup() {
-        getLayout().setMargin(new MarginInfo(true, false, false, false));
+        getLayout().setMargin(true);
         getLayout().setSpacing(true);
 
         Upload u = new Upload("Upload", new Upload.Receiver() {

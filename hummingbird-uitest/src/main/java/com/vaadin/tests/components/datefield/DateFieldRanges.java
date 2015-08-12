@@ -7,7 +7,6 @@ import java.util.Locale;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
@@ -150,7 +149,7 @@ public class DateFieldRanges extends AbstractTestUI {
         setLocale(new Locale("en", "US"));
         getLayout().setWidth(100, Unit.PERCENTAGE);
         getLayout().setHeight(null);
-        getLayout().setMargin(new MarginInfo(true, false, false, false));
+        getLayout().setMargin(true);
         getLayout().setSpacing(true);
 
         initializeControlFields();

@@ -16,7 +16,6 @@
 package com.vaadin.tests.components.splitpanel;
 
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalSplitPanel;
@@ -32,7 +31,7 @@ public class HorizontalSplitPanelHeight extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        getLayout().setMargin(new MarginInfo(true, false, false, false));
+        getLayout().setMargin(true);
 
         HorizontalSplitPanel panel = new HorizontalSplitPanel();
         panel.setCaption(

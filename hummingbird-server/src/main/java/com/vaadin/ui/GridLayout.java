@@ -30,7 +30,6 @@ import com.vaadin.event.LayoutEvents.LayoutClickNotifier;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.gridlayout.GridLayoutServerRpc;
 import com.vaadin.shared.ui.gridlayout.GridLayoutState;
 import com.vaadin.shared.ui.gridlayout.GridLayoutState.ChildComponentData;
@@ -457,7 +456,7 @@ public class GridLayout extends AbstractLayout
             throw new IllegalArgumentException(
                     "The given component is not a child of this layout");
         } else {
-            return new Alignment(childComponentData.alignment);
+            return childComponentData.alignment;
         }
     }
 
@@ -505,7 +504,7 @@ public class GridLayout extends AbstractLayout
                 int row2) {
             this.component = component;
             childData = new ChildComponentData();
-            childData.alignment = getDefaultComponentAlignment().getBitMask();
+            childData.alignment = getDefaultComponentAlignment();
             childData.column1 = column1;
             childData.row1 = row1;
             childData.column2 = column2;
@@ -841,7 +840,7 @@ public class GridLayout extends AbstractLayout
             addComponent(newComponent, oldLocation.column1, oldLocation.row1,
                     oldLocation.column2, oldLocation.row2);
         } else {
-            int oldAlignment = oldLocation.alignment;
+            Alignment oldAlignment = oldLocation.alignment;
             oldLocation.alignment = newLocation.alignment;
             newLocation.alignment = oldAlignment;
 
@@ -872,10 +871,9 @@ public class GridLayout extends AbstractLayout
                     "Component must be added to layout before using setComponentAlignment()");
         } else {
             if (alignment == null) {
-                childComponentData.alignment = GridLayoutState.ALIGNMENT_DEFAULT
-                        .getBitMask();
+                childComponentData.alignment = GridLayoutState.ALIGNMENT_DEFAULT;
             } else {
-                childComponentData.alignment = alignment.getBitMask();
+                childComponentData.alignment = alignment;
             }
         }
     }
@@ -1129,29 +1127,13 @@ public class GridLayout extends AbstractLayout
      * @see com.vaadin.ui.Layout.MarginHandler#setMargin(boolean)
      */
     @Override
-    public void setMargin(boolean enabled) {
-        setMargin(new MarginInfo(enabled));
+    public void setMargin(boolean margin) {
+        getState().margin = margin;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.Layout.MarginHandler#setMargin(com.vaadin.shared.ui.
-     * MarginInfo )
-     */
     @Override
-    public void setMargin(MarginInfo marginInfo) {
-        getState().marginsBitmask = marginInfo.getBitMask();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.Layout.MarginHandler#getMargin()
-     */
-    @Override
-    public MarginInfo getMargin() {
-        return new MarginInfo(getState(false).marginsBitmask);
+    public boolean isMargin() {
+        return getState(false).margin;
     }
 
     /*

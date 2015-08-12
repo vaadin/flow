@@ -7,8 +7,6 @@ import java.util.LinkedHashMap;
 import com.vaadin.ui.AbstractComponentContainer;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.HasComponents.ComponentAttachListener;
-import com.vaadin.ui.HasComponents.ComponentDetachListener;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.InlineDateField;
 import com.vaadin.ui.NativeButton;
@@ -20,8 +18,7 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalSplitPanel;
 
 public abstract class AbstractComponentContainerTest<T extends AbstractComponentContainer>
-        extends AbstractComponentTest<T>
-        implements ComponentAttachListener, ComponentDetachListener {
+        extends AbstractComponentTest<T> {
 
     private String CATEGORY_COMPONENT_CONTAINER_FEATURES = "Component container features";
     private Command<T, ComponentSize> addButtonCommand = new Command<T, ComponentSize>() {
@@ -130,33 +127,6 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
 
         }
     };
-    private Command<T, Boolean> componentAttachListenerCommand = new Command<T, Boolean>() {
-
-        @Override
-        public void execute(T c, Boolean value, Object data) {
-            if (value) {
-                c.addComponentAttachListener(
-                        AbstractComponentContainerTest.this);
-            } else {
-                c.removeComponentAttachListener(
-                        AbstractComponentContainerTest.this);
-            }
-        }
-    };
-
-    private Command<T, Boolean> componentDetachListenerCommand = new Command<T, Boolean>() {
-
-        @Override
-        public void execute(T c, Boolean value, Object data) {
-            if (value) {
-                c.addComponentDetachListener(
-                        AbstractComponentContainerTest.this);
-            } else {
-                c.removeComponentDetachListener(
-                        AbstractComponentContainerTest.this);
-            }
-        }
-    };
 
     private Command<T, Integer> setComponentHeight = new Command<T, Integer>() {
 
@@ -216,8 +186,6 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
         createAddComponentActions(CATEGORY_COMPONENT_CONTAINER_FEATURES);
         createRemoveComponentActions(CATEGORY_COMPONENT_CONTAINER_FEATURES);
         createChangeComponentSizeActions(CATEGORY_COMPONENT_CONTAINER_FEATURES);
-        createComponentAttachListener(CATEGORY_LISTENERS);
-        createComponentDetachListener(CATEGORY_LISTENERS);
     }
 
     protected Component getComponentAtIndex(T container, int value) {
@@ -236,18 +204,6 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
         ts.addTab(b, "Size full NativeButton", ICON_16_USER_PNG_UNCACHEABLE);
         ts.addTab(new Button("A button"), "Button", null);
         return ts;
-    }
-
-    private void createComponentAttachListener(String category) {
-        createBooleanAction("Component attach listener", category, false,
-                componentAttachListenerCommand);
-
-    }
-
-    private void createComponentDetachListener(String category) {
-        createBooleanAction("Component detach listener", category, false,
-                componentDetachListenerCommand);
-
     }
 
     private void createRemoveComponentActions(String category) {
@@ -339,23 +295,6 @@ public abstract class AbstractComponentContainerTest<T extends AbstractComponent
             }
 
         }
-
-    }
-
-    @Override
-    public void componentDetachedFromContainer(ComponentDetachEvent event) {
-        log(event.getClass().getSimpleName() + ": "
-                + event.getDetachedComponent().getClass().getSimpleName()
-                + " detached from "
-                + event.getContainer().getClass().getSimpleName());
-    }
-
-    @Override
-    public void componentAttachedToContainer(ComponentAttachEvent event) {
-        log(event.getClass().getSimpleName() + ": "
-                + event.getAttachedComponent().getClass().getSimpleName()
-                + " attached to "
-                + event.getContainer().getClass().getSimpleName());
 
     }
 

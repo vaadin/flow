@@ -16,7 +16,7 @@
 
 package com.vaadin.ui;
 
-import com.vaadin.shared.ui.MarginInfo;
+import java.text.Normalizer.Form;
 
 /**
  * FormLayout is used by {@link Form} to layout fields. It may also be used
@@ -35,15 +35,15 @@ public class FormLayout extends AbstractOrderedLayout {
     public FormLayout() {
         super();
         setSpacing(true);
-        setMargin(new MarginInfo(true, false, true, false));
+        setMargin(true);
         setWidth(100, Unit.PERCENTAGE);
     }
 
     /**
      * Constructs a FormLayout and adds the given components to it.
-     * 
+     *
      * @see AbstractOrderedLayout#addComponents(Component...)
-     * 
+     *
      * @param children
      *            Components to add to the FormLayout
      */

@@ -19,7 +19,6 @@ import java.io.Serializable;
 
 import com.vaadin.shared.Connector;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
 
 /**
@@ -39,7 +38,7 @@ public class ErrorEvent implements Serializable {
 
     /**
      * Gets the contained throwable, the cause of the error.
-     * 
+     *
      * @return
      */
     public Throwable getThrowable() {
@@ -58,7 +57,7 @@ public class ErrorEvent implements Serializable {
      * <p>
      * Returns a {@link DefaultErrorHandler} if no error handler was found
      * </p>
-     * 
+     *
      * @param connector
      *            The target connector
      * @return An ErrorHandler for the connector
@@ -71,7 +70,7 @@ public class ErrorEvent implements Serializable {
                 return errorHandler;
             }
 
-            HasComponents parent = component.getParent();
+            Component parent = component.getParent();
             if (parent != null) {
                 return findErrorHandler(parent);
             }
@@ -111,10 +110,10 @@ public class ErrorEvent implements Serializable {
 
     /**
      * Method for finding the error handler for the given session.
-     * 
+     *
      * @param connector
      *            The target connector
-     * 
+     *
      * @return An ErrorHandler for the session or null if none was found
      */
     public static ErrorHandler findErrorHandler(VaadinSession session) {

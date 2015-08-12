@@ -17,7 +17,6 @@ package com.vaadin.tests.themes.valo;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.Label;
@@ -38,7 +37,7 @@ public class SplitPanels extends VerticalLayout implements View {
         HorizontalLayout row = new HorizontalLayout();
         row.addStyleName("wrapping");
         row.setSpacing(true);
-        row.setMargin(new MarginInfo(true, false, false, false));
+        row.setMargin(true);
         addComponent(row);
 
         HorizontalSplitPanel sp = new HorizontalSplitPanel();

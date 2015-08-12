@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.ui.Component;
+
 public abstract class AbstractElementTemplate implements ElementTemplate {
 
     public enum Keys {
@@ -73,6 +75,18 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
             dataNode.put(EventListener.class, listeners);
         }
         return listeners;
+    }
+
+    private StateNode getComponentNode(StateNode node, boolean createIfNeeded) {
+        StateNode dataNode = getElementDataNode(node, createIfNeeded);
+        StateNode componentNode = dataNode.get(Component.class,
+                StateNode.class);
+        if (componentNode == null) {
+            componentNode = StateNode.create();
+            componentNode.put(Keys.SERVER_ONLY, Keys.SERVER_ONLY);
+            dataNode.put(Component.class, componentNode);
+        }
+        return componentNode;
     }
 
     @Override
@@ -143,7 +157,22 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
     @Override
     public void insertChild(int index, Element child, StateNode node) {
-        child.removeFromParent();
+        // Ensure that this element is not a child of the child element
+        if (node.hasAncestor(child.getNode())) {
+            throw new IllegalArgumentException(
+                    "Cannot add node inside its own children");
+        }
+
+        if (child.getParent() != null) {
+            if (child.getParent().getTemplate() == this) {
+                // Adjust index if child is a child of this
+                int currentIndex = child.getParent().getChildIndex(child);
+                if (index > currentIndex) {
+                    index--;
+                }
+            }
+            child.removeFromParent();
+        }
 
         StateNode childNode = child.getNode();
         getOrCreateChildrenList(node).add(index, childNode);
@@ -154,6 +183,10 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         }
         if (!(this instanceof BasicElementTemplate)) {
             childNode.put(Keys.PARENT_TEMPLATE, this);
+        }
+
+        if (getComponent(childNode) != null) {
+            getComponent(childNode).elementAttached();
         }
     }
 
@@ -181,9 +214,14 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         StateNode childNode = element.getNode();
 
         getChildrenList(node).ifPresent(list -> {
+            // Detach event while still attached to the DOM
+            if (getComponent(childNode) != null) {
+                getComponent(childNode).elementDetached();
+            }
             if (list.remove(childNode)) {
                 childNode.remove(Keys.TEMPLATE);
                 childNode.remove(Keys.PARENT_TEMPLATE);
+
             }
         });
     }
@@ -197,4 +235,21 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
             return dataNode.getStringKeys();
         }
     }
+
+    @Override
+    public void setComponent(Component c, StateNode node) {
+        getComponentNode(node, true).setValue(Component.class, c);
+
+    }
+
+    @Override
+    public Component getComponent(StateNode node) {
+        StateNode componentNode = getComponentNode(node, false);
+        if (componentNode == null) {
+            return null;
+        } else {
+            return componentNode.get(Component.class, Component.class);
+        }
+    }
+
 }

@@ -226,8 +226,7 @@ public class BoxLayoutTest extends AbstractTestUI {
 
         align = new NativeSelect(null, alignments);
         for (Alignment a : alignments) {
-            align.setItemCaption(a, a.getVerticalAlignment() + "-"
-                    + a.getHorizontalAlignment());
+            align.setItemCaption(a, a.getClassName());
         }
         align.setEnabled(false);
         align.setNullSelectionAllowed(false);

@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import com.vaadin.annotations.Tag;
 import com.vaadin.event.EventRouter;
 import com.vaadin.event.MethodEventSource;
+import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.server.Resource;
@@ -86,14 +87,14 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     private boolean visible = true;
 
-    private HasComponents parent;
+    // private HasComponents parent;
     private ErrorHandler errorHandler = null;
     /**
      * The EventRouter used for the event model.
      */
     private EventRouter eventRouter = null;
 
-    private com.vaadin.hummingbird.kernel.Element element;
+    private Element element;
 
     protected static final String DESIGN_ATTR_PLAIN_TEXT = "plain-text";
 
@@ -104,8 +105,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     public AbstractComponent() {
         // ComponentSizeValidator.setCreationLocation(this);
-        setElement(new com.vaadin.hummingbird.kernel.Element(
-                getClass().getAnnotation(Tag.class).value()));
+        setElement(new Element(getClass().getAnnotation(Tag.class).value()));
     }
 
     /* Get/Set component properties */
@@ -302,7 +302,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
         if (locale != null) {
             return locale;
         }
-        HasComponents parent = getParent();
+        Component parent = getParent();
         if (parent != null) {
             return parent.getLocale();
         }
@@ -446,35 +446,46 @@ public abstract class AbstractComponent extends AbstractClientConnector
      * we use the default documentation from implemented interface.
      */
     @Override
-    public HasComponents getParent() {
-        return parent;
+    public Component getParent() {
+        Element e = getElement().getParent();
+        while (e != null && e.getComponent() == null) {
+            e = e.getParent();
+        }
+
+        if (e != null) {
+            return e.getComponent();
+        } else {
+            return null;
+        }
     }
 
     @Override
-    public void setParent(HasComponents parent) {
-        // If the parent is not changed, don't do anything
-        if (parent == null ? this.parent == null : parent.equals(this.parent)) {
-            return;
-        }
-
-        if (parent != null && this.parent != null) {
-            throw new IllegalStateException(
-                    getClass().getName() + " already has a parent.");
-        }
-
-        // Send a detach event if the component is currently attached
-        if (isAttached()) {
-            detach();
-        }
-
-        // Connect to new parent
-        this.parent = parent;
-
-        // Send attach event if the component is now attached
-        if (isAttached()) {
-            attach();
-        }
+    public void setParent(Component parent) {
+        getLogger().severe("setParent() called - this should not be needed");
     }
+    // // If the parent is not changed, don't do anything
+    // if (parent == null ? this.parent == null : parent.equals(this.parent)) {
+    // return;
+    // }
+    //
+    // if (parent != null && this.parent != null) {
+    // throw new IllegalStateException(
+    // getClass().getName() + " already has a parent.");
+    // }
+    //
+    // // Send a detach event if the component is currently attached
+    // if (isAttached()) {
+    // detach();
+    // }
+    //
+    // // Connect to new parent
+    // this.parent = parent;
+    //
+    // // Send attach event if the component is now attached
+    // if (isAttached()) {
+    // attach();
+    // }
+    // }
 
     /**
      * Returns the closest ancestor with the given type.
@@ -490,8 +501,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
      * @return The first ancestor that can be assigned to the given class. Null
      *         if no ancestor with the correct type could be found.
      */
-    public <T extends HasComponents> T findAncestor(Class<T> parentType) {
-        HasComponents p = getParent();
+    public <T extends Component> T findAncestor(Class<T> parentType) {
+        Component p = getParent();
         while (p != null) {
             if (parentType.isAssignableFrom(p.getClass())) {
                 return parentType.cast(p);
@@ -1161,15 +1172,39 @@ public abstract class AbstractComponent extends AbstractClientConnector
     }
 
     @Override
-    public com.vaadin.hummingbird.kernel.Element getElement() {
+    public Element getElement() {
         return element;
     }
 
-    protected void setElement(com.vaadin.hummingbird.kernel.Element element) {
+    protected void setElement(Element element) {
         this.element = element;
+        if (element.getComponent() != null && element.getComponent() != this) {
+            throw new IllegalArgumentException(
+                    "The given element is already attached to another component");
+        }
+        this.element.setComponent(this);
+    }
+
+    protected boolean hasChild(Component component) {
+        return getElement().hasChild(component.getElement());
     }
 
     private static final Logger getLogger() {
         return Logger.getLogger(AbstractComponent.class.getName());
     }
+
+    @Override
+    public void elementAttached() {
+        if (isAttached()) {
+            attach();
+        }
+    }
+
+    @Override
+    public void elementDetached() {
+        if (isAttached()) {
+            detach();
+        }
+    }
+
 }

@@ -41,7 +41,7 @@ public abstract class AbstractComponentContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.ui.ComponentContainer#addComponents(com.vaadin.ui.Component[])
      */
@@ -91,65 +91,11 @@ public abstract class AbstractComponentContainer
         }
     }
 
-    /* documented in interface */
-    @Override
-    public void addComponentAttachListener(ComponentAttachListener listener) {
-        addListener(ComponentAttachEvent.class, listener,
-                ComponentAttachListener.attachMethod);
-    }
-
-    /* documented in interface */
-    @Override
-    public void removeComponentAttachListener(
-            ComponentAttachListener listener) {
-        removeListener(ComponentAttachEvent.class, listener,
-                ComponentAttachListener.attachMethod);
-    }
-
-    /* documented in interface */
-    @Override
-    public void addComponentDetachListener(ComponentDetachListener listener) {
-        addListener(ComponentDetachEvent.class, listener,
-                ComponentDetachListener.detachMethod);
-    }
-
-    /* documented in interface */
-    @Override
-    public void removeComponentDetachListener(
-            ComponentDetachListener listener) {
-        removeListener(ComponentDetachEvent.class, listener,
-                ComponentDetachListener.detachMethod);
-    }
-
-    /**
-     * Fires the component attached event. This should be called by the
-     * addComponent methods after the component have been added to this
-     * container.
-     * 
-     * @param component
-     *            the component that has been added to this container.
-     */
-    protected void fireComponentAttachEvent(Component component) {
-        fireEvent(new ComponentAttachEvent(this, component));
-    }
-
-    /**
-     * Fires the component detached event. This should be called by the
-     * removeComponent methods after the component have been removed from this
-     * container.
-     * 
-     * @param component
-     *            the component that has been removed from this container.
-     */
-    protected void fireComponentDetachEvent(Component component) {
-        fireEvent(new ComponentDetachEvent(this, component));
-    }
-
     /**
      * This only implements the events and component parent calls. The extending
      * classes must implement component list maintenance and call this method
      * after component list maintenance.
-     * 
+     *
      * @see com.vaadin.ui.ComponentContainer#addComponent(Component)
      */
     @Override
@@ -166,7 +112,6 @@ public abstract class AbstractComponentContainer
         }
 
         c.setParent(this);
-        fireComponentAttachEvent(c);
         markAsDirty();
     }
 
@@ -174,14 +119,13 @@ public abstract class AbstractComponentContainer
      * This only implements the events and component parent calls. The extending
      * classes must implement component list maintenance and call this method
      * before component list maintenance.
-     * 
+     *
      * @see com.vaadin.ui.ComponentContainer#removeComponent(Component)
      */
     @Override
     public void removeComponent(Component c) {
         if (equals(c.getParent())) {
             c.setParent(null);
-            fireComponentDetachEvent(c);
             markAsDirty();
         }
     }

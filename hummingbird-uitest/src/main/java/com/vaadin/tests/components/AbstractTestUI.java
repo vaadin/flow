@@ -20,7 +20,6 @@ public abstract class AbstractTestUI extends UI {
         getPage().setTitle(getClass().getName());
 
         Label label = new Label(getTestDescription(), ContentMode.HTML);
-        label.setWidth("100%");
 
         VerticalLayout rootLayout = new VerticalLayout();
         rootLayout.setMargin(true);
@@ -42,7 +41,7 @@ public abstract class AbstractTestUI extends UI {
      * is given. Supports transport=xhr (disables push), transport=websocket
      * (forces websocket into use), transport=long-polling(forces long-polling
      * into use). Using ?transport=xyz disables the fallback transport.
-     * 
+     *
      * @param request
      *            The UI init request
      */
@@ -80,7 +79,7 @@ public abstract class AbstractTestUI extends UI {
      * {@link #addComponent(Component)} instead to add the component to the
      * layout used by this UI. If you don't want to use the top-level layout
      * used by this class, you instead inherit directly from UI.
-     * 
+     *
      * @deprecated Use {@link #addComponent(Component)} or inherit from UI
      *             instead.
      */

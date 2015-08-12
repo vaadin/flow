@@ -4,7 +4,6 @@ import com.vaadin.data.validator.AbstractValidator;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -52,7 +51,7 @@ public class SimpleLoginView extends CustomComponent
         fields.setCaption(
                 "Please login to access the application. (test@test.com/passw0rd)");
         fields.setSpacing(true);
-        fields.setMargin(new MarginInfo(true, true, true, false));
+        fields.setMargin(true);
         fields.setSizeUndefined();
 
         // The view root layout

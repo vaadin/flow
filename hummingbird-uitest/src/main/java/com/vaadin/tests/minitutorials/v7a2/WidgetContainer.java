@@ -30,8 +30,6 @@ public class WidgetContainer extends AbstractComponentContainer {
         if (index != -1) {
             children.remove(index);
             children.add(index, newComponent);
-            fireComponentDetachEvent(oldComponent);
-            fireComponentAttachEvent(newComponent);
             markAsDirty();
         }
     }

@@ -11,10 +11,9 @@ public class ElementTest {
         element.setAttribute("nullValued", null);
         element.insertChild(0, new Element("strong"));
 
-        StringBuilder b = new StringBuilder();
-        element.toString(b);
+        String html = element.getOuterHTML();
         Assert.assertEquals("<span class=\"foobar\"><strong></strong></span>",
-                b.toString());
+                html);
     }
 
     @Test
@@ -27,7 +26,7 @@ public class ElementTest {
         root.insertChild(1, strong);
 
         Assert.assertEquals("<span>Hello <strong>world!</strong></span>",
-                root.toString());
+                root.getOuterHTML());
 
     }
 }

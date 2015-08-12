@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import com.vaadin.event.ComponentEventListener;
 import com.vaadin.event.FieldEvents;
+import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.ErrorMessage;
@@ -359,7 +360,7 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      *             if a parent is given even though the connector already has a
      *             parent
      */
-    public void setParent(HasComponents parent);
+    public void setParent(Component parent);
 
     /**
      * Gets the parent component of the component.
@@ -373,7 +374,7 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * @return the parent component
      */
     @Override
-    public HasComponents getParent();
+    public Component getParent();
 
     /**
      * Tests whether the component is in the read-only mode. The user can not
@@ -637,10 +638,8 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * Notifies the connector that it is detached from its VaadinSession.
      *
      * <p>
-     * The caller of this method is {@link #setParent(ClientConnector)} if the
-     * parent is in the session. When the parent is detached from the session it
-     * is its responsibility to call {@link #detach()} for each of its children.
-     *
+     * When the parent is detached from the session it is its responsibility to
+     * call {@link #detach()} for each of its children.
      * </p>
      */
     public void detach();
@@ -1148,5 +1147,27 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      */
     public void setErrorHandler(ErrorHandler errorHandler);
 
-    public com.vaadin.hummingbird.kernel.Element getElement();
+    public Element getElement();
+
+    /**
+     * Called when the element for this component has been attached to a parent
+     * element.
+     * <p>
+     * Note that this does not necessarily mean that the element is attached to
+     * the root element
+     */
+    public void elementAttached();
+
+    /**
+     * Called when the element for this component will be detached from a parent
+     * element.
+     * <p>
+     * When this method is called, the element is still attached to its previous
+     * parent.
+     * <p>
+     * Note that this does not necessarily mean that the element has ever been
+     * attached to the root element
+     */
+    public void elementDetached();
+
 }

@@ -49,61 +49,6 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
         }
     }
 
-    /* documented in interface */
-    @Override
-    public void addComponentAttachListener(ComponentAttachListener listener) {
-        addListener(ComponentAttachEvent.class, listener,
-                ComponentAttachListener.attachMethod);
-
-    }
-
-    /* documented in interface */
-    @Override
-    public void removeComponentAttachListener(
-            ComponentAttachListener listener) {
-        removeListener(ComponentAttachEvent.class, listener,
-                ComponentAttachListener.attachMethod);
-    }
-
-    /* documented in interface */
-    @Override
-    public void addComponentDetachListener(ComponentDetachListener listener) {
-        addListener(ComponentDetachEvent.class, listener,
-                ComponentDetachListener.detachMethod);
-    }
-
-    /* documented in interface */
-    @Override
-    public void removeComponentDetachListener(
-            ComponentDetachListener listener) {
-        removeListener(ComponentDetachEvent.class, listener,
-                ComponentDetachListener.detachMethod);
-    }
-
-    /**
-     * Fires the component attached event. This is called by the
-     * {@link #setContent(Component)} method after the component has been set as
-     * the content.
-     *
-     * @param component
-     *            the component that has been added to this container.
-     */
-    protected void fireComponentAttachEvent(Component component) {
-        fireEvent(new ComponentAttachEvent(this, component));
-    }
-
-    /**
-     * Fires the component detached event. This is called by the
-     * {@link #setContent(Component)} method after the content component has
-     * been replaced by other content.
-     *
-     * @param component
-     *            the component that has been removed from this container.
-     */
-    protected void fireComponentDetachEvent(Component component) {
-        fireEvent(new ComponentDetachEvent(this, component));
-    }
-
     @Override
     public Component getContent() {
         return content;
@@ -137,14 +82,12 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
         }
         if (oldContent != null && equals(oldContent.getParent())) {
             oldContent.setParent(null);
-            fireComponentDetachEvent(oldContent);
         }
         this.content = content;
         if (content != null) {
             removeFromParent(content);
 
             content.setParent(this);
-            fireComponentAttachEvent(content);
         }
 
         markAsDirty();
@@ -172,7 +115,7 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
             }
         }
 
-        HasComponents parent = content.getParent();
+        Component parent = content.getParent();
         if (parent instanceof ComponentContainer) {
             // If the component already has a parent, try to remove it
             ComponentContainer oldParent = (ComponentContainer) parent;

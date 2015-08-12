@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.annotations.Theme;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.server.VaadinRequest;
@@ -21,7 +20,6 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.VerticalLayout;
 
-@Theme("tests-components")
 public class OrderedLayoutCases extends AbstractTestUI {
 
     private static final String[] dimensionValues = { "-1px", "5px", "350px",
@@ -197,10 +195,16 @@ public class OrderedLayoutCases extends AbstractTestUI {
                         newLayout.setWidth(currentLayout.getWidth(),
                                 currentLayout.getWidthUnits());
 
-                        newLayout.setMargin(currentLayout.getMargin());
+                        newLayout.setMargin(currentLayout.isMargin());
                         newLayout.setSpacing(currentLayout.isSpacing());
 
-                        getLayout().replaceComponent(currentLayout, newLayout);
+                        if (currentLayout != null
+                                && currentLayout.getParent() == getLayout()) {
+                            getLayout().replaceComponent(currentLayout,
+                                    newLayout);
+                        } else {
+                            getLayout().addComponent(newLayout);
+                        }
                         getLayout().setExpandRatio(newLayout, 1);
                         currentLayout = newLayout;
                     }

@@ -63,7 +63,7 @@ public class BaseLayoutForSpacingMargin extends BaseLayoutTestUI {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                boolean margin = l2.getMargin().hasLeft();
+                boolean margin = l2.isMargin();
                 l2.setMargin(!margin);
 
             }

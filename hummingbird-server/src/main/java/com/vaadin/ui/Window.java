@@ -117,22 +117,6 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
 
     /* ********************************************************************* */
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.AbstractComponent#setParent(com.vaadin.server.
-     * ClientConnector )
-     */
-    @Override
-    public void setParent(HasComponents parent) {
-        if (parent == null || parent instanceof UI) {
-            super.setParent(parent);
-        } else {
-            throw new IllegalArgumentException(
-                    "A Window can only be added to a UI using UI.addWindow(Window window)");
-        }
-    }
-
     /**
      * Method that handles window closing (from UI).
      *

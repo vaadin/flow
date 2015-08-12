@@ -386,4 +386,15 @@ public abstract class StateNode {
     public static StateNode create(Map<Object, Class<?>> explicitTypes) {
         return ClassBackedStateNode.create(explicitTypes);
     }
+
+    public boolean hasAncestor(StateNode node) {
+        StateNode n = this;
+        while (n != null) {
+            if (n == node) {
+                return true;
+            }
+            n = n.getParent();
+        }
+        return false;
+    }
 }

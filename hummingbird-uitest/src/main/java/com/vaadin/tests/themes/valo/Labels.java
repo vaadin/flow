@@ -17,7 +17,6 @@ package com.vaadin.tests.themes.valo;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -42,7 +41,7 @@ public class Labels extends VerticalLayout implements View {
         addComponent(split);
 
         VerticalLayout left = new VerticalLayout();
-        left.setMargin(new MarginInfo(false, true, false, false));
+        left.setMargin(true);
         split.addComponent(left);
 
         Label huge = new Label("Huge type for display text.");

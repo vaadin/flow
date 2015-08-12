@@ -3,17 +3,12 @@ package com.vaadin.tests.server.component.window;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
-import com.vaadin.ui.HasComponents.ComponentAttachEvent;
-import com.vaadin.ui.HasComponents.ComponentAttachListener;
-import com.vaadin.ui.HasComponents.ComponentDetachEvent;
-import com.vaadin.ui.HasComponents.ComponentDetachListener;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
@@ -218,42 +213,6 @@ public class AttachDetachWindowTest {
         assertDetached(sub);
     }
 
-    @Test
-    public void addWindow_attachEventIsFired() {
-        TestUI ui = new TestUI();
-        final Window window = new Window();
-
-        final boolean[] eventFired = new boolean[1];
-        ui.addComponentAttachListener(new ComponentAttachListener() {
-
-            @Override
-            public void componentAttachedToContainer(ComponentAttachEvent event) {
-                eventFired[0] = event.getAttachedComponent().equals(window);
-            }
-        });
-        ui.addWindow(window);
-        Assert.assertTrue("Attach event is not fired for added window", eventFired[0]);
-    }
-
-    @Test
-    public void removeWindow_detachEventIsFired() {
-        TestUI ui = new TestUI();
-        final Window window = new Window();
-
-        final boolean[] eventFired = new boolean[1];
-        ui.addComponentDetachListener(new ComponentDetachListener() {
-
-            @Override
-            public void componentDetachedFromContainer(ComponentDetachEvent event) {
-                eventFired[0] = event.getDetachedComponent().equals(window);
-            }
-        });
-        ui.addWindow(window);
-        ui.removeWindow(window);
-
-        Assert.assertTrue("Detach event is not fired for removed window", eventFired[0]);
-    }
-
     /**
      * Asserts that win and its children are attached to testApp and their
      * attach() methods have been called.
@@ -262,12 +221,16 @@ public class AttachDetachWindowTest {
         TestContent testContent = win.getTestContent();
 
         assertTrue("window attach not called", win.attachCalled());
-        assertTrue("window content attach not called", testContent.contentAttachCalled);
-        assertTrue("window child attach not called", testContent.childAttachCalled);
+        assertTrue("window content attach not called",
+                testContent.contentAttachCalled);
+        assertTrue("window child attach not called",
+                testContent.childAttachCalled);
 
         assertSame("window not attached", win.getSession(), testApp);
-        assertSame("window content not attached", testContent.getUI().getSession(), testApp);
-        assertSame("window children not attached", testContent.child.getUI().getSession(), testApp);
+        assertSame("window content not attached",
+                testContent.getUI().getSession(), testApp);
+        assertSame("window children not attached",
+                testContent.child.getUI().getSession(), testApp);
     }
 
     /**
@@ -275,8 +238,10 @@ public class AttachDetachWindowTest {
      */
     private void assertUnattached(TestContainer win) {
         assertSame("window not detached", win.getSession(), null);
-        assertSame("window content not detached", getSession(win.getTestContent()), null);
-        assertSame("window children not detached", getSession(win.getTestContent().child), null);
+        assertSame("window content not detached",
+                getSession(win.getTestContent()), null);
+        assertSame("window children not detached",
+                getSession(win.getTestContent().child), null);
     }
 
     private VaadinSession getSession(ClientConnector testContainer) {
@@ -291,13 +256,15 @@ public class AttachDetachWindowTest {
     /**
      * Asserts that win and its children are unattached and their detach()
      * methods have been been called.
-     * 
+     *
      * @param win
      */
     private void assertDetached(TestContainer win) {
         assertUnattached(win);
         assertTrue("window detach not called", win.detachCalled());
-        assertTrue("window content detach not called", win.getTestContent().contentDetachCalled);
-        assertTrue("window child detach not called", win.getTestContent().childDetachCalled);
+        assertTrue("window content detach not called",
+                win.getTestContent().contentDetachCalled);
+        assertTrue("window child detach not called",
+                win.getTestContent().childDetachCalled);
     }
 }

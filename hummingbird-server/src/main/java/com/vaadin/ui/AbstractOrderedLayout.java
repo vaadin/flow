@@ -17,21 +17,15 @@
 package com.vaadin.ui;
 
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import com.vaadin.annotations.HTML;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.LayoutEvents.LayoutClickNotifier;
+import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.Sizeable;
-import com.vaadin.shared.Connector;
 import com.vaadin.shared.EventId;
-import com.vaadin.shared.MouseEventDetails;
-import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.shared.ui.orderedlayout.AbstractOrderedLayoutServerRpc;
-import com.vaadin.shared.ui.orderedlayout.AbstractOrderedLayoutState;
-import com.vaadin.shared.ui.orderedlayout.AbstractOrderedLayoutState.ChildComponentData;
 
 @SuppressWarnings("serial")
 @HTML("vaadin://bower_components/iron-flex-layout/classes/iron-flex-layout.html")
@@ -39,22 +33,20 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
         implements Layout.AlignmentHandler, Layout.SpacingHandler,
         LayoutClickNotifier, Layout.MarginHandler {
 
-    private AbstractOrderedLayoutServerRpc rpc = new AbstractOrderedLayoutServerRpc() {
-
-        @Override
-        public void layoutClick(MouseEventDetails mouseDetails,
-                Connector clickedConnector) {
-            fireEvent(LayoutClickEvent.createEvent(AbstractOrderedLayout.this,
-                    mouseDetails, clickedConnector));
-        }
-    };
+    // private AbstractOrderedLayoutServerRpc rpc = new
+    // AbstractOrderedLayoutServerRpc() {
+    //
+    // @Override
+    // public void layoutClick(MouseEventDetails mouseDetails,
+    // Connector clickedConnector) {
+    // fireEvent(LayoutClickEvent.createEvent(AbstractOrderedLayout.this,
+    // mouseDetails, clickedConnector));
+    // }
+    // };
 
     public static final Alignment ALIGNMENT_DEFAULT = Alignment.TOP_LEFT;
 
-    /**
-     * Custom layout slots containing the components.
-     */
-    protected LinkedList<Component> components = new LinkedList<Component>();
+    private static final String ERROR_NOT_A_CHILD = "The given component is not a child of this layout";
 
     private Alignment defaultComponentAlignment = Alignment.TOP_LEFT;
 
@@ -64,17 +56,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      * Constructs an empty AbstractOrderedLayout.
      */
     public AbstractOrderedLayout() {
-        registerRpc(rpc);
-    }
-
-    @Override
-    protected AbstractOrderedLayoutState getState() {
-        return (AbstractOrderedLayoutState) super.getState();
-    }
-
-    @Override
-    protected AbstractOrderedLayoutState getState(boolean markAsDirty) {
-        return (AbstractOrderedLayoutState) super.getState(markAsDirty);
+        getElement().addClass("layout");
+        // registerRpc(rpc);
     }
 
     /**
@@ -86,18 +69,14 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      */
     @Override
     public void addComponent(Component c) {
-        // Add to components before calling super.addComponent
-        // so that it is available to AttachListeners
-        components.add(c);
+        // Fires detach/attach as necessary
+        // Throws IllegalArgumentException
         try {
-            super.addComponent(c);
+            getElement().appendChild(c.getElement());
         } catch (IllegalArgumentException e) {
-            components.remove(c);
-            throw e;
+            throw new IllegalArgumentException(
+                    "Component cannot be added inside it's own content", e);
         }
-        componentAdded(c);
-
-        getElement().insertChild(getElement().getChildCount(), c.getElement());
     }
 
     /**
@@ -108,22 +87,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      *            the component to be added.
      */
     public void addComponentAsFirst(Component c) {
-        // If c is already in this, we must remove it before proceeding
-        // see ticket #7668
-        if (equals(c.getParent())) {
-            removeComponent(c);
-        }
-        components.addFirst(c);
-        try {
-            super.addComponent(c);
-        } catch (IllegalArgumentException e) {
-            components.remove(c);
-            throw e;
-        }
-        componentAdded(c);
-
-        getElement().insertChild(0, c.getElement());
-
+        addComponent(c, 0);
     }
 
     /**
@@ -136,34 +100,14 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      *            in and after the position are shifted forwards.
      */
     public void addComponent(Component c, int index) {
-        // If c is already in this, we must remove it before proceeding
-        // see ticket #7668
-        if (equals(c.getParent())) {
-            // When c is removed, all components after it are shifted down
-            if (index > getComponentIndex(c)) {
-                index--;
+        if (hasChild(c)) {
+            if (getComponentIndex(c) == index) {
+                return;
             }
+
             removeComponent(c);
         }
-        components.add(index, c);
-        try {
-            super.addComponent(c);
-        } catch (IllegalArgumentException e) {
-            components.remove(c);
-            throw e;
-        }
-
-        componentAdded(c);
-    }
-
-    private void componentRemoved(Component c) {
-        getState().childData.remove(c);
-    }
-
-    private void componentAdded(Component c) {
-        ChildComponentData ccd = new ChildComponentData();
-        ccd.alignmentBitmask = getDefaultComponentAlignment().getBitMask();
-        getState().childData.put(c, ccd);
+        getElement().insertChild(index, c.getElement());
     }
 
     /**
@@ -174,9 +118,11 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      */
     @Override
     public void removeComponent(Component c) {
-        components.remove(c);
-        super.removeComponent(c);
-        componentRemoved(c);
+        if (!hasChild(c)) {
+            throw new IllegalArgumentException(ERROR_NOT_A_CHILD);
+        }
+
+        c.getElement().removeFromParent(); // Fires detach
     }
 
     /**
@@ -187,7 +133,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      */
     @Override
     public Iterator<Component> iterator() {
-        return components.iterator();
+        return new ElementBasedComponentIterator(getElement());
     }
 
     /**
@@ -198,108 +144,72 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      */
     @Override
     public int getComponentCount() {
-        return components.size();
+        return getElement().getChildCount();
     }
 
     /* Documented in superclass */
     @Override
     public void replaceComponent(Component oldComponent,
             Component newComponent) {
-
-        // Gets the locations
-        int oldLocation = -1;
-        int newLocation = -1;
-        int location = 0;
-        for (final Iterator<Component> i = components.iterator(); i
-                .hasNext();) {
-            final Component component = i.next();
-
-            if (component == oldComponent) {
-                oldLocation = location;
-            }
-            if (component == newComponent) {
-                newLocation = location;
-            }
-
-            location++;
+        if (!hasChild(oldComponent)) {
+            throw new IllegalArgumentException(ERROR_NOT_A_CHILD);
+        }
+        if (hasChild(newComponent)) {
+            throw new IllegalArgumentException(
+                    "The new component is already a child of this layout");
         }
 
-        if (oldLocation == -1) {
-            addComponent(newComponent);
-        } else if (newLocation == -1) {
-            Alignment alignment = getComponentAlignment(oldComponent);
-            int expandRatio = getExpandRatio(oldComponent);
+        int insertIndex = getElement().getChildIndex(oldComponent.getElement());
+        int expandRatio = getExpandRatio(oldComponent);
+        Alignment alignment = getComponentAlignment(oldComponent);
 
-            removeComponent(oldComponent);
-            addComponent(newComponent, oldLocation);
-            applyLayoutSettings(newComponent, alignment, expandRatio);
-        } else {
-            // Both old and new are in the layout
-            if (oldLocation > newLocation) {
-                components.remove(oldComponent);
-                components.add(newLocation, oldComponent);
-                components.remove(newComponent);
-                components.add(oldLocation, newComponent);
-            } else {
-                components.remove(newComponent);
-                components.add(oldLocation, newComponent);
-                components.remove(oldComponent);
-                components.add(newLocation, oldComponent);
-            }
+        removeComponent(oldComponent);
+        addComponent(newComponent, insertIndex);
 
-            markAsDirty();
-        }
+        setExpandRatio(newComponent, expandRatio);
+        setComponentAlignment(newComponent, alignment);
     }
 
     @Override
     public void setComponentAlignment(Component childComponent,
             Alignment alignment) {
-        ChildComponentData childData = getState().childData.get(childComponent);
-        if (childData != null) {
-            // Alignments are bit masks
-            childData.alignmentBitmask = alignment.getBitMask();
-        } else {
+        if (!hasChild(childComponent)) {
             throw new IllegalArgumentException(
-                    "Component must be added to layout before using setComponentAlignment()");
+                    "The component is not a child of this layout");
         }
 
+        Alignment currentAlignment = getComponentAlignment(childComponent);
+
+        childComponent.getElement()
+                .removeClass(currentAlignment.getClassName());
+        if (!alignment.getClassName().equals("")) {
+            childComponent.getElement().addClass(alignment.getClassName());
+        }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.Layout.AlignmentHandler#getComponentAlignment(com
-     * .vaadin.ui.Component)
-     */
     @Override
     public Alignment getComponentAlignment(Component childComponent) {
-        ChildComponentData childData = getState().childData.get(childComponent);
-        if (childData == null) {
-            throw new IllegalArgumentException(
-                    "The given component is not a child of this layout");
+        if (!hasChild(childComponent)) {
+            throw new IllegalArgumentException(ERROR_NOT_A_CHILD);
         }
 
-        return new Alignment(childData.alignmentBitmask);
+        for (Alignment a : Alignment.values()) {
+            if (!a.getClassName().equals("")
+                    && childComponent.getElement().hasClass(a.getClassName())) {
+                return a;
+            }
+        }
+        return ALIGNMENT_DEFAULT;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.Layout.SpacingHandler#setSpacing(boolean)
-     */
     @Override
     public void setSpacing(boolean spacing) {
-        getState().spacing = spacing;
+        getElement().addClass("spacing");
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.Layout.SpacingHandler#isSpacing()
-     */
     @Override
     public boolean isSpacing() {
-        return getState(false).spacing;
+        return getElement().hasClass("spacing");
     }
 
     /**
@@ -332,15 +242,21 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      * @param ratio
      */
     public void setExpandRatio(Component component, int ratio) {
-        ChildComponentData childData = getState().childData.get(component);
-        if (childData == null) {
+        if (ratio < 0 || ratio > 10) {
             throw new IllegalArgumentException(
-                    "The given component is not a child of this layout");
+                    "Only expand ratios between 0 and 10 are supported");
+        }
+        if (!hasChild(component)) {
+            throw new IllegalArgumentException(ERROR_NOT_A_CHILD);
         }
 
-        childData.expandRatio = ratio;
+        String oldClass = "flex-" + getExpandRatio(component);
+        component.getElement().removeClass(oldClass);
 
-        component.getElement().setAttribute("class", "flex-" + ratio);
+        if (ratio != 0) {
+            String newClass = "flex-" + ratio;
+            component.getElement().addClass(newClass);
+        }
     }
 
     /**
@@ -351,13 +267,35 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      * @return expand ratio of given component, 0.0f by default.
      */
     public int getExpandRatio(Component component) {
-        ChildComponentData childData = getState(false).childData.get(component);
-        if (childData == null) {
-            throw new IllegalArgumentException(
-                    "The given component is not a child of this layout");
+        if (!hasChild(component)) {
+            throw new IllegalArgumentException(ERROR_NOT_A_CHILD);
         }
 
-        return childData.expandRatio;
+        Element childElement = component.getElement();
+        String childClass = childElement.getAttribute("class");
+        if (childClass == null) {
+            return 0;
+        }
+
+        String[] classes = childClass.split(" ");
+        for (String cls : classes) {
+            if (cls.startsWith("flex-")) {
+                try {
+                    return Integer.parseInt(cls.substring("flex-".length()));
+                } catch (NumberFormatException e) {
+                    // Some other class, like "flex-foo", keep looking
+                }
+            }
+        }
+
+        // String newAttr = Arrays.stream(childClass.split(" ")).filter(c -> {
+        // return !c.startsWith("flex-");
+        // }).collect(Collectors.joining(" "));
+        //
+        // newAttr+= " flex-";
+        // newAttr+=
+        // if (component.getElement().getAttribute("class"))
+        return 0;
     }
 
     @Override
@@ -381,7 +319,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      * @return The index of the component or -1 if the component is not a child.
      */
     public int getComponentIndex(Component component) {
-        return components.indexOf(component);
+        return getElement().getChildIndex(component.getElement());
     }
 
     /**
@@ -394,51 +332,24 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      *             If the index is out of range.
      */
     public Component getComponent(int index) throws IndexOutOfBoundsException {
-        return components.get(index);
+        return getElement().getChild(index).getComponent();
     }
 
     @Override
     public void setMargin(boolean enabled) {
-        setMargin(new MarginInfo(enabled));
+        getElement().addClass("margin");
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.Layout.MarginHandler#getMargin()
-     */
     @Override
-    public MarginInfo getMargin() {
-        return new MarginInfo(getState(false).marginsBitmask);
+    public boolean isMargin() {
+        return getElement().hasClass("margin");
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.Layout.MarginHandler#setMargin(MarginInfo)
-     */
-    @Override
-    public void setMargin(MarginInfo marginInfo) {
-        getState().marginsBitmask = marginInfo.getBitMask();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.Layout.AlignmentHandler#getDefaultComponentAlignment()
-     */
     @Override
     public Alignment getDefaultComponentAlignment() {
         return defaultComponentAlignment;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.vaadin.ui.Layout.AlignmentHandler#setDefaultComponentAlignment(com
-     * .vaadin.ui.Alignment)
-     */
     @Override
     public void setDefaultComponentAlignment(Alignment defaultAlignment) {
         defaultComponentAlignment = defaultAlignment;

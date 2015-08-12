@@ -17,7 +17,6 @@ package com.vaadin.tests.components.absolutelayout;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.AbsoluteLayout;
 import com.vaadin.ui.Component;
@@ -42,7 +41,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
         level1.setWidth(100, Unit.PERCENTAGE);
         level1.setExpandRatio(
                 level1.getComponent(level1.getComponentCount() - 1), 1);
-        level1.setMargin(new MarginInfo(true, false, false, false));
+        level1.setMargin(true);
 
         HorizontalLayout level2 = new HorizontalLayout(createFullOnFixed(),
                 createFullOnFull());
@@ -50,7 +49,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
         level2.setWidth(100, Unit.PERCENTAGE);
         level2.setExpandRatio(
                 level2.getComponent(level2.getComponentCount() - 1), 1);
-        level2.setMargin(new MarginInfo(true, false, false, false));
+        level2.setMargin(true);
 
         addComponent(level1);
         addComponent(level2);
@@ -60,7 +59,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
      * Creates an {@link AbsoluteLayout} of fixed size that contains a
      * full-sized NativeButton that has been forced to full size with css.
      * Represents the workaround given for this ticket.
-     * 
+     *
      * @return the created layout
      */
     private Component createComparisonTableOnFixed() {
@@ -79,7 +78,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
     /**
      * Creates an {@link AbsoluteLayout} of fixed size that contains a
      * full-sized {@link NativeButton}.
-     * 
+     *
      * @return the created layout
      */
     private Component createTableOnFixed() {
@@ -98,7 +97,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
     /**
      * Creates an {@link AbsoluteLayout} of fixed size that contains a
      * half-sized {@link Table}.
-     * 
+     *
      * @return the created layout
      */
     private Component createHalfTableOnFixed() {
@@ -163,7 +162,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
     /**
      * Creates an {@link AbsoluteLayout} of fixed size that contains a
      * fixed-sized {@link AbsoluteLayout}.
-     * 
+     *
      * @return the created layout
      */
     private Component createFullOnFixed() {
@@ -186,7 +185,7 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
     /**
      * Creates an {@link AbsoluteLayout} of full size that contains another
      * full-sized {@link AbsoluteLayout}.
-     * 
+     *
      * @return the created layout
      */
     private AbsoluteLayout createFullOnFull() {

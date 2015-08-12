@@ -2,6 +2,8 @@ package com.vaadin.hummingbird.kernel;
 
 import java.util.Collection;
 
+import com.vaadin.ui.Component;
+
 public interface ElementTemplate {
 
     public String getTag(StateNode node);
@@ -31,4 +33,9 @@ public interface ElementTemplate {
 
     public void removeListener(String type, EventListener listener,
             StateNode node);
+
+    public void setComponent(Component c, StateNode node);
+
+    public Component getComponent(StateNode node);
+
 }

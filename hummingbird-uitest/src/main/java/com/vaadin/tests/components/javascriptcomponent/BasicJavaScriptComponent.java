@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2000-2014 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -34,7 +34,7 @@ import com.vaadin.tests.util.Log;
 import com.vaadin.ui.AbstractJavaScriptComponent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.JavaScriptFunction;
 
 import elemental.json.JsonArray;
@@ -92,7 +92,7 @@ public class BasicJavaScriptComponent extends AbstractTestUI {
                         log.log("Connector ids doesn't match");
                     }
 
-                    HasComponents parent = getParent();
+                    Component parent = getParent();
                     int i = 1;
                     while (parent != null) {
                         if (!parentIds.getString(i)

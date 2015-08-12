@@ -32,16 +32,17 @@ public class VerticalLayout extends AbstractOrderedLayout {
      * Constructs an empty VerticalLayout.
      */
     public VerticalLayout() {
-        getElement().setAttribute("class", "layout vertical");
+        super();
+        getElement().addClass("vertical");
         setWidth("100%");
     }
 
     /**
      * Constructs a VerticalLayout with the given components. The components are
      * added in the given order.
-     * 
+     *
      * @see AbstractOrderedLayout#addComponents(Component...)
-     * 
+     *
      * @param children
      *            The components to add.
      */

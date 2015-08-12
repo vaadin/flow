@@ -18,8 +18,6 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.shared.ui.MarginInfo;
-
 /**
  * Extension to the {@link ComponentContainer} interface which adds the
  * layouting control to the elements in the container. This is required by the
@@ -40,11 +38,11 @@ public interface Layout extends ComponentContainer, Serializable {
         /**
          * Set alignment for one contained component in this layout. Use
          * predefined alignments from Alignment class.
-         * 
+         *
          * Example: <code>
          *      layout.setComponentAlignment(myComponent, Alignment.TOP_RIGHT);
          * </code>
-         * 
+         *
          * @param childComponent
          *            the component to align within it's layout cell.
          * @param alignment
@@ -55,7 +53,7 @@ public interface Layout extends ComponentContainer, Serializable {
 
         /**
          * Returns the current Alignment of given component.
-         * 
+         *
          * @param childComponent
          * @return the {@link Alignment}
          */
@@ -64,7 +62,7 @@ public interface Layout extends ComponentContainer, Serializable {
         /**
          * Sets the alignment used for new components added to this layout. The
          * default is {@link Alignment#TOP_LEFT}.
-         * 
+         *
          * @param defaultComponentAlignment
          *            The new default alignment
          */
@@ -73,7 +71,7 @@ public interface Layout extends ComponentContainer, Serializable {
 
         /**
          * Returns the alignment used for new components added to this layout
-         * 
+         *
          * @return The default alignment
          */
         public Alignment getDefaultComponentAlignment();
@@ -83,12 +81,12 @@ public interface Layout extends ComponentContainer, Serializable {
     /**
      * This type of layout supports automatic addition of space between its
      * components.
-     * 
+     *
      */
     public interface SpacingHandler extends Serializable {
         /**
          * Enable spacing between child components within this layout.
-         * 
+         *
          * <p>
          * <strong>NOTE:</strong> This will only affect the space between
          * components, not the space around all the components in the layout
@@ -96,12 +94,12 @@ public interface Layout extends ComponentContainer, Serializable {
          * Table). Use {@link #setMargin(boolean)} to add space around the
          * layout.
          * </p>
-         * 
+         *
          * <p>
          * See the reference manual for more information about CSS rules for
          * defining the amount of spacing to use.
          * </p>
-         * 
+         *
          * @param enabled
          *            true if spacing should be turned on, false if it should be
          *            turned off
@@ -109,7 +107,7 @@ public interface Layout extends ComponentContainer, Serializable {
         public void setSpacing(boolean enabled);
 
         /**
-         * 
+         *
          * @return true if spacing between child components within this layout
          *         is enabled, false otherwise
          */
@@ -123,11 +121,11 @@ public interface Layout extends ComponentContainer, Serializable {
     public interface MarginHandler extends Serializable {
 
         /**
-         * Enable layout margins. Affects all four sides of the layout. This
-         * will tell the client-side implementation to leave extra space around
-         * the layout. The client-side implementation decides the actual amount,
-         * and it can vary between themes.
-         * 
+         * Enable layout margins. Affects all four sides of the layout.
+         * <p>
+         * The size of the margin is decided by the {@code margin} style in the
+         * theme
+         *
          * @param enabled
          *            true if margins should be enabled on all sides, false to
          *            disable all margins
@@ -135,30 +133,11 @@ public interface Layout extends ComponentContainer, Serializable {
         public void setMargin(boolean enabled);
 
         /**
-         * Enable margins for this layout.
-         * 
-         * <p>
-         * <strong>NOTE:</strong> This will only affect the space around the
-         * components in the layout, not space between the components in the
-         * layout. Use {@link #setSpacing(boolean)} to add space between the
-         * components in the layout.
-         * </p>
-         * 
-         * <p>
-         * See the reference manual for more information about CSS rules for
-         * defining the size of the margin.
-         * </p>
-         * 
-         * @param marginInfo
-         *            MarginInfo object containing the new margins.
+         * Checks if layout margins are enabled.
+         *
+         * @return true if margins are enabled on all sides, false otherwise
          */
-        public void setMargin(MarginInfo marginInfo);
-
-        /**
-         * 
-         * @return MarginInfo containing the currently enabled margins.
-         */
-        public MarginInfo getMargin();
+        public boolean isMargin();
     }
 
 }

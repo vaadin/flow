@@ -3,7 +3,6 @@ package com.vaadin.tests.components.listselect;
 import java.util.ArrayList;
 
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.AbstractSelect;
@@ -15,7 +14,7 @@ public class ListSelectJump extends AbstractTestUI {
 
     @Override
     public void setup(VaadinRequest request) {
-        getLayout().setMargin(new MarginInfo(true, false, false, false));
+        getLayout().setMargin(true);
 
         addComponent(new Label(
                 "Instructions:<ol><li>Select Option #1</li><li><b>Also</b> select Option #10 (use meta-click)</li>"

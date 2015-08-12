@@ -47,7 +47,7 @@ public class GridLayoutMarginSpacing extends GridBaseLayoutTestUI {
 
             @Override
             public void buttonClick(ClickEvent event) {
-                boolean margin = layout.getMargin().hasLeft();
+                boolean margin = layout.isMargin();
                 layout.setMargin(!margin);
 
             }

@@ -27,7 +27,6 @@ import java.util.logging.Logger;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.colorpicker.Color;
 import com.vaadin.ui.AbstractColorPicker.Coordinates2Color;
 import com.vaadin.ui.Alignment;
@@ -256,12 +255,12 @@ public class ColorPickerPopup extends Window
 
     /**
      * Creates the RGB tab.
-     * 
+     *
      * @return the component
      */
     private Component createRGBTab(Color color) {
         VerticalLayout rgbLayout = new VerticalLayout();
-        rgbLayout.setMargin(new MarginInfo(false, false, true, false));
+        rgbLayout.setMargin(true);
         rgbLayout.addComponent(rgbPreview);
         rgbLayout.setStyleName("rgbtab");
 
@@ -336,12 +335,12 @@ public class ColorPickerPopup extends Window
 
     /**
      * Creates the hsv tab.
-     * 
+     *
      * @return the component
      */
     private Component createHSVTab(Color color) {
         VerticalLayout hsvLayout = new VerticalLayout();
-        hsvLayout.setMargin(new MarginInfo(false, false, true, false));
+        hsvLayout.setMargin(true);
         hsvLayout.addComponent(hsvPreview);
         hsvLayout.setStyleName("hsvtab");
 
@@ -447,12 +446,12 @@ public class ColorPickerPopup extends Window
 
     /**
      * Creates the select tab.
-     * 
+     *
      * @return the component
      */
     private Component createSelectTab() {
         VerticalLayout selLayout = new VerticalLayout();
-        selLayout.setMargin(new MarginInfo(false, false, true, false));
+        selLayout.setMargin(true);
         selLayout.addComponent(selPreview);
         selLayout.addStyleName("seltab");
 
@@ -506,7 +505,7 @@ public class ColorPickerPopup extends Window
 
     /**
      * Gets the history.
-     * 
+     *
      * @return the history
      */
     public ColorPickerHistory getHistory() {
@@ -537,7 +536,7 @@ public class ColorPickerPopup extends Window
 
     /**
      * Gets the color history.
-     * 
+     *
      * @return the color history
      */
     public List<Color> getColorHistory() {
@@ -600,7 +599,7 @@ public class ColorPickerPopup extends Window
 
     /**
      * Checks the visibility of the given tab
-     * 
+     *
      * @param tab
      *            The tab to check
      * @return true if tab is visible, false otherwise
@@ -617,7 +616,7 @@ public class ColorPickerPopup extends Window
 
     /**
      * How many tabs are visible
-     * 
+     *
      * @return The number of tabs visible
      */
     private int tabsNumVisible() {
@@ -639,7 +638,7 @@ public class ColorPickerPopup extends Window
 
     /**
      * Set RGB tab visibility
-     * 
+     *
      * @param visible
      *            The visibility of the RGB tab
      */
@@ -655,7 +654,7 @@ public class ColorPickerPopup extends Window
 
     /**
      * Set HSV tab visibility
-     * 
+     *
      * @param visible
      *            The visibility of the HSV tab
      */
@@ -671,7 +670,7 @@ public class ColorPickerPopup extends Window
 
     /**
      * Set Swatches tab visibility
-     * 
+     *
      * @param visible
      *            The visibility of the Swatches tab
      */
@@ -687,7 +686,7 @@ public class ColorPickerPopup extends Window
 
     /**
      * Set the History visibility
-     * 
+     *
      * @param visible
      */
     public void setHistoryVisible(boolean visible) {
@@ -697,7 +696,7 @@ public class ColorPickerPopup extends Window
 
     /**
      * Set the preview visibility
-     * 
+     *
      * @param visible
      */
     public void setPreviewVisible(boolean visible) {

@@ -460,7 +460,6 @@ public abstract class UI extends AbstractSingleComponentContainer
     private void attachWindow(Window w) {
         windows.add(w);
         w.setParent(this);
-        fireComponentAttachEvent(w);
         markAsDirty();
     }
 
@@ -485,7 +484,6 @@ public abstract class UI extends AbstractSingleComponentContainer
         window.setParent(null);
         markAsDirty();
         window.fireClose();
-        fireComponentDetachEvent(window);
 
         return true;
     }

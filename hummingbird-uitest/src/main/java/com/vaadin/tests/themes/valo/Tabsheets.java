@@ -19,7 +19,6 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -72,7 +71,7 @@ public class Tabsheets extends VerticalLayout implements View {
         wrap = new HorizontalLayout();
         wrap.setSpacing(true);
         wrap.addStyleName("wrapping");
-        wrap.setMargin(new MarginInfo(false, false, true, false));
+        wrap.setMargin(true);
         addComponent(wrap);
 
         final CheckBox framed = new CheckBox("Framed", true);
