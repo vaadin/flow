@@ -99,7 +99,7 @@ import com.vaadin.util.CurrentInstance;
  * 
  * @since 7.0
  */
-@JavaScript({ "vaadin://bower_components/webcomponentsjs/webcomponents.min.js", "vaadin://hum.js" })
+@JavaScript({ "vaadin://bower_components/webcomponentsjs/webcomponents.min.js" })
 public abstract class UI extends AbstractSingleComponentContainer implements PollNotifier, Focusable {
 
     /**

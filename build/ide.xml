@@ -134,6 +134,8 @@
             <arg value="${style}" />
             <arg value="-localWorkers" />
             <arg value="${localWorkers}" />
+        	<arg value="-XjsInteropMode" />
+        	<arg value="JS" />
             <arg line="${assertions}" />
             <arg value="-strict" />
             <arg line="${extraParams}" />

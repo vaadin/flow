@@ -24,11 +24,11 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Duration;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConfiguration;
@@ -46,6 +46,9 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.ui.VNotification;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.ApplicationConstants;
+
+import elemental.js.json.JsJsonArray;
+import elemental.js.json.JsJsonObject;
 
 /**
  * ServerMessageHandler is responsible for handling all incoming messages (JSON)
@@ -159,6 +162,8 @@ public class ServerMessageHandler {
 
     private ApplicationConnection connection;
 
+    private TreeUpdater treeUpdater = GWT.create(TreeUpdater.class);
+
     /**
      * Data structure holding information about pending UIDL messages.
      */
@@ -182,6 +187,8 @@ public class ServerMessageHandler {
      */
     public void setConnection(ApplicationConnection connection) {
         this.connection = connection;
+
+        treeUpdater.init(connection.getUIConnector().getWidget().getElement(), connection.getServerRpcQueue());
     }
 
     public static Logger getLogger() {
@@ -386,11 +393,12 @@ public class ServerMessageHandler {
                 double processUidlStart = Duration.currentTimeMillis();
 
                 Profiler.enter("Handle element update");
-                Element container = getUIConnector().getWidget().getElement();
+
                 ValueMap elementTemplates = json.getValueMap("elementTemplates");
-                handleTreeTemplates(elementTemplates, container);
                 JsArray<ValueMap> elementChanges = json.getJSValueMapArray("elementChanges");
-                handleElementChanges(elementChanges, container);
+
+                treeUpdater.update(elementTemplates.<JsJsonObject> cast(), elementChanges.<JsJsonArray> cast());
+
                 Profiler.leave("Handle element update");
 
                 getLogger().info("handleUIDLMessage: " + (Duration.currentTimeMillis() - processUidlStart) + " ms");
@@ -434,16 +442,6 @@ public class ServerMessageHandler {
                     });
                 }
             }
-
-            private native void handleTreeTemplates(ValueMap elementTemplates, Element containerElement)
-            /*-{
-            $wnd.handleTemplates(elementTemplates, containerElement);
-            }-*/;
-
-            private native void handleElementChanges(JsArray<ValueMap> elementChanges, Element containerElement)
-            /*-{
-            $wnd.handleChanges(elementChanges, containerElement);
-            }-*/;
 
             /**
              * Properly clean up any old stuff to ensure everything is properly
