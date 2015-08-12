@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class AbstractElementTemplate implements ElementTemplate {
 
     public enum Keys {
-        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS;
+        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY;
     }
 
     private static final AtomicInteger nextId = new AtomicInteger();
@@ -66,6 +66,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         StateNode listeners = dataNode.get(EventListener.class, StateNode.class);
         if (listeners == null) {
             listeners = StateNode.create();
+            listeners.put(Keys.SERVER_ONLY, Keys.SERVER_ONLY);
             dataNode.put(EventListener.class, listeners);
         }
         return listeners;

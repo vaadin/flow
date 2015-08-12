@@ -35,10 +35,10 @@ import org.json.JSONObject;
 import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
+import com.vaadin.hummingbird.kernel.AbstractElementTemplate;
 import com.vaadin.hummingbird.kernel.AttributeBinding;
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
-import com.vaadin.hummingbird.kernel.EventListener;
 import com.vaadin.hummingbird.kernel.ForElementTemplate;
 import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
 import com.vaadin.hummingbird.kernel.StateNode;
@@ -196,7 +196,19 @@ public class UidlWriter implements Serializable {
             JSONObject newTemplates = new JSONObject();
 
             ui.getRootNode().commit(new NodeChangeVisitor() {
+                private boolean isServerOnly(StateNode node) {
+                    if (node == null) {
+                        return false;
+                    } else if (node.containsKey(AbstractElementTemplate.Keys.SERVER_ONLY)) {
+                        return true;
+                    } else {
+                        return isServerOnly(node.getParent());
+                    }
+                }
+
                 private JSONObject createChange(StateNode node, String type) {
+                    assert !isServerOnly(node);
+
                     JSONObject change = new JSONObject();
                     change.put("type", type);
                     // abs since currently detached nodes have -id
@@ -207,23 +219,30 @@ public class UidlWriter implements Serializable {
 
                 @Override
                 public void visitRemoveChange(StateNode node, RemoveChange removeChange) {
-                    Object key = removeChange.getKey();
-                    if (key instanceof Class<?>) {
+                    if (isServerOnly(node)) {
                         return;
                     }
+                    if (removeChange.getValue() instanceof StateNode && isServerOnly((StateNode) removeChange.getValue())) {
+                        return;
+                    }
+                    Object key = removeChange.getKey();
                     JSONObject change = createChange(node, "remove");
                     change.put("key", key);
                 }
 
                 @Override
                 public void visitPutChange(StateNode node, PutChange putChange) {
+                    if (isServerOnly(node)) {
+                        return;
+                    }
                     JSONObject change;
                     Object key = putChange.getKey();
                     Object value = putChange.getValue();
-                    if (key instanceof Class<?>) {
-                        // Ignore
-                        return;
-                    } else if (value instanceof StateNode) {
+                    if (value instanceof StateNode) {
+                        StateNode childNode = (StateNode) value;
+                        if (isServerOnly(childNode)) {
+                            return;
+                        }
                         if (key instanceof ElementTemplate) {
                             change = createChange(node, "putOverride");
 
@@ -233,7 +252,7 @@ public class UidlWriter implements Serializable {
                         } else {
                             change = createChange(node, "putNode");
                         }
-                        change.put("value", ((StateNode) value).getId());
+                        change.put("value", childNode.getId());
                     } else {
                         change = createChange(node, "put");
                         if (value instanceof ElementTemplate) {
@@ -331,14 +350,14 @@ public class UidlWriter implements Serializable {
 
                 @Override
                 public void visitListReplaceChange(StateNode node, ListReplaceChange listReplaceChange) {
+                    if (isServerOnly(node)) {
+                        return;
+                    }
                     JSONObject change;
                     Object value = listReplaceChange.getNewValue();
                     if (value instanceof StateNode) {
                         change = createChange(node, "listReplaceNode");
                         change.put("value", ((StateNode) value).getId());
-                    } else if (value instanceof EventListener) {
-                        // Ignore
-                        return;
                     } else {
                         change = createChange(node, "listReplace");
                         change.put("value", value);
@@ -349,9 +368,7 @@ public class UidlWriter implements Serializable {
 
                 @Override
                 public void visitListRemoveChange(StateNode node, ListRemoveChange listRemoveChange) {
-                    if (listRemoveChange.getValue() instanceof EventListener) {
-                        // Value never sent to the client, don't remove it
-                        // either
+                    if (isServerOnly(node)) {
                         return;
                     }
                     JSONObject change = createChange(node, "listRemove");
@@ -361,14 +378,14 @@ public class UidlWriter implements Serializable {
 
                 @Override
                 public void visitListInsertChange(StateNode node, ListInsertChange listInsertChange) {
+                    if (isServerOnly(node)) {
+                        return;
+                    }
                     JSONObject change;
                     Object value = listInsertChange.getValue();
                     if (value instanceof StateNode) {
                         change = createChange(node, "listInsertNode");
                         change.put("value", ((StateNode) value).getId());
-                    } else if (value instanceof EventListener) {
-                        // Ignore
-                        return;
                     } else {
                         change = createChange(node, "listInsert");
                         change.put("value", value);
