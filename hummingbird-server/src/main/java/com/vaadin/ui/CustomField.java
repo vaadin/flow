@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -25,22 +25,22 @@ import com.vaadin.data.Property;
  * A {@link Field} whose UI content can be constructed by the user, enabling the
  * creation of e.g. form fields by composing Vaadin components. Customization of
  * both the visual presentation and the logic of the field is possible.
- * 
+ *
  * Subclasses must implement {@link #getType()} and {@link #initContent()}.
- * 
+ *
  * Most custom fields can simply compose a user interface that calls the methods
  * {@link #setInternalValue(Object)} and {@link #getInternalValue()} when
  * necessary.
- * 
+ *
  * It is also possible to override {@link #validate()},
  * {@link #setInternalValue(Object)}, {@link #commit()},
  * {@link #setPropertyDataSource(Property)}, {@link #isEmpty()} and other logic
  * of the field. Methods overriding {@link #setInternalValue(Object)} should
  * also call the corresponding superclass method.
- * 
+ *
  * @param <T>
  *            field value type
- * 
+ *
  * @since 7.0
  */
 public abstract class CustomField<T> extends AbstractField<T>

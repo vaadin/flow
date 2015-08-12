@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -36,7 +36,7 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * in-memory containers. Concrete in-memory container classes can either inherit
  * this class, inherit {@link AbstractContainer}, or implement the
  * {@link Container} interface directly.
- * 
+ *
  * Adding and removing items (if desired) must be implemented in subclasses by
  * overriding the appropriate add*Item() and remove*Item() and removeAllItems()
  * methods, calling the corresponding
@@ -45,12 +45,12 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * {@link #internalAddItemAtEnd(Object, Item, boolean)},
  * {@link #internalRemoveItem(Object)} and {@link #internalRemoveAllItems()}
  * methods.
- * 
+ *
  * By default, adding and removing container properties is not supported, and
  * subclasses need to implement {@link #getContainerPropertyIds()}. Optionally,
  * subclasses can override {@link #addContainerProperty(Object, Class, Object)}
  * and {@link #removeContainerProperty(Object)} to implement them.
- * 
+ *
  * Features:
  * <ul>
  * <li>{@link Container.Ordered}
@@ -60,12 +60,12 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * <li>{@link Sortable} (internal implementation, does not implement the
  * interface directly)
  * </ul>
- * 
+ *
  * To implement {@link Sortable}, subclasses need to implement
  * {@link #getSortablePropertyIds()} and call the superclass method
  * {@link #sortContainer(Object[], boolean[])} in the method
  * <code>sort(Object[], boolean[])</code>.
- * 
+ *
  * To implement {@link Filterable}, subclasses need to implement the methods
  * {@link Filterable#addContainerFilter(com.vaadin.data.Container.Filter)}
  * (calling {@link #addFilter(Filter)}),
@@ -73,14 +73,14 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * {@link #removeAllFilters()}) and
  * {@link Filterable#removeContainerFilter(com.vaadin.data.Container.Filter)}
  * (calling {@link #removeFilter(com.vaadin.data.Container.Filter)}).
- * 
+ *
  * To implement {@link SimpleFilterable}, subclasses also need to implement the
  * methods
  * {@link SimpleFilterable#addContainerFilter(Object, String, boolean, boolean)}
  * and {@link SimpleFilterable#removeContainerFilters(Object)} calling
  * {@link #addFilter(com.vaadin.data.Container.Filter)} and
  * {@link #removeFilters(Object)} respectively.
- * 
+ *
  * @param <ITEMIDTYPE>
  *            the class of item identifiers in the container, use Object if can
  *            be any class
@@ -90,7 +90,7 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * @param <ITEMCLASS>
  *            the (base) class of the Item instances in the container, use
  *            {@link Item} if unknown
- * 
+ *
  * @since 6.6
  */
 public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITEMCLASS extends Item>

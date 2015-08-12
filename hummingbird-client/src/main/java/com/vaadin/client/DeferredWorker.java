@@ -20,7 +20,7 @@ package com.vaadin.client;
  * there is work scheduled to be executed in the near future and that the
  * framework should wait for this work to complete before assuming the UI has
  * reached a steady state.
- * 
+ *
  * @since 7.3
  * @author Vaadin Ltd
  */

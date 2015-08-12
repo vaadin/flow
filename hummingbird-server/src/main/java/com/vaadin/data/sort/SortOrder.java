@@ -22,7 +22,7 @@ import com.vaadin.shared.data.sort.SortDirection;
 /**
  * Sort order descriptor. Links together a {@link SortDirection} value and a
  * Vaadin container property ID.
- * 
+ *
  * @since 7.4
  * @author Vaadin Ltd
  */

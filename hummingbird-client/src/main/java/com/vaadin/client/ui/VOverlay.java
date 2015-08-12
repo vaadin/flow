@@ -52,7 +52,7 @@ import com.vaadin.client.WidgetUtil;
  * temporary float over other components like context menus etc. This is to deal
  * stacking order correctly with VWindow objects.
  * </p>
- * 
+ *
  * <h3>Shadow</h3>
  * <p>
  * The separate shadow element underneath the main overlay element is <strong>
@@ -63,7 +63,7 @@ import com.vaadin.client.WidgetUtil;
  * supports, add <code>-webkit-box-shadow</code> and the standard
  * <code>box-shadow</code> properties.
  * </p>
- * 
+ *
  * <p>
  * For IE8, which doesn't support CSS box-shadow, you can use the proprietary
  * DropShadow filter. It doesn't provide the exact same features as box-shadow,
@@ -71,7 +71,7 @@ import com.vaadin.client.WidgetUtil;
  * border or a pseudo-element underneath the overlay which mimics a shadow, or
  * any combination of these.
  * </p>
- * 
+ *
  * <p>
  * Read more about the DropShadow filter from
  * <a href="http://msdn.microsoft.com/en-us/library/ms532985(v=vs.85).aspx" >

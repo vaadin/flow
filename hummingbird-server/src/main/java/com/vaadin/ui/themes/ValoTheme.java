@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -22,23 +22,23 @@ import com.vaadin.ui.Notification.Type;
  * <p>
  * Additional style names which can be used with the Valo theme.
  * </p>
- * 
+ *
  * <p>
  * These styles are only available if the
  * <code>$v-included-additional-styles</code> Sass list variable contains the
  * name of the component for that additional style name (e.g.
  * <code>button, textfield, table</code>).
  * </p>
- * 
+ *
  * <p>
  * Most of these additional style names can be included individually into your
  * custom theme using the component specific Sass mixins, in which case you can
  * also define the style names yourself. See the Valo theme Sass API
  * documentation for additional information.
  * </p>
- * 
+ *
  * TODO link to Sass API documentation
- * 
+ *
  * @since 7.3
  * @author Vaadin Ltd
  */

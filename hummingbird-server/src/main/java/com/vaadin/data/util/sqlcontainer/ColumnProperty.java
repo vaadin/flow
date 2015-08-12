@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -27,7 +27,7 @@ import com.vaadin.data.util.converter.Converter.ConversionException;
  * ColumnProperty represents the value of one column in a RowItem. In addition
  * to the value, ColumnProperty also contains some basic column attributes such
  * as nullability status, read-only status and data type.
- * 
+ *
  * Note that depending on the QueryDelegate in use this does not necessarily map
  * into an actual column in a database table.
  */

@@ -57,10 +57,10 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 /**
- * 
+ *
  * @author Vaadin Ltd
  * @since 7.0.0
- * 
+ *
  * @deprecated As of 7.0. Will likely change or be removed in a future version
  */
 @Deprecated

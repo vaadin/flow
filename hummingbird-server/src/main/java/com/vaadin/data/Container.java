@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -29,7 +29,7 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * {@link Item}s, but it imposes certain constraints on its contents. These
  * constraints state the following:
  * </p>
- * 
+ *
  * <ul>
  * <li>All Items in the Container must have the same number of Properties.
  * <li>All Items in the Container must have the same Property ID's (see
@@ -39,7 +39,7 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * <li>All Items within a container are uniquely identified by their non-null
  * IDs.
  * </ul>
- * 
+ *
  * <p>
  * The Container can be visualized as a representation of a relational database
  * table. Each Item in the Container represents a row in the table, and all
@@ -47,18 +47,18 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * that as with the cells in a database table, no Property in a Container may be
  * empty, though they may contain <code>null</code> values.
  * </p>
- * 
+ *
  * <p>
  * Note that though uniquely identified, the Items in a Container are not
  * necessarily {@link Container.Ordered ordered} or {@link Container.Indexed
  * indexed}.
  * </p>
- * 
+ *
  * <p>
  * Containers can derive Item ID's from the item properties or use other,
  * container specific or user specified identifiers.
  * </p>
- * 
+ *
  * <p>
  * If a container is {@link Filterable filtered} or {@link Sortable sorted},
  * most of the the methods of the container interface and its subinterfaces
@@ -67,13 +67,13 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * See individual method javadoc for exceptions to this (adding and removing
  * items).
  * </p>
- * 
+ *
  * <p>
  * <img src=doc-files/Container_full.gif> </p>
- * 
+ *
  * <p> The Container interface is split to several subinterfaces so that a class
  * can implement only the ones it needs. </p>
- * 
+ *
  * @author Vaadin Ltd
  * @since 3.0
  */

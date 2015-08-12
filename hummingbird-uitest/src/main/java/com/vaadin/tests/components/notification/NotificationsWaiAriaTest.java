@@ -31,7 +31,7 @@ import com.vaadin.tests.tb3.MultiBrowserTest;
 /**
  * Unit test class for Notification ARIA (Accessible Rich Internet Applications)
  * roles.
- * 
+ *
  * @since 7.2
  * @author Vaadin Ltd
  */

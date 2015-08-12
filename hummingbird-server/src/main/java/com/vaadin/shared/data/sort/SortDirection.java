@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 /**
  * Describes sorting direction.
- * 
+ *
  * @since 7.4
  * @author Vaadin Ltd
  */

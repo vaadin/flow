@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.vaadin.tests;
 
@@ -16,7 +16,7 @@ import com.vaadin.ui.VerticalLayout;
 
 /**
  * @author marc
- * 
+ *
  */
 public class TestComponentAddAndRecursion extends CustomComponent {
     Panel p;

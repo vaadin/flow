@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -23,7 +23,7 @@ import java.util.Iterator;
  * Custom component provides a simple implementation of the {@link Component}
  * interface to allow creating new UI components by composition of existing
  * server-side components.
- * 
+ *
  * <p>
  * The component is used by inheriting the CustomComponent class and setting the
  * composition root component. The composition root must be set with
@@ -31,24 +31,24 @@ import java.util.Iterator;
  * such as by adding it to a layout, so it is preferable to set it in the
  * constructor.
  * </p>
- * 
+ *
  * <p>
  * The composition root itself can contain more components. The advantage of
  * wrapping it in a CustomComponent is that its details, such as interfaces, are
  * hidden from the users of the component, thereby contributing to information
  * hiding.
  * </p>
- * 
+ *
  * <p>
  * The CustomComponent does not display the caption of the composition root, so
  * if you want to have it shown in the layout where the custom component is
  * contained, you need to set it as caption of the CustomComponent.
  * </p>
- * 
+ *
  * <p>
  * The component expands horizontally and has undefined height by default.
  * </p>
- * 
+ *
  * @author Vaadin Ltd.
  * @since 3.0
  */

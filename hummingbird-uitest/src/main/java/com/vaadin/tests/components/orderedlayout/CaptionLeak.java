@@ -13,7 +13,7 @@ import com.vaadin.ui.VerticalLayout;
 /**
  * HorizontalLayout and VerticalLayout should not leak caption elements via
  * listeners when removing components from a layout.
- * 
+ *
  * @since 7.1.13
  * @author Vaadin Ltd
  */

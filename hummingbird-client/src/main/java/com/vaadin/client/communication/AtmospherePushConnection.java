@@ -41,7 +41,7 @@ import elemental.json.JsonObject;
 /**
  * The default {@link PushConnection} implementation that uses Atmosphere for
  * handling the communication channel.
- * 
+ *
  * @author Vaadin Ltd
  * @since 7.1
  */

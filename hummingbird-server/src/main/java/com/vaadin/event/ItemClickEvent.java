@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -25,14 +25,14 @@ import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.ui.Component;
 
 /**
- * 
+ *
  * Click event fired by a {@link Component} implementing
  * {@link com.vaadin.data.Container} interface. ItemClickEvents happens on an
  * {@link Item} rendered somehow on terminal. Event may also contain a specific
  * {@link Property} on which the click event happened.
- * 
+ *
  * @since 5.3
- * 
+ *
  */
 @SuppressWarnings("serial")
 public class ItemClickEvent extends ClickEvent implements Serializable {

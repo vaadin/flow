@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -36,14 +36,14 @@ import com.vaadin.data.Property;
  * A wrapper class for adding external hierarchy to containers not implementing
  * the {@link com.vaadin.data.Container.Hierarchical} interface.
  * </p>
- * 
+ *
  * <p>
  * If the wrapped container is changed directly (that is, not through the
  * wrapper), and does not implement Container.ItemSetChangeNotifier and/or
  * Container.PropertySetChangeNotifier the hierarchy information must be updated
  * with the {@link #updateHierarchicalWrapper()} method.
  * </p>
- * 
+ *
  * @author Vaadin Ltd.
  * @since 3.0
  */

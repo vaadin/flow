@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -18,7 +18,7 @@ package com.vaadin.data.validator;
 /**
  * An base implementation for validating any objects that implement
  * {@link Comparable}.
- * 
+ *
  * Verifies that the value is of the given type and within the (optionally)
  * given limits. Typically you want to use a sub class of this like
  * {@link IntegerRangeValidator}, {@link DoubleRangeValidator} or
@@ -28,7 +28,7 @@ package com.vaadin.data.validator;
  * required to ensure that no empty values are accepted or override
  * {@link #isValidValue(Comparable)}.
  * </p>
- * 
+ *
  * @param <T>
  *            The type of Number to validate. Must implement Comparable so that
  *            minimum and maximum checks work.

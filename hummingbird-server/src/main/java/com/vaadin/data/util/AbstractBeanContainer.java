@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -39,25 +39,25 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
 
 /**
  * An abstract base class for in-memory containers for JavaBeans.
- * 
+ *
  * <p>
  * The properties of the container are determined automatically by introspecting
  * the used JavaBean class and explicitly adding or removing properties is not
  * supported. Only beans of the same type can be added to the container.
  * </p>
- * 
+ *
  * <p>
  * Subclasses should implement any public methods adding items to the container,
  * typically calling the protected methods {@link #addItem(Object, Object)},
  * {@link #addItemAfter(Object, Object, Object)} and
  * {@link #addItemAt(int, Object, Object)}.
  * </p>
- * 
+ *
  * @param <IDTYPE>
  *            The type of the item identifier
  * @param <BEANTYPE>
  *            The type of the Bean
- * 
+ *
  * @since 6.5
  */
 public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE>

@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -19,13 +19,13 @@ import java.util.Collection;
 
 /**
  * An in-memory container for JavaBeans.
- * 
+ *
  * <p>
  * The properties of the container are determined automatically by introspecting
  * the used JavaBean class. Only beans of the same type can be added to the
  * container.
  * </p>
- * 
+ *
  * <p>
  * BeanItemContainer uses the beans themselves as identifiers. The
  * {@link Object#hashCode()} of a bean is used when storing and looking up beans
@@ -34,21 +34,21 @@ import java.util.Collection;
  * implementation of {@link Object#equals(Object)} as well in order for it to
  * fulfill the contract between {@code equals()} and {@code hashCode()}.
  * </p>
- * 
+ *
  * <p>
  * To add items to the container, use the methods {@link #addBean(Object)},
  * {@link #addBeanAfter(Object, Object)} and {@link #addBeanAt(int, Object)}.
  * Also {@link #addItem(Object)}, {@link #addItemAfter(Object, Object)} and
  * {@link #addItemAt(int, Object)} can be used as synonyms for them.
  * </p>
- * 
+ *
  * <p>
  * It is not possible to add additional properties to the container.
  * </p>
- * 
+ *
  * @param <BEANTYPE>
  *            The type of the Bean
- * 
+ *
  * @since 5.4
  */
 @SuppressWarnings("serial")

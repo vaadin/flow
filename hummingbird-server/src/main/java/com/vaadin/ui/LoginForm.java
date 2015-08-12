@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -45,7 +45,7 @@ import com.vaadin.shared.ApplicationConstants;
  * Login page html can be overridden by replacing protected getLoginHTML method.
  * As the login page is actually an iframe, styles must be handled manually. By
  * default component tries to guess the right place for theme css.
- * 
+ *
  * @since 5.3
  * @deprecated As of 7.0. This component no longer fulfills its duty reliably in
  *             the supported browsers and a {@link VerticalLayout} with two

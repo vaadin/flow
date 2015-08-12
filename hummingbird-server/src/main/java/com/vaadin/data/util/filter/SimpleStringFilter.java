@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -22,17 +22,17 @@ import com.vaadin.data.Property;
 /**
  * Simple string filter for matching items that start with or contain a
  * specified string. The matching can be case-sensitive or case-insensitive.
- * 
+ *
  * This filter also directly supports in-memory filtering. When performing
  * in-memory filtering, values of other types are converted using toString(),
  * but other (lazy container) implementations do not need to perform such
  * conversions and might not support values of different types.
- * 
+ *
  * Note that this filter is modeled after the pre-6.6 filtering mechanisms, and
  * might not be very efficient e.g. for database filtering.
- * 
+ *
  * TODO this might still change
- * 
+ *
  * @since 6.6
  */
 public final class SimpleStringFilter implements Filter {

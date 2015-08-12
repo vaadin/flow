@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -19,25 +19,25 @@ import java.util.Collection;
 
 /**
  * An in-memory container for JavaBeans.
- * 
+ *
  * <p>
  * The properties of the container are determined automatically by introspecting
  * the used JavaBean class. Only beans of the same type can be added to the
  * container.
  * </p>
- * 
+ *
  * <p>
  * In BeanContainer (unlike {@link BeanItemContainer}), the item IDs do not have
  * to be the beans themselves. The container can be used either with explicit
  * item IDs or the item IDs can be generated when adding beans.
  * </p>
- * 
+ *
  * <p>
  * To use explicit item IDs, use the methods {@link #addItem(Object, Object)},
  * {@link #addItemAfter(Object, Object, Object)} and
  * {@link #addItemAt(int, Object, Object)}.
  * </p>
- * 
+ *
  * <p>
  * If a bean id resolver is set using
  * {@link #setBeanIdResolver(com.vaadin.data.util.AbstractBeanContainer.BeanIdResolver)}
@@ -47,25 +47,25 @@ import java.util.Collection;
  * container. If one of these methods is called, the resolver is used to
  * generate an identifier for the item (must not return null).
  * </p>
- * 
+ *
  * <p>
  * Note that explicit item identifiers can also be used when a resolver has been
  * set by calling the addItem*() methods - the resolver is only used when adding
  * beans using the addBean*() or {@link #addAll(Collection)} methods.
  * </p>
- * 
+ *
  * <p>
  * It is not possible to add additional properties to the container.
  * </p>
- * 
+ *
  * @param <IDTYPE>
  *            The type of the item identifier
  * @param <BEANTYPE>
  *            The type of the Bean
- * 
+ *
  * @see AbstractBeanContainer
  * @see BeanItemContainer
- * 
+ *
  * @since 6.5
  */
 public class BeanContainer<IDTYPE, BEANTYPE>

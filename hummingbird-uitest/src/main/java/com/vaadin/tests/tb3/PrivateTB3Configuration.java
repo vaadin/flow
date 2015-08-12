@@ -37,7 +37,7 @@ import com.vaadin.testbench.parallel.Browser;
  * Provides values for parameters which depend on where the test is run.
  * Parameters should be configured in work/eclipse-run-selected-test.properties.
  * A template is available in uitest/.
- * 
+ *
  * @author Vaadin Ltd
  */
 @RunOnHub("tb3-hub.intra.itmill.com")

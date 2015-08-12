@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -20,13 +20,13 @@ import com.vaadin.data.util.converter.Converter;
 
 /**
  * Formatting proxy for a {@link Property}.
- * 
+ *
  * <p>
  * This class can be used to implement formatting for any type of Property
  * datasources. The idea is to connect this as proxy between UI component and
  * the original datasource.
  * </p>
- * 
+ *
  * <p>
  * For example <code>
  * <pre>textfield.setPropertyDataSource(new PropertyFormatter(property) {
@@ -41,11 +41,11 @@ import com.vaadin.data.util.converter.Converter;
         });</pre></code> adds formatter for Double-typed property that extends
  * standard "1.0" notation with more zeroes.
  * </p>
- * 
+ *
  * @param T
  *            type of the underlying property (a PropertyFormatter is always a
  *            Property&lt;String&gt;)
- * 
+ *
  * @deprecated As of 7.0, replaced by {@link Converter}
  * @author Vaadin Ltd.
  * @since 5.3.0

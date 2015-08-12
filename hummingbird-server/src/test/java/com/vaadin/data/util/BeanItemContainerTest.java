@@ -20,7 +20,7 @@ import com.vaadin.data.util.filter.Compare;
 
 /**
  * Test basic functionality of BeanItemContainer.
- * 
+ *
  * Most sorting related tests are in {@link BeanItemContainerSortTest}.
  */
 public class BeanItemContainerTest extends AbstractBeanContainerTestBase {

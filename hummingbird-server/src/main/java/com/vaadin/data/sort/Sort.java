@@ -24,7 +24,7 @@ import com.vaadin.shared.data.sort.SortDirection;
 /**
  * Fluid Sort API. Provides a convenient, human-readable way of specifying
  * multi-column sort order.
- * 
+ *
  * @since 7.4
  * @author Vaadin Ltd
  */

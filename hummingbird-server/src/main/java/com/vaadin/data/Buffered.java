@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -24,20 +24,20 @@ import com.vaadin.data.Validator.InvalidValueException;
  * <p>
  * Defines the interface to commit and discard changes to an object, supporting
  * buffering.
- * 
+ *
  * <p>
  * In <i>buffered</i> mode the initial value is read from the data source and
  * then buffered. Any subsequential writes or reads will be done on the buffered
  * value. Calling {@link #commit()} will write the buffered value to the data
  * source while calling {@link #discard()} while discard the buffered value and
  * re-read the value from the data source.
- * 
+ *
  * <p>
  * In <i>non-buffered</i> mode the value is always read directly from the data
  * source. Any write is done directly to the data source with no buffering in
  * between. Reads are also done directly from the data source. Calling
  * {@link #commit()} or {@link #discard()} in this mode is efficiently a no-op.
- * 
+ *
  * @author Vaadin Ltd.
  * @since 3.0
  */

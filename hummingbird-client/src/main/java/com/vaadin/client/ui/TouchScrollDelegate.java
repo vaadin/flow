@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -57,26 +57,26 @@ import com.vaadin.client.VConsole;
  * Scroll event should only happen when the "touch scrolling actually ends".
  * Later we might also tune this so that a scroll event happens if user stalls
  * her finger long enought.
- * 
+ *
  * TODO static getter for active touch scroll delegate. Components might need to
  * prevent scrolling in some cases. Consider Table with drag and drop, or drag
  * and drop in scrollable area. Optimal implementation might be to start the
  * drag and drop only if user keeps finger down for a moment, otherwise do the
  * scroll. In this case, the draggable component would need to cancel scrolling
  * in a timer after touchstart event and take over from there.
- * 
+ *
  * TODO support scrolling horizontally
- * 
+ *
  * TODO cancel if user add second finger to the screen (user expects a gesture).
- * 
+ *
  * TODO "scrollbars", see e.g. iscroll.js
- * 
+ *
  * TODO write an email to sjobs √§t apple dot com and beg for this feature to be
  * built into webkit. Seriously, we should try to lobbying this to webkit folks.
  * This sure ain't our business to implement this with javascript.
- * 
+ *
  * TODO collect all general touch related constant to better place.
- * 
+ *
  * @author Matti Tahvonen, Vaadin Ltd
  */
 public class TouchScrollDelegate implements NativePreviewHandler {

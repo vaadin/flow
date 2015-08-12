@@ -49,7 +49,7 @@ import elemental.json.JsonException;
 /**
  * Handles incoming push connections and messages and dispatches them to the
  * correct {@link UI}/ {@link AtmospherePushConnection}
- * 
+ *
  * @author Vaadin Ltd
  * @since 7.1
  */

@@ -13,10 +13,10 @@ import com.vaadin.ui.AbstractField;
 /**
  * Base class for tests for checking that value change listeners for fields are
  * not called exactly once when they should be, and not at other times.
- * 
+ *
  * Does not check all cases (e.g. properties that do not implement
  * {@link ValueChangeNotifier}).
- * 
+ *
  * Subclasses should implement {@link #setValue()} and call
  * <code>super.setValue(AbstractField)</code>. Also, subclasses should typically
  * override {@link #setValue(AbstractField)} to set the field value via
