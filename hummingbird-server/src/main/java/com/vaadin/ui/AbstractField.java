@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -28,9 +28,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-import org.jsoup.nodes.Attributes;
-import org.jsoup.nodes.Element;
-
 import com.vaadin.data.Buffered;
 import com.vaadin.data.Property;
 import com.vaadin.data.Validatable;
@@ -43,8 +40,6 @@ import com.vaadin.server.AbstractErrorMessage;
 import com.vaadin.server.CompositeErrorMessage;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.shared.AbstractFieldState;
-import com.vaadin.ui.declarative.DesignAttributeHandler;
-import com.vaadin.ui.declarative.DesignContext;
 
 /**
  * <p>
@@ -54,19 +49,19 @@ import com.vaadin.ui.declarative.DesignContext;
  * <code>AbstractField</code> implements that interface itself, too, so
  * accessing the Property value represented by it is straightforward.
  * </p>
- * 
+ *
  * <p>
  * AbstractField also provides the {@link com.vaadin.data.Buffered} interface
  * for buffering the data source value. By default the Field is in write
  * through-mode and {@link #setWriteThrough(boolean)}should be called to enable
  * buffering.
  * </p>
- * 
+ *
  * <p>
  * The class also supports {@link com.vaadin.data.Validator validators} to make
  * sure the value contained in the field is valid.
  * </p>
- * 
+ *
  * @author Vaadin Ltd.
  * @since 3.0
  */
@@ -144,7 +139,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     /**
      * Whether this field is currently registered as listening to events from
      * its data source.
-     * 
+     *
      * @see #setPropertyDataSource(Property)
      * @see #addPropertyListeners()
      * @see #removePropertyListeners()
@@ -166,11 +161,11 @@ public abstract class AbstractField<T> extends AbstractComponent
     /**
      * Returns true if the error indicator be hidden when painting the component
      * even when there are errors.
-     * 
+     *
      * This is a mostly internal method, but can be overridden in subclasses
      * e.g. if the error indicator should also be shown for empty fields in some
      * cases.
-     * 
+     *
      * @return true to hide the error indicator, false to use the normal logic
      *         to show it when there are errors
      */
@@ -186,7 +181,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * to safely cast the value returned from <code>getValue</code> to the given
      * type and pass any variable assignable to this type as an argument to
      * <code>setValue</code>.
-     * 
+     *
      * @return the type of the Field
      */
     @Override
@@ -204,7 +199,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Changes the readonly state and throw read-only status change events.
-     * 
+     *
      * @see com.vaadin.ui.Component#setReadOnly(boolean)
      */
     @Override
@@ -215,7 +210,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Tests if the invalid data is committed to datasource.
-     * 
+     *
      * @see com.vaadin.data.BufferedValidatable#isInvalidCommitted()
      */
     @Override
@@ -225,7 +220,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Sets if the invalid data should be committed to datasource.
-     * 
+     *
      * @see com.vaadin.data.BufferedValidatable#setInvalidCommitted(boolean)
      */
     @Override
@@ -297,7 +292,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     /**
      * Gets the value from the data source. This is only here because of clarity
      * in the code that handles both the data model value and the field value.
-     * 
+     *
      * @return The value of the property data source
      */
     private Object getDataSourceValue() {
@@ -308,7 +303,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * Returns the field value. This is always identical to {@link #getValue()}
      * and only here because of clarity in the code that handles both the data
      * model value and the field value.
-     * 
+     *
      * @return The value of the field
      */
     private T getFieldValue() {
@@ -345,9 +340,9 @@ public abstract class AbstractField<T> extends AbstractComponent
      * Setting buffered mode from true to false will commit any pending changes.
      * </p>
      * <p>
-     * 
+     *
      * </p>
-     * 
+     *
      * @since 7.0.0
      * @param buffered
      *            true if buffered mode should be turned on, false otherwise
@@ -365,7 +360,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Checks the buffered mode of this Field.
-     * 
+     *
      * @return true if buffered mode is on, false otherwise
      */
     @Override
@@ -377,12 +372,12 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Gets the current value of the field.
-     * 
+     *
      * <p>
      * This is the visible, modified and possible invalid value the user have
      * entered to the field.
      * </p>
-     * 
+     *
      * <p>
      * Note that the object returned is compatible with getType(). For example,
      * if the type is String, this returns Strings even when the underlying
@@ -391,12 +386,12 @@ public abstract class AbstractField<T> extends AbstractComponent
      * data source, use {@link Property#getValue()} for the property data
      * source.
      * </p>
-     * 
+     *
      * <p>
      * Since Vaadin 7.0, no implicit conversions between other data types and
      * String are performed, but a converter is used if set.
      * </p>
-     * 
+     *
      * @return the current value of the field.
      */
     @Override
@@ -406,7 +401,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Sets the value of the field.
-     * 
+     *
      * @param newFieldValue
      *            the New value of the field.
      * @throws Property.ReadOnlyException
@@ -419,7 +414,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Sets the value of the field.
-     * 
+     *
      * @param newFieldValue
      *            the New value of the field.
      * @param repaintIsNotNeeded
@@ -520,7 +515,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Gets the current data source of the field, if any.
-     * 
+     *
      * @return the current data source as a Property, or <code>null</code> if
      *         none defined.
      */
@@ -534,7 +529,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * Sets the specified Property as the data source for the field. All
      * uncommitted changes are replaced with a value from the new data source.
      * </p>
-     * 
+     *
      * <p>
      * If the datasource has any validators, the same validators are added to
      * the field. Because the default behavior of the field is to allow invalid
@@ -543,7 +538,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * is invalid. After the value is valid, the error message is not shown and
      * the commit can be done normally.
      * </p>
-     * 
+     *
      * <p>
      * If the data source implements
      * {@link com.vaadin.data.Property.ValueChangeNotifier} and/or
@@ -554,7 +549,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * {@link AbstractField#detach() detach} and re-added on
      * {@link AbstractField#attach() attach}.
      * </p>
-     * 
+     *
      * <p>
      * Note: before 6.5 we actually called discard() method in the beginning of
      * the method. This was removed to simplify implementation, avoid excess
@@ -563,7 +558,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * method is called). Some complex field implementations might now need to
      * override this method to do housekeeping similar to discard().
      * </p>
-     * 
+     *
      * @param newDataSource
      *            the new data source Property.
      */
@@ -634,7 +629,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * Retrieves a converter for the field from the converter factory defined
      * for the application. Clears the converter if no application reference is
      * available or if the factory returns null.
-     * 
+     *
      * @param datamodelType
      *            The type of the data model that we want to be able to convert
      *            from
@@ -647,7 +642,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Convert the given value from the data source type to the UI type.
-     * 
+     *
      * @param newValue
      *            The data source value to convert.
      * @return The converted value that is compatible with the UI type or the
@@ -662,7 +657,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Convert the given value from the data source type to the UI type.
-     * 
+     *
      * @param newValue
      *            The data source value to convert.
      * @return The converted value that is compatible with the UI type or the
@@ -678,7 +673,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Convert the given value from the UI type to the data source type.
-     * 
+     *
      * @param fieldValue
      *            The value to convert. Typically returned by
      *            {@link #getFieldValue()}
@@ -694,7 +689,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Convert the given value from the UI type to the data source type.
-     * 
+     *
      * @param fieldValue
      *            The value to convert. Typically returned by
      *            {@link #getFieldValue()}
@@ -719,7 +714,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     /**
      * Retrieves the type of the currently used data model. If the field has no
      * data source then the model type of the converter is used.
-     * 
+     *
      * @since 7.1
      * @return The type of the currently used data model or null if no data
      *         source or converter is set.
@@ -737,7 +732,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     /**
      * Returns the conversion error with {0} replaced by the data source type
      * and {1} replaced by the exception (localized) message.
-     * 
+     *
      * @since 7.1
      * @param dataSourceType
      *            the type of the data source
@@ -771,7 +766,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * has been set. The value is not necessarily the same as the data source
      * value e.g. if the field is in buffered mode and has been modified.
      * </p>
-     * 
+     *
      * @return The converted value that is compatible with the data source type
      */
     public Object getConvertedValue() {
@@ -783,7 +778,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * value given is converted to the field type and then assigned to the
      * field. This will update the property data source in the same way as when
      * {@link #setValue(Object)} is called.
-     * 
+     *
      * @param value
      *            The value to set. Must be the same type as the data source.
      */
@@ -796,7 +791,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     /**
      * Adds a new validator for the field's value. All validators added to a
      * field are checked each time the its value changes.
-     * 
+     *
      * @param validator
      *            the new validator to be added.
      */
@@ -811,7 +806,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Gets the validators of the field.
-     * 
+     *
      * @return An unmodifiable collection that holds all validators for the
      *         field.
      */
@@ -826,7 +821,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Removes the validator from the field.
-     * 
+     *
      * @param validator
      *            the validator to remove.
      */
@@ -853,10 +848,10 @@ public abstract class AbstractField<T> extends AbstractComponent
      * Tests the current value against registered validators if the field is not
      * empty. If the field is empty it is considered valid if it is not required
      * and invalid otherwise. Validators are never checked for empty fields.
-     * 
+     *
      * In most cases, {@link #validate()} should be used instead of
      * {@link #isValid()} to also get the error message.
-     * 
+     *
      * @return <code>true</code> if all registered validators claim that the
      *         current value is valid or if the field is empty and not required,
      *         <code>false</code> otherwise.
@@ -874,16 +869,16 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Checks the validity of the Field.
-     * 
+     *
      * A field is invalid if it is set as required (using
      * {@link #setRequired(boolean)} and is empty, if one or several of the
      * validators added to the field indicate it is invalid or if the value
      * cannot be converted provided a converter has been set.
-     * 
+     *
      * The "required" validation is a built-in validation feature. If the field
      * is required and empty this method throws an EmptyValueException with the
      * error message set using {@link #setRequiredError(String)}.
-     * 
+     *
      * @see com.vaadin.data.Validatable#validate()
      */
     @Override
@@ -899,7 +894,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * Validates that the given value pass the validators for the field.
      * <p>
      * This method does not check the requiredness of the field.
-     * 
+     *
      * @param fieldValue
      *            The value to check
      * @throws Validator.InvalidValueException
@@ -954,7 +949,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     /**
      * Fields allow invalid values by default. In most cases this is wanted,
      * because the field otherwise visually forget the user input immediately.
-     * 
+     *
      * @return true iff the invalid values are allowed.
      * @see com.vaadin.data.Validatable#isInvalidAllowed()
      */
@@ -973,7 +968,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * values. The validators are automatically copied to the field when the
      * datasource is set.
      * </p>
-     * 
+     *
      * @see com.vaadin.data.Validatable#setInvalidAllowed(boolean)
      */
     @Override
@@ -986,7 +981,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * Error messages shown by the fields are composites of the error message
      * thrown by the superclasses (that is the component error message),
      * validation errors and buffered source errors.
-     * 
+     *
      * @see com.vaadin.ui.AbstractComponent#getErrorMessage()
      */
     @Override
@@ -1099,7 +1094,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     /**
      * React to read only status changes of the property by requesting a
      * repaint.
-     * 
+     *
      * @see Property.ReadOnlyStatusChangeListener
      */
     @Override
@@ -1110,7 +1105,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     /**
      * An <code>Event</code> object specifying the Property whose read-only
      * status has changed.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -1119,7 +1114,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
         /**
          * New instance of text change event.
-         * 
+         *
          * @param source
          *            the Source of the event.
          */
@@ -1129,7 +1124,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
         /**
          * Property where the event occurred.
-         * 
+         *
          * @return the Source of the event.
          */
         @Override
@@ -1173,10 +1168,10 @@ public abstract class AbstractField<T> extends AbstractComponent
     /**
      * This method listens to data source value changes and passes the changes
      * forwards.
-     * 
+     *
      * Changes are not forwarded to the listeners of the field during internal
      * operations of the field to avoid duplicate notifications.
-     * 
+     *
      * @param event
      *            the value change event telling the data source contents have
      *            changed.
@@ -1193,7 +1188,7 @@ public abstract class AbstractField<T> extends AbstractComponent
                      * reports different value than the one the field has just
                      * committed to it. In this case we respect the property
                      * value.
-                     * 
+                     *
                      * Still, we don't fire value change yet, but instead
                      * postpone it until "commit" is done. See setValue(Object,
                      * boolean) and commit().
@@ -1222,7 +1217,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Component.Focusable#getTabIndex()
      */
     @Override
@@ -1232,7 +1227,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Component.Focusable#setTabIndex(int)
      */
     @Override
@@ -1244,13 +1239,13 @@ public abstract class AbstractField<T> extends AbstractComponent
      * Returns the internal field value, which might not match the data source
      * value e.g. if the field has been modified and is not in write-through
      * mode.
-     * 
+     *
      * This method can be overridden by subclasses together with
      * {@link #setInternalValue(Object)} to compute internal field value at
      * runtime. When doing so, typically also {@link #isModified()} needs to be
      * overridden and care should be taken in the management of the empty state
      * and buffering support.
-     * 
+     *
      * @return internal field value
      */
     protected T getInternalValue() {
@@ -1262,9 +1257,9 @@ public abstract class AbstractField<T> extends AbstractComponent
      * change the internal Field value. It does not trigger valuechange events.
      * It can be overridden by the inheriting classes to update all dependent
      * variables.
-     * 
+     *
      * Subclasses can also override {@link #getInternalValue()} if necessary.
-     * 
+     *
      * @param newValue
      *            the new value to be set.
      */
@@ -1278,7 +1273,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Notifies the component that it is connected to an application.
-     * 
+     *
      * @see com.vaadin.ui.Component#attach()
      */
     @Override
@@ -1344,17 +1339,17 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Is this field required. Required fields must filled by the user.
-     * 
+     *
      * If the field is required, it is visually indicated in the user interface.
      * Furthermore, setting field to be required implicitly adds "non-empty"
      * validator and thus isValid() == false or any isEmpty() fields. In those
      * cases validation errors are not painted as it is obvious that the user
      * must fill in the required fields.
-     * 
+     *
      * On the other hand, for the non-required fields isValid() == true if the
      * field isEmpty() regardless of any attached validators.
-     * 
-     * 
+     *
+     *
      * @return <code>true</code> if the field is required, otherwise
      *         <code>false</code>.
      */
@@ -1365,16 +1360,16 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Sets the field required. Required fields must filled by the user.
-     * 
+     *
      * If the field is required, it is visually indicated in the user interface.
      * Furthermore, setting field to be required implicitly adds "non-empty"
      * validator and thus isValid() == false or any isEmpty() fields. In those
      * cases validation errors are not painted as it is obvious that the user
      * must fill in the required fields.
-     * 
+     *
      * On the other hand, for the non-required fields isValid() == true if the
      * field isEmpty() regardless of any attached validators.
-     * 
+     *
      * @param required
      *            Is the field required.
      */
@@ -1388,7 +1383,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * setting requiredMessage to be "" or null, no error pop-up or exclamation
      * mark is shown for a empty required field. This faults to "". Even in
      * those cases isValid() returns false for empty required fields.
-     * 
+     *
      * @param requiredMessage
      *            Message to be shown when this field is required, but empty.
      */
@@ -1406,7 +1401,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     /**
      * Gets the error that is shown if the field value cannot be converted to
      * the data source type.
-     * 
+     *
      * @return The error that is shown if conversion of the field value fails
      */
     public String getConversionError() {
@@ -1418,7 +1413,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * the data source type. If {0} is present in the message, it will be
      * replaced by the simple name of the data source type. If {1} is present in
      * the message, it will be replaced by the ConversionException message.
-     * 
+     *
      * @param valueConversionError
      *            Message to be shown when conversion of the value fails
      */
@@ -1439,13 +1434,13 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Is automatic, visible validation enabled?
-     * 
+     *
      * If automatic validation is enabled, any validators connected to this
      * component are evaluated while painting the component and potential error
      * messages are sent to client. If the automatic validation is turned off,
      * isValid() and validate() methods still work, but one must show the
      * validation in their own code.
-     * 
+     *
      * @return True, if automatic validation is enabled.
      */
     public boolean isValidationVisible() {
@@ -1454,13 +1449,13 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Enable or disable automatic, visible validation.
-     * 
+     *
      * If automatic validation is enabled, any validators connected to this
      * component are evaluated while painting the component and potential error
      * messages are sent to client. If the automatic validation is turned off,
      * isValid() and validate() methods still work, but one must show the
      * validation in their own code.
-     * 
+     *
      * @param validateAutomatically
      *            True, if automatic validation is enabled.
      */
@@ -1473,7 +1468,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Sets the current buffered source exception.
-     * 
+     *
      * @param currentBufferedSourceException
      */
     public void setCurrentBufferedSourceException(
@@ -1484,7 +1479,7 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /**
      * Gets the current buffered source exception.
-     * 
+     *
      * @return The current source exception
      */
     protected Buffered.SourceException getCurrentBufferedSourceException() {
@@ -1534,7 +1529,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     /**
      * Gets the converter used to convert the property data source value to the
      * field value.
-     * 
+     *
      * @return The converter or null if none is set.
      */
     public Converter<T, Object> getConverter() {
@@ -1545,7 +1540,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * Sets the converter used to convert the field value to property data
      * source type. The converter must have a presentation type that matches the
      * field type.
-     * 
+     *
      * @param converter
      *            The new converter to use.
      */
@@ -1607,54 +1602,6 @@ public abstract class AbstractField<T> extends AbstractComponent
             }
             isListeningToPropertyEvents = false;
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractComponent#readDesign(org.jsoup.nodes .Element,
-     * com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void readDesign(Element design, DesignContext designContext) {
-        super.readDesign(design, designContext);
-        Attributes attr = design.attributes();
-        if (design.hasAttr("readonly")) {
-            setReadOnly(DesignAttributeHandler.readAttribute("readonly", attr,
-                    Boolean.class));
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractComponent#getCustomAttributes()
-     */
-    @Override
-    protected Collection<String> getCustomAttributes() {
-        Collection<String> attributes = super.getCustomAttributes();
-        attributes.add("readonly");
-        // must be handled by subclasses
-        attributes.add("value");
-        attributes.add("converted-value");
-        return attributes;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractComponent#writeDesign(org.jsoup.nodes.Element
-     * , com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void writeDesign(Element design, DesignContext designContext) {
-        super.writeDesign(design, designContext);
-        AbstractField def = (AbstractField) designContext
-                .getDefaultInstance(this);
-        Attributes attr = design.attributes();
-        // handle readonly
-        DesignAttributeHandler.writeAttribute("readonly", attr,
-                super.isReadOnly(), def.isReadOnly(), Boolean.class);
     }
 
     private static final Logger getLogger() {

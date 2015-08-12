@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -15,11 +15,6 @@
  */
 
 package com.vaadin.ui;
-
-import java.util.Collection;
-
-import org.jsoup.nodes.Attributes;
-import org.jsoup.nodes.Element;
 
 import com.vaadin.data.Property;
 import com.vaadin.event.FieldEvents.BlurEvent;
@@ -30,8 +25,6 @@ import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.checkbox.CheckBoxServerRpc;
 import com.vaadin.shared.ui.checkbox.CheckBoxState;
-import com.vaadin.ui.declarative.DesignAttributeHandler;
-import com.vaadin.ui.declarative.DesignContext;
 
 public class CheckBox extends AbstractField<Boolean> {
 
@@ -49,7 +42,7 @@ public class CheckBox extends AbstractField<Boolean> {
              * to make sure the cached state is updated to match the client. If
              * we do not do this, a reverting setValue() call in a listener will
              * not cause the new state to be sent to the client.
-             * 
+             *
              * See #11028, #10030.
              */
             getUI().getConnectorTracker().getDiffState(CheckBox.this)
@@ -85,7 +78,7 @@ public class CheckBox extends AbstractField<Boolean> {
 
     /**
      * Creates a new checkbox with a set caption.
-     * 
+     *
      * @param caption
      *            the Checkbox caption.
      */
@@ -96,7 +89,7 @@ public class CheckBox extends AbstractField<Boolean> {
 
     /**
      * Creates a new checkbox with a caption and a set initial state.
-     * 
+     *
      * @param caption
      *            the caption of the checkbox
      * @param initialState
@@ -109,7 +102,7 @@ public class CheckBox extends AbstractField<Boolean> {
 
     /**
      * Creates a new checkbox that is connected to a boolean property.
-     * 
+     *
      * @param state
      *            the Initial state of the switch-button.
      * @param dataSource
@@ -133,7 +126,7 @@ public class CheckBox extends AbstractField<Boolean> {
      * Overridden to keep the shared state in sync with the AbstractField
      * internal value. Should be removed once AbstractField is refactored to use
      * shared state.
-     * 
+     *
      * See tickets #10921 and #11064.
      */
     @Override
@@ -161,48 +154,6 @@ public class CheckBox extends AbstractField<Boolean> {
 
     public void removeFocusListener(FocusListener listener) {
         removeListener(FocusEvent.EVENT_ID, FocusEvent.class, listener);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractField#readDesign(org.jsoup.nodes.Element,
-     * com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void readDesign(Element design, DesignContext designContext) {
-        super.readDesign(design, designContext);
-        if (design.hasAttr("checked")) {
-            this.setValue(DesignAttributeHandler.readAttribute("checked",
-                    design.attributes(), Boolean.class));
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractField#getCustomAttributes()
-     */
-    @Override
-    protected Collection<String> getCustomAttributes() {
-        Collection<String> attributes = super.getCustomAttributes();
-        attributes.add("checked");
-        return attributes;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractField#writeDesign(org.jsoup.nodes.Element,
-     * com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void writeDesign(Element design, DesignContext designContext) {
-        super.writeDesign(design, designContext);
-        CheckBox def = (CheckBox) designContext.getDefaultInstance(this);
-        Attributes attr = design.attributes();
-        DesignAttributeHandler.writeAttribute("checked", attr, getValue(),
-                def.getValue(), Boolean.class);
     }
 
     @Override

@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.jsoup.nodes.Element;
-
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.ContainerHierarchicalWrapper;
@@ -41,15 +39,12 @@ import com.vaadin.event.ItemClickEvent.ItemClickNotifier;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.ui.MultiSelectMode;
 import com.vaadin.shared.ui.tree.TreeConstants;
-import com.vaadin.ui.declarative.DesignAttributeHandler;
-import com.vaadin.ui.declarative.DesignContext;
-import com.vaadin.ui.declarative.DesignException;
 import com.vaadin.util.ReflectTools;
 
 /**
  * Tree component. A Tree can be used to select an item (or multiple items) from
  * a hierarchical set of items.
- * 
+ *
  * @author Vaadin Ltd.
  * @since 3.0
  */
@@ -130,7 +125,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Creates a new empty tree with caption.
-     * 
+     *
      * @param caption
      */
     public Tree(String caption) {
@@ -139,7 +134,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Creates a new tree with caption and connect it to a Container.
-     * 
+     *
      * @param caption
      * @param dataSource
      */
@@ -154,12 +149,12 @@ public class Tree extends AbstractSelect
 
     /**
      * Sets the icon for an item.
-     * 
+     *
      * @param itemId
      *            the id of the item to be assigned an icon.
      * @param icon
      *            the icon to use or null.
-     * 
+     *
      * @param altText
      *            the alternative text for the icon
      */
@@ -180,9 +175,9 @@ public class Tree extends AbstractSelect
 
     /**
      * Set the alternate text for an item.
-     * 
+     *
      * Used when the item has an icon.
-     * 
+     *
      * @param itemId
      *            the id of the item to be assigned an icon.
      * @param altText
@@ -200,7 +195,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Return the alternate text of an icon in a tree item.
-     * 
+     *
      * @param itemId
      *            Object with the ID of the item
      * @return String with the alternate text of the icon, or null when no icon
@@ -215,7 +210,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Check is an item is expanded
-     * 
+     *
      * @param itemId
      *            the item id.
      * @return true iff the item is expanded.
@@ -226,7 +221,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Expands an item.
-     * 
+     *
      * @param itemId
      *            the item id.
      * @return True iff the expand operation succeeded
@@ -239,7 +234,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Expands an item.
-     * 
+     *
      * @param itemId
      *            the item id.
      * @param sendChildTree
@@ -286,10 +281,10 @@ public class Tree extends AbstractSelect
 
     /**
      * Expands the items recursively
-     * 
+     *
      * Expands all the children recursively starting from an item. Operation
      * succeeds only if all expandable items are expanded.
-     * 
+     *
      * @param startItemId
      * @return True iff the expand operation succeeded
      */
@@ -317,7 +312,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Collapses an item.
-     * 
+     *
      * @param itemId
      *            the item id.
      * @return True iff the collapse operation succeeded
@@ -339,10 +334,10 @@ public class Tree extends AbstractSelect
 
     /**
      * Collapses the items recursively.
-     * 
+     *
      * Collapse all the children recursively starting from an item. Operation
      * succeeds only if all expandable items are collapsed.
-     * 
+     *
      * @param startItemId
      * @return True iff the collapse operation succeeded
      */
@@ -372,11 +367,11 @@ public class Tree extends AbstractSelect
      * Returns the current selectable state. Selectable determines if the a node
      * can be selected on the client side. Selectable does not affect
      * {@link #setValue(Object)} or {@link #select(Object)}.
-     * 
+     *
      * <p>
      * The tree is selectable by default.
      * </p>
-     * 
+     *
      * @return the current selectable state.
      */
     public boolean isSelectable() {
@@ -387,11 +382,11 @@ public class Tree extends AbstractSelect
      * Sets the selectable state. Selectable determines if the a node can be
      * selected on the client side. Selectable does not affect
      * {@link #setValue(Object)} or {@link #select(Object)}.
-     * 
+     *
      * <p>
      * The tree is selectable by default.
      * </p>
-     * 
+     *
      * @param selectable
      *            The new selectable state.
      */
@@ -404,7 +399,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Sets the behavior of the multiselect mode
-     * 
+     *
      * @param mode
      *            The mode to set
      */
@@ -418,7 +413,7 @@ public class Tree extends AbstractSelect
     /**
      * Returns the mode the multiselect is in. The mode controls how
      * multiselection can be done.
-     * 
+     *
      * @return The mode
      */
     public MultiSelectMode getMultiselectMode() {
@@ -429,7 +424,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Handles the selection
-     * 
+     *
      * @param variables
      *            The variables sent to the server from the client
      */
@@ -462,7 +457,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Tests if the Item with given ID can have any children.
-     * 
+     *
      * @see com.vaadin.data.Container.Hierarchical#areChildrenAllowed(Object)
      */
     @Override
@@ -472,7 +467,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Gets the IDs of all Items that are children of the specified Item.
-     * 
+     *
      * @see com.vaadin.data.Container.Hierarchical#getChildren(Object)
      */
     @Override
@@ -482,7 +477,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Gets the ID of the parent Item of the specified Item.
-     * 
+     *
      * @see com.vaadin.data.Container.Hierarchical#getParent(Object)
      */
     @Override
@@ -492,7 +487,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Tests if the Item specified with <code>itemId</code> has child Items.
-     * 
+     *
      * @see com.vaadin.data.Container.Hierarchical#hasChildren(Object)
      */
     @Override
@@ -502,7 +497,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Tests if the Item specified with <code>itemId</code> is a root Item.
-     * 
+     *
      * @see com.vaadin.data.Container.Hierarchical#isRoot(Object)
      */
     @Override
@@ -512,7 +507,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Gets the IDs of all Items in the container that don't have a parent.
-     * 
+     *
      * @see com.vaadin.data.Container.Hierarchical#rootItemIds()
      */
     @Override
@@ -522,7 +517,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Sets the given Item's capability to have children.
-     * 
+     *
      * @see com.vaadin.data.Container.Hierarchical#setChildrenAllowed(Object,
      *      boolean)
      */
@@ -539,7 +534,7 @@ public class Tree extends AbstractSelect
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container.Hierarchical#setParent(java.lang.Object ,
      * java.lang.Object)
      */
@@ -557,7 +552,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Sets the Container that serves as the data source of the viewer.
-     * 
+     *
      * @see com.vaadin.data.Container.Viewer#setContainerDataSource(Container)
      */
     @Override
@@ -605,7 +600,7 @@ public class Tree extends AbstractSelect
                  * by either adding or removing items to the container. To
                  * prevent a memory leak we should cleanup the expanded list
                  * from items which was removed.
-                 * 
+                 *
                  * However, there will still be a leak if the container is
                  * filtered to show only a subset of the items in the tree and
                  * later unfiltered items are removed from the container. In
@@ -629,7 +624,7 @@ public class Tree extends AbstractSelect
      * Event to fired when a node is expanded. ExapandEvent is fired when a node
      * is to be expanded. it can me used to dynamically fill the sub-nodes of
      * the node.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -639,7 +634,7 @@ public class Tree extends AbstractSelect
 
         /**
          * New instance of options change event
-         * 
+         *
          * @param source
          *            the Source of the event.
          * @param expandedItemId
@@ -651,7 +646,7 @@ public class Tree extends AbstractSelect
 
         /**
          * Node where the event occurred.
-         * 
+         *
          * @return the Source of the event.
          */
         public Object getItemId() {
@@ -661,7 +656,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Expand event listener.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -672,7 +667,7 @@ public class Tree extends AbstractSelect
 
         /**
          * A node has been expanded.
-         * 
+         *
          * @param event
          *            the Expand event.
          */
@@ -681,7 +676,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Adds the expand listener.
-     * 
+     *
      * @param listener
      *            the Listener to be added.
      */
@@ -691,7 +686,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Removes the expand listener.
-     * 
+     *
      * @param listener
      *            the Listener to be removed.
      */
@@ -702,7 +697,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Emits the expand event.
-     * 
+     *
      * @param itemId
      *            the item id.
      */
@@ -714,7 +709,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Collapse event
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -724,7 +719,7 @@ public class Tree extends AbstractSelect
 
         /**
          * New instance of options change event.
-         * 
+         *
          * @param source
          *            the Source of the event.
          * @param collapsedItemId
@@ -736,7 +731,7 @@ public class Tree extends AbstractSelect
 
         /**
          * Gets tge Collapsed Item id.
-         * 
+         *
          * @return the collapsed item id.
          */
         public Object getItemId() {
@@ -746,7 +741,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Collapse event listener.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -757,7 +752,7 @@ public class Tree extends AbstractSelect
 
         /**
          * A node has been collapsed.
-         * 
+         *
          * @param event
          *            the Collapse event.
          */
@@ -766,7 +761,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Adds the collapse listener.
-     * 
+     *
      * @param listener
      *            the Listener to be added.
      */
@@ -777,7 +772,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Removes the collapse listener.
-     * 
+     *
      * @param listener
      *            the Listener to be removed.
      */
@@ -788,7 +783,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Emits collapse event.
-     * 
+     *
      * @param itemId
      *            the item id.
      */
@@ -798,7 +793,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Gets the visible item ids.
-     * 
+     *
      * @see com.vaadin.ui.Select#getVisibleItemIds()
      */
     @Override
@@ -842,7 +837,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Tree does not support <code>setNullSelectionItemId</code>.
-     * 
+     *
      * @see com.vaadin.ui.AbstractSelect#setNullSelectionItemId(java.lang.Object)
      */
     @Override
@@ -856,7 +851,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Adding new items is not supported.
-     * 
+     *
      * @throws UnsupportedOperationException
      *             if set to true.
      * @see com.vaadin.ui.Select#setNewItemsAllowed(boolean)
@@ -885,7 +880,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Sets the {@link ItemStyleGenerator} to be used with this tree.
-     * 
+     *
      * @param itemStyleGenerator
      *            item style generator or null to remove generator
      */
@@ -913,7 +908,7 @@ public class Tree extends AbstractSelect
 
         /**
          * Called by Tree when an item is painted.
-         * 
+         *
          * @param source
          *            the source Tree
          * @param itemId
@@ -933,7 +928,7 @@ public class Tree extends AbstractSelect
 
     /**
      * Helper API for {@link TreeDropCriterion}
-     * 
+     *
      * @param itemId
      * @return
      */
@@ -944,7 +939,7 @@ public class Tree extends AbstractSelect
     /**
      * Sets the drag mode that controls how Tree behaves as a {@link DragSource}
      * .
-     * 
+     *
      * @param dragMode
      */
     public void setDragMode(TreeDragMode dragMode) {
@@ -955,7 +950,7 @@ public class Tree extends AbstractSelect
     /**
      * @return the drag mode that controls how Tree behaves as a
      *         {@link DragSource}.
-     * 
+     *
      * @see TreeDragMode
      */
     public TreeDragMode getDragMode() {
@@ -965,9 +960,9 @@ public class Tree extends AbstractSelect
     /**
      * Concrete implementation of {@link DataBoundTransferable} for data
      * transferred from a tree.
-     * 
+     *
      * @see {@link DataBoundTransferable}.
-     * 
+     *
      * @since 6.3
      */
     protected class TreeTransferable extends DataBoundTransferable {
@@ -991,7 +986,7 @@ public class Tree extends AbstractSelect
     /**
      * Set the item description generator which generates tooltips for the tree
      * items
-     * 
+     *
      * @param generator
      *            The generator to use or null to disable
      */
@@ -1024,104 +1019,4 @@ public class Tree extends AbstractSelect
         expanded.removeAll(removedItemIds);
     }
 
-    /**
-     * Reads an Item from a design and inserts it into the data source.
-     * Recursively handles any children of the item as well.
-     * 
-     * @since 7.5.0
-     * @param node
-     *            an element representing the item (tree node).
-     * @param selected
-     *            A set accumulating selected items. If the item that is read is
-     *            marked as selected, its item id should be added to this set.
-     * @param context
-     *            the DesignContext instance used in parsing
-     * @return the item id of the new item
-     * 
-     * @throws DesignException
-     *             if the tag name of the {@code node} element is not
-     *             {@code node}.
-     */
-    @Override
-    protected String readItem(Element node, Set<String> selected,
-            DesignContext context) {
-
-        if (!"node".equals(node.tagName())) {
-            throw new DesignException("Unrecognized child element in "
-                    + getClass().getSimpleName() + ": " + node.tagName());
-        }
-
-        String itemId = node.attr("text");
-        addItem(itemId);
-        if (node.hasAttr("icon")) {
-            Resource icon = DesignAttributeHandler.readAttribute("icon",
-                    node.attributes(), Resource.class);
-            setItemIcon(itemId, icon);
-        }
-        if (node.hasAttr("selected")) {
-            selected.add(itemId);
-        }
-
-        for (Element child : node.children()) {
-            String childItemId = readItem(child, selected, context);
-            setParent(childItemId, itemId);
-        }
-        return itemId;
-    }
-
-    /**
-     * Recursively writes the root items and their children to a design.
-     * 
-     * @since 7.5.0
-     * @param design
-     *            the element into which to insert the items
-     * @param context
-     *            the DesignContext instance used in writing
-     */
-    @Override
-    protected void writeItems(Element design, DesignContext context) {
-        for (Object itemId : rootItemIds()) {
-            writeItem(design, itemId, context);
-        }
-    }
-
-    /**
-     * Recursively writes a data source Item and its children to a design.
-     * 
-     * @since 7.5.0
-     * @param design
-     *            the element into which to insert the item
-     * @param itemId
-     *            the id of the item to write
-     * @param context
-     *            the DesignContext instance used in writing
-     * @return
-     */
-    @Override
-    protected Element writeItem(Element design, Object itemId,
-            DesignContext context) {
-        Element element = design.appendElement("node");
-
-        element.attr("text", itemId.toString());
-
-        Resource icon = getItemIcon(itemId);
-        if (icon != null) {
-            DesignAttributeHandler.writeAttribute("icon", element.attributes(),
-                    icon, null, Resource.class);
-        }
-
-        if (isSelected(itemId)) {
-            element.attr("selected", "");
-        }
-
-        Collection<?> children = getChildren(itemId);
-        if (children != null) {
-            // Yeah... see #5864
-            for (Object childItemId : children) {
-                writeItem(element, childItemId, context);
-            }
-        }
-
-        return element;
-    }
 }

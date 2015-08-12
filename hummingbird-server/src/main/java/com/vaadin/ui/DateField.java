@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -22,9 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.logging.Logger;
-
-import org.jsoup.nodes.Element;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Validator;
@@ -38,8 +35,6 @@ import com.vaadin.event.FieldEvents.FocusEvent;
 import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.shared.ui.datefield.TextualDateFieldState;
-import com.vaadin.ui.declarative.DesignAttributeHandler;
-import com.vaadin.ui.declarative.DesignContext;
 
 /**
  * <p>
@@ -55,7 +50,7 @@ import com.vaadin.ui.declarative.DesignContext;
  * {@link com.vaadin.ui.AbstractField#setWriteThrough(boolean)}must be called to
  * enable buffering.
  * </p>
- * 
+ *
  * @author Vaadin Ltd.
  * @since 3.0
  */
@@ -131,7 +126,7 @@ public class DateField extends AbstractField<Date>
 
     /**
      * Constructs an empty <code>DateField</code> with caption.
-     * 
+     *
      * @param caption
      *            the caption of the datefield.
      */
@@ -142,7 +137,7 @@ public class DateField extends AbstractField<Date>
     /**
      * Constructs a new <code>DateField</code> that's bound to the specified
      * <code>Property</code> and has the given caption <code>String</code>.
-     * 
+     *
      * @param caption
      *            the caption <code>String</code> for the editor.
      * @param dataSource
@@ -156,7 +151,7 @@ public class DateField extends AbstractField<Date>
     /**
      * Constructs a new <code>DateField</code> that's bound to the specified
      * <code>Property</code> and has no caption.
-     * 
+     *
      * @param dataSource
      *            the Property to be edited with this editor.
      */
@@ -176,7 +171,7 @@ public class DateField extends AbstractField<Date>
      * to a Property unless
      * {@link com.vaadin.data.Property.Viewer#setPropertyDataSource(Property)}
      * is called to bind it.
-     * 
+     *
      * @param caption
      *            the caption <code>String</code> for the editor.
      * @param value
@@ -209,7 +204,7 @@ public class DateField extends AbstractField<Date>
      * date (taking the resolution into account), the component will not
      * validate. If <code>startDate</code> is set to <code>null</code>, any
      * value before <code>endDate</code> will be accepted by the range
-     * 
+     *
      * @param startDate
      *            - the allowed range's start date
      */
@@ -229,7 +224,7 @@ public class DateField extends AbstractField<Date>
 
     /**
      * Sets the current error message if the range validation fails.
-     * 
+     *
      * @param dateOutOfRangeMessage
      *            - Localizable message which is shown when value (the date) is
      *            set outside allowed range
@@ -245,7 +240,7 @@ public class DateField extends AbstractField<Date>
      * to YEAR, any date in year n will be accepted. Resolutions lower than DAY
      * will be interpreted on a DAY level. That is, everything below DATE is
      * cleared
-     * 
+     *
      * @param forResolution
      *            - the range conforms to the resolution
      * @return
@@ -284,7 +279,7 @@ public class DateField extends AbstractField<Date>
      * if <code>rangeStart</code> is set to one millisecond before year n and
      * resolution is set to YEAR, any date in year n - 1 will be accepted.
      * Lowest supported resolution is DAY.
-     * 
+     *
      * @param forResolution
      *            - the range conforms to the resolution
      * @return
@@ -329,7 +324,7 @@ public class DateField extends AbstractField<Date>
      * date (taking the resolution into account), the component will not
      * validate. If <code>endDate</code> is set to <code>null</code>, any value
      * after <code>startDate</code> will be accepted by the range.
-     * 
+     *
      * @param endDate
      *            - the allowed range's end date (inclusive, based on the
      *            current resolution)
@@ -350,9 +345,9 @@ public class DateField extends AbstractField<Date>
 
     /**
      * Returns the precise rangeStart used.
-     * 
+     *
      * @param startDate
-     * 
+     *
      */
     public Date getRangeStart() {
         return getState(false).rangeStart;
@@ -360,7 +355,7 @@ public class DateField extends AbstractField<Date>
 
     /**
      * Returns the precise rangeEnd used.
-     * 
+     *
      * @param startDate
      */
     public Date getRangeEnd() {
@@ -380,13 +375,13 @@ public class DateField extends AbstractField<Date>
     /**
      * This method is called to handle a non-empty date string from the client
      * if the client could not parse it as a Date.
-     * 
+     *
      * By default, a Converter.ConversionException is thrown, and the current
      * value is not modified.
-     * 
+     *
      * This can be overridden to handle conversions, to return null (equivalent
      * to empty input), to throw an exception or to fire an event.
-     * 
+     *
      * @param dateString
      * @return parsed Date
      * @throws Converter.ConversionException
@@ -411,7 +406,7 @@ public class DateField extends AbstractField<Date>
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.AbstractField#setValue(java.lang.Object, boolean)
      */
     @Override
@@ -436,7 +431,7 @@ public class DateField extends AbstractField<Date>
              * datefields validity may change although the logical value does
              * not change. This is an issue for Form which expects that validity
              * of Fields cannot change unless actual value changes.
-             * 
+             *
              * So we check if this field is inside a form and the form has
              * registered this as a field. In this case we repaint the form.
              * Without this hacky solution the form might not be able to clean
@@ -472,7 +467,7 @@ public class DateField extends AbstractField<Date>
 
     /**
      * Gets the resolution.
-     * 
+     *
      * @return int
      */
     public Resolution getResolution() {
@@ -481,9 +476,9 @@ public class DateField extends AbstractField<Date>
 
     /**
      * Sets the resolution of the DateField.
-     * 
+     *
      * The default resolution is {@link Resolution#DAY} since Vaadin 7.0.
-     * 
+     *
      * @param resolution
      *            the resolution to set.
      */
@@ -495,13 +490,13 @@ public class DateField extends AbstractField<Date>
 
     /**
      * Returns new instance calendar used in Date conversions.
-     * 
+     *
      * Returns new clone of the calendar object initialized using the the
      * current date (if available)
-     * 
+     *
      * If this is no calendar is assigned the <code>Calendar.getInstance</code>
      * is used.
-     * 
+     *
      * @return the Calendar.
      * @see #setCalendar(Calendar)
      */
@@ -540,14 +535,14 @@ public class DateField extends AbstractField<Date>
     /**
      * Sets formatting used by some component implementations. See
      * {@link SimpleDateFormat} for format details.
-     * 
+     *
      * By default it is encouraged to used default formatting defined by Locale,
      * but due some JVM bugs it is sometimes necessary to use this method to
      * override formatting. See Vaadin issue #2200.
-     * 
+     *
      * @param dateFormat
      *            the dateFormat to set
-     * 
+     *
      * @see com.vaadin.ui.AbstractComponent#setLocale(Locale))
      */
     public void setDateFormat(String dateFormat) {
@@ -558,7 +553,7 @@ public class DateField extends AbstractField<Date>
     /**
      * Returns a format string used to format date value on client side or null
      * if default formatting from {@link Component#getLocale()} is used.
-     * 
+     *
      * @return the dateFormat
      */
     public String getDateFormat() {
@@ -568,10 +563,10 @@ public class DateField extends AbstractField<Date>
     /**
      * Specifies whether or not date/time interpretation in component is to be
      * lenient.
-     * 
+     *
      * @see Calendar#setLenient(boolean)
      * @see #isLenient()
-     * 
+     *
      * @param lenient
      *            true if the lenient mode is to be turned on; false if it is to
      *            be turned off.
@@ -583,9 +578,9 @@ public class DateField extends AbstractField<Date>
 
     /**
      * Returns whether date/time interpretation is to be lenient.
-     * 
+     *
      * @see #setLenient(boolean)
-     * 
+     *
      * @return true if the interpretation mode of this calendar is lenient;
      *         false otherwise.
      */
@@ -617,7 +612,7 @@ public class DateField extends AbstractField<Date>
 
     /**
      * Checks whether ISO 8601 week numbers are shown in the date selector.
-     * 
+     *
      * @return true if week numbers are shown, false otherwise.
      */
     public boolean isShowISOWeekNumbers() {
@@ -628,7 +623,7 @@ public class DateField extends AbstractField<Date>
      * Sets the visibility of ISO 8601 week numbers in the date selector. ISO
      * 8601 defines that a week always starts with a Monday so the week numbers
      * are only shown if this is the case.
-     * 
+     *
      * @param showWeekNumbers
      *            true if week numbers should be shown, false otherwise.
      */
@@ -642,7 +637,7 @@ public class DateField extends AbstractField<Date>
      * not empty. Note that DateField is considered empty (value == null) and
      * invalid if it contains text typed in by the user that couldn't be parsed
      * into a Date value.
-     * 
+     *
      * @see com.vaadin.ui.AbstractField#validate()
      */
     @Override
@@ -665,9 +660,9 @@ public class DateField extends AbstractField<Date>
      * custom exception, the message returned by
      * {@link Exception#getLocalizedMessage()} will be used instead of the value
      * returned by this method.
-     * 
+     *
      * @see #setParseErrorMessage(String)
-     * 
+     *
      * @return the error message that the DateField uses when it can't parse the
      *         textual input from user to a Date object
      */
@@ -680,7 +675,7 @@ public class DateField extends AbstractField<Date>
      * text input by user to a Date field. Note that if the
      * {@link #handleUnparsableDateString(String)} method is overridden, the
      * localized message from its exception is used.
-     * 
+     *
      * @see #getParseErrorMessage()
      * @see #handleUnparsableDateString(String)
      * @param parsingErrorMessage
@@ -693,10 +688,10 @@ public class DateField extends AbstractField<Date>
      * Sets the time zone used by this date field. The time zone is used to
      * convert the absolute time in a Date object to a logical time displayed in
      * the selector and to convert the select time back to a Date object.
-     * 
+     *
      * If no time zone has been set, the current default time zone returned by
      * {@code TimeZone.getDefault()} is used.
-     * 
+     *
      * @see #getTimeZone()
      * @param timeZone
      *            the time zone to use for time calculations.
@@ -710,10 +705,10 @@ public class DateField extends AbstractField<Date>
      * Gets the time zone used by this field. The time zone is used to convert
      * the absolute time in a Date object to a logical time displayed in the
      * selector and to convert the select time back to a Date object.
-     * 
+     *
      * If {@code null} is returned, the current default time zone returned by
      * {@code TimeZone.getDefault()} is used.
-     * 
+     *
      * @return the current time zone
      */
     public TimeZone getTimeZone() {
@@ -729,33 +724,9 @@ public class DateField extends AbstractField<Date>
 
     }
 
-    @Override
-    public void readDesign(Element design, DesignContext designContext) {
-        super.readDesign(design, designContext);
-        if (design.hasAttr("value") && !design.attr("value").isEmpty()) {
-            Date date = DesignAttributeHandler.getFormatter()
-                    .parse(design.attr("value"), Date.class);
-            // formatting will return null if it cannot parse the string
-            if (date == null) {
-                Logger.getLogger(DateField.class.getName()).info(
-                        "cannot parse " + design.attr("value") + " as date");
-            }
-            this.setValue(date);
-        }
-    }
-
-    @Override
-    public void writeDesign(Element design, DesignContext designContext) {
-        super.writeDesign(design, designContext);
-        if (getValue() != null) {
-            design.attr("value",
-                    DesignAttributeHandler.getFormatter().format(getValue()));
-        }
-    }
-
     /**
      * Returns current date-out-of-range error message.
-     * 
+     *
      * @see #setDateOutOfRangeMessage(String)
      * @since 7.4
      * @return Current error message for dates out of range.

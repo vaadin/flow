@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,11 +16,8 @@
 
 package com.vaadin.ui;
 
-import org.jsoup.nodes.Element;
-
 import com.vaadin.data.Property;
 import com.vaadin.shared.ui.textarea.TextAreaState;
-import com.vaadin.ui.declarative.DesignContext;
 
 /**
  * A text field that supports multi line editing.
@@ -36,7 +33,7 @@ public class TextArea extends AbstractTextField {
 
     /**
      * Constructs an empty TextArea with given caption.
-     * 
+     *
      * @param caption
      *            the caption for the field.
      */
@@ -47,7 +44,7 @@ public class TextArea extends AbstractTextField {
 
     /**
      * Constructs a TextArea with given property data source.
-     * 
+     *
      * @param dataSource
      *            the data source for the field
      */
@@ -58,7 +55,7 @@ public class TextArea extends AbstractTextField {
 
     /**
      * Constructs a TextArea with given caption and property data source.
-     * 
+     *
      * @param caption
      *            the caption for the field
      * @param dataSource
@@ -71,7 +68,7 @@ public class TextArea extends AbstractTextField {
 
     /**
      * Constructs a TextArea with given caption and value.
-     * 
+     *
      * @param caption
      *            the caption for the field
      * @param value
@@ -95,7 +92,7 @@ public class TextArea extends AbstractTextField {
 
     /**
      * Sets the number of rows in the text area.
-     * 
+     *
      * @param rows
      *            the number of rows for this text area.
      */
@@ -108,7 +105,7 @@ public class TextArea extends AbstractTextField {
 
     /**
      * Gets the number of rows in the text area.
-     * 
+     *
      * @return number of explicitly set rows.
      */
     public int getRows() {
@@ -117,7 +114,7 @@ public class TextArea extends AbstractTextField {
 
     /**
      * Sets the text area's word-wrap mode on or off.
-     * 
+     *
      * @param wordwrap
      *            the boolean value specifying if the text area should be in
      *            word-wrap mode.
@@ -128,36 +125,12 @@ public class TextArea extends AbstractTextField {
 
     /**
      * Tests if the text area is in word-wrap mode.
-     * 
+     *
      * @return <code>true</code> if the component is in word-wrap mode,
      *         <code>false</code> if not.
      */
     public boolean isWordwrap() {
         return getState(false).wordwrap;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractField#readDesign(org.jsoup.nodes.Element ,
-     * com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void readDesign(Element design, DesignContext designContext) {
-        super.readDesign(design, designContext);
-        setValue(design.html());
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractTextField#writeDesign(org.jsoup.nodes.Element
-     * , com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void writeDesign(Element design, DesignContext designContext) {
-        super.writeDesign(design, designContext);
-        design.html(getValue());
     }
 
     @Override

@@ -1,12 +1,10 @@
 package com.vaadin.tests.integration;
 
-import com.vaadin.annotations.DesignRoot;
 import com.vaadin.server.ClassResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.declarative.Design;
 
 public class ServletIntegrationUI extends UI {
 
@@ -33,7 +31,8 @@ public class ServletIntegrationUI extends UI {
         //
         // grid.setColumns("icon", "country");
 
-        final Label selectedLabel = new LabelFromDesign();
+        final Label selectedLabel = new Label(); // FIXME Read from template
+
         // grid.addSelectionListener(new SelectionListener() {
         //
         // @Override
@@ -56,10 +55,4 @@ public class ServletIntegrationUI extends UI {
         layout.addComponent(se);
     }
 
-    @DesignRoot
-    public static class LabelFromDesign extends Label {
-        public LabelFromDesign() {
-            Design.read(this);
-        }
-    }
 }

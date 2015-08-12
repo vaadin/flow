@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -18,8 +18,6 @@ package com.vaadin.ui;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import org.jsoup.nodes.Element;
-
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.LayoutEvents.LayoutClickNotifier;
@@ -28,7 +26,6 @@ import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.csslayout.CssLayoutServerRpc;
 import com.vaadin.shared.ui.csslayout.CssLayoutState;
-import com.vaadin.ui.declarative.DesignContext;
 
 /**
  * CssLayout is a layout component that can be used in browser environment only.
@@ -54,7 +51,7 @@ import com.vaadin.ui.declarative.DesignContext;
  * <p>
  * By extending CssLayout one can also inject some css rules straight to child
  * components using {@link #getCss(Component)}.
- * 
+ *
  * <p>
  * (*) Relative sizes (set from server side) are treated bit differently than in
  * other layouts in Vaadin. In cssLayout the size is calculated relatively to
@@ -67,9 +64,9 @@ import com.vaadin.ui.declarative.DesignContext;
  * wants to set component sizes with CSS, component must have undefined size on
  * server side (which is not the default for all components) and the size must
  * be defined with class styles - not by directly injecting width and height.
- * 
+ *
  * @since 6.1 brought in from "FastLayouts" incubator project
- * 
+ *
  */
 public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
 
@@ -96,9 +93,9 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
 
     /**
      * Constructs a CssLayout with the given components in the given order.
-     * 
+     *
      * @see #addComponents(Component...)
-     * 
+     *
      * @param children
      *            Components to add to the container.
      */
@@ -110,7 +107,7 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
     /**
      * Add a component into this container. The component is added to the right
      * or below the previous component.
-     * 
+     *
      * @param c
      *            the component to be added.
      */
@@ -130,7 +127,7 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
     /**
      * Adds a component into this container. The component is added to the left
      * or on top of the other components.
-     * 
+     *
      * @param c
      *            the component to be added.
      */
@@ -151,7 +148,7 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
 
     /**
      * Adds a component into indexed position in this container.
-     * 
+     *
      * @param c
      *            the component to be added.
      * @param index
@@ -179,7 +176,7 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
 
     /**
      * Removes the component from this container.
-     * 
+     *
      * @param c
      *            the component to be removed.
      */
@@ -192,7 +189,7 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
     /**
      * Gets the component container iterator for going trough all the components
      * in the container.
-     * 
+     *
      * @return the Iterator of the components inside the container.
      */
     @Override
@@ -203,7 +200,7 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
     /**
      * Gets the number of contained components. Consistent with the iterator
      * returned by {@link #getComponentIterator()}.
-     * 
+     *
      * @return the number of contained components
      */
     @Override
@@ -238,17 +235,17 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
     /**
      * Returns styles to be applied to given component. Override this method to
      * inject custom style rules to components.
-     * 
+     *
      * <p>
      * Note that styles are injected over previous styles before actual child
      * rendering. Previous styles are not cleared, but overridden.
-     * 
+     *
      * <p>
      * Note that one most often achieves better code style, by separating
      * styling to theme (with custom theme and {@link #addStyleName(String)}.
      * With own custom styles it is also very easy to break browser
      * compatibility.
-     * 
+     *
      * @param c
      *            the component
      * @return css rules to be applied to component
@@ -317,7 +314,7 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
 
     /**
      * Returns the index of the given component.
-     * 
+     *
      * @param component
      *            The component to look up.
      * @return The index of the component or -1 if the component is not a child.
@@ -328,7 +325,7 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
 
     /**
      * Returns the component at the given position.
-     * 
+     *
      * @param index
      *            The position of the component.
      * @return The component at the given index.
@@ -337,45 +334,6 @@ public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
      */
     public Component getComponent(int index) throws IndexOutOfBoundsException {
         return components.get(index);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractComponent#readDesign(org.jsoup.nodes .Element,
-     * com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void readDesign(Element design, DesignContext designContext) {
-        // process default attributes
-        super.readDesign(design, designContext);
-        // handle children
-        for (Element childComponent : design.children()) {
-            Component newChild = designContext.readDesign(childComponent);
-            addComponent(newChild);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractComponent#writeDesign(org.jsoup.nodes.Element
-     * , com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void writeDesign(Element design, DesignContext designContext) {
-        // write default attributes
-        super.writeDesign(design, designContext);
-        CssLayout def = designContext.getDefaultInstance(this);
-        // handle children
-        if (!designContext.shouldWriteChildren(this, def)) {
-            return;
-        }
-        Element designElement = design;
-        for (Component child : this) {
-            Element childNode = designContext.createElement(child);
-            designElement.appendChild(childNode);
-        }
     }
 
 }

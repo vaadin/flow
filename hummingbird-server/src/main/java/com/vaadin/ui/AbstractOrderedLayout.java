@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,13 +16,9 @@
 
 package com.vaadin.ui;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
-
-import org.jsoup.nodes.Attributes;
-import org.jsoup.nodes.Element;
 
 import com.vaadin.annotations.HTML;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
@@ -32,13 +28,10 @@ import com.vaadin.server.Sizeable;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
-import com.vaadin.shared.ui.AlignmentInfo;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.orderedlayout.AbstractOrderedLayoutServerRpc;
 import com.vaadin.shared.ui.orderedlayout.AbstractOrderedLayoutState;
 import com.vaadin.shared.ui.orderedlayout.AbstractOrderedLayoutState.ChildComponentData;
-import com.vaadin.ui.declarative.DesignAttributeHandler;
-import com.vaadin.ui.declarative.DesignContext;
 
 @SuppressWarnings("serial")
 @HTML("vaadin://bower_components/iron-flex-layout/classes/iron-flex-layout.html")
@@ -87,7 +80,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
     /**
      * Add a component into this container. The component is added to the right
      * or under the previous component.
-     * 
+     *
      * @param c
      *            the component to be added.
      */
@@ -110,7 +103,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
     /**
      * Adds a component into this container. The component is added to the left
      * or on top of the other components.
-     * 
+     *
      * @param c
      *            the component to be added.
      */
@@ -135,7 +128,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     /**
      * Adds a component into indexed position in this container.
-     * 
+     *
      * @param c
      *            the component to be added.
      * @param index
@@ -175,7 +168,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     /**
      * Removes the component from this container.
-     * 
+     *
      * @param c
      *            the component to be removed.
      */
@@ -189,7 +182,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
     /**
      * Gets the component container iterator for going trough all the components
      * in the container.
-     * 
+     *
      * @return the Iterator of the components inside the container.
      */
     @Override
@@ -200,7 +193,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
     /**
      * Gets the number of contained components. Consistent with the iterator
      * returned by {@link #getComponentIterator()}.
-     * 
+     *
      * @return the number of contained components
      */
     @Override
@@ -274,7 +267,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.AlignmentHandler#getComponentAlignment(com
      * .vaadin.ui.Component)
      */
@@ -291,7 +284,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.SpacingHandler#setSpacing(boolean)
      */
     @Override
@@ -301,7 +294,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.SpacingHandler#isSpacing()
      */
     @Override
@@ -314,26 +307,26 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      * This method is used to control how excess space in layout is distributed
      * among components. Excess space may exist if layout is sized and contained
      * non relatively sized components don't consume all available space.
-     * 
+     *
      * <p>
      * Example how to distribute 1:3 (33%) for component1 and 2:3 (67%) for
      * component2 :
-     * 
+     *
      * <code>
      * layout.setExpandRatio(component1, 1);<br>
      * layout.setExpandRatio(component2, 2);
      * </code>
-     * 
+     *
      * <p>
      * If no ratios have been set, the excess space is distributed evenly among
      * all components.
-     * 
+     *
      * <p>
      * Note, that width or height (depending on orientation) needs to be defined
      * for this method to have any effect.
-     * 
+     *
      * @see Sizeable
-     * 
+     *
      * @param component
      *            the component in this layout which expand ratio is to be set
      * @param ratio
@@ -352,7 +345,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     /**
      * Returns the expand ratio of given component.
-     * 
+     *
      * @param component
      *            which expand ratios is requested
      * @return expand ratio of given component, 0.0f by default.
@@ -382,7 +375,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     /**
      * Returns the index of the given component.
-     * 
+     *
      * @param component
      *            The component to look up.
      * @return The index of the component or -1 if the component is not a child.
@@ -393,7 +386,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     /**
      * Returns the component at the given position.
-     * 
+     *
      * @param index
      *            The position of the component.
      * @return The component at the given index.
@@ -411,7 +404,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.MarginHandler#getMargin()
      */
     @Override
@@ -421,7 +414,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.MarginHandler#setMargin(MarginInfo)
      */
     @Override
@@ -431,7 +424,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.AlignmentHandler#getDefaultComponentAlignment()
      */
     @Override
@@ -441,7 +434,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.ui.Layout.AlignmentHandler#setDefaultComponentAlignment(com
      * .vaadin.ui.Alignment)
@@ -455,122 +448,6 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
             int expandRatio) {
         setComponentAlignment(target, alignment);
         setExpandRatio(target, expandRatio);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractComponent#readDesign(org.jsoup.nodes .Element,
-     * com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void readDesign(Element design, DesignContext designContext) {
-        // process default attributes
-        super.readDesign(design, designContext);
-
-        setMargin(readMargin(design, getMargin(), designContext));
-
-        // handle children
-        for (Element childComponent : design.children()) {
-            Attributes attr = childComponent.attributes();
-            Component newChild = designContext.readDesign(childComponent);
-            addComponent(newChild);
-            // handle alignment
-            int bitMask = 0;
-            if (attr.hasKey(":middle")) {
-                bitMask += AlignmentInfo.Bits.ALIGNMENT_VERTICAL_CENTER;
-            } else if (attr.hasKey(":bottom")) {
-                bitMask += AlignmentInfo.Bits.ALIGNMENT_BOTTOM;
-            } else {
-                bitMask += AlignmentInfo.Bits.ALIGNMENT_TOP;
-            }
-            if (attr.hasKey(":center")) {
-                bitMask += AlignmentInfo.Bits.ALIGNMENT_HORIZONTAL_CENTER;
-            } else if (attr.hasKey(":right")) {
-                bitMask += AlignmentInfo.Bits.ALIGNMENT_RIGHT;
-            } else {
-                bitMask += AlignmentInfo.Bits.ALIGNMENT_LEFT;
-            }
-            setComponentAlignment(newChild, new Alignment(bitMask));
-            // handle expand ratio
-            if (attr.hasKey(":expand")) {
-                String value = attr.get(":expand");
-                if (value.length() > 0) {
-                    try {
-                        int ratio = Integer.valueOf(value);
-                        setExpandRatio(newChild, ratio);
-                    } catch (NumberFormatException nfe) {
-                        getLogger()
-                                .info("Failed to parse expand ratio " + value);
-                    }
-                } else {
-                    setExpandRatio(newChild, 1);
-                }
-            }
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractComponent#writeDesign(org.jsoup.nodes.Element
-     * , com.vaadin.ui.declarative.DesignContext)
-     */
-    @Override
-    public void writeDesign(Element design, DesignContext designContext) {
-        // write default attributes
-        super.writeDesign(design, designContext);
-
-        AbstractOrderedLayout def = (AbstractOrderedLayout) designContext
-                .getDefaultInstance(this);
-
-        writeMargin(design, getMargin(), def.getMargin(), designContext);
-
-        // handle children
-        if (!designContext.shouldWriteChildren(this, def)) {
-            return;
-        }
-
-        for (Component child : this) {
-            Element childElement = designContext.createElement(child);
-            design.appendChild(childElement);
-            // handle alignment
-            Alignment alignment = getComponentAlignment(child);
-            if (alignment.isMiddle()) {
-                childElement.attr(":middle", "");
-            } else if (alignment.isBottom()) {
-                childElement.attr(":bottom", "");
-            }
-            if (alignment.isCenter()) {
-                childElement.attr(":center", "");
-            } else if (alignment.isRight()) {
-                childElement.attr(":right", "");
-            }
-            // handle expand ratio
-            float expandRatio = getExpandRatio(child);
-            if (expandRatio == 1.0f) {
-                childElement.attr(":expand", "");
-            } else if (expandRatio > 0) {
-                childElement.attr(":expand", DesignAttributeHandler
-                        .getFormatter().format(expandRatio));
-            }
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.vaadin.ui.AbstractComponent#getCustomAttributes()
-     */
-    @Override
-    protected Collection<String> getCustomAttributes() {
-        Collection<String> customAttributes = super.getCustomAttributes();
-        customAttributes.add("margin");
-        customAttributes.add("margin-left");
-        customAttributes.add("margin-right");
-        customAttributes.add("margin-top");
-        customAttributes.add("margin-bottom");
-        return customAttributes;
     }
 
     private static Logger getLogger() {

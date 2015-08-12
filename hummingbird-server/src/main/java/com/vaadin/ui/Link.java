@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,20 +16,14 @@
 
 package com.vaadin.ui;
 
-import java.util.Collection;
-
-import org.jsoup.nodes.Element;
-
 import com.vaadin.server.Resource;
 import com.vaadin.shared.ui.BorderStyle;
 import com.vaadin.shared.ui.link.LinkConstants;
 import com.vaadin.shared.ui.link.LinkState;
-import com.vaadin.ui.declarative.DesignAttributeHandler;
-import com.vaadin.ui.declarative.DesignContext;
 
 /**
  * Link is used to create external or internal URL links.
- * 
+ *
  * @author Vaadin Ltd.
  * @since 3.0
  */
@@ -45,7 +39,7 @@ public class Link extends AbstractComponent {
 
     /**
      * Creates a new instance of Link.
-     * 
+     *
      * @param caption
      * @param resource
      */
@@ -56,8 +50,8 @@ public class Link extends AbstractComponent {
 
     /**
      * Creates a new instance of Link that opens a new window.
-     * 
-     * 
+     *
+     *
      * @param caption
      *            the Link text.
      * @param targetName
@@ -70,7 +64,7 @@ public class Link extends AbstractComponent {
      *            the Height of the target window.
      * @param border
      *            the Border style of the target window.
-     * 
+     *
      */
     public Link(String caption, Resource resource, String targetName, int width,
             int height, BorderStyle border) {
@@ -94,7 +88,7 @@ public class Link extends AbstractComponent {
 
     /**
      * Returns the target window border.
-     * 
+     *
      * @return the target window border.
      */
     public BorderStyle getTargetBorder() {
@@ -103,7 +97,7 @@ public class Link extends AbstractComponent {
 
     /**
      * Returns the target window height or -1 if not set.
-     * 
+     *
      * @return the target window height.
      */
     public int getTargetHeight() {
@@ -114,7 +108,7 @@ public class Link extends AbstractComponent {
     /**
      * Returns the target window name. Empty name of null implies that the
      * target is opened to the window containing the link.
-     * 
+     *
      * @return the target window name.
      */
     public String getTargetName() {
@@ -123,7 +117,7 @@ public class Link extends AbstractComponent {
 
     /**
      * Returns the target window width or -1 if not set.
-     * 
+     *
      * @return the target window width.
      */
     public int getTargetWidth() {
@@ -133,7 +127,7 @@ public class Link extends AbstractComponent {
 
     /**
      * Sets the border of the target window.
-     * 
+     *
      * @param targetBorder
      *            the targetBorder to set.
      */
@@ -143,7 +137,7 @@ public class Link extends AbstractComponent {
 
     /**
      * Sets the target window height.
-     * 
+     *
      * @param targetHeight
      *            the targetHeight to set.
      */
@@ -153,7 +147,7 @@ public class Link extends AbstractComponent {
 
     /**
      * Sets the target window name.
-     * 
+     *
      * @param targetName
      *            the targetName to set.
      */
@@ -163,7 +157,7 @@ public class Link extends AbstractComponent {
 
     /**
      * Sets the target window width.
-     * 
+     *
      * @param targetWidth
      *            the targetWidth to set.
      */
@@ -173,7 +167,7 @@ public class Link extends AbstractComponent {
 
     /**
      * Returns the resource this link opens.
-     * 
+     *
      * @return the Resource.
      */
     public Resource getResource() {
@@ -182,7 +176,7 @@ public class Link extends AbstractComponent {
 
     /**
      * Sets the resource this link opens.
-     * 
+     *
      * @param resource
      *            the resource to set.
      */
@@ -190,34 +184,4 @@ public class Link extends AbstractComponent {
         setResource(LinkConstants.HREF_RESOURCE, resource);
     }
 
-    @Override
-    public void readDesign(Element design, DesignContext designContext) {
-        super.readDesign(design, designContext);
-        if (design.hasAttr("target")) {
-            setTargetName(DesignAttributeHandler.getFormatter()
-                    .parse(design.attr("target"), String.class));
-        }
-        if (design.hasAttr("href")) {
-            setResource(DesignAttributeHandler.getFormatter()
-                    .parse(design.attr("href"), Resource.class));
-        }
-    }
-
-    @Override
-    public void writeDesign(Element design, DesignContext designContext) {
-        super.writeDesign(design, designContext);
-        Link def = designContext.getDefaultInstance(this);
-        DesignAttributeHandler.writeAttribute("target", design.attributes(),
-                getTargetName(), def.getTargetName(), String.class);
-        DesignAttributeHandler.writeAttribute("href", design.attributes(),
-                getResource(), def.getResource(), Resource.class);
-    }
-
-    @Override
-    protected Collection<String> getCustomAttributes() {
-        Collection<String> a = super.getCustomAttributes();
-        a.add("target-name");
-        a.add("resource");
-        return a;
-    }
 }

@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,10 +16,6 @@
 
 package com.vaadin.ui;
 
-import java.util.Collection;
-
-import org.jsoup.nodes.Element;
-
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
 import com.vaadin.server.Scrollable;
@@ -28,11 +24,10 @@ import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.panel.PanelServerRpc;
 import com.vaadin.shared.ui.panel.PanelState;
 import com.vaadin.ui.Component.Focusable;
-import com.vaadin.ui.declarative.DesignContext;
 
 /**
  * Panel - a simple single component container.
- * 
+ *
  * @author Vaadin Ltd.
  * @since 3.0
  */
@@ -56,7 +51,7 @@ public class Panel extends AbstractSingleComponentContainer
 
     /**
      * Creates a new empty panel which contains the given content.
-     * 
+     *
      * @param content
      *            the content for the panel.
      */
@@ -69,7 +64,7 @@ public class Panel extends AbstractSingleComponentContainer
 
     /**
      * Creates a new empty panel with caption.
-     * 
+     *
      * @param caption
      *            the caption used in the panel (HTML).
      */
@@ -79,7 +74,7 @@ public class Panel extends AbstractSingleComponentContainer
 
     /**
      * Creates a new empty panel with the given caption and content.
-     * 
+     *
      * @param caption
      *            the caption of the panel (HTML).
      * @param content
@@ -92,11 +87,11 @@ public class Panel extends AbstractSingleComponentContainer
 
     /**
      * Sets the caption of the panel.
-     * 
+     *
      * Note that the caption is interpreted as HTML and therefore care should be
      * taken not to enable HTML injection and XSS attacks using panel captions.
      * This behavior may change in future versions.
-     * 
+     *
      * @see AbstractComponent#setCaption(String)
      */
     @Override
@@ -108,7 +103,7 @@ public class Panel extends AbstractSingleComponentContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Scrollable#setScrollable(boolean)
      */
     @Override
@@ -118,7 +113,7 @@ public class Panel extends AbstractSingleComponentContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Scrollable#setScrollable(boolean)
      */
     @Override
@@ -128,7 +123,7 @@ public class Panel extends AbstractSingleComponentContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Scrollable#setScrollLeft(int)
      */
     @Override
@@ -142,7 +137,7 @@ public class Panel extends AbstractSingleComponentContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Scrollable#setScrollTop(int)
      */
     @Override
@@ -159,9 +154,9 @@ public class Panel extends AbstractSingleComponentContainer
      * user clicks inside the Panel. Also when the click targets a component
      * inside the Panel, provided the targeted component does not prevent the
      * click event from propagating.
-     * 
+     *
      * Use {@link #removeListener(ClickListener)} to remove the listener.
-     * 
+     *
      * @param listener
      *            The listener to add
      */
@@ -173,7 +168,7 @@ public class Panel extends AbstractSingleComponentContainer
     /**
      * Remove a click listener from the Panel. The listener should earlier have
      * been added using {@link #addListener(ClickListener)}.
-     * 
+     *
      * @param listener
      *            The listener to remove
      */
@@ -200,7 +195,7 @@ public class Panel extends AbstractSingleComponentContainer
 
     /**
      * Moves keyboard focus to the component. {@see Focusable#focus()}
-     * 
+     *
      */
     @Override
     public void focus() {
@@ -215,24 +210,6 @@ public class Panel extends AbstractSingleComponentContainer
     @Override
     protected PanelState getState(boolean markAsDirty) {
         return (PanelState) super.getState(markAsDirty);
-    }
-
-    @Override
-    public void readDesign(Element design, DesignContext designContext) {
-        super.readDesign(design, designContext);
-    }
-
-    @Override
-    protected Collection<String> getCustomAttributes() {
-        Collection<String> attributes = super.getCustomAttributes();
-        return attributes;
-    }
-
-    @Override
-    public void writeDesign(Element design, DesignContext designContext) {
-        super.writeDesign(design, designContext);
-        // handle tabindex
-        Panel def = (Panel) designContext.getDefaultInstance(this);
     }
 
 }

@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -18,16 +18,11 @@ package com.vaadin.ui;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Attributes;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
 
 import com.vaadin.server.ConnectorResource;
 import com.vaadin.server.DownloadStream;
@@ -39,12 +34,10 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.communication.URLReference;
 import com.vaadin.shared.ui.AbstractMediaState;
 import com.vaadin.shared.ui.MediaControl;
-import com.vaadin.ui.declarative.DesignAttributeHandler;
-import com.vaadin.ui.declarative.DesignContext;
 
 /**
  * Abstract base class for the HTML5 media components.
- * 
+ *
  * @author Vaadin Ltd
  */
 public abstract class AbstractMedia extends AbstractComponent {
@@ -61,7 +54,7 @@ public abstract class AbstractMedia extends AbstractComponent {
 
     /**
      * Sets a single media file as the source of the media component.
-     * 
+     *
      * @param source
      */
     public void setSource(Resource source) {
@@ -81,7 +74,7 @@ public abstract class AbstractMedia extends AbstractComponent {
      * supports. See
      * <a href="http://en.wikipedia.org/wiki/HTML5_video#Table">wikipedia</a>
      * for a table of formats supported by different browsers.
-     * 
+     *
      * @param source
      */
     public void addSource(Resource source) {
@@ -138,7 +131,7 @@ public abstract class AbstractMedia extends AbstractComponent {
      * the browser depending on which file formats it supports. See
      * <a href="http://en.wikipedia.org/wiki/HTML5_video#Table">wikipedia</a>
      * for a table of formats supported by different browsers.
-     * 
+     *
      * @param sources
      */
     public void setSources(Resource... sources) {
@@ -161,7 +154,7 @@ public abstract class AbstractMedia extends AbstractComponent {
 
     /**
      * Sets whether or not the browser should show native media controls.
-     * 
+     *
      * @param showControls
      */
     public void setShowControls(boolean showControls) {
@@ -183,7 +176,7 @@ public abstract class AbstractMedia extends AbstractComponent {
      * flash-based player, see the <a href=
      * "https://developer.mozilla.org/En/Using_audio_and_video_in_Firefox#Using_Flash"
      * >Mozilla Developer Network</a> for details.
-     * 
+     *
      * @param altText
      */
     public void setAltText(String altText) {
@@ -201,7 +194,7 @@ public abstract class AbstractMedia extends AbstractComponent {
     /**
      * Set whether the alternative text ({@link #setAltText(String)}) is
      * rendered as HTML or not.
-     * 
+     *
      * @param htmlContentAllowed
      */
     public void setHtmlContentAllowed(boolean htmlContentAllowed) {
@@ -219,7 +212,7 @@ public abstract class AbstractMedia extends AbstractComponent {
     /**
      * Sets whether the media is to automatically start playback when enough
      * data has been loaded.
-     * 
+     *
      * @param autoplay
      */
     public void setAutoplay(boolean autoplay) {
@@ -235,7 +228,7 @@ public abstract class AbstractMedia extends AbstractComponent {
 
     /**
      * Set whether to mute the audio or not.
-     * 
+     *
      * @param muted
      */
     public void setMuted(boolean muted) {
@@ -261,51 +254,6 @@ public abstract class AbstractMedia extends AbstractComponent {
      */
     public void play() {
         getRpcProxy(MediaControl.class).play();
-    }
-
-    @Override
-    public void writeDesign(Element design, DesignContext designContext) {
-        super.writeDesign(design, designContext);
-
-        String altText = getAltText();
-        if (altText != null && !altText.isEmpty()) {
-            design.append(altText);
-        }
-
-        for (Resource r : getSources()) {
-            Attributes attr = design.appendElement("source").attributes();
-            DesignAttributeHandler.writeAttribute("href", attr, r, null,
-                    Resource.class);
-        }
-    }
-
-    @Override
-    public void readDesign(Element design, DesignContext designContext) {
-        super.readDesign(design, designContext);
-
-        String altText = "";
-        for (Node child : design.childNodes()) {
-            if (child instanceof Element
-                    && ((Element) child).tagName().equals("source")
-                    && child.hasAttr("href")) {
-                addSource(DesignAttributeHandler.readAttribute("href",
-                        child.attributes(), Resource.class));
-            } else {
-                altText += child.toString();
-            }
-        }
-
-        altText = altText.trim();
-        if (!altText.isEmpty()) {
-            setAltText(altText);
-        }
-    }
-
-    @Override
-    protected Collection<String> getCustomAttributes() {
-        Collection<String> result = super.getCustomAttributes();
-        result.add("alt-text");
-        return result;
     }
 
 }

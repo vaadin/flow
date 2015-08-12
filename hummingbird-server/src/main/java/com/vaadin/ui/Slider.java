@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,22 +16,15 @@
 
 package com.vaadin.ui;
 
-import java.util.Collection;
-
-import org.jsoup.nodes.Attributes;
-import org.jsoup.nodes.Element;
-
 import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.Tag;
 import com.vaadin.shared.ui.slider.SliderOrientation;
 import com.vaadin.shared.ui.slider.SliderServerRpc;
 import com.vaadin.shared.ui.slider.SliderState;
-import com.vaadin.ui.declarative.DesignAttributeHandler;
-import com.vaadin.ui.declarative.DesignContext;
 
 /**
  * A component for selecting a numerical value within a range.
- * 
+ *
  * @author Vaadin Ltd.
  */
 @Tag("paper-slider")
@@ -48,7 +41,7 @@ public class Slider extends AbstractField<Double> {
              * to make sure the cached state is updated to match the client. If
              * we do not do this, a reverting setValue() call in a listener will
              * not cause the new state to be sent to the client.
-             * 
+             *
              * See #12133.
              */
             getUI().getConnectorTracker().getDiffState(Slider.this).put("value",
@@ -74,7 +67,7 @@ public class Slider extends AbstractField<Double> {
     /**
      * Default slider constructor. Sets all values to defaults and the slide
      * handle at minimum value.
-     * 
+     *
      */
     public Slider() {
         super();
@@ -84,10 +77,10 @@ public class Slider extends AbstractField<Double> {
 
     /**
      * Create a new slider with the caption given as parameter.
-     * 
+     *
      * The range of the slider is set to 0-100 and only integer values are
      * allowed.
-     * 
+     *
      * @param caption
      *            The caption for this slider (e.g. "Volume").
      */
@@ -98,7 +91,7 @@ public class Slider extends AbstractField<Double> {
 
     /**
      * Create a new slider with the given range and resolution.
-     * 
+     *
      * @param min
      *            The minimum value of the slider
      * @param max
@@ -115,7 +108,7 @@ public class Slider extends AbstractField<Double> {
 
     /**
      * Create a new slider with the given range that only allows integer values.
-     * 
+     *
      * @param min
      *            The minimum value of the slider
      * @param max
@@ -131,7 +124,7 @@ public class Slider extends AbstractField<Double> {
     /**
      * Create a new slider with the given caption and range that only allows
      * integer values.
-     * 
+     *
      * @param caption
      *            The caption for the slider
      * @param min
@@ -156,7 +149,7 @@ public class Slider extends AbstractField<Double> {
 
     /**
      * Gets the maximum slider value
-     * 
+     *
      * @return the largest value the slider can have
      */
     public double getMax() {
@@ -166,7 +159,7 @@ public class Slider extends AbstractField<Double> {
     /**
      * Set the maximum slider value. If the current value of the slider is
      * larger than this, the value is set to the new maximum.
-     * 
+     *
      * @param max
      *            The new maximum slider value
      */
@@ -185,7 +178,7 @@ public class Slider extends AbstractField<Double> {
 
     /**
      * Gets the minimum slider value
-     * 
+     *
      * @return the smallest value the slider can have
      */
     public double getMin() {
@@ -195,7 +188,7 @@ public class Slider extends AbstractField<Double> {
     /**
      * Set the minimum slider value. If the current value of the slider is
      * smaller than this, the value is set to the new minimum.
-     * 
+     *
      * @param min
      *            The new minimum slider value
      */
@@ -214,7 +207,7 @@ public class Slider extends AbstractField<Double> {
 
     /**
      * Get the current orientation of the slider (horizontal or vertical).
-     * 
+     *
      * @return {@link SliderOrientation#HORIZONTAL} or
      *         {@link SliderOrientation#VERTICAL}
      */
@@ -224,7 +217,7 @@ public class Slider extends AbstractField<Double> {
 
     /**
      * Set the orientation of the slider.
-     * 
+     *
      * @param orientation
      *            The new orientation, either
      *            {@link SliderOrientation#HORIZONTAL} or
@@ -237,7 +230,7 @@ public class Slider extends AbstractField<Double> {
     /**
      * Get the current resolution of the slider. The resolution is the number of
      * digits after the decimal point.
-     * 
+     *
      * @return resolution
      */
     public int getResolution() {
@@ -247,10 +240,10 @@ public class Slider extends AbstractField<Double> {
     /**
      * Set a new resolution for the slider. The resolution is the number of
      * digits after the decimal point.
-     * 
+     *
      * @throws IllegalArgumentException
      *             if resolution is negative.
-     * 
+     *
      * @param resolution
      */
     public void setResolution(int resolution) {
@@ -263,7 +256,7 @@ public class Slider extends AbstractField<Double> {
 
     /**
      * Sets the value of the slider.
-     * 
+     *
      * @param value
      *            The new value of the slider.
      * @param repaintIsNotNeeded
@@ -306,7 +299,7 @@ public class Slider extends AbstractField<Double> {
      * Overridden to keep the shared state in sync with the AbstractField
      * internal value. Should be removed once AbstractField is refactored to use
      * shared state.
-     * 
+     *
      * See tickets #10921 and #11064.
      */
     @Override
@@ -321,9 +314,9 @@ public class Slider extends AbstractField<Double> {
     /**
      * Thrown when the value of the slider is about to be set to a value that is
      * outside the valid range of the slider.
-     * 
+     *
      * @author Vaadin Ltd.
-     * 
+     *
      */
     public class ValueOutOfBoundsException extends RuntimeException {
 
@@ -332,7 +325,7 @@ public class Slider extends AbstractField<Double> {
         /**
          * Constructs an <code>ValueOutOfBoundsException</code> with the
          * specified detail message.
-         * 
+         *
          * @param valueOutOfBounds
          */
         public ValueOutOfBoundsException(Double valueOutOfBounds) {
@@ -343,7 +336,7 @@ public class Slider extends AbstractField<Double> {
 
         /**
          * Gets the value that is outside the valid range of the slider.
-         * 
+         *
          * @return the value that is out of bounds
          */
         public Double getValue() {
@@ -367,34 +360,4 @@ public class Slider extends AbstractField<Double> {
         return false;
     }
 
-    @Override
-    public void readDesign(Element design, DesignContext context) {
-        super.readDesign(design, context);
-        Attributes attr = design.attributes();
-        if (attr.hasKey("vertical")) {
-            setOrientation(SliderOrientation.VERTICAL);
-        }
-        if (!attr.get("value").isEmpty()) {
-            setValue(DesignAttributeHandler.readAttribute("value", attr,
-                    Double.class));
-        }
-    }
-
-    @Override
-    public void writeDesign(Element design, DesignContext context) {
-        super.writeDesign(design, context);
-        if (getOrientation() == SliderOrientation.VERTICAL) {
-            design.attr("vertical", "");
-        }
-        Slider defaultSlider = context.getDefaultInstance(this);
-        DesignAttributeHandler.writeAttribute(this, "value",
-                design.attributes(), defaultSlider);
-    }
-
-    @Override
-    protected Collection<String> getCustomAttributes() {
-        Collection<String> result = super.getCustomAttributes();
-        result.add("orientation");
-        return result;
-    }
 }

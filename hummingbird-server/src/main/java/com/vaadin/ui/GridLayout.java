@@ -17,21 +17,12 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-
-import org.jsoup.nodes.Attributes;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
@@ -43,17 +34,15 @@ import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.gridlayout.GridLayoutServerRpc;
 import com.vaadin.shared.ui.gridlayout.GridLayoutState;
 import com.vaadin.shared.ui.gridlayout.GridLayoutState.ChildComponentData;
-import com.vaadin.ui.declarative.DesignAttributeHandler;
-import com.vaadin.ui.declarative.DesignContext;
 
 /**
  * A layout where the components are laid out on a grid using cell coordinates.
- * 
+ *
  * <p>
  * The GridLayout also maintains a cursor for adding components in
  * left-to-right, top-to-bottom order.
  * </p>
- * 
+ *
  * <p>
  * Each component in a <code>GridLayout</code> uses a defined
  * {@link GridLayout.Area area} (column1,row1,column2,row2) from the grid. The
@@ -61,12 +50,12 @@ import com.vaadin.ui.declarative.DesignContext;
  * you will get an {@link OverlapsException}. Adding a component with cursor
  * automatically extends the grid by increasing the grid height.
  * </p>
- * 
+ *
  * <p>
  * The grid coordinates, which are specified by a row and column index, always
  * start from 0 for the topmost row and the leftmost column.
  * </p>
- * 
+ *
  * @author Vaadin Ltd.
  * @since 3.0
  */
@@ -105,10 +94,10 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Constructor for a grid of given size (number of columns and rows).
-     * 
+     *
      * The grid may grow or shrink later. Grid grows automatically if you add
      * components outside its area.
-     * 
+     *
      * @param columns
      *            Number of columns in the grid.
      * @param rows
@@ -130,9 +119,9 @@ public class GridLayout extends AbstractLayout
     /**
      * Constructs a GridLayout of given size (number of columns and rows) and
      * adds the given components in order to the grid.
-     * 
+     *
      * @see #addComponents(Component...)
-     * 
+     *
      * @param columns
      *            Number of columns in the grid.
      * @param rows
@@ -161,13 +150,13 @@ public class GridLayout extends AbstractLayout
      * by specifying the upper left corner (column1, row1) and the lower right
      * corner (column2, row2) of the area. The coordinates are zero-based.
      * </p>
-     * 
+     *
      * <p>
      * If the area overlaps with any of the existing components already present
      * in the grid, the operation will fail and an {@link OverlapsException} is
      * thrown.
      * </p>
-     * 
+     *
      * @param component
      *            the component to be added, not <code>null</code>.
      * @param column1
@@ -269,7 +258,7 @@ public class GridLayout extends AbstractLayout
     /**
      * Tests if the given area overlaps with any of the items already on the
      * grid.
-     * 
+     *
      * @param area
      *            the Area to be checked for overlapping.
      * @throws OverlapsException
@@ -291,7 +280,7 @@ public class GridLayout extends AbstractLayout
      * the area.) End coordinates (SouthEast corner of the area) are the same as
      * column1,row1. The coordinates are zero-based. Component width and height
      * is 1.
-     * 
+     *
      * @param component
      *            the component to be added, not <code>null</code>.
      * @param column
@@ -311,16 +300,16 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Forces the next component to be added at the beginning of the next line.
-     * 
+     *
      * <p>
      * Sets the cursor column to 0 and increments the cursor row by one.
      * </p>
-     * 
+     *
      * <p>
      * By calling this function you can ensure that no more components are added
      * right of the previous component.
      * </p>
-     * 
+     *
      * @see #space()
      */
     public void newLine() {
@@ -331,7 +320,7 @@ public class GridLayout extends AbstractLayout
     /**
      * Moves the cursor forward by one. If the cursor goes out of the right grid
      * border, it is moved to the first column of the next row.
-     * 
+     *
      * @see #newLine()
      */
     public void space() {
@@ -347,7 +336,7 @@ public class GridLayout extends AbstractLayout
      * cursor position is already occupied, the cursor is moved forwards to find
      * free position. If the cursor goes out from the bottom of the grid, the
      * grid is automatically extended.
-     * 
+     *
      * @param component
      *            the component to be added, not <code>null</code>.
      */
@@ -383,7 +372,7 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Removes the specified component from the layout.
-     * 
+     *
      * @param component
      *            the component to be removed.
      */
@@ -402,7 +391,7 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Removes the component specified by its cell coordinates.
-     * 
+     *
      * @param column
      *            the component's column, starting from 0.
      * @param row
@@ -426,7 +415,7 @@ public class GridLayout extends AbstractLayout
     /**
      * Gets an Iterator for the components contained in the layout. By using the
      * Iterator it is possible to step through the contents of the layout.
-     * 
+     *
      * @return the Iterator of the components inside the layout.
      */
     @Override
@@ -437,7 +426,7 @@ public class GridLayout extends AbstractLayout
     /**
      * Gets the number of components contained in the layout. Consistent with
      * the iterator returned by {@link #getComponentIterator()}.
-     * 
+     *
      * @return the number of contained components
      */
     @Override
@@ -456,7 +445,7 @@ public class GridLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.AlignmentHandler#getComponentAlignment(com
      * .vaadin.ui.Component)
      */
@@ -474,17 +463,17 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Defines a rectangular area of cells in a GridLayout.
-     * 
+     *
      * <p>
      * Also maintains a reference to the component contained in the area.
      * </p>
-     * 
+     *
      * <p>
      * The area is specified by the cell coordinates of its upper left corner
      * (column1,row1) and lower right corner (column2,row2). As otherwise with
      * GridLayout, the column and row coordinates start from zero.
      * </p>
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -496,7 +485,7 @@ public class GridLayout extends AbstractLayout
          * <p>
          * Construct a new area on a grid.
          * </p>
-         * 
+         *
          * @param component
          *            the component connected to the area.
          * @param column1
@@ -530,7 +519,7 @@ public class GridLayout extends AbstractLayout
 
         /**
          * Tests if this Area overlaps with another Area.
-         * 
+         *
          * @param other
          *            the other Area that is to be tested for overlap with this
          *            area
@@ -543,7 +532,7 @@ public class GridLayout extends AbstractLayout
 
         /**
          * Gets the component connected to the area.
-         * 
+         *
          * @return the Component.
          */
         public Component getComponent() {
@@ -552,7 +541,7 @@ public class GridLayout extends AbstractLayout
 
         /**
          * Gets the column of the top-left corner cell.
-         * 
+         *
          * @return the column of the top-left corner cell.
          */
         public int getColumn1() {
@@ -561,7 +550,7 @@ public class GridLayout extends AbstractLayout
 
         /**
          * Gets the column of the bottom-right corner cell.
-         * 
+         *
          * @return the column of the bottom-right corner cell.
          */
         public int getColumn2() {
@@ -570,7 +559,7 @@ public class GridLayout extends AbstractLayout
 
         /**
          * Gets the row of the top-left corner cell.
-         * 
+         *
          * @return the row of the top-left corner cell.
          */
         public int getRow1() {
@@ -579,7 +568,7 @@ public class GridLayout extends AbstractLayout
 
         /**
          * Gets the row of the bottom-right corner cell.
-         * 
+         *
          * @return the row of the bottom-right corner cell.
          */
         public int getRow2() {
@@ -598,7 +587,7 @@ public class GridLayout extends AbstractLayout
      * Gridlayout does not support laying components on top of each other. An
      * <code>OverlapsException</code> is thrown when a component already exists
      * (even partly) at the same space on a grid with the new component.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -608,7 +597,7 @@ public class GridLayout extends AbstractLayout
 
         /**
          * Constructs an <code>OverlapsException</code>.
-         * 
+         *
          * @param existingArea
          */
         public OverlapsException(Area existingArea) {
@@ -643,7 +632,7 @@ public class GridLayout extends AbstractLayout
 
         /**
          * Gets the area .
-         * 
+         *
          * @return the existing area.
          */
         public Area getArea() {
@@ -654,7 +643,7 @@ public class GridLayout extends AbstractLayout
     /**
      * An <code>Exception</code> object which is thrown when an area exceeds the
      * bounds of the grid.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -665,7 +654,7 @@ public class GridLayout extends AbstractLayout
         /**
          * Constructs an <code>OoutOfBoundsException</code> with the specified
          * detail message.
-         * 
+         *
          * @param areaOutOfBounds
          */
         public OutOfBoundsException(Area areaOutOfBounds) {
@@ -674,7 +663,7 @@ public class GridLayout extends AbstractLayout
 
         /**
          * Gets the area that is out of bounds.
-         * 
+         *
          * @return the area out of Bound.
          */
         public Area getArea() {
@@ -685,7 +674,7 @@ public class GridLayout extends AbstractLayout
     /**
      * Sets the number of columns in the grid. The column count can not be
      * reduced if there are any areas that would be outside of the shrunk grid.
-     * 
+     *
      * @param columns
      *            the new number of columns in the grid.
      */
@@ -726,7 +715,7 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Get the number of columns in the grid.
-     * 
+     *
      * @return the number of columns in the grid.
      */
     public int getColumns() {
@@ -736,7 +725,7 @@ public class GridLayout extends AbstractLayout
     /**
      * Sets the number of rows in the grid. The number of rows can not be
      * reduced if there are any areas that would be outside of the shrunk grid.
-     * 
+     *
      * @param rows
      *            the new number of rows in the grid.
      */
@@ -776,7 +765,7 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Get the number of rows in the grid.
-     * 
+     *
      * @return the number of rows in the grid.
      */
     public int getRows() {
@@ -785,14 +774,14 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Gets the current x-position (column) of the cursor.
-     * 
+     *
      * <p>
      * The cursor position points the position for the next component that is
      * added without specifying its coordinates (grid cell). When the cursor
      * position is occupied, the next component will be added to first free
      * position after the cursor.
      * </p>
-     * 
+     *
      * @return the grid column the cursor is on, starting from 0.
      */
     public int getCursorX() {
@@ -802,7 +791,7 @@ public class GridLayout extends AbstractLayout
     /**
      * Sets the current cursor x-position. This is usually handled automatically
      * by GridLayout.
-     * 
+     *
      * @param cursorX
      */
     public void setCursorX(int cursorX) {
@@ -811,14 +800,14 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Gets the current y-position (row) of the cursor.
-     * 
+     *
      * <p>
      * The cursor position points the position for the next component that is
      * added without specifying its coordinates (grid cell). When the cursor
      * position is occupied, the next component will be added to the first free
      * position after the cursor.
      * </p>
-     * 
+     *
      * @return the grid row the Cursor is on.
      */
     public int getCursorY() {
@@ -828,7 +817,7 @@ public class GridLayout extends AbstractLayout
     /**
      * Sets the current y-coordinate (row) of the cursor. This is usually
      * handled automatically by GridLayout.
-     * 
+     *
      * @param cursorY
      *            the row number, starting from 0 for the topmost row.
      */
@@ -863,7 +852,7 @@ public class GridLayout extends AbstractLayout
 
     /*
      * Removes all components from this container.
-     * 
+     *
      * @see com.vaadin.ui.ComponentContainer#removeAllComponents()
      */
     @Override
@@ -893,7 +882,7 @@ public class GridLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.SpacingHandler#setSpacing(boolean)
      */
     @Override
@@ -903,7 +892,7 @@ public class GridLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.SpacingHandler#isSpacing()
      */
     @Override
@@ -913,7 +902,7 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Inserts an empty row at the specified position in the grid.
-     * 
+     *
      * @param row
      *            Index of the row before which the new row will be inserted.
      *            The leftmost row has index 0.
@@ -947,18 +936,18 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Removes a row and all the components in the row.
-     * 
+     *
      * <p>
      * Components which span over several rows are removed if the selected row
      * is on the first row of such a component.
      * </p>
-     * 
+     *
      * <p>
      * If the last row is removed then all remaining components will be removed
      * and the grid will be reduced to one row. The cursor will be moved to the
      * upper left cell of the grid.
      * </p>
-     * 
+     *
      * @param row
      *            Index of the row to remove. The leftmost row has index 0.
      */
@@ -1005,20 +994,20 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Sets the expand ratio of given column.
-     * 
+     *
      * <p>
      * The expand ratio defines how excess space is distributed among columns.
      * Excess space means space that is left over from components that are not
      * sized relatively. By default, the excess space is distributed evenly.
      * </p>
-     * 
+     *
      * <p>
      * Note that the component width of the GridLayout must be defined (fixed or
      * relative, as opposed to undefined) for this method to have any effect.
      * </p>
-     * 
+     *
      * @see #setWidth(float, int)
-     * 
+     *
      * @param columnIndex
      * @param ratio
      */
@@ -1030,9 +1019,9 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Returns the expand ratio of given column
-     * 
+     *
      * @see #setColumnExpandRatio(int, float)
-     * 
+     *
      * @param columnIndex
      * @return the expand ratio, 0.0f by default
      */
@@ -1043,20 +1032,20 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Sets the expand ratio of given row.
-     * 
+     *
      * <p>
      * Expand ratio defines how excess space is distributed among rows. Excess
      * space means the space left over from components that are not sized
      * relatively. By default, the excess space is distributed evenly.
      * </p>
-     * 
+     *
      * <p>
      * Note, that height needs to be defined (fixed or relative, as opposed to
      * undefined height) for this method to have any effect.
      * </p>
-     * 
+     *
      * @see #setHeight(float, int)
-     * 
+     *
      * @param rowIndex
      *            The row index, starting from 0 for the topmost row.
      * @param ratio
@@ -1069,9 +1058,9 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Returns the expand ratio of given row.
-     * 
+     *
      * @see #setRowExpandRatio(int, float)
-     * 
+     *
      * @param rowIndex
      *            The row index, starting from 0 for the topmost row.
      * @return the expand ratio, 0.0f by default
@@ -1083,7 +1072,7 @@ public class GridLayout extends AbstractLayout
 
     /**
      * Gets the Component at given index.
-     * 
+     *
      * @param x
      *            The column index, starting from 0 for the leftmost column.
      * @param y
@@ -1105,7 +1094,7 @@ public class GridLayout extends AbstractLayout
     /**
      * Returns information about the area where given component is laid in the
      * GridLayout.
-     * 
+     *
      * @param component
      *            the component whose area information is requested.
      * @return an Area object that contains information how component is laid in
@@ -1136,7 +1125,7 @@ public class GridLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.MarginHandler#setMargin(boolean)
      */
     @Override
@@ -1146,7 +1135,7 @@ public class GridLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.MarginHandler#setMargin(com.vaadin.shared.ui.
      * MarginInfo )
      */
@@ -1157,7 +1146,7 @@ public class GridLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.MarginHandler#getMargin()
      */
     @Override
@@ -1167,7 +1156,7 @@ public class GridLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Layout.AlignmentHandler#getDefaultComponentAlignment()
      */
     @Override
@@ -1177,7 +1166,7 @@ public class GridLayout extends AbstractLayout
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.ui.Layout.AlignmentHandler#setDefaultComponentAlignment(com
      * .vaadin.ui.Alignment)
@@ -1191,12 +1180,12 @@ public class GridLayout extends AbstractLayout
      * Sets whether empty rows and columns should be considered as non-existent
      * when rendering or not. If this is set to true then the spacing between
      * multiple empty columns (or rows) will be collapsed.
-     * 
+     *
      * The default behavior is to consider all rows and columns as visible
-     * 
+     *
      * NOTE that this must be set before the initial rendering takes place.
      * Updating this on the fly is not supported.
-     * 
+     *
      * @since 7.3
      * @param hideEmptyRowsAndColumns
      *            true to hide empty rows and columns, false to leave them as-is
@@ -1208,7 +1197,7 @@ public class GridLayout extends AbstractLayout
     /**
      * Checks whether whether empty rows and columns should be considered as
      * non-existent when rendering or not.
-     * 
+     *
      * @see #setHideEmptyRowsAndColumns(boolean)
      * @since 7.3
      * @return true if empty rows and columns are hidden, false otherwise
@@ -1217,327 +1206,4 @@ public class GridLayout extends AbstractLayout
         return getState(false).hideEmptyRowsAndColumns;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * After reading the design, cursorY is set to point to a row outside of the
-     * GridLayout area. CursorX is reset to 0.
-     */
-    @Override
-    public void readDesign(Element design, DesignContext designContext) {
-        super.readDesign(design, designContext);
-
-        setMargin(readMargin(design, getMargin(), designContext));
-
-        List<Element> rowElements = new ArrayList<Element>();
-        List<Map<Integer, Component>> rows = new ArrayList<Map<Integer, Component>>();
-        // Prepare a 2D map for reading column contents
-        for (Element e : design.children()) {
-            if (e.tagName().equalsIgnoreCase("row")) {
-                rowElements.add(e);
-                rows.add(new HashMap<Integer, Component>());
-
-            }
-        }
-        setRows(Math.max(rows.size(), 1));
-
-        List<Integer> columnExpandRatios = new ArrayList<Integer>();
-        for (int row = 0; row < rowElements.size(); ++row) {
-            Element rowElement = rowElements.get(row);
-
-            // Row Expand
-            if (rowElement.hasAttr("expand")) {
-                int expand = DesignAttributeHandler.readAttribute("expand",
-                        rowElement.attributes(), int.class);
-                setRowExpandRatio(row, expand);
-            }
-
-            Elements cols = rowElement.children();
-
-            // Amount of skipped columns due to spanned components
-            int skippedColumns = 0;
-
-            for (int column = 0; column < cols.size(); ++column) {
-                while (rows.get(row).containsKey(column + skippedColumns)) {
-                    // Skip any spanned components
-                    skippedColumns++;
-                }
-
-                Element col = cols.get(column);
-                Component child = null;
-
-                if (col.children().size() > 0) {
-                    child = designContext.readDesign(col.child(0));
-                    // TODO: Currently ignoring any extra children.
-                    // Needs Error handling?
-                } // Else: Empty placeholder. No child component.
-
-                // Handle rowspan and colspan for this child component
-                Attributes attr = col.attributes();
-                int colspan = DesignAttributeHandler.readAttribute("colspan",
-                        attr, 1, int.class);
-                int rowspan = DesignAttributeHandler.readAttribute("rowspan",
-                        attr, 1, int.class);
-
-                for (int rowIndex = row; rowIndex < row + rowspan; ++rowIndex) {
-                    for (int colIndex = column; colIndex < column
-                            + colspan; ++colIndex) {
-                        if (rowIndex == rows.size()) {
-                            // Rowspan with not enough rows. Fix by adding rows.
-                            rows.add(new HashMap<Integer, Component>());
-                        }
-                        rows.get(rowIndex).put(colIndex + skippedColumns,
-                                child);
-                    }
-                }
-
-                // Read column expand ratios if handling the first row.
-                if (row == 0) {
-                    if (col.hasAttr("expand")) {
-                        for (String expand : col.attr("expand").split(",")) {
-                            columnExpandRatios.add(Integer.parseInt(expand));
-                        }
-                    } else {
-                        for (int c = 0; c < colspan; ++c) {
-                            columnExpandRatios.add(0);
-                        }
-                    }
-                }
-
-                skippedColumns += (colspan - 1);
-            }
-        }
-
-        // Calculate highest column count and set columns
-        int colMax = 0;
-        for (Map<Integer, Component> cols : rows) {
-            if (colMax < cols.size()) {
-                colMax = cols.size();
-            }
-        }
-        setColumns(Math.max(colMax, 1));
-
-        for (int i = 0; i < columnExpandRatios.size(); ++i) {
-            setColumnExpandRatio(i, columnExpandRatios.get(i));
-        }
-
-        // Reiterate through the 2D map and add components to GridLayout
-        Set<Component> visited = new HashSet<Component>();
-
-        // Ignore any missing components
-        visited.add(null);
-
-        for (int i = 0; i < rows.size(); ++i) {
-            Map<Integer, Component> row = rows.get(i);
-            for (int j = 0; j < colMax; ++j) {
-                Component child = row.get(j);
-                if (visited.contains(child)) {
-                    // Empty location or already handled child
-                    continue;
-                }
-                visited.add(child);
-
-                // Figure out col and rowspan from 2D map
-                int colspan = 0;
-                while (j + colspan + 1 < row.size()
-                        && row.get(j + colspan + 1) == child) {
-                    ++colspan;
-                }
-
-                int rowspan = 0;
-                while (i + rowspan + 1 < rows.size()
-                        && rows.get(i + rowspan + 1).get(j) == child) {
-                    ++rowspan;
-                }
-
-                // Add component with area
-                addComponent(child, j, i, j + colspan, i + rowspan);
-            }
-        }
-        // Set cursor position explicitly
-        setCursorY(getRows());
-        setCursorX(0);
-    }
-
-    @Override
-    public void writeDesign(Element design, DesignContext designContext) {
-        super.writeDesign(design, designContext);
-
-        GridLayout def = designContext.getDefaultInstance(this);
-
-        writeMargin(design, getMargin(), def.getMargin(), designContext);
-
-        if (components.isEmpty()
-                || !designContext.shouldWriteChildren(this, def)) {
-            return;
-        }
-
-        final Map<Connector, ChildComponentData> childData = getState().childData;
-
-        // Make a 2D map of component areas.
-        Component[][] componentMap = new Component[getState().rows][getState().columns];
-        final Component dummyComponent = new Label("");
-
-        for (Component component : components) {
-            ChildComponentData coords = childData.get(component);
-            for (int row = coords.row1; row <= coords.row2; ++row) {
-                for (int col = coords.column1; col <= coords.column2; ++col) {
-                    componentMap[row][col] = component;
-                }
-            }
-        }
-
-        // Go through the map and write only needed column tags
-        Set<Connector> visited = new HashSet<Connector>();
-
-        // Skip the dummy placeholder
-        visited.add(dummyComponent);
-
-        for (int i = 0; i < componentMap.length; ++i) {
-            Element row = design.appendElement("row");
-
-            // Row Expand
-            DesignAttributeHandler.writeAttribute("expand", row.attributes(),
-                    (int) getRowExpandRatio(i), 0, int.class);
-
-            int colspan = 1;
-            Element col;
-            for (int j = 0; j < componentMap[i].length; ++j) {
-                Component child = componentMap[i][j];
-                if (child != null) {
-                    if (visited.contains(child)) {
-                        // Child has already been written in the design
-                        continue;
-                    }
-                    visited.add(child);
-
-                    Element childElement = designContext.createElement(child);
-                    col = row.appendElement("column");
-
-                    // Write child data into design
-                    ChildComponentData coords = childData.get(child);
-
-                    Alignment alignment = getComponentAlignment(child);
-                    if (alignment.isMiddle()) {
-                        childElement.attr(":middle", "");
-                    } else if (alignment.isBottom()) {
-                        childElement.attr(":bottom", "");
-                    }
-                    if (alignment.isCenter()) {
-                        childElement.attr(":center", "");
-                    } else if (alignment.isRight()) {
-                        childElement.attr(":right", "");
-                    }
-
-                    col.appendChild(childElement);
-                    if (coords.row1 != coords.row2) {
-                        col.attr("rowspan",
-                                "" + (1 + coords.row2 - coords.row1));
-                    }
-
-                    colspan = 1 + coords.column2 - coords.column1;
-                    if (colspan > 1) {
-                        col.attr("colspan", "" + colspan);
-                    }
-
-                } else {
-                    boolean hasExpands = false;
-                    if (i == 0 && lastComponentOnRow(componentMap[i], j,
-                            visited)) {
-                        // A column with expand and no content in the end of
-                        // first row needs to be present.
-                        for (int c = j; c < componentMap[i].length; ++c) {
-                            if ((int) getColumnExpandRatio(c) > 0) {
-                                hasExpands = true;
-                            }
-                        }
-                    }
-
-                    if (lastComponentOnRow(componentMap[i], j, visited)
-                            && !hasExpands) {
-                        continue;
-                    }
-
-                    // Empty placeholder tag.
-                    col = row.appendElement("column");
-
-                    // Use colspan to make placeholders more pleasant
-                    while (j + colspan < componentMap[i].length
-                            && componentMap[i][j + colspan] == child) {
-                        ++colspan;
-                    }
-
-                    int rowspan = getRowSpan(componentMap, i, j, colspan,
-                            child);
-                    if (colspan > 1) {
-                        col.attr("colspan", "" + colspan);
-                    }
-                    if (rowspan > 1) {
-                        col.attr("rowspan", "" + rowspan);
-                    }
-                    for (int x = 0; x < rowspan; ++x) {
-                        for (int y = 0; y < colspan; ++y) {
-                            // Mark handled columns
-                            componentMap[i + x][j + y] = dummyComponent;
-                        }
-                    }
-                }
-
-                // Column expands
-                if (i == 0) {
-                    // Only do expands on first row
-                    String expands = "";
-                    boolean expandRatios = false;
-                    for (int c = 0; c < colspan; ++c) {
-                        int colExpand = (int) getColumnExpandRatio(j + c);
-                        if (colExpand > 0) {
-                            expandRatios = true;
-                        }
-                        expands += (c > 0 ? "," : "") + colExpand;
-                    }
-                    if (expandRatios) {
-                        col.attr("expand", expands);
-                    }
-                }
-
-                j += colspan - 1;
-            }
-        }
-    }
-
-    private int getRowSpan(Component[][] compMap, int i, int j, int colspan,
-            Component child) {
-        int rowspan = 1;
-        while (i + rowspan < compMap.length
-                && compMap[i + rowspan][j] == child) {
-            for (int k = 0; k < colspan; ++k) {
-                if (compMap[i + rowspan][j + k] != child) {
-                    return rowspan;
-                }
-            }
-            rowspan++;
-        }
-        return rowspan;
-    }
-
-    private boolean lastComponentOnRow(Component[] componentArray, int j,
-            Set<Connector> visited) {
-        while ((++j) < componentArray.length) {
-            Component child = componentArray[j];
-            if (child != null && !visited.contains(child)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    protected Collection<String> getCustomAttributes() {
-        Collection<String> result = super.getCustomAttributes();
-        result.add("cursor-x");
-        result.add("cursor-y");
-        result.add("rows");
-        result.add("columns");
-        return result;
-    }
 }
