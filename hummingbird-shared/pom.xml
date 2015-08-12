@@ -15,6 +15,15 @@
 	</dependencies>
 
 	<build>
+	<!--  Temporary to make client engine compilation work in Eclipse -->
+		<resources>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.java</include>
+				</includes>
+			</resource>
+		</resources>
 		<plugins>
 		</plugins>
 	</build>

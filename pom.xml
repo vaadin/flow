@@ -14,7 +14,6 @@
 		<module>hummingbird-shared</module>
 		<module>hummingbird-push</module>
 		<module>hummingbird-client</module>
-		<module>hummingbird-client-compiled</module>
 		<module>hummingbird-themes</module>
 		<module>hummingbird-uitest</module>
 	</modules>

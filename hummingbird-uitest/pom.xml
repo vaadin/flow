@@ -33,7 +33,7 @@
 
 		<dependency>
 			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird-client-compiled</artifactId>
+			<artifactId>hummingbird-client</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 
