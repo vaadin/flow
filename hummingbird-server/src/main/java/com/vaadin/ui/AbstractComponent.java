@@ -796,11 +796,9 @@ public abstract class AbstractComponent extends AbstractClientConnector
         this.height = height;
         heightUnit = unit;
         if (height < 0) {
-            getState().height = null;
-            Style.remove(getElement(), "height");
+            getElement().removeStyle("height");
         } else {
-            getState().height = height + unit.toString();
-            Style.add(getElement(), "height", getState().height);
+            getElement().setStyle("height", height + unit.toString());
         }
         // ComponentSizeValidator.setHeightLocation(this);
     }
@@ -860,11 +858,9 @@ public abstract class AbstractComponent extends AbstractClientConnector
         this.width = width;
         widthUnit = unit;
         if (width < 0) {
-            getState().width = null;
-            Style.remove(getElement(), "width");
+            getElement().removeStyle("width");
         } else {
-            getState().width = width + unit.toString();
-            Style.add(getElement(), "width", getState().width);
+            getElement().setStyle("width", width + unit.toString());
         }
         // ComponentSizeValidator.setWidthLocation(this);
     }

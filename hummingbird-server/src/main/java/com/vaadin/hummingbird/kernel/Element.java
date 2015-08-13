@@ -5,10 +5,14 @@ import java.util.Collection;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.Component;
 
 public class Element {
 
+    private static final String STYLE_SEPARATOR = ";";
+    private static final String CLASS_ATTRIBUTE = "class";
+    private static final String STYLE_ATTRIBUTE = "style";
     private ElementTemplate template;
     private StateNode node;
 
@@ -263,6 +267,10 @@ public class Element {
                 .filter(value -> {
                     return !value.equals(valueToRemove);
                 }).collect(Collectors.joining(separator));
+        if (newValue.equals("")) {
+            newValue = null;
+        }
+
         return setAttribute(name, newValue);
     }
 
@@ -313,7 +321,7 @@ public class Element {
      * @return this element
      */
     public Element removeClass(String className) {
-        return removeAttributeValue("class", className, " ");
+        return removeAttributeValue(CLASS_ATTRIBUTE, className, " ");
     }
 
     /**
@@ -328,10 +336,10 @@ public class Element {
      * @return this element
      */
     public Element addClass(String className) {
-        if (!hasAttribute("class")) {
-            setAttribute("class", className);
+        if (!hasAttribute(CLASS_ATTRIBUTE)) {
+            setAttribute(CLASS_ATTRIBUTE, className);
         } else {
-            addAttributeValue("class", className, " ");
+            addAttributeValue(CLASS_ATTRIBUTE, className, " ");
         }
         return this;
     }
@@ -344,7 +352,108 @@ public class Element {
      * @return true if the class name is set, false otherwise
      */
     public boolean hasClass(String className) {
-        return hasAttributeValue("class", className, " ");
+        return hasAttributeValue(CLASS_ATTRIBUTE, className, " ");
+    }
+
+    /**
+     * Sets the given inline style ({@code property}: {@code value}) on the
+     * element. Replaces any existing value with the same property.
+     *
+     * @param property
+     *            The style property to set
+     * @param value
+     *            The value to set for the property
+     */
+    public void setStyle(String property, String value) {
+        if (!hasAttribute(STYLE_ATTRIBUTE)) {
+            setAttribute(STYLE_ATTRIBUTE, property + ":" + value);
+            return;
+        }
+        String[] currentStyles = getAttribute(STYLE_ATTRIBUTE)
+                .split(STYLE_SEPARATOR);
+
+        boolean updated = false;
+        for (int i = 0; i < currentStyles.length; i++) {
+            String currentStyle = currentStyles[i];
+            String[] keyValue = currentStyle.split(":", 2);
+            String key = keyValue[0].trim();
+
+            if (key.equals(property)) {
+                updated = true;
+                currentStyles[i] = property + ":" + value;
+                break;
+            }
+        }
+
+        String newStyles = SharedUtil.join(currentStyles, STYLE_SEPARATOR);
+        if (!updated) {
+            newStyles += STYLE_SEPARATOR + property + ":" + value;
+        }
+        setAttribute(STYLE_ATTRIBUTE, newStyles);
+    }
+
+    /**
+     * Checks if the the given inline style property has been defined for the
+     * element
+     *
+     * @param property
+     *            the style property to look for
+     * @return true if the property has been set, false otherwise
+     */
+    public boolean hasStyle(String property) {
+        return getStyle(property) != null;
+    }
+
+    /**
+     * Gets the value of the given inline style property
+     *
+     * @param property
+     *            The property whose value should be returned
+     * @return The value of the property or null if the property has not been
+     *         set
+     */
+    public String getStyle(String property) {
+        if (!hasAttribute(STYLE_ATTRIBUTE)) {
+            return null;
+        }
+
+        for (String style : getAttribute(STYLE_ATTRIBUTE)
+                .split(STYLE_SEPARATOR)) {
+            String[] keyValue = style.split(":", 2);
+            String key = keyValue[0];
+            if (key.equals(property)) {
+                return keyValue[1];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Removes the given inline style property from the element.
+     * <p>
+     * Note that you should only pass the style property (e.g. width) and not
+     * the value
+     *
+     * @param property
+     *            the style property to remove
+     */
+    public void removeStyle(String property) {
+        if (!hasAttribute(STYLE_ATTRIBUTE)) {
+            return;
+        }
+
+        String newStyles = Arrays
+                .stream(getAttribute(STYLE_ATTRIBUTE).split(STYLE_SEPARATOR))
+                .filter(style -> {
+                    String[] keyValue = style.split(":", 2);
+                    String key = keyValue[0];
+                    return !key.equals(property);
+                }).collect(Collectors.joining(STYLE_SEPARATOR));
+
+        if (newStyles.equals("")) {
+            newStyles = null;
+        }
+        setAttribute(STYLE_ATTRIBUTE, newStyles);
     }
 
     public Element setComponent(Component component) {

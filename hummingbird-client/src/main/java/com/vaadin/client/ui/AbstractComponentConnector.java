@@ -15,8 +15,6 @@
  */
 package com.vaadin.client.ui;
 
-import java.awt.LayoutManager;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
@@ -157,17 +155,6 @@ public abstract class AbstractComponentConnector extends AbstractConnector
         Profiler.leave(
                 "AbstractComponentConnector.onStateChanged updateWidgetStyleNames");
 
-        /*
-         * updateComponentSize need to be after caption update so caption can be
-         * taken into account
-         */
-
-        Profiler.enter(
-                "AbstractComponentConnector.onStateChanged updateComponentSize");
-        updateComponentSize();
-        Profiler.leave(
-                "AbstractComponentConnector.onStateChanged updateComponentSize");
-
         Profiler.leave("AbstractComponentConnector.onStateChanged");
     }
 
@@ -191,80 +178,6 @@ public abstract class AbstractComponentConnector extends AbstractConnector
             }
         }
 
-    }
-
-    /**
-     * Updates the component size based on the shared state, invoking the
-     * {@link LayoutManager layout manager} if necessary.
-     */
-    protected void updateComponentSize() {
-        updateComponentSize(getState().width == null ? "" : getState().width,
-                getState().height == null ? "" : getState().height);
-    }
-
-    /**
-     * Updates the component size, invoking the {@link LayoutManager layout
-     * manager} if necessary.
-     *
-     * @param newWidth
-     *            The new width as a CSS string. Cannot be null.
-     * @param newHeight
-     *            The new height as a CSS string. Cannot be null.
-     */
-    protected void updateComponentSize(String newWidth, String newHeight) {
-        Profiler.enter("AbstractComponentConnector.updateComponentSize");
-
-        // Set defined sizes
-        Widget widget = getWidget();
-
-        Profiler.enter(
-                "AbstractComponentConnector.updateComponentSize update styleNames");
-        widget.setStyleName("v-has-width", !isUndefinedWidth());
-        widget.setStyleName("v-has-height", !isUndefinedHeight());
-        Profiler.leave(
-                "AbstractComponentConnector.updateComponentSize update styleNames");
-
-        Profiler.enter(
-                "AbstractComponentConnector.updateComponentSize update DOM");
-        updateWidgetSize(newWidth, newHeight);
-        Profiler.leave(
-                "AbstractComponentConnector.updateComponentSize update DOM");
-
-        Profiler.leave("AbstractComponentConnector.updateComponentSize");
-    }
-
-    /**
-     * Updates the DOM size of this connector's {@link #getWidget() widget}.
-     *
-     * @since 7.1.15
-     * @param newWidth
-     *            The new width as a CSS string. Cannot be null.
-     * @param newHeight
-     *            The new height as a CSS string. Cannot be null.
-     */
-    protected void updateWidgetSize(String newWidth, String newHeight) {
-        getWidget().setWidth(newWidth);
-        getWidget().setHeight(newHeight);
-    }
-
-    @Override
-    public boolean isRelativeHeight() {
-        return ComponentStateUtil.isRelativeHeight(getState());
-    }
-
-    @Override
-    public boolean isRelativeWidth() {
-        return ComponentStateUtil.isRelativeWidth(getState());
-    }
-
-    @Override
-    public boolean isUndefinedHeight() {
-        return ComponentStateUtil.isUndefinedHeight(getState());
-    }
-
-    @Override
-    public boolean isUndefinedWidth() {
-        return ComponentStateUtil.isUndefinedWidth(getState());
     }
 
     /*

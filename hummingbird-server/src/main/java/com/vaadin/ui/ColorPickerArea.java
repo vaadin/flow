@@ -36,7 +36,7 @@ public class ColorPickerArea extends AbstractColorPicker {
 
     /**
      * Instantiates a new color picker.
-     * 
+     *
      * @param popupCaption
      *            caption of the color select popup
      */
@@ -46,7 +46,7 @@ public class ColorPickerArea extends AbstractColorPicker {
 
     /**
      * Instantiates a new color picker.
-     * 
+     *
      * @param popupCaption
      *            caption of the color select popup
      * @param initialColor
@@ -63,14 +63,18 @@ public class ColorPickerArea extends AbstractColorPicker {
     }
 
     @Override
-    public void beforeClientResponse(boolean initial) {
-        super.beforeClientResponse(initial);
-
-        if ("".equals(getState().height)) {
-            getState().height = "30px";
+    public void setWidth(float width, Unit unit) {
+        super.setWidth(width, unit);
+        if (!getElement().hasStyle("width")) {
+            getElement().setStyle("width", "30px");
         }
-        if ("".equals(getState().width)) {
-            getState().width = "30px";
+    }
+
+    @Override
+    public void setHeight(float height, Unit unit) {
+        super.setHeight(height, unit);
+        if (!getElement().hasStyle("height")) {
+            getElement().setStyle("height", "30px");
         }
     }
 

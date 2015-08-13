@@ -16,13 +16,13 @@
 
 package com.vaadin.tests.server.component;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
 
 import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.shared.ui.label.LabelState;
 import com.vaadin.ui.Label;
+
+import junit.framework.TestCase;
 
 public class ComponentSizeParseTest extends TestCase {
 
@@ -56,6 +56,6 @@ public class ComponentSizeParseTest extends TestCase {
 
         label.setHeight(10, unit);
         label.beforeClientResponse(true);
-        Assert.assertEquals(string, label.getState().height);
+        Assert.assertEquals(string, label.getElement().getStyle("height"));
     }
 }

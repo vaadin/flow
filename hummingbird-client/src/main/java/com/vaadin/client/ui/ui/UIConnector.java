@@ -29,8 +29,6 @@ import com.google.gwt.dom.client.HeadElement;
 import com.google.gwt.dom.client.LinkElement;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.NodeList;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.StyleElement;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.event.dom.client.ScrollEvent;
@@ -44,7 +42,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.BrowserInfo;
@@ -59,7 +56,6 @@ import com.vaadin.client.VConsole;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.annotations.OnStateChange;
 import com.vaadin.client.communication.StateChangeEvent;
-import com.vaadin.client.communication.StateChangeEvent.StateChangeHandler;
 import com.vaadin.client.ui.AbstractConnector;
 import com.vaadin.client.ui.AbstractHasComponentsConnector;
 import com.vaadin.client.ui.ClickEventHandler;
@@ -85,18 +81,7 @@ import com.vaadin.ui.UI;
 @Connect(value = UI.class, loadStyle = LoadStyle.EAGER)
 public class UIConnector extends AbstractHasComponentsConnector {
 
-    private HandlerRegistration childStateChangeHandlerRegistration;
-
     private String activeTheme = null;
-
-    private final StateChangeHandler childStateChangeHandler = new StateChangeHandler() {
-        @Override
-        public void onStateChanged(StateChangeEvent stateChangeEvent) {
-            // TODO Should use a more specific handler that only reacts to
-            // size changes
-            onChildSizeChange();
-        }
-    };
 
     @Override
     protected Widget createWidget() {
@@ -359,26 +344,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
         }
     }
 
-    protected void onChildSizeChange() {
-        ComponentConnector child = getContent();
-        if (child == null) {
-            return;
-        }
-        Style childStyle = child.getWidget().getElement().getStyle();
-        /*
-         * Must set absolute position if the child has relative height and
-         * there's a chance of horizontal scrolling as some browsers will
-         * otherwise not take the scrollbar into account when calculating the
-         * height. Assuming v-ui does not have an undefined width for now, see
-         * #8460.
-         */
-        if (child.isRelativeHeight() && !BrowserInfo.get().isIE9()) {
-            childStyle.setPosition(Position.ABSOLUTE);
-        } else {
-            childStyle.clearPosition();
-        }
-    }
-
     @Override
     public UIState getState() {
         return (UIState) super.getState();
@@ -413,17 +378,8 @@ public class UIConnector extends AbstractHasComponentsConnector {
         }
 
         if (oldChild != newChild) {
-            if (childStateChangeHandlerRegistration != null) {
-                childStateChangeHandlerRegistration.removeHandler();
-                childStateChangeHandlerRegistration = null;
-            }
             if (newChild != null) {
                 getWidget().setWidget(newChild.getWidget());
-                childStateChangeHandlerRegistration = newChild
-                        .addStateChangeHandler(childStateChangeHandler);
-                // Must handle new child here as state change events are already
-                // fired
-                onChildSizeChange();
             } else {
                 getWidget().setWidget(null);
             }

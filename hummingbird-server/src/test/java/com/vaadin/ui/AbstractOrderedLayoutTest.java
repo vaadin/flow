@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.kernel.Element;
+import com.vaadin.hummingbird.kernel.ElementTest;
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServletRequest;
@@ -88,7 +89,8 @@ public class AbstractOrderedLayoutTest extends ComponentTestBase {
 
     @Test
     public void initialState() {
-        assertElementEquals(parse("<div class='layout' />"), aol.getElement());
+        ElementTest.assertElementEquals(
+                ElementTest.parse("<div class='layout' />"), aol.getElement());
     }
 
     @Test
@@ -96,7 +98,7 @@ public class AbstractOrderedLayoutTest extends ComponentTestBase {
 
         AbstractOrderedLayout aol2 = createLayout();
         setComponentElement(aol2, "<div class='layout' />");
-        assertElementEquals(aol.getElement(), aol2.getElement());
+        ElementTest.assertElementEquals(aol.getElement(), aol2.getElement());
     }
 
     @Test
@@ -184,10 +186,11 @@ public class AbstractOrderedLayoutTest extends ComponentTestBase {
         Button button = new Button();
         aol.addComponent(button);
         aol.setExpandRatio(button, 1);
-        Element domBefore = parse(button.getElement().getOuterHTML());
+        Element domBefore = ElementTest
+                .parse(button.getElement().getOuterHTML());
         aol.setExpandRatio(button, 2);
         domBefore.removeClass("flex-1").addClass("flex-2");
-        assertElementEquals(domBefore, button.getElement());
+        ElementTest.assertElementEquals(domBefore, button.getElement());
 
         Assert.assertEquals(2, aol.getExpandRatio(button));
         assertNotHasClass(button.getElement(), "flex-1");
@@ -222,11 +225,12 @@ public class AbstractOrderedLayoutTest extends ComponentTestBase {
         Button button = new Button();
         aol.addComponent(button);
         aol.setComponentAlignment(button, Alignment.BOTTOM_CENTER);
-        Element domBefore = parse(button.getElement().getOuterHTML());
+        Element domBefore = ElementTest
+                .parse(button.getElement().getOuterHTML());
         aol.setComponentAlignment(button, Alignment.MIDDLE_LEFT);
         domBefore.removeClass(Alignment.BOTTOM_CENTER.getClassName())
                 .addClass(Alignment.MIDDLE_LEFT.getClassName());
-        assertElementEquals(domBefore, button.getElement());
+        ElementTest.assertElementEquals(domBefore, button.getElement());
 
         Assert.assertEquals(Alignment.MIDDLE_LEFT,
                 aol.getComponentAlignment(button));

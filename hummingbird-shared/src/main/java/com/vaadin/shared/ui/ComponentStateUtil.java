@@ -27,30 +27,13 @@ public final class ComponentStateUtil implements Serializable {
         // Util class is not instantiable
     }
 
-    public static final boolean isUndefinedWidth(AbstractComponentState state) {
-        return state.width == null || "".equals(state.width);
-    }
-
-    public static final boolean isUndefinedHeight(
-            AbstractComponentState state) {
-        return state.height == null || "".equals(state.height);
-    }
-
     public static final boolean hasStyles(AbstractComponentState state) {
         return state.styles != null && !state.styles.isEmpty();
     }
 
-    public static final boolean isRelativeWidth(AbstractComponentState state) {
-        return state.width != null && state.width.endsWith("%");
-    }
-
-    public static final boolean isRelativeHeight(AbstractComponentState state) {
-        return state.height != null && state.height.endsWith("%");
-    }
-
     /**
      * Removes an event listener id.
-     * 
+     *
      * @param eventListenerId
      *            The event identifier to remove
      */
@@ -67,7 +50,7 @@ public final class ComponentStateUtil implements Serializable {
 
     /**
      * Adds an event listener id.
-     * 
+     *
      * @param eventListenerId
      *            The event identifier to add
      */

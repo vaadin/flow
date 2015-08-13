@@ -4,6 +4,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.kernel.ElementTest;
+
 public class VerticalLayoutTest extends ComponentTestBase {
 
     VerticalLayout vl;
@@ -15,7 +17,8 @@ public class VerticalLayoutTest extends ComponentTestBase {
 
     @Test
     public void initialClass() {
-        assertElementEquals(parse("<div class='layout vertical'>"),
+        ElementTest.assertElementEquals(
+                ElementTest.parse("<div class='layout vertical'>"),
                 vl.getElement());
     }
 

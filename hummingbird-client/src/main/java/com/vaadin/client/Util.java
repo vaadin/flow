@@ -31,11 +31,8 @@ import com.google.gwt.event.dom.client.KeyEvent;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import com.vaadin.client.RenderInformation.FloatSize;
 import com.vaadin.client.ui.VOverlay;
-import com.vaadin.shared.AbstractComponentState;
 import com.vaadin.shared.communication.MethodInvocation;
-import com.vaadin.shared.ui.ComponentStateUtil;
 
 import elemental.js.json.JsJsonValue;
 import elemental.json.JsonArray;
@@ -331,29 +328,6 @@ public class Util {
     @Deprecated
     public static void runWebkitOverflowAutoFix(final Element elem) {
         WidgetUtil.runWebkitOverflowAutoFix(elem);
-    }
-
-    /**
-     * Parses shared state and fetches the relative size of the component. If a
-     * dimension is not specified as relative it will return -1. If the shared
-     * state does not contain width or height specifications this will return
-     * null.
-     *
-     * @param state
-     * @return
-     */
-    public static FloatSize parseRelativeSize(AbstractComponentState state) {
-        if (ComponentStateUtil.isUndefinedHeight(state)
-                && ComponentStateUtil.isUndefinedWidth(state)) {
-            return null;
-        }
-
-        float relativeWidth = WidgetUtil.parseRelativeSize(state.width);
-        float relativeHeight = WidgetUtil.parseRelativeSize(state.height);
-
-        FloatSize relativeSize = new FloatSize(relativeWidth, relativeHeight);
-        return relativeSize;
-
     }
 
     @Deprecated

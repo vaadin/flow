@@ -21,7 +21,6 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.PaperButton;
 import com.vaadin.ui.Slider;
-import com.vaadin.ui.Style;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
@@ -40,8 +39,8 @@ public class LayoutWithButton extends UI {
 
         Button b3 = new Button("Say bar");
         PaperButton b4 = new PaperButton("Say baz");
-        Style.add(b4.getElement(), "color", "black");
-        Style.add(b4.getElement(), "background-color", "green");
+        b4.getElement().setStyle("color", "black");
+        b4.getElement().setStyle("background-color", "green");
         Button b5 = new Button("Say Vaadin");
         b1.getElement().addEventListener("click", () -> {
             vl.addComponent(new Label("Hello from the server"));

@@ -29,8 +29,6 @@ import com.vaadin.shared.communication.SharedState;
  * @since 7.0
  */
 public class AbstractComponentState extends SharedState {
-    public String height = "";
-    public String width = "";
     public boolean readOnly = false;
     @NoLayout
     public boolean immediate = false;

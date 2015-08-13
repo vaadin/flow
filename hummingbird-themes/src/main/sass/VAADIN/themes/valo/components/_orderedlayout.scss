@@ -21,10 +21,10 @@
   }
 
   .layout.margin {
-    margin-top: $v-layout-margin-top;
-    margin-bottom: $v-layout-margin-bottom;
-    margin-right: $v-layout-margin-right;
-    margin-left: $v-layout-margin-left;
+    padding-top: $v-layout-margin-top;
+    padding-bottom: $v-layout-margin-bottom;
+    padding-right: $v-layout-margin-right;
+    padding-left: $v-layout-margin-left;
   }
 
 }

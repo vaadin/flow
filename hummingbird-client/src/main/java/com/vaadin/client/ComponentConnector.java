@@ -31,7 +31,7 @@ public interface ComponentConnector extends ServerConnector {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.VPaintable#getState()
      */
     @Override
@@ -43,48 +43,8 @@ public interface ComponentConnector extends ServerConnector {
     public Widget getWidget();
 
     /**
-     * Returns <code>true</code> if the width of this paintable is currently
-     * undefined. If the width is undefined, the actual width of the paintable
-     * is defined by its contents.
-     * 
-     * @return <code>true</code> if the width is undefined, else
-     *         <code>false</code>
-     */
-    public boolean isUndefinedWidth();
-
-    /**
-     * Returns <code>true</code> if the height of this paintable is currently
-     * undefined. If the height is undefined, the actual height of the paintable
-     * is defined by its contents.
-     * 
-     * @return <code>true</code> if the height is undefined, else
-     *         <code>false</code>
-     */
-    public boolean isUndefinedHeight();
-
-    /**
-     * Returns <code>true</code> if the width of this paintable is currently
-     * relative. If the width is relative, the actual width of the paintable is
-     * a percentage of the size allocated to it by its parent.
-     * 
-     * @return <code>true</code> if the width is undefined, else
-     *         <code>false</code>
-     */
-    public boolean isRelativeWidth();
-
-    /**
-     * Returns <code>true</code> if the height of this paintable is currently
-     * relative. If the height is relative, the actual height of the paintable
-     * is a percentage of the size allocated to it by its parent.
-     * 
-     * @return <code>true</code> if the width is undefined, else
-     *         <code>false</code>
-     */
-    public boolean isRelativeHeight();
-
-    /**
      * Checks if the connector is read only.
-     * 
+     *
      * @deprecated This belongs in AbstractFieldConnector, see #8514
      * @return true
      */
@@ -94,13 +54,13 @@ public interface ComponentConnector extends ServerConnector {
     /**
      * Return true if parent handles caption, false if the paintable handles the
      * caption itself.
-     * 
+     *
      * <p>
      * This should always return true and all components should let the parent
      * handle the caption and use other attributes for internal texts in the
      * component
      * </p>
-     * 
+     *
      * @return true if caption handling is delegated to the parent, false if
      *         parent should not be allowed to render caption
      */
@@ -108,7 +68,7 @@ public interface ComponentConnector extends ServerConnector {
 
     /**
      * Sets the enabled state of the widget associated to this connector.
-     * 
+     *
      * @param widgetEnabled
      *            true if the widget should be enabled, false otherwise
      */

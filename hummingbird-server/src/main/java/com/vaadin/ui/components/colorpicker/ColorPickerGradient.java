@@ -72,13 +72,13 @@ public class ColorPickerGradient extends AbstractComponent
         registerRpc(rpc);
         // width and height must be set here instead of in theme, otherwise
         // coordinate calculations fail
-        getState().width = "220px";
-        getState().height = "220px";
+        setWidth("220px");
+        setHeight("220px");
     }
 
     /**
      * Instantiates a new color picker gradient.
-     * 
+     *
      * @param id
      *            the id
      * @param converter
@@ -115,7 +115,7 @@ public class ColorPickerGradient extends AbstractComponent
 
     /**
      * Sets the background color.
-     * 
+     *
      * @param color
      *            the new background color
      */
@@ -130,7 +130,7 @@ public class ColorPickerGradient extends AbstractComponent
 
     /**
      * Notifies the listeners that the color has changed
-     * 
+     *
      * @param color
      *            The color which it changed to
      */
