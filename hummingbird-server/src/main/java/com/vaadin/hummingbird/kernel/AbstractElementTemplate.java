@@ -164,9 +164,14 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         }
 
         if (child.getParent() != null) {
-            if (child.getParent().getTemplate() == this) {
+            if (child.getParent().getNode() == node
+                    && child.getParent().getTemplate() == this) {
                 // Adjust index if child is a child of this
                 int currentIndex = child.getParent().getChildIndex(child);
+                if (currentIndex == index) {
+                    // Already at the correct position
+                    return;
+                }
                 if (index > currentIndex) {
                     index--;
                 }

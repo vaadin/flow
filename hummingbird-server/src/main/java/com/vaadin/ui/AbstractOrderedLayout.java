@@ -44,6 +44,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
     // }
     // };
 
+    protected static final String CLASS_FLEX_CHILDREN = "flex-children";
+
     public static final Alignment ALIGNMENT_DEFAULT = Alignment.TOP_LEFT;
 
     private static final String ERROR_NOT_A_CHILD = "The given component is not a child of this layout";
@@ -57,7 +59,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      */
     public AbstractOrderedLayout() {
         getElement().addClass("layout");
-        // registerRpc(rpc);
+        getElement().addClass(CLASS_FLEX_CHILDREN);
     }
 
     /**
@@ -69,8 +71,6 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      */
     @Override
     public void addComponent(Component c) {
-        // Fires detach/attach as necessary
-        // Throws IllegalArgumentException
         try {
             getElement().appendChild(c.getElement());
         } catch (IllegalArgumentException e) {
@@ -100,13 +100,6 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      *            in and after the position are shifted forwards.
      */
     public void addComponent(Component c, int index) {
-        if (hasChild(c)) {
-            if (getComponentIndex(c) == index) {
-                return;
-            }
-
-            removeComponent(c);
-        }
         getElement().insertChild(index, c.getElement());
     }
 
@@ -204,7 +197,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     @Override
     public void setSpacing(boolean spacing) {
-        getElement().addClass("spacing");
+        getElement().setClass("spacing", spacing);
     }
 
     @Override
@@ -256,7 +249,23 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
         if (ratio != 0) {
             String newClass = "flex-" + ratio;
             component.getElement().addClass(newClass);
+            getElement().removeClass(CLASS_FLEX_CHILDREN);
+        } else {
+            if (!anyExpandsSet()) {
+                getElement().addClass(CLASS_FLEX_CHILDREN);
+            }
+
         }
+    }
+
+    private boolean anyExpandsSet() {
+        for (Component c : this) {
+            if (getExpandRatio(c) != 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -337,7 +346,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     @Override
     public void setMargin(boolean enabled) {
-        getElement().addClass("margin");
+        getElement().setClass("margin", enabled);
     }
 
     @Override

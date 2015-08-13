@@ -37,7 +37,7 @@ public class SizeWithUnit implements Serializable {
 
     /**
      * Constructs a new SizeWithUnit object representing the pair (size, unit).
-     * 
+     *
      * @param size
      *            a numeric value
      * @param unit
@@ -50,7 +50,7 @@ public class SizeWithUnit implements Serializable {
 
     /**
      * Returns the numeric value stored in this object.
-     * 
+     *
      * @return the value of this (value, unit) pair
      */
     public float getSize() {
@@ -59,7 +59,7 @@ public class SizeWithUnit implements Serializable {
 
     /**
      * Returns the unit stored in this object.
-     * 
+     *
      * @return the unit of this (value, unit) pair
      */
     public Unit getUnit() {
@@ -72,7 +72,7 @@ public class SizeWithUnit implements Serializable {
      * is used as the unit. If defaultUnit is null and s is a nonempty string
      * representing a unitless number, an exception is thrown. Null or empty
      * string will produce {-1,Unit#PIXELS}.
-     * 
+     *
      * @param s
      *            the string to be parsed
      * @param defaultUnit
@@ -80,7 +80,7 @@ public class SizeWithUnit implements Serializable {
      *            for no default unit.
      * @return an object containing the parsed value and unit
      */
-    public static SizeWithUnit parseStringSize(String s, Unit defaultUnit) {
+    public static SizeWithUnit parseStringSize(String s) {
         if (s == null) {
             return null;
         }
@@ -98,30 +98,21 @@ public class SizeWithUnit implements Serializable {
                 unit = Unit.PIXELS;
             } else {
                 String symbol = matcher.group(2);
-                if ((symbol != null && symbol.length() > 0)
-                        || defaultUnit == null) {
+                if ((symbol != null && symbol.length() > 0)) {
                     unit = Unit.getUnitFromSymbol(symbol);
-                } else {
-                    unit = defaultUnit;
                 }
+                if (unit == null) {
+                    throw new IllegalArgumentException(
+                            "Invalid size argument: \"" + s
+                                    + "\" (should match "
+                                    + sizePattern.pattern() + ")");
+                }
+
             }
         } else {
             throw new IllegalArgumentException("Invalid size argument: \"" + s
                     + "\" (should match " + sizePattern.pattern() + ")");
         }
         return new SizeWithUnit(size, unit);
-    }
-
-    /**
-     * Returns an object whose numeric value and unit are taken from the string
-     * s. Null or empty string will produce {-1,Unit#PIXELS}. An exception is
-     * thrown if s specifies a number without a unit.
-     * 
-     * @param s
-     *            the string to be parsed
-     * @return an object containing the parsed value and unit
-     */
-    public static SizeWithUnit parseStringSize(String s) {
-        return parseStringSize(s, null);
     }
 }

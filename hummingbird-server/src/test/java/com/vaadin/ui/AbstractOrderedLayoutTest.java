@@ -90,14 +90,15 @@ public class AbstractOrderedLayoutTest extends ComponentTestBase {
     @Test
     public void initialState() {
         ElementTest.assertElementEquals(
-                ElementTest.parse("<div class='layout' />"), aol.getElement());
+                ElementTest.parse("<div class='layout flex-children' />"),
+                aol.getElement());
     }
 
     @Test
     public void initialFromDOM() {
 
         AbstractOrderedLayout aol2 = createLayout();
-        setComponentElement(aol2, "<div class='layout' />");
+        setComponentElement(aol2, "<div class='layout flex-children' />");
         ElementTest.assertElementEquals(aol.getElement(), aol2.getElement());
     }
 
@@ -147,27 +148,94 @@ public class AbstractOrderedLayoutTest extends ComponentTestBase {
 
     @Test
     public void attachDetachOnMove() {
-        AtomicInteger componentAttach = new AtomicInteger(0);
-        AtomicInteger attach = new AtomicInteger(0);
-        AtomicInteger componentDetach = new AtomicInteger(0);
-        AtomicInteger detach = new AtomicInteger(0);
+        AtomicInteger a1 = new AtomicInteger(0);
+        AtomicInteger a2 = new AtomicInteger(0);
+        AtomicInteger a3 = new AtomicInteger(0);
+        AtomicInteger d1 = new AtomicInteger(0);
+        AtomicInteger d2 = new AtomicInteger(0);
+        AtomicInteger d3 = new AtomicInteger(0);
 
-        Button b = new Button();
-        aol.addComponent(new Button());
-        aol.addComponent(b);
+        Button b1 = new Button();
+        Button b2 = new Button();
+        Button b3 = new Button();
+        aol.addComponent(b1);
+        aol.addComponent(b2);
+        aol.addComponent(b3);
 
-        b.addAttachListener(e -> {
-            attach.incrementAndGet();
+        b1.addAttachListener(e -> {
+            a1.incrementAndGet();
         });
-        b.addDetachListener(e -> {
-            detach.incrementAndGet();
+        b2.addAttachListener(e -> {
+            a2.incrementAndGet();
+        });
+        b3.addAttachListener(e -> {
+            a3.incrementAndGet();
+        });
+        b1.addDetachListener(e -> {
+            d1.incrementAndGet();
+        });
+        b2.addDetachListener(e -> {
+            d2.incrementAndGet();
+        });
+        b3.addDetachListener(e -> {
+            d3.incrementAndGet();
         });
 
         // Should detach and then attach again
-        aol.addComponentAsFirst(b);
+        aol.addComponentAsFirst(b3);
 
-        Assert.assertEquals(1, detach.get());
-        Assert.assertEquals(1, attach.get());
+        Assert.assertEquals(0, a1.get());
+        Assert.assertEquals(0, d1.get());
+        Assert.assertEquals(0, a2.get());
+        Assert.assertEquals(0, d2.get());
+        Assert.assertEquals(1, a3.get());
+        Assert.assertEquals(1, d3.get());
+
+    }
+
+    @Test
+    public void noAttachDetachOnAddingAtSamePosition() {
+        AtomicInteger a1 = new AtomicInteger(0);
+        AtomicInteger a2 = new AtomicInteger(0);
+        AtomicInteger a3 = new AtomicInteger(0);
+        AtomicInteger d1 = new AtomicInteger(0);
+        AtomicInteger d2 = new AtomicInteger(0);
+        AtomicInteger d3 = new AtomicInteger(0);
+
+        Button b1 = new Button();
+        Button b2 = new Button();
+        Button b3 = new Button();
+        aol.addComponent(b1);
+        aol.addComponent(b2);
+        aol.addComponent(b3);
+
+        b1.addAttachListener(e -> {
+            a1.incrementAndGet();
+        });
+        b2.addAttachListener(e -> {
+            a2.incrementAndGet();
+        });
+        b3.addAttachListener(e -> {
+            a3.incrementAndGet();
+        });
+        b1.addDetachListener(e -> {
+            d1.incrementAndGet();
+        });
+        b2.addDetachListener(e -> {
+            d2.incrementAndGet();
+        });
+        b3.addDetachListener(e -> {
+            d3.incrementAndGet();
+        });
+
+        aol.addComponentAsFirst(b1);
+
+        Assert.assertEquals(0, a1.get());
+        Assert.assertEquals(0, d1.get());
+        Assert.assertEquals(0, a2.get());
+        Assert.assertEquals(0, d2.get());
+        Assert.assertEquals(0, a3.get());
+        Assert.assertEquals(0, d3.get());
 
     }
 
@@ -207,6 +275,21 @@ public class AbstractOrderedLayoutTest extends ComponentTestBase {
         Assert.assertEquals(0, aol.getExpandRatio(button));
         assertNotHasClass(button.getElement(), "flex-1");
         assertNotHasClass(button.getElement(), "flex-0");
+        assertHasClass(aol.getElement(), "flex-children");
+    }
+
+    @Test
+    public void allExpandInitially() {
+        Button b1 = new Button();
+        Button b2 = new Button();
+        Button b3 = new Button();
+        aol.addComponents(b1, b2, b3);
+
+        Assert.assertEquals(0, aol.getExpandRatio(b1));
+        Assert.assertEquals(0, aol.getExpandRatio(b2));
+        Assert.assertEquals(0, aol.getExpandRatio(b3));
+        assertHasClass(aol.getElement(),
+                AbstractOrderedLayout.CLASS_FLEX_CHILDREN);
     }
 
     @Test

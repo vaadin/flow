@@ -86,14 +86,14 @@ public interface Sizeable extends Serializable {
                     return unit;
                 }
             }
-            return Unit.PIXELS; // Defaults to pixels
+            return null;
         }
     }
 
     /**
      * Gets the width of the object. Negative number implies unspecified size
      * (terminal is free to set the size).
-     * 
+     *
      * @return width of the object in units specified by widthUnits property.
      */
     public float getWidth();
@@ -101,38 +101,38 @@ public interface Sizeable extends Serializable {
     /**
      * Gets the height of the object. Negative number implies unspecified size
      * (terminal is free to set the size).
-     * 
+     *
      * @return height of the object in units specified by heightUnits property.
      */
     public float getHeight();
 
     /**
      * Gets the width property units.
-     * 
+     *
      * @return units used in width property.
      */
     public Unit getWidthUnits();
 
     /**
      * Gets the height property units.
-     * 
+     *
      * @return units used in height property.
      */
     public Unit getHeightUnits();
 
     /**
      * Sets the height of the component using String presentation.
-     * 
+     *
      * String presentation is similar to what is used in Cascading Style Sheets.
      * Size can be length or percentage of available size.
-     * 
+     *
      * The empty string ("") or null will unset the height and set the units to
      * pixels.
-     * 
+     *
      * See
      * <a href="http://www.w3.org/TR/REC-CSS2/syndata.html#value-def-length">CSS
      * specification</a> for more details.
-     * 
+     *
      * @param height
      *            in CSS style string representation
      */
@@ -141,7 +141,7 @@ public interface Sizeable extends Serializable {
     /**
      * Sets the width of the object. Negative number implies unspecified size
      * (terminal is free to set the size).
-     * 
+     *
      * @param width
      *            the width of the object.
      * @param unit
@@ -152,7 +152,7 @@ public interface Sizeable extends Serializable {
     /**
      * Sets the height of the object. Negative number implies unspecified size
      * (terminal is free to set the size).
-     * 
+     *
      * @param height
      *            the height of the object.
      * @param unit
@@ -162,17 +162,17 @@ public interface Sizeable extends Serializable {
 
     /**
      * Sets the width of the component using String presentation.
-     * 
+     *
      * String presentation is similar to what is used in Cascading Style Sheets.
      * Size can be length or percentage of available size.
-     * 
+     *
      * The empty string ("") or null will unset the width and set the units to
      * pixels.
-     * 
+     *
      * See
      * <a href="http://www.w3.org/TR/REC-CSS2/syndata.html#value-def-length">CSS
      * specification</a> for more details.
-     * 
+     *
      * @param width
      *            in CSS style string representation, null or empty string to
      *            reset
@@ -191,14 +191,14 @@ public interface Sizeable extends Serializable {
 
     /**
      * Clears any defined width
-     * 
+     *
      * @since 7.3
      */
     public void setWidthUndefined();
 
     /**
      * Clears any defined height
-     * 
+     *
      * @since 7.3
      */
     public void setHeightUndefined();

@@ -465,4 +465,20 @@ public class Element {
         return template.getComponent(node);
     }
 
+    /**
+     * Adds or removes the given class, based on the {@code add} parameter
+     *
+     * @param className
+     *            the class to add or remove
+     * @param enabled
+     *            true to add the class, false to remove it
+     */
+    public void setClass(String className, boolean add) {
+        if (add) {
+            addClass(className);
+        } else {
+            removeClass(className);
+        }
+    }
+
 }

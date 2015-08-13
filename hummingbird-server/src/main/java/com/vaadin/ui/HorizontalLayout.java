@@ -31,15 +31,15 @@ public class HorizontalLayout extends AbstractOrderedLayout {
      * Constructs an empty HorizontalLayout.
      */
     public HorizontalLayout() {
-        getElement().setAttribute("class", "layout horizontal");
+        getElement().addClass("horizontal");
     }
 
     /**
      * Constructs a HorizontalLayout with the given components. The components
      * are added in the given order.
-     * 
+     *
      * @see AbstractOrderedLayout#addComponents(Component...)
-     * 
+     *
      * @param children
      *            The components to add.
      */

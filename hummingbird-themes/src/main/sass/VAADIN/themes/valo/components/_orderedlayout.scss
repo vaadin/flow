@@ -6,9 +6,14 @@
  */
 @mixin valo-orderedlayout-global {
 
+  .layout {
+  	box-sizing: border-box;
+  }
+
   .layout.vertical.spacing > * {
     margin-top: $v-layout-spacing-vertical;
   }
+
   .layout.vertical.spacing > *:first-child {
     margin-top: 0;
   }
@@ -16,6 +21,7 @@
   .layout.horizontal.spacing > * {
     margin-left: $v-layout-spacing-horizontal;
   }
+
   .layout.horizontal.spacing > *:first-child {
     margin-left: 0;
   }
@@ -27,6 +33,12 @@
     padding-left: $v-layout-margin-left;
   }
 
+  .layout.flex-children > * {
+      -ms-flex: 1;
+      -webkit-flex: 1;
+      flex: 1;
+     
+  }
 }
 
 /**
