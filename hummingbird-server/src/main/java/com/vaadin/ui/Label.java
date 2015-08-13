@@ -23,6 +23,7 @@ import java.util.Objects;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.ConverterUtil;
+import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.shared.ui.label.LabelState;
 
@@ -94,12 +95,11 @@ public class Label extends AbstractComponent implements Property<String>,
      * @param contentMode
      */
     public Label(String content, ContentMode contentMode) {
-        setElement(com.vaadin.hummingbird.kernel.Element.createText(""));
-
+        super();
+        getElement().appendChild(Element.createText(""));
         setValue(content);
         setContentMode(contentMode);
-        // XXX can't set width of a text node
-        // setWidth(100, Unit.PERCENTAGE);
+        setWidth(100, Unit.PERCENTAGE);
     }
 
     /**
@@ -171,7 +171,8 @@ public class Label extends AbstractComponent implements Property<String>,
             String oldTextValue = state.text;
             if (!Objects.equals(oldTextValue, newStringValue)) {
                 getState().text = newStringValue;
-                getElement().setAttribute("content", newStringValue);
+                getElement().getChild(0).setAttribute("content",
+                        newStringValue);
                 fireValueChange();
             }
         } else {
