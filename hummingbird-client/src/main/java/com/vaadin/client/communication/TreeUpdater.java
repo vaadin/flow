@@ -352,7 +352,12 @@ public class TreeUpdater {
 
                 domListeners.remove(id);
             } else {
-                throw new RuntimeException("Not supported: " + change.getKey());
+                String key = change.getKey();
+                if ("TAG".equals(key)) {
+                    return;
+                }
+
+                element.removeAttribute(change.getKey());
             }
         }
 
