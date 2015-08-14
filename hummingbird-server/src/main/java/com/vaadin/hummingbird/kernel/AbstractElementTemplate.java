@@ -79,6 +79,10 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
     private StateNode getComponentNode(StateNode node, boolean createIfNeeded) {
         StateNode dataNode = getElementDataNode(node, createIfNeeded);
+        if (dataNode == null) {
+            return null;
+        }
+
         StateNode componentNode = dataNode.get(Component.class,
                 StateNode.class);
         if (componentNode == null) {
