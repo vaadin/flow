@@ -11,8 +11,9 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.ComponentContainer.MarginHandler;
 import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Layout.MarginHandler;
 import com.vaadin.ui.NativeButton;
 
 public class CssLayoutCustomCss extends TestBase implements ClickListener {
@@ -49,7 +50,7 @@ public class CssLayoutCustomCss extends TestBase implements ClickListener {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
-                ((MarginHandler) layout).setMargin(cb.getValue());
+                ((ComponentContainer.MarginHandler) layout).setMargin(cb.getValue());
             }
         });
 

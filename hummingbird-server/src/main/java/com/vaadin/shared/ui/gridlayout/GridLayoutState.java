@@ -22,10 +22,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.vaadin.shared.Connector;
-import com.vaadin.shared.ui.AbstractLayoutState;
+import com.vaadin.shared.ui.JavaScriptComponentState;
 import com.vaadin.ui.Alignment;
 
-public class GridLayoutState extends AbstractLayoutState {
+public class GridLayoutState extends JavaScriptComponentState {
     public static Alignment ALIGNMENT_DEFAULT = Alignment.TOP_LEFT;
 
     {

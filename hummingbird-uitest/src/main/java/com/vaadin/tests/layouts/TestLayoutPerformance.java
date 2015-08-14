@@ -7,10 +7,10 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -68,7 +68,7 @@ public class TestLayoutPerformance extends TestBase {
             @Override
             public void buttonClick(ClickEvent event) {
                 int components = Integer.parseInt(n.getValue());
-                Layout layout = getCurrentLayout();
+                ComponentContainer layout = getCurrentLayout();
                 for (int i = 0; i < components; i++) {
                     Component component = newTestComponent();
                     if (cb.getValue()) {
@@ -92,14 +92,14 @@ public class TestLayoutPerformance extends TestBase {
 
     }
 
-    private Layout getCurrentLayout() {
+    private ComponentContainer getCurrentLayout() {
         Class<?> value = (Class<?>) ns.getValue();
         if (value == GridLayout.class) {
             return new GridLayout(10, 1);
         }
 
         try {
-            return (Layout) value.newInstance();
+            return (ComponentContainer) value.newInstance();
         } catch (InstantiationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

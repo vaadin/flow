@@ -11,8 +11,8 @@ import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.util.Log;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.RichTextArea;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
@@ -22,7 +22,7 @@ import com.vaadin.ui.VerticalLayout;
 public class NavigatorTest extends UI {
 
     private Log log = new Log(5);
-    private Layout naviLayout = new VerticalLayout();
+    private ComponentContainer naviLayout = new VerticalLayout();
     private TextField params = new TextField("Parameters");
 
     private Navigator navi;

@@ -10,9 +10,9 @@ import java.util.NoSuchElementException;
 import org.junit.Test;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 
 public class AddComponentsTest {
 
@@ -93,7 +93,7 @@ public class AddComponentsTest {
 
     @Test
     public void testConstructorWithComponents() {
-        Layout layout = new CssLayout(children);
+        ComponentContainer layout = new CssLayout(children);
         assertOrder(layout, new int[] { 0, 1, 2, 3 });
     }
 
@@ -117,7 +117,7 @@ public class AddComponentsTest {
      * Asserts that layout has the components in children in the order specified
      * by indices.
      */
-    private void assertOrder(Layout layout, int[] indices) {
+    private void assertOrder(ComponentContainer layout, int[] indices) {
         Iterator<?> i = layout.iterator();
         try {
             for (int index : indices) {

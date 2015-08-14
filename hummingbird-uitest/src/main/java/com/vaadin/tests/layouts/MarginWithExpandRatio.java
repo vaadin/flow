@@ -19,10 +19,10 @@ package com.vaadin.tests.layouts;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.tests.util.TestUtils;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 
@@ -60,7 +60,7 @@ public class MarginWithExpandRatio extends AbstractTestUI {
         return 11553;
     }
 
-    private void addLayoutTest(Layout l) {
+    private void addLayoutTest(ComponentContainer l) {
         l.setSizeFull();
 
         Label lbl = new Label("First (expand ratio 1)");

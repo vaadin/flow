@@ -9,8 +9,9 @@ import com.vaadin.server.Resource;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.server.UserError;
 import com.vaadin.ui.AbstractComponent;
+import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.ComponentContainer.SpacingHandler;
 import com.vaadin.ui.Field;
-import com.vaadin.ui.Layout.SpacingHandler;
 
 public abstract class AbstractComponentTestCase<T extends AbstractComponent>
         extends TestBase {
@@ -52,7 +53,7 @@ public abstract class AbstractComponentTestCase<T extends AbstractComponent>
 
     @Override
     protected void setup() {
-        ((SpacingHandler) getLayout()).setSpacing(true);
+        ((ComponentContainer.SpacingHandler) getLayout()).setSpacing(true);
 
         // Create Components
         initializeComponents();

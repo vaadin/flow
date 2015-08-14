@@ -18,7 +18,7 @@ package com.vaadin.tests.layouts.layouttester;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.AbstractComponent;
-import com.vaadin.ui.AbstractLayout;
+import com.vaadin.ui.AbstractComponentContainer;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
@@ -37,7 +37,8 @@ public class BaseAddReplaceMove extends BaseLayoutTestUI {
     /**
      * @param layoutClass
      */
-    public BaseAddReplaceMove(Class<? extends AbstractLayout> layoutClass) {
+    public BaseAddReplaceMove(
+            Class<? extends AbstractComponentContainer> layoutClass) {
         super(layoutClass);
     }
 

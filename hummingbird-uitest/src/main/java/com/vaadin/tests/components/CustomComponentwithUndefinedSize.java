@@ -3,8 +3,8 @@ package com.vaadin.tests.components;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CustomComponent;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
@@ -47,7 +47,7 @@ public class CustomComponentwithUndefinedSize extends TestBase {
             setCompositionRoot(buildLayout());
         }
 
-        public Layout buildLayout() {
+        public ComponentContainer buildLayout() {
             VerticalLayout layout = new VerticalLayout();
             VerticalLayout panelLayout = new VerticalLayout();
             panelLayout.setMargin(true);

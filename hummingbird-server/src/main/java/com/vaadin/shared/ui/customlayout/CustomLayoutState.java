@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.vaadin.shared.Connector;
-import com.vaadin.shared.ui.AbstractLayoutState;
+import com.vaadin.shared.ui.JavaScriptComponentState;
 
-public class CustomLayoutState extends AbstractLayoutState {
+public class CustomLayoutState extends JavaScriptComponentState {
     {
         primaryStyleName = "v-customlayout";
     }

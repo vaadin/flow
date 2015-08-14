@@ -68,7 +68,8 @@ import com.vaadin.shared.ui.csslayout.CssLayoutState;
  * @since 6.1 brought in from "FastLayouts" incubator project
  *
  */
-public class CssLayout extends AbstractLayout implements LayoutClickNotifier {
+public class CssLayout extends AbstractComponentContainer
+        implements LayoutClickNotifier {
 
     private CssLayoutServerRpc rpc = new CssLayoutServerRpc() {
 

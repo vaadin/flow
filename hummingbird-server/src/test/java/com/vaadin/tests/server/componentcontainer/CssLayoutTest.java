@@ -1,13 +1,13 @@
 package com.vaadin.tests.server.componentcontainer;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Layout;
 
 public class CssLayoutTest extends AbstractIndexedLayoutTestBase {
 
     @Override
-    protected Layout createLayout() {
+    protected ComponentContainer createLayout() {
         return new CssLayout();
     }
 

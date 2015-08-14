@@ -16,6 +16,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.VerticalLayout;
@@ -91,7 +92,7 @@ public class OrderedLayoutCases extends AbstractTestUI {
                         public void valueChange(ValueChangeEvent event) {
                             String value = event.getProperty().getValue()
                                     .toString();
-                            AlignmentHandler parent = (AlignmentHandler) getParent();
+                            ComponentContainer.AlignmentHandler parent = (ComponentContainer.AlignmentHandler) getParent();
                             if (parent == null) {
                                 return;
                             }

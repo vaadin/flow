@@ -11,9 +11,9 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.NativeButton;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
@@ -44,7 +44,7 @@ public class FocusAndBlurListeners extends TestBase {
 
     @Override
     protected void setup() {
-        Layout l = getLayout();
+        ComponentContainer l = getLayout();
 
         TextField tf = new TextField("TextField");
         l.addComponent(tf);

@@ -6,9 +6,9 @@ import java.util.Map;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
 
@@ -65,7 +65,7 @@ public class FirstTabNotVisibleWhenTabsheetNotClipped extends AbstractTestUI {
         return layout;
     }
 
-    private void addBlock(Layout layout) {
+    private void addBlock(ComponentContainer layout) {
         layout.setWidth("300px");
 
         TabSheet tabsheet = new TabSheet();

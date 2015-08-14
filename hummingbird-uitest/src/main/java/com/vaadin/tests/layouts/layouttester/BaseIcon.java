@@ -16,7 +16,7 @@
 package com.vaadin.tests.layouts.layouttester;
 
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.AbstractLayout;
+import com.vaadin.ui.AbstractComponentContainer;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
@@ -33,7 +33,7 @@ public class BaseIcon extends BaseLayoutTestUI {
     /**
      * @param layoutClass
      */
-    public BaseIcon(Class<? extends AbstractLayout> layoutClass) {
+    public BaseIcon(Class<? extends AbstractComponentContainer> layoutClass) {
         super(layoutClass);
     }
 

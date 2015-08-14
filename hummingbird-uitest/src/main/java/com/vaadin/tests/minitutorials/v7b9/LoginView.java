@@ -5,7 +5,7 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Layout;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.PasswordField;
@@ -19,7 +19,7 @@ public class LoginView extends Panel implements View {
 
     public LoginView(final Navigator navigator,
             final String fragmentAndParameters) {
-        Layout layout = new VerticalLayout();
+        ComponentContainer layout = new VerticalLayout();
 
         final TextField email = new TextField("Email");
         layout.addComponent(email);

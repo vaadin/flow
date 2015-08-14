@@ -4,8 +4,8 @@ import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.AbsoluteLayout;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 
 public class AbsoluteLayoutAddRemove extends TestBase {
 
@@ -21,7 +21,7 @@ public class AbsoluteLayoutAddRemove extends TestBase {
 
     @Override
     protected void setup() {
-        Layout main = getLayout();
+        ComponentContainer main = getLayout();
 
         final Label l = new Label("A Label");
         final AbsoluteLayout al = new AbsoluteLayout();

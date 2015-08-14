@@ -16,7 +16,7 @@
 package com.vaadin.tests.layouts.layouttester;
 
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.AbstractLayout;
+import com.vaadin.ui.AbstractComponentContainer;
 
 /**
  *
@@ -25,7 +25,8 @@ import com.vaadin.ui.AbstractLayout;
  */
 public class BaseComponentSizing extends BaseLayoutTestUI {
 
-    public BaseComponentSizing(Class<? extends AbstractLayout> layoutClass) {
+    public BaseComponentSizing(
+            Class<? extends AbstractComponentContainer> layoutClass) {
         super(layoutClass);
     }
 

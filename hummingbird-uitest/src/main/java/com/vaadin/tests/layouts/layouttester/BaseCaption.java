@@ -16,7 +16,7 @@
 package com.vaadin.tests.layouts.layouttester;
 
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.AbstractLayout;
+import com.vaadin.ui.AbstractComponentContainer;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.TabSheet;
 
@@ -30,7 +30,8 @@ public class BaseCaption extends BaseLayoutTestUI {
     /**
      * @param layoutClass
      */
-    public BaseCaption(Class<? extends AbstractLayout> layoutClass) {
+    public BaseCaption(
+            Class<? extends AbstractComponentContainer> layoutClass) {
         super(layoutClass);
     }
 

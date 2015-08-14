@@ -34,8 +34,8 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.Slider;
 import com.vaadin.ui.Slider.ValueOutOfBoundsException;
 import com.vaadin.ui.TabSheet;
@@ -93,7 +93,7 @@ public class ColorPickerPopup extends Window
     private ColorPickerHistory history;
 
     /** The history container. */
-    private Layout historyContainer;
+    private ComponentContainer historyContainer;
 
     /** The rgb gradient. */
     private ColorPickerGradient rgbGradient;

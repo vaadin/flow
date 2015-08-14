@@ -29,9 +29,10 @@ import com.vaadin.shared.EventId;
 
 @SuppressWarnings("serial")
 @HTML("vaadin://bower_components/iron-flex-layout/classes/iron-flex-layout.html")
-public abstract class AbstractOrderedLayout extends AbstractLayout
-        implements Layout.AlignmentHandler, Layout.SpacingHandler,
-        LayoutClickNotifier, Layout.MarginHandler {
+public abstract class AbstractOrderedLayout extends AbstractComponentContainer
+        implements ComponentContainer.AlignmentHandler,
+        ComponentContainer.SpacingHandler, LayoutClickNotifier,
+        ComponentContainer.MarginHandler {
 
     // private AbstractOrderedLayoutServerRpc rpc = new
     // AbstractOrderedLayoutServerRpc() {
@@ -71,7 +72,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      */
     @Override
     public void addComponent(Component c) {
-        assert c != null: "Cannot add null as a component";
+        assert c != null : "Cannot add null as a component";
         try {
             getElement().appendChild(c.getElement());
         } catch (IllegalArgumentException e) {
@@ -101,7 +102,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      *            in and after the position are shifted forwards.
      */
     public void addComponent(Component c, int index) {
-        assert c != null: "Cannot add null as a component";
+        assert c != null : "Cannot add null as a component";
 
         getElement().insertChild(index, c.getElement());
     }
@@ -114,7 +115,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      */
     @Override
     public void removeComponent(Component c) {
-        assert c != null: "Cannot remove null component";
+        assert c != null : "Cannot remove null component";
 
         if (!hasChild(c)) {
             throw new IllegalArgumentException(ERROR_NOT_A_CHILD);

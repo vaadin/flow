@@ -7,11 +7,11 @@ import com.vaadin.tests.components.AbstractTestUIWithLog;
 import com.vaadin.ui.AbsoluteLayout;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -101,7 +101,7 @@ public class TestLayoutClickListeners extends AbstractTestUIWithLog {
 
     }
 
-    private Layout createClickableGridLayout() {
+    private ComponentContainer createClickableGridLayout() {
 
         GridLayout gl = new GridLayout(4, 4);
         gl.setHeight("400px");
@@ -143,7 +143,7 @@ public class TestLayoutClickListeners extends AbstractTestUIWithLog {
         log(layout + ": " + button + " " + type + " on " + target);
     }
 
-    private Layout createClickableVerticalLayout() {
+    private ComponentContainer createClickableVerticalLayout() {
 
         VerticalLayout gl = new VerticalLayout();
         addContent(gl, 5);
@@ -160,7 +160,7 @@ public class TestLayoutClickListeners extends AbstractTestUIWithLog {
         return wrap(gl, "Clickable VerticalLayout");
     }
 
-    private void addContent(Layout gl, int nr) {
+    private void addContent(ComponentContainer gl, int nr) {
         for (int i = 1; i < nr; i++) {
             Label l = new Label("This is label " + i);
             l.setWidth(null);
@@ -171,7 +171,7 @@ public class TestLayoutClickListeners extends AbstractTestUIWithLog {
         }
     }
 
-    private Layout wrap(Component c, String caption) {
+    private ComponentContainer wrap(Component c, String caption) {
         VerticalLayout vl = new VerticalLayout();
         Label l = new Label(caption);
         l.setWidth(null);

@@ -1,13 +1,13 @@
 package com.vaadin.tests.server.componentcontainer;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Layout;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.VerticalLayout;
 
 public class VerticalLayoutTest extends AbstractIndexedLayoutTestBase {
 
     @Override
-    protected Layout createLayout() {
+    protected ComponentContainer createLayout() {
         return new VerticalLayout();
     }
 

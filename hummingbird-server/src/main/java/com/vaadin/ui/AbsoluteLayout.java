@@ -37,7 +37,7 @@ import com.vaadin.shared.ui.absolutelayout.AbsoluteLayoutState;
  *
  */
 @SuppressWarnings("serial")
-public class AbsoluteLayout extends AbstractLayout
+public class AbsoluteLayout extends AbstractComponentContainer
         implements LayoutClickNotifier {
 
     // constants for design attributes

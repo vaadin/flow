@@ -16,7 +16,7 @@
 package com.vaadin.tests.layouts.layouttester;
 
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.AbstractLayout;
+import com.vaadin.ui.AbstractComponentContainer;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
@@ -33,7 +33,8 @@ import com.vaadin.ui.TextField;
  */
 public class BaseRegError extends BaseLayoutTestUI {
 
-    public BaseRegError(Class<? extends AbstractLayout> layoutClass) {
+    public BaseRegError(
+            Class<? extends AbstractComponentContainer> layoutClass) {
         super(layoutClass);
     }
 

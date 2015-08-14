@@ -17,7 +17,7 @@ package com.vaadin.tests.components.combobox;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
-import com.vaadin.ui.AbstractLayout;
+import com.vaadin.ui.AbstractComponentContainer;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.VerticalLayout;
 
@@ -60,7 +60,7 @@ public class ComboBoxScrollingWithArrows extends AbstractTestUI {
         return 11333;
     }
 
-    private void addComboBox(AbstractLayout layout) {
+    private void addComboBox(AbstractComponentContainer layout) {
         ComboBox box = new ComboBox();
         for (int i = 0; i < 100; i++) {
             box.addItem("item " + i);

@@ -59,9 +59,9 @@ import com.vaadin.shared.ui.gridlayout.GridLayoutState.ChildComponentData;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public class GridLayout extends AbstractLayout
-        implements Layout.AlignmentHandler, Layout.SpacingHandler,
-        Layout.MarginHandler, LayoutClickNotifier {
+public class GridLayout extends AbstractComponentContainer implements
+        ComponentContainer.AlignmentHandler, ComponentContainer.SpacingHandler,
+        ComponentContainer.MarginHandler, LayoutClickNotifier {
 
     private GridLayoutServerRpc rpc = new GridLayoutServerRpc() {
 

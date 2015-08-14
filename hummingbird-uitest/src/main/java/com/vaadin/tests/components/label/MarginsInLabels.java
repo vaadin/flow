@@ -3,7 +3,7 @@ package com.vaadin.tests.components.label;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.tests.components.AbstractTestUI;
-import com.vaadin.ui.AbstractLayout;
+import com.vaadin.ui.AbstractComponentContainer;
 import com.vaadin.ui.Accordion;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
@@ -14,7 +14,7 @@ public class MarginsInLabels extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        AbstractLayout layout = new VerticalLayout();
+        AbstractComponentContainer layout = new VerticalLayout();
         layout.addComponent(
                 new Label("<h1>Vertical layout</h1>", ContentMode.HTML));
         layout.addComponent(new Label("Next row"));

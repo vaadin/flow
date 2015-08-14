@@ -11,9 +11,9 @@ import org.junit.Test;
 
 import com.vaadin.ui.AbstractOrderedLayout;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.VerticalLayout;
 
 public class AddComponentsTest {
@@ -140,7 +140,7 @@ public class AddComponentsTest {
      * Asserts that layout has the components in children in the order specified
      * by indices.
      */
-    private void assertOrder(Layout layout, int[] indices) {
+    private void assertOrder(ComponentContainer layout, int[] indices) {
         Iterator<?> i = layout.iterator();
         try {
             for (int index : indices) {

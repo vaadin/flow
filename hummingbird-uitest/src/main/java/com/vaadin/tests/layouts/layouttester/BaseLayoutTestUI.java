@@ -22,7 +22,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.AbstractComponent;
-import com.vaadin.ui.AbstractLayout;
+import com.vaadin.ui.AbstractComponentContainer;
 import com.vaadin.ui.AbstractOrderedLayout;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -60,10 +60,11 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
 
     protected AbstractOrderedLayout l1;
     protected AbstractOrderedLayout l2;
-    protected Class<? extends AbstractLayout> layoutClass;
+    protected Class<? extends AbstractComponentContainer> layoutClass;
     protected VerticalLayout mainLayout = new VerticalLayout();
 
-    public BaseLayoutTestUI(Class<? extends AbstractLayout> layoutClass) {
+    public BaseLayoutTestUI(
+            Class<? extends AbstractComponentContainer> layoutClass) {
         super();
         fillComponents();
         this.layoutClass = layoutClass;
@@ -99,7 +100,7 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
         }
     }
 
-    protected AbstractLayout createLabelsFields(
+    protected AbstractComponentContainer createLabelsFields(
             Class<? extends AbstractComponent> compType) {
         return createLabelsFields(compType, false, null);
     }
@@ -172,11 +173,11 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
         return nb;
     }
 
-    protected AbstractLayout createLabelsFields(
+    protected AbstractComponentContainer createLabelsFields(
             Class<? extends AbstractComponent> compType, boolean useIcon,
             String ErrorMessage) {
-        AbstractLayout mainLayout = new VerticalLayout();
-        AbstractLayout curLayout = null;
+        AbstractComponentContainer mainLayout = new VerticalLayout();
+        AbstractComponentContainer curLayout = null;
         try {
             curLayout = layoutClass.newInstance();
         } catch (InstantiationException e1) {

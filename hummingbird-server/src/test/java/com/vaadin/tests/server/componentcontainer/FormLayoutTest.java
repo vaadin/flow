@@ -6,14 +6,14 @@ import java.util.NoSuchElementException;
 import org.junit.Test;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 
 public class FormLayoutTest extends AbstractIndexedLayoutTestBase {
 
     @Override
-    protected Layout createLayout() {
+    protected ComponentContainer createLayout() {
         return new FormLayout();
     }
 
@@ -53,7 +53,7 @@ public class FormLayoutTest extends AbstractIndexedLayoutTestBase {
         assertOrder(l, new int[] { 0, 1, 2, 3 });
     }
 
-    private void assertOrder(Layout layout, int[] indices) {
+    private void assertOrder(ComponentContainer layout, int[] indices) {
         Iterator<?> i = layout.iterator();
         try {
             for (int index : indices) {

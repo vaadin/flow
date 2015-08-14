@@ -19,9 +19,9 @@ import com.vaadin.ui.Component.AttachEvent;
 import com.vaadin.ui.Component.AttachListener;
 import com.vaadin.ui.Component.DetachEvent;
 import com.vaadin.ui.Component.DetachListener;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.UI;
 
 public class AttachDetachListenersTest {
@@ -30,7 +30,7 @@ public class AttachDetachListenersTest {
 
     private VaadinSession session;
     private UI ui;
-    private Layout content;
+    private ComponentContainer content;
     private Component component;
 
     AttachListener attachListener;

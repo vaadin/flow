@@ -5,7 +5,7 @@ import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Layout;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
@@ -18,11 +18,11 @@ public class RepaintWindowContents extends AbstractTestUI {
         final Window window = new Window("Test window");
         addWindow(window);
 
-        final Layout layout1 = new VerticalLayout();
+        final ComponentContainer layout1 = new VerticalLayout();
         Button button1 = new Button("Button 1");
         layout1.addComponent(button1);
 
-        final Layout layout2 = new VerticalLayout();
+        final ComponentContainer layout2 = new VerticalLayout();
         Button button2 = new Button("Button 2");
         layout2.addComponent(button2);
 

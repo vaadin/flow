@@ -2,14 +2,12 @@ package com.vaadin.tests.components;
 
 import java.util.LinkedHashMap;
 
-import com.vaadin.ui.AbstractLayout;
+import com.vaadin.ui.AbstractComponentContainer;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Layout.AlignmentHandler;
-import com.vaadin.ui.Layout.MarginHandler;
-import com.vaadin.ui.Layout.SpacingHandler;
+import com.vaadin.ui.ComponentContainer;
 
-public abstract class AbstractLayoutTest<T extends AbstractLayout>
+public abstract class AbstractLayoutTest<T extends AbstractComponentContainer>
         extends AbstractComponentContainerTest<T> {
 
     protected static final String CATEGORY_LAYOUT_FEATURES = "Layout features";
@@ -17,7 +15,7 @@ public abstract class AbstractLayoutTest<T extends AbstractLayout>
 
         @Override
         public void execute(T c, Boolean value, Object data) {
-            ((MarginHandler) c).setMargin(value);
+            ((ComponentContainer.MarginHandler) c).setMargin(value);
 
         }
     };
@@ -25,7 +23,7 @@ public abstract class AbstractLayoutTest<T extends AbstractLayout>
     protected Command<T, Boolean> spacingCommand = new Command<T, Boolean>() {
         @Override
         public void execute(T c, Boolean value, Object data) {
-            ((SpacingHandler) c).setSpacing(value);
+            ((ComponentContainer.SpacingHandler) c).setSpacing(value);
         }
     };
 
@@ -34,21 +32,24 @@ public abstract class AbstractLayoutTest<T extends AbstractLayout>
         @Override
         public void execute(T c, Integer value, Object alignment) {
             Component child = getComponentAtIndex(c, value);
-            ((AlignmentHandler) c).setComponentAlignment(child,
-                    (Alignment) alignment);
+            ((ComponentContainer.AlignmentHandler) c)
+                    .setComponentAlignment(child, (Alignment) alignment);
         }
     };
 
     @Override
     protected void createActions() {
         super.createActions();
-        if (MarginHandler.class.isAssignableFrom(getTestClass())) {
+        if (ComponentContainer.MarginHandler.class
+                .isAssignableFrom(getTestClass())) {
             createMarginsSelect(CATEGORY_LAYOUT_FEATURES);
         }
-        if (SpacingHandler.class.isAssignableFrom(getTestClass())) {
+        if (ComponentContainer.SpacingHandler.class
+                .isAssignableFrom(getTestClass())) {
             createSpacingSelect(CATEGORY_LAYOUT_FEATURES);
         }
-        if (AlignmentHandler.class.isAssignableFrom(getTestClass())) {
+        if (ComponentContainer.AlignmentHandler.class
+                .isAssignableFrom(getTestClass())) {
             createChangeComponentAlignmentAction(CATEGORY_LAYOUT_FEATURES);
         }
 

@@ -11,9 +11,9 @@ import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.InlineDateField;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Panel;
@@ -33,7 +33,7 @@ public class SettingsView extends Panel implements View {
 
     public SettingsView(final Navigator navigator) {
         this.navigator = navigator;
-        Layout layout = new VerticalLayout();
+        ComponentContainer layout = new VerticalLayout();
 
         date = new InlineDateField("Birth date");
 

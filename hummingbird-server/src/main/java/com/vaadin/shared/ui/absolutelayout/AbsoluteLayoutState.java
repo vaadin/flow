@@ -18,9 +18,9 @@ package com.vaadin.shared.ui.absolutelayout;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vaadin.shared.ui.AbstractLayoutState;
+import com.vaadin.shared.ui.JavaScriptComponentState;
 
-public class AbsoluteLayoutState extends AbstractLayoutState {
+public class AbsoluteLayoutState extends JavaScriptComponentState {
     {
         primaryStyleName = "v-absolutelayout";
     }
