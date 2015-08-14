@@ -28,7 +28,7 @@ public interface ErrorHandlingRunnable extends Runnable, Serializable {
 
     /**
      * Handles exceptions thrown during the execution of a FutureAccess.
-     * 
+     *
      * @since 7.1.8
      * @param exception
      *            the thrown exception.

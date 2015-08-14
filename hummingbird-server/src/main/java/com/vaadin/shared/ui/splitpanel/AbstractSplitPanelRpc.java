@@ -22,7 +22,7 @@ public interface AbstractSplitPanelRpc extends ServerRpc {
 
     /**
      * Called when the position has been updated by the user.
-     * 
+     *
      * @param position
      *            The new position in % if the current unit is %, in px
      *            otherwise
@@ -31,7 +31,7 @@ public interface AbstractSplitPanelRpc extends ServerRpc {
 
     /**
      * Called when a click event has occurred on the splitter.
-     * 
+     *
      * @param mouseDetails
      *            Details about the mouse when the event took place
      */

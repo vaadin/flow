@@ -136,7 +136,7 @@ public class LoginForm extends CustomComponent {
      * Returns byte array containing login page html. If you need to override
      * the login html, use the default html as basis. Login page sets its target
      * with javascript.
-     * 
+     *
      * @return byte array containing login page html
      */
     protected String getLoginHTML() {
@@ -238,7 +238,7 @@ public class LoginForm extends CustomComponent {
 
     /**
      * Adds LoginListener to handle login logic
-     * 
+     *
      * @param listener
      */
     public void addLoginListener(LoginListener listener) {
@@ -247,7 +247,7 @@ public class LoginForm extends CustomComponent {
 
     /**
      * Removes LoginListener
-     * 
+     *
      * @param listener
      */
     public void removeLoginListener(LoginListener listener) {
@@ -280,7 +280,7 @@ public class LoginForm extends CustomComponent {
 
     /**
      * Returns the caption for the user name field.
-     * 
+     *
      * @return String
      */
     public String getUsernameCaption() {
@@ -290,7 +290,7 @@ public class LoginForm extends CustomComponent {
     /**
      * Sets the caption to show for the user name field. The caption cannot be
      * changed after the form has been shown to the user.
-     * 
+     *
      * @param usernameCaption
      */
     public void setUsernameCaption(String usernameCaption) {
@@ -299,7 +299,7 @@ public class LoginForm extends CustomComponent {
 
     /**
      * Returns the caption for the password field.
-     * 
+     *
      * @return String
      */
     public String getPasswordCaption() {
@@ -309,7 +309,7 @@ public class LoginForm extends CustomComponent {
     /**
      * Sets the caption to show for the password field. The caption cannot be
      * changed after the form has been shown to the user.
-     * 
+     *
      * @param passwordCaption
      */
     public void setPasswordCaption(String passwordCaption) {
@@ -318,7 +318,7 @@ public class LoginForm extends CustomComponent {
 
     /**
      * Returns the caption for the login button.
-     * 
+     *
      * @return String
      */
     public String getLoginButtonCaption() {
@@ -328,7 +328,7 @@ public class LoginForm extends CustomComponent {
     /**
      * Sets the caption (button text) to show for the login button. The caption
      * cannot be changed after the form has been shown to the user.
-     * 
+     *
      * @param loginButtonCaption
      */
     public void setLoginButtonCaption(String loginButtonCaption) {

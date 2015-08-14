@@ -41,7 +41,7 @@ public class ApplicationConstants implements Serializable {
             + "://";
     /**
      * Prefix used for theme resource URLs
-     * 
+     *
      * @see com.vaadin.server.ThemeResource
      * @since 7.5.0
      */

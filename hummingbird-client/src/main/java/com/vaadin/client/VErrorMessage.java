@@ -38,7 +38,7 @@ public class VErrorMessage extends FlowPanel {
      * The owner must be set if the {@link VErrorMessage} is created
      * 'stand-alone' (not within a {@link VOverlay}), or theming might not work
      * properly.
-     * 
+     *
      * @see VOverlay#setOwner(Widget)
      * @param owner
      *            the owner (creator Widget)
@@ -59,7 +59,7 @@ public class VErrorMessage extends FlowPanel {
 
     /**
      * Shows this error message next to given element.
-     * 
+     *
      * @param indicatorElement
      * @deprecated As of 7.2, call and override {@link #showAt(Element)} instead
      */
@@ -84,9 +84,9 @@ public class VErrorMessage extends FlowPanel {
 
     /**
      * Shows this error message next to given element.
-     * 
+     *
      * @param indicatorElement
-     * 
+     *
      * @since 7.2
      */
     public void showAt(Element indicatorElement) {

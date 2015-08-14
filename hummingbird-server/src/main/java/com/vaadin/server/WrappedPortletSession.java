@@ -33,7 +33,7 @@ public class WrappedPortletSession implements WrappedSession {
 
     /**
      * Creates a new wrapped portlet session.
-     * 
+     *
      * @param session
      *            the portlet session to wrap.
      */
@@ -58,7 +58,7 @@ public class WrappedPortletSession implements WrappedSession {
 
     /**
      * Gets the wrapped {@link PortletSession}.
-     * 
+     *
      * @return the wrapped portlet session
      */
     public PortletSession getPortletSession() {

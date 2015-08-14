@@ -48,7 +48,7 @@ public class DefaultItemSorter implements ItemSorter {
     /**
      * Constructs a DefaultItemSorter using the default <code>Comparator</code>
      * for comparing <code>Property</code>values.
-     * 
+     *
      */
     public DefaultItemSorter() {
         this(new DefaultPropertyValueComparator());
@@ -58,7 +58,7 @@ public class DefaultItemSorter implements ItemSorter {
      * Constructs a DefaultItemSorter which uses the <code>Comparator</code>
      * indicated by the <code>propertyValueComparator</code> parameter for
      * comparing <code>Property</code>values.
-     * 
+     *
      * @param propertyValueComparator
      *            The comparator to use when comparing individual
      *            <code>Property</code> values
@@ -69,7 +69,7 @@ public class DefaultItemSorter implements ItemSorter {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.ItemSorter#compare(java.lang.Object,
      * java.lang.Object)
      */
@@ -117,7 +117,7 @@ public class DefaultItemSorter implements ItemSorter {
      * <p>
      * The comparator set for this <code>DefaultItemSorter</code> is used for
      * comparing the two property values.
-     * 
+     *
      * @param propertyId
      *            The property id for the property that is used for comparison.
      * @param sortDirection
@@ -155,7 +155,7 @@ public class DefaultItemSorter implements ItemSorter {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.ItemSorter#setSortProperties(com.vaadin.data.
      * Container .Sortable, java.lang.Object[], boolean[])
      */
@@ -189,7 +189,7 @@ public class DefaultItemSorter implements ItemSorter {
      * Provides a default comparator used for comparing {@link Property} values.
      * The <code>DefaultPropertyValueComparator</code> assumes all objects it
      * compares can be cast to Comparable.
-     * 
+     *
      */
     public static class DefaultPropertyValueComparator
             implements Comparator<Object>, Serializable {

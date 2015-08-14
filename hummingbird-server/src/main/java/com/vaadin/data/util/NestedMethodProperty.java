@@ -83,7 +83,7 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
      * e.g. "manager.address.street".
      * <p>
      * Calling getValue will return null if any intermediate getter returns null
-     * 
+     *
      * @param instance
      *            top-level bean to which the property applies
      * @param propertyName
@@ -100,7 +100,7 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
      * For internal use to deduce property type etc. without a bean instance.
      * Calling {@link #setValue(Object)} or {@link #getValue()} on properties
      * constructed this way is not supported.
-     * 
+     *
      * @param instanceClass
      *            class of the top-level bean
      * @param propertyName
@@ -113,7 +113,7 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
     /**
      * Initializes most of the internal fields based on the top-level bean
      * instance and property name (dot-separated string).
-     * 
+     *
      * @param beanClass
      *            class of the top-level bean to which the property applies
      * @param propertyName
@@ -193,7 +193,7 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
     /**
      * Gets the value stored in the Property. The value is resolved by calling
      * the specified getter method with the argument specified at instantiation.
-     * 
+     *
      * @return the value of the Property
      */
     @Override
@@ -215,7 +215,7 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
     /**
      * Sets the value of the property. The new value must be assignable to the
      * type of this property.
-     * 
+     *
      * @param newValue
      *            the New value of the property.
      * @throws <code>Property.ReadOnlyException</code>
@@ -236,7 +236,7 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
     /**
      * Internal method to actually call the setter method of the wrapped
      * property.
-     * 
+     *
      * @param value
      */
     protected void invokeSetMethod(T value) {
@@ -256,9 +256,9 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
     /**
      * Returns an unmodifiable list of getter methods to call in sequence to get
      * the property value.
-     * 
+     *
      * This API may change in future versions.
-     * 
+     *
      * @return unmodifiable list of getter methods corresponding to each segment
      *         of the property name
      */

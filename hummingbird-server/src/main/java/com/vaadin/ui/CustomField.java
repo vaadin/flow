@@ -53,7 +53,7 @@ public abstract class CustomField<T> extends AbstractField<T>
 
     /**
      * Constructs a new custom field.
-     * 
+     *
      * <p>
      * The component is implemented by wrapping the methods of the composition
      * root component given as parameter. The composition root must be set
@@ -68,7 +68,7 @@ public abstract class CustomField<T> extends AbstractField<T>
     /**
      * Constructs the content and notifies it that the {@link CustomField} is
      * attached to a window.
-     * 
+     *
      * @see com.vaadin.ui.Component#attach()
      */
     @Override
@@ -84,7 +84,7 @@ public abstract class CustomField<T> extends AbstractField<T>
 
     /**
      * Returns the content (UI) of the custom component.
-     * 
+     *
      * @return Component
      */
     protected Component getContent() {
@@ -98,11 +98,11 @@ public abstract class CustomField<T> extends AbstractField<T>
     /**
      * Create the content component or layout for the field. Subclasses of
      * {@link CustomField} should implement this method.
-     * 
+     *
      * Note that this method is called when the CustomField is attached to a
      * layout or when {@link #getContent()} is called explicitly for the first
      * time. It is only called once for a {@link CustomField}.
-     * 
+     *
      * @return {@link Component} representing the UI of the CustomField
      */
     protected abstract Component initContent();

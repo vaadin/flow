@@ -483,9 +483,9 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
      * Override this method if you want to add some custom html around around
      * the div element into which the actual Vaadin application will be
      * rendered.
-     * 
+     *
      * @param context
-     * 
+     *
      * @throws IOException
      */
     private void setupMainDiv(BootstrapContext context) throws IOException {
@@ -712,13 +712,13 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     /**
      * Get the URI for the application theme.
-     * 
+     *
      * A portal-wide default theme is fetched from the portal shared resource
      * directory (if any), other themes from the portlet.
-     * 
+     *
      * @param context
      * @param themeName
-     * 
+     *
      * @return
      */
     public String getThemeUri(BootstrapContext context, String themeName) {
@@ -731,7 +731,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     /**
      * Override if required
-     * 
+     *
      * @param context
      * @return
      */
@@ -743,7 +743,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     /**
      * Do not override.
-     * 
+     *
      * @param context
      * @return
      */

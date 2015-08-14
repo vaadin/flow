@@ -97,7 +97,7 @@ public class TransactionalPropertyWrapperTest {
 
     /**
      * Check that all listeners have same hasListeners() response
-     * 
+     *
      * @param expected
      *            expected response
      * @return true if all are the same as expected. false if not

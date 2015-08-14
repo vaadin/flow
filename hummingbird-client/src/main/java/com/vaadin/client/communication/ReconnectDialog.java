@@ -27,7 +27,7 @@ public interface ReconnectDialog {
 
     /**
      * Sets the main text shown in the dialog
-     * 
+     *
      * @param text
      *            the text to show
      */
@@ -36,7 +36,7 @@ public interface ReconnectDialog {
     /**
      * Sets the reconnecting state, which is true if we are trying to
      * re-establish a connection with the server.
-     * 
+     *
      * @param reconnecting
      *            true if we are trying to re-establish the server connection,
      *            false if we have given up
@@ -45,14 +45,14 @@ public interface ReconnectDialog {
 
     /**
      * Checks if the reconnect dialog is visible to the user
-     * 
+     *
      * @return true if the user can see the dialog, false otherwise
      */
     boolean isVisible();
 
     /**
      * Shows the dialog to the user
-     * 
+     *
      * @param connection
      *            the application connection this is related to
      */

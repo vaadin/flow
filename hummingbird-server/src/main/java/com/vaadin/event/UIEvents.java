@@ -34,7 +34,7 @@ public interface UIEvents {
     /**
      * A {@link PollListener} receives and handles {@link PollEvent PollEvents}
      * fired by {@link PollNotifier PollNotifiers}.
-     * 
+     *
      * @since 7.2
      * @author Vaadin Ltd
      */
@@ -54,7 +54,7 @@ public interface UIEvents {
     /**
      * An event that is fired whenever a client polls the server for
      * asynchronous UI updates.
-     * 
+     *
      * @since 7.2
      * @author Vaadin Ltd
      */
@@ -85,7 +85,7 @@ public interface UIEvents {
      * able to send {@link PollEvent PollEvents} whenever the client sends a
      * periodic poll message to the client, to check for asynchronous
      * server-side modifications.
-     * 
+     *
      * @since 7.2
      * @see UI#setPollInterval(int)
      */

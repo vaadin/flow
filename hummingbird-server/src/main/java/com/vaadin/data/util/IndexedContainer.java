@@ -135,7 +135,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container#getContainerPropertyIds()
      */
     @Override
@@ -145,7 +145,7 @@ public class IndexedContainer
 
     /**
      * Gets the type of a Property stored in the list.
-     * 
+     *
      * @param id
      *            the ID of the Property.
      * @return Type of the requested Property
@@ -157,7 +157,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container#getContainerProperty(java.lang.Object,
      * java.lang.Object)
      */
@@ -175,7 +175,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container#addContainerProperty(java.lang.Object,
      * java.lang.Class, java.lang.Object)
      */
@@ -220,7 +220,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container#removeAllItems()
      */
     @Override
@@ -262,7 +262,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container#addItem(java.lang.Object)
      */
     @Override
@@ -282,7 +282,7 @@ public class IndexedContainer
 
     /**
      * Helper method to add default values for items if available
-     * 
+     *
      * @param t
      *            data table of added item
      */
@@ -296,7 +296,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container#removeItem(java.lang.Object)
      */
     @Override
@@ -321,7 +321,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container#removeContainerProperty(java.lang.Object )
      */
     @Override
@@ -355,7 +355,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container.Ordered#addItemAfter(java.lang.Object,
      * java.lang.Object)
      */
@@ -386,7 +386,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container.Indexed#addItemAt(int, java.lang.Object)
      */
     @Override
@@ -416,7 +416,7 @@ public class IndexedContainer
     /**
      * Generates an unique identifier for use as an item id. Guarantees that the
      * generated id is not currently used as an id.
-     * 
+     *
      * @return
      */
     private Serializable generateId() {
@@ -440,7 +440,7 @@ public class IndexedContainer
     /**
      * An <code>event</code> object specifying the list whose Item set has
      * changed.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -469,7 +469,7 @@ public class IndexedContainer
     /**
      * An <code>event</code> object specifying the Property in a list whose
      * value has changed.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -506,7 +506,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Property.ValueChangeNotifier#addListener(com.
      * vaadin.data.Property.ValueChangeListener)
      */
@@ -520,7 +520,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Property.ValueChangeNotifier#removeListener(com
      * .vaadin.data.Property.ValueChangeListener)
      */
@@ -534,7 +534,7 @@ public class IndexedContainer
 
     /**
      * Sends a Property value change event to all interested listeners.
-     * 
+     *
      * @param source
      *            the IndexedContainerProperty object.
      */
@@ -598,7 +598,7 @@ public class IndexedContainer
 
     /**
      * Adds new single Property change listener.
-     * 
+     *
      * @param propertyId
      *            the ID of the Property to add.
      * @param itemId
@@ -631,7 +631,7 @@ public class IndexedContainer
 
     /**
      * Removes a previously registered single Property change listener.
-     * 
+     *
      * @param propertyId
      *            the ID of the Property to remove.
      * @param itemId
@@ -668,10 +668,10 @@ public class IndexedContainer
     /*
      * A class implementing the com.vaadin.data.Item interface to be contained
      * in the list.
-     * 
+     *
      * @author Vaadin Ltd.
-     * 
-     * 
+     *
+     *
      * @since 3.0
      */
     class IndexedContainerItem implements Item {
@@ -805,9 +805,9 @@ public class IndexedContainer
      * A class implementing the {@link Property} interface to be contained in
      * the {@link IndexedContainerItem} contained in the
      * {@link IndexedContainer}.
-     * 
+     *
      * @author Vaadin Ltd.
-     * 
+     *
      * @since 3.0
      */
     private class IndexedContainerProperty<T>
@@ -989,7 +989,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container.Sortable#sort(java.lang.Object[],
      * boolean[])
      */
@@ -1000,7 +1000,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container.Sortable#getSortableContainerPropertyIds
      * ()
      */
@@ -1054,7 +1054,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.AbstractInMemoryContainer#getContainerFilters()
      */
     @Override
@@ -1064,7 +1064,7 @@ public class IndexedContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.AbstractInMemoryContainer#getContainerFilters()
      */
     @Override

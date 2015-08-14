@@ -38,7 +38,7 @@ public interface GridServerRpc extends ServerRpc {
 
     /**
      * Informs the server that the editor was opened (fresh) on a certain row
-     * 
+     *
      * @param rowKey
      *            a key identifying item the editor was opened on
      */
@@ -47,7 +47,7 @@ public interface GridServerRpc extends ServerRpc {
     /**
      * Informs the server that the editor was reopened (without closing it in
      * between) on another row
-     * 
+     *
      * @param rowKey
      *            a key identifying item the editor was opened on
      */
@@ -55,7 +55,7 @@ public interface GridServerRpc extends ServerRpc {
 
     /**
      * Informs the server that the editor was closed
-     * 
+     *
      * @param rowKey
      *            a key identifying item the editor was opened on
      */
@@ -63,7 +63,7 @@ public interface GridServerRpc extends ServerRpc {
 
     /**
      * Informs the server that an item has been clicked in Grid.
-     * 
+     *
      * @param rowKey
      *            a key identifying the clicked item
      * @param columnId
@@ -75,7 +75,7 @@ public interface GridServerRpc extends ServerRpc {
 
     /**
      * Informs the server that the columns of the Grid have been reordered.
-     * 
+     *
      * @since 7.5.0
      * @param newColumnOrder
      *            a list of column ids in the new order
@@ -94,7 +94,7 @@ public interface GridServerRpc extends ServerRpc {
      * {@link com.vaadin.data.RpcDataProviderExtension#beforeClientResponse(boolean)}
      * , and that is too late to change the hierarchy. So we need this
      * round-trip to work around that limitation.
-     * 
+     *
      * @since 7.5.0
      * @param fetchId
      *            an unique identifier for the request
@@ -104,7 +104,7 @@ public interface GridServerRpc extends ServerRpc {
 
     /**
      * Informs the server that the column's visibility has been changed.
-     * 
+     *
      * @since 7.5.0
      * @param id
      *            the id of the column

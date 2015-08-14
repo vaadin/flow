@@ -54,7 +54,7 @@ public class VaadinPortletResponse implements VaadinResponse {
 
     /**
      * Wraps a portlet response and an associated vaadin service
-     * 
+     *
      * @param response
      *            the portlet response to wrap
      * @param vaadinService
@@ -79,7 +79,7 @@ public class VaadinPortletResponse implements VaadinResponse {
 
     /**
      * Gets the original, unwrapped portlet response.
-     * 
+     *
      * @return the unwrapped portlet response
      */
     public PortletResponse getPortletResponse() {

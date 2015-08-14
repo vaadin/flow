@@ -26,12 +26,12 @@ public class DoubleRangeValidator extends RangeValidator<Double> {
 
     /**
      * Creates a validator for checking that an Double is within a given range.
-     * 
+     *
      * By default the range is inclusive i.e. both minValue and maxValue are
      * valid values. Use {@link #setMinValueIncluded(boolean)} or
      * {@link #setMaxValueIncluded(boolean)} to change it.
-     * 
-     * 
+     *
+     *
      * @param errorMessage
      *            the message to display in case the value does not validate.
      * @param minValue

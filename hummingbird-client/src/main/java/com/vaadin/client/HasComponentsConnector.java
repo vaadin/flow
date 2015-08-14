@@ -35,7 +35,7 @@ public interface HasComponentsConnector extends ServerConnector {
      * The children for this connector are defined as all {@link HasComponents}s
      * whose parent is this {@link HasComponentsConnector}.
      * </p>
-     * 
+     *
      * @return A collection of children for this connector. An empty collection
      *         if there are no children. Never returns null.
      */
@@ -50,7 +50,7 @@ public interface HasComponentsConnector extends ServerConnector {
      * {@link ConnectorHierarchyChangeHandler#onConnectorHierarchyChange(ConnectorHierarchyChangeEvent)}
      * . The event method is called only when the hierarchy has been updated for
      * all connectors.
-     * 
+     *
      * @param children
      *            The new child connectors
      */
@@ -59,7 +59,7 @@ public interface HasComponentsConnector extends ServerConnector {
     /**
      * Adds a handler that is called whenever the child hierarchy of this
      * connector has been updated by the server.
-     * 
+     *
      * @param handler
      *            The handler that should be added.
      * @return A handler registration reference that can be used to unregister

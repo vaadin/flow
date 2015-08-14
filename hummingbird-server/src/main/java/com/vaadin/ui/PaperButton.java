@@ -39,7 +39,7 @@ public class PaperButton extends Button {
 
     /**
      * Creates a new push button with the given caption.
-     * 
+     *
      * @param caption
      *            the Button caption.
      */

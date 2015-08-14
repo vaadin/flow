@@ -44,7 +44,7 @@ public class MethodPropertyDescriptor<BT>
     /**
      * Creates a property descriptor that can create MethodProperty instances to
      * access the underlying bean property.
-     * 
+     *
      * @param name
      *            of the property
      * @param propertyType

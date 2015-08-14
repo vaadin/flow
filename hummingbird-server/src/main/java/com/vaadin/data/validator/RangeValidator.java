@@ -45,7 +45,7 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
 
     /**
      * Creates a new range validator of the given type.
-     * 
+     *
      * @param errorMessage
      *            The error message to use if validation fails
      * @param type
@@ -65,7 +65,7 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
 
     /**
      * Checks if the minimum value is part of the accepted range
-     * 
+     *
      * @return true if the minimum value is part of the range, false otherwise
      */
     public boolean isMinValueIncluded() {
@@ -74,7 +74,7 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
 
     /**
      * Sets if the minimum value is part of the accepted range
-     * 
+     *
      * @param minValueIncluded
      *            true if the minimum value should be part of the range, false
      *            otherwise
@@ -85,7 +85,7 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
 
     /**
      * Checks if the maximum value is part of the accepted range
-     * 
+     *
      * @return true if the maximum value is part of the range, false otherwise
      */
     public boolean isMaxValueIncluded() {
@@ -94,7 +94,7 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
 
     /**
      * Sets if the maximum value is part of the accepted range
-     * 
+     *
      * @param maxValueIncluded
      *            true if the maximum value should be part of the range, false
      *            otherwise
@@ -105,7 +105,7 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
 
     /**
      * Gets the minimum value of the range
-     * 
+     *
      * @return the minimum value
      */
     public T getMinValue() {
@@ -116,7 +116,7 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
      * Sets the minimum value of the range. Use
      * {@link #setMinValueIncluded(boolean)} to control whether this value is
      * part of the range or not.
-     * 
+     *
      * @param minValue
      *            the minimum value
      */
@@ -126,7 +126,7 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
 
     /**
      * Gets the maximum value of the range
-     * 
+     *
      * @return the maximum value
      */
     public T getMaxValue() {
@@ -137,7 +137,7 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
      * Sets the maximum value of the range. Use
      * {@link #setMaxValueIncluded(boolean)} to control whether this value is
      * part of the range or not.
-     * 
+     *
      * @param maxValue
      *            the maximum value
      */
@@ -147,7 +147,7 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.data.validator.AbstractValidator#isValidValue(java.lang.Object
      * )
@@ -186,7 +186,7 @@ public class RangeValidator<T extends Comparable> extends AbstractValidator<T> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.validator.AbstractValidator#getType()
      */
     @Override

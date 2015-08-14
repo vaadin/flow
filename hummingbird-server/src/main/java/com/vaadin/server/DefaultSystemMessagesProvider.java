@@ -39,7 +39,7 @@ public class DefaultSystemMessagesProvider implements SystemMessagesProvider {
 
     /**
      * Gets the instance.
-     * 
+     *
      * @return the default system messages provider.
      */
     public static SystemMessagesProvider get() {

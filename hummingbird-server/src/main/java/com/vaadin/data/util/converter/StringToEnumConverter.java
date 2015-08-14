@@ -45,7 +45,7 @@ public class StringToEnumConverter implements Converter<String, Enum> {
      * Converts the given string to the given enum type using the given locale
      * <p>
      * Compatible with {@link #enumToString(Enum, Locale)}
-     * 
+     *
      * @param value
      *            The string value to convert
      * @param enumType
@@ -91,7 +91,7 @@ public class StringToEnumConverter implements Converter<String, Enum> {
      * Converts the given enum to a human readable string using the given locale
      * <p>
      * Compatible with {@link #stringToEnum(String, Class, Locale)}
-     * 
+     *
      * @param value
      *            The enum value to convert
      * @param locale

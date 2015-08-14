@@ -41,7 +41,7 @@ public class PortletUIInitHandler extends UIInitHandler {
     /**
      * Returns the {@link ResourceRequest} for the given request or null if none
      * could be found.
-     * 
+     *
      * @param request
      *            The original request, must be a {@link VaadinPortletRequest}
      * @return The resource request from the request parameter or null

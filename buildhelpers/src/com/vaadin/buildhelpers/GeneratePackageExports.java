@@ -142,7 +142,7 @@ public class GeneratePackageExports {
      * version.<java package>. Searches for the packge and then its parents
      * recursively. Falls back to the "vaadin.version" system property if no
      * other properties are found.
-     * 
+     *
      * @param javaPackage
      *            The package to determine a version for
      * @return A version or null if no version has been defined

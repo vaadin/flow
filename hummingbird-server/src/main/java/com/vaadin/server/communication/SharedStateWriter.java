@@ -42,7 +42,7 @@ public class SharedStateWriter implements Serializable {
     /**
      * Writes a JSON object containing the pending state changes of the dirty
      * connectors of the given UI.
-     * 
+     *
      * @param ui
      *            The UI whose state changes should be written.
      * @param writer

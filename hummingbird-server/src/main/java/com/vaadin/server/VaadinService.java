@@ -1803,10 +1803,10 @@ public abstract class VaadinService implements Serializable {
      * this {@link VaadinService} if found. If current security policy disallows
      * acquiring class loader instance it will log a message and re-throw
      * {@link SecurityException}
-     * 
+     *
      * @throws SecurityException
      *             If current security policy forbids acquiring class loader
-     * 
+     *
      * @since 7.3.5
      */
     protected void setDefaultClassLoader() {

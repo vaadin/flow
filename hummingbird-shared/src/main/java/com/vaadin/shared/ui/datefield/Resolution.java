@@ -38,7 +38,7 @@ public enum Resolution {
     /**
      * Returns the field in java.util.Calendar that corresponds to this
      * resolution.
-     * 
+     *
      * @return one of the field numbers used by Calendar
      */
     public int getCalendarField() {
@@ -49,7 +49,7 @@ public enum Resolution {
      * Returns the resolutions that are higher or equal to the given resolution,
      * starting from the given resolution. In other words passing DAY to this
      * methods returns DAY,MONTH,YEAR
-     * 
+     *
      * @param r
      *            The resolution to start from
      * @return An iterable for the resolutions higher or equal to r
@@ -68,7 +68,7 @@ public enum Resolution {
      * Returns the resolutions that are lower than the given resolution,
      * starting from the given resolution. In other words passing DAY to this
      * methods returns HOUR,MINUTE,SECOND.
-     * 
+     *
      * @param r
      *            The resolution to start from
      * @return An iterable for the resolutions lower than r

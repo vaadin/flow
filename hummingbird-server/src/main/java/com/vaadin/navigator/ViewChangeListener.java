@@ -111,7 +111,7 @@ public interface ViewChangeListener extends Serializable {
      * know the view in question), it should return true. If any listener
      * returns false, the view change is not allowed and
      * <code>afterViewChange()</code> methods are not called.
-     * 
+     *
      * @param event
      *            view change event
      * @return true if the view change should be allowed or this listener does
@@ -124,7 +124,7 @@ public interface ViewChangeListener extends Serializable {
      * method blocked the view change, this method is not called. Be careful of
      * unbounded recursion if you decide to change the view again in the
      * listener.
-     * 
+     *
      * @param event
      *            view change event
      */

@@ -30,7 +30,7 @@ public class SaneErrorsTest extends MultiBrowserTest {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.tests.tb3.MultiBrowserTest#getBrowsersToTest()
      */
     @Override

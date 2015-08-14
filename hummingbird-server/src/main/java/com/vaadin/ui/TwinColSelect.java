@@ -34,7 +34,7 @@ public class TwinColSelect extends AbstractSelect {
     private String rightColumnCaption;
 
     /**
-     * 
+     *
      */
     public TwinColSelect() {
         super();
@@ -71,8 +71,8 @@ public class TwinColSelect extends AbstractSelect {
      * {@link #setHeight(float, int)}) it overrides the number of rows. Leave
      * the height undefined to use this method. This is the opposite of how
      * {@link #setColumns(int)} work.
-     * 
-     * 
+     *
+     *
      * @param rows
      *            the number of rows to set.
      */
@@ -97,7 +97,7 @@ public class TwinColSelect extends AbstractSelect {
 
     /**
      * Sets the text shown above the right column.
-     * 
+     *
      * @param caption
      *            The text to show
      */
@@ -108,7 +108,7 @@ public class TwinColSelect extends AbstractSelect {
 
     /**
      * Returns the text shown above the right column.
-     * 
+     *
      * @return The text shown or null if not set.
      */
     public String getRightColumnCaption() {
@@ -117,7 +117,7 @@ public class TwinColSelect extends AbstractSelect {
 
     /**
      * Sets the text shown above the left column.
-     * 
+     *
      * @param caption
      *            The text to show
      */
@@ -128,7 +128,7 @@ public class TwinColSelect extends AbstractSelect {
 
     /**
      * Returns the text shown above the left column.
-     * 
+     *
      * @return The text shown or null if not set.
      */
     public String getLeftColumnCaption() {

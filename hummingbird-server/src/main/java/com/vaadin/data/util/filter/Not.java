@@ -31,7 +31,7 @@ public final class Not implements Filter {
 
     /**
      * Constructs a filter that negates a filter.
-     * 
+     *
      * @param filter
      *            {@link Filter} to negate, not-null
      */
@@ -41,7 +41,7 @@ public final class Not implements Filter {
 
     /**
      * Returns the negated filter.
-     * 
+     *
      * @return Filter
      */
     public Filter getFilter() {
@@ -58,7 +58,7 @@ public final class Not implements Filter {
      * Returns true if a change in the named property may affect the filtering
      * result. Return value is the same as {@link #appliesToProperty(Object)}
      * for the negated filter.
-     * 
+     *
      * @return boolean
      */
     @Override

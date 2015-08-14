@@ -38,7 +38,7 @@ public class Accordion extends TabSheet {
 
     /**
      * Constructs a new accordion containing the given components.
-     * 
+     *
      * @param components
      *            The components to add to the accordion. Each component will be
      *            added to a separate tab.
@@ -50,7 +50,7 @@ public class Accordion extends TabSheet {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.TabSheet#getState()
      */
     @Override

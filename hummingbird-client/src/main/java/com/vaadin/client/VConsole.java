@@ -32,7 +32,7 @@ public class VConsole {
 
     /**
      * Used by ApplicationConfiguration to initialize VConsole.
-     * 
+     *
      * @param console
      */
     static void setImplementation(VDebugWindow console) {

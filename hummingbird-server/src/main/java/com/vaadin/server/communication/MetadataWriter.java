@@ -35,7 +35,7 @@ public class MetadataWriter implements Serializable {
 
     /**
      * Writes a JSON object containing metadata related to the given UI.
-     * 
+     *
      * @param ui
      *            The UI whose metadata to write.
      * @param writer
@@ -53,7 +53,7 @@ public class MetadataWriter implements Serializable {
      *            messages.
      * @throws IOException
      *             If the serialization fails.
-     * 
+     *
      */
     public void write(UI ui, Writer writer, boolean repaintAll, boolean async,
             SystemMessages messages) throws IOException {

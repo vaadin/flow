@@ -68,7 +68,7 @@ public class VaadinPortletSession extends VaadinSession {
 
     /**
      * Create a portlet service session for the given portlet service
-     * 
+     *
      * @param service
      *            the portlet service to which the new session belongs
      */
@@ -176,7 +176,7 @@ public class VaadinPortletSession extends VaadinSession {
 
     /**
      * Creates a new action URL.
-     * 
+     *
      * @param action
      * @return action URL or null if called outside a MimeRequest (outside a
      *         UIDL request or similar)
@@ -195,16 +195,16 @@ public class VaadinPortletSession extends VaadinSession {
 
     /**
      * Sends a portlet event to the indicated destination.
-     * 
+     *
      * Internally, an action may be created and opened, as an event cannot be
      * sent directly from all types of requests.
-     * 
+     *
      * The event destinations and values need to be kept in the context until
      * sent. Any memory leaks if the action fails are limited to the session.
-     * 
+     *
      * Event names for events sent and received by a portlet need to be declared
      * in portlet.xml .
-     * 
+     *
      * @param uI
      *            a window in which a temporary action URL can be opened if
      *            necessary
@@ -243,16 +243,16 @@ public class VaadinPortletSession extends VaadinSession {
 
     /**
      * Sets a shared portlet parameter.
-     * 
+     *
      * Internally, an action may be created and opened, as shared parameters
      * cannot be set directly from all types of requests.
-     * 
+     *
      * The parameters and values need to be kept in the context until sent. Any
      * memory leaks if the action fails are limited to the session.
-     * 
+     *
      * Shared parameters set or read by a portlet need to be declared in
      * portlet.xml .
-     * 
+     *
      * @param uI
      *            a window in which a temporary action URL can be opened if
      *            necessary
@@ -290,9 +290,9 @@ public class VaadinPortletSession extends VaadinSession {
 
     /**
      * Sets the portlet mode. This may trigger a new render request.
-     * 
+     *
      * Portlet modes used by a portlet need to be declared in portlet.xml .
-     * 
+     *
      * @param uI
      *            a window in which the render URL can be opened if necessary
      * @param portletMode

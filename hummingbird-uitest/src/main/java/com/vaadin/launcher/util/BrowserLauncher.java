@@ -31,7 +31,7 @@ public class BrowserLauncher {
 
     /**
      * Open browser on specified URL.
-     * 
+     *
      * @param url
      */
     public static void openBrowser(String url) {

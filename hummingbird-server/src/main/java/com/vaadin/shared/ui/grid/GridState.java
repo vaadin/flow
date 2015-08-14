@@ -37,7 +37,7 @@ public class GridState extends TabIndexState {
      * <p>
      * Used as a data transfer object instead of the client/server ones, because
      * they don't know about each others classes.
-     * 
+     *
      * @see com.vaadin.ui.components.grid.Grid.SelectionMode
      * @see com.vaadin.client.ui.grid.Grid.SelectionMode
      */
@@ -76,51 +76,51 @@ public class GridState extends TabIndexState {
 
     /**
      * The key in which a row's data can be found
-     * 
+     *
      * @see com.vaadin.shared.data.DataProviderRpc#setRowData(int, String)
      */
     public static final String JSONKEY_DATA = "d";
 
     /**
      * The key in which a row's own key can be found
-     * 
+     *
      * @see com.vaadin.shared.data.DataProviderRpc#setRowData(int, String)
      */
     public static final String JSONKEY_ROWKEY = "k";
 
     /**
      * The key in which a row's generated style can be found
-     * 
+     *
      * @see com.vaadin.shared.data.DataProviderRpc#setRowData(int, String)
      */
     public static final String JSONKEY_ROWSTYLE = "rs";
 
     /**
      * The key in which a generated styles for a row's cells can be found
-     * 
+     *
      * @see com.vaadin.shared.data.DataProviderRpc#setRowData(int, String)
      */
     public static final String JSONKEY_CELLSTYLES = "cs";
 
     /**
      * The key in which a row's description can be found
-     * 
+     *
      * @see com.vaadin.shared.data.DataProviderRpc#setRowData(int, String)
      */
     public static final String JSONKEY_ROWDESCRIPTION = "rd";
 
     /**
      * The key in which a cell's description can be found
-     * 
+     *
      * @see com.vaadin.shared.data.DataProviderRpc#setRowData(int, String)
      */
     public static final String JSONKEY_CELLDESCRIPTION = "cd";
 
     /**
      * The key that tells whether details are visible for the row.
-     * 
+     *
      * @since 7.5.0
-     * 
+     *
      * @see com.vaadin.ui.Grid#setDetailsGenerator(com.vaadin.ui.Grid.DetailsGenerator)
      * @see com.vaadin.ui.Grid#setDetailsVisible(Object, boolean)
      * @see com.vaadin.shared.data.DataProviderRpc#setRowData(int,

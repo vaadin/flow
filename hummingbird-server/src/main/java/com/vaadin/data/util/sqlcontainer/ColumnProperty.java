@@ -60,7 +60,7 @@ final public class ColumnProperty implements Property {
 
     /**
      * Creates a new ColumnProperty instance.
-     * 
+     *
      * @param propertyId
      *            The ID of this property.
      * @param readOnly
@@ -99,7 +99,7 @@ final public class ColumnProperty implements Property {
     /**
      * Returns the current value for this property. To get the previous value
      * (if one exists) for a modified property use {@link #getOldValue()}.
-     * 
+     *
      * @return
      */
     @Override
@@ -113,7 +113,7 @@ final public class ColumnProperty implements Property {
     /**
      * Returns the original non-modified value of this property if it has been
      * modified.
-     * 
+     *
      * @return The original value if <code>isModified()</code> is true,
      *         <code>getValue()</code> otherwise.
      */
@@ -207,7 +207,7 @@ final public class ColumnProperty implements Property {
      * to be written by the underlying database. Also used for values like
      * VERSION and AUTO_INCREMENT fields that might be set to read-only by the
      * container but the database still allows writes.
-     * 
+     *
      * @return true if the read-only status can be changed, false otherwise.
      */
     public boolean isReadOnlyChangeAllowed() {
@@ -263,7 +263,7 @@ final public class ColumnProperty implements Property {
     /**
      * Return whether the value of this property should be persisted to the
      * database.
-     * 
+     *
      * @return true if the value should be written to the database, false
      *         otherwise.
      */
@@ -279,7 +279,7 @@ final public class ColumnProperty implements Property {
 
     /**
      * Returns whether or not this property is used as a row identifier.
-     * 
+     *
      * @return true if the property is a row identifier, false otherwise.
      */
     public boolean isRowIdentifier() {

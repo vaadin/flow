@@ -72,7 +72,7 @@ public class CompositeValidator implements Validator {
 
     /**
      * Constructs a composite validator in given mode.
-     * 
+     *
      * @param mode
      * @param errorMessage
      */
@@ -89,12 +89,12 @@ public class CompositeValidator implements Validator {
      * <li><code>MODE_AND</code>: All of the sub-validators are valid
      * <li><code>MODE_OR</code>: Any of the sub-validators are valid
      * </ul>
-     * 
+     *
      * If the value is invalid, validation error is thrown. If the error message
      * is set (non-null), it is used. If the error message has not been set, the
      * first error occurred is thrown.
      * </p>
-     * 
+     *
      * @param value
      *            the value to check.
      * @throws Validator.InvalidValueException
@@ -135,7 +135,7 @@ public class CompositeValidator implements Validator {
 
     /**
      * Gets the mode of the validator.
-     * 
+     *
      * @return Operation mode of the validator: {@link CombinationMode#AND} or
      *         {@link CombinationMode#OR}.
      */
@@ -149,7 +149,7 @@ public class CompositeValidator implements Validator {
      * <li>{@link CombinationMode#AND} (default)
      * <li>{@link CombinationMode#OR}
      * </ul>
-     * 
+     *
      * @param mode
      *            the mode to set.
      */
@@ -177,7 +177,7 @@ public class CompositeValidator implements Validator {
 
     /**
      * Adds validator to the interface.
-     * 
+     *
      * @param validator
      *            the Validator object which performs validation checks on this
      *            set of data field values.
@@ -191,7 +191,7 @@ public class CompositeValidator implements Validator {
 
     /**
      * Removes a validator from the composite.
-     * 
+     *
      * @param validator
      *            the Validator object which performs validation checks on this
      *            set of data field values.
@@ -202,22 +202,22 @@ public class CompositeValidator implements Validator {
 
     /**
      * Gets sub-validators by class.
-     * 
+     *
      * <p>
      * If the component contains directly or recursively (it contains another
      * composite containing the validator) validators compatible with given type
      * they are returned. This only applies to <code>AND</code> mode composite
      * validators.
      * </p>
-     * 
+     *
      * <p>
      * If the validator is in <code>OR</code> mode or does not contain any
      * validators of given type null is returned.
      * </p>
-     * 
+     *
      * @param validatorType
      *            The type of validators to return
-     * 
+     *
      * @return Collection<Validator> of validators compatible with given type
      *         that must apply or null if none found.
      */
@@ -247,7 +247,7 @@ public class CompositeValidator implements Validator {
     /**
      * Sets the message to be included in the exception in case the value does
      * not validate. The exception message is typically shown to the end user.
-     * 
+     *
      * @param errorMessage
      *            the error message.
      */

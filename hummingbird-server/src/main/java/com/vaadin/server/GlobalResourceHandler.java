@@ -129,7 +129,7 @@ public class GlobalResourceHandler implements RequestHandler {
      * A {@link ConnectorResource} registered for a {@link LegacyComponent} will
      * be set to be served with a global URL. Other resource types will be
      * ignored and thus not served by this handler.
-     * 
+     *
      * @param resource
      *            the resource to register
      * @param ownerConnector
@@ -176,7 +176,7 @@ public class GlobalResourceHandler implements RequestHandler {
 
     /**
      * Gets a global URI for a resource if it's registered with this handler.
-     * 
+     *
      * @param connector
      *            the connector for which the uri should be generated.
      * @param resource
@@ -201,7 +201,7 @@ public class GlobalResourceHandler implements RequestHandler {
     /**
      * Notifies this handler that resources registered for the given connector
      * can be released.
-     * 
+     *
      * @param connector
      *            the connector for which any registered resources can be
      *            released.

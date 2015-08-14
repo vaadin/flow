@@ -44,7 +44,7 @@ public class ConnectorHierarchyWriter implements Serializable {
     /**
      * Writes a JSON object containing the connector hierarchy (parent-child
      * mappings) of the dirty connectors in the given UI.
-     * 
+     *
      * @param ui
      *            The {@link UI} whose hierarchy to write.
      * @param writer

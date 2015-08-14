@@ -28,7 +28,7 @@ public class UIClassSelectionEvent extends UIProviderEvent {
 
     /**
      * Creates a new event for a specific request.
-     * 
+     *
      * @param request
      *            the Vaadin request for which a UI class is wanted.
      */

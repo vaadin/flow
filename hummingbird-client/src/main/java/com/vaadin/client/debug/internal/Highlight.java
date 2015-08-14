@@ -58,7 +58,7 @@ public class Highlight {
      * Pass the returned {@link Element} to {@link #hide(Element)} to remove
      * this particular highlight.
      * </p>
-     * 
+     *
      * @param connector
      *            ComponentConnector
      * @return Highlight element
@@ -74,9 +74,9 @@ public class Highlight {
      * Pass the returned {@link Element} to {@link #hide(Element)} to remove
      * this particular highlight.
      * </p>
-     * 
+     *
      * @since 7.1
-     * 
+     *
      * @param connector
      *            the server connector to highlight
      * @return Highlight element, or <code>null</code> if the connector isn't a
@@ -98,7 +98,7 @@ public class Highlight {
      * Pass the returned {@link Element} to {@link #hide(Element)} to remove
      * this particular highlight.
      * </p>
-     * 
+     *
      * @param connector
      *            ComponentConnector
      * @param color
@@ -119,7 +119,7 @@ public class Highlight {
      * Pass the returned {@link Element} to {@link #hide(Element)} to remove
      * this particular highlight.
      * </p>
-     * 
+     *
      * @param widget
      *            Widget to highlight
      * @return Highlight element
@@ -134,7 +134,7 @@ public class Highlight {
      * Pass the returned {@link Element} to {@link #hide(Element)} to remove
      * this particular highlight.
      * </p>
-     * 
+     *
      * @param widget
      *            Widget to highlight
      * @param color
@@ -154,7 +154,7 @@ public class Highlight {
      * Pass the returned {@link Element} to {@link #hide(Element)} to remove
      * this particular highlight.
      * </p>
-     * 
+     *
      * @param element
      *            Element to highlight
      * @return Highlight element
@@ -169,7 +169,7 @@ public class Highlight {
      * Pass the returned highlight {@link Element} to {@link #hide(Element)} to
      * remove this particular highlight.
      * </p>
-     * 
+     *
      * @param element
      *            Element to highlight
      * @param color
@@ -215,7 +215,7 @@ public class Highlight {
 
     /**
      * Hides the given highlight.
-     * 
+     *
      * @param highlight
      *            Highlight to hide
      */

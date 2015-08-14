@@ -29,7 +29,7 @@ public interface DebugWindowClientRpc extends ClientRpc {
     /**
      * Send results from {@link DebugWindowServerRpc#analyzeLayouts()} back to
      * the client.
-     * 
+     *
      * @since 7.1
      * @param json
      *            JSON containing list of found problems

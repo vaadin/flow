@@ -72,7 +72,7 @@ public abstract class Action implements Command {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#toString()
      */
     @Override

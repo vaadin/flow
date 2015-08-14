@@ -31,9 +31,9 @@ public interface ContainerResizedListener {
      * function on its ancestors that implement NeedsLayout in case their
      * container has resized. runAnchestorsLayout(HasWidgets parent) function
      * from Util class may be a good helper for this.
-     * 
+     *
      * @deprecated As of 7.0, this method is never called by the framework.
-     * 
+     *
      */
     @Deprecated
     public void iLayout();

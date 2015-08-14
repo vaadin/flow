@@ -64,7 +64,7 @@ public class DateTimeServiceTest extends TestCase {
     /**
      * Test all dates from 1990-1992 + some more and see that {@link Calendar}
      * calculates the ISO week number like we do.
-     * 
+     *
      */
     public void testISOWeekNumbers() {
         Calendar c = Calendar.getInstance();
@@ -83,7 +83,7 @@ public class DateTimeServiceTest extends TestCase {
     /**
      * Verify that special cases are handled correctly by us (and
      * {@link Calendar}).
-     * 
+     *
      */
     public void testSampleISOWeekNumbers() {
         for (Date d : isoWeekNumbers.keySet()) {

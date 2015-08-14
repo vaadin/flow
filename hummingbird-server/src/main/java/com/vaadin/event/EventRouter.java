@@ -106,7 +106,7 @@ public class EventRouter implements MethodEventSource {
     /**
      * Sends an event to all registered listeners. The listeners will decide if
      * the activation method should be called or not.
-     * 
+     *
      * @param event
      *            the Event to be sent to all listeners.
      */
@@ -121,7 +121,7 @@ public class EventRouter implements MethodEventSource {
      * If an error handler is set, the processing of other listeners will
      * continue after the error handler method call unless the error handler
      * itself throws an exception.
-     * 
+     *
      * @param event
      *            the Event to be sent to all listeners.
      * @param errorHandler
@@ -158,7 +158,7 @@ public class EventRouter implements MethodEventSource {
     /**
      * Checks if the given Event type is listened by a listener registered to
      * this router.
-     * 
+     *
      * @param eventType
      *            the event type to be checked
      * @return true if a listener is registered for the given event type
@@ -176,7 +176,7 @@ public class EventRouter implements MethodEventSource {
 
     /**
      * Returns all listeners that match or extend the given event type.
-     * 
+     *
      * @param eventType
      *            The type of event to return listeners for.
      * @return A collection with all registered listeners. Empty if no listeners

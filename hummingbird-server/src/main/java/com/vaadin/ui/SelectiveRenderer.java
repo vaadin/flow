@@ -39,7 +39,7 @@ public interface SelectiveRenderer extends HasComponents {
      * returning false will prevent the child from being sent to the client. If
      * a child is set to invisible, this method has no effect.
      * </p>
-     * 
+     *
      * @param childComponent
      *            The child component to check
      * @return true if the child component may be sent to the client, false

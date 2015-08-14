@@ -33,7 +33,7 @@ public interface FreeformStatementDelegate extends FreeformQueryDelegate {
      * string and parameter values required to create a PreparedStatement. This
      * method is responsible for gluing together the select query from the
      * filters and the order by conditions if these are supported.
-     * 
+     *
      * @param offset
      *            the first record (row) to fetch.
      * @param pagelength
@@ -58,7 +58,7 @@ public interface FreeformStatementDelegate extends FreeformQueryDelegate {
      * by the FreeformQuery.containsRowWithKeys() method. This is useful for
      * cases when the default logic in said method is not enough to support more
      * complex free form queries.
-     * 
+     *
      * @param keys
      *            the values of the primary keys
      * @throws UnsupportedOperationException

@@ -59,7 +59,7 @@ public class ClassResource implements ConnectorResource, Serializable {
      * Creates a new application resource instance. The resource id is relative
      * to the location of the UI of the component using this resource (or the
      * Application if using LegacyWindow).
-     * 
+     *
      * @param resourceName
      *            the Unique identifier of the resource within the application.
      */
@@ -69,7 +69,7 @@ public class ClassResource implements ConnectorResource, Serializable {
 
     /**
      * Creates a new application resource instance.
-     * 
+     *
      * @param associatedClass
      *            the class of the which the resource is associated.
      * @param resourceName
@@ -85,7 +85,7 @@ public class ClassResource implements ConnectorResource, Serializable {
 
     /**
      * Gets the MIME type of this resource.
-     * 
+     *
      * @see com.vaadin.server.Resource#getMIMEType()
      */
     @Override
@@ -118,12 +118,12 @@ public class ClassResource implements ConnectorResource, Serializable {
 
     /**
      * Gets the size of the download buffer used for this resource.
-     * 
+     *
      * <p>
      * If the buffer size is 0, the buffer size is decided by the terminal
      * adapter. The default value is 0.
      * </p>
-     * 
+     *
      * @return the size of the buffer in bytes.
      */
     public int getBufferSize() {
@@ -132,10 +132,10 @@ public class ClassResource implements ConnectorResource, Serializable {
 
     /**
      * Sets the size of the download buffer used for this resource.
-     * 
+     *
      * @param bufferSize
      *            the size of the buffer in bytes.
-     * 
+     *
      * @see #getBufferSize()
      */
     public void setBufferSize(int bufferSize) {
@@ -144,13 +144,13 @@ public class ClassResource implements ConnectorResource, Serializable {
 
     /**
      * Gets the length of cache expiration time.
-     * 
+     *
      * <p>
      * This gives the adapter the possibility cache streams sent to the client.
      * The caching may be made in adapter or at the client if the client
      * supports caching. Default is {@link DownloadStream#DEFAULT_CACHETIME}.
      * </p>
-     * 
+     *
      * @return Cache time in milliseconds
      */
     public long getCacheTime() {
@@ -159,17 +159,17 @@ public class ClassResource implements ConnectorResource, Serializable {
 
     /**
      * Sets the length of cache expiration time.
-     * 
+     *
      * <p>
      * This gives the adapter the possibility cache streams sent to the client.
      * The caching may be made in adapter or at the client if the client
      * supports caching. Zero or negative value disables the caching of this
      * stream.
      * </p>
-     * 
+     *
      * @param cacheTime
      *            the cache time in milliseconds.
-     * 
+     *
      */
     public void setCacheTime(long cacheTime) {
         this.cacheTime = cacheTime;

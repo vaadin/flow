@@ -29,7 +29,7 @@ import java.io.Serializable;
 public interface ViewportGenerator extends Serializable {
     /**
      * Generates a viewport tag based on a request.
-     * 
+     *
      * @param request
      *            the request for which to generate a viewport tag
      * @return the viewport tag content

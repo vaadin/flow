@@ -46,7 +46,7 @@ public interface CommunicationProblemHandler {
 
     /**
      * Called when an exception occurs during a {@link Heartbeat} request
-     * 
+     *
      * @param request
      *            The heartbeat request
      * @param exception
@@ -56,7 +56,7 @@ public interface CommunicationProblemHandler {
 
     /**
      * Called when a heartbeat request returns a status code other than OK (200)
-     * 
+     *
      * @param request
      *            The heartbeat request
      * @param response
@@ -74,7 +74,7 @@ public interface CommunicationProblemHandler {
      * result in the push connection trying a fallback connection method, trying
      * to reconnect to the server or might just be an indication that the
      * connection was intentionally closed ("unsubscribe"),
-     * 
+     *
      * @param pushConnection
      *            The push connection which was closed
      */
@@ -83,10 +83,10 @@ public interface CommunicationProblemHandler {
     /**
      * Called when a client side timeout occurs before a push connection to the
      * server completes.
-     * 
+     *
      * The client side timeout causes a disconnection of the push connection and
      * no reconnect will be attempted after this method is called,
-     * 
+     *
      * @param pushConnection
      *            The push connection which timed out
      */
@@ -94,13 +94,13 @@ public interface CommunicationProblemHandler {
 
     /**
      * Called when a fatal error fatal error occurs in the push connection.
-     * 
+     *
      * The push connection will not try to recover from this situation itself
      * and typically the problem handler should not try to do automatic recovery
      * either. The cause can be e.g. maximum number of reconnection attempts
      * have been reached, neither the selected transport nor the fallback
      * transport can be used or similar.
-     * 
+     *
      * @param pushConnection
      *            The push connection where the error occurred
      */
@@ -109,7 +109,7 @@ public interface CommunicationProblemHandler {
     /**
      * Called when the push connection has lost the connection to the server and
      * will proceed to try to re-establish the connection
-     * 
+     *
      * @param pushConnection
      *            The push connection which will be reconnected
      */
@@ -117,7 +117,7 @@ public interface CommunicationProblemHandler {
 
     /**
      * Called when the push connection to the server has been established.
-     * 
+     *
      * @param pushConnection
      *            The push connection which was established
      */
@@ -125,7 +125,7 @@ public interface CommunicationProblemHandler {
 
     /**
      * Called when the required push script could not be loaded
-     * 
+     *
      * @param resourceUrl
      *            The URL which was used for loading the script
      */
@@ -134,7 +134,7 @@ public interface CommunicationProblemHandler {
     /**
      * Called when an exception occurs during an XmlHttpRequest request to the
      * server.
-     * 
+     *
      * @param communicationProblemEvent
      *            An event containing what was being sent to the server and what
      *            exception occurred
@@ -144,7 +144,7 @@ public interface CommunicationProblemHandler {
     /**
      * Called when invalid content (not JSON) was returned from the server as
      * the result of an XmlHttpRequest request
-     * 
+     *
      * @param communicationProblemEvent
      *            An event containing what was being sent to the server and what
      *            was returned
@@ -154,7 +154,7 @@ public interface CommunicationProblemHandler {
     /**
      * Called when invalid status code (not 200) was returned by the server as
      * the result of an XmlHttpRequest.
-     * 
+     *
      * @param communicationProblemEvent
      *            An event containing what was being sent to the server and what
      *            was returned
@@ -169,7 +169,7 @@ public interface CommunicationProblemHandler {
     /**
      * Called when a message is to be sent to the server through the push
      * channel but the push channel is not connected
-     * 
+     *
      * @param payload
      *            The payload to send to the server
      */
@@ -178,7 +178,7 @@ public interface CommunicationProblemHandler {
     /**
      * Called when invalid content (not JSON) was pushed from the server through
      * the push connection
-     * 
+     *
      * @param communicationProblemEvent
      *            An event containing what was being sent to the server and what
      *            was returned

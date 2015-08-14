@@ -156,7 +156,7 @@ public abstract class AbstractJavaScriptComponent extends AbstractComponent {
      * available as <code>this</code>). Calling that JavaScript function will
      * cause the call method in the registered {@link JavaScriptFunction} to be
      * invoked with the same arguments.
-     * 
+     *
      * @param functionName
      *            the name that should be used for client-side function
      * @param function
@@ -174,7 +174,7 @@ public abstract class AbstractJavaScriptComponent extends AbstractComponent {
      * data types that can be represented in JavaScript including primitives,
      * their boxed types, arrays, String, List, Set, Map, Connector and
      * JavaBeans.
-     * 
+     *
      * @param name
      *            the name of the function
      * @param arguments

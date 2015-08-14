@@ -58,7 +58,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * {@link #convertToPresentation(Object, Class, Locale)} and
      * {@link #convertToModel(Object, Class, Locale)} should return the original
      * value.
-     * 
+     *
      * @param value
      *            The value to convert, compatible with the target type. Can be
      *            null
@@ -83,7 +83,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * {@link #convertToPresentation(Object, Class, Locale)} and
      * {@link #convertToModel(Object, Class, Locale)} should return the original
      * value.
-     * 
+     *
      * @param value
      *            The value to convert, compatible with the target type. Can be
      *            null
@@ -101,20 +101,20 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
 
     /**
      * The source type of the converter.
-     * 
+     *
      * Values of this type can be passed to
      * {@link #convertToPresentation(Object, Class, Locale)}.
-     * 
+     *
      * @return The source type
      */
     public Class<MODEL> getModelType();
 
     /**
      * The target type of the converter.
-     * 
+     *
      * Values of this type can be passed to
      * {@link #convertToModel(Object, Class, Locale)}.
-     * 
+     *
      * @return The target type
      */
     public Class<PRESENTATION> getPresentationType();
@@ -124,7 +124,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * {@link Converter#convertToPresentation(Object, Class, Locale)} or
      * {@link Converter#convertToModel(Object, Class, Locale)} could not be
      * converted.
-     * 
+     *
      * @author Vaadin Ltd
      * @since 7.0
      */

@@ -29,7 +29,7 @@ public class LocatorUtil {
     /**
      * Find first occurrence of character that's not inside quotes starting from
      * specified index.
-     * 
+     *
      * @param str
      *            Full string for searching
      * @param find
@@ -65,7 +65,7 @@ public class LocatorUtil {
     /**
      * Find first occurrence of character that's not inside quotes starting from
      * the beginning of string.
-     * 
+     *
      * @param str
      *            Full string for searching
      * @param find
@@ -78,7 +78,7 @@ public class LocatorUtil {
 
     /**
      * Checks if path refers to vaadin UI element com.vaadin.ui.UI.
-     * 
+     *
      * @param path
      *            to vaadin element
      * @return true if path refers to UI element, false otherwise
@@ -92,7 +92,7 @@ public class LocatorUtil {
     /**
      * Checks if path refers to vaadin Notification element
      * com.vaadin.ui.Notification.
-     * 
+     *
      * @param path
      *            to vaadin element
      * @return true if path refers to Notification element, false otherwise

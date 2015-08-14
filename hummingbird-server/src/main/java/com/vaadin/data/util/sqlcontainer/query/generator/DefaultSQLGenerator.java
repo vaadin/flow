@@ -45,7 +45,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
     /**
      * Create a new DefaultSqlGenerator instance that uses the given
      * implementation of {@link StatementHelper}
-     * 
+     *
      * @param statementHelper
      */
     public DefaultSQLGenerator(
@@ -58,7 +58,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
      * Construct a DefaultSQLGenerator with the specified identifiers for start
      * and end of quoted strings. The identifiers may be different depending on
      * the database engine and it's settings.
-     * 
+     *
      * @param quoteStart
      *            the identifier (character) denoting the start of a quoted
      *            string
@@ -73,7 +73,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
     /**
      * Same as {@link #DefaultSQLGenerator(String, String)} but with support for
      * custom {@link StatementHelper} implementation.
-     * 
+     *
      * @param quoteStart
      * @param quoteEnd
      * @param statementHelperClazz
@@ -86,7 +86,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.addon.sqlcontainer.query.generator.SQLGenerator#
      * generateSelectQuery(java.lang.String, java.util.List, java.util.List,
      * int, int, java.lang.String)
@@ -120,7 +120,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.addon.sqlcontainer.query.generator.SQLGenerator#
      * generateUpdateQuery(java.lang.String,
      * com.vaadin.addon.sqlcontainer.RowItem)
@@ -170,7 +170,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.addon.sqlcontainer.query.generator.SQLGenerator#
      * generateInsertQuery(java.lang.String,
      * com.vaadin.addon.sqlcontainer.RowItem)
@@ -222,7 +222,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.addon.sqlcontainer.query.generator.SQLGenerator#
      * generateDeleteQuery(java.lang.String,
      * com.vaadin.addon.sqlcontainer.RowItem)
@@ -283,7 +283,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
 
     /**
      * Generates sorting rules as an ORDER BY -clause
-     * 
+     *
      * @param sb
      *            StringBuffer to which the clause is appended.
      * @param o
@@ -310,7 +310,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
 
     /**
      * Generates the LIMIT and OFFSET clause.
-     * 
+     *
      * @param sb
      *            StringBuffer to which the clause is appended.
      * @param offset
@@ -372,7 +372,7 @@ public class DefaultSQLGenerator implements SQLGenerator {
     /**
      * Returns the statement helper for the generator. Override this to handle
      * platform specific data types.
-     * 
+     *
      * @see http://dev.vaadin.com/ticket/9148
      * @return a new instance of the statement helper
      */

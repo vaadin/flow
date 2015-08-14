@@ -100,7 +100,7 @@ public class ColorPickerGrid extends AbstractComponent
 
     /**
      * Instantiates a new color picker grid.
-     * 
+     *
      * @param rows
      *            the rows
      * @param columns
@@ -115,7 +115,7 @@ public class ColorPickerGrid extends AbstractComponent
 
     /**
      * Instantiates a new color picker grid.
-     * 
+     *
      * @param colors
      *            the colors
      */
@@ -164,7 +164,7 @@ public class ColorPickerGrid extends AbstractComponent
 
     /**
      * Sets the color grid.
-     * 
+     *
      * @param colors
      *            the new color grid
      */
@@ -185,7 +185,7 @@ public class ColorPickerGrid extends AbstractComponent
 
     /**
      * Adds a color change listener
-     * 
+     *
      * @param listener
      *            The color change listener
      */
@@ -201,7 +201,7 @@ public class ColorPickerGrid extends AbstractComponent
 
     /**
      * Removes a color change listener
-     * 
+     *
      * @param listener
      *            The listener
      */
@@ -220,7 +220,7 @@ public class ColorPickerGrid extends AbstractComponent
 
     /**
      * Sets the position.
-     * 
+     *
      * @param x
      *            the x
      * @param y
@@ -235,7 +235,7 @@ public class ColorPickerGrid extends AbstractComponent
 
     /**
      * Gets the position.
-     * 
+     *
      * @return the position
      */
     public int[] getPosition() {
@@ -244,7 +244,7 @@ public class ColorPickerGrid extends AbstractComponent
 
     /**
      * Notifies the listeners that a color change has occurred
-     * 
+     *
      * @param color
      *            The color which it changed to
      */

@@ -58,13 +58,13 @@ public class BeanItemContainer<BEANTYPE>
     /**
      * Bean identity resolver that returns the bean itself as its item
      * identifier.
-     * 
+     *
      * This corresponds to the old behavior of {@link BeanItemContainer}, and
      * requires suitable (identity-based) equals() and hashCode() methods on the
      * beans.
-     * 
+     *
      * @param <BT>
-     * 
+     *
      * @since 6.5
      */
     private static class IdentityBeanIdResolver<BT>
@@ -79,7 +79,7 @@ public class BeanItemContainer<BEANTYPE>
 
     /**
      * Constructs a {@code BeanItemContainer} for beans of the given type.
-     * 
+     *
      * @param type
      *            the type of the beans that will be added to the container.
      * @throws IllegalArgumentException
@@ -93,7 +93,7 @@ public class BeanItemContainer<BEANTYPE>
 
     /**
      * Constructs a {@code BeanItemContainer} and adds the given beans to it.
-     * 
+     *
      * @param type
      *            the type of the beans that will be added to the container.
      * @param collection
@@ -115,7 +115,7 @@ public class BeanItemContainer<BEANTYPE>
     /**
      * Adds all the beans from a {@link Collection} in one go. More efficient
      * than adding them one by one.
-     * 
+     *
      * @param collection
      *            The collection of beans to add. Must not be null.
      */
@@ -126,14 +126,14 @@ public class BeanItemContainer<BEANTYPE>
 
     /**
      * Adds the bean after the given bean.
-     * 
+     *
      * The bean is used both as the item contents and as the item identifier.
-     * 
+     *
      * @param previousItemId
      *            the bean (of type BT) after which to add newItemId
      * @param newItemId
      *            the bean (of type BT) to add (not null)
-     * 
+     *
      * @see com.vaadin.data.Container.Ordered#addItemAfter(Object, Object)
      */
     @Override
@@ -146,9 +146,9 @@ public class BeanItemContainer<BEANTYPE>
 
     /**
      * Adds a new bean at the given index.
-     * 
+     *
      * The bean is used both as the item contents and as the item identifier.
-     * 
+     *
      * @param index
      *            Index at which the bean should be added.
      * @param newItemId
@@ -164,9 +164,9 @@ public class BeanItemContainer<BEANTYPE>
 
     /**
      * Adds the bean to the Container.
-     * 
+     *
      * The bean is used both as the item contents and as the item identifier.
-     * 
+     *
      * @see com.vaadin.data.Container#addItem(Object)
      */
     @Override
@@ -177,9 +177,9 @@ public class BeanItemContainer<BEANTYPE>
 
     /**
      * Adds the bean to the Container.
-     * 
+     *
      * The bean is used both as the item contents and as the item identifier.
-     * 
+     *
      * @see com.vaadin.data.Container#addItem(Object)
      */
     @Override

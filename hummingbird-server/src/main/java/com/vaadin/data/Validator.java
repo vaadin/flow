@@ -53,7 +53,7 @@ public interface Validator extends Serializable {
      * Checks the given value against this validator. If the value is valid the
      * method does nothing. If the value is invalid, an
      * {@link InvalidValueException} is thrown.
-     * 
+     *
      * @param value
      *            the value to check
      * @throws Validator.InvalidValueException
@@ -63,13 +63,13 @@ public interface Validator extends Serializable {
 
     /**
      * Exception that is thrown by a {@link Validator} when a value is invalid.
-     * 
+     *
      * <p>
      * The default implementation of InvalidValueException does not support HTML
      * in error messages. To enable HTML support, override
      * {@link #getHtmlMessage()} and use the subclass in validators.
      * </p>
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -165,7 +165,7 @@ public interface Validator extends Serializable {
      * A specific type of {@link InvalidValueException} that indicates that
      * validation failed because the value was empty. What empty means is up to
      * the thrower.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 5.3.0
      */

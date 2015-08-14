@@ -242,7 +242,7 @@ public class TouchScrollDelegate implements NativePreviewHandler {
     /**
      * Makes the given elements scrollable, either natively or by using a
      * TouchScrollDelegate, depending on platform capabilities.
-     * 
+     *
      * @param widget
      *            The widget that contains scrollable elements
      * @param scrollables
@@ -270,7 +270,7 @@ public class TouchScrollDelegate implements NativePreviewHandler {
 
     /**
      * Has user moved the touch.
-     * 
+     *
      * @return
      */
     public boolean isMoved() {
@@ -399,7 +399,7 @@ public class TouchScrollDelegate implements NativePreviewHandler {
     /**
      * Detects if a touch happens on a predefined element and the element has
      * something to scroll.
-     * 
+     *
      * @param touch
      * @return
      */
@@ -480,7 +480,7 @@ public class TouchScrollDelegate implements NativePreviewHandler {
     private Animation momentum;
 
     /**
-     * 
+     *
      * @param event
      * @return
      */
@@ -610,7 +610,7 @@ public class TouchScrollDelegate implements NativePreviewHandler {
     /**
      * Note positive scrolltop moves layer up, positive translate moves layer
      * down.
-     * 
+     *
      * @param duration
      */
     private void translateTo(int duration, final int fromY, final int finalY) {
@@ -713,7 +713,7 @@ public class TouchScrollDelegate implements NativePreviewHandler {
     /**
      * long calcucation are not very efficient in GWT, so this helper method
      * returns timestamp in double.
-     * 
+     *
      * @return
      */
     public static double getTimeStamp() {

@@ -37,7 +37,7 @@ public interface Section {
      * The button should preferably only have an icon (no caption), and should
      * have a longer description as title (tooltip).
      * </p>
-     * 
+     *
      * @return section id
      */
     public DebugButton getTabButton();
@@ -45,7 +45,7 @@ public interface Section {
     /**
      * Returns a widget that is placed on top of the Section content when the
      * Section (tab) is active in the {@link VDebugWindow}.
-     * 
+     *
      * @return section controls
      */
     public Widget getControls();
@@ -53,7 +53,7 @@ public interface Section {
     /**
      * Returns a widget that is the main content of the section, displayed when
      * the section is active in the {@link VDebugWindow}.
-     * 
+     *
      * @return
      */
     public Widget getContent();

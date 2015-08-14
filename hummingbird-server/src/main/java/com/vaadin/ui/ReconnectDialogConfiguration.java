@@ -28,7 +28,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
     /**
      * Gets the text to show in the reconnect dialog when trying to re-establish
      * the server connection
-     * 
+     *
      * @return the text to show in the reconnect dialog
      */
     public String getDialogText();
@@ -36,7 +36,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
     /**
      * Sets the text to show in the reconnect dialog when trying to re-establish
      * the server connection
-     * 
+     *
      * @param dialogText
      *            the text to show in the reconnect dialog
      */
@@ -45,7 +45,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
     /**
      * Gets the text to show in the reconnect dialog after giving up trying to
      * reconnect ({@link #getReconnectAttempts()} reached)
-     * 
+     *
      * @return the text to show in the reconnect dialog after giving up
      */
     public String getDialogTextGaveUp();
@@ -53,7 +53,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
     /**
      * Sets the text to show in the reconnect dialog after giving up trying to
      * reconnect ({@link #getReconnectAttempts()} reached)
-     * 
+     *
      * @param dialogText
      *            the text to show in the reconnect dialog after giving up
      */
@@ -62,7 +62,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
     /**
      * Gets the number of times to try to reconnect to the server before giving
      * up
-     * 
+     *
      * @return the number of times to try to reconnect
      */
     public int getReconnectAttempts();
@@ -70,7 +70,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
     /**
      * Sets the number of times to try to reconnect to the server before giving
      * up
-     * 
+     *
      * @param reconnectAttempts
      *            the number of times to try to reconnect
      */
@@ -78,14 +78,14 @@ public interface ReconnectDialogConfiguration extends Serializable {
 
     /**
      * Gets the interval (in milliseconds) between reconnect attempts
-     * 
+     *
      * @return the interval (in ms) between reconnect attempts
      */
     public int getReconnectInterval();
 
     /**
      * Sets the interval (in milliseconds) between reconnect attempts
-     * 
+     *
      * @param reconnectInterval
      *            the interval (in ms) between reconnect attempts
      */

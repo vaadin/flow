@@ -34,7 +34,7 @@ public interface SystemMessagesProvider extends Serializable {
      * most cases some or both of {@link VaadinSession#getCurrent()} and
      * {@link UI#getCurrent()} can also be used to find more information to help
      * the decision.
-     * 
+     *
      * @param systemMessagesInfo
      *            Locale, current request and other information available.
      * @return a system messages object

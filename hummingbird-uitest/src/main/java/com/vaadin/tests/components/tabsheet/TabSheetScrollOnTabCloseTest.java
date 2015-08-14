@@ -73,7 +73,7 @@ public class TabSheetScrollOnTabCloseTest extends MultiBrowserTest {
      * and only if shouldBeVisible is true. Used for checking that the leftmost
      * visible tab is the expected one when there should be tabs (hidden because
      * of scroll position) to the left of tabId.
-     * 
+     *
      * If there is no tab with the specified id, the tab is considered not to be
      * visible.
      */
@@ -102,7 +102,7 @@ public class TabSheetScrollOnTabCloseTest extends MultiBrowserTest {
      * element is correct. If the element does not exist in the DOM, it is
      * considered not to be visible. If several elements match the locator, only
      * the visibility of the first matching element is considered.
-     * 
+     *
      * @param locator
      *            used to find the element
      * @param expectedVisibility
@@ -140,7 +140,7 @@ public class TabSheetScrollOnTabCloseTest extends MultiBrowserTest {
 
     /**
      * An expectation for checking that the leftmost tab has id equal to tabId.
-     * 
+     *
      * @param tabSheet
      *            the tab sheet containing the tab
      * @param tabId

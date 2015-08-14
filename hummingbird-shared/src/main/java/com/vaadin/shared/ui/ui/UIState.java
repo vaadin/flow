@@ -70,7 +70,7 @@ public class UIState extends TabIndexState {
     public PushConfigurationState pushConfiguration = new PushConfigurationState();
     /**
      * Currently used theme.
-     * 
+     *
      * @since 7.3
      */
     public String theme;

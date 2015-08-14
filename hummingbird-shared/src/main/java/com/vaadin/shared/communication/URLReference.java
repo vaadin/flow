@@ -25,7 +25,7 @@ public class URLReference implements Serializable {
      * Returns the URL that this object refers to.
      * <p>
      * Note that the URL can use special protocols like theme://
-     * 
+     *
      * @return The URL for this reference or null if unknown.
      */
     public String getURL() {
@@ -34,7 +34,7 @@ public class URLReference implements Serializable {
 
     /**
      * Sets the URL that this object refers to
-     * 
+     *
      * @param URL
      */
     public void setURL(String URL) {

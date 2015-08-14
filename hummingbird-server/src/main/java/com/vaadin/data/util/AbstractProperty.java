@@ -51,7 +51,7 @@ public abstract class AbstractProperty<T> implements Property<T>,
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * Override for additional restrictions on what is considered a read-only
      * property.
      */
@@ -103,7 +103,7 @@ public abstract class AbstractProperty<T> implements Property<T>,
 
     /**
      * Registers a new read-only status change listener for this Property.
-     * 
+     *
      * @param listener
      *            the new Listener to be registered.
      */
@@ -118,7 +118,7 @@ public abstract class AbstractProperty<T> implements Property<T>,
 
     /**
      * Removes a previously registered read-only status change listener.
-     * 
+     *
      * @param listener
      *            the listener to be removed.
      */

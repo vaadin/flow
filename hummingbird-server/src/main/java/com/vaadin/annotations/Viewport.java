@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
 public @interface Viewport {
     /**
      * Gets the viewport tag content.
-     * 
+     *
      * @return the viewport tag content
      */
     public String value();

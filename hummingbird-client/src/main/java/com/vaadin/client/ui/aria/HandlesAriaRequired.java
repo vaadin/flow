@@ -24,7 +24,7 @@ package com.vaadin.client.ui.aria;
 public interface HandlesAriaRequired {
     /**
      * Called to set the element, typically an input element, as required.
-     * 
+     *
      * @param required
      *            boolean true when the element needs to be set as required
      */

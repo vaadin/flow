@@ -36,7 +36,7 @@ public class KeyMapper<V> implements Serializable {
 
     /**
      * Gets key for an object.
-     * 
+     *
      * @param o
      *            the object.
      */
@@ -62,7 +62,7 @@ public class KeyMapper<V> implements Serializable {
 
     /**
      * Retrieves object with the key.
-     * 
+     *
      * @param key
      *            the name with the desired value.
      * @return the object with the key.
@@ -73,7 +73,7 @@ public class KeyMapper<V> implements Serializable {
 
     /**
      * Removes object from the mapper.
-     * 
+     *
      * @param removeobj
      *            the object to be removed.
      */

@@ -33,7 +33,7 @@ public class UIProviderEvent extends EventObject implements Serializable {
 
     /**
      * Creates a new UI provider event.
-     * 
+     *
      * @param request
      *            the request for which the event is UI provider is invoked
      */
@@ -44,7 +44,7 @@ public class UIProviderEvent extends EventObject implements Serializable {
 
     /**
      * Gets the Vaadin service from which the event originates.
-     * 
+     *
      * @return the Vaadin service
      */
     public VaadinService getService() {
@@ -53,7 +53,7 @@ public class UIProviderEvent extends EventObject implements Serializable {
 
     /**
      * Gets the request associated with this event.
-     * 
+     *
      * @return the Vaadin request
      */
     public VaadinRequest getRequest() {

@@ -82,7 +82,7 @@ public class UidlWriter implements Serializable {
 
     /**
      * Writes a JSON object containing all pending changes to the given UI.
-     * 
+     *
      * @param ui
      *            The {@link UI} whose changes to write
      * @param writer
@@ -92,7 +92,7 @@ public class UidlWriter implements Serializable {
      * @param async
      *            True if this message is sent by the server asynchronously,
      *            false if it is a response to a client message.
-     * 
+     *
      * @throws IOException
      *             If the writing fails.
      */
@@ -526,7 +526,7 @@ public class UidlWriter implements Serializable {
     /**
      * Adds the performance timing data (used by TestBench 3) to the UIDL
      * response.
-     * 
+     *
      * @throws IOException
      */
     private void writePerformanceData(UI ui, Writer writer) throws IOException {

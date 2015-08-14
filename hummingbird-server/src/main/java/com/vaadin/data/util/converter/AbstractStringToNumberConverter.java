@@ -38,7 +38,7 @@ public abstract class AbstractStringToNumberConverter<T>
     /**
      * Returns the format used by {@link #convertToPresentation(Object, Locale)}
      * and {@link #convertToModel(Object, Locale)}.
-     * 
+     *
      * @param locale
      *            The locale to use
      * @return A NumberFormat instance
@@ -55,7 +55,7 @@ public abstract class AbstractStringToNumberConverter<T>
     /**
      * Convert the value to a Number using the given locale and
      * {@link #getFormat(Locale)}.
-     * 
+     *
      * @param value
      *            The value to convert
      * @param locale
@@ -94,7 +94,7 @@ public abstract class AbstractStringToNumberConverter<T>
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.data.util.converter.Converter#convertToPresentation(java.lang
      * .Object, java.util.Locale)
@@ -112,7 +112,7 @@ public abstract class AbstractStringToNumberConverter<T>
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.converter.Converter#getPresentationType()
      */
     @Override

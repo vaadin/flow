@@ -30,7 +30,7 @@ public interface EditorServerRpc extends ServerRpc {
      * request is sent, it must be acknowledged with a
      * {@link EditorClientRpc#confirmBind() confirm call} before the client can
      * open the editor.
-     * 
+     *
      * @param rowIndex
      *            the index of the edited row
      */
@@ -40,7 +40,7 @@ public interface EditorServerRpc extends ServerRpc {
      * Asks the server to save unsaved changes in the editor to the data source.
      * When a save request is sent, it must be acknowledged with a
      * {@link EditorClientRpc#confirmSave() confirm call}.
-     * 
+     *
      * @param rowIndex
      *            the index of the edited row
      */
@@ -50,7 +50,7 @@ public interface EditorServerRpc extends ServerRpc {
      * Tells the server to cancel editing. When sending a cancel request, the
      * client does not need to wait for confirmation by the server before hiding
      * the editor.
-     * 
+     *
      * @param rowIndex
      *            the index of the edited row
      */

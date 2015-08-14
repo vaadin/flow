@@ -34,7 +34,7 @@ public class ComputedStyle {
      * <p>
      * Note that this method is expensive. Wherever possible, reuse the returned
      * object.
-     * 
+     *
      * @param elem
      *            the element
      * @return the computed style
@@ -60,7 +60,7 @@ public class ComputedStyle {
     }-*/;
 
     /**
-     * 
+     *
      * @param name
      *            name of the CSS property in camelCase
      * @return the value of the property, normalized for across browsers (each
@@ -136,9 +136,9 @@ public class ComputedStyle {
 
     /**
      * Retrieves the given computed property as an integer
-     * 
+     *
      * Returns 0 if the property cannot be converted to an integer
-     * 
+     *
      * @param name
      *            the property to retrieve
      * @return the integer value of the property or 0
@@ -153,9 +153,9 @@ public class ComputedStyle {
 
     /**
      * Retrieves the given computed property as a double
-     * 
+     *
      * Returns NaN if the property cannot be converted to a double
-     * 
+     *
      * @param name
      *            the property to retrieve
      * @return the double value of the property
@@ -209,7 +209,7 @@ public class ComputedStyle {
 
     /**
      * Returns the current width from the DOM.
-     * 
+     *
      * @since 7.5.1
      * @return the computed width
      */
@@ -219,7 +219,7 @@ public class ComputedStyle {
 
     /**
      * Returns the current height from the DOM.
-     * 
+     *
      * @since 7.5.1
      * @return the computed height
      */
@@ -229,13 +229,13 @@ public class ComputedStyle {
 
     /**
      * Takes a String value e.g. "12px" and parses that to Integer 12.
-     * 
+     *
      * @param String
      *            a value starting with a number
      * @return Integer the value from the string before any non-numeric
      *         characters. If the value cannot be parsed to a number, returns
      *         <code>null</code>.
-     * 
+     *
      * @deprecated Since 7.1.4, the method {@link #parseIntNative(String)} is
      *             used internally and this method does not belong in the public
      *             API of {@link ComputedStyle}. {@link #parseInt(String)} might
@@ -254,10 +254,10 @@ public class ComputedStyle {
 
     /**
      * Takes a String value e.g. "12px" and parses that to int 12.
-     * 
+     *
      * <p>
      * This method returns 0 for <code>NaN</code>.
-     * 
+     *
      * @param String
      *            a value starting with a number
      * @return int the value from the string before any non-numeric characters.
@@ -274,7 +274,7 @@ public class ComputedStyle {
 
     /**
      * Takes a String value e.g. "12.3px" and parses that to a double, 12.3.
-     * 
+     *
      * @param String
      *            a value starting with a number
      * @return the value from the string before any non-numeric characters or

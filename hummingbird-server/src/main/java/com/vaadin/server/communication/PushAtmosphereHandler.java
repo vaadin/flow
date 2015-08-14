@@ -80,7 +80,7 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
 
     /**
      * Called when the client sends a message through the push channel
-     * 
+     *
      * @param resource
      */
     private void onMessage(AtmosphereResource resource) {
@@ -90,7 +90,7 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
     /**
      * Called when the client sends the first request (to establish a push
      * connection)
-     * 
+     *
      * @param resource
      */
     private void onConnect(AtmosphereResource resource) {

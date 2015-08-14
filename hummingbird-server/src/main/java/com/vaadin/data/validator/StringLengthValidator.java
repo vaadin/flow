@@ -34,7 +34,7 @@ public class StringLengthValidator extends AbstractStringValidator {
 
     /**
      * Creates a new StringLengthValidator with a given error message.
-     * 
+     *
      * @param errorMessage
      *            the message to display in case the value does not validate.
      */
@@ -45,7 +45,7 @@ public class StringLengthValidator extends AbstractStringValidator {
     /**
      * Creates a new StringLengthValidator with a given error message and
      * minimum and maximum length limits.
-     * 
+     *
      * @param errorMessage
      *            the message to display in case the value does not validate.
      * @param minLength
@@ -70,7 +70,7 @@ public class StringLengthValidator extends AbstractStringValidator {
 
     /**
      * Checks if the given value is valid.
-     * 
+     *
      * @param value
      *            the value to validate.
      * @return <code>true</code> for valid value, otherwise <code>false</code>.
@@ -90,7 +90,7 @@ public class StringLengthValidator extends AbstractStringValidator {
 
     /**
      * Returns <code>true</code> if null strings are allowed.
-     * 
+     *
      * @return <code>true</code> if allows null string, otherwise
      *         <code>false</code>.
      */
@@ -101,7 +101,7 @@ public class StringLengthValidator extends AbstractStringValidator {
 
     /**
      * Gets the maximum permissible length of the string.
-     * 
+     *
      * @return the maximum length of the string or null if there is no limit
      */
     public Integer getMaxLength() {
@@ -110,7 +110,7 @@ public class StringLengthValidator extends AbstractStringValidator {
 
     /**
      * Gets the minimum permissible length of the string.
-     * 
+     *
      * @return the minimum length of the string or null if there is no limit
      */
     public Integer getMinLength() {
@@ -128,7 +128,7 @@ public class StringLengthValidator extends AbstractStringValidator {
 
     /**
      * Sets the maximum permissible length of the string.
-     * 
+     *
      * @param maxLength
      *            the maximum length to accept or null for no limit
      */
@@ -138,7 +138,7 @@ public class StringLengthValidator extends AbstractStringValidator {
 
     /**
      * Sets the minimum permissible length.
-     * 
+     *
      * @param minLength
      *            the minimum length to accept or null for no limit
      */

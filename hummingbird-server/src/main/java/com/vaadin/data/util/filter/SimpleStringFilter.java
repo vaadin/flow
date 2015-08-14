@@ -119,7 +119,7 @@ public final class SimpleStringFilter implements Filter {
 
     /**
      * Returns the property identifier to which this filter applies.
-     * 
+     *
      * @return property id
      */
     public Object getPropertyId() {
@@ -128,10 +128,10 @@ public final class SimpleStringFilter implements Filter {
 
     /**
      * Returns the filter string.
-     * 
+     *
      * Note: this method is intended only for implementations of lazy string
      * filters and may change in the future.
-     * 
+     *
      * @return filter string given to the constructor
      */
     public String getFilterString() {
@@ -140,10 +140,10 @@ public final class SimpleStringFilter implements Filter {
 
     /**
      * Returns whether the filter is case-insensitive or case-sensitive.
-     * 
+     *
      * Note: this method is intended only for implementations of lazy string
      * filters and may change in the future.
-     * 
+     *
      * @return true if performing case-insensitive filtering, false for
      *         case-sensitive
      */
@@ -154,10 +154,10 @@ public final class SimpleStringFilter implements Filter {
     /**
      * Returns true if the filter only applies to the beginning of the value
      * string, false for any location in the value.
-     * 
+     *
      * Note: this method is intended only for implementations of lazy string
      * filters and may change in the future.
-     * 
+     *
      * @return true if checking for matches at the beginning of the value only,
      *         false if matching any part of value
      */

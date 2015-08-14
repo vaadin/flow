@@ -133,7 +133,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
      * <p>
      * For JSR 356 websockets to work properly, the initialization must be done
      * in the servlet context initialization phase.
-     * 
+     *
      * @param servletRegistration
      *            The servlet registration info for the servlet
      * @param servletContext
@@ -160,7 +160,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
     /**
      * Returns the name of the attribute in the servlet context where the
      * pre-initialized Atmosphere object is stored
-     * 
+     *
      * @param servletName
      *            The name of the servlet
      * @return The attribute name which contains the initialized Atmosphere
@@ -173,7 +173,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
     /**
      * Tries to determine if the given servlet registration refers to a Vaadin
      * servlet.
-     * 
+     *
      * @param servletRegistration
      *            The servlet registration info for the servlet
      * @return false if the servlet is definitely not a Vaadin servlet, true

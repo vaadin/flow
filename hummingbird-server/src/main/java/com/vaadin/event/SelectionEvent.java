@@ -48,7 +48,7 @@ public class SelectionEvent extends EventObject {
      * <p>
      * <em>Note:</em> this excludes all itemIds that might have been previously
      * selected.
-     * 
+     *
      * @return a Collection of the itemIds that became selected
      */
     public Set<Object> getAdded() {
@@ -60,7 +60,7 @@ public class SelectionEvent extends EventObject {
      * <p>
      * <em>Note:</em> this excludes all itemIds that might have been previously
      * deselected.
-     * 
+     *
      * @return a Collection of the itemIds that became deselected
      */
     public Set<Object> getRemoved() {
@@ -69,7 +69,7 @@ public class SelectionEvent extends EventObject {
 
     /**
      * A {@link Collection} of all the itemIds that are currently selected.
-     * 
+     *
      * @return a Collection of the itemIds that are currently selected
      */
     public Set<Object> getSelected() {

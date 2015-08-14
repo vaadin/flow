@@ -54,7 +54,7 @@ import java.lang.annotation.Target;
 public @interface HTML {
     /**
      * HTML files to import
-     * 
+     *
      * @return an array of HMTL file urls
      */
     public String[]value();

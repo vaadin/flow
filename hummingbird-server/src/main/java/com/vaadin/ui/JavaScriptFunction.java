@@ -41,7 +41,7 @@ public interface JavaScriptFunction extends Serializable {
      * <p>
      * Because of the asynchronous nature of the communication between client
      * and server, no return value can be sent back to the browser.
-     * 
+     *
      * @param arguments
      *            an array with JSON representations of the arguments with which
      *            the JavaScript function was called.

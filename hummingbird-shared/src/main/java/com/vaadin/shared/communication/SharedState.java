@@ -54,7 +54,7 @@ public class SharedState implements Serializable {
 
     /**
      * The automatically managed resources used by the connector.
-     * 
+     *
      * @see com.vaadin.ui.AbstractClientConnector#setResource(String,
      *      com.vaadin.server.Resource)
      * @see com.vaadin.client.ui.AbstractConnector#getResourceUrl(String)

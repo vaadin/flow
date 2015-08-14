@@ -84,7 +84,7 @@ public class ComboBox extends AbstractSelect
      * Flag to indicate whether to scroll the selected item visible (select the
      * page on which it is) when opening the popup or not. Only applies to
      * single select mode.
-     * 
+     *
      * This requires finding the index of the item, which can be expensive in
      * many large lazy loading containers.
      */
@@ -125,7 +125,7 @@ public class ComboBox extends AbstractSelect
 
     /**
      * Gets the current input prompt.
-     * 
+     *
      * @see #setInputPrompt(String)
      * @return the current input prompt, or null if not enabled
      */
@@ -136,7 +136,7 @@ public class ComboBox extends AbstractSelect
     /**
      * Sets the input prompt - a textual prompt that is displayed when the
      * select would otherwise be empty, to prompt the user for input.
-     * 
+     *
      * @param inputPrompt
      *            the desired input prompt, or null to disable
      */
@@ -155,9 +155,9 @@ public class ComboBox extends AbstractSelect
      * field area of the component is just used to show what is selected. By
      * disabling text input, the comboBox will work in the same way as a
      * {@link NativeSelect}
-     * 
+     *
      * @see #isTextInputAllowed()
-     * 
+     *
      * @param textInputAllowed
      *            true to allow entering text, false to just show the current
      *            selection
@@ -172,7 +172,7 @@ public class ComboBox extends AbstractSelect
      * the selections or enter a new value if {@link #isNewItemsAllowed()}
      * returns true. If text input is disabled, the comboBox will work in the
      * same way as a {@link NativeSelect}
-     * 
+     *
      * @return
      */
     public boolean isTextInputAllowed() {
@@ -182,17 +182,17 @@ public class ComboBox extends AbstractSelect
     /**
      * Returns the filtered options for the current page using a container
      * filter.
-     * 
+     *
      * As a size effect, {@link #filteredSize} is set to the total number of
      * items passing the filter.
-     * 
+     *
      * The current container must be {@link Filterable} and {@link Indexed}, and
      * the filtering mode must be suitable for container filtering (tested with
      * {@link #canUseContainerFilter()}).
-     * 
+     *
      * Use {@link #getFilteredOptions()} and
      * {@link #sanitetizeList(List, boolean)} if this is not the case.
-     * 
+     *
      * @param needNullSelectOption
      * @return filtered list of options (may be empty) or null if cannot use
      *         container filters
@@ -269,11 +269,11 @@ public class ComboBox extends AbstractSelect
     /**
      * Constructs a filter instance to use when using a Filterable container in
      * the <code>ITEM_CAPTION_MODE_PROPERTY</code> mode.
-     * 
+     *
      * Note that the client side implementation expects the filter string to
      * apply to the item caption string it sees, so changing the behavior of
      * this method can cause problems.
-     * 
+     *
      * @param filterString
      * @param filteringMode
      * @return
@@ -308,14 +308,14 @@ public class ComboBox extends AbstractSelect
 
     /**
      * Makes correct sublist of given list of options.
-     * 
+     *
      * If paint is not an option request (affected by page or filter change),
      * page will be the one where possible selection exists.
-     * 
+     *
      * Detects proper first and last item in list to return right page of
      * options. Also, if the current page is beyond the end of the list, it will
      * be adjusted.
-     * 
+     *
      * @param options
      * @param needNullSelectOption
      *            flag to indicate if nullselect option needs to be taken into
@@ -355,7 +355,7 @@ public class ComboBox extends AbstractSelect
      * Returns the index of the first item on the current page. The index is to
      * the underlying (possibly filtered) contents. The null item, if any, does
      * not have an index but takes up a slot on the first page.
-     * 
+     *
      * @param needNullSelectOption
      *            true if a null option should be shown before any other options
      *            (takes up the first slot on the first page, not counted in
@@ -382,7 +382,7 @@ public class ComboBox extends AbstractSelect
      * the underlying (possibly filtered) contents. If needNullSelectOption is
      * true, the null item takes up the first slot on the first page,
      * effectively reducing the first page size by one.
-     * 
+     *
      * @param needNullSelectOption
      *            true if a null option should be shown before any other options
      *            (takes up the first slot on the first page, not counted in
@@ -407,7 +407,7 @@ public class ComboBox extends AbstractSelect
      * page is not after the end of the contents, and optionally go to the page
      * containg a specific item. There are no side effects but the adjusted page
      * index is returned.
-     * 
+     *
      * @param page
      *            page number to use as the starting point
      * @param needNullSelectOption
@@ -437,11 +437,11 @@ public class ComboBox extends AbstractSelect
 
     /**
      * Filters the options in memory and returns the full filtered list.
-     * 
+     *
      * This can be less efficient than using container filters, so use
      * {@link #getOptionsWithFilter(boolean)} if possible (filterable container
      * and suitable item caption mode etc.).
-     * 
+     *
      * @return
      */
     protected List<?> getFilteredOptions() {
@@ -525,7 +525,7 @@ public class ComboBox extends AbstractSelect
 
     /**
      * ComboBox does not support multi select mode.
-     * 
+     *
      * @deprecated As of 7.0, use {@link ListSelect}, {@link OptionGroup} or
      *             {@link TwinColSelect} instead
      * @see com.vaadin.ui.AbstractSelect#setMultiSelect(boolean)
@@ -543,12 +543,12 @@ public class ComboBox extends AbstractSelect
 
     /**
      * ComboBox does not support multi select mode.
-     * 
+     *
      * @deprecated As of 7.0, use {@link ListSelect}, {@link OptionGroup} or
      *             {@link TwinColSelect} instead
-     * 
+     *
      * @see com.vaadin.ui.AbstractSelect#isMultiSelect()
-     * 
+     *
      * @return false
      */
     @Deprecated
@@ -559,7 +559,7 @@ public class ComboBox extends AbstractSelect
 
     /**
      * Returns the page length of the suggestion popup.
-     * 
+     *
      * @return the pageLength
      */
     public int getPageLength() {
@@ -569,7 +569,7 @@ public class ComboBox extends AbstractSelect
     /**
      * Sets the page length for the suggestion popup. Setting the page length to
      * 0 will disable suggestion popup paging (all items visible).
-     * 
+     *
      * @param pageLength
      *            the pageLength to set
      */
@@ -582,10 +582,10 @@ public class ComboBox extends AbstractSelect
      * Sets whether to scroll the selected item visible (directly open the page
      * on which it is) when opening the combo box popup or not. Only applies to
      * single select mode.
-     * 
+     *
      * This requires finding the index of the item, which can be expensive in
      * many large lazy loading containers.
-     * 
+     *
      * @param scrollToSelectedItem
      *            true to find the page with the selected item when opening the
      *            selection popup
@@ -597,9 +597,9 @@ public class ComboBox extends AbstractSelect
     /**
      * Returns true if the select should find the page with the selected item
      * when opening the popup (single select combo box only).
-     * 
+     *
      * @see #setScrollToSelectedItem(boolean)
-     * 
+     *
      * @return true if the page with the selected item will be shown when
      *         opening the popup
      */

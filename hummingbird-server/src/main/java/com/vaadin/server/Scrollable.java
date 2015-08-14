@@ -31,24 +31,24 @@ public interface Scrollable extends Serializable {
 
     /**
      * Gets scroll left offset.
-     * 
+     *
      * <p>
      * Scrolling offset is the number of pixels this scrollable has been
      * scrolled right.
      * </p>
-     * 
+     *
      * @return Horizontal scrolling position in pixels.
      */
     public int getScrollLeft();
 
     /**
      * Sets scroll left offset.
-     * 
+     *
      * <p>
      * Scrolling offset is the number of pixels this scrollable has been
      * scrolled right.
      * </p>
-     * 
+     *
      * @param scrollLeft
      *            the xOffset.
      */
@@ -56,24 +56,24 @@ public interface Scrollable extends Serializable {
 
     /**
      * Gets scroll top offset.
-     * 
+     *
      * <p>
      * Scrolling offset is the number of pixels this scrollable has been
      * scrolled down.
      * </p>
-     * 
+     *
      * @return Vertical scrolling position in pixels.
      */
     public int getScrollTop();
 
     /**
      * Sets scroll top offset.
-     * 
+     *
      * <p>
      * Scrolling offset is the number of pixels this scrollable has been
      * scrolled down.
      * </p>
-     * 
+     *
      * <p>
      * The scrolling position is limited by the current height of the content
      * area. If the position is below the height, it is scrolled to the bottom.
@@ -81,7 +81,7 @@ public interface Scrollable extends Serializable {
      * scrolling to bottom only scrolls to the bottom of the previous content
      * area.
      * </p>
-     * 
+     *
      * @param scrollTop
      *            the yOffset.
      */

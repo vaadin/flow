@@ -38,7 +38,7 @@ public class ReverseConverter<PRESENTATION, MODEL>
     /**
      * Creates a converter from source to target based on a converter that
      * converts from target to source.
-     * 
+     *
      * @param converter
      *            The converter to use in a reverse fashion
      */
@@ -48,7 +48,7 @@ public class ReverseConverter<PRESENTATION, MODEL>
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.converter.Converter#convertToModel(java
      * .lang.Object, java.util.Locale)
      */
@@ -61,7 +61,7 @@ public class ReverseConverter<PRESENTATION, MODEL>
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.data.util.converter.Converter#convertToPresentation(java.lang
      * .Object, java.util.Locale)
@@ -75,7 +75,7 @@ public class ReverseConverter<PRESENTATION, MODEL>
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.converter.Converter#getSourceType()
      */
     @Override
@@ -85,7 +85,7 @@ public class ReverseConverter<PRESENTATION, MODEL>
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.converter.Converter#getTargetType()
      */
     @Override

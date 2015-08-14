@@ -63,7 +63,7 @@ public interface ClientConnector extends Connector {
     /**
      * Returns the list of pending server to client RPC calls and clears the
      * list.
-     * 
+     *
      * @return an unmodifiable ordered list of pending server to client method
      *         calls (not null)
      */
@@ -72,14 +72,14 @@ public interface ClientConnector extends Connector {
     /**
      * Checks if the communicator is enabled. An enabled communicator is allowed
      * to receive messages from its counter-part.
-     * 
+     *
      * @return true if the connector can receive messages, false otherwise
      */
     public boolean isConnectorEnabled();
 
     /**
      * Returns the type of the shared state for this connector
-     * 
+     *
      * @return The type of the state. Must never return null.
      */
     public Class<? extends SharedState> getStateType();
@@ -93,7 +93,7 @@ public interface ClientConnector extends Connector {
      * {@link #beforeClientResponse(boolean)} followed by {@link #encodeState()}
      * for all connectors that are marked as dirty and send any updated state
      * info to the client.
-     * 
+     *
      * @since 7.0.0
      */
     public void markAsDirty();
@@ -103,16 +103,16 @@ public interface ClientConnector extends Connector {
      * <p>
      * This should only be used in special cases, e.g when the state of a
      * descendant depends on the state of an ancestor.
-     * 
+     *
      * @see #markAsDirty()
-     * 
+     *
      * @since 7.0.0
      */
     public void markAsDirtyRecursive();
 
     /**
      * Checks if the connector is attached to a VaadinSession.
-     * 
+     *
      * @since 7.1
      * @return true if the connector is attached to a session, false otherwise
      */
@@ -120,7 +120,7 @@ public interface ClientConnector extends Connector {
 
     /**
      * Returns the UI this connector is attached to
-     * 
+     *
      * @return The UI this connector is attached to or null if it is not
      *         attached to any UI
      */
@@ -131,13 +131,13 @@ public interface ClientConnector extends Connector {
      * client. Gives the connector an opportunity to set computed/dynamic state
      * values or to invoke last minute RPC methods depending on other component
      * features.
-     * 
+     *
      * @param initial
      *            <code>true</code> if the client-side connector will be created
      *            and initialized after this method has been invoked.
      *            <code>false</code> if there is already an initialized
      *            client-side connector.
-     * 
+     *
      * @since 7.0
      */
     public void beforeClientResponse(boolean initial);
@@ -147,7 +147,7 @@ public interface ClientConnector extends Connector {
      * typically done by calling the static method
      * {@link LegacyCommunicationManager#encodeState(ClientConnector, SharedState)}
      * .
-     * 
+     *
      * @return a JSON object with the encoded connector state
      */
     public JsonObject encodeState();
@@ -167,7 +167,7 @@ public interface ClientConnector extends Connector {
      * the session should be unlocked before writing a large response to the
      * client.
      * </p>
-     * 
+     *
      * @param request
      *            the request that should be handled
      * @param response
@@ -185,7 +185,7 @@ public interface ClientConnector extends Connector {
     /**
      * Returns the RPC manager instance to use when receiving calls for an RPC
      * interface.
-     * 
+     *
      * @param rpcInterfaceName
      *            name of the interface for which the call was made
      * @return ServerRpcManager or null if none found for the interface

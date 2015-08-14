@@ -73,7 +73,7 @@ public class HierarchyPanel extends FlowPanel {
     /**
      * Adds the captions of all open (non-leaf) nodes in the hierarchy tree
      * recursively.
-     * 
+     *
      * @param widget
      *            the widget in which to search for open nodes (if SimpleTree)
      * @param openNodes
@@ -163,7 +163,7 @@ public class HierarchyPanel extends FlowPanel {
     /**
      * Outputs debug information on the server - usually in the console of an
      * IDE, with a clickable reference to the relevant code location.
-     * 
+     *
      * @since 7.1
      * @param connector
      *            show debug info for this connector

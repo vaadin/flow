@@ -121,7 +121,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     /**
      * Writes the opening of JSON message to be sent to client.
-     * 
+     *
      * @param outWriter
      * @param response
      * @throws IOException
@@ -138,7 +138,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.server.SessionExpiredHandler#handleSessionExpired(com.vaadin
      * .server.VaadinRequest, com.vaadin.server.VaadinResponse)
@@ -165,7 +165,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     /**
      * Returns the JSON which should be returned to the client when a request
      * for a non-existent UI arrives.
-     * 
+     *
      * @param service
      *            The VaadinService
      * @param vaadinRequest

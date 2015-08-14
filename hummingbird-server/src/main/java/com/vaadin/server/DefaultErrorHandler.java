@@ -63,7 +63,7 @@ public class DefaultErrorHandler implements ErrorHandler {
      * might be also other irrelevant exceptions that make no sense for Vaadin
      * users (~developers using Vaadin). This method tries to choose the
      * relevant one to be reported.
-     * 
+     *
      * @since 7.2
      * @param t
      *            a throwable passed to ErrorHandler
@@ -99,7 +99,7 @@ public class DefaultErrorHandler implements ErrorHandler {
     /**
      * Returns the AbstractComponent associated with the given error if such can
      * be found
-     * 
+     *
      * @param event
      *            The error to investigate
      * @return The {@link AbstractComponent} to error relates to or null if
@@ -123,7 +123,7 @@ public class DefaultErrorHandler implements ErrorHandler {
      * Finds the nearest component by traversing upwards in the hierarchy. If
      * connector is a Component, that Component is returned. Otherwise, looks
      * upwards in the hierarchy until it finds a {@link Component}.
-     * 
+     *
      * @return A Component or null if no component was found
      */
     public static Component findComponent(Connector connector) {

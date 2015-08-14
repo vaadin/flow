@@ -85,7 +85,7 @@ public interface Container extends Serializable {
      * returned.
      * <p>
      * Containers should not return Items that are filtered out.
-     * 
+     *
      * @param itemId
      *            ID of the {@link Item} to retrieve
      * @return the {@link Item} with the given ID or <code>null</code> if the
@@ -96,7 +96,7 @@ public interface Container extends Serializable {
     /**
      * Gets the ID's of all Properties stored in the Container. The ID's cannot
      * be modified through the returned collection.
-     * 
+     *
      * @return unmodifiable collection of Property IDs
      */
     public Collection<?> getContainerPropertyIds();
@@ -112,7 +112,7 @@ public interface Container extends Serializable {
      * <p>
      * Calling this method for large lazy containers can be an expensive
      * operation and should be avoided when practical.
-     * 
+     *
      * @return unmodifiable collection of Item IDs
      */
     public Collection<?> getItemIds();
@@ -122,7 +122,7 @@ public interface Container extends Serializable {
      * Container. If the Container does not contain the item or it is filtered
      * out, or the Container does not have the Property, <code>null</code> is
      * returned.
-     * 
+     *
      * @param itemId
      *            ID of the visible Item which contains the Property
      * @param propertyId
@@ -133,7 +133,7 @@ public interface Container extends Serializable {
 
     /**
      * Gets the data type of all Properties identified by the given Property ID.
-     * 
+     *
      * @param propertyId
      *            ID identifying the Properties
      * @return data type of the Properties
@@ -145,7 +145,7 @@ public interface Container extends Serializable {
      * <p>
      * Filtering can hide items so that they will not be visible through the
      * container API.
-     * 
+     *
      * @return number of Items in the Container
      */
     public int size();
@@ -157,7 +157,7 @@ public interface Container extends Serializable {
      * container API, and this method should respect visibility of items (i.e.
      * only indicate visible items as being in the container) if feasible for
      * the container.
-     * 
+     *
      * @param itemId
      *            ID the of Item to be tested
      * @return boolean indicating if the Container holds the specified Item
@@ -166,17 +166,17 @@ public interface Container extends Serializable {
 
     /**
      * Creates a new Item with the given ID in the Container.
-     * 
+     *
      * <p>
      * The new Item is returned, and it is ready to have its Properties
      * modified. Returns <code>null</code> if the operation fails or the
      * Container already contains a Item with the given ID.
      * </p>
-     * 
+     *
      * <p>
      * This functionality is optional.
      * </p>
-     * 
+     *
      * @param itemId
      *            ID of the Item to be created
      * @return Created new Item, or <code>null</code> in case of a failure
@@ -188,17 +188,17 @@ public interface Container extends Serializable {
 
     /**
      * Creates a new Item into the Container, and assign it an automatic ID.
-     * 
+     *
      * <p>
      * The new ID is returned, or <code>null</code> if the operation fails.
      * After a successful call you can use the {@link #getItem(Object ItemId)
      * <code>getItem</code>}method to fetch the Item.
      * </p>
-     * 
+     *
      * <p>
      * This functionality is optional.
      * </p>
-     * 
+     *
      * @return ID of the newly created Item, or <code>null</code> in case of a
      *         failure
      * @throws UnsupportedOperationException
@@ -209,16 +209,16 @@ public interface Container extends Serializable {
 
     /**
      * Removes the Item identified by <code>ItemId</code> from the Container.
-     * 
+     *
      * <p>
      * Containers that support filtering should also allow removing an item that
      * is currently filtered out.
      * </p>
-     * 
+     *
      * <p>
      * This functionality is optional.
      * </p>
-     * 
+     *
      * @param itemId
      *            ID of the Item to remove
      * @return <code>true</code> if the operation succeeded, <code>false</code>
@@ -234,7 +234,7 @@ public interface Container extends Serializable {
      * type and default value of the new Property are given as parameters.
      * <p>
      * This functionality is optional.
-     * 
+     *
      * @param propertyId
      *            ID of the Property
      * @param type
@@ -255,7 +255,7 @@ public interface Container extends Serializable {
      * Note that the Property will be removed from all Items in the Container.
      * <p>
      * This functionality is optional.
-     * 
+     *
      * @param propertyId
      *            ID of the Property to remove
      * @return <code>true</code> if the operation succeeded, <code>false</code>
@@ -269,12 +269,12 @@ public interface Container extends Serializable {
 
     /**
      * Removes all Items from the Container.
-     * 
+     *
      * <p>
      * Note that Property ID and type information is preserved. This
      * functionality is optional.
      * </p>
-     * 
+     *
      * @return <code>true</code> if the operation succeeded, <code>false</code>
      *         if not
      * @throws UnsupportedOperationException
@@ -285,7 +285,7 @@ public interface Container extends Serializable {
     /**
      * Interface for Container classes whose {@link Item}s can be traversed in
      * order.
-     * 
+     *
      * <p>
      * If the container is filtered or sorted, the traversal applies to the
      * filtered and sorted view.
@@ -645,7 +645,7 @@ public interface Container extends Serializable {
      * hierarchically. This means that the Items in the container belong in a
      * tree-like structure, with the following quirks:
      * </p>
-     * 
+     *
      * <ul>
      * <li>The Item structure may have more than one root elements
      * <li>The Items in the hierarchy can be declared explicitly to be able or
@@ -843,7 +843,7 @@ public interface Container extends Serializable {
      * The functionality of SimpleFilterable can be implemented using the
      * {@link Filterable} API and {@link SimpleStringFilter}.
      * </p>
-     * 
+     *
      * @since 5.0 (renamed from Filterable to SimpleFilterable in 6.6)
      */
     public interface SimpleFilterable extends Container, Serializable {
@@ -905,9 +905,9 @@ public interface Container extends Serializable {
      * An {@link Filter} should implement {@link #equals(Object)} and
      * {@link #hashCode()} correctly to avoid duplicate filter registrations
      * etc.
-     * 
+     *
      * @see Filterable
-     * 
+     *
      * @since 6.6
      */
     public interface Filter extends Serializable {
@@ -974,12 +974,12 @@ public interface Container extends Serializable {
      * at index 0, at index {@link com.vaadin.data.Container#size()} or at an
      * undefined position is up to the implementation.
      * </p>
-     * 
+     *
      * <p>
      * This API replaces the old Filterable interface, renamed to
      * {@link SimpleFilterable} in Vaadin 6.6.
      * </p>
-     * 
+     *
      * @since 6.6
      */
     public interface Filterable extends Container, Serializable {
@@ -1063,7 +1063,7 @@ public interface Container extends Serializable {
     /**
      * An <code>Event</code> object specifying the Container whose Item set has
      * changed (items added, removed or reordered).
-     * 
+     *
      * A simple property value change is not an item set change.
      */
     public interface ItemSetChangeEvent extends Serializable {
@@ -1102,7 +1102,7 @@ public interface Container extends Serializable {
      * <p>
      * An item set change refers to addition, removal or reordering of items in
      * the container. A simple property value change is not an item set change.
-     * 
+     *
      * <p>
      * Note: The general Java convention is not to explicitly declare that a
      * class generates events, but to directly define the
@@ -1184,14 +1184,14 @@ public interface Container extends Serializable {
      * that it will generate a <code>PropertySetChangeEvent</code> when the set
      * of property IDs supported by the container is modified.
      * </p>
-     * 
+     *
      * <p>
      * A property set change means the addition, removal or other structural
      * changes to the properties of a container. Changes concerning the set of
      * items in the container and their property values are not property set
      * changes.
      * </p>
-     * 
+     *
      * <p>
      * Note that the general Java convention is not to explicitly declare that a
      * class generates events, but to directly define the

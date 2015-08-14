@@ -29,7 +29,7 @@ public class ServiceDestroyEvent extends EventObject {
 
     /**
      * Creates a new event for the given service.
-     * 
+     *
      * @param service
      *            the service being destroyed
      */
@@ -39,7 +39,7 @@ public class ServiceDestroyEvent extends EventObject {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.util.EventObject#getSource()
      */
     @Override

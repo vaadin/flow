@@ -47,7 +47,7 @@ public interface Buffered extends Serializable {
      * Updates all changes since the previous commit to the data source. The
      * value stored in the object will always be updated into the data source
      * when <code>commit</code> is called.
-     * 
+     *
      * @throws SourceException
      *             if the operation fails because of an exception is thrown by
      *             the data source. The cause is included in the exception.
@@ -60,7 +60,7 @@ public interface Buffered extends Serializable {
     /**
      * Discards all changes since last commit. The object updates its value from
      * the data source.
-     * 
+     *
      * @throws SourceException
      *             if the operation fails because of an exception is thrown by
      *             the data source. The cause is included in the exception.
@@ -77,7 +77,7 @@ public interface Buffered extends Serializable {
      * When in non-buffered mode both read and write operations will be done
      * directly on the data source. In this mode the {@link #commit()} and
      * {@link #discard()} methods serve no purpose.
-     * 
+     *
      * @param buffered
      *            true if buffered mode should be turned on, false otherwise
      * @since 7.0
@@ -86,7 +86,7 @@ public interface Buffered extends Serializable {
 
     /**
      * Checks the buffered mode
-     * 
+     *
      * @return true if buffered mode is on, false otherwise
      * @since 7.0
      */
@@ -95,7 +95,7 @@ public interface Buffered extends Serializable {
     /**
      * Tests if the value stored in the object has been modified since it was
      * last updated from the data source.
-     * 
+     *
      * @return <code>true</code> if the value in the object has been modified
      *         since the last data source update, <code>false</code> if not.
      */
@@ -105,7 +105,7 @@ public interface Buffered extends Serializable {
      * An exception that signals that one or more exceptions occurred while a
      * buffered object tried to access its data source or if there is a problem
      * in processing a data source.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */

@@ -37,7 +37,7 @@ public class BrowserFrame extends AbstractEmbedded {
 
     /**
      * Creates a new empty browser frame with the given caption.
-     * 
+     *
      * @param caption
      *            The caption for the component
      */
@@ -47,7 +47,7 @@ public class BrowserFrame extends AbstractEmbedded {
 
     /**
      * Creates a new browser frame with the given caption and content.
-     * 
+     *
      * @param caption
      *            The caption for the component.
      * @param source

@@ -59,7 +59,7 @@ public interface JSONSerializer<T> {
      * Serialize the given object into JSON. Must be compatible with
      * {@link #deserialize(Type, JsonValue, ConnectorTracker)} and the client
      * side com.vaadin.client.communication.JSONSerializer
-     * 
+     *
      * @param value
      *            The object to serialize
      * @param connectorTracker

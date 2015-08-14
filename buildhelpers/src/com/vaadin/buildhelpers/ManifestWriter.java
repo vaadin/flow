@@ -33,7 +33,7 @@ public class ManifestWriter {
 
     /**
      * Writes a manifest attribute to a temporary buffer.
-     * 
+     *
      * @param name
      *            Attribute name
      * @param value
@@ -56,10 +56,10 @@ public class ManifestWriter {
 
     /**
      * Writes the manifest to given JAR file.
-     * 
+     *
      * The manifest must be created with {@code #writeAttribute(String, String)}
      * before calling this write.
-     * 
+     *
      * @param jarFilename
      *            File name of the JAR in which the manifest is written
      * @return 0 on success, nonzero value on error

@@ -134,7 +134,7 @@ public class AtmospherePushConnection implements PushConnection {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.client.communication.PushConnection#init(ApplicationConnection
      * , Map<String, String>, CommunicationErrorHandler)
@@ -294,9 +294,9 @@ public class AtmospherePushConnection implements PushConnection {
     /**
      * Called whenever a server push connection is established (or
      * re-established).
-     * 
+     *
      * @param response
-     * 
+     *
      * @since 7.2
      */
     protected void onConnect(AtmosphereResponse response) {
@@ -324,7 +324,7 @@ public class AtmospherePushConnection implements PushConnection {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.communication.PushConenction#disconnect()
      */
     @Override
@@ -378,7 +378,7 @@ public class AtmospherePushConnection implements PushConnection {
     /**
      * Called if the push connection fails. Atmosphere will automatically retry
      * the connection until successful.
-     * 
+     *
      */
     protected void onError(AtmosphereResponse response) {
         state = State.DISCONNECTED;

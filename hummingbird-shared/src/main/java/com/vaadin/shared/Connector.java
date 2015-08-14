@@ -40,7 +40,7 @@ public interface Connector extends Serializable {
     /**
      * Returns the id for this connector. This is set by the framework and does
      * not change during the lifetime of a connector.
-     * 
+     *
      * @return The id for the connector.
      */
     public String getConnectorId();
@@ -48,7 +48,7 @@ public interface Connector extends Serializable {
     /**
      * Gets the parent connector of this connector, or <code>null</code> if the
      * connector is not attached to any parent.
-     * 
+     *
      * @return the parent connector, or <code>null</code> if there is no parent.
      */
     public Connector getParent();

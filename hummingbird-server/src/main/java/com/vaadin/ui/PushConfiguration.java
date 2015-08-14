@@ -36,7 +36,7 @@ public interface PushConfiguration extends Serializable {
 
     /**
      * Returns the mode of bidirectional ("push") communication that is used.
-     * 
+     *
      * @return The push mode.
      */
     public PushMode getPushMode();
@@ -49,10 +49,10 @@ public interface PushConfiguration extends Serializable {
      * application developer. An add-on should not set the push mode directly,
      * rather instruct the user to set it.
      * </p>
-     * 
+     *
      * @param pushMode
      *            The push mode to use.
-     * 
+     *
      * @throws IllegalArgumentException
      *             if the argument is null.
      * @throws IllegalStateException
@@ -66,7 +66,7 @@ public interface PushConfiguration extends Serializable {
      * Note that if you set the transport type using
      * {@link #setParameter(String, String)} to an unsupported type this method
      * will return null. Supported types are defined by {@link Transport}.
-     * 
+     *
      * @return The primary transport type
      */
     public Transport getTransport();
@@ -76,7 +76,7 @@ public interface PushConfiguration extends Serializable {
      * <p>
      * Note that the new transport type will not be used until the push channel
      * is disconnected and reconnected if already active.
-     * 
+     *
      * @param transport
      *            The primary transport type
      */
@@ -88,7 +88,7 @@ public interface PushConfiguration extends Serializable {
      * Note that if you set the transport type using
      * {@link #setParameter(String, String)} to an unsupported type this method
      * will return null. Supported types are defined by {@link Transport}.
-     * 
+     *
      * @return The fallback transport type
      */
     public Transport getFallbackTransport();
@@ -98,7 +98,7 @@ public interface PushConfiguration extends Serializable {
      * <p>
      * Note that the new transport type will not be used until the push channel
      * is disconnected and reconnected if already active.
-     * 
+     *
      * @param fallbackTransport
      *            The fallback transport type
      */
@@ -109,7 +109,7 @@ public interface PushConfiguration extends Serializable {
      * <p>
      * This method provides low level access to push parameters and is typically
      * not needed for normal application development.
-     * 
+     *
      * @since 7.1
      * @param parameter
      *            The parameter name
@@ -119,7 +119,7 @@ public interface PushConfiguration extends Serializable {
 
     /**
      * Returns the parameters which have been defined.
-     * 
+     *
      * @since 7.1
      * @return A collection of parameter names
      */
@@ -130,7 +130,7 @@ public interface PushConfiguration extends Serializable {
      * <p>
      * This method provides low level access to push parameters and is typically
      * not needed for normal application development.
-     * 
+     *
      * @since 7.1
      * @param parameter
      *            The parameter name
@@ -142,12 +142,12 @@ public interface PushConfiguration extends Serializable {
     /**
      * Sets whether to force the use of XHR when sending data from the client to
      * the server.
-     * 
+     *
      * This settings currently only has effect when using websockets, which by
      * default send client to server requests through the websockets channel. If
      * you need to support cookies, HTTP auth or similar features not available
      * in websockets communication you can set this to true.
-     * 
+     *
      * @since 7.6
      * @param alwaysUseXhrForServerRequests
      *            true to always use XHR for server requests, false otherwise
@@ -158,9 +158,9 @@ public interface PushConfiguration extends Serializable {
     /**
      * Checks whether to force the use of XHR when sending data from the client
      * to the server.
-     * 
+     *
      * @see #setAlwaysUseXhrForServerRequests(boolean)
-     * 
+     *
      * @since 7.6
      * @return true to always use XHR for server requests, false otherwise
      */
@@ -177,7 +177,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.PushConfiguration#getPushMode()
      */
     @Override
@@ -187,7 +187,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.PushConfiguration#setPushMode(com.vaadin.shared.
      * communication .PushMode)
      */
@@ -228,7 +228,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.PushConfiguration#getTransport()
      */
     @Override
@@ -243,7 +243,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.ui.PushConfiguration#setTransport(com.vaadin.shared.ui.ui.
      * Transport)
@@ -256,7 +256,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.PushConfiguration#getFallbackTransport()
      */
     @Override
@@ -271,7 +271,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.ui.PushConfiguration#setFallbackTransport(com.vaadin.shared
      * .ui.ui.Transport)
@@ -284,7 +284,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.PushConfiguration#getParameter(java.lang.String)
      */
     @Override
@@ -294,7 +294,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.PushConfiguration#setParameter(java.lang.String,
      * java.lang.String)
      */

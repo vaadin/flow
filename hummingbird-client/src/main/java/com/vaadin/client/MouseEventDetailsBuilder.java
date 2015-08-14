@@ -33,7 +33,7 @@ public class MouseEventDetailsBuilder {
 
     /**
      * Construct a {@link MouseEventDetails} object from the given event
-     * 
+     *
      * @param evt
      *            The event to use as a source for the details
      * @return a MouseEventDetails containing information from the event
@@ -44,7 +44,7 @@ public class MouseEventDetailsBuilder {
 
     /**
      * Construct a {@link MouseEventDetails} object from the given event
-     * 
+     *
      * @param evt
      *            The event to use as a source for the details
      * @param relativeToElement

@@ -37,7 +37,7 @@ public class ThemeResource implements Resource {
 
     /**
      * Creates a resource.
-     * 
+     *
      * @param resourceId
      *            the Id of the resource.
      */
@@ -58,7 +58,7 @@ public class ThemeResource implements Resource {
 
     /**
      * Tests if the given object equals this Resource.
-     * 
+     *
      * @param obj
      *            the object to be tested for equality.
      * @return <code>true</code> if the given object equals this Icon,
@@ -89,7 +89,7 @@ public class ThemeResource implements Resource {
 
     /**
      * Gets the resource id.
-     * 
+     *
      * @return the resource id.
      */
     public String getResourceId() {

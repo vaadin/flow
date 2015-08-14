@@ -27,7 +27,7 @@ public interface SelectConnectorListener {
     /**
      * Listener method called when a connector has been selected. If a specific
      * element of the connector was selected, it is also given.
-     * 
+     *
      * @param connector
      *            selected connector
      * @param element

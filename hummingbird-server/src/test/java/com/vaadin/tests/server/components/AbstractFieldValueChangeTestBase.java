@@ -67,11 +67,11 @@ public abstract class AbstractFieldValueChangeTestBase<T> extends TestCase {
     /**
      * Common unbuffered case: both writeThrough (auto-commit) and readThrough
      * are on. Calling commit() should not cause notifications.
-     * 
+     *
      * Using the readThrough mode allows changes made to the property value to
      * be seen in some cases also when there is no notification of value change
      * from the property.
-     * 
+     *
      * Field value change notifications closely mirror value changes of the data
      * source behind the field.
      */
@@ -85,7 +85,7 @@ public abstract class AbstractFieldValueChangeTestBase<T> extends TestCase {
     /**
      * Fully buffered use where the data source is neither read nor modified
      * during editing, and is updated at commit().
-     * 
+     *
      * Field value change notifications reflect the buffered value in the field,
      * not the original data source value changes.
      */

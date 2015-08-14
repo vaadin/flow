@@ -53,9 +53,9 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
 
     /**
      * Gets the singleton instance.
-     * 
+     *
      * @since 7.4
-     * 
+     *
      * @return the singleton instance
      */
     public static DefaultFieldGroupFieldFactory get() {
@@ -196,7 +196,7 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
     /**
      * Fallback when no specific field has been created. Typically returns a
      * TextField.
-     * 
+     *
      * @param <T>
      *            The type of field to create
      * @param type
@@ -217,7 +217,7 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
     /**
      * Populates the given select with all the enums in the given {@link Enum}
      * class. Uses {@link Enum}.toString() for caption.
-     * 
+     *
      * @param select
      *            The select to populate
      * @param enumClass

@@ -57,7 +57,7 @@ public interface LayoutEvents {
      * class really will send the events, or if it just defines the methods to
      * be able to implement an interface.
      * </p>
-     * 
+     *
      * @since 6.5.2
      * @see LayoutClickListener
      * @see LayoutClickEvent

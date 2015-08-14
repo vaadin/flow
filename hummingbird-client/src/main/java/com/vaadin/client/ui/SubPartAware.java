@@ -28,7 +28,7 @@ public interface SubPartAware {
      * Locates an element inside a component using the identifier provided in
      * {@code subPart}. The {@code subPart} identifier is component specific and
      * may be any string of characters, numbers, space characters and brackets.
-     * 
+     *
      * @param subPart
      *            The identifier for the element inside the component
      * @return The element identified by subPart or null if the element could
@@ -49,7 +49,7 @@ public interface SubPartAware {
      * identifier for the root element even though a DIV inside the button was
      * passed as {@code subElement} because interactions with the DIV and the
      * root button element produce the same result.
-     * 
+     *
      * @param subElement
      *            The element the identifier string should uniquely identify
      * @return An identifier that uniquely identifies {@code subElement} or null

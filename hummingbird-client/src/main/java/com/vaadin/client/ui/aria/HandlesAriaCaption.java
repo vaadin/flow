@@ -26,10 +26,10 @@ public interface HandlesAriaCaption {
     /**
      * Called to bind the provided caption (label in HTML speak) element to the
      * main input element of the Widget.
-     * 
+     *
      * Binding should be removed from the main input field when captionElement
      * is null.
-     * 
+     *
      * @param captionElement
      *            Element of the caption
      */

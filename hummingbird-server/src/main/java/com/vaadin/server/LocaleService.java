@@ -46,7 +46,7 @@ public class LocaleService implements Serializable {
 
     /**
      * Creates a LocaleService bound to the given UI
-     * 
+     *
      * @since 7.1
      * @param ui
      *            The UI which owns the LocaleService
@@ -58,7 +58,7 @@ public class LocaleService implements Serializable {
 
     /**
      * Retrieves the UI this service is bound to
-     * 
+     *
      * @since 7.1
      * @return the UI for this service
      */
@@ -72,7 +72,7 @@ public class LocaleService implements Serializable {
      * {@link Locale} instances and sent to the client when needed, eliminating
      * the need to use the {@link Locale} class and all the framework behind it
      * on the client.
-     * 
+     *
      * @param locale
      *            The locale which is required on the client side
      */
@@ -93,7 +93,7 @@ public class LocaleService implements Serializable {
      * The state is transmitted inside the UI state rather than as an individual
      * entity.
      * </p>
-     * 
+     *
      * @since 7.1
      * @param markAsDirty
      *            true to mark the state as dirty
@@ -110,7 +110,7 @@ public class LocaleService implements Serializable {
 
     /**
      * Creates a LocaleData instance for transportation to the client
-     * 
+     *
      * @since 7.1
      * @param locale
      *            The locale for which to create a LocaleData object

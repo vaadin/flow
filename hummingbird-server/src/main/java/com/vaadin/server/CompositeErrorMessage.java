@@ -30,7 +30,7 @@ public class CompositeErrorMessage extends AbstractErrorMessage {
 
     /**
      * Constructor for CompositeErrorMessage.
-     * 
+     *
      * @param errorMessages
      *            the array of error messages that are listed together. Nulls
      *            are ignored, but at least one message is required.
@@ -52,7 +52,7 @@ public class CompositeErrorMessage extends AbstractErrorMessage {
 
     /**
      * Constructor for CompositeErrorMessage.
-     * 
+     *
      * @param errorMessages
      *            the Collection of error messages that are listed together. At
      *            least one message is required.
@@ -76,7 +76,7 @@ public class CompositeErrorMessage extends AbstractErrorMessage {
     /**
      * Adds a error message into this composite message. Updates the level
      * field.
-     * 
+     *
      * @param error
      *            the error message to be added. Duplicate errors are ignored.
      */
@@ -91,7 +91,7 @@ public class CompositeErrorMessage extends AbstractErrorMessage {
 
     /**
      * Gets Error Iterator.
-     * 
+     *
      * @return the error iterator.
      */
     public Iterator<ErrorMessage> iterator() {
@@ -100,7 +100,7 @@ public class CompositeErrorMessage extends AbstractErrorMessage {
 
     /**
      * Returns a comma separated list of the error messages.
-     * 
+     *
      * @return String, comma separated list of error messages.
      */
     @Override

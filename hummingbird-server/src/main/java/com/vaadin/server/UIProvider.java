@@ -43,7 +43,7 @@ public abstract class UIProvider implements Serializable {
      * Helper to get an annotation for a class. If the annotation is not present
      * on the target class, its super classes and implemented interfaces are
      * also searched for the annotation.
-     * 
+     *
      * @param clazz
      *            the class from which the annotation should be found
      * @param annotationType
@@ -81,13 +81,13 @@ public abstract class UIProvider implements Serializable {
      * <p>
      * The default implementation checks for a @{@link Theme} annotation on the
      * UI class.
-     * 
+     *
      * @param event
      *            the UI create event with information about the UI and the
      *            current request.
      * @return the name of the theme, or <code>null</code> if the default theme
      *         should be used
-     * 
+     *
      */
     public String getTheme(UICreateEvent event) {
         Theme uiTheme = getAnnotationFor(event.getUIClass(), Theme.class);
@@ -114,13 +114,13 @@ public abstract class UIProvider implements Serializable {
      * <p>
      * The default implementation uses the @{@link Push} annotation if it's
      * defined for the UI class.
-     * 
+     *
      * @param event
      *            the UI create event with information about the UI and the
      *            current request.
      * @return the push mode to use, or <code>null</code> if the default push
      *         mode should be used
-     * 
+     *
      */
     public PushMode getPushMode(UICreateEvent event) {
         Push push = getAnnotationFor(event.getUIClass(), Push.class);
@@ -137,7 +137,7 @@ public abstract class UIProvider implements Serializable {
      * <p>
      * The default implementation uses the @{@link Push} annotation if it's
      * defined for the UI class.
-     * 
+     *
      * @param event
      *            the UI create event with information about the UI and the
      *            current request.

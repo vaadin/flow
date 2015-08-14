@@ -72,7 +72,7 @@ public class ComboBoxSQLContainerFilteredValueChange extends TestBase {
 
     /**
      * (Re)creates the test table
-     * 
+     *
      * @param connectionPool
      */
     private void createTestTable(JDBCConnectionPool connectionPool) {
@@ -98,7 +98,7 @@ public class ComboBoxSQLContainerFilteredValueChange extends TestBase {
 
     /**
      * Adds test data to the test table
-     * 
+     *
      * @param connectionPool
      * @throws SQLException
      */

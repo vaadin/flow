@@ -29,7 +29,7 @@ public interface Resource extends Serializable {
 
     /**
      * Gets the MIME type of the resource.
-     * 
+     *
      * @return the MIME type of the resource.
      */
     public String getMIMEType();

@@ -31,7 +31,7 @@ public class ServletIntegrationWebsocketUI extends ServletIntegrationUI {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.tests.integration.IntegrationTestUI#init(com.vaadin.server
      * .VaadinRequest)

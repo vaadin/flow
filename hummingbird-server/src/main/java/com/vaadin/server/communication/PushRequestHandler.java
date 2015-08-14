@@ -135,7 +135,7 @@ public class PushRequestHandler
 
     /**
      * Initializes Atmosphere for the given ServletConfiguration
-     * 
+     *
      * @since 7.5.0
      * @param vaadinServletConfig
      *            The servlet configuration for the servlet which should have
@@ -243,7 +243,7 @@ public class PushRequestHandler
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.server.SessionExpiredHandler#handleSessionExpired(com.vaadin
      * .server.VaadinRequest, com.vaadin.server.VaadinResponse)

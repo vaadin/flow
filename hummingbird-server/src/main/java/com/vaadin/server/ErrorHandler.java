@@ -24,7 +24,7 @@ public interface ErrorHandler extends Serializable {
 
     /**
      * Invoked when an error occurs.
-     * 
+     *
      * @param event
      *            the fired event.
      */

@@ -49,7 +49,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
      * except the {@link VaadinSession} is locked before this is called and
      * unlocked after this has completed.
-     * 
+     *
      * @see #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)
      * @param session
      *            The session for the request
@@ -59,7 +59,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *            The response object to which a response can be written.
      * @return true if a response has been written and no further request
      *         handlers should be called, otherwise false
-     * 
+     *
      * @throws IOException
      *             If an IO error occurred
      */
@@ -74,7 +74,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * calling
      * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
      * with the session locked.
-     * 
+     *
      * @since 7.2
      * @param request
      *            the request to handle

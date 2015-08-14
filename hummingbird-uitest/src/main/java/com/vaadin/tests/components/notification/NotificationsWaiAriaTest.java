@@ -39,7 +39,7 @@ public class NotificationsWaiAriaTest extends MultiBrowserTest {
 
     /**
      * Checks if the ARIA roles are correctly applied to Notification.
-     * 
+     *
      * @since 7.2
      * @throws Exception
      */

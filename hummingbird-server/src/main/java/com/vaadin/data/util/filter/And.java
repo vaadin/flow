@@ -34,7 +34,7 @@ import com.vaadin.data.Item;
 public final class And extends AbstractJunctionFilter {
 
     /**
-     * 
+     *
      * @param filters
      *            filters of which the And filter will be composed
      */

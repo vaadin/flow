@@ -45,7 +45,7 @@ public class DateRangeValidator extends RangeValidator<Date> {
      * that the hours/minutes/seconds/milliseconds of the min/max values are
      * properly set.
      * </p>
-     * 
+     *
      * @param errorMessage
      *            the message to display in case the value does not validate.
      * @param minValue

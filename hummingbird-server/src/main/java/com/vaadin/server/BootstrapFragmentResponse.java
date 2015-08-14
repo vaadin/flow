@@ -35,10 +35,10 @@ public class BootstrapFragmentResponse extends BootstrapResponse {
 
     /**
      * Crate a new bootstrap fragment response.
-     * 
+     *
      * @see BootstrapResponse#BootstrapResponse(BootstrapHandler, VaadinRequest,
      *      VaadinSession, Class)
-     * 
+     *
      * @param handler
      *            the bootstrap handler that is firing the event
      * @param request
@@ -67,7 +67,7 @@ public class BootstrapFragmentResponse extends BootstrapResponse {
      * Gets the list of DOM nodes that will be used to generate the fragment
      * HTML. Changes to the returned list will be reflected in the generated
      * HTML.
-     * 
+     *
      * @return the current list of DOM nodes that makes up the application
      *         fragment
      */

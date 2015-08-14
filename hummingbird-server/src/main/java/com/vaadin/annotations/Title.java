@@ -31,7 +31,7 @@ import com.vaadin.ui.UI;
 public @interface Title {
     /**
      * Gets the HTML title that should be used if the UI is used on it's own.
-     * 
+     *
      * @return a page title string
      */
     public String value();

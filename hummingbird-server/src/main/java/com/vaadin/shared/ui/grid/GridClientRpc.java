@@ -30,7 +30,7 @@ public interface GridClientRpc extends ClientRpc {
     /**
      * Command client Grid to scroll to a specific data row and its (optional)
      * details.
-     * 
+     *
      * @param row
      *            zero-based row index. If the row index is below zero or above
      *            the row count of the client-side data source, a client-side
@@ -61,7 +61,7 @@ public interface GridClientRpc extends ClientRpc {
     /**
      * Informs the GridConnector on how the indexing of details connectors has
      * changed.
-     * 
+     *
      * @since 7.5.0
      * @param connectorChanges
      *            the indexing changes of details connectors

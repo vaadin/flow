@@ -38,7 +38,7 @@ public class StringToDoubleConverter
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.data.util.converter.Converter#convertToModel(java.lang.Object,
      * java.util.Locale)
@@ -53,7 +53,7 @@ public class StringToDoubleConverter
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.converter.Converter#getModelType()
      */
     @Override

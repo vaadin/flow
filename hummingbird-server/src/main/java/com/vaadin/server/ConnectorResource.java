@@ -39,14 +39,14 @@ public interface ConnectorResource extends Resource {
      * holding session locks (to prevent locking the session during long file
      * downloads).
      * </p>
-     * 
+     *
      * @return A download stream which produces the resource content
      */
     public DownloadStream getStream();
 
     /**
      * Gets the virtual filename for this resource.
-     * 
+     *
      * @return the file name associated to this resource.
      */
     public String getFilename();

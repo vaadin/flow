@@ -57,7 +57,7 @@ public class EventHelper {
     /**
      * Adds or removes a focus handler depending on if the connector has focus
      * listeners on the server side or not.
-     * 
+     *
      * @param connector
      *            The connector to update. Must implement focusHandler.
      * @param handlerRegistration
@@ -75,7 +75,7 @@ public class EventHelper {
     /**
      * Adds or removes a focus handler depending on if the connector has focus
      * listeners on the server side or not.
-     * 
+     *
      * @param connector
      *            The connector to update. Must implement focusHandler.
      * @param handlerRegistration
@@ -96,7 +96,7 @@ public class EventHelper {
     /**
      * Adds or removes a blur handler depending on if the connector has blur
      * listeners on the server side or not.
-     * 
+     *
      * @param connector
      *            The connector to update. Must implement BlurHandler.
      * @param handlerRegistration
@@ -114,7 +114,7 @@ public class EventHelper {
     /**
      * Adds or removes a blur handler depending on if the connector has blur
      * listeners on the server side or not.
-     * 
+     *
      * @param connector
      *            The connector to update. Must implement BlurHandler.
      * @param handlerRegistration
@@ -122,7 +122,7 @@ public class EventHelper {
      *            registered previously
      * @param widget
      *            The widget which emits blur events
-     * 
+     *
      * @return a new registration handler that can be used to unregister the
      *         handler later
      */

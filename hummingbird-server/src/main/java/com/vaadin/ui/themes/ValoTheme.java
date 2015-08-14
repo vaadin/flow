@@ -47,9 +47,9 @@ public class ValoTheme {
     public static final String THEME_NAME = "valo";
 
     /***************************************************************************
-     * 
+     *
      * Notification styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -112,9 +112,9 @@ public class ValoTheme {
     public static final String NOTIFICATION_FAILURE = "failure";
 
     /***************************************************************************
-     * 
+     *
      * Label styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -205,9 +205,9 @@ public class ValoTheme {
 
     /**
      * Spinner style. Add this style name to an empty Label to create a spinner.
-     * 
+     *
      * <h4>Example</h4>
-     * 
+     *
      * <pre>
      * Label spinner = new Label();
      * spinner.addStyleName(ValoTheme.LABEL_SPINNER);
@@ -216,9 +216,9 @@ public class ValoTheme {
     public static final String LABEL_SPINNER = "spinner";
 
     /***************************************************************************
-     * 
+     *
      * Button styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -306,9 +306,9 @@ public class ValoTheme {
     public static final String BUTTON_ICON_ONLY = "icon-only";
 
     /***************************************************************************
-     * 
+     *
      * Link styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -322,9 +322,9 @@ public class ValoTheme {
     public static final String LINK_LARGE = "large";
 
     /***************************************************************************
-     * 
+     *
      * TextField styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -372,9 +372,9 @@ public class ValoTheme {
     public static final String TEXTFIELD_INLINE_ICON = "inline-icon";
 
     /***************************************************************************
-     * 
+     *
      * TextArea styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -416,9 +416,9 @@ public class ValoTheme {
     public static final String TEXTAREA_ALIGN_CENTER = "align-center";
 
     /***************************************************************************
-     * 
+     *
      * DateField styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -460,9 +460,9 @@ public class ValoTheme {
     public static final String DATEFIELD_ALIGN_CENTER = "align-center";
 
     /***************************************************************************
-     * 
+     *
      * ComboBox styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -504,9 +504,9 @@ public class ValoTheme {
     public static final String COMBOBOX_ALIGN_CENTER = "align-center";
 
     /***************************************************************************
-     * 
+     *
      * CheckBox styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -520,9 +520,9 @@ public class ValoTheme {
     public static final String CHECKBOX_LARGE = "large";
 
     /***************************************************************************
-     * 
+     *
      * OptionGroup styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -544,9 +544,9 @@ public class ValoTheme {
     public static final String OPTIONGROUP_HORIZONTAL = "horizontal";
 
     /***************************************************************************
-     * 
+     *
      * Slider styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -556,9 +556,9 @@ public class ValoTheme {
     public static final String SLIDER_NO_INDICATOR = "no-indicator";
 
     /***************************************************************************
-     * 
+     *
      * ProgressBar styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -568,9 +568,9 @@ public class ValoTheme {
     public static final String PROGRESSBAR_POINT = "point";
 
     /***************************************************************************
-     * 
+     *
      * MenuBar styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -584,9 +584,9 @@ public class ValoTheme {
     public static final String MENUBAR_BORDERLESS = "borderless";
 
     /***************************************************************************
-     * 
+     *
      * DragAndDropWrapper styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -608,9 +608,9 @@ public class ValoTheme {
     public static final String DRAG_AND_DROP_WRAPPER_NO_HORIZONTAL_DRAG_HINTS = "no-horizontal-drag-hints";
 
     /***************************************************************************
-     * 
+     *
      * Panel styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -632,9 +632,9 @@ public class ValoTheme {
     public static final String PANEL_WELL = "well";
 
     /***************************************************************************
-     * 
+     *
      * SplitPanel styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -643,9 +643,9 @@ public class ValoTheme {
     public static final String SPLITPANEL_LARGE = "large";
 
     /***************************************************************************
-     * 
+     *
      * TabSheet styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -698,9 +698,9 @@ public class ValoTheme {
     public static final String TABSHEET_ONLY_SELECTED_TAB_IS_CLOSABLE = "only-selected-closable";
 
     /***************************************************************************
-     * 
+     *
      * Accordion styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -710,9 +710,9 @@ public class ValoTheme {
     public static final String ACCORDION_BORDERLESS = "borderless";
 
     /***************************************************************************
-     * 
+     *
      * Window and related styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -732,9 +732,9 @@ public class ValoTheme {
     public static final String WINDOW_BOTTOM_TOOLBAR = "v-window-bottom-toolbar";
 
     /***************************************************************************
-     * 
+     *
      * FormLayout styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -745,9 +745,9 @@ public class ValoTheme {
     public static final String FORMLAYOUT_LIGHT = "light";
 
     /***************************************************************************
-     * 
+     *
      * Layout styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -773,16 +773,16 @@ public class ValoTheme {
     /**
      * Add this style name to a CssLayout to create a grouped set of components,
      * i.e. a row of components which are joined seamlessly together.
-     * 
+     *
      * <h4>Example</h4>
-     * 
+     *
      * <pre>
      * CssLayout group = new CssLayout();
      * group.addStyleName(ValoTheme.LAYOUT_COMPONENT_GROUP);
-     * 
+     *
      * TextField field = new TextField();
      * group.addComponent(field);
-     * 
+     *
      * Button button = new Button(&quot;Action&quot;);
      * group.addComponent(button);
      * </pre>
@@ -790,9 +790,9 @@ public class ValoTheme {
     public static final String LAYOUT_COMPONENT_GROUP = "v-component-group";
 
     /***************************************************************************
-     * 
+     *
      * Valo menu styles
-     * 
+     *
      **************************************************************************/
 
     /**
@@ -800,19 +800,19 @@ public class ValoTheme {
      * When you use the Valo menu and wish to enable responsive features of the
      * menu, you need to add this style name to the UI containing the menu.
      * </p>
-     * 
+     *
      * <p>
      * You only need to add this style name to the UI containing a Valo menu, if
      * you're using the Responsive extension with the UI.
      * </p>
-     * 
+     *
      * <h4>Example</h4>
-     * 
+     *
      * <p>
      * To enable responsivity in the Valo menu, the following example code
      * should be executed in your UI containing the menu.
      * </p>
-     * 
+     *
      * <pre>
      * Responsive.makeResponsive(this);
      * addStyleName(ValoTheme.UI_WITH_MENU);
@@ -825,7 +825,7 @@ public class ValoTheme {
      * Set the <em><b>primary</b></em> style name of a CssLayout to this, and
      * add any number of layouts with the {@link #MENU_PART} style inside it.
      * </p>
-     * 
+     *
      * <p>
      * The menu style is used to create a sidebar navigation menu for the
      * application, usually action as the main navigation for the different
@@ -833,9 +833,9 @@ public class ValoTheme {
      * {@link #MENU_ITEM}s, and possibly some {@link #MENU_SUBTITLE}s and a
      * {@link #MENU_TITLE}.
      * </p>
-     * 
+     *
      * <h4>Example</h4>
-     * 
+     *
      * <pre>
      * CssLayout menuArea = new CssLayout();
      * menuArea.setPrimaryStyleName(ValoTheme.MENU_ROOT);
@@ -847,9 +847,9 @@ public class ValoTheme {
      * Add this style name to any layout and place it inside a layout with the
      * {@link #MENU_ROOT} style to build a menu component. Use the additional
      * MENU styles for individual components inside the layout.
-     * 
+     *
      * <h4>Example</h4>
-     * 
+     *
      * <pre>
      * CssLayout menu = new CssLayout();
      * menu.addStyleName(ValoTheme.MENU_PART);
@@ -863,9 +863,9 @@ public class ValoTheme {
      * captions. Useful on narrower viewport widths, since the menu width is
      * decreased quite dramatically, making more space for the content of the
      * application.
-     * 
+     *
      * <h4>Example</h4>
-     * 
+     *
      * <pre>
      * CssLayout menu = new CssLayout();
      * menu.addStyleName(ValoTheme.MENU_PART);
@@ -880,7 +880,7 @@ public class ValoTheme {
      * (intended to be placed in side a {@link #MENU_PART} layout). You can add
      * any components inside it, but usually you would place a Label inside.
      * </p>
-     * 
+     *
      * <p>
      * Any MenuBar component that you place inside this layout will match the
      * style of the title, allowing an easy way to add a toolbar to the title
@@ -900,15 +900,15 @@ public class ValoTheme {
      * Set the <em><b>primary</b></em> style name of a Button to this style name
      * to create a clickable menu item in the menu.
      * </p>
-     * 
+     *
      * <h4>Selected item</h4>
      * <p>
      * Add an additional style name <b><code>selected</code></b> to it to make
      * it the selected item in the menu.
      * </p>
-     * 
+     *
      * <h4>Example</h4>
-     * 
+     *
      * <pre>
      * Button item = new Button();
      * item.setPrimaryStyleName(ValoTheme.MENU_ITEM);
@@ -922,9 +922,9 @@ public class ValoTheme {
      * or {@link #MENU_ITEM} to add an additional badge indicator to the
      * subtitle/item. The Label/Button needs to allow HTML content in order to
      * use this style name.
-     * 
+     *
      * <h4>Examples</h4>
-     * 
+     *
      * <pre>
      * Button item = new Button();
      * item.setPrimaryStyleName(ValoTheme.MENU_ITEM);
@@ -932,7 +932,7 @@ public class ValoTheme {
      * item.setCaption(&quot;Item Caption &lt;span class=\&quot;&quot; + ValoTheme.MENU_BADGE
      *         + &quot;\&quot;&gt;Badge text&lt;/span&gt;&quot;);
      * </pre>
-     * 
+     *
      * <pre>
      * Label item = new Label();
      * item.setPrimaryStyleName(ValoTheme.MENU_ITEM);
@@ -949,7 +949,7 @@ public class ValoTheme {
      * style name to create an application logo. The logo is designed to be
      * placed inside a {@link #MENU_PART} layout.
      * </p>
-     * 
+     *
      * <p>
      * The text content of the logo should be very short, since the logo area
      * only shows approximately three letters. Using one of the
@@ -957,9 +957,9 @@ public class ValoTheme {
      * application.
      * </p>
      * </p>
-     * 
+     *
      * <h4>Example</h4>
-     * 
+     *
      * <pre>
      * Label logo = new Label(FontAwesome.ROCKET.getHtml(), ContentMode.HTML);
      * logo.setSizeUndefined();

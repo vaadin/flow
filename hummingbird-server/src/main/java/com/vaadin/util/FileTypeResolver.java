@@ -235,7 +235,7 @@ public class FileTypeResolver implements Serializable {
     /**
      * Gets the mime-type of a file. Currently the mime-type is resolved based
      * only on the file name extension.
-     * 
+     *
      * @param fileName
      *            the name of the file whose mime-type is requested.
      * @return mime-type <code>String</code> for the given filename
@@ -278,7 +278,7 @@ public class FileTypeResolver implements Serializable {
      * the mime-type for the given filename is resolved, and then the
      * corresponding icon is fetched from the internal icon storage. If it is
      * not found the default icon is returned.
-     * 
+     *
      * @param fileName
      *            the name of the file whose icon is requested.
      * @return the icon corresponding to the given file
@@ -301,7 +301,7 @@ public class FileTypeResolver implements Serializable {
      * the given file name is resolved, and then the corresponding icon is
      * fetched from the internal icon storage. If it is not found the default
      * icon is returned.
-     * 
+     *
      * @param file
      *            the file whose icon is requested.
      * @return the icon corresponding to the given file
@@ -313,7 +313,7 @@ public class FileTypeResolver implements Serializable {
     /**
      * Gets the mime-type for a file. Currently the returned file type is
      * resolved by the filename extension only.
-     * 
+     *
      * @param file
      *            the file whose mime-type is requested.
      * @return the files mime-type <code>String</code>
@@ -342,7 +342,7 @@ public class FileTypeResolver implements Serializable {
     /**
      * Adds a mime-type mapping for the given filename extension. If the
      * extension is already in the internal mapping it is overwritten.
-     * 
+     *
      * @param extension
      *            the filename extension to be associated with
      *            <code>MIMEType</code>.
@@ -356,7 +356,7 @@ public class FileTypeResolver implements Serializable {
     /**
      * Adds a icon for the given mime-type. If the mime-type also has a
      * corresponding icon, it is replaced with the new icon.
-     * 
+     *
      * @param MIMEType
      *            the mime-type whose icon is to be changed.
      * @param icon
@@ -368,7 +368,7 @@ public class FileTypeResolver implements Serializable {
 
     /**
      * Gets the internal file extension to mime-type mapping.
-     * 
+     *
      * @return unmodifiable map containing the current file extension to
      *         mime-type mapping
      */
@@ -378,7 +378,7 @@ public class FileTypeResolver implements Serializable {
 
     /**
      * Gets the internal mime-type to icon mapping.
-     * 
+     *
      * @return unmodifiable map containing the current mime-type to icon mapping
      */
     public static Map<String, Resource> getMIMETypeToIconMapping() {

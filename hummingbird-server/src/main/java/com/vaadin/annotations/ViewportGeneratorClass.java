@@ -47,7 +47,7 @@ public @interface ViewportGeneratorClass {
      * Gets the viewport generator class to use. Please note that the class must
      * be public and have a default constructor. It must additionally be
      * declared as static if it's declared as an inner class.
-     * 
+     *
      * @return the viewport generator class
      */
     public Class<? extends ViewportGenerator>value();

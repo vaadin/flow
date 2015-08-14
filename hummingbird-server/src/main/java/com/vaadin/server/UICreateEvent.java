@@ -33,7 +33,7 @@ public class UICreateEvent extends UIProviderEvent {
     /**
      * Creates a new UI create event for a given VaadinRequest and UI class but
      * without a UI id.
-     * 
+     *
      * @param request
      *            the request for which the UI will be created
      * @param uiClass
@@ -46,7 +46,7 @@ public class UICreateEvent extends UIProviderEvent {
     /**
      * Creates a new UI create event for a given VaadinRequest, UI class and UI
      * id
-     * 
+     *
      * @param request
      *            the request for which the UI will be created
      * @param uiClass
@@ -64,7 +64,7 @@ public class UICreateEvent extends UIProviderEvent {
 
     /**
      * Gets the UI class that will be created.
-     * 
+     *
      * @return the UI class
      */
     public Class<? extends UI> getUIClass() {
@@ -77,7 +77,7 @@ public class UICreateEvent extends UIProviderEvent {
      * <p>
      * The UI id is generally only available in
      * {@link UIProvider#createInstance(UICreateEvent)}
-     * 
+     *
      * @return the UI id; or <code>null</code> if the UI id is not yet known.
      */
     public Integer getUiId() {

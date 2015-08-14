@@ -21,14 +21,14 @@ public interface HasColorChangeListener extends Serializable {
 
     /**
      * Adds a {@link ColorChangeListener} to the component.
-     * 
+     *
      * @param listener
      */
     void addColorChangeListener(ColorChangeListener listener);
 
     /**
      * Removes a {@link ColorChangeListener} from the component.
-     * 
+     *
      * @param listener
      */
     void removeColorChangeListener(ColorChangeListener listener);

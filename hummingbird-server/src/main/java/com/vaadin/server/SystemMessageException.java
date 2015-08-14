@@ -26,7 +26,7 @@ public class SystemMessageException extends RuntimeException {
     /**
      * Constructs a new <code>SystemMessageException</code> with the specified
      * detail message.
-     * 
+     *
      * @param msg
      *            the detail message.
      */
@@ -37,7 +37,7 @@ public class SystemMessageException extends RuntimeException {
     /**
      * Constructs a new <code>SystemMessageException</code> with the specified
      * detail message and cause.
-     * 
+     *
      * @param msg
      *            the detail message.
      * @param cause
@@ -50,7 +50,7 @@ public class SystemMessageException extends RuntimeException {
     /**
      * Constructs a new <code>SystemMessageException</code> from another
      * exception.
-     * 
+     *
      * @param cause
      *            the cause of the exception.
      */

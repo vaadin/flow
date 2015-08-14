@@ -33,11 +33,11 @@ public final class IsNull implements Filter {
     /**
      * Constructor for a filter that compares the value of an item property with
      * null.
-     * 
+     *
      * For in-memory filtering, a simple == check is performed. For other
      * containers, the comparison implementation is container dependent but
      * should correspond to the in-memory null check.
-     * 
+     *
      * @param propertyId
      *            the identifier (not null) of the property whose value to check
      */
@@ -86,7 +86,7 @@ public final class IsNull implements Filter {
     /**
      * Returns the property id of the property tested by the filter, not null
      * for valid filters.
-     * 
+     *
      * @return property id (not null)
      */
     public Object getPropertyId() {

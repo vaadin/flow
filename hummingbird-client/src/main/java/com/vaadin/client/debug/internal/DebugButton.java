@@ -32,7 +32,7 @@ public class DebugButton extends Button {
     /**
      * Creates a {@link Button} with the given icon-font icon. The icon id will
      * be used in the <i>data-icon</i> attribute of an <i>&lt;i&gt;</i> -tag.
-     * 
+     *
      * @param icon
      *            Identifier for the desired icon in an icon-font
      */
@@ -54,12 +54,12 @@ public class DebugButton extends Button {
      * Creates a {@link Button} with the given icon-font icon and title
      * (tooltip). The icon id will be used in the <i>data-icon</i> attribute of
      * an <i>&lt;i&gt;</i> -tag.
-     * 
+     *
      * @param icon
      *            Identifier for the desired icon in an icon-font
      * @param title
      *            Button title (tooltip)
-     * 
+     *
      */
     public DebugButton(Icon icon, String title) {
         this(icon, title, null);
@@ -69,7 +69,7 @@ public class DebugButton extends Button {
      * Creates a {@link Button} with the given icon-font icon, title (tooltip),
      * and caption. The icon id will be used in the <i>data-icon</i> attribute
      * of an <i>&lt;i&gt;</i> -tag.
-     * 
+     *
      * @param icon
      *            Identifier for the desired icon in an icon-font
      * @param title
@@ -89,7 +89,7 @@ public class DebugButton extends Button {
     /**
      * Adds or removes a stylename, indicating whether or not the button is in
      * it's active state.
-     * 
+     *
      * @param active
      */
     public void setActive(boolean active) {
@@ -99,7 +99,7 @@ public class DebugButton extends Button {
 
     /**
      * Indicates wheter the Button is currently in its active state or not
-     * 
+     *
      * @return true if the Button is active, false otherwise
      */
     public boolean isActive() {

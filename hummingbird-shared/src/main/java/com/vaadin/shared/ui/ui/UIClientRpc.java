@@ -27,7 +27,7 @@ public interface UIClientRpc extends ClientRpc {
 
     /**
      * Informs the client that the UI has been closed
-     * 
+     *
      * @param sessionExpired
      *            true if the ui was closed because the session expired, false
      *            otherwise

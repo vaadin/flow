@@ -39,7 +39,7 @@ class CacheFlushNotifier implements Serializable {
 
     /**
      * Adds the given SQLContainer to the cache flush notification receiver list
-     * 
+     *
      * @param c
      *            Container to add
      */
@@ -65,7 +65,7 @@ class CacheFlushNotifier implements Serializable {
     /**
      * Iterates through the instances and notifies containers which are
      * connected to the same table or are using the same query string.
-     * 
+     *
      * @param c
      *            SQLContainer that issued the cache flush notification
      */

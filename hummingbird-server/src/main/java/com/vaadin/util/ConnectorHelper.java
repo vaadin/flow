@@ -31,7 +31,7 @@ public class ConnectorHelper {
 
     /**
      * Creates a string containing debug info for the connector
-     * 
+     *
      * @since 7.1
      * @param connector
      *            The connector to print debug info about
@@ -57,7 +57,7 @@ public class ConnectorHelper {
 
     /**
      * Creates a string containing hierarchy information for the connector
-     * 
+     *
      * @since 7.1
      * @param connector
      *            The connector to get hierarchy information for

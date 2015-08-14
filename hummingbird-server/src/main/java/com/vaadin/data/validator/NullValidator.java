@@ -34,7 +34,7 @@ public class NullValidator implements Validator {
 
     /**
      * Creates a new NullValidator.
-     * 
+     *
      * @param errorMessage
      *            the error message to display on invalidation.
      * @param onlyNullAllowed
@@ -47,7 +47,7 @@ public class NullValidator implements Validator {
 
     /**
      * Validates the data given in value.
-     * 
+     *
      * @param value
      *            the value to validate.
      * @throws Validator.InvalidValueException
@@ -71,7 +71,7 @@ public class NullValidator implements Validator {
 
     /**
      * Sets if nulls (and only nulls) are to be allowed.
-     * 
+     *
      * @param onlyNullAllowed
      *            If true, only nulls are allowed. If false only non-nulls are
      *            allowed. Do we allow nulls?
@@ -82,7 +82,7 @@ public class NullValidator implements Validator {
 
     /**
      * Gets the error message that is displayed in case the value is invalid.
-     * 
+     *
      * @return the Error Message.
      */
     public String getErrorMessage() {
@@ -91,7 +91,7 @@ public class NullValidator implements Validator {
 
     /**
      * Sets the error message to be displayed on invalid value.
-     * 
+     *
      * @param errorMessage
      *            the Error Message to set.
      */

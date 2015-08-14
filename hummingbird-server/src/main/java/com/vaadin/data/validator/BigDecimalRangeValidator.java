@@ -29,12 +29,12 @@ public class BigDecimalRangeValidator extends RangeValidator<BigDecimal> {
     /**
      * Creates a validator for checking that an BigDecimal is within a given
      * range.
-     * 
+     *
      * By default the range is inclusive i.e. both minValue and maxValue are
      * valid values. Use {@link #setMinValueIncluded(boolean)} or
      * {@link #setMaxValueIncluded(boolean)} to change it.
-     * 
-     * 
+     *
+     *
      * @param errorMessage
      *            the message to display in case the value does not validate.
      * @param minValue

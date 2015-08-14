@@ -55,7 +55,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
      * is being placed into service.
-     * 
+     *
      * @param servletConfig
      *            the object containing the servlet's configuration and
      *            initialization parameters
@@ -163,10 +163,10 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * <p>
      * The current servlet is derived from the current service using
      * {@link VaadinService#getCurrent()}
-     * 
+     *
      * @return the current Vaadin servlet instance if available, otherwise
      *         <code>null</code>
-     * 
+     *
      * @since 7.0
      */
     public static VaadinServlet getCurrent() {
@@ -196,7 +196,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
     /**
      * Receives standard HTTP requests from the public service method and
      * dispatches them.
-     * 
+     *
      * @param request
      *            the object that contains the request the client made of the
      *            servlet.
@@ -247,7 +247,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * Invoked for every request to this servlet to potentially send a redirect
      * to avoid problems with requests to the context root with no trailing
      * slash.
-     * 
+     *
      * @param request
      *            the processed request
      * @param response
@@ -297,7 +297,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * related to /bar.
      * <p>
      * For http://myhost.com/foo;a=1/bar;b=1 this method will return ;b=1
-     * 
+     *
      * @since 7.2
      * @param uri
      *            a URI
@@ -329,7 +329,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
     /**
      * Create a Vaadin request for a http servlet request. This method can be
      * overridden if the Vaadin request should have special properties.
-     * 
+     *
      * @param request
      *            the original http servlet request
      * @return a Vaadin request for the original request
@@ -341,7 +341,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     /**
      * Gets a the vaadin service for this servlet.
-     * 
+     *
      * @return the vaadin service
      */
     protected VaadinServletService getService() {
@@ -351,7 +351,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
     /**
      * Check that cookie support is enabled in the browser. Only checks UIDL
      * requests.
-     * 
+     *
      * @param requestType
      *            Type of the request as returned by
      *            {@link #getRequestType(HttpServletRequest)}
@@ -389,7 +389,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * Send a notification to client-side widgetset. Used to notify client of
      * critical errors, session expiration and more. Server has no knowledge of
      * what UI client refers to.
-     * 
+     *
      * @param request
      *            the HTTP request instance.
      * @param response
@@ -408,7 +408,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      *            the current page.
      * @throws IOException
      *             if the writing failed due to input/output error.
-     * 
+     *
      * @deprecated As of 7.0. This method is retained only for backwards
      *             compatibility and for {@link GAEVaadinServlet}.
      */
@@ -452,7 +452,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
     /**
      * Writes the response in {@code output} using the contentType given in
      * {@code contentType} to the provided {@link HttpServletResponse}
-     * 
+     *
      * @param response
      * @param contentType
      * @param output
@@ -475,12 +475,12 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * Gets resource path using different implementations. Required to
      * supporting different servlet container implementations (application
      * servers).
-     * 
+     *
      * @param servletContext
      * @param path
      *            the resource path.
      * @return the resource path.
-     * 
+     *
      * @deprecated As of 7.0. Will likely change or be removed in a future
      *             version
      */
@@ -508,10 +508,10 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * A helper method to strip away characters that might somehow be used for
      * XSS attacks. Leaves at least alphanumeric characters intact. Also removes
      * e.g. '(' and ')', so values should be safe in javascript too.
-     * 
+     *
      * @param themeName
      * @return
-     * 
+     *
      * @deprecated As of 7.0. Will likely change or be removed in a future
      *             version
      */
@@ -534,7 +534,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     /**
      * Returns the default theme. Must never return null.
-     * 
+     *
      * @return
      */
     public static String getDefaultTheme() {
@@ -544,7 +544,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
     /**
      * Check if this is a request for a static resource and, if it is, serve the
      * resource to the client.
-     * 
+     *
      * @param request
      * @param response
      * @return true if a file was served and the request has been handled, false
@@ -579,7 +579,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     /**
      * Serve resources from VAADIN directory.
-     * 
+     *
      * @param filename
      *            The filename to serve. Should always start with /VAADIN/.
      * @param request
@@ -675,7 +675,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * default filenames containing ".nocache." return 0, filenames containing
      * ".cache." return one year, all other return the value defined in the
      * web.xml using resourceCacheTime (defaults to 1 hour).
-     * 
+     *
      * @param filename
      * @return cache lifetime for the given filename in seconds
      */
@@ -710,7 +710,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
     /**
      * Writes the contents of the given resourceUrl in the response. Can be
      * overridden to add/modify response headers and similar.
-     * 
+     *
      * @param request
      *            The request for the resource
      * @param response
@@ -779,13 +779,13 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * is served if it exists. It is assumed that the compression method used is
      * gzip. If this method returns false or a compressed version is not found,
      * the original URL is used.
-     * 
+     *
      * The base implementation of this method returns true if and only if the
      * request indicates that the client accepts gzip compressed responses and
      * the filename extension of the requested resource is .js, .css, or .html.
-     * 
+     *
      * @since 7.5.0
-     * 
+     *
      * @param request
      *            the request for the resource
      * @param url
@@ -829,19 +829,19 @@ public class VaadinServlet extends HttpServlet implements Constants {
     /**
      * Check whether a URL obtained from a classloader refers to a valid static
      * resource in the directory VAADIN.
-     * 
+     *
      * Warning: Overriding of this method is not recommended, but is possible to
      * support non-default classloaders or servers that may produce URLs
      * different from the normal ones. The method prototype may change in the
      * future. Care should be taken not to expose class files or other resources
      * outside the VAADIN directory if the method is overridden.
-     * 
+     *
      * @param request
      * @param resourceUrl
      * @return
-     * 
+     *
      * @since 6.6.7
-     * 
+     *
      * @deprecated As of 7.0. Will likely change or be removed in a future
      *             version
      */
@@ -891,7 +891,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * Checks if the browser has an up to date cached version of requested
      * resource. Currently the check is performed using the "If-Modified-Since"
      * header. Could be expanded if needed.
-     * 
+     *
      * @param request
      *            The HttpServletRequest from the browser.
      * @param resourceLastModifiedTimestamp
@@ -930,10 +930,10 @@ public class VaadinServlet extends HttpServlet implements Constants {
     }
 
     /**
-     * 
+     *
      * @author Vaadin Ltd
      * @since 7.0
-     * 
+     *
      * @deprecated As of 7.0. This is no longer used and only provided for
      *             backwards compatibility. Each {@link RequestHandler} can
      *             individually decide whether it wants to handle a request or
@@ -947,7 +947,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
     /**
      * @param request
      * @return
-     * 
+     *
      * @deprecated As of 7.0. This is no longer used and only provided for
      *             backwards compatibility. Each {@link RequestHandler} can
      *             individually decide whether it wants to handle a request or
@@ -981,7 +981,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     /**
      * Remove any heading or trailing "what" from the "string".
-     * 
+     *
      * @param string
      * @param what
      * @return
@@ -1000,7 +1000,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     /**
      * Write a redirect response to the main page of the application.
-     * 
+     *
      * @param request
      * @param response
      * @throws IOException
@@ -1015,13 +1015,13 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     /**
      * Gets the current application URL from request.
-     * 
+     *
      * @param request
      *            the HTTP request.
      * @throws MalformedURLException
      *             if the application is denied access to the persistent data
      *             store represented by the given URL.
-     * 
+     *
      * @deprecated As of 7.0. Will likely change or be removed in a future
      *             version
      */
@@ -1059,7 +1059,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see javax.servlet.GenericServlet#destroy()
      */
     @Override
@@ -1071,10 +1071,10 @@ public class VaadinServlet extends HttpServlet implements Constants {
     /**
      * Escapes characters to html entities. An exception is made for some
      * "safe characters" to keep the text somewhat readable.
-     * 
+     *
      * @param unsafe
      * @return a safe string to be added inside an html tag
-     * 
+     *
      * @deprecated As of 7.0. Will likely change or be removed in a future
      *             version
      */

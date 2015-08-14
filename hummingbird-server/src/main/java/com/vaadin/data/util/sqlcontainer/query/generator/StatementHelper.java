@@ -162,13 +162,13 @@ public class StatementHelper implements Serializable {
      * Handle unrecognized null values. Override this to handle null values for
      * platform specific data types that are not handled by the default
      * implementation of the {@link StatementHelper}.
-     * 
+     *
      * @param i
      * @param pstmt
      * @param dataTypes2
-     * 
+     *
      * @return true if handled, false otherwise
-     * 
+     *
      * @see {@link http://dev.vaadin.com/ticket/9148}
      */
     protected boolean handleUnrecognizedTypeNullValue(int i,

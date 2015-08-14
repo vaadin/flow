@@ -35,7 +35,7 @@ public class StringDecorator implements Serializable {
     /**
      * Constructs a StringDecorator that uses the quoteStart and quoteEnd
      * characters to create quoted strings.
-     * 
+     *
      * @param quoteStart
      *            the character denoting the start of a quote.
      * @param quoteEnd
@@ -48,7 +48,7 @@ public class StringDecorator implements Serializable {
 
     /**
      * Surround a string with quote characters.
-     * 
+     *
      * @param str
      *            the string to quote
      * @return the quoted string
@@ -59,7 +59,7 @@ public class StringDecorator implements Serializable {
 
     /**
      * Groups a string by surrounding it in parenthesis
-     * 
+     *
      * @param str
      *            the string to group
      * @return the grouped string

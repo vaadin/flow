@@ -60,7 +60,7 @@ public class CustomizedSystemMessages extends SystemMessages
 
     /**
      * Sets the URL to go to when the session has expired.
-     * 
+     *
      * @param sessionExpiredURL
      *            the URL to go to, or null to reload current
      */
@@ -72,7 +72,7 @@ public class CustomizedSystemMessages extends SystemMessages
      * Enables or disables the notification. If disabled, the set URL (or
      * current) is loaded directly when next transaction between server and
      * client happens.
-     * 
+     *
      * @param sessionExpiredNotificationEnabled
      *            true = enabled, false = disabled
      */
@@ -86,7 +86,7 @@ public class CustomizedSystemMessages extends SystemMessages
      * caption and message are null, client automatically forwards to
      * sessionExpiredUrl after timeout timer expires. Timer uses value read from
      * HTTPSession.getMaxInactiveInterval()
-     * 
+     *
      * @param sessionExpiredCaption
      *            the caption
      */
@@ -99,7 +99,7 @@ public class CustomizedSystemMessages extends SystemMessages
      * caption and message are null, client automatically forwards to
      * sessionExpiredUrl after timeout timer expires. Timer uses value read from
      * HTTPSession.getMaxInactiveInterval()
-     * 
+     *
      * @param sessionExpiredMessage
      *            the message
      */
@@ -109,7 +109,7 @@ public class CustomizedSystemMessages extends SystemMessages
 
     /**
      * Sets the URL to go to when there is a authentication error.
-     * 
+     *
      * @param authenticationErrorURL
      *            the URL to go to, or null to reload current
      */
@@ -120,7 +120,7 @@ public class CustomizedSystemMessages extends SystemMessages
     /**
      * Enables or disables the notification. If disabled, the set URL (or
      * current) is loaded directly.
-     * 
+     *
      * @param authenticationErrorNotificationEnabled
      *            true = enabled, false = disabled
      */
@@ -132,7 +132,7 @@ public class CustomizedSystemMessages extends SystemMessages
     /**
      * Sets the caption of the notification. Set to null for no caption. If both
      * caption and message is null, the notification is disabled;
-     * 
+     *
      * @param authenticationErrorCaption
      *            the caption
      */
@@ -144,7 +144,7 @@ public class CustomizedSystemMessages extends SystemMessages
     /**
      * Sets the message of the notification. Set to null for no message. If both
      * caption and message is null, the notification is disabled;
-     * 
+     *
      * @param authenticationErrorMessage
      *            the message
      */
@@ -155,7 +155,7 @@ public class CustomizedSystemMessages extends SystemMessages
 
     /**
      * Sets the URL to go to when there is a communication error.
-     * 
+     *
      * @param communicationErrorURL
      *            the URL to go to, or null to reload current
      */
@@ -166,7 +166,7 @@ public class CustomizedSystemMessages extends SystemMessages
     /**
      * Enables or disables the notification. If disabled, the set URL (or
      * current) is loaded directly.
-     * 
+     *
      * @param communicationErrorNotificationEnabled
      *            true = enabled, false = disabled
      */
@@ -178,7 +178,7 @@ public class CustomizedSystemMessages extends SystemMessages
     /**
      * Sets the caption of the notification. Set to null for no caption. If both
      * caption and message is null, the notification is disabled;
-     * 
+     *
      * @param communicationErrorCaption
      *            the caption
      */
@@ -189,7 +189,7 @@ public class CustomizedSystemMessages extends SystemMessages
     /**
      * Sets the message of the notification. Set to null for no message. If both
      * caption and message is null, the notification is disabled;
-     * 
+     *
      * @param communicationErrorMessage
      *            the message
      */
@@ -199,7 +199,7 @@ public class CustomizedSystemMessages extends SystemMessages
 
     /**
      * Sets the URL to go to when an internal error occurs.
-     * 
+     *
      * @param internalErrorURL
      *            the URL to go to, or null to reload current
      */
@@ -210,7 +210,7 @@ public class CustomizedSystemMessages extends SystemMessages
     /**
      * Enables or disables the notification. If disabled, the set URL (or
      * current) is loaded directly.
-     * 
+     *
      * @param internalErrorNotificationEnabled
      *            true = enabled, false = disabled
      */
@@ -222,7 +222,7 @@ public class CustomizedSystemMessages extends SystemMessages
     /**
      * Sets the caption of the notification. Set to null for no caption. If both
      * caption and message is null, the notification is disabled;
-     * 
+     *
      * @param internalErrorCaption
      *            the caption
      */
@@ -233,7 +233,7 @@ public class CustomizedSystemMessages extends SystemMessages
     /**
      * Sets the message of the notification. Set to null for no message. If both
      * caption and message is null, the notification is disabled;
-     * 
+     *
      * @param internalErrorMessage
      *            the message
      */
@@ -243,7 +243,7 @@ public class CustomizedSystemMessages extends SystemMessages
 
     /**
      * Sets the URL to redirect to when the browser has cookies disabled.
-     * 
+     *
      * @param cookiesDisabledURL
      *            the URL to redirect to, or null to reload the current URL
      */
@@ -255,7 +255,7 @@ public class CustomizedSystemMessages extends SystemMessages
      * Enables or disables the notification for "cookies disabled" messages. If
      * disabled, the URL returned by {@link #getCookiesDisabledURL()} is loaded
      * directly.
-     * 
+     *
      * @param cookiesDisabledNotificationEnabled
      *            true to enable "cookies disabled" messages, false otherwise
      */
@@ -268,7 +268,7 @@ public class CustomizedSystemMessages extends SystemMessages
      * Sets the caption of the "cookies disabled" notification. Set to null for
      * no caption. If both caption and message is null, the notification is
      * disabled.
-     * 
+     *
      * @param cookiesDisabledCaption
      *            the caption for the "cookies disabled" notification
      */
@@ -280,7 +280,7 @@ public class CustomizedSystemMessages extends SystemMessages
      * Sets the message of the "cookies disabled" notification. Set to null for
      * no message. If both caption and message is null, the notification is
      * disabled.
-     * 
+     *
      * @param cookiesDisabledMessage
      *            the message for the "cookies disabled" notification
      */

@@ -49,7 +49,7 @@ public class RegexpValidator extends AbstractStringValidator {
     /**
      * Creates a validator for checking that the regular expression matches the
      * complete string to validate.
-     * 
+     *
      * @param regexp
      *            a Java regular expression
      * @param errorMessage
@@ -62,7 +62,7 @@ public class RegexpValidator extends AbstractStringValidator {
     /**
      * Creates a validator for checking that the regular expression matches the
      * string to validate.
-     * 
+     *
      * @param regexp
      *            a Java regular expression
      * @param complete
@@ -80,7 +80,7 @@ public class RegexpValidator extends AbstractStringValidator {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.data.validator.AbstractValidator#isValidValue(java.lang.Object
      * )
@@ -99,7 +99,7 @@ public class RegexpValidator extends AbstractStringValidator {
 
     /**
      * Get a new or reused matcher for the pattern
-     * 
+     *
      * @param value
      *            the string to find matches in
      * @return Matcher for the string

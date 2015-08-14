@@ -56,7 +56,7 @@ import java.lang.annotation.Target;
 public @interface JavaScript {
     /**
      * JavaScript files to load before initializing the client-side connector.
-     * 
+     *
      * @return an array of JavaScript file urls
      */
     public String[]value();

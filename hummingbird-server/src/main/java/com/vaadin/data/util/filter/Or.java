@@ -34,7 +34,7 @@ import com.vaadin.data.Item;
 public final class Or extends AbstractJunctionFilter {
 
     /**
-     * 
+     *
      * @param filters
      *            filters of which the Or filter will be composed
      */
@@ -57,7 +57,7 @@ public final class Or extends AbstractJunctionFilter {
      * Returns true if a change in the named property may affect the filtering
      * result. If some of the sub-filters are not in-memory filters, true is
      * returned.
-     * 
+     *
      * By default, all sub-filters are iterated to check if any of them applies.
      * If there are no sub-filters, true is returned as an empty Or rejects all
      * items.

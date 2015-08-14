@@ -49,7 +49,7 @@ public class ConnectorHierarchyChangeEvent
     /**
      * Returns a collection of the old children for the connector. This was the
      * state before the update was received from the server.
-     * 
+     *
      * @return A collection of old child connectors. Never returns null.
      */
     public List<ComponentConnector> getOldChildren() {
@@ -58,7 +58,7 @@ public class ConnectorHierarchyChangeEvent
 
     /**
      * Sets the collection of the old children for the connector.
-     * 
+     *
      * @param oldChildren
      *            The old child connectors. Must not be null.
      */
@@ -68,7 +68,7 @@ public class ConnectorHierarchyChangeEvent
 
     /**
      * Returns the {@link HasComponentsConnector} for which this event occurred.
-     * 
+     *
      * @return The {@link HasComponentsConnector} whose child collection has
      *         changed. Never returns null.
      */
@@ -78,7 +78,7 @@ public class ConnectorHierarchyChangeEvent
 
     /**
      * Sets the {@link HasComponentsConnector} for which this event occurred.
-     * 
+     *
      * @param The
      *            {@link HasComponentsConnector} whose child collection has
      *            changed.

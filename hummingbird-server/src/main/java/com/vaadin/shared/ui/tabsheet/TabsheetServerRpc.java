@@ -27,7 +27,7 @@ public interface TabsheetServerRpc extends ServerRpc {
 
     /**
      * Tell server that a tab has been selected by the user.
-     * 
+     *
      * @param key
      *            internal key of the tab
      */
@@ -35,7 +35,7 @@ public interface TabsheetServerRpc extends ServerRpc {
 
     /**
      * Tell server that a tab has been closed by the user.
-     * 
+     *
      * @param key
      *            internal key of the tab
      */

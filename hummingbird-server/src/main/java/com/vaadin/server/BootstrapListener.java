@@ -36,7 +36,7 @@ public interface BootstrapListener extends EventListener, Serializable {
      * Vaadin application. In a typical Servlet deployment, this is the contents
      * of the HTML body tag. In a typical Portlet deployment, this is the HTML
      * that will be returned in a {@link RenderResponse}.
-     * 
+     *
      * @param response
      *            the bootstrap response that can modified to cause changes in
      *            the generated HTML.
@@ -52,7 +52,7 @@ public interface BootstrapListener extends EventListener, Serializable {
      * If a full page is being generated, this method is invoked after
      * {@link #modifyBootstrapFragment(BootstrapFragmentResponse)} has been
      * invoked for all registered listeners.
-     * 
+     *
      * @param response
      *            the bootstrap response that can be modified to cause change in
      *            the generate HTML and in the HTTP headers of the response.

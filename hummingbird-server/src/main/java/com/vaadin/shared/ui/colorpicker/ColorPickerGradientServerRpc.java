@@ -27,7 +27,7 @@ public interface ColorPickerGradientServerRpc extends ServerRpc {
 
     /**
      * ColorPickerGradient mouseUp event.
-     * 
+     *
      * @param cursorX
      * @param cursorY
      */

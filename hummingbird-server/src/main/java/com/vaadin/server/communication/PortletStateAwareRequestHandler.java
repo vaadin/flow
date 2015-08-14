@@ -37,7 +37,7 @@ public class PortletStateAwareRequestHandler implements RequestHandler {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.RequestHandler#handleRequest(com.vaadin.server.
      * VaadinSession, com.vaadin.server.VaadinRequest,
      * com.vaadin.server.VaadinResponse)

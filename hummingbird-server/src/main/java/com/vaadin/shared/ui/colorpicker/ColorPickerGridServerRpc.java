@@ -27,7 +27,7 @@ public interface ColorPickerGridServerRpc extends ServerRpc {
 
     /**
      * ColorPickerGrid click event.
-     * 
+     *
      * @param x
      * @param y
      */

@@ -29,7 +29,7 @@ public class DateToLongConverter implements Converter<Date, Long> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.data.util.converter.Converter#convertToModel(java.lang.Object,
      * java.lang.Class, java.util.Locale)
@@ -46,7 +46,7 @@ public class DateToLongConverter implements Converter<Date, Long> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.data.util.converter.Converter#convertToPresentation(java.lang
      * .Object, java.lang.Class, java.util.Locale)
@@ -68,7 +68,7 @@ public class DateToLongConverter implements Converter<Date, Long> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.converter.Converter#getModelType()
      */
     @Override
@@ -78,7 +78,7 @@ public class DateToLongConverter implements Converter<Date, Long> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.converter.Converter#getPresentationType()
      */
     @Override

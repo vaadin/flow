@@ -49,7 +49,7 @@ public class Image extends AbstractEmbedded {
 
     /**
      * Creates a new empty Image with caption.
-     * 
+     *
      * @param caption
      */
     public Image(String caption) {
@@ -60,7 +60,7 @@ public class Image extends AbstractEmbedded {
     /**
      * Creates a new Image whose contents is loaded from given resource. The
      * dimensions are assumed if possible. The type is guessed from resource.
-     * 
+     *
      * @param caption
      * @param source
      *            the Source of the embedded object.
@@ -79,9 +79,9 @@ public class Image extends AbstractEmbedded {
      * Add a click listener to the component. The listener is called whenever
      * the user clicks inside the component. Depending on the content the event
      * may be blocked and in that case no event is fired.
-     * 
+     *
      * Use {@link #removeClickListener(ClickListener)} to remove the listener.
-     * 
+     *
      * @param listener
      *            The listener to add
      */
@@ -93,7 +93,7 @@ public class Image extends AbstractEmbedded {
     /**
      * Remove a click listener from the component. The listener should earlier
      * have been added using {@link #addClickListener(ClickListener)}.
-     * 
+     *
      * @param listener
      *            The listener to remove
      */

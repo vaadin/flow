@@ -63,7 +63,7 @@ public class MethodProperty extends Property {
 
     /**
      * Returns a list of all setters found in the beanType or its parent class
-     * 
+     *
      * @param beanType
      *            The type to check
      * @param getters

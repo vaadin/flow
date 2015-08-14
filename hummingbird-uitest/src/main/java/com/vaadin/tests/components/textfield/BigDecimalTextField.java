@@ -85,7 +85,7 @@ public class BigDecimalTextField extends AbstractTestUIWithLog {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.tests.components.AbstractTestUI#getTestDescription()
      */
     @Override
@@ -95,7 +95,7 @@ public class BigDecimalTextField extends AbstractTestUIWithLog {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.tests.components.AbstractTestUI#getTicketNumber()
      */
     @Override

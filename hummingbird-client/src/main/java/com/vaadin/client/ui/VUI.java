@@ -80,7 +80,7 @@ public class VUI extends SimplePanel
 
     /**
      * Keep track of possible parent size changes when an embedded application.
-     * 
+     *
      * Uses {@link #parentWidth} and {@link #parentHeight} as an optimization to
      * keep track of when there is a real change.
      */
@@ -214,7 +214,7 @@ public class VUI extends SimplePanel
 
     /**
      * Called when the window or parent div might have been resized.
-     * 
+     *
      * This immediately checks the sizes of the window and the parent div (if
      * monitoring it) and triggers layout recalculation if they have changed.
      */
@@ -225,15 +225,15 @@ public class VUI extends SimplePanel
 
     /**
      * Called when the window or parent div might have been resized.
-     * 
+     *
      * This immediately checks the sizes of the window and the parent div (if
      * monitoring it) and triggers layout recalculation if they have changed.
-     * 
+     *
      * @param newWindowWidth
      *            The new width of the window
      * @param newWindowHeight
      *            The new height of the window
-     * 
+     *
      * @deprecated use {@link #performSizeCheck()}
      */
     @Deprecated
@@ -312,7 +312,7 @@ public class VUI extends SimplePanel
      * Returns true if the body is NOT generated, i.e if someone else has made
      * the page that we're running in. Otherwise we're in charge of the whole
      * page.
-     * 
+     *
      * @return true if we're running embedded
      */
     public boolean isEmbedded() {
@@ -323,7 +323,7 @@ public class VUI extends SimplePanel
     /**
      * Returns true if the size of the parent should be checked periodically and
      * the application should react to its changes.
-     * 
+     *
      * @return true if size of parent should be tracked
      */
     protected boolean isMonitoringParentSize() {
@@ -333,7 +333,7 @@ public class VUI extends SimplePanel
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.google.gwt.event.logical.shared.ResizeHandler#onResize(com.google
      * .gwt.event.logical.shared.ResizeEvent)
@@ -346,7 +346,7 @@ public class VUI extends SimplePanel
 
     /**
      * Called when a resize event is received.
-     * 
+     *
      * This may trigger a lazy refresh or perform the size check immediately
      * depending on the browser used and whether the server side requests
      * resizes to be lazy.
@@ -459,10 +459,10 @@ public class VUI extends SimplePanel
 
     /**
      * Allows to store the currently focused Element.
-     * 
+     *
      * Current use case is to store the focus when a Window is opened. Does
      * currently handle only a single value. Needs to be extended for #12158
-     * 
+     *
      * @param focusedElement
      */
     public void storeFocus() {
@@ -471,10 +471,10 @@ public class VUI extends SimplePanel
 
     /**
      * Restores the previously stored focus Element.
-     * 
+     *
      * Current use case is to restore the focus when a Window is closed. Does
      * currently handle only a single value. Needs to be extended for #12158
-     * 
+     *
      * @return the lastFocusElementBeforeDialogOpened
      */
     public void focusStoredElement() {

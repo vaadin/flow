@@ -66,7 +66,7 @@ public abstract class AbstractBasicCrud extends AbstractTestUIWithLog {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.tests.components.AbstractTestUI#setup(com.vaadin.server.
      * VaadinRequest)
      */

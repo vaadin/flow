@@ -45,7 +45,7 @@ public @interface Delayed {
      * The default value is <code>false</code> which means that invoking the
      * method multiple times will cause multiple invocations to be enqueued and
      * eventually sent to the server.
-     * 
+     *
      * @return <code>true</code> if only the last invocation of the annotated
      *         method should be sent to the server, <code>false</code> if all
      *         enqueued invocations should be sent.

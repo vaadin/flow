@@ -77,7 +77,7 @@ public class BeanContainer<IDTYPE, BEANTYPE>
 
     /**
      * Adds the bean to the Container.
-     * 
+     *
      * @see com.vaadin.data.Container#addItem(Object)
      */
     @Override
@@ -91,7 +91,7 @@ public class BeanContainer<IDTYPE, BEANTYPE>
 
     /**
      * Adds the bean after the given item id.
-     * 
+     *
      * @see com.vaadin.data.Container.Ordered#addItemAfter(Object, Object)
      */
     @Override
@@ -106,16 +106,16 @@ public class BeanContainer<IDTYPE, BEANTYPE>
 
     /**
      * Adds a new bean at the given index.
-     * 
+     *
      * The bean is used both as the item contents and as the item identifier.
-     * 
+     *
      * @param index
      *            Index at which the bean should be added.
      * @param newItemId
      *            The item id for the bean to add to the container.
      * @param bean
      *            The bean to add to the container.
-     * 
+     *
      * @return Returns the new BeanItem or null if the operation fails.
      */
     @Override
@@ -133,7 +133,7 @@ public class BeanContainer<IDTYPE, BEANTYPE>
     /**
      * Sets the bean id resolver to use a property of the beans as the
      * identifier.
-     * 
+     *
      * @param propertyId
      *            the identifier of the property to use to find item identifiers
      */

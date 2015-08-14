@@ -317,7 +317,7 @@ public class VaadinPortlet extends GenericPortlet
     /**
      * This portlet parameter is used to add styles to the main element. E.g
      * "height:500px" generates a style="height:500px" to the main element.
-     * 
+     *
      * @deprecated As of 7.0. Will likely change or be removed in a future
      *             version
      */
@@ -327,7 +327,7 @@ public class VaadinPortlet extends GenericPortlet
     /**
      * This portal parameter is used to define the name of the Vaadin theme that
      * is used for all Vaadin applications in the portal.
-     * 
+     *
      * @deprecated As of 7.0. Will likely change or be removed in a future
      *             version
      */
@@ -405,7 +405,7 @@ public class VaadinPortlet extends GenericPortlet
 
     /**
      * @author Vaadin Ltd
-     * 
+     *
      * @deprecated As of 7.0. This is no longer used and only provided for
      *             backwards compatibility. Each {@link RequestHandler} can
      *             individually decide whether it wants to handle a request or
@@ -419,7 +419,7 @@ public class VaadinPortlet extends GenericPortlet
     /**
      * @param vaadinRequest
      * @return
-     * 
+     *
      * @deprecated As of 7.0. This is no longer used and only provided for
      *             backwards compatibility. Each {@link RequestHandler} can
      *             individually decide whether it wants to handle a request or
@@ -464,7 +464,7 @@ public class VaadinPortlet extends GenericPortlet
      * @param response
      * @throws PortletException
      * @throws IOException
-     * 
+     *
      * @deprecated As of 7.0. Will likely change or be removed in a future
      *             version
      */
@@ -483,7 +483,7 @@ public class VaadinPortlet extends GenericPortlet
 
     /**
      * Wraps the request in a (possibly portal specific) Vaadin portlet request.
-     * 
+     *
      * @param request
      *            The original PortletRequest
      * @return A wrapped version of the PortletRequest
@@ -577,10 +577,10 @@ public class VaadinPortlet extends GenericPortlet
      * <p>
      * The current portlet is derived from the current service using
      * {@link VaadinService#getCurrent()}
-     * 
+     *
      * @return the current vaadin portlet instance if available, otherwise
      *         <code>null</code>
-     * 
+     *
      * @since 7.0
      */
     public static VaadinPortlet getCurrent() {

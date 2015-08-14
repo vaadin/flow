@@ -36,7 +36,7 @@ public interface PushConnection {
 
     /**
      * Two-phase construction to allow using GWT.create().
-     * 
+     *
      * @param connection
      *            The ApplicationConnection
      */
@@ -54,12 +54,12 @@ public interface PushConnection {
      * <p>
      * This method must not be called if the push connection is not
      * bidirectional (if {@link #isBidirectional()} returns false)
-     * 
+     *
      * @param payload
      *            the payload to push
      * @throws IllegalStateException
      *             if this connection is not active
-     * 
+     *
      * @see #isActive()
      */
     public void push(JsonObject payload);
@@ -68,7 +68,7 @@ public interface PushConnection {
      * Checks whether this push connection is in a state where it can push
      * messages to the server. A connection is active until
      * {@link #disconnect(Command)} has been called.
-     * 
+     *
      * @return <code>true</code> if this connection can accept new messages;
      *         <code>false</code> if this connection is disconnected or
      *         disconnecting.
@@ -85,7 +85,7 @@ public interface PushConnection {
      * After this method has been called, {@link #isActive()} returns
      * <code>false</code>. Calling this method for a connection that is no
      * longer active will throw an exception.
-     * 
+     *
      * @param command
      *            callback command invoked when the connection has been properly
      *            disconnected
@@ -97,7 +97,7 @@ public interface PushConnection {
     /**
      * Returns a human readable string representation of the transport type used
      * to communicate with the server.
-     * 
+     *
      * @since 7.1
      * @return A human readable string representation of the transport type
      */
@@ -107,10 +107,10 @@ public interface PushConnection {
      * Checks whether this push connection should be used for communication in
      * both directions or if a normal XHR should be used for client to server
      * communication.
-     * 
+     *
      * A bidirectional push connection must be able to reliably tell when it is
      * connected and when it is not.
-     * 
+     *
      * @since 7.6
      * @return true if the push connection should be used for messages in both
      *         directions, false if it should only be used for server to client

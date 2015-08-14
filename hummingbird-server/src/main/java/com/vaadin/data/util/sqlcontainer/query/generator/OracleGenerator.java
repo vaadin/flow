@@ -37,7 +37,7 @@ public class OracleGenerator extends DefaultSQLGenerator {
      * Construct an OracleSQLGenerator with the specified identifiers for start
      * and end of quoted strings. The identifiers may be different depending on
      * the database engine and it's settings.
-     * 
+     *
      * @param quoteStart
      *            the identifier (character) denoting the start of a quoted
      *            string
@@ -55,7 +55,7 @@ public class OracleGenerator extends DefaultSQLGenerator {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.addon.sqlcontainer.query.generator.DefaultSQLGenerator#
      * generateSelectQuery(java.lang.String, java.util.List,
      * com.vaadin.addon.sqlcontainer.query.FilteringMode, java.util.List, int,

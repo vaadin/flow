@@ -92,7 +92,7 @@ public class VaadinServletService extends VaadinService {
 
     /**
      * Retrieves a reference to the servlet associated with this service.
-     * 
+     *
      * @return A reference to the VaadinServlet this service is using
      */
     public VaadinServlet getServlet() {
@@ -125,7 +125,7 @@ public class VaadinServletService extends VaadinService {
     /**
      * Gets a relative path that cancels the provided path. This essentially
      * adds one .. for each part of the path to cancel.
-     * 
+     *
      * @param pathToCancel
      *            the path that should be canceled
      * @return a relative path that cancels out the provided path segment

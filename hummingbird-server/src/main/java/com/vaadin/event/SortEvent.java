@@ -37,7 +37,7 @@ public class SortEvent extends Component.Event {
 
     /**
      * Creates a new sort order change event with a sort order list.
-     * 
+     *
      * @param source
      *            the component from which the event originates
      * @param sortOrder
@@ -55,7 +55,7 @@ public class SortEvent extends Component.Event {
 
     /**
      * Gets the sort order list.
-     * 
+     *
      * @return the sort order list
      */
     public List<SortOrder> getSortOrder() {
@@ -64,7 +64,7 @@ public class SortEvent extends Component.Event {
 
     /**
      * Returns whether this event originated from actions done by the user.
-     * 
+     *
      * @return true if sort event originated from user interaction
      */
     public boolean isUserOriginated() {

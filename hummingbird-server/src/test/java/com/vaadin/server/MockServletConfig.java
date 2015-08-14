@@ -45,7 +45,7 @@ public class MockServletConfig implements ServletConfig {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see javax.servlet.ServletConfig#getServletName()
      */
     @Override
@@ -55,7 +55,7 @@ public class MockServletConfig implements ServletConfig {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see javax.servlet.ServletConfig#getServletContext()
      */
     @Override
@@ -65,7 +65,7 @@ public class MockServletConfig implements ServletConfig {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see javax.servlet.ServletConfig#getInitParameter(java.lang.String)
      */
     @Override
@@ -75,7 +75,7 @@ public class MockServletConfig implements ServletConfig {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see javax.servlet.ServletConfig#getInitParameterNames()
      */
     @Override

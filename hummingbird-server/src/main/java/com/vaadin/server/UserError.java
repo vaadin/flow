@@ -28,7 +28,7 @@ public class UserError extends AbstractErrorMessage {
 
     /**
      * Creates a textual error message of level ERROR.
-     * 
+     *
      * @param textErrorMessage
      *            the text of the error message.
      */
@@ -38,7 +38,7 @@ public class UserError extends AbstractErrorMessage {
 
     /**
      * Creates an error message with level and content mode.
-     * 
+     *
      * @param message
      *            the error message.
      * @param contentMode

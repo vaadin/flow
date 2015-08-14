@@ -31,7 +31,7 @@ public interface SessionExpiredHandler extends RequestHandler {
      * to be sent to the user. If a response is written, this method should
      * return <code>true</code> to indicate that no more
      * {@link SessionExpiredHandler} handlers should be invoked for the request.
-     * 
+     *
      * @param request
      *            The request to handle
      * @param response

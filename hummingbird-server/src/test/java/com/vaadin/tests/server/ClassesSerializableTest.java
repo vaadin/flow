@@ -84,7 +84,7 @@ public class ClassesSerializableTest extends TestCase {
     /**
      * Tests that all the relevant classes and interfaces under
      * {@link #BASE_PACKAGES} implement Serializable.
-     * 
+     *
      * @throws Exception
      */
     public void testClassesSerializable() throws Exception {
@@ -170,10 +170,10 @@ public class ClassesSerializableTest extends TestCase {
 
     /**
      * Lists all class path entries by splitting the class path string.
-     * 
+     *
      * Adapted from ClassPathExplorer.getRawClasspathEntries(), but without
      * filtering.
-     * 
+     *
      * @return List of class path segment strings
      */
     //
@@ -203,10 +203,10 @@ public class ClassesSerializableTest extends TestCase {
     /**
      * Finds the server side classes/interfaces under a class path entry -
      * either a directory or a JAR that matches {@link #JAR_PATTERN}.
-     * 
+     *
      * Only classes under {@link #BASE_PACKAGES} are considered, and those
      * matching {@link #EXCLUDED_PATTERNS} are filtered out.
-     * 
+     *
      * @param classpathEntry
      * @return
      * @throws IOException
@@ -256,7 +256,7 @@ public class ClassesSerializableTest extends TestCase {
 
     /**
      * Lists class names (based on .class files) in a JAR file.
-     * 
+     *
      * @param file
      *            a valid JAR file
      * @return collection of fully qualified class names in the JAR
@@ -282,7 +282,7 @@ public class ClassesSerializableTest extends TestCase {
     /**
      * Lists class names (based on .class files) in a directory (a package path
      * root).
-     * 
+     *
      * @param parentPackage
      *            parent package name or null at root of hierarchy, used by
      *            recursion

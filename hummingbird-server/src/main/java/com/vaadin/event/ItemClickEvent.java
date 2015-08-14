@@ -50,7 +50,7 @@ public class ItemClickEvent extends ClickEvent implements Serializable {
 
     /**
      * Gets the item on which the click event occurred.
-     * 
+     *
      * @return item which was clicked
      */
     public Item getItem() {
@@ -59,7 +59,7 @@ public class ItemClickEvent extends ClickEvent implements Serializable {
 
     /**
      * Gets a possible identifier in source for clicked Item
-     * 
+     *
      * @return
      */
     public Object getItemId() {
@@ -70,7 +70,7 @@ public class ItemClickEvent extends ClickEvent implements Serializable {
      * Returns property on which click event occurred. Returns null if source
      * cannot be resolved at property leve. For example if clicked a cell in
      * table, the "column id" is returned.
-     * 
+     *
      * @return a property id of clicked property or null if click didn't occur
      *         on any distinct property.
      */
@@ -107,7 +107,7 @@ public class ItemClickEvent extends ClickEvent implements Serializable {
      * class really will send the events, or if it just defines the methods to
      * be able to implement an interface.
      * </p>
-     * 
+     *
      * @since 6.5
      * @see ItemClickListener
      * @see ItemClickEvent

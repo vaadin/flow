@@ -48,9 +48,9 @@ public class RenderInformation {
 
     /**
      * Update the size of the widget.
-     * 
+     *
      * @param widget
-     * 
+     *
      * @return true if the size has changed since last update
      * @deprecated As of 7.2, call and override {@link #updateSize(Element)}
      *             instead
@@ -69,11 +69,11 @@ public class RenderInformation {
 
     /**
      * Update the size of the widget.
-     * 
+     *
      * @param widget
-     * 
+     *
      * @return true if the size has changed since last update
-     * 
+     *
      * @since 7.2
      */
     public boolean updateSize(Element element) {

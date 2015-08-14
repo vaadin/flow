@@ -75,15 +75,15 @@ public class JavaScript {
      * object). The <code>call</code> method in the passed
      * {@link JavaScriptFunction} object will be invoked with the same
      * parameters whenever the JavaScript function is called in the browser.
-     * 
+     *
      * A function added with the name <code>"myFunction"</code> can thus be
      * invoked with the following JavaScript code:
      * <code>window.myFunction(argument1, argument2)</code>.
-     * 
+     *
      * If the name parameter contains dots, simple objects are created on demand
      * to allow calling the function using the same name (e.g.
      * <code>window.myObject.myFunction</code>).
-     * 
+     *
      * @param name
      *            the name that the function should get in the global JavaScript
      *            namespace.
@@ -99,11 +99,11 @@ public class JavaScript {
     /**
      * Removes a JavaScripFunction from the browser's global JavaScript
      * namespace.
-     * 
+     *
      * If the name contains dots and intermediate objects were created by
      * {@link #addFunction(String, JavaScriptFunction)}, these objects will not
      * be removed by this method.
-     * 
+     *
      * @param name
      *            the name of the callback to remove
      */
@@ -114,7 +114,7 @@ public class JavaScript {
 
     /**
      * Executes the given JavaScript code in the browser.
-     * 
+     *
      * @param script
      *            The JavaScript code to run.
      */
@@ -124,7 +124,7 @@ public class JavaScript {
 
     /**
      * Executes the given JavaScript code in the browser.
-     * 
+     *
      * @param script
      *            The JavaScript code to run.
      */
@@ -135,9 +135,9 @@ public class JavaScript {
     /**
      * Get the JavaScript object for the current Page, or null if there is no
      * current page.
-     * 
+     *
      * @see Page#getCurrent()
-     * 
+     *
      * @return the JavaScript object corresponding to the current Page, or
      *         <code>null</code> if there is no current page.
      */

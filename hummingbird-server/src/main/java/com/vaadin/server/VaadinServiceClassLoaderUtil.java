@@ -41,7 +41,7 @@ class VaadinServiceClassLoaderUtil {
      * appropriate message. The code for this method is modeled after
      * recommendations laid out by JEE 5 specification sections EE.6.2.4.7 and
      * EE.8.2.5
-     * 
+     *
      * @return Instance of {@link ClassLoader} that should be used by this
      *         instance of {@link VaadinService}
      * @throws SecurityException

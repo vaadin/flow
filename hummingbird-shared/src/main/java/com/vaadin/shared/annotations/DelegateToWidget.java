@@ -62,7 +62,7 @@ public @interface DelegateToWidget {
      * derived from the property name, so e.g. a field named
      * <code>myProperty</code> will delegate to a method named
      * <code>setMyProperty</code>.
-     * 
+     *
      * @return the name of the method to delegate to, or empty string to use the
      *         default name
      */

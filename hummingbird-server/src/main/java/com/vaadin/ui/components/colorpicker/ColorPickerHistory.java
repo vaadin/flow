@@ -168,7 +168,7 @@ public class ColorPickerHistory extends CustomComponent
 
     /**
      * Gets the history.
-     * 
+     *
      * @return the history
      */
     public List<Color> getHistory() {
@@ -179,10 +179,10 @@ public class ColorPickerHistory extends CustomComponent
 
     /**
      * Checks if the history contains given color.
-     * 
+     *
      * @param c
      *            the color
-     * 
+     *
      * @return true, if successful
      */
     public boolean hasColor(Color c) {
@@ -191,7 +191,7 @@ public class ColorPickerHistory extends CustomComponent
 
     /**
      * Adds a color change listener
-     * 
+     *
      * @param listener
      *            The listener
      */
@@ -202,7 +202,7 @@ public class ColorPickerHistory extends CustomComponent
 
     /**
      * Removes a color change listener
-     * 
+     *
      * @param listener
      *            The listener
      */

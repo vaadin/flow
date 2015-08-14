@@ -116,7 +116,7 @@ public abstract class VaadinUriResolver implements Serializable {
 
     /**
      * Gets the URL pointing to the VAADIN directory.
-     * 
+     *
      * @return the VAADIN directory URL
      */
     protected abstract String getVaadinDirUrl();
@@ -126,7 +126,7 @@ public abstract class VaadinUriResolver implements Serializable {
      * the requested URL to the {@link #getServiceUrl() service URL}. If
      * <code>null</code> is returned, the requested URL will instead be appended
      * to the base service URL.
-     * 
+     *
      * @return the parameter name used for passing request URLs, or
      *         <code>null</code> to send the path as a part of the request path.
      */
@@ -135,21 +135,21 @@ public abstract class VaadinUriResolver implements Serializable {
     /**
      * Gets the URL handled by {@link com.vaadin.server.VaadinService
      * VaadinService} to handle application requests.
-     * 
+     *
      * @return the service URL
      */
     protected abstract String getServiceUrl();
 
     /**
      * Gets the URI of the directory of the current theme.
-     * 
+     *
      * @return the URI of the current theme directory
      */
     protected abstract String getThemeUri();
 
     /**
      * Encodes a value for safe inclusion as a parameter in the query string.
-     * 
+     *
      * @param parameterValue
      *            the value to encode
      * @return the encoded value

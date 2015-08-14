@@ -33,7 +33,7 @@ public interface ItemSorter
      * Sets the parameters for an upcoming sort operation. The parameters
      * determine what container to sort and how the <code>ItemSorter</code>
      * sorts the container.
-     * 
+     *
      * @param container
      *            The container that will be sorted. The container must contain
      *            the propertyIds given in the <code>propertyId</code>
@@ -61,7 +61,7 @@ public interface ItemSorter
      * The parameters for the <code>ItemSorter</code> <code>compare()</code>
      * method must always be item ids which exist in the container set using
      * {@link #setSortProperties(Sortable, Object[], boolean[])}.
-     * 
+     *
      * @see Comparator#compare(Object, Object)
      */
     @Override

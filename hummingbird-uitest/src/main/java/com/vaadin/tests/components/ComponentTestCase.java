@@ -51,7 +51,7 @@ public abstract class ComponentTestCase<T extends AbstractComponent>
 
     /**
      * Override to provide custom actions for the test case.
-     * 
+     *
      * @param actions
      *            Array with default actions. Add custom actions to this. Never
      *            null.
@@ -64,7 +64,7 @@ public abstract class ComponentTestCase<T extends AbstractComponent>
      * Method that creates the "actions" shown in the upper part of the screen.
      * Override this only if you do not want the default actions. Custom actions
      * can be added through #createCustomActions();
-     * 
+     *
      * @return A List with actions to which more actions can be added.
      */
     protected List<Component> createActions() {

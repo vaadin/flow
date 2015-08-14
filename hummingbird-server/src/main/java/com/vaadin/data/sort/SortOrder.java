@@ -33,7 +33,7 @@ public class SortOrder implements Serializable {
 
     /**
      * Create a SortOrder object. Both arguments must be non-null.
-     * 
+     *
      * @param propertyId
      *            id of the data source property to sort by
      * @param direction
@@ -54,7 +54,7 @@ public class SortOrder implements Serializable {
 
     /**
      * Returns the property ID.
-     * 
+     *
      * @return a property ID
      */
     public Object getPropertyId() {
@@ -63,7 +63,7 @@ public class SortOrder implements Serializable {
 
     /**
      * Returns the {@link SortDirection} value.
-     * 
+     *
      * @return a sort direction value
      */
     public SortDirection getDirection() {

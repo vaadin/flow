@@ -37,7 +37,7 @@ public class StringToShortConverter
      * Returns the format used by
      * {@link #convertToPresentation(Short, Class, Locale)} and
      * {@link #convertToModel(String, Class, Locale)}
-     * 
+     *
      * @param locale
      *            The locale to use
      * @return A NumberFormat instance
@@ -52,7 +52,7 @@ public class StringToShortConverter
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.data.util.converter.Converter#convertToModel(java.lang.Object,
      * java.lang.Class, java.util.Locale)
@@ -78,7 +78,7 @@ public class StringToShortConverter
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.converter.Converter#getModelType()
      */
     @Override

@@ -53,7 +53,7 @@ public interface Property<T> extends Serializable {
     /**
      * Gets the value stored in the Property. The returned object is compatible
      * with the class returned by getType().
-     * 
+     *
      * @return the value stored in the Property
      */
     public T getValue();
@@ -65,14 +65,14 @@ public interface Property<T> extends Serializable {
      * missing, one should declare the Property to be in read-only mode and
      * throw <code>Property.ReadOnlyException</code> in this function.
      * </p>
-     * 
+     *
      * Note : Since Vaadin 7.0, setting the value of a non-String property as a
      * String is no longer supported.
-     * 
+     *
      * @param newValue
      *            New value of the Property. This should be assignable to the
      *            type returned by getType
-     * 
+     *
      * @throws Property.ReadOnlyException
      *             if the object is in read-only mode
      */
@@ -84,7 +84,7 @@ public interface Property<T> extends Serializable {
      * to safely cast the value returned from <code>getValue</code> to the given
      * type and pass any variable assignable to this type as an argument to
      * <code>setValue</code>.
-     * 
+     *
      * @return type of the Property
      */
     public Class<? extends T> getType();
@@ -94,7 +94,7 @@ public interface Property<T> extends Serializable {
      * the method <code>setValue</code> will throw
      * <code>ReadOnlyException</code> and will not modify the value of the
      * Property.
-     * 
+     *
      * @return <code>true</code> if the Property is in read-only mode,
      *         <code>false</code> if it's not
      */
@@ -102,10 +102,10 @@ public interface Property<T> extends Serializable {
 
     /**
      * Sets the Property's read-only mode to the specified status.
-     * 
+     *
      * This functionality is optional, but all properties must implement the
      * <code>isReadOnly</code> mode query correctly.
-     * 
+     *
      * @param newStatus
      *            new read-only status of the Property
      */
@@ -114,12 +114,12 @@ public interface Property<T> extends Serializable {
     /**
      * A Property that is capable of handle a transaction that can end in commit
      * or rollback.
-     * 
+     *
      * Note that this does not refer to e.g. database transactions but rather
      * two-phase commit that allows resetting old field values (in e.g. a
      * FieldGroup) if the commit of one of the properties fails after other
      * properties have already been committed.
-     * 
+     *
      * @param <T>
      *            The type of the property
      * @author Vaadin Ltd
@@ -173,7 +173,7 @@ public interface Property<T> extends Serializable {
     /**
      * <code>Exception</code> object that signals that a requested Property
      * modification failed because it's in read-only mode.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -202,7 +202,7 @@ public interface Property<T> extends Serializable {
     /**
      * Interface implemented by the viewer classes capable of using a Property
      * as a data source.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -234,7 +234,7 @@ public interface Property<T> extends Serializable {
      * Property is in a read-only mode, attempts to modify it will result in the
      * <code>ReadOnlyException</code> being thrown.
      * </p>
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -247,7 +247,7 @@ public interface Property<T> extends Serializable {
     /**
      * An <code>Event</code> object specifying the Property whose value has been
      * changed.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -264,7 +264,7 @@ public interface Property<T> extends Serializable {
     /**
      * The <code>listener</code> interface for receiving
      * <code>ValueChangeEvent</code> objects.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -292,7 +292,7 @@ public interface Property<T> extends Serializable {
      * class really will send the events, or if it just defines the methods to
      * be able to implement an interface.
      * </p>
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -323,7 +323,7 @@ public interface Property<T> extends Serializable {
     /**
      * An <code>Event</code> object specifying the Property whose read-only
      * status has been changed.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -340,7 +340,7 @@ public interface Property<T> extends Serializable {
     /**
      * The listener interface for receiving
      * <code>ReadOnlyStatusChangeEvent</code> objects.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -370,7 +370,7 @@ public interface Property<T> extends Serializable {
      * class really will send the events, or if it just defines the methods to
      * be able to implement an interface.
      * </p>
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */

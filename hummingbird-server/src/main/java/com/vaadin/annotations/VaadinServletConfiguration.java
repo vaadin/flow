@@ -47,7 +47,7 @@ public @interface VaadinServletConfiguration {
     /**
      * Defines the init parameter name for methods in
      * {@link VaadinServletConfiguration}.
-     * 
+     *
      * @since 7.1
      * @author Vaadin Ltd
      */
@@ -65,9 +65,9 @@ public @interface VaadinServletConfiguration {
 
     /**
      * Whether Vaadin is in production mode.
-     * 
+     *
      * @return true if in production mode, false otherwise.
-     * 
+     *
      * @see DeploymentConfiguration#isProductionMode()
      */
     @InitParameterName(Constants.SERVLET_PARAMETER_PRODUCTION_MODE)
@@ -75,7 +75,7 @@ public @interface VaadinServletConfiguration {
 
     /**
      * Gets the default UI class to use for the servlet.
-     * 
+     *
      * @return the default UI class
      */
     @InitParameterName(VaadinSession.UI_PARAMETER)
@@ -84,9 +84,9 @@ public @interface VaadinServletConfiguration {
     /**
      * The time resources can be cached in the browser, in seconds. The default
      * value is 3600 seconds, i.e. one hour.
-     * 
+     *
      * @return the resource cache time
-     * 
+     *
      * @see DeploymentConfiguration#getResourceCacheTime()
      */
     @InitParameterName(Constants.SERVLET_PARAMETER_RESOURCE_CACHE_TIME)
@@ -96,9 +96,9 @@ public @interface VaadinServletConfiguration {
      * The number of seconds between heartbeat requests of a UI, or a
      * non-positive number if heartbeat is disabled. The default value is 300
      * seconds, i.e. 5 minutes.
-     * 
+     *
      * @return the time between heartbeats
-     * 
+     *
      * @see DeploymentConfiguration#getHeartbeatInterval()
      */
     @InitParameterName(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL)
@@ -108,11 +108,11 @@ public @interface VaadinServletConfiguration {
      * Whether a session should be closed when all its open UIs have been idle
      * for longer than its configured maximum inactivity time. The default value
      * is <code>false</code>.
-     * 
+     *
      * @return true if UIs and sessions receiving only heartbeat requests are
      *         eventually closed; false if heartbeat requests extend UI and
      *         session lifetime indefinitely
-     * 
+     *
      * @see DeploymentConfiguration#isCloseIdleSessions()
      */
     @InitParameterName(Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS)

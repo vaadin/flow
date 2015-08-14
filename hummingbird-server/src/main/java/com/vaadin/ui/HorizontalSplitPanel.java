@@ -47,7 +47,7 @@ public class HorizontalSplitPanel extends AbstractSplitPanel {
 
     /**
      * Creates a horizontal split panel containing the given components
-     * 
+     *
      * @param firstComponent
      *            The component to be placed to the left of the splitter
      * @param secondComponent

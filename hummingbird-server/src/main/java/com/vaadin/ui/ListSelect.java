@@ -54,7 +54,7 @@ public class ListSelect extends AbstractSelect {
      * Sets the number of rows in the editor. If the number of rows is set 0,
      * the actual number of displayed rows is determined implicitly by the
      * adapter.
-     * 
+     *
      * @param rows
      *            the number of rows to set.
      */

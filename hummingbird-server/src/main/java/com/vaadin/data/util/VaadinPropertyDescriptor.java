@@ -33,21 +33,21 @@ import com.vaadin.data.Property;
 public interface VaadinPropertyDescriptor<BT> extends Serializable {
     /**
      * Returns the name of the property.
-     * 
+     *
      * @return
      */
     public String getName();
 
     /**
      * Returns the type of the property.
-     * 
+     *
      * @return Class<?>
      */
     public Class<?> getPropertyType();
 
     /**
      * Creates a new {@link Property} instance for this property for a bean.
-     * 
+     *
      * @param bean
      * @return
      */

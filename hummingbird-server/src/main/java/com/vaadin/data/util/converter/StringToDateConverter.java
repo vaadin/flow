@@ -40,7 +40,7 @@ public class StringToDateConverter implements Converter<String, Date> {
      * Returns the format used by
      * {@link #convertToPresentation(Date, Class,Locale)} and
      * {@link #convertToModel(String, Class, Locale)}.
-     * 
+     *
      * @param locale
      *            The locale to use
      * @return A DateFormat instance
@@ -58,7 +58,7 @@ public class StringToDateConverter implements Converter<String, Date> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.data.util.converter.Converter#convertToModel(java.lang.Object,
      * java.lang.Class, java.util.Locale)
@@ -92,7 +92,7 @@ public class StringToDateConverter implements Converter<String, Date> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.data.util.converter.Converter#convertToPresentation(java.lang
      * .Object, java.lang.Class, java.util.Locale)
@@ -110,7 +110,7 @@ public class StringToDateConverter implements Converter<String, Date> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.converter.Converter#getModelType()
      */
     @Override
@@ -120,7 +120,7 @@ public class StringToDateConverter implements Converter<String, Date> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.util.converter.Converter#getPresentationType()
      */
     @Override

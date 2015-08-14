@@ -295,7 +295,7 @@ public class GAEVaadinServlet extends VaadinServlet {
     /**
      * Returns the maximum inactive time for a session. This is used for
      * handling the expiration of session related information in caches etc.
-     * 
+     *
      * @param session
      * @return inactive timeout in seconds, greater than zero
      */
@@ -376,7 +376,7 @@ public class GAEVaadinServlet extends VaadinServlet {
     /**
      * Removes the ApplicationContext from the session in order to minimize the
      * data serialized to datastore and memcache.
-     * 
+     *
      * @param request
      */
     private void cleanSession(VaadinServletRequest request) {
@@ -407,7 +407,7 @@ public class GAEVaadinServlet extends VaadinServlet {
     /**
      * This will look at the timestamp and delete expired persisted Vaadin and
      * appengine sessions from the datastore.
-     * 
+     *
      * TODO Possible improvements include: 1. Use transactions (requires entity
      * groups - overkill?) 2. Delete one-at-a-time, catch possible exception,
      * continue w/ next.

@@ -45,7 +45,7 @@ public interface FieldEvents {
      * class really will send the events, or if it just defines the methods to
      * be able to implement an interface.
      * </p>
-     * 
+     *
      * @since 6.2
      * @see FocusListener
      * @see FocusEvent
@@ -83,7 +83,7 @@ public interface FieldEvents {
      * class really will send the events, or if it just defines the methods to
      * be able to implement an interface.
      * </p>
-     * 
+     *
      * @since 6.2
      * @see BlurListener
      * @see BlurEvent
@@ -112,7 +112,7 @@ public interface FieldEvents {
     /**
      * <code>FocusEvent</code> class for holding additional event information.
      * Fired when a <code>Field</code> receives keyboard focus.
-     * 
+     *
      * @since 6.2
      */
     @SuppressWarnings("serial")
@@ -131,7 +131,7 @@ public interface FieldEvents {
     /**
      * <code>FocusListener</code> interface for listening for
      * <code>FocusEvent</code> fired by a <code>Field</code>.
-     * 
+     *
      * @see FocusEvent
      * @since 6.2
      */
@@ -152,7 +152,7 @@ public interface FieldEvents {
     /**
      * <code>BlurEvent</code> class for holding additional event information.
      * Fired when a <code>Field</code> loses keyboard focus.
-     * 
+     *
      * @since 6.2
      */
     @SuppressWarnings("serial")
@@ -171,7 +171,7 @@ public interface FieldEvents {
     /**
      * <code>BlurListener</code> interface for listening for
      * <code>BlurEvent</code> fired by a <code>Field</code>.
-     * 
+     *
      * @see BlurEvent
      * @since 6.2
      */
@@ -208,7 +208,7 @@ public interface FieldEvents {
      * example on each key press, but buffered with a small delay. The
      * {@link TextField} component supports different modes for triggering
      * TextChangeEvents.
-     * 
+     *
      * @see TextChangeListener
      * @see TextChangeNotifier
      * @see TextField#setTextChangeEventMode(com.vaadin.ui.TextField.TextChangeEventMode)
@@ -234,7 +234,7 @@ public interface FieldEvents {
 
     /**
      * A listener for {@link TextChangeEvent}s.
-     * 
+     *
      * @since 6.5
      */
     public interface TextChangeListener extends ComponentEventListener {

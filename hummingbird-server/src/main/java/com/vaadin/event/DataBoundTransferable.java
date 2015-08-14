@@ -43,26 +43,26 @@ public abstract class DataBoundTransferable extends TransferableImpl {
 
     /**
      * Returns the identifier of the item being transferred.
-     * 
+     *
      * @return item identifier
      */
     public abstract Object getItemId();
 
     /**
      * Returns the optional property identifier that the transfer concerns.
-     * 
+     *
      * This can be e.g. the table column from which a drag operation originated.
-     * 
+     *
      * @return property identifier
      */
     public abstract Object getPropertyId();
 
     /**
      * Returns the container data source from which the transfer occurs.
-     * 
+     *
      * {@link com.vaadin.data.Container.Viewer#getContainerDataSource()} is used
      * to obtain the underlying container of the source component.
-     * 
+     *
      * @return Container
      */
     public Container getSourceContainer() {

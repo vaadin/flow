@@ -147,7 +147,7 @@ public class SimpleTree extends ComplexPanel implements HasDoubleClickHandlers {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @deprecated As of 7.2, call and override {@link #add(Widget, Element)}
      *             instead.
      */
@@ -162,7 +162,7 @@ public class SimpleTree extends ComplexPanel implements HasDoubleClickHandlers {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 7.2
      */
     @Override

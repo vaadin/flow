@@ -58,7 +58,7 @@ public class PopupDateField extends DateField {
 
     /**
      * Gets the current input prompt.
-     * 
+     *
      * @see #setInputPrompt(String)
      * @return the current input prompt, or null if not enabled
      */
@@ -69,7 +69,7 @@ public class PopupDateField extends DateField {
     /**
      * Sets the input prompt - a textual prompt that is displayed when the field
      * would otherwise be empty, to prompt the user for input.
-     * 
+     *
      * @param inputPrompt
      */
     public void setInputPrompt(String inputPrompt) {
@@ -89,9 +89,9 @@ public class PopupDateField extends DateField {
 
     /**
      * Checks whether the text field is enabled (default) or not.
-     * 
+     *
      * @see PopupDateField#setTextFieldEnabled(boolean);
-     * 
+     *
      * @return <b>true</b> if the text field is enabled, <b>false</b> otherwise.
      */
     public boolean isTextFieldEnabled() {
@@ -102,9 +102,9 @@ public class PopupDateField extends DateField {
      * Enables or disables the text field. By default the text field is enabled.
      * Disabling it causes only the button for date selection to be active, thus
      * preventing the user from entering invalid dates.
-     * 
+     *
      * See {@link http://dev.vaadin.com/ticket/6790}.
-     * 
+     *
      * @param state
      *            <b>true</b> to enable text field, <b>false</b> to disable it.
      */
@@ -115,7 +115,7 @@ public class PopupDateField extends DateField {
     /**
      * Set a description that explains the usage of the Widget for users of
      * assistive devices.
-     * 
+     *
      * @param description
      *            String with the description
      */
@@ -126,7 +126,7 @@ public class PopupDateField extends DateField {
     /**
      * Get the description that explains the usage of the Widget for users of
      * assistive devices.
-     * 
+     *
      * @return String with the description
      */
     public String getAssistiveText() {

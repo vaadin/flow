@@ -54,7 +54,7 @@ public class Heartbeat {
 
     /**
      * Initializes the heartbeat for the given application connection
-     * 
+     *
      * @param connection
      *            the connection
      */
@@ -161,7 +161,7 @@ public class Heartbeat {
 
     /**
      * Changes the heartbeatInterval in runtime and applies it.
-     * 
+     *
      * @param heartbeatInterval
      *            new interval in seconds.
      */

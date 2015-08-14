@@ -33,7 +33,7 @@ public class SystemError extends AbstractErrorMessage {
 
     /**
      * Constructor for SystemError with error message specified.
-     * 
+     *
      * @param message
      *            the Textual error description.
      */
@@ -46,7 +46,7 @@ public class SystemError extends AbstractErrorMessage {
 
     /**
      * Constructor for SystemError with causing exception and error message.
-     * 
+     *
      * @param message
      *            the Textual error description.
      * @param cause
@@ -59,7 +59,7 @@ public class SystemError extends AbstractErrorMessage {
 
     /**
      * Constructor for SystemError with cause.
-     * 
+     *
      * @param cause
      *            the throwable causing the system error.
      */
@@ -69,7 +69,7 @@ public class SystemError extends AbstractErrorMessage {
 
     /**
      * Returns the message of the error in HTML.
-     * 
+     *
      * Note that this API may change in future versions.
      */
     protected String getHtmlMessage() {

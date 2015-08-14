@@ -234,7 +234,7 @@ public class GeneratedPropertyContainer extends AbstractContainer
 
     /**
      * Constructor for GeneratedPropertyContainer.
-     * 
+     *
      * @param container
      *            underlying indexed container
      */
@@ -297,7 +297,7 @@ public class GeneratedPropertyContainer extends AbstractContainer
      * Add a new PropertyValueGenerator with given property id. This will
      * override any existing properties with the same property id. Fires a
      * PropertySetChangeEvent.
-     * 
+     *
      * @param propertyId
      *            property id
      * @param generator
@@ -312,7 +312,7 @@ public class GeneratedPropertyContainer extends AbstractContainer
     /**
      * Removes any possible PropertyValueGenerator with given property id. Fires
      * a PropertySetChangeEvent.
-     * 
+     *
      * @param propertyId
      *            property id
      */
@@ -697,7 +697,7 @@ public class GeneratedPropertyContainer extends AbstractContainer
 
     /**
      * Returns the original underlying container.
-     * 
+     *
      * @return the original underlying container
      */
     public Container.Indexed getWrappedContainer() {

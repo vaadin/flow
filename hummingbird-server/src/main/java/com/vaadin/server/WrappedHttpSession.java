@@ -36,7 +36,7 @@ public class WrappedHttpSession implements WrappedSession {
 
     /**
      * Creates a new wrapped http session.
-     * 
+     *
      * @param session
      *            the http session to wrap.
      */
@@ -61,7 +61,7 @@ public class WrappedHttpSession implements WrappedSession {
 
     /**
      * Gets the wrapped {@link HttpSession}.
-     * 
+     *
      * @return the wrapped http session
      */
     public HttpSession getHttpSession() {

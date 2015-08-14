@@ -59,7 +59,7 @@ public class Profiler {
      * Interface for getting data from the {@link Profiler}.
      * <p>
      * <b>Warning!</b> This interface is most likely to change in the future
-     * 
+     *
      * @since 7.1
      * @author Vaadin Ltd
      */

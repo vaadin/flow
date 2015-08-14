@@ -34,7 +34,7 @@ public interface LocatorStrategy {
     /**
      * Test the given input path for formatting errors. If a given path can not
      * be validated, the locator strategy will not be attempted.
-     * 
+     *
      * @param path
      *            a locator path expression
      * @return true, if the implementing class can process the given path,
@@ -53,7 +53,7 @@ public interface LocatorStrategy {
      * element if the widget determines an action on the other element will give
      * the same result as the action on the target element.
      * </p>
-     * 
+     *
      * @param targetElement
      *            The element to generate a path for.
      * @return A String locator that identifies the target element or null if a
@@ -66,7 +66,7 @@ public interface LocatorStrategy {
      * element. The {@link #getPathForElement(Element)} method can be used for
      * the inverse operation, i.e. generating a string expression for a DOM
      * element.
-     * 
+     *
      * @param path
      *            The String locator which identifies the target element.
      * @return The DOM element identified by {@code path} or null if the element
@@ -77,9 +77,9 @@ public interface LocatorStrategy {
     /**
      * Locates an element using a String locator (path) which identifies a DOM
      * element. The path starts from the specified root element.
-     * 
+     *
      * @see #getElementByPath(String)
-     * 
+     *
      * @param path
      *            The String locator which identifies the target element.
      * @param root
@@ -92,9 +92,9 @@ public interface LocatorStrategy {
     /**
      * Locates all elements that match a String locator (path) which identifies
      * DOM elements.
-     * 
+     *
      * This functionality is limited in {@link LegacyLocatorStrategy}.
-     * 
+     *
      * @param path
      *            The String locator which identifies target elements.
      * @return List that contains all matched elements. Empty list if none
@@ -105,11 +105,11 @@ public interface LocatorStrategy {
     /**
      * Locates all elements that match a String locator (path) which identifies
      * DOM elements. The path starts from the specified root element.
-     * 
+     *
      * This functionality is limited in {@link LegacyLocatorStrategy}.
-     * 
+     *
      * @see #getElementsByPath(String)
-     * 
+     *
      * @param path
      *            The String locator which identifies target elements.
      * @param root

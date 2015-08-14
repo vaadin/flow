@@ -57,7 +57,7 @@ public class WindowsCssTest extends VerticalLayout {
     }
 
     /**
-     * 
+     *
      * @param caption
      * @param primaryStyleName
      *            - the style defined styleName

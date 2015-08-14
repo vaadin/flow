@@ -39,7 +39,7 @@ public class SessionInitEvent extends EventObject {
 
     /**
      * Creates a new event.
-     * 
+     *
      * @param service
      *            the Vaadin service from which the event originates
      * @param session
@@ -61,7 +61,7 @@ public class SessionInitEvent extends EventObject {
 
     /**
      * Gets the Vaadin service from which this event originates
-     * 
+     *
      * @return the Vaadin service instance
      */
     public VaadinService getService() {
@@ -70,7 +70,7 @@ public class SessionInitEvent extends EventObject {
 
     /**
      * Gets the Vaadin service session that has been initialized.
-     * 
+     *
      * @return the Vaadin service session
      */
     public VaadinSession getSession() {
@@ -79,7 +79,7 @@ public class SessionInitEvent extends EventObject {
 
     /**
      * Gets the request that triggered the initialization.
-     * 
+     *
      * @return the request
      */
     public VaadinRequest getRequest() {

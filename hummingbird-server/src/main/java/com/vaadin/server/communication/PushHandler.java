@@ -174,7 +174,7 @@ public class PushHandler {
 
     /**
      * Find the UI for the atmosphere resource, lock it and invoke the callback.
-     * 
+     *
      * @param resource
      *            the atmosphere resource for the current request
      * @param callback
@@ -422,10 +422,10 @@ public class PushHandler {
      * two push connections which try to use the same UI. Using the
      * AtmosphereResource directly guarantees the message goes to the correct
      * recipient.
-     * 
+     *
      * @param resource
      *            The atmosphere resource to send refresh to
-     * 
+     *
      */
     private static void sendRefreshAndDisconnect(AtmosphereResource resource)
             throws IOException {
@@ -463,7 +463,7 @@ public class PushHandler {
 
     /**
      * Called when a new push connection is requested to be opened by the client
-     * 
+     *
      * @since 7.5.0
      * @param resource
      *            The related atmosphere resources
@@ -474,7 +474,7 @@ public class PushHandler {
 
     /**
      * Called when a message is received through the push connection
-     * 
+     *
      * @since 7.5.0
      * @param resource
      *            The related atmosphere resources

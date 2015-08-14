@@ -45,7 +45,7 @@ public interface StreamVariable extends Serializable {
      * {@link #streamingStarted(StreamingStartEvent)} method has been called.
      * The terminal implementation will write the streamed variable to the
      * returned output stream.
-     * 
+     *
      * @return Stream to which the uploaded file should be written.
      */
     public OutputStream getOutputStream();
@@ -59,7 +59,7 @@ public interface StreamVariable extends Serializable {
      * calling that method only if requested. The value is requested after the
      * {@link #uploadStarted(StreamingStartEvent)} event, but not after reading
      * each buffer.
-     * 
+     *
      * @return true if this {@link StreamVariable} wants to by notified during
      *         the upload of the progress of streaming.
      * @see #onProgress(StreamingProgressEvent)
@@ -91,7 +91,7 @@ public interface StreamVariable extends Serializable {
      * instance by the terminal like other methods. The implementation should
      * only return a boolean field and especially not modify UI or implement a
      * synchronization by itself.
-     * 
+     *
      * @return true if the streaming should be interrupted as soon as possible.
      */
     public boolean isInterrupted();

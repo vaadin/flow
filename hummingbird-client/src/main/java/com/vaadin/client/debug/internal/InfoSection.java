@@ -57,7 +57,7 @@ public class InfoSection implements Section {
     };
 
     /**
-     * 
+     *
      */
     public InfoSection() {
         createContent();
@@ -95,7 +95,7 @@ public class InfoSection implements Section {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.debug.internal.Section#getTabButton()
      */
     @Override
@@ -105,7 +105,7 @@ public class InfoSection implements Section {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.debug.internal.Section#getControls()
      */
     @Override
@@ -115,7 +115,7 @@ public class InfoSection implements Section {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.debug.internal.Section#getContent()
      */
     @Override
@@ -125,7 +125,7 @@ public class InfoSection implements Section {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.debug.internal.Section#show()
      */
     @Override
@@ -135,7 +135,7 @@ public class InfoSection implements Section {
 
     /**
      * Updates the information for all running applications
-     * 
+     *
      * @since 7.1
      */
     private void refresh() {
@@ -154,7 +154,7 @@ public class InfoSection implements Section {
 
     /**
      * Updates the information for a single running application
-     * 
+     *
      * @since 7.1
      */
     private void refresh(ApplicationConnection connection) {
@@ -185,7 +185,7 @@ public class InfoSection implements Section {
 
     /**
      * Logs version information for client/server/theme.
-     * 
+     *
      * @param applicationConfiguration
      * @since 7.1
      */
@@ -225,7 +225,7 @@ public class InfoSection implements Section {
 
     /**
      * Checks if the target value equals one of the reference values
-     * 
+     *
      * @param target
      *            The value to compare
      * @param reference1
@@ -249,7 +249,7 @@ public class InfoSection implements Section {
     /**
      * Finds out the version of the current theme (i.e. the version of Vaadin
      * used to compile it)
-     * 
+     *
      * @since 7.1
      * @return The full version as a string
      */
@@ -279,7 +279,7 @@ public class InfoSection implements Section {
 
     /**
      * Removes all content
-     * 
+     *
      * @since 7.1
      */
     private void clear() {
@@ -288,7 +288,7 @@ public class InfoSection implements Section {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.debug.internal.Section#hide()
      */
     @Override
@@ -298,7 +298,7 @@ public class InfoSection implements Section {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.debug.internal.Section#meta(com.vaadin.client.
      * ApplicationConnection, com.vaadin.client.ValueMap)
      */
@@ -309,7 +309,7 @@ public class InfoSection implements Section {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.debug.internal.Section#uidl(com.vaadin.client.
      * ApplicationConnection, com.vaadin.client.ValueMap)
      */

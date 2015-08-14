@@ -31,9 +31,9 @@ public interface ViewDisplay extends Serializable {
     /**
      * Remove previously shown view and show the newly selected view in its
      * place.
-     * 
+     *
      * The parameters for the view have been set before this method is called.
-     * 
+     *
      * @param view
      *            new view to show
      */

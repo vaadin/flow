@@ -36,7 +36,7 @@ public abstract class AbstractServerConnectorEvent<H extends EventHandler>
 
     /**
      * Sends this event to the given handler.
-     * 
+     *
      * @param handler
      *            The handler to dispatch.
      */

@@ -40,7 +40,7 @@ public interface RequestHandler extends Serializable {
      * {@link VaadinSession#accessSynchronously(Runnable)} or
      * {@link UI#accessSynchronously(Runnable)}.
      * </p>
-     * 
+     *
      * @param session
      *            The session for the request
      * @param request

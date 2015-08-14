@@ -31,7 +31,7 @@ public class PaintException extends IOException implements Serializable {
     /**
      * Constructs an instance of <code>PaintExeception</code> with the specified
      * detail message.
-     * 
+     *
      * @param msg
      *            the detail message.
      */
@@ -42,7 +42,7 @@ public class PaintException extends IOException implements Serializable {
     /**
      * Constructs an instance of <code>PaintExeception</code> with the specified
      * detail message and cause.
-     * 
+     *
      * @param msg
      *            the detail message.
      * @param cause
@@ -54,7 +54,7 @@ public class PaintException extends IOException implements Serializable {
 
     /**
      * Constructs an instance of <code>PaintExeception</code> from IOException.
-     * 
+     *
      * @param exception
      *            the original exception.
      */

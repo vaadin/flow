@@ -48,7 +48,7 @@ public class DateTimeService {
 
     /**
      * Creates a new date time service with a given locale.
-     * 
+     *
      * @param locale
      *            e.g. fi, en etc.
      * @throws LocaleNotLoadedException
@@ -261,7 +261,7 @@ public class DateTimeService {
 
     /**
      * Returns the ISO-8601 week number of the given date.
-     * 
+     *
      * @param date
      *            The date for which the week number should be resolved
      * @return The ISO-8601 week number for {@literal date}
@@ -299,11 +299,11 @@ public class DateTimeService {
      * it to the month name since DateTimeFormat.format always uses the current
      * locale and will replace the month name wrong if current locale is
      * different from the locale set for the DateField.
-     * 
+     *
      * MMMM is converted into long month name, MMM is converted into short month
      * name. '' are added around the name to avoid that DateTimeFormat parses
      * the month name as a pattern.
-     * 
+     *
      * @param date
      *            The date to convert
      * @param formatStr
@@ -417,7 +417,7 @@ public class DateTimeService {
     /**
      * Replaces month names in the entered date with the name in the current
      * browser locale.
-     * 
+     *
      * @param enteredDate
      *            Date string e.g. "5 May 2010"
      * @param formatString
@@ -457,7 +457,7 @@ public class DateTimeService {
     /**
      * Parses the given date string using the given format string and the locale
      * set in this DateTimeService instance.
-     * 
+     *
      * @param dateString
      *            Date string e.g. "1 February 2010"
      * @param formatString
@@ -467,7 +467,7 @@ public class DateTimeService {
      * @return A Date object representing the dateString. Never returns null.
      * @throws IllegalArgumentException
      *             if the parsing fails
-     * 
+     *
      */
     public Date parseDate(String dateString, String formatString,
             boolean lenient) throws IllegalArgumentException {

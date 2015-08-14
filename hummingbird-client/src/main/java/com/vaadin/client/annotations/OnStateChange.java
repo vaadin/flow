@@ -43,7 +43,7 @@ import com.vaadin.client.communication.StateChangeEvent;
 public @interface OnStateChange {
     /**
      * Defines a list of property names to listen for.
-     * 
+     *
      * @return an array of property names, should contain at least one item
      */
     public String[]value();

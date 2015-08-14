@@ -33,14 +33,14 @@ public interface DeploymentConfiguration extends Serializable {
 
     /**
      * Returns whether Vaadin is in production mode.
-     * 
+     *
      * @return true if in production mode, false otherwise.
      */
     public boolean isProductionMode();
 
     /**
      * Returns whether cross-site request forgery protection is enabled.
-     * 
+     *
      * @return true if XSRF protection is enabled, false otherwise.
      */
     public boolean isXsrfProtectionEnabled();
@@ -49,7 +49,7 @@ public interface DeploymentConfiguration extends Serializable {
      * Returns whether sync id checking is enabled. The sync id is used to
      * gracefully handle situations when the client sends a message to a
      * connector that has recently been removed on the server.
-     * 
+     *
      * @since 7.3
      * @return <code>true</code> if sync id checking is enabled;
      *         <code>false</code> otherwise
@@ -58,7 +58,7 @@ public interface DeploymentConfiguration extends Serializable {
 
     /**
      * Returns the time resources can be cached in the browsers, in seconds.
-     * 
+     *
      * @return The resource cache time.
      */
     public int getResourceCacheTime();
@@ -66,7 +66,7 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Returns the number of seconds between heartbeat requests of a UI, or a
      * non-positive number if heartbeat is disabled.
-     * 
+     *
      * @return The time between heartbeats.
      */
     public int getHeartbeatInterval();
@@ -75,7 +75,7 @@ public interface DeploymentConfiguration extends Serializable {
      * Returns whether the sending of URL's as GET and POST parameters in
      * requests with content-type <code>application/x-www-form-urlencoded</code>
      * is enabled or not.
-     * 
+     *
      * @return <code>false</code> if set to false or <code>true</code> otherwise
      */
     public boolean isSendUrlsAsParameters();
@@ -89,11 +89,11 @@ public interface DeploymentConfiguration extends Serializable {
      * heartbeat requests cause the session to stay open for as long as there
      * are open UIs on the client side. If it is {@code true}, the session is
      * eventually closed if the open UIs do not have any user interaction.
-     * 
+     *
      * @see WrappedSession#getMaxInactiveInterval()
-     * 
+     *
      * @since 7.0.0
-     * 
+     *
      * @return True if UIs and sessions receiving only heartbeat requests are
      *         eventually closed; false if heartbeat requests extend UI and
      *         session lifetime indefinitely.
@@ -103,7 +103,7 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Returns the mode of bidirectional ("push") client-server communication
      * that should be used.
-     * 
+     *
      * @return The push mode in use.
      */
     public PushMode getPushMode();
@@ -111,7 +111,7 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Gets the properties configured for the deployment, e.g. as init
      * parameters to the servlet or portlet.
-     * 
+     *
      * @return properties for the application.
      */
     public Properties getInitParameters();
@@ -119,7 +119,7 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Gets a configured property. The properties are typically read from e.g.
      * web.xml or from system properties of the JVM.
-     * 
+     *
      * @param propertyName
      *            The simple of the property, in some contexts, lookup might be
      *            performed using variations of the provided name.
@@ -134,32 +134,32 @@ public interface DeploymentConfiguration extends Serializable {
 
     /**
      * Gets UI class configuration option value.
-     * 
+     *
      * @return UI class name
-     * 
+     *
      * @since 7.4
      */
     public String getUIClassName();
 
     /**
      * Gets UI provider class configuration option value.
-     * 
+     *
      * @since 7.4
-     * 
+     *
      * @return UI class name
      */
     public String getUIProviderClassName();
 
     /**
      * Gets resources path configuration option value.
-     * 
+     *
      * @since 7.4
      */
     public String getResourcesPath();
 
     /**
      * Gets class loader configuration option value.
-     * 
+     *
      * @since 7.4
      */
     public String getClassLoaderName();

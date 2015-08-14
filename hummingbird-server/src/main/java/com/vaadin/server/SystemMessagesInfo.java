@@ -26,7 +26,7 @@ public class SystemMessagesInfo implements Serializable {
 
     /**
      * The locale of the UI related to the {@link SystemMessages} request.
-     * 
+     *
      * @return The Locale or null if the locale is not known
      */
     public Locale getLocale() {
@@ -39,7 +39,7 @@ public class SystemMessagesInfo implements Serializable {
 
     /**
      * Gets the request currently in progress.
-     * 
+     *
      * @return The request currently in progress or null if no request is in
      *         progress.
      */
@@ -53,7 +53,7 @@ public class SystemMessagesInfo implements Serializable {
 
     /**
      * Returns the service this SystemMessages request comes from.
-     * 
+     *
      * @return The service which triggered this request or null of not triggered
      *         from a service.
      */

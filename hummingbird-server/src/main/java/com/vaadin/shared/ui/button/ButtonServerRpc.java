@@ -26,7 +26,7 @@ import com.vaadin.shared.communication.ServerRpc;
 public interface ButtonServerRpc extends ServerRpc {
     /**
      * Button click event.
-     * 
+     *
      * @param mouseEventDetails
      *            serialized mouse event details
      */

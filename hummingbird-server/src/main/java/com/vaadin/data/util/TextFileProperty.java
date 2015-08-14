@@ -45,9 +45,9 @@ public class TextFileProperty extends AbstractProperty<String> {
 
     /**
      * Wrap given file with property interface.
-     * 
+     *
      * Setting the file to null works, but getValue() will return null.
-     * 
+     *
      * @param file
      *            File to be wrapped.
      */
@@ -58,9 +58,9 @@ public class TextFileProperty extends AbstractProperty<String> {
     /**
      * Wrap the given file with the property interface and specify character
      * set.
-     * 
+     *
      * Setting the file to null works, but getValue() will return null.
-     * 
+     *
      * @param file
      *            File to be wrapped.
      * @param charset
@@ -73,7 +73,7 @@ public class TextFileProperty extends AbstractProperty<String> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Property#getType()
      */
     @Override
@@ -83,7 +83,7 @@ public class TextFileProperty extends AbstractProperty<String> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Property#getValue()
      */
     @Override
@@ -115,7 +115,7 @@ public class TextFileProperty extends AbstractProperty<String> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Property#isReadOnly()
      */
     @Override
@@ -125,7 +125,7 @@ public class TextFileProperty extends AbstractProperty<String> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Property#setValue(java.lang.Object)
      */
     @Override

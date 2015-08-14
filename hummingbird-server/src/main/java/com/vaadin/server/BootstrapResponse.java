@@ -35,7 +35,7 @@ public abstract class BootstrapResponse extends EventObject {
 
     /**
      * Creates a new bootstrap event.
-     * 
+     *
      * @param handler
      *            the bootstrap handler that is firing the event
      * @param request
@@ -60,7 +60,7 @@ public abstract class BootstrapResponse extends EventObject {
 
     /**
      * Gets the bootstrap handler that fired this event
-     * 
+     *
      * @return the bootstrap handler that fired this event
      */
     public BootstrapHandler getBootstrapHandler() {
@@ -74,7 +74,7 @@ public abstract class BootstrapResponse extends EventObject {
      * will not be available because the bootstrap page is generated before the
      * bootstrap javascript has had a chance to send any information back to the
      * server.
-     * 
+     *
      * @return the Vaadin request that is being handled
      */
     public VaadinRequest getRequest() {
@@ -83,7 +83,7 @@ public abstract class BootstrapResponse extends EventObject {
 
     /**
      * Gets the service session to which the rendered view belongs.
-     * 
+     *
      * @return the Vaadin service session
      */
     public VaadinSession getSession() {
@@ -93,7 +93,7 @@ public abstract class BootstrapResponse extends EventObject {
     /**
      * Gets the class of the UI that will be displayed on the generated
      * bootstrap page.
-     * 
+     *
      * @return the class of the UI
      */
     public Class<? extends UI> getUiClass() {
@@ -103,7 +103,7 @@ public abstract class BootstrapResponse extends EventObject {
     /**
      * Gets the UI provider that is used to provide information about the
      * bootstapped UI.
-     * 
+     *
      * @return the UI provider
      */
     public UIProvider getUIProvider() {

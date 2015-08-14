@@ -31,7 +31,7 @@ public class FocusUtil {
 
     /**
      * Sets the access key property
-     * 
+     *
      * @param focusable
      *            The widget for which we want to set the access key.
      * @param key
@@ -46,7 +46,7 @@ public class FocusUtil {
     /**
      * Explicitly focus/unfocus the given widget. Only one widget can have focus
      * at a time, and the widget that does will receive all keyboard events.
-     * 
+     *
      * @param focusable
      *            the widget to focus/unfocus
      * @param focused
@@ -68,7 +68,7 @@ public class FocusUtil {
      * the same tab index, each such widget will receive focus in an arbitrary
      * order. Setting the tab index to <code>-1</code> will cause the widget to
      * be removed from the tab order.
-     * 
+     *
      * @param focusable
      *            The widget
      * @param tabIndex
@@ -83,10 +83,10 @@ public class FocusUtil {
 
     /**
      * Gets the widget's position in the tab index.
-     * 
+     *
      * @param focusable
      *            The widget
-     * 
+     *
      * @return the widget's tab index
      */
     public static int getTabIndex(Widget focusable) {

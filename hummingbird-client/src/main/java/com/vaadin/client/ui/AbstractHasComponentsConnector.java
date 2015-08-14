@@ -39,7 +39,7 @@ public abstract class AbstractHasComponentsConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.HasComponentsConnector#getChildren()
      */
     @Override
@@ -53,7 +53,7 @@ public abstract class AbstractHasComponentsConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.HasComponentsConnector#setChildren
      * (java.util.Collection)
      */

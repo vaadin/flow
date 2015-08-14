@@ -33,7 +33,7 @@ public class ReflectTools implements Serializable {
      * Locates the method in the given class. Returns null if the method is not
      * found. Throws an ExceptionInInitializerError if there is a problem
      * locating the method as this is mainly called from static blocks.
-     * 
+     *
      * @param cls
      *            Class that contains the method
      * @param methodName
@@ -59,7 +59,7 @@ public class ReflectTools implements Serializable {
      * <p>
      * Uses getter if present, otherwise tries to access even private fields
      * directly.
-     * 
+     *
      * @param object
      *            The object containing the field
      * @param field
@@ -101,7 +101,7 @@ public class ReflectTools implements Serializable {
      * Uses getter if a getter for the correct return type is present, otherwise
      * tries to access even private fields directly. If the java field is not
      * assignable to the property type throws an IllegalArgumentException.
-     * 
+     *
      * @param object
      *            The object containing the field
      * @param field
@@ -149,7 +149,7 @@ public class ReflectTools implements Serializable {
      * <p>
      * Uses setter if present, otherwise tries to access even private fields
      * directly.
-     * 
+     *
      * @param object
      *            The object containing the field
      * @param field

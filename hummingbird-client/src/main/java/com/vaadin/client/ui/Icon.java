@@ -35,7 +35,7 @@ public abstract class Icon extends UIObject {
      * This might be a URL referencing a image (e.g {@link ImageIcon}) or a
      * custom URI (e.g {@link FontIcon}).
      * </p>
-     * 
+     *
      * @param uri
      *            the URI for this icon
      */
@@ -43,14 +43,14 @@ public abstract class Icon extends UIObject {
 
     /**
      * Gets the current URI for this icon.
-     * 
+     *
      * @return URI in use
      */
     public abstract String getUri();
 
     /**
      * Sets the alternate text for the icon.
-     * 
+     *
      * @param alternateText
      *            with the alternate text.
      */

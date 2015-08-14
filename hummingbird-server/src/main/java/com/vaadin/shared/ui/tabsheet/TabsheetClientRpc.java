@@ -27,7 +27,7 @@ public interface TabsheetClientRpc extends ClientRpc {
 
     /**
      * Forces the client to switch to the tab that is selected by the server.
-     * 
+     *
      * This is required e.g. for reverting tab selection change on the server
      * side (shared state does not change).
      */

@@ -60,7 +60,7 @@ public class StreamResource implements ConnectorResource {
 
     /**
      * Creates a new stream resource for downloading from stream.
-     * 
+     *
      * @param streamSource
      *            the source Stream.
      * @param filename
@@ -84,7 +84,7 @@ public class StreamResource implements ConnectorResource {
 
     /**
      * Sets the mime type of the resource.
-     * 
+     *
      * @param MIMEType
      *            the MIME type to be set.
      */
@@ -95,7 +95,7 @@ public class StreamResource implements ConnectorResource {
     /**
      * Returns the source for this <code>StreamResource</code>. StreamSource is
      * queried when the resource is about to be streamed to the client.
-     * 
+     *
      * @return Source of the StreamResource.
      */
     public StreamSource getStreamSource() {
@@ -106,7 +106,7 @@ public class StreamResource implements ConnectorResource {
      * Sets the source for this <code>StreamResource</code>.
      * <code>StreamSource</code> is queried when the resource is about to be
      * streamed to the client.
-     * 
+     *
      * @param streamSource
      *            the source to set.
      */
@@ -116,7 +116,7 @@ public class StreamResource implements ConnectorResource {
 
     /**
      * Gets the filename.
-     * 
+     *
      * @return the filename.
      */
     @Override
@@ -126,7 +126,7 @@ public class StreamResource implements ConnectorResource {
 
     /**
      * Sets the filename.
-     * 
+     *
      * @param filename
      *            the filename to set.
      */
@@ -149,7 +149,7 @@ public class StreamResource implements ConnectorResource {
 
     /**
      * Interface implemented by the source of a StreamResource.
-     * 
+     *
      * @author Vaadin Ltd.
      * @since 3.0
      */
@@ -163,12 +163,12 @@ public class StreamResource implements ConnectorResource {
 
     /**
      * Gets the size of the download buffer used for this resource.
-     * 
+     *
      * <p>
      * If the buffer size is 0, the buffer size is decided by the terminal
      * adapter. The default value is 0.
      * </p>
-     * 
+     *
      * @return the size of the buffer in bytes.
      */
     public int getBufferSize() {
@@ -177,7 +177,7 @@ public class StreamResource implements ConnectorResource {
 
     /**
      * Sets the size of the download buffer used for this resource.
-     * 
+     *
      * @param bufferSize
      *            the size of the buffer in bytes.
      */
@@ -190,7 +190,7 @@ public class StreamResource implements ConnectorResource {
      * possibility cache streams sent to the client. The caching may be made in
      * adapter or at the client if the client supports caching. Default is
      * <code>DownloadStream.DEFAULT_CACHETIME</code>.
-     * 
+     *
      * @return Cache time in milliseconds.
      */
     public long getCacheTime() {
@@ -199,17 +199,17 @@ public class StreamResource implements ConnectorResource {
 
     /**
      * Sets the length of cache expiration time.
-     * 
+     *
      * <p>
      * This gives the adapter the possibility cache streams sent to the client.
      * The caching may be made in adapter or at the client if the client
      * supports caching. Zero or negavive value disbales the caching of this
      * stream.
      * </p>
-     * 
+     *
      * @param cacheTime
      *            the cache time in milliseconds.
-     * 
+     *
      */
     public void setCacheTime(long cacheTime) {
         this.cacheTime = cacheTime;

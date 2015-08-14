@@ -194,7 +194,7 @@ public class XhrConnection {
 
     /**
      * Sends an asynchronous UIDL request to the server using the given URI.
-     * 
+     *
      * @param payload
      *            The URI to use for the request. May includes GET parameters
      * @throws RequestException
@@ -240,7 +240,7 @@ public class XhrConnection {
 
     /**
      * Retrieves the URI to use when sending RPCs to the server
-     * 
+     *
      * @return The URI to use for server messages.
      */
     protected String getUri() {

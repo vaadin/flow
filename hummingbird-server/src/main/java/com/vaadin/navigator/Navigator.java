@@ -232,7 +232,7 @@ public class Navigator implements Serializable {
     /**
      * A ViewProvider which supports mapping a single view name to a single
      * pre-initialized view instance.
-     * 
+     *
      * For most cases, ClassBasedViewProvider should be used instead of this.
      */
     public static class StaticViewProvider implements ViewProvider {
@@ -388,7 +388,7 @@ public class Navigator implements Serializable {
      * navigator, {@code navigator.navigateTo(navigator.getState())} may need to
      * be explicitly called to ensure the current view matches the navigation
      * state.
-     * 
+     *
      * @param ui
      *            The UI to which this Navigator is attached.
      * @param container
@@ -411,7 +411,7 @@ public class Navigator implements Serializable {
      * navigator, {@code navigator.navigateTo(navigator.getState())} may need to
      * be explicitly called to ensure the current view matches the navigation
      * state.
-     * 
+     *
      * @param ui
      *            The UI to which this Navigator is attached.
      * @param container
@@ -431,7 +431,7 @@ public class Navigator implements Serializable {
      * navigator, {@code navigator.navigateTo(navigator.getState())} may need to
      * be explicitly called to ensure the current view matches the navigation
      * state.
-     * 
+     *
      * @param ui
      *            The UI to which this Navigator is attached.
      * @param display
@@ -452,7 +452,7 @@ public class Navigator implements Serializable {
      * navigator, {@code navigator.navigateTo(navigator.getState())} may need to
      * be explicitly called to ensure the current view matches the navigation
      * state.
-     * 
+     *
      * @param ui
      *            The UI to which this Navigator is attached.
      * @param stateManager
@@ -488,10 +488,10 @@ public class Navigator implements Serializable {
      * <p>
      * Registered {@link ViewChangeListener}s are called upon successful view
      * change.
-     * 
+     *
      * @param navigationState
      *            view name and parameters
-     * 
+     *
      * @throws IllegalArgumentException
      *             if <code>navigationState</code> does not map to a known view
      *             and no error view is registered
@@ -537,7 +537,7 @@ public class Navigator implements Serializable {
      * <p>
      * This method also verifies that the user is allowed to perform the
      * navigation operation.
-     * 
+     *
      * @param view
      *            view to activate
      * @param viewName
@@ -589,7 +589,7 @@ public class Navigator implements Serializable {
      * The view change listeners may also e.g. open a warning or question dialog
      * and save the parameters to re-initiate the navigation operation upon user
      * action.
-     * 
+     *
      * @param event
      *            view change event (not null, view change not yet performed)
      * @return true if the view change should be allowed, false to silently
@@ -611,7 +611,7 @@ public class Navigator implements Serializable {
     /**
      * Returns the {@link NavigationStateManager} that is used to get, listen to
      * and manipulate the navigation state used by this Navigator.
-     * 
+     *
      * @return NavigationStateManager in use
      */
     protected NavigationStateManager getStateManager() {
@@ -621,7 +621,7 @@ public class Navigator implements Serializable {
     /**
      * Returns the current navigation state reported by this Navigator's
      * {@link NavigationStateManager}.
-     * 
+     *
      * @return The navigation state.
      */
     public String getState() {
@@ -630,7 +630,7 @@ public class Navigator implements Serializable {
 
     /**
      * Return the {@link ViewDisplay} used by the navigator.
-     * 
+     *
      * @return the ViewDisplay used for displaying views
      */
     public ViewDisplay getDisplay() {
@@ -645,7 +645,7 @@ public class Navigator implements Serializable {
      * Fires an event after the current view has changed.
      * <p>
      * Listeners are called in registration order.
-     * 
+     *
      * @param event
      *            view change event (not null)
      */
@@ -667,7 +667,7 @@ public class Navigator implements Serializable {
      * <p>
      * Note that a view should not be shared between UIs (for instance, it
      * should not be a static field in a UI subclass).
-     * 
+     *
      * @param viewName
      *            String that identifies a view (not null nor empty string)
      * @param view
@@ -692,7 +692,7 @@ public class Navigator implements Serializable {
      * overwrites the old registration of the same type.
      * <p>
      * A new view instance is created every time a view is requested.
-     * 
+     *
      * @param viewName
      *            String that identifies a view (not null nor empty string)
      * @param viewClass
@@ -716,7 +716,7 @@ public class Navigator implements Serializable {
      * <p>
      * This method only applies to views registered using
      * {@link #addView(String, View)} or {@link #addView(String, Class)}.
-     * 
+     *
      * @param viewName
      *            name of the view to remove
      */
@@ -743,7 +743,7 @@ public class Navigator implements Serializable {
      * <p>
      * Providers are called in order of registration until one that can handle
      * the requested view name is found.
-     * 
+     *
      * @param provider
      *            provider to register, not <code>null</code>
      * @throws IllegalArgumentException
@@ -759,7 +759,7 @@ public class Navigator implements Serializable {
 
     /**
      * Unregister a view provider (factory).
-     * 
+     *
      * @param provider
      *            provider to unregister
      */
@@ -775,7 +775,7 @@ public class Navigator implements Serializable {
      * <p>
      * Note that an error view should not be shared between UIs (for instance,
      * it should not be a static field in a UI subclass).
-     * 
+     *
      * @param viewClass
      *            The View class whose instance should be used as the error
      *            view.
@@ -802,7 +802,7 @@ public class Navigator implements Serializable {
      * Registers a view that is displayed when no other view matches the
      * navigation state. This implicitly sets an appropriate error view provider
      * and overrides any previous {@link #setErrorProvider(ViewProvider)} call.
-     * 
+     *
      * @param view
      *            The View that should be used as the error view.
      */
@@ -826,7 +826,7 @@ public class Navigator implements Serializable {
      * navigation state, but could return different views for different states.
      * Its <code>getViewName(String navigationState)</code> should return
      * <code>navigationState</code>.
-     * 
+     *
      * @param provider
      */
     public void setErrorProvider(ViewProvider provider) {
@@ -841,7 +841,7 @@ public class Navigator implements Serializable {
      * beforeViewChange()}) and after (
      * {@link ViewChangeListener#afterViewChange(ViewChangeEvent)
      * afterViewChange()}) a view change occurs.
-     * 
+     *
      * @param listener
      *            Listener to invoke during a view change.
      */
@@ -851,7 +851,7 @@ public class Navigator implements Serializable {
 
     /**
      * Removes a view change listener.
-     * 
+     *
      * @param listener
      *            Listener to remove.
      */

@@ -77,7 +77,7 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.server.SessionExpiredHandler#handleSessionExpired(com.vaadin
      * .server.VaadinRequest, com.vaadin.server.VaadinResponse)

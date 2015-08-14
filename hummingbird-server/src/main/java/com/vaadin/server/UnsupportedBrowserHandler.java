@@ -54,7 +54,7 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
 
     /**
      * Writes a page encouraging the user to upgrade to a more current browser.
-     * 
+     *
      * @param request
      * @param response
      * @throws IOException

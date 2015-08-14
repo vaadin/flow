@@ -66,12 +66,12 @@ public class TextChangeEvents extends TestBase {
 
     /**
      * "Autosuggest"
-     * 
+     *
      * Known issue is timing if suggestion comes while typing more content. IMO
      * we will not support this kind of features in default TextField, but
      * hopefully make it easily extendable to perfect suggest feature. MT
      * 2010-10
-     * 
+     *
      */
     private class VaadinDeveloperNameField extends TextField
             implements TextChangeListener {

@@ -213,7 +213,7 @@ public class SystemMessages implements Serializable {
     /**
      * Returns the URL the user should be redirected to after dismissing the
      * "you have to enable your cookies" message. Typically null.
-     * 
+     *
      * @return A URL the user should be redirected to after dismissing the
      *         message or null to reload the current URL.
      */
@@ -225,7 +225,7 @@ public class SystemMessages implements Serializable {
      * Determines if "cookies disabled" messages should be shown to the end user
      * or not. If the notification is disabled the user will be immediately
      * redirected to the URL returned by {@link #getCookiesDisabledURL()}.
-     * 
+     *
      * @return true to show "cookies disabled" messages to the end user, false
      *         to redirect to the given URL directly
      */
@@ -236,7 +236,7 @@ public class SystemMessages implements Serializable {
     /**
      * Returns the caption of the message shown to the user when cookies are
      * disabled in the browser.
-     * 
+     *
      * @return The caption of the "cookies disabled" message
      */
     public String getCookiesDisabledCaption() {
@@ -247,7 +247,7 @@ public class SystemMessages implements Serializable {
     /**
      * Returns the message shown to the user when cookies are disabled in the
      * browser.
-     * 
+     *
      * @return The "cookies disabled" message
      */
     public String getCookiesDisabledMessage() {

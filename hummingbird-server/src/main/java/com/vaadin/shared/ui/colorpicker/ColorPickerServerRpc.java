@@ -27,9 +27,9 @@ public interface ColorPickerServerRpc extends ServerRpc {
 
     /**
      * ColorPicker click event.
-     * 
+     *
      * @param openPopup
-     * 
+     *
      */
     public void openPopup(boolean openPopup);
 

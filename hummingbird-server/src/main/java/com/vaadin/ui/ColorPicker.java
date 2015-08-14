@@ -37,7 +37,7 @@ public class ColorPicker extends AbstractColorPicker {
 
     /**
      * Instantiates a new color picker.
-     * 
+     *
      * @param popupCaption
      *            caption of the color select popup
      */
@@ -47,7 +47,7 @@ public class ColorPicker extends AbstractColorPicker {
 
     /**
      * Instantiates a new color picker.
-     * 
+     *
      * @param popupCaption
      *            caption of the color select popup
      * @param initialColor

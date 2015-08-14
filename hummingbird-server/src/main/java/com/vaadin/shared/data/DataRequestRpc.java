@@ -30,7 +30,7 @@ public interface DataRequestRpc extends ServerRpc {
 
     /**
      * Request rows from the server.
-     * 
+     *
      * @param firstRowIndex
      *            the index of the first requested row
      * @param numberOfRows
@@ -48,7 +48,7 @@ public interface DataRequestRpc extends ServerRpc {
      * Informs the server that an item referenced with a key pinned status has
      * changed. This is a delayed call that happens along with next rpc call to
      * server.
-     * 
+     *
      * @param key
      *            key mapping to item
      * @param isPinned

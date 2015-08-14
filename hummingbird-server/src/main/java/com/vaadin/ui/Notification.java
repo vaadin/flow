@@ -98,9 +98,9 @@ public class Notification implements Serializable {
 
     /**
      * Creates a "humanized" notification message.
-     * 
+     *
      * The caption is rendered as plain text with HTML automatically escaped.
-     * 
+     *
      * @param caption
      *            The message to show
      */
@@ -110,9 +110,9 @@ public class Notification implements Serializable {
 
     /**
      * Creates a notification message of the specified type.
-     * 
+     *
      * The caption is rendered as plain text with HTML automatically escaped.
-     * 
+     *
      * @param caption
      *            The message to show
      * @param type
@@ -125,10 +125,10 @@ public class Notification implements Serializable {
     /**
      * Creates a "humanized" notification message with a bigger caption and
      * smaller description.
-     * 
+     *
      * The caption and description are rendered as plain text with HTML
      * automatically escaped.
-     * 
+     *
      * @param caption
      *            The message caption
      * @param description
@@ -141,10 +141,10 @@ public class Notification implements Serializable {
     /**
      * Creates a notification message of the specified type, with a bigger
      * caption and smaller description.
-     * 
+     *
      * The caption and description are rendered as plain text with HTML
      * automatically escaped.
-     * 
+     *
      * @param caption
      *            The message caption
      * @param description
@@ -159,9 +159,9 @@ public class Notification implements Serializable {
     /**
      * Creates a notification message of the specified type, with a bigger
      * caption and smaller description.
-     * 
+     *
      * Care should be taken to to avoid XSS vulnerabilities if html is allowed.
-     * 
+     *
      * @param caption
      *            The message caption
      * @param description
@@ -205,7 +205,7 @@ public class Notification implements Serializable {
 
     /**
      * Gets the caption part of the notification message.
-     * 
+     *
      * @return The message caption
      */
     public String getCaption() {
@@ -214,7 +214,7 @@ public class Notification implements Serializable {
 
     /**
      * Sets the caption part of the notification message
-     * 
+     *
      * @param caption
      *            The message caption
      */
@@ -224,7 +224,7 @@ public class Notification implements Serializable {
 
     /**
      * Gets the description part of the notification message.
-     * 
+     *
      * @return The message description.
      */
     public String getDescription() {
@@ -233,7 +233,7 @@ public class Notification implements Serializable {
 
     /**
      * Sets the description part of the notification message.
-     * 
+     *
      * @param description
      */
     public void setDescription(String description) {
@@ -242,7 +242,7 @@ public class Notification implements Serializable {
 
     /**
      * Gets the position of the notification message.
-     * 
+     *
      * @return The position
      */
     public Position getPosition() {
@@ -251,7 +251,7 @@ public class Notification implements Serializable {
 
     /**
      * Sets the position of the notification message.
-     * 
+     *
      * @param position
      *            The desired notification position
      */
@@ -261,7 +261,7 @@ public class Notification implements Serializable {
 
     /**
      * Gets the icon part of the notification message.
-     * 
+     *
      * @return The message icon
      */
     public Resource getIcon() {
@@ -270,7 +270,7 @@ public class Notification implements Serializable {
 
     /**
      * Sets the icon part of the notification message.
-     * 
+     *
      * @param icon
      *            The desired message icon
      */
@@ -280,7 +280,7 @@ public class Notification implements Serializable {
 
     /**
      * Gets the delay before the notification disappears.
-     * 
+     *
      * @return the delay in msec, -1 indicates the message has to be clicked.
      */
     public int getDelayMsec() {
@@ -289,7 +289,7 @@ public class Notification implements Serializable {
 
     /**
      * Sets the delay before the notification disappears.
-     * 
+     *
      * @param delayMsec
      *            the desired delay in msec, -1 to require the user to click the
      *            message
@@ -300,7 +300,7 @@ public class Notification implements Serializable {
 
     /**
      * Sets the style name for the notification message.
-     * 
+     *
      * @param styleName
      *            The desired style name.
      */
@@ -310,7 +310,7 @@ public class Notification implements Serializable {
 
     /**
      * Gets the style name for the notification message.
-     * 
+     *
      * @return
      */
     public String getStyleName() {
@@ -322,7 +322,7 @@ public class Notification implements Serializable {
      * true, the texts are passed to the browser as html and the developer is
      * responsible for ensuring no harmful html is used. If set to false, the
      * texts are passed to the browser as plain text.
-     * 
+     *
      * @param htmlContentAllowed
      *            true if the texts are used as html, false if used as plain
      *            text
@@ -334,7 +334,7 @@ public class Notification implements Serializable {
     /**
      * Checks whether caption and description are interpreted as html or plain
      * text.
-     * 
+     *
      * @return true if the texts are used as html, false if used as plain text
      * @see #setHtmlContentAllowed(boolean)
      */
@@ -344,7 +344,7 @@ public class Notification implements Serializable {
 
     /**
      * Shows this notification on a Page.
-     * 
+     *
      * @param page
      *            The page on which the notification should be shown
      */
@@ -356,12 +356,12 @@ public class Notification implements Serializable {
     /**
      * Shows a notification message on the middle of the current page. The
      * message automatically disappears ("humanized message").
-     * 
+     *
      * The caption is rendered as plain text with HTML automatically escaped.
-     * 
+     *
      * @see #Notification(String)
      * @see #show(Page)
-     * 
+     *
      * @param caption
      *            The message
      */
@@ -374,12 +374,12 @@ public class Notification implements Serializable {
      * of the message depends on the type, which is one of the basic types
      * defined in {@link Notification}, for instance
      * Notification.TYPE_WARNING_MESSAGE.
-     * 
+     *
      * The caption is rendered as plain text with HTML automatically escaped.
-     * 
+     *
      * @see #Notification(String, int)
      * @see #show(Page)
-     * 
+     *
      * @param caption
      *            The message
      * @param type
@@ -394,12 +394,12 @@ public class Notification implements Serializable {
      * of the message depends on the type, which is one of the basic types
      * defined in {@link Notification}, for instance
      * Notification.TYPE_WARNING_MESSAGE.
-     * 
+     *
      * The caption is rendered as plain text with HTML automatically escaped.
-     * 
+     *
      * @see #Notification(String, Type)
      * @see #show(Page)
-     * 
+     *
      * @param caption
      *            The message
      * @param description

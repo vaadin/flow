@@ -44,7 +44,7 @@ public class ExternalResource implements Resource, Serializable {
 
     /**
      * Creates a new download component for downloading directly from given URL.
-     * 
+     *
      * @param sourceURL
      *            the source URL.
      */
@@ -58,7 +58,7 @@ public class ExternalResource implements Resource, Serializable {
 
     /**
      * Creates a new download component for downloading directly from given URL.
-     * 
+     *
      * @param sourceURL
      *            the source URL.
      * @param mimeType
@@ -71,7 +71,7 @@ public class ExternalResource implements Resource, Serializable {
 
     /**
      * Creates a new download component for downloading directly from given URL.
-     * 
+     *
      * @param sourceURL
      *            the source URL.
      */
@@ -85,7 +85,7 @@ public class ExternalResource implements Resource, Serializable {
 
     /**
      * Creates a new download component for downloading directly from given URL.
-     * 
+     *
      * @param sourceURL
      *            the source URL.
      * @param mimeType
@@ -98,7 +98,7 @@ public class ExternalResource implements Resource, Serializable {
 
     /**
      * Gets the URL of the external resource.
-     * 
+     *
      * @return the URL of the external resource.
      */
     public String getURL() {
@@ -107,7 +107,7 @@ public class ExternalResource implements Resource, Serializable {
 
     /**
      * Gets the MIME type of the resource.
-     * 
+     *
      * @see com.vaadin.server.Resource#getMIMEType()
      */
     @Override

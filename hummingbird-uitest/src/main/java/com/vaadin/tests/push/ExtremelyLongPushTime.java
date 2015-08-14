@@ -25,7 +25,7 @@ public abstract class ExtremelyLongPushTime extends PushLargeData {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.tests.components.AbstractTestUI#setup(com.vaadin.server.
      * VaadinRequest)
      */

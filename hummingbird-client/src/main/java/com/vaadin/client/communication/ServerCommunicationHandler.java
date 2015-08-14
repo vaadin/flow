@@ -99,7 +99,7 @@ public class ServerCommunicationHandler {
     /**
      * Sends all pending method invocations (server RPC and legacy variable
      * changes) to the server.
-     * 
+     *
      */
     private void doSendInvocationsToServer() {
         ServerRpcQueue serverRpcQueue = getServerRpcQueue();
@@ -141,7 +141,7 @@ public class ServerCommunicationHandler {
 
     /**
      * Makes an UIDL request to the server.
-     * 
+     *
      * @param reqInvocations
      *            Data containing RPC invocations and all related information.
      * @param extraParams
@@ -176,7 +176,7 @@ public class ServerCommunicationHandler {
     /**
      * Sends an asynchronous or synchronous UIDL request to the server using the
      * given URI.
-     * 
+     *
      * @param uri
      *            The URI to use for the request. May includes GET parameters
      * @param payload
@@ -192,7 +192,7 @@ public class ServerCommunicationHandler {
 
     /**
      * Sets the status for the push connection.
-     * 
+     *
      * @param enabled
      *            <code>true</code> to enable the push connection;
      *            <code>false</code> to disable the push connection.
@@ -280,7 +280,7 @@ public class ServerCommunicationHandler {
     /**
      * Indicates whether or not there are currently active UIDL requests. Used
      * internally to sequence requests properly, seldom needed in Widgets.
-     * 
+     *
      * @return true if there are active requests
      */
     public boolean hasActiveRequest() {
@@ -290,7 +290,7 @@ public class ServerCommunicationHandler {
     /**
      * Returns a human readable string representation of the method used to
      * communicate with the server.
-     * 
+     *
      * @return A string representation of the current transport type
      */
     public String getCommunicationMethodName() {
@@ -326,7 +326,7 @@ public class ServerCommunicationHandler {
 
     /**
      * Used internally to update what the server expects
-     * 
+     *
      * @param clientToServerMessageId
      *            the new client id to set
      * @param force
@@ -367,9 +367,9 @@ public class ServerCommunicationHandler {
 
     /**
      * Strips the JSON wrapping from the given json string with wrapping.
-     * 
+     *
      * If the given string is not wrapped as expected, returns null
-     * 
+     *
      * @since
      * @param jsonWithWrapping
      *            the JSON received from the server

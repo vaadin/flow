@@ -70,7 +70,7 @@ public class NativeButtonIconAndTextTest extends MultiBrowserTest {
      * If the button identified by 'buttonId' has an icon, asserts that the
      * alternate text of the icon matches 'expected'. "" and null are considered
      * equivalent.
-     * 
+     *
      * @param buttonId
      *            the id of the button who possibly contains an icon
      * @param expected

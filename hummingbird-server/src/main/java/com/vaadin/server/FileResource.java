@@ -52,7 +52,7 @@ public class FileResource implements ConnectorResource {
     /**
      * Creates a new file resource for providing given file for client
      * terminals.
-     * 
+     *
      * @param sourceFile
      *            the file that should be served.
      */
@@ -82,7 +82,7 @@ public class FileResource implements ConnectorResource {
 
     /**
      * Gets the source file.
-     * 
+     *
      * @return the source File.
      */
     public File getSourceFile() {
@@ -91,7 +91,7 @@ public class FileResource implements ConnectorResource {
 
     /**
      * Sets the source file.
-     * 
+     *
      * @param sourceFile
      *            the source file to set.
      */
@@ -114,7 +114,7 @@ public class FileResource implements ConnectorResource {
      * possibility cache streams sent to the client. The caching may be made in
      * adapter or at the client if the client supports caching. Default is
      * <code>DownloadStream.DEFAULT_CACHETIME</code>.
-     * 
+     *
      * @return Cache time in milliseconds.
      */
     public long getCacheTime() {
@@ -126,7 +126,7 @@ public class FileResource implements ConnectorResource {
      * possibility cache streams sent to the client. The caching may be made in
      * adapter or at the client if the client supports caching. Zero or negavive
      * value disbales the caching of this stream.
-     * 
+     *
      * @param cacheTime
      *            the cache time in milliseconds.
      */
@@ -136,12 +136,12 @@ public class FileResource implements ConnectorResource {
 
     /**
      * Gets the size of the download buffer used for this resource.
-     * 
+     *
      * <p>
      * If the buffer size is 0, the buffer size is decided by the terminal
      * adapter. The default value is 0.
      * </p>
-     * 
+     *
      * @return the size of the buffer in bytes.
      */
     public int getBufferSize() {
@@ -150,7 +150,7 @@ public class FileResource implements ConnectorResource {
 
     /**
      * Sets the size of the download buffer used for this resource.
-     * 
+     *
      * @param bufferSize
      *            the size of the buffer in bytes.
      */

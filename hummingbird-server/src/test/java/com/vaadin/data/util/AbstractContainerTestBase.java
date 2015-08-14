@@ -352,7 +352,7 @@ public abstract class AbstractContainerTestBase extends TestCase {
     /**
      * Override in subclasses to return false if the container getItem() method
      * returns a non-null value for an item that has been filtered out.
-     * 
+     *
      * @return
      */
     protected boolean isFilteredOutItemNull() {

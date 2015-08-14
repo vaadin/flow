@@ -42,7 +42,7 @@ public @interface Push {
     /**
      * Returns the {@link PushMode} to use for the annotated UI. The default
      * push mode when this annotation is present is {@link PushMode#AUTOMATIC}.
-     * 
+     *
      * @return the push mode to use
      */
     public PushMode value() default PushMode.AUTOMATIC;
@@ -51,7 +51,7 @@ public @interface Push {
      * Returns the transport type used for the push for the annotated UI. The
      * default transport type when this annotation is present is
      * {@link Transport#WEBSOCKET}.
-     * 
+     *
      * @return the transport type to use
      */
     public Transport transport() default Transport.WEBSOCKET;

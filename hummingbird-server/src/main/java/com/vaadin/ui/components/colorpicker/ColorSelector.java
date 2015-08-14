@@ -28,7 +28,7 @@ public interface ColorSelector extends Serializable, HasColorChangeListener {
 
     /**
      * Sets the color.
-     * 
+     *
      * @param color
      *            the new color
      */
@@ -36,7 +36,7 @@ public interface ColorSelector extends Serializable, HasColorChangeListener {
 
     /**
      * Gets the color.
-     * 
+     *
      * @return the color
      */
     public Color getColor();

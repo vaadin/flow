@@ -32,7 +32,7 @@ public class NativeButtonClickTest extends MultiBrowserTest {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.tests.tb3.MultiBrowserTest#getBrowsersToTest()
      */
 

@@ -36,10 +36,10 @@ public interface MouseEvents {
      * Class for holding information about a mouse click event. A
      * {@link ClickEvent} is fired when the user clicks on a
      * <code>Component</code>.
-     * 
+     *
      * The information available for click events are terminal dependent.
      * Correct values for all event details cannot be guaranteed.
-     * 
+     *
      * @author Vaadin Ltd.
      * @see ClickListener
      * @since 6.2
@@ -172,7 +172,7 @@ public interface MouseEvents {
     /**
      * Interface for listening for a {@link ClickEvent} fired by a
      * {@link Component}.
-     * 
+     *
      * @see ClickEvent
      * @author Vaadin Ltd.
      * @since 6.2
@@ -195,7 +195,7 @@ public interface MouseEvents {
     /**
      * Class for holding additional event information for DoubleClick events.
      * Fired when the user double-clicks on a <code>Component</code>.
-     * 
+     *
      * @see ClickEvent
      * @author Vaadin Ltd.
      * @since 6.2
@@ -210,7 +210,7 @@ public interface MouseEvents {
     /**
      * Interface for listening for a {@link DoubleClickEvent} fired by a
      * {@link Component}.
-     * 
+     *
      * @see DoubleClickEvent
      * @author Vaadin Ltd.
      * @since 6.2

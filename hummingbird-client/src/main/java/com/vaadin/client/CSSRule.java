@@ -26,7 +26,7 @@ public class CSSRule {
     private JavaScriptObject rules = null;
 
     /**
-     * 
+     *
      * @param selector
      *            the CSS selector to search for in the stylesheets
      * @param deep
@@ -108,7 +108,7 @@ public class CSSRule {
 
     /**
      * Returns a specific property value from this CSS rule.
-     * 
+     *
      * @param propertyName
      *            camelCase CSS property name
      * @return the value of the property as a String

@@ -35,7 +35,7 @@ public class VaadinServletResponse extends HttpServletResponseWrapper
 
     /**
      * Wraps a http servlet response and an associated vaadin service
-     * 
+     *
      * @param response
      *            the http servlet response to wrap
      * @param vaadinService
@@ -49,7 +49,7 @@ public class VaadinServletResponse extends HttpServletResponseWrapper
 
     /**
      * Gets the original unwrapped <code>HttpServletResponse</code>
-     * 
+     *
      * @return the unwrapped response
      */
     public HttpServletResponse getHttpServletResponse() {

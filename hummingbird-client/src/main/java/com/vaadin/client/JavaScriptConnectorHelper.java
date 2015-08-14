@@ -79,7 +79,7 @@ public class JavaScriptConnectorHelper {
      * javascript is usually initalized the first time a state change event is
      * received, but it might in some cases be necessary to make this happen
      * earlier.
-     * 
+     *
      * @since 7.4.0
      */
     public void ensureJavascriptInited() {

@@ -47,7 +47,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Default value for {@link #isSyncIdCheckEnabled()} = {@value} .
-     * 
+     *
      * @since 7.3
      */
     public static final boolean DEFAULT_SYNC_ID_CHECK = true;
@@ -67,7 +67,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Create a new deployment configuration instance.
-     * 
+     *
      * @param systemPropertyBaseClass
      *            the class that should be used as a basis when reading system
      *            properties
@@ -112,7 +112,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Gets an system property value.
-     * 
+     *
      * @param parameterName
      *            the Name or the parameter.
      * @return String value or null if not found
@@ -150,7 +150,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Gets an application property value.
-     * 
+     *
      * @param parameterName
      *            the Name or the parameter.
      * @return String value or null if not found
@@ -171,7 +171,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * The default is false.
      */
     @Override

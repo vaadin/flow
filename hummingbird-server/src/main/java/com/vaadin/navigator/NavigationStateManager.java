@@ -36,7 +36,7 @@ public interface NavigationStateManager extends Serializable {
     /**
      * Returns the current navigation state including view name and any optional
      * parameters.
-     * 
+     *
      * @return current view and parameter string, not null
      */
     public String getState();
@@ -46,7 +46,7 @@ public interface NavigationStateManager extends Serializable {
      * location, including view name and any optional parameters.
      * <p>
      * This method should be only called by a Navigator.
-     * 
+     *
      * @param fragment
      *            new view and parameter string, not null
      */

@@ -33,7 +33,7 @@ public interface SQLGenerator extends Serializable {
     /**
      * Generates a SELECT query with the provided parameters. Uses default
      * filtering mode (INCLUSIVE).
-     * 
+     *
      * @param tableName
      *            Name of the table queried
      * @param filters
@@ -55,7 +55,7 @@ public interface SQLGenerator extends Serializable {
 
     /**
      * Generates an UPDATE query with the provided parameters.
-     * 
+     *
      * @param tableName
      *            Name of the table queried
      * @param item
@@ -68,7 +68,7 @@ public interface SQLGenerator extends Serializable {
     /**
      * Generates an INSERT query for inserting a new row with the provided
      * values.
-     * 
+     *
      * @param tableName
      *            Name of the table queried
      * @param item
@@ -81,7 +81,7 @@ public interface SQLGenerator extends Serializable {
     /**
      * Generates a DELETE query for deleting data related to the given RowItem
      * from the database.
-     * 
+     *
      * @param tableName
      *            Name of the table queried
      * @param primaryKeyColumns

@@ -51,7 +51,7 @@ public class FileUploadHandler implements RequestHandler {
     /**
      * Stream that extracts content from another stream until the boundary
      * string is encountered.
-     * 
+     *
      * Public only for unit tests, should be considered private for all other
      * purposes.
      */
@@ -202,7 +202,7 @@ public class FileUploadHandler implements RequestHandler {
     /**
      * An UploadInterruptedException will be thrown by an ongoing upload if
      * {@link StreamVariable#isInterrupted()} returns <code>true</code>.
-     * 
+     *
      * By checking the exception of an {@link StreamingErrorEvent} or
      * {@link FailedEvent} against this class, it is possible to determine if an
      * upload was interrupted by code or aborted due to any other exception.
@@ -320,7 +320,7 @@ public class FileUploadHandler implements RequestHandler {
      * assume the caller has locked the session. This allows the session to be
      * locked only when needed and not when handling the upload data.
      * </p>
-     * 
+     *
      * @param session
      *            The session containing the stream variable
      * @param request
@@ -477,7 +477,7 @@ public class FileUploadHandler implements RequestHandler {
      * assume the caller has locked the session. This allows the session to be
      * locked only when needed and not when handling the upload data.
      * </p>
-     * 
+     *
      * @param session
      *            The session containing the stream variable
      * @param request
@@ -658,7 +658,7 @@ public class FileUploadHandler implements RequestHandler {
     /**
      * Removes any possible path information from the filename and returns the
      * filename. Separators / and \\ are used.
-     * 
+     *
      * @param name
      * @return
      */
@@ -672,7 +672,7 @@ public class FileUploadHandler implements RequestHandler {
 
     /**
      * TODO document
-     * 
+     *
      * @param request
      * @param response
      * @throws IOException

@@ -64,7 +64,7 @@ public class ColorPickerSelect extends CustomComponent
 
     /**
      * Instantiates a new color picker select.
-     * 
+     *
      * @param rows
      *            the rows
      * @param columns
@@ -99,12 +99,12 @@ public class ColorPickerSelect extends CustomComponent
 
     /**
      * Creates the all colors.
-     * 
+     *
      * @param rows
      *            the rows
      * @param columns
      *            the columns
-     * 
+     *
      * @return the color[][]
      */
     private Color[][] createAllColors(int rows, int columns) {
@@ -149,14 +149,14 @@ public class ColorPickerSelect extends CustomComponent
 
     /**
      * Creates the color.
-     * 
+     *
      * @param color
      *            the color
      * @param rows
      *            the rows
      * @param columns
      *            the columns
-     * 
+     *
      * @return the color[][]
      */
     private Color[][] createColors(Color color, int rows, int columns) {

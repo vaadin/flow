@@ -558,7 +558,7 @@ public enum FontAwesome implements FontIcon {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.FontIcon#getFontFamily()
      */
     @Override
@@ -568,7 +568,7 @@ public enum FontAwesome implements FontIcon {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.FontIcon#getCodepoint()
      */
     @Override
@@ -583,7 +583,7 @@ public enum FontAwesome implements FontIcon {
 
     /**
      * Finds an instance of FontAwesome with given codepoint
-     * 
+     *
      * @since 7.5.0
      * @param codepoint
      * @return FontAwesome instance with a specific codepoint or null if there

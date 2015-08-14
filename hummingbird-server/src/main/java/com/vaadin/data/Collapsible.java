@@ -44,11 +44,11 @@ public interface Collapsible extends Hierarchical, Ordered {
      * Collapsing the {@link Item} indicated by <code>itemId</code> hides all
      * children, and their respective children, from the {@link Container}.
      * </p>
-     * 
+     *
      * <p>
      * If called on a leaf {@link Item}, this method does nothing.
      * </p>
-     * 
+     *
      * @param itemId
      *            the identifier of the collapsed {@link Item}
      * @param collapsed
@@ -63,12 +63,12 @@ public interface Collapsible extends Hierarchical, Ordered {
      * Checks whether the {@link Item}, identified by <code>itemId</code> is
      * collapsed or not.
      * </p>
-     * 
+     *
      * <p>
      * If an {@link Item} is "collapsed" its children are not included in
      * methods used to list Items in this container.
      * </p>
-     * 
+     *
      * @param itemId
      *            The {@link Item}'s identifier that is to be checked.
      * @return <code>true</code> iff the {@link Item} identified by

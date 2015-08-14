@@ -49,7 +49,7 @@ public class QueryBuilder implements Serializable {
     /**
      * Allows specification of a custom ColumnQuoter instance that handles
      * quoting of column names for the current DB dialect.
-     * 
+     *
      * @param decorator
      *            the ColumnQuoter instance to use.
      */
@@ -68,7 +68,7 @@ public class QueryBuilder implements Serializable {
     /**
      * Constructs and returns a string representing the filter that can be used
      * in a WHERE clause.
-     * 
+     *
      * @param filter
      *            the filter to translate
      * @param sh

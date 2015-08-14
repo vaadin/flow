@@ -30,7 +30,7 @@ import java.io.Serializable;
 public interface SessionDestroyListener extends Serializable {
     /**
      * Called when a Vaadin service session is no longer used.
-     * 
+     *
      * @param event
      *            the event with details about the destroyed session
      */

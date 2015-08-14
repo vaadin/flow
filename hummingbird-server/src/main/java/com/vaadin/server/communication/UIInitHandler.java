@@ -89,7 +89,7 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
      * Commit the JSON response. We can't write immediately to the output stream
      * as we want to write only a critical notification if something goes wrong
      * during the response handling.
-     * 
+     *
      * @param request
      *            The request that resulted in this response
      * @param response
@@ -184,13 +184,13 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
 
     /**
      * Constructs an embed id based on information in the request.
-     * 
+     *
      * @since 7.2
-     * 
+     *
      * @param request
      *            the request to get embed information from
      * @return the embed id, or <code>null</code> if id is not available.
-     * 
+     *
      * @see UI#getEmbedId()
      */
     protected String getEmbedId(VaadinRequest request) {
@@ -208,7 +208,7 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
     /**
      * Generates the initial UIDL message that can e.g. be included in a html
      * page to avoid a separate round trip just for getting the UIDL.
-     * 
+     *
      * @param request
      *            the request that caused the initialization
      * @param uI
@@ -239,7 +239,7 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
 
     /**
      * Gets the security key (and generates one if needed) as UIDL.
-     * 
+     *
      * @param session
      *            the vaadin session to which the security key belongs
      * @return the security key UIDL or "" if the feature is turned off

@@ -63,7 +63,7 @@ import com.vaadin.server.ClientConnector;
 public @interface StyleSheet {
     /**
      * Style sheets to load before initializing the client-side connector.
-     * 
+     *
      * @return an array of style sheet urls
      */
     public String[]value();

@@ -57,7 +57,7 @@ public class StringToCollectionConverter
     /**
      * Creates converter with given {@code delimiter} and {@link String} as
      * token model type in collection.
-     * 
+     *
      * @param delimiter
      *            custom delimiter
      */
@@ -71,7 +71,7 @@ public class StringToCollectionConverter
      * <p>
      * If {@code tokenConverter} is null then no conversation is done and
      * {@link String} is used as token type in resulting model collection.
-     * 
+     *
      * @param tokenConverter
      *            converter for token
      * @param tokenType
@@ -88,7 +88,7 @@ public class StringToCollectionConverter
      * <p>
      * If {@code tokenConverter} is null then no conversation is done and
      * {@link String} is used as token type in resulting model collection.
-     * 
+     *
      * @param tokenConverter
      *            converter for token
      * @param tokenType
@@ -108,7 +108,7 @@ public class StringToCollectionConverter
      * <p>
      * If {@code tokenConverter} is null then no conversation is done and
      * {@link String} is used as token type in resulting model collection.
-     * 
+     *
      * @param tokenConverter
      *            converter for token
      * @param tokenType
@@ -192,7 +192,7 @@ public class StringToCollectionConverter
 
     /**
      * Default collection factory implementation.
-     * 
+     *
      * @author Vaadin Ltd
      */
     public static class DefaultCollectionFactory implements CollectionFactory {
@@ -220,7 +220,7 @@ public class StringToCollectionConverter
     /**
      * Collection factory. Defines a strategy to create collection by collection
      * class.
-     * 
+     *
      * @author Vaadin Ltd
      */
     public interface CollectionFactory extends Serializable {

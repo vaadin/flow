@@ -41,7 +41,7 @@ public interface SessionInitListener extends Serializable {
      * the listener is not necessarily notified immediately when the session is
      * created but only when the first request for that session is handled by a
      * specific service.
-     * 
+     *
      * @param event
      *            the initialization event
      * @throws ServiceException

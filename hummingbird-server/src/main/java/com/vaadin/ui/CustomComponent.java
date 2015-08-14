@@ -63,7 +63,7 @@ public class CustomComponent extends AbstractComponent
 
     /**
      * Constructs a new custom component.
-     * 
+     *
      * <p>
      * Note that you must set the composition root before the component can be
      * used, preferably in the constructor.
@@ -76,7 +76,7 @@ public class CustomComponent extends AbstractComponent
 
     /**
      * Constructs a new custom component.
-     * 
+     *
      * @param compositionRoot
      *            the root of the composition component tree. It must not be
      *            null.
@@ -88,7 +88,7 @@ public class CustomComponent extends AbstractComponent
 
     /**
      * Returns the composition root.
-     * 
+     *
      * @return the Component Composition root.
      */
     protected Component getCompositionRoot() {
@@ -97,12 +97,12 @@ public class CustomComponent extends AbstractComponent
 
     /**
      * Sets the composition root for the component.
-     * 
+     *
      * <p>
      * You must set the composition root must to a non-null value before the
      * component can be used. You can change it later.
      * </p>
-     * 
+     *
      * @param compositionRoot
      *            the root of the composition component tree.
      */
@@ -140,7 +140,7 @@ public class CustomComponent extends AbstractComponent
     /**
      * Gets the number of contained components. Consistent with the iterator
      * returned by {@link #getComponentIterator()}.
-     * 
+     *
      * @return the number of contained components (zero or one)
      */
     public int getComponentCount() {

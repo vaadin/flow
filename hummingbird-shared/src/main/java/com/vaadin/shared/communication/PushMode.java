@@ -55,7 +55,7 @@ public enum PushMode {
 
     /**
      * Checks whether the push mode is using push functionality
-     * 
+     *
      * @return <code>true</code> if this mode requires push functionality;
      *         <code>false</code> if no push functionality is used for this
      *         mode.

@@ -35,7 +35,7 @@ public interface Transferable extends Serializable {
      * <p>
      * Note, implementations of {@link Transferable} often provide a better
      * typed API for accessing data.
-     * 
+     *
      * @param dataFlavor
      *            the data flavor to be returned from Transferable
      * @return the data stored in the Transferable or null if Transferable
@@ -46,7 +46,7 @@ public interface Transferable extends Serializable {
     /**
      * Stores data of given data flavor to Transferable. Possibly existing value
      * of the same data flavor will be replaced.
-     * 
+     *
      * @param dataFlavor
      *            the data flavor
      * @param value

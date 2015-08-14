@@ -50,7 +50,7 @@ public class WebBrowser implements Serializable {
     /**
      * Gets the height of the screen in pixels. This is the full screen
      * resolution and not the height available for the application.
-     * 
+     *
      * @return the height of the screen in pixels.
      */
     public int getScreenHeight() {
@@ -60,7 +60,7 @@ public class WebBrowser implements Serializable {
     /**
      * Gets the width of the screen in pixels. This is the full screen
      * resolution and not the width available for the application.
-     * 
+     *
      * @return the width of the screen in pixels.
      */
     public int getScreenWidth() {
@@ -69,7 +69,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Get the browser user-agent string.
-     * 
+     *
      * @return The raw browser userAgent string
      */
     public String getBrowserApplication() {
@@ -79,7 +79,7 @@ public class WebBrowser implements Serializable {
     /**
      * Gets the IP-address of the web browser. If the application is running
      * inside a portlet, this method will return null.
-     * 
+     *
      * @return IP-address in 1.12.123.123 -format
      */
     public String getAddress() {
@@ -98,7 +98,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests whether the user is using Firefox.
-     * 
+     *
      * @return true if the user is using Firefox, false if the user is not using
      *         Firefox or if no information on the browser is present
      */
@@ -112,7 +112,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests whether the user is using Internet Explorer.
-     * 
+     *
      * @return true if the user is using Internet Explorer, false if the user is
      *         not using Internet Explorer or if no information on the browser
      *         is present
@@ -127,7 +127,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests whether the user is using Safari.
-     * 
+     *
      * @return true if the user is using Safari, false if the user is not using
      *         Safari or if no information on the browser is present
      */
@@ -141,7 +141,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests whether the user is using Opera.
-     * 
+     *
      * @return true if the user is using Opera, false if the user is not using
      *         Opera or if no information on the browser is present
      */
@@ -155,7 +155,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests whether the user is using Chrome.
-     * 
+     *
      * @return true if the user is using Chrome, false if the user is not using
      *         Chrome or if no information on the browser is present
      */
@@ -169,7 +169,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests whether the user is using Chrome Frame.
-     * 
+     *
      * @return true if the user is using Chrome Frame, false if the user is not
      *         using Chrome or if no information on the browser is present
      */
@@ -183,7 +183,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests whether the user's browser is Chrome Frame capable.
-     * 
+     *
      * @return true if the user can use Chrome Frame, false if the user can not
      *         or if no information on the browser is present
      */
@@ -197,12 +197,12 @@ public class WebBrowser implements Serializable {
 
     /**
      * Gets the major version of the browser the user is using.
-     * 
+     *
      * <p>
      * Note that Internet Explorer in IE7 compatibility mode might return 8 in
      * some cases even though it should return 7.
      * </p>
-     * 
+     *
      * @return The major version of the browser or -1 if not known.
      */
     public int getBrowserMajorVersion() {
@@ -215,9 +215,9 @@ public class WebBrowser implements Serializable {
 
     /**
      * Gets the minor version of the browser the user is using.
-     * 
+     *
      * @see #getBrowserMajorVersion()
-     * 
+     *
      * @return The minor version of the browser or -1 if not known.
      */
     public int getBrowserMinorVersion() {
@@ -230,7 +230,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests whether the user is using Linux.
-     * 
+     *
      * @return true if the user is using Linux, false if the user is not using
      *         Linux or if no information on the browser is present
      */
@@ -240,7 +240,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests whether the user is using Mac OS X.
-     * 
+     *
      * @return true if the user is using Mac OS X, false if the user is not
      *         using Mac OS X or if no information on the browser is present
      */
@@ -250,7 +250,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests whether the user is using Windows.
-     * 
+     *
      * @return true if the user is using Windows, false if the user is not using
      *         Windows or if no information on the browser is present
      */
@@ -260,7 +260,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests whether the user is using Windows Phone.
-     * 
+     *
      * @return true if the user is using Windows Phone, false if the user is not
      *         using Windows Phone or if no information on the browser is
      *         present
@@ -272,7 +272,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests if the browser is run on Android.
-     * 
+     *
      * @return true if run on Android false if the user is not using Android or
      *         if no information on the browser is present
      */
@@ -282,7 +282,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests if the browser is run in iOS.
-     * 
+     *
      * @return true if run in iOS false if the user is not using iOS or if no
      *         information on the browser is present
      */
@@ -292,7 +292,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests if the browser is run on IPhone.
-     * 
+     *
      * @return true if run on IPhone false if the user is not using IPhone or if
      *         no information on the browser is present
      * @since 7.3.3
@@ -303,7 +303,7 @@ public class WebBrowser implements Serializable {
 
     /**
      * Tests if the browser is run on IPad.
-     * 
+     *
      * @return true if run on IPad false if the user is not using IPad or if no
      *         information on the browser is present
      * @since 7.3.3
@@ -317,7 +317,7 @@ public class WebBrowser implements Serializable {
      * This includes possible daylight saving adjustments, to figure out which
      * TimeZone the user actually might be in, see
      * {@link #getRawTimezoneOffset()}.
-     * 
+     *
      * @see WebBrowser#getRawTimezoneOffset()
      * @return timezone offset in milliseconds, 0 if not available
      */
@@ -339,7 +339,7 @@ public class WebBrowser implements Serializable {
      * currently have daylight saving time, or in a zone that never has daylight
      * saving time.
      * </p>
-     * 
+     *
      * @return timezone offset in milliseconds excluding DST, 0 if not available
      */
     public int getRawTimezoneOffset() {
@@ -349,7 +349,7 @@ public class WebBrowser implements Serializable {
     /**
      * Returns the offset in milliseconds between the browser's GMT TimeZone and
      * DST.
-     * 
+     *
      * @return the number of milliseconds that the TimeZone shifts when DST is
      *         in effect
      */
@@ -360,7 +360,7 @@ public class WebBrowser implements Serializable {
     /**
      * Returns whether daylight saving time (DST) is currently in effect in the
      * region of the browser or not.
-     * 
+     *
      * @return true if the browser resides at a location that currently is in
      *         DST
      */
@@ -376,7 +376,7 @@ public class WebBrowser implements Serializable {
      * <p>
      * To get the actual date and time shown in the end users computer, you can
      * do something like:
-     * 
+     *
      * <pre>
      * WebBrowser browser = ...;
      * SimpleTimeZone timeZone = new SimpleTimeZone(browser.getTimezoneOffset(), "Fake client time zone");
@@ -384,7 +384,7 @@ public class WebBrowser implements Serializable {
      * format.setTimeZone(timeZone);
      * myLabel.setValue(format.format(browser.getCurrentDate()));
      * </pre>
-     * 
+     *
      * @return the current date and time of the browser.
      * @see #isDSTInEffect()
      * @see #getDSTSavings()
@@ -404,7 +404,7 @@ public class WebBrowser implements Serializable {
     /**
      * For internal use by VaadinServlet/VaadinPortlet only. Updates all
      * properties in the class according to the given information.
-     * 
+     *
      * @param sw
      *            Screen width
      * @param sh
@@ -474,7 +474,7 @@ public class WebBrowser implements Serializable {
     /**
      * For internal use by VaadinServlet/VaadinPortlet only. Updates all
      * properties in the class according to the given information.
-     * 
+     *
      * @param request
      *            the Vaadin request to read the information from
      */
@@ -504,11 +504,11 @@ public class WebBrowser implements Serializable {
      * Checks if the browser is so old that it simply won't work with a Vaadin
      * application. Can be used to redirect to an alternative page, show
      * alternative content or similar.
-     * 
+     *
      * When this method returns true chances are very high that the browser
      * won't work and it does not make sense to direct the user to the Vaadin
      * application.
-     * 
+     *
      * @return true if the browser won't work, false if not the browser is
      *         supported or might work
      */

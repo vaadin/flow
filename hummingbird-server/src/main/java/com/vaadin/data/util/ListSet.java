@@ -220,7 +220,7 @@ public class ListSet<E> extends ArrayList<E> {
 
     /**
      * Removes "e" from the set if it no longer exists in the list.
-     * 
+     *
      * @param e
      */
     private void removeFromSet(E e) {
@@ -245,7 +245,7 @@ public class ListSet<E> extends ArrayList<E> {
     /**
      * Marks the "element" can be found more than once from the list. Allowed in
      * {@link #set(int, Object)} to make sorting work.
-     * 
+     *
      * @param element
      */
     private void addDuplicate(E element) {

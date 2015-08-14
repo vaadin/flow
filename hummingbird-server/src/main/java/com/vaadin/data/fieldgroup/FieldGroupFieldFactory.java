@@ -29,7 +29,7 @@ import com.vaadin.ui.Field;
 public interface FieldGroupFieldFactory extends Serializable {
     /**
      * Creates a field based on the data type that we want to edit
-     * 
+     *
      * @param dataType
      *            The type that we want to edit using the field
      * @param fieldType

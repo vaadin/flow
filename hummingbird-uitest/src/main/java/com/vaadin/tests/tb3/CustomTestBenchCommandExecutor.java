@@ -54,7 +54,7 @@ public class CustomTestBenchCommandExecutor {
 
     /**
      * Compares the screenshot of the given element with the reference.
-     * 
+     *
      * Copied from TestBenchCommandExecutor
      */
     public boolean compareScreen(WebElement element, File reference,
@@ -71,7 +71,7 @@ public class CustomTestBenchCommandExecutor {
 
     /**
      * Compares the screenshot of the given element with the reference.
-     * 
+     *
      * Copied from TestBenchCommandExecutor and added cropToElement
      */
     public boolean compareScreen(WebElement element, BufferedImage reference,
@@ -107,7 +107,7 @@ public class CustomTestBenchCommandExecutor {
     /**
      * Crops the image to show only the element. If the element is partly off
      * screen, crops to show the part of the element which is in the screenshot
-     * 
+     *
      * @param element
      *            the element to retain in the screenshot
      * @param fullScreen

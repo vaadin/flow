@@ -37,7 +37,7 @@ public interface ServerConnector extends Connector {
 
     /**
      * Gets ApplicationConnection instance that created this connector.
-     * 
+     *
      * @return The ApplicationConnection as set by
      *         {@link #doInit(String, ApplicationConnection)}
      */
@@ -47,13 +47,13 @@ public interface ServerConnector extends Connector {
      * Tests whether the connector is enabled or not. This method checks that
      * the connector is enabled in context, i.e. if the parent connector is
      * disabled, this method must return false.
-     * 
+     *
      * @return true if the connector is enabled, false otherwise
      */
     public boolean isEnabled();
 
     /**
-     * 
+     *
      * Called once by the framework to initialize the connector.
      * <p>
      * Note that the shared state is not yet available at this point nor any
@@ -64,9 +64,9 @@ public interface ServerConnector extends Connector {
     /**
      * For internal use by the framework: returns the registered RPC
      * implementations for an RPC interface identifier.
-     * 
+     *
      * TODO interface identifier type or format may change
-     * 
+     *
      * @param rpcInterfaceId
      *            RPC interface identifier: fully qualified interface type name
      * @return RPC interface implementations registered for an RPC interface,
@@ -78,7 +78,7 @@ public interface ServerConnector extends Connector {
     /**
      * Adds a handler that is called whenever any part of the state has been
      * updated by the server.
-     * 
+     *
      * @param handler
      *            The handler that should be added.
      * @return A handler registration reference that can be used to unregister
@@ -90,7 +90,7 @@ public interface ServerConnector extends Connector {
     /**
      * Removes a handler that is called whenever any part of the state has been
      * updated by the server.
-     * 
+     *
      * @param handler
      *            The handler that should be removed.
      */
@@ -99,7 +99,7 @@ public interface ServerConnector extends Connector {
     /**
      * Adds a handler that is called whenever the given part of the state has
      * been updated by the server.
-     * 
+     *
      * @param propertyName
      *            the name of the property for which the handler should be
      *            called
@@ -114,7 +114,7 @@ public interface ServerConnector extends Connector {
     /**
      * Removes a handler that is called whenever any part of the state has been
      * updated by the server.
-     * 
+     *
      * @param propertyName
      *            the name of the property for which the handler should be
      *            called
@@ -126,7 +126,7 @@ public interface ServerConnector extends Connector {
 
     /**
      * Sends the given event to all registered handlers.
-     * 
+     *
      * @param event
      *            The event to send.
      */
@@ -140,7 +140,7 @@ public interface ServerConnector extends Connector {
     /**
      * Returns the parent of this connector. Can be null for only the root
      * connector.
-     * 
+     *
      * @return The parent of this connector, as set by
      *         {@link #setParent(ServerConnector)}.
      */
@@ -155,7 +155,7 @@ public interface ServerConnector extends Connector {
      * Note that calling this method does not fire a
      * {@link ConnectorHierarchyChangeEvent}. The event is fired only when the
      * whole hierarchy has been updated.
-     * 
+     *
      * @param parent
      *            The new parent of the connector
      */
@@ -169,12 +169,12 @@ public interface ServerConnector extends Connector {
 
     /**
      * Gets the current shared state of the connector.
-     * 
+     *
      * Note that state is considered an internal part of the connector. You
      * should not rely on the state object outside of the connector who owns it.
      * If you depend on the state of other connectors you should use their
      * public API instead of their state object directly.
-     * 
+     *
      * @since 7.0.
      * @return state The shared state object. Can be any sub type of
      *         {@link SharedState}. Never null.
@@ -184,7 +184,7 @@ public interface ServerConnector extends Connector {
     /**
      * Checks if an event listener has been registered on the server side for
      * the given event identifier.
-     * 
+     *
      * @param eventIdentifier
      *            The identifier for the event
      * @return true if a listener has been registered on the server side, false

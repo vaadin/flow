@@ -100,7 +100,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * An ordered {@link List} of all item identifiers in the container,
      * including those that have been filtered out.
-     * 
+     *
      * Must not be null.
      */
     private List<ITEMIDTYPE> allItemIds;
@@ -108,10 +108,10 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * An ordered {@link List} of item identifiers in the container after
      * filtering, excluding those that have been filtered out.
-     * 
+     *
      * This is what the external API of the {@link Container} interface and its
      * subinterfaces shows (e.g. {@link #size()}, {@link #nextItemId(Object)}).
-     * 
+     *
      * If null, the full item id list is used instead.
      */
     private List<ITEMIDTYPE> filteredItemIds;
@@ -182,12 +182,12 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * An <code>Event</code> object specifying information about the added
      * items.
-     * 
+     *
      * <p>
      * This class provides information about the first added item and the number
      * of added items.
      * </p>
-     * 
+     *
      * @since 7.4
      */
     protected static class BaseItemAddEvent extends BaseItemAddOrRemoveEvent
@@ -207,12 +207,12 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * An <code>Event</code> object specifying information about the removed
      * items.
-     * 
+     *
      * <p>
      * This class provides information about the first removed item and the
      * number of removed items.
      * </p>
-     * 
+     *
      * @since 7.4
      */
     protected static class BaseItemRemoveEvent extends BaseItemAddOrRemoveEvent
@@ -231,9 +231,9 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
 
     /**
      * Get an item even if filtered out.
-     * 
+     *
      * For internal use only.
-     * 
+     *
      * @param itemId
      * @return
      */
@@ -475,7 +475,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * This method should reset any internal data structures and then repopulate
      * them so {@link #getItemIds()} and other methods only return the filtered
      * items.
-     * 
+     *
      * @param hasFilters
      *            true if filters has been set for the container, false
      *            otherwise
@@ -519,7 +519,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * Checks if the given itemId passes the filters set for the container. The
      * caller should make sure the itemId exists in the container. For
      * non-existing itemIds the behavior is undefined.
-     * 
+     *
      * @param itemId
      *            An itemId that exists in the container.
      * @return true if the itemId passes all filters or no filters are set,
@@ -542,20 +542,20 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
 
     /**
      * Adds a container filter and re-filter the view.
-     * 
+     *
      * The filter must implement Filter and its sub-filters (if any) must also
      * be in-memory filterable.
-     * 
+     *
      * This can be used to implement
      * {@link Filterable#addContainerFilter(com.vaadin.data.Container.Filter)}
      * and optionally also
      * {@link SimpleFilterable#addContainerFilter(Object, String, boolean, boolean)}
      * (with {@link SimpleStringFilter}).
-     * 
+     *
      * Note that in some cases, incompatible filters cannot be detected when
      * added and an {@link UnsupportedFilterException} may occur when performing
      * filtering.
-     * 
+     *
      * @throws UnsupportedFilterException
      *             if the filter is detected as not supported by the container
      */
@@ -566,7 +566,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
 
     /**
      * Returns true if any filters have been applied to the container.
-     * 
+     *
      * @return true if the container has filters applied, false otherwise
      * @since 7.1
      */
@@ -576,7 +576,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.data.Container.Filterable#getContainerFilters()
      */
     protected Collection<Filter> getContainerFilters() {
@@ -585,7 +585,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
 
     /**
      * Remove a specific container filter and re-filter the view (if necessary).
-     * 
+     *
      * This can be used to implement
      * {@link Filterable#removeContainerFilter(com.vaadin.data.Container.Filter)}
      * .
@@ -604,7 +604,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
 
     /**
      * Remove all container filters for all properties and re-filter the view.
-     * 
+     *
      * This can be used to implement
      * {@link Filterable#removeAllContainerFilters()}.
      */
@@ -618,7 +618,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
 
     /**
      * Checks if there is a filter that applies to a given property.
-     * 
+     *
      * @param propertyId
      * @return true if there is an active filter for the property
      */
@@ -640,10 +640,10 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * Remove all container filters for a given property identifier and
      * re-filter the view. This also removes filters applying to multiple
      * properties including the one identified by propertyId.
-     * 
+     *
      * This can be used to implement
      * {@link Filterable#removeContainerFilters(Object)}.
-     * 
+     *
      * @param propertyId
      * @return Collection<Filter> removed filters
      */
@@ -672,7 +672,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * Returns the ItemSorter used for comparing items in a sort. See
      * {@link #setItemSorter(ItemSorter)} for more information.
-     * 
+     *
      * @return The ItemSorter used for comparing two items in a sort.
      */
     protected ItemSorter getItemSorter() {
@@ -684,7 +684,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * {@link ItemSorter#compare(Object, Object)} method is called with item ids
      * to perform the sorting. A default ItemSorter is used if this is not
      * explicitly set.
-     * 
+     *
      * @param itemSorter
      *            The ItemSorter used for comparing two items in a sort (not
      *            null).
@@ -695,10 +695,10 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
 
     /**
      * Sort base implementation to be used to implement {@link Sortable}.
-     * 
+     *
      * Subclasses should call this from a public
      * {@link #sort(Object[], boolean[])} method when implementing Sortable.
-     * 
+     *
      * @see com.vaadin.data.Container.Sortable#sort(java.lang.Object[],
      *      boolean[])
      */
@@ -730,7 +730,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * operation. Typically this method calls
      * <code>Collections.sort(aCollection, getItemSorter())</code> on all arrays
      * (containing item ids) that need to be sorted.
-     * 
+     *
      */
     protected void doSort() {
         Collections.sort(getAllItemIds(), getItemSorter());
@@ -757,7 +757,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * Removes all items from the internal data structures of this class. This
      * can be used to implement {@link #removeAllItems()} in subclasses.
-     * 
+     *
      * No notification is sent, the caller has to fire a suitable item set
      * change notification.
      */
@@ -772,10 +772,10 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * Removes a single item from the internal data structures of this class.
      * This can be used to implement {@link #removeItem(Object)} in subclasses.
-     * 
+     *
      * No notification is sent, the caller has to fire a suitable item set
      * change notification.
-     * 
+     *
      * @param itemId
      *            the identifier of the item to remove
      * @return true if an item was successfully removed, false if failed to
@@ -800,16 +800,16 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * Adds the bean to all internal data structures at the given position.
      * Fails if an item with itemId is already in the container. Returns a the
      * item if it was added successfully, null otherwise.
-     * 
+     *
      * <p>
      * Caller should initiate filtering after calling this method.
      * </p>
-     * 
+     *
      * For internal use only - subclasses should use
      * {@link #internalAddItemAtEnd(Object, Item, boolean)},
      * {@link #internalAddItemAt(int, Object, Item, boolean)} and
      * {@link #internalAddItemAfter(Object, Object, Item, boolean)} instead.
-     * 
+     *
      * @param position
      *            The position at which the item should be inserted in the
      *            unfiltered collection of items
@@ -817,7 +817,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      *            The item identifier for the item to insert
      * @param item
      *            The item to insert
-     * 
+     *
      * @return ITEMCLASS if the item was added successfully, null otherwise
      */
     private ITEMCLASS internalAddAt(int position, ITEMIDTYPE itemId,
@@ -842,7 +842,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * Add an item at the end of the container, and perform filtering if
      * necessary. An event is fired if the filtered view changes.
-     * 
+     *
      * @param newItemId
      * @param item
      *            new item to add
@@ -871,9 +871,9 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * Add an item after a given (visible) item, and perform filtering. An event
      * is fired if the filtered view changes.
-     * 
+     *
      * The new item is added at the beginning if previousItemId is null.
-     * 
+     *
      * @param previousItemId
      *            item id of a visible item after which to add the new item, or
      *            null to add at the beginning
@@ -911,7 +911,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * Add an item at a given (visible after filtering) item index, and perform
      * filtering. An event is fired if the filtered view changes.
-     * 
+     *
      * @param index
      *            position where to add the item (visible/view index)
      * @param newItemId
@@ -943,10 +943,10 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * involve storing the item or any relevant information about it in internal
      * container-specific collections if necessary, as well as registering
      * listeners etc.
-     * 
+     *
      * The full identifier list in {@link AbstractInMemoryContainer} has already
      * been updated to reflect the new item when this method is called.
-     * 
+     *
      * @param position
      * @param itemId
      * @param item
@@ -960,9 +960,9 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * Notify item set change listeners that an item has been added to the
      * container.
-     * 
+     *
      * @since 7.4
-     * 
+     *
      * @param position
      *            position of the added item in the view
      * @param itemId
@@ -978,7 +978,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * Notify item set change listeners that items has been added to the
      * container.
-     * 
+     *
      * @param firstPosition
      *            position of the first visible added item in the view
      * @param firstItemId
@@ -996,9 +996,9 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * Notify item set change listeners that an item has been removed from the
      * container.
-     * 
+     *
      * @since 7.4
-     * 
+     *
      * @param position
      *            position of the removed item in the view prior to removal (if
      *            was visible)
@@ -1013,7 +1013,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * Notify item set change listeners that items has been removed from the
      * container.
-     * 
+     *
      * @param firstPosition
      *            position of the first visible removed item in the view prior
      *            to removal
@@ -1022,7 +1022,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      *            to satisfy {@link Container#removeItem(Object)} API
      * @param numberOfItems
      *            the number of removed visible items
-     * 
+     *
      */
     protected void fireItemsRemoved(int firstPosition, Object firstItemId,
             int numberOfItems) {
@@ -1035,7 +1035,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
 
     /**
      * Returns the internal list of visible item identifiers after filtering.
-     * 
+     *
      * For internal use only.
      */
     protected List<ITEMIDTYPE> getVisibleItemIds() {
@@ -1051,9 +1051,9 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * returned if there is no visible items.
      * <p>
      * For internal use only.
-     * 
+     *
      * @since 7.4
-     * 
+     *
      * @return item id of the first visible item
      */
     protected ITEMIDTYPE getFirstVisibleItem() {
@@ -1065,7 +1065,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
 
     /**
      * Returns true is the container has active filters.
-     * 
+     *
      * @return true if the container is currently filtered
      */
     protected boolean isFiltered() {
@@ -1076,7 +1076,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * Internal helper method to set the internal list of filtered item
      * identifiers. Should not be used outside this class except for
      * implementing clone(), may disappear from future versions.
-     * 
+     *
      * @param filteredItemIds
      */
     @Deprecated
@@ -1089,7 +1089,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * identifiers. Should not be used outside this class except for
      * implementing clone(), may disappear from future versions - use
      * {@link #getVisibleItemIds()} in other contexts.
-     * 
+     *
      * @return List<ITEMIDTYPE>
      */
     protected List<ITEMIDTYPE> getFilteredItemIds() {
@@ -1100,7 +1100,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * Internal helper method to set the internal list of all item identifiers.
      * Should not be used outside this class except for implementing clone(),
      * may disappear from future versions.
-     * 
+     *
      * @param allItemIds
      */
     @Deprecated
@@ -1112,7 +1112,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      * Internal helper method to get the internal list of all item identifiers.
      * Avoid using this method outside this class, may disappear in future
      * versions.
-     * 
+     *
      * @return List<ITEMIDTYPE>
      */
     protected List<ITEMIDTYPE> getAllItemIds() {
@@ -1121,12 +1121,12 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
 
     /**
      * Set the internal collection of filters without performing filtering.
-     * 
+     *
      * This method is mostly for internal use, use
      * {@link #addFilter(com.vaadin.data.Container.Filter)} and
      * <code>remove*Filter*</code> (which also re-filter the container) instead
      * when possible.
-     * 
+     *
      * @param filters
      */
     protected void setFilters(Set<Filter> filters) {
@@ -1136,7 +1136,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     /**
      * Returns the internal collection of filters. The returned collection
      * should not be modified by callers outside this class.
-     * 
+     *
      * @return Set<Filter>
      */
     protected Set<Filter> getFilters() {

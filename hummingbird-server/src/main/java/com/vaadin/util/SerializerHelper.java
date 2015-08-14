@@ -31,7 +31,7 @@ public class SerializerHelper {
     /**
      * Serializes the class reference so {@link #readClass(ObjectInputStream)}
      * can deserialize it. Supports null class references.
-     * 
+     *
      * @param out
      *            The {@link ObjectOutputStream} to serialize to.
      * @param cls
@@ -53,7 +53,7 @@ public class SerializerHelper {
      * Serializes the class references so
      * {@link #readClassArray(ObjectInputStream)} can deserialize it. Supports
      * null class arrays.
-     * 
+     *
      * @param out
      *            The {@link ObjectOutputStream} to serialize to.
      * @param classes
@@ -78,7 +78,7 @@ public class SerializerHelper {
      * Deserializes a class references serialized by
      * {@link #writeClassArray(ObjectOutputStream, Class[])}. Supports null
      * class arrays.
-     * 
+     *
      * @param in
      *            {@link ObjectInputStream} to read from.
      * @return Class array with the class references or null.
@@ -111,7 +111,7 @@ public class SerializerHelper {
 
     /**
      * Resolves the class given by {@code className}.
-     * 
+     *
      * @param className
      *            The fully qualified class name.
      * @return A {@code Class} reference.
@@ -133,7 +133,7 @@ public class SerializerHelper {
      * Deserializes a class reference serialized by
      * {@link #writeClass(ObjectOutputStream, Class)}. Supports null class
      * references.
-     * 
+     *
      * @param in
      *            {@code ObjectInputStream} to read from.
      * @return Class reference to the resolved class

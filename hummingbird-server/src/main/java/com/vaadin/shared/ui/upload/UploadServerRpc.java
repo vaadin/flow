@@ -21,7 +21,7 @@ public interface UploadServerRpc extends ServerRpc {
 
     /**
      * Event sent when the file name of the upload component is changed.
-     * 
+     *
      * @param filename
      *            The filename
      */
@@ -30,7 +30,7 @@ public interface UploadServerRpc extends ServerRpc {
     /**
      * Called to poll the server to see if any changes have been made e.g. when
      * starting upload
-     * 
+     *
      * @since
      */
     void poll();

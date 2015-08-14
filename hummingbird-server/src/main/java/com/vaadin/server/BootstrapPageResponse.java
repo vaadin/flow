@@ -37,10 +37,10 @@ public class BootstrapPageResponse extends BootstrapResponse {
 
     /**
      * Crate a new bootstrap page response.
-     * 
+     *
      * @see BootstrapResponse#BootstrapResponse(BootstrapHandler, VaadinRequest,
      *      VaadinSession, Class)
-     * 
+     *
      * @param handler
      *            the bootstrap handler that is firing the event
      * @param request
@@ -70,9 +70,9 @@ public class BootstrapPageResponse extends BootstrapResponse {
     /**
      * Sets a header value that will be added to the HTTP response. If the
      * header had already been set, the new value overwrites the previous one.
-     * 
+     *
      * @see VaadinResponse#setHeader(String, String)
-     * 
+     *
      * @param name
      *            the name of the header
      * @param value
@@ -86,10 +86,10 @@ public class BootstrapPageResponse extends BootstrapResponse {
      * Properly formats a timestamp as a date in a header that will be included
      * in the HTTP response. If the header had already been set, the new value
      * overwrites the previous one.
-     * 
+     *
      * @see #setHeader(String, String)
      * @see VaadinResponse#setDateHeader(String, long)
-     * 
+     *
      * @param name
      *            the name of the header
      * @param timestamp
@@ -103,7 +103,7 @@ public class BootstrapPageResponse extends BootstrapResponse {
      * Gets the document node representing the root of the DOM hierarchy that
      * will be used to generate the HTML page. Changes to the document will be
      * reflected in the HTML.
-     * 
+     *
      * @return the document node
      */
     public Document getDocument() {

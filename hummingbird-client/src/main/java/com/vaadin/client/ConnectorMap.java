@@ -33,7 +33,7 @@ public class ConnectorMap {
 
     /**
      * Returns a {@link ServerConnector} by its id
-     * 
+     *
      * @param id
      *            The connector id
      * @return A connector or null if a connector with the given id has not been
@@ -45,7 +45,7 @@ public class ConnectorMap {
 
     /**
      * Returns a {@link ComponentConnector} element by its root element.
-     * 
+     *
      * @param element
      *            Root element of the {@link ComponentConnector}
      * @return A connector or null if a connector with the given id has not been
@@ -73,7 +73,7 @@ public class ConnectorMap {
 
     /**
      * FIXME: What does this even do and why?
-     * 
+     *
      * @param pid
      * @return
      */
@@ -83,7 +83,7 @@ public class ConnectorMap {
 
     /**
      * Checks if a connector with the given id has been registered.
-     * 
+     *
      * @param connectorId
      *            The id to check for
      * @return true if a connector has been registered with the given id, false
@@ -102,7 +102,7 @@ public class ConnectorMap {
 
     /**
      * Retrieves the connector whose widget matches the parameter.
-     * 
+     *
      * @param widget
      *            The widget
      * @return A connector with {@literal widget} as its root widget or null if
@@ -122,7 +122,7 @@ public class ConnectorMap {
      * Gets the connector id using a DOM element - the element should be the
      * root element for a connector, otherwise no id will be found. Use
      * {@link #getConnectorId(ServerConnector)} instead whenever possible.
-     * 
+     *
      * @see #getConnectorId(ServerConnector)
      * @param el
      *            element of the connector whose id is desired
@@ -136,7 +136,7 @@ public class ConnectorMap {
     /**
      * Gets the main element for the connector with the given id. The reverse of
      * {@link #getConnectorId(Element)}.
-     * 
+     *
      * @param connectorId
      *            the id of the widget whose element is desired
      * @return the element for the connector corresponding to the id
@@ -155,7 +155,7 @@ public class ConnectorMap {
      * This method does not remove the connector from the DOM, but marks the
      * connector so that ApplicationConnection may clean up its references to
      * it. Removing the widget from DOM is component containers responsibility.
-     * 
+     *
      * @param connector
      *            the connector to remove
      */
@@ -186,9 +186,9 @@ public class ConnectorMap {
 
     /**
      * Gets all registered {@link ComponentConnector} instances
-     * 
+     *
      * @return An array of all registered {@link ComponentConnector} instances
-     * 
+     *
      * @deprecated As of 7.0.1, use {@link #getComponentConnectorsAsJsArray()}
      *             for better performance.
      */
@@ -235,7 +235,7 @@ public class ConnectorMap {
 
     /**
      * Tests if the widget is the root widget of a {@link ComponentConnector}.
-     * 
+     *
      * @param widget
      *            The widget to test
      * @return true if the widget is the root widget of a

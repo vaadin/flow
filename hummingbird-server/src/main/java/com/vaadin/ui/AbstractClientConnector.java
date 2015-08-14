@@ -111,12 +111,12 @@ public abstract class AbstractClientConnector
 
     /**
      * Registers an RPC interface implementation for this component.
-     * 
+     *
      * A component can listen to multiple RPC interfaces, and subclasses can
      * register additional implementations.
-     * 
+     *
      * @since 7.0
-     * 
+     *
      * @param implementation
      *            RPC interface implementation
      * @param rpcInterfaceType
@@ -131,12 +131,12 @@ public abstract class AbstractClientConnector
 
     /**
      * Registers an RPC interface implementation for this component.
-     * 
+     *
      * A component can listen to multiple RPC interfaces, and subclasses can
      * register additional implementations.
-     * 
+     *
      * @since 7.0
-     * 
+     *
      * @param implementation
      *            RPC interface implementation. Also used to deduce the type.
      */
@@ -188,7 +188,7 @@ public abstract class AbstractClientConnector
      * state will be sent to the client. Use {@code getState(false)} to avoid
      * marking the connector as dirty.
      * </p>
-     * 
+     *
      * @return The shared state for this connector. Never null.
      */
     protected SharedState getState() {
@@ -197,11 +197,11 @@ public abstract class AbstractClientConnector
 
     /**
      * Returns the shared state for this connector.
-     * 
+     *
      * @param markAsDirty
      *            true if the connector should automatically be marked dirty,
      *            false otherwise
-     * 
+     *
      * @return The shared state for this connector. Never null.
      * @see #getState()
      */
@@ -240,9 +240,9 @@ public abstract class AbstractClientConnector
      * <p>
      * No configuration of the values of the state should be performed in
      * {@link #createState()}.
-     * 
+     *
      * @since 7.0
-     * 
+     *
      * @return new shared state object
      */
     protected SharedState createState() {
@@ -298,12 +298,12 @@ public abstract class AbstractClientConnector
     /**
      * Returns an RPC proxy for a given server to client RPC interface for this
      * component.
-     * 
+     *
      * TODO more javadoc, subclasses, ...
-     * 
+     *
      * @param rpcInterface
      *            RPC interface type
-     * 
+     *
      * @since 7.0
      */
     protected <T extends ClientRpc> T getRpcProxy(final Class<T> rpcInterface) {
@@ -351,14 +351,14 @@ public abstract class AbstractClientConnector
 
     /**
      * For internal use: adds a method invocation to the pending RPC call queue.
-     * 
+     *
      * @param interfaceName
      *            RPC interface name
      * @param method
      *            RPC method
      * @param parameters
      *            RPC all parameters
-     * 
+     *
      * @since 7.0
      */
     protected void addMethodInvocationToQueue(String interfaceName,
@@ -401,7 +401,7 @@ public abstract class AbstractClientConnector
     /**
      * Finds the {@link VaadinSession} to which this connector belongs. If the
      * connector has not been attached, <code>null</code> is returned.
-     * 
+     *
      * @return The connector's session, or <code>null</code> if not attached
      */
     protected VaadinSession getSession() {
@@ -417,7 +417,7 @@ public abstract class AbstractClientConnector
      * Finds a UI ancestor of this connector. <code>null</code> is returned if
      * no UI ancestor is found (typically because the connector is not attached
      * to a proper hierarchy).
-     * 
+     *
      * @return the UI ancestor of this connector, or <code>null</code> if none
      *         is found.
      */
@@ -449,7 +449,7 @@ public abstract class AbstractClientConnector
     /**
      * Get an Iterable for iterating over all child connectors, including both
      * extensions and child components.
-     * 
+     *
      * @param connector
      *            the connector to get children for
      * @return an Iterable giving all child connectors.
@@ -503,7 +503,7 @@ public abstract class AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.ClientConnector#isAttached()
      */
     @Override
@@ -551,12 +551,12 @@ public abstract class AbstractClientConnector
     /**
      * Gets a resource defined using {@link #setResource(String, Resource)} with
      * the corresponding key.
-     * 
+     *
      * @param key
      *            the string identifier of the resource
      * @return a resource, or <code>null</code> if there's no resource
      *         associated with the given key
-     * 
+     *
      * @see #setResource(String, Resource)
      */
     protected Resource getResource(String key) {
@@ -570,7 +570,7 @@ public abstract class AbstractClientConnector
      * connector using
      * {@link com.vaadin.terminal.gwt.client.ui.AbstractConnector#getResourceUrl(String)}
      * with the same key.
-     * 
+     *
      * @param key
      *            the string key to associate the resource with
      * @param resource
@@ -590,7 +590,7 @@ public abstract class AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -617,7 +617,7 @@ public abstract class AbstractClientConnector
      * by the proxy to actually be called on the underlying instance.
      * <p>
      * See #14639
-     * 
+     *
      * @deprecated only defined for framework hacks, do not use.
      */
     @Deprecated
@@ -627,7 +627,7 @@ public abstract class AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#hashCode()
      */
     @Override

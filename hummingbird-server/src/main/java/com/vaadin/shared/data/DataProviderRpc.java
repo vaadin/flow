@@ -34,7 +34,7 @@ public interface DataProviderRpc extends ClientRpc {
      * <p>
      * rowDataJson represents a JSON array of JSON objects in the following
      * format:
-     * 
+     *
      * <pre>
      * [{
      *   "d": [COL_1_JSON, COL_2_json, ...],
@@ -43,10 +43,10 @@ public interface DataProviderRpc extends ClientRpc {
      * ...
      * ]
      * </pre>
-     * 
+     *
      * where COL_INDEX is the index of the column (as a string), and COL_n_JSON
      * is valid JSON of the column's data.
-     * 
+     *
      * @param firstRowIndex
      *            the index of the first updated row
      * @param rowDataJson
@@ -59,7 +59,7 @@ public interface DataProviderRpc extends ClientRpc {
 
     /**
      * Informs the client to remove row data.
-     * 
+     *
      * @param firstRowIndex
      *            the index of the first removed row
      * @param count
@@ -71,7 +71,7 @@ public interface DataProviderRpc extends ClientRpc {
 
     /**
      * Informs the client to insert new row data.
-     * 
+     *
      * @param firstRowIndex
      *            the index of the first new row
      * @param count
@@ -86,7 +86,7 @@ public interface DataProviderRpc extends ClientRpc {
      * This should be used in the cases where the data has changed in some
      * unverifiable way. I.e. "something happened". This will lead to a
      * re-rendering of the current Grid viewport
-     * 
+     *
      * @param size
      *            the size of the new data set
      */

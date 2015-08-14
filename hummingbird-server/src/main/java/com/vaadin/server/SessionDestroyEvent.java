@@ -32,7 +32,7 @@ public class SessionDestroyEvent extends EventObject {
 
     /**
      * Creates a new event.
-     * 
+     *
      * @param service
      *            the Vaadin service from which the even originates
      * @param session
@@ -50,7 +50,7 @@ public class SessionDestroyEvent extends EventObject {
 
     /**
      * Gets the Vaadin service from which the even originates.
-     * 
+     *
      * @return the Vaadin service
      */
     public VaadinService getService() {
@@ -59,7 +59,7 @@ public class SessionDestroyEvent extends EventObject {
 
     /**
      * Gets the Vaadin service session that is no longer used.
-     * 
+     *
      * @return the Vaadin service session
      */
     public VaadinSession getSession() {

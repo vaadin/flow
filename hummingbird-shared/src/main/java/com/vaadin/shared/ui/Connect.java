@@ -76,9 +76,9 @@ public @interface Connect {
      * also includes
      * {@link com.vaadin.server.widgetsetutils.LazyWidgetMapGenerator} that
      * makes as many widgets lazily loaded as possible.
-     * 
+     *
      * @since 6.4
-     * 
+     *
      * @return the hint for the widget set generator how the client side
      *         implementation should be loaded to the browser
      */

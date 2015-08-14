@@ -38,7 +38,7 @@ public class EmailValidator extends RegexpValidator {
     /**
      * Creates a validator for checking that a string is a syntactically valid
      * e-mail address.
-     * 
+     *
      * @param errorMessage
      *            the message to display in case the value does not validate.
      */

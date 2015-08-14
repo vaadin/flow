@@ -438,7 +438,7 @@ public class ColorPickerTestUI extends AbstractTestUI
     // This is called whenever a colorpicker popup is closed
     /**
      * Update display.
-     * 
+     *
      * @param fg
      *            the fg
      * @param bg

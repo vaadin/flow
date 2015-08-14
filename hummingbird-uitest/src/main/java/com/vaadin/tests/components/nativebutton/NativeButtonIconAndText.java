@@ -86,7 +86,7 @@ public class NativeButtonIconAndText extends AbstractTestUI
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.tests.components.AbstractTestUI#getTestDescription()
      */
     @Override
@@ -96,7 +96,7 @@ public class NativeButtonIconAndText extends AbstractTestUI
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.tests.components.AbstractTestUI#getTicketNumber()
      */
     @Override
@@ -106,7 +106,7 @@ public class NativeButtonIconAndText extends AbstractTestUI
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Button.ClickListener#buttonClick(com.vaadin.ui.Button.
      * ClickEvent)
      */

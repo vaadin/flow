@@ -34,7 +34,7 @@ public interface ViewProvider extends Serializable {
      * Extract the view name from a combined view name and parameter string.
      * This method should return a view name if and only if this provider
      * handles creation of such views.
-     * 
+     *
      * @param viewAndParameters
      *            string with view name and its fragment parameters (if given),
      *            not null
@@ -44,10 +44,10 @@ public interface ViewProvider extends Serializable {
 
     /**
      * Create or return a pre-created instance of a view.
-     * 
+     *
      * The parameters for the view are set separately by the navigator when the
      * view is activated.
-     * 
+     *
      * @param viewName
      *            name of the view, not null
      * @return newly created view (null if none available for the view name)

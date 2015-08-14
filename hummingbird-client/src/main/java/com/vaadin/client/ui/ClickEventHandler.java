@@ -35,7 +35,7 @@ public abstract class ClickEventHandler extends AbstractClickEventHandler {
     /**
      * Sends the click event based on the given native event. Delegates actual
      * sending to {@link #fireClick(MouseEventDetails)}.
-     * 
+     *
      * @param event
      *            The native event that caused this click event
      */
@@ -49,10 +49,10 @@ public abstract class ClickEventHandler extends AbstractClickEventHandler {
     /**
      * Sends the click event to the server. Must be implemented by sub classes,
      * typically by calling an RPC method.
-     * 
+     *
      * @param event
      *            The event that caused this click to be fired
-     * 
+     *
      * @param mouseDetails
      *            The mouse details for the event
      */

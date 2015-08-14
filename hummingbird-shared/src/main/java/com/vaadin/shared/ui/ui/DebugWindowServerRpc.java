@@ -33,7 +33,7 @@ public interface DebugWindowServerRpc extends ServerRpc {
      * Sends a request to the server to print details to console that will help
      * the developer to locate the corresponding server-side connector in the
      * source code.
-     * 
+     *
      * @since 7.1
      * @param connector
      *            the connector to locate
@@ -43,7 +43,7 @@ public interface DebugWindowServerRpc extends ServerRpc {
     /**
      * Sends a request to the server to print a design to the console for the
      * given component.
-     * 
+     *
      * @since 7.5
      * @param connector
      *            the component connector to output a declarative design for

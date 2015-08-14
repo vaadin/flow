@@ -37,7 +37,7 @@ public class ParallelScheduler implements RunnerScheduler {
     /**
      * Creates a parallel scheduler which will use the given executor service
      * when submitting test jobs.
-     * 
+     *
      * @param service
      *            The service to use for tests
      */

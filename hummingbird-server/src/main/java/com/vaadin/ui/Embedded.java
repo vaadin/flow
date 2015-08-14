@@ -100,7 +100,7 @@ public class Embedded extends AbstractComponent {
 
     /**
      * Creates a new empty Embedded object with caption.
-     * 
+     *
      * @param caption
      */
     public Embedded(String caption) {
@@ -112,7 +112,7 @@ public class Embedded extends AbstractComponent {
      * Creates a new Embedded object whose contents is loaded from given
      * resource. The dimensions are assumed if possible. The type is guessed
      * from resource.
-     * 
+     *
      * @param caption
      * @param source
      *            the Source of the embedded object.
@@ -127,7 +127,7 @@ public class Embedded extends AbstractComponent {
      * presented instead of this component's normal content, for accessibility
      * purposes. Does not work when {@link #setType(int)} has been called with
      * {@link #TYPE_BROWSER}.
-     * 
+     *
      * @param altText
      *            A short, human-readable description of this component's
      *            content.
@@ -143,7 +143,7 @@ public class Embedded extends AbstractComponent {
 
     /**
      * Gets this component's "alt-text".
-     * 
+     *
      * @see #setAlternateText(String)
      */
     public String getAlternateText() {
@@ -155,7 +155,7 @@ public class Embedded extends AbstractComponent {
      * are passed to the instantiated object. Parameters are are stored as name
      * value pairs. This overrides the previous value assigned to this
      * parameter.
-     * 
+     *
      * @param name
      *            the name of the parameter.
      * @param value
@@ -170,7 +170,7 @@ public class Embedded extends AbstractComponent {
      * Gets the value of an object parameter. Parameters are optional
      * information, and they are passed to the instantiated object. Parameters
      * are are stored as name value pairs.
-     * 
+     *
      * @return the Value of parameter or null if not found.
      */
     public String getParameter(String name) {
@@ -179,7 +179,7 @@ public class Embedded extends AbstractComponent {
 
     /**
      * Removes an object parameter from the list.
-     * 
+     *
      * @param name
      *            the name of the parameter to remove.
      */
@@ -190,7 +190,7 @@ public class Embedded extends AbstractComponent {
 
     /**
      * Gets the embedded object parameter names.
-     * 
+     *
      * @return the Iterator of parameters names.
      */
     public Iterator<String> getParameterNames() {
@@ -201,7 +201,7 @@ public class Embedded extends AbstractComponent {
      * This attribute specifies the base path used to resolve relative URIs
      * specified by the classid, data, and archive attributes. When absent, its
      * default value is the base URI of the current document.
-     * 
+     *
      * @return the code base.
      */
     public String getCodebase() {
@@ -210,7 +210,7 @@ public class Embedded extends AbstractComponent {
 
     /**
      * Gets the MIME-Type of the code.
-     * 
+     *
      * @return the MIME-Type of the code.
      */
     public String getCodetype() {
@@ -219,7 +219,7 @@ public class Embedded extends AbstractComponent {
 
     /**
      * Gets the MIME-Type of the object.
-     * 
+     *
      * @return the MIME-Type of the object.
      */
     public String getMimeType() {
@@ -229,7 +229,7 @@ public class Embedded extends AbstractComponent {
     /**
      * This attribute specifies a message that a user agent may render while
      * loading the object's implementation and data.
-     * 
+     *
      * @return The text displayed when loading
      */
     public String getStandby() {
@@ -240,7 +240,7 @@ public class Embedded extends AbstractComponent {
      * This attribute specifies the base path used to resolve relative URIs
      * specified by the classid, data, and archive attributes. When absent, its
      * default value is the base URI of the current document.
-     * 
+     *
      * @param codebase
      *            The base path
      */
@@ -258,7 +258,7 @@ public class Embedded extends AbstractComponent {
      * but recommended when classid is specified since it allows the user agent
      * to avoid loading information for unsupported content types. When absent,
      * it defaults to the value of the type attribute.
-     * 
+     *
      * @param codetype
      *            the codetype to set.
      */
@@ -272,7 +272,7 @@ public class Embedded extends AbstractComponent {
 
     /**
      * Sets the mimeType, the MIME-Type of the object.
-     * 
+     *
      * @param mimeType
      *            the mimeType to set.
      */
@@ -298,7 +298,7 @@ public class Embedded extends AbstractComponent {
     /**
      * This attribute specifies a message that a user agent may render while
      * loading the object's implementation and data.
-     * 
+     *
      * @param standby
      *            The text to display while loading
      */
@@ -313,7 +313,7 @@ public class Embedded extends AbstractComponent {
     /**
      * This attribute may be used to specify the location of an object's
      * implementation via a URI.
-     * 
+     *
      * @return the classid.
      */
     public String getClassId() {
@@ -323,7 +323,7 @@ public class Embedded extends AbstractComponent {
     /**
      * This attribute may be used to specify the location of an object's
      * implementation via a URI.
-     * 
+     *
      * @param classId
      *            the classId to set.
      */
@@ -337,7 +337,7 @@ public class Embedded extends AbstractComponent {
 
     /**
      * Gets the resource contained in the embedded object.
-     * 
+     *
      * @return the Resource
      */
     public Resource getSource() {
@@ -353,7 +353,7 @@ public class Embedded extends AbstractComponent {
      * <li>TYPE_IMAGE
      * </ul>
      * </p>
-     * 
+     *
      * @return the type.
      */
     public int getType() {
@@ -363,7 +363,7 @@ public class Embedded extends AbstractComponent {
     /**
      * Sets the object source resource. The dimensions are assumed if possible.
      * The type is guessed from resource.
-     * 
+     *
      * @param source
      *            the source to set.
      */
@@ -395,7 +395,7 @@ public class Embedded extends AbstractComponent {
      * <li>{@link #TYPE_BROWSER} <i>(Deprecated)</i>
      * </ul>
      * </p>
-     * 
+     *
      * @param type
      *            the type to set.
      */
@@ -416,7 +416,7 @@ public class Embedded extends AbstractComponent {
      * archives will generally result in reduced load times for objects.
      * Archives specified as relative URIs should be interpreted relative to the
      * codebase attribute.
-     * 
+     *
      * @return Space-separated list of URIs with resources relevant to the
      *         object
      */
@@ -431,7 +431,7 @@ public class Embedded extends AbstractComponent {
      * archives will generally result in reduced load times for objects.
      * Archives specified as relative URIs should be interpreted relative to the
      * codebase attribute.
-     * 
+     *
      * @param archive
      *            Space-separated list of URIs with resources relevant to the
      *            object
@@ -448,9 +448,9 @@ public class Embedded extends AbstractComponent {
      * Add a click listener to the component. The listener is called whenever
      * the user clicks inside the component. Depending on the content the event
      * may be blocked and in that case no event is fired.
-     * 
+     *
      * Use {@link #removeListener(ClickListener)} to remove the listener.
-     * 
+     *
      * @param listener
      *            The listener to add
      */
@@ -471,7 +471,7 @@ public class Embedded extends AbstractComponent {
     /**
      * Remove a click listener from the component. The listener should earlier
      * have been added using {@link #addListener(ClickListener)}.
-     * 
+     *
      * @param listener
      *            The listener to remove
      */
