@@ -392,10 +392,10 @@ public class Element {
      * @param value
      *            The value to set for the property
      */
-    public void setStyle(String property, String value) {
+    public Element setStyle(String property, String value) {
         if (!hasAttribute(STYLE_ATTRIBUTE)) {
             setAttribute(STYLE_ATTRIBUTE, property + ":" + value);
-            return;
+            return this;
         }
         String[] currentStyles = getAttribute(STYLE_ATTRIBUTE)
                 .split(STYLE_SEPARATOR);
@@ -418,6 +418,7 @@ public class Element {
             newStyles += STYLE_SEPARATOR + property + ":" + value;
         }
         setAttribute(STYLE_ATTRIBUTE, newStyles);
+        return this;
     }
 
     /**
@@ -465,9 +466,9 @@ public class Element {
      * @param property
      *            the style property to remove
      */
-    public void removeStyle(String property) {
+    public Element removeStyle(String property) {
         if (!hasAttribute(STYLE_ATTRIBUTE)) {
-            return;
+            return this;
         }
 
         String newStyles = Arrays
@@ -482,6 +483,7 @@ public class Element {
             newStyles = null;
         }
         setAttribute(STYLE_ATTRIBUTE, newStyles);
+        return this;
     }
 
     public Element setComponent(Component component) {
@@ -501,11 +503,11 @@ public class Element {
      * @param enabled
      *            true to add the class, false to remove it
      */
-    public void setClass(String className, boolean add) {
+    public Element setClass(String className, boolean add) {
         if (add) {
-            addClass(className);
+            return addClass(className);
         } else {
-            removeClass(className);
+            return removeClass(className);
         }
     }
 
@@ -516,9 +518,10 @@ public class Element {
      * @param text
      *            The text to set
      */
-    public void setTextContent(String text) {
+    public Element setTextContent(String text) {
         removeAllChildren();
         appendChild(createText(text));
+        return this;
     }
 
     /**

@@ -20,6 +20,112 @@ public class ElementTest {
     }
 
     @Test
+    public void setTextReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.setTextContent("foo"));
+    }
+
+    @Test
+    public void setAttributeReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.setAttribute("foo", "bar"));
+    }
+
+    @Test
+    public void setIntAttributeReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.setAttribute("foo", 12));
+    }
+
+    @Test
+    public void setBooleanAttributeReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.setAttribute("foo", true));
+    }
+
+    @Test
+    public void setClassReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.setClass("foo", true));
+    }
+
+    @Test
+    public void setComponentReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.setComponent(null));
+    }
+
+    @Test
+    public void setStyleReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.setStyle("width", "100%"));
+    }
+
+    @Test
+    public void addClassReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.addClass("foo"));
+    }
+
+    @Test
+    public void addEventListenerReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.addEventListener("click", () -> {
+        }));
+    }
+
+    @Test
+    public void appendChildReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.appendChild(new Element("span")));
+    }
+
+    @Test
+    public void insertChildReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element,
+                element.insertChild(0, new Element("span")));
+    }
+
+    @Test
+    public void removeAllChildrenReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.removeAllChildren());
+    }
+
+    @Test
+    public void removeAttributeReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.removeAttribute("foo"));
+    }
+
+    @Test
+    public void removeClassReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.removeClass("foo"));
+    }
+
+    @Test
+    public void removeEventListenerReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element,
+                element.removeEventListener("click", () -> {
+                }));
+    }
+
+    @Test
+    public void removeFromParentReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.removeFromParent());
+    }
+
+    @Test
+    public void removeStyleReturnsElement() {
+        Element element = new Element("div");
+        Assert.assertEquals(element, element.removeStyle("foo"));
+    }
+
+    @Test
     public void textFromNormalElement() {
         Element e = new Element("div");
         Assert.assertEquals("", e.getTextContent());
