@@ -201,16 +201,6 @@ public abstract class AbstractOrderedLayout extends AbstractComponentContainer
         return defaultComponentAlignment;
     }
 
-    @Override
-    public void setSpacing(boolean spacing) {
-        getElement().setClass("spacing", spacing);
-    }
-
-    @Override
-    public boolean isSpacing() {
-        return getElement().hasClass("spacing");
-    }
-
     /**
      * <p>
      * This method is used to control how excess space in layout is distributed
@@ -348,16 +338,6 @@ public abstract class AbstractOrderedLayout extends AbstractComponentContainer
      */
     public Component getComponent(int index) throws IndexOutOfBoundsException {
         return getElement().getChild(index).getComponent();
-    }
-
-    @Override
-    public void setMargin(boolean enabled) {
-        getElement().setClass("margin", enabled);
-    }
-
-    @Override
-    public boolean isMargin() {
-        return getElement().hasClass("margin");
     }
 
     @Override

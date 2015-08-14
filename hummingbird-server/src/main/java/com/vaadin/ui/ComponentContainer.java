@@ -29,11 +29,11 @@ import java.io.Serializable;
 public interface ComponentContainer extends HasComponents {
 
     /**
-     * AlignmentHandler is most commonly an advanced {@link Layout} that can
-     * align its components.
+     * AlignmentHandler is most commonly an advanced container which can align
+     * its components.
      */
     interface AlignmentHandler extends Serializable {
-    
+
         /**
          * Set alignment for one contained component in this layout. Use
          * predefined alignments from Alignment class.
@@ -49,7 +49,7 @@ public interface ComponentContainer extends HasComponents {
          */
         public void setComponentAlignment(Component childComponent,
                 Alignment alignment);
-    
+
         /**
          * Returns the current Alignment of given component.
          *
@@ -57,7 +57,7 @@ public interface ComponentContainer extends HasComponents {
          * @return the {@link Alignment}
          */
         public Alignment getComponentAlignment(Component childComponent);
-    
+
         /**
          * Sets the alignment used for new components added to this layout. The
          * default is {@link Alignment#TOP_LEFT}.
@@ -67,14 +67,14 @@ public interface ComponentContainer extends HasComponents {
          */
         public void setDefaultComponentAlignment(
                 Alignment defaultComponentAlignment);
-    
+
         /**
          * Returns the alignment used for new components added to this layout
          *
          * @return The default alignment
          */
         public Alignment getDefaultComponentAlignment();
-    
+
     }
 
     /**
@@ -82,7 +82,9 @@ public interface ComponentContainer extends HasComponents {
      * components.
      *
      */
-    interface SpacingHandler extends Serializable {
+    interface SpacingHandler extends Component {
+        public static final String SPACING_CLASSNAME = "spacing";
+
         /**
          * Enable spacing between child components within this layout.
          *
@@ -99,44 +101,53 @@ public interface ComponentContainer extends HasComponents {
          * defining the amount of spacing to use.
          * </p>
          *
-         * @param enabled
+         * @param spacing
          *            true if spacing should be turned on, false if it should be
          *            turned off
          */
-        public void setSpacing(boolean enabled);
-    
+        default public void setSpacing(boolean spacing) {
+            getElement().setClass(SPACING_CLASSNAME, spacing);
+        }
+
         /**
          *
          * @return true if spacing between child components within this layout
          *         is enabled, false otherwise
          */
-        public boolean isSpacing();
+        default public boolean isSpacing() {
+            return getElement().hasClass(SPACING_CLASSNAME);
+        }
     }
 
     /**
      * This type of layout supports automatic addition of margins (space around
      * its components).
      */
-    interface MarginHandler extends Serializable {
-    
+    interface MarginHandler extends Component {
+        public static final String MARGIN_CLASSNAME = "margin";
+
         /**
          * Enable layout margins. Affects all four sides of the layout.
          * <p>
          * The size of the margin is decided by the {@code margin} style in the
          * theme
          *
-         * @param enabled
+         * @param margin
          *            true if margins should be enabled on all sides, false to
          *            disable all margins
          */
-        public void setMargin(boolean enabled);
-    
+        default public void setMargin(boolean margin) {
+            getElement().setClass(MARGIN_CLASSNAME, margin);
+        }
+
         /**
          * Checks if layout margins are enabled.
          *
          * @return true if margins are enabled on all sides, false otherwise
          */
-        public boolean isMargin();
+        default public boolean isMargin() {
+            return getElement().hasClass(MARGIN_CLASSNAME);
+        }
     }
 
     /**
