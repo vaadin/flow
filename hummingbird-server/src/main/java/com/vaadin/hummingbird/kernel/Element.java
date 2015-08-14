@@ -54,6 +54,10 @@ public class Element {
         return this;
     }
 
+    public Element setAttribute(String name, int value) {
+        return setAttribute(name, String.valueOf(value));
+    }
+
     private boolean validAttribute(String name) {
         if ("#text".equals(getTag())) {
             assert"content".equals(name) : "Attribute " + name
@@ -70,6 +74,28 @@ public class Element {
 
     public String getAttribute(String name) {
         return template.getAttribute(name, node);
+    }
+
+    public String getAttribute(String name, String defaultValue) {
+        if (!hasAttribute(name)) {
+            return defaultValue;
+        }
+
+        return getAttribute(name);
+    }
+
+    public int getAttribute(String name, int defaultValue) {
+        if (!hasAttribute(name)) {
+            return defaultValue;
+        }
+
+        try {
+            return Integer.parseInt(getAttribute(name));
+        } catch (Exception e) {
+            getLogger().fine("Could not parse attribute value '" + defaultValue
+                    + "' as integer");
+            return defaultValue;
+        }
     }
 
     public boolean hasAttribute(String name) {

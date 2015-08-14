@@ -164,4 +164,44 @@ public class ElementTest {
         return e;
     }
 
+    @Test
+    public void integerAttributeSetUsingString() {
+        Element e = new Element("div");
+        e.setAttribute("foo", "10");
+        Assert.assertEquals(10, e.getAttribute("foo", 1));
+    }
+
+    @Test
+    public void integerAttribute() {
+        Element e = new Element("div");
+        e.setAttribute("foo", 10);
+        Assert.assertEquals(10, e.getAttribute("foo", 1));
+    }
+
+    @Test
+    public void integerAttributeUnparsable() {
+        Element e = new Element("div");
+        e.setAttribute("foo", "bar");
+        Assert.assertEquals(1, e.getAttribute("foo", 1));
+    }
+
+    @Test
+    public void integerAttributeDefaultValue() {
+        Element e = new Element("div");
+        Assert.assertEquals(12, e.getAttribute("foo", 12));
+    }
+
+    @Test
+    public void stringAttribute() {
+        Element e = new Element("div");
+        e.setAttribute("foo", "Bar");
+        Assert.assertEquals("Bar", e.getAttribute("foo", "baz"));
+    }
+
+    @Test
+    public void stringAttributeDefaultValue() {
+        Element e = new Element("div");
+        Assert.assertEquals(e.getAttribute("foo", "bar"), "bar");
+    }
+
 }
