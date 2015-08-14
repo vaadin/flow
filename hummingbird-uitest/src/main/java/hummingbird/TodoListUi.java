@@ -15,6 +15,7 @@
  */
 package hummingbird;
 
+import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
@@ -28,12 +29,23 @@ public class TodoListUi extends UI {
         TodoList todoList = new TodoList();
         todoList.addTodo("Make hummingbird work");
 
-        Button button = new Button("Add another todo");
-        button.getElement().addEventListener("click",
+        Button addButton = new Button("Add another todo");
+        addButton.getElement().addEventListener("click",
                 () -> todoList.addTodo("Another todo"));
 
+        Button toggleButton = new Button("Toggle input type");
+        toggleButton.addClickListener(e -> {
+            Element firstInput = todoList.getElement().getChild(0);
+            if (firstInput.hasAttribute("type")) {
+                firstInput.removeAttribute("type");
+            } else {
+                firstInput.setAttribute("type", "password");
+            }
+        });
+
         layout.addComponent(todoList);
-        layout.addComponent(button);
+        layout.addComponent(addButton);
+        layout.addComponent(toggleButton);
 
         setContent(layout);
     }

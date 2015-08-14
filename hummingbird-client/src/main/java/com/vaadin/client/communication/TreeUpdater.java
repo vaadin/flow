@@ -45,8 +45,9 @@ public class TreeUpdater {
 
         private final int[] childElementTemplates;
 
-        public StaticChildrenElementTemplate(JsonObject templateDescription) {
-            super(templateDescription);
+        public StaticChildrenElementTemplate(JsonObject templateDescription,
+                int templateId) {
+            super(templateDescription, templateId);
 
             JsonArray children = templateDescription.getArray("children");
             childElementTemplates = new int[children.length()];
@@ -69,8 +70,9 @@ public class TreeUpdater {
     public class ForElementTemplate extends BoundElementTemplate {
         private final int childTemplateId;
 
-        public ForElementTemplate(JsonObject templateDescription) {
-            super(templateDescription);
+        public ForElementTemplate(JsonObject templateDescription,
+                int templateId) {
+            super(templateDescription, templateId);
 
             childTemplateId = (int) templateDescription
                     .getNumber("childTemplate");
@@ -90,8 +92,11 @@ public class TreeUpdater {
         private final String tag;
         private final Map<String, String> defaultAttributeValues;
         private final Map<String, String> propertyToAttribute;
+        private int templateId;
 
-        public BoundElementTemplate(JsonObject templateDescription) {
+        public BoundElementTemplate(JsonObject templateDescription,
+                int templateId) {
+            this.templateId = templateId;
             tag = templateDescription.getString("tag");
 
             defaultAttributeValues = readStringMap(
@@ -146,9 +151,29 @@ public class TreeUpdater {
                 public void listInsert(ListInsertChange change) {
                     throw new RuntimeException("Not yet implemented");
                 }
+
+                @Override
+                public void putOverride(PutOverrideChange change) {
+                    BoundElementTemplate.this.putOverride(node, element,
+                            change);
+                }
             });
 
             return element;
+        }
+
+        protected void putOverride(JsonObject node, Element element,
+                PutOverrideChange change) {
+            if (change.getKey() != this.templateId) {
+                return;
+            }
+
+            int nodeId = change.getValue();
+            JsonObject overrideNode = idToNode.get(nodeId);
+
+            BasicElementListener basicElementListener = new BasicElementListener(
+                    overrideNode, element);
+            addNodeListener(overrideNode, basicElementListener);
         }
 
         protected void put(JsonObject node, Element element, PutChange change) {
@@ -226,6 +251,15 @@ public class TreeUpdater {
     }
 
     @JsType
+    public interface PutOverrideChange extends Change {
+        @JsProperty
+        int getKey();
+
+        @JsProperty
+        int getValue();
+    }
+
+    @JsType
     public interface PutNodeChange extends Change {
         @JsProperty
         int getValue();
@@ -242,13 +276,10 @@ public class TreeUpdater {
     public class BasicElementListener implements NodeListener {
 
         private JsonObject node;
-        private String tag;
         private Element element;
 
-        public BasicElementListener(JsonObject node, String tag,
-                Element element) {
+        public BasicElementListener(JsonObject node, Element element) {
             this.node = node;
-            this.tag = tag;
             this.element = element;
         }
 
@@ -361,6 +392,10 @@ public class TreeUpdater {
             }
         }
 
+        @Override
+        public void putOverride(PutOverrideChange change) {
+            throw new RuntimeException("Not yet implemented");
+        }
     }
 
     private void sendEventToServer(int nodeId, String eventType) {
@@ -425,6 +460,10 @@ public class TreeUpdater {
             throw new RuntimeException("Not supported");
         }
 
+        @Override
+        public void putOverride(PutOverrideChange change) {
+            throw new RuntimeException("Not yet implemented");
+        }
     }
 
     public class DynamicTemplateListener implements NodeListener {
@@ -469,6 +508,11 @@ public class TreeUpdater {
         public void remove(RemoveChange change) {
             throw new RuntimeException("Not supported");
         }
+
+        @Override
+        public void putOverride(PutOverrideChange change) {
+            throw new RuntimeException("Not supported");
+        }
     }
 
     public interface NodeListener {
@@ -477,30 +521,15 @@ public class TreeUpdater {
 
         void put(PutChange change);
 
-        /**
-         * @since
-         * @param change
-         */
         void listInsertNode(ListInsertNodeChange change);
 
-        /**
-         * @since
-         * @param change
-         */
         void listInsert(ListInsertChange change);
 
-        /**
-         * @since
-         * @param change
-         */
         void listRemove(ListRemoveChange change);
 
-        /**
-         * @since
-         * @param change
-         */
         void remove(RemoveChange change);
 
+        void putOverride(PutOverrideChange change);
     }
 
     private interface Template {
@@ -522,6 +551,10 @@ public class TreeUpdater {
 
     private Map<Integer, JsonObject> idToNode = new HashMap<>();
     private Map<JsonObject, Integer> nodeToId = new HashMap<>();
+    
+    // Node id -> template id -> override node id
+    // XXX seems like this is never actually read, could maybe be removed?
+    private Map<Integer, Map<Integer, Integer>> overrides = new HashMap<>();
 
     private Map<Integer, List<NodeListener>> listeners = new HashMap<>();
 
@@ -618,6 +651,23 @@ public class TreeUpdater {
                 }
             });
         }
+
+        @Override
+        public void putOverride(PutOverrideChange change) {
+            int nodeId = change.getId();
+            int templateId = change.getKey();
+            int overrideNodeId = change.getValue();
+
+            ensureNodeExists(overrideNodeId);
+
+            Map<Integer, Integer> nodeOverrides = overrides.get(nodeId);
+            if (nodeOverrides == null) {
+                nodeOverrides = new HashMap<>();
+                overrides.put(nodeId, nodeOverrides);
+            }
+
+            nodeOverrides.put(templateId, overrideNodeId);
+        }
     };
 
     private ServerRpcQueue rpcQueue;
@@ -655,8 +705,7 @@ public class TreeUpdater {
                 return textNode;
             } else {
                 Element element = Document.get().createElement(tag);
-                addNodeListener(node,
-                        new BasicElementListener(node, tag, element));
+                addNodeListener(node, new BasicElementListener(node, element));
                 return element;
             }
         }
@@ -733,6 +782,9 @@ public class TreeUpdater {
         case "remove":
             nodeListener.remove((RemoveChange) change);
             break;
+        case "putOverride":
+            nodeListener.putOverride((PutOverrideChange) change);
+            break;
         default:
             throw new RuntimeException(
                     "Unsupported change type: " + change.getType());
@@ -742,8 +794,8 @@ public class TreeUpdater {
     private void initRoot() {
         JsonObject rootNode = idToNode.get(Integer.valueOf(1));
         JsonObject bodyNode = rootNode.get("body");
-        addNodeListener(bodyNode, new BasicElementListener(bodyNode,
-                bodyNode.getString("TAG"), rootElement));
+        addNodeListener(bodyNode,
+                new BasicElementListener(bodyNode, rootElement));
     }
 
     private void addNodeListener(JsonObject node, NodeListener listener) {
@@ -782,20 +834,24 @@ public class TreeUpdater {
         for (String keyString : keys) {
             JsonObject templateDescription = elementTemplates
                     .getObject(keyString);
-            Template template = createTemplate(templateDescription);
-            templates.put(Integer.valueOf(keyString), template);
+            Integer templateId = Integer.valueOf(keyString);
+            Template template = createTemplate(templateDescription,
+                    templateId.intValue());
+            templates.put(templateId, template);
         }
     }
 
-    private Template createTemplate(JsonObject templateDescription) {
+    private Template createTemplate(JsonObject templateDescription,
+            int templateId) {
         String type = templateDescription.getString("type");
         switch (type) {
         case "BoundElementTemplate":
-            return new BoundElementTemplate(templateDescription);
+            return new BoundElementTemplate(templateDescription, templateId);
         case "ForElementTemplate":
-            return new ForElementTemplate(templateDescription);
+            return new ForElementTemplate(templateDescription, templateId);
         case "StaticChildrenElementTemplate":
-            return new StaticChildrenElementTemplate(templateDescription);
+            return new StaticChildrenElementTemplate(templateDescription,
+                    templateId);
         default:
             throw new RuntimeException("Unsupported template type: " + type);
         }
