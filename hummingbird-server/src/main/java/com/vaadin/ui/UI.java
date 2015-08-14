@@ -29,6 +29,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
@@ -98,6 +99,7 @@ import com.vaadin.util.CurrentInstance;
  */
 @JavaScript({
         "vaadin://bower_components/webcomponentsjs/webcomponents.min.js" })
+@HTML({ "vaadin://bower_components/polymer/polymer.html" })
 public abstract class UI extends AbstractSingleComponentContainer
         implements PollNotifier, Focusable {
 
