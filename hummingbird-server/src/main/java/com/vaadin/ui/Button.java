@@ -74,9 +74,7 @@ public class Button extends AbstractFocusable {
     @Override
     public void setCaption(String caption) {
         super.setCaption(caption);
-        getElement().removeAllChildren();
-        getElement().insertChild(0,
-                com.vaadin.hummingbird.kernel.Element.createText(caption));
+        getElement().setTextContent(caption);
     }
 
     /**

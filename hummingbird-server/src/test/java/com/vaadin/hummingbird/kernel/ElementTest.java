@@ -8,7 +8,7 @@ import org.junit.Test;
 
 public class ElementTest {
     @Test
-    public void testToString() {
+    public void elementOuterHTML() {
         Element element = new Element("span");
         element.setAttribute("class", "foobar");
         element.setAttribute("nullValued", null);
@@ -20,12 +20,51 @@ public class ElementTest {
     }
 
     @Test
-    public void testTextNodeString() {
+    public void textFromNormalElement() {
+        Element e = new Element("div");
+        Assert.assertEquals("", e.getTextContent());
+    }
+
+    @Test
+    public void textFromSingleElement() {
+        Element e = new Element("div");
+        e.setTextContent("Foobar");
+        Assert.assertEquals("Foobar", e.getTextContent());
+    }
+
+    @Test
+    public void textFromSiblingElements() {
+        Element e = new Element("div");
+        Element e1 = new Element("span");
+        Element e2 = new Element("button");
+        e.appendChild(e1);
+        e.appendChild(e2);
+        e1.setTextContent("Foo");
+        e2.setTextContent("Bar");
+        Assert.assertEquals("FooBar", e.getTextContent());
+    }
+
+    @Test
+    public void textFromNestedElements() {
+        Element e = new Element("div");
+        Element e1 = new Element("span");
+        e.appendChild(e1);
+        e1.setTextContent("Hello");
+        Element e2 = new Element("span");
+        e.appendChild(e2);
+        Element e21 = new Element("span");
+        e2.appendChild(e21);
+        e21.setTextContent(" World!");
+        Assert.assertEquals("Hello World!", e.getTextContent());
+    }
+
+    @Test
+    public void textNodeOuterHTML() {
         Element strong = new Element("strong");
-        strong.insertChild(0, Element.createText("world!"));
+        strong.setTextContent("world!");
 
         Element root = new Element("span");
-        root.insertChild(0, Element.createText("Hello "));
+        root.setTextContent("Hello ");
         root.insertChild(1, strong);
 
         Assert.assertEquals("<span>Hello <strong>world!</strong></span>",

@@ -23,5 +23,4 @@ public class LabelState extends AbstractComponentState {
     }
 
     public ContentMode contentMode = ContentMode.TEXT;
-    public String text = "";
 }

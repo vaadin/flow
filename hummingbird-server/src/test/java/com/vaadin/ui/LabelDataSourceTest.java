@@ -51,15 +51,17 @@ public class LabelDataSourceTest {
     @Test
     public void stringDataSource() {
         label.setPropertyDataSource(stringDataSource);
-        Assert.assertEquals(STRING_DS_VALUE, label.getState().text);
+        Assert.assertEquals(STRING_DS_VALUE,
+                label.getElement().getTextContent());
         Assert.assertEquals(STRING_DS_VALUE, label.getValue());
         Assert.assertEquals(stringDataSource, label.getPropertyDataSource());
         label.setPropertyDataSource(null);
-        Assert.assertEquals(STRING_DS_VALUE, label.getState().text);
+        Assert.assertEquals(STRING_DS_VALUE,
+                label.getElement().getTextContent());
         Assert.assertEquals(STRING_DS_VALUE, label.getValue());
         Assert.assertEquals(null, label.getPropertyDataSource());
         label.setValue("foo");
-        Assert.assertEquals("foo", label.getState().text);
+        Assert.assertEquals("foo", label.getElement().getTextContent());
         Assert.assertEquals("foo", label.getValue());
         Assert.assertNull(label.getPropertyDataSource());
 
@@ -69,7 +71,8 @@ public class LabelDataSourceTest {
     public void integerDataSourceFi() {
         label.setLocale(new Locale("fi", "FI"));
         label.setPropertyDataSource(integerDataSource);
-        Assert.assertEquals(INTEGER_STRING_VALUE_FI, label.getState().text);
+        Assert.assertEquals(INTEGER_STRING_VALUE_FI,
+                label.getElement().getTextContent());
         Assert.assertEquals(INTEGER_STRING_VALUE_FI, label.getValue());
         Assert.assertEquals(integerDataSource, label.getPropertyDataSource());
     }
@@ -78,7 +81,8 @@ public class LabelDataSourceTest {
     public void integerDataSourceEn() {
         label.setLocale(new Locale("en", "US"));
         label.setPropertyDataSource(integerDataSource);
-        Assert.assertEquals(INTEGER_STRING_VALUE_EN_US, label.getState().text);
+        Assert.assertEquals(INTEGER_STRING_VALUE_EN_US,
+                label.getElement().getTextContent());
         Assert.assertEquals(INTEGER_STRING_VALUE_EN_US, label.getValue());
         Assert.assertEquals(integerDataSource, label.getPropertyDataSource());
     }
@@ -88,7 +92,8 @@ public class LabelDataSourceTest {
         label.setLocale(new Locale("en", "US"));
         label.setPropertyDataSource(integerDataSource);
         label.setLocale(new Locale("fi", "FI"));
-        Assert.assertEquals(INTEGER_STRING_VALUE_FI, label.getState().text);
+        Assert.assertEquals(INTEGER_STRING_VALUE_FI,
+                label.getElement().getTextContent());
         Assert.assertEquals(INTEGER_STRING_VALUE_FI, label.getValue());
         Assert.assertEquals(integerDataSource, label.getPropertyDataSource());
     }
@@ -112,6 +117,7 @@ public class LabelDataSourceTest {
         UI ui = new MockUI();
         ui.setLocale(Locale.GERMANY);
         ui.setContent(label);
-        Assert.assertEquals(INTEGER_STRING_VALUE_DE, label.getState().text);
+        Assert.assertEquals(INTEGER_STRING_VALUE_DE,
+                label.getElement().getTextContent());
     }
 }

@@ -23,7 +23,6 @@ import java.util.Objects;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.ConverterUtil;
-import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.shared.ui.label.LabelState;
 
@@ -96,7 +95,6 @@ public class Label extends AbstractComponent implements Property<String>,
      */
     public Label(String content, ContentMode contentMode) {
         super();
-        getElement().appendChild(Element.createText(""));
         setValue(content);
         setContentMode(contentMode);
         setWidth(100, Unit.PERCENTAGE);
@@ -138,7 +136,7 @@ public class Label extends AbstractComponent implements Property<String>,
     public String getValue() {
         if (getPropertyDataSource() == null) {
             // Use internal value if we are running without a data source
-            return getState(false).text;
+            return getElement().getTextContent();
         }
         return getDataSourceValue();
     }
@@ -166,13 +164,8 @@ public class Label extends AbstractComponent implements Property<String>,
     @Override
     public void setValue(String newStringValue) {
         if (getPropertyDataSource() == null) {
-
-            LabelState state = getState(false);
-            String oldTextValue = state.text;
-            if (!Objects.equals(oldTextValue, newStringValue)) {
-                getState().text = newStringValue;
-                getElement().getChild(0).setAttribute("content",
-                        newStringValue);
+            if (!Objects.equals(getValue(), newStringValue)) {
+                getElement().setTextContent(newStringValue);
                 fireValueChange();
             }
         } else {
@@ -367,8 +360,9 @@ public class Label extends AbstractComponent implements Property<String>,
     private void updateValueFromDataSource() {
         // Update the internal value from the data source
         String newConvertedValue = getDataSourceValue();
-        if (!Objects.equals(newConvertedValue, getState(false).text)) {
-            getState().text = newConvertedValue;
+        String domValue = getElement().getTextContent();
+        if (!Objects.equals(newConvertedValue, domValue)) {
+            getElement().setTextContent(newConvertedValue);
             fireValueChange();
         }
     }

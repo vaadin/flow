@@ -10,9 +10,11 @@ import com.vaadin.ui.Component;
 
 public class Element {
 
+    private static final String TEXT_NODE_TEXT_ATTRIBUTE = "content";
     private static final String STYLE_SEPARATOR = ";";
     private static final String CLASS_ATTRIBUTE = "class";
     private static final String STYLE_ATTRIBUTE = "style";
+    private static final String TEXT_NODE_TAG = "#text";
     private ElementTemplate template;
     private StateNode node;
 
@@ -59,8 +61,8 @@ public class Element {
     }
 
     private boolean validAttribute(String name) {
-        if ("#text".equals(getTag())) {
-            assert"content".equals(name) : "Attribute " + name
+        if (TEXT_NODE_TAG.equals(getTag())) {
+            assert TEXT_NODE_TEXT_ATTRIBUTE.equals(name) : "Attribute " + name
                     + " is not supported for text nodes";
         }
         return true;
@@ -172,8 +174,8 @@ public class Element {
 
     private void getOuterHTML(StringBuilder b) {
         String tag = getTag();
-        if ("#text".equals(tag)) {
-            String content = getAttribute("content");
+        if (TEXT_NODE_TAG.equals(tag)) {
+            String content = getTextNodeText(this);
             if (content != null) {
                 b.append(content);
             }
@@ -201,9 +203,9 @@ public class Element {
         }
     }
 
-    public static Element createText(String content) {
-        Element element = new Element("#text");
-        element.setAttribute("content", content);
+    private static Element createText(String content) {
+        Element element = new Element(TEXT_NODE_TAG);
+        element.setAttribute(TEXT_NODE_TEXT_ATTRIBUTE, content);
         return element;
     }
 
@@ -505,6 +507,52 @@ public class Element {
         } else {
             removeClass(className);
         }
+    }
+
+    /**
+     * Removes all children from the element and sets the given text as its text
+     * content
+     *
+     * @param text
+     *            The text to set
+     */
+    public void setTextContent(String text) {
+        removeAllChildren();
+        appendChild(createText(text));
+    }
+
+    /**
+     * Returns the text content of this element and all child elements
+     * recursively
+     *
+     * @return
+     */
+    public String getTextContent() {
+        StringBuilder b = new StringBuilder();
+        getTextContent(this, b);
+        return b.toString();
+    }
+
+    private void getTextContent(Element e, StringBuilder b) {
+
+        for (int i = 0; i < e.getChildCount(); i++) {
+            Element child = e.getChild(i);
+            if (isTextNode(child)) {
+                b.append(getTextNodeText(child));
+            } else {
+                getTextContent(child, b);
+            }
+        }
+    }
+
+    private String getTextNodeText(Element e) {
+        assert isTextNode(e);
+        assert e.hasAttribute(TEXT_NODE_TEXT_ATTRIBUTE);
+        return e.getAttribute(TEXT_NODE_TEXT_ATTRIBUTE);
+    }
+
+    private boolean isTextNode(Element e) {
+        return TEXT_NODE_TAG.equals(e.getTag());
     }
 
 }
