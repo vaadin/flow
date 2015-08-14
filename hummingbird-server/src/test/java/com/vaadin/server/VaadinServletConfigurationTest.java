@@ -39,7 +39,10 @@ public class VaadinServletConfigurationTest {
         ServletInUI servlet = new MockUIContainingServlet.ServletInUI();
         servlet.init(new MockServletConfig());
 
-        Class<? extends UI> uiClass = new DefaultUIProvider().getUIClass(new UIClassSelectionEvent(new VaadinServletRequest(EasyMock.createMock(HttpServletRequest.class), servlet.getService())));
+        Class<? extends UI> uiClass = new DefaultUIProvider()
+                .getUIClass(new UIClassSelectionEvent(new VaadinServletRequest(
+                        EasyMock.createMock(HttpServletRequest.class),
+                        servlet.getService())));
         Assert.assertEquals(MockUIContainingServlet.class, uiClass);
     }
 
@@ -47,14 +50,18 @@ public class VaadinServletConfigurationTest {
     public void testValuesFromAnnotation() throws ServletException {
         TestServlet servlet = new TestServlet();
         servlet.init(new MockServletConfig());
-        DeploymentConfiguration configuration = servlet.getService().getDeploymentConfiguration();
+        DeploymentConfiguration configuration = servlet.getService()
+                .getDeploymentConfiguration();
 
         Assert.assertEquals(true, configuration.isProductionMode());
         Assert.assertEquals(true, configuration.isCloseIdleSessions());
         Assert.assertEquals(1234, configuration.getHeartbeatInterval());
         Assert.assertEquals(4321, configuration.getResourceCacheTime());
 
-        Class<? extends UI> uiClass = new DefaultUIProvider().getUIClass(new UIClassSelectionEvent(new VaadinServletRequest(EasyMock.createMock(HttpServletRequest.class), servlet.getService())));
+        Class<? extends UI> uiClass = new DefaultUIProvider()
+                .getUIClass(new UIClassSelectionEvent(new VaadinServletRequest(
+                        EasyMock.createMock(HttpServletRequest.class),
+                        servlet.getService())));
         Assert.assertEquals(MockUIContainingServlet.class, uiClass);
     }
 
@@ -66,7 +73,8 @@ public class VaadinServletConfigurationTest {
 
         TestServlet servlet = new TestServlet();
         servlet.init(new MockServletConfig(servletInitParams));
-        DeploymentConfiguration configuration = servlet.getService().getDeploymentConfiguration();
+        DeploymentConfiguration configuration = servlet.getService()
+                .getDeploymentConfiguration();
 
         // Values from servlet init params take precedence
         Assert.assertEquals(1111, configuration.getHeartbeatInterval());
@@ -76,7 +84,10 @@ public class VaadinServletConfigurationTest {
         Assert.assertEquals(true, configuration.isCloseIdleSessions());
         Assert.assertEquals(4321, configuration.getResourceCacheTime());
 
-        Class<? extends UI> uiClass = new DefaultUIProvider().getUIClass(new UIClassSelectionEvent(new VaadinServletRequest(EasyMock.createMock(HttpServletRequest.class), servlet.getService())));
+        Class<? extends UI> uiClass = new DefaultUIProvider()
+                .getUIClass(new UIClassSelectionEvent(new VaadinServletRequest(
+                        EasyMock.createMock(HttpServletRequest.class),
+                        servlet.getService())));
         Assert.assertEquals(MockUIContainingServlet.class, uiClass);
     }
 }

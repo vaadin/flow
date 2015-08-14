@@ -43,7 +43,9 @@ public class FinalMethodTest extends TestCase {
                 continue;
             }
             if (isFinal(m)) {
-                String error = "Class " + c.getName() + " contains a " + (isPublic(m) ? "public" : "non-public") + " final method: " + m.getName();
+                String error = "Class " + c.getName() + " contains a "
+                        + (isPublic(m) ? "public" : "non-public")
+                        + " final method: " + m.getName();
                 // System.err.println(error);
                 throw new RuntimeException(error);
             }

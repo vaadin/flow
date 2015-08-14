@@ -34,6 +34,6 @@ public class EventRouterTest extends TestCase {
         tf.setValue("abc"); // No inner listener calls, adds one inner
         tf.setValue("def"); // One inner listener call, adds one inner
         tf.setValue("ghi"); // Two inner listener calls, adds one inner
-        assert (innerListenerCalls == 3);
+        assert(innerListenerCalls == 3);
     }
 }

@@ -10,15 +10,19 @@ import com.vaadin.tests.VaadinClasses;
 public class GraphVizClassHierarchyCreator {
 
     public static void main(String[] args) {
-        String gv = getGraphVizHierarchy((List) VaadinClasses.getComponents(), "com.vaadin");
+        String gv = getGraphVizHierarchy((List) VaadinClasses.getComponents(),
+                "com.vaadin");
         System.out.println(gv);
     }
 
-    private static String getGraphVizHierarchy(List<Class> classes, String packageToInclude) {
+    private static String getGraphVizHierarchy(List<Class> classes,
+            String packageToInclude) {
         boolean includeInterfaces = false;
 
         StringBuilder header = new StringBuilder();
-        header.append("digraph finite_state_machine {\n" + "        rankdir=BT;\n" + "        dpi=\"150\";\n" + "                ratio=\"0.25\";\n");
+        header.append("digraph finite_state_machine {\n"
+                + "        rankdir=BT;\n" + "        dpi=\"150\";\n"
+                + "                ratio=\"0.25\";\n");
 
         StringBuilder sb = new StringBuilder();
 
@@ -30,12 +34,14 @@ public class GraphVizClassHierarchyCreator {
         Set<Class> interfaces = new HashSet<Class>();
         for (Object cls : classesAndParents.toArray()) {
             for (Class<?> c : ((Class) cls).getInterfaces()) {
-                addClassAndParentInterfaces(classesAndParents, c, packageToInclude);
+                addClassAndParentInterfaces(classesAndParents, c,
+                        packageToInclude);
             }
         }
 
         for (Class<?> c : classesAndParents) {
-            appendClass(sb, c, c.getSuperclass(), packageToInclude, includeInterfaces);
+            appendClass(sb, c, c.getSuperclass(), packageToInclude,
+                    includeInterfaces);
             for (Class ci : c.getInterfaces()) {
                 appendClass(sb, c, ci, packageToInclude, includeInterfaces);
             }
@@ -61,7 +67,8 @@ public class GraphVizClassHierarchyCreator {
         return header.toString() + sb.toString() + "}";
     }
 
-    private static void addClassAndParents(Set<Class> classesAndParents, Class<?> cls, String packageToInclude) {
+    private static void addClassAndParents(Set<Class> classesAndParents,
+            Class<?> cls, String packageToInclude) {
 
         if (cls == null) {
             return;
@@ -76,11 +83,14 @@ public class GraphVizClassHierarchyCreator {
         }
 
         classesAndParents.add(cls);
-        addClassAndParents(classesAndParents, cls.getSuperclass(), packageToInclude);
+        addClassAndParents(classesAndParents, cls.getSuperclass(),
+                packageToInclude);
 
     }
 
-    private static void addClassAndParentInterfaces(Set<Class> classesAndParents, Class<?> cls, String packageToInclude) {
+    private static void addClassAndParentInterfaces(
+            Set<Class> classesAndParents, Class<?> cls,
+            String packageToInclude) {
 
         if (cls == null) {
             return;
@@ -96,12 +106,15 @@ public class GraphVizClassHierarchyCreator {
 
         classesAndParents.add(cls);
         for (Class iClass : cls.getInterfaces()) {
-            addClassAndParentInterfaces(classesAndParents, iClass, packageToInclude);
+            addClassAndParentInterfaces(classesAndParents, iClass,
+                    packageToInclude);
         }
 
     }
 
-    private static void appendClass(StringBuilder sb, Class<?> c, Class<?> superClass, String packageToInclude, boolean includeInterfaces) {
+    private static void appendClass(StringBuilder sb, Class<?> c,
+            Class<?> superClass, String packageToInclude,
+            boolean includeInterfaces) {
         if (superClass == null) {
             return;
         }
@@ -111,11 +124,13 @@ public class GraphVizClassHierarchyCreator {
         if (!superClass.getPackage().getName().startsWith(packageToInclude)) {
             return;
         }
-        if (!includeInterfaces && (c.isInterface() || superClass.isInterface())) {
+        if (!includeInterfaces
+                && (c.isInterface() || superClass.isInterface())) {
             return;
         }
 
-        sb.append(c.getSimpleName()).append(" -> ").append(superClass.getSimpleName()).append("\n");
+        sb.append(c.getSimpleName()).append(" -> ")
+                .append(superClass.getSimpleName()).append("\n");
 
     }
 

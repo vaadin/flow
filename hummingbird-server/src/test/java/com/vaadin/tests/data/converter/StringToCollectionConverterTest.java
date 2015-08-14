@@ -43,7 +43,8 @@ public class StringToCollectionConverterTest {
     @Test
     public void convertToModel_defaultCtor() {
         StringToCollectionConverter converter = new StringToCollectionConverter();
-        Collection<?> model = converter.convertToModel("a, b, c", List.class, null);
+        Collection<?> model = converter.convertToModel("a, b, c", List.class,
+                null);
         Assert.assertTrue("Unexpected model class", model instanceof ArrayList);
         Iterator<?> iterator = model.iterator();
         Assert.assertEquals("Incorrect fist token", "a", iterator.next());
@@ -53,8 +54,10 @@ public class StringToCollectionConverterTest {
 
     @Test
     public void convertToModel_customDelimiter() {
-        StringToCollectionConverter converter = new StringToCollectionConverter("x");
-        Collection<?> model = converter.convertToModel("axbxc", List.class, null);
+        StringToCollectionConverter converter = new StringToCollectionConverter(
+                "x");
+        Collection<?> model = converter.convertToModel("axbxc", List.class,
+                null);
         Assert.assertTrue("Unexpected model class", model instanceof ArrayList);
         Iterator<?> iterator = model.iterator();
         Assert.assertEquals("Incorrect fist token", "a", iterator.next());
@@ -64,8 +67,10 @@ public class StringToCollectionConverterTest {
 
     @Test
     public void convertToModel_customConverter() {
-        StringToCollectionConverter converter = new StringToCollectionConverter(",", new StringToIntegerConverter(), Integer.class);
-        Collection<?> model = converter.convertToModel("6,2,5", List.class, null);
+        StringToCollectionConverter converter = new StringToCollectionConverter(
+                ",", new StringToIntegerConverter(), Integer.class);
+        Collection<?> model = converter.convertToModel("6,2,5", List.class,
+                null);
         Assert.assertTrue("Unexpected model class", model instanceof ArrayList);
         Iterator<?> iterator = model.iterator();
         Assert.assertEquals("Incorrect fist token", 6, iterator.next());
@@ -75,12 +80,15 @@ public class StringToCollectionConverterTest {
 
     @Test
     public void convertToModel_setAsCollection() {
-        StringToCollectionConverter converter = new StringToCollectionConverter(" ", new StringToEnumConverter(), TestEnum.class);
-        Collection<?> model = converter.convertToModel("Z X Y", Set.class, null);
+        StringToCollectionConverter converter = new StringToCollectionConverter(
+                " ", new StringToEnumConverter(), TestEnum.class);
+        Collection<?> model = converter.convertToModel("Z X Y", Set.class,
+                null);
         Assert.assertTrue("Unexpected model class", model instanceof HashSet);
         EnumSet<TestEnum> set = EnumSet.allOf(TestEnum.class);
         set.removeAll(model);
-        Assert.assertTrue("Some values are not in resutling collection", set.isEmpty());
+        Assert.assertTrue("Some values are not in resutling collection",
+                set.isEmpty());
     }
 
     @Test
@@ -88,12 +96,15 @@ public class StringToCollectionConverterTest {
         CollectionFactory factory = new CollectionFactory() {
 
             @Override
-            public Collection<?> createCollection(Class<? extends Collection> type) {
+            public Collection<?> createCollection(
+                    Class<? extends Collection> type) {
                 return new Vector();
             }
         };
-        StringToCollectionConverter converter = new StringToCollectionConverter(", ", null, String.class, factory);
-        Collection<?> model = converter.convertToModel("a, b, c", Collection.class, null);
+        StringToCollectionConverter converter = new StringToCollectionConverter(
+                ", ", null, String.class, factory);
+        Collection<?> model = converter.convertToModel("a, b, c",
+                Collection.class, null);
         Assert.assertTrue("Unexpected model class", model instanceof Vector);
         Iterator<?> iterator = model.iterator();
         Assert.assertEquals("Incorrect fist token", "a", iterator.next());
@@ -104,23 +115,28 @@ public class StringToCollectionConverterTest {
     @Test
     public void convertToPresentation_default() {
         StringToCollectionConverter converter = new StringToCollectionConverter();
-        String presentation = converter.convertToPresentation(Arrays.asList("a", "b", "c"), String.class, null);
+        String presentation = converter.convertToPresentation(
+                Arrays.asList("a", "b", "c"), String.class, null);
 
         Assert.assertEquals("a, b, c", presentation);
     }
 
     @Test
     public void convertToPresentation_customDelimiter() {
-        StringToCollectionConverter converter = new StringToCollectionConverter("x");
-        String presentation = converter.convertToPresentation(Arrays.asList("a", "b", "c"), String.class, null);
+        StringToCollectionConverter converter = new StringToCollectionConverter(
+                "x");
+        String presentation = converter.convertToPresentation(
+                Arrays.asList("a", "b", "c"), String.class, null);
 
         Assert.assertEquals("axbxc", presentation);
     }
 
     @Test
     public void convertToPresentation_customConverter() {
-        StringToCollectionConverter converter = new StringToCollectionConverter(",", new StringToEnumConverter(), TestEnum.class);
-        String presentation = converter.convertToPresentation(Arrays.asList(TestEnum.Z, TestEnum.Y), String.class, null);
+        StringToCollectionConverter converter = new StringToCollectionConverter(
+                ",", new StringToEnumConverter(), TestEnum.class);
+        String presentation = converter.convertToPresentation(
+                Arrays.asList(TestEnum.Z, TestEnum.Y), String.class, null);
 
         Assert.assertEquals("Z,Y", presentation);
     }
@@ -131,7 +147,8 @@ public class StringToCollectionConverterTest {
         Collection<?> model = converter.convertToModel("a", List.class, null);
         Iterator<?> iterator = model.iterator();
         Assert.assertEquals("Incorrect fist token", "a", iterator.next());
-        Assert.assertFalse("More than one item detected after conversation", iterator.hasNext());
+        Assert.assertFalse("More than one item detected after conversation",
+                iterator.hasNext());
     }
 
     public enum TestEnum {

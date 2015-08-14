@@ -52,7 +52,10 @@ public class LayoutSettingsOnReplaceTest {
         };
         layout.replaceComponent(first, replace);
 
-        Assert.assertEquals("Expand ratio for replaced component is not " + "the same as for previous one", ratio, layout.getExpandRatio(replace), 0.0001);
+        Assert.assertEquals(
+                "Expand ratio for replaced component is not "
+                        + "the same as for previous one",
+                ratio, layout.getExpandRatio(replace), 0.0001);
     }
 
     @Test
@@ -76,6 +79,9 @@ public class LayoutSettingsOnReplaceTest {
         };
         layout.replaceComponent(first, replace);
 
-        Assert.assertEquals("Alignment for replaced component is not " + "the same as for previous one", alignment, layout.getComponentAlignment(replace));
+        Assert.assertEquals(
+                "Alignment for replaced component is not "
+                        + "the same as for previous one",
+                alignment, layout.getComponentAlignment(replace));
     }
 }

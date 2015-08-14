@@ -25,7 +25,8 @@ public class TextFieldWithConverterAndValidatorTest extends TestCase {
         field.setConverter(new ConvertTo42());
         field.setPropertyDataSource(property);
 
-        field.addValidator(new RangeValidator<Integer>("Incorrect value", Integer.class, 42, 42));
+        field.addValidator(new RangeValidator<Integer>("Incorrect value",
+                Integer.class, 42, 42));
 
         // succeeds
         field.setValue("a");

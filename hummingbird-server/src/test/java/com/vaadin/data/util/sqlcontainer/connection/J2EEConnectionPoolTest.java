@@ -14,7 +14,8 @@ import org.junit.Test;
 public class J2EEConnectionPoolTest {
 
     @Test
-    public void reserveConnection_dataSourceSpecified_shouldReturnValidConnection() throws SQLException {
+    public void reserveConnection_dataSourceSpecified_shouldReturnValidConnection()
+            throws SQLException {
         Connection connection = EasyMock.createMock(Connection.class);
         connection.setAutoCommit(false);
         EasyMock.expectLastCall();
@@ -49,7 +50,8 @@ public class J2EEConnectionPoolTest {
     }
 
     @Test
-    public void reserveConnection_dataSourceLookedUp_shouldReturnValidConnection() throws SQLException, NamingException {
+    public void reserveConnection_dataSourceLookedUp_shouldReturnValidConnection()
+            throws SQLException, NamingException {
         Connection connection = EasyMock.createMock(Connection.class);
         connection.setAutoCommit(false);
         EasyMock.expectLastCall();
@@ -60,7 +62,8 @@ public class J2EEConnectionPoolTest {
         ds.getConnection();
         EasyMock.expectLastCall().andReturn(connection);
 
-        System.setProperty("java.naming.factory.initial", "com.vaadin.data.util.sqlcontainer.connection.MockInitialContextFactory");
+        System.setProperty("java.naming.factory.initial",
+                "com.vaadin.data.util.sqlcontainer.connection.MockInitialContextFactory");
         Context context = EasyMock.createMock(Context.class);
         context.lookup("testDataSource");
         EasyMock.expectLastCall().andReturn(ds);
@@ -76,8 +79,10 @@ public class J2EEConnectionPoolTest {
     }
 
     @Test(expected = SQLException.class)
-    public void reserveConnection_nonExistantDataSourceLookedUp_shouldFail() throws SQLException, NamingException {
-        System.setProperty("java.naming.factory.initial", "com.vaadin.addon.sqlcontainer.connection.MockInitialContextFactory");
+    public void reserveConnection_nonExistantDataSourceLookedUp_shouldFail()
+            throws SQLException, NamingException {
+        System.setProperty("java.naming.factory.initial",
+                "com.vaadin.addon.sqlcontainer.connection.MockInitialContextFactory");
         Context context = EasyMock.createMock(Context.class);
         context.lookup("foo");
         EasyMock.expectLastCall().andThrow(new NamingException("fail"));

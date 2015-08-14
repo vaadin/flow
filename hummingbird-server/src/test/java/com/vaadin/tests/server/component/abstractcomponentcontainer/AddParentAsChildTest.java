@@ -35,7 +35,8 @@ public class AddParentAsChildTest {
     @Test(expected = IllegalArgumentException.class)
     public void testAddComponent() {
         AbstractComponentContainer container = new ComponentContainer();
-        HasComponents hasComponentsMock = EasyMock.createMock(HasComponents.class);
+        HasComponents hasComponentsMock = EasyMock
+                .createMock(HasComponents.class);
         container.setParent(hasComponentsMock);
 
         container.addComponent(hasComponentsMock);
@@ -44,7 +45,8 @@ public class AddParentAsChildTest {
     class ComponentContainer extends AbstractComponentContainer {
 
         @Override
-        public void replaceComponent(Component oldComponent, Component newComponent) {
+        public void replaceComponent(Component oldComponent,
+                Component newComponent) {
         }
 
         @Override

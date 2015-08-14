@@ -33,7 +33,8 @@ public class StatementHelperTest {
     public void testSetValueNullParameter() throws SQLException {
         StatementHelper helper = new StatementHelper();
         helper.addParameterValue(null, Object.class);
-        PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+        PreparedStatement statement = EasyMock
+                .createMock(PreparedStatement.class);
         // should throw SQLException, not NPE
         helper.setParameterValuesToStatement(statement);
     }
@@ -42,7 +43,8 @@ public class StatementHelperTest {
     public void testSetByteArrayValue() throws SQLException {
         StatementHelper helper = new StatementHelper();
         helper.addParameterValue(null, byte[].class);
-        PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+        PreparedStatement statement = EasyMock
+                .createMock(PreparedStatement.class);
         // should not throw SQLException
         helper.setParameterValuesToStatement(statement);
 

@@ -45,12 +45,15 @@ public class BeanItemContainerSortTest {
         }
     }
 
-    String[] names = new String[] { "Antti", "Ville", "Sirkka", "Jaakko", "Pekka", "John" };
+    String[] names = new String[] { "Antti", "Ville", "Sirkka", "Jaakko",
+            "Pekka", "John" };
     int[] ages = new int[] { 10, 20, 50, 12, 64, 67 };
-    String[] sortedByAge = new String[] { names[0], names[3], names[1], names[2], names[4], names[5] };
+    String[] sortedByAge = new String[] { names[0], names[3], names[1],
+            names[2], names[4], names[5] };
 
     public BeanItemContainer<Person> getContainer() {
-        BeanItemContainer<Person> bc = new BeanItemContainer<Person>(Person.class);
+        BeanItemContainer<Person> bc = new BeanItemContainer<Person>(
+                Person.class);
         for (int i = 0; i < names.length; i++) {
             Person p = new Person();
             p.setName(names[i]);
@@ -62,7 +65,8 @@ public class BeanItemContainerSortTest {
     }
 
     public BeanItemContainer<Parent> getParentContainer() {
-        BeanItemContainer<Parent> bc = new BeanItemContainer<Parent>(Parent.class);
+        BeanItemContainer<Parent> bc = new BeanItemContainer<Parent>(
+                Parent.class);
         for (int i = 0; i < names.length; i++) {
             Parent p = new Parent();
             p.setName(names[i]);
@@ -139,7 +143,8 @@ public class BeanItemContainerSortTest {
     public void testGetSortableProperties() {
         BeanItemContainer<Person> container = getContainer();
 
-        Collection<?> sortablePropertyIds = container.getSortableContainerPropertyIds();
+        Collection<?> sortablePropertyIds = container
+                .getSortableContainerPropertyIds();
         Assert.assertEquals(2, sortablePropertyIds.size());
         Assert.assertTrue(sortablePropertyIds.contains("name"));
         Assert.assertTrue(sortablePropertyIds.contains("age"));
@@ -151,7 +156,8 @@ public class BeanItemContainerSortTest {
 
         Assert.assertEquals(3, container.getContainerPropertyIds().size());
 
-        Collection<?> sortablePropertyIds = container.getSortableContainerPropertyIds();
+        Collection<?> sortablePropertyIds = container
+                .getSortableContainerPropertyIds();
         Assert.assertEquals(2, sortablePropertyIds.size());
         Assert.assertTrue(sortablePropertyIds.contains("name"));
         Assert.assertTrue(sortablePropertyIds.contains("age"));

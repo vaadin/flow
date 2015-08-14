@@ -40,12 +40,16 @@ public class DateFieldConverterTest extends TestCase {
         datefield.setConverter(new Converter<Date, Long>() {
 
             @Override
-            public Long convertToModel(Date value, Class<? extends Long> targetType, Locale locale) throws ConversionException {
+            public Long convertToModel(Date value,
+                    Class<? extends Long> targetType, Locale locale)
+                            throws ConversionException {
                 return value.getTime();
             }
 
             @Override
-            public Date convertToPresentation(Long value, Class<? extends Date> targetType, Locale locale) throws ConversionException {
+            public Date convertToPresentation(Long value,
+                    Class<? extends Date> targetType, Locale locale)
+                            throws ConversionException {
                 return new Date(value);
             }
 

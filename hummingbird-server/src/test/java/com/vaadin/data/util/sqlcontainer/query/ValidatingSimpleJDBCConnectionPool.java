@@ -37,8 +37,11 @@ public class ValidatingSimpleJDBCConnectionPool implements JDBCConnectionPool {
     private Set<Connection> reserved = new HashSet<Connection>();
     private Set<Connection> alreadyReleased = new HashSet<Connection>();
 
-    public ValidatingSimpleJDBCConnectionPool(String driverName, String connectionUri, String userName, String password, int initialConnections, int maxConnections) throws SQLException {
-        realPool = new SimpleJDBCConnectionPool(driverName, connectionUri, userName, password, initialConnections, maxConnections);
+    public ValidatingSimpleJDBCConnectionPool(String driverName,
+            String connectionUri, String userName, String password,
+            int initialConnections, int maxConnections) throws SQLException {
+        realPool = new SimpleJDBCConnectionPool(driverName, connectionUri,
+                userName, password, initialConnections, maxConnections);
     }
 
     @Deprecated
@@ -57,9 +60,11 @@ public class ValidatingSimpleJDBCConnectionPool implements JDBCConnectionPool {
     public void releaseConnection(Connection conn) {
         if (conn != null && !reserved.remove(conn)) {
             if (alreadyReleased.contains(conn)) {
-                getLogger().severe("Tried to release connection (" + conn + ") which has already been released");
+                getLogger().severe("Tried to release connection (" + conn
+                        + ") which has already been released");
             } else {
-                throw new RuntimeException("Tried to release connection (" + conn + ") not reserved using reserveConnection");
+                throw new RuntimeException("Tried to release connection ("
+                        + conn + ") not reserved using reserveConnection");
             }
         }
         realPool.releaseConnection(conn);
@@ -71,11 +76,13 @@ public class ValidatingSimpleJDBCConnectionPool implements JDBCConnectionPool {
     public void destroy() {
         realPool.destroy();
         if (!reserved.isEmpty()) {
-            throw new RuntimeException(reserved.size() + " connections never released");
+            throw new RuntimeException(
+                    reserved.size() + " connections never released");
         }
     }
 
     public static Logger getLogger() {
-        return Logger.getLogger(ValidatingSimpleJDBCConnectionPool.class.getName());
+        return Logger
+                .getLogger(ValidatingSimpleJDBCConnectionPool.class.getName());
     }
 }

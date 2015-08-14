@@ -6,7 +6,8 @@ package com.vaadin.data.util;
  * Only a limited subset of the functionality is tested here, the rest in tests
  * of subclasses including {@link BeanItemContainer} and {@link BeanContainer}.
  */
-public abstract class AbstractBeanContainerTestBase extends AbstractInMemoryContainerTestBase {
+public abstract class AbstractBeanContainerTestBase
+        extends AbstractInMemoryContainerTestBase {
 
     public static class Person {
         private String name;
@@ -33,7 +34,8 @@ public abstract class AbstractBeanContainerTestBase extends AbstractInMemoryCont
 
         public ClassName(String fullyQualifiedName, Integer idNumber) {
             this.fullyQualifiedName = fullyQualifiedName;
-            simpleName = AbstractContainerTestBase.getSimpleName(fullyQualifiedName);
+            simpleName = AbstractContainerTestBase
+                    .getSimpleName(fullyQualifiedName);
             reverseFullyQualifiedName = reverse(fullyQualifiedName);
             this.idNumber = idNumber;
         }
@@ -58,7 +60,8 @@ public abstract class AbstractBeanContainerTestBase extends AbstractInMemoryCont
             return reverseFullyQualifiedName;
         }
 
-        public void setReverseFullyQualifiedName(String reverseFullyQualifiedName) {
+        public void setReverseFullyQualifiedName(
+                String reverseFullyQualifiedName) {
             this.reverseFullyQualifiedName = reverseFullyQualifiedName;
         }
 

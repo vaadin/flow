@@ -26,15 +26,15 @@ public class OrderedLayoutTest extends TestCase {
             aol.addComponent(c);
         }
         for (int i = 0; i < nrComponents; i++) {
-            assert (aol.getComponent(i) == components[i]);
-            assert (aol.getComponentIndex(components[i]) == i);
+            assert(aol.getComponent(i) == components[i]);
+            assert(aol.getComponentIndex(components[i]) == i);
         }
 
         // Iteration should be in indexed order
         int idx = 0;
         for (Iterator<Component> i = aol.iterator(); i.hasNext();) {
             Component c = i.next();
-            assert (aol.getComponentIndex(c) == idx++);
+            assert(aol.getComponentIndex(c) == idx++);
         }
     }
 

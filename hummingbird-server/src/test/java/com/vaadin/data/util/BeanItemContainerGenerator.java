@@ -58,9 +58,11 @@ public class BeanItemContainerGenerator {
         return createContainer(size, new Date().getTime());
     }
 
-    public static BeanItemContainer<TestBean> createContainer(int size, long seed) {
+    public static BeanItemContainer<TestBean> createContainer(int size,
+            long seed) {
 
-        BeanItemContainer<TestBean> container = new BeanItemContainer<TestBean>(TestBean.class);
+        BeanItemContainer<TestBean> container = new BeanItemContainer<TestBean>(
+                TestBean.class);
         PortableRandom r = new PortableRandom(seed);
         for (int i = 0; i < size; i++) {
             container.addBean(new TestBean(r));
@@ -94,7 +96,8 @@ public class BeanItemContainerGenerator {
             age = r.nextInt(100) + 5;
             shoesize = r.nextInt(10) + 35;
             name = createRandomString(r, r.nextInt(5) + 5);
-            address = createRandomString(r, r.nextInt(15) + 5) + " " + r.nextInt(100) + 1;
+            address = createRandomString(r, r.nextInt(15) + 5) + " "
+                    + r.nextInt(100) + 1;
             city = createRandomString(r, r.nextInt(7) + 3);
             if (r.nextBoolean()) {
                 country = createRandomString(r, r.nextInt(4) + 4);

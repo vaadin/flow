@@ -17,7 +17,8 @@ public class MockInitialContextFactory implements InitialContextFactory {
     }
 
     @Override
-    public Context getInitialContext(java.util.Hashtable<?, ?> environment) throws NamingException {
+    public Context getInitialContext(java.util.Hashtable<?, ?> environment)
+            throws NamingException {
         if (mockCtx == null) {
             throw new IllegalStateException("mock context was not set.");
         }

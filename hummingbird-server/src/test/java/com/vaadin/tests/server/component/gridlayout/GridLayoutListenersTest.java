@@ -7,6 +7,7 @@ import com.vaadin.ui.GridLayout;
 
 public class GridLayoutListenersTest extends AbstractListenerMethodsTestBase {
     public void testLayoutClickListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(GridLayout.class, LayoutClickEvent.class, LayoutClickListener.class);
+        testListenerAddGetRemove(GridLayout.class, LayoutClickEvent.class,
+                LayoutClickListener.class);
     }
 }

@@ -53,15 +53,18 @@ public class LabelConvertersTest {
     public void testIntegerDataSource() {
         VaadinSession.setCurrent(new AlwaysLockedVaadinSession(null));
         Label l = new Label("Foo");
-        Property ds = new MethodProperty<Integer>(Person.createTestPerson1(), "age");
+        Property ds = new MethodProperty<Integer>(Person.createTestPerson1(),
+                "age");
         l.setPropertyDataSource(ds);
-        assertEquals(String.valueOf(Person.createTestPerson1().getAge()), l.getValue());
+        assertEquals(String.valueOf(Person.createTestPerson1().getAge()),
+                l.getValue());
     }
 
     @Test
     public void testSetValueWithDataSource() {
         try {
-            MethodProperty<String> property = new MethodProperty<String>(Person.createTestPerson1(), "firstName");
+            MethodProperty<String> property = new MethodProperty<String>(
+                    Person.createTestPerson1(), "firstName");
             Label l = new Label(property);
             l.setValue("Foo");
             fail("setValue should throw an exception when a data source is set");

@@ -6,7 +6,8 @@ import com.vaadin.data.Container.Filter;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.BeanItem;
 
-public class AndOrFilterTest extends AbstractFilterTestBase<AbstractJunctionFilter> {
+public class AndOrFilterTest
+        extends AbstractFilterTestBase<AbstractJunctionFilter> {
 
     protected Item item1 = new BeanItem<Integer>(1);
     protected Item item2 = new BeanItem<Integer>(2);
@@ -25,8 +26,10 @@ public class AndOrFilterTest extends AbstractFilterTestBase<AbstractJunctionFilt
     }
 
     public void testTwoFilterAnd() {
-        Filter filter1 = new And(new SameItemFilter(item1), new SameItemFilter(item1));
-        Filter filter2 = new And(new SameItemFilter(item1), new SameItemFilter(item2));
+        Filter filter1 = new And(new SameItemFilter(item1),
+                new SameItemFilter(item1));
+        Filter filter2 = new And(new SameItemFilter(item1),
+                new SameItemFilter(item2));
 
         Assert.assertTrue(filter1.passesFilter(null, item1));
         Assert.assertFalse(filter1.passesFilter(null, item2));
@@ -36,8 +39,10 @@ public class AndOrFilterTest extends AbstractFilterTestBase<AbstractJunctionFilt
     }
 
     public void testThreeFilterAnd() {
-        Filter filter1 = new And(new SameItemFilter(item1), new SameItemFilter(item1), new SameItemFilter(item1));
-        Filter filter2 = new And(new SameItemFilter(item1), new SameItemFilter(item1), new SameItemFilter(item2));
+        Filter filter1 = new And(new SameItemFilter(item1),
+                new SameItemFilter(item1), new SameItemFilter(item1));
+        Filter filter2 = new And(new SameItemFilter(item1),
+                new SameItemFilter(item1), new SameItemFilter(item2));
 
         Assert.assertTrue(filter1.passesFilter(null, item1));
         Assert.assertFalse(filter1.passesFilter(null, item2));
@@ -60,8 +65,10 @@ public class AndOrFilterTest extends AbstractFilterTestBase<AbstractJunctionFilt
     }
 
     public void testTwoFilterOr() {
-        Filter filter1 = new Or(new SameItemFilter(item1), new SameItemFilter(item1));
-        Filter filter2 = new Or(new SameItemFilter(item1), new SameItemFilter(item2));
+        Filter filter1 = new Or(new SameItemFilter(item1),
+                new SameItemFilter(item1));
+        Filter filter2 = new Or(new SameItemFilter(item1),
+                new SameItemFilter(item2));
 
         Assert.assertTrue(filter1.passesFilter(null, item1));
         Assert.assertFalse(filter1.passesFilter(null, item2));
@@ -71,8 +78,10 @@ public class AndOrFilterTest extends AbstractFilterTestBase<AbstractJunctionFilt
     }
 
     public void testThreeFilterOr() {
-        Filter filter1 = new Or(new SameItemFilter(item1), new SameItemFilter(item1), new SameItemFilter(item1));
-        Filter filter2 = new Or(new SameItemFilter(item1), new SameItemFilter(item1), new SameItemFilter(item2));
+        Filter filter1 = new Or(new SameItemFilter(item1),
+                new SameItemFilter(item1), new SameItemFilter(item1));
+        Filter filter2 = new Or(new SameItemFilter(item1),
+                new SameItemFilter(item1), new SameItemFilter(item2));
 
         Assert.assertTrue(filter1.passesFilter(null, item1));
         Assert.assertFalse(filter1.passesFilter(null, item2));
@@ -87,9 +96,12 @@ public class AndOrFilterTest extends AbstractFilterTestBase<AbstractJunctionFilt
         Filter filter1a = new And(new SameItemFilter(item1));
         Filter filter1a2 = new And(new SameItemFilter(item1));
         Filter filter1b = new And(new SameItemFilter(item2));
-        Filter filter2a = new And(new SameItemFilter(item1), new SameItemFilter(item1));
-        Filter filter2b = new And(new SameItemFilter(item1), new SameItemFilter(item2));
-        Filter filter2b2 = new And(new SameItemFilter(item1), new SameItemFilter(item2));
+        Filter filter2a = new And(new SameItemFilter(item1),
+                new SameItemFilter(item1));
+        Filter filter2b = new And(new SameItemFilter(item1),
+                new SameItemFilter(item2));
+        Filter filter2b2 = new And(new SameItemFilter(item1),
+                new SameItemFilter(item2));
         Filter other0 = new Or();
         Filter other1 = new Or(new SameItemFilter(item1));
 
@@ -123,9 +135,12 @@ public class AndOrFilterTest extends AbstractFilterTestBase<AbstractJunctionFilt
         Filter filter1a = new Or(new SameItemFilter(item1));
         Filter filter1a2 = new Or(new SameItemFilter(item1));
         Filter filter1b = new Or(new SameItemFilter(item2));
-        Filter filter2a = new Or(new SameItemFilter(item1), new SameItemFilter(item1));
-        Filter filter2b = new Or(new SameItemFilter(item1), new SameItemFilter(item2));
-        Filter filter2b2 = new Or(new SameItemFilter(item1), new SameItemFilter(item2));
+        Filter filter2a = new Or(new SameItemFilter(item1),
+                new SameItemFilter(item1));
+        Filter filter2b = new Or(new SameItemFilter(item1),
+                new SameItemFilter(item2));
+        Filter filter2b2 = new Or(new SameItemFilter(item1),
+                new SameItemFilter(item2));
         Filter other0 = new And();
         Filter other1 = new And(new SameItemFilter(item1));
 
@@ -157,9 +172,12 @@ public class AndOrFilterTest extends AbstractFilterTestBase<AbstractJunctionFilt
         Filter filter0 = new And();
         Filter filter1a = new And(new SameItemFilter(item1, "a"));
         Filter filter1b = new And(new SameItemFilter(item1, "b"));
-        Filter filter2aa = new And(new SameItemFilter(item1, "a"), new SameItemFilter(item1, "a"));
-        Filter filter2ab = new And(new SameItemFilter(item1, "a"), new SameItemFilter(item1, "b"));
-        Filter filter3abc = new And(new SameItemFilter(item1, "a"), new SameItemFilter(item1, "b"), new SameItemFilter(item1, "c"));
+        Filter filter2aa = new And(new SameItemFilter(item1, "a"),
+                new SameItemFilter(item1, "a"));
+        Filter filter2ab = new And(new SameItemFilter(item1, "a"),
+                new SameItemFilter(item1, "b"));
+        Filter filter3abc = new And(new SameItemFilter(item1, "a"),
+                new SameItemFilter(item1, "b"), new SameItemFilter(item1, "c"));
 
         // empty And does not filter out anything
         Assert.assertFalse(filter0.appliesToProperty("a"));
@@ -185,9 +203,12 @@ public class AndOrFilterTest extends AbstractFilterTestBase<AbstractJunctionFilt
         Filter filter0 = new Or();
         Filter filter1a = new Or(new SameItemFilter(item1, "a"));
         Filter filter1b = new Or(new SameItemFilter(item1, "b"));
-        Filter filter2aa = new Or(new SameItemFilter(item1, "a"), new SameItemFilter(item1, "a"));
-        Filter filter2ab = new Or(new SameItemFilter(item1, "a"), new SameItemFilter(item1, "b"));
-        Filter filter3abc = new Or(new SameItemFilter(item1, "a"), new SameItemFilter(item1, "b"), new SameItemFilter(item1, "c"));
+        Filter filter2aa = new Or(new SameItemFilter(item1, "a"),
+                new SameItemFilter(item1, "a"));
+        Filter filter2ab = new Or(new SameItemFilter(item1, "a"),
+                new SameItemFilter(item1, "b"));
+        Filter filter3abc = new Or(new SameItemFilter(item1, "a"),
+                new SameItemFilter(item1, "b"), new SameItemFilter(item1, "c"));
 
         // empty Or filters out everything
         Assert.assertTrue(filter0.appliesToProperty("a"));

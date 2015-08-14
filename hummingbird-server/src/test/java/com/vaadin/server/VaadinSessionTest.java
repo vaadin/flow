@@ -60,6 +60,7 @@ public class VaadinSessionTest {
         mockHttpSession = EasyMock.createMock(HttpSession.class);
         mockWrappedSession = new WrappedHttpSession(mockHttpSession) {
             final ReentrantLock lock = new ReentrantLock();
+
             {
                 lock.lock();
             }
@@ -69,15 +70,18 @@ public class VaadinSessionTest {
                 Object res;
                 try {
                     Thread.sleep(100); // for deadlock testing
-                    org.junit.Assert.assertTrue("Deadlock detected", httpSessionLock.tryLock(5, TimeUnit.SECONDS)); // simulates
-                                                                                                                    // servlet
-                                                                                                                    // container's
-                                                                                                                    // session
-                                                                                                                    // locking
-                    String lockAttribute = mockService.getServiceName() + ".lock";
+                    org.junit.Assert.assertTrue("Deadlock detected",
+                            httpSessionLock.tryLock(5, TimeUnit.SECONDS)); // simulates
+                                                                           // servlet
+                                                                           // container's
+                                                                           // session
+                                                                           // locking
+                    String lockAttribute = mockService.getServiceName()
+                            + ".lock";
                     if (lockAttribute.equals(name)) {
                         res = lock;
-                    } else if ("com.vaadin.server.VaadinSession.Mock Servlet".equals(name)) {
+                    } else if ("com.vaadin.server.VaadinSession.Mock Servlet"
+                            .equals(name)) {
                         res = session;
                     } else {
                         res = super.getAttribute(name);
@@ -109,12 +113,16 @@ public class VaadinSessionTest {
                 return page;
             }
         };
-        vaadinRequest = new VaadinServletRequest(EasyMock.createMock(HttpServletRequest.class), mockService) {
+        vaadinRequest = new VaadinServletRequest(
+                EasyMock.createMock(HttpServletRequest.class), mockService) {
             @Override
             public String getParameter(String name) {
-                if ("theme".equals(name) || "restartApplication".equals(name) || "ignoreRestart".equals(name) || "closeApplication".equals(name)) {
+                if ("theme".equals(name) || "restartApplication".equals(name)
+                        || "ignoreRestart".equals(name)
+                        || "closeApplication".equals(name)) {
                     return null;
-                } else if (UIInitHandler.BROWSER_DETAILS_PARAMETER.equals(name)) {
+                } else
+                    if (UIInitHandler.BROWSER_DETAILS_PARAMETER.equals(name)) {
                     return "1";
                 }
                 return super.getParameter(name);
@@ -126,7 +134,8 @@ public class VaadinSessionTest {
             }
 
             @Override
-            public WrappedSession getWrappedSession(boolean allowSessionCreation) {
+            public WrappedSession getWrappedSession(
+                    boolean allowSessionCreation) {
                 return mockWrappedSession;
             }
 
@@ -174,7 +183,8 @@ public class VaadinSessionTest {
     }
 
     @Test
-    public void threadLocalsAfterUnderlyingSessionTimeout() throws InterruptedException {
+    public void threadLocalsAfterUnderlyingSessionTimeout()
+            throws InterruptedException {
 
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
         ui.addDetachListener(new DetachListener() {
@@ -189,7 +199,8 @@ public class VaadinSessionTest {
             }
         });
 
-        session.valueUnbound(EasyMock.createMock(HttpSessionBindingEvent.class));
+        session.valueUnbound(
+                EasyMock.createMock(HttpSessionBindingEvent.class));
         mockService.runPendingAccessTasks(session); // as soon as we changed
                                                     // session.accessSynchronously
                                                     // to session.access in
@@ -229,11 +240,18 @@ public class VaadinSessionTest {
     public void testValueUnbound() {
         MockVaadinSession vaadinSession = new MockVaadinSession(mockService);
 
-        vaadinSession.valueUnbound(EasyMock.createMock(HttpSessionBindingEvent.class));
-        org.junit.Assert.assertEquals("'valueUnbound' method doesn't call 'close' for the session", 1, vaadinSession.getCloseCount());
+        vaadinSession.valueUnbound(
+                EasyMock.createMock(HttpSessionBindingEvent.class));
+        org.junit.Assert.assertEquals(
+                "'valueUnbound' method doesn't call 'close' for the session", 1,
+                vaadinSession.getCloseCount());
 
-        vaadinSession.valueUnbound(EasyMock.createMock(HttpSessionBindingEvent.class));
+        vaadinSession.valueUnbound(
+                EasyMock.createMock(HttpSessionBindingEvent.class));
 
-        org.junit.Assert.assertEquals("'valueUnbound' method may not call 'close' " + "method for closing session", 1, vaadinSession.getCloseCount());
+        org.junit.Assert.assertEquals(
+                "'valueUnbound' method may not call 'close' "
+                        + "method for closing session",
+                1, vaadinSession.getCloseCount());
     }
 }

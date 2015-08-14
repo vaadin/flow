@@ -6,8 +6,10 @@ import com.vaadin.data.validator.RegexpValidator;
 
 public class RegexpValidatorTest extends TestCase {
 
-    private RegexpValidator completeValidator = new RegexpValidator("pattern", true, "Complete match validator error");
-    private RegexpValidator partialValidator = new RegexpValidator("pattern", false, "Partial match validator error");
+    private RegexpValidator completeValidator = new RegexpValidator("pattern",
+            true, "Complete match validator error");
+    private RegexpValidator partialValidator = new RegexpValidator("pattern",
+            false, "Partial match validator error");
 
     public void testRegexpValidatorWithNull() {
         assertTrue(completeValidator.isValid(null));

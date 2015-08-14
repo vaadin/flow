@@ -40,7 +40,8 @@ public class UploadTest {
         Assert.assertFalse(upload.isUploading());
     }
 
-    private static class TestStreamingErrorEvent implements StreamingErrorEvent {
+    private static class TestStreamingErrorEvent
+            implements StreamingErrorEvent {
 
         @Override
         public String getFileName() {
@@ -77,17 +78,20 @@ public class UploadTest {
         }
 
         @Override
-        protected void fireNoInputStream(String filename, String MIMEType, long length) {
+        protected void fireNoInputStream(String filename, String MIMEType,
+                long length) {
             fireEvent();
         }
 
         @Override
-        protected void fireNoOutputStream(String filename, String MIMEType, long length) {
+        protected void fireNoOutputStream(String filename, String MIMEType,
+                long length) {
             fireEvent();
         }
 
         @Override
-        protected void fireUploadInterrupted(String filename, String MIMEType, long length, Exception e) {
+        protected void fireUploadInterrupted(String filename, String MIMEType,
+                long length, Exception e) {
             fireEvent();
         }
 

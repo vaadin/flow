@@ -49,7 +49,8 @@ public class ClassesSerializableTest extends TestCase {
             "com\\.vaadin\\.server\\.VaadinServiceClassLoaderUtil", //
             "com\\.vaadin\\.server\\.VaadinServiceClassLoaderUtil\\$GetClassLoaderPrivilegedAction", //
             "com\\.vaadin\\.server\\.communication\\.FileUploadHandler\\$SimpleMultiPartInputStream", //
-            "com\\.vaadin\\.server\\.communication\\.PushRequestHandler.*", "com\\.vaadin\\.server\\.communication\\.PushHandler.*", // PushHandler
+            "com\\.vaadin\\.server\\.communication\\.PushRequestHandler.*",
+            "com\\.vaadin\\.server\\.communication\\.PushHandler.*", // PushHandler
             "com\\.vaadin\\.server\\.communication\\.DateSerializer", //
             "com\\.vaadin\\.server\\.communication\\.JSONSerializer", //
             // and its inner classes do not need to be serializable
@@ -60,7 +61,11 @@ public class ClassesSerializableTest extends TestCase {
             "com\\.vaadin\\.buildhelpers.*", //
             "com\\.vaadin\\.util\\.ReflectTools.*", //
             "com\\.vaadin\\.data\\.util\\.ReflectTools.*", //
-            "com\\.vaadin\\.data\\.util.BeanItemContainerGenerator.*", "com\\.vaadin\\.data\\.util\\.sqlcontainer\\.connection\\.MockInitialContextFactory", "com\\.vaadin\\.data\\.util\\.sqlcontainer\\.DataGenerator", "com\\.vaadin\\.data\\.util\\.sqlcontainer\\.FreeformQueryUtil", "com\\.vaadin\\.sass.*", //
+            "com\\.vaadin\\.data\\.util.BeanItemContainerGenerator.*",
+            "com\\.vaadin\\.data\\.util\\.sqlcontainer\\.connection\\.MockInitialContextFactory",
+            "com\\.vaadin\\.data\\.util\\.sqlcontainer\\.DataGenerator",
+            "com\\.vaadin\\.data\\.util\\.sqlcontainer\\.FreeformQueryUtil",
+            "com\\.vaadin\\.sass.*", //
             "com\\.vaadin\\.testbench.*", //
             "com\\.vaadin\\.util\\.CurrentInstance\\$1", //
             "com\\.vaadin\\.server\\.AbstractClientConnector\\$1", //
@@ -104,7 +109,8 @@ public class ClassesSerializableTest extends TestCase {
 
             // report non-serializable classes and interfaces
             if (!Serializable.class.isAssignableFrom(cls)) {
-                if (cls.getSuperclass() == Object.class && cls.getInterfaces().length == 1) {
+                if (cls.getSuperclass() == Object.class
+                        && cls.getInterfaces().length == 1) {
                     // Single interface implementors
                     Class<?> iface = cls.getInterfaces()[0];
 
@@ -141,12 +147,14 @@ public class ClassesSerializableTest extends TestCase {
                     nonSerializableString += ")";
                 }
             }
-            fail("Serializable not implemented by the following classes and interfaces: " + nonSerializableString);
+            fail("Serializable not implemented by the following classes and interfaces: "
+                    + nonSerializableString);
         }
     }
 
     private boolean isTestClass(Class<?> cls) {
-        if (cls.getEnclosingClass() != null && isTestClass(cls.getEnclosingClass())) {
+        if (cls.getEnclosingClass() != null
+                && isTestClass(cls.getEnclosingClass())) {
             return true;
         }
 
@@ -203,7 +211,8 @@ public class ClassesSerializableTest extends TestCase {
      * @return
      * @throws IOException
      */
-    private List<String> findServerClasses(String classpathEntry) throws IOException {
+    private List<String> findServerClasses(String classpathEntry)
+            throws IOException {
         Collection<String> classes = new ArrayList<String>();
 
         File file = new File(classpathEntry);
@@ -261,7 +270,8 @@ public class ClassesSerializableTest extends TestCase {
         while (e.hasMoreElements()) {
             JarEntry entry = e.nextElement();
             if (entry.getName().endsWith(".class")) {
-                String nameWithoutExtension = entry.getName().replaceAll("\\.class", "");
+                String nameWithoutExtension = entry.getName()
+                        .replaceAll("\\.class", "");
                 String className = nameWithoutExtension.replace('/', '.');
                 classes.add(className);
             }
@@ -280,8 +290,10 @@ public class ClassesSerializableTest extends TestCase {
      *            File representing the directory to scan
      * @return collection of fully qualified class names in the directory
      */
-    private final static Collection<String> findClassesInDirectory(String parentPackage, File parent) {
-        if (parent.isHidden() || parent.getPath().contains(File.separator + ".")) {
+    private final static Collection<String> findClassesInDirectory(
+            String parentPackage, File parent) {
+        if (parent.isHidden()
+                || parent.getPath().contains(File.separator + ".")) {
             return Collections.emptyList();
         }
 
@@ -297,9 +309,11 @@ public class ClassesSerializableTest extends TestCase {
         File[] files = parent.listFiles();
         for (File child : files) {
             if (child.isDirectory()) {
-                classNames.addAll(findClassesInDirectory(parentPackage + child.getName(), child));
+                classNames.addAll(findClassesInDirectory(
+                        parentPackage + child.getName(), child));
             } else if (child.getName().endsWith(".class")) {
-                classNames.add(parentPackage.replace(File.separatorChar, '.') + child.getName().replaceAll("\\.class", ""));
+                classNames.add(parentPackage.replace(File.separatorChar, '.')
+                        + child.getName().replaceAll("\\.class", ""));
             }
         }
 

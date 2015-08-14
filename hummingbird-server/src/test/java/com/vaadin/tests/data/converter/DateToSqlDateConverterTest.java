@@ -12,12 +12,14 @@ public class DateToSqlDateConverterTest extends TestCase {
     DateToSqlDateConverter converter = new DateToSqlDateConverter();
 
     public void testNullConversion() {
-        assertEquals(null, converter.convertToModel(null, java.sql.Date.class, null));
+        assertEquals(null,
+                converter.convertToModel(null, java.sql.Date.class, null));
     }
 
     public void testValueConversion() {
         Date testDate = new Date(100, 0, 1);
         long time = testDate.getTime();
-        assertEquals(testDate, converter.convertToModel(new java.sql.Date(time), java.sql.Date.class, Locale.ENGLISH));
+        assertEquals(testDate, converter.convertToModel(new java.sql.Date(time),
+                java.sql.Date.class, Locale.ENGLISH));
     }
 }

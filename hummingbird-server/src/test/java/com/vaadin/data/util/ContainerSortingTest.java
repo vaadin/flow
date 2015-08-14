@@ -50,7 +50,10 @@ public class ContainerSortingTest extends TestCase {
 
         ic.addContainerFilter(PROPERTY_STRING_ID, "a", true, false);
         ic.sort(new Object[] { PROPERTY_STRING_ID }, new boolean[] { true });
-        verifyOrder(ic, new String[] { ITEM_ANOTHER_NULL, ITEM_DATA_MINUS1, ITEM_DATA_MINUS1_NULL, ITEM_DATA_MINUS2, ITEM_DATA_MINUS2_NULL, });
+        verifyOrder(ic,
+                new String[] { ITEM_ANOTHER_NULL, ITEM_DATA_MINUS1,
+                        ITEM_DATA_MINUS1_NULL, ITEM_DATA_MINUS2,
+                        ITEM_DATA_MINUS2_NULL, });
     }
 
     public void testIndexedContainer() {
@@ -60,13 +63,29 @@ public class ContainerSortingTest extends TestCase {
         populate(ic);
 
         ic.sort(new Object[] { PROPERTY_STRING_ID }, new boolean[] { true });
-        verifyOrder(ic, new String[] { ITEM_ANOTHER_NULL, ITEM_DATA_MINUS1, ITEM_DATA_MINUS1_NULL, ITEM_DATA_MINUS2, ITEM_DATA_MINUS2_NULL, ITEM_STRING_1, ITEM_STRING_2, ITEM_STRING_NULL2 });
+        verifyOrder(ic,
+                new String[] { ITEM_ANOTHER_NULL, ITEM_DATA_MINUS1,
+                        ITEM_DATA_MINUS1_NULL, ITEM_DATA_MINUS2,
+                        ITEM_DATA_MINUS2_NULL, ITEM_STRING_1, ITEM_STRING_2,
+                        ITEM_STRING_NULL2 });
 
-        ic.sort(new Object[] { PROPERTY_INTEGER_NOT_NULL, PROPERTY_INTEGER_NULL2, PROPERTY_STRING_ID }, new boolean[] { true, false, true });
-        verifyOrder(ic, new String[] { ITEM_DATA_MINUS2, ITEM_DATA_MINUS2_NULL, ITEM_DATA_MINUS1, ITEM_DATA_MINUS1_NULL, ITEM_ANOTHER_NULL, ITEM_STRING_NULL2, ITEM_STRING_1, ITEM_STRING_2 });
+        ic.sort(new Object[] { PROPERTY_INTEGER_NOT_NULL,
+                PROPERTY_INTEGER_NULL2, PROPERTY_STRING_ID },
+                new boolean[] { true, false, true });
+        verifyOrder(ic,
+                new String[] { ITEM_DATA_MINUS2, ITEM_DATA_MINUS2_NULL,
+                        ITEM_DATA_MINUS1, ITEM_DATA_MINUS1_NULL,
+                        ITEM_ANOTHER_NULL, ITEM_STRING_NULL2, ITEM_STRING_1,
+                        ITEM_STRING_2 });
 
-        ic.sort(new Object[] { PROPERTY_INTEGER_NOT_NULL, PROPERTY_INTEGER_NULL2, PROPERTY_STRING_ID }, new boolean[] { true, true, true });
-        verifyOrder(ic, new String[] { ITEM_DATA_MINUS2_NULL, ITEM_DATA_MINUS2, ITEM_DATA_MINUS1_NULL, ITEM_DATA_MINUS1, ITEM_ANOTHER_NULL, ITEM_STRING_NULL2, ITEM_STRING_1, ITEM_STRING_2 });
+        ic.sort(new Object[] { PROPERTY_INTEGER_NOT_NULL,
+                PROPERTY_INTEGER_NULL2, PROPERTY_STRING_ID },
+                new boolean[] { true, true, true });
+        verifyOrder(ic,
+                new String[] { ITEM_DATA_MINUS2_NULL, ITEM_DATA_MINUS2,
+                        ITEM_DATA_MINUS1_NULL, ITEM_DATA_MINUS1,
+                        ITEM_ANOTHER_NULL, ITEM_STRING_NULL2, ITEM_STRING_1,
+                        ITEM_STRING_2 });
 
     }
 
@@ -74,9 +93,21 @@ public class ContainerSortingTest extends TestCase {
         HierarchicalContainer hc = new HierarchicalContainer();
         populateContainer(hc);
         hc.sort(new Object[] { "name" }, new boolean[] { true });
-        verifyOrder(hc, new String[] { "Audi", "C++", "Call of Duty", "Cars", "English", "Fallout", "Finnish", "Ford", "Games", "Java", "Might and Magic", "Natural languages", "PHP", "Programming languages", "Python", "Red Alert", "Swedish", "Toyota", "Volvo" });
-        TestUtil.assertArrays(hc.rootItemIds().toArray(), new Integer[] { nameToId.get("Cars"), nameToId.get("Games"), nameToId.get("Natural languages"), nameToId.get("Programming languages") });
-        TestUtil.assertArrays(hc.getChildren(nameToId.get("Games")).toArray(), new Integer[] { nameToId.get("Call of Duty"), nameToId.get("Fallout"), nameToId.get("Might and Magic"), nameToId.get("Red Alert") });
+        verifyOrder(hc,
+                new String[] { "Audi", "C++", "Call of Duty", "Cars", "English",
+                        "Fallout", "Finnish", "Ford", "Games", "Java",
+                        "Might and Magic", "Natural languages", "PHP",
+                        "Programming languages", "Python", "Red Alert",
+                        "Swedish", "Toyota", "Volvo" });
+        TestUtil.assertArrays(hc.rootItemIds().toArray(),
+                new Integer[] { nameToId.get("Cars"), nameToId.get("Games"),
+                        nameToId.get("Natural languages"),
+                        nameToId.get("Programming languages") });
+        TestUtil.assertArrays(hc.getChildren(nameToId.get("Games")).toArray(),
+                new Integer[] { nameToId.get("Call of Duty"),
+                        nameToId.get("Fallout"),
+                        nameToId.get("Might and Magic"),
+                        nameToId.get("Red Alert") });
     }
 
     private static void populateContainer(HierarchicalContainer container) {
@@ -111,7 +142,8 @@ public class ContainerSortingTest extends TestCase {
     private static Map<String, Integer> nameToId = new HashMap<String, Integer>();
     private static Map<Integer, String> idToName = new HashMap<Integer, String>();
 
-    public static void addItem(IndexedContainer container, String string, String parent) {
+    public static void addItem(IndexedContainer container, String string,
+            String parent) {
         nameToId.put(string, index);
         idToName.put(index, string);
 
@@ -119,7 +151,8 @@ public class ContainerSortingTest extends TestCase {
         item.getItemProperty("name").setValue(string);
 
         if (parent != null && container instanceof HierarchicalContainer) {
-            ((HierarchicalContainer) container).setParent(index, nameToId.get(parent));
+            ((HierarchicalContainer) container).setParent(index,
+                    nameToId.get(parent));
         }
 
         index++;
@@ -132,7 +165,8 @@ public class ContainerSortingTest extends TestCase {
         int index = 0;
         while (i.hasNext()) {
             Object o = i.next();
-            if (o.getClass() == Integer.class && idOrder[index].getClass() == String.class) {
+            if (o.getClass() == Integer.class
+                    && idOrder[index].getClass() == String.class) {
                 o = idToName.get(o);
             }
             actual[index++] = o;
@@ -153,7 +187,8 @@ public class ContainerSortingTest extends TestCase {
         addItem(ic, ITEM_DATA_MINUS2_NULL, null, -2, null);
     }
 
-    private Item addItem(Container ic, String id, String string_null, int integer, Integer integer_null) {
+    private Item addItem(Container ic, String id, String string_null,
+            int integer, Integer integer_null) {
         Item i = ic.addItem(id);
         i.getItemProperty(PROPERTY_STRING_ID).setValue(id);
         i.getItemProperty(PROPERTY_STRING_NULL).setValue(string_null);

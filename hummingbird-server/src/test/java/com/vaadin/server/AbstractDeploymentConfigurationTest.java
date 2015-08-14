@@ -33,29 +33,38 @@ public class AbstractDeploymentConfigurationTest {
     @Test
     public void getUIClass_returnsUIParameterPropertyValue() {
         String ui = UUID.randomUUID().toString();
-        DeploymentConfiguration config = getConfig(VaadinSession.UI_PARAMETER, ui);
-        Assert.assertEquals("Unexpected UI class configuration option value", ui, config.getUIClassName());
+        DeploymentConfiguration config = getConfig(VaadinSession.UI_PARAMETER,
+                ui);
+        Assert.assertEquals("Unexpected UI class configuration option value",
+                ui, config.getUIClassName());
     }
 
     @Test
     public void getUIProviderClass_returnsUIProviderPropertyValue() {
         String uiProvider = UUID.randomUUID().toString();
-        DeploymentConfiguration config = getConfig(Constants.SERVLET_PARAMETER_UI_PROVIDER, uiProvider);
-        Assert.assertEquals("Unexpected UI providerclass configuration option value", uiProvider, config.getUIProviderClassName());
+        DeploymentConfiguration config = getConfig(
+                Constants.SERVLET_PARAMETER_UI_PROVIDER, uiProvider);
+        Assert.assertEquals(
+                "Unexpected UI providerclass configuration option value",
+                uiProvider, config.getUIProviderClassName());
     }
 
     @Test
     public void getResourcesPath_returnsResourcesPathPropertyValue() {
         String resources = UUID.randomUUID().toString();
-        DeploymentConfiguration config = getConfig(Constants.PARAMETER_VAADIN_RESOURCES, resources);
-        Assert.assertEquals("Unexpected resources path configuration option value", resources, config.getResourcesPath());
+        DeploymentConfiguration config = getConfig(
+                Constants.PARAMETER_VAADIN_RESOURCES, resources);
+        Assert.assertEquals(
+                "Unexpected resources path configuration option value",
+                resources, config.getResourcesPath());
     }
 
     @Test
     public void getClassLoader_returnsClassloaderPropertyValue() {
         String classLoader = UUID.randomUUID().toString();
         DeploymentConfiguration config = getConfig("ClassLoader", classLoader);
-        Assert.assertEquals("Unexpected classLoader configuration option value", classLoader, config.getClassLoaderName());
+        Assert.assertEquals("Unexpected classLoader configuration option value",
+                classLoader, config.getClassLoaderName());
     }
 
     private DeploymentConfiguration getConfig(String property, String value) {
@@ -66,7 +75,8 @@ public class AbstractDeploymentConfigurationTest {
         return new DeploymentConfigImpl(props);
     }
 
-    private static class DeploymentConfigImpl extends AbstractDeploymentConfiguration {
+    private static class DeploymentConfigImpl
+            extends AbstractDeploymentConfiguration {
 
         private Properties properties;
 
@@ -115,7 +125,8 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public String getApplicationOrSystemProperty(String propertyName, String defaultValue) {
+        public String getApplicationOrSystemProperty(String propertyName,
+                String defaultValue) {
             return properties.getProperty(propertyName, defaultValue);
         }
 

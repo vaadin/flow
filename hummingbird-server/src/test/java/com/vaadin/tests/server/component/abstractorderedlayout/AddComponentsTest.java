@@ -18,7 +18,8 @@ import com.vaadin.ui.VerticalLayout;
 
 public class AddComponentsTest {
 
-    Component[] children = new Component[] { new Label("A"), new Label("B"), new Label("C"), new Label("D") };
+    Component[] children = new Component[] { new Label("A"), new Label("B"),
+            new Label("C"), new Label("D") };
 
     @Test
     public void moveComponentsBetweenLayouts() {
@@ -118,7 +119,8 @@ public class AddComponentsTest {
         assertSame(extra, layout1.getComponent(4));
 
         layout1.removeAllComponents();
-        layout1.addComponents(children[3], children[2], children[1], children[0]);
+        layout1.addComponents(children[3], children[2], children[1],
+                children[0]);
         assertOrder(layout1, new int[] { 3, 2, 1, 0 });
 
         VerticalLayout layout2 = new VerticalLayout(children);
@@ -129,7 +131,8 @@ public class AddComponentsTest {
         assertSame(extra, layout2.getComponent(4));
 
         layout2.removeAllComponents();
-        layout2.addComponents(children[3], children[2], children[1], children[0]);
+        layout2.addComponents(children[3], children[2], children[1],
+                children[0]);
         assertOrder(layout2, new int[] { 3, 2, 1, 0 });
     }
 

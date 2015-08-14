@@ -42,7 +42,8 @@ public class FileUploadHandlerTest {
             public int read() throws IOException {
                 counter++;
                 if (counter > 6) {
-                    throw new RuntimeException("-1 is ignored by FileUploadHandler");
+                    throw new RuntimeException(
+                            "-1 is ignored by FileUploadHandler");
                 }
                 return -1;
             }
@@ -55,7 +56,8 @@ public class FileUploadHandlerTest {
 
     @Test(expected = IOException.class)
     public void testStreamEnded() throws IOException {
-        handler.doHandleSimpleMultipartFileUpload(null, request, null, null, null, null, null);
+        handler.doHandleSimpleMultipartFileUpload(null, request, null, null,
+                null, null, null);
 
     }
 

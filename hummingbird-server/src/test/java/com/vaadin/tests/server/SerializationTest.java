@@ -38,17 +38,20 @@ public class SerializationTest extends TestCase {
     }
 
     public void testMethodPropertyGetter() throws Exception {
-        MethodProperty<?> mp = new MethodProperty<Object>(new Data(), "dummyGetter");
+        MethodProperty<?> mp = new MethodProperty<Object>(new Data(),
+                "dummyGetter");
         serializeAndDeserialize(mp);
     }
 
     public void testMethodPropertyGetterAndSetter() throws Exception {
-        MethodProperty<?> mp = new MethodProperty<Object>(new Data(), "dummyGetterAndSetter");
+        MethodProperty<?> mp = new MethodProperty<Object>(new Data(),
+                "dummyGetterAndSetter");
         serializeAndDeserialize(mp);
     }
 
     public void testMethodPropertyInt() throws Exception {
-        MethodProperty<?> mp = new MethodProperty<Object>(new Data(), "dummyInt");
+        MethodProperty<?> mp = new MethodProperty<Object>(new Data(),
+                "dummyInt");
         serializeAndDeserialize(mp);
     }
 
@@ -57,17 +60,21 @@ public class SerializationTest extends TestCase {
 
         session = serializeAndDeserialize(session);
 
-        assertNotNull("Pending access queue was not recreated after deserialization", session.getPendingAccessQueue());
+        assertNotNull(
+                "Pending access queue was not recreated after deserialization",
+                session.getPendingAccessQueue());
     }
 
-    private static <S extends Serializable> S serializeAndDeserialize(S s) throws IOException, ClassNotFoundException {
+    private static <S extends Serializable> S serializeAndDeserialize(S s)
+            throws IOException, ClassNotFoundException {
         // Serialize and deserialize
 
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
         out.writeObject(s);
         byte[] data = bs.toByteArray();
-        ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data));
+        ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(data));
         @SuppressWarnings("unchecked")
         S s2 = (S) in.readObject();
 

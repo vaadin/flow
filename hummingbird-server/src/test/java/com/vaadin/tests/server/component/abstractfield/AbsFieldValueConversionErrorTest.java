@@ -16,7 +16,9 @@ import com.vaadin.ui.TextField;
 
 public class AbsFieldValueConversionErrorTest extends TestCase {
 
-    Person paulaBean = new Person("Paula", "Brilliant", "paula@brilliant.com", 34, Sex.FEMALE, new Address("Paula street 1", 12345, "P-town", Country.FINLAND));
+    Person paulaBean = new Person("Paula", "Brilliant", "paula@brilliant.com",
+            34, Sex.FEMALE,
+            new Address("Paula street 1", 12345, "P-town", Country.FINLAND));
 
     public void testValidateConversionErrorParameters() {
         TextField tf = new TextField();
@@ -28,7 +30,9 @@ public class AbsFieldValueConversionErrorTest extends TestCase {
             tf.validate();
             fail();
         } catch (InvalidValueException e) {
-            Assert.assertEquals("(Type: Integer) Converter exception message: Could not convert 'abc' to java.lang.Integer", e.getMessage());
+            Assert.assertEquals(
+                    "(Type: Integer) Converter exception message: Could not convert 'abc' to java.lang.Integer",
+                    e.getMessage());
         }
 
     }
@@ -43,7 +47,9 @@ public class AbsFieldValueConversionErrorTest extends TestCase {
             tf.getConvertedValue();
             fail();
         } catch (ConversionException e) {
-            Assert.assertEquals("(Type: Integer) Converter exception message: Could not convert 'abc' to java.lang.Integer", e.getMessage());
+            Assert.assertEquals(
+                    "(Type: Integer) Converter exception message: Could not convert 'abc' to java.lang.Integer",
+                    e.getMessage());
         }
 
     }
@@ -73,7 +79,8 @@ public class AbsFieldValueConversionErrorTest extends TestCase {
             tf.validate();
             fail();
         } catch (InvalidValueException e) {
-            Assert.assertEquals("Could not convert value to Integer", e.getMessage());
+            Assert.assertEquals("Could not convert value to Integer",
+                    e.getMessage());
         }
 
     }

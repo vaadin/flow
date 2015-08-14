@@ -35,7 +35,8 @@ import com.vaadin.ui.TextField;
 public class TransactionalPropertyWrapperTest {
 
     @SuppressWarnings("serial")
-    public class TestingProperty<T extends Object> extends ObjectProperty<Object> {
+    public class TestingProperty<T extends Object>
+            extends ObjectProperty<Object> {
 
         private List<ValueChangeListener> listeners = new ArrayList<ValueChangeListener>();
 
@@ -65,12 +66,14 @@ public class TransactionalPropertyWrapperTest {
     private final TextField nameField = new TextField("Name");
     private final TextField ageField = new TextField("Age");
     private final TextField unboundField = new TextField("No FieldGroup");
-    private final TestingProperty<String> unboundProp = new TestingProperty<String>("Hello World");
+    private final TestingProperty<String> unboundProp = new TestingProperty<String>(
+            "Hello World");
     private final PropertysetItem item = new PropertysetItem();
 
     @Test
     public void fieldGroupBindAndUnbind() {
-        item.addItemProperty("name", new TestingProperty<String>("Just some text"));
+        item.addItemProperty("name",
+                new TestingProperty<String>("Just some text"));
         item.addItemProperty("age", new TestingProperty<String>("42"));
 
         final FieldGroup binder = new FieldGroup(item);
@@ -87,7 +90,8 @@ public class TransactionalPropertyWrapperTest {
             binder.unbind(ageField);
             unboundField.setPropertyDataSource(null);
 
-            assertTrue("Listeners in Properties after unbinding", fieldsHaveListeners(false));
+            assertTrue("Listeners in Properties after unbinding",
+                    fieldsHaveListeners(false));
         }
     }
 
@@ -100,7 +104,8 @@ public class TransactionalPropertyWrapperTest {
      */
     private boolean fieldsHaveListeners(boolean expected) {
         for (Object id : item.getItemPropertyIds()) {
-            TestingProperty<?> itemProperty = (TestingProperty<?>) item.getItemProperty(id);
+            TestingProperty<?> itemProperty = (TestingProperty<?>) item
+                    .getItemProperty(id);
 
             if (itemProperty.hasListeners() != expected) {
                 return false;

@@ -383,7 +383,8 @@ public class MockServletContext implements ServletContext {
      * java.lang.Class)
      */
     @Override
-    public Dynamic addServlet(String servletName, Class<? extends Servlet> servletClass) {
+    public Dynamic addServlet(String servletName,
+            Class<? extends Servlet> servletClass) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -394,7 +395,8 @@ public class MockServletContext implements ServletContext {
      * @see javax.servlet.ServletContext#createServlet(java.lang.Class)
      */
     @Override
-    public <T extends Servlet> T createServlet(Class<T> clazz) throws ServletException {
+    public <T extends Servlet> T createServlet(Class<T> clazz)
+            throws ServletException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -429,7 +431,8 @@ public class MockServletContext implements ServletContext {
      * java.lang.String)
      */
     @Override
-    public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName, String className) {
+    public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName,
+            String className) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -441,7 +444,8 @@ public class MockServletContext implements ServletContext {
      * javax.servlet.Filter)
      */
     @Override
-    public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
+    public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName,
+            Filter filter) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -453,7 +457,8 @@ public class MockServletContext implements ServletContext {
      * java.lang.Class)
      */
     @Override
-    public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName, Class<? extends Filter> filterClass) {
+    public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName,
+            Class<? extends Filter> filterClass) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -464,7 +469,8 @@ public class MockServletContext implements ServletContext {
      * @see javax.servlet.ServletContext#createFilter(java.lang.Class)
      */
     @Override
-    public <T extends Filter> T createFilter(Class<T> clazz) throws ServletException {
+    public <T extends Filter> T createFilter(Class<T> clazz)
+            throws ServletException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -508,7 +514,8 @@ public class MockServletContext implements ServletContext {
      * @see javax.servlet.ServletContext#setSessionTrackingModes(java.util.Set)
      */
     @Override
-    public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
+    public void setSessionTrackingModes(
+            Set<SessionTrackingMode> sessionTrackingModes) {
         // TODO Auto-generated method stub
 
     }
@@ -574,7 +581,8 @@ public class MockServletContext implements ServletContext {
      * @see javax.servlet.ServletContext#createListener(java.lang.Class)
      */
     @Override
-    public <T extends EventListener> T createListener(Class<T> clazz) throws ServletException {
+    public <T extends EventListener> T createListener(Class<T> clazz)
+            throws ServletException {
         // TODO Auto-generated method stub
         return null;
     }

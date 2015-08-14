@@ -8,7 +8,8 @@ import com.vaadin.data.Property;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.PropertysetItem;
 
-public abstract class AbstractFilterTestBase<FILTERTYPE extends Filter> extends TestCase {
+public abstract class AbstractFilterTestBase<FILTERTYPE extends Filter>
+        extends TestCase {
 
     protected static final String PROPERTY1 = "property1";
     protected static final String PROPERTY2 = "property2";
@@ -65,13 +66,15 @@ public abstract class AbstractFilterTestBase<FILTERTYPE extends Filter> extends 
         }
 
         @Override
-        public boolean passesFilter(Object itemId, Item item) throws UnsupportedOperationException {
+        public boolean passesFilter(Object itemId, Item item)
+                throws UnsupportedOperationException {
             return this.item == item;
         }
 
         @Override
         public boolean appliesToProperty(Object propertyId) {
-            return this.propertyId != null ? this.propertyId.equals(propertyId) : true;
+            return this.propertyId != null ? this.propertyId.equals(propertyId)
+                    : true;
         }
 
         @Override
@@ -80,7 +83,9 @@ public abstract class AbstractFilterTestBase<FILTERTYPE extends Filter> extends 
                 return false;
             }
             SameItemFilter other = (SameItemFilter) obj;
-            return item == other.item && (propertyId == null ? other.propertyId == null : propertyId.equals(other.propertyId));
+            return item == other.item
+                    && (propertyId == null ? other.propertyId == null
+                            : propertyId.equals(other.propertyId));
         }
 
         @Override

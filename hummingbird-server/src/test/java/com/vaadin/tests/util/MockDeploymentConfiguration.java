@@ -7,7 +7,8 @@ import java.util.Properties;
 import com.vaadin.server.AbstractDeploymentConfiguration;
 import com.vaadin.shared.communication.PushMode;
 
-public class MockDeploymentConfiguration extends AbstractDeploymentConfiguration {
+public class MockDeploymentConfiguration
+        extends AbstractDeploymentConfiguration {
 
     private boolean productionMode = false;
     private boolean xsrfProtectionEnabled = true;
@@ -98,7 +99,8 @@ public class MockDeploymentConfiguration extends AbstractDeploymentConfiguration
     }
 
     @Override
-    public String getApplicationOrSystemProperty(String propertyName, String defaultValue) {
+    public String getApplicationOrSystemProperty(String propertyName,
+            String defaultValue) {
         if (applicationOrSystemProperty.containsKey(propertyName)) {
             return applicationOrSystemProperty.get(propertyName);
         } else {

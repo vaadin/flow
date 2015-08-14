@@ -23,7 +23,9 @@ import com.vaadin.ui.TextField;
 
 public class AbsFieldValueConversionsTest extends TestCase {
 
-    Person paulaBean = new Person("Paula", "Brilliant", "paula@brilliant.com", 34, Sex.FEMALE, new Address("Paula street 1", 12345, "P-town", Country.FINLAND));
+    Person paulaBean = new Person("Paula", "Brilliant", "paula@brilliant.com",
+            34, Sex.FEMALE,
+            new Address("Paula street 1", 12345, "P-town", Country.FINLAND));
 
     /**
      * Java uses a non-breaking space (ascii 160) instead of space when
@@ -33,7 +35,8 @@ public class AbsFieldValueConversionsTest extends TestCase {
 
     public void testWithoutConversion() {
         TextField tf = new TextField();
-        tf.setPropertyDataSource(new MethodProperty<String>(paulaBean, "firstName"));
+        tf.setPropertyDataSource(
+                new MethodProperty<String>(paulaBean, "firstName"));
         assertEquals("Paula", tf.getValue());
         assertEquals("Paula", tf.getPropertyDataSource().getValue());
         tf.setValue("abc");
@@ -53,7 +56,8 @@ public class AbsFieldValueConversionsTest extends TestCase {
         assertEquals("123,456,789", tf.getValue());
         tf.setLocale(new Locale("fi", "FI"));
         assertEquals((Integer) 123456789, ds.getValue());
-        assertEquals("123" + FORMATTED_SPACE + "456" + FORMATTED_SPACE + "789", tf.getValue());
+        assertEquals("123" + FORMATTED_SPACE + "456" + FORMATTED_SPACE + "789",
+                tf.getValue());
 
     }
 
@@ -81,12 +85,14 @@ public class AbsFieldValueConversionsTest extends TestCase {
         tf.setConverter(new Converter<String, String>() {
 
             @Override
-            public String convertToModel(String value, Class<? extends String> targetType, Locale locale) {
+            public String convertToModel(String value,
+                    Class<? extends String> targetType, Locale locale) {
                 return value;
             }
 
             @Override
-            public String convertToPresentation(String value, Class<? extends String> targetType, Locale locale) {
+            public String convertToPresentation(String value,
+                    Class<? extends String> targetType, Locale locale) {
                 return value;
             }
 
@@ -100,7 +106,8 @@ public class AbsFieldValueConversionsTest extends TestCase {
                 return String.class;
             }
         });
-        tf.setPropertyDataSource(new MethodProperty<String>(paulaBean, "firstName"));
+        tf.setPropertyDataSource(
+                new MethodProperty<String>(paulaBean, "firstName"));
         assertEquals("Paula", tf.getValue());
         assertEquals("Paula", tf.getPropertyDataSource().getValue());
         tf.setValue("abc");
@@ -136,7 +143,8 @@ public class AbsFieldValueConversionsTest extends TestCase {
         assertEquals("123,456,789", tf.getValue());
         tf.setLocale(new Locale("fi", "FI"));
         assertEquals((Integer) 123456789, ds.getValue());
-        assertEquals("123" + FORMATTED_SPACE + "456" + FORMATTED_SPACE + "789", tf.getValue());
+        assertEquals("123" + FORMATTED_SPACE + "456" + FORMATTED_SPACE + "789",
+                tf.getValue());
     }
 
     public void testBooleanNullConversion() {
@@ -144,7 +152,8 @@ public class AbsFieldValueConversionsTest extends TestCase {
         cb.setConverter(new Converter<Boolean, Boolean>() {
 
             @Override
-            public Boolean convertToModel(Boolean value, Class<? extends Boolean> targetType, Locale locale) {
+            public Boolean convertToModel(Boolean value,
+                    Class<? extends Boolean> targetType, Locale locale) {
                 // value from a CheckBox should never be null as long as it is
                 // not set to null (handled by conversion below).
                 assertNotNull(value);
@@ -152,7 +161,8 @@ public class AbsFieldValueConversionsTest extends TestCase {
             }
 
             @Override
-            public Boolean convertToPresentation(Boolean value, Class<? extends Boolean> targetType, Locale locale) {
+            public Boolean convertToPresentation(Boolean value,
+                    Class<? extends Boolean> targetType, Locale locale) {
                 // Datamodel -> field
                 if (value == null) {
                     return false;
@@ -172,11 +182,13 @@ public class AbsFieldValueConversionsTest extends TestCase {
             }
 
         });
-        MethodProperty<Boolean> property = new MethodProperty<Boolean>(paulaBean, "deceased");
+        MethodProperty<Boolean> property = new MethodProperty<Boolean>(
+                paulaBean, "deceased");
         cb.setPropertyDataSource(property);
         assertEquals(Boolean.FALSE, property.getValue());
         assertEquals(Boolean.FALSE, cb.getValue());
-        Boolean newDmValue = cb.getConverter().convertToPresentation(cb.getValue(), Boolean.class, new Locale("fi", "FI"));
+        Boolean newDmValue = cb.getConverter().convertToPresentation(
+                cb.getValue(), Boolean.class, new Locale("fi", "FI"));
         assertEquals(Boolean.FALSE, newDmValue);
 
         // FIXME: Should be able to set to false here to cause datamodel to be
@@ -227,7 +239,9 @@ public class AbsFieldValueConversionsTest extends TestCase {
 
         tf.setPropertyDataSource(new MethodProperty<Number>(nb, "number"));
         Converter c2 = tf.getConverter();
-        assertTrue("StringToInteger converter is ok for integer types and should stay even though property is changed", c1 == c2);
+        assertTrue(
+                "StringToInteger converter is ok for integer types and should stay even though property is changed",
+                c1 == c2);
         assertEquals(490, tf.getPropertyDataSource().getValue());
         assertEquals("490", tf.getValue());
 
@@ -242,7 +256,8 @@ public class AbsFieldValueConversionsTest extends TestCase {
         try {
             Object v = tf.getConvertedValue();
             System.out.println(v);
-            Assert.fail("Trying to convert String -> Integer should fail when there is no converter");
+            Assert.fail(
+                    "Trying to convert String -> Integer should fail when there is no converter");
         } catch (ConversionException e) {
             // ok, should happen when there is no converter but conversion is
             // needed

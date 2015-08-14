@@ -57,7 +57,8 @@ public class FieldGroupTests {
         Bean bean = new Bean();
         FieldGroup group = new FieldGroup() {
             @Override
-            protected <T> Transactional<T> wrapInTransactionalProperty(Property<T> itemProperty) {
+            protected <T> Transactional<T> wrapInTransactionalProperty(
+                    Property<T> itemProperty) {
                 return new TransactionalPropertyImpl(itemProperty);
             }
         };
@@ -66,10 +67,14 @@ public class FieldGroupTests {
         group.bind(field, "name");
 
         Property propertyDataSource = field.getPropertyDataSource();
-        Assert.assertTrue("Custom implementation of transactional property " + "has not been used", propertyDataSource instanceof TransactionalPropertyImpl);
+        Assert.assertTrue(
+                "Custom implementation of transactional property "
+                        + "has not been used",
+                propertyDataSource instanceof TransactionalPropertyImpl);
     }
 
-    public static class TransactionalPropertyImpl<T> extends TransactionalPropertyWrapper<T> {
+    public static class TransactionalPropertyImpl<T>
+            extends TransactionalPropertyWrapper<T> {
 
         public TransactionalPropertyImpl(Property<T> wrappedProperty) {
             super(wrappedProperty);

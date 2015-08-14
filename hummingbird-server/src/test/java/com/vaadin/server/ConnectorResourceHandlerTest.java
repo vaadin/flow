@@ -41,7 +41,8 @@ public class ConnectorResourceHandlerTest {
         response = control.createMock(VaadinResponse.class);
         VaadinService service = control.createMock(VaadinService.class);
 
-        EasyMock.expect(request.getPathInfo()).andReturn("/APP/connector/0/1/2");
+        EasyMock.expect(request.getPathInfo())
+                .andReturn("/APP/connector/0/1/2");
 
         control.replay();
 
@@ -56,7 +57,8 @@ public class ConnectorResourceHandlerTest {
 
         session.lock();
         try {
-            session.setCommunicationManager(new LegacyCommunicationManager(session));
+            session.setCommunicationManager(
+                    new LegacyCommunicationManager(session));
             ui.setSession(session);
             session.addUI(ui);
         } finally {
@@ -73,7 +75,8 @@ public class ConnectorResourceHandlerTest {
 
         Button button = new Button() {
             @Override
-            public boolean handleConnectorRequest(VaadinRequest request, VaadinResponse response, String path) {
+            public boolean handleConnectorRequest(VaadinRequest request,
+                    VaadinResponse response, String path) {
                 throw new RuntimeException();
             }
         };

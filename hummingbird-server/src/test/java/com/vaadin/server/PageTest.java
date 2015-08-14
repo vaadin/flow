@@ -35,7 +35,8 @@ public class PageTest {
 
     @Test
     public void removeBrowserWindowResizeListener_listenerIsAttached_listenerRemoved() {
-        Page page = new Page(EasyMock.createMock(UI.class), EasyMock.createMock(PageState.class));
+        Page page = new Page(EasyMock.createMock(UI.class),
+                EasyMock.createMock(PageState.class));
 
         TestBrowserWindowResizeListener listener = new TestBrowserWindowResizeListener();
         page.addBrowserWindowResizeListener(listener);
@@ -43,17 +44,22 @@ public class PageTest {
 
         page.updateBrowserWindowSize(0, 0, true);
 
-        Assert.assertFalse("Listener is called after removal", listener.isCalled());
+        Assert.assertFalse("Listener is called after removal",
+                listener.isCalled());
     }
 
     @Test
     public void removeBrowserWindowResizeListener_listenerIsNotAttached_stateIsUpdated() {
-        TestPage page = new TestPage(EasyMock.createMock(UI.class), EasyMock.createMock(PageState.class));
+        TestPage page = new TestPage(EasyMock.createMock(UI.class),
+                EasyMock.createMock(PageState.class));
 
-        BrowserWindowResizeListener listener = EasyMock.createMock(BrowserWindowResizeListener.class);
+        BrowserWindowResizeListener listener = EasyMock
+                .createMock(BrowserWindowResizeListener.class);
         page.removeBrowserWindowResizeListener(listener);
 
-        Assert.assertFalse("Page state 'hasResizeListeners' property has wrong value", page.getState(false).hasResizeListeners);
+        Assert.assertFalse(
+                "Page state 'hasResizeListeners' property has wrong value",
+                page.getState(false).hasResizeListeners);
     }
 
     private static class TestPage extends Page {
@@ -69,7 +75,8 @@ public class PageTest {
 
     }
 
-    private static class TestBrowserWindowResizeListener implements BrowserWindowResizeListener {
+    private static class TestBrowserWindowResizeListener
+            implements BrowserWindowResizeListener {
 
         @Override
         public void browserWindowResized(BrowserWindowResizeEvent event) {

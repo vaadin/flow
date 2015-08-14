@@ -61,7 +61,8 @@ public class BeanFieldGroupTest {
 
     @Test
     public void propertyTypeWithoutItem() {
-        BeanFieldGroup<Sub2> s = new BeanFieldGroup<BeanFieldGroupTest.Sub2>(Sub2.class);
+        BeanFieldGroup<Sub2> s = new BeanFieldGroup<BeanFieldGroupTest.Sub2>(
+                Sub2.class);
         Assert.assertEquals(boolean.class, s.getPropertyType("sub2field"));
         Assert.assertEquals(Integer.class, s.getPropertyType("sub1Field"));
         Assert.assertEquals(String.class, s.getPropertyType("mainField"));

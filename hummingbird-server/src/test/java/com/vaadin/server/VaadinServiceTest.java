@@ -42,8 +42,10 @@ public class VaadinServiceTest {
         }
     }
 
-    private String createCriticalNotification(String caption, String message, String details, String url) {
-        return VaadinService.createCriticalNotificationJSON(caption, message, details, url);
+    private String createCriticalNotification(String caption, String message,
+            String details, String url) {
+        return VaadinService.createCriticalNotificationJSON(caption, message,
+                details, url);
     }
 
     @Test
@@ -59,67 +61,82 @@ public class VaadinServiceTest {
 
         MockVaadinSession vaadinSession = new MockVaadinSession(service);
         service.fireSessionDestroy(vaadinSession);
-        Assert.assertEquals("'fireSessionDestroy' method doesn't call 'close' for the session", 1, vaadinSession.getCloseCount());
+        Assert.assertEquals(
+                "'fireSessionDestroy' method doesn't call 'close' for the session",
+                1, vaadinSession.getCloseCount());
 
-        vaadinSession.valueUnbound(EasyMock.createMock(HttpSessionBindingEvent.class));
+        vaadinSession.valueUnbound(
+                EasyMock.createMock(HttpSessionBindingEvent.class));
 
-        Assert.assertEquals("'fireSessionDestroy' method may not call 'close' " + "method for closing session", 1, vaadinSession.getCloseCount());
+        Assert.assertEquals(
+                "'fireSessionDestroy' method may not call 'close' "
+                        + "method for closing session",
+                1, vaadinSession.getCloseCount());
 
-        Assert.assertEquals("SessionDestroyListeners not called exactly once", 1, listener.callCount);
+        Assert.assertEquals("SessionDestroyListeners not called exactly once",
+                1, listener.callCount);
     }
 
     @Test
     public void captionIsSetToACriticalNotification() {
-        String notification = createCriticalNotification("foobar", "message", "details", "url");
+        String notification = createCriticalNotification("foobar", "message",
+                "details", "url");
 
         assertThat(notification, containsString("\"caption\":\"foobar\""));
     }
 
     @Test
     public void nullCaptionIsSetToACriticalNotification() {
-        String notification = createCriticalNotification(null, "message", "details", "url");
+        String notification = createCriticalNotification(null, "message",
+                "details", "url");
 
         assertThat(notification, containsString("\"caption\":null"));
     }
 
     @Test
     public void messageWithDetailsIsSetToACriticalNotification() {
-        String notification = createCriticalNotification("caption", "foo", "bar", "url");
+        String notification = createCriticalNotification("caption", "foo",
+                "bar", "url");
 
         assertThat(notification, containsString("\"details\":\"bar\""));
     }
 
     @Test
     public void nullMessageSentAsNullInACriticalNotification() {
-        String notification = createCriticalNotification("caption", null, "foobar", "url");
+        String notification = createCriticalNotification("caption", null,
+                "foobar", "url");
 
         assertThat(notification, containsString("\"message\":null"));
     }
 
     @Test
     public void nullMessageIsSetToACriticalNotification() {
-        String notification = createCriticalNotification("caption", null, null, "url");
+        String notification = createCriticalNotification("caption", null, null,
+                "url");
 
         assertThat(notification, containsString("\"message\":null"));
     }
 
     @Test
     public void messageSetToACriticalNotification() {
-        String notification = createCriticalNotification("caption", "foobar", null, "url");
+        String notification = createCriticalNotification("caption", "foobar",
+                null, "url");
 
         assertThat(notification, containsString("\"message\":\"foobar\""));
     }
 
     @Test
     public void urlIsSetToACriticalNotification() {
-        String notification = createCriticalNotification("caption", "message", "details", "foobar");
+        String notification = createCriticalNotification("caption", "message",
+                "details", "foobar");
 
         assertThat(notification, containsString("\"url\":\"foobar\""));
     }
 
     @Test
     public void nullUrlIsSetToACriticalNotification() {
-        String notification = createCriticalNotification("caption", "message", "details", null);
+        String notification = createCriticalNotification("caption", "message",
+                "details", null);
 
         assertThat(notification, containsString("\"url\":null"));
     }

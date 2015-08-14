@@ -45,7 +45,8 @@ public class JSONSerializerTest extends TestCase {
     HashMap<AbstractSplitPanelState, String> stateToStringMap;
 
     public void testStringToBeanMapSerialization() throws Exception {
-        Type mapType = getClass().getDeclaredField("stringToStateMap").getGenericType();
+        Type mapType = getClass().getDeclaredField("stringToStateMap")
+                .getGenericType();
         stringToStateMap = new HashMap<String, AbstractSplitPanelState>();
         AbstractSplitPanelState s = new AbstractSplitPanelState();
         AbstractSplitPanelState s2 = new AbstractSplitPanelState();
@@ -56,13 +57,16 @@ public class JSONSerializerTest extends TestCase {
         stringToStateMap.put("string - state 1", s);
         stringToStateMap.put("String - state 2", s2);
 
-        JsonValue encodedMap = JsonCodec.encode(stringToStateMap, null, mapType, null).getEncodedValue();
+        JsonValue encodedMap = JsonCodec
+                .encode(stringToStateMap, null, mapType, null)
+                .getEncodedValue();
 
         ensureDecodedCorrectly(stringToStateMap, encodedMap, mapType);
     }
 
     public void testBeanToStringMapSerialization() throws Exception {
-        Type mapType = getClass().getDeclaredField("stateToStringMap").getGenericType();
+        Type mapType = getClass().getDeclaredField("stateToStringMap")
+                .getGenericType();
         stateToStringMap = new HashMap<AbstractSplitPanelState, String>();
         AbstractSplitPanelState s = new AbstractSplitPanelState();
         AbstractSplitPanelState s2 = new AbstractSplitPanelState();
@@ -71,7 +75,9 @@ public class JSONSerializerTest extends TestCase {
         stateToStringMap.put(s, "string - state 1");
         stateToStringMap.put(s2, "String - state 2");
 
-        JsonValue encodedMap = JsonCodec.encode(stateToStringMap, null, mapType, null).getEncodedValue();
+        JsonValue encodedMap = JsonCodec
+                .encode(stateToStringMap, null, mapType, null)
+                .getEncodedValue();
 
         ensureDecodedCorrectly(stateToStringMap, encodedMap, mapType);
     }
@@ -80,7 +86,8 @@ public class JSONSerializerTest extends TestCase {
         JsonArray inputArray = Json.createArray();
         inputArray.set(0, "n");
         inputArray.set(1, Json.createNull());
-        UidlValue decodedObject = (UidlValue) JsonCodec.decodeInternalType(UidlValue.class, true, inputArray, null);
+        UidlValue decodedObject = (UidlValue) JsonCodec
+                .decodeInternalType(UidlValue.class, true, inputArray, null);
         assertNull(decodedObject.getValue());
     }
 
@@ -89,7 +96,8 @@ public class JSONSerializerTest extends TestCase {
             JsonArray inputArray = Json.createArray();
             inputArray.set(0, "n");
             inputArray.set(1, "a");
-            UidlValue decodedObject = (UidlValue) JsonCodec.decodeInternalType(UidlValue.class, true, inputArray, null);
+            UidlValue decodedObject = (UidlValue) JsonCodec.decodeInternalType(
+                    UidlValue.class, true, inputArray, null);
 
             throw new AssertionFailedError("No JsonException thrown");
         } catch (JsonException e) {
@@ -97,8 +105,10 @@ public class JSONSerializerTest extends TestCase {
         }
     }
 
-    private void ensureDecodedCorrectly(Object original, JsonValue encoded, Type type) throws Exception {
-        Object serverSideDecoded = JsonCodec.decodeInternalOrCustomType(type, encoded, null);
+    private void ensureDecodedCorrectly(Object original, JsonValue encoded,
+            Type type) throws Exception {
+        Object serverSideDecoded = JsonCodec.decodeInternalOrCustomType(type,
+                encoded, null);
         assertTrue("Server decoded", equals(original, serverSideDecoded));
 
     }
@@ -122,7 +132,8 @@ public class JSONSerializerTest extends TestCase {
             return false;
         }
 
-        if (o1 instanceof Collection || o1 instanceof Number || o1 instanceof String) {
+        if (o1 instanceof Collection || o1 instanceof Number
+                || o1 instanceof String) {
             return o1.equals(o2);
         }
 

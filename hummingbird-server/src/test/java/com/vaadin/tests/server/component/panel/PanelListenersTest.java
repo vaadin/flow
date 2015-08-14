@@ -7,6 +7,7 @@ import com.vaadin.ui.Panel;
 
 public class PanelListenersTest extends AbstractListenerMethodsTestBase {
     public void testClickListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Panel.class, ClickEvent.class, ClickListener.class);
+        testListenerAddGetRemove(Panel.class, ClickEvent.class,
+                ClickListener.class);
     }
 }

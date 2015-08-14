@@ -20,12 +20,14 @@ import static org.mockito.Mockito.spy;
 
 import com.vaadin.server.VaadinPortlet.VaadinWebSpherePortalRequest;
 
-public class VaadinWebSpherePortalRequestTest extends VaadinHttpAndPortletRequestTestBase<VaadinWebSpherePortalRequest> {
+public class VaadinWebSpherePortalRequestTest extends
+        VaadinHttpAndPortletRequestTestBase<VaadinWebSpherePortalRequest> {
 
     @Override
     protected VaadinWebSpherePortalRequest createSut() {
 
-        VaadinWebSpherePortalRequest request = new VaadinWebSpherePortalRequest(portletRequest, vaadinPortletService);
+        VaadinWebSpherePortalRequest request = new VaadinWebSpherePortalRequest(
+                portletRequest, vaadinPortletService);
 
         // Although partial mocking can be considered a code smell,
         // here it's actually quite useful to mock reflection calls.

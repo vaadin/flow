@@ -37,7 +37,8 @@ public class FormLayoutTest extends AbstractIndexedLayoutTestBase {
         return getLayout().getComponentCount();
     }
 
-    Component[] children = new Component[] { new Label("A"), new Label("B"), new Label("C"), new Label("D") };
+    Component[] children = new Component[] { new Label("A"), new Label("B"),
+            new Label("C"), new Label("D") };
 
     @Test
     public void testConstructorWithComponents() {

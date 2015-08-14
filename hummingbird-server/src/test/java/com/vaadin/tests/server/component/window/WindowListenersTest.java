@@ -13,18 +13,22 @@ import com.vaadin.ui.Window.ResizeListener;
 
 public class WindowListenersTest extends AbstractListenerMethodsTestBase {
     public void testFocusListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Window.class, FocusEvent.class, FocusListener.class);
+        testListenerAddGetRemove(Window.class, FocusEvent.class,
+                FocusListener.class);
     }
 
     public void testBlurListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Window.class, BlurEvent.class, BlurListener.class);
+        testListenerAddGetRemove(Window.class, BlurEvent.class,
+                BlurListener.class);
     }
 
     public void testResizeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Window.class, ResizeEvent.class, ResizeListener.class);
+        testListenerAddGetRemove(Window.class, ResizeEvent.class,
+                ResizeListener.class);
     }
 
     public void testCloseListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(Window.class, CloseEvent.class, CloseListener.class);
+        testListenerAddGetRemove(Window.class, CloseEvent.class,
+                CloseListener.class);
     }
 }

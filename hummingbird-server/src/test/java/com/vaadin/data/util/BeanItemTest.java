@@ -149,7 +149,8 @@ public class BeanItemTest extends TestCase {
         }
     }
 
-    protected static interface MySubInterface extends MySuperInterface, MySuperInterface2 {
+    protected static interface MySubInterface
+            extends MySuperInterface, MySuperInterface2 {
         public int getSub();
 
         public void setSub(int i);
@@ -161,7 +162,8 @@ public class BeanItemTest extends TestCase {
     }
 
     public void testGetProperties() {
-        BeanItem<MySuperClass> item = new BeanItem<MySuperClass>(new MySuperClass());
+        BeanItem<MySuperClass> item = new BeanItem<MySuperClass>(
+                new MySuperClass());
 
         Collection<?> itemPropertyIds = item.getItemPropertyIds();
         Assert.assertEquals(3, itemPropertyIds.size());
@@ -195,23 +197,32 @@ public class BeanItemTest extends TestCase {
         Assert.assertFalse(item.getItemProperty("name2").isReadOnly());
     }
 
-    public void testGetInterfaceProperties() throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        Method method = BeanItem.class.getDeclaredMethod("getPropertyDescriptors", Class.class);
+    public void testGetInterfaceProperties() throws SecurityException,
+            NoSuchMethodException, IllegalArgumentException,
+            IllegalAccessException, InvocationTargetException {
+        Method method = BeanItem.class
+                .getDeclaredMethod("getPropertyDescriptors", Class.class);
         method.setAccessible(true);
-        LinkedHashMap<String, VaadinPropertyDescriptor<Class>> propertyDescriptors = (LinkedHashMap<String, VaadinPropertyDescriptor<Class>>) method.invoke(null, MySuperInterface.class);
+        LinkedHashMap<String, VaadinPropertyDescriptor<Class>> propertyDescriptors = (LinkedHashMap<String, VaadinPropertyDescriptor<Class>>) method
+                .invoke(null, MySuperInterface.class);
 
         Assert.assertEquals(2, propertyDescriptors.size());
         Assert.assertTrue(propertyDescriptors.containsKey("super1"));
         Assert.assertTrue(propertyDescriptors.containsKey("override"));
 
-        MethodProperty<?> property = (MethodProperty<?>) propertyDescriptors.get("override").createProperty(getClass());
+        MethodProperty<?> property = (MethodProperty<?>) propertyDescriptors
+                .get("override").createProperty(getClass());
         Assert.assertTrue(property.isReadOnly());
     }
 
-    public void testGetSuperInterfaceProperties() throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        Method method = BeanItem.class.getDeclaredMethod("getPropertyDescriptors", Class.class);
+    public void testGetSuperInterfaceProperties() throws SecurityException,
+            NoSuchMethodException, IllegalArgumentException,
+            IllegalAccessException, InvocationTargetException {
+        Method method = BeanItem.class
+                .getDeclaredMethod("getPropertyDescriptors", Class.class);
         method.setAccessible(true);
-        LinkedHashMap<String, VaadinPropertyDescriptor<Class>> propertyDescriptors = (LinkedHashMap<String, VaadinPropertyDescriptor<Class>>) method.invoke(null, MySubInterface.class);
+        LinkedHashMap<String, VaadinPropertyDescriptor<Class>> propertyDescriptors = (LinkedHashMap<String, VaadinPropertyDescriptor<Class>>) method
+                .invoke(null, MySubInterface.class);
 
         Assert.assertEquals(4, propertyDescriptors.size());
         Assert.assertTrue(propertyDescriptors.containsKey("sub"));
@@ -219,7 +230,8 @@ public class BeanItemTest extends TestCase {
         Assert.assertTrue(propertyDescriptors.containsKey("super2"));
         Assert.assertTrue(propertyDescriptors.containsKey("override"));
 
-        MethodProperty<?> property = (MethodProperty<?>) propertyDescriptors.get("override").createProperty(getClass());
+        MethodProperty<?> property = (MethodProperty<?>) propertyDescriptors
+                .get("override").createProperty(getClass());
         Assert.assertFalse(property.isReadOnly());
     }
 
@@ -230,7 +242,8 @@ public class BeanItemTest extends TestCase {
         ids.add("name2");
         ids.add("noField");
 
-        BeanItem<MyClass> item = new BeanItem<MyClass>(new MyClass("bean1"), ids);
+        BeanItem<MyClass> item = new BeanItem<MyClass>(new MyClass("bean1"),
+                ids);
 
         Iterator<?> it = item.getItemPropertyIds().iterator();
         Assert.assertEquals("name", it.next());
@@ -241,7 +254,8 @@ public class BeanItemTest extends TestCase {
     }
 
     public void testPropertyExplicitOrder2() {
-        BeanItem<MyClass> item = new BeanItem<MyClass>(new MyClass("bean1"), new String[] { "name", "superPublic", "name2", "noField" });
+        BeanItem<MyClass> item = new BeanItem<MyClass>(new MyClass("bean1"),
+                new String[] { "name", "superPublic", "name2", "noField" });
 
         Iterator<?> it = item.getItemPropertyIds().iterator();
         Assert.assertEquals("name", it.next());
@@ -257,7 +271,8 @@ public class BeanItemTest extends TestCase {
         ids.add("name");
 
         // currently silently ignores non-existent properties
-        BeanItem<MyClass> item = new BeanItem<MyClass>(new MyClass("bean1"), ids);
+        BeanItem<MyClass> item = new BeanItem<MyClass>(new MyClass("bean1"),
+                ids);
 
         Iterator<?> it = item.getItemPropertyIds().iterator();
         Assert.assertEquals("name", it.next());
@@ -289,10 +304,14 @@ public class BeanItemTest extends TestCase {
     public void testPropertyTypes() {
         BeanItem<MyClass> item = new BeanItem<MyClass>(new MyClass("bean1"));
 
-        Assert.assertTrue(Integer.class.equals(item.getItemProperty("superPrivate").getType()));
-        Assert.assertTrue(Double.class.equals(item.getItemProperty("superProtected").getType()));
-        Assert.assertTrue(Boolean.class.equals(item.getItemProperty("superPublic").getType()));
-        Assert.assertTrue(String.class.equals(item.getItemProperty("name").getType()));
+        Assert.assertTrue(Integer.class
+                .equals(item.getItemProperty("superPrivate").getType()));
+        Assert.assertTrue(Double.class
+                .equals(item.getItemProperty("superProtected").getType()));
+        Assert.assertTrue(Boolean.class
+                .equals(item.getItemProperty("superPublic").getType()));
+        Assert.assertTrue(
+                String.class.equals(item.getItemProperty("name").getType()));
     }
 
     public void testPropertyReadOnly() {
@@ -304,18 +323,28 @@ public class BeanItemTest extends TestCase {
 
     public void testCustomProperties() throws Exception {
         LinkedHashMap<String, VaadinPropertyDescriptor<MyClass>> propertyDescriptors = new LinkedHashMap<String, VaadinPropertyDescriptor<MyClass>>();
-        propertyDescriptors.put("myname", new MethodPropertyDescriptor<BeanItemTest.MyClass>("myname", MyClass.class, MyClass.class.getDeclaredMethod("getName"), MyClass.class.getDeclaredMethod("setName", String.class)));
+        propertyDescriptors.put("myname",
+                new MethodPropertyDescriptor<BeanItemTest.MyClass>("myname",
+                        MyClass.class,
+                        MyClass.class.getDeclaredMethod("getName"),
+                        MyClass.class.getDeclaredMethod("setName",
+                                String.class)));
         MyClass instance = new MyClass("bean1");
-        Constructor<BeanItem> constructor = BeanItem.class.getDeclaredConstructor(Object.class, Map.class);
+        Constructor<BeanItem> constructor = BeanItem.class
+                .getDeclaredConstructor(Object.class, Map.class);
         constructor.setAccessible(true);
-        BeanItem<MyClass> item = constructor.newInstance(instance, propertyDescriptors);
+        BeanItem<MyClass> item = constructor.newInstance(instance,
+                propertyDescriptors);
 
         Assert.assertEquals(1, item.getItemPropertyIds().size());
         Assert.assertEquals("bean1", item.getItemProperty("myname").getValue());
     }
 
     public void testAddRemoveProperty() throws Exception {
-        MethodPropertyDescriptor<BeanItemTest.MyClass> pd = new MethodPropertyDescriptor<BeanItemTest.MyClass>("myname", MyClass.class, MyClass.class.getDeclaredMethod("getName"), MyClass.class.getDeclaredMethod("setName", String.class));
+        MethodPropertyDescriptor<BeanItemTest.MyClass> pd = new MethodPropertyDescriptor<BeanItemTest.MyClass>(
+                "myname", MyClass.class,
+                MyClass.class.getDeclaredMethod("getName"),
+                MyClass.class.getDeclaredMethod("setName", String.class));
 
         BeanItem<MyClass> item = new BeanItem<MyClass>(new MyClass("bean1"));
 
@@ -334,9 +363,11 @@ public class BeanItemTest extends TestCase {
         BeanItem<SubClass> item = new BeanItem<SubClass>(new SubClass());
 
         Property<?> property = item.getItemProperty("property");
-        Assert.assertEquals("Unexpected class for property type", String.class, property.getType());
+        Assert.assertEquals("Unexpected class for property type", String.class,
+                property.getType());
 
-        Assert.assertEquals("Unexpected property value", "", property.getValue());
+        Assert.assertEquals("Unexpected property value", "",
+                property.getValue());
 
         // Should not be exception
         property.setValue(null);

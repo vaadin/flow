@@ -34,7 +34,8 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
     }
 
     public void testContainerIndexed() {
-        testContainerIndexed(new IndexedContainer(), sampleData[2], 2, true, "newItemId", true);
+        testContainerIndexed(new IndexedContainer(), sampleData[2], 2, true,
+                "newItemId", true);
     }
 
     public void testItemSetChangeListeners() {
@@ -302,7 +303,9 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
         container.removeItem(itemId);
 
         itemId = container.addItem();
-        assertEquals("Id sequence should continue from the previous value even if an item is removed", Integer.valueOf(2), itemId);
+        assertEquals(
+                "Id sequence should continue from the previous value even if an item is removed",
+                Integer.valueOf(2), itemId);
     }
 
     public void testItemAddedEvent() {
@@ -343,7 +346,8 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
         IndexedContainer container = new IndexedContainer();
         Object itemId = container.addItem();
         ItemSetChangeListener removeListener = createListenerMockFor(container);
-        removeListener.containerItemSetChange(EasyMock.isA(ItemRemoveEvent.class));
+        removeListener
+                .containerItemSetChange(EasyMock.isA(ItemRemoveEvent.class));
         EasyMock.replay(removeListener);
 
         container.removeItem(itemId);
@@ -355,7 +359,8 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
         IndexedContainer container = new IndexedContainer();
         Object itemId = container.addItem();
         ItemSetChangeListener removeListener = createListenerMockFor(container);
-        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(removeListener);
+        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(
+                removeListener);
         EasyMock.replay(removeListener);
 
         container.removeItem(itemId);
@@ -368,7 +373,8 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
         container.addItem();
         Object secondItemId = container.addItem();
         ItemSetChangeListener removeListener = createListenerMockFor(container);
-        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(removeListener);
+        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(
+                removeListener);
         EasyMock.replay(removeListener);
 
         container.removeItem(secondItemId);
@@ -381,7 +387,8 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
         container.addItem();
         container.addItem();
         ItemSetChangeListener removeListener = createListenerMockFor(container);
-        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(removeListener);
+        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(
+                removeListener);
         EasyMock.replay(removeListener);
 
         container.removeAllItems();
@@ -389,20 +396,24 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
         assertEquals(2, capturedEvent.getValue().getRemovedItemsCount());
     }
 
-    private Capture<ItemAddEvent> captureAddEvent(ItemSetChangeListener addListener) {
+    private Capture<ItemAddEvent> captureAddEvent(
+            ItemSetChangeListener addListener) {
         Capture<ItemAddEvent> capturedEvent = new Capture<ItemAddEvent>();
         addListener.containerItemSetChange(EasyMock.capture(capturedEvent));
         return capturedEvent;
     }
 
-    private Capture<ItemRemoveEvent> captureRemoveEvent(ItemSetChangeListener removeListener) {
+    private Capture<ItemRemoveEvent> captureRemoveEvent(
+            ItemSetChangeListener removeListener) {
         Capture<ItemRemoveEvent> capturedEvent = new Capture<ItemRemoveEvent>();
         removeListener.containerItemSetChange(EasyMock.capture(capturedEvent));
         return capturedEvent;
     }
 
-    private ItemSetChangeListener createListenerMockFor(IndexedContainer container) {
-        ItemSetChangeListener listener = EasyMock.createNiceMock(ItemSetChangeListener.class);
+    private ItemSetChangeListener createListenerMockFor(
+            IndexedContainer container) {
+        ItemSetChangeListener listener = EasyMock
+                .createNiceMock(ItemSetChangeListener.class);
         container.addItemSetChangeListener(listener);
         return listener;
     }
@@ -445,7 +456,9 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
         try {
             List<Object> itemIds = ic.getItemIds(1, 0);
 
-            assertTrue("Container returned actual values when asking for 0 items...", itemIds.isEmpty());
+            assertTrue(
+                    "Container returned actual values when asking for 0 items...",
+                    itemIds.isEmpty());
         } catch (Exception e) {
             // Should not happen!
             fail("Container threw unspecified exception when fetching 0 items...");
@@ -460,7 +473,9 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
         try {
             List<Object> itemIds = ic.getItemIds(1, -1);
 
-            assertTrue("Container returned actual values when asking for -1 items...", itemIds.isEmpty());
+            assertTrue(
+                    "Container returned actual values when asking for -1 items...",
+                    itemIds.isEmpty());
         } catch (IllegalArgumentException e) {
             // this is expected
 
@@ -475,7 +490,9 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
     public void testGetItemIdsRangeIndexOutOfBoundsDueToSizeChange() {
         IndexedContainer ic = new IndexedContainer();
         ic.addItem(new Object());
-        Assert.assertEquals("Container returned too many items when the range was >> container size", 1, ic.getItemIds(0, 10).size());
+        Assert.assertEquals(
+                "Container returned too many items when the range was >> container size",
+                1, ic.getItemIds(0, 10).size());
     }
 
     // Ticket 8028

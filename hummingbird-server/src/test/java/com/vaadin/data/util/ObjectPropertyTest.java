@@ -33,19 +33,22 @@ public class ObjectPropertyTest extends TestCase {
     private TestSubClass sub1 = new TestSubClass("sub1");
 
     public void testSimple() {
-        ObjectProperty<TestSuperClass> prop1 = new ObjectProperty<TestSuperClass>(super1, TestSuperClass.class);
+        ObjectProperty<TestSuperClass> prop1 = new ObjectProperty<TestSuperClass>(
+                super1, TestSuperClass.class);
         Assert.assertEquals("super1", prop1.getValue().getName());
         prop1 = new ObjectProperty<TestSuperClass>(super1);
         Assert.assertEquals("super1", prop1.getValue().getName());
 
-        ObjectProperty<TestSubClass> prop2 = new ObjectProperty<TestSubClass>(sub1, TestSubClass.class);
+        ObjectProperty<TestSubClass> prop2 = new ObjectProperty<TestSubClass>(
+                sub1, TestSubClass.class);
         Assert.assertEquals("Subclass: sub1", prop2.getValue().getName());
         prop2 = new ObjectProperty<TestSubClass>(sub1);
         Assert.assertEquals("Subclass: sub1", prop2.getValue().getName());
     }
 
     public void testSetValueObjectSuper() {
-        ObjectProperty<TestSuperClass> prop = new ObjectProperty<TestSuperClass>(super1, TestSuperClass.class);
+        ObjectProperty<TestSuperClass> prop = new ObjectProperty<TestSuperClass>(
+                super1, TestSuperClass.class);
         Assert.assertEquals("super1", prop.getValue().getName());
         prop.setValue(new TestSuperClass("super2"));
         Assert.assertEquals("super1", super1.getName());
@@ -53,7 +56,8 @@ public class ObjectPropertyTest extends TestCase {
     }
 
     public void testSetValueObjectSub() {
-        ObjectProperty<TestSubClass> prop = new ObjectProperty<TestSubClass>(sub1, TestSubClass.class);
+        ObjectProperty<TestSubClass> prop = new ObjectProperty<TestSubClass>(
+                sub1, TestSubClass.class);
         Assert.assertEquals("Subclass: sub1", prop.getValue().getName());
         prop.setValue(new TestSubClass("sub2"));
         Assert.assertEquals("Subclass: sub1", sub1.getName());
@@ -61,7 +65,8 @@ public class ObjectPropertyTest extends TestCase {
     }
 
     public void testSetValueStringSuper() {
-        ObjectProperty<TestSuperClass> prop = new ObjectProperty<TestSuperClass>(super1, TestSuperClass.class);
+        ObjectProperty<TestSuperClass> prop = new ObjectProperty<TestSuperClass>(
+                super1, TestSuperClass.class);
         Assert.assertEquals("super1", prop.getValue().getName());
         prop.setValue(new TestSuperClass("super2"));
         Assert.assertEquals("super1", super1.getName());
@@ -69,7 +74,8 @@ public class ObjectPropertyTest extends TestCase {
     }
 
     public void testSetValueStringSub() {
-        ObjectProperty<TestSubClass> prop = new ObjectProperty<TestSubClass>(sub1, TestSubClass.class);
+        ObjectProperty<TestSubClass> prop = new ObjectProperty<TestSubClass>(
+                sub1, TestSubClass.class);
         Assert.assertEquals("Subclass: sub1", prop.getValue().getName());
         prop.setValue(new TestSubClass("sub2"));
         Assert.assertEquals("Subclass: sub1", sub1.getName());
@@ -77,7 +83,8 @@ public class ObjectPropertyTest extends TestCase {
     }
 
     public void testMixedGenerics() {
-        ObjectProperty<TestSuperClass> prop = new ObjectProperty<TestSuperClass>(sub1);
+        ObjectProperty<TestSuperClass> prop = new ObjectProperty<TestSuperClass>(
+                sub1);
         Assert.assertEquals("Subclass: sub1", prop.getValue().getName());
         Assert.assertEquals(prop.getType(), TestSubClass.class);
         // create correct subclass based on the runtime type of the instance

@@ -40,7 +40,8 @@ public class GeneratedPropertyContainerTest {
     Indexed wrappedContainer;
     private static double MILES_CONVERSION = 0.6214d;
 
-    private class GeneratedPropertyListener implements PropertySetChangeListener {
+    private class GeneratedPropertyListener
+            implements PropertySetChangeListener {
 
         private int callCount = 0;
 
@@ -51,7 +52,9 @@ public class GeneratedPropertyContainerTest {
         @Override
         public void containerPropertySetChange(PropertySetChangeEvent event) {
             ++callCount;
-            assertEquals("Container for event was not GeneratedPropertyContainer", event.getContainer(), container);
+            assertEquals(
+                    "Container for event was not GeneratedPropertyContainer",
+                    event.getContainer(), container);
         }
     }
 
@@ -66,7 +69,9 @@ public class GeneratedPropertyContainerTest {
         @Override
         public void containerItemSetChange(ItemSetChangeEvent event) {
             ++callCount;
-            assertEquals("Container for event was not GeneratedPropertyContainer", event.getContainer(), container);
+            assertEquals(
+                    "Container for event was not GeneratedPropertyContainer",
+                    event.getContainer(), container);
         }
     }
 
@@ -77,50 +82,60 @@ public class GeneratedPropertyContainerTest {
 
     @Test
     public void testSimpleGeneratedProperty() {
-        container.addGeneratedProperty("hello", new PropertyValueGenerator<String>() {
+        container.addGeneratedProperty("hello",
+                new PropertyValueGenerator<String>() {
 
-            @Override
-            public String getValue(Item item, Object itemId, Object propertyId) {
-                return "Hello World!";
-            }
+                    @Override
+                    public String getValue(Item item, Object itemId,
+                            Object propertyId) {
+                        return "Hello World!";
+                    }
 
-            @Override
-            public Class<String> getType() {
-                return String.class;
-            }
-        });
+                    @Override
+                    public Class<String> getType() {
+                        return String.class;
+                    }
+                });
 
         Object itemId = container.addItem();
-        assertEquals("Expected value not in item.", container.getItem(itemId).getItemProperty("hello").getValue(), "Hello World!");
+        assertEquals("Expected value not in item.",
+                container.getItem(itemId).getItemProperty("hello").getValue(),
+                "Hello World!");
     }
 
     @Test
     public void testSortableProperties() {
-        container.addGeneratedProperty("baz", new PropertyValueGenerator<String>() {
+        container.addGeneratedProperty("baz",
+                new PropertyValueGenerator<String>() {
 
-            @Override
-            public String getValue(Item item, Object itemId, Object propertyId) {
-                return item.getItemProperty("foo").getValue() + " " + item.getItemProperty("bar").getValue();
-            }
+                    @Override
+                    public String getValue(Item item, Object itemId,
+                            Object propertyId) {
+                        return item.getItemProperty("foo").getValue() + " "
+                                + item.getItemProperty("bar").getValue();
+                    }
 
-            @Override
-            public Class<String> getType() {
-                return String.class;
-            }
+                    @Override
+                    public Class<String> getType() {
+                        return String.class;
+                    }
 
-            @Override
-            public SortOrder[] getSortProperties(SortOrder order) {
-                SortOrder[] sortOrder = new SortOrder[1];
-                sortOrder[0] = new SortOrder("bar", order.getDirection());
-                return sortOrder;
-            }
-        });
+                    @Override
+                    public SortOrder[] getSortProperties(SortOrder order) {
+                        SortOrder[] sortOrder = new SortOrder[1];
+                        sortOrder[0] = new SortOrder("bar",
+                                order.getDirection());
+                        return sortOrder;
+                    }
+                });
 
         container.sort(new Object[] { "baz" }, new boolean[] { true });
-        assertEquals("foo 0", container.getItem(container.getIdByIndex(0)).getItemProperty("baz").getValue());
+        assertEquals("foo 0", container.getItem(container.getIdByIndex(0))
+                .getItemProperty("baz").getValue());
 
         container.sort(new Object[] { "baz" }, new boolean[] { false });
-        assertEquals("foo 10", container.getItem(container.getIdByIndex(0)).getItemProperty("baz").getValue());
+        assertEquals("foo 10", container.getItem(container.getIdByIndex(0))
+                .getItemProperty("baz").getValue());
     }
 
     @Test
@@ -128,46 +143,55 @@ public class GeneratedPropertyContainerTest {
 
         assertTrue(container.getSortableContainerPropertyIds().contains("bar"));
 
-        container.addGeneratedProperty("bar", new PropertyValueGenerator<String>() {
+        container.addGeneratedProperty("bar",
+                new PropertyValueGenerator<String>() {
 
-            @Override
-            public String getValue(Item item, Object itemId, Object propertyId) {
-                return item.getItemProperty("foo").getValue() + " " + item.getItemProperty("bar").getValue();
-            }
+                    @Override
+                    public String getValue(Item item, Object itemId,
+                            Object propertyId) {
+                        return item.getItemProperty("foo").getValue() + " "
+                                + item.getItemProperty("bar").getValue();
+                    }
 
-            @Override
-            public Class<String> getType() {
-                return String.class;
-            }
-        });
+                    @Override
+                    public Class<String> getType() {
+                        return String.class;
+                    }
+                });
 
-        assertFalse(container.getSortableContainerPropertyIds().contains("bar"));
+        assertFalse(
+                container.getSortableContainerPropertyIds().contains("bar"));
     }
 
     @Test
     public void testFilterByMiles() {
-        container.addGeneratedProperty("miles", new PropertyValueGenerator<Double>() {
+        container.addGeneratedProperty("miles",
+                new PropertyValueGenerator<Double>() {
 
-            @Override
-            public Double getValue(Item item, Object itemId, Object propertyId) {
-                return (Double) item.getItemProperty("km").getValue() * MILES_CONVERSION;
-            }
+                    @Override
+                    public Double getValue(Item item, Object itemId,
+                            Object propertyId) {
+                        return (Double) item.getItemProperty("km").getValue()
+                                * MILES_CONVERSION;
+                    }
 
-            @Override
-            public Class<Double> getType() {
-                return Double.class;
-            }
+                    @Override
+                    public Class<Double> getType() {
+                        return Double.class;
+                    }
 
-            @Override
-            public Filter modifyFilter(Filter filter) throws UnsupportedFilterException {
-                if (filter instanceof Compare.LessOrEqual) {
-                    Double value = (Double) ((Compare.LessOrEqual) filter).getValue();
-                    value = value / MILES_CONVERSION;
-                    return new Compare.LessOrEqual("km", value);
-                }
-                return super.modifyFilter(filter);
-            }
-        });
+                    @Override
+                    public Filter modifyFilter(Filter filter)
+                            throws UnsupportedFilterException {
+                        if (filter instanceof Compare.LessOrEqual) {
+                            Double value = (Double) ((Compare.LessOrEqual) filter)
+                                    .getValue();
+                            value = value / MILES_CONVERSION;
+                            return new Compare.LessOrEqual("km", value);
+                        }
+                        return super.modifyFilter(filter);
+                    }
+                });
 
         for (Object itemId : container.getItemIds()) {
             Item item = container.getItem(itemId);
@@ -180,7 +204,8 @@ public class GeneratedPropertyContainerTest {
         container.addContainerFilter(filter);
         for (Object itemId : container.getItemIds()) {
             Item item = container.getItem(itemId);
-            assertTrue("Item did not pass original filter.", filter.passesFilter(itemId, item));
+            assertTrue("Item did not pass original filter.",
+                    filter.passesFilter(itemId, item));
         }
 
         assertTrue(container.getContainerFilters().contains(filter));
@@ -207,26 +232,30 @@ public class GeneratedPropertyContainerTest {
         container.addPropertySetChangeListener(listener);
         container.addPropertySetChangeListener(removedListener);
 
-        container.addGeneratedProperty("foo", new PropertyValueGenerator<String>() {
+        container.addGeneratedProperty("foo",
+                new PropertyValueGenerator<String>() {
 
-            @Override
-            public String getValue(Item item, Object itemId, Object propertyId) {
-                return "";
-            }
+                    @Override
+                    public String getValue(Item item, Object itemId,
+                            Object propertyId) {
+                        return "";
+                    }
 
-            @Override
-            public Class<String> getType() {
-                return String.class;
-            }
-        });
+                    @Override
+                    public Class<String> getType() {
+                        return String.class;
+                    }
+                });
 
         // Adding property to wrapped container should cause an event
         wrappedContainer.addContainerProperty("baz", String.class, "");
         container.removePropertySetChangeListener(removedListener);
         container.removeGeneratedProperty("foo");
 
-        assertEquals("Listener was not called correctly.", 3, listener.getCallCount());
-        assertEquals("Removed listener was not called correctly.", 2, removedListener.getCallCount());
+        assertEquals("Listener was not called correctly.", 3,
+                listener.getCallCount());
+        assertEquals("Removed listener was not called correctly.", 2,
+                removedListener.getCallCount());
     }
 
     @Test
@@ -237,20 +266,25 @@ public class GeneratedPropertyContainerTest {
         container.sort(new Object[] { "foo" }, new boolean[] { true });
         container.sort(new Object[] { "foo" }, new boolean[] { false });
 
-        assertEquals("Listener was not called correctly.", 2, listener.getCallCount());
+        assertEquals("Listener was not called correctly.", 2,
+                listener.getCallCount());
 
     }
 
     @Test
     public void testRemoveProperty() {
         container.removeContainerProperty("foo");
-        assertFalse("Container contained removed property", container.getContainerPropertyIds().contains("foo"));
-        assertTrue("Wrapped container did not contain removed property", wrappedContainer.getContainerPropertyIds().contains("foo"));
+        assertFalse("Container contained removed property",
+                container.getContainerPropertyIds().contains("foo"));
+        assertTrue("Wrapped container did not contain removed property",
+                wrappedContainer.getContainerPropertyIds().contains("foo"));
 
-        assertFalse(container.getItem(container.firstItemId()).getItemPropertyIds().contains("foo"));
+        assertFalse(container.getItem(container.firstItemId())
+                .getItemPropertyIds().contains("foo"));
 
         container.addContainerProperty("foo", null, null);
-        assertTrue("Container did not contain returned property", container.getContainerPropertyIds().contains("foo"));
+        assertTrue("Container did not contain returned property",
+                container.getContainerPropertyIds().contains("foo"));
     }
 
     private Indexed createContainer() {

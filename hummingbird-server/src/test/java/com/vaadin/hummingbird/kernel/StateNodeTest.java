@@ -634,23 +634,23 @@ public class StateNodeTest {
             }
         });
 
-        StateNode node2 = StateNode.create(Collections.singletonMap("string",
-                String.class));
+        StateNode node2 = StateNode
+                .create(Collections.singletonMap("string", String.class));
 
         Assert.assertSame(node1.getClass(), node2.getClass());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void backedNode_invalidType_throws() {
-        StateNode node = StateNode.create(Collections.singletonMap("string",
-                String.class));
+        StateNode node = StateNode
+                .create(Collections.singletonMap("string", String.class));
         node.put("string", Integer.valueOf(5));
     }
 
     @Test
     public void backedNodeAlwaysContainsKey() {
-        StateNode node = StateNode.create(Collections.singletonMap("string",
-                String.class));
+        StateNode node = StateNode
+                .create(Collections.singletonMap("string", String.class));
 
         Assert.assertTrue(node.containsKey("string"));
         Assert.assertFalse(node.containsKey("someOtherKey"));
@@ -662,8 +662,8 @@ public class StateNodeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void backedNodeRemoveThrows() {
-        StateNode node = StateNode.create(Collections.singletonMap("string",
-                String.class));
+        StateNode node = StateNode
+                .create(Collections.singletonMap("string", String.class));
         node.remove("string");
     }
 
@@ -685,8 +685,8 @@ public class StateNodeTest {
             }
         }));
 
-        Map<Object, Class<?>> fields = keys.stream().collect(
-                Collectors.toMap(key -> key, key -> String.class));
+        Map<Object, Class<?>> fields = keys.stream()
+                .collect(Collectors.toMap(key -> key, key -> String.class));
 
         StateNode node = StateNode.create(fields);
 

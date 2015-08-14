@@ -11,7 +11,8 @@ import com.vaadin.ui.Tree.CollapseListener;
 import com.vaadin.ui.Tree.ExpandEvent;
 import com.vaadin.ui.Tree.ExpandListener;
 
-public class ListenersTest extends TestCase implements ExpandListener, CollapseListener {
+public class ListenersTest extends TestCase
+        implements ExpandListener, CollapseListener {
     private int expandCalled;
     private int collapseCalled;
     private Object lastExpanded;
@@ -40,7 +41,8 @@ public class ListenersTest extends TestCase implements ExpandListener, CollapseL
         expandCalled = 0;
         tree.expandItemsRecursively(rootIds.get(1));
         assertEquals(2, expandCalled);
-        List<Object> c = new ArrayList<Object>(tree.getChildren(rootIds.get(1)));
+        List<Object> c = new ArrayList<Object>(
+                tree.getChildren(rootIds.get(1)));
 
         assertEquals(c.get(4), lastExpanded);
 
@@ -111,7 +113,8 @@ public class ListenersTest extends TestCase implements ExpandListener, CollapseL
         collapseCalled = 0;
         tree.collapseItemsRecursively(rootIds.get(1));
         assertEquals(2, collapseCalled);
-        List<Object> c = new ArrayList<Object>(tree.getChildren(rootIds.get(1)));
+        List<Object> c = new ArrayList<Object>(
+                tree.getChildren(rootIds.get(1)));
         assertEquals(c.get(4), lastCollapsed);
 
         // Collapsing an already expanded item should send no expand event

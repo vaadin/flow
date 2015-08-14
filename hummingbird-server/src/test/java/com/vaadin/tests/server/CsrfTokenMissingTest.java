@@ -73,11 +73,13 @@ public class CsrfTokenMissingTest {
         mockServlet.init(new MockServletConfig());
         mockDeploymentConfiguration = new MockDeploymentConfiguration();
 
-        mockService = new VaadinServletService(mockServlet, mockDeploymentConfiguration);
+        mockService = new VaadinServletService(mockServlet,
+                mockDeploymentConfiguration);
 
         mockSession = new AlwaysLockedVaadinSession(mockService);
 
-        vaadinRequest = new VaadinServletRequest(EasyMock.createMock(HttpServletRequest.class), mockService);
+        vaadinRequest = new VaadinServletRequest(
+                EasyMock.createMock(HttpServletRequest.class), mockService);
 
     }
 
@@ -124,7 +126,10 @@ public class CsrfTokenMissingTest {
      * Gets the payload with the specified token.
      */
     private String getPayload(String token) {
-        return "{" + (token != null ? "\"csrfToken\":" + "\"" + token + "\", " : "") + "\"rpc\":[[\"0\",\"com.vaadin.shared.ui.ui.UIServerRpc\",\"resize\",[\"449\",\"1155\",\"1155\",\"449\"]],[\"4\",\"com.vaadin.shared.ui.button.ButtonServerRpc\",\"click\",[{\"clientY\":\"53\", \"clientX\":\"79\", \"shiftKey\":false, \"button\":\"LEFT\", \"ctrlKey\":false, \"type\":\"1\", \"metaKey\":false, \"altKey\":false, \"relativeY\":\"17\", \"relativeX\":\"61\"}]]], \"syncId\":1}";
+        return "{"
+                + (token != null ? "\"csrfToken\":" + "\"" + token + "\", "
+                        : "")
+                + "\"rpc\":[[\"0\",\"com.vaadin.shared.ui.ui.UIServerRpc\",\"resize\",[\"449\",\"1155\",\"1155\",\"449\"]],[\"4\",\"com.vaadin.shared.ui.button.ButtonServerRpc\",\"click\",[{\"clientY\":\"53\", \"clientX\":\"79\", \"shiftKey\":false, \"button\":\"LEFT\", \"ctrlKey\":false, \"type\":\"1\", \"metaKey\":false, \"altKey\":false, \"relativeY\":\"17\", \"relativeX\":\"61\"}]]], \"syncId\":1}";
     }
 
     /*
@@ -153,7 +158,8 @@ public class CsrfTokenMissingTest {
      * Gets whether the token from the request is the default one.
      */
     private boolean isDefaultToken(RpcRequest rpcRequest) {
-        return ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE.equals(rpcRequest.getCsrfToken());
+        return ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE
+                .equals(rpcRequest.getCsrfToken());
     }
 
     /*
@@ -174,10 +180,13 @@ public class CsrfTokenMissingTest {
      * Gets whether the token from the request is valid.
      */
     private boolean isRequestValid(RpcRequest rpcRequest) {
-        return VaadinService.isCsrfTokenValid(mockSession, rpcRequest.getCsrfToken());
+        return VaadinService.isCsrfTokenValid(mockSession,
+                rpcRequest.getCsrfToken());
     }
 
-    private static Logger LOGGER = Logger.getLogger(CsrfTokenMissingTest.class.getName());
+    private static Logger LOGGER = Logger
+            .getLogger(CsrfTokenMissingTest.class.getName());
+
     static {
         LOGGER.setLevel(Level.ALL);
     }

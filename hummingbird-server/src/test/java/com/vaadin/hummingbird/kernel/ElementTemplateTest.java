@@ -55,8 +55,9 @@ public class ElementTemplateTest {
             }
         };
         ElementTemplate elementTemplate = new BoundElementTemplate("input",
-                Collections.singleton(new ModelAttributeBinding("value",
-                        "modelValue")), defaultAttributeValues);
+                Collections.singleton(
+                        new ModelAttributeBinding("value", "modelValue")),
+                defaultAttributeValues);
         StateNode node = StateNode.create();
         node.put("modelValue", "My value");
 
@@ -90,8 +91,9 @@ public class ElementTemplateTest {
     @Test(expected = IllegalStateException.class)
     public void boundTemplate_setBoundAttribute_throw() {
         ElementTemplate template = new BoundElementTemplate("input",
-                Collections.singleton(new ModelAttributeBinding("value",
-                        "value")), Collections.emptyMap());
+                Collections
+                        .singleton(new ModelAttributeBinding("value", "value")),
+                Collections.emptyMap());
 
         Element element = Element.getElement(template, StateNode.create());
 
@@ -104,8 +106,9 @@ public class ElementTemplateTest {
     public void boundTemplate_rawChildren() {
         // <div (class)="root"><span (class)="child" /></div>
         BoundElementTemplate childTemplate = new BoundElementTemplate("span",
-                Collections.singleton(new ModelAttributeBinding("class",
-                        "child")), Collections.emptyMap());
+                Collections
+                        .singleton(new ModelAttributeBinding("class", "child")),
+                Collections.emptyMap());
 
         ElementTemplate rootTemplate = new BoundElementTemplate("div",
                 Collections
@@ -126,8 +129,8 @@ public class ElementTemplateTest {
                 }
             }
         };
-        childTemplate.setParentResolver(node -> Element.getElement(
-                rootTemplate, node));
+        childTemplate.setParentResolver(
+                node -> Element.getElement(rootTemplate, node));
 
         StateNode node = StateNode.create();
         node.put("root", "rootClass");
@@ -333,8 +336,8 @@ public class ElementTemplateTest {
                 });
 
         ElementTemplate template = new StaticChildrenElementTemplate("span",
-                Collections.emptyList(), Collections.emptyMap(), Arrays.asList(
-                        boundText, dynamicText));
+                Collections.emptyList(), Collections.emptyMap(),
+                Arrays.asList(boundText, dynamicText));
 
         StateNode node = StateNode.create();
         node.put("bound", "Hello ");
