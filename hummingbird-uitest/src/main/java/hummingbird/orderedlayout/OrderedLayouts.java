@@ -1,4 +1,4 @@
-package hummingbird;
+package hummingbird.orderedlayout;
 
 import java.util.Random;
 

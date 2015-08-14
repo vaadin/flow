@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package hummingbird;
+package hummingbird.orderedlayout;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Button;

@@ -1,4 +1,4 @@
-package hummingbird;
+package hummingbird.orderedlayout;
 
 import com.vaadin.ui.AbstractOrderedLayout;
 import com.vaadin.ui.Button;
