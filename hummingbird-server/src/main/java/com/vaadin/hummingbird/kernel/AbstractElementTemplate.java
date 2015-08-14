@@ -198,7 +198,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     @Override
     public Element getParent(StateNode node) {
         StateNode parentNode = node.getParent();
-        if (parentNode == null) {
+        if (parentNode == null || parentNode == node.getRoot()) {
             return null;
         }
 
