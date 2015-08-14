@@ -172,14 +172,24 @@ public class ElementTest {
 
     public static void assertElementEquals(Element expected, Element actual) {
         Assert.assertEquals(expected.getTag(), actual.getTag());
-        Assert.assertEquals(expected.getAttributeNames().size(),
-                actual.getAttributeNames().size());
 
         for (String name : expected.getAttributeNames()) {
             Assert.assertTrue("Attribute " + name + " does not exist",
                     actual.hasAttribute(name));
             Assert.assertEquals(expected.getAttribute(name),
                     actual.getAttribute(name));
+        }
+        if (expected.getAttributeNames().size() != actual.getAttributeNames()
+                .size()) {
+
+            String err = "Unexpected attributes found in element: ";
+            for (String name : actual.getAttributeNames()) {
+                if (!expected.hasAttribute(name)) {
+                    err += name + "=" + actual.getAttribute(name);
+                }
+            }
+            Assert.fail(err);
+
         }
 
     }

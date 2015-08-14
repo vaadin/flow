@@ -15,6 +15,7 @@
  */
 package com.vaadin.tests.server.component.window;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.server.VaadinRequest;
@@ -37,6 +38,7 @@ public class WindowAttachTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    @Ignore("Window is currently not handled at all")
     public void testAddToLayout() {
         VerticalLayout vl = new VerticalLayout();
         vl.addComponent(new Window("foo"));

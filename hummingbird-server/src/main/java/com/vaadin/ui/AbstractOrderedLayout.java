@@ -50,7 +50,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
 
     private static final String ERROR_NOT_A_CHILD = "The given component is not a child of this layout";
 
-    private Alignment defaultComponentAlignment = Alignment.TOP_LEFT;
+    private Alignment defaultComponentAlignment = ALIGNMENT_DEFAULT;
 
     /* Child component alignments */
 
@@ -71,6 +71,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      */
     @Override
     public void addComponent(Component c) {
+        assert c != null: "Cannot add null as a component";
         try {
             getElement().appendChild(c.getElement());
         } catch (IllegalArgumentException e) {
@@ -100,6 +101,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      *            in and after the position are shifted forwards.
      */
     public void addComponent(Component c, int index) {
+        assert c != null: "Cannot add null as a component";
+
         getElement().insertChild(index, c.getElement());
     }
 
@@ -111,6 +114,8 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
      */
     @Override
     public void removeComponent(Component c) {
+        assert c != null: "Cannot remove null component";
+
         if (!hasChild(c)) {
             throw new IllegalArgumentException(ERROR_NOT_A_CHILD);
         }
@@ -192,7 +197,7 @@ public abstract class AbstractOrderedLayout extends AbstractLayout
                 return a;
             }
         }
-        return ALIGNMENT_DEFAULT;
+        return defaultComponentAlignment;
     }
 
     @Override

@@ -1,12 +1,11 @@
 package com.vaadin.ui;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.kernel.ElementTest;
 
-public class VerticalLayoutTest extends ComponentTestBase {
+public class VerticalLayoutTest {
 
     VerticalLayout vl;
 
@@ -18,35 +17,9 @@ public class VerticalLayoutTest extends ComponentTestBase {
     @Test
     public void initialClass() {
         ElementTest.assertElementEquals(
-                ElementTest.parse("<div class='layout vertical'>"),
+                ElementTest
+                        .parse("<div class='layout flex-children vertical' style='width:100.0%'>"),
                 vl.getElement());
     }
 
-    @Test
-    public void testAddToEmpty() {
-        VerticalLayout vl = new VerticalLayout();
-        Button button = new Button();
-        vl.addComponent(button);
-
-        Assert.assertEquals(vl, button.getParent());
-        Assert.assertEquals(1, vl.getComponentCount());
-        Assert.assertEquals(button, vl.getComponent(0));
-
-        // assertElement("<div class=\"layout vertical\"></div>",
-        // vl.getElement());
-    }
-
-    @Test
-    public void testAddAtEnd() {
-        VerticalLayout vl = new VerticalLayout();
-        vl.addComponent(new Button());
-        Label label = new Label();
-        vl.addComponent(label);
-
-        Assert.assertEquals(vl, label.getParent());
-        Assert.assertEquals(1, vl.getComponentCount());
-        Assert.assertEquals(label, vl.getComponent(0));
-        // assertElement("<div class=\"layout vertical\"><button /></div>",
-        // vl.getElement());
-    }
 }

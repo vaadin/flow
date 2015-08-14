@@ -3,6 +3,7 @@ package com.vaadin.tests.server.component.window;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.server.ClientConnector;
@@ -14,6 +15,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
+@Ignore("Sub windows are not currently attached anywhere")
 public class AttachDetachWindowTest {
 
     private VaadinSession testApp = new AlwaysLockedVaadinSession(null);

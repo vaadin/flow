@@ -600,6 +600,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     @Override
     public void detach() {
+        assert isAttached() : "detach() should never be called for a detached component";
         for (Component component : getAllChildrenIterable(this)) {
             component.detach();
         }

@@ -461,7 +461,6 @@ public abstract class UI extends AbstractSingleComponentContainer
      */
     private void attachWindow(Window w) {
         windows.add(w);
-        w.setParent(this);
         markAsDirty();
     }
 

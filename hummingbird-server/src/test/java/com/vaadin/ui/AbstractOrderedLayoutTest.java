@@ -44,6 +44,7 @@ public class AbstractOrderedLayoutTest extends ComponentTestBase {
         };
         service = EasyMock.createMock(VaadinServletService.class);
         session = new MockVaadinSession(service);
+        session.lock();
         httpSession = EasyMock.createMock(HttpSession.class);
         wrappedSession = new WrappedHttpSession(httpSession);
 

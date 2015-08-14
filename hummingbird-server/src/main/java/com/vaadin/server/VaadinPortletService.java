@@ -90,6 +90,11 @@ public class VaadinPortletService extends VaadinService {
             return appOrSystemProperty;
         }
 
+        String portalProperty = portletRequest.getPortalProperty(name);
+        if (portalProperty != null) {
+            return portalProperty;
+        }
+
         return defaultValue;
     }
 

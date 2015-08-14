@@ -306,8 +306,8 @@ public class Button extends AbstractFocusable {
     public void addClickListener(ClickListener listener) {
         // FIXME
 
-        // addListener(ClickEvent.class, listener,
-        // ClickListener.BUTTON_CLICK_METHOD);
+        addListener(ClickEvent.class, listener,
+                ClickListener.BUTTON_CLICK_METHOD);
 
         getElement().addEventListener("click", () -> {
             listener.buttonClick(new ClickEvent(this));

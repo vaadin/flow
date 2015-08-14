@@ -6,13 +6,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.junit.Assert;
 
 import com.vaadin.tests.VaadinClasses;
 import com.vaadin.ui.Component;
+
+import junit.framework.TestCase;
 
 public abstract class AbstractListenerMethodsTestBase extends TestCase {
 
@@ -153,14 +153,15 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
 
     private Method getAddListenerMethod(Class<?> cls, Class<?> listenerClass)
             throws SecurityException, NoSuchMethodException {
-        return cls.getMethod("addListener", listenerClass);
-
+        String methodName = "add" + listenerClass.getSimpleName();
+        return cls.getMethod(methodName, listenerClass);
     }
 
     private Method getRemoveListenerMethod(Class<?> cls, Class<?> listenerClass)
             throws SecurityException, NoSuchMethodException {
-        return cls.getMethod("removeListener", listenerClass);
+        String methodName = "remove" + listenerClass.getSimpleName();
 
+        return cls.getMethod(methodName, listenerClass);
     }
 
     private void verifyListeners(Object c, Class<?> eventClass,
