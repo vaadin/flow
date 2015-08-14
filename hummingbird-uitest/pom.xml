@@ -135,6 +135,10 @@
 				<artifactId>jetty-maven-plugin</artifactId>
 				<version>${jetty.plugin.version}</version>
 				<configuration>
+					<webAppConfig>
+						<webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
+						<containerIncludeJarPattern>^$</containerIncludeJarPattern>
+					</webAppConfig>
 					<scanIntervalSeconds>-1</scanIntervalSeconds>
 					<httpConnector>
 						<port>8888</port>
