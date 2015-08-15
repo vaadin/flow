@@ -3,7 +3,7 @@ package com.vaadin.hummingbird.kernel;
 import java.util.Collections;
 import java.util.function.Function;
 
-public class DynamicTextTemplate extends StaticChildrenElementTemplate {
+public class DynamicTextTemplate extends BoundElementTemplate {
     private DynamicTextTemplate(AttributeBinding binding) {
         super("#text", Collections.singletonList(binding),
                 Collections.emptyMap(), Collections.emptyList());

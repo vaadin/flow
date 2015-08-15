@@ -3,9 +3,7 @@ package com.vaadin.hummingbird.kernel;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -102,107 +100,21 @@ public class ElementTemplateTest {
         element.setAttribute("value", "foobar");
     }
 
-    @Test
-    public void boundTemplate_rawChildren() {
-        // <div (class)="root"><span (class)="child" /></div>
-        BoundElementTemplate childTemplate = new BoundElementTemplate("span",
-                Collections
-                        .singleton(new ModelAttributeBinding("class", "child")),
-                Collections.emptyMap());
-
-        ElementTemplate rootTemplate = new BoundElementTemplate("div",
-                Collections
-                        .singleton(new ModelAttributeBinding("class", "root")),
-                Collections.emptyMap()) {
-
-            @Override
-            public int getChildCount(StateNode node) {
-                return 1;
-            }
-
-            @Override
-            public Element getChild(int index, StateNode node) {
-                if (index == 0) {
-                    return Element.getElement(childTemplate, node);
-                } else {
-                    throw new IndexOutOfBoundsException();
-                }
-            }
-        };
-        childTemplate.setParentResolver(
-                node -> Element.getElement(rootTemplate, node));
-
-        StateNode node = StateNode.create();
-        node.put("root", "rootClass");
-        node.put("child", "childClass");
-
-        Element rootElement = Element.getElement(rootTemplate, node);
-
-        Assert.assertEquals(1, rootElement.getChildCount());
-
-        Element child1 = rootElement.getChild(0);
-        Assert.assertEquals("childClass", child1.getAttribute("class"));
-        Assert.assertEquals("span", child1.getTag());
-        Assert.assertEquals("div", child1.getParent().getTag());
-        Assert.assertEquals("rootClass",
-                child1.getParent().getAttribute("class"));
-    }
-
-    @Test
-    public void boundTemplate_if() {
-        Predicate<StateNode> predicate = n -> n.get("test") != null;
-
-        List<BoundElementTemplate> trueChildren = Collections
-                .singletonList(new BoundElementTemplate("span", Collections
-                        .singletonList(new AttributeBinding("class") {
-                            @Override
-                            public String getValue(StateNode node) {
-                                return node.get("childClass", String.class);
-                            }
-                        }), Collections.emptyMap()));
-        List<BoundElementTemplate> falseChildren = Collections.emptyList();
-
-        IfElementTemplate ifElementTemplate = new IfElementTemplate("div",
-                Collections.emptyList(), Collections.emptyMap(), predicate,
-                trueChildren, falseChildren);
-
-        StateNode node = StateNode.create();
-        Element element = Element.getElement(ifElementTemplate, node);
-
-        Assert.assertEquals("div", element.getTag());
-        Assert.assertEquals(0, element.getChildCount());
-
-        node.put("test", Boolean.TRUE);
-        node.put("childClass", "true");
-
-        Assert.assertEquals(1, element.getChildCount());
-
-        Element child = element.getChild(0);
-        Assert.assertEquals("span", child.getTag());
-        Assert.assertEquals("div", child.getParent().getTag());
-        Assert.assertEquals("true", child.getAttribute("class"));
-
-        node.remove("test");
-        Assert.assertEquals(0, element.getChildCount());
-        Assert.assertNull(child.getParent());
-    }
-
-    @Test
     public void boundTemplate_for() {
-        BoundElementTemplate childTemplate = new BoundElementTemplate("span",
+        BoundElementTemplate childTemplate = new ForElementTemplate("span",
                 Collections.singletonList(new AttributeBinding("class") {
                     @Override
                     public String getValue(StateNode node) {
                         return node.get("class", String.class);
                     }
-                }), Collections.emptyMap());
+                }), Collections.emptyMap(), "todos", null);
 
-        ForElementTemplate forTemplate = new ForElementTemplate("div",
-                Collections.emptyList(), Collections.emptyMap(), "todos",
-                childTemplate);
+        BoundElementTemplate parentTemplate = new BoundElementTemplate("div",
+                Collections.emptyList(), Collections.emptyMap(),
+                Collections.singletonList(childTemplate));
 
         StateNode node = StateNode.create();
-        Element element = Element.getElement(forTemplate, node);
+        Element element = Element.getElement(parentTemplate, node);
 
         Assert.assertEquals("div", element.getTag());
         Assert.assertEquals(0, element.getChildCount());
@@ -240,20 +152,20 @@ public class ElementTemplateTest {
         Assert.assertEquals("div", element.getChild(0).getParent().getTag());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     public void boundStaticTemplate_removeChild_throws() {
         Element element = createTemplateElementWithStaticChild();
         element.getChild(0).removeFromParent();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     public void boundStaticTemplate_addChild_throws() {
         Element element = createTemplateElementWithStaticChild();
 
         element.insertChild(0, new Element("div"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalStateException.class)
     public void boundStaticTemplate_stealChild_throws() {
         Element element = createTemplateElementWithStaticChild();
 
@@ -263,10 +175,11 @@ public class ElementTemplateTest {
 
     private static Element createTemplateElementWithStaticChild() {
         BoundElementTemplate childTemplate = new BoundElementTemplate("span",
-                Collections.emptyList(), Collections.emptyMap());
+                Collections.emptyList(), Collections.emptyMap(),
+                Collections.emptyList());
 
-        StaticChildrenElementTemplate rootTemplate = new StaticChildrenElementTemplate(
-                "div", Collections.emptyList(), Collections.emptyMap(),
+        BoundElementTemplate rootTemplate = new BoundElementTemplate("div",
+                Collections.emptyList(), Collections.emptyMap(),
                 Collections.singletonList(childTemplate));
 
         StateNode node = StateNode.create();
@@ -314,7 +227,7 @@ public class ElementTemplateTest {
     public void staticTextTemplate() {
         StaticTextTemplate textTemplate = new StaticTextTemplate("Hello world");
 
-        ElementTemplate template = new StaticChildrenElementTemplate("span",
+        ElementTemplate template = new BoundElementTemplate("span",
                 Collections.emptyList(), Collections.emptyMap(),
                 Collections.singletonList(textTemplate));
 
@@ -335,7 +248,7 @@ public class ElementTemplateTest {
                     }
                 });
 
-        ElementTemplate template = new StaticChildrenElementTemplate("span",
+        ElementTemplate template = new BoundElementTemplate("span",
                 Collections.emptyList(), Collections.emptyMap(),
                 Arrays.asList(boundText, dynamicText));
 

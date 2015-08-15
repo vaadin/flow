@@ -24,7 +24,6 @@ import com.vaadin.hummingbird.kernel.DynamicTextTemplate;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.ForElementTemplate;
 import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
-import com.vaadin.hummingbird.kernel.StaticChildrenElementTemplate;
 import com.vaadin.hummingbird.kernel.StaticTextTemplate;
 
 public class TemplateParser {
@@ -79,21 +78,19 @@ public class TemplateParser {
 
         }
 
+        List<BoundElementTemplate> childTemplates = element.childNodes()
+                .stream().map(TemplateParser::createTemplate)
+                .collect(Collectors.toList());
+        if (childTemplates.isEmpty()) {
+            childTemplates = null;
+        }
+
         if (forDefinition != null) {
-            assert element.childNodeSize() == 1;
-            BoundElementTemplate innerTemplate = createTemplate(
-                    element.childNode(0));
             return new ForElementTemplate(element.tagName(), bindings,
-                    defaultAttributes, forDefinition, innerTemplate);
-        } else if (element.childNodeSize() != 0) {
-            List<BoundElementTemplate> childTemplates = element.childNodes()
-                    .stream().map(TemplateParser::createTemplate)
-                    .collect(Collectors.toList());
-            return new StaticChildrenElementTemplate(element.tagName(),
-                    bindings, defaultAttributes, childTemplates);
+                    defaultAttributes, forDefinition, childTemplates);
         } else {
             return new BoundElementTemplate(element.tagName(), bindings,
-                    defaultAttributes);
+                    defaultAttributes, childTemplates);
         }
 
     }

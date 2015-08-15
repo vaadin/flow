@@ -41,58 +41,42 @@ import elemental.json.JsonValue;
 
 public class TreeUpdater {
 
-    public class StaticChildrenElementTemplate extends BoundElementTemplate {
-
-        private final int[] childElementTemplates;
-
-        public StaticChildrenElementTemplate(JsonObject templateDescription,
-                int templateId) {
-            super(templateDescription, templateId);
-
-            JsonArray children = templateDescription.getArray("children");
-            childElementTemplates = new int[children.length()];
-            for (int i = 0; i < childElementTemplates.length; i++) {
-                childElementTemplates[i] = (int) children.getNumber(i);
-            }
-        }
-
-        @Override
-        protected void initElement(JsonObject node, Element element) {
-            super.initElement(node, element);
-
-            for (int templateId : childElementTemplates) {
-                element.appendChild(createTemplateElement(node, templateId));
-            }
-        }
-
-    }
-
-    public class ForElementTemplate extends BoundElementTemplate {
-        private final int childTemplateId;
+    public class ForElementTemplate implements Template {
+        private final BoundElementTemplate childTemplate;
+        private final String modelKey;
 
         public ForElementTemplate(JsonObject templateDescription,
                 int templateId) {
-            super(templateDescription, templateId);
+            modelKey = templateDescription.getString("modelKey");
 
-            childTemplateId = (int) templateDescription
-                    .getNumber("childTemplate");
+            childTemplate = new BoundElementTemplate(templateDescription,
+                    templateId);
         }
 
         @Override
-        protected void listInsertNode(JsonObject node, Element element,
-                ListInsertNodeChange change) {
-            JsonObject childNode = idToNode.get(change.getValue());
-            Node child = createTemplateElement(childNode, childTemplateId);
-            insertNodeAtIndex(element, child, change.getIndex());
+        public Node createElement(JsonObject node) {
+            // Creates anchor element
+            Node commentNode = createCommentNode("for " + modelKey);
+            addNodeListener(node, new ForAnchorListener(commentNode,
+                    childTemplate, modelKey));
+            return commentNode;
         }
     }
+
+    private static native Node createCommentNode(String comment)
+    /*-{
+        return $doc.createComment(comment);
+    }-*/;
 
     public class BoundElementTemplate implements Template {
 
         private final String tag;
         private final Map<String, String> defaultAttributeValues;
         private final Map<String, String> propertyToAttribute;
-        private int templateId;
+
+        private final int[] childElementTemplates;
+
+        private final int templateId;
 
         public BoundElementTemplate(JsonObject templateDescription,
                 int templateId) {
@@ -104,6 +88,17 @@ public class TreeUpdater {
 
             propertyToAttribute = readStringMap(
                     templateDescription.getObject("attributeBindings"));
+
+            if (templateDescription.hasKey("children")) {
+                JsonArray children = templateDescription.getArray("children");
+                childElementTemplates = new int[children.length()];
+                for (int i = 0; i < childElementTemplates.length; i++) {
+                    childElementTemplates[i] = (int) children.getNumber(i);
+                }
+            } else {
+                childElementTemplates = null;
+            }
+
         }
 
         private Map<String, String> readStringMap(JsonObject json) {
@@ -120,72 +115,14 @@ public class TreeUpdater {
             final Element element = Document.get().createElement(tag);
             initElement(node, element);
 
-            addNodeListener(node, new NodeListener() {
-                @Override
-                public void remove(RemoveChange change) {
-                    throw new RuntimeException("Not yet implemented");
-                }
-
-                @Override
-                public void putNode(PutNodeChange change) {
-                    throw new RuntimeException("Not yet implemented");
-                }
-
-                @Override
-                public void put(PutChange change) {
-                    BoundElementTemplate.this.put(node, element, change);
-                }
-
-                @Override
-                public void listRemove(ListRemoveChange change) {
-                    throw new RuntimeException("Not yet implemented");
-                }
-
-                @Override
-                public void listInsertNode(ListInsertNodeChange change) {
-                    BoundElementTemplate.this.listInsertNode(node, element,
-                            change);
-                }
-
-                @Override
-                public void listInsert(ListInsertChange change) {
-                    throw new RuntimeException("Not yet implemented");
-                }
-
-                @Override
-                public void putOverride(PutOverrideChange change) {
-                    BoundElementTemplate.this.putOverride(node, element,
-                            change);
-                }
-            });
+            addNodeListener(node,
+                    new BoundElementListener(node, element, this));
 
             return element;
         }
 
-        protected void putOverride(JsonObject node, Element element,
-                PutOverrideChange change) {
-            if (change.getKey() != this.templateId) {
-                return;
-            }
-
-            int nodeId = change.getValue();
-            JsonObject overrideNode = idToNode.get(nodeId);
-
-            BasicElementListener basicElementListener = new BasicElementListener(
-                    overrideNode, element);
-            addNodeListener(overrideNode, basicElementListener);
-        }
-
-        protected void put(JsonObject node, Element element, PutChange change) {
-            String key = change.getKey();
-            String targetAttribute = propertyToAttribute.get(key);
-            if (targetAttribute != null) {
-                element.setAttribute(targetAttribute,
-                        change.getValue().asString());
-            } else if (!"TEMPLATE".equals(change.getKey())) {
-                throw new RuntimeException(
-                        "Unsupported property change: " + change.getKey());
-            }
+        public int getTemplateId() {
+            return templateId;
         }
 
         protected void initElement(JsonObject node, Element element) {
@@ -193,12 +130,17 @@ public class TreeUpdater {
                     .entrySet()) {
                 element.setAttribute(entry.getKey(), entry.getValue());
             }
+
+            if (childElementTemplates != null) {
+                for (int templateId : childElementTemplates) {
+                    element.appendChild(
+                            createTemplateElement(node, templateId));
+                }
+            }
         }
 
-        protected void listInsertNode(JsonObject node, Element element,
-                ListInsertNodeChange change) {
-            throw new RuntimeException(
-                    "Not implemented for " + getClass().getSimpleName());
+        public String getTargetAttribute(String property) {
+            return propertyToAttribute.get(property);
         }
     }
 
@@ -271,6 +213,136 @@ public class TreeUpdater {
     @JsFunction
     public interface DomListener {
         public void handleEvent(JavaScriptObject event);
+    }
+
+    public class ForAnchorListener implements NodeListener {
+        private Node anchorNode;
+        private BoundElementTemplate childTemplate;
+        private String modelKey;
+
+        public ForAnchorListener(Node anchorNode,
+                BoundElementTemplate childTemplate, String modelKey) {
+            this.anchorNode = anchorNode;
+            this.childTemplate = childTemplate;
+            this.modelKey = modelKey;
+        }
+
+        @Override
+        public void listInsertNode(ListInsertNodeChange change) {
+            if (!modelKey.equals(change.getKey())) {
+                return;
+            }
+            JsonObject childNode = idToNode.get(change.getValue());
+
+            Node child = childTemplate.createElement(childNode);
+
+            Node refChild = anchorNode;
+            int index = change.getIndex();
+            for (int i = 0; i < index; i++) {
+                refChild = refChild.getNextSibling();
+            }
+
+            Element parentElement = anchorNode.getParentElement();
+            parentElement.insertAfter(child, refChild);
+        }
+
+        @Override
+        public void putNode(PutNodeChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void put(PutChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void listInsert(ListInsertChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void listRemove(ListRemoveChange change) {
+            // XXX Should remove child
+            // Don't care
+        }
+
+        @Override
+        public void remove(RemoveChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void putOverride(PutOverrideChange change) {
+            // Don't care
+        }
+    }
+
+    public class BoundElementListener implements NodeListener {
+
+        private final JsonObject node;
+        private final Element element;
+        private final BoundElementTemplate template;
+
+        public BoundElementListener(JsonObject node, Element element,
+                BoundElementTemplate template) {
+            this.node = node;
+            this.element = element;
+            this.template = template;
+        }
+
+        @Override
+        public void putNode(PutNodeChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void put(PutChange change) {
+            String key = change.getKey();
+            String targetAttribute = template.getTargetAttribute(key);
+            if (targetAttribute != null) {
+                element.setAttribute(targetAttribute,
+                        change.getValue().asString());
+            } else if (!"TEMPLATE".equals(change.getKey())) {
+                throw new RuntimeException(
+                        "Unsupported property change: " + change.getKey());
+            }
+        }
+
+        @Override
+        public void listInsertNode(ListInsertNodeChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void listInsert(ListInsertChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void listRemove(ListRemoveChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void remove(RemoveChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void putOverride(PutOverrideChange change) {
+            if (change.getKey() != template.getTemplateId()) {
+                return;
+            }
+
+            int nodeId = change.getValue();
+            JsonObject overrideNode = idToNode.get(nodeId);
+
+            BasicElementListener basicElementListener = new BasicElementListener(
+                    overrideNode, element);
+            addNodeListener(overrideNode, basicElementListener);
+        }
+
     }
 
     public class BasicElementListener implements NodeListener {
@@ -551,7 +623,7 @@ public class TreeUpdater {
 
     private Map<Integer, JsonObject> idToNode = new HashMap<>();
     private Map<JsonObject, Integer> nodeToId = new HashMap<>();
-    
+
     // Node id -> template id -> override node id
     // XXX seems like this is never actually read, could maybe be removed?
     private Map<Integer, Map<Integer, Integer>> overrides = new HashMap<>();
@@ -849,9 +921,6 @@ public class TreeUpdater {
             return new BoundElementTemplate(templateDescription, templateId);
         case "ForElementTemplate":
             return new ForElementTemplate(templateDescription, templateId);
-        case "StaticChildrenElementTemplate":
-            return new StaticChildrenElementTemplate(templateDescription,
-                    templateId);
         default:
             throw new RuntimeException("Unsupported template type: " + type);
         }

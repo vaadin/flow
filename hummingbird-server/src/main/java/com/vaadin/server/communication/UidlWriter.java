@@ -42,7 +42,6 @@ import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.ForElementTemplate;
 import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
 import com.vaadin.hummingbird.kernel.StateNode;
-import com.vaadin.hummingbird.kernel.StaticChildrenElementTemplate;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
@@ -318,11 +317,6 @@ public class UidlWriter implements Serializable {
                     if (template.getClass() == BoundElementTemplate.class) {
                         serializeBoundElementTemplate(serialized,
                                 (BoundElementTemplate) template);
-                    } else if (template
-                            .getClass() == StaticChildrenElementTemplate.class) {
-                        serializeStaticChildrenElementEmplate(serialized,
-                                (StaticChildrenElementTemplate) template, ui,
-                                newTemplates);
                     } else
                         if (template.getClass() == ForElementTemplate.class) {
                         serializeForTemplate(serialized,
@@ -339,24 +333,6 @@ public class UidlWriter implements Serializable {
                         JSONObject newTemplates) {
                     serialized.put("modelKey", template.getModelProperty());
 
-                    ElementTemplate childTemplate = template.getChildTemplate();
-                    ensureTemplateSent(childTemplate, ui, newTemplates);
-                    serialized.put("childTemplate", childTemplate.getId());
-
-                    serializeBoundElementTemplate(serialized, template);
-                }
-
-                private void serializeStaticChildrenElementEmplate(
-                        JSONObject serialized,
-                        StaticChildrenElementTemplate template, UI ui,
-                        JSONObject newTemplates) {
-                    JSONArray children = new JSONArray();
-                    serialized.put("children", children);
-                    for (BoundElementTemplate childTemplate : template
-                            .getChildren()) {
-                        ensureTemplateSent(childTemplate, ui, newTemplates);
-                        children.put(childTemplate.getId());
-                    }
                     serializeBoundElementTemplate(serialized, template);
                 }
 
@@ -373,6 +349,17 @@ public class UidlWriter implements Serializable {
                             // Not yet supported
                             throw new RuntimeException(
                                     attributeBinding.toString());
+                        }
+                    }
+
+                    List<BoundElementTemplate> childTemplates = bet
+                            .getChildTemplates();
+                    if (childTemplates != null) {
+                        JSONArray children = new JSONArray();
+                        serialized.put("children", children);
+                        for (BoundElementTemplate childTemplate : childTemplates) {
+                            ensureTemplateSent(childTemplate, ui, newTemplates);
+                            children.put(childTemplate.getId());
                         }
                     }
 

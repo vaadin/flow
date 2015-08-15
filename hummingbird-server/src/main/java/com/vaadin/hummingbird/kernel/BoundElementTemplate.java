@@ -3,8 +3,8 @@ package com.vaadin.hummingbird.kernel;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,11 +15,20 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     private final Map<String, AttributeBinding> attributeBindings;
     private final Map<String, String> defaultAttributeValues;
 
-    private Function<StateNode, Element> parentResolver;
+    private final List<BoundElementTemplate> childTemplates;
+
+    private BoundElementTemplate parentTemplate;
 
     public BoundElementTemplate(String tag,
             Collection<AttributeBinding> attributeBindings,
             Map<String, String> defaultAttributeValues) {
+        this(tag, attributeBindings, defaultAttributeValues, null);
+    }
+
+    public BoundElementTemplate(String tag,
+            Collection<AttributeBinding> attributeBindings,
+            Map<String, String> defaultAttributeValues,
+            List<BoundElementTemplate> childTemplates) {
 
         this.attributeBindings = new HashMap<String, AttributeBinding>();
         for (AttributeBinding b : attributeBindings) {
@@ -32,6 +41,56 @@ public class BoundElementTemplate extends AbstractElementTemplate {
         this.defaultAttributeValues = new HashMap<>(defaultAttributeValues);
 
         this.tag = tag;
+
+        this.childTemplates = childTemplates;
+        if (childTemplates != null) {
+            for (BoundElementTemplate childTemplate : childTemplates) {
+                childTemplate.parentTemplate = this;
+            }
+        }
+    }
+
+    @Override
+    public int getChildCount(StateNode node) {
+        if (childTemplates == null) {
+            return super.getChildCount(node);
+        } else {
+            int count = 0;
+            for (BoundElementTemplate childTemplate : childTemplates) {
+                count += childTemplate.getElementCount(node);
+            }
+            return count;
+        }
+    }
+
+    @Override
+    public Element getChild(int index, StateNode node) {
+        if (childTemplates == null) {
+            return super.getChild(index, node);
+        } else {
+            int count = 0;
+            for (BoundElementTemplate childTemplate : childTemplates) {
+                int templateElements = childTemplate.getElementCount(node);
+                if (count + templateElements > index) {
+                    int indexInTemplate = index - count;
+                    return childTemplate.getElement(node, indexInTemplate);
+                }
+                count += templateElements;
+            }
+            throw new IndexOutOfBoundsException();
+        }
+    }
+
+    protected Element getElement(StateNode node, int indexInTemplate) {
+        if (indexInTemplate == 0) {
+            return Element.getElement(this, node);
+        } else {
+            throw new IndexOutOfBoundsException();
+        }
+    }
+
+    protected int getElementCount(StateNode node) {
+        return 1;
     }
 
     @Override
@@ -76,13 +135,6 @@ public class BoundElementTemplate extends AbstractElementTemplate {
         return elementData;
     }
 
-    public void setParentResolver(Function<StateNode, Element> parentResolver) {
-        if (this.parentResolver != null) {
-            throw new IllegalStateException();
-        }
-        this.parentResolver = parentResolver;
-    }
-
     @Override
     public boolean supports(StateNode node) {
         return node.get(Keys.TAG) == null;
@@ -90,8 +142,8 @@ public class BoundElementTemplate extends AbstractElementTemplate {
 
     @Override
     public Element getParent(StateNode node) {
-        if (parentResolver != null) {
-            return parentResolver.apply(node);
+        if (parentTemplate != null) {
+            return Element.getElement(parentTemplate, node);
         }
         return super.getParent(node);
     }
@@ -123,4 +175,27 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     public String getTag() {
         return tag;
     }
+
+    public List<BoundElementTemplate> getChildTemplates() {
+        return Collections.unmodifiableList(childTemplates);
+    }
+
+    @Override
+    public void insertChild(int index, Element child, StateNode node) {
+        if (childTemplates == null) {
+            super.insertChild(index, child, node);
+        } else {
+            throw new IllegalStateException();
+        }
+    }
+
+    @Override
+    public void removeChild(StateNode node, Element element) {
+        if (childTemplates == null) {
+            super.removeChild(node, element);
+        } else {
+            throw new IllegalStateException();
+        }
+    }
+
 }

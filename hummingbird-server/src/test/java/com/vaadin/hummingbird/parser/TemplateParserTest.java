@@ -76,7 +76,7 @@ public class TemplateParserTest {
     @Test
     public void forLoop() {
         // This is not exactly the angular syntax
-        String templateString = "<ul *ng-for=\"todos\"><li>{{title}}</li></ul>";
+        String templateString = "<ul><li *ng-for=\"todos\">{{title}}</li></ul>";
         StateNode node = StateNode.create();
         List<Object> todos = node.getMultiValued("todos");
         IntStream.range(0, 3).forEach(i -> {

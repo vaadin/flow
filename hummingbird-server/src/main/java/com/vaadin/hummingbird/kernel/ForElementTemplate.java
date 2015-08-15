@@ -3,35 +3,21 @@ package com.vaadin.hummingbird.kernel;
 import java.util.List;
 import java.util.Map;
 
-public class ForElementTemplate extends BoundElementTemplateWithChildren {
+public class ForElementTemplate extends BoundElementTemplate {
 
     private String modelProperty;
-    private ElementTemplate childTemplate;
 
     public ForElementTemplate(String tag,
             List<AttributeBinding> attributeBindings,
             Map<String, String> defaultAttributes, String modelProperty,
-            BoundElementTemplate childTemplate) {
-        super(tag, attributeBindings, defaultAttributes);
+            List<BoundElementTemplate> children) {
+        super(tag, attributeBindings, defaultAttributes, children);
         this.modelProperty = modelProperty;
-        this.childTemplate = childTemplate;
-        childTemplate.setParentResolver(node -> {
-            StateNode parent = node.getParent();
-            if (parent == null) {
-                return null;
-            }
-            return Element.getElement(this, parent);
-        });
     }
 
     @Override
-    protected int doGetChildCount(StateNode node) {
-        List<Object> stateList = getChildNodes(node);
-        if (stateList == null) {
-            return 0;
-        } else {
-            return stateList.size();
-        }
+    protected int getElementCount(StateNode node) {
+        return getChildNodes(node).size();
     }
 
     private List<Object> getChildNodes(StateNode node) {
@@ -39,17 +25,19 @@ public class ForElementTemplate extends BoundElementTemplateWithChildren {
     }
 
     @Override
-    protected StateNode getChildNode(int childIndex, StateNode node) {
-        return (StateNode) getChildNodes(node).get(childIndex);
+    protected Element getElement(StateNode node, int indexInTemplate) {
+        StateNode childNode = (StateNode) getChildNodes(node)
+                .get(indexInTemplate);
+        return Element.getElement(this, childNode);
     }
 
     @Override
-    protected ElementTemplate getChildTemplate(int childIndex, StateNode node) {
-        return childTemplate;
-    }
-
-    public ElementTemplate getChildTemplate() {
-        return childTemplate;
+    public Element getParent(StateNode node) {
+        StateNode parentNode = node.getParent();
+        if (parentNode == null) {
+            return null;
+        }
+        return super.getParent(parentNode);
     }
 
     public String getModelProperty() {
