@@ -41,25 +41,126 @@ import elemental.json.JsonValue;
 
 public class TreeUpdater {
 
+    public class ElementNotifier {
+        private final List<ElementUpdater> updaters = new ArrayList<>();
+
+        public ElementNotifier(JsonObject node, String scope) {
+            addNodeListener(node, new NodeListener() {
+                @Override
+                public void putNode(PutNodeChange change) {
+                    String parameter = scope + change.getKey();
+                    for (ElementUpdater updater : new ArrayList<>(updaters)) {
+                        updater.putNode(parameter, change);
+                    }
+                }
+
+                @Override
+                public void put(PutChange change) {
+                    String parameter = scope + change.getKey();
+                    for (ElementUpdater updater : new ArrayList<>(updaters)) {
+                        updater.put(parameter, change);
+                    }
+                }
+
+                @Override
+                public void listInsertNode(ListInsertNodeChange change) {
+                    String parameter = scope + change.getKey();
+                    for (ElementUpdater updater : new ArrayList<>(updaters)) {
+                        updater.listInsertNode(parameter, change);
+                    }
+                }
+
+                @Override
+                public void listInsert(ListInsertChange change) {
+                    String parameter = scope + change.getKey();
+                    for (ElementUpdater updater : new ArrayList<>(updaters)) {
+                        updater.listInsert(parameter, change);
+                    }
+                }
+
+                @Override
+                public void listRemove(ListRemoveChange change) {
+                    String parameter = scope + change.getKey();
+                    for (ElementUpdater updater : new ArrayList<>(updaters)) {
+                        updater.listRemove(parameter, change);
+                    }
+                }
+
+                @Override
+                public void remove(RemoveChange change) {
+                    String parameter = scope + change.getKey();
+                    for (ElementUpdater updater : new ArrayList<>(updaters)) {
+                        updater.remove(parameter, change);
+                    }
+                }
+
+                @Override
+                public void putOverride(PutOverrideChange change) {
+                    for (ElementUpdater updater : new ArrayList<>(updaters)) {
+                        updater.putOverride(scope, change);
+                    }
+                }
+            });
+        }
+
+        public void addUpdater(ElementUpdater updater) {
+            updaters.add(updater);
+        }
+
+        public void removeUpdater(ElementUpdater updater) {
+            updaters.remove(updater);
+        }
+    }
+
+    public interface ElementUpdater {
+
+        void putNode(String scope, PutNodeChange change);
+
+        void putOverride(String scope, PutOverrideChange change);
+
+        void remove(String scope, RemoveChange change);
+
+        void listRemove(String scope, ListRemoveChange change);
+
+        void listInsert(String scope, ListInsertChange change);
+
+        void listInsertNode(String scope, ListInsertNodeChange change);
+
+        void put(String scope, PutChange change);
+    }
+
     public class ForElementTemplate implements Template {
         private final BoundElementTemplate childTemplate;
         private final String modelKey;
+        private final String innerScope;
 
         public ForElementTemplate(JsonObject templateDescription,
                 int templateId) {
             modelKey = templateDescription.getString("modelKey");
+            innerScope = templateDescription.getString("innerScope");
 
             childTemplate = new BoundElementTemplate(templateDescription,
                     templateId);
         }
 
         @Override
-        public Node createElement(JsonObject node) {
+        public Node createElement(JsonObject node, ElementNotifier notifier) {
             // Creates anchor element
             Node commentNode = createCommentNode("for " + modelKey);
-            addNodeListener(node, new ForAnchorListener(commentNode,
-                    childTemplate, modelKey));
+            notifier.addUpdater(new ForAnchorListener(commentNode, this));
             return commentNode;
+        }
+
+        public String getModelKey() {
+            return modelKey;
+        }
+
+        public String getInnerScope() {
+            return innerScope;
+        }
+
+        public Template getChildTemplate() {
+            return childTemplate;
         }
     }
 
@@ -111,12 +212,12 @@ public class TreeUpdater {
         }
 
         @Override
-        public Node createElement(final JsonObject node) {
+        public Node createElement(final JsonObject node,
+                ElementNotifier notifier) {
             final Element element = Document.get().createElement(tag);
             initElement(node, element);
 
-            addNodeListener(node,
-                    new BoundElementListener(node, element, this));
+            notifier.addUpdater(new BoundElementListener(node, element, this));
 
             return element;
         }
@@ -215,26 +316,27 @@ public class TreeUpdater {
         public void handleEvent(JavaScriptObject event);
     }
 
-    public class ForAnchorListener implements NodeListener {
-        private Node anchorNode;
-        private BoundElementTemplate childTemplate;
-        private String modelKey;
+    public class ForAnchorListener implements ElementUpdater {
+        private final Node anchorNode;
+        private final ForElementTemplate template;
 
-        public ForAnchorListener(Node anchorNode,
-                BoundElementTemplate childTemplate, String modelKey) {
+        public ForAnchorListener(Node anchorNode, ForElementTemplate template) {
             this.anchorNode = anchorNode;
-            this.childTemplate = childTemplate;
-            this.modelKey = modelKey;
+            this.template = template;
         }
 
         @Override
-        public void listInsertNode(ListInsertNodeChange change) {
-            if (!modelKey.equals(change.getKey())) {
+        public void listInsertNode(String property,
+                ListInsertNodeChange change) {
+            if (!template.getModelKey().equals(property)) {
                 return;
             }
             JsonObject childNode = idToNode.get(change.getValue());
 
-            Node child = childTemplate.createElement(childNode);
+            ElementNotifier notifier = new ElementNotifier(childNode,
+                    template.getInnerScope() + ".");
+            Node child = template.getChildTemplate().createElement(childNode,
+                    notifier);
 
             Node refChild = anchorNode;
             int index = change.getIndex();
@@ -247,38 +349,38 @@ public class TreeUpdater {
         }
 
         @Override
-        public void putNode(PutNodeChange change) {
+        public void putNode(String property, PutNodeChange change) {
             // Don't care
         }
 
         @Override
-        public void put(PutChange change) {
+        public void put(String property, PutChange change) {
             // Don't care
         }
 
         @Override
-        public void listInsert(ListInsertChange change) {
+        public void listInsert(String property, ListInsertChange change) {
             // Don't care
         }
 
         @Override
-        public void listRemove(ListRemoveChange change) {
+        public void listRemove(String property, ListRemoveChange change) {
             // XXX Should remove child
             // Don't care
         }
 
         @Override
-        public void remove(RemoveChange change) {
+        public void remove(String property, RemoveChange change) {
             // Don't care
         }
 
         @Override
-        public void putOverride(PutOverrideChange change) {
+        public void putOverride(String property, PutOverrideChange change) {
             // Don't care
         }
     }
 
-    public class BoundElementListener implements NodeListener {
+    public class BoundElementListener implements ElementUpdater {
 
         private final JsonObject node;
         private final Element element;
@@ -292,45 +394,42 @@ public class TreeUpdater {
         }
 
         @Override
-        public void putNode(PutNodeChange change) {
+        public void putNode(String property, PutNodeChange change) {
             // Don't care
         }
 
         @Override
-        public void put(PutChange change) {
-            String key = change.getKey();
-            String targetAttribute = template.getTargetAttribute(key);
+        public void put(String property, PutChange change) {
+            String targetAttribute = template.getTargetAttribute(property);
             if (targetAttribute != null) {
                 element.setAttribute(targetAttribute,
                         change.getValue().asString());
-            } else if (!"TEMPLATE".equals(change.getKey())) {
-                throw new RuntimeException(
-                        "Unsupported property change: " + change.getKey());
             }
         }
 
         @Override
-        public void listInsertNode(ListInsertNodeChange change) {
+        public void listInsertNode(String property,
+                ListInsertNodeChange change) {
             // Don't care
         }
 
         @Override
-        public void listInsert(ListInsertChange change) {
+        public void listInsert(String property, ListInsertChange change) {
             // Don't care
         }
 
         @Override
-        public void listRemove(ListRemoveChange change) {
+        public void listRemove(String property, ListRemoveChange change) {
             // Don't care
         }
 
         @Override
-        public void remove(RemoveChange change) {
+        public void remove(String property, RemoveChange change) {
             // Don't care
         }
 
         @Override
-        public void putOverride(PutOverrideChange change) {
+        public void putOverride(String property, PutOverrideChange change) {
             if (change.getKey() != template.getTemplateId()) {
                 return;
             }
@@ -605,7 +704,7 @@ public class TreeUpdater {
     }
 
     private interface Template {
-        public Node createElement(JsonObject node);
+        public Node createElement(JsonObject node, ElementNotifier notifier);
     }
 
     @JsType
@@ -787,7 +886,7 @@ public class TreeUpdater {
         Template template = templates.get(Integer.valueOf(templateId));
         assert template != null;
 
-        return template.createElement(node);
+        return template.createElement(node, new ElementNotifier(node, ""));
     }
 
     private static void insertNodeAtIndex(Element parent, Node child,

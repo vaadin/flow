@@ -13,8 +13,12 @@ public class DynamicTextTemplate extends BoundElementTemplate {
         this(createBinding(function));
     }
 
-    public DynamicTextTemplate(String modelPath) {
+    public DynamicTextTemplate(ModelPath modelPath) {
         this(new ModelAttributeBinding("content", modelPath));
+    }
+
+    public DynamicTextTemplate(String modelPath) {
+        this(new ModelPath(modelPath));
     }
 
     private static AttributeBinding createBinding(

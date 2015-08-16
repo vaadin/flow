@@ -1,18 +1,21 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 public class ForElementTemplate extends BoundElementTemplate {
 
-    private String modelProperty;
+    private final ModelPath listPath;
+    private final String innerScope;
 
     public ForElementTemplate(String tag,
-            List<AttributeBinding> attributeBindings,
-            Map<String, String> defaultAttributes, String modelProperty,
-            List<BoundElementTemplate> children) {
+            Collection<AttributeBinding> attributeBindings,
+            Map<String, String> defaultAttributes, ModelPath listPath,
+            String innerScope, List<BoundElementTemplate> children) {
         super(tag, attributeBindings, defaultAttributes, children);
-        this.modelProperty = modelProperty;
+        this.listPath = listPath;
+        this.innerScope = innerScope;
     }
 
     @Override
@@ -21,7 +24,8 @@ public class ForElementTemplate extends BoundElementTemplate {
     }
 
     private List<Object> getChildNodes(StateNode node) {
-        return node.getMultiValued(modelProperty);
+        return listPath.getNode(node)
+                .getMultiValued(listPath.getNodeProperty());
     }
 
     @Override
@@ -40,7 +44,11 @@ public class ForElementTemplate extends BoundElementTemplate {
         return super.getParent(parentNode);
     }
 
-    public String getModelProperty() {
-        return modelProperty;
+    public ModelPath getModelProperty() {
+        return listPath;
+    }
+
+    public String getInnerScope() {
+        return innerScope;
     }
 }

@@ -141,7 +141,8 @@ public class BuildTodoMvcStringPerformance {
                                     .collect(Collectors.joining(" "));
                         }
                     }
-                }), em, "todos", Arrays.asList(view, edit));
+                }), em, new ModelPath("todos"), null,
+                Arrays.asList(view, edit));
 
         BoundElementTemplate todoList = new BoundElementTemplate("ul", el,
                 buildMap("class", "todo-list"),

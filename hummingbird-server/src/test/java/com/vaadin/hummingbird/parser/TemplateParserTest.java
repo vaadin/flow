@@ -76,8 +76,9 @@ public class TemplateParserTest {
     @Test
     public void forLoop() {
         // This is not exactly the angular syntax
-        String templateString = "<ul><li *ng-for=\"todos\">{{title}}</li></ul>";
+        String templateString = "<ul><li *ng-for='#todo of todos' [innertitle]='todo.title' [outertitle]='title'>{{todo.title}}</li></ul>";
         StateNode node = StateNode.create();
+        node.put("title", "Outer title");
         List<Object> todos = node.getMultiValued("todos");
         IntStream.range(0, 3).forEach(i -> {
             StateNode child = StateNode.create();
@@ -92,7 +93,11 @@ public class TemplateParserTest {
         Assert.assertEquals(3, element.getChildCount());
         for (int i = 0; i < 3; i++) {
             Element li = element.getChild(i);
-            Assert.assertEquals("<li>Todo " + i + "</li>", li.toString());
+            Assert.assertEquals(1, li.getChildCount());
+            Assert.assertEquals(2, li.getAttributeNames().size());
+            Assert.assertEquals("Outer title", li.getAttribute("outertitle"));
+            Assert.assertEquals("Todo " + i, li.getAttribute("innertitle"));
+            Assert.assertEquals("Todo " + i, li.getChild(0).toString());
         }
     }
 }

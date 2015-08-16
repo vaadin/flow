@@ -2,19 +2,24 @@ package com.vaadin.hummingbird.kernel;
 
 public class ModelAttributeBinding extends AttributeBinding {
 
-    private String modelPath;
+    private ModelPath path;
 
-    public ModelAttributeBinding(String attributeName, String modelPath) {
+    public ModelAttributeBinding(String attributeName, ModelPath path) {
         super(attributeName);
-        this.modelPath = modelPath;
+        this.path = path;
+    }
+
+    public ModelAttributeBinding(String attributeName, String propertyName) {
+        this(attributeName, new ModelPath(propertyName));
+    }
+
+    public ModelPath getPath() {
+        return path;
     }
 
     @Override
     public String getValue(StateNode node) {
-        return node.get(modelPath, String.class);
+        return path.getNode(node).get(path.getNodeProperty(), String.class);
     }
 
-    public String getModelPath() {
-        return modelPath;
-    }
 }

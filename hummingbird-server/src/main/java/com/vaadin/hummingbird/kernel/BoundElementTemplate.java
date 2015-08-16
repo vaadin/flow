@@ -177,7 +177,11 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     }
 
     public List<BoundElementTemplate> getChildTemplates() {
-        return Collections.unmodifiableList(childTemplates);
+        if (childTemplates != null) {
+            return Collections.unmodifiableList(childTemplates);
+        } else {
+            return null;
+        }
     }
 
     @Override

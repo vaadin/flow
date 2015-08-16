@@ -331,7 +331,9 @@ public class UidlWriter implements Serializable {
                 private void serializeForTemplate(JSONObject serialized,
                         ForElementTemplate template, UI ui,
                         JSONObject newTemplates) {
-                    serialized.put("modelKey", template.getModelProperty());
+                    serialized.put("modelKey",
+                            template.getModelProperty().getFullPath());
+                    serialized.put("innerScope", template.getInnerScope());
 
                     serializeBoundElementTemplate(serialized, template);
                 }
@@ -343,7 +345,7 @@ public class UidlWriter implements Serializable {
                             .getAttributeBindings().values()) {
                         if (attributeBinding instanceof ModelAttributeBinding) {
                             ModelAttributeBinding mab = (ModelAttributeBinding) attributeBinding;
-                            attributeBindings.put(mab.getModelPath(),
+                            attributeBindings.put(mab.getPath().getFullPath(),
                                     mab.getAttributeName());
                         } else {
                             // Not yet supported

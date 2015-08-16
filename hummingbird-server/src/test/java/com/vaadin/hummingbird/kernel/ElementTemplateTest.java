@@ -107,7 +107,7 @@ public class ElementTemplateTest {
                     public String getValue(StateNode node) {
                         return node.get("class", String.class);
                     }
-                }), Collections.emptyMap(), "todos", null);
+                }), Collections.emptyMap(), new ModelPath("todos"), null, null);
 
         BoundElementTemplate parentTemplate = new BoundElementTemplate("div",
                 Collections.emptyList(), Collections.emptyMap(),
