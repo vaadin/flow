@@ -15,16 +15,6 @@
 		<gwt.module.output>${project.build.outputDirectory}/VAADIN/gwt</gwt.module.output>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>google-snapshots</id>
-			<url>https://oss.sonatype.org/content/repositories/google-snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
 	<dependencies>
 
 		<!-- Project dependencies -->
