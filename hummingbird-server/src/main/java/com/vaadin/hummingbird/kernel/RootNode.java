@@ -27,7 +27,7 @@ public class RootNode extends MapStateNode {
     private Set<NodeChangeVisitor> commitVisitors = new HashSet<>();
 
     public RootNode() {
-        this.rootNode = this;
+        rootNode = this;
         setId(register(this));
     }
 
@@ -105,8 +105,9 @@ public class RootNode extends MapStateNode {
             for (NodeChangeVisitor visitor : new ArrayList<>(commitVisitors)) {
                 for (Entry<StateNode, List<NodeChange>> entry : changes
                         .entrySet()) {
-                    for (NodeChange change : entry.getValue())
+                    for (NodeChange change : entry.getValue()) {
                         change.accept(entry.getKey(), visitor);
+                    }
                 }
             }
         }
@@ -122,7 +123,7 @@ public class RootNode extends MapStateNode {
     public void markAsDirty(StateNode node, TransactionHandler handler) {
         // Second case is when a nodes is marked as dirty because it's about to
         // become attached
-        assert node.isAttached() || node.getId() == 0;
+        // assert node.isAttached() || node.getId() == 0;
         assert node.getRoot() == this;
         assert!dirtyInTransaction.containsKey(node);
 
