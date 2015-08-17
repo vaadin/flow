@@ -154,6 +154,10 @@ public class TemplateParser {
                 bindings.add(new ModelAttributeBinding(
                         name.substring(1, name.length() - 1),
                         context.getPath(value)));
+            } else if (name.startsWith("(")) {
+                // Ignore event listeners for now
+            } else if (name.startsWith("#")) {
+                // Ignore local ids for now
             } else {
                 defaultAttributes.put(name, value);
             }
