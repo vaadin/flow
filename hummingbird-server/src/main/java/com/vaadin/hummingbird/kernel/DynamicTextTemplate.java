@@ -4,9 +4,12 @@ import java.util.Collections;
 import java.util.function.Function;
 
 public class DynamicTextTemplate extends BoundElementTemplate {
+    private AttributeBinding binding;
+
     private DynamicTextTemplate(AttributeBinding binding) {
         super("#text", Collections.singletonList(binding),
                 Collections.emptyMap(), Collections.emptyList());
+        this.binding = binding;
     }
 
     public DynamicTextTemplate(Function<StateNode, String> function) {
@@ -31,4 +34,7 @@ public class DynamicTextTemplate extends BoundElementTemplate {
         };
     }
 
+    public AttributeBinding getBinding() {
+        return binding;
+    }
 }

@@ -41,6 +41,80 @@ import elemental.json.JsonValue;
 
 public class TreeUpdater {
 
+    public class TextUpdater implements ElementUpdater {
+
+        private final Text textNode;
+        private final String binding;
+
+        public TextUpdater(DynamicTextTemplate template, Text textNode) {
+            this.binding = template.getBinding();
+            this.textNode = textNode;
+        }
+
+        @Override
+        public void put(String scope, PutChange change) {
+            if (scope.equals(binding)) {
+                textNode.setData(change.getValue().asString());
+            }
+        }
+
+        @Override
+        public void remove(String scope, RemoveChange change) {
+            if (scope.equals(binding)) {
+                textNode.setData("");
+            }
+        }
+
+        @Override
+        public void putNode(String scope, PutNodeChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void putOverride(String scope, PutOverrideChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void listRemove(String scope, ListRemoveChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void listInsert(String scope, ListInsertChange change) {
+            // Don't care
+        }
+
+        @Override
+        public void listInsertNode(String scope, ListInsertNodeChange change) {
+            // Don't care
+        }
+
+    }
+
+    public class DynamicTextTemplate implements Template {
+
+        private String binding;
+
+        public DynamicTextTemplate(JsonObject templateDescription,
+                int templateId) {
+            this.binding = templateDescription.getString("binding");
+        }
+
+        public String getBinding() {
+            return binding;
+        }
+
+        @Override
+        public Node createElement(JsonObject node, ElementNotifier notifier) {
+            Text text = Document.get().createTextNode("");
+
+            notifier.addUpdater(new TextUpdater(this, text));
+
+            return text;
+        }
+    }
+
     public class ElementNotifier {
         private final List<ElementUpdater> updaters = new ArrayList<>();
 
@@ -215,7 +289,7 @@ public class TreeUpdater {
         public Node createElement(final JsonObject node,
                 ElementNotifier notifier) {
             final Element element = Document.get().createElement(tag);
-            initElement(node, element);
+            initElement(node, element, notifier);
 
             notifier.addUpdater(new BoundElementListener(node, element, this));
 
@@ -226,7 +300,8 @@ public class TreeUpdater {
             return templateId;
         }
 
-        protected void initElement(JsonObject node, Element element) {
+        protected void initElement(JsonObject node, Element element,
+                ElementNotifier notifier) {
             for (Entry<String, String> entry : defaultAttributeValues
                     .entrySet()) {
                 element.setAttribute(entry.getKey(), entry.getValue());
@@ -234,8 +309,8 @@ public class TreeUpdater {
 
             if (childElementTemplates != null) {
                 for (int templateId : childElementTemplates) {
-                    element.appendChild(
-                            createTemplateElement(node, templateId));
+                    element.appendChild(templates.get(templateId)
+                            .createElement(node, notifier));
                 }
             }
         }
@@ -866,8 +941,11 @@ public class TreeUpdater {
 
     private Node createElement(JsonObject node) {
         if (node.hasKey("TEMPLATE")) {
-            return createTemplateElement(node,
-                    (int) node.getNumber("TEMPLATE"));
+            int templateId = (int) node.getNumber("TEMPLATE");
+            Template template = templates.get(Integer.valueOf(templateId));
+            assert template != null;
+
+            return template.createElement(node, new ElementNotifier(node, ""));
         } else {
             String tag = node.getString("TAG");
             if ("#text".equals(tag)) {
@@ -880,13 +958,6 @@ public class TreeUpdater {
                 return element;
             }
         }
-    }
-
-    private Node createTemplateElement(JsonObject node, int templateId) {
-        Template template = templates.get(Integer.valueOf(templateId));
-        assert template != null;
-
-        return template.createElement(node, new ElementNotifier(node, ""));
     }
 
     private static void insertNodeAtIndex(Element parent, Node child,
@@ -1020,6 +1091,8 @@ public class TreeUpdater {
             return new BoundElementTemplate(templateDescription, templateId);
         case "ForElementTemplate":
             return new ForElementTemplate(templateDescription, templateId);
+        case "DynamicTextTemplate":
+            return new DynamicTextTemplate(templateDescription, templateId);
         default:
             throw new RuntimeException("Unsupported template type: " + type);
         }

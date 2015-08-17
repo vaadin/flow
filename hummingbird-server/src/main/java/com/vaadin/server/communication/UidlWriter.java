@@ -38,6 +38,7 @@ import com.vaadin.annotations.StyleSheet;
 import com.vaadin.hummingbird.kernel.AbstractElementTemplate;
 import com.vaadin.hummingbird.kernel.AttributeBinding;
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
+import com.vaadin.hummingbird.kernel.DynamicTextTemplate;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.ForElementTemplate;
 import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
@@ -322,10 +323,27 @@ public class UidlWriter implements Serializable {
                         serializeForTemplate(serialized,
                                 (ForElementTemplate) template, ui,
                                 newTemplates);
+                    } else if (template
+                            .getClass() == DynamicTextTemplate.class) {
+                        serializeDynamicTextTemplate(serialized,
+                                (DynamicTextTemplate) template, ui,
+                                newTemplates);
                     } else {
                         throw new RuntimeException(template.toString());
                     }
                     return serialized;
+                }
+
+                private void serializeDynamicTextTemplate(JSONObject serialized,
+                        DynamicTextTemplate template, UI ui,
+                        JSONObject newTemplates) {
+                    AttributeBinding binding = template.getBinding();
+                    if (binding instanceof ModelAttributeBinding) {
+                        ModelAttributeBinding mab = (ModelAttributeBinding) binding;
+                        serialized.put("binding", mab.getPath().getFullPath());
+                    } else {
+                        throw new RuntimeException(binding.toString());
+                    }
                 }
 
                 private void serializeForTemplate(JSONObject serialized,
