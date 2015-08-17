@@ -2,6 +2,8 @@ package com.vaadin.hummingbird.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -170,26 +172,49 @@ public class TemplateParser {
                 childTemplates);
     }
 
-    private static final ConcurrentMap<Class<?>, ElementTemplate> templateCache = new ConcurrentHashMap<>();
+    private static class ElementTemplateCache {
+        private final ElementTemplate template;
+        private final long timestamp;
 
-    public static ElementTemplate parse(Class<?> type) {
-        return templateCache.computeIfAbsent(type,
-                TemplateParser::getParsedTemplate);
+        public ElementTemplateCache(ElementTemplate template, long timestamp) {
+            this.template = template;
+            this.timestamp = timestamp;
+        }
     }
 
-    private static ElementTemplate getParsedTemplate(Class<?> type) {
+    private static final ConcurrentMap<Class<?>, ElementTemplateCache> templateCache = new ConcurrentHashMap<>();
+
+    public static ElementTemplate parse(Class<?> type) {
         String fileName = type.getSimpleName() + ".html";
-        InputStream resource = type.getResourceAsStream(fileName);
-        if (resource == null) {
+
+        URL resourceUrl = type.getResource(fileName);
+        if (resourceUrl == null) {
             throw new RuntimeException("File not found from classpath: "
                     + type.getPackage().getName() + "/" + fileName);
         }
 
+        ElementTemplateCache cacheEntry = templateCache.get(type);
+
         try {
-            String templateString = IOUtils.toString(resource);
-            return parse(templateString);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            URLConnection connection = resourceUrl.openConnection();
+            try (InputStream is = connection.getInputStream()) {
+                // Check lastModified after accessing the input stream to make
+                // sure it is always properly closed
+                // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4257700
+                long lastModified = connection.getLastModified();
+                if (cacheEntry != null
+                        && cacheEntry.timestamp == lastModified) {
+                    return cacheEntry.template;
+                } else {
+                    String templateString = IOUtils.toString(is);
+                    ElementTemplate template = parse(templateString);
+                    templateCache.put(type,
+                            new ElementTemplateCache(template, lastModified));
+                    return template;
+                }
+            }
+        } catch (IOException e1) {
+            throw new RuntimeException(e1);
         }
     }
 }
