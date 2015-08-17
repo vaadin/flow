@@ -15,11 +15,11 @@
  */
 package com.vaadin.ui;
 
-import java.util.Collections;
 import java.util.Iterator;
 
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.AbstractSimpleDOMComponentContainer.ElementBasedComponentIterator;
 
 /**
  * Abstract base class for component containers that have only one child
@@ -33,25 +33,23 @@ import com.vaadin.server.VaadinSession;
 public abstract class AbstractSingleComponentContainer extends AbstractComponent
         implements SingleComponentContainer {
 
-    private Component content;
-
     @Override
     public int getComponentCount() {
-        return (content != null) ? 1 : 0;
+        return getElement().getChildCount();
     }
 
     @Override
     public Iterator<Component> iterator() {
-        if (content != null) {
-            return Collections.singletonList(content).iterator();
-        } else {
-            return Collections.<Component> emptyList().iterator();
-        }
+        return new ElementBasedComponentIterator(getElement());
     }
 
     @Override
     public Component getContent() {
-        return content;
+        if (getElement().getChildCount() == 0) {
+            return null;
+        } else {
+            return getElement().getChild(0).getComponent();
+        }
     }
 
     /**
@@ -69,28 +67,10 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
      */
     @Override
     public void setContent(Component content) {
-        // Make sure we're not adding the component inside it's own content
-        if (isOrHasAncestor(content)) {
-            throw new IllegalArgumentException(
-                    "Component cannot be added inside it's own content");
-        }
-
-        Component oldContent = getContent();
-        if (oldContent == content) {
-            // do not set the same content twice
-            return;
-        }
-        if (oldContent != null && equals(oldContent.getParent())) {
-            oldContent.setParent(null);
-        }
-        this.content = content;
+        getElement().removeAllChildren();
         if (content != null) {
-            removeFromParent(content);
-
-            content.setParent(this);
+            getElement().appendChild(content.getElement());
         }
-
-        markAsDirty();
     }
 
     /**
@@ -115,20 +95,7 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
             }
         }
 
-        Component parent = content.getParent();
-        if (parent instanceof ComponentContainer) {
-            // If the component already has a parent, try to remove it
-            ComponentContainer oldParent = (ComponentContainer) parent;
-            oldParent.removeComponent(content);
-        } else if (parent instanceof SingleComponentContainer) {
-            SingleComponentContainer oldParent = (SingleComponentContainer) parent;
-            if (oldParent.getContent() == content) {
-                oldParent.setContent(null);
-            }
-        } else if (parent != null) {
-            throw new IllegalArgumentException(
-                    "Content is already attached to another parent");
-        }
+        content.getElement().removeFromParent();
     }
 
 }

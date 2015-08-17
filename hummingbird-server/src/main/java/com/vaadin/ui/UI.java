@@ -957,28 +957,6 @@ public abstract class UI extends AbstractSingleComponentContainer
         super.detach();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.vaadin.ui.AbstractSingleComponentContainer#setContent(com.vaadin.
-     * ui.Component)
-     */
-    @Override
-    public void setContent(Component content) {
-        if (content instanceof Window) {
-            throw new IllegalArgumentException(
-                    "A Window cannot be added using setContent. Use addWindow(Window window) instead");
-        }
-        super.setContent(content);
-        if (content == null) {
-            getElement().removeAllChildren();
-        } else {
-            getElement().insertChild(0, content.getElement());
-        }
-
-    }
-
     @Override
     public void setTabIndex(int tabIndex) {
         getState().tabIndex = tabIndex;

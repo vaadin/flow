@@ -15,12 +15,10 @@
  */
 package com.vaadin.tests.server.component.abstractsinglecomponentcontainer;
 
-import org.easymock.EasyMock;
 import org.junit.Test;
 
 import com.vaadin.ui.AbstractSingleComponentContainer;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.HasComponents;
 
 /**
  *
@@ -35,11 +33,11 @@ public class SetParentAsContentTest {
     public void testSetContent() {
         AbstractSingleComponentContainer container = new AbstractSingleComponentContainer() {
         };
-        HasComponents hasComponentsMock = EasyMock
-                .createMock(HasComponents.class);
-        container.setParent(hasComponentsMock);
+        AbstractSingleComponentContainer child = new AbstractSingleComponentContainer() {
+        };
+        child.setContent(container);
 
-        container.setContent(hasComponentsMock);
+        container.setContent(child);
     }
 
 }
