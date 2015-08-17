@@ -43,6 +43,7 @@ import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.ForElementTemplate;
 import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.StaticTextTemplate;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
@@ -328,10 +329,21 @@ public class UidlWriter implements Serializable {
                         serializeDynamicTextTemplate(serialized,
                                 (DynamicTextTemplate) template, ui,
                                 newTemplates);
+                    } else
+                        if (template.getClass() == StaticTextTemplate.class) {
+                        serializeStaticTextTemplate(serialized,
+                                (StaticTextTemplate) template, ui,
+                                newTemplates);
                     } else {
                         throw new RuntimeException(template.toString());
                     }
                     return serialized;
+                }
+
+                private void serializeStaticTextTemplate(JSONObject serialized,
+                        StaticTextTemplate template, UI ui,
+                        JSONObject newTemplates) {
+                    serialized.put("content", template.getContent());
                 }
 
                 private void serializeDynamicTextTemplate(JSONObject serialized,

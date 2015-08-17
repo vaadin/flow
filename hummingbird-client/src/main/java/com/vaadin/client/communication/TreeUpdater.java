@@ -41,6 +41,22 @@ import elemental.json.JsonValue;
 
 public class TreeUpdater {
 
+    public class StaticTextTemplate implements Template {
+
+        private String content;
+
+        public StaticTextTemplate(JsonObject templateDescription,
+                int templateId) {
+            this.content = templateDescription.getString("content");
+        }
+
+        @Override
+        public Node createElement(JsonObject node, ElementNotifier notifier) {
+            return Document.get().createTextNode(content);
+        }
+
+    }
+
     public class TextUpdater implements ElementUpdater {
 
         private final Text textNode;
@@ -1093,6 +1109,8 @@ public class TreeUpdater {
             return new ForElementTemplate(templateDescription, templateId);
         case "DynamicTextTemplate":
             return new DynamicTextTemplate(templateDescription, templateId);
+        case "StaticTextTemplate":
+            return new StaticTextTemplate(templateDescription, templateId);
         default:
             throw new RuntimeException("Unsupported template type: " + type);
         }
