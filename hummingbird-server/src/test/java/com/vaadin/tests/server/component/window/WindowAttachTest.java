@@ -23,6 +23,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
+@Ignore("Window is currently not handled at all")
 public class WindowAttachTest {
 
     private static class MyUI extends UI {
@@ -38,7 +39,6 @@ public class WindowAttachTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    @Ignore("Window is currently not handled at all")
     public void testAddToLayout() {
         VerticalLayout vl = new VerticalLayout();
         vl.addComponent(new Window("foo"));

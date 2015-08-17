@@ -17,13 +17,13 @@ package com.vaadin.tests.data.converter;
 
 import java.util.Locale;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.DefaultConverterFactory;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.ui.TextField;
+
+import junit.framework.TestCase;
 
 public class ConverterFactoryTest extends TestCase {
 
@@ -92,12 +92,17 @@ public class ConverterFactoryTest extends TestCase {
         appWithCustomIntegerConverter
                 .setConverterFactory(new ConverterFactory42());
         VaadinSession.setCurrent(appWithCustomIntegerConverter);
+        try {
 
-        TextField tf = new TextField("", "123");
-        tf.setConverter(Integer.class);
-        // The application converter always returns 42. Current application is
-        // null
-        assertEquals(42, tf.getConvertedValue());
+            TextField tf = new TextField("", "123");
+            tf.setConverter(Integer.class);
+            // The application converter always returns 42. Current application
+            // is
+            // null
+            assertEquals(42, tf.getConvertedValue());
+        } finally {
+            VaadinSession.setCurrent(null);
+        }
     }
 
     public void testApplicationConverterFactoryForDifferentThanCurrentApplication() {

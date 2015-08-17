@@ -123,6 +123,7 @@ public class Element {
     }
 
     public Element insertChild(int index, Element child) {
+        assert child != null : "Cannot insert null child";
         template.insertChild(index, child, node);
         return this;
     }

@@ -56,6 +56,8 @@ public class RemoveFromParentLockingTest {
 
     @Test
     public void attachNoSessionLocked() {
+        VaadinSession.setCurrent(null); // Ensure nobody left a session hanging
+
         VerticalLayout testComponent = createTestComponent();
 
         VerticalLayout target = new VerticalLayout();

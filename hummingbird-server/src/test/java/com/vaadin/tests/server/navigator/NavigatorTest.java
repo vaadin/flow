@@ -18,8 +18,6 @@ package com.vaadin.tests.server.navigator;
 
 import java.util.LinkedList;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
 import org.easymock.IMocksControl;
@@ -33,9 +31,10 @@ import com.vaadin.navigator.ViewDisplay;
 import com.vaadin.navigator.ViewProvider;
 import com.vaadin.tests.server.navigator.ClassBasedViewProviderTest.TestView;
 import com.vaadin.tests.server.navigator.ClassBasedViewProviderTest.TestView2;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+
+import junit.framework.TestCase;
 
 public class NavigatorTest extends TestCase {
 
@@ -359,12 +358,15 @@ public class NavigatorTest extends TestCase {
     }
 
     public void testComponentContainerViewDisplay() {
-        abstract class TestView implements Component, View {
+        class TestView extends VerticalLayout implements View {
+
+            @Override
+            public void enter(ViewChangeEvent event) {
+            }
         }
 
-        TestView tv1 = EasyMock.createNiceMock(TestView.class);
-        TestView tv2 = EasyMock.createNiceMock(TestView.class);
-        EasyMock.replay(tv1, tv2);
+        TestView tv1 = new TestView();
+        TestView tv2 = new TestView();
 
         VerticalLayout container = new VerticalLayout();
         ViewDisplay display = new Navigator.ComponentContainerViewDisplay(

@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.UI;
 
 public abstract class AbstractElementTemplate implements ElementTemplate {
 
@@ -161,6 +164,8 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
     @Override
     public void insertChild(int index, Element child, StateNode node) {
+        assert child != null : "Cannot insert null child";
+
         // Ensure that this element is not a child of the child element
         if (node.hasAncestor(child.getNode())) {
             throw new IllegalArgumentException(
@@ -220,6 +225,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
     @Override
     public void removeChild(StateNode node, Element element) {
+        assert sessionLocked(node, element);
         StateNode childNode = element.getNode();
 
         getChildrenList(node).ifPresent(list -> {
@@ -233,6 +239,29 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
             }
         });
+    }
+
+    private boolean sessionLocked(StateNode node, Element element) {
+        // Verify the appropriate session is locked
+        RootNode root = node.getRoot();
+        if (root == null) {
+            return true;
+        }
+        StateNode bodyNode = root.get("body", StateNode.class);
+
+        UI parentUI = (UI) getComponent(bodyNode);
+        if (parentUI != null) {
+            VaadinSession parentSession = parentUI.getSession();
+            if (parentSession != null && !parentSession.hasLock()) {
+                String message = "Cannot remove from parent when the session is not locked.";
+                if (VaadinService.isOtherSessionLocked(parentSession)) {
+                    message += " Furthermore, there is another locked session, indicating that the component might be about to be moved from one session to another.";
+                }
+                throw new IllegalStateException(message);
+            }
+        }
+
+        return true;
     }
 
     @Override
