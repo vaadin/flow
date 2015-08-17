@@ -21,7 +21,7 @@ import com.vaadin.ui.Template;
 public class TodoList extends Template {
     public void addTodo(String todo) {
         StateNode todoNode = StateNode.create();
-        todoNode.put("todo", todo);
+        todoNode.put("title", todo);
         getNode().getMultiValued("todos").add(todoNode);
     }
 }

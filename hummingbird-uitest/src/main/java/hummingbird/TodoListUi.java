@@ -15,12 +15,13 @@
  */
 package hummingbird;
 
-import com.vaadin.hummingbird.kernel.Element;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
+@StyleSheet("TodoList.css")
 public class TodoListUi extends UI {
 
     @Override
@@ -32,20 +33,20 @@ public class TodoListUi extends UI {
         Button addButton = new Button("Add another todo");
         addButton.getElement().addEventListener("click",
                 () -> todoList.addTodo("Another todo"));
-
-        Button toggleButton = new Button("Toggle input type");
-        toggleButton.addClickListener(e -> {
-            Element firstInput = todoList.getElement().getChild(0);
-            if (firstInput.hasAttribute("type")) {
-                firstInput.removeAttribute("type");
-            } else {
-                firstInput.setAttribute("type", "password");
-            }
-        });
+        //
+        // Button toggleButton = new Button("Toggle completed");
+        // toggleButton.addClickListener(e -> {
+        // Element firstInput = todoList.getElement().getChild(0);
+        // if (firstInput.hasAttribute("type")) {
+        // firstInput.removeAttribute("type");
+        // } else {
+        // firstInput.setAttribute("type", "password");
+        // }
+        // });
 
         layout.addComponent(todoList);
         layout.addComponent(addButton);
-        layout.addComponent(toggleButton);
+        // layout.addComponent(toggleButton);
 
         setContent(layout);
     }
