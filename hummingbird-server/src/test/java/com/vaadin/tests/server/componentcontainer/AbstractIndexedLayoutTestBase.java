@@ -77,7 +77,7 @@ public abstract class AbstractIndexedLayoutTestBase extends TestCase {
         try {
             getComponent(0);
             fail();
-        } catch (IndexOutOfBoundsException e) {
+        } catch (AssertionError | IndexOutOfBoundsException e) {
             // Expected
         }
     }

@@ -78,6 +78,7 @@ public class ColorPickerPreview extends CssLayout
     @Override
     public void setColor(Color color) {
         this.color = color;
+        getElement().setStyle("background", color.getCSS());
 
         // Unregister listener
         field.removeValueChangeListener(this);
@@ -187,11 +188,4 @@ public class ColorPickerPreview extends CssLayout
         }
     }
 
-    /**
-     * Called when the component is refreshing
-     */
-    @Override
-    protected String getCss(Component c) {
-        return "background: " + color.getCSS();
-    }
 }

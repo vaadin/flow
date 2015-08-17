@@ -1182,10 +1182,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
         this.element.setComponent(this);
     }
 
-    protected boolean hasChild(Component component) {
-        return getElement().hasChild(component.getElement());
-    }
-
     private static final Logger getLogger() {
         return Logger.getLogger(AbstractComponent.class.getName());
     }

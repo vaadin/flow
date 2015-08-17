@@ -16,7 +16,6 @@
 
 package com.vaadin.ui;
 
-import java.util.Iterator;
 import java.util.logging.Logger;
 
 import com.vaadin.annotations.HTML;
@@ -29,7 +28,7 @@ import com.vaadin.shared.EventId;
 
 @SuppressWarnings("serial")
 @HTML("vaadin://bower_components/iron-flex-layout/classes/iron-flex-layout.html")
-public abstract class AbstractOrderedLayout extends AbstractComponentContainer
+public abstract class AbstractOrderedLayout extends SimpleDOMComponentContainer
         implements ComponentContainer.AlignmentHandler,
         ComponentContainer.SpacingHandler, LayoutClickNotifier,
         ComponentContainer.MarginHandler {
@@ -49,8 +48,6 @@ public abstract class AbstractOrderedLayout extends AbstractComponentContainer
 
     public static final Alignment ALIGNMENT_DEFAULT = Alignment.TOP_LEFT;
 
-    private static final String ERROR_NOT_A_CHILD = "The given component is not a child of this layout";
-
     private Alignment defaultComponentAlignment = ALIGNMENT_DEFAULT;
 
     /* Child component alignments */
@@ -63,110 +60,15 @@ public abstract class AbstractOrderedLayout extends AbstractComponentContainer
         getElement().addClass(CLASS_FLEX_CHILDREN);
     }
 
-    /**
-     * Add a component into this container. The component is added to the right
-     * or under the previous component.
-     *
-     * @param c
-     *            the component to be added.
-     */
-    @Override
-    public void addComponent(Component c) {
-        assert c != null : "Cannot add null as a component";
-        try {
-            getElement().appendChild(c.getElement());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(
-                    "Component cannot be added inside it's own content", e);
-        }
-    }
-
-    /**
-     * Adds a component into this container. The component is added to the left
-     * or on top of the other components.
-     *
-     * @param c
-     *            the component to be added.
-     */
-    public void addComponentAsFirst(Component c) {
-        addComponent(c, 0);
-    }
-
-    /**
-     * Adds a component into indexed position in this container.
-     *
-     * @param c
-     *            the component to be added.
-     * @param index
-     *            the index of the component position. The components currently
-     *            in and after the position are shifted forwards.
-     */
-    public void addComponent(Component c, int index) {
-        assert c != null : "Cannot add null as a component";
-
-        getElement().insertChild(index, c.getElement());
-    }
-
-    /**
-     * Removes the component from this container.
-     *
-     * @param c
-     *            the component to be removed.
-     */
-    @Override
-    public void removeComponent(Component c) {
-        assert c != null : "Cannot remove null component";
-
-        if (!hasChild(c)) {
-            throw new IllegalArgumentException(ERROR_NOT_A_CHILD);
-        }
-
-        c.getElement().removeFromParent(); // Fires detach
-    }
-
-    /**
-     * Gets the component container iterator for going trough all the components
-     * in the container.
-     *
-     * @return the Iterator of the components inside the container.
-     */
-    @Override
-    public Iterator<Component> iterator() {
-        return new ElementBasedComponentIterator(getElement());
-    }
-
-    /**
-     * Gets the number of contained components. Consistent with the iterator
-     * returned by {@link #getComponentIterator()}.
-     *
-     * @return the number of contained components
-     */
-    @Override
-    public int getComponentCount() {
-        return getElement().getChildCount();
-    }
-
-    /* Documented in superclass */
     @Override
     public void replaceComponent(Component oldComponent,
             Component newComponent) {
-        if (!hasChild(oldComponent)) {
-            throw new IllegalArgumentException(ERROR_NOT_A_CHILD);
-        }
-        if (hasChild(newComponent)) {
-            throw new IllegalArgumentException(
-                    "The new component is already a child of this layout");
-        }
-
-        int insertIndex = getElement().getChildIndex(oldComponent.getElement());
         int expandRatio = getExpandRatio(oldComponent);
         Alignment alignment = getComponentAlignment(oldComponent);
-
-        removeComponent(oldComponent);
-        addComponent(newComponent, insertIndex);
-
+        super.replaceComponent(oldComponent, newComponent);
         setExpandRatio(newComponent, expandRatio);
         setComponentAlignment(newComponent, alignment);
+
     }
 
     @Override
@@ -316,30 +218,6 @@ public abstract class AbstractOrderedLayout extends AbstractComponentContainer
                 LayoutClickEvent.class, listener);
     }
 
-    /**
-     * Returns the index of the given component.
-     *
-     * @param component
-     *            The component to look up.
-     * @return The index of the component or -1 if the component is not a child.
-     */
-    public int getComponentIndex(Component component) {
-        return getElement().getChildIndex(component.getElement());
-    }
-
-    /**
-     * Returns the component at the given position.
-     *
-     * @param index
-     *            The position of the component.
-     * @return The component at the given index.
-     * @throws IndexOutOfBoundsException
-     *             If the index is out of range.
-     */
-    public Component getComponent(int index) throws IndexOutOfBoundsException {
-        return getElement().getChild(index).getComponent();
-    }
-
     @Override
     public Alignment getDefaultComponentAlignment() {
         return defaultComponentAlignment;
@@ -348,12 +226,6 @@ public abstract class AbstractOrderedLayout extends AbstractComponentContainer
     @Override
     public void setDefaultComponentAlignment(Alignment defaultAlignment) {
         defaultComponentAlignment = defaultAlignment;
-    }
-
-    private void applyLayoutSettings(Component target, Alignment alignment,
-            int expandRatio) {
-        setComponentAlignment(target, alignment);
-        setExpandRatio(target, expandRatio);
     }
 
     private static Logger getLogger() {

@@ -27,6 +27,7 @@ import java.io.Serializable;
  * @since 3.0
  */
 public interface ComponentContainer extends HasComponents {
+    public static final String ERROR_NOT_A_CHILD = "The given component is not a child of this component container";
 
     /**
      * AlignmentHandler is most commonly an advanced container which can align

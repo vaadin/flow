@@ -1,8 +1,5 @@
 package com.vaadin.tests.layouts;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.tests.components.TestBase;
@@ -12,24 +9,17 @@ import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.ComponentContainer.MarginHandler;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.NativeButton;
 
 public class CssLayoutCustomCss extends TestBase implements ClickListener {
 
-    protected Map<Component, String> css = new HashMap<Component, String>();
     private CssLayout layout;
 
     @Override
     protected void setup() {
         setTheme("tests-tickets");
-        layout = new CssLayout() {
-            @Override
-            protected String getCss(com.vaadin.ui.Component c) {
-                return css.get(c);
-            }
-        };
+        layout = new CssLayout();
         layout.setSizeFull();
         addComponent(layout);
 
@@ -50,7 +40,8 @@ public class CssLayoutCustomCss extends TestBase implements ClickListener {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
-                ((ComponentContainer.MarginHandler) layout).setMargin(cb.getValue());
+                ((ComponentContainer.MarginHandler) layout)
+                        .setMargin(cb.getValue());
             }
         });
 
@@ -59,7 +50,7 @@ public class CssLayoutCustomCss extends TestBase implements ClickListener {
 
     private Button createButton(String string) {
         NativeButton button = new NativeButton(string);
-        css.put(button, string);
+        applyStyle(button);
         button.addClickListener(this);
         return button;
     }
@@ -81,13 +72,18 @@ public class CssLayoutCustomCss extends TestBase implements ClickListener {
         Button b = event.getButton();
         if (b.getCaption().contains("not ")) {
             b.setCaption(b.getCaption().substring(4));
-            css.put(b, b.getCaption());
+            applyStyle(b);
         } else {
-            css.remove(b);
+            b.getElement().removeStyle("color");
             b.setCaption("not " + b.getCaption());
         }
         layout.markAsDirty();
 
+    }
+
+    private void applyStyle(Button b) {
+        String[] keyValue = b.getCaption().split(":", 2);
+        b.getElement().setStyle(keyValue[0], keyValue[1]);
     }
 
 }

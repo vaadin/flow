@@ -21,7 +21,6 @@ import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextArea;
@@ -47,16 +46,7 @@ public class TextAreaSizeResetted extends AbstractTestUI {
     public static final int TEXTAREAHEIGHT = 200;
     public static final int TEXTAREAWIDTH = 200;
 
-    CssLayout layout = new CssLayout() {
-        @Override
-        protected String getCss(Component c) {
-            if (c instanceof TextArea) {
-                return "resize:both";
-            }
-
-            return super.getCss(c);
-        }
-    };
+    CssLayout layout = new CssLayout();
 
     @Override
     protected void setup(VaadinRequest request) {
@@ -84,6 +74,7 @@ public class TextAreaSizeResetted extends AbstractTestUI {
 
         addComponent(layout);
 
+        textArea.getElement().setStyle("resize", "both");
         layout.addComponent(textArea);
         layout.addComponent(textField);
         layout.addComponent(button);

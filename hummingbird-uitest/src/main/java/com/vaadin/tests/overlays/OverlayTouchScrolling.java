@@ -8,7 +8,6 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
@@ -20,14 +19,10 @@ public class OverlayTouchScrolling extends AbstractTestUI {
 
         final CssLayout green = new CssLayout();
         green.setSizeFull();
-        final CssLayout layout = new CssLayout() {
-            @Override
-            protected String getCss(Component c) {
-                return "background:green;";
-            }
-        };
+        final CssLayout layout = new CssLayout();
         layout.setSizeFull();
         layout.addComponent(green);
+        green.getElement().setStyle("background", "green");
         setContent(layout);
 
         Button button = new Button("Tap me with a touch device");

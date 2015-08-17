@@ -1,7 +1,6 @@
 package com.vaadin.tests.components.textfield;
 
 import com.vaadin.tests.components.TestBase;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
@@ -17,12 +16,7 @@ public class SizedTextFields extends TestBase {
 
         VerticalLayout vl;
 
-        CssLayout cssLayout = new CssLayout() {
-            @Override
-            protected String getCss(Component c) {
-                return "margin-top: 20px; background:red;";
-            }
-        };
+        CssLayout cssLayout = new CssLayout();
 
         vl = new VerticalLayout();
         vl.setHeight("40px");
@@ -33,6 +27,8 @@ public class SizedTextFields extends TestBase {
         vl.addComponent(tf);
         vl.setCaption("Fullsize textfield in 40px height 200px width box");
         cssLayout.addComponent(vl);
+        vl.getElement().setStyle("margin-top", "20px").setStyle("background",
+                "red");
 
         vl = new VerticalLayout();
         vl.setHeight("40px");
@@ -44,6 +40,8 @@ public class SizedTextFields extends TestBase {
         vl.addComponent(ta);
         vl.setCaption("Fullsize textarea in 100px height 200px width box");
         cssLayout.addComponent(vl);
+        vl.getElement().setStyle("margin-top", "20px").setStyle("background",
+                "red");
 
         vl = new VerticalLayout();
         vl.setSizeUndefined();
@@ -52,6 +50,8 @@ public class SizedTextFields extends TestBase {
         vl.addComponent(tf);
         vl.setCaption("Normal textfield in natural size.");
         cssLayout.addComponent(vl);
+        vl.getElement().setStyle("margin-top", "20px").setStyle("background",
+                "red");
 
         getLayout().addComponent(cssLayout);
 
