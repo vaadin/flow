@@ -28,10 +28,10 @@ import com.vaadin.shared.EventId;
 
 @SuppressWarnings("serial")
 @HTML("vaadin://bower_components/iron-flex-layout/classes/iron-flex-layout.html")
-public abstract class AbstractOrderedLayout extends SimpleDOMComponentContainer
-        implements ComponentContainer.AlignmentHandler,
-        ComponentContainer.SpacingHandler, LayoutClickNotifier,
-        ComponentContainer.MarginHandler {
+public abstract class AbstractOrderedLayout
+        extends AbstractSimpleDOMComponentContainer implements
+        ComponentContainer.AlignmentHandler, ComponentContainer.SpacingHandler,
+        LayoutClickNotifier, ComponentContainer.MarginHandler {
 
     // private AbstractOrderedLayoutServerRpc rpc = new
     // AbstractOrderedLayoutServerRpc() {

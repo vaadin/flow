@@ -7,9 +7,10 @@ import com.vaadin.hummingbird.kernel.Element;
 /**
  * An implementation helper for component containers which store their
  * children's elements as immediate childrens to the container's element.
- * Application developers should not rely on this interface
+ * Application developers should not use this class
  */
-public class SimpleDOMComponentContainer extends AbstractComponentContainer {
+public class AbstractSimpleDOMComponentContainer
+        extends AbstractComponentContainer {
     /**
      * Add a component into this container. The component is added to the right
      * or under the previous component.
@@ -172,4 +173,8 @@ public class SimpleDOMComponentContainer extends AbstractComponentContainer {
         return getElement().getChildCount();
     }
 
+    @Override
+    public void removeAllComponents() {
+        getElement().removeAllChildren();
+    }
 }

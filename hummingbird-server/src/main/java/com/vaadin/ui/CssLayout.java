@@ -64,7 +64,7 @@ import com.vaadin.shared.ui.csslayout.CssLayoutServerRpc;
  * @since 6.1 brought in from "FastLayouts" incubator project
  *
  */
-public class CssLayout extends SimpleDOMComponentContainer
+public class CssLayout extends AbstractSimpleDOMComponentContainer
         implements LayoutClickNotifier {
 
     private CssLayoutServerRpc rpc = new CssLayoutServerRpc() {
