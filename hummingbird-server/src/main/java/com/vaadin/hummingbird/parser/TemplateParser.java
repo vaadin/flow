@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -58,6 +59,8 @@ public class TemplateParser {
             return createElementTemplate((Element) node, context);
         } else if (node instanceof TextNode) {
             return createTextTemplate((TextNode) node, context);
+        } else if (node instanceof Comment) {
+            return null;
         } else {
             throw new RuntimeException(node.getClass().getName());
         }
@@ -159,7 +162,7 @@ public class TemplateParser {
         final Context finalContext = context;
         List<BoundElementTemplate> childTemplates = element.childNodes()
                 .stream().map(c -> createTemplate(c, finalContext))
-                .collect(Collectors.toList());
+                .filter(c -> c != null).collect(Collectors.toList());
         if (childTemplates.isEmpty()) {
             childTemplates = null;
         }
