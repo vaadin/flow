@@ -33,20 +33,15 @@ public class TodoListUi extends UI {
         Button addButton = new Button("Add another todo");
         addButton.getElement().addEventListener("click",
                 () -> todoList.addTodo("Another todo"));
-        //
-        // Button toggleButton = new Button("Toggle completed");
-        // toggleButton.addClickListener(e -> {
-        // Element firstInput = todoList.getElement().getChild(0);
-        // if (firstInput.hasAttribute("type")) {
-        // firstInput.removeAttribute("type");
-        // } else {
-        // firstInput.setAttribute("type", "password");
-        // }
-        // });
+
+        Button toggleButton = new Button("Toggle completed");
+        toggleButton.addClickListener(e -> {
+            todoList.setCompleted(0, !todoList.isCompleted(0));
+        });
 
         layout.addComponent(todoList);
         layout.addComponent(addButton);
-        // layout.addComponent(toggleButton);
+        layout.addComponent(toggleButton);
 
         setContent(layout);
     }

@@ -493,7 +493,7 @@ public class TreeUpdater {
         public void put(String property, PutChange change) {
             String targetAttribute = template.getTargetAttribute(property);
             if (targetAttribute != null) {
-                element.setAttribute(targetAttribute,
+                element.setPropertyString(targetAttribute,
                         change.getValue().asString());
             }
         }
@@ -516,7 +516,10 @@ public class TreeUpdater {
 
         @Override
         public void remove(String property, RemoveChange change) {
-            // Don't care
+            String targetAttribute = template.getTargetAttribute(property);
+            if (targetAttribute != null) {
+                element.setPropertyString(targetAttribute, null);
+            }
         }
 
         @Override
@@ -559,9 +562,9 @@ public class TreeUpdater {
             }
 
             if (value == null) {
-                element.removeAttribute(key);
+                element.setPropertyString(key, null);
             } else {
-                element.setAttribute(key, value);
+                element.setPropertyString(key, value);
             }
         }
 
@@ -636,7 +639,8 @@ public class TreeUpdater {
 
         @Override
         public void remove(RemoveChange change) {
-            if ("LISTENERS".equals(change.getKey())) {
+            String key = change.getKey();
+            if ("LISTENERS".equals(key)) {
                 // This means we have no listeners left, remove the map as well
                 Integer id = nodeToId.get(node);
 
@@ -645,12 +649,11 @@ public class TreeUpdater {
 
                 domListeners.remove(id);
             } else {
-                String key = change.getKey();
                 if ("TAG".equals(key)) {
                     return;
                 }
 
-                element.removeAttribute(change.getKey());
+                element.setPropertyString(key, null);
             }
         }
 

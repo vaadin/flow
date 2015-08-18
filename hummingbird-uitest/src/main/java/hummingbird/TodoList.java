@@ -15,6 +15,8 @@
  */
 package hummingbird;
 
+import java.util.List;
+
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.ui.Template;
 
@@ -22,6 +24,24 @@ public class TodoList extends Template {
     public void addTodo(String todo) {
         StateNode todoNode = StateNode.create();
         todoNode.put("title", todo);
-        getNode().getMultiValued("todos").add(todoNode);
+        getTodos().add(todoNode);
+    }
+
+    private List<Object> getTodos() {
+        return getNode().getMultiValued("todos");
+    }
+
+    public void setCompleted(int todoIndex, boolean completed) {
+        StateNode todoNode = (StateNode) getTodos().get(todoIndex);
+        if (completed) {
+            todoNode.put("completed", Boolean.TRUE);
+        } else {
+            todoNode.remove("completed");
+        }
+    }
+
+    public boolean isCompleted(int todoIndex) {
+        StateNode todoNode = (StateNode) getTodos().get(todoIndex);
+        return todoNode.containsKey("completed");
     }
 }
