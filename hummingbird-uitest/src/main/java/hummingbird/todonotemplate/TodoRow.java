@@ -1,42 +1,49 @@
 package hummingbird.todonotemplate;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.event.FieldEvents.BlurEvent;
 import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.NativeButton;
 import com.vaadin.ui.TextField;
 
+@Tag("li")
 public class TodoRow extends CssLayout {
 
     private CheckBox completed;
     private TextField edit;
-    private Label caption;
+    private HTML caption;
 
     private Todo todo;
 
+    private CssLayout view = new CssLayout();
+
     public TodoRow() {
-        addStyleName("todo-row");
+        view.addStyleName("view");
+        addComponent(view);
+
+        // addStyleName("todo-row");
 
         completed = new CheckBox(null);
-        addComponent(completed);
+        completed.setStyleName("toggle");
+        view.addComponent(completed);
 
-        caption = new Label("");
-        caption.setSizeUndefined();
-        addComponent(caption);
+        caption = new HTML("<label />");
+        view.addComponent(caption);
 
-        NativeButton destroy = new NativeButton();
+        Button destroy = new Button();
         destroy.addStyleName("destroy");
         addComponent(destroy);
 
         edit = new TextField();
+        edit.setStyleName("edit");
         addComponent(edit);
 
         /* Event handling */
@@ -90,9 +97,9 @@ public class TodoRow extends CssLayout {
 
     public void setTodo(Todo todo) {
         this.todo = todo;
-        getElement().setClass("completed", todo.isCompleted());
+        setStyleName("completed", todo.isCompleted());
         completed.setValue(todo.isCompleted());
-        caption.setValue(todo.getText());
+        caption.setInnerHtml(todo.getText());
         edit.setValue(todo.getText());
     }
 

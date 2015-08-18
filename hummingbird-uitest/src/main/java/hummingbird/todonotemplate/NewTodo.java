@@ -16,6 +16,12 @@ public class NewTodo extends TextField {
         addBlurListener((e) -> {
             focused = false;
         });
+        addValueChangeListener(e -> {
+            if (!getValue().isEmpty()) {
+                getPresenter().add(new Todo(getValue()));
+                clear();
+            }
+        });
         // addShortcutListener(new ShortcutListener(null, KeyCode.ENTER, null) {
         // @Override
         // public void handleAction(Object sender, Object target) {

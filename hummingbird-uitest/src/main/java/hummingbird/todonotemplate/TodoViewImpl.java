@@ -2,16 +2,16 @@ package hummingbird.todonotemplate;
 
 import java.util.List;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
-import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Label;
 
 import hummingbird.todonotemplate.TodoFooter.Filter;
 
+@Tag("section")
 public class TodoViewImpl extends CssLayout implements TodoView {
     private NewTodo newTodo;
     private CssLayout main;
@@ -26,24 +26,34 @@ public class TodoViewImpl extends CssLayout implements TodoView {
      * programmatic value change: https://dev.vaadin.com/ticket/17820
      */
     private boolean toggleAllEvents = true;
+    private TodoList todoList;
 
     public TodoViewImpl() {
         setSizeUndefined();
         setId("todoapp");
 
-        Label header = new Label("<h1>todos</h1>", ContentMode.HTML);
+        // Header
+        CssLayout header = new CssLayout("section");
+        HTML text = new HTML("<h1>todos</h1>");
+        header.addComponent(text);
         header.setId("header");
         header.setSizeUndefined();
+
+        NewTodo newTodo = new NewTodo();
+        header.addComponent(newTodo);
+
         addComponent(header);
 
-        newTodo = new NewTodo();
-        addComponent(newTodo);
-
-        main = new CssLayout();
+        // Main
+        main = new CssLayout("section");
         main.setId("main");
+
         toggleAll = new CheckBox("Mark all as complete");
         toggleAll.setId("toggle-all");
         main.addComponent(toggleAll);
+        todoList = new TodoList();
+        todoList.setId("todo-list");
+        main.addComponent(todoList);
         addComponent(main);
 
         toggleAll.addValueChangeListener(new ValueChangeListener() {
@@ -74,13 +84,13 @@ public class TodoViewImpl extends CssLayout implements TodoView {
     @Override
     public void addTodo(Todo todo) {
         TodoRow row = new TodoRow();
-        main.addComponent(row);
+        todoList.addComponent(row);
         row.setTodo(todo);
     }
 
     @Override
     public void removeTodo(Todo todo) {
-        main.removeComponent(getRow(todo));
+        todoList.removeComponent(getRow(todo));
     }
 
     @Override
@@ -91,8 +101,7 @@ public class TodoViewImpl extends CssLayout implements TodoView {
 
     @Override
     public void refresh(List<Todo> todos) {
-        main.removeAllComponents();
-        main.addComponent(toggleAll);
+        todoList.removeAllComponents();
         for (Todo t : todos) {
             addTodo(t);
         }
@@ -101,12 +110,10 @@ public class TodoViewImpl extends CssLayout implements TodoView {
     }
 
     private TodoRow getRow(Todo todo) {
-        for (Component c : main) {
-            if (c instanceof TodoRow) {
-                TodoRow r = (TodoRow) c;
-                if (r.getTodo() == todo) {
-                    return r;
-                }
+        for (Component c : todoList) {
+            TodoRow r = (TodoRow) c;
+            if (r.getTodo() == todo) {
+                return r;
             }
         }
         return null;

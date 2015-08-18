@@ -1,12 +1,12 @@
 package hummingbird.todonotemplate;
 
-import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.NativeButton;
 
+@Tag("footer")
 public class TodoFooter extends CssLayout {
 
     public enum Filter {
@@ -23,7 +23,7 @@ public class TodoFooter extends CssLayout {
         }
     }
 
-    private Label todoCount;
+    private HTML todoCount;
     private NativeButton filterAll;
     private NativeButton filterActive;
     private NativeButton filterCompleted;
@@ -40,9 +40,8 @@ public class TodoFooter extends CssLayout {
     public TodoFooter() {
         setId("footer");
 
-        todoCount = new Label("<b>0</b> items left", ContentMode.HTML);
+        todoCount = new HTML("<span><b>0</b> items left</span>");
         todoCount.setId("todo-count");
-        todoCount.setSizeUndefined();
         addComponent(todoCount);
 
         CssLayout filters = new CssLayout();
@@ -80,7 +79,7 @@ public class TodoFooter extends CssLayout {
     }
 
     public void updateCounters(int completed, int remaining) {
-        todoCount.setValue("<b>" + remaining + "</b> items left");
+        todoCount.setInnerHtml("<b>" + remaining + "</b> items left");
         clearCompleted.setCaption("Clear completed (" + completed + ")");
         clearCompleted.setVisible(completed != 0);
 
