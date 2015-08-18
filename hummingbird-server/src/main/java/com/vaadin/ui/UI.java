@@ -66,6 +66,8 @@ import com.vaadin.ui.Component.Focusable;
 import com.vaadin.util.ConnectorHelper;
 import com.vaadin.util.CurrentInstance;
 
+import elemental.json.JsonObject;
+
 /**
  * The topmost component in any component hierarchy. There is one UI for every
  * Vaadin instance in a browser window. A UI may either represent an entire
@@ -251,12 +253,15 @@ public abstract class UI extends AbstractSingleComponentContainer
         getPage().getJavaScript().addFunction("vEvent", json -> {
             int nodeId = (int) json.getNumber(0);
             String eventType = json.getString(1);
+            JsonObject eventData = json.getObject(2);
 
             List<Object> listeners = getRootNode().getById(nodeId)
                     .get(EventListener.class, StateNode.class)
                     .getMultiValued(eventType);
-            new ArrayList<>(listeners)
-                    .forEach(value -> ((EventListener) value).handleEvent());
+            Element.debug("Received event " + eventType + " for " + nodeId
+                    + ": " + eventData);
+            new ArrayList<>(listeners).forEach(
+                    value -> ((EventListener) value).handleEvent(eventData));
         });
     }
 

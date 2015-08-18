@@ -8,9 +8,9 @@ public interface ElementTemplate {
 
     public String getTag(StateNode node);
 
-    public void setAttribute(String name, String value, StateNode node);
+    public void setAttribute(String name, Object value, StateNode node);
 
-    public String getAttribute(String name, StateNode node);
+    public Object getAttribute(String name, StateNode node);
 
     public int getChildCount(StateNode node);
 
@@ -28,7 +28,7 @@ public interface ElementTemplate {
 
     public abstract int getId();
 
-    public void addListener(String type, EventListener listener,
+    public void addEventListener(String type, EventListener listener,
             StateNode node);
 
     public void removeListener(String type, EventListener listener,
@@ -37,5 +37,7 @@ public interface ElementTemplate {
     public void setComponent(Component c, StateNode node);
 
     public Component getComponent(StateNode node);
+
+    public void addEventData(String type, StateNode node, String[] data);
 
 }

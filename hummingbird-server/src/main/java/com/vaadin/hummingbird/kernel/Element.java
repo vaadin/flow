@@ -53,7 +53,15 @@ public class Element {
     public Element setAttribute(String name, String value) {
         assert validAttribute(name);
         template.setAttribute(name, value, node);
+        debug("Set attribute " + name + " for " + this);
         return this;
+    }
+
+    public static void debug(String string) {
+        if (false) {
+            getLogger().info(string);
+        }
+
     }
 
     public Element setAttribute(String name, int value) {
@@ -70,12 +78,13 @@ public class Element {
 
     public Element setAttribute(String name, boolean value) {
         assert validAttribute(name);
-        template.setAttribute(name, Boolean.toString(value), node);
+        template.setAttribute(name, value, node);
         return this;
     }
 
     public String getAttribute(String name) {
-        return template.getAttribute(name, node);
+        Object value = template.getAttribute(name, node);
+        return value == null ? null : value.toString();
     }
 
     public String getAttribute(String name, String defaultValue) {
@@ -104,8 +113,13 @@ public class Element {
         return getAttribute(name) != null;
     }
 
+    public Element addEventData(String type, String... data) {
+        template.addEventData(type, node, data);
+        return this;
+    }
+
     public Element addEventListener(String type, EventListener listener) {
-        template.addListener(type, listener, node);
+        template.addEventListener(type, listener, node);
         return this;
     }
 

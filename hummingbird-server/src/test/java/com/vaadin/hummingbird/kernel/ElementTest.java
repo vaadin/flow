@@ -70,7 +70,7 @@ public class ElementTest {
     @Test
     public void addEventListenerReturnsElement() {
         Element element = new Element("div");
-        Assert.assertEquals(element, element.addEventListener("click", () -> {
+        Assert.assertEquals(element, element.addEventListener("click", e -> {
         }));
     }
 
@@ -108,9 +108,8 @@ public class ElementTest {
     @Test
     public void removeEventListenerReturnsElement() {
         Element element = new Element("div");
-        Assert.assertEquals(element,
-                element.removeEventListener("click", () -> {
-                }));
+        Assert.assertEquals(element, element.removeEventListener("click", e -> {
+        }));
     }
 
     @Test

@@ -16,8 +16,6 @@
 
 package com.vaadin.shared;
 
-import java.util.List;
-
 import com.vaadin.shared.annotations.NoLayout;
 import com.vaadin.shared.communication.SharedState;
 
@@ -35,7 +33,6 @@ public class AbstractComponentState extends SharedState {
     // Note: for the caption, there is a difference between null and an empty
     // string!
     public String caption = null;
-    public List<String> styles = null;
     public String id = null;
     public String primaryStyleName = null;
 

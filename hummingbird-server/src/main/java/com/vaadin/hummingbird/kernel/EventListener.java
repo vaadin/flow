@@ -15,7 +15,9 @@
  */
 package com.vaadin.hummingbird.kernel;
 
+import elemental.json.JsonObject;
+
 @FunctionalInterface
 public interface EventListener {
-    public void handleEvent();
+    public void handleEvent(JsonObject eventData);
 }

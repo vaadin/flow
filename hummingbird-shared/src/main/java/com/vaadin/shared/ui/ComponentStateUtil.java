@@ -18,17 +18,12 @@ package com.vaadin.shared.ui;
 import java.io.Serializable;
 import java.util.HashSet;
 
-import com.vaadin.shared.AbstractComponentState;
 import com.vaadin.shared.communication.SharedState;
 
 public final class ComponentStateUtil implements Serializable {
 
     private ComponentStateUtil() {
         // Util class is not instantiable
-    }
-
-    public static final boolean hasStyles(AbstractComponentState state) {
-        return state.styles != null && !state.styles.isEmpty();
     }
 
     /**

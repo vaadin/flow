@@ -428,8 +428,7 @@ public class ServerRpcHandler implements Serializable {
         // the string name to avoid problems with OSGi
         Class<? extends ServerRpc> rpcInterface = rpcManager.getRpcInterface();
 
-        ServerRpcMethodInvocation invocation = new ServerRpcMethodInvocation(
-                parametersJson.length());
+        ServerRpcMethodInvocation invocation = new ServerRpcMethodInvocation();
 
         invocation.setJavaScriptCallbackRpcName(javascriptCallbackRpcName);
         invocation.setParameters(parametersJson);

@@ -32,7 +32,7 @@ public class TodoListUi extends UI {
         todoList.updateStuff();
 
         Button addButton = new Button("Add another todo");
-        addButton.getElement().addEventListener("click", () -> {
+        addButton.getElement().addEventListener("click", e -> {
             todoList.addTodo("Another todo");
             todoList.updateStuff();
         });

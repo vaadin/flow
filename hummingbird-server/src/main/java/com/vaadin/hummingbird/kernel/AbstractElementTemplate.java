@@ -14,7 +14,7 @@ import com.vaadin.ui.UI;
 public abstract class AbstractElementTemplate implements ElementTemplate {
 
     public enum Keys {
-        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY;
+        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY, EVENT_DATA;
     }
 
     private static final AtomicInteger nextId = new AtomicInteger();
@@ -31,17 +31,17 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     }
 
     @Override
-    public String getAttribute(String name, StateNode node) {
+    public Object getAttribute(String name, StateNode node) {
         StateNode elementDataNode = getElementDataNode(node, false);
         if (elementDataNode == null) {
             return null;
         } else {
-            return elementDataNode.get(name, String.class);
+            return elementDataNode.get(name, Object.class);
         }
     }
 
     @Override
-    public void setAttribute(String name, String value, StateNode node) {
+    public void setAttribute(String name, Object value, StateNode node) {
         if (value == null) {
             StateNode elementDataNode = getElementDataNode(node, false);
             if (elementDataNode != null) {
@@ -54,7 +54,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     }
 
     @Override
-    public void addListener(String type, EventListener listener,
+    public void addEventListener(String type, EventListener listener,
             StateNode node) {
         StateNode listeners = getListenerNode(node, true);
 
@@ -66,6 +66,24 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         }
         // The listener instance list staying on the server
         typeListeners.add(listener);
+    }
+
+    @Override
+    public void addEventData(String type, StateNode node, String[] data) {
+        StateNode elementData = getElementDataNode(node, true);
+        StateNode eventDataNode = elementData.get(Keys.EVENT_DATA,
+                StateNode.class);
+        if (eventDataNode == null) {
+            eventDataNode = StateNode.create();
+            elementData.put(Keys.EVENT_DATA, eventDataNode);
+        }
+
+        List<Object> eventData = eventDataNode.getMultiValued(type);
+        for (String d : data) {
+            if (!eventData.contains(d)) {
+                eventData.add(d);
+            }
+        }
     }
 
     private StateNode getListenerNode(StateNode node, boolean createIfNeeded) {

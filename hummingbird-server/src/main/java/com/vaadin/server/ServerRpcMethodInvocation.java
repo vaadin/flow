@@ -32,11 +32,11 @@ public class ServerRpcMethodInvocation extends MethodInvocation {
 
     private final Class<? extends ServerRpc> interfaceClass;
 
-    public ServerRpcMethodInvocation(int parameterCount) {
+    public ServerRpcMethodInvocation() {
         super();
         interfaceClass = JavaScriptCallbackRpc.class;
 
-        method = findInvocationMethod(interfaceClass, "call", parameterCount);
+        method = findInvocationMethod(interfaceClass, "call", 2);
     }
 
     public Class<? extends ServerRpc> getInterfaceClass() {

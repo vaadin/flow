@@ -32,7 +32,6 @@ import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.AbstractComponentState;
 import com.vaadin.shared.ComponentConstants;
-import com.vaadin.shared.ui.ComponentStateUtil;
 import com.vaadin.shared.ui.TabIndexState;
 
 public abstract class AbstractComponentConnector extends AbstractConnector
@@ -228,17 +227,6 @@ public abstract class AbstractComponentConnector extends AbstractConnector
                     false);
         }
         styleNames.setLength(0);
-
-        if (ComponentStateUtil.hasStyles(state)) {
-            // add new style names
-            for (String newStyle : state.styles) {
-                setWidgetStyleName(newStyle, true);
-                setWidgetStyleNameWithPrefix(primaryStyleName + "-", newStyle,
-                        true);
-                styleNames.push(newStyle);
-            }
-
-        }
 
         if (state.primaryStyleName != null
                 && !state.primaryStyleName.equals(primaryStyleName)) {

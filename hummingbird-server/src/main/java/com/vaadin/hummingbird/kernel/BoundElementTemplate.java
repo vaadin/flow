@@ -34,7 +34,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
             List<BoundElementTemplate> childTemplates) {
 
         this.attributeBindings = new HashMap<String, AttributeBinding>();
-        this.classPartBindings = new LinkedHashMap<>();
+        classPartBindings = new LinkedHashMap<>();
         for (AttributeBinding b : attributeBindings) {
             String attributeName = b.getAttributeName();
             if (attributeName.startsWith("class.")) {
@@ -109,9 +109,9 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     }
 
     @Override
-    public String getAttribute(String name, StateNode node) {
+    public Object getAttribute(String name, StateNode node) {
         AttributeBinding binding = attributeBindings.get(name);
-        String value;
+        Object value;
         if (binding == null) {
             value = super.getAttribute(name, node);
             if (value == null) {
@@ -127,8 +127,9 @@ public class BoundElementTemplate extends AbstractElementTemplate {
         }
 
         if ("class".equals(name)) {
+            assert value instanceof String;
             StringBuilder builder = new StringBuilder(
-                    value == null ? null : value);
+                    value == null ? null : (String) value);
             for (Entry<String, AttributeBinding> entry : classPartBindings
                     .entrySet()) {
                 Object classBindingValue = entry.getValue().getValue(node);
@@ -148,7 +149,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     }
 
     @Override
-    public void setAttribute(String name, String value, StateNode node) {
+    public void setAttribute(String name, Object value, StateNode node) {
         AttributeBinding binding = attributeBindings.get(name);
         if (binding != null) {
             throw new IllegalStateException(

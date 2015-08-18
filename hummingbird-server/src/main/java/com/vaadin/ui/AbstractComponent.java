@@ -17,13 +17,12 @@
 package com.vaadin.ui;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
-import java.util.Iterator;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
@@ -31,6 +30,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.event.EventRouter;
 import com.vaadin.event.MethodEventSource;
 import com.vaadin.hummingbird.kernel.Element;
+import com.vaadin.hummingbird.kernel.EventListener;
 import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.server.Resource;
@@ -96,6 +96,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     private Element element;
 
+    private Map<String, EventListener> elementEventListeners;
+
     protected static final String DESIGN_ATTR_PLAIN_TEXT = "plain-text";
 
     /* Constructor */
@@ -105,7 +107,16 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     public AbstractComponent() {
         // ComponentSizeValidator.setCreationLocation(this);
-        setElement(new Element(getClass().getAnnotation(Tag.class).value()));
+        createElement(getClass().getAnnotation(Tag.class).value());
+    }
+
+    protected AbstractComponent(String tagName) {
+        createElement(tagName);
+        // ComponentSizeValidator.setCreationLocation(this);
+    }
+
+    private void createElement(String tagName) {
+        setElement(new Element(tagName));
     }
 
     /* Get/Set component properties */
@@ -137,17 +148,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     @Override
     public String getStyleName() {
-        String s = "";
-        if (ComponentStateUtil.hasStyles(getState(false))) {
-            for (final Iterator<String> it = getState(false).styles
-                    .iterator(); it.hasNext();) {
-                s += it.next();
-                if (it.hasNext()) {
-                    s += " ";
-                }
-            }
-        }
-        return s;
+        return getElement().getAttribute("class");
     }
 
     /*
@@ -156,19 +157,11 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     @Override
     public void setStyleName(String style) {
+        getElement().removeAttribute("class");
         if (style == null || "".equals(style)) {
-            getState().styles = null;
             return;
         }
-        if (getState().styles == null) {
-            getState().styles = new ArrayList<String>();
-        }
-        List<String> styles = getState().styles;
-        styles.clear();
-        StringTokenizer tokenizer = new StringTokenizer(style, " ");
-        while (tokenizer.hasMoreTokens()) {
-            styles.add(tokenizer.nextToken());
-        }
+        addStyleName(style);
     }
 
     @Override
@@ -195,22 +188,14 @@ public abstract class AbstractComponent extends AbstractClientConnector
             return;
         }
 
-        if (getState().styles == null) {
-            getState().styles = new ArrayList<String>();
-        }
-        List<String> styles = getState().styles;
-        if (!styles.contains(style)) {
-            styles.add(style);
-        }
+        getElement().addClass(style);
     }
 
     @Override
     public void removeStyleName(String style) {
-        if (ComponentStateUtil.hasStyles(getState())) {
-            StringTokenizer tokenizer = new StringTokenizer(style, " ");
-            while (tokenizer.hasMoreTokens()) {
-                getState().styles.remove(tokenizer.nextToken());
-            }
+        StringTokenizer tokenizer = new StringTokenizer(style, " ");
+        while (tokenizer.hasMoreTokens()) {
+            getElement().removeClass(tokenizer.nextToken());
         }
     }
 
@@ -1197,6 +1182,33 @@ public abstract class AbstractComponent extends AbstractClientConnector
     public void elementDetached() {
         if (isAttached()) {
             detach();
+        }
+    }
+
+    protected void addElementEventListener(String eventType,
+            EventListener listener) {
+        getElement().addEventListener(eventType, listener);
+        if (elementEventListeners == null) {
+            elementEventListeners = new HashMap<>();
+        }
+        elementEventListeners.put(eventType, listener);
+
+    }
+
+    protected boolean hasElementEventListener(String eventType) {
+        if (elementEventListeners == null) {
+            return false;
+        }
+        return elementEventListeners.containsKey(eventType);
+    }
+
+    protected void removeElementEventListener(String eventType) {
+        assert hasElementEventListener(eventType);
+
+        getElement().removeEventListener(eventType,
+                elementEventListeners.remove(eventType));
+        if (elementEventListeners.isEmpty()) {
+            elementEventListeners = null;
         }
     }
 

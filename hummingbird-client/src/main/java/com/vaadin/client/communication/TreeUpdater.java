@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
@@ -47,7 +48,7 @@ public class TreeUpdater {
 
         public StaticTextTemplate(JsonObject templateDescription,
                 int templateId) {
-            this.content = templateDescription.getString("content");
+            content = templateDescription.getString("content");
         }
 
         @Override
@@ -63,7 +64,7 @@ public class TreeUpdater {
         private final String binding;
 
         public TextUpdater(DynamicTextTemplate template, Text textNode) {
-            this.binding = template.getBinding();
+            binding = template.getBinding();
             this.textNode = textNode;
         }
 
@@ -114,7 +115,7 @@ public class TreeUpdater {
 
         public DynamicTextTemplate(JsonObject templateDescription,
                 int templateId) {
-            this.binding = templateDescription.getString("binding");
+            binding = templateDescription.getString("binding");
         }
 
         public String getBinding() {
@@ -508,8 +509,8 @@ public class TreeUpdater {
         public void put(String property, PutChange change) {
             String targetAttribute = template.getTargetAttribute(property);
             if (targetAttribute != null) {
-                element.setPropertyString(targetAttribute,
-                        change.getValue().asString());
+                setAttributeOrProperty(element, targetAttribute,
+                        change.getValue());
                 return;
             }
 
@@ -554,7 +555,7 @@ public class TreeUpdater {
         public void remove(String property, RemoveChange change) {
             String targetAttribute = template.getTargetAttribute(property);
             if (targetAttribute != null) {
-                element.setPropertyString(targetAttribute, null);
+                setAttributeOrProperty(element, targetAttribute, null);
             }
 
             String classPartMapping = template.getClassPartMapping(property);
@@ -591,22 +592,20 @@ public class TreeUpdater {
 
         @Override
         public void putNode(PutNodeChange change) {
+            if ("EVENT_DATA".equals(change.getKey())) {
+                return;
+            }
             throw new RuntimeException("Not supported");
         }
 
         @Override
         public void put(PutChange change) {
-            String value = change.getValue().asString();
+            JsonValue value = change.getValue();
             String key = change.getKey();
             if ("TAG".equals(key)) {
                 return;
             }
-
-            if (value == null) {
-                element.setPropertyString(key, null);
-            } else {
-                element.setPropertyString(key, value);
-            }
+            setAttributeOrProperty(element, key, value);
         }
 
         @Override
@@ -651,7 +650,40 @@ public class TreeUpdater {
             DomListener listener = new DomListener() {
                 @Override
                 public void handleEvent(JavaScriptObject event) {
-                    sendEventToServer(id.intValue(), type);
+                    JsonObject eventData = Json.createObject();
+
+                    JsonObject eventTypesToData = node.getObject("EVENT_DATA");
+                    if (eventTypesToData != null) {
+                        JsonArray eventDataKeys = eventTypesToData
+                                .getArray(type);
+                        if (eventDataKeys != null
+                                && eventDataKeys.getType() != JsonType.NULL) {
+                            for (int i = 0; i < eventDataKeys.length(); i++) {
+                                String eventDataKey = eventDataKeys
+                                        .getString(i);
+                                if (eventDataKey.startsWith("event.")) {
+                                    String jsKey = eventDataKey
+                                            .substring("event.".length());
+                                    JsonValue value = ((JsonObject) event)
+                                            .get(jsKey);
+                                    eventData.put(eventDataKey, value);
+                                } else
+                                    if (eventDataKey.startsWith("element.")) {
+                                    String jsKey = eventDataKey
+                                            .substring("element.".length());
+                                    JsonValue value = ((JsonObject) element)
+                                            .get(jsKey);
+                                    eventData.put(eventDataKey, value);
+
+                                } else {
+                                    throw new RuntimeException(
+                                            "Unsupported event data key: "
+                                                    + eventDataKey);
+                                }
+                            }
+                        }
+                    }
+                    sendEventToServer(id.intValue(), type, eventData);
                 }
             };
 
@@ -694,7 +726,7 @@ public class TreeUpdater {
                     return;
                 }
 
-                element.setPropertyString(key, null);
+                setAttributeOrProperty(element, key, null);
             }
         }
 
@@ -704,10 +736,12 @@ public class TreeUpdater {
         }
     }
 
-    private void sendEventToServer(int nodeId, String eventType) {
+    private void sendEventToServer(int nodeId, String eventType,
+            JsonObject eventData) {
         JsonArray arguments = Json.createArray();
         arguments.set(0, nodeId);
         arguments.set(1, eventType);
+        arguments.set(2, eventData);
 
         /*
          * Must invoke manually as the RPC interface can't be used in GWT
@@ -715,6 +749,65 @@ public class TreeUpdater {
          */
         rpcQueue.add(new MethodInvocation("vEvent", arguments), false);
         rpcQueue.flush();
+    }
+
+    private static void setAttributeOrProperty(Element element, String key,
+            JsonValue value) {
+        if (isAlwaysAttribute(key)) {
+            if (value != null) {
+                element.setAttribute(key, value.asString());
+                debug("Set attribute " + key + "=" + value + " for "
+                        + outerHtml(element));
+            } else {
+                element.removeAttribute(key);
+                debug("Removed attribute " + key + " from "
+                        + outerHtml(element));
+            }
+        } else {
+            if (value.getType() == JsonType.BOOLEAN) {
+                element.setPropertyBoolean(key, value.asBoolean());
+                debug("Set property " + key + "=" + value + " (boolean) for "
+                        + outerHtml(element));
+            } else if (value.getType() == JsonType.NUMBER) {
+                element.setPropertyDouble(key, value.asNumber());
+                debug("Set property " + key + "=" + value + " (number) for "
+                        + outerHtml(element));
+            } else {
+                element.setPropertyString(key, value.asString());
+                debug("Set property " + key + "=" + value + " (string) for "
+                        + outerHtml(element));
+            }
+
+        }
+
+    }
+
+    private static void debug(String string) {
+        if (false) {
+            getLogger().info(string);
+        }
+    }
+
+    private static String outerHtml(Element element) {
+        return element.getPropertyString("outerHTML");
+    }
+
+    private static String outerHtml(Node node) {
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            return outerHtml((Element) node);
+        } else if (node.getNodeType() == Node.TEXT_NODE) {
+            return "#text " + ((Text) node).getNodeValue();
+        } else {
+            return "#Unknown: " + node.getNodeValue();
+        }
+    }
+
+    private static Logger getLogger() {
+        return Logger.getLogger(TreeUpdater.class.getName());
+    }
+
+    private static boolean isAlwaysAttribute(String key) {
+        return key.equals("class") || key.equals("style");
     }
 
     public class TextElementListener implements NodeListener {
@@ -1011,10 +1104,12 @@ public class TreeUpdater {
             if ("#text".equals(tag)) {
                 Text textNode = Document.get().createTextNode("");
                 addNodeListener(node, new TextElementListener(node, textNode));
+                debug("Created text node");
                 return textNode;
             } else {
                 Element element = Document.get().createElement(tag);
                 addNodeListener(node, new BasicElementListener(node, element));
+                debug("Created element: " + outerHtml(element));
                 return element;
             }
         }
@@ -1024,9 +1119,13 @@ public class TreeUpdater {
             int index) {
         if (parent.getChildCount() == index) {
             parent.appendChild(child);
+            debug("Appended node " + outerHtml(child) + " into "
+                    + outerHtml(parent));
         } else {
             Node reference = parent.getChildNodes().getItem(index);
             parent.insertBefore(child, reference);
+            debug("Inserted node " + outerHtml(child) + " into "
+                    + outerHtml(parent) + " at index " + index);
         }
     }
 
