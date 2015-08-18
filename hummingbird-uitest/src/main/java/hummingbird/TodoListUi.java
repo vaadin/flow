@@ -29,14 +29,18 @@ public class TodoListUi extends UI {
         VerticalLayout layout = new VerticalLayout();
         TodoList todoList = new TodoList();
         todoList.addTodo("Make hummingbird work");
+        todoList.updateStuff();
 
         Button addButton = new Button("Add another todo");
-        addButton.getElement().addEventListener("click",
-                () -> todoList.addTodo("Another todo"));
+        addButton.getElement().addEventListener("click", () -> {
+            todoList.addTodo("Another todo");
+            todoList.updateStuff();
+        });
 
         Button toggleButton = new Button("Toggle completed");
         toggleButton.addClickListener(e -> {
             todoList.setCompleted(0, !todoList.isCompleted(0));
+            todoList.updateStuff();
         });
 
         layout.addComponent(todoList);

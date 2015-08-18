@@ -21,10 +21,19 @@ import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.ui.Template;
 
 public class TodoList extends Template {
+    private int completeCount = 0;
+
+    public TodoList() {
+        getNode().put("remainingCount", Integer.valueOf(0));
+    }
+
     public void addTodo(String todo) {
         StateNode todoNode = StateNode.create();
         todoNode.put("title", todo);
         getTodos().add(todoNode);
+        if (todoNode.containsKey("hasTodos")) {
+            todoNode.put("hasTodos", Boolean.TRUE);
+        }
     }
 
     private List<Object> getTodos() {
@@ -33,10 +42,35 @@ public class TodoList extends Template {
 
     public void setCompleted(int todoIndex, boolean completed) {
         StateNode todoNode = (StateNode) getTodos().get(todoIndex);
-        if (completed) {
+        if (completed && !todoNode.containsKey("completed")) {
+            completeCount++;
             todoNode.put("completed", Boolean.TRUE);
-        } else {
+        } else if (!completed && todoNode.containsKey("completed")) {
+            completeCount--;
             todoNode.remove("completed");
+        }
+    }
+
+    public void updateStuff() {
+        StateNode node = getNode();
+
+        updateBoolean(node, completeCount == 0, "hasNoCompleted");
+
+        int remainingCount = getTodos().size() - completeCount;
+        updateBoolean(node, remainingCount == 0, "isAllCompleted");
+        updateBoolean(node, (remainingCount != 0), "hasRemaining");
+
+        Integer remainingObj = Integer.valueOf(remainingCount);
+        if (!remainingObj.equals(node.get("remainingCount"))) {
+            node.put("remainingCount", remainingObj);
+        }
+    }
+
+    private void updateBoolean(StateNode node, boolean value, String key) {
+        if (value && !node.containsKey(key)) {
+            node.put(key, Boolean.TRUE);
+        } else if (!value && node.containsKey(key)) {
+            node.remove(key);
         }
     }
 
