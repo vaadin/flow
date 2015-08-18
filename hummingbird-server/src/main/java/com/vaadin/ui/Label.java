@@ -97,7 +97,6 @@ public class Label extends AbstractComponent implements Property<String>,
         super();
         setValue(content);
         setContentMode(contentMode);
-        setWidth(100, Unit.PERCENTAGE);
     }
 
     /**
@@ -110,7 +109,6 @@ public class Label extends AbstractComponent implements Property<String>,
     public Label(Property contentSource, ContentMode contentMode) {
         setPropertyDataSource(contentSource);
         setContentMode(contentMode);
-        setWidth(100, Unit.PERCENTAGE);
     }
 
     @Override
