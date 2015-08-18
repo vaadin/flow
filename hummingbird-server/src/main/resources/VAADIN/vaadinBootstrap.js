@@ -212,10 +212,11 @@
 				loadTheme(themeUri, versionInfo && versionInfo['vaadinVersion']);
 				
 				var widgetset = getConfig('client-engine');
-				widgetsets[widgetset] = {
-						pendingApps: []
-					};		
-				
+				if (mayDefer) {
+					widgetsets[widgetset] = {
+							pendingApps: []
+						};
+				}
 				if (getConfig('uidl') === undefined) {
 					if (mayDefer) {
 						fetchRootConfig();
