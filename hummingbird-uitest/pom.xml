@@ -116,7 +116,7 @@
 					<destination>src/main/generated-resources</destination>
 					<sassOptions>
 						<!-- Hack to be able to import Valo as ../valo/valo -->
-						<load_paths>['${project.build}../hummingbird-themes/src/main/sass/VAADIN/themes/valo']</load_paths>
+						<load_paths>['${project.build.directory}/../../hummingbird-themes/src/main/sass/VAADIN/themes/valo']</load_paths>
 					</sassOptions>
 				</configuration>
 				<executions>
