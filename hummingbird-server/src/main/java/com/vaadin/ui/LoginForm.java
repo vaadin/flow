@@ -194,7 +194,7 @@ public class LoginForm extends CustomComponent {
 
         /**
          * Access method to form values by field names.
-         * 
+         *
          * @param name
          * @return value in given field
          */
@@ -214,7 +214,7 @@ public class LoginForm extends CustomComponent {
     public interface LoginListener extends Serializable {
         /**
          * This method is fired on each login form post.
-         * 
+         *
          * @param event
          */
         public void onLogin(LoginForm.LoginEvent event);

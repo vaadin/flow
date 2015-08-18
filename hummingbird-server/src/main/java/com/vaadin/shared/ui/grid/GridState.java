@@ -44,7 +44,7 @@ public class GridState extends TabIndexState {
     public enum SharedSelectionMode {
         /**
          * Representation of a single selection mode
-         * 
+         *
          * @see com.vaadin.ui.components.grid.Grid.SelectionMode#SINGLE
          * @see com.vaadin.client.ui.grid.Grid.SelectionMode#SINGLE
          */
@@ -52,7 +52,7 @@ public class GridState extends TabIndexState {
 
         /**
          * Representation of a multiselection mode
-         * 
+         *
          * @see com.vaadin.ui.components.grid.Grid.SelectionMode#MULTI
          * @see com.vaadin.client.ui.grid.Grid.SelectionMode#MULTI
          */
@@ -60,7 +60,7 @@ public class GridState extends TabIndexState {
 
         /**
          * Representation of a no-selection mode
-         * 
+         *
          * @see com.vaadin.ui.components.grid.Grid.SelectionMode#NONE
          * @see com.vaadin.client.ui.grid.Grid.SelectionMode#NONE
          */

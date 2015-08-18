@@ -1687,7 +1687,7 @@ public abstract class VaadinService implements Serializable {
          * If no thread is currently holding the lock, pending changes for UIs
          * with automatic push would not be processed and pushed until the next
          * time there is a request or someone does an explicit push call.
-         * 
+         *
          * To remedy this, we try to get the lock at this point. If the lock is
          * currently held by another thread, we just back out as the queue will
          * get purged once it is released. If the lock is held by the current

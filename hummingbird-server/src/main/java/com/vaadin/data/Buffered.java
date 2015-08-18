@@ -121,7 +121,7 @@ public interface Buffered extends Serializable {
 
         /**
          * Creates a source exception that does not include a cause.
-         * 
+         *
          * @param source
          *            the source object implementing the Buffered interface.
          */
@@ -131,7 +131,7 @@ public interface Buffered extends Serializable {
 
         /**
          * Creates a source exception from multiple causes.
-         * 
+         *
          * @param source
          *            the source object implementing the Buffered interface.
          * @param causes
@@ -144,7 +144,7 @@ public interface Buffered extends Serializable {
 
         /**
          * Gets the cause of the exception.
-         * 
+         *
          * @return The (first) cause for the exception, null if no cause.
          */
         @Override
@@ -157,7 +157,7 @@ public interface Buffered extends Serializable {
 
         /**
          * Gets all the causes for this exception.
-         * 
+         *
          * @return throwables that caused this exception
          */
         public final Throwable[] getCauses() {
@@ -166,7 +166,7 @@ public interface Buffered extends Serializable {
 
         /**
          * Gets a source of the exception.
-         * 
+         *
          * @return the Buffered object which generated this exception.
          */
         public Buffered getSource() {

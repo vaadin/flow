@@ -116,7 +116,7 @@ public class XhrConnection {
 
         /**
          * Sets the payload which was sent to the server
-         * 
+         *
          * @param payload
          *            the payload which was sent to the server
          */
@@ -182,7 +182,7 @@ public class XhrConnection {
 
         /**
          * Sets the time when the request was sent
-         * 
+         *
          * @param requestStartTime
          *            the time when the request was sent
          */

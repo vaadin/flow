@@ -76,7 +76,7 @@ public @interface DelegateToWidget {
         /**
          * Gets the name of the method to delegate to for a given property name
          * and annotation value.
-         * 
+         *
          * @param propertyName
          *            the name of the delegated property
          * @param annotationValue

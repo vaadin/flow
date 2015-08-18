@@ -81,7 +81,7 @@ public class AtmospherePushConnection implements PushConnection {
         /**
          * Appends all the data from the given Reader to this message and
          * returns whether the message was completed.
-         * 
+         *
          * @param reader
          *            The Reader from which to read.
          * @return true if this message is complete, false otherwise.

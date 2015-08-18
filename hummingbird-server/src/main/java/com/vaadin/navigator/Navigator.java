@@ -107,7 +107,7 @@ public class Navigator implements Serializable {
         /**
          * Creates a new URIFragmentManager and attach it to listen to URI
          * fragment changes of a {@link Page}.
-         * 
+         *
          * @param page
          *            page whose URI fragment to get and modify
          */
@@ -143,7 +143,7 @@ public class Navigator implements Serializable {
 
         /**
          * Returns the current URI fragment tracked by this UriFragentManager.
-         * 
+         *
          * @return The URI fragment.
          */
         protected String getFragment() {
@@ -152,7 +152,7 @@ public class Navigator implements Serializable {
 
         /**
          * Sets the URI fragment to the given string.
-         * 
+         *
          * @param fragment
          *            The new URI fragment.
          */
@@ -242,7 +242,7 @@ public class Navigator implements Serializable {
         /**
          * Creates a new view provider which returns a pre-created view
          * instance.
-         * 
+         *
          * @param viewName
          *            name of the view (not null)
          * @param view
@@ -276,7 +276,7 @@ public class Navigator implements Serializable {
 
         /**
          * Get the view name for this provider.
-         * 
+         *
          * @return view name for this provider
          */
         public String getViewName() {
@@ -301,7 +301,7 @@ public class Navigator implements Serializable {
         /**
          * Create a new view provider which creates new view instances based on
          * a view class.
-         * 
+         *
          * @param viewName
          *            name of the views to create (not null)
          * @param viewClass
@@ -348,7 +348,7 @@ public class Navigator implements Serializable {
 
         /**
          * Get the view name for this provider.
-         * 
+         *
          * @return view name for this provider
          */
         public String getViewName() {
@@ -357,7 +357,7 @@ public class Navigator implements Serializable {
 
         /**
          * Get the view class for this provider.
-         * 
+         *
          * @return {@link View} class
          */
         public Class<? extends View> getViewClass() {

@@ -304,7 +304,7 @@ public interface Container extends Serializable {
          * Gets the ID of the Item following the Item that corresponds to
          * <code>itemId</code>. If the given Item is the last or not found in
          * the Container, <code>null</code> is returned.
-         * 
+         *
          * @param itemId
          *            ID of a visible Item in the Container
          * @return ID of the next visible Item or <code>null</code>
@@ -315,7 +315,7 @@ public interface Container extends Serializable {
          * Gets the ID of the Item preceding the Item that corresponds to
          * <code>itemId</code>. If the given Item is the first or not found in
          * the Container, <code>null</code> is returned.
-         * 
+         *
          * @param itemId
          *            ID of a visible Item in the Container
          * @return ID of the previous visible Item or <code>null</code>
@@ -324,14 +324,14 @@ public interface Container extends Serializable {
 
         /**
          * Gets the ID of the first Item in the Container.
-         * 
+         *
          * @return ID of the first visible Item in the Container
          */
         public Object firstItemId();
 
         /**
          * Gets the ID of the last Item in the Container..
-         * 
+         *
          * @return ID of the last visible Item in the Container
          */
         public Object lastItemId();
@@ -339,7 +339,7 @@ public interface Container extends Serializable {
         /**
          * Tests if the Item corresponding to the given Item ID is the first
          * Item in the Container.
-         * 
+         *
          * @param itemId
          *            ID of an Item in the Container
          * @return <code>true</code> if the Item is first visible item in the
@@ -350,7 +350,7 @@ public interface Container extends Serializable {
         /**
          * Tests if the Item corresponding to the given Item ID is the last Item
          * in the Container.
-         * 
+         *
          * @return <code>true</code> if the Item is last visible item in the
          *         Container, <code>false</code> if not
          */
@@ -362,9 +362,9 @@ public interface Container extends Serializable {
          * Adding an item after null item adds the item as first item of the
          * ordered container.
          * </p>
-         * 
+         *
          * @see Ordered Ordered: adding items in filtered or sorted containers
-         * 
+         *
          * @param previousItemId
          *            Id of the visible item in ordered container after which to
          *            insert the new item.
@@ -382,9 +382,9 @@ public interface Container extends Serializable {
          * Adding an item after null item adds the item as first item of the
          * ordered container.
          * </p>
-         * 
+         *
          * @see Ordered Ordered: adding items in filtered or sorted containers
-         * 
+         *
          * @param previousItemId
          *            Id of the visible item in ordered container after which to
          *            insert the new item.
@@ -428,7 +428,7 @@ public interface Container extends Serializable {
          * <p>
          * Sorting a container can irreversibly change the order of its items or
          * only change the order temporarily, depending on the container.
-         * 
+         *
          * @param propertyId
          *            Array of container property IDs, whose values are used to
          *            sort the items in container as primary, secondary, ...
@@ -447,7 +447,7 @@ public interface Container extends Serializable {
 
         /**
          * Gets the container property IDs which can be used to sort the items.
-         * 
+         *
          * @return the IDs of the properties that can be used for sorting the
          *         container
          */
@@ -471,7 +471,7 @@ public interface Container extends Serializable {
          * Gets the index of the Item corresponding to the itemId. The following
          * is <code>true</code> for the returned index: 0 <= index < size(), or
          * index = -1 if there is no visible item with that id in the container.
-         * 
+         *
          * @param itemId
          *            ID of an Item in the Container
          * @return index of the Item, or -1 if (the filtered and sorted view of)
@@ -483,7 +483,7 @@ public interface Container extends Serializable {
          * Get the item id for the item at the position given by
          * <code>index</code>.
          * <p>
-         * 
+         *
          * @param index
          *            the index of the requested item id
          * @return the item id of the item at the given index
@@ -509,7 +509,7 @@ public interface Container extends Serializable {
          * <p>
          * For quick migration to new API see:
          * {@link ContainerHelpers#getItemIdsUsingGetIdByIndex(int, int, Indexed)}
-         * 
+         *
          * @param startIndex
          *            the index for the first item which id to include
          * @param numberOfItems
@@ -517,7 +517,7 @@ public interface Container extends Serializable {
          *            start index, must be >= 0
          * @return List containing the requested item ids or empty list if
          *         <code>numberOfItems</code> == 0; not null
-         * 
+         *
          * @throws IllegalArgumentException
          *             if <code>numberOfItems</code> is < 0
          * @throws IndexOutOfBoundsException
@@ -525,7 +525,7 @@ public interface Container extends Serializable {
          *             container. (i.e.
          *             <code>startIndex &lt; 0 || container.size()-1 &lt; startIndex</code>
          *             )
-         * 
+         *
          * @since 7.0
          */
         public List<?> getItemIds(int startIndex, int numberOfItems);
@@ -543,7 +543,7 @@ public interface Container extends Serializable {
          * given position. See {@link Indexed}, {@link Ordered},
          * {@link Filterable} and {@link Sortable} for more information.
          * </p>
-         * 
+         *
          * @param index
          *            Index (in the filtered and sorted view) to add the new
          *            item.
@@ -566,7 +566,7 @@ public interface Container extends Serializable {
          * given position. See {@link Indexed}, {@link Filterable} and
          * {@link Sortable} for more information.
          * </p>
-         * 
+         *
          * @param index
          *            Index (in the filtered and sorted view) at which to add
          *            the new item.
@@ -582,28 +582,28 @@ public interface Container extends Serializable {
         /**
          * An <code>Event</code> object specifying information about the added
          * items.
-         * 
+         *
          * @since 7.4
          */
         public interface ItemAddEvent extends ItemSetChangeEvent {
 
             /**
              * Gets the item id of the first added item.
-             * 
+             *
              * @return item id of the first added item
              */
             public Object getFirstItemId();
 
             /**
              * Gets the index of the first added item.
-             * 
+             *
              * @return index of the first added item
              */
             public int getFirstIndex();
 
             /**
              * Gets the number of the added items.
-             * 
+             *
              * @return the number of added items.
              */
             public int getAddedItemsCount();
@@ -612,27 +612,27 @@ public interface Container extends Serializable {
         /**
          * An <code>Event</code> object specifying information about the removed
          * items.
-         * 
+         *
          * @since 7.4
          */
         public interface ItemRemoveEvent extends ItemSetChangeEvent {
             /**
              * Gets the item id of the first removed item.
-             * 
+             *
              * @return item id of the first removed item
              */
             public Object getFirstItemId();
 
             /**
              * Gets the index of the first removed item.
-             * 
+             *
              * @return index of the first removed item
              */
             public int getFirstIndex();
 
             /**
              * Gets the number of the removed items.
-             * 
+             *
              * @return the number of removed items
              */
             public int getRemovedItemsCount();
@@ -657,7 +657,7 @@ public interface Container extends Serializable {
         /**
          * Gets the IDs of all Items that are children of the specified Item.
          * The returned collection is unmodifiable.
-         * 
+         *
          * @param itemId
          *            ID of the Item whose children the caller is interested in
          * @return An unmodifiable {@link java.util.Collection collection}
@@ -668,7 +668,7 @@ public interface Container extends Serializable {
 
         /**
          * Gets the ID of the parent Item of the specified Item.
-         * 
+         *
          * @param itemId
          *            ID of the Item whose parent the caller wishes to find out.
          * @return the ID of the parent Item. Will be <code>null</code> if the
@@ -680,7 +680,7 @@ public interface Container extends Serializable {
          * Gets the IDs of all Items in the container that don't have a parent.
          * Such items are called <code>root</code> Items. The returned
          * collection is unmodifiable.
-         * 
+         *
          * @return An unmodifiable {@link java.util.Collection collection}
          *         containing IDs of all root elements of the container
          */
@@ -694,11 +694,11 @@ public interface Container extends Serializable {
          * also possible to detach a node from the hierarchy (and thus make it
          * root) by setting the parent <code>null</code>.
          * </p>
-         * 
+         *
          * <p>
          * This operation is optional.
          * </p>
-         * 
+         *
          * @param itemId
          *            ID of the item to be set as the child of the Item
          *            identified with <code>newParentId</code>
@@ -713,7 +713,7 @@ public interface Container extends Serializable {
 
         /**
          * Tests if the Item with given ID can have children.
-         * 
+         *
          * @param itemId
          *            ID of the Item in the container whose child capability is
          *            to be tested
@@ -735,12 +735,12 @@ public interface Container extends Serializable {
          * {@link #setParent(Object itemId, Object newParentId)}or
          * {@link com.vaadin.data.Container#removeItem(Object itemId)}.
          * </p>
-         * 
+         *
          * <p>
          * This operation is optional. If it is not implemented, the method
          * always returns <code>false</code>.
          * </p>
-         * 
+         *
          * @param itemId
          *            ID of the Item in the container whose child capability is
          *            to be set
@@ -760,7 +760,7 @@ public interface Container extends Serializable {
          * at least one unless it is empty. The
          * {@link #getParent(Object itemId)} method always returns
          * <code>null</code> for root Items.
-         * 
+         *
          * @param itemId
          *            ID of the Item whose root status is to be tested
          * @return <code>true</code> if the specified Item is a root,
@@ -774,12 +774,12 @@ public interface Container extends Serializable {
          * or if it is a leaf. The {@link #getChildren(Object itemId)} method
          * always returns <code>null</code> for leaf Items.
          * </p>
-         * 
+         *
          * <p>
          * Note that being a leaf does not imply whether or not an Item is
          * allowed to have children.
          * </p>
-         * 
+         *
          * @param itemId
          *            ID of the Item to be tested
          * @return <code>true</code> if the specified Item has children,
@@ -792,11 +792,11 @@ public interface Container extends Serializable {
          * Removes the Item identified by <code>ItemId</code> from the
          * Container.
          * </p>
-         * 
+         *
          * <p>
          * Note that this does not remove any children the item might have.
          * </p>
-         * 
+         *
          * @param itemId
          *            ID of the Item to remove
          * @return <code>true</code> if the operation succeeded,
@@ -861,7 +861,7 @@ public interface Container extends Serializable {
          * <p>
          * If a container has multiple filters, only items accepted by all
          * filters are visible.
-         * 
+         *
          * @param propertyId
          *            Property for which the filter is applied to.
          * @param filterString
@@ -882,7 +882,7 @@ public interface Container extends Serializable {
 
         /**
          * Remove all filters from the given property.
-         * 
+         *
          * @param propertyId
          *            for which to remove filters
          */
@@ -914,7 +914,7 @@ public interface Container extends Serializable {
 
         /**
          * Check if an item passes the filter (in-memory filtering).
-         * 
+         *
          * @param itemId
          *            identifier of the item being filtered; may be null when
          *            the item is being added to the container
@@ -930,10 +930,10 @@ public interface Container extends Serializable {
         /**
          * Check if a change in the value of a property can affect the filtering
          * result. May always return true, at the cost of performance.
-         * 
+         *
          * If the filter cannot determine whether it may depend on the property
          * or not, should return true.
-         * 
+         *
          * @param propertyId
          * @return true if the filtering result may/does change based on changes
          *         to the property identified by propertyId
@@ -988,7 +988,7 @@ public interface Container extends Serializable {
          * <p>
          * If a container has multiple filters, only items accepted by all
          * filters are visible.
-         * 
+         *
          * @throws UnsupportedFilterException
          *             if the filter is not supported by the container
          */
@@ -1010,7 +1010,7 @@ public interface Container extends Serializable {
 
         /**
          * Returns the filters which have been applied to the container
-         * 
+         *
          * @return A collection of filters which have been applied to the
          *         container. An empty collection if no filters have been
          *         applied.
@@ -1027,7 +1027,7 @@ public interface Container extends Serializable {
 
         /**
          * Sets the Container that serves as the data source of the viewer.
-         * 
+         *
          * @param newDataSource
          *            The new data source Item
          */
@@ -1035,7 +1035,7 @@ public interface Container extends Serializable {
 
         /**
          * Gets the Container serving as the data source of the viewer.
-         * 
+         *
          * @return data source Container
          */
         public Container getContainerDataSource();
@@ -1070,7 +1070,7 @@ public interface Container extends Serializable {
 
         /**
          * Gets the Property where the event occurred.
-         * 
+         *
          * @return source of the event
          */
         public Container getContainer();
@@ -1087,7 +1087,7 @@ public interface Container extends Serializable {
         /**
          * Lets the listener know a Containers visible (filtered and/or sorted,
          * if applicable) Item set has changed.
-         * 
+         *
          * @param event
          *            change event text
          */
@@ -1116,7 +1116,7 @@ public interface Container extends Serializable {
 
         /**
          * Adds an Item set change listener for the object.
-         * 
+         *
          * @param listener
          *            listener to be added
          */
@@ -1125,7 +1125,7 @@ public interface Container extends Serializable {
 
         /**
          * Removes the Item set change listener from the object.
-         * 
+         *
          * @param listener
          *            listener to be removed
          */
@@ -1149,7 +1149,7 @@ public interface Container extends Serializable {
 
         /**
          * Retrieves the Container whose contents have been modified.
-         * 
+         *
          * @return Source Container of the event.
          */
         public Container getContainer();
@@ -1169,7 +1169,7 @@ public interface Container extends Serializable {
         /**
          * Notifies this listener that the set of property IDs supported by the
          * Container has changed.
-         * 
+         *
          * @param event
          *            Change event.
          */
@@ -1205,7 +1205,7 @@ public interface Container extends Serializable {
 
         /**
          * Registers a new Property set change listener for this Container.
-         * 
+         *
          * @param listener
          *            The new Listener to be registered
          */
@@ -1214,7 +1214,7 @@ public interface Container extends Serializable {
 
         /**
          * Removes a previously registered Property set change listener.
-         * 
+         *
          * @param listener
          *            Listener to be removed
          */

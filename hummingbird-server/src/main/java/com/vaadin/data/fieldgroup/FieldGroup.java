@@ -523,7 +523,7 @@ public class FieldGroup implements Serializable {
 
         /**
          * Constructs a new exception with the specified validation exceptions.
-         * 
+         *
          * @param invalidValueExceptions
          *            a property id to exception map
          */
@@ -700,7 +700,7 @@ public class FieldGroup implements Serializable {
          * updated.
          * <p>
          * Throw a {@link CommitException} to abort the commit.
-         * 
+         *
          * @param commitEvent
          *            An event containing information regarding the commit
          * @throws CommitException
@@ -713,7 +713,7 @@ public class FieldGroup implements Serializable {
          * updated.
          * <p>
          * Throw a {@link CommitException} to abort the commit.
-         * 
+         *
          * @param commitEvent
          *            An event containing information regarding the commit
          * @throws CommitException
@@ -735,7 +735,7 @@ public class FieldGroup implements Serializable {
 
         /**
          * Returns the field binder that this commit relates to
-         * 
+         *
          * @return The FieldBinder that is being committed.
          */
         public FieldGroup getFieldBinder() {
@@ -1093,7 +1093,7 @@ public class FieldGroup implements Serializable {
 
         /**
          * Returns the field group where the exception occurred
-         * 
+         *
          * @since 7.4
          * @return the field group
          */

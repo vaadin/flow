@@ -140,7 +140,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
         /**
          * Constructs a new <code>ConversionException</code> with the specified
          * detail message.
-         * 
+         *
          * @param msg
          *            the detail message
          */
@@ -151,7 +151,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
         /**
          * Constructs a new {@code ConversionException} with the specified
          * cause.
-         * 
+         *
          * @param cause
          *            The cause of the the exception
          */
@@ -162,7 +162,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
         /**
          * Constructs a new <code>ConversionException</code> with the specified
          * detail message and cause.
-         * 
+         *
          * @param message
          *            the detail message
          * @param cause

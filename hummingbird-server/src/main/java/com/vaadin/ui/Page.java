@@ -45,7 +45,7 @@ public class Page implements Serializable {
     public interface BrowserWindowResizeListener extends Serializable {
         /**
          * Invoked when the browser window containing a UI has been resized.
-         * 
+         *
          * @param event
          *            a browser window resize event
          */
@@ -62,7 +62,7 @@ public class Page implements Serializable {
 
         /**
          * Creates a new event
-         * 
+         *
          * @param source
          *            the uI for which the browser window has been resized
          * @param width
@@ -83,7 +83,7 @@ public class Page implements Serializable {
 
         /**
          * Gets the new browser window height
-         * 
+         *
          * @return an integer with the new pixel height of the browser window
          */
         public int getHeight() {
@@ -92,7 +92,7 @@ public class Page implements Serializable {
 
         /**
          * Gets the new browser window width
-         * 
+         *
          * @return an integer with the new pixel width of the browser window
          */
         public int getWidth() {
@@ -116,9 +116,9 @@ public class Page implements Serializable {
          * changes. Please note that the initial URI fragment has already been
          * set when a new UI is initialized, so there will not be any initial
          * event for listeners added during {@link UI#init(VaadinRequest)}.
-         * 
+         *
          * @see Page#addUriFragmentChangedListener(UriFragmentChangedListener)
-         * 
+         *
          * @param event
          *            the URI fragment changed event
          */
@@ -149,7 +149,7 @@ public class Page implements Serializable {
 
         /**
          * Creates a new instance of UriFragmentReader change event.
-         * 
+         *
          * @param source
          *            the Source of the event.
          * @param uriFragment
@@ -162,7 +162,7 @@ public class Page implements Serializable {
 
         /**
          * Gets the page in which the fragment has changed.
-         * 
+         *
          * @return the page in which the fragment has changed
          */
         public Page getPage() {
@@ -171,7 +171,7 @@ public class Page implements Serializable {
 
         /**
          * Get the new URI fragment
-         * 
+         *
          * @return the new fragment
          */
         public String getUriFragment() {

@@ -85,7 +85,7 @@ public interface Validator extends Serializable {
         /**
          * Constructs a new {@code InvalidValueException} with the specified
          * message.
-         * 
+         *
          * @param message
          *            The detail message of the problem.
          */
@@ -97,7 +97,7 @@ public interface Validator extends Serializable {
          * Constructs a new {@code InvalidValueException} with a set of causing
          * validation exceptions. The causing validation exceptions are included
          * when the exception is painted to the client.
-         * 
+         *
          * @param message
          *            The detail message of the problem.
          * @param causes
@@ -117,10 +117,10 @@ public interface Validator extends Serializable {
 
         /**
          * Check if the error message should be hidden.
-         * 
+         *
          * An empty (null or "") message is invisible unless it contains nested
          * exceptions that are visible.
-         * 
+         *
          * @return true if the error message should be hidden, false otherwise
          */
         public boolean isInvisible() {
@@ -140,7 +140,7 @@ public interface Validator extends Serializable {
 
         /**
          * Returns the message of the error in HTML.
-         * 
+         *
          * Note that this API may change in future versions.
          */
         public String getHtmlMessage() {
@@ -150,7 +150,7 @@ public interface Validator extends Serializable {
         /**
          * Returns the {@code InvalidValueExceptions} that caused this
          * exception.
-         * 
+         *
          * @return An array containing the {@code InvalidValueExceptions} that
          *         caused this exception. Returns an empty array if this
          *         exception was not caused by other exceptions.

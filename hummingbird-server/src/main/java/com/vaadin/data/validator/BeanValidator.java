@@ -65,7 +65,7 @@ public class BeanValidator implements Validator {
 
         /**
          * Create a simple immutable message interpolator context.
-         * 
+         *
          * @param value
          *            value being validated
          * @param descriptor

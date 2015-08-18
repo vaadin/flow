@@ -54,7 +54,7 @@ public interface FieldEvents {
         /**
          * Adds a <code>FocusListener</code> to the Component which gets fired
          * when a <code>Field</code> receives keyboard focus.
-         * 
+         *
          * @param listener
          * @see FocusListener
          * @since 6.2
@@ -63,7 +63,7 @@ public interface FieldEvents {
 
         /**
          * Removes a <code>FocusListener</code> from the Component.
-         * 
+         *
          * @param listener
          * @see FocusListener
          * @since 6.2
@@ -92,7 +92,7 @@ public interface FieldEvents {
         /**
          * Adds a <code>BlurListener</code> to the Component which gets fired
          * when a <code>Field</code> loses keyboard focus.
-         * 
+         *
          * @param listener
          * @see BlurListener
          * @since 6.2
@@ -101,7 +101,7 @@ public interface FieldEvents {
 
         /**
          * Removes a <code>BlurListener</code> from the Component.
-         * 
+         *
          * @param listener
          * @see BlurListener
          * @since 6.2
@@ -142,7 +142,7 @@ public interface FieldEvents {
 
         /**
          * Component has been focused
-         * 
+         *
          * @param event
          *            Component focus event.
          */
@@ -182,7 +182,7 @@ public interface FieldEvents {
 
         /**
          * Component has been blurred
-         * 
+         *
          * @param event
          *            Component blur event.
          */
@@ -245,7 +245,7 @@ public interface FieldEvents {
 
         /**
          * This method is called repeatedly while the text is edited by a user.
-         * 
+         *
          * @param event
          *            the event providing details of the text change
          */

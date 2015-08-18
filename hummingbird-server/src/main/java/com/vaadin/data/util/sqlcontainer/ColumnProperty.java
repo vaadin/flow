@@ -304,7 +304,7 @@ final public class ColumnProperty implements Property {
         /**
          * Constructs a new <code>NotNullableException</code> with the specified
          * detail message.
-         * 
+         *
          * @param msg
          *            the detail message
          */
@@ -315,7 +315,7 @@ final public class ColumnProperty implements Property {
         /**
          * Constructs a new <code>NotNullableException</code> from another
          * exception.
-         * 
+         *
          * @param cause
          *            The cause of the failure
          */

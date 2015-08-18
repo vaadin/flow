@@ -126,7 +126,7 @@ public class VUI extends SimplePanel
                 /*
                  * Ensure the fragment is properly encoded in all browsers
                  * (#10769)
-                 * 
+                 *
                  * createUrlBuilder does not properly pass an empty fragment to
                  * UrlBuilder on Webkit browsers so do it manually (#11686)
                  */
@@ -357,7 +357,7 @@ public class VUI extends SimplePanel
          * problems with scrollbars. Firefox 3 might also produce some extra
          * events. We postpone both the re-layouting and the server side event
          * for a while to deal with these issues.
-         * 
+         *
          * We may also postpone these events to avoid slowness when resizing the
          * browser window. Constantly recalculating the layout causes the resize
          * operation to be really slow with complex layouts.

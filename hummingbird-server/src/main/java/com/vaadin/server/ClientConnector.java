@@ -51,7 +51,7 @@ public interface ClientConnector extends Connector {
 
         /**
          * Gets the connector for which this error occurred.
-         * 
+         *
          * @return The connector for which the error occurred
          */
         public Connector getConnector() {

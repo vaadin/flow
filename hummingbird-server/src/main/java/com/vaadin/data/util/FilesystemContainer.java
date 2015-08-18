@@ -653,7 +653,7 @@ public class FilesystemContainer implements Container.Hierarchical {
          * same Item contained in the same list always have different
          * hash-codes, though Properties in different Items may have identical
          * hash-codes.
-         * 
+         *
          * @return A locally unique hash-code as integer
          */
         @Override
@@ -664,7 +664,7 @@ public class FilesystemContainer implements Container.Hierarchical {
         /**
          * Tests if the given object is the same as the this object. Two
          * Properties got from an Item with the same ID are equal.
-         * 
+         *
          * @param obj
          *            an object to compare with this object.
          * @return <code>true</code> if the given object is the same as this
@@ -688,7 +688,7 @@ public class FilesystemContainer implements Container.Hierarchical {
 
         /**
          * Gets the last modified date of this file.
-         * 
+         *
          * @return Date
          */
         public Date lastModified() {
@@ -697,7 +697,7 @@ public class FilesystemContainer implements Container.Hierarchical {
 
         /**
          * Gets the name of this file.
-         * 
+         *
          * @return file name of this file.
          */
         public String getName() {
@@ -706,7 +706,7 @@ public class FilesystemContainer implements Container.Hierarchical {
 
         /**
          * Gets the icon of this file.
-         * 
+         *
          * @return the icon of this file.
          */
         public Resource getIcon() {
@@ -715,7 +715,7 @@ public class FilesystemContainer implements Container.Hierarchical {
 
         /**
          * Gets the size of this file.
-         * 
+         *
          * @return size
          */
         public long getSize() {
@@ -738,7 +738,7 @@ public class FilesystemContainer implements Container.Hierarchical {
 
         /**
          * Filesystem container does not support adding new properties.
-         * 
+         *
          * @see com.vaadin.data.Item#addItemProperty(Object, Property)
          */
         @Override
@@ -750,7 +750,7 @@ public class FilesystemContainer implements Container.Hierarchical {
 
         /**
          * Filesystem container does not support removing properties.
-         * 
+         *
          * @see com.vaadin.data.Item#removeItemProperty(Object)
          */
         @Override
@@ -775,7 +775,7 @@ public class FilesystemContainer implements Container.Hierarchical {
 
         /**
          * Constructs a new FileExtensionFilter using given extension.
-         * 
+         *
          * @param fileExtension
          *            the File extension without the separator (dot).
          */
@@ -785,7 +785,7 @@ public class FilesystemContainer implements Container.Hierarchical {
 
         /**
          * Allows only files with the extension and directories.
-         * 
+         *
          * @see java.io.FilenameFilter#accept(File, String)
          */
         @Override

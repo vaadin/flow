@@ -48,7 +48,7 @@ public class ColorPickerSelect extends CustomComponent
 
         /**
          * Instantiates a new color range property id.
-         * 
+         *
          * @param caption
          *            the caption
          */

@@ -83,7 +83,7 @@ public class SelectionEvent extends EventObject {
     public interface SelectionListener extends Serializable {
         /**
          * Notifies the listener that the selection state has changed.
-         * 
+         *
          * @param event
          *            the selection change event
          */
@@ -97,7 +97,7 @@ public class SelectionEvent extends EventObject {
     public interface SelectionNotifier extends Serializable {
         /**
          * Registers a new selection listener
-         * 
+         *
          * @param listener
          *            the listener to register
          */
@@ -105,7 +105,7 @@ public class SelectionEvent extends EventObject {
 
         /**
          * Removes a previously registered selection change listener
-         * 
+         *
          * @param listener
          *            the listener to remove
          */

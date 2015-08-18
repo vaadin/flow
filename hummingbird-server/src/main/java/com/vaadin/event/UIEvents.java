@@ -44,7 +44,7 @@ public interface UIEvents {
 
         /**
          * A poll request has been received by the server.
-         * 
+         *
          * @param event
          *            poll event
          */
@@ -65,7 +65,7 @@ public interface UIEvents {
 
         /**
          * Get the {@link UI} instance that received the poll request.
-         * 
+         *
          * @return the {@link UI} that received the poll request. Never
          *         <code>null</code>.
          */
@@ -95,7 +95,7 @@ public interface UIEvents {
          * <p>
          * The listener is called whenever the client polls the server for
          * asynchronous UI updates.
-         * 
+         *
          * @see UI#setPollInterval(int)
          * @see #removePollListener(PollListener)
          * @param listener
@@ -105,7 +105,7 @@ public interface UIEvents {
 
         /**
          * Remove a poll listener.
-         * 
+         *
          * @see #addPollListener(PollListener)
          * @param listener
          *            the listener to be removed

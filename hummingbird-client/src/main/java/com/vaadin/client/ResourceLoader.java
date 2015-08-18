@@ -56,7 +56,7 @@ public class ResourceLoader {
 
         /**
          * Creates a new event.
-         * 
+         *
          * @param loader
          *            the resource loader that has loaded the resource
          * @param resourceUrl
@@ -74,7 +74,7 @@ public class ResourceLoader {
 
         /**
          * Gets the resource loader that has fired this event
-         * 
+         *
          * @return the resource loader
          */
         public ResourceLoader getResourceLoader() {
@@ -83,7 +83,7 @@ public class ResourceLoader {
 
         /**
          * Gets the absolute url of the loaded resource.
-         * 
+         *
          * @return the absolute url of the loaded resource
          */
         public String getResourceUrl() {
@@ -93,9 +93,9 @@ public class ResourceLoader {
         /**
          * Returns true if the resource has been preloaded, false if it's fully
          * loaded
-         * 
+         *
          * @see ResourceLoader#preloadResource(String, ResourceLoadListener)
-         * 
+         *
          * @return true if the resource has been preloaded, false if it's fully
          *         loaded
          */
@@ -112,9 +112,9 @@ public class ResourceLoader {
          * Notifies this ResourceLoadListener that a resource has been loaded.
          * Some browsers do not support any way of detecting load errors. In
          * these cases, onLoad will be called regardless of the status.
-         * 
+         *
          * @see ResourceLoadEvent
-         * 
+         *
          * @param event
          *            a resource load event with information about the loaded
          *            resource
@@ -127,9 +127,9 @@ public class ResourceLoader {
          * server did not respond. Some browsers do not support any way of
          * detecting load errors. In these cases, onLoad will be called
          * regardless of the status.
-         * 
+         *
          * @see ResourceLoadEvent
-         * 
+         *
          * @param event
          *            a resource load event with information about the resource
          *            that could not be loaded.

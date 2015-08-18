@@ -185,7 +185,7 @@ public class PropertysetItem
 
         /**
          * Gets the Item whose Property set has changed.
-         * 
+         *
          * @return source object of the event as an <code>Item</code>
          */
         @Override

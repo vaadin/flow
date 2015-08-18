@@ -682,11 +682,11 @@ public class VaadinServlet extends HttpServlet implements Constants {
     protected int getCacheTime(String filename) {
         /*
          * GWT conventions:
-         * 
+         *
          * - files containing .nocache. will not be cached.
-         * 
+         *
          * - files containing .cache. will be cached for one year.
-         * 
+         *
          * https://developers.google.com/web-toolkit/doc/latest/
          * DevGuideCompilingAndDebugging#perfect_caching
          */

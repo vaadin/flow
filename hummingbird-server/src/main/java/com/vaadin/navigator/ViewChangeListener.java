@@ -41,7 +41,7 @@ public interface ViewChangeListener extends Serializable {
 
         /**
          * Create a new view change event.
-         * 
+         *
          * @param navigator
          *            Navigator that triggered the event, not null
          */
@@ -56,7 +56,7 @@ public interface ViewChangeListener extends Serializable {
 
         /**
          * Returns the navigator that triggered this event.
-         * 
+         *
          * @return Navigator (not null)
          */
         public Navigator getNavigator() {
@@ -65,7 +65,7 @@ public interface ViewChangeListener extends Serializable {
 
         /**
          * Returns the view being deactivated.
-         * 
+         *
          * @return old View
          */
         public View getOldView() {
@@ -74,7 +74,7 @@ public interface ViewChangeListener extends Serializable {
 
         /**
          * Returns the view being activated.
-         * 
+         *
          * @return new View
          */
         public View getNewView() {
@@ -83,7 +83,7 @@ public interface ViewChangeListener extends Serializable {
 
         /**
          * Returns the view name of the view being activated.
-         * 
+         *
          * @return view name of the new View
          */
         public String getViewName() {
@@ -92,7 +92,7 @@ public interface ViewChangeListener extends Serializable {
 
         /**
          * Returns the parameters for the view being activated.
-         * 
+         *
          * @return navigation parameters (potentially bookmarkable) for the new
          *         view
          */

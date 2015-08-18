@@ -136,7 +136,7 @@ public abstract class AbstractBasicCrud extends AbstractTestUIWithLog {
             /*
              * Currently only sets the initial state because of
              * https://dev.vaadin.com/ticket/17847
-             * 
+             *
              * Must set lastName state initially as BeanFieldGroup can't tell it
              * should be read-only before setting an item data source
              */

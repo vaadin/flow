@@ -184,7 +184,7 @@ public class LocaleService implements Serializable {
         final String timeformat = df.substring(timeStart, df.length());
         /*
          * Doesn't return second or milliseconds.
-         * 
+         *
          * We use timeformat to determine 12/24-hour clock
          */
         final boolean twelve_hour_clock = timeformat.indexOf("a") > -1;

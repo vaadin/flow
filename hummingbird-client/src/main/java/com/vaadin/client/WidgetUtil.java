@@ -1396,7 +1396,7 @@ public class WidgetUtil {
 
         /**
          * Gets the unit value by its type.
-         * 
+         *
          * @param type
          *            the type of the unit as found in the style.
          * @return the unit value.
@@ -1413,7 +1413,7 @@ public class WidgetUtil {
 
         /**
          * Parse the size from string format to {@link CssSize}.
-         * 
+         *
          * @param s
          *            the size as string.
          * @return a {@link CssSize} object.
@@ -1453,7 +1453,7 @@ public class WidgetUtil {
 
         /**
          * Creates a {@link CssSize} using a value and its measurement unit.
-         * 
+         *
          * @param value
          *            the value.
          * @param unit
@@ -1481,7 +1481,7 @@ public class WidgetUtil {
 
         /**
          * Gets the value for this css size.
-         * 
+         *
          * @return the value.
          */
         public float getValue() {
@@ -1490,7 +1490,7 @@ public class WidgetUtil {
 
         /**
          * Gets the measurement unit for this css size.
-         * 
+         *
          * @return the unit.
          */
         public Unit getUnit() {
@@ -1514,7 +1514,7 @@ public class WidgetUtil {
 
         /**
          * Check whether the two sizes are equals.
-         * 
+         *
          * @param cssSize1
          *            the first size to compare.
          * @param cssSize2

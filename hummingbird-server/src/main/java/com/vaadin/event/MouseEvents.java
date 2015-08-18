@@ -57,7 +57,7 @@ public interface MouseEvents {
          * Returns an identifier describing which mouse button the user pushed.
          * Compare with {@link MouseButton#LEFT},{@link MouseButton#MIDDLE},
          * {@link Button#RIGHT} to find out which button it is.
-         * 
+         *
          * @return one of {@link MouseButton#LEFT}, {@link MouseButton#MIDDLE},
          *         {@link MouseButton#RIGHT}.
          */
@@ -68,7 +68,7 @@ public interface MouseEvents {
         /**
          * Returns the mouse position (x coordinate) when the click took place.
          * The position is relative to the browser client area.
-         * 
+         *
          * @return The mouse cursor x position
          */
         public int getClientX() {
@@ -78,7 +78,7 @@ public interface MouseEvents {
         /**
          * Returns the mouse position (y coordinate) when the click took place.
          * The position is relative to the browser client area.
-         * 
+         *
          * @return The mouse cursor y position
          */
         public int getClientY() {
@@ -88,7 +88,7 @@ public interface MouseEvents {
         /**
          * Returns the relative mouse position (x coordinate) when the click
          * took place. The position is relative to the clicked component.
-         * 
+         *
          * @return The mouse cursor x position relative to the clicked layout
          *         component or -1 if no x coordinate available
          */
@@ -99,7 +99,7 @@ public interface MouseEvents {
         /**
          * Returns the relative mouse position (y coordinate) when the click
          * took place. The position is relative to the clicked component.
-         * 
+         *
          * @return The mouse cursor y position relative to the clicked layout
          *         component or -1 if no y coordinate available
          */
@@ -109,7 +109,7 @@ public interface MouseEvents {
 
         /**
          * Checks if the event is a double click event.
-         * 
+         *
          * @return true if the event is a double click event, false otherwise
          */
         public boolean isDoubleClick() {
@@ -118,7 +118,7 @@ public interface MouseEvents {
 
         /**
          * Checks if the Alt key was down when the mouse event took place.
-         * 
+         *
          * @return true if Alt was down when the event occured, false otherwise
          */
         public boolean isAltKey() {
@@ -127,7 +127,7 @@ public interface MouseEvents {
 
         /**
          * Checks if the Ctrl key was down when the mouse event took place.
-         * 
+         *
          * @return true if Ctrl was pressed when the event occured, false
          *         otherwise
          */
@@ -137,7 +137,7 @@ public interface MouseEvents {
 
         /**
          * Checks if the Meta key was down when the mouse event took place.
-         * 
+         *
          * @return true if Meta was pressed when the event occured, false
          *         otherwise
          */
@@ -147,7 +147,7 @@ public interface MouseEvents {
 
         /**
          * Checks if the Shift key was down when the mouse event took place.
-         * 
+         *
          * @return true if Shift was pressed when the event occured, false
          *         otherwise
          */
@@ -160,7 +160,7 @@ public interface MouseEvents {
          * pushed. This is meant for debug purposes only and the string returned
          * could change. Use {@link #getButton()} to check which button was
          * pressed.
-         * 
+         *
          * @since 6.3
          * @return A string representation of which button was pushed.
          */
@@ -185,7 +185,7 @@ public interface MouseEvents {
         /**
          * Called when a {@link Component} has been clicked. A reference to the
          * component is given by {@link ClickEvent#getComponent()}.
-         * 
+         *
          * @param event
          *            An event containing information about the click.
          */
@@ -224,7 +224,7 @@ public interface MouseEvents {
         /**
          * Called when a {@link Component} has been double clicked. A reference
          * to the component is given by {@link DoubleClickEvent#getComponent()}.
-         * 
+         *
          * @param event
          *            An event containing information about the double click.
          */

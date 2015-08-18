@@ -227,7 +227,7 @@ public class StringToCollectionConverter
 
         /**
          * Create collection by its {@code type}.
-         * 
+         *
          * @param type
          *            collection type
          * @return instantiated collection with given {@code type}

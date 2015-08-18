@@ -129,12 +129,12 @@ public class TouchScrollDelegate implements NativePreviewHandler {
         /**
          * Attaches the scroll handler to the widget. This method must be called
          * before calling any other methods in this class.
-         * 
+         *
          * @param widget
          *            The widget that contains scrollable elements
          * @param scrollables
          *            The elements of the widget that should be scrollable.
-         * 
+         *
          * @deprecated Use {@link GWT#create(Class)} and
          *             {@link #init(Widget, Element...)} instead of this
          *             constructor to enable overriding.
@@ -148,7 +148,7 @@ public class TouchScrollDelegate implements NativePreviewHandler {
         /**
          * Attaches the scroll handler to the widget. This method must be called
          * once before calling any other method in this class.
-         * 
+         *
          * @param widget
          *            The widget that contains scrollable elements
          * @param scrollables
@@ -202,7 +202,7 @@ public class TouchScrollDelegate implements NativePreviewHandler {
         /**
          * Registers the given elements as scrollable, removing previously
          * registered scrollables from this handler.
-         * 
+         *
          * @param scrollables
          *            The elements that should be scrollable
          */
@@ -223,7 +223,7 @@ public class TouchScrollDelegate implements NativePreviewHandler {
          * scrolling of the device should be used. By default, relies on
          * {@link BrowserInfo#requiresTouchScrollDelegate()}, override to change
          * the behavior.
-         * 
+         *
          * @return true if a Javascript delegate should be used for scrolling,
          *         false to use the native scrolling of the device
          */

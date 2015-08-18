@@ -58,11 +58,11 @@ public abstract class Compare implements Filter {
         /**
          * Construct a filter that accepts items for which the identified
          * property value is equal to <code>value</code>.
-         * 
+         *
          * For in-memory filters, equals() is used for the comparison. For other
          * containers, the comparison implementation is container dependent and
          * may use e.g. database comparison operations.
-         * 
+         *
          * @param propertyId
          *            the identifier of the property whose value to compare
          *            against value, not null
@@ -90,12 +90,12 @@ public abstract class Compare implements Filter {
         /**
          * Construct a filter that accepts items for which the identified
          * property value is greater than <code>value</code>.
-         * 
+         *
          * For in-memory filters, the values must implement {@link Comparable}
          * and {@link Comparable#compareTo(Object)} is used for the comparison.
          * For other containers, the comparison implementation is container
          * dependent and may use e.g. database comparison operations.
-         * 
+         *
          * @param propertyId
          *            the identifier of the property whose value to compare
          *            against value, not null
@@ -123,12 +123,12 @@ public abstract class Compare implements Filter {
         /**
          * Construct a filter that accepts items for which the identified
          * property value is less than <code>value</code>.
-         * 
+         *
          * For in-memory filters, the values must implement {@link Comparable}
          * and {@link Comparable#compareTo(Object)} is used for the comparison.
          * For other containers, the comparison implementation is container
          * dependent and may use e.g. database comparison operations.
-         * 
+         *
          * @param propertyId
          *            the identifier of the property whose value to compare
          *            against value, not null
@@ -156,12 +156,12 @@ public abstract class Compare implements Filter {
         /**
          * Construct a filter that accepts items for which the identified
          * property value is greater than or equal to <code>value</code>.
-         * 
+         *
          * For in-memory filters, the values must implement {@link Comparable}
          * and {@link Comparable#compareTo(Object)} is used for the comparison.
          * For other containers, the comparison implementation is container
          * dependent and may use e.g. database comparison operations.
-         * 
+         *
          * @param propertyId
          *            the identifier of the property whose value to compare
          *            against value, not null
@@ -189,12 +189,12 @@ public abstract class Compare implements Filter {
         /**
          * Construct a filter that accepts items for which the identified
          * property value is less than or equal to <code>value</code>.
-         * 
+         *
          * For in-memory filters, the values must implement {@link Comparable}
          * and {@link Comparable#compareTo(Object)} is used for the comparison.
          * For other containers, the comparison implementation is container
          * dependent and may use e.g. database comparison operations.
-         * 
+         *
          * @param propertyId
          *            the identifier of the property whose value to compare
          *            against value, not null

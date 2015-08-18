@@ -119,7 +119,7 @@ public class FileUploadHandler implements RequestHandler {
         /**
          * Reads the input to expect a boundary string. Expects that the first
          * character has already been matched.
-         * 
+         *
          * @return -1 if the boundary was matched, else returns the first byte
          *         from boundary
          * @throws IOException
@@ -155,7 +155,7 @@ public class FileUploadHandler implements RequestHandler {
         /**
          * Returns the partly matched boundary string and the byte following
          * that.
-         * 
+         *
          * @return
          * @throws IOException
          */
@@ -384,13 +384,13 @@ public class FileUploadHandler implements RequestHandler {
         /*
          * Reads bytes from the underlying stream. Compares the read bytes to
          * the boundary string and returns -1 if met.
-         * 
+         *
          * The matching happens so that if the read byte equals to the first
          * char of boundary string, the stream goes to "buffering mode". In
          * buffering mode bytes are read until the character does not match the
          * corresponding from boundary string or the full boundary string is
          * found.
-         * 
+         *
          * Note, if this is someday needed elsewhere, don't shoot yourself to
          * foot and split to a top level helper class.
          */

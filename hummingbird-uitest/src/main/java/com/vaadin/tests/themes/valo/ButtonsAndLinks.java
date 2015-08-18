@@ -33,7 +33,7 @@ import com.vaadin.ui.VerticalLayout;
  */
 public class ButtonsAndLinks extends VerticalLayout implements View {
     /**
-    * 
+    *
     */
     public ButtonsAndLinks() {
         setMargin(true);

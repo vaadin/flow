@@ -81,7 +81,7 @@ public abstract class AbstractProperty<T> implements Property<T>,
 
         /**
          * Constructs a new read-only status change event for this object.
-         * 
+         *
          * @param source
          *            source object of the event.
          */
@@ -91,7 +91,7 @@ public abstract class AbstractProperty<T> implements Property<T>,
 
         /**
          * Gets the Property whose read-only state has changed.
-         * 
+         *
          * @return source Property of the event.
          */
         @Override
@@ -154,7 +154,7 @@ public abstract class AbstractProperty<T> implements Property<T>,
 
         /**
          * Constructs a new value change event for this object.
-         * 
+         *
          * @param source
          *            source object of the event.
          */
@@ -164,7 +164,7 @@ public abstract class AbstractProperty<T> implements Property<T>,
 
         /**
          * Gets the Property whose value has changed.
-         * 
+         *
          * @return source Property of the event.
          */
         @Override

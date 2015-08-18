@@ -55,7 +55,7 @@ public interface ErrorMessage extends Serializable {
 
         /**
          * Textual representation for server-client communication of level
-         * 
+         *
          * @return String for error severity
          */
         public String getText() {
@@ -64,7 +64,7 @@ public interface ErrorMessage extends Serializable {
 
         /**
          * Integer representation of error severity for comparison
-         * 
+         *
          * @return integer for error severity
          */
         public int intValue() {

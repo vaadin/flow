@@ -82,7 +82,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE>
             extends Serializable {
         /**
          * Return the item identifier for a bean.
-         * 
+         *
          * @param bean
          * @return
          */

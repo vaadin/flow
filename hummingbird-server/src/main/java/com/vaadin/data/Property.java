@@ -129,7 +129,7 @@ public interface Property<T> extends Serializable {
 
         /**
          * Starts a transaction.
-         * 
+         *
          * <p>
          * If the value is set during a transaction the value must not replace
          * the original value until {@link #commit()} is called. Still,
@@ -190,7 +190,7 @@ public interface Property<T> extends Serializable {
         /**
          * Constructs a new <code>ReadOnlyException</code> with the specified
          * detail message.
-         * 
+         *
          * @param msg
          *            the detail message
          */
@@ -210,7 +210,7 @@ public interface Property<T> extends Serializable {
 
         /**
          * Sets the Property that serves as the data source of the viewer.
-         * 
+         *
          * @param newDataSource
          *            the new data source Property
          */
@@ -218,7 +218,7 @@ public interface Property<T> extends Serializable {
 
         /**
          * Gets the Property serving as the data source of the viewer.
-         * 
+         *
          * @return the Property serving as the viewers data source
          */
         public Property getPropertyDataSource();
@@ -255,7 +255,7 @@ public interface Property<T> extends Serializable {
 
         /**
          * Retrieves the Property that has been modified.
-         * 
+         *
          * @return source Property of the event
          */
         public Property getProperty();
@@ -272,7 +272,7 @@ public interface Property<T> extends Serializable {
 
         /**
          * Notifies this listener that the Property's value has changed.
-         * 
+         *
          * @param event
          *            value change event object
          */
@@ -300,7 +300,7 @@ public interface Property<T> extends Serializable {
 
         /**
          * Registers a new value change listener for this Property.
-         * 
+         *
          * @param listener
          *            the new Listener to be registered
          */
@@ -309,7 +309,7 @@ public interface Property<T> extends Serializable {
 
         /**
          * Removes a previously registered value change listener.
-         * 
+         *
          * @param listener
          *            listener to be removed
          */
@@ -331,7 +331,7 @@ public interface Property<T> extends Serializable {
 
         /**
          * Property whose read-only state has changed.
-         * 
+         *
          * @return source Property of the event.
          */
         public Property getProperty();
@@ -349,7 +349,7 @@ public interface Property<T> extends Serializable {
         /**
          * Notifies this listener that a Property's read-only status has
          * changed.
-         * 
+         *
          * @param event
          *            Read-only status change event object
          */
@@ -378,7 +378,7 @@ public interface Property<T> extends Serializable {
 
         /**
          * Registers a new read-only status change listener for this Property.
-         * 
+         *
          * @param listener
          *            the new Listener to be registered
          */
@@ -387,7 +387,7 @@ public interface Property<T> extends Serializable {
 
         /**
          * Removes a previously registered read-only status change listener.
-         * 
+         *
          * @param listener
          *            listener to be removed
          */

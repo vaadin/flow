@@ -36,7 +36,7 @@ public interface LayoutEvents {
 
         /**
          * Layout has been clicked
-         * 
+         *
          * @param event
          *            Component click event.
          */
@@ -69,13 +69,13 @@ public interface LayoutEvents {
          * the click targets a component inside a nested layout or Panel,
          * provided the targeted component does not prevent the click event from
          * propagating. A caption is not considered part of a component.
-         * 
+         *
          * The child component that was clicked is included in the
          * {@link LayoutClickEvent}.
-         * 
+         *
          * Use {@link #removeListener(LayoutClickListener)} to remove the
          * listener.
-         * 
+         *
          * @param listener
          *            The listener to add
          */
@@ -83,7 +83,7 @@ public interface LayoutEvents {
 
         /**
          * Removes an LayoutClickListener.
-         * 
+         *
          * @param listener
          *            LayoutClickListener to be removed
          */
@@ -112,10 +112,10 @@ public interface LayoutEvents {
         /**
          * Returns the component that was clicked, which is somewhere inside the
          * parent layout on which the listener was registered.
-         * 
+         *
          * For the direct child component of the layout, see
          * {@link #getChildComponent()}.
-         * 
+         *
          * @return clicked {@link Component}, null if none found
          */
         public Component getClickedComponent() {
@@ -125,10 +125,10 @@ public interface LayoutEvents {
         /**
          * Returns the direct child component of the layout which contains the
          * clicked component.
-         * 
+         *
          * For the clicked component inside that child component of the layout,
          * see {@link #getClickedComponent()}.
-         * 
+         *
          * @return direct child {@link Component} of the layout which contains
          *         the clicked Component, null if none found
          */

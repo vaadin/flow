@@ -456,7 +456,7 @@ public class IndexedContainer
 
         /**
          * Iff one item is added, gives its index.
-         * 
+         *
          * @return -1 if either multiple items are changed or some other change
          *         than add is done.
          */
@@ -482,7 +482,7 @@ public class IndexedContainer
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see com.vaadin.data.Property.ValueChangeEvent#getProperty()
          */
         @Override
@@ -684,7 +684,7 @@ public class IndexedContainer
         /**
          * Constructs a new ListItem instance and connects it to a host
          * container.
-         * 
+         *
          * @param itemId
          *            the Item ID of the new Item.
          */
@@ -699,7 +699,7 @@ public class IndexedContainer
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see com.vaadin.data.Item#getItemProperty(java.lang.Object)
          */
         @Override
@@ -717,7 +717,7 @@ public class IndexedContainer
          * Item. The format of the string is a space separated catenation of the
          * <code>String</code> representations of the values of the Properties
          * contained by the Item.
-         * 
+         *
          * @return <code>String</code> representation of the Item contents
          */
         @Override
@@ -740,7 +740,7 @@ public class IndexedContainer
          * list. Two Items inside the same list have always different
          * hash-codes, though Items in different lists may have identical
          * hash-codes.
-         * 
+         *
          * @return A locally unique hash-code as integer
          */
         @Override
@@ -751,7 +751,7 @@ public class IndexedContainer
         /**
          * Tests if the given object is the same as the this object. Two Items
          * got from a list container with the same ID are equal.
-         * 
+         *
          * @param obj
          *            an object to compare with this object
          * @return <code>true</code> if the given object is the same as this
@@ -775,7 +775,7 @@ public class IndexedContainer
          * IndexedContainerItem does not support adding new properties. Add
          * properties at container level. See
          * {@link IndexedContainer#addContainerProperty(Object, Class, Object)}
-         * 
+         *
          * @see com.vaadin.data.Item#addProperty(Object, Property)
          */
         @Override
@@ -789,7 +789,7 @@ public class IndexedContainer
          * Indexed container does not support removing properties. Remove
          * properties at container level. See
          * {@link IndexedContainer#removeContainerProperty(Object)}
-         * 
+         *
          * @see com.vaadin.data.Item#removeProperty(Object)
          */
         @Override
@@ -825,7 +825,7 @@ public class IndexedContainer
 
         /**
          * Constructs a new {@link IndexedContainerProperty} object.
-         * 
+         *
          * @param itemId
          *            the ID of the Item to connect the new Property to.
          * @param propertyId
@@ -846,7 +846,7 @@ public class IndexedContainer
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see com.vaadin.data.Property#getType()
          */
         @Override
@@ -856,7 +856,7 @@ public class IndexedContainer
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see com.vaadin.data.Property#getValue()
          */
         @Override
@@ -866,7 +866,7 @@ public class IndexedContainer
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see com.vaadin.data.Property#isReadOnly()
          */
         @Override
@@ -876,7 +876,7 @@ public class IndexedContainer
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see com.vaadin.data.Property#setReadOnly(boolean)
          */
         @Override
@@ -890,7 +890,7 @@ public class IndexedContainer
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see com.vaadin.data.Property#setValue(java.lang.Object)
          */
         @Override
@@ -929,7 +929,7 @@ public class IndexedContainer
          * same Item contained in the same list always have different
          * hash-codes, though Properties in different Items may have identical
          * hash-codes.
-         * 
+         *
          * @return A locally unique hash-code as integer
          */
         @Override
@@ -940,7 +940,7 @@ public class IndexedContainer
         /**
          * Tests if the given object is the same as the this object. Two
          * Properties got from an Item with the same ID are equal.
-         * 
+         *
          * @param obj
          *            an object to compare with this object
          * @return <code>true</code> if the given object is the same as this
@@ -959,7 +959,7 @@ public class IndexedContainer
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see com.vaadin.data.Property.ValueChangeNotifier#addListener(
          * com.vaadin.data.Property.ValueChangeListener)
          */
@@ -971,7 +971,7 @@ public class IndexedContainer
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see com.vaadin.data.Property.ValueChangeNotifier#removeListener
          * (com.vaadin.data.Property.ValueChangeListener)
          */

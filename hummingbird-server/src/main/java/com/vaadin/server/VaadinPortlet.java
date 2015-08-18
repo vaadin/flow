@@ -66,7 +66,7 @@ public class VaadinPortlet extends GenericPortlet
 
         /**
          * Constructs a new {@link VaadinHttpAndPortletRequest}.
-         * 
+         *
          * @since 7.2
          * @param request
          *            {@link PortletRequest} to be wrapped
@@ -82,7 +82,7 @@ public class VaadinPortlet extends GenericPortlet
 
         /**
          * Returns the original HTTP servlet request for this portlet request.
-         * 
+         *
          * @since 7.2
          * @param request
          *            {@link PortletRequest} used to
@@ -181,15 +181,15 @@ public class VaadinPortlet extends GenericPortlet
          * Simplified version of what Liferay PortalClassInvoker did. This is
          * used because the API of PortalClassInvoker has changed in Liferay
          * 6.2.
-         * 
+         *
          * This simply uses reflection with Liferay class loader. Parameters are
          * Strings to avoid static dependencies and to load all classes with
          * Liferay's own class loader. Only static utility methods are
          * supported.
-         * 
+         *
          * This method is for internal use only and may change in future
          * versions.
-         * 
+         *
          * @param className
          *            name of the Liferay class to call
          * @param methodName

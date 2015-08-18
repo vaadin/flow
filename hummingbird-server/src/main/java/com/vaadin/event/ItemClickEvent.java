@@ -115,7 +115,7 @@ public class ItemClickEvent extends ClickEvent implements Serializable {
     public interface ItemClickNotifier extends Serializable {
         /**
          * Register a listener to handle {@link ItemClickEvent}s.
-         * 
+         *
          * @param listener
          *            ItemClickListener to be registered
          */
@@ -123,7 +123,7 @@ public class ItemClickEvent extends ClickEvent implements Serializable {
 
         /**
          * Removes an ItemClickListener.
-         * 
+         *
          * @param listener
          *            ItemClickListener to be removed
          */

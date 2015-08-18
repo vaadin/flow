@@ -77,7 +77,7 @@ public class ReconnectingCommunicationProblemHandler
 
         /**
          * Checks if this type is of higher priority than the given type
-         * 
+         *
          * @param type
          *            the type to compare to
          * @return true if this type has higher priority than the given type,

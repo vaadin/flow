@@ -173,7 +173,7 @@ public interface QueryDelegate extends Serializable {
         /**
          * Gets the old (temporary) RowId of the added row that raised this
          * event.
-         * 
+         *
          * @return old RowId
          */
         public RowId getOldRowId();
@@ -181,7 +181,7 @@ public interface QueryDelegate extends Serializable {
         /**
          * Gets the new, possibly database assigned RowId of the added row that
          * raised this event.
-         * 
+         *
          * @return new RowId
          */
         public RowId getNewRowId();
@@ -191,7 +191,7 @@ public interface QueryDelegate extends Serializable {
     public interface RowIdChangeListener extends Serializable {
         /**
          * Lets the listener know that a RowId has been changed.
-         * 
+         *
          * @param event
          */
         public void rowIdChange(QueryDelegate.RowIdChangeEvent event);
@@ -206,7 +206,7 @@ public interface QueryDelegate extends Serializable {
     public interface RowIdChangeNotifier extends Serializable {
         /**
          * Adds a RowIdChangeListener for the object.
-         * 
+         *
          * @param listener
          *            listener to be added
          */
@@ -215,7 +215,7 @@ public interface QueryDelegate extends Serializable {
 
         /**
          * Removes the specified RowIdChangeListener from the object.
-         * 
+         *
          * @param listener
          *            listener to be removed
          */

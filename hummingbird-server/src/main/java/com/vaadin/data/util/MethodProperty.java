@@ -704,7 +704,7 @@ public class MethodProperty<T> extends AbstractProperty<T> {
         /**
          * Constructs a new <code>MethodException</code> with the specified
          * detail message.
-         * 
+         *
          * @param property
          *            the property.
          * @param msg
@@ -717,7 +717,7 @@ public class MethodProperty<T> extends AbstractProperty<T> {
 
         /**
          * Constructs a new <code>MethodException</code> from another exception.
-         * 
+         *
          * @param property
          *            the property.
          * @param cause
@@ -738,7 +738,7 @@ public class MethodProperty<T> extends AbstractProperty<T> {
 
         /**
          * Gets the method property this exception originates from.
-         * 
+         *
          * @return MethodProperty or null if not a valid MethodProperty
          */
         public MethodProperty getMethodProperty() {
@@ -748,7 +748,7 @@ public class MethodProperty<T> extends AbstractProperty<T> {
 
         /**
          * Gets the method property this exception originates from.
-         * 
+         *
          * @return Property from which the exception originates
          */
         public Property getProperty() {

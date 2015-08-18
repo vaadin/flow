@@ -93,7 +93,7 @@ public interface Item extends Serializable {
 
         /**
          * Sets the Item that serves as the data source of the viewer.
-         * 
+         *
          * @param newDataSource
          *            The new data source Item
          */
@@ -101,7 +101,7 @@ public interface Item extends Serializable {
 
         /**
          * Gets the Item serving as the data source of the viewer.
-         * 
+         *
          * @return data source Item
          */
         public Item getItemDataSource();
@@ -134,7 +134,7 @@ public interface Item extends Serializable {
 
         /**
          * Retrieves the Item whose contents has been modified.
-         * 
+         *
          * @return source Item of the event
          */
         public Item getItem();
@@ -148,7 +148,7 @@ public interface Item extends Serializable {
 
         /**
          * Notifies this listener that the Item's property set has changed.
-         * 
+         *
          * @param event
          *            Property set change event object
          */
@@ -173,7 +173,7 @@ public interface Item extends Serializable {
 
         /**
          * Registers a new property set change listener for this Item.
-         * 
+         *
          * @param listener
          *            The new Listener to be registered.
          */
@@ -182,7 +182,7 @@ public interface Item extends Serializable {
 
         /**
          * Removes a previously registered property set change listener.
-         * 
+         *
          * @param listener
          *            Listener to be removed.
          */

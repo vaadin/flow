@@ -57,7 +57,7 @@ public @interface VaadinServletConfiguration {
     public @interface InitParameterName {
         /**
          * The name of the init parameter that the annotated method controls.
-         * 
+         *
          * @return the parameter name
          */
         public String value();

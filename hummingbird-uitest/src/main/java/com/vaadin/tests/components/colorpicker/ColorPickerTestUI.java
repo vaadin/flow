@@ -104,7 +104,7 @@ public class ColorPickerTestUI extends AbstractTestUI
 
         /**
          * Instantiates a new my image source.
-         * 
+         *
          * @param fg
          *            the foreground
          * @param bg
