@@ -264,6 +264,7 @@ public class TreeUpdater {
         private final String tag;
         private final Map<String, String> defaultAttributeValues;
         private final Map<String, String> propertyToAttribute;
+        private final Map<String, String> classPartBindings;
 
         private final int[] childElementTemplates;
 
@@ -280,6 +281,9 @@ public class TreeUpdater {
             propertyToAttribute = readStringMap(
                     templateDescription.getObject("attributeBindings"));
 
+            classPartBindings = readStringMap(
+                    templateDescription.getObject("classPartBindings"));
+
             if (templateDescription.hasKey("children")) {
                 JsonArray children = templateDescription.getArray("children");
                 childElementTemplates = new int[children.length()];
@@ -294,6 +298,9 @@ public class TreeUpdater {
 
         private Map<String, String> readStringMap(JsonObject json) {
             Map<String, String> values = new HashMap<>();
+            if (json == null) {
+                return values;
+            }
             for (String name : json.keys()) {
                 assert json.get(name).getType() == JsonType.STRING;
                 values.put(name, json.getString(name));
@@ -333,6 +340,14 @@ public class TreeUpdater {
 
         public String getTargetAttribute(String property) {
             return propertyToAttribute.get(property);
+        }
+
+        public String getClassPartMapping(String property) {
+            if (classPartBindings == null) {
+                return null;
+            } else {
+                return classPartBindings.get(property);
+            }
         }
     }
 
@@ -495,6 +510,27 @@ public class TreeUpdater {
             if (targetAttribute != null) {
                 element.setPropertyString(targetAttribute,
                         change.getValue().asString());
+                return;
+            }
+
+            String classPartMapping = template.getClassPartMapping(property);
+            if (classPartMapping != null) {
+                if (isTrueIsh(change.getValue())) {
+                    element.addClassName(classPartMapping);
+                } else {
+                    element.removeClassName(classPartMapping);
+                }
+            }
+        }
+
+        private boolean isTrueIsh(JsonValue value) {
+            switch (value.getType()) {
+            case BOOLEAN:
+                return value.asBoolean();
+            case STRING:
+                return !"false".equalsIgnoreCase(value.asString());
+            default:
+                throw new RuntimeException(value.getType().name());
             }
         }
 
@@ -519,6 +555,11 @@ public class TreeUpdater {
             String targetAttribute = template.getTargetAttribute(property);
             if (targetAttribute != null) {
                 element.setPropertyString(targetAttribute, null);
+            }
+
+            String classPartMapping = template.getClassPartMapping(property);
+            if (classPartMapping != null) {
+                element.removeClassName(classPartMapping);
             }
         }
 

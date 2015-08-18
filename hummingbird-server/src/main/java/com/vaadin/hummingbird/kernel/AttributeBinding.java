@@ -11,5 +11,5 @@ public abstract class AttributeBinding {
         return attributeName;
     }
 
-    public abstract String getValue(StateNode node);
+    public abstract Object getValue(StateNode node);
 }

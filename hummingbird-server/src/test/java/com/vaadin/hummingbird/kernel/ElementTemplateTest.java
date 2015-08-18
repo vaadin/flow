@@ -261,6 +261,28 @@ public class ElementTemplateTest {
         Assert.assertEquals("<span>Hello world</span>", element.toString());
     }
 
+    @Test
+    public void boundClassPart() {
+        BoundElementTemplate template = new BoundElementTemplate("div",
+                Collections.singletonList(
+                        new ModelAttributeBinding("class.completed", "done")),
+                Collections.singletonMap("class", "baseClass"));
+        StateNode node = StateNode.create();
+
+        Element element = Element.getElement(template, node);
+
+        Assert.assertEquals("baseClass", element.getAttribute("class"));
+
+        node.put("done", Boolean.TRUE);
+
+        Assert.assertEquals("baseClass completed",
+                element.getAttribute("class"));
+
+        node.remove("done");
+
+        Assert.assertEquals("baseClass", element.getAttribute("class"));
+    }
+
     private static Element createMirror(Element element) {
         return Element.getElement(element.getTemplate(), element.getNode());
     }

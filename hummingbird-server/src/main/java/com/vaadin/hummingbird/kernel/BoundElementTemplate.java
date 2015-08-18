@@ -3,8 +3,10 @@ package com.vaadin.hummingbird.kernel;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -13,6 +15,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     private final String tag;
 
     private final Map<String, AttributeBinding> attributeBindings;
+    private final Map<String, AttributeBinding> classPartBindings;
     private final Map<String, String> defaultAttributeValues;
 
     private final List<BoundElementTemplate> childTemplates;
@@ -31,8 +34,15 @@ public class BoundElementTemplate extends AbstractElementTemplate {
             List<BoundElementTemplate> childTemplates) {
 
         this.attributeBindings = new HashMap<String, AttributeBinding>();
+        this.classPartBindings = new LinkedHashMap<>();
         for (AttributeBinding b : attributeBindings) {
-            this.attributeBindings.put(b.getAttributeName(), b);
+            String attributeName = b.getAttributeName();
+            if (attributeName.startsWith("class.")) {
+                classPartBindings
+                        .put(attributeName.substring("class.".length()), b);
+            } else {
+                this.attributeBindings.put(attributeName, b);
+            }
         }
 
         // this.attributeBindings = attributeBindings.parallelStream()
@@ -101,15 +111,40 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     @Override
     public String getAttribute(String name, StateNode node) {
         AttributeBinding binding = attributeBindings.get(name);
+        String value;
         if (binding == null) {
-            String value = super.getAttribute(name, node);
+            value = super.getAttribute(name, node);
             if (value == null) {
                 value = defaultAttributeValues.get(name);
             }
-            return value;
+        } else {
+            Object bindingValue = binding.getValue(node);
+            if (bindingValue == null) {
+                value = null;
+            } else {
+                value = String.valueOf(bindingValue);
+            }
         }
 
-        return binding.getValue(node);
+        if ("class".equals(name)) {
+            StringBuilder builder = new StringBuilder(
+                    value == null ? null : value);
+            for (Entry<String, AttributeBinding> entry : classPartBindings
+                    .entrySet()) {
+                Object classBindingValue = entry.getValue().getValue(node);
+                if (Boolean.TRUE.equals(classBindingValue)
+                        || (classBindingValue instanceof String
+                                && !((String) classBindingValue)
+                                        .equalsIgnoreCase("false"))) {
+                    if (builder.length() != 0) {
+                        builder.append(' ');
+                    }
+                    builder.append(entry.getKey());
+                }
+            }
+            value = builder.toString();
+        }
+        return value;
     }
 
     @Override
@@ -170,6 +205,10 @@ public class BoundElementTemplate extends AbstractElementTemplate {
 
     public Map<String, String> getDefaultAttributeValues() {
         return Collections.unmodifiableMap(defaultAttributeValues);
+    }
+
+    public Map<String, AttributeBinding> getClassPartBindings() {
+        return Collections.unmodifiableMap(classPartBindings);
     }
 
     public String getTag() {

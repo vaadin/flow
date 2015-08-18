@@ -399,6 +399,22 @@ public class UidlWriter implements Serializable {
                     bet.getDefaultAttributeValues()
                             .forEach(defaultAttributes::put);
 
+                    JSONObject classPartBindings = new JSONObject();
+                    bet.getClassPartBindings().forEach((key, binding) -> {
+                        if (binding instanceof ModelAttributeBinding) {
+                            ModelAttributeBinding mab = (ModelAttributeBinding) binding;
+                            classPartBindings.put(mab.getPath().getFullPath(),
+                                    key);
+                        } else {
+                            // Not yet supported
+                            throw new RuntimeException(binding.toString());
+                        }
+                    });
+
+                    if (classPartBindings.length() != 0) {
+                        serialized.put("classPartBindings", classPartBindings);
+                    }
+
                     serialized.put("attributeBindings", attributeBindings)
                             .put("defaultAttributes", defaultAttributes)
                             .put("tag", bet.getTag());

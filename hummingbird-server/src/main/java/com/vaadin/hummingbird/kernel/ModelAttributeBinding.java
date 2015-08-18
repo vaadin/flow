@@ -18,8 +18,8 @@ public class ModelAttributeBinding extends AttributeBinding {
     }
 
     @Override
-    public String getValue(StateNode node) {
-        return path.getNode(node).get(path.getNodeProperty(), String.class);
+    public Object getValue(StateNode node) {
+        return path.getNode(node).get(path.getNodeProperty());
     }
 
 }
