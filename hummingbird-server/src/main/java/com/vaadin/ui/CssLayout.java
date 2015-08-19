@@ -97,6 +97,10 @@ public class CssLayout extends AbstractSimpleDOMComponentContainer
         addComponents(children);
     }
 
+    public CssLayout(String tagName) {
+        super(tagName);
+    }
+
     @Override
     public void addLayoutClickListener(LayoutClickListener listener) {
         addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,

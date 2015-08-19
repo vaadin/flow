@@ -142,6 +142,14 @@ public abstract class AbstractJavaScriptComponent extends AbstractComponent {
     private JavaScriptCallbackHelper callbackHelper = new JavaScriptCallbackHelper(
             this);
 
+    protected AbstractJavaScriptComponent(String tagName) {
+        super(tagName);
+    }
+
+    public AbstractJavaScriptComponent() {
+        super();
+    }
+
     @Override
     protected <T extends ServerRpc> void registerRpc(T implementation,
             Class<T> rpcInterfaceType) {

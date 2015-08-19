@@ -11,6 +11,14 @@ import com.vaadin.hummingbird.kernel.Element;
  */
 public class AbstractSimpleDOMComponentContainer
         extends AbstractComponentContainer {
+    public AbstractSimpleDOMComponentContainer() {
+        super();
+    }
+
+    protected AbstractSimpleDOMComponentContainer(String tagName) {
+        super(tagName);
+    }
+
     /**
      * Add a component into this container. The component is added to the right
      * or under the previous component.

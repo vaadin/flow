@@ -39,6 +39,10 @@ public abstract class AbstractComponentContainer
         super();
     }
 
+    protected AbstractComponentContainer(String tagName) {
+        super(tagName);
+    }
+
     /*
      * (non-Javadoc)
      *
