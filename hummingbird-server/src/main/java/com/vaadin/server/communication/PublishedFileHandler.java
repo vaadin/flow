@@ -98,6 +98,10 @@ public class PublishedFileHandler implements RequestHandler {
             return true;
         }
 
+        assert fileName.startsWith(context.getName());
+
+        fileName = fileName.substring(context.getName().length() + 1);
+
         // Resolve file relative to the location of the context class
         InputStream in = context.getResourceAsStream(fileName);
         if (in == null) {

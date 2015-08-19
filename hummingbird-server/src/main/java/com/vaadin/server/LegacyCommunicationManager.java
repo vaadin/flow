@@ -169,6 +169,8 @@ public class LegacyCommunicationManager implements Serializable {
     }
 
     private String registerPublishedFile(String name, Class<?> context) {
+        name = context.getName() + "." + name;
+
         // Add to map of names accepted by servePublishedFile
         if (publishedFileContexts.containsKey(name)) {
             Class<?> oldContext = publishedFileContexts.get(name);
