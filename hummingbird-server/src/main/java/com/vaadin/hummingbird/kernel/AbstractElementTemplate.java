@@ -17,12 +17,16 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY, EVENT_DATA;
     }
 
-    private static final AtomicInteger nextId = new AtomicInteger();
+    private static final AtomicInteger nextId = new AtomicInteger(1);
 
     private int id;
 
     public AbstractElementTemplate() {
-        id = nextId.incrementAndGet();
+        if (getClass() == BasicElementTemplate.class) {
+            id = 0;
+        } else {
+            id = nextId.incrementAndGet();
+        }
     }
 
     @Override

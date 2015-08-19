@@ -5,6 +5,7 @@ public class BasicElementTemplate extends AbstractElementTemplate {
 
     // Singleton constructor
     private BasicElementTemplate() {
+        assert getId() == 0;
     }
 
     public static BasicElementTemplate get() {
