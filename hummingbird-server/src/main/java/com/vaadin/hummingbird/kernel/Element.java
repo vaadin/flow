@@ -219,6 +219,8 @@ public class Element {
     }
 
     private static Element createText(String content) {
+        assert content != null;
+
         Element element = new Element(TEXT_NODE_TAG);
         element.setAttribute(TEXT_NODE_TEXT_ATTRIBUTE, content);
         return element;
@@ -535,7 +537,9 @@ public class Element {
      */
     public Element setTextContent(String text) {
         removeAllChildren();
-        appendChild(createText(text));
+        if (text != null) {
+            appendChild(createText(text));
+        }
         return this;
     }
 
