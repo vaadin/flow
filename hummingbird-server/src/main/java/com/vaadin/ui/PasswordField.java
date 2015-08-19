@@ -15,12 +15,14 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property;
 
 /**
  * A field that is used to enter secret text information like passwords. The
  * entered text is not displayed on the screen.
  */
+@Tag("input")
 public class PasswordField extends AbstractTextField {
 
     /**
@@ -28,6 +30,7 @@ public class PasswordField extends AbstractTextField {
      */
     public PasswordField() {
         setValue("");
+        getElement().setAttribute("type", "password");
     }
 
     /**

@@ -1,11 +1,8 @@
 package com.vaadin.tests.components.textarea;
 
-import com.vaadin.event.FieldEvents.TextChangeEvent;
-import com.vaadin.event.FieldEvents.TextChangeListener;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.AbstractTextField;
-import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextArea;
@@ -30,17 +27,17 @@ public class TextAreaCursorPosition extends TestBase {
 
     public void addListener(AbstractField newField) {
         AbstractTextField newTextField = (AbstractTextField) newField;
-        newTextField.setTextChangeEventMode(TextChangeEventMode.EAGER);
-
-        newTextField.addTextChangeListener(new TextChangeListener() {
-            @Override
-            public void textChange(TextChangeEvent event) {
-                AbstractTextField component = (AbstractTextField) event
-                        .getComponent();
-                cursorPosition.setValue(
-                        String.valueOf(component.getCursorPosition()));
-            }
-        });
+        // newTextField.setTextChangeEventMode(TextChangeEventMode.EAGER);
+        //
+        // newTextField.addTextChangeListener(new TextChangeListener() {
+        // @Override
+        // public void textChange(TextChangeEvent event) {
+        // AbstractTextField component = (AbstractTextField) event
+        // .getComponent();
+        // cursorPosition.setValue(
+        // String.valueOf(component.getCursorPosition()));
+        // }
+        // });
     }
 
     @Override

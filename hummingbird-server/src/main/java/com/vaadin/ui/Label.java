@@ -161,6 +161,10 @@ public class Label extends AbstractComponent implements Property<String>,
      */
     @Override
     public void setValue(String newStringValue) {
+        if (newStringValue == null) {
+            newStringValue = "";
+        }
+
         if (getPropertyDataSource() == null) {
             if (!Objects.equals(getValue(), newStringValue)) {
                 getElement().setTextContent(newStringValue);

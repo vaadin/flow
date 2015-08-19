@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property;
 
 /**
@@ -37,6 +38,7 @@ import com.vaadin.data.Property;
  * @since 3.0
  */
 @SuppressWarnings("serial")
+@Tag("input")
 public class TextField extends AbstractTextField {
 
     /**
@@ -107,6 +109,16 @@ public class TextField extends AbstractTextField {
     @Override
     public void clear() {
         setValue("");
+    }
+
+    @Override
+    protected void setInternalValue(String newValue) {
+        if (newValue == null) {
+            newValue = "";
+        }
+
+        super.setInternalValue(newValue);
+        getElement().setAttribute("value", getInternalValue());
     }
 
 }

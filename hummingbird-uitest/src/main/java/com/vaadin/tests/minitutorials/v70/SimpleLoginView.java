@@ -41,7 +41,6 @@ public class SimpleLoginView extends CustomComponent
         password.addValidator(new PasswordValidator());
         password.setRequired(true);
         password.setValue("");
-        password.setNullRepresentation("");
 
         // Create login button
         loginButton = new Button("Login", this);

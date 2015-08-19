@@ -816,37 +816,46 @@ public class TreeUpdater {
 
     private static void setAttributeOrProperty(Element element, String key,
             JsonValue value) {
-        if (isAlwaysAttribute(key)) {
-            if (value != null) {
-                element.setAttribute(key, value.asString());
-                debug("Set attribute " + key + "=" + value + " for "
-                        + outerHtml(element));
-            } else {
+        if (value == null || value.getType() == JsonType.NULL) {
+            // Null property and/or remove attribute
+            // Sets property to null before as e.g. <input> will set maxlength=0
+            // when we null the property..
+            if (!isAlwaysAttribute(key)) {
+                element.setPropertyString(key, null);
+            }
+            if (element.hasAttribute(key)) {
                 element.removeAttribute(key);
                 debug("Removed attribute " + key + " from "
                         + outerHtml(element));
             }
         } else {
-            if (value.getType() == JsonType.BOOLEAN) {
-                element.setPropertyBoolean(key, value.asBoolean());
-                debug("Set property " + key + "=" + value + " (boolean) for "
-                        + outerHtml(element));
-            } else if (value.getType() == JsonType.NUMBER) {
-                element.setPropertyDouble(key, value.asNumber());
-                debug("Set property " + key + "=" + value + " (number) for "
+            // Update value (which is not null)
+            if (isAlwaysAttribute(key)) {
+                element.setAttribute(key, value.asString());
+                debug("Set attribute " + key + "=" + value + " for "
                         + outerHtml(element));
             } else {
-                element.setPropertyString(key, value.asString());
-                debug("Set property " + key + "=" + value + " (string) for "
-                        + outerHtml(element));
-            }
+                if (value.getType() == JsonType.BOOLEAN) {
+                    element.setPropertyBoolean(key, value.asBoolean());
+                    debug("Set property " + key + "=" + value
+                            + " (boolean) for " + outerHtml(element));
+                } else if (value.getType() == JsonType.NUMBER) {
+                    element.setPropertyDouble(key, value.asNumber());
+                    debug("Set property " + key + "=" + value + " (number) for "
+                            + outerHtml(element));
+                } else {
+                    element.setPropertyString(key, value.asString());
+                    debug("Set property " + key + "=" + value + " (string) for "
+                            + outerHtml(element));
+                }
 
+            }
         }
 
     }
 
     private static void debug(String string) {
-        if (false) {
+        if (true) {
             getLogger().info(string);
         }
     }

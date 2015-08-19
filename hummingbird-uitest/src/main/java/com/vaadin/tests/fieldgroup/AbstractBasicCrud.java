@@ -126,11 +126,6 @@ public abstract class AbstractBasicCrud extends AbstractTestUIWithLog {
         public CustomForm() {
             fieldGroup.bindMemberFields(this);
 
-            address_postalCode.setNullRepresentation("");
-            gender.setNullRepresentation("");
-            age.setNullRepresentation("");
-            address_country.setNullRepresentation("");
-
             // Last name editing is disabled through property readonly.
             // Postal code editing is disabled through disabling field.
             /*
@@ -142,8 +137,6 @@ public abstract class AbstractBasicCrud extends AbstractTestUIWithLog {
              */
             lastName.setReadOnly(true);
             address_postalCode.setEnabled(false);
-
-            birthDate.setNullRepresentation("");
 
             age.addValidator(new IntegerRangeValidator(
                     "Must be between 0 and 100", 0, 100));

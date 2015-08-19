@@ -16,12 +16,13 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property;
-import com.vaadin.shared.ui.textarea.TextAreaState;
 
 /**
  * A text field that supports multi line editing.
  */
+@Tag("textarea")
 public class TextArea extends AbstractTextField {
 
     /**
@@ -80,16 +81,6 @@ public class TextArea extends AbstractTextField {
 
     }
 
-    @Override
-    protected TextAreaState getState() {
-        return (TextAreaState) super.getState();
-    }
-
-    @Override
-    protected TextAreaState getState(boolean markAsDirty) {
-        return (TextAreaState) super.getState(markAsDirty);
-    }
-
     /**
      * Sets the number of rows in the text area.
      *
@@ -100,7 +91,7 @@ public class TextArea extends AbstractTextField {
         if (rows < 0) {
             rows = 0;
         }
-        getState().rows = rows;
+        getElement().setAttribute("rows", rows);
     }
 
     /**
@@ -109,7 +100,8 @@ public class TextArea extends AbstractTextField {
      * @return number of explicitly set rows.
      */
     public int getRows() {
-        return getState(false).rows;
+        return getElement().getAttribute("rows", 5);
+
     }
 
     /**
@@ -120,7 +112,11 @@ public class TextArea extends AbstractTextField {
      *            word-wrap mode.
      */
     public void setWordwrap(boolean wordwrap) {
-        getState().wordwrap = wordwrap;
+        if (wordwrap) {
+            getElement().removeAttribute("wrap");
+        } else {
+            getElement().setAttribute("wrap", "off");
+        }
     }
 
     /**
@@ -130,7 +126,7 @@ public class TextArea extends AbstractTextField {
      *         <code>false</code> if not.
      */
     public boolean isWordwrap() {
-        return getState(false).wordwrap;
+        return !getElement().hasAttribute("wrap");
     }
 
     @Override

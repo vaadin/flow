@@ -15,8 +15,6 @@ public class ConverterThatEnforcesAFormat extends AbstractTestUIWithLog {
         final TextField tf = new TextField(
                 "This field should always be formatted with 3 digits");
         tf.setLocale(Locale.ENGLISH);
-        // this is needed so that IE tests pass
-        tf.setNullRepresentation("");
         tf.setConverter(new StringToDoubleConverterWithThreeFractionDigits());
         tf.addValueChangeListener(new ValueChangeListener() {
             @Override

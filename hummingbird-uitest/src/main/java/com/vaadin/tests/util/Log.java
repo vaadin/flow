@@ -3,18 +3,17 @@ package com.vaadin.tests.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.Label;
+import com.vaadin.ui.HTML;
 import com.vaadin.ui.VerticalLayout;
 
 public class Log extends VerticalLayout {
-    List<Label> eventLabels = new ArrayList<Label>();
+    List<HTML> eventLabels = new ArrayList<HTML>();
     private boolean numberLogRows = true;
     private int nextLogNr = 1;
 
     public Log(int nr) {
         for (int i = 0; i < nr; i++) {
-            Label l = createEventLabel();
+            HTML l = createEventLabel("&nbsp;");
             l.setId("Log_row_" + i);
             eventLabels.add(l);
             addComponent(l);
@@ -27,31 +26,32 @@ public class Log extends VerticalLayout {
      * Clears the rows and reset the row number to zero.
      */
     public Log clear() {
-        for (Label l : eventLabels) {
-            l.setValue("&nbsp;");
+        for (HTML l : eventLabels) {
+            l.setInnerHtml("&nbsp;");
         }
+
         nextLogNr = 0;
         return this;
     }
 
     public Log log(String event) {
         int nr = eventLabels.size();
-        for (int i = nr - 1; i > 0; i--) {
-            eventLabels.get(i).setValue(eventLabels.get(i - 1).getValue());
+        for (int i = 0; i < nr; i++) {
+            eventLabels.get(i).setId("Log_row_" + i);
         }
+        removeComponent(getComponent(0));
         String msg = event;
         if (numberLogRows) {
             msg = nextLogNr + ". " + msg;
             nextLogNr++;
         }
-        eventLabels.get(0).setValue(msg);
+        addComponent(createEventLabel(msg));
         System.out.println(event);
         return this;
     }
 
-    private Label createEventLabel() {
-        Label l = new Label("&nbsp;", ContentMode.HTML);
-        l.setWidth(null);
+    private HTML createEventLabel(String html) {
+        HTML l = new HTML(html);
         return l;
     }
 
