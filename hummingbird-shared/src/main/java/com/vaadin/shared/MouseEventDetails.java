@@ -17,6 +17,8 @@ package com.vaadin.shared;
 
 import java.io.Serializable;
 
+import elemental.json.JsonObject;
+
 /**
  * Helper class to store and transfer mouse event details.
  */
@@ -50,137 +52,72 @@ public class MouseEventDetails implements Serializable {
 
     }
 
-    private static final char DELIM = ',';
+    // private static final char DELIM = ',';
     // From com.google.gwt.user.client.Event
     private static final int ONDBLCLICK = 0x00002;
 
-    private MouseButton button;
-    private int clientX;
-    private int clientY;
-    private boolean altKey;
-    private boolean ctrlKey;
-    private boolean metaKey;
-    private boolean shiftKey;
-    private int type;
-    private int relativeX = -1;
-    private int relativeY = -1;
+    private JsonObject json;
+
+    public MouseEventDetails(JsonObject json) {
+        this.json = json;
+    }
 
     public MouseButton getButton() {
-        return button;
+        return MouseButton.valueOf(json.getString("event.button"));
     }
 
     public int getClientX() {
-        return clientX;
+        return (int) json.getNumber("event.clientX");
     }
 
     public int getClientY() {
-        return clientY;
+        return (int) json.getNumber("event.clientY");
     }
 
     public boolean isAltKey() {
-        return altKey;
+        return json.getBoolean("event.altKey");
     }
 
     public boolean isCtrlKey() {
-        return ctrlKey;
+        return json.getBoolean("event.ctrlKey");
     }
 
     public boolean isMetaKey() {
-        return metaKey;
+        return json.getBoolean("event.metaKey");
     }
 
     public boolean isShiftKey() {
-        return shiftKey;
+        return json.getBoolean("event.shiftKey");
     }
 
     public int getRelativeX() {
-        return relativeX;
+        return (int) json.getNumber("event.relativeX");
     }
 
     public int getRelativeY() {
-        return relativeY;
-    }
-
-    public void setButton(MouseButton button) {
-        this.button = button;
-    }
-
-    public void setClientX(int clientX) {
-        this.clientX = clientX;
-    }
-
-    public void setClientY(int clientY) {
-        this.clientY = clientY;
-    }
-
-    public void setAltKey(boolean altKey) {
-        this.altKey = altKey;
-    }
-
-    public void setCtrlKey(boolean ctrlKey) {
-        this.ctrlKey = ctrlKey;
-    }
-
-    public void setMetaKey(boolean metaKey) {
-        this.metaKey = metaKey;
-    }
-
-    public void setShiftKey(boolean shiftKey) {
-        this.shiftKey = shiftKey;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
-    public void setRelativeX(int relativeX) {
-        this.relativeX = relativeX;
-    }
-
-    public void setRelativeY(int relativeY) {
-        this.relativeY = relativeY;
-    }
-
-    public MouseEventDetails() {
+        return (int) json.getNumber("event.relativeY");
     }
 
     @Override
     public String toString() {
-        return serialize();
-    }
-
-    public String serialize() {
-        return button.toString() + DELIM + clientX + DELIM + clientY + DELIM
-                + altKey + DELIM + ctrlKey + DELIM + metaKey + DELIM + shiftKey
-                + DELIM + type + DELIM + relativeX + DELIM + relativeY;
-    }
-
-    public static MouseEventDetails deSerialize(String serializedString) {
-        MouseEventDetails instance = new MouseEventDetails();
-        String[] fields = serializedString.split(",");
-        instance.button = MouseButton.valueOf(fields[0]);
-        instance.clientX = Integer.parseInt(fields[1]);
-        instance.clientY = Integer.parseInt(fields[2]);
-        instance.altKey = Boolean.valueOf(fields[3]).booleanValue();
-        instance.ctrlKey = Boolean.valueOf(fields[4]).booleanValue();
-        instance.metaKey = Boolean.valueOf(fields[5]).booleanValue();
-        instance.shiftKey = Boolean.valueOf(fields[6]).booleanValue();
-        instance.type = Integer.parseInt(fields[7]);
-        instance.relativeX = Integer.parseInt(fields[8]);
-        instance.relativeY = Integer.parseInt(fields[9]);
-        return instance;
+        return json.toString();
     }
 
     public String getButtonName() {
-        return button == null ? "" : button.getName();
+        return getButton() == null ? "" : getButton().getName();
     }
 
     public int getType() {
-        return type;
+        return (int) json.getNumber("event.type");
     }
 
     public boolean isDoubleClick() {
-        return type == ONDBLCLICK;
+        return getType() == ONDBLCLICK;
     }
 
+    public static String[] getEventProperties() {
+        return new String[] { "event.button", "event.clientX", "event.clientY",
+                "event.type", "event.altKey", "event.metaKey", "event.ctrlKey",
+                "event.shiftKey", "event.relativeX", "event.relativeY" };
+    }
 }

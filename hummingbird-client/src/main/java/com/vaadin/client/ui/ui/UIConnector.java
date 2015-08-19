@@ -27,7 +27,6 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.HeadElement;
 import com.google.gwt.dom.client.LinkElement;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.StyleElement;
 import com.google.gwt.dom.client.StyleInjector;
@@ -58,12 +57,10 @@ import com.vaadin.client.annotations.OnStateChange;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.ui.AbstractConnector;
 import com.vaadin.client.ui.AbstractHasComponentsConnector;
-import com.vaadin.client.ui.ClickEventHandler;
 import com.vaadin.client.ui.JavaScriptManager;
 import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.VUI;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.SharedState;
 import com.vaadin.shared.ui.Connect;
@@ -316,15 +313,16 @@ public class UIConnector extends AbstractHasComponentsConnector {
                 });
     }
 
-    private ClickEventHandler clickEventHandler = new ClickEventHandler(this) {
-
-        @Override
-        protected void fireClick(NativeEvent event,
-                MouseEventDetails mouseDetails) {
-            getRpcProxy(UIServerRpc.class).click(mouseDetails);
-        }
-
-    };
+    // private ClickEventHandler clickEventHandler = new ClickEventHandler(this)
+    // {
+    //
+    // @Override
+    // protected void fireClick(NativeEvent event,
+    // MouseEventDetails mouseDetails) {
+    // getRpcProxy(UIServerRpc.class).click(mouseDetails);
+    // }
+    //
+    // };
 
     private Timer pollTimer = null;
 

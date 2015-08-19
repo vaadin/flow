@@ -368,18 +368,6 @@ public abstract class UI extends AbstractSingleComponentContainer
         return session;
     }
 
-    /**
-     * Fire a click event to all click listeners.
-     *
-     * @param object
-     *            The raw "value" of the variable change from the client side.
-     */
-    private void fireClick(Map<String, Object> parameters) {
-        MouseEventDetails mouseDetails = MouseEventDetails
-                .deSerialize((String) parameters.get("mouseDetails"));
-        fireEvent(new ClickEvent(this, mouseDetails));
-    }
-
     /*
      * (non-Javadoc)
      *
