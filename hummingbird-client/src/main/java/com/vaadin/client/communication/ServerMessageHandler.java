@@ -26,7 +26,6 @@ import java.util.logging.Logger;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Command;
@@ -47,8 +46,7 @@ import com.vaadin.client.ui.VNotification;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.ApplicationConstants;
 
-import elemental.js.json.JsJsonArray;
-import elemental.js.json.JsJsonObject;
+import elemental.json.JsonObject;
 
 /**
  * ServerMessageHandler is responsible for handling all incoming messages (JSON)
@@ -416,13 +414,12 @@ public class ServerMessageHandler {
 
                 Profiler.enter("Handle element update");
 
-                ValueMap elementTemplates = json
-                        .getValueMap("elementTemplates");
-                JsArray<ValueMap> elementChanges = json
-                        .getJSValueMapArray("elementChanges");
+                // Get an instance of a proper JSON api
+                JsonObject jsonJson = json.cast();
 
-                treeUpdater.update(elementTemplates.<JsJsonObject> cast(),
-                        elementChanges.<JsJsonArray> cast());
+                treeUpdater.update(jsonJson.getObject("elementTemplates"),
+                        jsonJson.getArray("elementChanges"),
+                        jsonJson.getArray("rpc"));
 
                 Profiler.leave("Handle element update");
 

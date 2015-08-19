@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.NodeChangeVisitor;
@@ -19,12 +20,39 @@ public class RootNode extends MapStateNode {
         public void rollback();
     }
 
+    public class PendingRpc {
+        private final StateNode context;
+        private final String javascript;
+        private final Object[] params;
+
+        public PendingRpc(StateNode context, String javascript,
+                Object[] params) {
+            this.context = context;
+            this.javascript = javascript;
+            this.params = params;
+        }
+
+        public StateNode getContext() {
+            return context;
+        }
+
+        public String getJavascript() {
+            return javascript;
+        }
+
+        public Object[] getParams() {
+            return params;
+        }
+    }
+
     private int nextId = 1;
     private Map<Integer, StateNode> idToNode = new HashMap<>();
     private Map<Integer, StateNode> transactionIdToNode = new HashMap<>();
 
     private Map<StateNode, TransactionHandler> dirtyInTransaction = new LinkedHashMap<>();
     private Set<NodeChangeVisitor> commitVisitors = new HashSet<>();
+
+    private List<PendingRpc> pendingRpc = new ArrayList<>();
 
     public RootNode() {
         rootNode = this;
@@ -118,6 +146,8 @@ public class RootNode extends MapStateNode {
 
         dirtyInTransaction.values().forEach(TransactionHandler::rollback);
         dirtyInTransaction.clear();
+
+        pendingRpc.clear();
     }
 
     public void markAsDirty(StateNode node, TransactionHandler handler) {
@@ -129,4 +159,18 @@ public class RootNode extends MapStateNode {
 
         dirtyInTransaction.put(node, handler);
     }
+
+    public List<PendingRpc> flushRpcQueue() {
+        List<PendingRpc> collect = pendingRpc.stream()
+                .filter(r -> r.context.isAttached())
+                .collect(Collectors.toList());
+        pendingRpc.clear();
+        return collect;
+    }
+
+    public void enqueueRpc(StateNode context, String javascript,
+            Object... params) {
+        pendingRpc.add(new PendingRpc(context, javascript, params));
+    }
+
 }

@@ -23,6 +23,8 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.client.js.JsFunction;
@@ -34,6 +36,7 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Text;
 import com.vaadin.shared.communication.MethodInvocation;
 
+import elemental.js.json.JsJsonValue;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -1021,6 +1024,8 @@ public class TreeUpdater {
 
     private boolean rootInitialized = false;
 
+    private Map<Integer, Node> nodeIdToBasicElement = new HashMap<>();
+
     private NodeListener treeUpdater = new NodeListener() {
 
         @Override
@@ -1105,6 +1110,8 @@ public class TreeUpdater {
                     Integer id = nodeToId.remove(node);
                     idToNode.remove(id);
 
+                    nodeIdToBasicElement.remove(id);
+
                     listeners.remove(id);
                     domListeners.remove(id);
                 }
@@ -1164,11 +1171,13 @@ public class TreeUpdater {
             if ("#text".equals(tag)) {
                 Text textNode = Document.get().createTextNode("");
                 addNodeListener(node, new TextElementListener(node, textNode));
+                nodeIdToBasicElement.put(nodeToId.get(node), textNode);
                 debug("Created text node");
                 return textNode;
             } else {
                 Element element = Document.get().createElement(tag);
                 addNodeListener(node, new BasicElementListener(node, element));
+                nodeIdToBasicElement.put(nodeToId.get(node), element);
                 debug("Created element: " + outerHtml(element));
                 return element;
             }
@@ -1189,7 +1198,8 @@ public class TreeUpdater {
         }
     }
 
-    public void update(JsonObject elementTemplates, JsonArray elementChanges) {
+    public void update(JsonObject elementTemplates, JsonArray elementChanges,
+            JsonArray rpc) {
         extractTemplates(elementTemplates);
 
         updateTree(elementChanges);
@@ -1202,6 +1212,66 @@ public class TreeUpdater {
         }
 
         notifyListeners(elementChanges);
+
+        if (rpc != null) {
+            runRpc(rpc);
+        }
+    }
+
+    private void runRpc(JsonArray rpcInvocations) {
+        for (int invocationIndex = 0; invocationIndex < rpcInvocations
+                .length(); invocationIndex++) {
+            JsonArray invocation = rpcInvocations.getArray(invocationIndex);
+            String script = invocation.getString(0);
+
+            int paramCount = invocation.length() - 1;
+
+            JsArray<JavaScriptObject> params = JavaScriptObject.createArray()
+                    .cast();
+            JsArrayString newFunctionParams = JavaScriptObject.createArray()
+                    .cast();
+            for (int i = 0; i < paramCount; i++) {
+                JavaScriptObject value;
+                JsonValue paramValue = invocation.get(i + 1);
+
+                if (paramValue.getType() == JsonType.ARRAY) {
+                    throw new RuntimeException("Not supported");
+                } else if (paramValue.getType() == JsonType.OBJECT) {
+                    JsonObject object = (JsonObject) paramValue;
+                    if (object.hasKey("template") && object.hasKey("node")) {
+                        int templateId = (int) object.getNumber("template");
+                        int nodeId = (int) object.getNumber("node");
+                        value = findDomNode(nodeId, templateId);
+                    } else {
+                        throw new RuntimeException(object.toJson());
+                    }
+                } else {
+                    // "primitive" type
+                    value = (JsJsonValue) paramValue;
+                }
+
+                params.push(value);
+                newFunctionParams.push("$" + i);
+            }
+
+            newFunctionParams.push(script);
+            createAndRunFunction(newFunctionParams, params);
+        }
+    }
+
+    private static native void createAndRunFunction(
+            JsArrayString newFunctionParams, JsArray<JavaScriptObject> params)
+            /*-{
+                Function.apply(Function, newFunctionParams).apply(null, params);
+            }-*/;
+
+    private Node findDomNode(int nodeId, int templateId) {
+        if (templateId == 0) {
+            return nodeIdToBasicElement.get(Integer.valueOf(nodeId));
+        } else {
+            throw new RuntimeException(
+                    "Not yet implemented for template elements");
+        }
     }
 
     private static native void logTree(String string, JsonObject jsonObject)

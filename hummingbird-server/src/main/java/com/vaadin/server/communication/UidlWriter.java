@@ -40,9 +40,11 @@ import com.vaadin.hummingbird.kernel.AbstractElementTemplate;
 import com.vaadin.hummingbird.kernel.AttributeBinding;
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.DynamicTextTemplate;
+import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.ForElementTemplate;
 import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
+import com.vaadin.hummingbird.kernel.RootNode.PendingRpc;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.StaticTextTemplate;
 import com.vaadin.hummingbird.kernel.change.IdChange;
@@ -525,11 +527,60 @@ public class UidlWriter implements Serializable {
             });
             response.put("elementTemplates", newTemplates);
             response.put("elementChanges", changes);
+
+            List<PendingRpc> rpcQueue = ui.getRootNode().flushRpcQueue();
+            if (!rpcQueue.isEmpty()) {
+                response.put("rpc", encodeRpcQueue(rpcQueue));
+            }
+
             String r = response.toString();
             writer.write(r.substring(1, r.length() - 1));
         } finally {
             uiConnectorTracker.setWritingResponse(false);
             uiConnectorTracker.cleanConnectorMap();
+        }
+    }
+
+    private JSONArray encodeRpcQueue(List<PendingRpc> rpcQueue) {
+        JSONArray array = new JSONArray();
+
+        for (PendingRpc pendingRpc : rpcQueue) {
+            JSONArray rpc = new JSONArray();
+            rpc.put(0, pendingRpc.getJavascript());
+
+            Object[] params = pendingRpc.getParams();
+            for (int i = 0; i < params.length; i++) {
+                Object param = params[i];
+
+                rpc.put(i + 1, serializeRpcParam(param));
+            }
+
+            array.put(rpc);
+        }
+
+        return array;
+    }
+
+    private static Object serializeRpcParam(Object param) {
+        if (param == null) {
+            return null;
+        } else if (param instanceof String) {
+            return param;
+        } else if (param instanceof Number) {
+            return param;
+        } else if (param instanceof Boolean) {
+            return param;
+        } else if (param instanceof Element) {
+            Element element = (Element) param;
+
+            JSONObject object = new JSONObject();
+            object.put("node", element.getNode().getId());
+            object.put("template", element.getTemplate().getId());
+
+            return object;
+        } else {
+            throw new RuntimeException(param.getClass().getName()
+                    + " not supported as an RPC parameter");
         }
     }
 
