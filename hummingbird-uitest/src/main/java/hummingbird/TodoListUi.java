@@ -17,7 +17,6 @@ package hummingbird;
 
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
@@ -31,21 +30,7 @@ public class TodoListUi extends UI {
         todoList.addTodo("Make hummingbird work");
         todoList.updateStuff();
 
-        Button addButton = new Button("Add another todo");
-        addButton.getElement().addEventListener("click", e -> {
-            todoList.addTodo("Another todo");
-            todoList.updateStuff();
-        });
-
-        Button toggleButton = new Button("Toggle completed");
-        toggleButton.addClickListener(e -> {
-            todoList.setCompleted(0, !todoList.isCompleted(0));
-            todoList.updateStuff();
-        });
-
         layout.addComponent(todoList);
-        layout.addComponent(addButton);
-        layout.addComponent(toggleButton);
 
         setContent(layout);
     }

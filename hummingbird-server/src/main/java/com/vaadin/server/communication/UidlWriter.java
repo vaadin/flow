@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +53,7 @@ import com.vaadin.hummingbird.kernel.change.NodeChangeVisitor;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
+import com.vaadin.hummingbird.parser.EventBinding;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.LegacyCommunicationManager.ClientCache;
@@ -217,6 +219,16 @@ public class UidlWriter implements Serializable {
                     }
                 }
 
+                private boolean isServerOnlyKey(Object key) {
+                    if (key == null) {
+                        return false;
+                    } else if (key instanceof Class) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+
                 private JSONObject createChange(StateNode node, String type) {
                     assert!isServerOnly(node);
 
@@ -240,6 +252,10 @@ public class UidlWriter implements Serializable {
                         return;
                     }
                     Object key = removeChange.getKey();
+                    if (isServerOnlyKey(key)) {
+                        return;
+                    }
+
                     JSONObject change = createChange(node, "remove");
                     change.put("key", key);
                 }
@@ -252,6 +268,10 @@ public class UidlWriter implements Serializable {
                     }
                     JSONObject change;
                     Object key = putChange.getKey();
+                    if (isServerOnlyKey(key)) {
+                        return;
+                    }
+
                     Object value = putChange.getValue();
                     if (value instanceof StateNode) {
                         StateNode childNode = (StateNode) value;
@@ -295,19 +315,12 @@ public class UidlWriter implements Serializable {
 
                 private void ensureTemplateSent(ElementTemplate template, UI ui,
                         JSONObject newTemplates) {
-                    Set<Integer> sentTemplates = ui.getSentTemplates();
-                    if (sentTemplates == null) {
-                        sentTemplates = new HashSet<>();
-                    }
 
-                    Integer templateId = Integer.valueOf(template.getId());
-                    if (!sentTemplates.contains(templateId)) {
+                    if (!ui.knowsTemplate(template)) {
                         newTemplates.put(Integer.toString(template.getId()),
                                 serializeTemplate(template, ui, newTemplates));
-                        sentTemplates.add(templateId);
+                        ui.registerTemplate(template);
                     }
-
-                    ui.setSentTemplates(sentTemplates);
                 }
 
                 private JSONObject serializeTemplate(ElementTemplate template,
@@ -415,6 +428,21 @@ public class UidlWriter implements Serializable {
                         serialized.put("classPartBindings", classPartBindings);
                     }
 
+                    Map<String, List<EventBinding>> events = bet.getEvents();
+                    if (events != null && !events.isEmpty()) {
+                        JSONObject eventsJson = new JSONObject();
+                        events.forEach((type, list) -> {
+                            JSONArray params = new JSONArray();
+                            list.stream().map(EventBinding::getParams)
+                                    .flatMap(Collection::stream)
+                                    .filter(p -> !"element".equals(p))
+                                    .distinct().forEach(params::put);
+
+                            eventsJson.put(type, params);
+                        });
+                        serialized.put("events", eventsJson);
+                    }
+
                     serialized.put("attributeBindings", attributeBindings)
                             .put("defaultAttributes", defaultAttributes)
                             .put("tag", bet.getTag());
@@ -432,6 +460,11 @@ public class UidlWriter implements Serializable {
                     if (isServerOnly(node)) {
                         return;
                     }
+                    Object key = listReplaceChange.getKey();
+                    if (isServerOnlyKey(key)) {
+                        return;
+                    }
+
                     JSONObject change;
                     Object value = listReplaceChange.getNewValue();
                     if (value instanceof StateNode) {
@@ -442,7 +475,7 @@ public class UidlWriter implements Serializable {
                         change.put("value", value);
                     }
                     change.put("index", listReplaceChange.getIndex());
-                    change.put("key", listReplaceChange.getKey());
+                    change.put("key", key);
                 }
 
                 @Override
@@ -451,9 +484,14 @@ public class UidlWriter implements Serializable {
                     if (isServerOnly(node)) {
                         return;
                     }
+                    Object key = listRemoveChange.getKey();
+                    if (isServerOnlyKey(key)) {
+                        return;
+                    }
+
                     JSONObject change = createChange(node, "listRemove");
                     change.put("index", listRemoveChange.getIndex());
-                    change.put("key", listRemoveChange.getKey());
+                    change.put("key", key);
                 }
 
                 @Override
@@ -462,6 +500,11 @@ public class UidlWriter implements Serializable {
                     if (isServerOnly(node)) {
                         return;
                     }
+                    Object key = listInsertChange.getKey();
+                    if (isServerOnlyKey(key)) {
+                        return;
+                    }
+
                     JSONObject change;
                     Object value = listInsertChange.getValue();
                     if (value instanceof StateNode) {
@@ -472,7 +515,7 @@ public class UidlWriter implements Serializable {
                         change.put("value", value);
                     }
                     change.put("index", listInsertChange.getIndex());
-                    change.put("key", listInsertChange.getKey());
+                    change.put("key", key);
                 }
 
                 @Override

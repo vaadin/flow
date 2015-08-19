@@ -101,6 +101,10 @@ public abstract class StateNode {
         return assertCast(get(key), type);
     }
 
+    public <T> T get(Class<T> key) {
+        return get(key, key);
+    }
+
     @SuppressWarnings("unchecked")
     private static final <T> T assertCast(Object value, Class<T> type) {
         assert value == null || type.isInstance(value);
@@ -348,6 +352,13 @@ public abstract class StateNode {
         logChange(new PutChange(key, value));
         attach(value);
         return previous;
+    }
+
+    public <T> void put(Class<T> type, T value) {
+        // Explicit variable since Eclipse determined that a (Object) cast was
+        // unnecessary and could be removed
+        Object key = type;
+        put(key, value);
     }
 
     public Object remove(Object key) {

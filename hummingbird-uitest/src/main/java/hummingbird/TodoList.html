@@ -3,49 +3,45 @@
 		<h1>todos</h1>
 		<input id="new-todo" #newtodo class="new-todo"
 			placeholder="What needs to be done?"
-			autofocus (keyup)="addNewTodo($event, newtodo)" />
+			autofocus (change)="addNewTodo(element.value)" />
 	</header>
 	<!-- Content comes here -->
 	<!-- This section should be hidden by default and shown when there are todos -->
 	<section class="main" [class.visible]="hasTodos">
 		<input id="toggle-all" class="toggle-all" type="checkbox"
-			[checked]="isAllCompleted"
-			(click)="setAllCompleted($event.target.checked)"> <label
-			for="toggle-all">Mark all as complete</label>
+			[checked]="isAllCompleted" (click)="setAllCompleted(element.checked)">
+		<label for="toggle-all">Mark all as complete</label>
 		<ul class="todo-list">
 
 			<li *ng-for="#todo of todos" [class.completed]="todo.completed"
 				[class.editing]="todo.editing">
 				<div class="view" [class.hidden]="todo.editing">
 					<!-- todo.complete=this.checked; -->
-					<input (click)="setTodoCompleted(todo,$event.target.checked);"
+					<input (click)="setTodoCompleted(element.checked)"
 						class="toggle" type="checkbox" [checked]="todo.completed">
 
-					<label (dblclick)="labelDoubleClick(todo,edit)">{{todo.title}}</label>
-					<button class="destroy" (click)="removeTodo(todo);"></button>
+					<label (dblclick)="labelDoubleClick()">{{todo.title}}</label>
+					<button class="destroy" (click)="removeTodo()"></button>
 				</div> <input #edit class="edit" [class.visible]="todo.editing"
-				value="{{todo.title}}" (blur)="handleEditBlur(todo, $event);"
-				(keyup)="handleEditKeyEvents(todo, $event)">
+				[value]="todo.title" (blur)="handleEditBlur(element.value)"
+				(change)="handleEditBlur(element.value)">
 			</li>
 		</ul>
 	</section>
 	<!-- This footer should hidden by default and shown when there are todos -->
 	<footer class="footer" [class.visible]="hasTodos">
 		<!-- This should be `0 items left` by default -->
-		<span class="todo-count" [class.visible]="hasRemaining"
-			id="itemsLeft"><strong>{{remainingCount}}</strong> items
-			left</span>
+		<span class="todo-count" [class.visible]="hasRemaining" id="itemsLeft"><strong>{{remainingCount}}</strong>
+			items left</span>
 		<!-- Remove this if you don't implement routing -->
 		<ul class="filters">
 			<li><a [class.selected]="allFilter" href="#">All</a></li>
 			<li><a [class.selected]="activeFitler" href="#active">Active</a>
 			</li>
-			<li><a [class.selected]="completedFilter"
-				href="#completed">Completed</a></li>
+			<li><a [class.selected]="completedFilter" href="#completed">Completed</a></li>
 		</ul>
 		<!-- Hidden if no completed items are left ↓ -->
-		<button
-			#clearCompleted [class.hidden]="hasNoCompleted"
+		<button #clearCompleted [class.hidden]="hasNoCompleted"
 			class="clear-completed" (click)="clearCompleted()">Clear
 			completed</button>
 	</footer>

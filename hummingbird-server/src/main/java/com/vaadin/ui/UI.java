@@ -19,6 +19,7 @@ package com.vaadin.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -37,6 +38,7 @@ import com.vaadin.event.UIEvents.PollEvent;
 import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
 import com.vaadin.hummingbird.kernel.Element;
+import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.EventListener;
 import com.vaadin.hummingbird.kernel.RootNode;
 import com.vaadin.hummingbird.kernel.StateNode;
@@ -66,6 +68,7 @@ import com.vaadin.ui.Component.Focusable;
 import com.vaadin.util.ConnectorHelper;
 import com.vaadin.util.CurrentInstance;
 
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
@@ -263,6 +266,52 @@ public abstract class UI extends AbstractSingleComponentContainer
             new ArrayList<>(listeners).forEach(
                     value -> ((EventListener) value).handleEvent(eventData));
         });
+
+        getPage().getJavaScript().addFunction("vTemplateEvent",
+                this::handleTemplateEvent);
+    }
+
+    private void handleTemplateEvent(JsonArray json) {
+        int nodeId = (int) json.getNumber(0);
+        int templateId = (int) json.getNumber(1);
+        String eventType = json.getString(2);
+        JsonObject eventData = json.getObject(3);
+
+        StateNode node = rootNode.getById(nodeId);
+        if (node == null) {
+            getLogger().warning(
+                    "Got template event for non-existing node id " + nodeId);
+            return;
+        }
+
+        TemplateEventHandler templateEventHandler = findTemplateEventHandler(
+                node);
+        if (templateEventHandler == null) {
+            throw new RuntimeException(
+                    "No template event handler found for node " + node.getId());
+        }
+
+        ElementTemplate template = sentTemplates
+                .get(Integer.valueOf(templateId));
+        if (template == null) {
+            throw new RuntimeException(
+                    "Got template event for non-existing template id: "
+                            + templateId);
+        }
+
+        templateEventHandler.handleEvent(node, template, eventType, eventData);
+    }
+
+    private static TemplateEventHandler findTemplateEventHandler(
+            StateNode node) {
+        while (node != null) {
+            if (node.containsKey(TemplateEventHandler.class)) {
+                return node.get(TemplateEventHandler.class);
+            } else {
+                node = node.getParent();
+            }
+        }
+        return null;
     }
 
     @Override
@@ -525,7 +574,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     private String embedId;
 
-    private Set<Integer> sentTemplates;
+    private Map<Integer, ElementTemplate> sentTemplates = new HashMap<>();
 
     private Set<Class<? extends ClientConnector>> resourcesHandled = new HashSet<>();
 
@@ -1387,25 +1436,16 @@ public abstract class UI extends AbstractSingleComponentContainer
      * @since
      * @return
      */
-    public Set<Integer> getSentTemplates() {
-        return sentTemplates;
-    }
-
-    /**
-     * @since
-     * @param sentTemplates
-     */
-    public void setSentTemplates(Set<Integer> sentTemplates) {
-        this.sentTemplates = sentTemplates;
-
-    }
-
-    /**
-     * @since
-     * @return
-     */
     public Set<Class<? extends ClientConnector>> getResourcesHandled() {
         return resourcesHandled;
+    }
+
+    public boolean knowsTemplate(ElementTemplate template) {
+        return sentTemplates.containsKey(Integer.valueOf(template.getId()));
+    }
+
+    public void registerTemplate(ElementTemplate template) {
+        sentTemplates.put(Integer.valueOf(template.getId()), template);
     }
 
 }

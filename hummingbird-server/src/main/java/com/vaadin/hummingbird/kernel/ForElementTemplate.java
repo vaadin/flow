@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.vaadin.hummingbird.parser.EventBinding;
+
 public class ForElementTemplate extends BoundElementTemplate {
 
     private final ModelPath listPath;
@@ -11,9 +13,10 @@ public class ForElementTemplate extends BoundElementTemplate {
 
     public ForElementTemplate(String tag,
             Collection<AttributeBinding> attributeBindings,
-            Map<String, String> defaultAttributes, ModelPath listPath,
+            Map<String, String> defaultAttributes,
+            Collection<EventBinding> events, ModelPath listPath,
             String innerScope, List<BoundElementTemplate> children) {
-        super(tag, attributeBindings, defaultAttributes, children);
+        super(tag, attributeBindings, defaultAttributes, events, children);
         this.listPath = listPath;
         this.innerScope = innerScope;
     }

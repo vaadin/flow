@@ -266,6 +266,7 @@ public class TreeUpdater {
         private final Map<String, String> defaultAttributeValues;
         private final Map<String, String> propertyToAttribute;
         private final Map<String, String> classPartBindings;
+        private final Map<String, JsonArray> events;
 
         private final int[] childElementTemplates;
 
@@ -293,6 +294,17 @@ public class TreeUpdater {
                 }
             } else {
                 childElementTemplates = null;
+            }
+
+            if (templateDescription.hasKey("events")) {
+                events = new HashMap<>();
+                JsonObject eventsJson = templateDescription.getObject("events");
+                for (String type : eventsJson.keys()) {
+                    JsonArray parametersJson = eventsJson.getArray(type);
+                    events.put(type, parametersJson);
+                }
+            } else {
+                events = null;
             }
 
         }
@@ -329,6 +341,25 @@ public class TreeUpdater {
             for (Entry<String, String> entry : defaultAttributeValues
                     .entrySet()) {
                 element.setAttribute(entry.getKey(), entry.getValue());
+            }
+
+            if (events != null) {
+                for (Entry<String, JsonArray> entry : events.entrySet()) {
+                    String type = entry.getKey();
+                    JsonArray eventDataKeys = entry.getValue();
+                    addDomListener(element, type, new DomListener() {
+
+                        @Override
+                        public void handleEvent(JavaScriptObject event) {
+                            JsonObject eventDetails = extractEventDetails(event,
+                                    element, eventDataKeys);
+
+                            sendTemplateEventToServer(
+                                    nodeToId.get(node).intValue(), templateId,
+                                    type, eventDetails);
+                        }
+                    });
+                }
             }
 
             if (childElementTemplates != null) {
@@ -445,14 +476,18 @@ public class TreeUpdater {
             Node child = template.getChildTemplate().createElement(childNode,
                     notifier);
 
+            Node insertionPoint = findNodeBefore(change.getIndex());
+
+            insertionPoint.getParentElement().insertAfter(child,
+                    insertionPoint);
+        }
+
+        private Node findNodeBefore(int index) {
             Node refChild = anchorNode;
-            int index = change.getIndex();
             for (int i = 0; i < index; i++) {
                 refChild = refChild.getNextSibling();
             }
-
-            Element parentElement = anchorNode.getParentElement();
-            parentElement.insertAfter(child, refChild);
+            return refChild;
         }
 
         @Override
@@ -472,8 +507,13 @@ public class TreeUpdater {
 
         @Override
         public void listRemove(String property, ListRemoveChange change) {
-            // XXX Should remove child
-            // Don't care
+            if (!template.getModelKey().equals(property)) {
+                return;
+            }
+
+            Node node = findNodeBefore(change.getIndex()).getNextSibling();
+
+            node.removeFromParent();
         }
 
         @Override
@@ -650,7 +690,7 @@ public class TreeUpdater {
             DomListener listener = new DomListener() {
                 @Override
                 public void handleEvent(JavaScriptObject event) {
-                    JsonObject eventData = Json.createObject();
+                    JsonObject eventData = null;
 
                     JsonObject eventTypesToData = node.getObject("EVENT_DATA");
                     if (eventTypesToData != null) {
@@ -658,31 +698,15 @@ public class TreeUpdater {
                                 .getArray(type);
                         if (eventDataKeys != null
                                 && eventDataKeys.getType() != JsonType.NULL) {
-                            for (int i = 0; i < eventDataKeys.length(); i++) {
-                                String eventDataKey = eventDataKeys
-                                        .getString(i);
-                                if (eventDataKey.startsWith("event.")) {
-                                    String jsKey = eventDataKey
-                                            .substring("event.".length());
-                                    JsonValue value = ((JsonObject) event)
-                                            .get(jsKey);
-                                    eventData.put(eventDataKey, value);
-                                } else
-                                    if (eventDataKey.startsWith("element.")) {
-                                    String jsKey = eventDataKey
-                                            .substring("element.".length());
-                                    JsonValue value = ((JsonObject) element)
-                                            .get(jsKey);
-                                    eventData.put(eventDataKey, value);
-
-                                } else {
-                                    throw new RuntimeException(
-                                            "Unsupported event data key: "
-                                                    + eventDataKey);
-                                }
-                            }
+                            eventData = extractEventDetails(event, element,
+                                    eventDataKeys);
                         }
                     }
+
+                    if (eventData == null) {
+                        eventData = Json.createObject();
+                    }
+
                     sendEventToServer(id.intValue(), type, eventData);
                 }
             };
@@ -736,6 +760,27 @@ public class TreeUpdater {
         }
     }
 
+    private static JsonObject extractEventDetails(JavaScriptObject event,
+            Element element, JsonArray eventDataKeys) {
+        JsonObject eventData = Json.createObject();
+        for (int i = 0; i < eventDataKeys.length(); i++) {
+            String eventDataKey = eventDataKeys.getString(i);
+            if (eventDataKey.startsWith("event.")) {
+                String jsKey = eventDataKey.substring("event.".length());
+                JsonValue value = ((JsonObject) event).get(jsKey);
+                eventData.put(eventDataKey, value);
+            } else if (eventDataKey.startsWith("element.")) {
+                String jsKey = eventDataKey.substring("element.".length());
+                JsonValue value = ((JsonObject) element).get(jsKey);
+                eventData.put(eventDataKey, value);
+            } else {
+                throw new RuntimeException(
+                        "Unsupported event data key: " + eventDataKey);
+            }
+        }
+        return eventData;
+    }
+
     private void sendEventToServer(int nodeId, String eventType,
             JsonObject eventData) {
         JsonArray arguments = Json.createArray();
@@ -743,12 +788,27 @@ public class TreeUpdater {
         arguments.set(1, eventType);
         arguments.set(2, eventData);
 
+        sendRpc("vEvent", arguments);
+    }
+
+    private void sendRpc(String callbackName, JsonArray arguments) {
         /*
          * Must invoke manually as the RPC interface can't be used in GWT
          * because of the JSONArray parameter
          */
-        rpcQueue.add(new MethodInvocation("vEvent", arguments), false);
+        rpcQueue.add(new MethodInvocation(callbackName, arguments), false);
         rpcQueue.flush();
+    }
+
+    protected void sendTemplateEventToServer(int nodeId, int templateId,
+            String type, JsonObject eventData) {
+        JsonArray arguments = Json.createArray();
+        arguments.set(0, nodeId);
+        arguments.set(1, templateId);
+        arguments.set(2, type);
+        arguments.set(3, eventData);
+
+        sendRpc("vTemplateEvent", arguments);
     }
 
     private static void setAttributeOrProperty(Element element, String key,

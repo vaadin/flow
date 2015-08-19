@@ -15,15 +15,51 @@
  */
 package com.vaadin.ui;
 
+import java.util.List;
+
+import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
+import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.parser.EventBinding;
 import com.vaadin.hummingbird.parser.TemplateParser;
+
+import elemental.json.JsonObject;
 
 public abstract class Template extends AbstractComponent {
     private final StateNode node = StateNode.create();
 
     public Template() {
         setElement(Element.getElement(TemplateParser.parse(getClass()), node));
+
+        getNode().put(TemplateEventHandler.class, this::handleTemplateEvent);
+    }
+
+    private void handleTemplateEvent(StateNode node, ElementTemplate template,
+            String eventType, JsonObject eventData) {
+        Element element = Element.getElement(template, node);
+        List<EventBinding> eventBindings = ((BoundElementTemplate) template)
+                .getEventBindings(eventType);
+        for (EventBinding eventBinding : eventBindings) {
+            String methodName = eventBinding.getMethodName();
+            List<String> paramsDefinitions = eventBinding.getParams();
+
+            Object[] params = new Object[paramsDefinitions.size()];
+            for (int i = 0; i < params.length; i++) {
+                String definition = paramsDefinitions.get(i);
+                if ("element".equals(definition)) {
+                    params[i] = element;
+                } else {
+                    params[i] = eventData.get(definition);
+                }
+            }
+
+            onBrowserEvent(node, element, methodName, params);
+        }
+    }
+
+    protected void onBrowserEvent(StateNode node, Element element, String methodName, Object[] params) {
+        // Default does nothing
     }
 
     protected StateNode getNode() {

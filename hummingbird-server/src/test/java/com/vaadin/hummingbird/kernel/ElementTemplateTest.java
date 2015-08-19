@@ -55,7 +55,7 @@ public class ElementTemplateTest {
         ElementTemplate elementTemplate = new BoundElementTemplate("input",
                 Collections.singleton(
                         new ModelAttributeBinding("value", "modelValue")),
-                defaultAttributeValues);
+                defaultAttributeValues, Collections.emptyList());
         StateNode node = StateNode.create();
         node.put("modelValue", "My value");
 
@@ -91,7 +91,7 @@ public class ElementTemplateTest {
         ElementTemplate template = new BoundElementTemplate("input",
                 Collections
                         .singleton(new ModelAttributeBinding("value", "value")),
-                Collections.emptyMap());
+                Collections.emptyMap(), Collections.emptyList());
 
         Element element = Element.getElement(template, StateNode.create());
 
@@ -107,10 +107,12 @@ public class ElementTemplateTest {
                     public String getValue(StateNode node) {
                         return node.get("class", String.class);
                     }
-                }), Collections.emptyMap(), new ModelPath("todos"), null, null);
+                }), Collections.emptyMap(), Collections.emptyList(),
+                new ModelPath("todos"), null, null);
 
         BoundElementTemplate parentTemplate = new BoundElementTemplate("div",
                 Collections.emptyList(), Collections.emptyMap(),
+                Collections.emptyList(),
                 Collections.singletonList(childTemplate));
 
         StateNode node = StateNode.create();
@@ -180,6 +182,7 @@ public class ElementTemplateTest {
 
         BoundElementTemplate rootTemplate = new BoundElementTemplate("div",
                 Collections.emptyList(), Collections.emptyMap(),
+                Collections.emptyList(),
                 Collections.singletonList(childTemplate));
 
         StateNode node = StateNode.create();
@@ -192,8 +195,10 @@ public class ElementTemplateTest {
         Element parent = new Element("div");
 
         StateNode node = StateNode.create();
-        Element child = Element.getElement(new BoundElementTemplate("span",
-                Collections.emptyList(), Collections.emptyMap()), node);
+        Element child = Element.getElement(
+                new BoundElementTemplate("span", Collections.emptyList(),
+                        Collections.emptyMap(), Collections.emptyList()),
+                node);
 
         parent.insertChild(0, child);
 
@@ -210,8 +215,10 @@ public class ElementTemplateTest {
         Element child = new Element("span");
 
         StateNode node = StateNode.create();
-        Element parent = Element.getElement(new BoundElementTemplate("div",
-                Collections.emptyList(), Collections.emptyMap()), node);
+        Element parent = Element.getElement(
+                new BoundElementTemplate("div", Collections.emptyList(),
+                        Collections.emptyMap(), Collections.emptyList()),
+                node);
 
         parent.insertChild(0, child);
 
@@ -229,6 +236,7 @@ public class ElementTemplateTest {
 
         ElementTemplate template = new BoundElementTemplate("span",
                 Collections.emptyList(), Collections.emptyMap(),
+                Collections.emptyList(),
                 Collections.singletonList(textTemplate));
 
         Element element = Element.getElement(template, StateNode.create());
@@ -250,7 +258,7 @@ public class ElementTemplateTest {
 
         ElementTemplate template = new BoundElementTemplate("span",
                 Collections.emptyList(), Collections.emptyMap(),
-                Arrays.asList(boundText, dynamicText));
+                Collections.emptyList(), Arrays.asList(boundText, dynamicText));
 
         StateNode node = StateNode.create();
         node.put("bound", "Hello ");
@@ -266,7 +274,8 @@ public class ElementTemplateTest {
         BoundElementTemplate template = new BoundElementTemplate("div",
                 Collections.singletonList(
                         new ModelAttributeBinding("class.completed", "done")),
-                Collections.singletonMap("class", "baseClass"));
+                Collections.singletonMap("class", "baseClass"),
+                Collections.emptyList());
         StateNode node = StateNode.create();
 
         Element element = Element.getElement(template, node);

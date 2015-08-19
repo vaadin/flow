@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.parser.EventBinding;
+
 public class BoundElementTemplate extends AbstractElementTemplate {
 
     private final String tag;
@@ -17,6 +19,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     private final Map<String, AttributeBinding> attributeBindings;
     private final Map<String, AttributeBinding> classPartBindings;
     private final Map<String, String> defaultAttributeValues;
+    private final Map<String, List<EventBinding>> events;
 
     private final List<BoundElementTemplate> childTemplates;
 
@@ -24,13 +27,15 @@ public class BoundElementTemplate extends AbstractElementTemplate {
 
     public BoundElementTemplate(String tag,
             Collection<AttributeBinding> attributeBindings,
-            Map<String, String> defaultAttributeValues) {
-        this(tag, attributeBindings, defaultAttributeValues, null);
+            Map<String, String> defaultAttributeValues,
+            Collection<EventBinding> events) {
+        this(tag, attributeBindings, defaultAttributeValues, events, null);
     }
 
     public BoundElementTemplate(String tag,
             Collection<AttributeBinding> attributeBindings,
             Map<String, String> defaultAttributeValues,
+            Collection<EventBinding> events,
             List<BoundElementTemplate> childTemplates) {
 
         this.attributeBindings = new HashMap<String, AttributeBinding>();
@@ -49,6 +54,9 @@ public class BoundElementTemplate extends AbstractElementTemplate {
         // .collect(Collectors.toMap(AttributeBinding::getAttributeName, v ->
         // v));
         this.defaultAttributeValues = new HashMap<>(defaultAttributeValues);
+
+        this.events = events.stream()
+                .collect(Collectors.groupingBy(EventBinding::getEventType));
 
         this.tag = tag;
 
@@ -240,6 +248,14 @@ public class BoundElementTemplate extends AbstractElementTemplate {
         } else {
             throw new IllegalStateException();
         }
+    }
+
+    public Map<String, List<EventBinding>> getEvents() {
+        return events;
+    }
+
+    public List<EventBinding> getEventBindings(String eventType) {
+        return events.get(eventType);
     }
 
 }

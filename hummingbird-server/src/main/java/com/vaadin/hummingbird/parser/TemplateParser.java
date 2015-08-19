@@ -38,6 +38,9 @@ public class TemplateParser {
     private static final Pattern forDefinitionPattern = Pattern
             .compile("#([^\\s]+)\\s+of\\s+([^\\s]+)");
 
+    private static final Pattern elementDefinitionPattern = Pattern
+            .compile("\\s*([^(\\s]+)\\(([^)]*)\\)\\s*");
+
     @FunctionalInterface
     private interface Context {
         public List<String> resolve(List<String> path);
@@ -85,6 +88,7 @@ public class TemplateParser {
         public BoundElementTemplate create(String tag,
                 Collection<AttributeBinding> attributeBindings,
                 Map<String, String> defaultAttributeValues,
+                Collection<EventBinding> events,
                 List<BoundElementTemplate> childTemplates);
     }
 
@@ -92,6 +96,8 @@ public class TemplateParser {
             Context context) {
         List<AttributeBinding> bindings = new ArrayList<>();
         Map<String, String> defaultAttributes = new HashMap<>();
+        List<EventBinding> events = new ArrayList<>();
+
         TemplateCreator creator = null;
 
         for (Attribute a : element.attributes()) {
@@ -130,11 +136,13 @@ public class TemplateParser {
                         public BoundElementTemplate create(String tag,
                                 Collection<AttributeBinding> attributeBindings,
                                 Map<String, String> defaultAttributeValues,
+                                Collection<EventBinding> events,
                                 List<BoundElementTemplate> childTemplates) {
 
                             return new ForElementTemplate(tag,
                                     attributeBindings, defaultAttributes,
-                                    listPath, innerVarName, childTemplates);
+                                    events, listPath, innerVarName,
+                                    childTemplates);
                         }
                     };
                 } else {
@@ -151,11 +159,25 @@ public class TemplateParser {
                 // Handled above
                 continue;
             } else if (name.startsWith("[")) {
-                bindings.add(new ModelAttributeBinding(
-                        name.substring(1, name.length() - 1),
+                String attibuteName = name.substring(1, name.length() - 1);
+                bindings.add(new ModelAttributeBinding(attibuteName,
                         context.getPath(value)));
             } else if (name.startsWith("(")) {
-                // Ignore event listeners for now
+                String eventName = name.substring(1, name.length() - 1);
+
+                Matcher elementMatcher = elementDefinitionPattern
+                        .matcher(value);
+                if (!elementMatcher.matches()) {
+                    throw new RuntimeException(value);
+                }
+
+                String methodName = elementMatcher.group(1);
+                String[] params = elementMatcher.group(2).split("\\s*,\\s*");
+                if (params.length == 1 && params[0].isEmpty()) {
+                    params = new String[0];
+                }
+
+                events.add(new EventBinding(eventName, methodName, params));
             } else if (name.startsWith("#")) {
                 // Ignore local ids for now
             } else {
@@ -176,7 +198,7 @@ public class TemplateParser {
         }
 
         return creator.create(element.tagName(), bindings, defaultAttributes,
-                childTemplates);
+                events, childTemplates);
     }
 
     private static class ElementTemplateCache {
