@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property;
 import com.vaadin.event.FieldEvents.BlurEvent;
 import com.vaadin.event.FieldEvents.BlurListener;
@@ -24,8 +25,8 @@ import com.vaadin.event.FieldEvents.FocusEvent;
 import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.checkbox.CheckBoxServerRpc;
-import com.vaadin.shared.ui.checkbox.CheckBoxState;
 
+@Tag("input")
 public class CheckBox extends AbstractField<Boolean> {
 
     private CheckBoxServerRpc rpc = new CheckBoxServerRpc() {
@@ -49,6 +50,7 @@ public class CheckBox extends AbstractField<Boolean> {
      * Creates a new checkbox.
      */
     public CheckBox() {
+        getElement().setAttribute("type", "checkbox");
         registerRpc(rpc);
         registerRpc(focusBlurRpc);
         setValue(Boolean.FALSE);
@@ -96,24 +98,12 @@ public class CheckBox extends AbstractField<Boolean> {
     }
 
     @Override
-    protected CheckBoxState getState() {
-        return (CheckBoxState) super.getState();
-    }
-
-    /*
-     * Overridden to keep the shared state in sync with the AbstractField
-     * internal value. Should be removed once AbstractField is refactored to use
-     * shared state.
-     *
-     * See tickets #10921 and #11064.
-     */
-    @Override
     protected void setInternalValue(Boolean newValue) {
         super.setInternalValue(newValue);
         if (newValue == null) {
             newValue = false;
         }
-        getState().checked = newValue;
+        getElement().setAttribute("checked", newValue);
     }
 
     public void addBlurListener(BlurListener listener) {
@@ -143,6 +133,17 @@ public class CheckBox extends AbstractField<Boolean> {
     public boolean isEmpty() {
         return getValue() == null || getValue().equals(Boolean.FALSE);
 
+    }
+
+    @Override
+    public void addValueChangeListener(ValueChangeListener listener) {
+        super.addValueChangeListener(listener);
+        if (!hasElementEventListener("change")) {
+            getElement().addEventData("change", "element.checked");
+            addElementEventListener("change", e -> {
+                setValue(e.getBoolean("element.checked"));
+            });
+        }
     }
 
 }
