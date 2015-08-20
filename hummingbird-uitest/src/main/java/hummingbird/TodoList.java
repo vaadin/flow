@@ -122,6 +122,15 @@ public class TodoList extends Template {
         }
         case "labelDoubleClick": {
             updateBoolean(node, true, "editing");
+            Element todoView = element.getParent();
+            Element todoLi = todoView.getParent();
+            for (int i = 0; i < todoLi.getChildCount(); i++) {
+                Element child = todoLi.getChild(i);
+                if ("input".equals(child.getTag())) {
+                    child.focus();
+                    break;
+                }
+            }
             break;
         }
         case "handleEditBlur": {
