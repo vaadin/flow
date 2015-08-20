@@ -15,7 +15,6 @@
  */
 package com.vaadin.ui.components.colorpicker;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -51,19 +50,6 @@ public class ColorPickerPopup extends Window
         implements ClickListener, ColorChangeListener, ColorSelector {
 
     private static final String STYLENAME = "v-colorpicker-popup";
-
-    private static final Method COLOR_CHANGE_METHOD;
-
-    static {
-        try {
-            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod(
-                    "colorChanged", new Class[] { ColorChangeEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in ColorPicker");
-        }
-    }
 
     /** The tabs. */
     private final TabSheet tabs = new TabSheet();

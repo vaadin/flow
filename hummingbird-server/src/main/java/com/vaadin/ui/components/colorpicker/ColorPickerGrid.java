@@ -16,7 +16,6 @@
 package com.vaadin.ui.components.colorpicker;
 
 import java.awt.Point;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,19 +33,6 @@ public class ColorPickerGrid extends AbstractComponent
         implements ColorSelector {
 
     private static final String STYLENAME = "v-colorpicker-grid";
-
-    private static final Method COLOR_CHANGE_METHOD;
-
-    static {
-        try {
-            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod(
-                    "colorChanged", new Class[] { ColorChangeEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in ColorPicker");
-        }
-    }
 
     private ColorPickerGridServerRpc rpc = new ColorPickerGridServerRpc() {
 

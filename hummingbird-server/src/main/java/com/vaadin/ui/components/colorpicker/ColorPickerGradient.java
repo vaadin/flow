@@ -15,8 +15,6 @@
  */
 package com.vaadin.ui.components.colorpicker;
 
-import java.lang.reflect.Method;
-
 import com.vaadin.shared.ui.colorpicker.Color;
 import com.vaadin.shared.ui.colorpicker.ColorPickerGradientServerRpc;
 import com.vaadin.shared.ui.colorpicker.ColorPickerGradientState;
@@ -30,19 +28,6 @@ import com.vaadin.ui.AbstractComponent;
  */
 public class ColorPickerGradient extends AbstractComponent
         implements ColorSelector {
-
-    private static final Method COLOR_CHANGE_METHOD;
-
-    static {
-        try {
-            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod(
-                    "colorChanged", new Class[] { ColorChangeEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in ColorPicker");
-        }
-    }
 
     private ColorPickerGradientServerRpc rpc = new ColorPickerGradientServerRpc() {
 

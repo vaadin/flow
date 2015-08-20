@@ -16,7 +16,6 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Iterator;
 
@@ -38,20 +37,6 @@ public class PopupView extends AbstractComponent implements HasComponents {
 
     private Content content;
     private Component visibleComponent;
-
-    private static final Method POPUP_VISIBILITY_METHOD;
-
-    static {
-        try {
-            POPUP_VISIBILITY_METHOD = PopupVisibilityListener.class
-                    .getDeclaredMethod("popupVisibilityChange",
-                            new Class[] { PopupVisibilityEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in PopupView");
-        }
-    }
 
     private final PopupViewServerRpc rpc = new PopupViewServerRpc() {
 

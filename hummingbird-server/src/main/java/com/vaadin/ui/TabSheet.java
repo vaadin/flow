@@ -17,7 +17,6 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -727,22 +726,6 @@ public class TabSheet extends AbstractComponentContainer
             copyTabMetadata(tmp, oldTab);
 
             markAsDirty();
-        }
-    }
-
-    /* Click event */
-
-    private static final Method SELECTED_TAB_CHANGE_METHOD;
-
-    static {
-        try {
-            SELECTED_TAB_CHANGE_METHOD = SelectedTabChangeListener.class
-                    .getDeclaredMethod("selectedTabChange",
-                            new Class[] { SelectedTabChangeEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in TabSheet");
         }
     }
 

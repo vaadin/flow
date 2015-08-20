@@ -16,7 +16,6 @@
 
 package com.vaadin.ui;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1055,20 +1054,6 @@ public abstract class AbstractField<T> extends AbstractComponent
     }
 
     /* Read-only status change events */
-
-    private static final Method READ_ONLY_STATUS_CHANGE_METHOD;
-
-    static {
-        try {
-            READ_ONLY_STATUS_CHANGE_METHOD = Property.ReadOnlyStatusChangeListener.class
-                    .getDeclaredMethod("readOnlyStatusChange", new Class[] {
-                            Property.ReadOnlyStatusChangeEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in AbstractField");
-        }
-    }
 
     /**
      * React to read only status changes of the property by requesting a

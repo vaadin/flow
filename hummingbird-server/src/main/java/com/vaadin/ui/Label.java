@@ -16,7 +16,6 @@
 
 package com.vaadin.ui;
 
-import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -266,22 +265,6 @@ public class Label extends AbstractComponent implements Property<String>,
         }
 
         getState().contentMode = contentMode;
-    }
-
-    /* Value change events */
-
-    private static final Method VALUE_CHANGE_METHOD;
-
-    static {
-        try {
-            VALUE_CHANGE_METHOD = Property.ValueChangeListener.class
-                    .getDeclaredMethod("valueChange",
-                            new Class[] { Property.ValueChangeEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in Label");
-        }
     }
 
     /**

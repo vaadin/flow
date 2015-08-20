@@ -16,8 +16,6 @@
 
 package com.vaadin.ui;
 
-import java.lang.reflect.Method;
-
 import com.vaadin.event.ComponentEventListener;
 import com.vaadin.event.FieldEvents.BlurNotifier;
 import com.vaadin.event.FieldEvents.FocusNotifier;
@@ -205,19 +203,6 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
     public void setPositionY(int positionY) {
         getState().positionY = positionY;
         getState().centered = false;
-    }
-
-    private static final Method WINDOW_CLOSE_METHOD;
-
-    static {
-        try {
-            WINDOW_CLOSE_METHOD = CloseListener.class.getDeclaredMethod(
-                    "windowClose", new Class[] { CloseEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error, window close method not found");
-        }
     }
 
     public static class CloseEvent extends Component.Event {

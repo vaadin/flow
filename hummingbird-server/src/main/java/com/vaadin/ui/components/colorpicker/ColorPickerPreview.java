@@ -15,8 +15,6 @@
  */
 package com.vaadin.ui.components.colorpicker;
 
-import java.lang.reflect.Method;
-
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.shared.ui.colorpicker.Color;
@@ -34,19 +32,6 @@ public class ColorPickerPreview extends CssLayout
 
     private static final String STYLE_DARK_COLOR = "v-textfield-dark";
     private static final String STYLE_LIGHT_COLOR = "v-textfield-light";
-
-    private static final Method COLOR_CHANGE_METHOD;
-
-    static {
-        try {
-            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod(
-                    "colorChanged", new Class[] { ColorChangeEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in ColorPicker");
-        }
-    }
 
     /** The color. */
     private Color color;

@@ -15,7 +15,6 @@
  */
 package com.vaadin.ui.components.colorpicker;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,19 +34,6 @@ public class ColorPickerHistory extends CustomComponent
         implements ColorSelector, ColorChangeListener {
 
     private static final String STYLENAME = "v-colorpicker-history";
-
-    private static final Method COLOR_CHANGE_METHOD;
-
-    static {
-        try {
-            COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod(
-                    "colorChanged", new Class[] { ColorChangeEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in ColorPicker");
-        }
-    }
 
     /** The rows. */
     private static final int rows = 4;
