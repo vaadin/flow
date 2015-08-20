@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2000-2014 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -19,6 +19,7 @@ package com.vaadin.tests.vaadincontext;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 
+import com.vaadin.server.BootstrapFragmentListener;
 import com.vaadin.server.BootstrapFragmentResponse;
 import com.vaadin.server.BootstrapListener;
 import com.vaadin.server.BootstrapPageResponse;
@@ -37,10 +38,42 @@ public class BootstrapModifyUI extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         Button c = new Button("Add bootstrap listener",
                 new Button.ClickListener() {
+
+                    private boolean shouldModify(BootstrapResponse response) {
+                        Class<? extends UI> uiClass = response.getUiClass();
+                        boolean shouldModify = uiClass == BootstrapModifyUI.class;
+                        return shouldModify;
+                    }
+
                     @Override
                     public void buttonClick(ClickEvent event) {
-                        getSession().addBootstrapListener(
-                                createBootstrapListener());
+                        getSession().addBootstrapFragmentListener(
+                                new BootstrapFragmentListener() {
+
+                            @Override
+                            public void modifyBootstrapFragment(
+                                    BootstrapFragmentResponse response) {
+                                if (shouldModify(response)) {
+                                    Element heading = new Element(
+                                            Tag.valueOf("div"), "").text(
+                                                    "Added by modifyBootstrapFragment");
+                                    response.getFragmentNodes().add(0, heading);
+                                }
+                            }
+
+                        });
+                        getSession()
+                                .addBootstrapListener(new BootstrapListener() {
+
+                            @Override
+                            public void modifyBootstrapPage(
+                                    BootstrapPageResponse response) {
+                                if (shouldModify(response)) {
+                                    response.getDocument().body().child(0)
+                                            .before("<div>Added by modifyBootstrapPage</div>");
+                                }
+                            }
+                        });
                         event.getButton().setEnabled(false);
                         getSession().setAttribute(INSTALLED_ATRIBUTE_NAME,
                                 Boolean.TRUE);
@@ -49,34 +82,6 @@ public class BootstrapModifyUI extends AbstractTestUI {
         addComponent(c);
         c.setEnabled(
                 getSession().getAttribute(INSTALLED_ATRIBUTE_NAME) == null);
-    }
-
-    private static BootstrapListener createBootstrapListener() {
-        return new BootstrapListener() {
-            @Override
-            public void modifyBootstrapFragment(
-                    BootstrapFragmentResponse response) {
-                if (shouldModify(response)) {
-                    Element heading = new Element(Tag.valueOf("div"), "")
-                            .text("Added by modifyBootstrapFragment");
-                    response.getFragmentNodes().add(0, heading);
-                }
-            }
-
-            private boolean shouldModify(BootstrapResponse response) {
-                Class<? extends UI> uiClass = response.getUiClass();
-                boolean shouldModify = uiClass == BootstrapModifyUI.class;
-                return shouldModify;
-            }
-
-            @Override
-            public void modifyBootstrapPage(BootstrapPageResponse response) {
-                if (shouldModify(response)) {
-                    response.getDocument().body().child(0)
-                            .before("<div>Added by modifyBootstrapPage</div>");
-                }
-            }
-        };
     }
 
     @Override

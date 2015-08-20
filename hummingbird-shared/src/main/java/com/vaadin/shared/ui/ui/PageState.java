@@ -26,10 +26,6 @@ import java.io.Serializable;
  * @since 7.1
  */
 public class PageState implements Serializable {
-    /**
-     * True if the page has browser window resize listeners.
-     */
-    public boolean hasResizeListeners = false;
 
     /**
      * Non-null if the title is set. Null means Vaadin does not touch the title.

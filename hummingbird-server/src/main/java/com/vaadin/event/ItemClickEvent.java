@@ -16,7 +16,6 @@
 package com.vaadin.event;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
@@ -78,19 +77,7 @@ public class ItemClickEvent extends ClickEvent implements Serializable {
         return propertyId;
     }
 
-    public static final Method ITEM_CLICK_METHOD;
-
-    static {
-        try {
-            ITEM_CLICK_METHOD = ItemClickListener.class.getDeclaredMethod(
-                    "itemClick", new Class[] { ItemClickEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException();
-        }
-    }
-
-    public interface ItemClickListener extends Serializable {
+    public interface ItemClickListener extends ComponentEventListener {
         public void itemClick(ItemClickEvent event);
     }
 

@@ -16,7 +16,7 @@
 
 package com.vaadin.server;
 
-import java.io.Serializable;
+import com.vaadin.event.ComponentEventListener;
 
 /**
  * A listener that gets notified when a Vaadin service session is no longer
@@ -27,7 +27,7 @@ import java.io.Serializable;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public interface SessionDestroyListener extends Serializable {
+public interface SessionDestroyListener extends ComponentEventListener {
     /**
      * Called when a Vaadin service session is no longer used.
      *

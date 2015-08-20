@@ -19,7 +19,6 @@ package com.vaadin.ui;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
 import com.vaadin.server.Scrollable;
-import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.panel.PanelServerRpc;
 import com.vaadin.shared.ui.panel.PanelState;
@@ -161,8 +160,7 @@ public class Panel extends AbstractSingleComponentContainer
      *            The listener to add
      */
     public void addClickListener(ClickListener listener) {
-        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener,
-                ClickListener.clickMethod);
+        addListener(ClickListener.class, listener);
     }
 
     /**
@@ -173,8 +171,7 @@ public class Panel extends AbstractSingleComponentContainer
      *            The listener to remove
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class,
-                listener);
+        removeListener(ClickListener.class, listener);
     }
 
     /**

@@ -8,7 +8,7 @@ import com.vaadin.tests.server.component.AbstractListenerMethodsTestBase;
 public class AbstractInMemoryContainerListenersTest
         extends AbstractListenerMethodsTestBase {
     public void testItemSetChangeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(IndexedContainer.class,
+        testNonEventSourceListenerAddGetRemove(IndexedContainer.class,
                 ItemSetChangeEvent.class, ItemSetChangeListener.class);
     }
 }

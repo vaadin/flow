@@ -17,14 +17,13 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
+import java.util.EventListener;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.button.ButtonServerRpc;
 import com.vaadin.shared.ui.button.ButtonState;
-import com.vaadin.util.ReflectTools;
 
 /**
  * A generic button component.
@@ -280,11 +279,7 @@ public class Button extends AbstractFocusable {
      * @author Vaadin Ltd.
      * @since 3.0
      */
-    public interface ClickListener extends Serializable {
-
-        public static final Method BUTTON_CLICK_METHOD = ReflectTools
-                .findMethod(ClickListener.class, "buttonClick",
-                        ClickEvent.class);
+    public interface ClickListener extends EventListener, Serializable {
 
         /**
          * Called when a {@link Button} has been clicked. A reference to the
@@ -294,7 +289,6 @@ public class Button extends AbstractFocusable {
          *            An event containing information about the click.
          */
         public void buttonClick(ClickEvent event);
-
     }
 
     /**
@@ -304,18 +298,14 @@ public class Button extends AbstractFocusable {
      *            the Listener to be added.
      */
     public void addClickListener(ClickListener listener) {
-
-        addListener(ClickEvent.class, listener,
-                ClickListener.BUTTON_CLICK_METHOD);
-
-        if (!hasElementEventListener("click")) {
+        if (!hasListeners(ClickListener.class)) {
             getElement().addEventData("click",
                     MouseEventDetails.getEventProperties());
             getElement().addEventListener("click", e -> {
                 fireClick(new MouseEventDetails(e));
             });
         }
-
+        addListener(ClickListener.class, listener);
     }
 
     /**
@@ -325,8 +315,7 @@ public class Button extends AbstractFocusable {
      *            the Listener to be removed.
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(ClickEvent.class, listener,
-                ClickListener.BUTTON_CLICK_METHOD);
+        removeListener(ClickListener.class, listener);
     }
 
     /**

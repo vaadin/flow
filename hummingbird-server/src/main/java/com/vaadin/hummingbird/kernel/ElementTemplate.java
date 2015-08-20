@@ -31,7 +31,10 @@ public interface ElementTemplate {
     public void addEventListener(String type, EventListener listener,
             StateNode node);
 
-    public void removeListener(String type, EventListener listener,
+    public void removeEventListener(String type, EventListener listener,
+            StateNode node);
+
+    public Collection<EventListener> getEventListeners(String eventType,
             StateNode node);
 
     public void setComponent(Component c, StateNode node);

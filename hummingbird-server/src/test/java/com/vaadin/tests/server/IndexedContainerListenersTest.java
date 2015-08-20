@@ -10,12 +10,12 @@ import com.vaadin.tests.server.component.AbstractListenerMethodsTestBase;
 public class IndexedContainerListenersTest
         extends AbstractListenerMethodsTestBase {
     public void testValueChangeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(IndexedContainer.class, ValueChangeEvent.class,
-                ValueChangeListener.class);
+        testNonEventSourceListenerAddGetRemove(IndexedContainer.class,
+                ValueChangeEvent.class, ValueChangeListener.class);
     }
 
     public void testPropertySetChangeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(IndexedContainer.class,
+        testNonEventSourceListenerAddGetRemove(IndexedContainer.class,
                 PropertySetChangeEvent.class, PropertySetChangeListener.class);
     }
 }

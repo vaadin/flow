@@ -17,7 +17,6 @@ package com.vaadin.ui.components.colorpicker;
 
 import com.vaadin.shared.ui.colorpicker.Color;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Component.Event;
 
 /**
  * The color changed event which is passed to the listeners when a color change
@@ -25,7 +24,7 @@ import com.vaadin.ui.Component.Event;
  *
  * @since 7.0.0
  */
-public class ColorChangeEvent extends Event {
+public class ColorChangeEvent extends Component.Event {
     private final Color color;
 
     public ColorChangeEvent(Component source, Color color) {

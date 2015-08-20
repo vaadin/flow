@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventListener;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1341,25 +1342,25 @@ public abstract class AbstractSelect extends AbstractField<Object>implements
     }
 
     @Override
-    public Collection<?> getListeners(Class<?> eventType) {
-        if (Container.ItemSetChangeEvent.class.isAssignableFrom(eventType)) {
+    public <T extends EventListener> Collection<T> getListeners(
+            Class<T> listenerType) {
+        if (listenerType == Container.ItemSetChangeListener.class) {
             if (itemSetEventListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return Collections
+                return (Collection<T>) Collections
                         .unmodifiableCollection(itemSetEventListeners);
             }
-        } else if (Container.PropertySetChangeEvent.class
-                .isAssignableFrom(eventType)) {
+        } else if (listenerType == Container.PropertySetChangeListener.class) {
             if (propertySetEventListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return Collections
+                return (Collection<T>) Collections
                         .unmodifiableCollection(propertySetEventListeners);
             }
         }
 
-        return super.getListeners(eventType);
+        return super.getListeners(listenerType);
     }
 
     /**

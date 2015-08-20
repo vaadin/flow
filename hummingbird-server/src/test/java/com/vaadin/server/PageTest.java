@@ -21,9 +21,9 @@ import org.junit.Test;
 
 import com.vaadin.shared.ui.ui.PageState;
 import com.vaadin.ui.Page;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.Page.BrowserWindowResizeEvent;
 import com.vaadin.ui.Page.BrowserWindowResizeListener;
+import com.vaadin.ui.UI;
 
 /**
  *
@@ -46,20 +46,6 @@ public class PageTest {
 
         Assert.assertFalse("Listener is called after removal",
                 listener.isCalled());
-    }
-
-    @Test
-    public void removeBrowserWindowResizeListener_listenerIsNotAttached_stateIsUpdated() {
-        TestPage page = new TestPage(EasyMock.createMock(UI.class),
-                EasyMock.createMock(PageState.class));
-
-        BrowserWindowResizeListener listener = EasyMock
-                .createMock(BrowserWindowResizeListener.class);
-        page.removeBrowserWindowResizeListener(listener);
-
-        Assert.assertFalse(
-                "Page state 'hasResizeListeners' property has wrong value",
-                page.getState(false).hasResizeListeners);
     }
 
     private static class TestPage extends Page {

@@ -17,18 +17,15 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Iterator;
 
 import com.vaadin.event.ComponentEventListener;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.server.Sizeable;
-import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.splitpanel.AbstractSplitPanelRpc;
 import com.vaadin.shared.ui.splitpanel.AbstractSplitPanelState;
 import com.vaadin.shared.ui.splitpanel.AbstractSplitPanelState.SplitterState;
-import com.vaadin.util.ReflectTools;
 
 /**
  * AbstractSplitPanel.
@@ -497,10 +494,6 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      */
     public interface SplitterClickListener extends ComponentEventListener {
 
-        public static final Method clickMethod = ReflectTools.findMethod(
-                SplitterClickListener.class, "splitterClick",
-                SplitterClickEvent.class);
-
         /**
          * SplitPanel splitter has been clicked
          *
@@ -527,10 +520,6 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      */
     public interface SplitPositionChangeListener
             extends ComponentEventListener {
-
-        public static final Method moveMethod = ReflectTools.findMethod(
-                SplitPositionChangeListener.class, "onSplitPositionChanged",
-                SplitPositionChangeEvent.class);
 
         /**
          * SplitPanel splitter position has been changed.
@@ -569,13 +558,11 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
     }
 
     public void addSplitterClickListener(SplitterClickListener listener) {
-        addListener(EventId.CLICK_EVENT_IDENTIFIER, SplitterClickEvent.class,
-                listener, SplitterClickListener.clickMethod);
+        addListener(SplitterClickListener.class, listener);
     }
 
     public void removeSplitterClickListener(SplitterClickListener listener) {
-        removeListener(EventId.CLICK_EVENT_IDENTIFIER, SplitterClickEvent.class,
-                listener);
+        removeListener(SplitterClickListener.class, listener);
     }
 
     /**
@@ -587,8 +574,7 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      */
     public void addSplitPositionChangeListener(
             SplitPositionChangeListener listener) {
-        addListener(SplitPositionChangeEvent.class, listener,
-                SplitPositionChangeListener.moveMethod);
+        addListener(SplitPositionChangeListener.class, listener);
     }
 
     /**
@@ -600,7 +586,7 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      */
     public void removeSplitPositionChangeListener(
             SplitPositionChangeListener listener) {
-        removeListener(SplitPositionChangeEvent.class, listener);
+        removeListener(SplitPositionChangeListener.class, listener);
     }
 
     @Override

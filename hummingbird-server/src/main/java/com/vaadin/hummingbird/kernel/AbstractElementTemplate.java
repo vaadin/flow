@@ -119,7 +119,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     }
 
     @Override
-    public void removeListener(String type, EventListener listener,
+    public void removeEventListener(String type, EventListener listener,
             StateNode node) {
         StateNode listenerNode = getListenerNode(node, false);
         if (listenerNode == null) {
@@ -143,6 +143,22 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
                 }
             }
         }
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Collection<EventListener> getEventListeners(String type,
+            StateNode node) {
+        StateNode listenerNode = getListenerNode(node, false);
+        if (listenerNode == null) {
+            return Collections.emptyList();
+        }
+        if (!listenerNode.containsKey(type)) {
+            return Collections.emptyList();
+        }
+
+        List<Object> listeners = listenerNode.getMultiValued(type);
+        return (Collection) Collections.unmodifiableList(listeners);
     }
 
     @Override

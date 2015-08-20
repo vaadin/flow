@@ -16,12 +16,11 @@
 package com.vaadin.ui;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.vaadin.event.ComponentEventListener;
 import com.vaadin.server.ConnectorResource;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.VaadinRequest;
@@ -211,7 +210,7 @@ public class LoginForm extends CustomComponent {
      * Login listener is a class capable to listen LoginEvents sent from
      * LoginBox
      */
-    public interface LoginListener extends Serializable {
+    public interface LoginListener extends ComponentEventListener {
         /**
          * This method is fired on each login form post.
          *
@@ -220,21 +219,8 @@ public class LoginForm extends CustomComponent {
         public void onLogin(LoginForm.LoginEvent event);
     }
 
-    private static final Method ON_LOGIN_METHOD;
-
     private static final String UNDEFINED_HEIGHT = "140px";
     private static final String UNDEFINED_WIDTH = "200px";
-
-    static {
-        try {
-            ON_LOGIN_METHOD = LoginListener.class.getDeclaredMethod("onLogin",
-                    new Class[] { LoginEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in LoginForm");
-        }
-    }
 
     /**
      * Adds LoginListener to handle login logic
@@ -242,7 +228,7 @@ public class LoginForm extends CustomComponent {
      * @param listener
      */
     public void addLoginListener(LoginListener listener) {
-        addListener(LoginEvent.class, listener, ON_LOGIN_METHOD);
+        addListener(LoginListener.class, listener);
     }
 
     /**
@@ -251,7 +237,7 @@ public class LoginForm extends CustomComponent {
      * @param listener
      */
     public void removeLoginListener(LoginListener listener) {
-        removeListener(LoginEvent.class, listener, ON_LOGIN_METHOD);
+        removeListener(LoginListener.class, listener);
     }
 
     @Override

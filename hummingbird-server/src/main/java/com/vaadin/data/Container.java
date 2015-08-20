@@ -18,6 +18,7 @@ package com.vaadin.data;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.EventListener;
 import java.util.List;
 
 import com.vaadin.data.util.filter.SimpleStringFilter;
@@ -1082,7 +1083,7 @@ public interface Container extends Serializable {
      * An item set change refers to addition, removal or reordering of items in
      * the container. A simple property value change is not an item set change.
      */
-    public interface ItemSetChangeListener extends Serializable {
+    public interface ItemSetChangeListener extends EventListener, Serializable {
 
         /**
          * Lets the listener know a Containers visible (filtered and/or sorted,
@@ -1145,7 +1146,8 @@ public interface Container extends Serializable {
      * items in the container and their property values are not property set
      * changes.
      */
-    public interface PropertySetChangeEvent extends Serializable {
+    public interface PropertySetChangeEvent
+            extends EventListener, Serializable {
 
         /**
          * Retrieves the Container whose contents have been modified.
@@ -1164,7 +1166,8 @@ public interface Container extends Serializable {
      * concerning the set of items in the container and their property values
      * are not property set changes.
      */
-    public interface PropertySetChangeListener extends Serializable {
+    public interface PropertySetChangeListener
+            extends EventListener, Serializable {
 
         /**
          * Notifies this listener that the set of property IDs supported by the

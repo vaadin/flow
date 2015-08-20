@@ -17,24 +17,25 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.EventListener;
 import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.event.EventRouter;
+import com.vaadin.event.EventSource;
 import com.vaadin.server.Constants;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.WebBrowser;
 import com.vaadin.shared.ui.ui.PageClientRpc;
 import com.vaadin.shared.ui.ui.PageState;
 import com.vaadin.shared.ui.ui.UIState;
-import com.vaadin.util.ReflectTools;
 
-public class Page implements Serializable {
+public class Page implements Serializable, EventSource {
 
     /**
      * Listener that gets notified when the size of the browser window
@@ -42,7 +43,8 @@ public class Page implements Serializable {
      *
      * @see UI#addListener(BrowserWindowResizeListener)
      */
-    public interface BrowserWindowResizeListener extends Serializable {
+    public interface BrowserWindowResizeListener
+            extends EventListener, Serializable {
         /**
          * Invoked when the browser window containing a UI has been resized.
          *
@@ -100,17 +102,14 @@ public class Page implements Serializable {
         }
     }
 
-    private static final Method BROWSER_RESIZE_METHOD = ReflectTools.findMethod(
-            BrowserWindowResizeListener.class, "browserWindowResized",
-            BrowserWindowResizeEvent.class);
-
     /**
      * Listener that that gets notified when the URI fragment of the page
      * changes.
      *
      * @see Page#addUriFragmentChangedListener(UriFragmentChangedListener)
      */
-    public interface UriFragmentChangedListener extends Serializable {
+    public interface UriFragmentChangedListener
+            extends EventListener, Serializable {
         /**
          * Event handler method invoked when the URI fragment of the page
          * changes. Please note that the initial URI fragment has already been
@@ -124,10 +123,6 @@ public class Page implements Serializable {
          */
         public void uriFragmentChanged(UriFragmentChangedEvent event);
     }
-
-    private static final Method URI_FRAGMENT_CHANGED_METHOD = ReflectTools
-            .findMethod(Page.UriFragmentChangedListener.class,
-                    "uriFragmentChanged", UriFragmentChangedEvent.class);
 
     /**
      * A list of notifications that are waiting to be sent to the client.
@@ -202,18 +197,39 @@ public class Page implements Serializable {
         this.state = state;
     }
 
-    private void addListener(Class<?> eventType, Object target, Method method) {
-        if (!hasEventRouter()) {
+    @Override
+    public <T extends EventListener> void addListener(Class<T> listenerType,
+            T listener) {
+        if (eventRouter == null) {
             eventRouter = new EventRouter();
         }
-        eventRouter.addListener(eventType, target, method);
+        eventRouter.addListener(listenerType, listener);
     }
 
-    private void removeListener(Class<?> eventType, Object target,
-            Method method) {
-        if (hasEventRouter()) {
-            eventRouter.removeListener(eventType, target, method);
+    @Override
+    public <T extends EventListener> void removeListener(Class<T> listenerType,
+            T listener) {
+        if (eventRouter == null) {
+            return;
         }
+        eventRouter.removeListener(listenerType, listener);
+    }
+
+    @Override
+    public boolean hasListeners(Class<? extends EventListener> listenerType) {
+        if (eventRouter == null) {
+            return false;
+        }
+        return eventRouter.hasListeners(listenerType);
+    }
+
+    @Override
+    public <T extends EventListener> java.util.Collection<T> getListeners(
+            Class<T> listenerType) {
+        if (eventRouter == null) {
+            return Collections.emptyList();
+        }
+        return eventRouter.getListeners(listenerType);
     }
 
     /**
@@ -231,8 +247,7 @@ public class Page implements Serializable {
      */
     public void addUriFragmentChangedListener(
             Page.UriFragmentChangedListener listener) {
-        addListener(UriFragmentChangedEvent.class, listener,
-                URI_FRAGMENT_CHANGED_METHOD);
+        addListener(UriFragmentChangedListener.class, listener);
     }
 
     /**
@@ -245,8 +260,7 @@ public class Page implements Serializable {
      */
     public void removeUriFragmentChangedListener(
             Page.UriFragmentChangedListener listener) {
-        removeListener(UriFragmentChangedEvent.class, listener,
-                URI_FRAGMENT_CHANGED_METHOD);
+        removeListener(UriFragmentChangedListener.class, listener);
     }
 
     /**
@@ -298,8 +312,9 @@ public class Page implements Serializable {
         uI.markAsDirty();
     }
 
-    private void fireEvent(EventObject event) {
-        if (hasEventRouter()) {
+    @Override
+    public void fireEvent(EventObject event) {
+        if (eventRouter != null) {
             eventRouter.fireEvent(event);
         }
     }
@@ -433,10 +448,8 @@ public class Page implements Serializable {
      * @see UI#setResizeLazy(boolean)
      */
     public void addBrowserWindowResizeListener(
-            BrowserWindowResizeListener resizeListener) {
-        addListener(BrowserWindowResizeEvent.class, resizeListener,
-                BROWSER_RESIZE_METHOD);
-        getState(true).hasResizeListeners = true;
+            BrowserWindowResizeListener listener) {
+        addListener(BrowserWindowResizeListener.class, listener);
     }
 
     /**
@@ -447,11 +460,8 @@ public class Page implements Serializable {
      *            the listener to remove
      */
     public void removeBrowserWindowResizeListener(
-            BrowserWindowResizeListener resizeListener) {
-        removeListener(BrowserWindowResizeEvent.class, resizeListener,
-                BROWSER_RESIZE_METHOD);
-        getState(true).hasResizeListeners = hasEventRouter()
-                && eventRouter.hasListeners(BrowserWindowResizeEvent.class);
+            BrowserWindowResizeListener listener) {
+        removeListener(BrowserWindowResizeListener.class, listener);
     }
 
     /**
@@ -668,7 +678,4 @@ public class Page implements Serializable {
         return state;
     }
 
-    private boolean hasEventRouter() {
-        return eventRouter != null;
-    }
 }

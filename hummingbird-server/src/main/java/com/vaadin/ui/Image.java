@@ -18,7 +18,6 @@ package com.vaadin.ui;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
 import com.vaadin.server.Resource;
-import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.image.ImageServerRpc;
 import com.vaadin.shared.ui.image.ImageState;
@@ -86,8 +85,7 @@ public class Image extends AbstractEmbedded {
      *            The listener to add
      */
     public void addClickListener(ClickListener listener) {
-        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener,
-                ClickListener.clickMethod);
+        addListener(ClickListener.class, listener);
     }
 
     /**
@@ -98,7 +96,6 @@ public class Image extends AbstractEmbedded {
      *            The listener to remove
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class,
-                listener);
+        removeListener(ClickListener.class, listener);
     }
 }

@@ -18,6 +18,7 @@ package com.vaadin.data.util;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventListener;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -238,8 +239,9 @@ public class PropertysetItem
         }
     }
 
-    public Collection<?> getListeners(Class<?> eventType) {
-        if (Item.PropertySetChangeEvent.class.isAssignableFrom(eventType)) {
+    public Collection<?> getListeners(
+            Class<? extends EventListener> listenerType) {
+        if (listenerType == Item.PropertySetChangeListener.class) {
             if (propertySetChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {

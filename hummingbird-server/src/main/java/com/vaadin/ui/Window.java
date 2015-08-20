@@ -16,14 +16,10 @@
 
 package com.vaadin.ui;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import com.vaadin.event.FieldEvents.BlurEvent;
-import com.vaadin.event.FieldEvents.BlurListener;
+import com.vaadin.event.ComponentEventListener;
 import com.vaadin.event.FieldEvents.BlurNotifier;
-import com.vaadin.event.FieldEvents.FocusEvent;
-import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.event.FieldEvents.FocusNotifier;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.shared.Connector;
@@ -32,7 +28,6 @@ import com.vaadin.shared.ui.window.WindowMode;
 import com.vaadin.shared.ui.window.WindowRole;
 import com.vaadin.shared.ui.window.WindowServerRpc;
 import com.vaadin.shared.ui.window.WindowState;
-import com.vaadin.util.ReflectTools;
 
 /**
  * A component that represents a floating popup window that can be added to a
@@ -256,7 +251,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      * fires the CloseListener.
      * </p>
      */
-    public interface CloseListener extends Serializable {
+    public interface CloseListener extends ComponentEventListener {
         /**
          * Called when the user closes a window. Use
          * {@link CloseEvent#getWindow()} to get a reference to the
@@ -289,7 +284,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      *            the CloseListener to add.
      */
     public void addCloseListener(CloseListener listener) {
-        addListener(CloseEvent.class, listener, WINDOW_CLOSE_METHOD);
+        addListener(CloseListener.class, listener);
     }
 
     /**
@@ -303,7 +298,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      *            the CloseListener to remove.
      */
     public void removeCloseListener(CloseListener listener) {
-        removeListener(CloseEvent.class, listener, WINDOW_CLOSE_METHOD);
+        removeListener(CloseListener.class, listener);
     }
 
     protected void fireClose() {
@@ -356,11 +351,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      * will be called whenever the window is maximized (
      * {@link WindowMode#MAXIMIZED}) or restored ({@link WindowMode#NORMAL} ).
      */
-    public interface WindowModeChangeListener extends Serializable {
-
-        public static final Method windowModeChangeMethod = ReflectTools
-                .findMethod(WindowModeChangeListener.class, "windowModeChanged",
-                        WindowModeChangeEvent.class);
+    public interface WindowModeChangeListener extends ComponentEventListener {
 
         /**
          * Called when the user maximizes / restores a window. Use
@@ -386,8 +377,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      *            the WindowModeChangeListener to add.
      */
     public void addWindowModeChangeListener(WindowModeChangeListener listener) {
-        addListener(WindowModeChangeEvent.class, listener,
-                WindowModeChangeListener.windowModeChangeMethod);
+        addListener(WindowModeChangeListener.class, listener);
     }
 
     /**
@@ -398,29 +388,12 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      */
     public void removeWindowModeChangeListener(
             WindowModeChangeListener listener) {
-        removeListener(WindowModeChangeEvent.class, listener,
-                WindowModeChangeListener.windowModeChangeMethod);
+        removeListener(WindowModeChangeListener.class, listener);
     }
 
     protected void fireWindowWindowModeChange() {
         fireEvent(
                 new Window.WindowModeChangeEvent(this, getState().windowMode));
-    }
-
-    /**
-     * Method for the resize event.
-     */
-    private static final Method WINDOW_RESIZE_METHOD;
-
-    static {
-        try {
-            WINDOW_RESIZE_METHOD = ResizeListener.class.getDeclaredMethod(
-                    "windowResized", new Class[] { ResizeEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error, window resized method not found");
-        }
     }
 
     /**
@@ -453,7 +426,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      *
      * @see com.vaadin.ui.Window.ResizeEvent
      */
-    public interface ResizeListener extends Serializable {
+    public interface ResizeListener extends ComponentEventListener {
         public void windowResized(ResizeEvent e);
     }
 
@@ -463,7 +436,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      * @param listener
      */
     public void addResizeListener(ResizeListener listener) {
-        addListener(ResizeEvent.class, listener, WINDOW_RESIZE_METHOD);
+        addListener(ResizeListener.class, listener);
     }
 
     /**
@@ -472,7 +445,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      * @param listener
      */
     public void removeResizeListener(ResizeListener listener) {
-        removeListener(ResizeEvent.class, listener);
+        removeListener(ResizeListener.class, listener);
     }
 
     /**
@@ -679,42 +652,6 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
             getState().windowMode = windowMode;
             fireWindowWindowModeChange();
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.vaadin.event.FieldEvents.FocusNotifier#addFocusListener(com.vaadin
-     * .event.FieldEvents.FocusListener)
-     */
-    @Override
-    public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
-                FocusListener.focusMethod);
-    }
-
-    @Override
-    public void removeFocusListener(FocusListener listener) {
-        removeListener(FocusEvent.EVENT_ID, FocusEvent.class, listener);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.vaadin.event.FieldEvents.BlurNotifier#addBlurListener(com.vaadin.
-     * event.FieldEvents.BlurListener)
-     */
-    @Override
-    public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
-                BlurListener.blurMethod);
-    }
-
-    @Override
-    public void removeBlurListener(BlurListener listener) {
-        removeListener(BlurEvent.EVENT_ID, BlurEvent.class, listener);
     }
 
     /**

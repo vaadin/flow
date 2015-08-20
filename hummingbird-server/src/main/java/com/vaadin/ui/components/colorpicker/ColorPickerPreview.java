@@ -115,12 +115,12 @@ public class ColorPickerPreview extends CssLayout
 
     @Override
     public void addColorChangeListener(ColorChangeListener listener) {
-        addListener(ColorChangeEvent.class, listener, COLOR_CHANGE_METHOD);
+        addListener(ColorChangeListener.class, listener);
     }
 
     @Override
     public void removeColorChangeListener(ColorChangeListener listener) {
-        removeListener(ColorChangeEvent.class, listener);
+        removeListener(ColorChangeListener.class, listener);
     }
 
     @Override

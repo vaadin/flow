@@ -154,7 +154,7 @@ public class UIConnector extends AbstractHasComponentsConnector {
                 getRpcProxy(UIServerRpc.class).resize(event.getHeight(),
                         event.getWidth(), Window.getClientWidth(),
                         Window.getClientHeight());
-                if (getState().immediate || getPageState().hasResizeListeners) {
+                if (getState().immediate) {
                     getConnection().getServerRpcQueue().flush();
                 }
             }

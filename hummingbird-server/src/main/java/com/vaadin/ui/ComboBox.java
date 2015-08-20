@@ -25,10 +25,6 @@ import java.util.List;
 import com.vaadin.data.Container;
 import com.vaadin.data.util.filter.SimpleStringFilter;
 import com.vaadin.event.FieldEvents;
-import com.vaadin.event.FieldEvents.BlurEvent;
-import com.vaadin.event.FieldEvents.BlurListener;
-import com.vaadin.event.FieldEvents.FocusEvent;
-import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.shared.ui.combobox.FilteringMode;
 
 /**
@@ -499,28 +495,6 @@ public class ComboBox extends AbstractSelect
     @Override
     public FilteringMode getFilteringMode() {
         return filteringMode;
-    }
-
-    @Override
-    public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
-                BlurListener.blurMethod);
-    }
-
-    @Override
-    public void removeBlurListener(BlurListener listener) {
-        removeListener(BlurEvent.EVENT_ID, BlurEvent.class, listener);
-    }
-
-    @Override
-    public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
-                FocusListener.focusMethod);
-    }
-
-    @Override
-    public void removeFocusListener(FocusListener listener) {
-        removeListener(FocusEvent.EVENT_ID, FocusEvent.class, listener);
     }
 
     /**

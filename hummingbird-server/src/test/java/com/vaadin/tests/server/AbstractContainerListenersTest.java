@@ -11,12 +11,12 @@ public class AbstractContainerListenersTest
         extends AbstractListenerMethodsTestBase {
 
     public void testItemSetChangeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(IndexedContainer.class,
+        testNonEventSourceListenerAddGetRemove(IndexedContainer.class,
                 ItemSetChangeEvent.class, ItemSetChangeListener.class);
     }
 
     public void testPropertySetChangeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(IndexedContainer.class,
+        testNonEventSourceListenerAddGetRemove(IndexedContainer.class,
                 PropertySetChangeEvent.class, PropertySetChangeListener.class);
     }
 }

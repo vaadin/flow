@@ -83,38 +83,6 @@ public interface Field<T> extends Component, BufferedValidatable, Property<T>,
     public String getRequiredError();
 
     /**
-     * An <code>Event</code> object specifying the Field whose value has been
-     * changed.
-     *
-     * @author Vaadin Ltd.
-     * @since 3.0
-     */
-    @SuppressWarnings("serial")
-    public static class ValueChangeEvent extends Component.Event
-            implements Property.ValueChangeEvent {
-
-        /**
-         * Constructs a new event object with the specified source field object.
-         *
-         * @param source
-         *            the field that caused the event.
-         */
-        public ValueChangeEvent(Field source) {
-            super(source);
-        }
-
-        /**
-         * Gets the Property which triggered the event.
-         *
-         * @return the Source Property of the event.
-         */
-        @Override
-        public Property getProperty() {
-            return (Property) getSource();
-        }
-    }
-
-    /**
      * Is the field empty?
      *
      * In general, "empty" state is same as null. As an exception, TextField

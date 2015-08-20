@@ -16,7 +16,7 @@
 
 package com.vaadin.server;
 
-import java.io.Serializable;
+import com.vaadin.event.ComponentEventListener;
 
 /**
  * Listener that gets notified when the {@link VaadinService} to which it has
@@ -28,7 +28,7 @@ import java.io.Serializable;
  * @since 7.2
  * @author Vaadin Ltd
  */
-public interface ServiceDestroyListener extends Serializable {
+public interface ServiceDestroyListener extends ComponentEventListener {
     /**
      * Invoked when a service is destroyed
      *

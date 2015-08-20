@@ -31,7 +31,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import com.vaadin.event.MethodEventSource;
+import com.vaadin.event.EventSource;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.ClientMethodInvocation;
 import com.vaadin.server.ConnectorResource;
@@ -58,7 +58,7 @@ import elemental.json.JsonObject;
  * @since 7.0.0
  */
 public abstract class AbstractClientConnector
-        implements ClientConnector, MethodEventSource {
+        implements ClientConnector, EventSource {
     /**
      * A map from client to server RPC interface class name to the RPC call
      * manager that handles incoming RPC calls for that interface.

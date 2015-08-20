@@ -16,11 +16,9 @@
 package com.vaadin.event;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
-import com.vaadin.util.ReflectTools;
 
 /**
  * A class that contains events, listeners and handlers specific to the
@@ -38,9 +36,7 @@ public interface UIEvents {
      * @since 7.2
      * @author Vaadin Ltd
      */
-    public interface PollListener extends Serializable {
-        public static final Method POLL_METHOD = ReflectTools
-                .findMethod(PollListener.class, "poll", PollEvent.class);
+    public interface PollListener extends ComponentEventListener {
 
         /**
          * A poll request has been received by the server.

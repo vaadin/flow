@@ -17,16 +17,16 @@
 package com.vaadin.event;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 
-import com.vaadin.shared.EventId;
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.hummingbird.kernel.EventListener;
 import com.vaadin.shared.communication.FieldRpc.FocusAndBlurServerRpc;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Component.Event;
 import com.vaadin.ui.Field;
-import com.vaadin.ui.Field.ValueChangeEvent;
 import com.vaadin.ui.TextField;
-import com.vaadin.util.ReflectTools;
+
+import elemental.json.JsonObject;
 
 /**
  * Interface that serves as a wrapper for {@link Field} related events.
@@ -50,7 +50,7 @@ public interface FieldEvents {
      * @see FocusListener
      * @see FocusEvent
      */
-    public interface FocusNotifier extends Serializable {
+    public interface FocusNotifier extends Component, EventSource {
         /**
          * Adds a <code>FocusListener</code> to the Component which gets fired
          * when a <code>Field</code> receives keyboard focus.
@@ -59,7 +59,20 @@ public interface FieldEvents {
          * @see FocusListener
          * @since 6.2
          */
-        public void addFocusListener(FocusListener listener);
+        default public void addFocusListener(FocusListener listener) {
+            if (!hasListeners(FocusListener.class)) {
+                getElement().addEventListener("focus", new DOMFocusListener() {
+                    @Override
+                    public void handleEvent(JsonObject eventData) {
+                        fireEvent(new FocusEvent(FocusNotifier.this));
+                    }
+                });
+            }
+            addListener(FocusListener.class, listener);
+        }
+
+        public interface DOMFocusListener extends EventListener {
+        }
 
         /**
          * Removes a <code>FocusListener</code> from the Component.
@@ -68,7 +81,19 @@ public interface FieldEvents {
          * @see FocusListener
          * @since 6.2
          */
-        public void removeFocusListener(FocusListener listener);
+        default public void removeFocusListener(FocusListener listener) {
+            removeListener(FocusListener.class, listener);
+
+            if (!hasListeners(FocusListener.class)) {
+                for (EventListener l : getElement()
+                        .getEventListeners("focus")) {
+                    if (l instanceof DOMFocusListener) {
+                        getElement().removeEventListener("focus", l);
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -88,7 +113,7 @@ public interface FieldEvents {
      * @see BlurListener
      * @see BlurEvent
      */
-    public interface BlurNotifier extends Serializable {
+    public interface BlurNotifier extends Component, EventSource {
         /**
          * Adds a <code>BlurListener</code> to the Component which gets fired
          * when a <code>Field</code> loses keyboard focus.
@@ -97,7 +122,17 @@ public interface FieldEvents {
          * @see BlurListener
          * @since 6.2
          */
-        public void addBlurListener(BlurListener listener);
+        default public void addBlurListener(BlurListener listener) {
+            if (!hasListeners(BlurListener.class)) {
+                getElement().addEventListener("blur", new DOMBlurListener() {
+                    @Override
+                    public void handleEvent(JsonObject eventData) {
+                        fireEvent(new BlurEvent(BlurNotifier.this));
+                    }
+                });
+            }
+            addListener(BlurListener.class, listener);
+        }
 
         /**
          * Removes a <code>BlurListener</code> from the Component.
@@ -106,7 +141,22 @@ public interface FieldEvents {
          * @see BlurListener
          * @since 6.2
          */
-        public void removeBlurListener(BlurListener listener);
+        default public void removeBlurListener(BlurListener listener) {
+            removeListener(BlurListener.class, listener);
+
+            if (!hasListeners(BlurListener.class)) {
+                for (EventListener l : getElement().getEventListeners("blur")) {
+                    if (l instanceof DOMBlurListener) {
+                        getElement().removeEventListener("blur", l);
+                        return;
+                    }
+                }
+            }
+        }
+
+        public interface DOMBlurListener extends EventListener {
+        }
+
     }
 
     /**
@@ -117,11 +167,6 @@ public interface FieldEvents {
      */
     @SuppressWarnings("serial")
     public static class FocusEvent extends Component.Event {
-
-        /**
-         * Identifier for event that can be used in {@link EventRouter}
-         */
-        public static final String EVENT_ID = EventId.FOCUS;
 
         public FocusEvent(Component source) {
             super(source);
@@ -136,9 +181,6 @@ public interface FieldEvents {
      * @since 6.2
      */
     public interface FocusListener extends ComponentEventListener {
-
-        public static final Method focusMethod = ReflectTools
-                .findMethod(FocusListener.class, "focus", FocusEvent.class);
 
         /**
          * Component has been focused
@@ -161,8 +203,6 @@ public interface FieldEvents {
         /**
          * Identifier for event that can be used in {@link EventRouter}
          */
-        public static final String EVENT_ID = EventId.BLUR;
-
         public BlurEvent(Component source) {
             super(source);
         }
@@ -176,9 +216,6 @@ public interface FieldEvents {
      * @since 6.2
      */
     public interface BlurListener extends ComponentEventListener {
-
-        public static final Method blurMethod = ReflectTools
-                .findMethod(BlurListener.class, "blur", BlurEvent.class);
 
         /**
          * Component has been blurred
@@ -238,10 +275,6 @@ public interface FieldEvents {
      * @since 6.5
      */
     public interface TextChangeListener extends ComponentEventListener {
-
-        public static String EVENT_ID = "ie";
-        public static Method EVENT_METHOD = ReflectTools.findMethod(
-                TextChangeListener.class, "textChange", TextChangeEvent.class);
 
         /**
          * This method is called repeatedly while the text is edited by a user.

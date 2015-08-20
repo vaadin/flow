@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -466,32 +465,6 @@ public class IndexedContainer
 
     }
 
-    /**
-     * An <code>event</code> object specifying the Property in a list whose
-     * value has changed.
-     *
-     * @author Vaadin Ltd.
-     * @since 3.0
-     */
-    private static class PropertyValueChangeEvent extends EventObject
-            implements Property.ValueChangeEvent, Serializable {
-
-        private PropertyValueChangeEvent(Property source) {
-            super(source);
-        }
-
-        /*
-         * (non-Javadoc)
-         *
-         * @see com.vaadin.data.Property.ValueChangeEvent#getProperty()
-         */
-        @Override
-        public Property getProperty() {
-            return (Property) getSource();
-        }
-
-    }
-
     @Override
     public void addPropertySetChangeListener(
             Container.PropertySetChangeListener listener) {
@@ -543,7 +516,7 @@ public class IndexedContainer
         // Sends event to listeners listening all value changes
         if (propertyValueChangeListeners != null) {
             final Object[] l = propertyValueChangeListeners.toArray();
-            final Property.ValueChangeEvent event = new IndexedContainer.PropertyValueChangeEvent(
+            final Property.ValueChangeEvent event = new Property.ValueChangeEvent(
                     source);
             for (int i = 0; i < l.length; i++) {
                 ((Property.ValueChangeListener) l[i]).valueChange(event);
@@ -558,7 +531,7 @@ public class IndexedContainer
                 final List<Property.ValueChangeListener> listenerList = propertySetToListenerListMap
                         .get(source.itemId);
                 if (listenerList != null) {
-                    final Property.ValueChangeEvent event = new IndexedContainer.PropertyValueChangeEvent(
+                    final Property.ValueChangeEvent event = new Property.ValueChangeEvent(
                             source);
                     Object[] listeners = listenerList.toArray();
                     for (int i = 0; i < listeners.length; i++) {
@@ -572,16 +545,17 @@ public class IndexedContainer
     }
 
     @Override
-    public Collection<?> getListeners(Class<?> eventType) {
-        if (Property.ValueChangeEvent.class.isAssignableFrom(eventType)) {
+    public <T extends java.util.EventListener> Collection<T> getListeners(
+            Class<T> listenerType) {
+        if (listenerType == Property.ValueChangeListener.class) {
             if (propertyValueChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return Collections
+                return (Collection<T>) Collections
                         .unmodifiableCollection(propertyValueChangeListeners);
             }
         }
-        return super.getListeners(eventType);
+        return super.getListeners(listenerType);
     }
 
     @Override

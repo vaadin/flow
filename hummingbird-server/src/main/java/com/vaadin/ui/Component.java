@@ -17,7 +17,6 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.EventObject;
 import java.util.Locale;
 
@@ -29,7 +28,6 @@ import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.server.Resource;
 import com.vaadin.server.Sizeable;
-import com.vaadin.util.ReflectTools;
 
 /**
  * {@code Component} is the top-level interface that is and must be implemented
@@ -738,165 +736,6 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
     }
 
     /**
-     * Listener interface for receiving <code>Component.Event</code>s.
-     *
-     * <p>
-     * Listener interfaces are the basis of all user interaction handling in
-     * Vaadin. You have or create a listener object that receives the events.
-     * All event types have their corresponding listener types; they are not,
-     * however, required to inherit the {@code Component.Listener} interface,
-     * and they rarely do so.
-     * </p>
-     *
-     * <p>
-     * This generic listener interface is useful typically when you wish to
-     * handle events from different component types in a single listener method
-     * ({@code componentEvent()}. If you handle component events in an anonymous
-     * listener class, you normally use the component specific listener class,
-     * such as {@link com.vaadin.ui.Button.ClickEvent}.
-     * </p>
-     *
-     * <pre>
-     * class Listening extends CustomComponent implements Listener {
-     *     Button ok; // Stored for determining the source of an event
-     *
-     *     Label status; // For displaying info about the event
-     *
-     *     public Listening() {
-     *         VerticalLayout layout = new VerticalLayout();
-     *
-     *         // Some miscellaneous component
-     *         TextField name = new TextField(&quot;Say it all here&quot;);
-     *         name.addListener(this);
-     *         layout.addComponent(name);
-     *
-     *         // Handle button clicks as generic events instead
-     *         // of Button.ClickEvent events
-     *         ok = new Button(&quot;OK&quot;);
-     *         ok.addListener(this);
-     *         layout.addComponent(ok);
-     *
-     *         // For displaying information about an event
-     *         status = new Label(&quot;&quot;);
-     *         layout.addComponent(status);
-     *
-     *         setCompositionRoot(layout);
-     *     }
-     *
-     *     public void componentEvent(Event event) {
-     *         // Act according to the source of the event
-     *         if (event.getSource() == ok
-     *                 &amp;&amp; event.getClass() == Button.ClickEvent.class)
-     *             getWindow().showNotification(&quot;Click!&quot;);
-     *
-     *         // Display source component and event class names
-     *         status.setValue(
-     *                 &quot;Event from &quot; + event.getSource().getClass().getName()
-     *                         + &quot;: &quot; + event.getClass().getName());
-     *     }
-     * }
-     *
-     * Listening listening = new Listening();
-     * layout.addComponent(listening);
-     * </pre>
-     *
-     * @see Component#addListener(Listener)
-     */
-    public interface Listener extends ComponentEventListener {
-
-        /**
-         * Notifies the listener of a component event.
-         *
-         * <p>
-         * As the event can typically come from one of many source components,
-         * you may need to differentiate between the event source by component
-         * reference, class, etc.
-         * </p>
-         *
-         * <pre>
-         * public void componentEvent(Event event) {
-         *     // Act according to the source of the event
-         *     if (event.getSource() == ok
-         *             &amp;&amp; event.getClass() == Button.ClickEvent.class)
-         *         getWindow().showNotification(&quot;Click!&quot;);
-         *
-         *     // Display source component and event class names
-         *     status.setValue(
-         *             &quot;Event from &quot; + event.getSource().getClass().getName() + &quot;: &quot;
-         *                     + event.getClass().getName());
-         * }
-         * </pre>
-         *
-         * @param event
-         *            the event that has occurred.
-         */
-        public void componentEvent(Component.Event event);
-    }
-
-    /**
-     * Registers a new (generic) component event listener for the component.
-     *
-     * <pre>
-     * class Listening extends CustomComponent implements Listener {
-     *     // Stored for determining the source of an event
-     *     Button ok;
-     *
-     *     Label status; // For displaying info about the event
-     *
-     *     public Listening() {
-     *         VerticalLayout layout = new VerticalLayout();
-     *
-     *         // Some miscellaneous component
-     *         TextField name = new TextField(&quot;Say it all here&quot;);
-     *         name.addListener(this);
-     *         layout.addComponent(name);
-     *
-     *         // Handle button clicks as generic events instead
-     *         // of Button.ClickEvent events
-     *         ok = new Button(&quot;OK&quot;);
-     *         ok.addListener(this);
-     *         layout.addComponent(ok);
-     *
-     *         // For displaying information about an event
-     *         status = new Label(&quot;&quot;);
-     *         layout.addComponent(status);
-     *
-     *         setCompositionRoot(layout);
-     *     }
-     *
-     *     public void componentEvent(Event event) {
-     *         // Act according to the source of the event
-     *         if (event.getSource() == ok)
-     *             getWindow().showNotification(&quot;Click!&quot;);
-     *
-     *         status.setValue(
-     *                 &quot;Event from &quot; + event.getSource().getClass().getName()
-     *                         + &quot;: &quot; + event.getClass().getName());
-     *     }
-     * }
-     *
-     * Listening listening = new Listening();
-     * layout.addComponent(listening);
-     * </pre>
-     *
-     * @param listener
-     *            the new Listener to be registered.
-     * @see Component.Event
-     * @see #removeListener(Listener)
-     */
-    public void addListener(Component.Listener listener);
-
-    /**
-     * Removes a previously registered component event listener from this
-     * component.
-     *
-     * @param listener
-     *            the listener to be removed.
-     * @see #addListener(Listener)
-     */
-    public void removeListener(Component.Listener listener);
-
-    /**
      * Class of all component originated error events.
      *
      * <p>
@@ -1066,7 +905,6 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * Event fired after a connector is attached to the application.
      */
     public static class AttachEvent extends Component.Event {
-        public static final String ATTACH_EVENT_IDENTIFIER = "clientConnectorAttach";
 
         public AttachEvent(Component source) {
             super(source);
@@ -1078,8 +916,6 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      *
      */
     public static interface AttachListener extends ComponentEventListener {
-        public static final Method attachMethod = ReflectTools
-                .findMethod(AttachListener.class, "attach", AttachEvent.class);
 
         /**
          * Called when a AttachListener is notified of a AttachEvent.
@@ -1094,8 +930,6 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * Event fired before a connector is detached from the application.
      */
     public static class DetachEvent extends Component.Event {
-        public static final String DETACH_EVENT_IDENTIFIER = "clientConnectorDetach";
-
         public DetachEvent(Component source) {
             super(source);
         }
@@ -1106,8 +940,6 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      *
      */
     public static interface DetachListener extends ComponentEventListener {
-        public static final Method detachMethod = ReflectTools
-                .findMethod(DetachListener.class, "detach", DetachEvent.class);
 
         /**
          * Called when a DetachListener is notified of a DetachEvent.

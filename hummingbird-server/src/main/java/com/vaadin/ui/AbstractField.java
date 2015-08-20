@@ -16,7 +16,6 @@
 
 package com.vaadin.ui;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1024,30 +1023,13 @@ public abstract class AbstractField<T> extends AbstractComponent
 
     /* Value change events */
 
-    private static final Method VALUE_CHANGE_METHOD;
-
-    static {
-        try {
-            VALUE_CHANGE_METHOD = Property.ValueChangeListener.class
-                    .getDeclaredMethod("valueChange",
-                            new Class[] { Property.ValueChangeEvent.class });
-        } catch (final java.lang.NoSuchMethodException e) {
-            // This should never happen
-            throw new java.lang.RuntimeException(
-                    "Internal error finding methods in AbstractField");
-        }
-    }
-
     /*
      * Adds a value change listener for the field. Don't add a JavaDoc comment
      * here, we use the default documentation from the implemented interface.
      */
     @Override
     public void addValueChangeListener(Property.ValueChangeListener listener) {
-        addListener(AbstractField.ValueChangeEvent.class, listener,
-                VALUE_CHANGE_METHOD);
-        // ensure "automatic immediate handling" works
-        markAsDirty();
+        addListener(ValueChangeListener.class, listener);
     }
 
     /*
@@ -1058,10 +1040,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     @Override
     public void removeValueChangeListener(
             Property.ValueChangeListener listener) {
-        removeListener(AbstractField.ValueChangeEvent.class, listener,
-                VALUE_CHANGE_METHOD);
-        // ensure "automatic immediate handling" works
-        markAsDirty();
+        removeListener(ValueChangeListener.class, listener);
     }
 
     /**
@@ -1098,39 +1077,8 @@ public abstract class AbstractField<T> extends AbstractComponent
      * @see Property.ReadOnlyStatusChangeListener
      */
     @Override
-    public void readOnlyStatusChange(Property.ReadOnlyStatusChangeEvent event) {
+    public void readOnlyStatusChange(ReadOnlyStatusChangeEvent event) {
         getState().propertyReadOnly = event.getProperty().isReadOnly();
-    }
-
-    /**
-     * An <code>Event</code> object specifying the Property whose read-only
-     * status has changed.
-     *
-     * @author Vaadin Ltd.
-     * @since 3.0
-     */
-    public static class ReadOnlyStatusChangeEvent extends Component.Event
-            implements Property.ReadOnlyStatusChangeEvent, Serializable {
-
-        /**
-         * New instance of text change event.
-         *
-         * @param source
-         *            the Source of the event.
-         */
-        public ReadOnlyStatusChangeEvent(AbstractField source) {
-            super(source);
-        }
-
-        /**
-         * Property where the event occurred.
-         *
-         * @return the Source of the event.
-         */
-        @Override
-        public Property getProperty() {
-            return (Property) getSource();
-        }
     }
 
     /*
@@ -1141,8 +1089,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     @Override
     public void addReadOnlyStatusChangeListener(
             Property.ReadOnlyStatusChangeListener listener) {
-        addListener(Property.ReadOnlyStatusChangeEvent.class, listener,
-                READ_ONLY_STATUS_CHANGE_METHOD);
+        addListener(ReadOnlyStatusChangeListener.class, listener);
     }
 
     /*
@@ -1153,8 +1100,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     @Override
     public void removeReadOnlyStatusChangeListener(
             Property.ReadOnlyStatusChangeListener listener) {
-        removeListener(Property.ReadOnlyStatusChangeEvent.class, listener,
-                READ_ONLY_STATUS_CHANGE_METHOD);
+        removeListener(ReadOnlyStatusChangeListener.class, listener);
     }
 
     /**
@@ -1162,7 +1108,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      * is validated before the event is created.
      */
     protected void fireReadOnlyStatusChange() {
-        fireEvent(new AbstractField.ReadOnlyStatusChangeEvent(this));
+        fireEvent(new ReadOnlyStatusChangeEvent(this));
     }
 
     /**

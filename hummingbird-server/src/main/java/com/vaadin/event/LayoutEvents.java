@@ -16,7 +16,6 @@
 package com.vaadin.event;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.MouseEvents.ClickEvent;
@@ -24,15 +23,10 @@ import com.vaadin.shared.Connector;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
-import com.vaadin.util.ReflectTools;
 
 public interface LayoutEvents {
 
     public interface LayoutClickListener extends ComponentEventListener {
-
-        public static final Method clickMethod = ReflectTools.findMethod(
-                LayoutClickListener.class, "layoutClick",
-                LayoutClickEvent.class);
 
         /**
          * Layout has been clicked

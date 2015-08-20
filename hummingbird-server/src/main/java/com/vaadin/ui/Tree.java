@@ -18,7 +18,6 @@ package com.vaadin.ui;
 
 import java.awt.dnd.DragSource;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,14 +31,12 @@ import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.ContainerHierarchicalWrapper;
 import com.vaadin.data.util.HierarchicalContainer;
+import com.vaadin.event.ComponentEventListener;
 import com.vaadin.event.DataBoundTransferable;
-import com.vaadin.event.ItemClickEvent;
 import com.vaadin.event.ItemClickEvent.ItemClickListener;
 import com.vaadin.event.ItemClickEvent.ItemClickNotifier;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.ui.MultiSelectMode;
-import com.vaadin.shared.ui.tree.TreeConstants;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Tree component. A Tree can be used to select an item (or multiple items) from
@@ -660,10 +657,7 @@ public class Tree extends AbstractSelect
      * @author Vaadin Ltd.
      * @since 3.0
      */
-    public interface ExpandListener extends Serializable {
-
-        public static final Method EXPAND_METHOD = ReflectTools.findMethod(
-                ExpandListener.class, "nodeExpand", ExpandEvent.class);
+    public interface ExpandListener extends ComponentEventListener {
 
         /**
          * A node has been expanded.
@@ -681,7 +675,7 @@ public class Tree extends AbstractSelect
      *            the Listener to be added.
      */
     public void addExpandListener(ExpandListener listener) {
-        addListener(ExpandEvent.class, listener, ExpandListener.EXPAND_METHOD);
+        addListener(ExpandListener.class, listener);
     }
 
     /**
@@ -691,8 +685,7 @@ public class Tree extends AbstractSelect
      *            the Listener to be removed.
      */
     public void removeExpandListener(ExpandListener listener) {
-        removeListener(ExpandEvent.class, listener,
-                ExpandListener.EXPAND_METHOD);
+        removeListener(ExpandListener.class, listener);
     }
 
     /**
@@ -745,10 +738,7 @@ public class Tree extends AbstractSelect
      * @author Vaadin Ltd.
      * @since 3.0
      */
-    public interface CollapseListener extends Serializable {
-
-        public static final Method COLLAPSE_METHOD = ReflectTools.findMethod(
-                CollapseListener.class, "nodeCollapse", CollapseEvent.class);
+    public interface CollapseListener extends ComponentEventListener {
 
         /**
          * A node has been collapsed.
@@ -766,8 +756,7 @@ public class Tree extends AbstractSelect
      *            the Listener to be added.
      */
     public void addCollapseListener(CollapseListener listener) {
-        addListener(CollapseEvent.class, listener,
-                CollapseListener.COLLAPSE_METHOD);
+        addListener(CollapseListener.class, listener);
     }
 
     /**
@@ -777,8 +766,7 @@ public class Tree extends AbstractSelect
      *            the Listener to be removed.
      */
     public void removeCollapseListener(CollapseListener listener) {
-        removeListener(CollapseEvent.class, listener,
-                CollapseListener.COLLAPSE_METHOD);
+        removeListener(CollapseListener.class, listener);
     }
 
     /**
@@ -868,14 +856,12 @@ public class Tree extends AbstractSelect
 
     @Override
     public void addItemClickListener(ItemClickListener listener) {
-        addListener(TreeConstants.ITEM_CLICK_EVENT_ID, ItemClickEvent.class,
-                listener, ItemClickEvent.ITEM_CLICK_METHOD);
+        addListener(ItemClickListener.class, listener);
     }
 
     @Override
     public void removeItemClickListener(ItemClickListener listener) {
-        removeListener(TreeConstants.ITEM_CLICK_EVENT_ID, ItemClickEvent.class,
-                listener);
+        removeListener(ItemClickListener.class, listener);
     }
 
     /**

@@ -96,6 +96,43 @@ public interface StreamVariable extends Serializable {
      */
     public boolean isInterrupted();
 
+    public static abstract class AbstractStreamingEvent
+            implements StreamingEvent {
+        private final String type;
+        private final String filename;
+        private final long contentLength;
+        private final long bytesReceived;
+
+        @Override
+        public String getFileName() {
+            return filename;
+        }
+
+        @Override
+        public String getMimeType() {
+            return type;
+        }
+
+        protected AbstractStreamingEvent(String filename, String type,
+                long length, long bytesReceived) {
+            this.filename = filename;
+            this.type = type;
+            contentLength = length;
+            this.bytesReceived = bytesReceived;
+        }
+
+        @Override
+        public long getContentLength() {
+            return contentLength;
+        }
+
+        @Override
+        public long getBytesReceived() {
+            return bytesReceived;
+        }
+
+    }
+
     public interface StreamingEvent extends Serializable {
 
         /**
@@ -123,27 +160,52 @@ public interface StreamVariable extends Serializable {
      * Event passed to {@link #uploadStarted(StreamingStartEvent)} method before
      * the streaming of the content to {@link StreamVariable} starts.
      */
-    public interface StreamingStartEvent extends StreamingEvent {
+    public class StreamingStartEvent extends AbstractStreamingEvent {
+
+        private boolean disposed;
+
+        public StreamingStartEvent(final String filename, final String type,
+                long contentLength) {
+            super(filename, type, contentLength, 0);
+        }
+
         /**
          * The owner of the StreamVariable can call this method to inform the
          * terminal implementation that this StreamVariable will not be used to
          * accept more post.
          */
-        public void disposeStreamVariable();
+        public void disposeStreamVariable() {
+            disposed = true;
+        }
+
+        public boolean isDisposed() {
+            return disposed;
+        }
+
     }
 
     /**
      * Event passed to {@link #onProgress(StreamingProgressEvent)} method during
      * the streaming progresses.
      */
-    public interface StreamingProgressEvent extends StreamingEvent {
+    public class StreamingProgressEvent extends AbstractStreamingEvent {
+        public StreamingProgressEvent(final String filename, final String type,
+                long contentLength, long bytesReceived) {
+            super(filename, type, contentLength, bytesReceived);
+        }
+
     }
 
     /**
      * Event passed to {@link #uploadFinished(StreamingEndEvent)} method the
      * contents have been streamed to StreamVariable successfully.
      */
-    public interface StreamingEndEvent extends StreamingEvent {
+    public class StreamingEndEvent extends AbstractStreamingEvent {
+        public StreamingEndEvent(String filename, String type,
+                long totalBytes) {
+            super(filename, type, totalBytes, totalBytes);
+        }
+
     }
 
     /**
@@ -153,12 +215,22 @@ public interface StreamVariable extends Serializable {
      * communication. In the latter case the exception is also passed to
      * {@link VaadinSession#error(com.vaadin.server.Terminal.ErrorEvent)} .
      */
-    public interface StreamingErrorEvent extends StreamingEvent {
+    public class StreamingErrorEvent extends AbstractStreamingEvent {
+        private Exception exception;
+
+        public StreamingErrorEvent(final String filename, final String type,
+                long contentLength, long bytesReceived,
+                final Exception exception) {
+            super(filename, type, contentLength, bytesReceived);
+            this.exception = exception;
+        }
 
         /**
          * @return the exception that caused the receiving not to finish cleanly
          */
-        public Exception getException();
+        public Exception getException() {
+            return exception;
+        }
 
     }
 

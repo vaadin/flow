@@ -18,17 +18,15 @@ package com.vaadin.ui;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property;
-import com.vaadin.event.FieldEvents.BlurEvent;
-import com.vaadin.event.FieldEvents.BlurListener;
+import com.vaadin.event.FieldEvents.BlurNotifier;
 import com.vaadin.event.FieldEvents.FocusAndBlurServerRpcImpl;
-import com.vaadin.event.FieldEvents.FocusEvent;
-import com.vaadin.event.FieldEvents.FocusListener;
+import com.vaadin.event.FieldEvents.FocusNotifier;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.checkbox.CheckBoxServerRpc;
 
 @Tag("input")
-public class CheckBox extends AbstractField<Boolean> {
-
+public class CheckBox extends AbstractField<Boolean>
+        implements FocusNotifier, BlurNotifier {
     private CheckBoxServerRpc rpc = new CheckBoxServerRpc() {
 
         @Override
@@ -104,24 +102,6 @@ public class CheckBox extends AbstractField<Boolean> {
             newValue = false;
         }
         getElement().setAttribute("checked", newValue);
-    }
-
-    public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
-                BlurListener.blurMethod);
-    }
-
-    public void removeBlurListener(BlurListener listener) {
-        removeListener(BlurEvent.EVENT_ID, BlurEvent.class, listener);
-    }
-
-    public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
-                FocusListener.focusMethod);
-    }
-
-    public void removeFocusListener(FocusListener listener) {
-        removeListener(FocusEvent.EVENT_ID, FocusEvent.class, listener);
     }
 
     @Override

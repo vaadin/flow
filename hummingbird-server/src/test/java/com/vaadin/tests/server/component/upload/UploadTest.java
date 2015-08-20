@@ -40,34 +40,11 @@ public class UploadTest {
         Assert.assertFalse(upload.isUploading());
     }
 
-    private static class TestStreamingErrorEvent
-            implements StreamingErrorEvent {
+    private static class TestStreamingErrorEvent extends StreamingErrorEvent {
 
-        @Override
-        public String getFileName() {
-            return null;
+        public TestStreamingErrorEvent() {
+            super(null, null, 0, 0, new Exception());
         }
-
-        @Override
-        public String getMimeType() {
-            return null;
-        }
-
-        @Override
-        public long getContentLength() {
-            return 0;
-        }
-
-        @Override
-        public long getBytesReceived() {
-            return 0;
-        }
-
-        @Override
-        public Exception getException() {
-            return new Exception();
-        }
-
     }
 
     private static class TestUpload extends Upload {

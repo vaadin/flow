@@ -124,8 +124,12 @@ public class Element {
     }
 
     public Element removeEventListener(String type, EventListener listener) {
-        template.removeListener(type, listener, node);
+        template.removeEventListener(type, listener, node);
         return this;
+    }
+
+    public Collection<EventListener> getEventListeners(String eventType) {
+        return template.getEventListeners(eventType, node);
     }
 
     public int getChildCount() {

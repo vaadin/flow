@@ -16,7 +16,7 @@
 
 package com.vaadin.server;
 
-import java.io.Serializable;
+import com.vaadin.event.ComponentEventListener;
 
 /**
  * Event listener that can be registered to a {@link VaadinService} to get an
@@ -32,7 +32,7 @@ import java.io.Serializable;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public interface SessionInitListener extends Serializable {
+public interface SessionInitListener extends ComponentEventListener {
     /**
      * Invoked when a new Vaadin service session is initialized for that
      * service.

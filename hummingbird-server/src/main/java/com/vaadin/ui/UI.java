@@ -56,7 +56,6 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.server.VaadinSession.State;
 import com.vaadin.server.communication.PushConnection;
 import com.vaadin.shared.Connector;
-import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.DebugWindowServerRpc;
@@ -790,8 +789,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      *            The listener to add
      */
     public void addClickListener(ClickListener listener) {
-        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener,
-                ClickListener.clickMethod);
+        addListener(ClickListener.class, listener);
     }
 
     /**
@@ -802,8 +800,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      *            The listener to remove
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class,
-                listener);
+        removeListener(ClickListener.class, listener);
     }
 
     @Override
@@ -1306,13 +1303,12 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     @Override
     public void addPollListener(PollListener listener) {
-        addListener(EventId.POLL, PollEvent.class, listener,
-                PollListener.POLL_METHOD);
+        addListener(PollListener.class, listener);
     }
 
     @Override
     public void removePollListener(PollListener listener) {
-        removeListener(EventId.POLL, PollEvent.class, listener);
+        removeListener(PollListener.class, listener);
     }
 
     /**

@@ -17,6 +17,9 @@
 package com.vaadin.data;
 
 import java.io.Serializable;
+import java.util.EventObject;
+
+import com.vaadin.event.ComponentEventListener;
 
 /**
  * <p>
@@ -249,16 +252,21 @@ public interface Property<T> extends Serializable {
      * changed.
      *
      * @author Vaadin Ltd.
-     * @since 3.0
      */
-    public interface ValueChangeEvent extends Serializable {
+    public class ValueChangeEvent extends EventObject implements Serializable {
+
+        public ValueChangeEvent(Property source) {
+            super(source);
+        }
 
         /**
          * Retrieves the Property that has been modified.
          *
          * @return source Property of the event
          */
-        public Property getProperty();
+        public Property getProperty() {
+            return (Property) getSource();
+        }
     }
 
     /**
@@ -268,7 +276,7 @@ public interface Property<T> extends Serializable {
      * @author Vaadin Ltd.
      * @since 3.0
      */
-    public interface ValueChangeListener extends Serializable {
+    public interface ValueChangeListener extends ComponentEventListener {
 
         /**
          * Notifies this listener that the Property's value has changed.
@@ -327,14 +335,28 @@ public interface Property<T> extends Serializable {
      * @author Vaadin Ltd.
      * @since 3.0
      */
-    public interface ReadOnlyStatusChangeEvent extends Serializable {
+    public static class ReadOnlyStatusChangeEvent extends java.util.EventObject
+            implements Serializable {
 
         /**
-         * Property whose read-only state has changed.
+         * Constructs a new read-only status change event for this object.
+         *
+         * @param source
+         *            source object of the event.
+         */
+        public ReadOnlyStatusChangeEvent(Property source) {
+            super(source);
+        }
+
+        /**
+         * Gets the Property whose read-only state has changed.
          *
          * @return source Property of the event.
          */
-        public Property getProperty();
+        public Property getProperty() {
+            return (Property) getSource();
+        }
+
     }
 
     /**
@@ -344,7 +366,8 @@ public interface Property<T> extends Serializable {
      * @author Vaadin Ltd.
      * @since 3.0
      */
-    public interface ReadOnlyStatusChangeListener extends Serializable {
+    public interface ReadOnlyStatusChangeListener
+            extends ComponentEventListener {
 
         /**
          * Notifies this listener that a Property's read-only status has
@@ -353,8 +376,7 @@ public interface Property<T> extends Serializable {
          * @param event
          *            Read-only status change event object
          */
-        public void readOnlyStatusChange(
-                Property.ReadOnlyStatusChangeEvent event);
+        public void readOnlyStatusChange(ReadOnlyStatusChangeEvent event);
     }
 
     /**

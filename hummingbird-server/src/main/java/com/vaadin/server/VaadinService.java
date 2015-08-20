@@ -25,7 +25,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,7 +59,6 @@ import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
-import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
@@ -87,17 +85,6 @@ public abstract class VaadinService implements Serializable {
     // Use the old name.reinitializing value for backwards compatibility
     static final String PRESERVE_UNBOUND_SESSION_ATTRIBUTE = VaadinService.class
             .getName() + ".reinitializing";
-
-    private static final Method SESSION_INIT_METHOD = ReflectTools.findMethod(
-            SessionInitListener.class, "sessionInit", SessionInitEvent.class);
-
-    private static final Method SESSION_DESTROY_METHOD = ReflectTools
-            .findMethod(SessionDestroyListener.class, "sessionDestroy",
-                    SessionDestroyEvent.class);
-
-    private static final Method SERVICE_DESTROY_METHOD = ReflectTools
-            .findMethod(ServiceDestroyListener.class, "serviceDestroy",
-                    ServiceDestroyEvent.class);
 
     /**
      * @deprecated As of 7.0. Only supported for {@link LegacyApplication}.
@@ -391,8 +378,7 @@ public abstract class VaadinService implements Serializable {
      *            the Vaadin service session initialization listener
      */
     public void addSessionInitListener(SessionInitListener listener) {
-        eventRouter.addListener(SessionInitEvent.class, listener,
-                SESSION_INIT_METHOD);
+        eventRouter.addListener(SessionInitListener.class, listener);
     }
 
     /**
@@ -405,8 +391,7 @@ public abstract class VaadinService implements Serializable {
      *            the Vaadin service session initialization listener to remove.
      */
     public void removeSessionInitListener(SessionInitListener listener) {
-        eventRouter.removeListener(SessionInitEvent.class, listener,
-                SESSION_INIT_METHOD);
+        eventRouter.removeListener(SessionInitListener.class, listener);
     }
 
     /**
@@ -422,8 +407,7 @@ public abstract class VaadinService implements Serializable {
      *            the vaadin service session destroy listener
      */
     public void addSessionDestroyListener(SessionDestroyListener listener) {
-        eventRouter.addListener(SessionDestroyEvent.class, listener,
-                SESSION_DESTROY_METHOD);
+        eventRouter.addListener(SessionDestroyListener.class, listener);
     }
 
     /**
@@ -483,8 +467,7 @@ public abstract class VaadinService implements Serializable {
      *            the vaadin service session destroy listener
      */
     public void removeSessionDestroyListener(SessionDestroyListener listener) {
-        eventRouter.removeListener(SessionDestroyEvent.class, listener,
-                SESSION_DESTROY_METHOD);
+        eventRouter.removeListener(SessionDestroyListener.class, listener);
     }
 
     /**
@@ -1766,8 +1749,7 @@ public abstract class VaadinService implements Serializable {
      * @see ServiceDestroyListener
      */
     public void addServiceDestroyListener(ServiceDestroyListener listener) {
-        eventRouter.addListener(ServiceDestroyEvent.class, listener,
-                SERVICE_DESTROY_METHOD);
+        eventRouter.addListener(ServiceDestroyListener.class, listener);
     }
 
     /**
@@ -1779,8 +1761,7 @@ public abstract class VaadinService implements Serializable {
      *            the service destroy listener to remove
      */
     public void removeServiceDestroyListener(ServiceDestroyListener listener) {
-        eventRouter.removeListener(ServiceDestroyEvent.class, listener,
-                SERVICE_DESTROY_METHOD);
+        eventRouter.removeListener(ServiceDestroyListener.class, listener);
     }
 
     /**

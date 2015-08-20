@@ -23,7 +23,6 @@ import java.util.Map;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
 import com.vaadin.server.Resource;
-import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.embedded.EmbeddedServerRpc;
 
@@ -455,17 +454,7 @@ public class Embedded extends AbstractComponent {
      *            The listener to add
      */
     public void addClickListener(ClickListener listener) {
-        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener,
-                ClickListener.clickMethod);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addClickListener(ClickListener)}
-     **/
-    @Deprecated
-    public void addListener(ClickListener listener) {
-        addClickListener(listener);
+        addListener(ClickListener.class, listener);
     }
 
     /**
@@ -476,17 +465,7 @@ public class Embedded extends AbstractComponent {
      *            The listener to remove
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class,
-                listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeClickListener(ClickListener)}
-     **/
-    @Deprecated
-    public void removeListener(ClickListener listener) {
-        removeClickListener(listener);
+        removeListener(ClickListener.class, listener);
     }
 
 }

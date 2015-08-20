@@ -11,13 +11,14 @@ import com.vaadin.tests.server.component.AbstractListenerMethodsTestBase;
 public class AbstractPropertyListenersTest
         extends AbstractListenerMethodsTestBase {
     public void testValueChangeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(AbstractProperty.class, ValueChangeEvent.class,
-                ValueChangeListener.class, new ObjectProperty<String>(""));
+        testNonEventSourceListenerAddGetRemove(AbstractProperty.class,
+                ValueChangeEvent.class, ValueChangeListener.class,
+                new ObjectProperty<String>(""));
     }
 
     public void testReadOnlyStatusChangeListenerAddGetRemove()
             throws Exception {
-        testListenerAddGetRemove(AbstractProperty.class,
+        testNonEventSourceListenerAddGetRemove(AbstractProperty.class,
                 ReadOnlyStatusChangeEvent.class,
                 ReadOnlyStatusChangeListener.class,
                 new ObjectProperty<String>(""));

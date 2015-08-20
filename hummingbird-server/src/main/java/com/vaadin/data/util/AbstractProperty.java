@@ -17,6 +17,7 @@ package com.vaadin.data.util;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventListener;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
@@ -72,36 +73,6 @@ public abstract class AbstractProperty<T> implements Property<T>,
     /* Events */
 
     /**
-     * An <code>Event</code> object specifying the Property whose read-only
-     * status has been changed.
-     */
-    protected static class ReadOnlyStatusChangeEvent
-            extends java.util.EventObject
-            implements Property.ReadOnlyStatusChangeEvent {
-
-        /**
-         * Constructs a new read-only status change event for this object.
-         *
-         * @param source
-         *            source object of the event.
-         */
-        protected ReadOnlyStatusChangeEvent(Property source) {
-            super(source);
-        }
-
-        /**
-         * Gets the Property whose read-only state has changed.
-         *
-         * @return source Property of the event.
-         */
-        @Override
-        public Property getProperty() {
-            return (Property) getSource();
-        }
-
-    }
-
-    /**
      * Registers a new read-only status change listener for this Property.
      *
      * @param listener
@@ -145,35 +116,6 @@ public abstract class AbstractProperty<T> implements Property<T>,
         }
     }
 
-    /**
-     * An <code>Event</code> object specifying the Property whose value has been
-     * changed.
-     */
-    private static class ValueChangeEvent extends java.util.EventObject
-            implements Property.ValueChangeEvent {
-
-        /**
-         * Constructs a new value change event for this object.
-         *
-         * @param source
-         *            source object of the event.
-         */
-        protected ValueChangeEvent(Property source) {
-            super(source);
-        }
-
-        /**
-         * Gets the Property whose value has changed.
-         *
-         * @return source Property of the event.
-         */
-        @Override
-        public Property getProperty() {
-            return (Property) getSource();
-        }
-
-    }
-
     @Override
     public void addValueChangeListener(ValueChangeListener listener) {
         if (valueChangeListeners == null) {
@@ -204,15 +146,15 @@ public abstract class AbstractProperty<T> implements Property<T>,
         }
     }
 
-    public Collection<?> getListeners(Class<?> eventType) {
-        if (Property.ValueChangeEvent.class.isAssignableFrom(eventType)) {
+    public Collection<?> getListeners(
+            Class<? extends EventListener> listenerType) {
+        if (listenerType == ValueChangeListener.class) {
             if (valueChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
                 return Collections.unmodifiableCollection(valueChangeListeners);
             }
-        } else if (Property.ReadOnlyStatusChangeEvent.class
-                .isAssignableFrom(eventType)) {
+        } else if (listenerType == ReadOnlyStatusChangeListener.class) {
             if (readOnlyStatusChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {

@@ -246,21 +246,21 @@ public abstract class AbstractContainer implements Container {
         return itemSetChangeListeners;
     }
 
-    public Collection<?> getListeners(Class<?> eventType) {
-        if (Container.PropertySetChangeEvent.class
-                .isAssignableFrom(eventType)) {
+    @SuppressWarnings("unchecked")
+    public <T extends java.util.EventListener> Collection<T> getListeners(
+            Class<T> listenerType) {
+        if (listenerType == Container.PropertySetChangeListener.class) {
             if (propertySetChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return Collections
+                return (Collection<T>) Collections
                         .unmodifiableCollection(propertySetChangeListeners);
             }
-        } else if (Container.ItemSetChangeEvent.class
-                .isAssignableFrom(eventType)) {
+        } else if (listenerType == Container.ItemSetChangeListener.class) {
             if (itemSetChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return Collections
+                return (Collection<T>) Collections
                         .unmodifiableCollection(itemSetChangeListeners);
             }
         }

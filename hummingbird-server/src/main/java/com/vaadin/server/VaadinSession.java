@@ -19,7 +19,6 @@ package com.vaadin.server;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -55,7 +54,6 @@ import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Contains everything that Vaadin needs to store for a specific user. This is
@@ -197,13 +195,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     // javadoc in UI should be updated if this value is changed
     public static final String UI_PARAMETER = "UI";
-
-    private static final Method BOOTSTRAP_FRAGMENT_METHOD = ReflectTools
-            .findMethod(BootstrapListener.class, "modifyBootstrapFragment",
-                    BootstrapFragmentResponse.class);
-    private static final Method BOOTSTRAP_PAGE_METHOD = ReflectTools.findMethod(
-            BootstrapListener.class, "modifyBootstrapPage",
-            BootstrapPageResponse.class);
 
     /**
      * Configuration for the session.
@@ -826,7 +817,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * loads the Vaadin application in the browser and the HTTP headers that are
      * included in the response serving the HTML.
      *
-     * @see BootstrapListener#modifyBootstrapFragment(BootstrapFragmentResponse)
      * @see BootstrapListener#modifyBootstrapPage(BootstrapPageResponse)
      *
      * @param listener
@@ -834,10 +824,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void addBootstrapListener(BootstrapListener listener) {
         assert hasLock();
-        eventRouter.addListener(BootstrapFragmentResponse.class, listener,
-                BOOTSTRAP_FRAGMENT_METHOD);
-        eventRouter.addListener(BootstrapPageResponse.class, listener,
-                BOOTSTRAP_PAGE_METHOD);
+        eventRouter.addListener(BootstrapListener.class, listener);
     }
 
     /**
@@ -850,10 +837,39 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void removeBootstrapListener(BootstrapListener listener) {
         assert hasLock();
-        eventRouter.removeListener(BootstrapFragmentResponse.class, listener,
-                BOOTSTRAP_FRAGMENT_METHOD);
-        eventRouter.removeListener(BootstrapPageResponse.class, listener,
-                BOOTSTRAP_PAGE_METHOD);
+        eventRouter.removeListener(BootstrapListener.class, listener);
+    }
+
+    /**
+     * Remove a bootstrap fragment listener that was previously added.
+     *
+     * @see #addBootstrapFragmentListener(BootstrapFragmentListener)
+     *
+     * @param listener
+     *            the bootstrap fragment listener to remove
+     */
+    public void removeBootstrapFragmentListener(
+            BootstrapFragmentListener listener) {
+        assert hasLock();
+        eventRouter.removeListener(BootstrapFragmentListener.class, listener);
+    }
+
+    /**
+     * Adds a listener that will be invoked when the bootstrap HTML is about to
+     * be generated. This can be used to modify the contents of the HTML that
+     * loads the Vaadin application in the browser and the HTTP headers that are
+     * included in the response serving the HTML.
+     *
+     * @see BootstrapListener#modifyBootstrapFragment(BootstrapFragmentResponse)
+     * @see BootstrapListener#modifyBootstrapPage(BootstrapPageResponse)
+     *
+     * @param listener
+     *            the bootstrap listener to add
+     */
+    public void addBootstrapFragmentListener(
+            BootstrapFragmentListener listener) {
+        assert hasLock();
+        eventRouter.addListener(BootstrapFragmentListener.class, listener);
     }
 
     /**

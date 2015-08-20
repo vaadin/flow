@@ -9,10 +9,10 @@ import static org.easymock.EasyMock.verify;
 import org.easymock.EasyMock;
 
 import com.vaadin.data.Property;
+import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.tests.server.component.AbstractListenerMethodsTestBase;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Label.ValueChangeEvent;
 
 public class LabelListenersTest extends AbstractListenerMethodsTestBase {
     public void testValueChangeListenerAddGetRemove() throws Exception {

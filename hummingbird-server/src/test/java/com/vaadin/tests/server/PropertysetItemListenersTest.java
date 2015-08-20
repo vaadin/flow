@@ -8,7 +8,7 @@ import com.vaadin.tests.server.component.AbstractListenerMethodsTestBase;
 public class PropertysetItemListenersTest
         extends AbstractListenerMethodsTestBase {
     public void testPropertySetChangeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(PropertysetItem.class,
+        testNonEventSourceListenerAddGetRemove(PropertysetItem.class,
                 PropertySetChangeEvent.class, PropertySetChangeListener.class);
     }
 }

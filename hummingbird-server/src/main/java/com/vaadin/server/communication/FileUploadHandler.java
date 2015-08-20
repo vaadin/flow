@@ -32,6 +32,8 @@ import com.vaadin.server.ServletPortletHelper;
 import com.vaadin.server.StreamVariable;
 import com.vaadin.server.StreamVariable.StreamingEndEvent;
 import com.vaadin.server.StreamVariable.StreamingErrorEvent;
+import com.vaadin.server.StreamVariable.StreamingProgressEvent;
+import com.vaadin.server.StreamVariable.StreamingStartEvent;
 import com.vaadin.server.UploadException;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
@@ -538,8 +540,8 @@ public class FileUploadHandler implements RequestHandler {
 
         OutputStream out = null;
         long totalBytes = 0;
-        StreamingStartEventImpl startedEvent = new StreamingStartEventImpl(
-                filename, type, contentLength);
+        StreamingStartEvent startedEvent = new StreamingStartEvent(filename,
+                type, contentLength);
         try {
             boolean listenProgress;
             session.lock();
@@ -579,7 +581,7 @@ public class FileUploadHandler implements RequestHandler {
                         lastStreamingEvent = now;
                         session.lock();
                         try {
-                            StreamingProgressEventImpl progressEvent = new StreamingProgressEventImpl(
+                            StreamingProgressEvent progressEvent = new StreamingProgressEvent(
                                     filename, type, contentLength, totalBytes);
                             streamVariable.onProgress(progressEvent);
                         } finally {
@@ -594,7 +596,7 @@ public class FileUploadHandler implements RequestHandler {
 
             // upload successful
             out.close();
-            StreamingEndEvent event = new StreamingEndEventImpl(filename, type,
+            StreamingEndEvent event = new StreamingEndEvent(filename, type,
                     totalBytes);
             session.lock();
             try {
@@ -606,8 +608,8 @@ public class FileUploadHandler implements RequestHandler {
         } catch (UploadInterruptedException e) {
             // Download interrupted by application code
             tryToCloseStream(out);
-            StreamingErrorEvent event = new StreamingErrorEventImpl(filename,
-                    type, contentLength, totalBytes, e);
+            StreamingErrorEvent event = new StreamingErrorEvent(filename, type,
+                    contentLength, totalBytes, e);
             session.lock();
             try {
                 streamVariable.streamingFailed(event);
@@ -620,8 +622,8 @@ public class FileUploadHandler implements RequestHandler {
             tryToCloseStream(out);
             session.lock();
             try {
-                StreamingErrorEvent event = new StreamingErrorEventImpl(
-                        filename, type, contentLength, totalBytes, e);
+                StreamingErrorEvent event = new StreamingErrorEvent(filename,
+                        type, contentLength, totalBytes, e);
                 streamVariable.streamingFailed(event);
                 // throw exception for terminal to be handled (to be passed to
                 // terminalErrorHandler)

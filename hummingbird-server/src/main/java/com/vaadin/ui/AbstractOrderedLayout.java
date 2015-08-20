@@ -19,12 +19,10 @@ package com.vaadin.ui;
 import java.util.logging.Logger;
 
 import com.vaadin.annotations.HTML;
-import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.LayoutEvents.LayoutClickNotifier;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.Sizeable;
-import com.vaadin.shared.EventId;
 
 @SuppressWarnings("serial")
 @HTML("vaadin://bower_components/iron-flex-layout/classes/iron-flex-layout.html")
@@ -207,15 +205,12 @@ public abstract class AbstractOrderedLayout
 
     @Override
     public void addLayoutClickListener(LayoutClickListener listener) {
-        addListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
-                LayoutClickEvent.class, listener,
-                LayoutClickListener.clickMethod);
+        addListener(LayoutClickListener.class, listener);
     }
 
     @Override
     public void removeLayoutClickListener(LayoutClickListener listener) {
-        removeListener(EventId.LAYOUT_CLICK_EVENT_IDENTIFIER,
-                LayoutClickEvent.class, listener);
+        removeListener(LayoutClickListener.class, listener);
     }
 
     @Override

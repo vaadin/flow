@@ -285,36 +285,6 @@ public class Label extends AbstractComponent implements Property<String>,
     }
 
     /**
-     * Value change event
-     *
-     * @author Vaadin Ltd.
-     * @since 3.0
-     */
-    public static class ValueChangeEvent extends Component.Event
-            implements Property.ValueChangeEvent {
-
-        /**
-         * New instance of text change event
-         *
-         * @param source
-         *            the Source of the event.
-         */
-        public ValueChangeEvent(Label source) {
-            super(source);
-        }
-
-        /**
-         * Gets the Property that has been modified.
-         *
-         * @see com.vaadin.data.Property.ValueChangeEvent#getProperty()
-         */
-        @Override
-        public Property getProperty() {
-            return (Property) getSource();
-        }
-    }
-
-    /**
      * Adds the value change listener.
      *
      * @param listener
@@ -323,8 +293,7 @@ public class Label extends AbstractComponent implements Property<String>,
      */
     @Override
     public void addValueChangeListener(Property.ValueChangeListener listener) {
-        addListener(Label.ValueChangeEvent.class, listener,
-                VALUE_CHANGE_METHOD);
+        addListener(ValueChangeListener.class, listener);
     }
 
     /**
@@ -337,8 +306,7 @@ public class Label extends AbstractComponent implements Property<String>,
     @Override
     public void removeValueChangeListener(
             Property.ValueChangeListener listener) {
-        removeListener(Label.ValueChangeEvent.class, listener,
-                VALUE_CHANGE_METHOD);
+        removeListener(ValueChangeListener.class, listener);
     }
 
     /**

@@ -26,6 +26,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.parser.Tag;
 
+import com.vaadin.server.BootstrapFragmentListener;
 import com.vaadin.server.BootstrapFragmentResponse;
 import com.vaadin.server.BootstrapListener;
 import com.vaadin.server.BootstrapPageResponse;
@@ -43,6 +44,9 @@ public class BootstrapListenerCode {
                     .appendChild(new Comment("Powered by Vaadin!", ""));
             response.setHeader("X-Powered-By", "Vaadin 7");
         }
+    };
+
+    public static BootstrapFragmentListener fragmentListener = new BootstrapFragmentListener() {
 
         @Override
         public void modifyBootstrapFragment(
@@ -69,6 +73,8 @@ class MyVaadinServlet extends VaadinServlet {
                     throws ServiceException {
                 event.getSession()
                         .addBootstrapListener(BootstrapListenerCode.listener);
+                event.getSession().addBootstrapFragmentListener(
+                        BootstrapListenerCode.fragmentListener);
             }
         });
     }
@@ -86,6 +92,8 @@ class MyVaadinPortlet extends VaadinPortlet {
                     throws ServiceException {
                 event.getSession()
                         .addBootstrapListener(BootstrapListenerCode.listener);
+                event.getSession().addBootstrapFragmentListener(
+                        BootstrapListenerCode.fragmentListener);
             }
         });
     }

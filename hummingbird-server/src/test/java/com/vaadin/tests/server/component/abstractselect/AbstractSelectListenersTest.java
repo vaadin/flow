@@ -10,12 +10,12 @@ import com.vaadin.ui.ComboBox;
 public class AbstractSelectListenersTest
         extends AbstractListenerMethodsTestBase {
     public void testItemSetChangeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(ComboBox.class, ItemSetChangeEvent.class,
-                ItemSetChangeListener.class);
+        testNonEventSourceListenerAddGetRemove(ComboBox.class,
+                ItemSetChangeEvent.class, ItemSetChangeListener.class);
     }
 
     public void testPropertySetChangeListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(ComboBox.class, PropertySetChangeEvent.class,
-                PropertySetChangeListener.class);
+        testNonEventSourceListenerAddGetRemove(ComboBox.class,
+                PropertySetChangeEvent.class, PropertySetChangeListener.class);
     }
 }

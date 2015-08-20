@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Iterator;
 
+import com.vaadin.event.ComponentEventListener;
 import com.vaadin.shared.ui.popupview.PopupViewServerRpc;
 import com.vaadin.shared.ui.popupview.PopupViewState;
 
@@ -300,8 +301,7 @@ public class PopupView extends AbstractComponent implements HasComponents {
      *
      */
     public void addPopupVisibilityListener(PopupVisibilityListener listener) {
-        addListener(PopupVisibilityEvent.class, listener,
-                POPUP_VISIBILITY_METHOD);
+        addListener(PopupVisibilityListener.class, listener);
     }
 
     /**
@@ -315,8 +315,7 @@ public class PopupView extends AbstractComponent implements HasComponents {
      */
     public void removePopupVisibilityListener(
             PopupVisibilityListener listener) {
-        removeListener(PopupVisibilityEvent.class, listener,
-                POPUP_VISIBILITY_METHOD);
+        removeListener(PopupVisibilityListener.class, listener);
     }
 
     /**
@@ -356,7 +355,7 @@ public class PopupView extends AbstractComponent implements HasComponents {
      * visibility of the popup changes.
      *
      */
-    public interface PopupVisibilityListener extends Serializable {
+    public interface PopupVisibilityListener extends ComponentEventListener {
         /**
          * Pass to {@link PopupView#PopupVisibilityEvent} to start listening for
          * popup visibility changes.

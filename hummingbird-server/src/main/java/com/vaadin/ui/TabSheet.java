@@ -24,12 +24,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.vaadin.event.FieldEvents.BlurEvent;
-import com.vaadin.event.FieldEvents.BlurListener;
+import com.vaadin.event.ComponentEventListener;
 import com.vaadin.event.FieldEvents.BlurNotifier;
 import com.vaadin.event.FieldEvents.FocusAndBlurServerRpcImpl;
-import com.vaadin.event.FieldEvents.FocusEvent;
-import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.event.FieldEvents.FocusNotifier;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.server.KeyMapper;
@@ -787,7 +784,7 @@ public class TabSheet extends AbstractComponentContainer
      *
      * @since 3.0
      */
-    public interface SelectedTabChangeListener extends Serializable {
+    public interface SelectedTabChangeListener extends ComponentEventListener {
 
         /**
          * Selected (shown) tab in tab sheet has has been changed.
@@ -806,8 +803,7 @@ public class TabSheet extends AbstractComponentContainer
      */
     public void addSelectedTabChangeListener(
             SelectedTabChangeListener listener) {
-        addListener(SelectedTabChangeEvent.class, listener,
-                SELECTED_TAB_CHANGE_METHOD);
+        addListener(SelectedTabChangeListener.class, listener);
     }
 
     /**
@@ -818,8 +814,7 @@ public class TabSheet extends AbstractComponentContainer
      */
     public void removeSelectedTabChangeListener(
             SelectedTabChangeListener listener) {
-        removeListener(SelectedTabChangeEvent.class, listener,
-                SELECTED_TAB_CHANGE_METHOD);
+        removeListener(SelectedTabChangeListener.class, listener);
     }
 
     /**
@@ -1334,28 +1329,6 @@ public class TabSheet extends AbstractComponentContainer
     @Override
     public void setTabIndex(int tabIndex) {
         getState().tabIndex = tabIndex;
-    }
-
-    @Override
-    public void addBlurListener(BlurListener listener) {
-        addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener,
-                BlurListener.blurMethod);
-    }
-
-    @Override
-    public void removeBlurListener(BlurListener listener) {
-        removeListener(BlurEvent.EVENT_ID, BlurEvent.class, listener);
-    }
-
-    @Override
-    public void addFocusListener(FocusListener listener) {
-        addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener,
-                FocusListener.focusMethod);
-    }
-
-    @Override
-    public void removeFocusListener(FocusListener listener) {
-        removeListener(FocusEvent.EVENT_ID, FocusEvent.class, listener);
     }
 
     @Override

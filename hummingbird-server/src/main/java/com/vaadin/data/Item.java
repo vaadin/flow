@@ -18,6 +18,7 @@ package com.vaadin.data;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.EventListener;
 
 /**
  * <p>
@@ -144,7 +145,8 @@ public interface Item extends Serializable {
      * The listener interface for receiving <code>PropertySetChangeEvent</code>
      * objects.
      */
-    public interface PropertySetChangeListener extends Serializable {
+    public interface PropertySetChangeListener
+            extends EventListener, Serializable {
 
         /**
          * Notifies this listener that the Item's property set has changed.
