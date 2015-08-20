@@ -367,8 +367,8 @@ public class TreeUpdater {
 
             if (childElementTemplates != null) {
                 for (int templateId : childElementTemplates) {
-                    element.appendChild(templates.get(templateId)
-                            .createElement(node, notifier));
+                    element.appendChild(TreeUpdater.this.createElement(templates.get(templateId), node,
+                            notifier));
                 }
             }
         }
@@ -476,7 +476,7 @@ public class TreeUpdater {
 
             ElementNotifier notifier = new ElementNotifier(childNode,
                     template.getInnerScope() + ".");
-            Node child = template.getChildTemplate().createElement(childNode,
+            Node child = createElement(template.getChildTemplate(), childNode,
                     notifier);
 
             Node insertionPoint = findNodeBefore(change.getIndex());
@@ -1026,6 +1026,8 @@ public class TreeUpdater {
 
     private Map<Integer, Node> nodeIdToBasicElement = new HashMap<>();
 
+    private Map<Integer, Map<Template, Node>> nodeIdToTemplateToElement = new HashMap<>();
+
     private NodeListener treeUpdater = new NodeListener() {
 
         @Override
@@ -1159,13 +1161,30 @@ public class TreeUpdater {
             element.removeEventListener(type, listener);
             }-*/;
 
+    private Node createElement(Template template, JsonObject node,
+            ElementNotifier notifier) {
+        Node element = template.createElement(node, notifier);
+
+        Integer nodeId = nodeToId.get(node);
+        Map<Template, Node> templateToElement = nodeIdToTemplateToElement
+                .get(nodeId);
+        if (templateToElement == null) {
+            templateToElement = new HashMap<>();
+            nodeIdToTemplateToElement.put(nodeId, templateToElement);
+        }
+
+        templateToElement.put(template, element);
+
+        return element;
+    }
+
     private Node createElement(JsonObject node) {
         if (node.hasKey("TEMPLATE")) {
             int templateId = (int) node.getNumber("TEMPLATE");
             Template template = templates.get(Integer.valueOf(templateId));
             assert template != null;
 
-            return template.createElement(node, new ElementNotifier(node, ""));
+            return createElement(template, node, new ElementNotifier(node, ""));
         } else {
             String tag = node.getString("TAG");
             if ("#text".equals(tag)) {
@@ -1269,8 +1288,14 @@ public class TreeUpdater {
         if (templateId == 0) {
             return nodeIdToBasicElement.get(Integer.valueOf(nodeId));
         } else {
-            throw new RuntimeException(
-                    "Not yet implemented for template elements");
+            Map<Template, Node> templateToElement = nodeIdToTemplateToElement
+                    .get(Integer.valueOf(nodeId));
+            if (templateToElement == null) {
+                return null;
+            }
+
+            return templateToElement
+                    .get(templates.get(Integer.valueOf(templateId)));
         }
     }
 
