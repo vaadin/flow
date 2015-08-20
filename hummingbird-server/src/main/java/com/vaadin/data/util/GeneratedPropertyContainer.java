@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.google.gwt.thirdparty.guava.common.collect.Sets;
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
@@ -146,10 +145,11 @@ public class GeneratedPropertyContainer extends AbstractContainer
 
         @Override
         public Collection<?> getItemPropertyIds() {
-            Set<?> wrappedProperties = asSet(wrappedItem.getItemPropertyIds());
-            return Sets.union(
-                    Sets.difference(wrappedProperties, removedProperties),
-                    propertyGenerators.keySet());
+            LinkedHashSet<Object> itemPropertyIds = new LinkedHashSet<>();
+            itemPropertyIds.addAll(wrappedItem.getItemPropertyIds());
+            itemPropertyIds.removeAll(removedProperties);
+            itemPropertyIds.addAll(propertyGenerators.keySet());
+            return itemPropertyIds;
         }
 
         @Override
@@ -287,6 +287,7 @@ public class GeneratedPropertyContainer extends AbstractContainer
                                         PropertySetChangeEvent event) {
                                     fireContainerPropertySetChange();
                                 }
+
                             });
         }
     }
@@ -556,10 +557,11 @@ public class GeneratedPropertyContainer extends AbstractContainer
      */
     @Override
     public Collection<?> getContainerPropertyIds() {
-        Set<?> wrappedProperties = asSet(
-                wrappedContainer.getContainerPropertyIds());
-        return Sets.union(Sets.difference(wrappedProperties, removedProperties),
-                propertyGenerators.keySet());
+        LinkedHashSet<Object> wrappedProperties = new LinkedHashSet<>();
+        wrappedProperties.addAll(wrappedContainer.getContainerPropertyIds());
+        wrappedProperties.removeAll(removedProperties);
+        wrappedProperties.addAll(propertyGenerators.keySet());
+        return wrappedProperties;
     }
 
     /**

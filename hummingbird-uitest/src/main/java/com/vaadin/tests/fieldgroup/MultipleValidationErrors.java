@@ -1,5 +1,7 @@
 package com.vaadin.tests.fieldgroup;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import com.vaadin.data.Validator;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.util.BeanItem;
@@ -10,7 +12,6 @@ import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
-import org.apache.commons.lang.StringEscapeUtils;
 
 public class MultipleValidationErrors extends AbstractTestUI {
 
@@ -42,7 +43,7 @@ public class MultipleValidationErrors extends AbstractTestUI {
                     if (e.getCause() != null && e
                             .getCause() instanceof Validator.InvalidValueException) {
                         validationErrors.setValue(StringEscapeUtils
-                                .unescapeHtml(AbstractErrorMessage
+                                .unescapeHtml4(AbstractErrorMessage
                                         .getErrorMessageForException(
                                                 e.getCause())
                                         .getFormattedHtmlMessage()));

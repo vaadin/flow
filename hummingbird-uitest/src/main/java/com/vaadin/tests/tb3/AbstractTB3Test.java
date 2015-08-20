@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,7 +58,6 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import com.google.gwt.thirdparty.guava.common.base.Joiner;
 import com.thoughtworks.selenium.webdriven.WebDriverBackedSelenium;
 import com.vaadin.server.UIProvider;
 import com.vaadin.testbench.TestBenchDriverProxy;
@@ -272,7 +272,7 @@ public abstract class AbstractTB3Test extends ParallelTest {
         }
 
         if (parameters.size() > 0) {
-            url += "?" + Joiner.on("&").join(parameters);
+            url += "?" + parameters.stream().collect(Collectors.joining("&"));
         }
 
         driver.get(url);

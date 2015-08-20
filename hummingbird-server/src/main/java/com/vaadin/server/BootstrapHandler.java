@@ -20,6 +20,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +29,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -37,7 +41,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.parser.Tag;
 
-import com.google.gwt.thirdparty.guava.common.net.UrlEscapers;
 import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
@@ -214,7 +217,14 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         @Override
         protected String encodeQueryStringParameterValue(String queryString) {
-            return UrlEscapers.urlFormParameterEscaper().escape(queryString);
+            try {
+                return URLEncoder.encode(queryString, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                // Won't happen
+                getLogger().log(Level.SEVERE,
+                        "Error encoding query string parameters", e);
+                return "";
+            }
         }
     }
 
@@ -223,6 +233,10 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         // We do not want to handle /APP requests here, instead let it fall
         // through and produce a 404
         return !ServletPortletHelper.isAppRequest(request);
+    }
+
+    public Logger getLogger() {
+        return Logger.getLogger(BootstrapHandler.class.getName());
     }
 
     @Override

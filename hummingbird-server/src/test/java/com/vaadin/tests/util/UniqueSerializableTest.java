@@ -17,11 +17,11 @@ package com.vaadin.tests.util;
 
 import java.io.Serializable;
 
-import junit.framework.TestCase;
-
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 
 import com.vaadin.ui.UniqueSerializable;
+
+import junit.framework.TestCase;
 
 public class UniqueSerializableTest extends TestCase implements Serializable {
 
