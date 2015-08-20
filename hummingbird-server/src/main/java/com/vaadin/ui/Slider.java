@@ -182,10 +182,11 @@ public class Slider extends AbstractField<Double> {
 
     private double roundValue(double value) {
         double range = getMax() - getMin();
-        double totalSteps = range / getStep();
+        double step = getStep();
+        double totalSteps = range / step;
         double relativeValue = (value - getMin()) / range;
-        double currentStep = relativeValue * totalSteps;
-        return Math.round(currentStep * getStep()) + getMin();
+        double currentStep = Math.round(relativeValue * totalSteps);
+        return currentStep * step + getMin();
     }
 
     /**
