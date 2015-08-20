@@ -577,4 +577,19 @@ public class Element {
         return TEXT_NODE_TAG.equals(e.getTag());
     }
 
+    /**
+     * Focuses the element if it's attached to the DOM. Focusing an element
+     * before attaching it has no effect.
+     */
+    public void focus() {
+        StateNode node = getNode();
+        RootNode root = node.getRoot();
+        if (root == null) {
+            // No-op if not attached, just as the DOM works
+            return;
+        }
+
+        root.enqueueRpc(node, "$0.focus()", this);
+    }
+
 }
