@@ -367,8 +367,8 @@ public class TreeUpdater {
 
             if (childElementTemplates != null) {
                 for (int templateId : childElementTemplates) {
-                    element.appendChild(TreeUpdater.this.createElement(templates.get(templateId), node,
-                            notifier));
+                    element.appendChild(TreeUpdater.this.createElement(
+                            templates.get(templateId), node, notifier));
                 }
             }
         }
@@ -826,27 +826,27 @@ public class TreeUpdater {
             if (element.hasAttribute(key)) {
                 element.removeAttribute(key);
                 debug("Removed attribute " + key + " from "
-                        + outerHtml(element));
+                        + debugHtml(element));
             }
         } else {
             // Update value (which is not null)
             if (isAlwaysAttribute(key)) {
                 element.setAttribute(key, value.asString());
                 debug("Set attribute " + key + "=" + value + " for "
-                        + outerHtml(element));
+                        + debugHtml(element));
             } else {
                 if (value.getType() == JsonType.BOOLEAN) {
                     element.setPropertyBoolean(key, value.asBoolean());
                     debug("Set property " + key + "=" + value
-                            + " (boolean) for " + outerHtml(element));
+                            + " (boolean) for " + debugHtml(element));
                 } else if (value.getType() == JsonType.NUMBER) {
                     element.setPropertyDouble(key, value.asNumber());
                     debug("Set property " + key + "=" + value + " (number) for "
-                            + outerHtml(element));
+                            + debugHtml(element));
                 } else {
                     element.setPropertyString(key, value.asString());
                     debug("Set property " + key + "=" + value + " (string) for "
-                            + outerHtml(element));
+                            + debugHtml(element));
                 }
 
             }
@@ -860,13 +860,24 @@ public class TreeUpdater {
         }
     }
 
-    private static String outerHtml(Element element) {
-        return element.getPropertyString("outerHTML");
-    }
+    private static native String debugHtml(Element element)
+    /*-{
+       var str = "<"+element.tagName.toLowerCase();
+       for (var i=0; i < element.attributes.length; i++) {
+           var a = element.attributes[i];
+           str += " ";
+           str += a.name;
+           str += "=\"";
+           str += a.value;
+           str +="\"";
+       }
+       return str+">";
+    
+    }-*/;
 
-    private static String outerHtml(Node node) {
+    private static String debugHtml(Node node) {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
-            return outerHtml((Element) node);
+            return debugHtml((Element) node);
         } else if (node.getNodeType() == Node.TEXT_NODE) {
             return "#text " + ((Text) node).getNodeValue();
         } else {
@@ -1206,7 +1217,7 @@ public class TreeUpdater {
                 Element element = Document.get().createElement(tag);
                 addNodeListener(node, new BasicElementListener(node, element));
                 nodeIdToBasicElement.put(nodeToId.get(node), element);
-                debug("Created element: " + outerHtml(element));
+                debug("Created element: " + debugHtml(element));
                 return element;
             }
         }
@@ -1216,13 +1227,13 @@ public class TreeUpdater {
             int index) {
         if (parent.getChildCount() == index) {
             parent.appendChild(child);
-            debug("Appended node " + outerHtml(child) + " into "
-                    + outerHtml(parent));
+            debug("Appended node " + debugHtml(child) + " into "
+                    + debugHtml(parent));
         } else {
             Node reference = parent.getChildNodes().getItem(index);
             parent.insertBefore(child, reference);
-            debug("Inserted node " + outerHtml(child) + " into "
-                    + outerHtml(parent) + " at index " + index);
+            debug("Inserted node " + debugHtml(child) + " into "
+                    + debugHtml(parent) + " at index " + index);
         }
     }
 

@@ -27,9 +27,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.LinkElement;
 import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
@@ -40,7 +38,6 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.CommunicationProblemHandler;
@@ -721,15 +718,31 @@ public class ApplicationConnection implements HasHandlers {
     }
 
     public void loadHtmlDependencies(JsArrayString dependencies) {
-        // Assuming no reason to interpret in a defined order and no need to
-        // wait for load events
+        if (dependencies.length() == 0) {
+            return;
+        }
+
+        ResourceLoader loader = ResourceLoader.get();
+
+        // Load all at once
         for (int i = 0; i < dependencies.length(); i++) {
             String url = translateVaadinUri(dependencies.get(i));
             getLogger().info("Loading HTML dependency from " + url);
-            LinkElement l = Document.get().createLinkElement();
-            l.setAttribute("rel", "import");
-            l.setAttribute("href", url);
-            Document.get().getHead().appendChild(l);
+            ApplicationConfiguration.startDependencyLoading();
+            loader.loadHtml(url, new ResourceLoadListener() {
+                @Override
+                public void onLoad(ResourceLoadEvent event) {
+                    ApplicationConfiguration.endDependencyLoading();
+                }
+
+                @Override
+                public void onError(ResourceLoadEvent event) {
+                    getLogger().severe(
+                            event.getResourceUrl() + " could not be loaded.");
+                    // The show must go on
+                    onLoad(event);
+                }
+            });
         }
     }
 

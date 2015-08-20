@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
@@ -263,11 +264,13 @@ public class ResourceLoader {
             addOnloadHandler(scriptTag, new ResourceLoadListener() {
                 @Override
                 public void onLoad(ResourceLoadEvent event) {
+                    getLogger().info("Loaded script: " + url);
                     fireLoad(event);
                 }
 
                 @Override
                 public void onError(ResourceLoadEvent event) {
+                    getLogger().severe("Failed to load script: " + url);
                     fireError(event);
                 }
             }, event);
@@ -497,11 +500,13 @@ public class ResourceLoader {
                                 return;
                             }
                         }
+                        getLogger().info("Loaded stylesheet: " + url);
                         fireLoad(event);
                     }
 
                     @Override
                     public void onError(ResourceLoadEvent event) {
+                        getLogger().severe("Failed to load stylesheet: " + url);
                         fireError(event);
                     }
                 }, event);
@@ -533,12 +538,12 @@ public class ResourceLoader {
                     if (rules === undefined) {
                         rules = sheet.rules;
                     }
-    
+
                     if (rules === null) {
                         // Style sheet loaded, but can't access length because of XSS -> assume there's something there
                         return 1;
                     }
-    
+
                     // Return length so we can distinguish 0 (probably 404 error) from normal case.
                     return rules.length;
                 } catch (err) {
@@ -609,4 +614,59 @@ public class ResourceLoader {
         }
     }
 
+    public void loadHtml(String htmlUrl,
+            ResourceLoadListener resourceLoadListener) {
+        final String url = WidgetUtil.getAbsoluteUrl(htmlUrl);
+        ResourceLoadEvent event = new ResourceLoadEvent(this, url, false);
+        if (loadedResources.contains(url)) {
+            if (resourceLoadListener != null) {
+                resourceLoadListener.onLoad(event);
+            }
+            return;
+        }
+
+        if (preloadListeners.containsKey(url)) {
+            // Preload going on, continue when preloaded
+            preloadResource(url, new ResourceLoadListener() {
+                @Override
+                public void onLoad(ResourceLoadEvent event) {
+                    loadScript(url, resourceLoadListener);
+                }
+
+                @Override
+                public void onError(ResourceLoadEvent event) {
+                    // Preload failed -> signal error to own listener
+                    if (resourceLoadListener != null) {
+                        resourceLoadListener.onError(event);
+                    }
+                }
+            });
+            return;
+        }
+
+        if (addListener(url, resourceLoadListener, loadListeners)) {
+            LinkElement linkTag = Document.get().createLinkElement();
+            linkTag.setAttribute("rel", "import");
+            linkTag.setAttribute("href", url);
+
+            addOnloadHandler(linkTag, new ResourceLoadListener() {
+                @Override
+                public void onLoad(ResourceLoadEvent event) {
+                    getLogger().info("Loaded HTML import " + url);
+                    fireLoad(event);
+                }
+
+                @Override
+                public void onError(ResourceLoadEvent event) {
+                    getLogger().severe("Failed to load html import " + url);
+                    fireError(event);
+                }
+            }, event);
+            head.appendChild(linkTag);
+        }
+    }
+
+    private static Logger getLogger() {
+        return Logger.getLogger(ResourceLoader.class.getName());
+    }
 }
