@@ -70,7 +70,7 @@ public class SliderTest {
     @Test
     public void valueCanHaveLargePrecision() {
         Slider slider = new Slider();
-        slider.setResolution(20);
+        slider.setStep(0.0000000000000000000000000001);
 
         slider.setValue(99.01234567891234567890123456789);
 
@@ -91,7 +91,6 @@ public class SliderTest {
         double minValue = (double) Integer.MAX_VALUE + 1;
 
         Slider s = new Slider(minValue, minValue + 1, 0);
-
         assertThat(s.getValue(), is(minValue));
     }
 

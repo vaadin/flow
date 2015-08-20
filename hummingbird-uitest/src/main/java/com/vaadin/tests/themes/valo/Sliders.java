@@ -17,7 +17,6 @@ package com.vaadin.tests.themes.valo;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.shared.ui.slider.SliderOrientation;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.ProgressBar;
@@ -79,19 +78,16 @@ public class Sliders extends VerticalLayout implements View {
 
         slider = new Slider("Toggle imitation");
         slider.setWidth("50px");
-        slider.setResolution(0);
         slider.setMin(0);
         slider.setMax(1);
         row.addComponent(slider);
 
         slider = new Slider("Vertical");
         slider.setValue(50.0);
-        slider.setOrientation(SliderOrientation.VERTICAL);
         row.addComponent(slider);
 
         slider = new Slider("Vertical, sized");
         slider.setValue(50.0);
-        slider.setOrientation(SliderOrientation.VERTICAL);
         slider.setHeight("200px");
         row.addComponent(slider);
 
@@ -99,28 +95,24 @@ public class Sliders extends VerticalLayout implements View {
         slider.setValue(50.0);
         slider.setHeight("200px");
         slider.addStyleName("color1");
-        slider.setOrientation(SliderOrientation.VERTICAL);
         row.addComponent(slider);
 
         slider = new Slider("Custom track");
         slider.setValue(50.0);
         slider.setHeight("200px");
         slider.addStyleName("color2");
-        slider.setOrientation(SliderOrientation.VERTICAL);
         row.addComponent(slider);
 
         slider = new Slider("Custom indicator");
         slider.setValue(50.0);
         slider.setHeight("200px");
         slider.addStyleName("color3");
-        slider.setOrientation(SliderOrientation.VERTICAL);
         row.addComponent(slider);
 
         slider = new Slider("No indicator");
         slider.setValue(50.0);
         slider.setHeight("200px");
         slider.addStyleName("no-indicator");
-        slider.setOrientation(SliderOrientation.VERTICAL);
         row.addComponent(slider);
 
         slider = new Slider("With ticks");
@@ -128,7 +120,6 @@ public class Sliders extends VerticalLayout implements View {
         slider.setHeight("200px");
         slider.setMax(4);
         slider.addStyleName("ticks");
-        slider.setOrientation(SliderOrientation.VERTICAL);
         row.addComponent(slider);
 
         slider = new Slider("Disabled");

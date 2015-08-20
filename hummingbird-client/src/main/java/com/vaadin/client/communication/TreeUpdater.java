@@ -831,22 +831,22 @@ public class TreeUpdater {
         } else {
             // Update value (which is not null)
             if (isAlwaysAttribute(key)) {
-                element.setAttribute(key, value.asString());
-                debug("Set attribute " + key + "=" + value + " for "
+                debug("Set attribute " + key + "=\"" + value + "\" for "
                         + debugHtml(element));
+                element.setAttribute(key, value.asString());
             } else {
                 if (value.getType() == JsonType.BOOLEAN) {
+                    debug("Set property " + key + "=\"" + value
+                            + "\" (boolean) for " + debugHtml(element));
                     element.setPropertyBoolean(key, value.asBoolean());
-                    debug("Set property " + key + "=" + value
-                            + " (boolean) for " + debugHtml(element));
                 } else if (value.getType() == JsonType.NUMBER) {
+                    debug("Set property " + key + "=\"" + value
+                            + "\" (number) for " + debugHtml(element));
                     element.setPropertyDouble(key, value.asNumber());
-                    debug("Set property " + key + "=" + value + " (number) for "
-                            + debugHtml(element));
                 } else {
+                    debug("Set property " + key + "=\"" + value
+                            + "\" (string) for " + debugHtml(element));
                     element.setPropertyString(key, value.asString());
-                    debug("Set property " + key + "=" + value + " (string) for "
-                            + debugHtml(element));
                 }
 
             }
@@ -872,7 +872,7 @@ public class TreeUpdater {
            str +="\"";
        }
        return str+">";
-    
+
     }-*/;
 
     private static String debugHtml(Node node) {

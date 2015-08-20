@@ -65,7 +65,18 @@ public class Element {
     }
 
     public Element setAttribute(String name, int value) {
-        return setAttribute(name, String.valueOf(value));
+        assert validAttribute(name);
+        template.setAttribute(name, value, node);
+        debug("Set attribute " + name + " for " + this);
+        return this;
+    }
+
+    public Element setAttribute(String name, double value) {
+        assert validAttribute(name);
+        template.setAttribute(name, value, node);
+        debug("Set attribute " + name + " for " + this);
+        return this;
+
     }
 
     private boolean validAttribute(String name) {
@@ -105,6 +116,20 @@ public class Element {
         } catch (Exception e) {
             getLogger().fine("Could not parse attribute value '" + defaultValue
                     + "' as integer");
+            return defaultValue;
+        }
+    }
+
+    public double getAttribute(String name, double defaultValue) {
+        if (!hasAttribute(name)) {
+            return defaultValue;
+        }
+
+        try {
+            return Double.parseDouble(getAttribute(name));
+        } catch (Exception e) {
+            getLogger().fine("Could not parse attribute value '" + defaultValue
+                    + "' as double");
             return defaultValue;
         }
     }

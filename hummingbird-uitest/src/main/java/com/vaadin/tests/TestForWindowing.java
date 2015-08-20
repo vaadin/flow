@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2000-2014 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -93,7 +93,7 @@ public class TestForWindowing extends CustomComponent {
                         s.setCaption("Volume");
                         s.setMax(13);
                         s.setMin(12);
-                        s.setResolution(2);
+                        s.setStep(0.01);
                         // s.setOrientation(Slider.ORIENTATION_VERTICAL);
                         // s.setArrows(false);
 

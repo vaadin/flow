@@ -26,21 +26,6 @@ public class ProgressBarGenericTest extends AbstractFieldTest<ProgressBar> {
         createBooleanAction("Indeterminate", CATEGORY_FEATURES, false,
                 indeterminate, null);
         createValueSelection(CATEGORY_FEATURES);
-        createPrimaryStyleNameSelect();
-    }
-
-    /**
-     * @since
-     */
-    protected void createPrimaryStyleNameSelect() {
-        LinkedHashMap<String, String> options = new LinkedHashMap<String, String>();
-        String primaryStyle = getComponent().getPrimaryStyleName();
-        options.put(primaryStyle, primaryStyle);
-        options.put(primaryStyle + "-foo", primaryStyle + "-foo");
-        options.put("foo", "foo");
-        createSelectAction("Primary style name", CATEGORY_DECORATIONS, options,
-                primaryStyle, primaryStyleNameCommand);
-
     }
 
     private void createValueSelection(String categorySelection) {

@@ -236,8 +236,6 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
 
         createWidthAndHeightActions(CATEGORY_SIZE);
 
-        createStyleNameSelect(CATEGORY_DECORATIONS);
-
         createFocusActions();
     }
 
@@ -306,19 +304,6 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
                 }
             }, null);
         }
-    }
-
-    private void createStyleNameSelect(String category) {
-        LinkedHashMap<String, String> options = new LinkedHashMap<String, String>();
-        options.put("-", null);
-        options.put("Light blue background (background-lightblue)",
-                "background-lightblue");
-        options.put("1px red border (border-red-1px)", "border-red-1px");
-        options.put("2px blue border (border-blue-2px)", "border-blue-2px");
-        createComponentStyleNames(options);
-        createSelectAction("Style name", category, options, "-",
-                styleNameCommand);
-
     }
 
     protected void createComponentStyleNames(

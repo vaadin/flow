@@ -10,7 +10,6 @@ import com.vaadin.server.ThemeResource;
 import com.vaadin.server.UserError;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.ComponentContainer.SpacingHandler;
 import com.vaadin.ui.Field;
 
 public abstract class AbstractComponentTestCase<T extends AbstractComponent>
@@ -214,20 +213,6 @@ public abstract class AbstractComponentTestCase<T extends AbstractComponent>
             Command<T, VALUET> command, VALUET value, Object data) {
         doCommand(command, value, data);
     }
-
-    protected Command<T, String> styleNameCommand = new Command<T, String>() {
-        @Override
-        public void execute(T c, String value, Object data) {
-            c.setStyleName(value);
-        }
-    };
-
-    protected Command<T, String> primaryStyleNameCommand = new Command<T, String>() {
-        @Override
-        public void execute(T c, String value, Object data) {
-            c.setPrimaryStyleName(value);
-        }
-    };
 
     @Override
     protected String getTestDescription() {
