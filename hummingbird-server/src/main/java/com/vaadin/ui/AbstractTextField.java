@@ -16,20 +16,11 @@
 
 package com.vaadin.ui;
 
-import com.vaadin.annotations.JavaScript;
 import com.vaadin.event.FieldEvents.BlurNotifier;
 import com.vaadin.event.FieldEvents.FocusNotifier;
-import com.vaadin.hummingbird.kernel.Element;
 
 public abstract class AbstractTextField extends AbstractField<String>
         implements BlurNotifier, FocusNotifier {
-
-    @JavaScript("abstracttextfield.js")
-    public interface JS extends PublishedJavascript {
-        public void setSelectionRange(Element e, int pos, int length);
-
-        public void focus(Element element);
-    }
 
     protected AbstractTextField() {
         super();
