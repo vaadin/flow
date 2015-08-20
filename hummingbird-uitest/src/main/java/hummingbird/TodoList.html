@@ -17,12 +17,12 @@
 				[class.editing]="todo.editing">
 				<div class="view" [class.hidden]="todo.editing">
 					<!-- todo.complete=this.checked; -->
-					<input (click)="setTodoCompleted(element.checked)"
-						class="toggle" type="checkbox" [checked]="todo.completed">
-
-					<label (dblclick)="labelDoubleClick()">{{todo.title}}</label>
+					<input (click)="setTodoCompleted(element.checked)" class="toggle"
+						type="checkbox" [checked]="todo.completed"> <label
+						(dblclick)="labelDoubleClick()">{{todo.title}}</label>
 					<button class="destroy" (click)="removeTodo()"></button>
-				</div> <input #edit class="edit" [class.visible]="todo.editing"
+				</div>
+				<input #edit class="edit" [class.visible]="todo.editing"
 				[value]="todo.title" (blur)="handleEditBlur(element.value)"
 				(change)="handleEditBlur(element.value)">
 			</li>
