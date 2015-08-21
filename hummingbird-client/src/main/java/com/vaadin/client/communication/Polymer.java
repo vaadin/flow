@@ -1,61 +1,86 @@
 package com.vaadin.client.communication;
 
+import com.google.gwt.core.client.js.JsProperty;
+import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
 
+import elemental.js.util.JsArrayOfString;
+
 public class Polymer {
 
+    public static native PolymerDOM dom(Element element)
+    /*-{
+    return $wnd.Polymer.dom(element);
+    }-*/;
+
+    public static native void flushDom()
+    /*-{
+     $wnd.Polymer.dom.flush();
+    }-*/;
+
     // See https://www.polymer-project.org/1.0/docs/devguide/local-dom.html
+    @JsType
+    public interface PolymerDOM {
 
-    public static native void addClassName(Element element, String className)
-    /*-{
-    $wnd.Polymer.dom(element).classList.add(className);
-    }-*/;
+        // Adding and removing children
 
-    public static native void removeClassName(Element element, String className)
-    /*-{
-    $wnd.Polymer.dom(element).classList.remove(className);
-    }-*/;
+        public void appendChild(Node childNode);
 
-    /* Child manipulation */
-    public static native void appendChild(Element parent, Node childNode)
-    /*-{
-         $wnd.Polymer.dom(parent).appendChild(childNode);
-    }-*/;
+        public void insertBefore(Node child, Node beforeNode);
 
-    public static native JsArrayObject<Node> getChildNodes(Element parent)
-    /*-{
-    return $wnd.Polymer.dom(parent).childNodes;
-    }-*/;
+        public void removeChild(Node childNode);
 
-    public static native void removeChild(Element parent, Node childNode)
-    /*-{
-    $wnd.Polymer.dom(parent).removeChild(childNode);
-    }-*/;
+        // Parent and child APIs
 
-    public static native void insertBefore(Element parent, Node child,
-            Node reference)
-            /*-{
-            $wnd.Polymer.dom(parent).insertBefore(child, reference);
-            }-*/;
+        @JsProperty
+        public JsArrayObject<Node> getChildNodes();
 
-    public static native void flush(Element parent)
-    /*-{
-    return $wnd.Polymer.dom(parent).flush();
-    }-*/;
+        @JsProperty
+        public Node getParentNode();
 
-    /* Node mutation */
-    public static native void setAttribute(Element element, String key,
-            String value)
-            /*-{
-            return $wnd.Polymer.dom(element).setAttribute(key,value);
-            }-*/;
+        @JsProperty
+        public Node getFirstChild();
 
-    /* Node mutation */
-    public static native void removeAttribute(Element element, String key)
-    /*-{
-    return $wnd.Polymer.dom(element).removeAttribute(key);
-    }-*/;
+        @JsProperty
+        public Node getLastChild();
+
+        @JsProperty
+        public Node getFirstElementChild();
+
+        @JsProperty
+        public Node getLastElementChild();
+
+        @JsProperty
+        public Node getPreviousSibling();
+
+        @JsProperty
+        public Node getNextSibling();
+
+        @JsProperty
+        public Node getTextContent();
+
+        @JsProperty
+        public Node getInnerHTML();
+
+        // Query selector
+        public Node querySelector(String selector);
+
+        public JsArrayObject<Node> querySelectorAll(String selector);
+
+        // Content APIs
+        // public ??? getDistributedNodes()
+        // public ??? getDestinationInsertionPoints()
+
+        // Node mutation APIs
+        public void setAttribute(String attribute, String value);
+
+        public void removeAttribute(String attribute);
+
+        @JsProperty
+        public JsArrayOfString getClassList();
+
+    }
 
 }

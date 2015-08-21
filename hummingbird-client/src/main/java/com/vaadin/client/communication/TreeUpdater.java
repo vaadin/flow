@@ -343,7 +343,8 @@ public class TreeUpdater {
                 ElementNotifier notifier) {
             for (Entry<String, String> entry : defaultAttributeValues
                     .entrySet()) {
-                Polymer.setAttribute(element, entry.getKey(), entry.getValue());
+                Polymer.dom(element).setAttribute(entry.getKey(),
+                        entry.getValue());
             }
 
             if (events != null) {
@@ -369,7 +370,7 @@ public class TreeUpdater {
                 for (int templateId : childElementTemplates) {
                     Node newChildElement = TreeUpdater.this.createElement(
                             templates.get(templateId), node, notifier);
-                    Polymer.appendChild(element, newChildElement);
+                    Polymer.dom(element).appendChild(newChildElement);
                 }
             }
         }
@@ -561,9 +562,9 @@ public class TreeUpdater {
             String classPartMapping = template.getClassPartMapping(property);
             if (classPartMapping != null) {
                 if (isTrueIsh(change.getValue())) {
-                    Polymer.addClassName(element, classPartMapping);
+                    Polymer.dom(element).getClassList().push(classPartMapping);
                 } else {
-                    Polymer.removeClassName(element, classPartMapping);
+                    Polymer.dom(element).getClassList().remove(classPartMapping);
                 }
             }
         }
@@ -604,7 +605,7 @@ public class TreeUpdater {
 
             String classPartMapping = template.getClassPartMapping(property);
             if (classPartMapping != null) {
-                Polymer.removeClassName(element, classPartMapping);
+                Polymer.dom(element).getClassList().remove(classPartMapping);
             }
         }
 
@@ -682,9 +683,9 @@ public class TreeUpdater {
                 removeListener(change.getValue().asString());
                 break;
             case "CHILDREN":
-                Node childNode = Polymer.getChildNodes(element)
+                Node childNode = Polymer.dom(element).getChildNodes()
                         .get(change.getIndex());
-                Polymer.removeChild(element, childNode);
+                Polymer.dom(element).removeChild(childNode);
                 break;
             default:
                 throw new RuntimeException("Not supported: " + change.getKey());
@@ -827,7 +828,7 @@ public class TreeUpdater {
                 element.setPropertyString(key, null);
             }
             if (element.hasAttribute(key)) {
-                Polymer.removeAttribute(element, key);
+                Polymer.dom(element).removeAttribute(key);
                 debug("Removed attribute " + key + " from "
                         + debugHtml(element));
             }
@@ -836,7 +837,7 @@ public class TreeUpdater {
             if (isAlwaysAttribute(key)) {
                 debug("Set attribute " + key + "=\"" + value + "\" for "
                         + debugHtml(element));
-                Polymer.setAttribute(element, key, value.asString());
+                Polymer.dom(element).setAttribute(key, value.asString());
             } else {
                 if (value.getType() == JsonType.BOOLEAN) {
                     debug("Set property " + key + "=\"" + value
@@ -875,7 +876,7 @@ public class TreeUpdater {
            str +="\"";
        }
        return str+">";
-    
+
     }-*/;
 
     private static String debugHtml(Node node) {
@@ -1228,13 +1229,13 @@ public class TreeUpdater {
 
     private static void insertNodeAtIndex(Element parent, Node child,
             int index) {
-        if (Polymer.getChildNodes(parent).size() == index) {
-            Polymer.appendChild(parent, child);
+        if (Polymer.dom(parent).getChildNodes().size() == index) {
+            Polymer.dom(parent).appendChild(child);
             debug("Appended node " + debugHtml(child) + " into "
                     + debugHtml(parent));
         } else {
-            Node reference = Polymer.getChildNodes(parent).get(index);
-            Polymer.insertBefore(parent, child, reference);
+            Node reference = Polymer.dom(parent).getChildNodes().get(index);
+            Polymer.dom(parent).insertBefore(child, reference);
             debug("Inserted node " + debugHtml(child) + " into "
                     + debugHtml(parent) + " at index " + index);
         }
