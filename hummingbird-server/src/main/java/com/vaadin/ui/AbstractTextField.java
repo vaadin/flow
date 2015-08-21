@@ -119,8 +119,7 @@ public abstract class AbstractTextField extends AbstractField<String>
     public void setSelectionRange(int pos, int length) {
         getElement().setAttribute("selectionStart", pos);
         getElement().setAttribute("selectionEnd", pos + length);
-        // FIXME
-        // getElement().focus();
+        getElement().focus();
     }
 
     /**

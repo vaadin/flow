@@ -70,11 +70,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     private Locale locale;
 
-    /**
-     * The component should receive focus (if {@link Focusable}) when attached.
-     */
-    private boolean delayedFocus;
-
     /* Sizeable fields */
 
     private float width = -1;
@@ -562,9 +557,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
             component.attach();
         }
 
-        if (delayedFocus) {
-            focus();
-        }
         if (locale != null) {
             getUI().getLocaleService().addLocale(locale);
         }
@@ -595,15 +587,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      * Sets the focus for this component if the component is {@link Focusable}.
      */
     protected void focus() {
-        if (this instanceof Focusable) {
-            final VaadinSession session = getSession();
-            if (session != null) {
-                getUI().setFocusedComponent((Focusable) this);
-                delayedFocus = false;
-            } else {
-                delayedFocus = true;
-            }
-        }
+        getElement().focus();
     }
 
     /**

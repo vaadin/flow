@@ -1138,9 +1138,6 @@ public abstract class AbstractField<T> extends AbstractComponent
         setInternalValue(convertFromModel(event.getProperty().getValue()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void focus() {
         super.focus();
