@@ -9,12 +9,12 @@ import com.vaadin.ui.OptionGroup;
 
 public class OptionGroupListenersTest extends AbstractListenerMethodsTestBase {
     public void testFocusListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(OptionGroup.class, FocusEvent.class,
+        testDOMListenerAddGetRemove(OptionGroup.class, FocusEvent.class,
                 FocusListener.class);
     }
 
     public void testBlurListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(OptionGroup.class, BlurEvent.class,
+        testDOMListenerAddGetRemove(OptionGroup.class, BlurEvent.class,
                 BlurListener.class);
     }
 }

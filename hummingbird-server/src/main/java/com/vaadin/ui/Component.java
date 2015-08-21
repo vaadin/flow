@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.EventObject;
 import java.util.Locale;
 
+import com.vaadin.annotations.EventType;
 import com.vaadin.event.ComponentEventListener;
 import com.vaadin.event.FieldEvents;
 import com.vaadin.hummingbird.kernel.Element;
@@ -731,6 +732,15 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
          */
         public Component getComponent() {
             return (Component) getSource();
+        }
+
+        public static String getEventType(
+                Class<? extends EventObject> eventType) {
+            if (eventType.getAnnotation(EventType.class) != null) {
+                return eventType.getAnnotation(EventType.class).value();
+            }
+
+            return null;
         }
 
     }

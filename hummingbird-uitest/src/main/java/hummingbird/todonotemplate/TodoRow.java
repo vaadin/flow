@@ -3,13 +3,9 @@ package hummingbird.todonotemplate;
 import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
-import com.vaadin.event.FieldEvents.BlurEvent;
-import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.TextField;
@@ -66,19 +62,13 @@ public class TodoRow extends CssLayout {
 
         // Blur instead of ValueChange as we want to go back to non-edit mode
         // also when there are no changes
-        edit.addBlurListener(new BlurListener() {
-            @Override
-            public void blur(BlurEvent event) {
-                getPresenter().updateText(todo, edit.getValue());
-                setEditing(false);
-            }
+        edit.addBlurListener(e -> {
+            getPresenter().updateText(todo, edit.getValue());
+            setEditing(false);
         });
 
-        destroy.addClickListener(new ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                getPresenter().delete(todo);
-            }
+        destroy.addClickListener(e -> {
+            getPresenter().delete(todo);
         });
 
     }

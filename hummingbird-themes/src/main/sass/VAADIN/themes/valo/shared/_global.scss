@@ -51,7 +51,7 @@ $valo-global-included: false !default;
       -webkit-text-size-adjust: 100%;
 
       // Disable text selection by default
-      @include user-select(none);
+      //@include user-select(none);
 
       // Enable text selection for certain elements
       input[type="text"],

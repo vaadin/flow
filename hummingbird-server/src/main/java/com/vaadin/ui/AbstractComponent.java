@@ -28,8 +28,8 @@ import java.util.logging.Logger;
 import com.vaadin.annotations.Tag;
 import com.vaadin.event.EventRouter;
 import com.vaadin.event.EventSource;
+import com.vaadin.hummingbird.kernel.DomEventListener;
 import com.vaadin.hummingbird.kernel.Element;
-import com.vaadin.hummingbird.kernel.EventListener;
 import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.server.Resource;
@@ -88,7 +88,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     private Element element;
 
-    private Map<String, EventListener> elementEventListeners;
+    private Map<String, DomEventListener> elementEventListeners;
 
     protected static final String DESIGN_ATTR_PLAIN_TEXT = "plain-text";
 
@@ -99,7 +99,13 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     public AbstractComponent() {
         // ComponentSizeValidator.setCreationLocation(this);
-        createElement(getClass().getAnnotation(Tag.class).value());
+
+        Tag tag = getClass().getAnnotation(Tag.class);
+        if (tag == null) {
+            throw new IllegalStateException(
+                    "No @Tag defined for " + getClass().getName());
+        }
+        createElement(tag.value());
     }
 
     protected AbstractComponent(String tagName) {
@@ -958,7 +964,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
     }
 
     protected void addElementEventListener(String eventType,
-            EventListener listener) {
+            DomEventListener listener) {
         getElement().addEventListener(eventType, listener);
         if (elementEventListeners == null) {
             elementEventListeners = new HashMap<>();

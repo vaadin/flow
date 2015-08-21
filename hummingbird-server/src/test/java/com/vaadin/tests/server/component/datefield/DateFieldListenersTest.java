@@ -9,12 +9,12 @@ import com.vaadin.ui.DateField;
 
 public class DateFieldListenersTest extends AbstractListenerMethodsTestBase {
     public void testFocusListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(DateField.class, FocusEvent.class,
+        testDOMListenerAddGetRemove(DateField.class, FocusEvent.class,
                 FocusListener.class);
     }
 
     public void testBlurListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(DateField.class, BlurEvent.class,
+        testDOMListenerAddGetRemove(DateField.class, BlurEvent.class,
                 BlurListener.class);
     }
 }

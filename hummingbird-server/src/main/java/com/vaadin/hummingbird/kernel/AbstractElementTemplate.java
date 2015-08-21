@@ -2,6 +2,7 @@ package com.vaadin.hummingbird.kernel;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -58,7 +59,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     }
 
     @Override
-    public void addEventListener(String type, EventListener listener,
+    public void addEventListener(String type, DomEventListener listener,
             StateNode node) {
         StateNode listeners = getListenerNode(node, true);
 
@@ -90,14 +91,28 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         }
     }
 
+    @Override
+    public Collection<String> getEventData(String type, StateNode node) {
+        StateNode elementData = getElementDataNode(node, true);
+        StateNode eventDataNode = elementData.get(Keys.EVENT_DATA,
+                StateNode.class);
+        if (eventDataNode == null) {
+            return Collections.emptySet();
+        }
+
+        Collection<String> eventData = new HashSet<>(
+                (List) eventDataNode.getMultiValued(type));
+        return eventData;
+    }
+
     private StateNode getListenerNode(StateNode node, boolean createIfNeeded) {
         StateNode dataNode = getElementDataNode(node, createIfNeeded);
-        StateNode listeners = dataNode.get(EventListener.class,
+        StateNode listeners = dataNode.get(DomEventListener.class,
                 StateNode.class);
         if (listeners == null) {
             listeners = StateNode.create();
             listeners.put(Keys.SERVER_ONLY, Keys.SERVER_ONLY);
-            dataNode.put(EventListener.class, listeners);
+            dataNode.put(DomEventListener.class, listeners);
         }
         return listeners;
     }
@@ -119,7 +134,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     }
 
     @Override
-    public void removeEventListener(String type, EventListener listener,
+    public void removeEventListener(String type, DomEventListener listener,
             StateNode node) {
         StateNode listenerNode = getListenerNode(node, false);
         if (listenerNode == null) {
@@ -139,7 +154,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
                 if (listenerNode.getStringKeys().isEmpty()) {
                     elementDataNode.remove(Keys.LISTENERS);
-                    elementDataNode.remove(EventListener.class);
+                    elementDataNode.remove(DomEventListener.class);
                 }
             }
         }
@@ -147,7 +162,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Collection<EventListener> getEventListeners(String type,
+    public Collection<DomEventListener> getEventListeners(String type,
             StateNode node) {
         StateNode listenerNode = getListenerNode(node, false);
         if (listenerNode == null) {

@@ -1,17 +1,13 @@
 package com.vaadin.tests.components.textfield;
 
 import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.event.FieldEvents.BlurEvent;
-import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.FieldEvents.FocusEvent;
-import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.tests.util.Log;
 import com.vaadin.ui.TextField;
 
-public class TextFieldFocusAndBlurListeners extends TestBase
-        implements FocusListener, BlurListener, ValueChangeListener {
+public class TextFieldFocusAndBlurListeners extends TestBase {
     private Log log = new Log(5).setNumberLogRows(false);
 
     @Override
@@ -30,61 +26,40 @@ public class TextFieldFocusAndBlurListeners extends TestBase
         TextField tf1 = new TextField("TextField 1",
                 "Has focus and blur listeners");
         tf1.setWidth("300px");
-        tf1.addFocusListener(this);
-        tf1.addBlurListener(this);
+        tf1.addFocusListener(this::focus);
+        tf1.addBlurListener(this::blur);
 
         addComponent(tf1);
 
         TextField tf2 = new TextField("TextField 2",
                 "Has focus, blur and valuechange listeners");
         tf2.setWidth("300px");
-        tf2.addValueChangeListener(new ValueChangeListener() {
-
-            @Override
-            public void valueChange(ValueChangeEvent event) {
-                TextFieldFocusAndBlurListeners.this.valueChange(event);
-            }
-        });
-        tf2.addFocusListener(new FocusListener() {
-
-            @Override
-            public void focus(FocusEvent event) {
-                TextFieldFocusAndBlurListeners.this.focus(event);
-            }
-
-        });
-        tf2.addBlurListener(new BlurListener() {
-
-            @Override
-            public void blur(BlurEvent event) {
-                TextFieldFocusAndBlurListeners.this.blur(event);
-            }
-        });
+        tf2.addValueChangeListener(this::valueChange);
+        tf2.addFocusListener(this::focus);
+        tf2.addBlurListener(this::blur);
 
         addComponent(tf2);
 
         TextField tf3 = new TextField("TextField 3",
                 "Has non-immediate valuechange listener");
         tf3.setWidth("300px");
-        tf3.addValueChangeListener(this);
+        tf3.addValueChangeListener(this::valueChange);
 
         addComponent(tf3);
 
         TextField tf4 = new TextField("TextField 4",
                 "Has immediate valuechange listener");
         tf4.setWidth("300px");
-        tf4.addValueChangeListener(this);
+        tf4.addValueChangeListener(this::valueChange);
 
         addComponent(tf4);
     }
 
-    @Override
     public void focus(FocusEvent event) {
         log.log(event.getComponent().getCaption() + ": Focus");
 
     }
 
-    @Override
     public void blur(BlurEvent event) {
         TextField tf = (TextField) event.getComponent();
         log.log(tf.getCaption() + ": Blur. Value is: "
@@ -92,7 +67,6 @@ public class TextFieldFocusAndBlurListeners extends TestBase
 
     }
 
-    @Override
     public void valueChange(ValueChangeEvent event) {
         TextField tf = (TextField) event.getProperty();
         log.log(tf.getCaption() + ": ValueChange: " + tf.getValue().toString());

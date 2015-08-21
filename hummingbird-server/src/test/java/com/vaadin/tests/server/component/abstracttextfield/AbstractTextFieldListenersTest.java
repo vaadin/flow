@@ -15,12 +15,12 @@ public class AbstractTextFieldListenersTest
     // }
 
     public void testFocusListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(TextField.class, FocusEvent.class,
+        testDOMListenerAddGetRemove(TextField.class, FocusEvent.class,
                 FocusListener.class);
     }
 
     public void testBlurListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(TextField.class, BlurEvent.class,
+        testDOMListenerAddGetRemove(TextField.class, BlurEvent.class,
                 BlurListener.class);
     }
 }

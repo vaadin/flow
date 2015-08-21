@@ -19,6 +19,7 @@ package com.vaadin.ui;
 import java.util.Locale;
 import java.util.Objects;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.ConverterUtil;
@@ -48,6 +49,7 @@ import com.vaadin.shared.ui.label.LabelState;
  * @since 3.0
  */
 @SuppressWarnings("serial")
+@Tag("div")
 public class Label extends AbstractComponent implements Property<String>,
         Property.Viewer, Property.ValueChangeListener,
         Property.ValueChangeNotifier, Comparable<Label> {

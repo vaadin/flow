@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -32,14 +31,16 @@ import java.util.logging.Logger;
 
 import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.Tag;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
 import com.vaadin.event.UIEvents.PollEvent;
 import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
+import com.vaadin.hummingbird.kernel.AbstractElementTemplate.Keys;
+import com.vaadin.hummingbird.kernel.BasicElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
-import com.vaadin.hummingbird.kernel.EventListener;
 import com.vaadin.hummingbird.kernel.RootNode;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.navigator.Navigator;
@@ -104,6 +105,7 @@ import elemental.json.JsonObject;
 @JavaScript({
         "vaadin://bower_components/webcomponentsjs/webcomponents.min.js" })
 @HTML({ "vaadin://bower_components/polymer/polymer.html" })
+@Tag("div")
 public abstract class UI extends AbstractSingleComponentContainer
         implements PollNotifier, Focusable {
 
@@ -257,13 +259,18 @@ public abstract class UI extends AbstractSingleComponentContainer
             String eventType = json.getString(1);
             JsonObject eventData = json.getObject(2);
 
-            List<Object> listeners = getRootNode().getById(nodeId)
-                    .get(EventListener.class, StateNode.class)
-                    .getMultiValued(eventType);
-            Element.debug("Received event " + eventType + " for " + nodeId
-                    + ": " + eventData);
-            new ArrayList<>(listeners).forEach(
-                    value -> ((EventListener) value).handleEvent(eventData));
+            StateNode elementStateNode = getRootNode().getById(nodeId);
+
+            ElementTemplate template;
+            if (elementStateNode.containsKey(Keys.TAG)) {
+                template = BasicElementTemplate.get();
+            } else {
+                throw new RuntimeException(
+                        "Only BasicElementTemplate currently supported for events");
+            }
+
+            Element e = Element.getElement(template, elementStateNode);
+            e.dispatchEvent(eventType, eventData);
         });
 
         getPage().getJavaScript().addFunction("vTemplateEvent",

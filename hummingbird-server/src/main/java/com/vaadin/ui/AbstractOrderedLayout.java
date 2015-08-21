@@ -19,6 +19,7 @@ package com.vaadin.ui;
 import java.util.logging.Logger;
 
 import com.vaadin.annotations.HTML;
+import com.vaadin.annotations.Tag;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.LayoutEvents.LayoutClickNotifier;
 import com.vaadin.hummingbird.kernel.Element;
@@ -26,6 +27,7 @@ import com.vaadin.server.Sizeable;
 
 @SuppressWarnings("serial")
 @HTML("vaadin://bower_components/iron-flex-layout/classes/iron-flex-layout.html")
+@Tag("div")
 public abstract class AbstractOrderedLayout
         extends AbstractSimpleDOMComponentContainer implements
         ComponentContainer.AlignmentHandler, ComponentContainer.SpacingHandler,

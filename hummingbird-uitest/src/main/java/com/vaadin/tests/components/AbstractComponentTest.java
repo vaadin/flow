@@ -8,11 +8,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.event.EventListener;
+import com.vaadin.event.FieldEvents;
 import com.vaadin.event.FieldEvents.BlurEvent;
-import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.FieldEvents.BlurNotifier;
 import com.vaadin.event.FieldEvents.FocusEvent;
-import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.event.FieldEvents.FocusNotifier;
 import com.vaadin.server.DefaultErrorHandler;
 import com.vaadin.server.Resource;
@@ -23,8 +23,8 @@ import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.MenuItem;
 
-public abstract class AbstractComponentTest<T extends AbstractComponent> extends
-        AbstractComponentTestCase<T>implements FocusListener, BlurListener {
+public abstract class AbstractComponentTest<T extends AbstractComponent>
+        extends AbstractComponentTestCase<T> {
 
     protected static final String TEXT_SHORT = "Short";
     protected static final String TEXT_MEDIUM = "This is a semi-long text that might wrap.";
@@ -239,15 +239,29 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         createFocusActions();
     }
 
+    private EventListener<FocusEvent> focusListener = new EventListener<FocusEvent>() {
+
+        @Override
+        public void onEvent(FocusEvent event) {
+            log(event.getClass().getSimpleName());
+        }
+    };
+    private EventListener<BlurEvent> blurListener = new EventListener<FieldEvents.BlurEvent>() {
+
+        @Override
+        public void onEvent(BlurEvent event) {
+            log(event.getClass().getSimpleName());
+        }
+    };
     protected Command<T, Boolean> focusListenerCommand = new Command<T, Boolean>() {
 
         @Override
         public void execute(T c, Boolean value, Object data) {
             FocusNotifier fn = (FocusNotifier) c;
             if (value) {
-                fn.addFocusListener(AbstractComponentTest.this);
+                fn.addFocusListener(focusListener);
             } else {
-                fn.removeFocusListener(AbstractComponentTest.this);
+                fn.removeFocusListener(focusListener);
             }
         }
     };
@@ -257,9 +271,9 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         public void execute(T c, Boolean value, Object data) {
             BlurNotifier bn = (BlurNotifier) c;
             if (value) {
-                bn.addBlurListener(AbstractComponentTest.this);
+                bn.addBlurListener(blurListener);
             } else {
-                bn.removeBlurListener(AbstractComponentTest.this);
+                bn.removeBlurListener(blurListener);
             }
         }
     };
@@ -710,16 +724,6 @@ public abstract class AbstractComponentTest<T extends AbstractComponent> extends
         log.log("Exception occured, " + throwable.getClass().getName() + ": "
                 + throwable.getMessage());
         throwable.printStackTrace();
-    }
-
-    @Override
-    public void focus(FocusEvent event) {
-        log(event.getClass().getSimpleName());
-    }
-
-    @Override
-    public void blur(BlurEvent event) {
-        log(event.getClass().getSimpleName());
     }
 
 }

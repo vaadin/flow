@@ -1,12 +1,24 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EventObject;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.vaadin.annotations.EventParameter;
+import com.vaadin.annotations.EventType;
+import com.vaadin.event.EventListener;
 import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.Component;
+
+import elemental.json.JsonObject;
 
 public class Element {
 
@@ -52,13 +64,16 @@ public class Element {
 
     public Element setAttribute(String name, String value) {
         assert validAttribute(name);
+
         template.setAttribute(name, value, node);
         debug("Set attribute " + name + " for " + this);
         return this;
     }
 
     public static void debug(String string) {
-        if (false) {
+        assert string != null;
+
+        if (true) {
             getLogger().info(string);
         }
 
@@ -66,6 +81,7 @@ public class Element {
 
     public Element setAttribute(String name, int value) {
         assert validAttribute(name);
+
         template.setAttribute(name, value, node);
         debug("Set attribute " + name + " for " + this);
         return this;
@@ -73,6 +89,7 @@ public class Element {
 
     public Element setAttribute(String name, double value) {
         assert validAttribute(name);
+
         template.setAttribute(name, value, node);
         debug("Set attribute " + name + " for " + this);
         return this;
@@ -80,6 +97,10 @@ public class Element {
     }
 
     private boolean validAttribute(String name) {
+        if (name == null) {
+            return false;
+        }
+
         if (TEXT_NODE_TAG.equals(getTag())) {
             assert TEXT_NODE_TEXT_ATTRIBUTE.equals(name) : "Attribute " + name
                     + " is not supported for text nodes";
@@ -89,16 +110,21 @@ public class Element {
 
     public Element setAttribute(String name, boolean value) {
         assert validAttribute(name);
+
         template.setAttribute(name, value, node);
         return this;
     }
 
     public String getAttribute(String name) {
+        assert validAttribute(name);
+
         Object value = template.getAttribute(name, node);
         return value == null ? null : value.toString();
     }
 
     public String getAttribute(String name, String defaultValue) {
+        assert validAttribute(name);
+
         if (!hasAttribute(name)) {
             return defaultValue;
         }
@@ -107,6 +133,8 @@ public class Element {
     }
 
     public int getAttribute(String name, int defaultValue) {
+        assert validAttribute(name);
+
         if (!hasAttribute(name)) {
             return defaultValue;
         }
@@ -121,6 +149,8 @@ public class Element {
     }
 
     public double getAttribute(String name, double defaultValue) {
+        assert validAttribute(name);
+
         if (!hasAttribute(name)) {
             return defaultValue;
         }
@@ -135,25 +165,53 @@ public class Element {
     }
 
     public boolean hasAttribute(String name) {
+        assert validAttribute(name);
+
         return getAttribute(name) != null;
     }
 
-    public Element addEventData(String type, String... data) {
-        template.addEventData(type, node, data);
+    public Element addEventData(String eventType, String... data) {
+        assert eventType != null;
+
+        for (String d : data) {
+            debug("Add event data for " + eventType + ": " + d);
+        }
+        template.addEventData(eventType, node, data);
         return this;
     }
 
-    public Element addEventListener(String type, EventListener listener) {
-        template.addEventListener(type, listener, node);
+    Collection<String> getEventData(String eventType) {
+        assert eventType != null;
+
+        return template.getEventData(eventType, node);
+    }
+
+    public Element addEventListener(String eventType,
+            DomEventListener listener) {
+        assert eventType != null;
+        assert listener != null;
+
+        template.addEventListener(eventType, listener, node);
         return this;
     }
 
-    public Element removeEventListener(String type, EventListener listener) {
-        template.removeEventListener(type, listener, node);
+    public Element removeEventListener(String eventType,
+            DomEventListener listener) {
+        assert eventType != null;
+        assert listener != null;
+
+        template.removeEventListener(eventType, listener, node);
         return this;
     }
 
-    public Collection<EventListener> getEventListeners(String eventType) {
+    public boolean hasEventListeners(String eventType) {
+        assert eventType != null;
+        return !template.getEventListeners(eventType, node).isEmpty();
+    }
+
+    public Collection<DomEventListener> getEventListeners(String eventType) {
+        assert eventType != null;
+
         return template.getEventListeners(eventType, node);
     }
 
@@ -162,16 +220,22 @@ public class Element {
     }
 
     public Element getChild(int index) {
+        assert index >= 0;
+
         return template.getChild(index, node);
     }
 
     public Element insertChild(int index, Element child) {
+        assert index >= 0;
         assert child != null : "Cannot insert null child";
+
         template.insertChild(index, child, node);
         return this;
     }
 
     public Element appendChild(Element child) {
+        assert child != null : "Cannot insert null child";
+
         insertChild(getChildCount(), child);
         return this;
     }
@@ -198,6 +262,9 @@ public class Element {
     }
 
     public static Element getElement(ElementTemplate template, StateNode node) {
+        assert template != null;
+        assert node != null;
+
         return new Element(template, node);
     }
 
@@ -255,6 +322,16 @@ public class Element {
         return element;
     }
 
+    public void removeChild(Element element) {
+        assert element != null;
+
+        if (element.getParent() != this) {
+            throw new IllegalArgumentException(
+                    "The given element is not a child of this element");
+        }
+        template.removeChild(getNode(), element);
+    }
+
     public Element removeAllChildren() {
         while (getChildCount() > 0) {
             getChild(0).removeFromParent();
@@ -279,6 +356,10 @@ public class Element {
      */
     protected Element addAttributeValue(String name, String valueToAdd,
             String separator) {
+        assert validAttribute(name);
+        assert valueToAdd != null;
+        assert separator != null;
+
         if (!hasAttribute(name)) {
             return setAttribute(name, valueToAdd);
         } else {
@@ -306,6 +387,10 @@ public class Element {
      */
     protected boolean hasAttributeValue(String name, String valueToAdd,
             String separator) {
+        assert validAttribute(name);
+        assert valueToAdd != null;
+        assert separator != null;
+
         if (hasAttribute(name)) {
             String[] currentValues = getAttribute(name).split(separator);
             for (String s : currentValues) {
@@ -333,6 +418,10 @@ public class Element {
      */
     protected Element removeAttributeValue(String name, String valueToRemove,
             String separator) {
+        assert validAttribute(name);
+        assert valueToRemove != null;
+        assert separator != null;
+
         if (!hasAttribute(name)) {
             return this;
         }
@@ -349,10 +438,13 @@ public class Element {
     }
 
     public boolean hasChild(Element element) {
+        assert element != null;
+
         return equals(element.getParent());
     }
 
     public int getChildIndex(Element element) {
+        assert element != null;
         for (int i = 0; i < getChildCount(); i++) {
             if (getChild(i).equals(element)) {
                 return i;
@@ -379,6 +471,8 @@ public class Element {
     }
 
     public Element removeAttribute(String name) {
+        assert validAttribute(name);
+
         setAttribute(name, null);
         return this;
     }
@@ -395,6 +489,8 @@ public class Element {
      * @return this element
      */
     public Element removeClass(String className) {
+        assert className != null;
+
         return removeAttributeValue(CLASS_ATTRIBUTE, className, " ");
     }
 
@@ -410,6 +506,8 @@ public class Element {
      * @return this element
      */
     public Element addClass(String className) {
+        assert className != null;
+
         if (!hasAttribute(CLASS_ATTRIBUTE)) {
             setAttribute(CLASS_ATTRIBUTE, className);
         } else {
@@ -426,6 +524,8 @@ public class Element {
      * @return true if the class name is set, false otherwise
      */
     public boolean hasClass(String className) {
+        assert className != null;
+
         return hasAttributeValue(CLASS_ATTRIBUTE, className, " ");
     }
 
@@ -439,6 +539,9 @@ public class Element {
      *            The value to set for the property
      */
     public Element setStyle(String property, String value) {
+        assert property != null;
+        assert value != null;
+
         if (!hasAttribute(STYLE_ATTRIBUTE)) {
             setAttribute(STYLE_ATTRIBUTE, property + ":" + value);
             return this;
@@ -476,6 +579,8 @@ public class Element {
      * @return true if the property has been set, false otherwise
      */
     public boolean hasStyle(String property) {
+        assert property != null;
+
         return getStyle(property) != null;
     }
 
@@ -488,6 +593,8 @@ public class Element {
      *         set
      */
     public String getStyle(String property) {
+        assert property != null;
+
         if (!hasAttribute(STYLE_ATTRIBUTE)) {
             return null;
         }
@@ -513,6 +620,8 @@ public class Element {
      *            the style property to remove
      */
     public Element removeStyle(String property) {
+        assert property != null;
+
         if (!hasAttribute(STYLE_ATTRIBUTE)) {
             return this;
         }
@@ -550,6 +659,8 @@ public class Element {
      *            true to add the class, false to remove it
      */
     public Element setClass(String className, boolean add) {
+        assert className != null;
+
         if (add) {
             return addClass(className);
         } else {
@@ -585,6 +696,8 @@ public class Element {
     }
 
     private void getTextContent(Element e, StringBuilder b) {
+        assert e != null;
+        assert b != null;
 
         for (int i = 0; i < e.getChildCount(); i++) {
             Element child = e.getChild(i);
@@ -603,7 +716,7 @@ public class Element {
     }
 
     private boolean isTextNode(Element e) {
-        return TEXT_NODE_TAG.equals(e.getTag());
+        return e != null && TEXT_NODE_TAG.equals(e.getTag());
     }
 
     /**
@@ -621,4 +734,198 @@ public class Element {
         root.enqueueRpc(node, "$0.focus()", this);
     }
 
+    public <E extends EventObject> void removeEventListener(Class<E> eventType,
+            EventListener<E> listener, Object source) {
+        assert eventType != null;
+        assert listener != null;
+        assert source != null;
+
+        removeEventListener(getDomEventType(eventType),
+                new DomEventListenerWrapper<E>(eventType, listener, source));
+    }
+
+    public <E extends EventObject> void addEventListener(Class<E> eventType,
+            com.vaadin.event.EventListener<E> listener, Object source) {
+        assert eventType != null;
+        assert listener != null;
+        assert source != null;
+
+        if (eventType.getEnclosingClass() != null
+                && !Modifier.isStatic(eventType.getModifiers())) {
+            // Non static inner class
+            throw new IllegalArgumentException(
+                    "Event classes must be top level classes or static inner classes. "
+                            + eventType.getName()
+                            + " is a non-static inner class");
+        }
+
+        String domEventType = getDomEventType(eventType);
+        addEventData(domEventType, eventType);
+        addEventListener(domEventType,
+                new DomEventListenerWrapper<E>(eventType, listener, source));
+    }
+
+    private void addEventData(String domEventType,
+            Class<? extends EventObject> eventType) {
+        assert domEventType != null && !domEventType.isEmpty();
+        assert eventType != null;
+
+        for (Field f : getEventParameterFields(eventType)) {
+            String eventParameter = getDomEventParameterName(f);
+            addEventData(domEventType, eventParameter);
+        }
+    }
+
+    private String getDomEventType(Class<? extends EventObject> eventType) {
+        assert eventType != null;
+
+        EventType ann = eventType.getAnnotation(EventType.class);
+        if (ann == null) {
+            throw new IllegalArgumentException(
+                    "Event type " + eventType.getName() + " should have an @"
+                            + EventType.class.getSimpleName() + " annotation");
+        }
+        return ann.value();
+    }
+
+    public static class DomEventListenerWrapper<E extends EventObject>
+            implements DomEventListener {
+
+        private EventListener<E> listener;
+        private Object eventSource;
+        private Class<E> eventType;
+
+        public DomEventListenerWrapper(Class<E> eventType,
+                EventListener<E> listener, Object eventSource) {
+            assert eventType != null;
+            assert listener != null;
+            assert eventSource != null;
+
+            this.eventType = eventType;
+            this.listener = listener;
+            this.eventSource = eventSource;
+        }
+
+        @Override
+        public void handleEvent(JsonObject eventData) {
+            assert eventData != null;
+
+            E eventObject = createEventObject();
+
+            populateEvent(eventObject, eventData);
+            listener.onEvent(eventObject);
+        }
+
+        private E createEventObject() {
+            for (Constructor<?> c : eventType.getConstructors()) {
+                if (c.getParameterCount() == 1 && c.getParameterTypes()[0]
+                        .isAssignableFrom(eventSource.getClass())) {
+                    try {
+                        return eventType.cast(c.newInstance(eventSource));
+                    } catch (InstantiationException | IllegalAccessException
+                            | IllegalArgumentException
+                            | InvocationTargetException e) {
+                        throw new RuntimeException(
+                                "Unable to create event object instanceof of type "
+                                        + eventType.getName(),
+                                e);
+                    }
+                }
+            }
+            throw new RuntimeException(
+                    "Unable to create event of type " + eventType.getName()
+                            + ". No constructor accepting the event source of type "
+                            + eventSource.getClass().getName() + " found.");
+        }
+
+        private void populateEvent(E eventObject, JsonObject eventData) {
+            assert eventObject != null;
+            assert eventData != null;
+
+            for (Field f : getEventParameterFields(eventType)) {
+                String value = getDomEventParameterName(f);
+
+                f.setAccessible(true);
+                try {
+                    if (f.getType() == int.class) {
+                        f.set(eventObject, (int) eventData.getNumber(value));
+                    } else if (f.getType() == double.class) {
+                        f.set(eventObject, eventData.getNumber(value));
+                    } else if (f.getType() == boolean.class) {
+                        f.set(eventObject, eventData.getBoolean(value));
+                    } else if (f.getType() == String.class) {
+                        f.set(eventObject, eventData.getString(value));
+                    } else {
+                        f.set(eventObject, eventData.get(value));
+                    }
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    throw new RuntimeException(
+                            "Unable to assign value to field " + f.getName()
+                                    + " in event object of type "
+                                    + eventType.getName(),
+                            e);
+                }
+            }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof DomEventListenerWrapper<?>)) {
+                return false;
+            }
+            return listener.equals(((DomEventListenerWrapper<?>) obj).listener);
+        }
+
+        @Override
+        public int hashCode() {
+            return listener.hashCode() * 37 + eventSource.hashCode();
+        }
+    }
+
+    private static String getDomEventParameterName(Field f) {
+        assert f != null;
+
+        EventParameter param = f.getAnnotation(EventParameter.class);
+        assert param != null;
+        String value = param.value();
+        if (value.equals("")) {
+            value = f.getName();
+        }
+
+        return value;
+    }
+
+    private static List<Field> getEventParameterFields(Class<?> eventType) {
+        assert eventType != null;
+
+        List<Field> fields = new ArrayList<>();
+        // TODO Cache
+        while (eventType != Object.class) {
+            Arrays.stream(eventType.getDeclaredFields())
+                    .filter(f -> f.getAnnotation(EventParameter.class) != null)
+                    .forEach(fields::add);
+            eventType = eventType.getSuperclass();
+        }
+        return fields;
+    }
+
+    public void dispatchEvent(String eventType, JsonObject eventData) {
+        assert eventType != null;
+        assert eventData != null;
+
+        Collection<DomEventListener> listeners = getEventListeners(eventType);
+        if (listeners.isEmpty()) {
+            debug("No listeners for '" + eventType + "' event");
+
+            return;
+        }
+
+        debug("Dispatching '" + eventType + "' event to " + listeners.size()
+                + " listeners. Event data: " + eventData.toJson());
+        for (DomEventListener listener : listeners
+                .toArray(new DomEventListener[listeners.size()])) {
+            listener.handleEvent(eventData);
+        }
+
+    }
 }

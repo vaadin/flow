@@ -9,12 +9,12 @@ import com.vaadin.ui.ComboBox;
 
 public class SelectListenersTest extends AbstractListenerMethodsTestBase {
     public void testFocusListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(ComboBox.class, FocusEvent.class,
+        testDOMListenerAddGetRemove(ComboBox.class, FocusEvent.class,
                 FocusListener.class);
     }
 
     public void testBlurListenerAddGetRemove() throws Exception {
-        testListenerAddGetRemove(ComboBox.class, BlurEvent.class,
+        testDOMListenerAddGetRemove(ComboBox.class, BlurEvent.class,
                 BlurListener.class);
     }
 }

@@ -697,11 +697,15 @@ public class TreeUpdater {
 
         private void addListener(final String type) {
             final Integer id = nodeToId.get(node);
+            debug("Add listener for " + type + " node " + debugHtml(element));
             DomListener listener = new DomListener() {
                 @Override
                 public void handleEvent(JavaScriptObject event) {
                     JsonObject eventData = null;
 
+                    debug("Handling " + type + " for " + debugHtml(element)
+                            + ". Event: "
+                            + ((JsonObject) event.cast()).toJson());
                     JsonObject eventTypesToData = node.getObject("EVENT_DATA");
                     if (eventTypesToData != null) {
                         JsonArray eventDataKeys = eventTypesToData
@@ -775,24 +779,46 @@ public class TreeUpdater {
         JsonObject eventData = Json.createObject();
         for (int i = 0; i < eventDataKeys.length(); i++) {
             String eventDataKey = eventDataKeys.getString(i);
+            JsonValue value;
             if (eventDataKey.startsWith("event.")) {
                 String jsKey = eventDataKey.substring("event.".length());
-                JsonValue value = ((JsonObject) event).get(jsKey);
-                eventData.put(eventDataKey, value);
+                value = getValue((JsonObject) event, jsKey);
             } else if (eventDataKey.startsWith("element.")) {
                 String jsKey = eventDataKey.substring("element.".length());
-                JsonValue value = ((JsonObject) element).get(jsKey);
-                eventData.put(eventDataKey, value);
+                value = getValue((JsonObject) element, jsKey);
             } else {
-                throw new RuntimeException(
-                        "Unsupported event data key: " + eventDataKey);
+                String jsKey = eventDataKey;
+
+                // Try event first, then element
+                value = getValue((JsonObject) event, jsKey);
+                if (value == null) {
+                    value = getValue((JsonObject) element, jsKey);
+                }
             }
+            if (value == null) {
+                debug("No value found for event key " + eventDataKey);
+            }
+            eventData.put(eventDataKey, value);
         }
         return eventData;
+
+    }
+
+    private static JsonValue getValue(JsonObject dataObject, String jsKey) {
+        String keys[] = jsKey.split("\\.");
+        for (String key : keys) {
+            dataObject = dataObject.getObject(key);
+            if (dataObject == null) {
+                return null;
+            }
+        }
+        return dataObject;
     }
 
     private void sendEventToServer(int nodeId, String eventType,
             JsonObject eventData) {
+        debug("Sending event " + eventType + " for node " + nodeId
+                + " to server (data: " + eventData.toJson() + ")");
         JsonArray arguments = Json.createArray();
         arguments.set(0, nodeId);
         arguments.set(1, eventType);

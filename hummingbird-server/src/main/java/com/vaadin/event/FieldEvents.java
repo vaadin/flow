@@ -18,15 +18,13 @@ package com.vaadin.event;
 
 import java.io.Serializable;
 
+import com.vaadin.annotations.EventType;
 import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.hummingbird.kernel.EventListener;
 import com.vaadin.shared.communication.FieldRpc.FocusAndBlurServerRpc;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Component.Event;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.TextField;
-
-import elemental.json.JsonObject;
 
 /**
  * Interface that serves as a wrapper for {@link Field} related events.
@@ -59,19 +57,10 @@ public interface FieldEvents {
          * @see FocusListener
          * @since 6.2
          */
-        default public void addFocusListener(FocusListener listener) {
-            if (!hasListeners(FocusListener.class)) {
-                getElement().addEventListener("focus", new DOMFocusListener() {
-                    @Override
-                    public void handleEvent(JsonObject eventData) {
-                        fireEvent(new FocusEvent(FocusNotifier.this));
-                    }
-                });
-            }
-            addListener(FocusListener.class, listener);
-        }
-
-        public interface DOMFocusListener extends EventListener {
+        default public void addFocusListener(
+                EventListener<FocusEvent> listener) {
+            getElement().addEventListener(FocusEvent.class, listener,
+                    FocusNotifier.this);
         }
 
         /**
@@ -81,18 +70,10 @@ public interface FieldEvents {
          * @see FocusListener
          * @since 6.2
          */
-        default public void removeFocusListener(FocusListener listener) {
-            removeListener(FocusListener.class, listener);
-
-            if (!hasListeners(FocusListener.class)) {
-                for (EventListener l : getElement()
-                        .getEventListeners("focus")) {
-                    if (l instanceof DOMFocusListener) {
-                        getElement().removeEventListener("focus", l);
-                        return;
-                    }
-                }
-            }
+        default public void removeFocusListener(
+                EventListener<FocusEvent> listener) {
+            getElement().removeEventListener(FocusEvent.class, listener,
+                    FocusNotifier.this);
         }
     }
 
@@ -122,16 +103,9 @@ public interface FieldEvents {
          * @see BlurListener
          * @since 6.2
          */
-        default public void addBlurListener(BlurListener listener) {
-            if (!hasListeners(BlurListener.class)) {
-                getElement().addEventListener("blur", new DOMBlurListener() {
-                    @Override
-                    public void handleEvent(JsonObject eventData) {
-                        fireEvent(new BlurEvent(BlurNotifier.this));
-                    }
-                });
-            }
-            addListener(BlurListener.class, listener);
+        default public void addBlurListener(EventListener<BlurEvent> listener) {
+            getElement().addEventListener(BlurEvent.class, listener,
+                    BlurNotifier.this);
         }
 
         /**
@@ -141,20 +115,10 @@ public interface FieldEvents {
          * @see BlurListener
          * @since 6.2
          */
-        default public void removeBlurListener(BlurListener listener) {
-            removeListener(BlurListener.class, listener);
-
-            if (!hasListeners(BlurListener.class)) {
-                for (EventListener l : getElement().getEventListeners("blur")) {
-                    if (l instanceof DOMBlurListener) {
-                        getElement().removeEventListener("blur", l);
-                        return;
-                    }
-                }
-            }
-        }
-
-        public interface DOMBlurListener extends EventListener {
+        default public void removeBlurListener(
+                EventListener<BlurEvent> listener) {
+            getElement().removeEventListener(BlurEvent.class, listener,
+                    BlurNotifier.this);
         }
 
     }
@@ -165,7 +129,7 @@ public interface FieldEvents {
      *
      * @since 6.2
      */
-    @SuppressWarnings("serial")
+    @EventType("focus")
     public static class FocusEvent extends Component.Event {
 
         public FocusEvent(Component source) {
@@ -173,22 +137,24 @@ public interface FieldEvents {
         }
     }
 
-    /**
-     * <code>FocusListener</code> interface for listening for
-     * <code>FocusEvent</code> fired by a <code>Field</code>.
-     *
-     * @see FocusEvent
-     * @since 6.2
-     */
-    public interface FocusListener extends ComponentEventListener {
+    public interface BlurListener extends EventListener<BlurEvent> {
+        @Override
+        default void onEvent(BlurEvent event) {
+            blur(event);
+        }
 
-        /**
-         * Component has been focused
-         *
-         * @param event
-         *            Component focus event.
-         */
+        public void blur(BlurEvent event);
+
+    }
+
+    public interface FocusListener extends EventListener<FocusEvent> {
+        @Override
+        default void onEvent(FocusEvent event) {
+            focus(event);
+        }
+
         public void focus(FocusEvent event);
+
     }
 
     /**
@@ -197,7 +163,7 @@ public interface FieldEvents {
      *
      * @since 6.2
      */
-    @SuppressWarnings("serial")
+    @EventType("blur")
     public static class BlurEvent extends Component.Event {
 
         /**
@@ -206,24 +172,6 @@ public interface FieldEvents {
         public BlurEvent(Component source) {
             super(source);
         }
-    }
-
-    /**
-     * <code>BlurListener</code> interface for listening for
-     * <code>BlurEvent</code> fired by a <code>Field</code>.
-     *
-     * @see BlurEvent
-     * @since 6.2
-     */
-    public interface BlurListener extends ComponentEventListener {
-
-        /**
-         * Component has been blurred
-         *
-         * @param event
-         *            Component blur event.
-         */
-        public void blur(BlurEvent event);
     }
 
     /**

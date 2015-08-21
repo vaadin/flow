@@ -2,16 +2,20 @@ package com.vaadin.tests.server.component;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EventListener;
 import java.util.EventObject;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.easymock.EasyMock;
 import org.junit.Assert;
 
 import com.vaadin.event.EventSource;
+import com.vaadin.hummingbird.kernel.DomEventListener;
+import com.vaadin.hummingbird.kernel.Element.DomEventListenerWrapper;
 import com.vaadin.tests.VaadinClasses;
 import com.vaadin.ui.Component;
 
@@ -83,6 +87,17 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
         }
     }
 
+    protected void testDOMListenerAddGetRemove(
+            Class<? extends Component> testClass,
+            Class<? extends EventObject> eventClass,
+            Class<? extends com.vaadin.event.EventListener<?>> listenerClass)
+                    throws Exception {
+        // Create a component for testing
+        Component c = testClass.newInstance();
+        testDOMListenerAddGetRemove(testClass, eventClass, listenerClass, c);
+
+    }
+
     protected void testListenerAddGetRemove(
             Class<? extends EventSource> testClass,
             Class<? extends EventObject> eventClass,
@@ -119,6 +134,37 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
         // Remove the remaining and verify
         removeListener(c, mockListener2, listenerClass);
         verifyListeners(c, listenerClass);
+
+    }
+
+    protected void testDOMListenerAddGetRemove(Class<? extends Component> cls,
+            Class<? extends EventObject> eventClass,
+            Class<? extends com.vaadin.event.EventListener> listenerClass,
+            Component c) throws Exception {
+
+        com.vaadin.event.EventListener mockListener1 = EasyMock
+                .createMock(listenerClass);
+        com.vaadin.event.EventListener mockListener2 = EasyMock
+                .createMock(listenerClass);
+
+        // Verify we start from no listeners
+        verifyDOMListeners(c, eventClass);
+
+        // Add one listener and verify
+        addListener(c, mockListener1, listenerClass);
+        verifyDOMListeners(c, eventClass, mockListener1);
+
+        // Add another listener and verify
+        addListener(c, mockListener2, listenerClass);
+        verifyDOMListeners(c, eventClass, mockListener1, mockListener2);
+
+        // Remove the first and verify
+        removeListener(c, mockListener1, listenerClass);
+        verifyDOMListeners(c, eventClass, mockListener2);
+
+        // Remove the remaining and verify
+        removeListener(c, mockListener2, listenerClass);
+        verifyDOMListeners(c, eventClass);
 
     }
 
@@ -197,14 +243,24 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
     private Method getAddListenerMethod(Class<?> cls, Class<?> listenerClass)
             throws SecurityException, NoSuchMethodException {
         String methodName = "add" + listenerClass.getSimpleName();
-        return cls.getMethod(methodName, listenerClass);
+        try {
+            return cls.getMethod(methodName, listenerClass);
+        } catch (NoSuchMethodException e) {
+            return cls.getMethod(methodName,
+                    com.vaadin.event.EventListener.class);
+        }
+
     }
 
     private Method getRemoveListenerMethod(Class<?> cls, Class<?> listenerClass)
             throws SecurityException, NoSuchMethodException {
         String methodName = "remove" + listenerClass.getSimpleName();
-
-        return cls.getMethod(methodName, listenerClass);
+        try {
+            return cls.getMethod(methodName, listenerClass);
+        } catch (NoSuchMethodException e) {
+            return cls.getMethod(methodName,
+                    com.vaadin.event.EventListener.class);
+        }
     }
 
     private void verifyListeners(EventSource c,
@@ -218,6 +274,28 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
                 registeredListeners.size());
 
         Assert.assertArrayEquals(expectedListeners,
+                registeredListeners.toArray());
+    }
+
+    private <E extends EventObject> void verifyDOMListeners(Component c,
+            Class<E> eventType,
+            com.vaadin.event.EventListener<E>... expectedListeners)
+                    throws IllegalArgumentException, SecurityException,
+                    IllegalAccessException, InvocationTargetException,
+                    NoSuchMethodException {
+        Collection<DomEventListener> registeredListeners = c.getElement()
+                .getEventListeners(Component.Event.getEventType(eventType));
+        assertEquals("Number of listeners", expectedListeners.length,
+                registeredListeners.size());
+
+        List<DomEventListenerWrapper<E>> wrappedExpectedListeners = new ArrayList<>();
+
+        for (com.vaadin.event.EventListener<E> listener : expectedListeners) {
+            wrappedExpectedListeners.add(
+                    new DomEventListenerWrapper<E>(eventType, listener, c));
+        }
+
+        Assert.assertArrayEquals(wrappedExpectedListeners.toArray(),
                 registeredListeners.toArray());
     }
 

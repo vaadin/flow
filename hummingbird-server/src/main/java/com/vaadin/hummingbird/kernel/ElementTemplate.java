@@ -28,13 +28,22 @@ public interface ElementTemplate {
 
     public abstract int getId();
 
-    public void addEventListener(String type, EventListener listener,
+    public void addEventListener(String type, DomEventListener listener,
             StateNode node);
 
-    public void removeEventListener(String type, EventListener listener,
+    public void removeEventListener(String type, DomEventListener listener,
             StateNode node);
 
-    public Collection<EventListener> getEventListeners(String eventType,
+    /**
+     * Returns the event listeners registered for the given event type.
+     * <p>
+     * Returns an empty collection if there are no listeners registered
+     *
+     * @param eventType
+     * @param node
+     * @return a collection with the registered event listeners.
+     */
+    public Collection<DomEventListener> getEventListeners(String eventType,
             StateNode node);
 
     public void setComponent(Component c, StateNode node);
@@ -42,5 +51,7 @@ public interface ElementTemplate {
     public Component getComponent(StateNode node);
 
     public void addEventData(String type, StateNode node, String[] data);
+
+    public Collection<String> getEventData(String eventType, StateNode node);
 
 }
