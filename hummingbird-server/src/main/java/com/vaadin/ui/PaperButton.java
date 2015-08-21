@@ -16,7 +16,7 @@
 
 package com.vaadin.ui;
 
-import com.vaadin.annotations.HTML;
+import com.vaadin.annotations.Bower;
 import com.vaadin.annotations.Tag;
 
 /**
@@ -27,7 +27,7 @@ import com.vaadin.annotations.Tag;
  */
 @SuppressWarnings("serial")
 @Tag("paper-button")
-@HTML("vaadin://bower_components/paper-button/paper-button.html")
+@Bower("paper-button")
 public class PaperButton extends Button {
 
     /**

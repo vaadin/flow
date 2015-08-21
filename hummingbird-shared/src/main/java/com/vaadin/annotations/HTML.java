@@ -47,7 +47,6 @@ import java.lang.annotation.Target;
  * com.example.MyConnector.
  *
  * @author Vaadin Ltd
- * @since 8.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

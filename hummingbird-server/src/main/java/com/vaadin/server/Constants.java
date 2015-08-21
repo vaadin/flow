@@ -156,4 +156,5 @@ public interface Constants {
 
     static final String PORTLET_CONTEXT = "PORTLET_CONTEXT";
 
+    static final String BOWER_RESOURCE = "vaadin://bower_components/{0}/{0}.html";
 }

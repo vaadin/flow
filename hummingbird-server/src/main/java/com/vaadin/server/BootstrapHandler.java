@@ -41,12 +41,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.parser.Tag;
 
-import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Viewport;
 import com.vaadin.annotations.ViewportGeneratorClass;
 import com.vaadin.server.communication.AtmospherePushConnection;
+import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
@@ -435,14 +435,12 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 }
             }
 
-            HTML html = c.getAnnotation(HTML.class);
-            if (html != null) {
-                String[] resources = html.value();
-                for (String resource : resources) {
-                    String url = registerDependency(context, uiClass, resource);
-                    head.appendElement("link").attr("rel", "import")
-                            .attr("href", url);
-                }
+            List<String> htmlResources = UidlWriter.getHtmlResources(c);
+
+            for (String resource : htmlResources) {
+                String url = registerDependency(context, uiClass, resource);
+                head.appendElement("link").attr("rel", "import").attr("href",
+                        url);
             }
 
             StyleSheet styleSheet = c.getAnnotation(StyleSheet.class);

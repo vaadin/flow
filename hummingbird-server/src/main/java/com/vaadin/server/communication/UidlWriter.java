@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.vaadin.annotations.Bower;
 import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
@@ -57,6 +58,7 @@ import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
 import com.vaadin.hummingbird.parser.EventBinding;
 import com.vaadin.server.ClientConnector;
+import com.vaadin.server.Constants;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.LegacyCommunicationManager.ClientCache;
 import com.vaadin.server.VaadinService;
@@ -624,14 +626,14 @@ public class UidlWriter implements Serializable {
             }
         }
 
-        HTML htmlAnnotation = cls.getAnnotation(HTML.class);
-        if (htmlAnnotation != null) {
+        List<String> htmlResources = getHtmlResources(cls);
+        if (!htmlResources.isEmpty()) {
             if (!response.has(DEPENDENCY_HTML)) {
                 response.put(DEPENDENCY_HTML, new JSONArray());
             }
             JSONArray htmlJson = response.getJSONArray(DEPENDENCY_HTML);
 
-            for (String uri : htmlAnnotation.value()) {
+            for (String uri : htmlResources) {
                 htmlJson.put(manager.registerDependency(uri, cls));
             }
         }
@@ -641,6 +643,29 @@ public class UidlWriter implements Serializable {
                     (Class<? extends ClientConnector>) cls.getSuperclass(),
                     response);
         }
+    }
+
+    public static List<String> getHtmlResources(
+            Class<? extends ClientConnector> cls) {
+
+        List<String> resources = new ArrayList<>();
+
+        HTML htmlAnnotation = cls.getAnnotation(HTML.class);
+        Bower bowerAnnotation = cls.getAnnotation(Bower.class);
+
+        if (htmlAnnotation != null) {
+            for (String uri : htmlAnnotation.value()) {
+                resources.add(uri);
+            }
+        }
+        if (bowerAnnotation != null) {
+            for (String bowerComponent : bowerAnnotation.value()) {
+                String uri = Constants.BOWER_RESOURCE.replace("{0}",
+                        bowerComponent);
+                resources.add(uri);
+            }
+        }
+        return resources;
     }
 
     private JsonArray toJsonArray(List<String> list) {
