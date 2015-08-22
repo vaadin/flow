@@ -562,9 +562,10 @@ public class TreeUpdater {
             String classPartMapping = template.getClassPartMapping(property);
             if (classPartMapping != null) {
                 if (isTrueIsh(change.getValue())) {
-                    Polymer.dom(element).getClassList().push(classPartMapping);
+                    Polymer.dom(element).getClassList().add(classPartMapping);
                 } else {
-                    Polymer.dom(element).getClassList().remove(classPartMapping);
+                    Polymer.dom(element).getClassList()
+                            .remove(classPartMapping);
                 }
             }
         }
@@ -876,7 +877,7 @@ public class TreeUpdater {
            str +="\"";
        }
        return str+">";
-
+    
     }-*/;
 
     private static String debugHtml(Node node) {

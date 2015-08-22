@@ -6,8 +6,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
 
-import elemental.js.util.JsArrayOfString;
-
 public class Polymer {
 
     public static native PolymerDOM dom(Element element)
@@ -19,6 +17,22 @@ public class Polymer {
     /*-{
      $wnd.Polymer.dom.flush();
     }-*/;
+
+    @JsType
+    public interface TokenList {
+        @JsProperty
+        public int getLength();
+
+        public String item(int index);
+
+        public boolean contains(String token);
+
+        public void add(String item);
+
+        public void remove(String item);
+
+        public boolean toggle(String item);
+    }
 
     // See https://www.polymer-project.org/1.0/docs/devguide/local-dom.html
     @JsType
@@ -79,7 +93,7 @@ public class Polymer {
         public void removeAttribute(String attribute);
 
         @JsProperty
-        public JsArrayOfString getClassList();
+        public TokenList getClassList();
 
     }
 
