@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Duration;
@@ -57,6 +58,8 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 public class ServerMessageHandler {
+
+    private boolean initial = true;
 
     /**
      * Helper used to return two values when updating the connector hierarchy.
@@ -472,6 +475,18 @@ public class ServerMessageHandler {
                         }
                     });
                 }
+
+                if (initial) {
+                    initial = false;
+
+                    double fetchStart = getPerformanceTiming("fetchStart");
+                    if (fetchStart != 0) {
+                        int time = (int) (Duration.currentTimeMillis()
+                                - fetchStart);
+                        getLogger().log(Level.INFO, "First response processed "
+                                + time + " ms after fetchStart");
+                    }
+                }
             }
 
             /**
@@ -485,6 +500,15 @@ public class ServerMessageHandler {
         };
         ApplicationConfiguration.runWhenDependenciesLoaded(c);
     }
+
+    private static final native double getPerformanceTiming(String name)
+    /*-{
+        if ($wnd.performance && $wnd.performance.timing && $wnd.performance.timing[name]) {
+            return $wnd.performance.timing[name];
+        } else {
+            return 0;
+        }
+    }-*/;
 
     private void endRequestIfResponse(ValueMap json) {
         if (isResponse(json)) {
