@@ -18,6 +18,7 @@ package com.vaadin.shared.ui.grid;
 import java.io.Serializable;
 
 import com.vaadin.shared.Connector;
+import com.vaadin.ui.renderers.Renderer;
 
 /**
  * Column state DTO for transferring column properties from the server to the
@@ -43,7 +44,7 @@ public class GridColumnState implements Serializable {
     /**
      * The connector for the renderer used to render the cells in this column.
      */
-    public Connector rendererConnector;
+    public Renderer<?> rendererConnector;
 
     /**
      * Whether the values in this column are editable when the editor interface

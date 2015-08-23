@@ -13,33 +13,38 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.ui.renderers;
 
-package com.vaadin.shared.ui.grid;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import com.vaadin.ui.Grid.AbstractRenderer;
+import elemental.json.JsonValue;
 
 /**
- * The column group data shared between the server and the client
+ * A renderer for presenting simple plain-text string values.
  * 
  * @since 7.4
  * @author Vaadin Ltd
  */
-public class ColumnGroupState implements Serializable {
+public class TextRenderer extends AbstractRenderer<String> {
 
     /**
-     * The columns that is included in the group
+     * Creates a new text renderer
      */
-    public List<String> columns = new ArrayList<String>();
+    public TextRenderer() {
+        this("");
+    }
 
     /**
-     * The header text of the group
+     * Creates a new text renderer
+     * 
+     * @param nullRepresentation
+     *            the textual representation of {@code null} value
      */
-    public String header;
+    public TextRenderer(String nullRepresentation) {
+        super(String.class, nullRepresentation);
+    }
 
-    /**
-     * The footer text of the group
-     */
-    public String footer;
+    @Override
+    public String getNullRepresentation() {
+        return super.getNullRepresentation();
+    }
 }

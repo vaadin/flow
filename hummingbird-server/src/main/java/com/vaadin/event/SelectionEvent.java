@@ -84,14 +84,15 @@ public class SelectionEvent extends EventObject {
      * The listener interface for receiving {@link SelectionEvent
      * SelectionEvents}.
      */
-    public interface SelectionListener extends Serializable {
+    public interface SelectionListener extends EventListener<SelectionEvent> {
         /**
          * Notifies the listener that the selection state has changed.
          *
          * @param event
          *            the selection change event
          */
-        void select(SelectionEvent event);
+        @Override
+        void onEvent(SelectionEvent event);
     }
 
     /**

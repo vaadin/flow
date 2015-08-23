@@ -13,33 +13,34 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.ui.renderers;
 
-package com.vaadin.shared.ui.grid;
+import com.vaadin.ui.Grid.AbstractRenderer;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import elemental.json.JsonValue;
 
 /**
- * The column group data shared between the server and the client
- * 
- * @since 7.4
+ * A renderer that represents a double values as a graphical progress bar.
+ *
  * @author Vaadin Ltd
+ * @since 7.4
  */
-public class ColumnGroupState implements Serializable {
+public class ProgressBarRenderer extends AbstractRenderer<Double> {
 
     /**
-     * The columns that is included in the group
+     * Creates a new text renderer
      */
-    public List<String> columns = new ArrayList<String>();
+    public ProgressBarRenderer() {
+        super(Double.class, null);
+    }
 
-    /**
-     * The header text of the group
-     */
-    public String header;
-
-    /**
-     * The footer text of the group
-     */
-    public String footer;
+    @Override
+    public JsonValue encode(Double value) {
+        if (value != null) {
+            value = Math.max(Math.min(value, 1), 0);
+        } else {
+            value = 0d;
+        }
+        return super.encode(value);
+    }
 }

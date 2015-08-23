@@ -74,7 +74,7 @@ public class SortEvent extends Component.Event {
     /**
      * Listener for sort order change events.
      */
-    public interface SortListener extends Serializable {
+    public interface SortListener extends EventListener<SortEvent> {
         /**
          * Called when the sort order has changed.
          *
