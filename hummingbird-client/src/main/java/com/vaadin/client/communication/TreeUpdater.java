@@ -45,6 +45,8 @@ import elemental.json.JsonValue;
 
 public class TreeUpdater {
 
+    private final static boolean debug = false;
+
     public class StaticTextTemplate implements Template {
 
         private String content;
@@ -830,27 +832,37 @@ public class TreeUpdater {
             }
             if (element.hasAttribute(key)) {
                 Polymer.dom(element).removeAttribute(key);
-                debug("Removed attribute " + key + " from "
-                        + debugHtml(element));
+                if (debug) {
+                    debug("Removed attribute " + key + " from "
+                            + debugHtml(element));
+                }
             }
         } else {
             // Update value (which is not null)
             if (isAlwaysAttribute(key)) {
-                debug("Set attribute " + key + "=\"" + value + "\" for "
-                        + debugHtml(element));
+                if (debug) {
+                    debug("Set attribute " + key + "=\"" + value + "\" for "
+                            + debugHtml(element));
+                }
                 Polymer.dom(element).setAttribute(key, value.asString());
             } else {
                 if (value.getType() == JsonType.BOOLEAN) {
-                    debug("Set property " + key + "=\"" + value
-                            + "\" (boolean) for " + debugHtml(element));
+                    if (debug) {
+                        debug("Set property " + key + "=\"" + value
+                                + "\" (boolean) for " + debugHtml(element));
+                    }
                     element.setPropertyBoolean(key, value.asBoolean());
                 } else if (value.getType() == JsonType.NUMBER) {
-                    debug("Set property " + key + "=\"" + value
-                            + "\" (number) for " + debugHtml(element));
+                    if (debug) {
+                        debug("Set property " + key + "=\"" + value
+                                + "\" (number) for " + debugHtml(element));
+                    }
                     element.setPropertyDouble(key, value.asNumber());
                 } else {
-                    debug("Set property " + key + "=\"" + value
-                            + "\" (string) for " + debugHtml(element));
+                    if (debug) {
+                        debug("Set property " + key + "=\"" + value
+                                + "\" (string) for " + debugHtml(element));
+                    }
                     element.setPropertyString(key, value.asString());
                 }
 
@@ -860,7 +872,7 @@ public class TreeUpdater {
     }
 
     private static void debug(String string) {
-        if (true) {
+        if (debug) {
             getLogger().info(string);
         }
     }
@@ -1216,13 +1228,17 @@ public class TreeUpdater {
                 Text textNode = Document.get().createTextNode("");
                 addNodeListener(node, new TextElementListener(node, textNode));
                 nodeIdToBasicElement.put(nodeToId.get(node), textNode);
-                debug("Created text node");
+                if (debug) {
+                    debug("Created text node");
+                }
                 return textNode;
             } else {
                 Element element = Document.get().createElement(tag);
                 addNodeListener(node, new BasicElementListener(node, element));
                 nodeIdToBasicElement.put(nodeToId.get(node), element);
-                debug("Created element: " + debugHtml(element));
+                if (debug) {
+                    debug("Created element: " + debugHtml(element));
+                }
                 return element;
             }
         }
@@ -1232,13 +1248,17 @@ public class TreeUpdater {
             int index) {
         if (Polymer.dom(parent).getChildNodes().size() == index) {
             Polymer.dom(parent).appendChild(child);
-            debug("Appended node " + debugHtml(child) + " into "
-                    + debugHtml(parent));
+            if (debug) {
+                debug("Appended node " + debugHtml(child) + " into "
+                        + debugHtml(parent));
+            }
         } else {
             Node reference = Polymer.dom(parent).getChildNodes().get(index);
             Polymer.dom(parent).insertBefore(child, reference);
-            debug("Inserted node " + debugHtml(child) + " into "
-                    + debugHtml(parent) + " at index " + index);
+            if (debug) {
+                debug("Inserted node " + debugHtml(child) + " into "
+                        + debugHtml(parent) + " at index " + index);
+            }
         }
     }
 
