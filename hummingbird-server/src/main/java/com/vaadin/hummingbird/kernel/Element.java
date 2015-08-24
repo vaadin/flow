@@ -230,6 +230,27 @@ public class Element {
         assert child != null : "Cannot insert null child";
 
         template.insertChild(index, child, node);
+        assert child.getParent().equals(
+                this) : "Child should have this as parent after being inserted";
+
+        return this;
+    }
+
+    public Element setChild(int index, Element child) {
+        assert index >= 0;
+        assert child != null;
+
+        int childCount = getChildCount();
+        if (index < childCount) {
+            removeChild(index);
+            insertChild(index, child);
+        } else if (index == getChildCount()) {
+            insertChild(childCount, child);
+        } else {
+            throw new IllegalArgumentException("Cannot set child element "
+                    + index + " when there are only " + childCount
+                    + " child elements");
+        }
         return this;
     }
 
@@ -237,6 +258,8 @@ public class Element {
         assert child != null : "Cannot insert null child";
 
         insertChild(getChildCount(), child);
+        assert child.getParent().equals(this);
+
         return this;
     }
 
@@ -322,14 +345,26 @@ public class Element {
         return element;
     }
 
-    public void removeChild(Element element) {
+    public Element removeChild(Element element) {
         assert element != null;
 
-        if (element.getParent() != this) {
+        if (!element.getParent().equals(this)) {
             throw new IllegalArgumentException(
                     "The given element is not a child of this element");
         }
         template.removeChild(getNode(), element);
+        return this;
+    }
+
+    public Element removeChild(int index) {
+        assert index >= 0;
+        assert index < getChildCount();
+
+        Element element = getChild(index);
+        assert element.getParent().equals(this);
+
+        template.removeChild(getNode(), element);
+        return this;
     }
 
     public Element removeAllChildren() {
@@ -734,17 +769,19 @@ public class Element {
         root.enqueueRpc(node, "$0.focus()", this);
     }
 
-    public <E extends EventObject> void removeEventListener(Class<E> eventType,
-            EventListener<E> listener, Object source) {
+    public <E extends EventObject> Element removeEventListener(
+            Class<E> eventType, EventListener<E> listener, Object source) {
         assert eventType != null;
         assert listener != null;
         assert source != null;
 
         removeEventListener(getDomEventType(eventType),
                 new DomEventListenerWrapper<E>(eventType, listener, source));
+
+        return this;
     }
 
-    public <E extends EventObject> void addEventListener(Class<E> eventType,
+    public <E extends EventObject> Element addEventListener(Class<E> eventType,
             com.vaadin.event.EventListener<E> listener, Object source) {
         assert eventType != null;
         assert listener != null;
@@ -763,6 +800,8 @@ public class Element {
         addEventData(domEventType, eventType);
         addEventListener(domEventType,
                 new DomEventListenerWrapper<E>(eventType, listener, source));
+
+        return this;
     }
 
     private void addEventData(String domEventType,
@@ -928,4 +967,5 @@ public class Element {
         }
 
     }
+
 }

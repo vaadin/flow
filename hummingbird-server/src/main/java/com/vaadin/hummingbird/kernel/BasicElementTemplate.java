@@ -18,9 +18,18 @@ public class BasicElementTemplate extends AbstractElementTemplate {
     }
 
     public static StateNode createBasicElementModel(String tag) {
+        assert validTagName(tag) : "Invalid tag name " + tag;
         StateNode node = StateNode.create();
         node.put(Keys.TAG, tag);
         return node;
+    }
+
+    private static boolean validTagName(String tag) {
+        if (tag.contains("<") || tag.contains(">")) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override

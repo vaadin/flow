@@ -1,7 +1,11 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.EventObject;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jsoup.Jsoup;
@@ -30,108 +34,33 @@ public class ElementTest {
     }
 
     @Test
-    public void setTextReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.setTextContent("foo"));
-    }
-
-    @Test
-    public void setAttributeReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.setAttribute("foo", "bar"));
-    }
-
-    @Test
-    public void setIntAttributeReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.setAttribute("foo", 12));
-    }
-
-    @Test
-    public void setBooleanAttributeReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.setAttribute("foo", true));
-    }
-
-    @Test
-    public void setClassReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.setClass("foo", true));
-    }
-
-    @Test
-    public void setComponentReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.setComponent(null));
-    }
-
-    @Test
-    public void setStyleReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.setStyle("width", "100%"));
-    }
-
-    @Test
-    public void addClassReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.addClass("foo"));
-    }
-
-    @Test
-    public void addEventListenerReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.addEventListener("click", e -> {
-        }));
-    }
-
-    @Test
-    public void appendChildReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.appendChild(new Element("span")));
-    }
-
-    @Test
-    public void insertChildReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element,
-                element.insertChild(0, new Element("span")));
-    }
-
-    @Test
-    public void removeAllChildrenReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.removeAllChildren());
-    }
-
-    @Test
-    public void removeAttributeReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.removeAttribute("foo"));
-    }
-
-    @Test
-    public void removeClassReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.removeClass("foo"));
-    }
-
-    @Test
-    public void removeEventListenerReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.removeEventListener("click", e -> {
-        }));
-    }
-
-    @Test
-    public void removeFromParentReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.removeFromParent());
-    }
-
-    @Test
-    public void removeStyleReturnsElement() {
-        Element element = new Element("div");
-        Assert.assertEquals(element, element.removeStyle("foo"));
+    public void publicSettersReturnElement() {
+        Set<String> notChecked = new HashSet<>();
+        for (Method m : Element.class.getDeclaredMethods()) {
+            if (!Modifier.isPublic(m.getModifiers())) {
+                continue;
+            }
+            if (m.getName().startsWith("set")
+                    || m.getName().startsWith("append")
+                    || m.getName().startsWith("add")
+                    || m.getName().startsWith("insert")
+                    || m.getName().startsWith("remove")) {
+                // Setter
+                Class<?> returnType = m.getReturnType();
+                Assert.assertEquals(
+                        "Setter " + m.getName() + " returns "
+                                + returnType.getName(),
+                        Element.class, returnType);
+            } else if (m.getName().startsWith("get")
+                    || m.getName().startsWith("has")
+                    || m.getName().equals("equals")
+                    || m.getName().equals("toString")) {
+                // Ignore
+            } else {
+                notChecked.add(m.getName());
+            }
+        }
+        System.out.println("Not checked: " + notChecked);
     }
 
     @Test
