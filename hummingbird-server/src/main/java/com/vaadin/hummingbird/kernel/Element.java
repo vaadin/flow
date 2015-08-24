@@ -293,6 +293,9 @@ public class Element {
 
     @Override
     public String toString() {
+        if (isTextNode(this)) {
+            return "#text: " + getTextNodeText(this);
+        }
         return getOuterHTML();
     }
 
@@ -676,13 +679,8 @@ public class Element {
         return this;
     }
 
-    public Element setComponent(Component component) {
-        template.setComponent(component, node);
-        return this;
-    }
-
-    public Component getComponent() {
-        return template.getComponent(node);
+    public List<Component> getComponents() {
+        return template.getComponents(node, false);
     }
 
     /**
@@ -750,7 +748,7 @@ public class Element {
         return e.getAttribute(TEXT_NODE_TEXT_ATTRIBUTE);
     }
 
-    private boolean isTextNode(Element e) {
+    private static boolean isTextNode(Element e) {
         return e != null && TEXT_NODE_TAG.equals(e.getTag());
     }
 

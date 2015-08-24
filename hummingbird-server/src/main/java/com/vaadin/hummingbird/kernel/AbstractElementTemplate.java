@@ -117,22 +117,6 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         return listeners;
     }
 
-    private StateNode getComponentNode(StateNode node, boolean createIfNeeded) {
-        StateNode dataNode = getElementDataNode(node, createIfNeeded);
-        if (dataNode == null) {
-            return null;
-        }
-
-        StateNode componentNode = dataNode.get(Component.class,
-                StateNode.class);
-        if (componentNode == null) {
-            componentNode = StateNode.create();
-            componentNode.put(Keys.SERVER_ONLY, Keys.SERVER_ONLY);
-            dataNode.put(Component.class, componentNode);
-        }
-        return componentNode;
-    }
-
     @Override
     public void removeEventListener(String type, DomEventListener listener,
             StateNode node) {
@@ -252,8 +236,10 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
             childNode.put(Keys.PARENT_TEMPLATE, this);
         }
 
-        if (getComponent(childNode) != null) {
-            getComponent(childNode).elementAttached();
+        List<Component> components = getComponents(childNode, false);
+        for (int i = components.size() - 1; i >= 0; i--) {
+            // Parent before child
+            components.get(i).elementAttached();
         }
     }
 
@@ -283,15 +269,19 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
         getChildrenList(node).ifPresent(list -> {
             // Detach event while still attached to the DOM
-            if (getComponent(childNode) != null) {
-                getComponent(childNode).elementDetached();
+            List<Component> components = getComponents(childNode, false);
+            for (int i = components.size() - 1; i >= 0; i--) {
+                // Parent before child
+                components.get(i).elementDetached();
             }
+
             if (list.remove(childNode)) {
                 childNode.remove(Keys.TEMPLATE);
                 childNode.remove(Keys.PARENT_TEMPLATE);
 
             }
         });
+
     }
 
     private boolean sessionLocked(StateNode node, Element element) {
@@ -302,7 +292,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         }
         StateNode bodyNode = root.get("body", StateNode.class);
 
-        UI parentUI = (UI) getComponent(bodyNode);
+        UI parentUI = (UI) getComponents(bodyNode, false).get(0);
         if (parentUI != null) {
             VaadinSession parentSession = parentUI.getSession();
             if (parentSession != null && !parentSession.hasLock()) {
@@ -327,20 +317,17 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         }
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public void setComponent(Component c, StateNode node) {
-        getComponentNode(node, true).setValue(Component.class, c);
-
-    }
-
-    @Override
-    public Component getComponent(StateNode node) {
-        StateNode componentNode = getComponentNode(node, false);
-        if (componentNode == null) {
-            return null;
-        } else {
-            return componentNode.get(Component.class, Component.class);
+    public List<Component> getComponents(StateNode node,
+            boolean createIfNeeded) {
+        StateNode dataNode = getElementDataNode(node, createIfNeeded);
+        if (dataNode == null
+                || !dataNode.containsKey(Component.class) && !createIfNeeded) {
+            return Collections.emptyList();
         }
+
+        return (List) dataNode.getMultiValued(Component.class);
     }
 
 }

@@ -3,12 +3,12 @@ package com.vaadin.hummingbird.parser;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class TemplateParserTest {
     @Test
@@ -97,7 +97,7 @@ public class TemplateParserTest {
             Assert.assertEquals(2, li.getAttributeNames().size());
             Assert.assertEquals("Outer title", li.getAttribute("outertitle"));
             Assert.assertEquals("Todo " + i, li.getAttribute("innertitle"));
-            Assert.assertEquals("Todo " + i, li.getChild(0).toString());
+            Assert.assertEquals("Todo " + i, li.getChild(0).getOuterHTML());
         }
     }
 }

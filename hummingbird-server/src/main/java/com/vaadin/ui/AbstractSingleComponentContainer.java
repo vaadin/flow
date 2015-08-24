@@ -15,11 +15,8 @@
  */
 package com.vaadin.ui;
 
-import java.util.Iterator;
-
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.ui.AbstractSimpleDOMComponentContainer.ElementBasedComponentIterator;
 
 /**
  * Abstract base class for component containers that have only one child
@@ -35,21 +32,17 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
 
     @Override
     public int getComponentCount() {
-        return getElement().getChildCount();
-    }
-
-    @Override
-    public Iterator<Component> iterator() {
-        return new ElementBasedComponentIterator(getElement());
+        return getChildComponents().size();
     }
 
     @Override
     public Component getContent() {
-        if (getElement().getChildCount() == 0) {
+        if (getChildComponents().isEmpty()) {
             return null;
         } else {
-            return getElement().getChild(0).getComponent();
+            return getChildComponents().get(0);
         }
+
     }
 
     /**

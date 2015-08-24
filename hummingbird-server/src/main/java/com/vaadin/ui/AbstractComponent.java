@@ -16,10 +16,13 @@
 
 package com.vaadin.ui;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -430,16 +433,17 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     @Override
     public Component getParent() {
-        Element e = getElement().getParent();
-        while (e != null && e.getComponent() == null) {
-            e = e.getParent();
+        Element parentElement = getElement().getParent();
+        while (parentElement != null
+                && parentElement.getComponents().isEmpty()) {
+            parentElement = parentElement.getParent();
         }
 
-        if (e != null) {
-            return e.getComponent();
-        } else {
+        if (parentElement == null) {
             return null;
         }
+
+        return findParentComponent(this, parentElement);
     }
 
     @Override
@@ -938,11 +942,18 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     protected void setElement(Element element) {
         this.element = element;
-        if (element.getComponent() != null && element.getComponent() != this) {
-            throw new IllegalArgumentException(
-                    "The given element is already attached to another component");
+        if (!element.getComponents().isEmpty()) {
+            if (element.getComponents().size() == 1
+                    && element.getComponents().get(0) == this) {
+                getLogger().warning("Element already set for this component");
+                return;
+            } else {
+                throw new IllegalArgumentException(
+                        "The given element is already attached to another component");
+            }
         }
-        this.element.setComponent(this);
+        this.element.getTemplate().getComponents(this.element.getNode(), true)
+                .add(this);
     }
 
     private static final Logger getLogger() {
@@ -988,6 +999,105 @@ public abstract class AbstractComponent extends AbstractClientConnector
         if (elementEventListeners.isEmpty()) {
             elementEventListeners = null;
         }
+    }
+
+    public Iterator<Component> iterator() {
+        return getChildComponents().iterator();
+    }
+
+    public List<Component> getChildComponents() {
+        List<Component> childComponents = new ArrayList<>();
+        for (int i = 0; i < getElement().getChildCount(); i++) {
+            Element child = getElement().getChild(i);
+            findComponents(child, childComponents);
+        }
+        return childComponents;
+    }
+
+    private void findComponents(Element element, List<Component> components) {
+        if (!element.getComponents().isEmpty()) {
+            components.add(findChildComponent(this, element));
+            return;
+        }
+
+        for (int i = 0; i < element.getChildCount(); i++) {
+            Element child = element.getChild(i);
+            findComponents(child, components);
+        }
+    }
+
+    private static Component findChildComponent(Component parent,
+            Element childElementWithComponent) {
+        assert!childElementWithComponent.getComponents().isEmpty();
+
+        List<Component> components = childElementWithComponent.getComponents();
+        if (components.size() == 1) {
+            return components.get(0);
+        } else {
+            if (parent instanceof Composite) {
+                // Inside a composite chain
+                int i = components.indexOf(parent);
+                if (i == -1) {
+                    throw new IllegalStateException(
+                            "Composite hierarchy is incorrect: "
+                                    + parent.getClass().getName()
+                                    + " not found in Composite chain");
+                } else if (i == components.size() - 1) {
+                    // Parent is the last composite
+                    return components.get(0);
+                } else {
+                    // Component is index 0, parents 1..N.
+                    // Next child is thus i-1
+                    return components.get(i - 1);
+                }
+            } else {
+                // The element is the parent of a composite chain
+                return components.get(components.size() - 1);
+            }
+        }
+    }
+
+    private static Component findParentComponent(Component child,
+            Element parentElementWithComponent) {
+        assert!parentElementWithComponent.getComponents().isEmpty();
+
+        Element childElementWithComponent = child.getElement();
+        assert!childElementWithComponent.getComponents().isEmpty();
+
+        // Composite is a special, special case...
+        List<Component> childComponents = childElementWithComponent
+                .getComponents();
+        if (childComponents.size() == 1) {
+            // No composite chain - the standard case
+            return parentElementWithComponent.getComponents().get(0);
+        } else {
+            int childIndexInCompositeChain;
+            if (child instanceof Composite) {
+                // Inside a composite chain
+                childIndexInCompositeChain = childComponents.indexOf(child);
+            } else {
+                // This is the composition root of the last composite
+                // -> return first composite
+                childIndexInCompositeChain = 0;
+            }
+
+            if (childIndexInCompositeChain == -1) {
+                throw new IllegalStateException(
+                        "Composite hierarchy is incorrect: "
+                                + child.getClass().getName()
+                                + " not found in Composite chain");
+            } else
+                if (childIndexInCompositeChain == childComponents.size() - 1) {
+                // This is the last Composite parent
+                // -> the parent component is the parentElement's component
+                return parentElementWithComponent.getComponents().get(0);
+            } else {
+                // Component is index 0, parents 1..N.
+                // Next parent is thus i+1
+                return childComponents.get(childIndexInCompositeChain + 1);
+            }
+        }
+
     }
 
 }

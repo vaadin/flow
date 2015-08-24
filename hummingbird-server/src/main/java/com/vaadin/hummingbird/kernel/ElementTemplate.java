@@ -1,6 +1,7 @@
 package com.vaadin.hummingbird.kernel;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.vaadin.ui.Component;
 
@@ -46,9 +47,8 @@ public interface ElementTemplate {
     public Collection<DomEventListener> getEventListeners(String eventType,
             StateNode node);
 
-    public void setComponent(Component c, StateNode node);
-
-    public Component getComponent(StateNode node);
+    public List<Component> getComponents(StateNode node,
+            boolean createIfNeeded);
 
     public void addEventData(String type, StateNode node, String[] data);
 
