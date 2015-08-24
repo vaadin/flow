@@ -15,22 +15,33 @@
  */
 package com.vaadin.ui;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
+import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.parser.EventBinding;
 import com.vaadin.hummingbird.parser.TemplateParser;
 
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 public abstract class Template extends AbstractComponent {
     private final StateNode node = StateNode.create();
 
     public Template() {
-        setElement(Element.getElement(TemplateParser.parse(getClass()), node));
+        this(null);
+    }
+
+    protected Template(ElementTemplate elementTemplate) {
+        if (elementTemplate == null) {
+            elementTemplate = TemplateParser.parse(getClass());
+        }
+        setElement(Element.getElement(elementTemplate, node));
 
         getNode().put(TemplateEventHandler.class, this::handleTemplateEvent);
     }
@@ -58,8 +69,64 @@ public abstract class Template extends AbstractComponent {
         }
     }
 
-    protected void onBrowserEvent(StateNode node, Element element, String methodName, Object[] params) {
-        // Default does nothing
+    protected void onBrowserEvent(StateNode node, Element element,
+            String methodName, Object[] params) {
+        Method method = findTemplateEventHandlerMethod(getClass(), methodName);
+        if (method == null) {
+            throw new RuntimeException("Couldn't find any @"
+                    + com.vaadin.annotations.TemplateEventHandler.class
+                            .getName()
+                    + " method named " + methodName + " in "
+                    + getClass().getName());
+        }
+
+        int paramIndex = 0;
+
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        Object[] methodParams = new Object[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            Class<?> type = parameterTypes[i];
+            if (StateNode.class.isAssignableFrom(type)) {
+                methodParams[i] = node;
+            } else {
+                Object param = params[paramIndex++];
+                if (param == null || type.isInstance(param)) {
+                    methodParams[i] = param;
+                } else if (param instanceof JsonValue) {
+                    methodParams[i] = JsonConverter.fromJson(parameterTypes[i],
+                            (JsonValue) param);
+                } else {
+                    throw new RuntimeException(
+                            "Can't convert " + param.getClass().getName()
+                                    + " to " + type.getName());
+                }
+            }
+        }
+
+        method.setAccessible(true);
+        try {
+            method.invoke(this, methodParams);
+        } catch (IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            throw new RuntimeException("Couldn't invoke " + method, e);
+        }
+    }
+
+    private static Method findTemplateEventHandlerMethod(Class<?> type,
+            String methodName) {
+        while (type != null && type != Template.class) {
+            Method[] declaredMethods = type.getDeclaredMethods();
+            for (Method method : declaredMethods) {
+                if (method.getName().equals(methodName) && method.getAnnotation(
+                        com.vaadin.annotations.TemplateEventHandler.class) != null) {
+                    return method;
+                }
+            }
+
+            type = type.getSuperclass();
+        }
+
+        return null;
     }
 
     protected StateNode getNode() {
