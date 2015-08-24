@@ -41,6 +41,7 @@ import com.vaadin.hummingbird.kernel.DynamicTextTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.ForElementTemplate;
+import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
 import com.vaadin.hummingbird.kernel.RootNode.PendingRpc;
 import com.vaadin.hummingbird.kernel.StateNode;
@@ -298,7 +299,7 @@ public class UidlWriter implements Serializable {
                             value = Integer.valueOf(template.getId());
                             ensureTemplateSent(template, ui, newTemplates);
                         }
-                        change.put("value", encodeValue(value));
+                        change.put("value", JsonConverter.toJson(value));
                     }
                     assert key instanceof String || key instanceof Enum;
                     change.put("key", String.valueOf(key));
@@ -478,7 +479,7 @@ public class UidlWriter implements Serializable {
                         change.put("value", ((StateNode) value).getId());
                     } else {
                         change = createChange(node, "listReplace");
-                        change.put("value", encodeValue(value));
+                        change.put("value", JsonConverter.toJson(value));
                     }
                     change.put("index", listReplaceChange.getIndex());
                     assert key instanceof String || key instanceof Enum;
@@ -520,7 +521,7 @@ public class UidlWriter implements Serializable {
                         change.put("value", ((StateNode) value).getId());
                     } else {
                         change = createChange(node, "listInsert");
-                        change.put("value", encodeValue(value));
+                        change.put("value", JsonConverter.toJson(value));
                     }
                     change.put("index", listInsertChange.getIndex());
                     assert key instanceof String || key instanceof Enum;
@@ -569,15 +570,7 @@ public class UidlWriter implements Serializable {
     }
 
     private static JsonValue serializeRpcParam(Object param) {
-        if (param == null) {
-            return null;
-        } else if (param instanceof String) {
-            return Json.create((String) param);
-        } else if (param instanceof Number) {
-            return Json.create(((Number) param).doubleValue());
-        } else if (param instanceof Boolean) {
-            return Json.create(((Boolean) param).booleanValue());
-        } else if (param instanceof Element) {
+        if (param instanceof Element) {
             Element element = (Element) param;
 
             JsonObject object = Json.createObject();
@@ -586,8 +579,7 @@ public class UidlWriter implements Serializable {
 
             return object;
         } else {
-            throw new RuntimeException(param.getClass().getName()
-                    + " not supported as an RPC parameter");
+            return JsonConverter.toJson(param);
         }
     }
 
@@ -721,9 +713,5 @@ public class UidlWriter implements Serializable {
 
     private static final Logger getLogger() {
         return Logger.getLogger(UidlWriter.class.getName());
-    }
-
-    private static JsonValue encodeValue(Object object) {
-        return serializeRpcParam(object);
     }
 }

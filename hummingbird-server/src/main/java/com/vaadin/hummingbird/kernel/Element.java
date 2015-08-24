@@ -886,17 +886,9 @@ public class Element {
 
                 f.setAccessible(true);
                 try {
-                    if (f.getType() == int.class) {
-                        f.set(eventObject, (int) eventData.getNumber(value));
-                    } else if (f.getType() == double.class) {
-                        f.set(eventObject, eventData.getNumber(value));
-                    } else if (f.getType() == boolean.class) {
-                        f.set(eventObject, eventData.getBoolean(value));
-                    } else if (f.getType() == String.class) {
-                        f.set(eventObject, eventData.getString(value));
-                    } else {
-                        f.set(eventObject, eventData.get(value));
-                    }
+                    Object decodedValue = JsonConverter.fromJson(f.getType(),
+                            eventData.get(value));
+                    f.set(eventObject, decodedValue);
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     throw new RuntimeException(
                             "Unable to assign value to field " + f.getName()
