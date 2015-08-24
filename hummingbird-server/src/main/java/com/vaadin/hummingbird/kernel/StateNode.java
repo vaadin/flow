@@ -24,7 +24,7 @@ import com.vaadin.hummingbird.kernel.change.RemoveChange;
 
 public abstract class StateNode {
     private enum Keys {
-        TRANSACTION_LOG;
+        TRANSACTION_LOG, NEXT_UNPREVIEWED_LOG_INDEX;
     }
 
     private class ListView extends AbstractList<Object> {
@@ -144,6 +144,9 @@ public abstract class StateNode {
 
     private void logChange(NodeChange change) {
         getTransactionLog().add(change);
+        if (rootNode != null) {
+            rootNode.markAsDirty(this);
+        }
     }
 
     private List<NodeChange> getTransactionLog() {
@@ -153,7 +156,7 @@ public abstract class StateNode {
             log = new ArrayList<>();
             setValue(Keys.TRANSACTION_LOG, log);
             if (rootNode != null) {
-                rootNode.markAsDirty(this, createTransactionHandler());
+                rootNode.registerTransactionHandler(this, createTransactionHandler());
             }
         }
         return log;
@@ -171,13 +174,34 @@ public abstract class StateNode {
                 }
 
                 removeValue(Keys.TRANSACTION_LOG);
+                removeValue(Keys.NEXT_UNPREVIEWED_LOG_INDEX);
             }
 
             @Override
             public List<NodeChange> commit() {
                 List<NodeChange> log = getTransactionLog();
                 removeValue(Keys.TRANSACTION_LOG);
+                removeValue(Keys.NEXT_UNPREVIEWED_LOG_INDEX);
                 return log;
+            }
+
+            @Override
+            public List<NodeChange> previewChanges() {
+                List<NodeChange> transactionLog = getTransactionLog();
+                Integer nextUnpreviewedLogIndex = get(
+                        Keys.NEXT_UNPREVIEWED_LOG_INDEX, Integer.class);
+                if (nextUnpreviewedLogIndex == null) {
+                    nextUnpreviewedLogIndex = Integer.valueOf(0);
+                }
+                List<NodeChange> subList = transactionLog.subList(
+                        nextUnpreviewedLogIndex.intValue(),
+                        transactionLog.size());
+
+                // Non-transactional put
+                setValue(Keys.NEXT_UNPREVIEWED_LOG_INDEX,
+                        Integer.valueOf(transactionLog.size()));
+
+                return Collections.unmodifiableList(subList);
             }
         };
     }
@@ -249,7 +273,7 @@ public abstract class StateNode {
         setId(root.register(this));
 
         if (hadTransactionLog) {
-            root.markAsDirty(this, createTransactionHandler());
+            root.registerTransactionHandler(this, createTransactionHandler());
         }
 
         // Recursively set the root of all children as well
@@ -407,5 +431,13 @@ public abstract class StateNode {
             n = n.getParent();
         }
         return false;
+    }
+
+    public void addChangeListener(NodeChangeListener listener) {
+        getMultiValued(NodeChangeListener.class).add(listener);
+    }
+
+    public void removeChangeListener(NodeChangeListener listener) {
+        getMultiValued(NodeChangeListener.class).remove(listener);
     }
 }

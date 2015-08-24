@@ -16,6 +16,7 @@ import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
+import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.NodeChangeVisitor;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
@@ -697,5 +698,76 @@ public class StateNodeTest {
         for (int i = 0; i < keys.size(); i++) {
             Assert.assertEquals(Integer.toString(i), node.get(keys.get(i)));
         }
+    }
+
+    @Test
+    public void simpleNodeChangeListener() {
+        RootNode root = new RootNode();
+        StateNode node = StateNode.create();
+        root.put(StateNode.class, node);
+
+        List<List<NodeChange>> recordedChanges = new ArrayList<>();
+
+        node.addChangeListener(new NodeChangeListener() {
+            @Override
+            public void onChange(StateNode stateNode,
+                    List<NodeChange> changes) {
+                recordedChanges.add(new ArrayList<>(changes));
+            }
+        });
+
+        // Flush old setup changes
+        root.commit();
+        recordedChanges.clear();
+
+        node.put("value", "value");
+
+        Assert.assertEquals(0, recordedChanges.size());
+
+        root.commit();
+
+        Assert.assertEquals(1, recordedChanges.size());
+
+        List<NodeChange> changes = recordedChanges.get(0);
+        Assert.assertEquals(1, changes.size());
+    }
+
+    @Test
+    public void nodeChangeListenerCountUpdate() {
+        RootNode root = new RootNode();
+        StateNode node = StateNode.create();
+        root.put(StateNode.class, node);
+
+        ArrayList<Integer> changesCounts = new ArrayList<>();
+
+        node.addChangeListener(new NodeChangeListener() {
+            @Override
+            public void onChange(StateNode stateNode,
+                    List<NodeChange> changes) {
+                changesCounts.add(Integer.valueOf(changes.size()));
+
+                List<Object> list = stateNode.getMultiValued("list");
+                Integer count = stateNode.get("count", Integer.class);
+                if (count == null || count.intValue() != list.size()) {
+                    stateNode.put("count", Integer.valueOf(list.size()));
+                }
+            }
+        });
+
+        List<Object> multiValued = node.getMultiValued("list");
+        multiValued.add("");
+
+        Assert.assertNull(node.get("count"));
+        Assert.assertEquals(0, changesCounts.size());
+
+        root.commit();
+
+        Assert.assertEquals(Integer.valueOf(1), node.get("count"));
+        Assert.assertEquals(2, changesCounts.size());
+
+        // IdChange, ParentChange, ListInsert (listeners), ListInsert (list)
+        Assert.assertEquals(Integer.valueOf(4), changesCounts.get(0));
+        // PutChange (count)
+        Assert.assertEquals(Integer.valueOf(1), changesCounts.get(1));
     }
 }

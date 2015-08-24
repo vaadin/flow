@@ -18,6 +18,8 @@ public class RootNode extends MapStateNode {
         public List<NodeChange> commit();
 
         public void rollback();
+
+        public List<NodeChange> previewChanges();
     }
 
     public class PendingRpc {
@@ -53,6 +55,8 @@ public class RootNode extends MapStateNode {
     private Set<NodeChangeVisitor> commitVisitors = new HashSet<>();
 
     private List<PendingRpc> pendingRpc = new ArrayList<>();
+
+    private Set<StateNode> preCommitChanges = new HashSet<>();
 
     public RootNode() {
         rootNode = this;
@@ -113,6 +117,23 @@ public class RootNode extends MapStateNode {
 
     public void commit() {
 
+        do {
+            Set<StateNode> changes = new HashSet<>(preCommitChanges);
+            preCommitChanges.clear();
+
+            for (StateNode stateNode : changes) {
+                if (stateNode.containsKey(NodeChangeListener.class)) {
+                    List<Object> listeners = stateNode
+                            .getMultiValued(NodeChangeListener.class);
+                    for (Object o : new ArrayList<>(listeners)) {
+                        NodeChangeListener l = (NodeChangeListener) o;
+                        l.onChange(stateNode, dirtyInTransaction.get(stateNode)
+                                .previewChanges());
+                    }
+                }
+            }
+        } while (!preCommitChanges.isEmpty());
+
         transactionIdToNode.forEach((k, v) -> {
             if (v == null) {
                 idToNode.remove(k);
@@ -150,7 +171,8 @@ public class RootNode extends MapStateNode {
         pendingRpc.clear();
     }
 
-    public void markAsDirty(StateNode node, TransactionHandler handler) {
+    public void registerTransactionHandler(StateNode node,
+            TransactionHandler handler) {
         // Second case is when a nodes is marked as dirty because it's about to
         // become attached
         // assert node.isAttached() || node.getId() == 0;
@@ -158,6 +180,10 @@ public class RootNode extends MapStateNode {
         assert!dirtyInTransaction.containsKey(node);
 
         dirtyInTransaction.put(node, handler);
+    }
+
+    public void markAsDirty(StateNode node) {
+        preCommitChanges.add(node);
     }
 
     public List<PendingRpc> flushRpcQueue() {
