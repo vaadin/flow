@@ -156,7 +156,8 @@ public abstract class StateNode {
             log = new ArrayList<>();
             setValue(Keys.TRANSACTION_LOG, log);
             if (rootNode != null) {
-                rootNode.registerTransactionHandler(this, createTransactionHandler());
+                rootNode.registerTransactionHandler(this,
+                        createTransactionHandler());
             }
         }
         return log;
@@ -201,7 +202,7 @@ public abstract class StateNode {
                 setValue(Keys.NEXT_UNPREVIEWED_LOG_INDEX,
                         Integer.valueOf(transactionLog.size()));
 
-                return Collections.unmodifiableList(subList);
+                return subList;
             }
         };
     }

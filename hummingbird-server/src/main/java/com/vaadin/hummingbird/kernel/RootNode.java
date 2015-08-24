@@ -125,10 +125,11 @@ public class RootNode extends MapStateNode {
                 if (stateNode.containsKey(NodeChangeListener.class)) {
                     List<Object> listeners = stateNode
                             .getMultiValued(NodeChangeListener.class);
+                    List<NodeChange> previewChanges = new ArrayList<>(
+                            dirtyInTransaction.get(stateNode).previewChanges());
                     for (Object o : new ArrayList<>(listeners)) {
                         NodeChangeListener l = (NodeChangeListener) o;
-                        l.onChange(stateNode, dirtyInTransaction.get(stateNode)
-                                .previewChanges());
+                        l.onChange(stateNode, previewChanges);
                     }
                 }
             }
