@@ -121,7 +121,7 @@ public class CheckBox extends AbstractField<Boolean>
         if (!hasElementEventListener("change")) {
             getElement().addEventData("change", "element.checked");
             addElementEventListener("change", e -> {
-                setValue(e.getBoolean("element.checked"));
+                setValue(e.get("element.checked").asBoolean());
             });
         }
     }
