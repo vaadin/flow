@@ -26,10 +26,11 @@ public class CompositeUI extends UI {
             Button first = new Button("First");
             NativeButton second = new NativeButton("Second");
             first.addClickListener(e -> {
-                hl.addComponent(new Button("New"));
+                hl.addComponent(new Button("New from first"));
                 // hl.addComponentAsFirst(hl.getComponent(1));
             });
             second.addClickListener(e -> {
+                hl.addComponent(new Button("New from second"));
                 // hl.addComponentAsFirst(hl.getComponent(1));
             });
 

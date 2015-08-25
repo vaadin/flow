@@ -34,6 +34,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Text;
+import com.google.gwt.user.client.Window.Location;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.js.json.JsJsonValue;
@@ -45,7 +46,8 @@ import elemental.json.JsonValue;
 
 public class TreeUpdater {
 
-    private final static boolean debug = false;
+    private final static boolean debug = Location.getQueryString()
+            .contains("superdevmode");
 
     public class StaticTextTemplate implements Template {
 
@@ -915,7 +917,7 @@ public class TreeUpdater {
            str +="\"";
        }
        return str+">";
-    
+
     }-*/;
 
     private static String debugHtml(Node node) {
