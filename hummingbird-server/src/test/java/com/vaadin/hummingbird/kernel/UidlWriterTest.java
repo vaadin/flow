@@ -5,10 +5,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.communication.UidlWriter;
+import com.vaadin.server.communication.ChangeUidlBuilder;
 import com.vaadin.ui.UI;
 
-import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
@@ -38,14 +37,10 @@ public class UidlWriterTest {
         element = ui.getElement();
     }
 
-    private JsonObject encode() {
-        JsonObject response = Json.createObject();
-        UidlWriter.encodeChanges(ui, response);
-        return response;
-    }
-
     private JsonArray encodeElementChanges() {
-        return encode().getArray("elementChanges");
+        ChangeUidlBuilder visitor = new ChangeUidlBuilder(ui);
+        ui.getRootNode().commit(visitor);
+        return visitor.getChanges();
     }
 
     @Test
