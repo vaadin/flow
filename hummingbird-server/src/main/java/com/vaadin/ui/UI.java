@@ -103,7 +103,7 @@ import elemental.json.JsonObject;
  * @since 7.0
  */
 @JavaScript({
-        "vaadin://bower_components/webcomponentsjs/webcomponents.min.js" })
+        "vaadin://bower_components/webcomponentsjs/webcomponents-lite.min.js" })
 @Bower("polymer")
 @Tag("div")
 public abstract class UI extends AbstractSingleComponentContainer
