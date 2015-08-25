@@ -41,6 +41,16 @@ public class RpcExamples extends AbstractTestUI {
             }
         });
 
+        getElement().appendChild(new Element("button") {
+            {
+                setTextContent("Log window.vaadin property names");
+                addEventListener("click", e -> {
+                    getRootNode().enqueueRpc(getRootNode(),
+                            "console.log(Object.getOwnPropertyNames(window.vaadin))");
+                });
+            }
+        });
+
     }
 
 }
