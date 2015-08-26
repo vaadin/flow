@@ -755,29 +755,33 @@ public class Element {
     /**
      * Focuses the element when it is attached to the DOM.
      */
-    public void focus() {
+    public Element focus() {
         getNode().enqueueRpc("$0.focus()", this);
+        return this;
     }
 
     /**
      * Scrolls the element when it is attached to the DOM.
      */
-    public void scrollIntoView() {
+    public Element scrollIntoView() {
         getNode().enqueueRpc("$0.scrollIntoView()", this);
+        return this;
     }
 
     /**
      * Scrolls the element to the given top coordinate
      */
-    public void setScrollTop(int scrollTop) {
+    public Element setScrollTop(int scrollTop) {
         getNode().enqueueRpc("$0.scrollTop=$1", this, scrollTop);
+        return this;
     }
 
     /**
      * Scrolls the element to the given left coordinate
      */
-    public void setScrollLeft(int scrollLeft) {
+    public Element setScrollLeft(int scrollLeft) {
         getNode().enqueueRpc("$0.scrollLeft=$1", this, scrollLeft);
+        return this;
     }
 
     public <E extends EventObject> Element removeEventListener(
@@ -951,7 +955,7 @@ public class Element {
         return fields;
     }
 
-    public void dispatchEvent(String eventType, JsonObject eventData) {
+    public Element dispatchEvent(String eventType, JsonObject eventData) {
         assert eventType != null;
         assert eventData != null;
 
@@ -959,7 +963,7 @@ public class Element {
         if (listeners.isEmpty()) {
             debug("No listeners for '" + eventType + "' event");
 
-            return;
+            return this;
         }
 
         debug("Dispatching '" + eventType + "' event to " + listeners.size()
@@ -969,6 +973,7 @@ public class Element {
             listener.handleEvent(eventData);
         }
 
+        return this;
     }
 
 }

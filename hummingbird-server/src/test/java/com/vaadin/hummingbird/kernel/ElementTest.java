@@ -11,12 +11,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
-import org.junit.Assert;
-import org.junit.Test;
 
 import com.vaadin.annotations.EventParameter;
 import com.vaadin.annotations.EventType;
 import com.vaadin.event.EventListener;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import elemental.json.Json;
 
@@ -35,32 +36,35 @@ public class ElementTest {
 
     @Test
     public void publicSettersReturnElement() {
-        Set<String> notChecked = new HashSet<>();
+        Set<String> ignore = new HashSet<>();
+        ignore.add("toString");
+        ignore.add("hashCode");
+        ignore.add("equals");
+        ignore.add("debug");
+
         for (Method m : Element.class.getDeclaredMethods()) {
             if (!Modifier.isPublic(m.getModifiers())) {
                 continue;
             }
-            if (m.getName().startsWith("set")
-                    || m.getName().startsWith("append")
-                    || m.getName().startsWith("add")
-                    || m.getName().startsWith("insert")
-                    || m.getName().startsWith("remove")) {
-                // Setter
+            if (m.getName().startsWith("get") || m.getName().startsWith("has")
+                    || ignore.contains(m.getName())) {
+                // Ignore
+                /*
+                 * } else if (m.getName().startsWith("set") ||
+                 * m.getName().startsWith("append") ||
+                 * m.getName().startsWith("add") ||
+                 * m.getName().startsWith("insert") ||
+                 * m.getName().startsWith("remove")) {
+                 */
+            } else {
+                // Setters and such
                 Class<?> returnType = m.getReturnType();
                 Assert.assertEquals(
-                        "Setter " + m.getName() + " returns "
-                                + returnType.getName(),
+                        "Method " + m.getName() + " has invalid return type",
                         Element.class, returnType);
-            } else if (m.getName().startsWith("get")
-                    || m.getName().startsWith("has")
-                    || m.getName().equals("equals")
-                    || m.getName().equals("toString")) {
-                // Ignore
-            } else {
-                notChecked.add(m.getName());
             }
         }
-        System.out.println("Not checked: " + notChecked);
+
     }
 
     @Test
