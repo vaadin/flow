@@ -29,10 +29,6 @@ $valo-global-included: false !default;
       content: "@version@";
     }
 
-    // Core widget styles come before any other component (and are always included),
-    // so that it has the least specificity
-    @include valo-widget;
-
     .v-generated-body {
       overflow: hidden;
       margin: 0;
@@ -157,35 +153,6 @@ $valo-global-included: false !default;
     .v-captiontext {
       display: inline-block;
       line-height: inherit;
-    }
-
-    // Component global styles should also be included here
-    @if v-is-included(orderedlayout) {
-      @include valo-orderedlayout-global;
-    }
-
-    @if v-is-included(gridlayout) {
-      @include valo-gridlayout-global;
-    }
-
-    @if v-is-included(calendar) {
-      @include valo-calendar-global;
-    }
-
-    @if v-is-included(colorpicker) {
-      @include valo-colorpicker-global;
-    }
-
-    @if v-is-included(table) or v-is-included(treetable) {
-      @include valo-table-global;
-    }
-
-    @if v-is-included(tabsheet) {
-      @include valo-tabsheet-global;
-    }
-
-    @if v-is-included(splitpanel) {
-      @include valo-splitpanel-global;
     }
 
     $valo-global-included: true;
@@ -352,17 +319,12 @@ $valo-shared-pathPrefix: null;
     margin: 0;
     border-radius: $v-border-radius;
 
-    @include valo-nativeselect-select-style;
   }
 
   button {
     font: inherit;
     font-weight: 400;
     line-height: $v-line-height;
-  }
-
-  a {
-    @include valo-link-style;
   }
 
   .v-disabled {

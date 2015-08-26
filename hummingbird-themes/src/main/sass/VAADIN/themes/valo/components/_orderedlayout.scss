@@ -4,7 +4,7 @@
  *
  * @group orderedlayout
  */
-@mixin valo-orderedlayout-global {
+@mixin valo-orderedlayout {
 
   .layout {
   	box-sizing: border-box;
@@ -41,51 +41,3 @@
   }
 }
 
-/**
- *
- *
- * @param {bool} $include-additional-styles - 
- *
- * @group orderedlayout
- */
-@mixin valo-orderedlayout ($include-additional-styles: contains($v-included-additional-styles, orderedlayout) or contains($v-included-additional-styles, verticallayout) or contains($v-included-additional-styles, horizontallayout)) {
-
-  @if $include-additional-styles {
-    .v-verticallayout-well,
-    .v-horizontallayout-well {
-      @include valo-panel-well-style;
-      @include valo-panel-adjust-content-margins;
-    }
-
-    .v-verticallayout-card,
-    .v-horizontallayout-card {
-      @include valo-panel-style;
-      @include valo-panel-adjust-content-margins;
-    }
-
-    .v-horizontallayout-wrapping {
-      @include valo-horizontallayout-wrapping-style;
-    }
-  }
-
-}
-
-
-/**
- *
- *
- *
- * @group orderedlayout
- */
-@mixin valo-horizontallayout-wrapping-style {
-    white-space: normal !important;
-
-    & > .v-spacing + .v-slot,
-    & > .v-slot:first-child {
-      margin-bottom: $v-layout-spacing-vertical;
-    }
-
-    & > .v-slot:first-child:last-child {
-      margin-bottom: 0;
-    }
-}
