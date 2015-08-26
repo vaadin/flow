@@ -35,6 +35,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Text;
 import com.google.gwt.user.client.Window.Location;
+import com.vaadin.client.ApplicationConnection.Client;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.js.json.JsJsonValue;
@@ -331,6 +332,9 @@ public class TreeUpdater {
         @Override
         public Node createElement(final JsonObject node,
                 ElementNotifier notifier) {
+            assert tag != null;
+            debug("Create element with tag " + tag);
+
             final Element element = Document.get().createElement(tag);
             initElement(node, element, notifier);
 
@@ -345,6 +349,8 @@ public class TreeUpdater {
 
         protected void initElement(JsonObject node, Element element,
                 ElementNotifier notifier) {
+            assert element != null;
+
             for (Entry<String, String> entry : defaultAttributeValues
                     .entrySet()) {
                 Polymer.dom(element).setAttribute(entry.getKey(),
@@ -851,6 +857,7 @@ public class TreeUpdater {
 
     private static void setAttributeOrProperty(Element element, String key,
             JsonValue value) {
+        assert element != null;
         if (value == null || value.getType() == JsonType.NULL) {
             // Null property and/or remove attribute
             // Sets property to null before as e.g. <input> will set maxlength=0
@@ -917,7 +924,7 @@ public class TreeUpdater {
            str +="\"";
        }
        return str+">";
-
+    
     }-*/;
 
     private static String debugHtml(Node node) {
@@ -1205,11 +1212,17 @@ public class TreeUpdater {
 
     private ServerRpcQueue rpcQueue;
 
-    public void init(Element rootElement, ServerRpcQueue rpcQueue) {
+    private Client client;
+
+    public void init(Element rootElement, ServerRpcQueue rpcQueue,
+            Client client) {
         assert this.rootElement == null : "Can only init once";
+        assert rpcQueue != null;
+        assert client != null;
 
         this.rootElement = rootElement;
         this.rpcQueue = rpcQueue;
+        this.client = client;
     }
 
     private static native JavaScriptObject addDomListener(Element element,
@@ -1345,7 +1358,8 @@ public class TreeUpdater {
                 params.push(value);
                 newFunctionParams.push("$" + i);
             }
-
+            newFunctionParams.push("modules");
+            params.push(client.getModules());
             newFunctionParams.push(script);
             createAndRunFunction(newFunctionParams, params);
         }

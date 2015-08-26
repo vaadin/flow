@@ -16,6 +16,8 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.JavaScriptModule;
+import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.ClassResource;
 import com.vaadin.server.ConnectorResource;
 import com.vaadin.server.DownloadStream;
@@ -169,8 +171,17 @@ public class FileDownloader {
 
     }
 
+    @JavaScriptModule("FileDownloader.js")
+    public interface FileDownloaderJS {
+        public void attachDownload(Element e, String url);
+    }
+
     public void attach(AbstractComponent c) {
         String url;
+        if (!c.isAttached()) {
+            throw new IllegalStateException("The component " + c
+                    + " must be attached before adding a downloader to it");
+        }
 
         if (fileDownloadResource instanceof ConnectorResource) {
             // Served by servlet
@@ -189,29 +200,7 @@ public class FileDownloader {
                     "Only ConnectorResource and ExternalResource are supported");
         }
 
-        c.getUI().getRootNode().enqueueRpc(c.getElement().getNode(),
-                "$0.addEventListener('click', function(e) {"//
-                        + "if (false) { " // Browser.isIOS()
-                        + " window.open($1, '_blank','');"//
-                        + "} else {"
-                        + " var iframe = document.createElement('iframe');"
-                        + " iframe.style.visibility='hidden';"
-                        + " iframe.style.height='0px';"
-                        + " iframe.style.width='0px';"
-                        + " iframe.frameBorder=0;"//
-                        + " iframe.tabIndex=-1;" //
-                        + " iframe.src=$1;"
-                        + " document.body.appendChild(iframe);"
-                        + " if (!$0.downloadFrames) {"
-                        + " $0.downloadFrames = [];" //
-                        + " }" //
-                        + " $0.downloadFrames.push(iframe);"
-                        // + " // TODO remove all downloadFrames when $0 is
-                        // detached"
-                        + "}"//
-                        + "});",
-                c.getElement(), url);
-
+        JS.get(FileDownloaderJS.class, c).attachDownload(c.getElement(), url);
     }
 
 }

@@ -189,9 +189,8 @@ public class ServerMessageHandler {
      */
     public void setConnection(ApplicationConnection connection) {
         this.connection = connection;
-
         treeUpdater.init(connection.getUIConnector().getWidget().getElement(),
-                connection.getServerRpcQueue());
+                connection.getServerRpcQueue(), connection.getCurrentClient());
     }
 
     public static Logger getLogger() {
