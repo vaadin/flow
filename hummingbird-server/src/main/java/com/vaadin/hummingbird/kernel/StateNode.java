@@ -92,6 +92,7 @@ public abstract class StateNode {
     private int id = 0;
 
     protected RootNode rootNode;
+    private List<Runnable> runOnAttach = null;
 
     protected StateNode() {
         // Empty
@@ -277,6 +278,11 @@ public abstract class StateNode {
             root.registerTransactionHandler(this, createTransactionHandler());
         }
 
+        if (runOnAttach != null) {
+            runOnAttach.forEach(Runnable::run);
+            runOnAttach = null;
+        }
+
         // Recursively set the root of all children as well
         forEachChildNode(n -> {
             if (n.getRoot() != root) {
@@ -440,5 +446,23 @@ public abstract class StateNode {
 
     public void removeChangeListener(NodeChangeListener listener) {
         getMultiValued(NodeChangeListener.class).remove(listener);
+    }
+
+    public void enqueueRpc(String string, Element element) {
+        runAttached(() -> {
+            getRoot().enqueueRpc(this, string, element);
+        });
+
+    }
+
+    private void runAttached(Runnable runnable) {
+        if (isAttached()) {
+            runnable.run();
+        } else {
+            if (runOnAttach == null) {
+                runOnAttach = new ArrayList<>();
+            }
+            runOnAttach.add(runnable);
+        }
     }
 }

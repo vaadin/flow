@@ -753,18 +753,10 @@ public class Element {
     }
 
     /**
-     * Focuses the element if it's attached to the DOM. Focusing an element
-     * before attaching it has no effect.
+     * Focuses the element when it is attached to the DOM.
      */
     public void focus() {
-        StateNode node = getNode();
-        RootNode root = node.getRoot();
-        if (root == null) {
-            // No-op if not attached, just as the DOM works
-            return;
-        }
-
-        root.enqueueRpc(node, "$0.focus()", this);
+        getNode().enqueueRpc("$0.focus()", this);
     }
 
     public <E extends EventObject> Element removeEventListener(

@@ -93,6 +93,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     private Map<String, DomEventListener> elementEventListeners;
 
+    private List<Runnable> runOnAttach;
+
     protected static final String DESIGN_ATTR_PLAIN_TEXT = "plain-text";
 
     /* Constructor */
@@ -559,7 +561,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
     public void attach() {
         markAsDirty();
 
-        getUI().getConnectorTracker().registerConnector(this);
+        UI ui = getUI();
+        ui.getConnectorTracker().registerConnector(this);
 
         fireEvent(new AttachEvent(this));
 
@@ -568,9 +571,13 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
 
         if (locale != null) {
-            getUI().getLocaleService().addLocale(locale);
+            ui.getLocaleService().addLocale(locale);
         }
 
+        if (runOnAttach != null) {
+            runOnAttach.forEach(Runnable::run);
+            runOnAttach = null;
+        }
     }
 
     /**
@@ -1098,6 +1105,18 @@ public abstract class AbstractComponent extends AbstractClientConnector
             }
         }
 
+    }
+
+    @Override
+    public void runAttached(Runnable runnable) {
+        if (isAttached()) {
+            runnable.run();
+        } else {
+            if (runOnAttach == null) {
+                runOnAttach = new ArrayList<>();
+            }
+            runOnAttach.add(runnable);
+        }
     }
 
 }

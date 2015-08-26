@@ -644,6 +644,17 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
     public void detach();
 
     /**
+     * Executes the given runnable when the component is attached.
+     * <p>
+     * Executes the runnable immediately if the component is attached when this
+     * method is called
+     *
+     * @param runnable
+     *            the runnable to execute when attached
+     */
+    public void runAttached(Runnable runnable);
+
+    /**
      * Gets the locale of the component.
      *
      * <p>

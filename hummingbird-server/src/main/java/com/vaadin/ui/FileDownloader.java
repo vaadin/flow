@@ -177,30 +177,28 @@ public class FileDownloader {
     }
 
     public void attach(AbstractComponent c) {
-        String url;
-        if (!c.isAttached()) {
-            throw new IllegalStateException("The component " + c
-                    + " must be attached before adding a downloader to it");
-        }
+        c.runAttached(() -> {
+            String url;
+            if (fileDownloadResource instanceof ConnectorResource) {
+                // Served by servlet
+                String key = "download" + hashCode();
+                DownloadResource downloadResource = new DownloadResource(
+                        (ConnectorResource) fileDownloadResource,
+                        isOverrideContentType());
+                c.setResource(key, downloadResource);
+                url = new ResourceReference(downloadResource, c, key).getURL();
+                // Hack, wrong in many cases
+                url = url.replace("app://", "./");
+            } else if (fileDownloadResource instanceof ExternalResource) {
+                url = ((ExternalResource) fileDownloadResource).getURL();
+            } else {
+                throw new IllegalArgumentException(
+                        "Only ConnectorResource and ExternalResource are supported");
+            }
 
-        if (fileDownloadResource instanceof ConnectorResource) {
-            // Served by servlet
-            String key = "download" + hashCode();
-            DownloadResource downloadResource = new DownloadResource(
-                    (ConnectorResource) fileDownloadResource,
-                    isOverrideContentType());
-            c.setResource(key, downloadResource);
-            url = new ResourceReference(downloadResource, c, key).getURL();
-            // Hack, wrong in many cases
-            url = url.replace("app://", "./");
-        } else if (fileDownloadResource instanceof ExternalResource) {
-            url = ((ExternalResource) fileDownloadResource).getURL();
-        } else {
-            throw new IllegalArgumentException(
-                    "Only ConnectorResource and ExternalResource are supported");
-        }
-
-        JS.get(FileDownloaderJS.class, c).attachDownload(c.getElement(), url);
+            JS.get(FileDownloaderJS.class, c).attachDownload(c.getElement(),
+                    url);
+        });
     }
 
 }
