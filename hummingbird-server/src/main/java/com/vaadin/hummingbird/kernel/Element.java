@@ -759,6 +759,27 @@ public class Element {
         getNode().enqueueRpc("$0.focus()", this);
     }
 
+    /**
+     * Scrolls the element when it is attached to the DOM.
+     */
+    public void scrollIntoView() {
+        getNode().enqueueRpc("$0.scrollIntoView()", this);
+    }
+
+    /**
+     * Scrolls the element to the given top coordinate
+     */
+    public void setScrollTop(int scrollTop) {
+        getNode().enqueueRpc("$0.scrollTop=$1", this, scrollTop);
+    }
+
+    /**
+     * Scrolls the element to the given left coordinate
+     */
+    public void setScrollLeft(int scrollLeft) {
+        getNode().enqueueRpc("$0.scrollLeft=$1", this, scrollLeft);
+    }
+
     public <E extends EventObject> Element removeEventListener(
             Class<E> eventType, EventListener<E> listener, Object source) {
         assert eventType != null;

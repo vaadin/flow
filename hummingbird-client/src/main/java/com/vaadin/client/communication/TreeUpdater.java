@@ -803,6 +803,7 @@ public class TreeUpdater {
                     value = getValue((JsonObject) element, jsKey);
                 }
             }
+            // FIXME This logs errors for "0"
             if (value == null) {
                 debug("No value found for event key " + eventDataKey);
             }
@@ -814,13 +815,15 @@ public class TreeUpdater {
 
     private static JsonValue getValue(JsonObject dataObject, String jsKey) {
         String keys[] = jsKey.split("\\.");
-        for (String key : keys) {
+        for (int i = 0; i < keys.length - 1; i++) {
+            String key = keys[i];
             dataObject = dataObject.getObject(key);
             if (dataObject == null) {
                 return null;
             }
         }
-        return dataObject;
+        // Ensure we return 0 instead of null, e.g. for scrollLeft
+        return dataObject.getObject(keys[keys.length - 1]);
     }
 
     private void sendEventToServer(int nodeId, String eventType,
@@ -1270,7 +1273,7 @@ public class TreeUpdater {
                 addNodeListener(node, new TextElementListener(node, textNode));
                 nodeIdToBasicElement.put(nodeToId.get(node), textNode);
                 if (debug) {
-                    debug("Created text node");
+                    debug("Created text node for nodeId=" + nodeToId.get(node));
                 }
                 return textNode;
             } else {
@@ -1278,7 +1281,8 @@ public class TreeUpdater {
                 addNodeListener(node, new BasicElementListener(node, element));
                 nodeIdToBasicElement.put(nodeToId.get(node), element);
                 if (debug) {
-                    debug("Created element: " + debugHtml(element));
+                    debug("Created element: " + debugHtml(element)
+                            + " for nodeId=" + nodeToId.get(node));
                 }
                 return element;
             }
@@ -1358,6 +1362,11 @@ public class TreeUpdater {
                 params.push(value);
                 newFunctionParams.push("$" + i);
             }
+            if (debug) {
+                String paramString = params.join(", ");
+                debug("Executing: " + script + " (" + paramString + ")");
+            }
+
             newFunctionParams.push("modules");
             params.push(client.getModules());
             newFunctionParams.push(script);
@@ -1375,7 +1384,11 @@ public class TreeUpdater {
 
     private Node findDomNode(int nodeId, int templateId) {
         if (templateId == 0) {
-            return nodeIdToBasicElement.get(Integer.valueOf(nodeId));
+            Node n = nodeIdToBasicElement.get(Integer.valueOf(nodeId));
+            if (n == null) {
+                getLogger().warning("No element found for nodeId=" + nodeId);
+            }
+            return n;
         } else {
             Map<Template, Node> templateToElement = nodeIdToTemplateToElement
                     .get(Integer.valueOf(nodeId));
@@ -1439,6 +1452,12 @@ public class TreeUpdater {
     private void initRoot() {
         JsonObject rootNode = idToNode.get(Integer.valueOf(1));
         JsonObject bodyNode = rootNode.get("body");
+
+        // TODO Remove UI element hack
+        nodeIdToBasicElement.put(2, rootElement);
+        debug("Registered element: " + debugHtml(rootElement) + " for nodeId="
+                + 2);
+
         addNodeListener(bodyNode,
                 new BasicElementListener(bodyNode, rootElement));
     }

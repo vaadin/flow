@@ -448,14 +448,14 @@ public abstract class StateNode {
         getMultiValued(NodeChangeListener.class).remove(listener);
     }
 
-    public void enqueueRpc(String string, Element element) {
+    public void enqueueRpc(String string, Object... params) {
         runAttached(() -> {
-            getRoot().enqueueRpc(this, string, element);
+            getRoot().enqueueRpc(this, string, params);
         });
 
     }
 
-    private void runAttached(Runnable runnable) {
+    public void runAttached(Runnable runnable) {
         if (isAttached()) {
             runnable.run();
         } else {

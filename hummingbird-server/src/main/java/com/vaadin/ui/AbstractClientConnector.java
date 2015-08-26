@@ -306,6 +306,7 @@ public abstract class AbstractClientConnector
      *
      * @since 7.0
      */
+    @Deprecated
     protected <T extends ClientRpc> T getRpcProxy(final Class<T> rpcInterface) {
         // create, initialize and return a dynamic proxy for RPC
         try {

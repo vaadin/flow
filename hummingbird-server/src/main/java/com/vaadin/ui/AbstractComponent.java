@@ -1119,4 +1119,16 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
     }
 
+    /**
+     * Helper for {@link JS#get(Class, Component)} which uses this component as
+     * the scope
+     *
+     * @param javascriptInterface
+     *            the Javascript interface to use
+     * @return a proxy object used to execute Javascript on the client
+     */
+    protected <T> T getJS(Class<T> javascriptInterface) {
+        return JS.get(javascriptInterface, this);
+    }
+
 }

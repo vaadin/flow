@@ -59,7 +59,6 @@ import com.vaadin.shared.Connector;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.DebugWindowServerRpc;
-import com.vaadin.shared.ui.ui.ScrollClientRpc;
 import com.vaadin.shared.ui.ui.UIClientRpc;
 import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
@@ -120,12 +119,6 @@ public abstract class UI extends AbstractSingleComponentContainer
     private final LinkedHashSet<Window> windows = new LinkedHashSet<Window>();
 
     /**
-     * The component that should be scrolled into view after the next repaint.
-     * Null if nothing should be scrolled into view.
-     */
-    private Component scrollIntoView;
-
-    /**
      * The id of this UI, used to find the server side instance of the UI form
      * which a request originates. A negative value indicates that the UI id has
      * not yet been assigned by the Application.
@@ -142,16 +135,6 @@ public abstract class UI extends AbstractSingleComponentContainer
     private LoadingIndicatorConfiguration loadingIndicatorConfiguration = new LoadingIndicatorConfigurationImpl(
             this);
 
-    /**
-     * Scroll Y position.
-     */
-    private int scrollTop = 0;
-
-    /**
-     * Scroll X position
-     */
-    private int scrollLeft = 0;
-
     private RootNode rootNode;
 
     private UIServerRpc rpc = new UIServerRpc() {
@@ -165,12 +148,6 @@ public abstract class UI extends AbstractSingleComponentContainer
                 int windowHeight) {
             // TODO We're not doing anything with the view dimensions
             getPage().updateBrowserWindowSize(windowWidth, windowHeight, true);
-        }
-
-        @Override
-        public void scroll(int scrollTop, int scrollLeft) {
-            UI.this.scrollTop = scrollTop;
-            UI.this.scrollLeft = scrollLeft;
         }
 
         @Override
@@ -604,10 +581,9 @@ public abstract class UI extends AbstractSingleComponentContainer
             throws IllegalArgumentException {
         if (component.getUI() != this) {
             throw new IllegalArgumentException(
-                    "The component where to scroll must belong to this UI.");
+                    "The component to scroll into view must belong to this UI.");
         }
-        scrollIntoView = component;
-        markAsDirty();
+        component.getElement().scrollIntoView();
     }
 
     /**
@@ -722,14 +698,7 @@ public abstract class UI extends AbstractSingleComponentContainer
             throw new IllegalArgumentException(
                     "Scroll offset must be at least 0");
         }
-        if (this.scrollTop != scrollTop) {
-            this.scrollTop = scrollTop;
-            getRpcProxy(ScrollClientRpc.class).setScrollTop(scrollTop);
-        }
-    }
-
-    public int getScrollTop() {
-        return scrollTop;
+        getElement().setScrollTop(scrollTop);
     }
 
     /**
@@ -742,14 +711,7 @@ public abstract class UI extends AbstractSingleComponentContainer
             throw new IllegalArgumentException(
                     "Scroll offset must be at least 0");
         }
-        if (this.scrollLeft != scrollLeft) {
-            this.scrollLeft = scrollLeft;
-            getRpcProxy(ScrollClientRpc.class).setScrollLeft(scrollLeft);
-        }
-    }
-
-    public int getScrollLeft() {
-        return scrollLeft;
+        getElement().setScrollLeft(scrollLeft);
     }
 
     /**

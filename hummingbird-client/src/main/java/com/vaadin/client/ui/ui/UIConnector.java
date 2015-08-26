@@ -30,8 +30,6 @@ import com.google.gwt.dom.client.LinkElement;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.StyleElement;
 import com.google.gwt.dom.client.StyleInjector;
-import com.google.gwt.event.dom.client.ScrollEvent;
-import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Command;
@@ -69,7 +67,6 @@ import com.vaadin.shared.ui.ui.DebugWindowClientRpc;
 import com.vaadin.shared.ui.ui.DebugWindowServerRpc;
 import com.vaadin.shared.ui.ui.PageClientRpc;
 import com.vaadin.shared.ui.ui.PageState;
-import com.vaadin.shared.ui.ui.ScrollClientRpc;
 import com.vaadin.shared.ui.ui.UIClientRpc;
 import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
@@ -100,17 +97,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
             public void reload() {
                 Window.Location.reload();
 
-            }
-        });
-        registerRpc(ScrollClientRpc.class, new ScrollClientRpc() {
-            @Override
-            public void setScrollTop(int scrollTop) {
-                getWidget().getElement().setScrollTop(scrollTop);
-            }
-
-            @Override
-            public void setScrollLeft(int scrollLeft) {
-                getWidget().getElement().setScrollLeft(scrollLeft);
             }
         });
         registerRpc(UIClientRpc.class, new UIClientRpc() {
@@ -156,24 +142,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
                         Window.getClientHeight());
                 if (getState().immediate) {
                     getConnection().getServerRpcQueue().flush();
-                }
-            }
-        });
-        getWidget().addScrollHandler(new ScrollHandler() {
-            private int lastSentScrollTop = Integer.MAX_VALUE;
-            private int lastSentScrollLeft = Integer.MAX_VALUE;
-
-            @Override
-            public void onScroll(ScrollEvent event) {
-                Element element = getWidget().getElement();
-                int newScrollTop = element.getScrollTop();
-                int newScrollLeft = element.getScrollLeft();
-                if (newScrollTop != lastSentScrollTop
-                        || newScrollLeft != lastSentScrollLeft) {
-                    lastSentScrollTop = newScrollTop;
-                    lastSentScrollLeft = newScrollLeft;
-                    getRpcProxy(UIServerRpc.class).scroll(newScrollTop,
-                            newScrollLeft);
                 }
             }
         });

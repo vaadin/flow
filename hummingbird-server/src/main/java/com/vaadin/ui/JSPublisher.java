@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 
-import com.vaadin.annotations.JavaScriptModule;
 import com.vaadin.hummingbird.kernel.RootNode;
 
 public class JSPublisher {
@@ -18,20 +17,17 @@ public class JSPublisher {
 
         if (!isPublished(root, namespace)) {
             setPublished(root, namespace);
-            JavaScriptModule jsModule = javascriptInterface
-                    .getAnnotation(JavaScriptModule.class);
-            if (jsModule == null) {
-                throw new IllegalArgumentException(
-                        "Javascript interface " + javascriptInterface.getName()
-                                + " must be annotated with @"
-                                + JavaScriptModule.class.getSimpleName());
-            }
-            String jsResource = jsModule.value();
+            String jsResource = JS.getResource(javascriptInterface);
             try (InputStream is = javascriptInterface
                     .getResourceAsStream(jsResource)) {
                 if (is == null) {
-                    throw new IllegalArgumentException("Javascript resource "
-                            + jsResource + " not found using class loader");
+                    throw new IllegalArgumentException(
+                            "Javascript resource " + jsResource
+                                    + " not found using class loader. Should be in the package "
+                                    + javascriptInterface.getPackage().getName()
+                                    + ", together with the "
+                                    + javascriptInterface.getSimpleName()
+                                    + " interface");
                 }
 
                 String content = IOUtils.toString(is);

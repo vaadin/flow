@@ -9,10 +9,19 @@ import com.vaadin.ui.UI;
 
 public class UIScrolling extends AbstractTestUI {
 
+    int scrollTop = 0, scrollLeft = 0;
+
     @Override
     protected void setup(VaadinRequest request) {
+
         // Set layout to high enough to get scroll.
         getLayout().setHeight("2250px");
+
+        getElement().addEventData("scroll", "scrollTop", "scrollLeft");
+        getElement().addEventListener("scroll", e -> {
+            scrollTop = (int) e.getNumber("scrollTop");
+            scrollLeft = (int) e.getNumber("scrollLeft");
+        });
         addComponent(new Button("scroll to 1000px", new Button.ClickListener() {
 
             @Override
@@ -25,9 +34,7 @@ public class UIScrolling extends AbstractTestUI {
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
-                        Notification.show("Scrolled to "
-                                + event.getButton().getUI().getScrollTop()
-                                + " px");
+                        Notification.show("Scrolled to " + scrollTop + " px");
                     }
                 }));
     }
