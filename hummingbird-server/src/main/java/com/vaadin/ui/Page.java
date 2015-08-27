@@ -678,4 +678,8 @@ public class Page implements Serializable, EventSource {
         return state;
     }
 
+    public UI getUI() {
+        return uI;
+    }
+
 }

@@ -4,8 +4,8 @@ import com.vaadin.tests.components.TestBase;
 import com.vaadin.tests.util.LoremIpsum;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
-import com.vaadin.ui.Page;
 import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.Page;
 
 public class SemiTransparentNotification extends TestBase {
 
@@ -18,7 +18,6 @@ public class SemiTransparentNotification extends TestBase {
         Notification n = new Notification(
                 "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This should be a <br/><b>SEMI-TRANSPARENT</b><br/> notification",
                 Type.WARNING_MESSAGE);
-        n.setHtmlContentAllowed(true);
         n.show(Page.getCurrent());
     }
 

@@ -201,7 +201,7 @@ public class UidlWriter implements Serializable {
     }
 
     public static void encodeRpc(UI ui, JsonObject response) {
-        List<PendingRpc> rpcQueue = ui.getRootNode().flushRpcQueue();
+        List<PendingRpc> rpcQueue = ui.getRoot().getRootNode().flushRpcQueue();
         if (!rpcQueue.isEmpty()) {
             response.put("rpc", encodeRpcQueue(rpcQueue));
         }
@@ -209,7 +209,7 @@ public class UidlWriter implements Serializable {
 
     private static void encodeChanges(UI ui, JsonObject response) {
         ChangeUidlBuilder uidlBuilder = new ChangeUidlBuilder(ui);
-        ui.getRootNode().commit(uidlBuilder);
+        ui.getRoot().getRootNode().commit(uidlBuilder);
         response.put("elementTemplates", uidlBuilder.getNewTemplates());
         response.put("elementChanges", uidlBuilder.getChanges());
     }

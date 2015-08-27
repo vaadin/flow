@@ -17,7 +17,11 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
+import com.vaadin.annotations.Bower;
+import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.Position;
 
@@ -60,7 +64,9 @@ import com.vaadin.shared.Position;
  * </p>
  *
  */
-public class Notification implements Serializable {
+@Bower("vaadin-notification")
+@Tag("vaadin-notification")
+public class Notification extends AbstractComponent implements Serializable {
     public enum Type {
         HUMANIZED_MESSAGE("humanized"), WARNING_MESSAGE(
                 "warning"), ERROR_MESSAGE("error"), TRAY_NOTIFICATION(
@@ -88,13 +94,8 @@ public class Notification implements Serializable {
     public static final int DELAY_FOREVER = -1;
     public static final int DELAY_NONE = 0;
 
-    private String caption;
-    private String description;
     private Resource icon;
-    private Position position = Position.MIDDLE_CENTER;
-    private int delayMsec = 0;
     private String styleName;
-    private boolean htmlContentAllowed;
 
     /**
      * Creates a "humanized" notification message.
@@ -174,9 +175,10 @@ public class Notification implements Serializable {
      */
     public Notification(String caption, String description, Type type,
             boolean htmlContentAllowed) {
-        this.caption = caption;
-        this.description = description;
-        this.htmlContentAllowed = htmlContentAllowed;
+        getElement().appendChild(new Element("div"));
+        getElement().appendChild(new Element("div"));
+        setCaption(caption);
+        setDescription(description);
         setType(type);
     }
 
@@ -184,18 +186,18 @@ public class Notification implements Serializable {
         styleName = type.getStyle();
         switch (type) {
         case WARNING_MESSAGE:
-            delayMsec = 1500;
+            setDelayMsec(1500);
             break;
         case ERROR_MESSAGE:
-            delayMsec = -1;
+            setDelayMsec(-1);
             break;
         case TRAY_NOTIFICATION:
-            delayMsec = 3000;
-            position = Position.BOTTOM_RIGHT;
+            setDelayMsec(3000);
+            setPosition(Position.BOTTOM_RIGHT);
             break;
         case ASSISTIVE_NOTIFICATION:
-            delayMsec = 3000;
-            position = Position.ASSISTIVE;
+            setDelayMsec(3000);
+            setPosition(Position.ASSISTIVE);
             break;
         case HUMANIZED_MESSAGE:
         default:
@@ -208,8 +210,9 @@ public class Notification implements Serializable {
      *
      * @return The message caption
      */
+    @Override
     public String getCaption() {
-        return caption;
+        return getElement().getChild(0).getTextContent();
     }
 
     /**
@@ -218,8 +221,9 @@ public class Notification implements Serializable {
      * @param caption
      *            The message caption
      */
+    @Override
     public void setCaption(String caption) {
-        this.caption = caption;
+        getElement().getChild(0).setTextContent(caption);
     }
 
     /**
@@ -228,7 +232,7 @@ public class Notification implements Serializable {
      * @return The message description.
      */
     public String getDescription() {
-        return description;
+        return getElement().getChild(1).getTextContent();
     }
 
     /**
@@ -237,7 +241,7 @@ public class Notification implements Serializable {
      * @param description
      */
     public void setDescription(String description) {
-        this.description = description;
+        getElement().getChild(1).setTextContent(description);
     }
 
     /**
@@ -246,7 +250,15 @@ public class Notification implements Serializable {
      * @return The position
      */
     public Position getPosition() {
-        return position;
+        for (Position p : Position.values()) {
+            boolean hasAll = Arrays.stream(p.getClassNames())
+                    .allMatch(n -> getElement().hasClass(n));
+            if (hasAll) {
+                return p;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -256,7 +268,13 @@ public class Notification implements Serializable {
      *            The desired notification position
      */
     public void setPosition(Position position) {
-        this.position = position;
+        for (String className : Position.getAllClassNames()) {
+            getElement().removeClass(className);
+        }
+
+        for (String className : position.getClassNames()) {
+            getElement().addClass(className);
+        }
     }
 
     /**
@@ -264,6 +282,7 @@ public class Notification implements Serializable {
      *
      * @return The message icon
      */
+    @Override
     public Resource getIcon() {
         return icon;
     }
@@ -274,6 +293,7 @@ public class Notification implements Serializable {
      * @param icon
      *            The desired message icon
      */
+    @Override
     public void setIcon(Resource icon) {
         this.icon = icon;
     }
@@ -284,7 +304,7 @@ public class Notification implements Serializable {
      * @return the delay in msec, -1 indicates the message has to be clicked.
      */
     public int getDelayMsec() {
-        return delayMsec;
+        return getElement().getAttribute("autoClose", -1);
     }
 
     /**
@@ -295,7 +315,7 @@ public class Notification implements Serializable {
      *            message
      */
     public void setDelayMsec(int delayMsec) {
-        this.delayMsec = delayMsec;
+        getElement().setAttribute("autoClose", delayMsec);
     }
 
     /**
@@ -304,6 +324,7 @@ public class Notification implements Serializable {
      * @param styleName
      *            The desired style name.
      */
+    @Override
     public void setStyleName(String styleName) {
         this.styleName = styleName;
     }
@@ -313,33 +334,14 @@ public class Notification implements Serializable {
      *
      * @return
      */
+    @Override
     public String getStyleName() {
         return styleName;
     }
 
-    /**
-     * Sets whether html is allowed in the caption and description. If set to
-     * true, the texts are passed to the browser as html and the developer is
-     * responsible for ensuring no harmful html is used. If set to false, the
-     * texts are passed to the browser as plain text.
-     *
-     * @param htmlContentAllowed
-     *            true if the texts are used as html, false if used as plain
-     *            text
-     */
-    public void setHtmlContentAllowed(boolean htmlContentAllowed) {
-        this.htmlContentAllowed = htmlContentAllowed;
-    }
+    public void show(Page page) {
+        show(page.getUI());
 
-    /**
-     * Checks whether caption and description are interpreted as html or plain
-     * text.
-     *
-     * @return true if the texts are used as html, false if used as plain text
-     * @see #setHtmlContentAllowed(boolean)
-     */
-    public boolean isHtmlContentAllowed() {
-        return htmlContentAllowed;
     }
 
     /**
@@ -348,9 +350,16 @@ public class Notification implements Serializable {
      * @param page
      *            The page on which the notification should be shown
      */
-    public void show(Page page) {
-        // TODO Can avoid deprecated API when Notification extends Extension
-        page.showNotification(this);
+    public void show(UI ui) {
+        // Workaround for hierarchy issue when client side removes the element
+        // from the DOM
+        getElement().setAttribute("keepOnClose", true);
+
+        getElement().addEventListener("iron-overlay-closed", e -> {
+            ui.getRoot().getLayer(20000).removeComponent(this);
+        });
+
+        ui.getRoot().ensureLayer(20000).addComponent(this);
     }
 
     /**
@@ -366,7 +375,7 @@ public class Notification implements Serializable {
      *            The message
      */
     public static void show(String caption) {
-        new Notification(caption).show(Page.getCurrent());
+        new Notification(caption).show(UI.getCurrent());
     }
 
     /**
@@ -386,7 +395,7 @@ public class Notification implements Serializable {
      *            The message type
      */
     public static void show(String caption, Type type) {
-        new Notification(caption, type).show(Page.getCurrent());
+        new Notification(caption, type).show(UI.getCurrent());
     }
 
     /**
@@ -408,6 +417,6 @@ public class Notification implements Serializable {
      *            The message type
      */
     public static void show(String caption, String description, Type type) {
-        new Notification(caption, description, type).show(Page.getCurrent());
+        new Notification(caption, description, type).show(UI.getCurrent());
     }
 }

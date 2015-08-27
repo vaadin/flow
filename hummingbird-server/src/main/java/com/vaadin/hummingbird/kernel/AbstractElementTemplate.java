@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
+import com.vaadin.ui.UI.Root;
 
 public abstract class AbstractElementTemplate implements ElementTemplate {
 
@@ -290,11 +290,11 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         if (root == null) {
             return true;
         }
-        StateNode bodyNode = root.get("body", StateNode.class);
+        StateNode bodyNode = root.get("containerElement", StateNode.class);
 
-        UI parentUI = (UI) getComponents(bodyNode, false).get(0);
-        if (parentUI != null) {
-            VaadinSession parentSession = parentUI.getSession();
+        Root r = (Root) getComponents(bodyNode, false).get(0);
+        if (r != null) {
+            VaadinSession parentSession = r.getUI().getSession();
             if (parentSession != null && !parentSession.hasLock()) {
                 String message = "Cannot remove from parent when the session is not locked.";
                 if (VaadinService.isOtherSessionLocked(parentSession)) {

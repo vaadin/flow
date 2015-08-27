@@ -16,19 +16,30 @@
 package com.vaadin.shared;
 
 public enum Position {
-    TOP_LEFT, TOP_CENTER, TOP_RIGHT, MIDDLE_LEFT, MIDDLE_CENTER, MIDDLE_RIGHT, BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT, /**
-                                                                                                                          * Position
-                                                                                                                          * that
-                                                                                                                          * is
-                                                                                                                          * only
-                                                                                                                          * accessible
-                                                                                                                          * for
-                                                                                                                          * assistive
-                                                                                                                          * devices,
-                                                                                                                          * invisible
-                                                                                                                          * for
-                                                                                                                          * visual
-                                                                                                                          * users.
-                                                                                                                          **/
+    TOP_LEFT("top", "left"), TOP_CENTER("top", "center"), TOP_RIGHT("top",
+            "right"), MIDDLE_LEFT("left"), MIDDLE_CENTER(
+                    "center"), MIDDLE_RIGHT("right"), BOTTOM_LEFT(
+                            "bottom left"), BOTTOM_CENTER(
+                                    "bottom center"), BOTTOM_RIGHT(
+                                            "bottom right"),
+
+    /**
+     * Position that is only accessible for assistive devices, invisible for
+     * visual users.
+     **/
     ASSISTIVE;
+
+    private String[] classNames;
+
+    private Position(String... classNames) {
+        this.classNames = classNames;
+    }
+
+    public String[] getClassNames() {
+        return classNames;
+    }
+
+    public static String[] getAllClassNames() {
+        return new String[] { "top", "bottom", "left", "center", "right" };
+    }
 }

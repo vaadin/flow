@@ -1,12 +1,12 @@
 package com.vaadin.hummingbird.kernel;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.communication.ChangeUidlBuilder;
 import com.vaadin.ui.UI;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -32,14 +32,14 @@ public class UidlWriterTest {
                 // Do nothing
             }
         };
-        ui.getRootNode().commit();
+        ui.getRoot().getRootNode().commit();
 
         element = ui.getElement();
     }
 
     private JsonArray encodeElementChanges() {
         ChangeUidlBuilder visitor = new ChangeUidlBuilder(ui);
-        ui.getRootNode().commit(visitor);
+        ui.getRoot().getRootNode().commit(visitor);
         return visitor.getChanges();
     }
 

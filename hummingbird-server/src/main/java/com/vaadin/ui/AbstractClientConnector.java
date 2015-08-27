@@ -47,6 +47,7 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.communication.ClientRpc;
 import com.vaadin.shared.communication.ServerRpc;
 import com.vaadin.shared.communication.SharedState;
+import com.vaadin.ui.UI.Root;
 
 import elemental.json.JsonObject;
 
@@ -428,6 +429,9 @@ public abstract class AbstractClientConnector
         while (connector != null) {
             if (connector instanceof UI) {
                 return (UI) connector;
+            }
+            if (connector instanceof Root) {
+                return ((Root) connector).getUI();
             }
             connector = connector.getParent();
         }

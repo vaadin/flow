@@ -1,0 +1,175 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="../neon-animation/neon-animation.html">
+<link rel="import" href="../paper-dialog-behavior/paper-dialog-behavior.html">
+
+<dom-module id="vaadin-notification">
+
+    <style>
+    :host {
+      font: 300 16px/1.55 "Open Sans", sans-serif;
+      display: block;
+      color: #197de1;
+
+      background: white;
+      text-align: center;
+      box-shadow: 0px 5px 15px 0px rgba(0, 0, 0, 0.15);
+      padding: 19px 22px;
+      margin: 0;
+      position: fixed;
+    };
+
+    :host.left {
+      left: 12px;
+    }
+    :host.top {
+      top: 12px;
+    }
+    :host.right {
+      right: 12px;
+    }
+    :host.bottom {
+      bottom: 12px;
+    }
+    /* Tray */
+    :host.tray {
+      bottom: 12px;
+      right: 12px;
+    }
+    /* Error */
+    :host.error {
+      background: #ed473b;
+      font-weight: 400;
+      color: white;
+    }
+    /* Warning */
+    :host.warning {
+      background: #FFF3D2;
+      color: #AC7C00;
+    }
+
+    #main {
+      border-radius: 4px;
+      line-height: 1;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    </style>
+    <template>
+      <div id="main">
+        <content></content>
+      </div>
+    </template>
+</dom-module>
+<script>
+  Polymer({
+    is: "slide-from-above-animation",
+    behaviors: [
+      Polymer.NeonAnimationBehavior
+    ],
+    configure: function(config) {
+      var node = config.node;
+      this.setPrefixedProperty(node, 'transformOrigin', '0 0');
+      this._effect = new KeyframeEffect(node, [
+        {'transform': 'translateY(-150%)'},
+        {'transform': 'none'}
+      ], this.timingFromConfig(config));
+      this._effect.timing.duration=400;
+      this._effect.timing.delay=10;
+      return this._effect;
+    }
+  });
+
+
+    Polymer({
+        is: "slide-from-below-animation",
+        behaviors: [
+          Polymer.NeonAnimationBehavior
+        ],
+        configure: function(config) {
+          var node = config.node;
+          this.setPrefixedProperty(node, 'transformOrigin', '0 0');
+          this._effect = new KeyframeEffect(node, [
+            {'transform': 'translateY(100%)'},
+            {'transform': 'none'}
+          ], this.timingFromConfig(config));
+          this._effect.timing.duration=400;
+          this._effect.timing.delay=10;
+          return this._effect;
+        }
+      });
+
+    Polymer({
+        is: 'vaadin-notification',
+        behaviors: [
+          Polymer.PaperDialogBehavior,
+          Polymer.NeonAnimationRunnerBehavior
+      ],
+        properties: {
+          type: {
+            type: String,
+          },
+          autoClose: {
+            type: Number,
+            value: -1,
+          },
+          keepOnClose: {
+            type: Boolean,
+            reflectToAttribute: true,
+          },
+          noCancelOnOutsideClick: {
+            value: true,  //override default
+          },
+          entryAnimation: {
+            value: "fade-in-animation",  //override default
+          },
+          exitAnimation: {
+            value: "fade-out-animation",  //override default
+          },
+        },
+        listeners: {
+          'click':  'close',
+          'neon-animation-finish': '_onNeonAnimationFinish',
+          'iron-overlay-closed': '_closed',
+        },
+        observers: [
+        ],
+        attached: function() {
+          if (!this.hasAttribute("entry-animation")) {
+            if (Polymer.dom(this).classList.contains("top")) {
+              this.entryAnimation="slide-from-above-animation";
+            } else if (Polymer.dom(this).classList.contains("bottom")) {
+              this.entryAnimation="slide-from-below-animation";
+            }
+          }
+          this.opened = true;
+        },
+        _renderOpened: function() {
+          this.playAnimation("entry");
+        },
+        _renderClosed: function() {
+          if (this._closeTimer) {
+            clearTimeout(this._closeTimer);
+          }
+          this.playAnimation("exit");
+        },
+        _onNeonAnimationFinish: function() {
+          if (this.opened) {
+            this._finishRenderOpened();
+            if (this.autoClose >= 0) {
+              var self = this;
+              this._closeTimer = setTimeout(function() {
+                self.close();
+              }, this.autoClose);
+            }
+          } else {
+            this._finishRenderClosed();
+          }
+        },
+        _closed: function() {
+          if (!this.keepOnClose) {
+            Polymer.dom(this.remove());
+          }
+        },
+    });
+</script>

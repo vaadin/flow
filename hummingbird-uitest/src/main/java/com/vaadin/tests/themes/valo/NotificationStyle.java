@@ -41,7 +41,6 @@ public class NotificationStyle extends AbstractTestUI {
                                 "<p>Caption</p>",
                                 "<div style='display:inline-block;'><h1>Description</h1>"
                                         + "<p class='tested-p'>tested p</p></div>");
-                        notification.setHtmlContentAllowed(true);
                         notification.setDelayMsec(50000);
                         notification.show(getPage());
                     }
@@ -55,7 +54,6 @@ public class NotificationStyle extends AbstractTestUI {
                         Notification notification = new Notification(
                                 "<p>Caption</p>",
                                 "Description text<p class='tested-p'>tested p text</p>");
-                        notification.setHtmlContentAllowed(true);
                         notification.setDelayMsec(50000);
                         notification.show(getPage());
                     }

@@ -103,7 +103,6 @@ public class NotificationsWaiAria extends AbstractTestUI {
 
             Notification n = new Notification(tf.getValue(), typeValue);
             n.setDelayMsec(-1);
-            n.setHtmlContentAllowed(true);
             NotificationConfiguration notificationConf = UI.getCurrent()
                     .getNotificationConfiguration();
             notificationConf.setAssistivePrefix(typeValue, prefix.getValue());
@@ -120,7 +119,6 @@ public class NotificationsWaiAria extends AbstractTestUI {
         public void buttonClick(ClickEvent event) {
             Notification n = new Notification(tf.getValue(),
                     (Type) type.getValue());
-            n.setHtmlContentAllowed(true);
             n.show(Page.getCurrent());
         }
     }

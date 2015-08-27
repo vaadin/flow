@@ -254,6 +254,15 @@ public abstract class UI extends CssLayout
         public UI getUI() {
             return (UI) getLayer(1);
         }
+
+        public Layer ensureLayer(int layerIndex) {
+            Layer layer = getLayer(layerIndex);
+            if (layer == null) {
+                layer = createLayer(layerIndex);
+            }
+            return layer;
+
+        }
     }
 
     public static class LayerImpl extends CssLayout implements Layer {
@@ -295,7 +304,7 @@ public abstract class UI extends CssLayout
             String eventType = json.getString(1);
             JsonObject eventData = json.getObject(2);
 
-            StateNode elementStateNode = getRootNode().getById(nodeId);
+            StateNode elementStateNode = getRoot().rootNode.getById(nodeId);
 
             ElementTemplate template;
             if (elementStateNode.containsKey(Keys.TAG)) {
@@ -1439,13 +1448,6 @@ public abstract class UI extends CssLayout
     }
 
     /**
-     * @return the rootNode
-     */
-    public RootNode getRootNode() {
-        return root.getRootNode();
-    }
-
-    /**
      * @since
      * @return
      */
@@ -1468,6 +1470,10 @@ public abstract class UI extends CssLayout
             layer.getElement().addClass("window");
         }
         return layer;
+    }
+
+    public Root getRoot() {
+        return root;
     }
 
 }

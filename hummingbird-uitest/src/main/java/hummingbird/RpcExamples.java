@@ -15,8 +15,8 @@ public class RpcExamples extends AbstractTestUI {
             {
                 setTextContent("Focus input");
                 addEventListener("click", e -> {
-                    getRootNode().enqueueRpc(input.getNode(), "$0.focus()",
-                            input);
+                    getRoot().getRootNode().enqueueRpc(input.getNode(),
+                            "$0.focus()", input);
                 });
             }
         });
@@ -25,8 +25,8 @@ public class RpcExamples extends AbstractTestUI {
             {
                 setTextContent("Show alert");
                 addEventListener("click", e -> {
-                    getRootNode().enqueueRpc(getRootNode(), "window.alert($0)",
-                            "Hello");
+                    getRoot().getRootNode().enqueueRpc(getRoot().getRootNode(),
+                            "window.alert($0)", "Hello");
                 });
             }
         });
@@ -35,7 +35,7 @@ public class RpcExamples extends AbstractTestUI {
             {
                 setTextContent("Log stuff");
                 addEventListener("click", e -> {
-                    getRootNode().enqueueRpc(getRootNode(),
+                    getRoot().getRootNode().enqueueRpc(getRoot().getRootNode(),
                             "console.log($0, $1)", "Foobar", input);
                 });
             }
@@ -45,7 +45,7 @@ public class RpcExamples extends AbstractTestUI {
             {
                 setTextContent("Log window.vaadin property names");
                 addEventListener("click", e -> {
-                    getRootNode().enqueueRpc(getRootNode(),
+                    getRoot().getRootNode().enqueueRpc(getRoot().getRootNode(),
                             "console.log(Object.getOwnPropertyNames(window.vaadin))");
                 });
             }
