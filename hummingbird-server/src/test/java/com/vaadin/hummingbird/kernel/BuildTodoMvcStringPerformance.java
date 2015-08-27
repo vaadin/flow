@@ -1,14 +1,8 @@
 package com.vaadin.hummingbird.kernel;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.vaadin.hummingbird.parser.EventBinding;
 
 public class BuildTodoMvcStringPerformance {
     public static void main(String[] args) throws InterruptedException {
@@ -46,24 +40,21 @@ public class BuildTodoMvcStringPerformance {
     }
 
     private static ElementTemplate buildTemplate() {
-        List<AttributeBinding> el = Collections.emptyList();
-        List<EventBinding> eb = Collections.emptyList();
-        Map<String, String> em = Collections.emptyMap();
+        BoundTemplateBuilder headerH1 = TemplateBuilder.withTag("h1")
+                .addChild(TemplateBuilder.staticText("todos"));
 
-        BoundElementTemplate headerH1 = new BoundElementTemplate("h1", el, em,
-                eb, Collections.singletonList(new StaticTextTemplate("todos")));
+        BoundTemplateBuilder headerInput = TemplateBuilder.withTag("input")
+                .setAttribute("id", "new-todo")
+                .setAttribute("class", "new-todo")
+                .setAttribute("placeholder", "What needs to be done?")
+                .setAttribute("autofocus", "");
 
-        BoundElementTemplate headerInput = new BoundElementTemplate("input", el,
-                buildMap("id", "new-todo", "class", "new-todo", "placeholder",
-                        "What needs to be done?", "autofocus", ""),
-                eb);
+        BoundTemplateBuilder header = TemplateBuilder.withTag("header")
+                .setAttribute("class", "header").addChild(headerH1)
+                .addChild(headerInput);
 
-        BoundElementTemplate header = new BoundElementTemplate("header", el,
-                buildMap("class", "header"), eb,
-                Arrays.asList(headerH1, headerInput));
-
-        BoundElementTemplate toggleAll = new BoundElementTemplate("input",
-                Collections.singletonList(new AttributeBinding("checked") {
+        BoundTemplateBuilder toggleAll = TemplateBuilder.withTag("input")
+                .bindAttribute(new AttributeBinding("checked") {
                     @Override
                     public String getValue(StateNode node) {
                         if (node.containsKey("allCompleted")) {
@@ -72,16 +63,16 @@ public class BuildTodoMvcStringPerformance {
                             return null;
                         }
                     }
-                }), buildMap("id", "toggle-all", "class", "toggle-all", "type",
-                        "checkbox"),
-                eb);
+                }).setAttribute("id", "toggle-all")
+                .setAttribute("class", "toggle-all")
+                .setAttribute("type", "checkbox");
 
-        BoundElementTemplate mainLabel = new BoundElementTemplate("label", el,
-                buildMap("for", "toggle-all"), eb, Collections.singletonList(
-                        new StaticTextTemplate("Mark all as completed")));
+        BoundTemplateBuilder mainLabel = TemplateBuilder.withTag("label")
+                .setAttribute("for", "toggle-all")
+                .addChild(TemplateBuilder.staticText("Mark all as completed"));
 
-        BoundElementTemplate toggle = new BoundElementTemplate("input",
-                Collections.singletonList(new AttributeBinding("checked") {
+        BoundTemplateBuilder toggle = TemplateBuilder.withTag("input")
+                .bindAttribute(new AttributeBinding("checked") {
                     @Override
                     public String getValue(StateNode node) {
                         if (Boolean.TRUE.equals(node.get("completed"))) {
@@ -90,17 +81,17 @@ public class BuildTodoMvcStringPerformance {
                             return null;
                         }
                     }
-                }), buildMap("class", "toggle", "type", "checkbox"), eb);
+                }).setAttribute("class", "toggle")
+                .setAttribute("type", "checkbox");
 
-        BoundElementTemplate todoLabel = new BoundElementTemplate("label", el,
-                em, eb,
-                Collections.singletonList(new DynamicTextTemplate("title")));
+        BoundTemplateBuilder todoLabel = TemplateBuilder.withTag("label")
+                .addChild(TemplateBuilder.dynamicText("title"));
 
-        BoundElementTemplate todoButton = new BoundElementTemplate("button", el,
-                buildMap("class", "destroy"), eb);
+        BoundTemplateBuilder todoButton = TemplateBuilder.withTag("button")
+                .setAttribute("class", "destory");
 
-        BoundElementTemplate view = new BoundElementTemplate("div",
-                Collections.singletonList(new AttributeBinding("class") {
+        BoundTemplateBuilder view = TemplateBuilder.withTag("div")
+                .bindAttribute(new AttributeBinding("class") {
                     @Override
                     public String getValue(StateNode node) {
                         if (node.get("id")
@@ -110,25 +101,24 @@ public class BuildTodoMvcStringPerformance {
                             return null;
                         }
                     }
-                }), em, eb, Arrays.asList(toggle, todoLabel, todoButton));
+                }).addChild(toggle).addChild(todoLabel).addChild(todoButton);
 
-        BoundElementTemplate edit = new BoundElementTemplate("input",
-                Arrays.asList(new ModelAttributeBinding("value", "title"),
-                        new AttributeBinding("class") {
-                            @Override
-                            public String getValue(StateNode node) {
-                                if (node.get("id").equals(
-                                        node.getParent().get("editId"))) {
-                                    return "edit";
-                                } else {
-                                    return "edit hidden";
-                                }
-                            }
-                        }),
-                em, eb);
+        BoundTemplateBuilder edit = TemplateBuilder.withTag("input")
+                .bindAttribute("value", "title")
+                .bindAttribute(new AttributeBinding("class") {
+                    @Override
+                    public String getValue(StateNode node) {
+                        if (node.get("id")
+                                .equals(node.getParent().get("editId"))) {
+                            return "edit";
+                        } else {
+                            return "edit hidden";
+                        }
+                    }
+                });
 
-        BoundElementTemplate todoLi = new ForElementTemplate("li",
-                Collections.singletonList(new AttributeBinding("class") {
+        BoundTemplateBuilder todoLi = TemplateBuilder.withTag("li")
+                .bindAttribute(new AttributeBinding("class") {
                     @Override
                     public String getValue(StateNode node) {
                         ArrayList<String> classes = new ArrayList<>();
@@ -146,31 +136,28 @@ public class BuildTodoMvcStringPerformance {
                                     .collect(Collectors.joining(" "));
                         }
                     }
-                }), em, eb, new ModelPath("todos"), null,
-                Arrays.asList(view, edit));
+                }).setForDefinition(new ModelPath("todos"), null).addChild(view)
+                .addChild(edit);
 
-        BoundElementTemplate todoList = new BoundElementTemplate("ul", el,
-                buildMap("class", "todo-list"), eb,
-                Collections.singletonList(todoLi));
+        BoundTemplateBuilder todoList = TemplateBuilder.withTag("ul")
+                .setAttribute("class", "todo-list").addChild(todoLi);
 
-        BoundElementTemplate todoCountStrong = new BoundElementTemplate(
-                "strong", el, em, eb,
-                Collections.singletonList(new DynamicTextTemplate(n -> {
+        BoundTemplateBuilder todoCountStrong = TemplateBuilder.withTag("strong")
+                .addChild(TemplateBuilder.dynamicText(n -> {
                     List<Object> list = n.getMultiValued("todos");
                     long remainingCount = list
                             .stream().filter(o -> ((StateNode) o)
                                     .get("completed").equals(Boolean.FALSE))
                             .count();
                     return Long.toString(remainingCount);
-                })));
+                }));
 
-        BoundElementTemplate todoCount = new BoundElementTemplate("span", el,
-                buildMap("class", "todo-count"), eb,
-                Arrays.asList(todoCountStrong,
-                        new StaticTextTemplate(" items left")));
+        BoundTemplateBuilder todoCount = TemplateBuilder.withTag("span")
+                .setAttribute("class", "todo-count").addChild(todoCountStrong)
+                .addChild(TemplateBuilder.staticText(" items left"));
 
-        BoundElementTemplate clearCompleted = new BoundElementTemplate("button",
-                Collections.singletonList(new AttributeBinding("class") {
+        BoundTemplateBuilder clearCompleted = TemplateBuilder.withTag("button")
+                .bindAttribute(new AttributeBinding("class") {
                     @Override
                     public String getValue(StateNode n) {
                         List<Object> list = n.getMultiValued("todos");
@@ -183,10 +170,9 @@ public class BuildTodoMvcStringPerformance {
                             return null;
                         }
                     }
-                }), buildMap("id", "clear-completed"), eb);
-
-        BoundElementTemplate footer = new BoundElementTemplate("footer",
-                Collections.singletonList(new AttributeBinding("class") {
+                }).setAttribute("id", "clear-completed");
+        BoundTemplateBuilder footer = TemplateBuilder.withTag("footer")
+                .bindAttribute(new AttributeBinding("class") {
                     @Override
                     public String getValue(StateNode node) {
                         if (node.getMultiValued("todos").isEmpty()) {
@@ -195,10 +181,10 @@ public class BuildTodoMvcStringPerformance {
                             return null;
                         }
                     }
-                }), em, eb, Arrays.asList(todoCount, clearCompleted));
+                }).addChild(todoCount).addChild(clearCompleted);
 
-        BoundElementTemplate main = new BoundElementTemplate("section",
-                Collections.singletonList(new AttributeBinding("class") {
+        BoundTemplateBuilder main = TemplateBuilder.withTag("section")
+                .bindAttribute(new AttributeBinding("class") {
                     @Override
                     public String getValue(StateNode node) {
                         if (node.getMultiValued("todos").isEmpty()) {
@@ -207,52 +193,45 @@ public class BuildTodoMvcStringPerformance {
                             return "main";
                         }
                     }
-                }), em, eb,
-                Arrays.asList(toggleAll, mainLabel, todoList, footer));
+                }).addChild(toggleAll).addChild(mainLabel).addChild(todoList)
+                .addChild(footer);
 
-        BoundElementTemplate todoapp = new BoundElementTemplate("section", el,
-                buildMap("class", "todoapp"), eb, Arrays.asList(header, main));
+        BoundTemplateBuilder todoapp = TemplateBuilder.withTag("section")
+                .setAttribute("class", "todoapp").addChild(header)
+                .addChild(main);
 
-        BoundElementTemplate templateByLink = new BoundElementTemplate("a", el,
-                buildMap("href", "http://sindresorhus.com"), eb,
-                Collections.singletonList(
-                        new StaticTextTemplate("Sindre Sorhus")));
-        BoundElementTemplate templateBy = new BoundElementTemplate("p", el, em,
-                eb, Arrays.asList(new StaticTextTemplate("Template by "),
-                        templateByLink));
+        BoundTemplateBuilder templateByLink = TemplateBuilder.withTag("a")
+                .setAttribute("href", "http://sindresorhus.com")
+                .addChild(TemplateBuilder.staticText("Sindre Sorhus"));
 
-        BoundElementTemplate createdByLink = new BoundElementTemplate("a", el,
-                buildMap("href", "http://vaadin.com"), eb,
-                Collections.singletonList(
-                        new StaticTextTemplate("A humming bird")));
-        BoundElementTemplate createdBy = new BoundElementTemplate("p", el, em,
-                eb, Arrays.asList(new StaticTextTemplate("Created by "),
-                        createdByLink));
+        BoundTemplateBuilder templateBy = TemplateBuilder.withTag("p")
+                .addChild(TemplateBuilder.staticText("Template by "))
+                .addChild(templateByLink);
 
-        BoundElementTemplate partOfLink = new BoundElementTemplate("a", el,
-                buildMap("href", "http://todomvc.com"), eb,
-                Collections.singletonList(new StaticTextTemplate("TodoMVC")));
-        BoundElementTemplate partOf = new BoundElementTemplate("p", el, em, eb,
-                Arrays.asList(new StaticTextTemplate("Part of "), partOfLink));
+        BoundTemplateBuilder createdByLink = TemplateBuilder.withTag("a")
+                .setAttribute("href", "http://vaadin.com")
+                .addChild(TemplateBuilder.staticText("A humming bird"));
 
-        BoundElementTemplate info = new BoundElementTemplate("footer", el,
-                buildMap("class", "info"), eb,
-                Arrays.asList(templateBy, createdBy, partOf));
+        BoundTemplateBuilder createdBy = TemplateBuilder.withTag("p")
+                .addChild(TemplateBuilder.staticText("Created by "))
+                .addChild(createdByLink);
 
-        BoundElementTemplate body = new BoundElementTemplate("body", el, em, eb,
-                Arrays.asList(todoapp, info));
-        return body;
-    }
+        BoundTemplateBuilder partOfLink = TemplateBuilder.withTag("a")
+                .setAttribute("href", "http://todomvc.com")
+                .addChild(TemplateBuilder.staticText("TodoMVC"));
 
-    private static Map<String, String> buildMap(String... pairs) {
-        if (pairs.length % 2 != 0) {
-            throw new IllegalArgumentException();
-        }
-        HashMap<String, String> map = new HashMap<>();
-        for (int i = 0; i < pairs.length; i += 2) {
-            map.put(pairs[i], pairs[i + 1]);
-        }
-        return map;
+        BoundTemplateBuilder partOf = TemplateBuilder.withTag("p")
+                .addChild(TemplateBuilder.staticText("Part of "))
+                .addChild(partOfLink);
+
+        BoundTemplateBuilder info = TemplateBuilder.withTag("footer")
+                .setAttribute("class", "info").addChild(templateBy)
+                .addChild(createdBy).addChild(partOf);
+
+        BoundTemplateBuilder body = TemplateBuilder.withTag("body")
+                .addChild(todoapp).addChild(info);
+
+        return body.build();
     }
 
     private static StateNode buildTodoModel(int count) {
