@@ -513,20 +513,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         List<Node> fragmentNodes = context.getBootstrapResponse()
                 .getFragmentNodes();
 
-        Element mainDiv = new Element(Tag.valueOf("div"), "");
-        mainDiv.attr("id", context.getAppId());
-        mainDiv.addClass("v-app");
-        mainDiv.addClass(context.getThemeName());
-        mainDiv.addClass(context.getUIClass().getSimpleName()
-                .toLowerCase(Locale.ENGLISH));
-        if (style != null && style.length() != 0) {
-            mainDiv.attr("style", style);
-        }
-        mainDiv.appendElement("div").addClass("v-app-loading");
-        mainDiv.appendElement("noscript").append(
-                "You have to enable javascript in your browser to use an application built with Vaadin.");
-        fragmentNodes.add(mainDiv);
-
         VaadinRequest request = context.getRequest();
 
         VaadinService vaadinService = request.getService();
