@@ -18,6 +18,8 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.util.EventObject;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
 import com.vaadin.annotations.EventType;
@@ -1022,5 +1024,13 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      * attached to the root element
      */
     public void elementDetached();
+
+    public List<Component> getChildComponents();
+
+    public Iterator<Component> iterator();
+
+    default public int getComponentCount() {
+        return getChildComponents().size();
+    };
 
 }

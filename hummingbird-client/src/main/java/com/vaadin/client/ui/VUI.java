@@ -156,10 +156,6 @@ public class VUI extends SimplePanel
 
     public VUI() {
         super();
-        // Allow focusing the view by using the focus() method, the view
-        // should not be in the document focus flow
-        getElement().setTabIndex(-1);
-        makeScrollable();
     }
 
     /**

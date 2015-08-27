@@ -18,11 +18,9 @@ package com.vaadin.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -105,18 +103,13 @@ import elemental.json.JsonObject;
 @com.vaadin.annotations.HTML({
         "vaadin://bower_components/polymer/polymer-mini.html" })
 @Tag("div")
-public abstract class UI extends AbstractSingleComponentContainer
-        implements PollNotifier, Focusable {
+public abstract class UI extends CssLayout
+        implements PollNotifier, Focusable, Layer {
 
     /**
      * The application to which this UI belongs
      */
     private volatile VaadinSession session;
-
-    /**
-     * List of windows in this UI.
-     */
-    private final LinkedHashSet<Window> windows = new LinkedHashSet<Window>();
 
     /**
      * The id of this UI, used to find the server side instance of the UI form
@@ -134,8 +127,6 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     private LoadingIndicatorConfiguration loadingIndicatorConfiguration = new LoadingIndicatorConfigurationImpl(
             this);
-
-    private RootNode rootNode;
 
     private UIServerRpc rpc = new UIServerRpc() {
         @Override
@@ -204,12 +195,78 @@ public abstract class UI extends AbstractSingleComponentContainer
      */
     private int lastProcessedClientToServerId = -1;
 
+    private Root root;
+
     /**
      * Creates a new empty UI without a caption. The content of the UI must be
      * set by calling {@link #setContent(Component)} before using the UI.
      */
     public UI() {
         this(null);
+    }
+
+    public static class Root extends AbstractComponent {
+        private RootNode rootNode;
+
+        public Root() {
+            rootNode = new RootNode();
+            rootNode.put("containerElement", getElement().getNode());
+        }
+
+        public void addLayer(Layer layer) {
+            getElement().appendChild(layer.getElement());
+            layer.getElement().addClass("layer");
+            layer.getElement().setStyle("z-index", layer.getLayerIndex() + "");
+
+        }
+
+        public List<Layer> getLayers() {
+            return (List) getChildComponents();
+        }
+
+        public RootNode getRootNode() {
+            return rootNode;
+        }
+
+        public Layer getLayer(int layerIndex) {
+            for (Layer layer : getLayers()) {
+                if (layer.getLayerIndex() == layerIndex) {
+                    return layer;
+                }
+            }
+            return null;
+        }
+
+        public Layer createLayer(int layerIndex) {
+            assert getLayer(layerIndex) == null;
+
+            Layer layer = new LayerImpl(layerIndex);
+            addLayer(layer);
+            return layer;
+        }
+
+        @Override
+        protected VaadinSession getSession() {
+            return getUI().getSession();
+        }
+
+        @Override
+        public UI getUI() {
+            return (UI) getLayer(1);
+        }
+    }
+
+    public static class LayerImpl extends CssLayout implements Layer {
+        private int layerIndex;
+
+        public LayerImpl(int layerIndex) {
+            this.layerIndex = layerIndex;
+        }
+
+        @Override
+        public int getLayerIndex() {
+            return layerIndex;
+        }
     }
 
     /**
@@ -222,14 +279,16 @@ public abstract class UI extends AbstractSingleComponentContainer
      * @see #setContent(Component)
      */
     public UI(Component content) {
-        rootNode = new RootNode();
-        Element body = new Element("body");
-        rootNode.put("body", body.getNode());
-        setElement(body);
+        root = new Root();
+        root.addLayer(this);
+        getElement().addClass("ui").addClass("v-scrollable");
         registerRpc(rpc);
         registerRpc(debugRpc);
         setSizeFull();
-        setContent(content);
+
+        if (content != null) {
+            addComponent(content);
+        }
 
         getPage().getJavaScript().addFunction("vEvent", json -> {
             int nodeId = (int) json.getNumber(0);
@@ -254,13 +313,18 @@ public abstract class UI extends AbstractSingleComponentContainer
                 this::handleTemplateEvent);
     }
 
+    @Override
+    public int getLayerIndex() {
+        return Layer.UI_LAYER_INDEX;
+    }
+
     private void handleTemplateEvent(JsonArray json) {
         int nodeId = (int) json.getNumber(0);
         int templateId = (int) json.getNumber(1);
         String eventType = json.getString(2);
         JsonObject eventData = json.getObject(3);
 
-        StateNode node = rootNode.getById(nodeId);
+        StateNode node = root.getRootNode().getById(nodeId);
         if (node == null) {
             getLogger().warning(
                     "Got template event for non-existing node id " + nodeId);
@@ -351,34 +415,26 @@ public abstract class UI extends AbstractSingleComponentContainer
         return session;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.HasComponents#iterator()
-     */
-    @Override
-    public Iterator<Component> iterator() {
-        // TODO could directly create some kind of combined iterator instead of
-        // creating a new ArrayList
-        ArrayList<Component> components = new ArrayList<Component>();
-
-        if (getContent() != null) {
-            components.add(getContent());
+    @Deprecated
+    public void setContent(Component content) {
+        removeAllComponents();
+        if (content != null) {
+            addComponent(content);
         }
-
-        components.addAll(windows);
-
-        return components.iterator();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.ComponentContainer#getComponentCount()
-     */
-    @Override
-    public int getComponentCount() {
-        return windows.size() + (getContent() == null ? 0 : 1);
+    @Deprecated
+    public Component getContent() {
+        if (getComponentCount() == 1) {
+            return getChildComponents().get(0);
+        } else if (getComponentCount() == 0) {
+            return null;
+        } else {
+            getLogger().warning("Using getContent() when "
+                    + getClass().getSimpleName()
+                    + " has multiple child components may yield unexpected results");
+            return getChildComponents().get(0);
+        }
     }
 
     /**
@@ -485,7 +541,8 @@ public abstract class UI extends AbstractSingleComponentContainer
      *            the window to add
      */
     private void attachWindow(Window w) {
-        windows.add(w);
+        getWindowLayer().getElement().appendChild(w.getElement());
+        // windows.add(w);
         markAsDirty();
     }
 
@@ -503,12 +560,9 @@ public abstract class UI extends AbstractSingleComponentContainer
      * @return true if the subwindow was removed, false otherwise
      */
     public boolean removeWindow(Window window) {
-        if (!windows.remove(window)) {
-            // Window window is not a subwindow of this UI.
-            return false;
-        }
-        window.setParent(null);
-        markAsDirty();
+        getWindowLayer().removeComponent(window);
+
+        // TODO Move to window
         window.fireClose();
 
         return true;
@@ -520,7 +574,13 @@ public abstract class UI extends AbstractSingleComponentContainer
      * @return an unmodifiable collection of windows
      */
     public Collection<Window> getWindows() {
-        return Collections.unmodifiableCollection(windows);
+        List<Window> windows = new ArrayList<>();
+        for (Component c : getWindowLayer().getChildComponents()) {
+            if (c instanceof Window) {
+                windows.add((Window) c);
+            }
+        }
+        return windows;
     }
 
     @Override
@@ -1382,7 +1442,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * @return the rootNode
      */
     public RootNode getRootNode() {
-        return rootNode;
+        return root.getRootNode();
     }
 
     /**
@@ -1399,6 +1459,15 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     public void registerTemplate(ElementTemplate template) {
         sentTemplates.put(Integer.valueOf(template.getId()), template);
+    }
+
+    private Layer getWindowLayer() {
+        Layer layer = root.getLayer(Layer.WINDOW_LAYER_INDEX);
+        if (layer == null) {
+            layer = root.createLayer(Layer.WINDOW_LAYER_INDEX);
+            layer.getElement().addClass("window");
+        }
+        return layer;
     }
 
 }

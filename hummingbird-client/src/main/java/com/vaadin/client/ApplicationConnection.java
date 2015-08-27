@@ -19,9 +19,6 @@ package com.vaadin.client;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import com.google.gwt.aria.client.LiveValue;
-import com.google.gwt.aria.client.RelevantValue;
-import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -39,8 +36,8 @@ import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.CommunicationProblemHandler;
@@ -54,7 +51,6 @@ import com.vaadin.client.ui.FontIcon;
 import com.vaadin.client.ui.Icon;
 import com.vaadin.client.ui.ImageIcon;
 import com.vaadin.client.ui.VNotification;
-import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
@@ -362,22 +358,25 @@ public class ApplicationConnection implements HasHandlers {
                 appRootPanelName);
 
         initializeClientHooks();
-        serverMessageHandler.setConnection(this);
-        uIConnector.init(cnf.getRootPanelId(), this);
+
+        // Remove the v-app-loading or any splash screen added inside the div by
+        // the user
+        getContainerElement().setInnerHTML("");
+
+        // Activate the initial theme by only adding the class name. Not calling
+        // activateTheme here as it will also cause a full layout and updates to
+        // the overlay container which has not yet been created at this point
+        getContainerElement().addClassName(cnf.getThemeName());
 
         getLoadingIndicator().show();
 
-        heartbeat.init(this);
+        serverMessageHandler.setConnection(this);
 
-        // Ensure the overlay container is added to the dom and set as a live
-        // area for assistive devices
-        Element overlayContainer = VOverlay.getOverlayContainer(this);
-        Roles.getAlertRole().setAriaLiveProperty(overlayContainer,
-                LiveValue.ASSERTIVE);
-        VOverlay.setOverlayContainerLabel(this,
-                getUIConnector().getState().overlayContainerLabel);
-        Roles.getAlertRole().setAriaRelevantProperty(overlayContainer,
-                RelevantValue.ADDITIONS);
+        heartbeat.init(this);
+    }
+
+    public Element getContainerElement() {
+        return RootPanel.get(getConfiguration().getRootPanelId()).getElement();
     }
 
     /**

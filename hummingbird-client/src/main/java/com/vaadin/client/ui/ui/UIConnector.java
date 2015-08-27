@@ -37,7 +37,6 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
@@ -238,32 +237,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
 
         DOM.sinkEvents(getWidget().getElement(),
                 Event.ONKEYDOWN | Event.ONSCROLL);
-
-        RootPanel root = RootPanel.get(rootPanelId);
-
-        // Remove the v-app-loading or any splash screen added inside the div by
-        // the user
-        root.getElement().setInnerHTML("");
-
-        // Activate the initial theme by only adding the class name. Not calling
-        // activateTheme here as it will also cause a full layout and updates to
-        // the overlay container which has not yet been created at this point
-        activeTheme = applicationConnection.getConfiguration().getThemeName();
-        root.addStyleName(activeTheme);
-
-        root.add(getWidget());
-
-        // Set default tab index before focus call. State change handler
-        // will update this later if needed.
-        getWidget().setTabIndex(1);
-
-        if (applicationConnection.getConfiguration().isStandalone()) {
-            // set focus to iview element by default to listen possible keyboard
-            // shortcuts. For embedded applications this is unacceptable as we
-            // don't want to steal focus from the main page nor we don't want
-            // side-effects from focusing (scrollIntoView).
-            getWidget().getElement().focus();
-        }
 
         applicationConnection.addHandler(
                 ApplicationConnection.ApplicationStoppedEvent.TYPE,

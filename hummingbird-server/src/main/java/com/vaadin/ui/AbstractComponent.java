@@ -1008,10 +1008,12 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
     }
 
+    @Override
     public Iterator<Component> iterator() {
         return getChildComponents().iterator();
     }
 
+    @Override
     public List<Component> getChildComponents() {
         List<Component> childComponents = new ArrayList<>();
         for (int i = 0; i < getElement().getChildCount(); i++) {

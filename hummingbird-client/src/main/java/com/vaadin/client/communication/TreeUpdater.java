@@ -927,7 +927,7 @@ public class TreeUpdater {
            str +="\"";
        }
        return str+">";
-    
+
     }-*/;
 
     private static String debugHtml(Node node) {
@@ -1451,12 +1451,12 @@ public class TreeUpdater {
 
     private void initRoot() {
         JsonObject rootNode = idToNode.get(Integer.valueOf(1));
-        JsonObject bodyNode = rootNode.get("body");
+        JsonObject bodyNode = rootNode.get("containerElement");
 
         // TODO Remove UI element hack
         nodeIdToBasicElement.put(2, rootElement);
-        debug("Registered element: " + debugHtml(rootElement) + " for nodeId="
-                + 2);
+        debug("Registered root element: " + debugHtml(rootElement)
+                + " for nodeId=" + 2);
 
         addNodeListener(bodyNode,
                 new BasicElementListener(bodyNode, rootElement));

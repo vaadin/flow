@@ -189,7 +189,7 @@ public class ServerMessageHandler {
      */
     public void setConnection(ApplicationConnection connection) {
         this.connection = connection;
-        treeUpdater.init(connection.getUIConnector().getWidget().getElement(),
+        treeUpdater.init(connection.getContainerElement(),
                 connection.getServerRpcQueue(), connection.getCurrentClient());
     }
 

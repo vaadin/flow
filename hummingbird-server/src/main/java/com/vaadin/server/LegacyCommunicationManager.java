@@ -36,6 +36,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ConnectorTracker;
 import com.vaadin.ui.SelectiveRenderer;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.UI.Root;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -254,8 +255,8 @@ public class LegacyCommunicationManager implements Serializable {
         if (parent != null) {
             return isComponentVisibleToClient(parent);
         } else {
-            if (child instanceof UI) {
-                // UI has no parent and visibility was checked above
+            if (child instanceof Root) {
+                // Root has no parent and visibility was checked above
                 return true;
             } else {
                 // Component which is not attached to any UI

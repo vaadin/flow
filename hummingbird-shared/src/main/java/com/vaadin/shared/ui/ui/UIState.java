@@ -23,9 +23,9 @@ import java.util.Map;
 
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.extension.javascriptmanager.JavaScriptManagerState;
-import com.vaadin.shared.ui.TabIndexState;
+import com.vaadin.shared.ui.JavaScriptComponentState;
 
-public class UIState extends TabIndexState {
+public class UIState extends JavaScriptComponentState {
     public LoadingIndicatorConfigurationState loadingIndicatorConfiguration = new LoadingIndicatorConfigurationState();
     public int pollInterval = -1;
 
@@ -76,11 +76,10 @@ public class UIState extends TabIndexState {
     public String theme;
     public ReconnectDialogConfigurationState reconnectDialog = new ReconnectDialogConfigurationState();
     public JavaScriptManagerState javascriptManager = new JavaScriptManagerState();
+    public int tabIndex;
 
     {
         primaryStyleName = "v-ui";
-        // Default is 1 for legacy reasons
-        tabIndex = 1;
     }
 
     public static class LoadingIndicatorConfigurationState
