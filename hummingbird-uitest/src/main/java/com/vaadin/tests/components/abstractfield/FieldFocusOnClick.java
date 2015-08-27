@@ -13,11 +13,11 @@ public class FieldFocusOnClick extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new TextField(null, "TextField"));
-        addComponent(new CheckBox("CheckBox"));
-        addComponent(
+        add(new TextField(null, "TextField"));
+        add(new CheckBox("CheckBox"));
+        add(
                 new OptionGroup(null, Arrays.asList("Option 1", "Option 2")));
-        addComponent(new NativeButton("NativeButton"));
+        add(new NativeButton("NativeButton"));
     }
 
     @Override

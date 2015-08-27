@@ -32,7 +32,7 @@ public class ResynchronizeAfterAsyncRemoval extends AbstractTestUIWithLog {
 
         // Clicking the button will trigger sending the window coordinates, but
         // the window is already removed at that point.
-        addComponent(new Button("Am I dirty?", new Button.ClickListener() {
+        add(new Button("Am I dirty?", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 log("Window removed: " + (window.getParent() == null));
@@ -42,7 +42,7 @@ public class ResynchronizeAfterAsyncRemoval extends AbstractTestUIWithLog {
                 log("Dirty: " + dirty);
             }
         }));
-        addComponent(new Button("Log unregistered connector count",
+        add(new Button("Log unregistered connector count",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

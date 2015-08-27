@@ -26,7 +26,7 @@ public class TestDatefieldYear extends TestBase {
         df.setLocale(new Locale("en", "US"));
         df.setResolution(Resolution.YEAR);
         df.setResolution(Resolution.MONTH);
-        addComponent(df);
+        add(df);
 
     }
 }

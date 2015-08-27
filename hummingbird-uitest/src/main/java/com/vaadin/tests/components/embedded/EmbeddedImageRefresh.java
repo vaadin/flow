@@ -32,7 +32,7 @@ public class EmbeddedImageRefresh extends TestBase {
     protected void setup() {
         // Create the embedded.
         final Embedded embedded = new Embedded();
-        addComponent(embedded);
+        add(embedded);
 
         // Attach it to a resource.
         final MyImageSource imageSource = new MyImageSource();
@@ -49,7 +49,7 @@ public class EmbeddedImageRefresh extends TestBase {
                 embedded.markAsDirty();
             }
         });
-        addComponent(button);
+        add(button);
         button = new Button("refr name");
         button.addClickListener(new Button.ClickListener() {
             @Override
@@ -59,7 +59,7 @@ public class EmbeddedImageRefresh extends TestBase {
                 embedded.markAsDirty();
             }
         });
-        addComponent(button);
+        add(button);
         button = new Button("200x200");
         button.addClickListener(new Button.ClickListener() {
             @Override
@@ -68,7 +68,7 @@ public class EmbeddedImageRefresh extends TestBase {
                 embedded.setHeight("200px");
             }
         });
-        addComponent(button);
+        add(button);
         button = new Button("undef");
         button.addClickListener(new Button.ClickListener() {
             @Override
@@ -76,7 +76,7 @@ public class EmbeddedImageRefresh extends TestBase {
                 embedded.setSizeUndefined();
             }
         });
-        addComponent(button);
+        add(button);
 
     }
 

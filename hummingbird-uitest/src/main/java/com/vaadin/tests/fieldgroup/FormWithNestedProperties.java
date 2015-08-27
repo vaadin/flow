@@ -34,16 +34,16 @@ public class FormWithNestedProperties extends AbstractBeanFieldGroupTest {
         country = (NativeSelect) getFieldBinder().buildAndBind("country",
                 "address.country", NativeSelect.class);
         getFieldBinder().bindMemberFields(this);
-        addComponent(firstName);
-        addComponent(lastName);
-        addComponent(streetAddress);
-        addComponent(country);
-        addComponent(email);
-        addComponent(age);
-        addComponent(deceased);
-        addComponent(getCommitButton());
-        addComponent(getDiscardButton());
-        addComponent(getShowBeanButton());
+        add(firstName);
+        add(lastName);
+        add(streetAddress);
+        add(country);
+        add(email);
+        add(age);
+        add(deceased);
+        add(getCommitButton());
+        add(getDiscardButton());
+        add(getShowBeanButton());
 
         getFieldBinder().setItemDataSource(new Person("First", "Last", "Email",
                 52, Sex.FEMALE,

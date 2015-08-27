@@ -24,7 +24,7 @@ public class UIInitTest extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new Label("Hello UI"));
+        add(new Label("Hello UI"));
     }
 
     @Override

@@ -48,8 +48,8 @@ public class SelectItemCaptionRefresh extends AbstractTestUI {
         select.addItem(itemId);
         select.setItemCaption(itemId, "start");
 
-        addComponent(select);
-        addComponent(new Button("Update item's caption", clickListener));
+        add(select);
+        add(new Button("Update item's caption", clickListener));
     }
 
     /*

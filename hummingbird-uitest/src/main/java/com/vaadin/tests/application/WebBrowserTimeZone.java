@@ -56,7 +56,7 @@ public class WebBrowserTimeZone extends AbstractTestUI {
     private Label addLabel(String caption) {
         final Label label = new Label("n/a");
         label.setCaption(caption);
-        addComponent(label);
+        add(label);
         return label;
     }
 

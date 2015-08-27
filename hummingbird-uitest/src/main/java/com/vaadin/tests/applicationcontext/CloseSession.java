@@ -65,8 +65,8 @@ public class CloseSession extends AbstractTestUI {
                 + OLD_HASH_PARAM + "=" + sessionHash + "&"
                 + OLD_SESSION_ID_PARAM + "=" + sessionId;
 
-        addComponent(log);
-        addComponent(
+        add(log);
+        add(
                 new Button("Close VaadinServiceSession and redirect elsewhere",
                         new Button.ClickListener() {
                             @Override
@@ -78,7 +78,7 @@ public class CloseSession extends AbstractTestUI {
                                 getSession().close();
                             }
                         }));
-        addComponent(new Button("Close VaadinServiceSession and reopen page",
+        add(new Button("Close VaadinServiceSession and reopen page",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -86,21 +86,21 @@ public class CloseSession extends AbstractTestUI {
                         getSession().close();
                     }
                 }));
-        addComponent(new Button("Just close VaadinSession",
+        add(new Button("Just close VaadinSession",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
                         getSession().close();
                     }
                 }));
-        addComponent(new Button("Just close HttpSession",
+        add(new Button("Just close HttpSession",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
                         getSession().getSession().invalidate();
                     }
                 }));
-        addComponent(new Button("Invalidate HttpSession and reopen page",
+        add(new Button("Invalidate HttpSession and reopen page",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -109,7 +109,7 @@ public class CloseSession extends AbstractTestUI {
                         getPage().setLocation(reopenUrl);
                     }
                 }));
-        addComponent(new Button("Invalidate HttpSession and redirect elsewhere",
+        add(new Button("Invalidate HttpSession and redirect elsewhere",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -118,7 +118,7 @@ public class CloseSession extends AbstractTestUI {
                         getPage().setLocation("/statictestfiles/static.html");
                     }
                 }));
-        addComponent(new Button("Invalidate HttpSession in a background thread",
+        add(new Button("Invalidate HttpSession in a background thread",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

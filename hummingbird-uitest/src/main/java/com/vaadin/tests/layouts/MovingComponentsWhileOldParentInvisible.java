@@ -63,7 +63,7 @@ public class MovingComponentsWhileOldParentInvisible extends TestBase {
                                 (Class<? extends HasComponents>) event
                                         .getProperty().getValue());
                         addToCC(lab);
-                        replaceComponent(oldCC, cc);
+                        replace(oldCC, cc);
                     }
                 });
 
@@ -87,9 +87,9 @@ public class MovingComponentsWhileOldParentInvisible extends TestBase {
                     }
                 });
 
-        addComponent(componentContainerSelect);
-        addComponent(cc);
-        addComponent(but1);
+        add(componentContainerSelect);
+        add(cc);
+        add(but1);
     }
 
     protected void addToCC(Label lab2) {

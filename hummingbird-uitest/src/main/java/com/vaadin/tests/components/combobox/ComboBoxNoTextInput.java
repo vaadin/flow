@@ -35,7 +35,7 @@ public class ComboBoxNoTextInput extends ComboBoxSelecting {
                 comboBox.setTextInputAllowed(textInputCheckBox.getValue());
             }
         });
-        addComponent(textInputCheckBox);
+        add(textInputCheckBox);
     }
 
     @Override

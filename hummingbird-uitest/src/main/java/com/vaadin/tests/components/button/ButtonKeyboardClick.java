@@ -61,7 +61,7 @@ public class ButtonKeyboardClick extends AbstractTestUI {
                 labels[3] = label;
             }
         });
-        addComponent(button);
+        add(button);
     }
 
     @Override

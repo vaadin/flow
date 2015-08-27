@@ -8,8 +8,8 @@ import com.vaadin.ui.PopupDateField;
 public class PopupDateFieldConnector extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new PopupDateField());
-        addComponent(new DateField());
+        add(new PopupDateField());
+        add(new DateField());
     }
 
     @Override

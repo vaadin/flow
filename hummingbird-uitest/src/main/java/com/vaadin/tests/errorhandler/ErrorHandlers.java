@@ -30,11 +30,11 @@ public class ErrorHandlers extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(runtimeExceptionOnClick(new Button("Standard button")));
-        addComponent(npeOnClick(new Button("Standard button with NPE")));
+        add(runtimeExceptionOnClick(new Button("Standard button")));
+        add(npeOnClick(new Button("Standard button with NPE")));
         Button customErrorButton = notificationErrorHandler(
                 new Button("Button with notification error handler"));
-        addComponent(runtimeExceptionOnClick(customErrorButton));
+        add(runtimeExceptionOnClick(customErrorButton));
 
         final VerticalLayout layoutWithErrorHandler = new VerticalLayout(
                 runtimeExceptionOnClick(new Button("Error handler on parent")));
@@ -50,7 +50,7 @@ public class ErrorHandlers extends AbstractTestUI {
         layoutWithErrorHandler.setErrorHandler(e);
         layoutWithErrorHandler.addComponent(notificationErrorHandler(
                 npeOnClick(new Button("Error handler on button and parent"))));
-        addComponent(layoutWithErrorHandler);
+        add(layoutWithErrorHandler);
     }
 
     private Button notificationErrorHandler(Button button) {

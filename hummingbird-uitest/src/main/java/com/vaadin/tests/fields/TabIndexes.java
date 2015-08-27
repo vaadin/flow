@@ -35,7 +35,7 @@ public class TabIndexes extends AbstractTestUIWithLog {
     @Override
     protected void setup(VaadinRequest request) {
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        addComponent(buttonLayout);
+        add(buttonLayout);
         Button clearTabIndexes = new Button("Set all tab indexes to 0");
         clearTabIndexes.addClickListener(new ClickListener() {
 
@@ -120,7 +120,7 @@ public class TabIndexes extends AbstractTestUIWithLog {
             f.setId("field-" + fieldId++);
             gl.addComponent(f);
         }
-        addComponent(gl);
+        add(gl);
 
     }
 

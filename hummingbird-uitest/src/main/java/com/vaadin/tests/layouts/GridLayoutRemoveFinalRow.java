@@ -22,7 +22,7 @@ public class GridLayoutRemoveFinalRow extends TestBase {
         layout.addComponent(new Label("Label2"));
         layout.addComponent(new Label("Label3"));
         layout.addComponent(new Label("Label4"));
-        addComponent(layout);
+        add(layout);
 
         Button removeRowBtn = new Button("Remove row",
                 new Button.ClickListener() {
@@ -31,7 +31,7 @@ public class GridLayoutRemoveFinalRow extends TestBase {
                         layout.removeRow(0);
                     }
                 });
-        addComponent(removeRowBtn);
+        add(removeRowBtn);
     }
 
     @Override

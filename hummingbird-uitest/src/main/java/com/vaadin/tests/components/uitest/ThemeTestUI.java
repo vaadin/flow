@@ -26,10 +26,10 @@ public class ThemeTestUI extends AbstractTestUI {
         selectors.addComponent(customStyle);
         selectors.addComponent(setStyleName);
 
-        addComponent(selectors);
+        add(selectors);
 
         sampler = new TestSampler();
-        addComponent(sampler);
+        add(sampler);
 
     }
 

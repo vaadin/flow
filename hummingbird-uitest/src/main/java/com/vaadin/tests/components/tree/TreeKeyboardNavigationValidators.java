@@ -10,7 +10,7 @@ public class TreeKeyboardNavigationValidators extends TestBase {
 
     @Override
     protected void setup() {
-        addComponent(getTree());
+        add(getTree());
     }
 
     private Tree getTree() {

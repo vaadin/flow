@@ -33,8 +33,8 @@ public class ComboBoxIdenticalItems extends AbstractTestUI {
             }
         });
 
-        addComponent(log);
-        addComponent(select);
+        add(log);
+        add(select);
     }
 
     @Override

@@ -21,7 +21,7 @@ public class ComboBoxUndefinedWidthAndIcon extends TestBase {
         cb.setItemIconPropertyId("icon");
         cb.setItemCaptionPropertyId("caption");
 
-        addComponent(cb);
+        add(cb);
     }
 
     @Override

@@ -18,8 +18,8 @@ public class ScrollbarsInNestedTabsheets extends TestBase {
         final TabSheet t = new TabSheet();
         final TabSheet t2 = getTabSheet();
         t.addTab(t2, "Main Tab");
-        addComponent(l);
-        addComponent(t);
+        add(l);
+        add(t);
     }
 
     private TabSheet getTabSheet() {

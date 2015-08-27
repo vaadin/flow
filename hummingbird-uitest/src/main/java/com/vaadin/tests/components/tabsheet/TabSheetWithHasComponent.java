@@ -38,7 +38,7 @@ public class TabSheetWithHasComponent extends AbstractTestUI {
         ts.addComponent(new CustomComponent(new Panel(
                 "Panel in custom component", new Button("In panel"))));
 
-        addComponent(ts);
+        add(ts);
     }
 
     private PopupView createPopupView(final Component content) {

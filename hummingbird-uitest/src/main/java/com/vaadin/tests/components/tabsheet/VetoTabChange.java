@@ -39,7 +39,7 @@ public class VetoTabChange extends AbstractTestUI {
         ts.addTab(new Label("Tab 1"), "Tab 1");
         ts.addTab(new Label("Tab 2"), "Tab 2");
 
-        addComponent(ts);
+        add(ts);
     }
 
     @Override

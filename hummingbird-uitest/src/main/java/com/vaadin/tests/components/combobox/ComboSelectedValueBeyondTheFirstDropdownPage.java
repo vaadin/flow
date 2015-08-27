@@ -19,8 +19,8 @@ public class ComboSelectedValueBeyondTheFirstDropdownPage
         Label value = getLabel();
         ComboBox combobox = getComboBox(value);
 
-        addComponent(combobox);
-        addComponent(value);
+        add(combobox);
+        add(value);
     }
 
     private Label getLabel() {

@@ -62,7 +62,7 @@ public class ModalWindowInitialLocation extends AbstractTestUI {
                 getUI().addWindow(w);
             }
         });
-        addComponent(b);
+        add(b);
     }
 
     @Override

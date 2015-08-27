@@ -23,9 +23,9 @@ public class FormBuilderWithNestedProperties extends TestBase {
         FieldGroup fieldGroup = new BeanFieldGroup<Person>(Person.class);
         fieldGroup.buildAndBindMemberFields(this);
 
-        addComponent(firstName);
-        addComponent(lastName);
-        addComponent(streetAddress);
+        add(firstName);
+        add(lastName);
+        add(streetAddress);
 
         fieldGroup.setItemDataSource(new BeanItem<Person>(new Person("Who",
                 "me?", "email", 1, Sex.MALE,

@@ -41,7 +41,7 @@ public class VerticalRelativeChildren extends TestBase {
         vl.addComponent(areaRelativeTop);
         vl.setComponentAlignment(areaRelativeTop, Alignment.TOP_LEFT);
 
-        addComponent(vl);
+        add(vl);
     }
 
     @Override

@@ -36,8 +36,8 @@ public class Media extends TestBase {
                         "http://jonatan.virtuallypreinstalled.com/media/big_buck_bunny.ogv"));
         v.setWidth("640px");
         v.setHeight("360px");
-        addComponent(v);
-        addComponent(new Button("Play video", new ClickListener() {
+        add(v);
+        add(new Button("Play video", new ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
@@ -45,7 +45,7 @@ public class Media extends TestBase {
             }
 
         }));
-        addComponent(new Button("Pause video", new ClickListener() {
+        add(new Button("Pause video", new ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
@@ -60,9 +60,9 @@ public class Media extends TestBase {
                         "http://jonatan.virtuallypreinstalled.com/media/audio.mp3"),
                 new ExternalResource(
                         "http://jonatan.virtuallypreinstalled.com/media/audio.ogg"));
-        addComponent(a);
+        add(a);
 
-        addComponent(new Button("Play audio", new ClickListener() {
+        add(new Button("Play audio", new ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
@@ -70,7 +70,7 @@ public class Media extends TestBase {
             }
 
         }));
-        addComponent(new Button("Pause audio", new ClickListener() {
+        add(new Button("Pause audio", new ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {

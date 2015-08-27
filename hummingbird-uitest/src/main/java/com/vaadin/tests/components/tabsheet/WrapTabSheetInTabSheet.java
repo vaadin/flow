@@ -13,7 +13,7 @@ public class WrapTabSheetInTabSheet extends TestBase {
     protected void setup() {
         final VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.addComponent(new Label("This is main layout"));
-        addComponent(mainLayout);
+        add(mainLayout);
 
         Button b = new Button("Wrap main layout in a TabSheet");
         b.addClickListener(new Button.ClickListener() {

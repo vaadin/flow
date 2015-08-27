@@ -30,7 +30,7 @@ public class CheckBoxRpcCount extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         final Label countLabel = new Label("No RPC calls made yet.");
         countLabel.setId("count-label");
-        addComponent(countLabel);
+        add(countLabel);
 
         CheckBox cb = new CheckBox("Click me to start counting...") {
             {
@@ -56,7 +56,7 @@ public class CheckBoxRpcCount extends AbstractTestUI {
                 // immediate mode is set to true
             }
         });
-        addComponent(cb);
+        add(cb);
     }
 
     @Override

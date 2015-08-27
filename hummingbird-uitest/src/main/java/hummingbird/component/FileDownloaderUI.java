@@ -15,7 +15,7 @@ public class FileDownloaderUI extends AbstractTestUIWithLog {
             log("Download clicked");
         });
         new FileDownloader(new ClassResource("excel.xlsx")).attach(button);
-        addComponent(button);
+        add(button);
     }
 
 }

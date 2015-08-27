@@ -27,7 +27,7 @@ public class ComboFocusBlurEvents extends TestBase {
 
         ComboBox cb = new ComboBox("Combobox", list);
         cb.setInputPrompt("Enter text");
-        addComponent(cb);
+        add(cb);
 
         final ObjectProperty<String> log = new ObjectProperty<String>("");
 
@@ -50,13 +50,13 @@ public class ComboFocusBlurEvents extends TestBase {
         });
 
         TextField field = new TextField("Some textfield");
-        addComponent(field);
+        add(field);
 
         Label output = new Label(log);
         output.setCaption("Events:");
 
         output.setContentMode(ContentMode.HTML);
-        addComponent(output);
+        add(output);
 
     }
 

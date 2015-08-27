@@ -31,7 +31,7 @@ public class StylePrefix extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         FormLayout layout = new FormLayout();
         layout.addStyleName("mystyle");
-        addComponent(layout);
+        add(layout);
     }
 
     @Override

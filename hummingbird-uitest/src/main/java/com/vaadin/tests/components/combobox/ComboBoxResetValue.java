@@ -31,7 +31,7 @@ public class ComboBoxResetValue extends AbstractTestUI {
                 cbNullSelectionNotAllowed.setValue(null);
             }
         });
-        addComponents(new HorizontalLayout(new VerticalLayout(
+        add(new HorizontalLayout(new VerticalLayout(
                 cbNullSelectionAllowedWithSetNullSelectionItemId,
                 cbNullSelectionAllowedWithoutNullSelectionItemId,
                 cbNullSelectionNotAllowed), b));

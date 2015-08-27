@@ -29,7 +29,7 @@ public class ClipContent extends TestBase {
                 cc.setWidth(w.getValue());
             }
         });
-        addComponent(w);
+        add(w);
         final TextField h = new TextField("Height");
         h.setValue("20px");
         h.addValueChangeListener(new TextField.ValueChangeListener() {
@@ -38,11 +38,11 @@ public class ClipContent extends TestBase {
                 cc.setHeight(h.getValue());
             }
         });
-        addComponent(h);
+        add(h);
         Button b = new Button("apply");
-        addComponent(b);
+        add(b);
 
-        addComponent(cc);
+        add(cc);
 
     }
 

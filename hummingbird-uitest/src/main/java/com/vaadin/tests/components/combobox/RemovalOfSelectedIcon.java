@@ -13,10 +13,10 @@ public class RemovalOfSelectedIcon extends TestBase {
     protected void setup() {
 
         final ComboBox cb1 = createComboBox("Don't touch this combobox");
-        addComponent(cb1);
+        add(cb1);
 
         final ComboBox cb2 = createComboBox("Select icon test combobox");
-        addComponent(cb2);
+        add(cb2);
 
         Button btClear = new Button("Clear button");
         btClear.addClickListener(new Button.ClickListener() {
@@ -28,7 +28,7 @@ public class RemovalOfSelectedIcon extends TestBase {
             }
         });
 
-        addComponent(btClear);
+        add(btClear);
     }
 
     private ComboBox createComboBox(String caption) {

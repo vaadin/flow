@@ -38,10 +38,10 @@ public class PopupDateFieldExtendedRange extends AbstractTestUI {
         fields[2].setCaption("Finnish locale with week numbers");
 
         for (PopupDateField f : fields) {
-            addComponent(f);
+            add(f);
         }
 
-        addComponent(new Button("Change date", new ClickListener() {
+        add(new Button("Change date", new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 date.set(2010, 1, 16);

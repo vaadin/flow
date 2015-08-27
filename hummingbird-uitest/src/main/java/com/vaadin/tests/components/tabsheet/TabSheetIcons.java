@@ -27,8 +27,8 @@ public class TabSheetIcons extends TestBase {
         ts2.setHeight("100px");
         ts2.setWidth("400px");
 
-        addComponent(ts1);
-        addComponent(ts2);
+        add(ts1);
+        add(ts2);
     }
 
     private TabSheet createTabsheet() {

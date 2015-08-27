@@ -9,12 +9,12 @@ public class ButtonHtml extends TestBase {
     @Override
     protected void setup() {
         Button b = new Button("<b>Plain text button</b>");
-        addComponent(b);
+        add(b);
 
         b = new Button(
                 "<span style=\"color: red; font-weight: bold;\">HTML</span> button");
         b.setHtmlContentAllowed(true);
-        addComponent(b);
+        add(b);
 
         final Button swapButton = new Button("<i>Swap button<i>");
         swapButton.addClickListener(new Button.ClickListener() {
@@ -25,7 +25,7 @@ public class ButtonHtml extends TestBase {
                         !swapButton.isHtmlContentAllowed());
             }
         });
-        addComponent(swapButton);
+        add(swapButton);
     }
 
     @Override

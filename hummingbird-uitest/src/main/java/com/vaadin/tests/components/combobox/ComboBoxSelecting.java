@@ -42,7 +42,7 @@ public class ComboBoxSelecting extends AbstractTestUI {
         // Had to add an extra text field for our old Firefox browsers, because
         // tab will otherwise send the focus to address bar and FF 24 won't fire
         // a key event properly. Nice!
-        addComponents(comboBox, label, new TextField());
+        add(comboBox, label, new TextField());
     }
 
     @Override

@@ -37,7 +37,7 @@ public class HorizontalLayoutWithLabelAndButton extends AbstractTestUIWithLog {
         b.setStyleName("primary");
         hl.setExpandRatio(b, 1);
 
-        addComponent(hl);
+        add(hl);
     }
 
 }

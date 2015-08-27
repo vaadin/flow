@@ -65,7 +65,7 @@ public class ChangeHierarchyBeforeResponse extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         layout.addComponent(labelToRemove);
 
-        addComponent(layout);
+        add(layout);
     }
 
 }

@@ -63,7 +63,7 @@ public class NativeButtonClick extends AbstractTestUI {
         HorizontalLayout layout = new HorizontalLayout();
         layout.addComponents(button1, button2, label1, label2);
         layout.setSpacing(true);
-        addComponent(layout);
+        add(layout);
     }
 
     /*

@@ -54,15 +54,15 @@ public abstract class TestBase extends AbstractTestCase {
 
     protected abstract void setup();
 
-    protected void addComponent(Component c) {
+    protected void add(Component c) {
         getLayout().addComponent(c);
     }
 
-    protected void removeComponent(Component c) {
+    protected void remove(Component c) {
         getLayout().removeComponent(c);
     }
 
-    protected void replaceComponent(Component oldComponent,
+    protected void replace(Component oldComponent,
             Component newComponent) {
         getLayout().replaceComponent(oldComponent, newComponent);
     }

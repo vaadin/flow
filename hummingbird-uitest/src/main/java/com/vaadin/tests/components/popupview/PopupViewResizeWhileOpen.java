@@ -58,7 +58,7 @@ public class PopupViewResizeWhileOpen extends AbstractTestUI {
             }
         });
         pv.setHideOnMouseOut(false);
-        addComponent(pv);
+        add(pv);
     }
 
     @Override

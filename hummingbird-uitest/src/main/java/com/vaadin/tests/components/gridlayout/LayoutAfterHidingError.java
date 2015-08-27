@@ -32,7 +32,7 @@ public class LayoutAfterHidingError extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         final Panel panel = new Panel();
         panel.setWidth("300px");
-        addComponent(panel);
+        add(panel);
 
         GridLayout gl = new GridLayout();
         gl.setWidth("100%");

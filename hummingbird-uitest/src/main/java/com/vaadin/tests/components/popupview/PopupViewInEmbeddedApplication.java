@@ -13,7 +13,7 @@ public class PopupViewInEmbeddedApplication extends TestBase {
     protected void setup() {
         PopupView pop = new PopupView("Click me!",
                 new Label("I popped up, woohoo!"));
-        addComponent(pop);
+        add(pop);
     }
 
     @Override

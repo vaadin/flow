@@ -22,8 +22,8 @@ public class StringMyTypeConverter extends AbstractTestUI {
         textField.setConverter(new StringToNameConverter());
         textField.setConvertedValue(name);
 
-        addComponent(textField);
-        addComponent(new Button("Submit value", new ClickListener() {
+        add(textField);
+        add(new Button("Submit value", new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 try {

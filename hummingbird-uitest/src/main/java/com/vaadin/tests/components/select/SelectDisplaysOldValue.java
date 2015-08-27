@@ -16,7 +16,7 @@ public class SelectDisplaysOldValue extends TestBase {
 
     @Override
     protected void setup() {
-        addComponent(new DynamicSelectTestCase());
+        add(new DynamicSelectTestCase());
     }
 
     public class DynamicSelectTestCase extends HorizontalLayout {

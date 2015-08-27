@@ -85,7 +85,7 @@ public class CommunicationError extends UIProvider {
                             }
                         }
                     });
-            addComponent(button);
+            add(button);
         }
 
         @Override

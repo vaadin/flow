@@ -59,7 +59,7 @@ public class GridLayoutExpandRatio extends AbstractTestUI {
         gridLayout2.setHeight("500px");
         gridLayout2.setWidth("500px");
         gridLayout2.setSpacing(true);
-        addComponent(layout);
+        add(layout);
         HorizontalLayout space = new HorizontalLayout();
         space.setWidth("100px");
         layout.addComponent(gridLayout);
@@ -67,7 +67,7 @@ public class GridLayoutExpandRatio extends AbstractTestUI {
         layout.addComponent(gridLayout2);
 
         setExpandRatio();
-        addComponent(new Button("Hide/show both middle Column and row",
+        add(new Button("Hide/show both middle Column and row",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

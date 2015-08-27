@@ -52,7 +52,7 @@ public class UIAccess extends AbstractTestUIWithLog {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(
+        add(
                 new Button("Access from UI thread", new Button.ClickListener() {
 
                     @Override
@@ -70,7 +70,7 @@ public class UIAccess extends AbstractTestUIWithLog {
                                 + checkFromBeforeClientResponse.isDone());
                     }
                 }));
-        addComponent(new Button("Access from background thread",
+        add(new Button("Access from background thread",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -126,7 +126,7 @@ public class UIAccess extends AbstractTestUIWithLog {
                         setPollInterval(3000);
                     }
                 }));
-        addComponent(new Button("Access throwing exception",
+        add(new Button("Access throwing exception",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -157,7 +157,7 @@ public class UIAccess extends AbstractTestUIWithLog {
                         });
                     }
                 }));
-        addComponent(new Button("Cancel future before started",
+        add(new Button("Cancel future before started",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -172,7 +172,7 @@ public class UIAccess extends AbstractTestUIWithLog {
                         log("future was cancelled, should not start");
                     }
                 }));
-        addComponent(
+        add(
                 new Button("Cancel running future", new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -220,7 +220,7 @@ public class UIAccess extends AbstractTestUIWithLog {
                         }.start();
                     }
                 }));
-        addComponent(new Button("CurrentInstance accessSynchronously values",
+        add(new Button("CurrentInstance accessSynchronously values",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -251,7 +251,7 @@ public class UIAccess extends AbstractTestUIWithLog {
                                         .get(CurrentInstanceTestType.class));
                     }
                 }));
-        addComponent(new Button("CurrentInstance access values",
+        add(new Button("CurrentInstance access values",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -290,7 +290,7 @@ public class UIAccess extends AbstractTestUIWithLog {
                     }
                 }));
 
-        addComponent(new Button("CurrentInstance when pushing",
+        add(new Button("CurrentInstance when pushing",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

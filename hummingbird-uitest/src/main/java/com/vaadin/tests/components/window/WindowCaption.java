@@ -71,7 +71,7 @@ public class WindowCaption extends AbstractTestUI {
             }
         });
 
-        addComponents(red, plainText, nullCaption, empty);
+        add(red, plainText, nullCaption, empty);
         red.click();
     }
 

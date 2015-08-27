@@ -13,10 +13,10 @@ public class LocaleChangeOnReadOnlyField extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         final TextField textField = getReadOnlyTextField();
-        addComponent(textField);
+        add(textField);
 
         Button changeLocaleButton = addLocaleChangeButton(textField);
-        addComponent(changeLocaleButton);
+        add(changeLocaleButton);
     }
 
     private TextField getReadOnlyTextField() {

@@ -27,7 +27,7 @@ public class DisabledDateFieldWidth extends TestBase {
         gl.addComponent(dateField1);
         gl.addComponent(button);
 
-        addComponent(gl);
+        add(gl);
     }
 
     @Override

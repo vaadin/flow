@@ -28,7 +28,7 @@ public class HorizontalLayoutVerticalAlign extends TestBase {
 
         p.addComponent(new TextArea());
 
-        addComponent(p);
+        add(p);
     }
 
     @Override

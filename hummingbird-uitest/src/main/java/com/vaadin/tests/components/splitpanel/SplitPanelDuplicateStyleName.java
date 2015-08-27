@@ -43,7 +43,7 @@ public class SplitPanelDuplicateStyleName extends AbstractTestUIWithLog {
         }
         splitPanel.setWidth("200px");
         splitPanel.setHeight("200px");
-        addComponent(splitPanel);
+        add(splitPanel);
     }
 
     @Override

@@ -25,10 +25,10 @@ public class BackButtonTest extends AbstractTestUI {
         getPage().setUriFragment("page1");
 
         layout = new VerticalLayout();
-        addComponent(layout);
+        add(layout);
 
         p1 = new Page1();
-        addComponent(p1);
+        add(p1);
 
         p2 = new Page2();
         getPage().addUriFragmentChangedListener(
@@ -69,14 +69,14 @@ public class BackButtonTest extends AbstractTestUI {
     }
 
     private void showPage2() {
-        removeComponent(p1);
+        remove(p1);
         p2.f.setValue("");
-        addComponent(p2);
+        add(p2);
     }
 
     private void showPage1() {
-        removeComponent(p2);
-        addComponent(p1);
+        remove(p2);
+        add(p1);
     }
 
     class Page2 extends VerticalLayout {

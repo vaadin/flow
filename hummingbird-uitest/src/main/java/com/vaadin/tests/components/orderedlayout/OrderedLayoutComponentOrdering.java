@@ -18,7 +18,7 @@ public class OrderedLayoutComponentOrdering extends TestBase {
         final HorizontalLayout hl = new HorizontalLayout(a, b);
         hl.setCaption("Horizontal layout");
         hl.setSpacing(true);
-        addComponent(hl);
+        add(hl);
 
         Button addFirst = new Button("add first");
         addFirst.addClickListener(new Button.ClickListener() {
@@ -28,7 +28,7 @@ public class OrderedLayoutComponentOrdering extends TestBase {
                 hl.addComponent(new Button(String.valueOf(++counter)), 1);
             }
         });
-        addComponent(addFirst);
+        add(addFirst);
 
         Button add = new Button("add second");
         add.addClickListener(new Button.ClickListener() {
@@ -38,7 +38,7 @@ public class OrderedLayoutComponentOrdering extends TestBase {
                 hl.addComponent(new Button(String.valueOf(++counter)), 2);
             }
         });
-        addComponent(add);
+        add(add);
 
         Button addThird = new Button("add third");
         addThird.addClickListener(new Button.ClickListener() {
@@ -48,7 +48,7 @@ public class OrderedLayoutComponentOrdering extends TestBase {
                 hl.addComponent(new Button(String.valueOf(++counter)), 3);
             }
         });
-        addComponent(addThird);
+        add(addThird);
 
         Button move = new Button("move last to first");
         move.addClickListener(new Button.ClickListener() {
@@ -58,7 +58,7 @@ public class OrderedLayoutComponentOrdering extends TestBase {
                         hl.getComponent(hl.getComponentCount() - 1));
             }
         });
-        addComponent(move);
+        add(move);
 
         Button swap = new Button("move forth to second");
         swap.addClickListener(new Button.ClickListener() {
@@ -67,7 +67,7 @@ public class OrderedLayoutComponentOrdering extends TestBase {
                 hl.addComponent(hl.getComponent(3), 1);
             }
         });
-        addComponent(swap);
+        add(swap);
 
     }
 

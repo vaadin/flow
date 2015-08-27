@@ -38,21 +38,21 @@ public class NotificationsWaiAria extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         prefix = new TextField("Prefix", "Info");
-        addComponent(prefix);
+        add(prefix);
 
         postfix = new TextField("Postfix",
                 " - closes automatically after 10 seconds");
-        addComponent(postfix);
+        add(postfix);
 
         role = new NativeSelect("NotificationRole");
         role.addItem(NotificationRole.ALERT);
         role.addItem(NotificationRole.STATUS);
         role.setValue(role.getItemIds().iterator().next());
-        addComponent(role);
+        add(role);
 
         tf = new TextArea("Text", "Hello world");
         tf.setRows(10);
-        addComponent(tf);
+        add(tf);
         type = new ComboBox();
         type.setNullSelectionAllowed(false);
         type.addContainerProperty(CAPTION, String.class, "");
@@ -75,15 +75,15 @@ public class NotificationsWaiAria extends AbstractTestUI {
         item.getItemProperty(CAPTION).setValue("Assistive");
 
         type.setValue(type.getItemIds().iterator().next());
-        addComponent(type);
+        add(type);
 
         Button showNotification = new Button("Show notification",
                 new SettingHandler());
-        addComponent(showNotification);
+        add(showNotification);
 
         Button showDefaultNotification = new Button("Default notification",
                 new DefaultHandler());
-        addComponent(showDefaultNotification);
+        add(showDefaultNotification);
     }
 
     @Override

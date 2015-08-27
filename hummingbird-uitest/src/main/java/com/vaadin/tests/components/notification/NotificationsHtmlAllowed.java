@@ -21,19 +21,19 @@ public class NotificationsHtmlAllowed extends TestBase
     @Override
     protected void setup() {
         captionField = new TextField("Caption", "Hello <u>world</u>");
-        addComponent(captionField);
+        add(captionField);
         captionField.focus();
 
         messageField = new TextArea("Message",
                 "Hello <i>world</i>\nWith a newline <br/>And a html line break");
         messageField.setRows(10);
-        addComponent(messageField);
+        add(messageField);
 
         htmlAllowedBox = new CheckBox("Html content allowed", true);
-        addComponent(htmlAllowedBox);
+        add(htmlAllowedBox);
 
         Button showNotification = new Button("Show notification", this);
-        addComponent(showNotification);
+        add(showNotification);
     }
 
     @Override

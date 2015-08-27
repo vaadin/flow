@@ -43,9 +43,9 @@ public class TreeScrollingOnSelection extends TestBase {
         panel.setWidth("200px");
         panel.setHeight("300px");
 
-        addComponent(panel);
+        add(panel);
 
-        addComponent(charLabel);
+        add(charLabel);
     }
 
     private HierarchicalContainer getContainer() {

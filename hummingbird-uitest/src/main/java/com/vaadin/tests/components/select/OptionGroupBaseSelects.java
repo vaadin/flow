@@ -66,7 +66,7 @@ public class OptionGroupBaseSelects
         cbs.setSpacing(true);
         cbs.addComponent(cb);
         cbs.addComponent(cb2);
-        addComponent(cbs);
+        add(cbs);
 
         layout = new HorizontalLayout();
         layout.setSpacing(true);

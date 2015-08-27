@@ -60,9 +60,9 @@ public class TestFileUploadSize extends TestBase implements Receiver {
         grid.addComponent(expectedSize, 1, 0);
         grid.addComponent(receivedSize, 1, 1);
 
-        addComponent(label);
-        addComponent(grid);
-        addComponent(u);
+        add(label);
+        add(grid);
+        add(u);
     }
 
     @Override

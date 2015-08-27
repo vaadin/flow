@@ -41,7 +41,7 @@ public class DateFieldReadOnly extends AbstractTestUI {
         timeField.setValue(c.getTime());
         timeField.setReadOnly(true);
 
-        addComponent(timeField);
+        add(timeField);
 
         Button b = new Button("Switch read-only");
         b.addClickListener(new ClickListener() {
@@ -52,6 +52,6 @@ public class DateFieldReadOnly extends AbstractTestUI {
             }
         });
 
-        addComponent(b);
+        add(b);
     }
 }

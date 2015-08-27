@@ -11,8 +11,8 @@ public class IE6Cursor extends TestBase {
         TextField tf2 = new TextField("Second");
         tf2.setInputPrompt("prompt");
 
-        addComponent(tf1);
-        addComponent(tf2);
+        add(tf1);
+        add(tf2);
     }
 
     @Override

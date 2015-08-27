@@ -14,7 +14,7 @@ public class DeploymentConfiguration extends AbstractTestUI {
         getLayout().setMargin(true);
 
         for (Object key : params.keySet()) {
-            addComponent(
+            add(
                     new Label(key + ": " + params.getProperty((String) key)));
         }
     }

@@ -25,12 +25,12 @@ public class EmbeddedPdf extends TestBase {
         player.setWidth("400px");
         player.setHeight("300px");
         player.setSource(new ClassResource(getClass(), "test.pdf"));
-        addComponent(player);
+        add(player);
 
-        addComponent(new Button("Remove pdf", new Button.ClickListener() {
+        add(new Button("Remove pdf", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                removeComponent(player);
+                remove(player);
             }
         }));
 

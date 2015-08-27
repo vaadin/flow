@@ -12,7 +12,7 @@ public class ComboBoxSuggestionPopupClose extends AbstractTestUI {
         select.addItem("one");
         select.addItem("two");
         select.addItem("three");
-        addComponent(select);
+        add(select);
     }
 
     @Override

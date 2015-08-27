@@ -44,7 +44,7 @@ public class HtmlInCaption extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         HorizontalLayout main = new HorizontalLayout();
-        addComponent(main);
+        add(main);
         VerticalLayout components = new VerticalLayout();
         components.setId("components");
         VerticalLayout layouts = new VerticalLayout();

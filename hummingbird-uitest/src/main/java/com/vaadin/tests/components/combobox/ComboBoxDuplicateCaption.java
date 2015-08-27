@@ -48,10 +48,10 @@ public class ComboBoxDuplicateCaption extends TestBase {
         box.setItemCaptionMode(ItemCaptionMode.PROPERTY);
         box.setItemCaptionPropertyId("lastName");
 
-        addComponent(log);
+        add(log);
 
-        addComponent(box);
-        addComponent(new Button("Focus this"));
+        add(box);
+        add(new Button("Focus this"));
     }
 
     @Override

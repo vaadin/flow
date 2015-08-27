@@ -25,7 +25,7 @@ public class FirstTabNotVisibleWhenTabsheetNotClipped extends AbstractTestUI {
                 firstNotClippedTab.setVisible(!firstNotClippedTab.isVisible());
             }
         });
-        addComponent(createNotClippedTabSheet());
+        add(createNotClippedTabSheet());
 
         addButton("Toggle first clipped tab", new Button.ClickListener() {
             @Override
@@ -33,11 +33,11 @@ public class FirstTabNotVisibleWhenTabsheetNotClipped extends AbstractTestUI {
                 firstClippedTab.setVisible(!firstClippedTab.isVisible());
             }
         });
-        addComponent(createClippedTabSheet());
+        add(createClippedTabSheet());
 
-        addComponent(new Label("VerticalLayout:"));
+        add(new Label("VerticalLayout:"));
         addBlock(new VerticalLayout());
-        addComponent(new Label("HorizontalLayout:"));
+        add(new Label("HorizontalLayout:"));
         addBlock(new HorizontalLayout());
     }
 
@@ -95,7 +95,7 @@ public class FirstTabNotVisibleWhenTabsheetNotClipped extends AbstractTestUI {
 
         layout.addComponent(vtabLayout);
         layout.addComponent(tabsheet);
-        addComponent(layout);
+        add(layout);
     }
 
     private Button.ClickListener createTabListener(

@@ -21,7 +21,7 @@ public class EmptyTabSheet extends TestBase {
     protected void setup() {
         tabSheet = new TabSheet();
         tabSheet.setId("tabsheet");
-        addComponent(tabSheet);
+        add(tabSheet);
     }
 
 }

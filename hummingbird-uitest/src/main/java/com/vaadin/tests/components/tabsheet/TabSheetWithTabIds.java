@@ -39,7 +39,7 @@ public class TabSheetWithTabIds extends AbstractTestUI {
 
         final Tab tab3 = tabSheet.addTab(new Label("Label 3"), "Tab 3", null);
 
-        addComponent(tabSheet);
+        add(tabSheet);
 
         Button b = new Button("Set ids", new Button.ClickListener() {
 
@@ -50,7 +50,7 @@ public class TabSheetWithTabIds extends AbstractTestUI {
                 tab3.setId("tab3");
             }
         });
-        addComponent(b);
+        add(b);
 
         Button b2 = new Button("Clear ids", new Button.ClickListener() {
 
@@ -61,7 +61,7 @@ public class TabSheetWithTabIds extends AbstractTestUI {
                 tab3.setId(null);
             }
         });
-        addComponent(b2);
+        add(b2);
     }
 
     @Override

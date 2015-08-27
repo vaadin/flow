@@ -25,7 +25,7 @@ public class StaticViewport extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new Label("I should have a static viewport tag"));
+        add(new Label("I should have a static viewport tag"));
     }
 
 }

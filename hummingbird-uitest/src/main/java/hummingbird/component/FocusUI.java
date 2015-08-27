@@ -23,9 +23,9 @@ public class FocusUI extends AbstractTestUIWithLog {
             tf.focus();
             playground.addComponent(tf);
         });
-        addComponent(b);
-        addComponent(b2);
-        addComponent(playground);
+        add(b);
+        add(b2);
+        add(playground);
 
     }
 

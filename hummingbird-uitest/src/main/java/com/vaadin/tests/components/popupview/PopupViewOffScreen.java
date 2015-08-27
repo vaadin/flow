@@ -54,7 +54,7 @@ public class PopupViewOffScreen extends TestBase {
         gl.addComponent(createPopupView("blue"), 0, 2);
         gl.addComponent(createPopupView("yellow"), 2, 2);
 
-        addComponent(gl);
+        add(gl);
         gl.getParent().setSizeFull();
     }
 

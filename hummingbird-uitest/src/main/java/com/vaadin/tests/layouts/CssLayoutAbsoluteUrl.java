@@ -28,7 +28,7 @@ public class CssLayoutAbsoluteUrl extends AbstractTestUI {
         label.setId("myLabel");
         label.getElement().setStyle("color", "blue")
                 .setStyle("background-image", "url(\"about:blank\")");
-        addComponent(new CssLayout(label));
+        add(new CssLayout(label));
     }
 
 }

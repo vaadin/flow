@@ -11,35 +11,35 @@ public class EmptyCaptions extends TestBase {
         TextField tf;
 
         tf = new TextField(null, "Null caption");
-        addComponent(tf);
+        add(tf);
 
         tf = new TextField("", "Empty caption");
-        addComponent(tf);
+        add(tf);
 
         tf = new TextField(" ", "Space as caption");
-        addComponent(tf);
+        add(tf);
 
         tf = new TextField(null, "Null caption, required");
         tf.setRequired(true);
-        addComponent(tf);
+        add(tf);
         tf = new TextField("", "Empty caption, required");
         tf.setRequired(true);
-        addComponent(tf);
+        add(tf);
         tf = new TextField(" ", "Space as caption, required");
         tf.setRequired(true);
-        addComponent(tf);
+        add(tf);
 
         tf = new TextField(null, "Null caption, error");
         tf.setComponentError(new UserError("error"));
-        addComponent(tf);
+        add(tf);
 
         tf = new TextField("", "Empty caption, error");
         tf.setComponentError(new UserError("error"));
-        addComponent(tf);
+        add(tf);
 
         tf = new TextField(" ", "Space as caption, error");
         tf.setComponentError(new UserError("error"));
-        addComponent(tf);
+        add(tf);
 
     }
 

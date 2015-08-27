@@ -26,7 +26,7 @@ public class AbsoluteLayoutClipping extends TestBase {
         l3.setWidth("50px");
         abs.addComponent(l3, "top:20px;left:0px");
 
-        addComponent(abs);
+        add(abs);
     }
 
     @Override

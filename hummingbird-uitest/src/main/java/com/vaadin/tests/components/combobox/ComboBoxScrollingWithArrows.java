@@ -36,7 +36,7 @@ public class ComboBoxScrollingWithArrows extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         VerticalLayout layout = new VerticalLayout();
-        addComponent(layout);
+        add(layout);
         addComboBox(layout);
     }
 

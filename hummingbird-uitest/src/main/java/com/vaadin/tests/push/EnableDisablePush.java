@@ -58,7 +58,7 @@ public class EnableDisablePush extends AbstractTestUI {
         getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         log.log("Push enabled");
 
-        addComponent(new Button("Disable push", new Button.ClickListener() {
+        add(new Button("Disable push", new Button.ClickListener() {
             @Override
             public void buttonClick(Button.ClickEvent event) {
                 log.log("Disabling push");
@@ -67,7 +67,7 @@ public class EnableDisablePush extends AbstractTestUI {
             }
         }));
 
-        addComponent(new Button("Enable push", new Button.ClickListener() {
+        add(new Button("Enable push", new Button.ClickListener() {
             @Override
             public void buttonClick(Button.ClickEvent event) {
                 log.log("Enabling push");
@@ -76,7 +76,7 @@ public class EnableDisablePush extends AbstractTestUI {
             }
         }));
 
-        addComponent(new Button("Disable polling", new Button.ClickListener() {
+        add(new Button("Disable polling", new Button.ClickListener() {
             @Override
             public void buttonClick(Button.ClickEvent event) {
                 log.log("Disabling poll");
@@ -85,7 +85,7 @@ public class EnableDisablePush extends AbstractTestUI {
             }
         }));
 
-        addComponent(new Button("Enable polling", new Button.ClickListener() {
+        add(new Button("Enable polling", new Button.ClickListener() {
             @Override
             public void buttonClick(Button.ClickEvent event) {
                 log.log("Enabling poll");
@@ -94,7 +94,7 @@ public class EnableDisablePush extends AbstractTestUI {
             }
         }));
 
-        addComponent(
+        add(
                 new Button("Disable push, re-enable from background thread",
                         new Button.ClickListener() {
                             @Override
@@ -108,7 +108,7 @@ public class EnableDisablePush extends AbstractTestUI {
                             }
                         }));
 
-        addComponent(log);
+        add(log);
     }
 
     @Override

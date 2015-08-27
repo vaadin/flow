@@ -10,7 +10,7 @@ public class ClickingWhilePopupOpen extends TestBase {
     protected void setup() {
         Label popup = new Label("Popup");
         popup.setSizeUndefined();
-        addComponent(new PopupView("Click here to open the popup", popup));
+        add(new PopupView("Click here to open the popup", popup));
     }
 
     @Override

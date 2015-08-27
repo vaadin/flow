@@ -21,7 +21,7 @@ public class ValueThroughProperty extends TestBase {
 
     @Override
     protected void setup() {
-        addComponent(new Label(
+        add(new Label(
                 "Try to input an invalid value to the DateField, for example \"asdf\".<br />"
                         + "Then try to set DateField's value using the first button. It sets the value "
                         + "correctly (as we can see from the Label) but the client-side is not updated.<br/>"
@@ -31,11 +31,11 @@ public class ValueThroughProperty extends TestBase {
         final PopupDateField df = new PopupDateField(dateProperty);
         df.setLocale(new Locale("en", "US"));
         df.setResolution(Resolution.DAY);
-        addComponent(df);
+        add(df);
 
         Label valueLabel = new Label(df.getPropertyDataSource());
         valueLabel.setCaption("DateField's value");
-        addComponent(valueLabel);
+        add(valueLabel);
 
         final Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, 2010);
@@ -49,7 +49,7 @@ public class ValueThroughProperty extends TestBase {
                     }
 
                 });
-        addComponent(setDateButton1);
+        add(setDateButton1);
 
         Button setDateButton2 = new Button(
                 "Set value to 12/14/10 using setValue", new ClickListener() {
@@ -59,7 +59,7 @@ public class ValueThroughProperty extends TestBase {
                     }
 
                 });
-        addComponent(setDateButton2);
+        add(setDateButton2);
     }
 
     @Override

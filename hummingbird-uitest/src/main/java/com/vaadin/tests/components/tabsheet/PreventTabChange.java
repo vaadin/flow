@@ -44,7 +44,7 @@ public class PreventTabChange extends TestBase
         lastTab = tab1;
         tabSheet.setSelectedTab(tab1);
 
-        addComponent(tabSheet);
+        add(tabSheet);
     }
 
     @Override

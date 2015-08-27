@@ -12,9 +12,9 @@ public class SliderPrimaryStyleName extends TestBase {
         final Slider slider = new Slider(0, 100);
         slider.setWidth("100px");
         slider.setPrimaryStyleName("my-slider");
-        addComponent(slider);
+        add(slider);
 
-        addComponent(
+        add(
                 new Button("Change primary style", new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

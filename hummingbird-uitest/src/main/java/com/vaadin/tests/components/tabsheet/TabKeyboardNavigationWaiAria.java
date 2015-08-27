@@ -42,10 +42,10 @@ public class TabKeyboardNavigationWaiAria extends AbstractTestUI {
             }
         });
 
-        addComponent(addTab);
-        addComponent(focus);
+        add(addTab);
+        add(focus);
 
-        addComponent(ts);
+        add(ts);
     }
 
     @Override

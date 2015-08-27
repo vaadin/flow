@@ -31,7 +31,7 @@ public class MultipleValidationErrors extends AbstractTestUI {
 
         final Label validationErrors = new Label();
         validationErrors.setId("validationErrors");
-        addComponent(validationErrors);
+        add(validationErrors);
 
         addButton("Submit", new Button.ClickListener() {
             @Override
@@ -64,7 +64,7 @@ public class MultipleValidationErrors extends AbstractTestUI {
 
         fieldGroup.bind(textfield, propertyId);
 
-        addComponent(textfield);
+        add(textfield);
     }
 
     @Override

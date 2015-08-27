@@ -16,12 +16,12 @@ public class DoubleInTextField extends AbstractComponentDataBindingTest {
                         Country.SOUTH_AFRICA));
 
         TextField salary = new TextField("Vaadin 7 - TextField with Double");
-        addComponent(salary);
+        add(salary);
         salary.setPropertyDataSource(
                 new MethodProperty<Double>(person, "salaryDouble"));
 
         TextField salary6 = new TextField("Vaadin 6 - TextField with Double");
-        addComponent(salary6);
+        add(salary6);
         salary6.setPropertyDataSource(
                 new MethodProperty<Double>(person, "salaryDouble"));
         salary6.setConverter(new Vaadin6ImplicitDoubleConverter());

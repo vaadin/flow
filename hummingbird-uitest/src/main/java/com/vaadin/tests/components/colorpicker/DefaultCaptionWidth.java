@@ -31,7 +31,7 @@ public class DefaultCaptionWidth extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         final ColorPicker colorPicker = new ColorPicker();
-        addComponent(colorPicker);
+        add(colorPicker);
         colorPicker.setDefaultCaptionEnabled(true);
 
         Button setWidth = new Button("Set explicit width",
@@ -44,7 +44,7 @@ public class DefaultCaptionWidth extends AbstractTestUI {
                     }
                 });
         setWidth.addStyleName("set-width");
-        addComponent(setWidth);
+        add(setWidth);
 
         Button setCaption = new Button("Set explicit caption",
                 new Button.ClickListener() {
@@ -56,7 +56,7 @@ public class DefaultCaptionWidth extends AbstractTestUI {
                     }
                 });
         setCaption.addStyleName("set-caption");
-        addComponent(setCaption);
+        add(setCaption);
 
     }
 

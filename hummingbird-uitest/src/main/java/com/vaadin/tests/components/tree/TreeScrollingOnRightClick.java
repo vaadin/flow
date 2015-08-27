@@ -37,7 +37,7 @@ public class TreeScrollingOnRightClick extends AbstractTestUI {
             tree.addItem(String.format("Node %s", i));
         }
 
-        addComponent(tree);
+        add(tree);
     }
 
     @Override

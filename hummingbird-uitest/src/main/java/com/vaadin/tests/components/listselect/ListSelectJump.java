@@ -16,7 +16,7 @@ public class ListSelectJump extends AbstractTestUI {
     public void setup(VaadinRequest request) {
         getLayout().setMargin(true);
 
-        addComponent(new Label(
+        add(new Label(
                 "Instructions:<ol><li>Select Option #1</li><li><b>Also</b> select Option #10 (use meta-click)</li>"
                         + "<li>Leave the Option #10 visible in the scroll window</li><li>Press the button</li></ol>"
                         + "You will see the <code>ListSelect</code> scroll window jump back to the top.",
@@ -31,10 +31,10 @@ public class ListSelectJump extends AbstractTestUI {
         listSelect.setRows(5);
         listSelect.setItemCaptionMode(AbstractSelect.ItemCaptionMode.ID);
         listSelect.setId("listselect");
-        addComponent(listSelect);
+        add(listSelect);
         Button button = new Button("Press Me");
         button.setId("button");
-        addComponent(button);
+        add(button);
     }
 
     @Override

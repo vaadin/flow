@@ -29,9 +29,9 @@ public class CustomComponentHideContent extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         final Label content = new Label("This is the content");
         CustomComponent customComponent = new CustomComponent(content);
-        addComponent(customComponent);
+        add(customComponent);
 
-        addComponent(new Button("Toggle content visibility",
+        add(new Button("Toggle content visibility",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

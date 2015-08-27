@@ -26,6 +26,6 @@ public class LargeCaptionIcon extends TestBase {
         l.setCaption("This is its caption, it also has a large icon");
         l.setIcon(new ThemeResource("../runo/icons/64/ok.png"));
         gl.addComponent(l);
-        addComponent(gl);
+        add(gl);
     }
 }

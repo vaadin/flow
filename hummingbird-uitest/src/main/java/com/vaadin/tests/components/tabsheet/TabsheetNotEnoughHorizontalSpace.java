@@ -41,7 +41,7 @@ public class TabsheetNotEnoughHorizontalSpace extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         generateTabs();
         tabsheet.setSizeFull();
-        addComponent(tabsheet);
+        add(tabsheet);
 
     }
 

@@ -33,12 +33,12 @@ public class ComboBoxSuggestionPageLength extends AbstractTestUI {
         ComboBox cb = new ComboBox("Page length 0", items);
         cb.setPageLength(0);
         cb.setFilteringMode(FilteringMode.CONTAINS);
-        addComponent(cb);
+        add(cb);
 
         cb = new ComboBox("Page length 2", items);
         cb.setPageLength(2);
         cb.setFilteringMode(FilteringMode.CONTAINS);
-        addComponent(cb);
+        add(cb);
     }
 
     @Override

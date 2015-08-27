@@ -41,7 +41,7 @@ public class LabelWrapping extends TestBase {
         hl.addComponent(longLabel);
         hl.addComponent(changeLength);
 
-        addComponent(hl);
+        add(hl);
     }
 
 }

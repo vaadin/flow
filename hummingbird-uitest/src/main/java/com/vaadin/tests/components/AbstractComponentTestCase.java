@@ -65,7 +65,7 @@ public abstract class AbstractComponentTestCase<T extends AbstractComponent>
 
     protected void addTestComponent(T c) {
         testComponents.add(c);
-        addComponent(c);
+        add(c);
     }
 
     protected List<T> getTestComponents() {

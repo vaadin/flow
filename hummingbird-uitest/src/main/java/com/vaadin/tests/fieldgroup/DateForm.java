@@ -78,17 +78,17 @@ public class DateForm extends AbstractTestUIWithLog {
     @Override
     protected void setup(VaadinRequest request) {
         setLocale(Locale.US);
-        addComponent(log);
+        add(log);
         final FieldGroup fieldGroup = new BeanFieldGroup<DateObject>(
                 DateObject.class);
         fieldGroup.setBuffered(true);
 
         fieldGroup.buildAndBindMemberFields(this);
         textField.setWidth("20em");
-        addComponent(dateField);
-        addComponent(popupDateField);
-        addComponent(inlineDateField);
-        addComponent(textField);
+        add(dateField);
+        add(popupDateField);
+        add(inlineDateField);
+        add(textField);
 
         Button commitButton = new Button("Commit", new Button.ClickListener() {
 
@@ -123,9 +123,9 @@ public class DateForm extends AbstractTestUIWithLog {
 
                     }
                 });
-        addComponent(commitButton);
-        addComponent(discardButton);
-        addComponent(showBean);
+        add(commitButton);
+        add(discardButton);
+        add(showBean);
 
         DateObject d = new DateObject(new Date(443457289789L),
                 new Date(443457289789L), new Date(443457289789L),

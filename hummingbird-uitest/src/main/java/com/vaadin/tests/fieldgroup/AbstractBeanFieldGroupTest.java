@@ -20,7 +20,7 @@ public abstract class AbstractBeanFieldGroupTest extends TestBase {
 
     @Override
     protected void setup() {
-        addComponent(log);
+        add(log);
     }
 
     protected Button getDiscardButton() {

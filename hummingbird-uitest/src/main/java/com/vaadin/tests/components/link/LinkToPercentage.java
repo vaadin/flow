@@ -35,7 +35,7 @@ public class LinkToPercentage extends TestBase {
 
         Link link = new Link("The link", resource);
 
-        addComponent(link);
+        add(link);
     }
 
     @Override

@@ -22,7 +22,7 @@ public class TestLayoutClickListeners extends AbstractTestUIWithLog {
     protected void setup(VaadinRequest request) {
         HorizontalLayout layoutsLayout = new HorizontalLayout();
         layoutsLayout.setSpacing(true);
-        addComponent(layoutsLayout);
+        add(layoutsLayout);
 
         layoutsLayout.addComponent(createClickableGridLayout());
         layoutsLayout.addComponent(createClickableVerticalLayout());

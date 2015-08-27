@@ -20,7 +20,7 @@ public class DateFieldLocale extends TestBase {
         dateField.setValue(new Date(2013 - 1900, 7 - 1, 27));
         dateField.setResolution(Resolution.DAY);
 
-        addComponent(new Button("Change locale", new ClickListener() {
+        add(new Button("Change locale", new ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
@@ -33,7 +33,7 @@ public class DateFieldLocale extends TestBase {
             }
         }));
 
-        addComponent(dateField);
+        add(dateField);
     }
 
     @Override

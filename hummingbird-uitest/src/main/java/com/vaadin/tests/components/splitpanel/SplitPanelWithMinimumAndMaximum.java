@@ -311,7 +311,7 @@ public class SplitPanelWithMinimumAndMaximum extends AbstractTestUI {
         togglableSplitPanelLayout.addComponent(buttonLayout);
         tabs.addComponent(togglableSplitPanelLayout);
 
-        addComponent(tabs);
+        add(tabs);
         tabs.setHeight("550px");
         tabs.setWidth("600px");
         getLayout().setSizeFull();

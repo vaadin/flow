@@ -27,7 +27,7 @@ public class FlashPresentation extends TestBase {
         player.setParameter("allowFullScreen", "true");
         player.setAlternateText("Flash alternative text");
 
-        addComponent(player);
+        add(player);
     }
 
 }

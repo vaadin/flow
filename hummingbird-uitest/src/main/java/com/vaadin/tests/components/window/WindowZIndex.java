@@ -29,7 +29,7 @@ public class WindowZIndex extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new Button("Add window", new ClickListener() {
+        add(new Button("Add window", new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 Window window = new Window();
@@ -42,7 +42,7 @@ public class WindowZIndex extends AbstractTestUI {
                 windows.add(window);
             }
         }));
-        addComponent(new Button("Close window", new ClickListener() {
+        add(new Button("Close window", new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 try {

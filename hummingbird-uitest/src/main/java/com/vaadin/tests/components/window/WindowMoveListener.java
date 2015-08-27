@@ -29,7 +29,7 @@ public class WindowMoveListener extends AbstractTestUI {
 
         Button b = new Button();
         b.setId("testbutton");
-        addComponent(b);
+        add(b);
         b.addClickListener(new ClickListener() {
 
             @Override

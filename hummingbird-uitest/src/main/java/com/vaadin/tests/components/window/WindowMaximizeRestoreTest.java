@@ -33,7 +33,7 @@ public class WindowMaximizeRestoreTest extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         Button addButton = new Button("Add new Window");
         addButton.addClickListener(addListener);
-        addComponent(addButton);
+        add(addButton);
 
         addWindowAgain = new ComboBox("Add Window Again");
         addWindowAgain.setBuffered(false);
@@ -49,7 +49,7 @@ public class WindowMaximizeRestoreTest extends AbstractTestUI {
                 }
             }
         });
-        addComponent(addWindowAgain);
+        add(addWindowAgain);
 
         addWindow(createNewWindow());
     }

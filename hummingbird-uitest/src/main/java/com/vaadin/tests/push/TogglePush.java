@@ -35,7 +35,7 @@ public class TogglePush extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         updateCounter();
-        addComponent(counterLabel);
+        add(counterLabel);
 
         getPushConfiguration()
                 .setPushMode("disabled".equals(request.getParameter("push"))
@@ -55,9 +55,9 @@ public class TogglePush extends AbstractTestUI {
                 }
             }
         });
-        addComponent(pushSetting);
+        add(pushSetting);
 
-        addComponent(
+        add(
                 new Button("Update counter now", new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -65,7 +65,7 @@ public class TogglePush extends AbstractTestUI {
                     }
                 }));
 
-        addComponent(new Button("Update counter in 1 sec",
+        add(new Button("Update counter in 1 sec",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

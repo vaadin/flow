@@ -52,7 +52,7 @@ public class OptionGroupRetainFocusKeyboardValueChange extends AbstractTestUI {
             }
         });
 
-        addComponent(optiongroup);
+        add(optiongroup);
 
         optiongroup.focus();
     }

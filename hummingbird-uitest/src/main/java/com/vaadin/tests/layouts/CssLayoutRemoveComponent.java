@@ -27,7 +27,7 @@ public class CssLayoutRemoveComponent extends TestBase {
         layout.addComponent(new TextField("Caption2"));
         layout.addComponent(new TextField("Caption3"));
 
-        addComponent(layout);
+        add(layout);
     }
 
     @Override

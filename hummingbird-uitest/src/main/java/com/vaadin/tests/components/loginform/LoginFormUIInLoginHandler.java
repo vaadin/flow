@@ -18,22 +18,22 @@ public class LoginFormUIInLoginHandler extends TestBase {
             public void onLogin(LoginEvent event) {
                 UI r1 = UI.getCurrent();
                 if (r1 != null) {
-                    addComponent(
+                    add(
                             new Label("UI.getCurrent().data: " + r1.getData()));
                 } else {
-                    addComponent(new Label("UI.getCurrent() is null"));
+                    add(new Label("UI.getCurrent() is null"));
                 }
                 UI r2 = ((LoginForm) event.getSource()).getUI();
                 if (r2 != null) {
-                    addComponent(new Label(
+                    add(new Label(
                             "event.getSource().data: " + r2.getData()));
                 } else {
-                    addComponent(
+                    add(
                             new Label("event.getSource().getRoot() is null"));
                 }
             }
         });
-        addComponent(lf);
+        add(lf);
         getLayout().getUI().setData("This UI");
     }
 

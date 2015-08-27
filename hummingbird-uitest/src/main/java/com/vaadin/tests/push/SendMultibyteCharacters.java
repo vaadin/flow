@@ -12,7 +12,7 @@ public class SendMultibyteCharacters extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         TextArea textArea = new TextArea();
 
-        addComponent(textArea);
+        add(textArea);
     }
 
     @Override

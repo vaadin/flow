@@ -38,7 +38,7 @@ public class InsertRowInMiddle extends AbstractTestUI {
             }
         });
         layout.addComponent(newRowButton, 0, 1);
-        addComponent(layout);
+        add(layout);
     }
 
     @Override

@@ -13,25 +13,25 @@ public class EmbeddedWithNullSource extends TestBase {
         AbstractEmbedded e;
 
         e = new Image("Image w/o alt text");
-        addComponent(e);
+        add(e);
 
         e = new Image("Image w/ alt text");
         e.setAlternateText("Image");
-        addComponent(e);
+        add(e);
 
         e = new Flash("Flash w/o alt text");
-        addComponent(e);
+        add(e);
 
         e = new Flash("Flash w/ alt text");
         e.setAlternateText("Flash");
-        addComponent(e);
+        add(e);
 
         e = new BrowserFrame("BrowserFrame w/o alt text");
-        addComponent(e);
+        add(e);
 
         e = new BrowserFrame("BrowserFrame w/ alt text");
         e.setAlternateText("BrowserFrame");
-        addComponent(e);
+        add(e);
 
     }
 

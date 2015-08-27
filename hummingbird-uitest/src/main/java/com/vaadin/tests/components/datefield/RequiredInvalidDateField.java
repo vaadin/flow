@@ -61,7 +61,7 @@ public class RequiredInvalidDateField extends TestBase {
         dateField1.setResolution(Resolution.DAY);
         dateField1.setId("_DF1");
         dateField1.addValidator(dateValidator);
-        addComponent(dateField1);
+        add(dateField1);
 
         // required
         Property<Date> dateProperty2 = new ObjectProperty<Date>(date);
@@ -71,7 +71,7 @@ public class RequiredInvalidDateField extends TestBase {
         dateField2.setId("_DF2");
         dateField2.setRequired(true);
         dateField2.addValidator(dateValidator);
-        addComponent(dateField2);
+        add(dateField2);
     }
 
     @Override

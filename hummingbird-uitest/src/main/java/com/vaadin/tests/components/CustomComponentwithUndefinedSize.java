@@ -36,7 +36,7 @@ public class CustomComponentwithUndefinedSize extends TestBase {
         tabs.addTab(mcc.buildLayout(),
                 "Works (no CustomComponent, same layout)", null);
 
-        addComponent(tabs);
+        add(tabs);
         getLayout().setSizeFull();
     }
 

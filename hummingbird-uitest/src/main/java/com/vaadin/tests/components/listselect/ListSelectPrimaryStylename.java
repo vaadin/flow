@@ -14,9 +14,9 @@ public class ListSelectPrimaryStylename extends TestBase {
         final ListSelect list = new ListSelect("Caption",
                 Arrays.asList("Option 1", "Option 2", "Option 3"));
         list.setPrimaryStyleName("my-list");
-        addComponent(list);
+        add(list);
 
-        addComponent(new Button("Change primary stylename",
+        add(new Button("Change primary stylename",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

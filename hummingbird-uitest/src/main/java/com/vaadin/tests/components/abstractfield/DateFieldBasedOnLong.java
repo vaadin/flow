@@ -15,13 +15,13 @@ public class DateFieldBasedOnLong extends AbstractComponentDataBindingTest {
     @Override
     protected void createFields() {
         PopupDateField pdf = new PopupDateField("DateField");
-        addComponent(pdf);
+        add(pdf);
         property = new ObjectProperty<Long>(l, Long.class);
         pdf.setPropertyDataSource(property);
 
         property.setValue(new Date(2011 - 1900, 4, 6).getTime());
 
-        addComponent(new Button("Set property value to 10000L",
+        add(new Button("Set property value to 10000L",
                 new Button.ClickListener() {
 
                     @Override

@@ -17,7 +17,7 @@ public class GridLayoutMoveComponent extends AbstractTestUI {
         grid.setCaption("Fixed size grid");
         grid.setWidth("300px");
         grid.setHeight("100px");
-        addComponent(grid);
+        add(grid);
 
         final Label l = new Label("100% label");
         final Button b = new Button("100px button");
@@ -29,7 +29,7 @@ public class GridLayoutMoveComponent extends AbstractTestUI {
         grid.addComponent(b, 0, 1);
         grid.addComponent(tf, 0, 2);
 
-        addComponent(
+        add(
                 new Button("Shift label right", new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -39,7 +39,7 @@ public class GridLayoutMoveComponent extends AbstractTestUI {
                     }
                 }));
 
-        addComponent(
+        add(
                 new Button("Shift button right", new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -48,7 +48,7 @@ public class GridLayoutMoveComponent extends AbstractTestUI {
                     }
                 }));
 
-        addComponent(new Button("Shift text field right",
+        add(new Button("Shift text field right",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

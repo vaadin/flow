@@ -53,10 +53,10 @@ public class TextFields extends AbstractTestUIWithLog {
                 selectInSecond, spacer);
         hl.setSpacing(true);
         hl.setExpandRatio(spacer, 1);
-        addComponent(hl);
-        addComponent(createTextFields());
-        addComponent(createPasswordFields());
-        addComponent(createTextAreas());
+        add(hl);
+        add(createTextFields());
+        add(createPasswordFields());
+        add(createTextAreas());
     }
 
     private Component withCaption(Component c) {

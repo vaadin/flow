@@ -46,7 +46,7 @@ public class ComboBoxInputPrompt extends AbstractTestUI {
                     }
                 });
 
-        addComponents(cb1, cb2, cb3, enableButton);
+        add(cb1, cb2, cb3, enableButton);
     }
 
     @Override

@@ -22,8 +22,8 @@ public class HiddenTabSheetBrowserResize extends TestBase {
                         tabSheet.setVisible(!tabSheet.isVisible());
                     }
                 });
-        addComponent(toggleButton);
-        addComponent(tabSheet);
+        add(toggleButton);
+        add(tabSheet);
     }
 
     @Override

@@ -86,9 +86,9 @@ public class DateFieldTimezone extends TestBase {
             }
         });
 
-        addComponent(timezoneSelector);
-        addComponent(log);
-        addComponent(dateField);
+        add(timezoneSelector);
+        add(log);
+        add(dateField);
     }
 
     @Override

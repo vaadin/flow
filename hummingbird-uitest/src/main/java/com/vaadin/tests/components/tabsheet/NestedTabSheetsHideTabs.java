@@ -15,7 +15,7 @@ public class NestedTabSheetsHideTabs extends TestBase {
 
     @Override
     public void setup() {
-        addComponent(new Button("Toggle tabs", new Button.ClickListener() {
+        add(new Button("Toggle tabs", new Button.ClickListener() {
             @Override
             public void buttonClick(final ClickEvent event) {
                 main.setTabsVisible(!main.isTabsVisible());
@@ -28,7 +28,7 @@ public class NestedTabSheetsHideTabs extends TestBase {
         main.addTab(newPage(1), "Page 1");
         main.addTab(sub, "Page 2 (TabSheet)");
         main.addTab(newPage(3), "Page 3");
-        addComponent(main);
+        add(main);
     }
 
     private static ComponentContainer newPage(final int number) {

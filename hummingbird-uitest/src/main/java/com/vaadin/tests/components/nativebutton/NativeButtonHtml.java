@@ -10,12 +10,12 @@ public class NativeButtonHtml extends TestBase {
     @Override
     protected void setup() {
         NativeButton b = new NativeButton("<b>Plain text button</b>");
-        addComponent(b);
+        add(b);
 
         b = new NativeButton(
                 "<span style=\"color: red; font-weight: bold;\">HTML</span> button");
         b.setHtmlContentAllowed(true);
-        addComponent(b);
+        add(b);
 
         final NativeButton swapButton = new NativeButton("<i>Swap button<i>");
         swapButton.addClickListener(new Button.ClickListener() {
@@ -26,7 +26,7 @@ public class NativeButtonHtml extends TestBase {
                         !swapButton.isHtmlContentAllowed());
             }
         });
-        addComponent(swapButton);
+        add(swapButton);
     }
 
     @Override

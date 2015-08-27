@@ -31,10 +31,10 @@ public class SelectionAndCursorPosition extends TestBase {
             public void valueChange(ValueChangeEvent event) {
                 if (textField.getUI() == null
                         || textField.getUI().getSession() == null) {
-                    replaceComponent(textArea, textField);
+                    replace(textArea, textField);
                     activeComponent = textField;
                 } else {
-                    replaceComponent(textField, textArea);
+                    replace(textField, textArea);
                     activeComponent = textArea;
                 }
             }

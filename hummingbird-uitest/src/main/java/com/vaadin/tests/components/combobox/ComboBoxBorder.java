@@ -26,7 +26,7 @@ public class ComboBoxBorder extends TestBase {
             }
         });
 
-        addComponent(cb);
+        add(cb);
 
     }
 

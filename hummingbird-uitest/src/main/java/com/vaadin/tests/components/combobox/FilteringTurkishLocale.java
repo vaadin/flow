@@ -44,7 +44,7 @@ public class FilteringTurkishLocale extends AbstractTestUI {
         });
         localeSelect.setValue(Locale.ENGLISH);
 
-        addComponents(localeSelect, comboBox);
+        add(localeSelect, comboBox);
     }
 
     @Override

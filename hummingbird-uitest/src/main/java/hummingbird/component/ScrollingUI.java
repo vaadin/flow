@@ -29,22 +29,22 @@ public class ScrollingUI extends AbstractTestUIWithLog {
 
         vl.addComponent(bottomButton);
 
-        addComponent(new Button("Scroll to top button", e -> {
+        add(new Button("Scroll to top button", e -> {
             scrollIntoView(topButton);
         }));
-        addComponent(new Button("Scroll to middle button", e -> {
+        add(new Button("Scroll to middle button", e -> {
             scrollIntoView(middleButton);
         }));
-        addComponent(new Button("Scroll to bottom button", e -> {
+        add(new Button("Scroll to bottom button", e -> {
             scrollIntoView(bottomButton);
         }));
-        addComponent(new Button("Set scroll top to 200", e -> {
+        add(new Button("Set scroll top to 200", e -> {
             setScrollTop(200);
         }));
-        addComponent(new Button("Set scroll left to 200", e -> {
+        add(new Button("Set scroll left to 200", e -> {
             setScrollLeft(200);
         }));
-        addComponent(vl);
+        add(vl);
     }
 
 }

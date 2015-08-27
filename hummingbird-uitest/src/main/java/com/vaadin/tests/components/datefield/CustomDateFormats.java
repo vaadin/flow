@@ -42,7 +42,7 @@ public class CustomDateFormats extends TestBase {
                 setDateFieldLocale((Locale) s.getValue());
             }
         });
-        addComponent(s);
+        add(s);
         s.setValue(Locale.FRANCE);
     }
 
@@ -55,9 +55,9 @@ public class CustomDateFormats extends TestBase {
     protected void setDateFieldLocale(Locale value) {
         Component n = getCustomFormats(value);
         if (customFormats == null) {
-            addComponent(n);
+            add(n);
         } else {
-            replaceComponent(customFormats, n);
+            replace(customFormats, n);
         }
         customFormats = n;
 

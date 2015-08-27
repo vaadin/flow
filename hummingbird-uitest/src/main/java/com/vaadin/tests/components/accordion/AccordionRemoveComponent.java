@@ -40,7 +40,7 @@ public class AccordionRemoveComponent extends AbstractTestUI {
             }
         });
         accordion.addComponent(button);
-        addComponent(accordion);
+        add(accordion);
     }
 
     @Override

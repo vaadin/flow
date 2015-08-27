@@ -21,7 +21,7 @@ public class ComboBoxSQLContainerFilteredValueChange extends TestBase {
     @Override
     protected void setup() {
         VerticalLayout layout = new VerticalLayout();
-        addComponent(layout);
+        add(layout);
 
         final ComboBox myCombo = new ComboBox("MyCaption");
         layout.addComponent(myCombo);

@@ -18,7 +18,7 @@ public class TabSheetWithDisappearingContent extends TestBase {
             Tab tab = t.addTab(v, "Tab " + i);
             tab.setClosable(true);
         }
-        addComponent(t);
+        add(t);
     }
 
     @Override

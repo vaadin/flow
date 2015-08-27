@@ -38,12 +38,12 @@ public class DateFieldChangeResolution extends AbstractTestUI {
         dateField.setResolution(Resolution.YEAR);
         dateField.setId(DATEFIELD_ID);
 
-        addComponent(dateField);
+        add(dateField);
 
         Label l = new Label("Select resolution");
-        addComponent(l);
+        add(l);
         HorizontalLayout hlayout = new HorizontalLayout();
-        addComponent(hlayout);
+        add(hlayout);
         for (final Resolution value : Resolution.values()) {
             String resolutionString = value.toString().toLowerCase();
             Button b = new Button(resolutionString);

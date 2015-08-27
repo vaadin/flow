@@ -21,7 +21,7 @@ public class Notifications extends TestBase implements ClickListener {
     protected void setup() {
         tf = new TextArea("Text", "Hello world");
         tf.setRows(10);
-        addComponent(tf);
+        add(tf);
         type = new NativeSelect();
         type.setNullSelectionAllowed(false);
         type.addContainerProperty(CAPTION, String.class, "");
@@ -35,9 +35,9 @@ public class Notifications extends TestBase implements ClickListener {
         type.addItem(Type.TRAY_NOTIFICATION).getItemProperty(CAPTION)
                 .setValue("Tray");
         type.setValue(type.getItemIds().iterator().next());
-        addComponent(type);
+        add(type);
         Button showNotification = new Button("Show notification", this);
-        addComponent(showNotification);
+        add(showNotification);
     }
 
     @Override

@@ -24,7 +24,7 @@ public class RichTextAreaUpdateWhileTyping extends AbstractTestUI {
         rta = new RichTextArea();
         rta.setId("rta");
 
-        addComponent(rta);
+        add(rta);
     }
 
     @Override

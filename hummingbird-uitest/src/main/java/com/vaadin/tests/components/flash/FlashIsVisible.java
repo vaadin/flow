@@ -12,7 +12,7 @@ public class FlashIsVisible extends TestBase {
         player.setWidth("400px");
         player.setHeight("300px");
         player.setSource(new ClassResource("simple.swf"));
-        addComponent(player);
+        add(player);
     }
 
     @Override

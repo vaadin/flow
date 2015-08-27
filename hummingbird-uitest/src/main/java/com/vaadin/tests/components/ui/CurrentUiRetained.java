@@ -59,7 +59,7 @@ public class CurrentUiRetained extends AbstractTestUIWithLog {
         });
         thread.start();
 
-        addComponent(new Button("Show result", new Button.ClickListener() {
+        add(new Button("Show result", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 try {

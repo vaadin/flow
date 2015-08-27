@@ -30,7 +30,7 @@ public class NestedLayoutCaptionHover extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         VerticalLayout test = new VerticalLayout();
         test.setCaption("inner layout");
-        addComponent(new VerticalLayout(
+        add(new VerticalLayout(
                 new VerticalLayout(new VerticalLayout(test))));
     }
 

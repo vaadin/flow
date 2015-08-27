@@ -58,7 +58,7 @@ public class GridLayoutNPE extends TestBase {
 
         });
 
-        addComponent(lo);
+        add(lo);
     }
 
     @Override

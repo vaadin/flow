@@ -77,8 +77,8 @@ public class ThemeChangeOnTheFly extends AbstractTestUIWithLog {
         image = new Image("Reindeer theme image",
                 new ThemeResource("button/img/left-focus.png"));
         images.addComponent(image);
-        addComponent(images);
-        addComponent(gl);
+        add(images);
+        add(gl);
 
         getLayout().setSpacing(true);
 

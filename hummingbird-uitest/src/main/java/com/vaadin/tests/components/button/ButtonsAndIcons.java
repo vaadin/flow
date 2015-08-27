@@ -22,28 +22,28 @@ public class ButtonsAndIcons extends TestBase {
         Button b = new Button("Text and icon");
         b.setIcon(new ThemeResource("../runo/icons/16/ok.png"));
 
-        addComponent(b);
+        add(b);
 
         b = new Button("Only text");
 
-        addComponent(b);
+        add(b);
         b = new Button((String) null);
         b.setIcon(new ThemeResource("../runo/icons/16/ok.png"));
 
-        addComponent(b);
+        add(b);
 
         b = new NativeButton("Text and icon");
         b.setIcon(new ThemeResource("../runo/icons/16/ok.png"));
 
-        addComponent(b);
+        add(b);
 
         b = new NativeButton("Only text");
 
-        addComponent(b);
+        add(b);
         b = new NativeButton(null);
         b.setIcon(new ThemeResource("../runo/icons/16/ok.png"));
 
-        addComponent(b);
+        add(b);
     }
 
 }

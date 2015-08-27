@@ -35,7 +35,7 @@ public class ComboBoxItemAddingWithFocusListener extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         cBox = new ComboBox();
-        addComponent(cBox);
+        add(cBox);
         cBox.addItem("Foo");
         cBox.addItem("Bar");
         cBox.addFocusListener(new FocusListener() {
@@ -48,7 +48,7 @@ public class ComboBoxItemAddingWithFocusListener extends AbstractTestUI {
             }
 
         });
-        addComponent(new Button("Focus Target"));
+        add(new Button("Focus Target"));
     }
 
     @Override

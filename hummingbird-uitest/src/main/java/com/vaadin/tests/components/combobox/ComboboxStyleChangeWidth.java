@@ -44,8 +44,8 @@ public class ComboboxStyleChangeWidth extends AbstractTestUIWithLog {
                     }
                 });
 
-        addComponent(cbFoo);
-        addComponent(btn);
+        add(cbFoo);
+        add(btn);
 
     }
 

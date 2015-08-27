@@ -50,8 +50,8 @@ public class ComboBoxMouseSelectEnter extends AbstractTestUI {
             }
         });
 
-        addComponents(comboBox);
-        addComponent(label);
+        add(comboBox);
+        add(label);
     }
 
     @Override

@@ -83,7 +83,7 @@ public abstract class AbstractComponentTest<T extends AbstractComponent>
         setTheme("tests-components");
 
         // Create menu here so it appears before the components
-        addComponent(createMainMenu());
+        add(createMainMenu());
 
         getLayout().setSizeFull();
         createLog();

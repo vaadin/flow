@@ -36,15 +36,15 @@ public class RequiredIndicatorForFieldsWithoutCaption extends AbstractTestUI {
                 }
             }
         });
-        addComponent(required);
-        addComponent(createWrappedTextField(new GridLayout(2, 1)));
-        addComponent(createWrappedTextField(new VerticalLayout()));
-        addComponent(createWrappedTextField(new HorizontalLayout()));
+        add(required);
+        add(createWrappedTextField(new GridLayout(2, 1)));
+        add(createWrappedTextField(new VerticalLayout()));
+        add(createWrappedTextField(new HorizontalLayout()));
         AbsoluteLayout al = new AbsoluteLayout();
         al.setWidth("400px");
         al.setHeight("100px");
-        addComponent(createWrappedTextField(al));
-        addComponent(createWrappedTextField(new CssLayout()));
+        add(createWrappedTextField(al));
+        add(createWrappedTextField(new CssLayout()));
     }
 
     /**

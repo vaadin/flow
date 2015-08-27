@@ -22,7 +22,7 @@ public class TabSheetWithoutTabCaption extends TestBase {
         final TabSheet moduleArea = new TabSheet();
         Label label = new Label("Tab contents");
         moduleArea.addTab(label);
-        addComponent(moduleArea);
+        add(moduleArea);
     }
 
 }

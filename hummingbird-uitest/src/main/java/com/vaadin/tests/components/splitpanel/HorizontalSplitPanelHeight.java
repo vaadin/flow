@@ -41,7 +41,7 @@ public class HorizontalSplitPanelHeight extends AbstractTestUI {
         label.addStyleName("target");
         panel.setSecondComponent(label);
 
-        addComponent(panel);
+        add(panel);
 
         panel = new HorizontalSplitPanel();
         panel.setCaption(
@@ -52,7 +52,7 @@ public class HorizontalSplitPanelHeight extends AbstractTestUI {
         panel.setSecondComponent(label);
         panel.setFirstComponent(new Button("button"));
 
-        addComponent(panel);
+        add(panel);
 
         panel = new HorizontalSplitPanel();
         panel.setCaption(
@@ -63,7 +63,7 @@ public class HorizontalSplitPanelHeight extends AbstractTestUI {
         panel.setSecondComponent(label);
         panel.setHeight(30, Unit.PIXELS);
 
-        addComponent(panel);
+        add(panel);
 
         VerticalSplitPanel vPanel = new VerticalSplitPanel();
         vPanel.setCaption(
@@ -74,7 +74,7 @@ public class HorizontalSplitPanelHeight extends AbstractTestUI {
         vLabel.addStyleName("target");
         vPanel.setSecondComponent(vLabel);
 
-        addComponent(vPanel);
+        add(vPanel);
 
     }
 

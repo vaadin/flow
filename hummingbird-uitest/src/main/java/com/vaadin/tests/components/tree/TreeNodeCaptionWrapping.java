@@ -39,6 +39,6 @@ public class TreeNodeCaptionWrapping extends TestBase {
         tree.expandItem(mainItem);
         tree.expandItem(subItem);
 
-        addComponent(tree);
+        add(tree);
     }
 }

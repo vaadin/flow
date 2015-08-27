@@ -42,7 +42,7 @@ public class ComboBoxClickIcon extends AbstractTestUI {
         combo.setItemIcon(items.get(2), FontAwesome.ALIGN_CENTER);
         combo.addItems(items);
         combo.setTextInputAllowed(false);
-        addComponent(combo);
+        add(combo);
     }
 
     @Override

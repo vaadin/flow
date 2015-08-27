@@ -36,7 +36,7 @@ public class RemSizeUnitTest extends AbstractTestUI {
             label.setWidth("168px");
         }
 
-        addComponent(label);
+        add(label);
     }
 
     @Override

@@ -30,17 +30,17 @@ public class PrimaryStyle extends AbstractTestUI {
         final Label label = new Label("Test Label");
         label.setPrimaryStyleName("initial");
         label.setStyleName("state");
-        addComponent(label);
+        add(label);
 
         final Button button = new Button("Test Button");
         button.setPrimaryStyleName("initial");
         button.setStyleName("state");
-        addComponent(button);
+        add(button);
 
         final TextField tf = new TextField("Test TextField");
         tf.setPrimaryStyleName("initial");
         tf.setStyleName("state");
-        addComponent(tf);
+        add(tf);
 
         Button updateButton = new Button("Update styles",
                 new Button.ClickListener() {
@@ -58,7 +58,7 @@ public class PrimaryStyle extends AbstractTestUI {
                     }
                 });
         updateButton.setId("update-button");
-        addComponent(updateButton);
+        add(updateButton);
     }
 
     @Override

@@ -14,7 +14,7 @@ public class ImageAltText extends TestBase {
                 new ThemeResource("../runo/icons/64/ok.png"));
         image.setId("image");
         image.setAlternateText("Original alt text");
-        addComponent(image);
+        add(image);
 
         Button changeAltTexts = new Button("Change alt text",
                 new Button.ClickListener() {
@@ -23,7 +23,7 @@ public class ImageAltText extends TestBase {
                         image.setAlternateText("New alt text!");
                     }
                 });
-        addComponent(changeAltTexts);
+        add(changeAltTexts);
     }
 
     @Override

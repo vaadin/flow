@@ -51,7 +51,7 @@ public class PopupDateFieldValueChangeEvents extends AbstractTestUIWithLog {
     protected void setup(VaadinRequest request) {
 
         HorizontalLayout hl = new HorizontalLayout();
-        addComponent(hl);
+        add(hl);
 
         Calendar calendar = Calendar.getInstance();
         calendar.set(2010, 1, 1, 18, 19, 20);

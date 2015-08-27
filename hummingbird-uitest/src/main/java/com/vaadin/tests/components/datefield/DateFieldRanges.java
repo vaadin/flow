@@ -110,7 +110,7 @@ public class DateFieldRanges extends AbstractTestUI {
             @Override
             public void buttonClick(ClickEvent event) {
                 GridLayout newContainer = createStaticFields();
-                replaceComponent(currentStaticContainer, newContainer);
+                replace(currentStaticContainer, newContainer);
                 currentStaticContainer = newContainer;
             }
         });
@@ -168,14 +168,14 @@ public class DateFieldRanges extends AbstractTestUI {
         hl.addComponent(valueDF);
         hl.addComponent(recreate);
         hl.addComponent(clearRangeButton);
-        addComponent(hl);
-        addComponent(new Label("Dynamic DateFields"));
-        addComponent(gl);
+        add(hl);
+        add(new Label("Dynamic DateFields"));
+        add(gl);
         currentStaticContainer = createStaticFields();
-        addComponent(new Label("Static DateFields"));
-        addComponent(currentStaticContainer);
+        add(new Label("Static DateFields"));
+        add(currentStaticContainer);
 
-        addComponent(label);
+        add(label);
 
     }
 

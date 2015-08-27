@@ -15,7 +15,7 @@ public class TwinColSelectCaptionStyles extends TestBase {
         sel.setRightColumnCaption("Right caption");
         sel.setStyleName("styled-twincol-captions");
         sel.setWidth("300px");
-        addComponent(sel);
+        add(sel);
 
         Button b = new Button("Set height and width to 500px",
                 new Button.ClickListener() {
@@ -27,7 +27,7 @@ public class TwinColSelectCaptionStyles extends TestBase {
 
                     }
                 });
-        addComponent(b);
+        add(b);
     }
 
     @Override

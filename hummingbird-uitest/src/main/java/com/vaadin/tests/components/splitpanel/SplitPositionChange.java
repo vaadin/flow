@@ -63,7 +63,7 @@ public class SplitPositionChange extends AbstractTestUIWithLog {
                                         event.getSplitPositionUnit()));
                     }
                 });
-        addComponent(splitPanel);
+        add(splitPanel);
     }
 
     private Panel buildPanel(String caption) {

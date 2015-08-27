@@ -41,7 +41,7 @@ public class MenuBarNavigation extends AbstractTestUIWithLog
         edit.addItem("Paste", this);
         mb.addItem("Help", this);
 
-        addComponent(mb);
+        add(mb);
     }
 
     @Override

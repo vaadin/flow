@@ -24,7 +24,7 @@ public class CloseSubWindow extends AbstractTestUIWithLog {
             }
         });
 
-        addComponent(openWindowButton);
+        add(openWindowButton);
     }
 
     private Window createClosableSubWindow(final String title) {

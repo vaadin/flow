@@ -34,8 +34,8 @@ public class RichTextAreaRelativeHeightResize extends AbstractTestUI {
         richTextArea.setSizeFull();
         layout.addComponent(richTextArea);
 
-        addComponent(layout);
-        addComponent(new Button("Increase height", new Button.ClickListener() {
+        add(layout);
+        add(new Button("Increase height", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 layout.setHeight("400px");

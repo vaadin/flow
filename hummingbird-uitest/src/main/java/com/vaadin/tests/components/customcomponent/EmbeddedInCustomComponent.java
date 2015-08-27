@@ -17,7 +17,7 @@ public class EmbeddedInCustomComponent extends TestBase {
         hl.addComponent(wrap("An uncached image",
                 "ok.png?random=" + new Date().getTime()));
         hl.addComponent(wrap("A cached image", "cancel.png"));
-        addComponent(hl);
+        add(hl);
     }
 
     private CustomComponent wrap(String caption, String themeImage) {

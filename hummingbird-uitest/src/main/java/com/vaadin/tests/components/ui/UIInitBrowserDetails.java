@@ -20,7 +20,7 @@ public class UIInitBrowserDetails extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         r = request;
         l.setWidth("100%");
-        addComponent(l);
+        add(l);
 
         Page p = getPage();
         WebBrowser wb = p.getWebBrowser();

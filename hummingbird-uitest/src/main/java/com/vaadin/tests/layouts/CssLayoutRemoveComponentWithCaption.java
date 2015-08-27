@@ -18,7 +18,7 @@ public class CssLayoutRemoveComponentWithCaption extends TestBase {
             @Override
             public void buttonClick(ClickEvent event) {
                 layout.removeComponent(tf);
-                addComponent(new TextField("new field"));
+                add(new TextField("new field"));
 
             }
 
@@ -26,7 +26,7 @@ public class CssLayoutRemoveComponentWithCaption extends TestBase {
         layout.addComponent(tf);
         layout.addComponent(b);
 
-        addComponent(layout);
+        add(layout);
     }
 
     @Override

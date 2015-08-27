@@ -33,8 +33,8 @@ public class TabsheetShouldUpdateHeight extends TestBase {
                     }
                 });
 
-        addComponent(tabsOuter);
-        addComponent(btnSwitch);
+        add(tabsOuter);
+        add(btnSwitch);
     }
 
     private VerticalLayout getLayoutWithComponents(final int inAmount,

@@ -19,8 +19,8 @@ public class TestUploadFilename extends TestBase {
 
         Upload upload = new Upload("Upload a file", receiver);
 
-        addComponent(upload);
-        addComponent(result);
+        add(upload);
+        add(result);
 
         upload.addFinishedListener(new Upload.FinishedListener() {
             @Override

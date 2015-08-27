@@ -37,7 +37,7 @@ public class MoveComponentsFromGridLayoutToInnerLayout extends AbstractTestUI {
         vl.addComponent(new Label("I'm inside the inner layout"));
         gl.addComponent(vl);
 
-        addComponent(gl);
+        add(gl);
 
         Button b = new Button("Repaint inner layout",
                 new Button.ClickListener() {
@@ -48,7 +48,7 @@ public class MoveComponentsFromGridLayoutToInnerLayout extends AbstractTestUI {
                     }
                 });
 
-        addComponent(b);
+        add(b);
     }
 
     @Override

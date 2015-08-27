@@ -37,7 +37,7 @@ public class TreeIconUpdate extends TestBase {
             }
         }
 
-        addComponent(tree);
+        add(tree);
 
         Button button = new Button("Change icon", new ClickListener() {
 
@@ -47,7 +47,7 @@ public class TreeIconUpdate extends TestBase {
             }
         });
 
-        addComponent(button);
+        add(button);
         button = new Button("Change caption", new ClickListener() {
 
             @Override
@@ -56,7 +56,7 @@ public class TreeIconUpdate extends TestBase {
             }
         });
 
-        addComponent(button);
+        add(button);
 
     }
 

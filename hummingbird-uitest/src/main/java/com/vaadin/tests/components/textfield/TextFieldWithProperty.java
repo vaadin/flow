@@ -19,7 +19,7 @@ public class TextFieldWithProperty extends TestBase {
 
         tf1.setPropertyDataSource(op);
 
-        addComponent(tf1);
+        add(tf1);
 
         Button b = new Button(
                 "Set BAR to underlaying property (should propagate to UI)");
@@ -29,7 +29,7 @@ public class TextFieldWithProperty extends TestBase {
                 op.setValue("BAR");
             }
         });
-        addComponent(b);
+        add(b);
 
     }
 

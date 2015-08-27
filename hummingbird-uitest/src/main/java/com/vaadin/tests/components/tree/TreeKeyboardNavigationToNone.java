@@ -35,7 +35,7 @@ public class TreeKeyboardNavigationToNone extends AbstractTestUI {
         tree.addItem("b");
 
         tree.select("a");
-        addComponents(tree);
+        add(tree);
         tree.focus();
 
         Button button = new Button("Select last item",
@@ -47,7 +47,7 @@ public class TreeKeyboardNavigationToNone extends AbstractTestUI {
                         tree.focus();
                     }
                 });
-        addComponent(button);
+        add(button);
     }
 
     @Override

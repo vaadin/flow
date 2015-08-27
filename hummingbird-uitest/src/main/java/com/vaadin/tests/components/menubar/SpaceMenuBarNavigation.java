@@ -38,7 +38,7 @@ public class SpaceMenuBarNavigation extends AbstractTestUI implements Command {
 
         item.addItem("subitem", this);
 
-        addComponent(menuBar);
+        add(menuBar);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class SpaceMenuBarNavigation extends AbstractTestUI implements Command {
     public void menuSelected(MenuItem selectedItem) {
         Label label = new Label("action result");
         label.addStyleName("action-result");
-        addComponent(label);
+        add(label);
     }
 
 }

@@ -43,7 +43,7 @@ public class AbsoluteLayoutCorrectPositioningOfHiddenField extends TestBase {
         action.setId("actionButton");
         abs.addComponent(action, "top: 70px;left: 150px;");
 
-        addComponent(abs);
+        add(abs);
     }
 
     @Override

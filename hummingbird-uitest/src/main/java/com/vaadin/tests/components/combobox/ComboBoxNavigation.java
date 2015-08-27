@@ -24,7 +24,7 @@ public class ComboBoxNavigation extends TestBase {
         }
 
         cb.setFilteringMode(FilteringMode.CONTAINS);
-        addComponent(cb);
+        add(cb);
 
     }
 

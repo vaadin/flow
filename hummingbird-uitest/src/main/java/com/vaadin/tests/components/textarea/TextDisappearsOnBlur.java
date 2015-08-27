@@ -8,7 +8,7 @@ public class TextDisappearsOnBlur extends TestBase {
     @Override
     protected void setup() {
         TextArea ta = new TextArea();
-        addComponent(ta);
+        add(ta);
 
         // All three are required for the bug to manifest
         ta.setMaxLength(50);

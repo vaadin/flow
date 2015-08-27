@@ -25,15 +25,15 @@ public class GridLayoutCaptionAlignment extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(createLayout(Alignment.BOTTOM_CENTER));
-        addComponent(createLayout(Alignment.BOTTOM_LEFT));
-        addComponent(createLayout(Alignment.BOTTOM_RIGHT));
-        addComponent(createLayout(Alignment.MIDDLE_CENTER));
-        addComponent(createLayout(Alignment.MIDDLE_LEFT));
-        addComponent(createLayout(Alignment.MIDDLE_RIGHT));
-        addComponent(createLayout(Alignment.TOP_CENTER));
-        addComponent(createLayout(Alignment.TOP_LEFT));
-        addComponent(createLayout(Alignment.TOP_RIGHT));
+        add(createLayout(Alignment.BOTTOM_CENTER));
+        add(createLayout(Alignment.BOTTOM_LEFT));
+        add(createLayout(Alignment.BOTTOM_RIGHT));
+        add(createLayout(Alignment.MIDDLE_CENTER));
+        add(createLayout(Alignment.MIDDLE_LEFT));
+        add(createLayout(Alignment.MIDDLE_RIGHT));
+        add(createLayout(Alignment.TOP_CENTER));
+        add(createLayout(Alignment.TOP_LEFT));
+        add(createLayout(Alignment.TOP_RIGHT));
     }
 
     private GridLayout createLayout(Alignment align) {

@@ -42,7 +42,7 @@ public class TabSpaceNotScroll extends AbstractTestUI {
             tabSheet.addTab(c, caption);
         }
 
-        addComponent(tabSheet);
+        add(tabSheet);
 
         Label dontShowThis = new Label("Page scroll. This is bad.");
 
@@ -51,7 +51,7 @@ public class TabSpaceNotScroll extends AbstractTestUI {
         panel.addComponent(dontShowThis);
         panel.setComponentAlignment(dontShowThis, Alignment.MIDDLE_CENTER);
 
-        addComponent(panel);
+        add(panel);
     }
 
     @Override

@@ -10,6 +10,6 @@ public class ComboBoxEmptyItemsKeyboardNavigation extends AbstractTestUI {
         ComboBox comboBox = new ComboBox();
         comboBox.addItems("foo", "bar");
 
-        addComponent(comboBox);
+        add(comboBox);
     }
 }

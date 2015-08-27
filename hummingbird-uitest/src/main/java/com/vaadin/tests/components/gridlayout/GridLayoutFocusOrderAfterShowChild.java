@@ -79,9 +79,9 @@ public class GridLayoutFocusOrderAfterShowChild extends AbstractTestUIWithLog {
         t5.setVisible(false);
         gl.addComponent(t5);
 
-        addComponent(gl);
+        add(gl);
 
-        addComponent(new Button("Show first", new Button.ClickListener() {
+        add(new Button("Show first", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 t1.setVisible(true);
@@ -89,7 +89,7 @@ public class GridLayoutFocusOrderAfterShowChild extends AbstractTestUIWithLog {
             }
         }));
 
-        addComponent(new Button("Show third", new Button.ClickListener() {
+        add(new Button("Show third", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 t3.setVisible(true);
@@ -97,7 +97,7 @@ public class GridLayoutFocusOrderAfterShowChild extends AbstractTestUIWithLog {
             }
         }));
 
-        addComponent(new Button("Show fifth", new Button.ClickListener() {
+        add(new Button("Show fifth", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 t5.setVisible(true);

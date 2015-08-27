@@ -55,7 +55,7 @@ public class SystemMessages extends AbstractTestUI {
             }
         });
         localeSelect.setValue(new Locale("fi", "FI"));
-        addComponent(localeSelect);
+        add(localeSelect);
         final MyButton failButton = new MyButton();
         failButton.setCaption("Generate server side error");
         failButton.addClickListener(new ClickListener() {
@@ -66,7 +66,7 @@ public class SystemMessages extends AbstractTestUI {
                 failButton.markAsDirty();
             }
         });
-        addComponent(failButton);
+        add(failButton);
 
     }
 

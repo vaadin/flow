@@ -22,14 +22,14 @@ public class UIScrolling extends AbstractTestUI {
             scrollTop = (int) e.getNumber("scrollTop");
             scrollLeft = (int) e.getNumber("scrollLeft");
         });
-        addComponent(new Button("scroll to 1000px", new Button.ClickListener() {
+        add(new Button("scroll to 1000px", new Button.ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
                 UI.getCurrent().setScrollTop(1000);
             }
         }));
-        addComponent(new Button(
+        add(new Button(
                 "This button is halfway down. Click to report scroll position.",
                 new Button.ClickListener() {
                     @Override

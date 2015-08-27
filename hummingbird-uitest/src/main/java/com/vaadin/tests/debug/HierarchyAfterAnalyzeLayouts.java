@@ -24,7 +24,7 @@ public class HierarchyAfterAnalyzeLayouts extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new Label("This is a label"));
+        add(new Label("This is a label"));
     }
 
     @Override

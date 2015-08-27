@@ -61,10 +61,10 @@ public class ValidationOfRequiredEmptyFields extends AbstractTestUI {
         requiredErrorInput.setValue("");
         stringLengthValidatorInput.setValue(false);
 
-        addComponent(requiredInput);
-        addComponent(requiredErrorInput);
-        addComponent(stringLengthValidatorInput);
-        addComponent(tf);
+        add(requiredInput);
+        add(requiredErrorInput);
+        add(stringLengthValidatorInput);
+        add(tf);
     }
 
     @Override

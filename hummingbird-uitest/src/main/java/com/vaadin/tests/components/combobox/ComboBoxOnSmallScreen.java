@@ -33,7 +33,7 @@ public class ComboBoxOnSmallScreen extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponents(createComboBox());
+        add(createComboBox());
     }
 
     @Override

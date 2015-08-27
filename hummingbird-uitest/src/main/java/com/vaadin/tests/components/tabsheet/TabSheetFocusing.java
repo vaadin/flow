@@ -30,8 +30,8 @@ public class TabSheetFocusing extends AbstractTestUI {
         final TabSheet ts = new TabSheet();
         ts.setWidth("400px");
         ts.setHeight("200px");
-        addComponent(ts);
-        addComponent(new Button("Add tab", new ClickListener() {
+        add(ts);
+        add(new Button("Add tab", new ClickListener() {
             int i = 0;
 
             @Override

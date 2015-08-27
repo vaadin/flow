@@ -12,7 +12,7 @@ public class ListSelectAllowNewItem extends TestBase {
         ListSelect select = new ListSelect("Select",
                 Arrays.asList("Option 1", "Option 2"));
         select.setNewItemsAllowed(true);
-        addComponent(select);
+        add(select);
     }
 
     @Override

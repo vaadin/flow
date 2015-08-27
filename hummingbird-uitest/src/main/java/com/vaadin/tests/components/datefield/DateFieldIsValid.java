@@ -40,7 +40,7 @@ public class DateFieldIsValid extends AbstractTestUIWithLog {
                         + ", is valid: " + dateField.isValid());
             }
         });
-        addComponent(dateField);
+        add(dateField);
         addButton("check dateField", new ClickListener() {
 
             @Override

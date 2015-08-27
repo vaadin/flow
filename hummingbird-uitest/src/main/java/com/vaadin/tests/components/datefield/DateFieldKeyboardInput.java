@@ -35,12 +35,12 @@ public class DateFieldKeyboardInput extends AbstractTestUI {
         final PopupDateField dateField = new PopupDateField("Select date",
                 c.getTime());
         dateField.setDateFormat("dd.MM.yyyy");
-        addComponent(dateField);
+        add(dateField);
         dateField.addValueChangeListener(new ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
-                addComponent(new Label("Date has been changed."));
+                add(new Label("Date has been changed."));
             }
         });
     }

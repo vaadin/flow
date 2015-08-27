@@ -24,7 +24,7 @@ public class PopupDateFieldPopup extends TestBase {
         pdf.setLocale(Locale.US);
         pdf.setValue(cal.getTime());
         pdf.setResolution(Resolution.SECOND);
-        addComponent(pdf);
+        add(pdf);
     }
 
     @Override

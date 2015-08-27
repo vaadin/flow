@@ -21,7 +21,7 @@ public class CssLayoutCustomCss extends TestBase implements ClickListener {
         setTheme("tests-tickets");
         layout = new CssLayout();
         layout.setSizeFull();
-        addComponent(layout);
+        add(layout);
 
         Button red, green;
         layout.addComponent(red = createButton("color:red"));

@@ -23,7 +23,7 @@ public class MenuItemStyleRemoved extends AbstractTestUI {
         second.addItem("second sub-item 2", null, null);
         second.addItem("second sub-item 2", null, null);
 
-        addComponent(menuBar);
+        add(menuBar);
         addButton("Add styles", new Button.ClickListener() {
             @Override
             public void buttonClick(Button.ClickEvent event) {

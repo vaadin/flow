@@ -22,14 +22,14 @@ public class TextFieldFocusAndBlurListeners extends TestBase {
 
     @Override
     public void setup() {
-        addComponent(log);
+        add(log);
         TextField tf1 = new TextField("TextField 1",
                 "Has focus and blur listeners");
         tf1.setWidth("300px");
         tf1.addFocusListener(this::focus);
         tf1.addBlurListener(this::blur);
 
-        addComponent(tf1);
+        add(tf1);
 
         TextField tf2 = new TextField("TextField 2",
                 "Has focus, blur and valuechange listeners");
@@ -38,21 +38,21 @@ public class TextFieldFocusAndBlurListeners extends TestBase {
         tf2.addFocusListener(this::focus);
         tf2.addBlurListener(this::blur);
 
-        addComponent(tf2);
+        add(tf2);
 
         TextField tf3 = new TextField("TextField 3",
                 "Has non-immediate valuechange listener");
         tf3.setWidth("300px");
         tf3.addValueChangeListener(this::valueChange);
 
-        addComponent(tf3);
+        add(tf3);
 
         TextField tf4 = new TextField("TextField 4",
                 "Has immediate valuechange listener");
         tf4.setWidth("300px");
         tf4.addValueChangeListener(this::valueChange);
 
-        addComponent(tf4);
+        add(tf4);
     }
 
     public void focus(FocusEvent event) {

@@ -47,11 +47,11 @@ public class ExpandCollapseTree extends TestBase {
             }
         });
 
-        addComponent(tree);
+        add(tree);
 
         valueLbl.setWidth("300px");
         valueLbl.setHeight("600px");
-        addComponent(valueLbl);
+        add(valueLbl);
 
     }
 

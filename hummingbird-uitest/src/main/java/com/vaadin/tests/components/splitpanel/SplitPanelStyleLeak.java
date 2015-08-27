@@ -28,7 +28,7 @@ public class SplitPanelStyleLeak extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         CssLayout wrap = new CssLayout();
-        addComponent(wrap);
+        add(wrap);
 
         wrap.addComponent(getSplit(true, null));
         wrap.addComponent(getSplit(false, null));

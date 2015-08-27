@@ -11,7 +11,7 @@ public class DisabledUploadButton extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         final Upload upload = new Upload();
 
-        addComponent(upload);
+        add(upload);
 
         addButton("Set readonly", new Button.ClickListener() {
             @Override

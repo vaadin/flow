@@ -28,9 +28,9 @@ public class WebBrowserSize extends AbstractTestUI {
             }
         });
 
-        addComponent(update);
-        addComponent(screenSizeLabel);
-        addComponent(browserSizeLabel);
+        add(update);
+        add(screenSizeLabel);
+        add(browserSizeLabel);
 
     }
 

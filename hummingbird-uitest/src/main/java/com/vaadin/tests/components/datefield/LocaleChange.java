@@ -67,8 +67,8 @@ public class LocaleChange extends AbstractTestUI {
             }
         });
 
-        addComponent(df);
-        addComponent(button);
+        add(df);
+        add(button);
     }
 
     @Override

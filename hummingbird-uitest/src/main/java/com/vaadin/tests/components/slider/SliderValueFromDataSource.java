@@ -38,13 +38,13 @@ public class SliderValueFromDataSource extends AbstractTestUI {
         Slider slider = new Slider(0, 20);
         slider.setWidth("200px");
         slider.setPropertyDataSource(item.getItemProperty("doubleValue"));
-        addComponent(slider);
+        add(slider);
 
         ProgressBar pi = new ProgressBar();
         setPollInterval(60 * 1000);
         pi.setWidth("200px");
         pi.setPropertyDataSource(item.getItemProperty("floatValue"));
-        addComponent(pi);
+        add(pi);
     }
 
     @Override

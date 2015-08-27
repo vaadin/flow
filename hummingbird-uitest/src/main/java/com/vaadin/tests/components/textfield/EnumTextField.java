@@ -44,7 +44,7 @@ public class EnumTextField extends AbstractTestUIWithLog {
         });
 
         tf.setPropertyDataSource(new ObjectProperty<Enum>(MyEnum.FIRST_VALUE));
-        addComponent(tf);
+        add(tf);
     }
 
 }

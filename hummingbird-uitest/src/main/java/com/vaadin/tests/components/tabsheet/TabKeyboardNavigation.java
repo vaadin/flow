@@ -72,15 +72,15 @@ public class TabKeyboardNavigation extends AbstractTestUI {
             }
         });
 
-        addComponent(addTab);
-        addComponent(focus);
+        add(addTab);
+        add(focus);
 
         TextField tf = new TextField();
-        addComponent(tf);
-        addComponent(focusblur);
-        addComponent(ts);
+        add(tf);
+        add(focusblur);
+        add(ts);
         tf = new TextField();
-        addComponent(tf);
+        add(tf);
     }
 
     @Override

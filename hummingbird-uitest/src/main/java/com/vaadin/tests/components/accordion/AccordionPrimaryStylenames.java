@@ -14,9 +14,9 @@ public class AccordionPrimaryStylenames extends TestBase {
         acc.addComponent(new NativeButton("First tab"));
         acc.addComponent(new NativeButton("Second tab"));
         acc.setPrimaryStyleName("my-accordion");
-        addComponent(acc);
+        add(acc);
 
-        addComponent(
+        add(
                 new Button("Set primary stylename", new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

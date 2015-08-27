@@ -32,7 +32,7 @@ public class VerticalScrollbarPosition extends TestBase {
         tf2.setWidth("1000px");
         tf2.setHeight("50px");
         tabsheet.addTab(tf2);
-        addComponent(tabsheet);
+        add(tabsheet);
     }
 
 }

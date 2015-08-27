@@ -28,7 +28,7 @@ public class PopupDateFieldLocaleTest extends AbstractTestUI {
         pdf.setValue(cal.getTime());
 
         pdf.setResolution(Resolution.SECOND);
-        addComponent(pdf);
+        add(pdf);
 
         pdf.addValueChangeListener(new ValueChangeListener() {
             @Override

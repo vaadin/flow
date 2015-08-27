@@ -50,7 +50,7 @@ public class PushConfiguration extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new PushConfigurator(this));
+        add(new PushConfigurator(this));
         spacer();
 
         /*
@@ -58,9 +58,9 @@ public class PushConfiguration extends AbstractTestUI {
          */
         Label lbl = new Label(counter);
         lbl.setCaption("Client counter (click 'increment' to update):");
-        addComponent(lbl);
+        add(lbl);
 
-        addComponent(new Button("Increment", new Button.ClickListener() {
+        add(new Button("Increment", new Button.ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
@@ -75,9 +75,9 @@ public class PushConfiguration extends AbstractTestUI {
          */
         lbl = new Label(counter2);
         lbl.setCaption("Server counter (updates each 1s by server thread) :");
-        addComponent(lbl);
+        add(lbl);
 
-        addComponent(new Button("Reset", new Button.ClickListener() {
+        add(new Button("Reset", new Button.ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
@@ -100,7 +100,7 @@ public class PushConfiguration extends AbstractTestUI {
     }
 
     private void spacer() {
-        addComponent(new Label("<hr/>", ContentMode.HTML));
+        add(new Label("<hr/>", ContentMode.HTML));
     }
 
     @Override

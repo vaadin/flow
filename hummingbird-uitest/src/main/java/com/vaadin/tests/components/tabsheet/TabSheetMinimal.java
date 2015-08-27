@@ -23,8 +23,8 @@ public class TabSheetMinimal extends TestBase {
 
             }
         });
-        addComponent(ts);
-        addComponent(b);
+        add(ts);
+        add(b);
     }
 
     @Override

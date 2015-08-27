@@ -41,7 +41,7 @@ public class DateRangeWithSqlDate extends AbstractTestUI {
 
         df.setValue(startDate);
 
-        addComponent(df);
+        add(df);
     }
 
     @Override

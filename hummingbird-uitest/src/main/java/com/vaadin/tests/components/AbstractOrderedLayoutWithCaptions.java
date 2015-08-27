@@ -47,7 +47,7 @@ public class AbstractOrderedLayoutWithCaptions extends AbstractTestUI {
 
         Panel containingPanel = new Panel(layout);
         containingPanel.setHeight("200px");
-        addComponent(containingPanel);
+        add(containingPanel);
     }
 
     /*

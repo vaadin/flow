@@ -9,7 +9,7 @@ public class SliderKeyboardFocus extends TestBase {
     protected void setup() {
         Slider slider = new Slider("The slider", 0, 100);
         slider.setWidth("300px");
-        addComponent(slider);
+        add(slider);
 
     }
 

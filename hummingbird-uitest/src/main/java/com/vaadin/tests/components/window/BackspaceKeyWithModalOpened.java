@@ -53,7 +53,7 @@ public class BackspaceKeyWithModalOpened extends AbstractTestUI {
             });
 
             btnNext.setId(BTN_NEXT_ID);
-            addComponent(btnNext);
+            add(btnNext);
         }
     }
 
@@ -88,7 +88,7 @@ public class BackspaceKeyWithModalOpened extends AbstractTestUI {
                     });
 
             btnOpenModal.setId(BTN_OPEN_MODAL_ID);
-            addComponent(btnOpenModal);
+            add(btnOpenModal);
         }
     }
 
@@ -97,7 +97,7 @@ public class BackspaceKeyWithModalOpened extends AbstractTestUI {
         ComponentContainer navigatorLayout = new VerticalLayout();
         navigator = new Navigator(this, navigatorLayout);
 
-        addComponent(navigatorLayout);
+        add(navigatorLayout);
 
         navigator.addView(DEFAULT_VIEW_ID, new DefaultView());
 

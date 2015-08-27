@@ -21,7 +21,7 @@ public class TabGetAndReplaceComponent extends TestBase {
         tabs.addTab(new Label("Content 3"), "Content 3", null);
         tabs.addTab(new Label("Content 4"), "Content 4", null);
         tabs.addTab(new Label("Content 5"), "Content 5", null);
-        addComponent(tabs);
+        add(tabs);
 
         Button replace2 = new Button("Replace Content 2",
                 new Button.ClickListener() {
@@ -39,7 +39,7 @@ public class TabGetAndReplaceComponent extends TestBase {
 
                     }
                 });
-        addComponent(replace2);
+        add(replace2);
     }
 
     @Override

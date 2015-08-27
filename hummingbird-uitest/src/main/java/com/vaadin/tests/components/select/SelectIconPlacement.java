@@ -24,7 +24,7 @@ public class SelectIconPlacement extends TestBase {
                     new ThemeResource("common/icons/" + icon + "?w=" + width));
             mySelect.select(bar);
             mySelect.setWidth(width);
-            addComponent(mySelect);
+            add(mySelect);
         }
 
     }

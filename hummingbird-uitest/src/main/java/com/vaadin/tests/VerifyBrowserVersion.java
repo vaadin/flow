@@ -11,11 +11,11 @@ public class VerifyBrowserVersion extends TestBase {
         WebBrowser browser = getBrowser();
         Label userAgent = new Label(browser.getBrowserApplication());
         userAgent.setId("userAgent");
-        addComponent(userAgent);
+        add(userAgent);
         Label touchDevice = new Label(
                 "Touch device? " + (browser.isTouchDevice() ? "YES" : "No"));
         touchDevice.setId("touchDevice");
-        addComponent(touchDevice);
+        add(touchDevice);
     }
 
     @Override

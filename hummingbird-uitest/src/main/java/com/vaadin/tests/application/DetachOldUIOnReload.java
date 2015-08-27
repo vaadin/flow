@@ -31,14 +31,14 @@ public class DetachOldUIOnReload extends AbstractTestUIWithLog {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new Label("This is UI " + getUIId()));
-        addComponent(new Button("Reload page", new Button.ClickListener() {
+        add(new Label("This is UI " + getUIId()));
+        add(new Button("Reload page", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 getPage().reload();
             }
         }));
-        addComponent(new Button("Read log messages from session",
+        add(new Button("Read log messages from session",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

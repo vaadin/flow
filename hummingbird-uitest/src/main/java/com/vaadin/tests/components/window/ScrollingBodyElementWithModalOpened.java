@@ -43,7 +43,7 @@ public class ScrollingBodyElementWithModalOpened extends AbstractTestUI {
 
         window.setModal(true);
 
-        addComponent(verticalLayout);
+        add(verticalLayout);
     }
 
     @Override

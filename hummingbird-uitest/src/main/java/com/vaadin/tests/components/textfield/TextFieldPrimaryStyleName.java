@@ -11,9 +11,9 @@ public class TextFieldPrimaryStyleName extends TestBase {
     protected void setup() {
         final TextField field = new TextField();
         field.setPrimaryStyleName("my-textfield");
-        addComponent(field);
+        add(field);
 
-        addComponent(new Button("Change primary style name",
+        add(new Button("Change primary style name",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

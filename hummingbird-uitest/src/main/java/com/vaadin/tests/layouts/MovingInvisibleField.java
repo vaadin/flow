@@ -40,9 +40,9 @@ public class MovingInvisibleField extends TestBase {
         layout1.addComponent(tfVisible);
         layout1.addComponent(tfHidden);
 
-        addComponent(layout1);
-        addComponent(b);
-        addComponent(layout2);
+        add(layout1);
+        add(b);
+        add(layout2);
     }
 
     @Override

@@ -38,7 +38,7 @@ public class HierarchicalContainerSorting extends TestBase {
         }
         hl.addComponent(tree2);
 
-        addComponent(hl);
+        add(hl);
     }
 
     private static void sort(IndexedContainer container) {

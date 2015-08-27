@@ -29,7 +29,7 @@ public class ConverterThatEnforcesAFormat extends AbstractTestUIWithLog {
                         + ")");
             }
         });
-        addComponent(tf);
+        add(tf);
         tf.setConvertedValue(50.0);
     }
 

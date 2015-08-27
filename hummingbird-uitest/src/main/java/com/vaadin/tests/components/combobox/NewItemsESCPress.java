@@ -12,7 +12,7 @@ public class NewItemsESCPress extends TestBase {
     protected void setup() {
         final TextArea addedItems = new TextArea("Last added items:");
         addedItems.setRows(10);
-        addComponent(addedItems);
+        add(addedItems);
 
         final ComboBox box = new ComboBox("New items are allowed");
         box.setNewItemsAllowed(true);
@@ -24,7 +24,7 @@ public class NewItemsESCPress extends TestBase {
                 box.addItem(newItemCaption);
             }
         });
-        addComponent(box);
+        add(box);
     }
 
     @Override

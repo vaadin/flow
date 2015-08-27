@@ -56,7 +56,7 @@ public class TabSelectionRevertedByServer extends AbstractTestUI {
             }
         });
 
-        addComponent(tabsheet);
+        add(tabsheet);
 
         addButton("Select Last Tab", new ClickListener() {
 

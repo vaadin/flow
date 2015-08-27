@@ -12,18 +12,18 @@ public class SetTabIndex extends TestBase {
     protected void setup() {
         final TextField field1 = new TextField("Field1 (tabindex 1)");
         field1.setTabIndex(1);
-        addComponent(field1);
+        add(field1);
 
         final TextField field3 = new TextField("Field3 (tabindex 3)");
         field3.setTabIndex(3);
-        addComponent(field3);
+        add(field3);
 
         final TextField field2 = new TextField("Field2 (tabindex 2)");
         field2.setTabIndex(2);
-        addComponent(field2);
+        add(field2);
 
         final TextField field0 = new TextField("Field2 (tabindex 0)");
-        addComponent(field0);
+        add(field0);
 
         final CheckBox readonly = new CheckBox("Readonly");
         readonly.addValueChangeListener(new Property.ValueChangeListener() {
@@ -37,7 +37,7 @@ public class SetTabIndex extends TestBase {
                 field0.setReadOnly(readonly);
             }
         });
-        addComponent(readonly);
+        add(readonly);
 
     }
 

@@ -27,7 +27,7 @@ public class TreeItemDoubleClick extends AbstractTestUIWithLog {
 
         tree.addItemClickListener(listener);
 
-        addComponent(tree);
+        add(tree);
 
     }
 

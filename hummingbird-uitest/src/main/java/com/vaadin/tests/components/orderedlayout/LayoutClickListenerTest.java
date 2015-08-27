@@ -67,7 +67,7 @@ public class LayoutClickListenerTest extends TestBase {
 
                 if (clickedComponent == null) {
                     // Not over any child component
-                    LayoutClickListenerTest.this.addComponent(
+                    LayoutClickListenerTest.this.add(
                             new Label("The click was not over any component."));
                 } else {
                     // Over a child component
@@ -77,12 +77,12 @@ public class LayoutClickListenerTest extends TestBase {
                             + event.getChildComponent().getClass()
                                     .getCanonicalName();
                     LayoutClickListenerTest.this
-                            .addComponent(new Label(message));
+                            .add(new Label(message));
                 }
             }
         });
 
-        addComponent(layout);
+        add(layout);
     }
 
     @Override

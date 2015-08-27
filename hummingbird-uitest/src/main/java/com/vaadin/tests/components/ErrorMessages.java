@@ -18,15 +18,15 @@ public class ErrorMessages extends TestBase {
         errors.add(new UserError("Error 1"));
         errors.add(new UserError("Error 2"));
         bb.setComponentError(new CompositeErrorMessage(errors));
-        addComponent(bb);
+        add(bb);
 
         TextField tf = new TextField("", "Textfield with UserError");
         tf.setComponentError(new UserError("This is a failure"));
-        addComponent(tf);
+        add(tf);
 
         ComboBox cb = new ComboBox("ComboBox with description and UserError");
         cb.setComponentError(new UserError("This is a failure"));
-        addComponent(cb);
+        add(cb);
 
     }
 

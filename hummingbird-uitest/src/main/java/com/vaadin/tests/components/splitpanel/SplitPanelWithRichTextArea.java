@@ -18,7 +18,7 @@ public class SplitPanelWithRichTextArea extends TestBase {
         sp.setFirstComponent(label);
         sp.setSecondComponent(rta);
 
-        addComponent(sp);
+        add(sp);
         sp.setSizeFull();
         getLayout().setSizeFull();
 

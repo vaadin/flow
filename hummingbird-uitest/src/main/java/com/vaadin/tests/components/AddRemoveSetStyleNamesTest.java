@@ -22,7 +22,7 @@ public class AddRemoveSetStyleNamesTest extends TestBase {
         popupDateField = new PopupDateField("PopupDateField");
         popupDateField.setRequired(true);
         popupDateField.setRequiredError("abcd");
-        addComponent(popupDateField);
+        add(popupDateField);
 
         listener = new Button.ClickListener() {
 
@@ -37,11 +37,11 @@ public class AddRemoveSetStyleNamesTest extends TestBase {
 
         button1 = new Button("Add style1", listener);
         button1.setData(style1);
-        addComponent(button1);
+        add(button1);
 
         button2 = new Button("Add style2", listener);
         button2.setData(style2);
-        addComponent(button2);
+        add(button2);
 
         button3 = new Button("Set thestyle", new Button.ClickListener() {
 
@@ -58,7 +58,7 @@ public class AddRemoveSetStyleNamesTest extends TestBase {
                 }
             }
         });
-        addComponent(button3);
+        add(button3);
     }
 
     private void setComponentsStyle(String style, boolean add, Button button) {

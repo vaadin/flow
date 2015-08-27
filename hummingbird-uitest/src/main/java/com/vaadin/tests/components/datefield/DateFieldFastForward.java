@@ -23,7 +23,7 @@ public class DateFieldFastForward extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new InlineDateField());
+        add(new InlineDateField());
     }
 
     @Override

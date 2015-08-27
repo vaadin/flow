@@ -48,7 +48,7 @@ public class SplitPanelMoveComponent extends AbstractTestUI {
 
         });
 
-        addComponent(split);
+        add(split);
     }
 
     @Override

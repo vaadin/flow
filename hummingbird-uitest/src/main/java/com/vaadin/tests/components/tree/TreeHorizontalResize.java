@@ -30,7 +30,7 @@ public class TreeHorizontalResize extends TestBase {
         Panel treePanel = new Panel(treeLayout);
         treePanel.setHeight("500px");
         treePanel.setWidth(null);
-        addComponent(treePanel);
+        add(treePanel);
 
         Tree tree = new Tree();
         tree.setContainerDataSource(getHardwareContainer());

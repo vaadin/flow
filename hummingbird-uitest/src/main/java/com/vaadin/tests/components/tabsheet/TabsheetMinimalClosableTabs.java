@@ -27,7 +27,7 @@ public class TabsheetMinimalClosableTabs extends TestBase {
             }
         }
 
-        addComponent(ts);
+        add(ts);
     }
 
     @Override

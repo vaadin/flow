@@ -12,15 +12,15 @@ public class IntegerFieldWithoutDataSource extends TestBase {
 
     @Override
     protected void setup() {
-        addComponent(log);
+        add(log);
 
         TextField tf = createIntegerTextField();
         tf.setCaption(tf.getCaption() + "(invalid allowed)");
-        addComponent(tf);
+        add(tf);
         tf = createIntegerTextField();
         tf.setInvalidAllowed(false);
         tf.setCaption(tf.getCaption() + "(invalid not allowed)");
-        addComponent(tf);
+        add(tf);
     }
 
     private TextField createIntegerTextField() {

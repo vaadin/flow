@@ -26,7 +26,7 @@ public class Wordwrap extends TestBase {
         layout.addComponent(area2);
         layout.setSpacing(true);
 
-        addComponent(layout);
+        add(layout);
 
         CheckBox onoff = new CheckBox("Wrap state for the right field");
         onoff.setValue(false);
@@ -44,7 +44,7 @@ public class Wordwrap extends TestBase {
             }
         });
 
-        addComponent(onoff);
+        add(onoff);
     }
 
     @Override

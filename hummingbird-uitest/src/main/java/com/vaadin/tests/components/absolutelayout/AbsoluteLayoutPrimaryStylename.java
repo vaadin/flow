@@ -21,9 +21,9 @@ public class AbsoluteLayoutPrimaryStylename extends TestBase {
         comp1.setHeight("50px");
         layout.addComponent(comp1);
 
-        addComponent(layout);
+        add(layout);
 
-        addComponent(new Button("Change primary stylename",
+        add(new Button("Change primary stylename",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

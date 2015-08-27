@@ -40,8 +40,8 @@ public class UISerialization extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(log);
-        addComponent(new Button("Serialize UI", new ClickListener() {
+        add(log);
+        add(new Button("Serialize UI", new ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
@@ -67,7 +67,7 @@ public class UISerialization extends AbstractTestUI {
                     log.log("Exception caught: " + e.getMessage());
                     StringWriter sw = new StringWriter();
                     e.printStackTrace(new PrintWriter(sw));
-                    addComponent(
+                    add(
                             new Label(sw.toString(), ContentMode.PREFORMATTED));
                 }
 

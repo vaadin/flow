@@ -13,15 +13,15 @@ public class IntegerDoubleFieldsWithDataSource extends TestBase {
 
     @Override
     protected void setup() {
-        addComponent(log);
+        add(log);
 
         TextField tf = createIntegerTextField();
-        addComponent(tf);
+        add(tf);
 
         tf = createIntegerTextField();
         tf.setCaption("Enter a double");
         tf.setPropertyDataSource(new ObjectProperty<Double>(2.1));
-        addComponent(tf);
+        add(tf);
     }
 
     private TextField createIntegerTextField() {

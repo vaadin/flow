@@ -48,11 +48,11 @@ public class IntegerTextFieldDataSource extends AbstractTestUI {
             }
         });
 
-        addComponent(new Label("Text field type: " + textField.getType()));
-        addComponent(
+        add(new Label("Text field type: " + textField.getType()));
+        add(
                 new Label("Text field type: " + integerProperty.getType()));
-        addComponent(textField);
-        addComponent(submitButton);
+        add(textField);
+        add(submitButton);
     }
 
     @Override

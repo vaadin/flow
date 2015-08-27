@@ -15,7 +15,7 @@ public class AddAndRemoveTabs extends TestBase {
     public void setup() {
         tabSheet = new TabSheet();
         addTab();
-        addComponent(tabSheet);
+        add(tabSheet);
 
         Button addTabBtn = new Button("Add new tab",
                 new Button.ClickListener() {
@@ -26,7 +26,7 @@ public class AddAndRemoveTabs extends TestBase {
                     }
 
                 });
-        addComponent(addTabBtn);
+        add(addTabBtn);
     }
 
     private void addTab() {

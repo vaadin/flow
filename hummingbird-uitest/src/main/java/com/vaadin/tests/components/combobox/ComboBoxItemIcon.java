@@ -32,7 +32,7 @@ public class ComboBoxItemIcon extends TestBase {
             item.getItemProperty("icon").setValue(
                     new ThemeResource("../tests-tickets/icons/se.gif"));
 
-            addComponent(cb);
+            add(cb);
         }
         {
             ComboBox cb = new ComboBox();
@@ -50,7 +50,7 @@ public class ComboBoxItemIcon extends TestBase {
                     new ThemeResource("../tests-tickets/icons/hu.gif"));
 
             cb.setValue("Hungary");
-            addComponent(cb);
+            add(cb);
         }
     }
 

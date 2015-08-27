@@ -73,9 +73,9 @@ public class WindowWaiAriaRoles extends AbstractTestUI {
                 openWindow(alertWindow);
             }
         });
-        addComponent(closeButton);
-        addComponent(regularButton);
-        addComponent(alertButton);
+        add(closeButton);
+        add(regularButton);
+        add(alertButton);
     }
 
     void openWindow(Window window) {

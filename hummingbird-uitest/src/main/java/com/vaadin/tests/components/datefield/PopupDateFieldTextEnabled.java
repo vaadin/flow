@@ -27,8 +27,8 @@ public class PopupDateFieldTextEnabled extends TestBase {
                 }
             }
         });
-        addComponent(box);
-        addComponent(field);
+        add(box);
+        add(field);
     }
 
     @Override

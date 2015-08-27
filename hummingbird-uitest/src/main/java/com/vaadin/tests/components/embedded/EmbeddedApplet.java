@@ -27,12 +27,12 @@ public class EmbeddedApplet extends TestBase {
         applet.setWidth("400px");
         applet.setHeight("300px");
         applet.setSource(new ExternalResource("/statictestfiles/applet.html"));
-        addComponent(applet);
+        add(applet);
 
-        addComponent(new Button("Remove applet", new Button.ClickListener() {
+        add(new Button("Remove applet", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                removeComponent(applet);
+                remove(applet);
             }
         }));
 

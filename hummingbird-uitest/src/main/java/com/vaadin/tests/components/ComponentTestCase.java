@@ -29,7 +29,7 @@ public abstract class ComponentTestCase<T extends AbstractComponent>
     protected final void setup() {
         // Create action layout so it appears before the components
         actionLayout = createActionLayout();
-        addComponent(actionLayout);
+        add(actionLayout);
 
         super.setup();
 

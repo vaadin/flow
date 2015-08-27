@@ -39,8 +39,8 @@ public class CustomComponentChildVisibility extends AbstractTestUI {
             }
         });
 
-        addComponent(cc);
-        addComponent(hideButton);
+        add(cc);
+        add(hideButton);
 
     }
 

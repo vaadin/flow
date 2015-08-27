@@ -31,7 +31,7 @@ public class ContrastFontColor extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         TextField field = new TextField();
-        addComponent(field);
+        add(field);
     }
 
     @Override

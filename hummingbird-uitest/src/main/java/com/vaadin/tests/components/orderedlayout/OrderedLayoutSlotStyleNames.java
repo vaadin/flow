@@ -22,7 +22,7 @@ public class OrderedLayoutSlotStyleNames extends TestBase {
         btn.addStyleName("my-second-button");
         vl.addComponent(btn);
 
-        addComponent(vl);
+        add(vl);
 
         HorizontalLayout hl = new HorizontalLayout();
 
@@ -36,7 +36,7 @@ public class OrderedLayoutSlotStyleNames extends TestBase {
         btn.addStyleName("my-second-button");
         hl.addComponent(btn);
 
-        addComponent(hl);
+        add(hl);
     }
 
     @Override

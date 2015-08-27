@@ -37,7 +37,7 @@ public class PushFromInit extends AbstractTestUIWithLog {
             throw new RuntimeException(e);
         }
         new Thread(new RunAfterInit()).start();
-        addComponent(new Button("Sync"));
+        add(new Button("Sync"));
     }
 
     class RunBeforeInitEnds implements Runnable {

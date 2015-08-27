@@ -45,11 +45,11 @@ public class JavaScriptPreloading extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(log);
+        add(log);
 
         final JsLabel c = new JsLabel("Hello World!");
         c.setId("js-component");
-        addComponent(c);
+        add(c);
     }
 
     @Override

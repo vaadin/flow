@@ -48,7 +48,7 @@ public class DisabledParentLayout extends AbstractTestUI {
         });
         content.addComponent(button);
 
-        addComponent(content);
+        add(content);
     }
 
     @Override

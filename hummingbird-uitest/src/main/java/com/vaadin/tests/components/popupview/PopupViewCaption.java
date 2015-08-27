@@ -30,7 +30,7 @@ public class PopupViewCaption extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         FormLayout layout = new FormLayout();
-        addComponent(layout);
+        add(layout);
         Label label = new Label("Label");
         PopupView popup = new PopupView("Popup short text", label);
         popup.setCaption("Popup Caption:");

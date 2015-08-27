@@ -49,8 +49,8 @@ public class PopupDateFieldInputPrompt extends AbstractTestUI {
         dateField.setInputPrompt("prompt");
         dateField.setCaption("PopupDateField");
 
-        addComponent(text);
-        addComponent(dateField);
+        add(text);
+        add(dateField);
     }
 
     @Override

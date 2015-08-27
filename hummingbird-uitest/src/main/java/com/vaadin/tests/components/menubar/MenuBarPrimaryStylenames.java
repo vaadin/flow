@@ -25,9 +25,9 @@ public class MenuBarPrimaryStylenames extends TestBase {
         MenuItem menu1 = submenu2.addItem("Menu1", null);
         menu1.addItem("Item11", null);
 
-        addComponent(mainMenu);
+        add(mainMenu);
 
-        addComponent(new Button("Change primary stylename",
+        add(new Button("Change primary stylename",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

@@ -33,7 +33,7 @@ public class FormLayoutCaptionStyles extends TestBase {
                 }));
         fl.addComponent(f2);
 
-        addComponent(fl);
+        add(fl);
 
     }
 

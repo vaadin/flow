@@ -51,8 +51,8 @@ public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
                 level2.getComponent(level2.getComponentCount() - 1), 1);
         level2.setMargin(true);
 
-        addComponent(level1);
-        addComponent(level2);
+        add(level1);
+        add(level2);
     }
 
     /**

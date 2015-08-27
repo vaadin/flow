@@ -71,9 +71,9 @@ public abstract class PushLargeData extends AbstractTestUIWithLog {
         interval.setValue(DEFAULT_DELAY_MS + "");
         duration.setValue(DEFAULT_DURATION_MS + "");
 
-        addComponent(dataSize);
-        addComponent(interval);
-        addComponent(duration);
+        add(dataSize);
+        add(interval);
+        add(duration);
 
         Button b = new Button("Start pushing");
         b.setId("startButton");
@@ -92,8 +92,8 @@ public abstract class PushLargeData extends AbstractTestUIWithLog {
                         + "ms");
             }
         });
-        addComponent(b);
-        addComponent(dataLabel);
+        add(b);
+        add(dataLabel);
     }
 
     public Label getDataLabel() {

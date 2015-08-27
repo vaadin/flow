@@ -95,11 +95,11 @@ public abstract class AbstractBasicCrud extends AbstractTestUIWithLog {
             public void valueChange(ValueChangeEvent event) {
                 AbstractForm oldForm = form;
                 form = (AbstractForm) formType.getValue();
-                replaceComponent(oldForm, form);
+                replace(oldForm, form);
             }
         });
 
-        addComponent(formType);
+        add(formType);
 
     }
 

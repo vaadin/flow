@@ -19,7 +19,7 @@ public class GridLayoutSpanExpansion extends TestBase {
                         "This is a somewhat long text that spans over a few lines."),
                 1, 0, 1, 1);
         heightSpan.setRowExpandRatio(1, 1);
-        addComponent(heightSpan);
+        add(heightSpan);
 
         GridLayout widthSpan = new GridLayout(2, 2);
         widthSpan.setHeight("100px");
@@ -33,7 +33,7 @@ public class GridLayoutSpanExpansion extends TestBase {
         widthSpan.addComponent(label1, 0, 1);
         widthSpan.addComponent(new Label("2"), 1, 1);
         widthSpan.setColumnExpandRatio(1, 1);
-        addComponent(widthSpan);
+        add(widthSpan);
 
         GridLayout multipleSpans = new GridLayout(3, 3);
         multipleSpans.setWidth("400px");
@@ -47,7 +47,7 @@ public class GridLayoutSpanExpansion extends TestBase {
         multipleSpans.setColumnExpandRatio(0, 1);
         multipleSpans.setColumnExpandRatio(1, 3);
         multipleSpans.setColumnExpandRatio(2, 2);
-        addComponent(multipleSpans);
+        add(multipleSpans);
     }
 
     private static Button makeWideButton(String caption) {

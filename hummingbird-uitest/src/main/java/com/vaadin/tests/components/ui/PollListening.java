@@ -27,7 +27,7 @@ public class PollListening extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         final Label statusLabel = new Label("Default Label");
-        addComponent(statusLabel);
+        add(statusLabel);
 
         setPollInterval(2000);
         addPollListener(new PollListener() {

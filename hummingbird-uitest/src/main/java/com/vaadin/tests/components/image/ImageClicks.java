@@ -26,7 +26,7 @@ public class ImageClicks extends TestBase {
     protected void setup() {
 
         final Label label = new Label(labelText());
-        addComponent(label);
+        add(label);
 
         final Image image = new Image();
         final MyImageSource imageSource = new MyImageSource();
@@ -45,7 +45,7 @@ public class ImageClicks extends TestBase {
             }
 
         });
-        addComponent(image);
+        add(image);
 
     }
 

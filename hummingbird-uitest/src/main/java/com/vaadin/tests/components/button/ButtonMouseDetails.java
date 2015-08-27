@@ -44,9 +44,9 @@ public class ButtonMouseDetails extends TestBase {
         getLayout().setSpacing(true);
 
         Button button = new Button("CLICK ME!", clickListener);
-        addComponent(button);
+        add(button);
 
-        addComponent(out);
+        add(out);
     }
 
     @Override

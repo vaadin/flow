@@ -55,9 +55,9 @@ public class NativeButtonIconAndText extends AbstractTestUI
         buttonTextIcon.setId(BUTTON_TEXT_ICON);
         buttonTextIconAlt.setId(BUTTON_TEXT_ICON_ALT);
 
-        addComponent(buttonText);
-        addComponent(buttonTextIcon);
-        addComponent(buttonTextIconAlt);
+        add(buttonText);
+        add(buttonTextIcon);
+        add(buttonTextIconAlt);
 
         NativeButton nativeButtonText = new NativeButton("Only text");
 
@@ -79,9 +79,9 @@ public class NativeButtonIconAndText extends AbstractTestUI
         nativeButtonTextIcon.setId(NATIVE_BUTTON_TEXT_ICON);
         nativeButtonTextIconAlt.setId(NATIVE_BUTTON_TEXT_ICON_ALT);
 
-        addComponent(nativeButtonText);
-        addComponent(nativeButtonTextIcon);
-        addComponent(nativeButtonTextIconAlt);
+        add(nativeButtonText);
+        add(nativeButtonTextIcon);
+        add(nativeButtonTextIconAlt);
     }
 
     /*

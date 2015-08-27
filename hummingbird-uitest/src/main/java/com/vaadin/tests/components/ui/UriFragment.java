@@ -15,7 +15,7 @@ public class UriFragment extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         fragmentLabel.setId("fragmentLabel");
-        addComponent(fragmentLabel);
+        add(fragmentLabel);
         updateLabel();
         getPage().addUriFragmentChangedListener(
                 new Page.UriFragmentChangedListener() {
@@ -26,9 +26,9 @@ public class UriFragment extends AbstractTestUI {
                     }
                 });
 
-        addComponent(createButton("test", "Navigate to #test", "test"));
-        addComponent(createButton("empty", "Navigate to #", ""));
-        addComponent(createButton("null", "setUriFragment(null)", null));
+        add(createButton("test", "Navigate to #test", "test"));
+        add(createButton("empty", "Navigate to #", ""));
+        add(createButton("null", "setUriFragment(null)", null));
     }
 
     private Button createButton(String id, String caption,

@@ -24,7 +24,7 @@ public class SliderUI extends AbstractTestUIWithLog {
         s4.setValue(90.0);
         s4.setStep(20);
 
-        addComponents(new Label("Default slider"), s1,
+        add(new Label("Default slider"), s1,
                 new Label("Slider set to 50"), s2,
                 new Label("Slider 40-70 with pin"), s3,
                 new Label("Slider with step 20"), s4);

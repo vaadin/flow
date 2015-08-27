@@ -38,12 +38,12 @@ public class DisabledInlineDateField extends AbstractTestUI {
         DateField df = new InlineDateField("Disabled");
         df.setValue(testDate);
         df.setEnabled(false);
-        addComponent(df);
+        add(df);
 
         df = new InlineDateField("Read-only");
         df.setValue(testDate);
         df.setReadOnly(true);
-        addComponent(df);
+        add(df);
     }
 
     @Override

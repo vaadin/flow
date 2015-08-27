@@ -28,7 +28,7 @@ public class FormLayoutErrorHover extends AbstractTestUI {
         PopupDateField fromDate = new PopupDateField("Date");
         formLayout.addComponent(fromDate);
 
-        addComponent(formLayout);
+        add(formLayout);
     }
 
     @Override

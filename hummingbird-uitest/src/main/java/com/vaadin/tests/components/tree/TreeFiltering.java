@@ -17,7 +17,7 @@ public class TreeFiltering extends TestBase {
     public void setup() {
 
         final Tree ccTree = new Tree();
-        addComponent(ccTree);
+        add(ccTree);
         final HierarchicalContainer cont = new HierarchicalContainer();
         cont.addContainerProperty("caption", String.class, "");
 
@@ -54,7 +54,7 @@ public class TreeFiltering extends TestBase {
                 ccTree.markAsDirty();
             }
         });
-        addComponent(filterType);
+        add(filterType);
 
         final Button b = new Button("Add filter 'foo'", new ClickListener() {
             @Override
@@ -63,7 +63,7 @@ public class TreeFiltering extends TestBase {
 
             }
         });
-        addComponent(b);
+        add(b);
         final Button b2 = new Button("Add filter 'Num'", new ClickListener() {
             @Override
             public void buttonClick(final ClickEvent event) {
@@ -72,7 +72,7 @@ public class TreeFiltering extends TestBase {
             }
         });
 
-        addComponent(b2);
+        add(b2);
         final Button num = new Button("Add filter '0'", new ClickListener() {
             @Override
             public void buttonClick(final ClickEvent event) {
@@ -81,7 +81,7 @@ public class TreeFiltering extends TestBase {
             }
         });
 
-        addComponent(num);
+        add(num);
         final Button num2 = new Button("Add filter '0-'", new ClickListener() {
             @Override
             public void buttonClick(final ClickEvent event) {
@@ -90,7 +90,7 @@ public class TreeFiltering extends TestBase {
             }
         });
 
-        addComponent(num2);
+        add(num2);
         final Button num3 = new Button("Add filter 'Number 4'",
                 new ClickListener() {
                     @Override
@@ -101,7 +101,7 @@ public class TreeFiltering extends TestBase {
                     }
                 });
 
-        addComponent(num3);
+        add(num3);
         final Button p1 = new Button("Set Number 3 parent to Number 0",
                 new ClickListener() {
                     @Override
@@ -110,7 +110,7 @@ public class TreeFiltering extends TestBase {
 
                     }
                 });
-        addComponent(p1);
+        add(p1);
         final Button r = new Button("Remove filters", new ClickListener() {
             @Override
             public void buttonClick(final ClickEvent event) {
@@ -118,7 +118,7 @@ public class TreeFiltering extends TestBase {
 
             }
         });
-        addComponent(r);
+        add(r);
     }
 
     @Override

@@ -49,8 +49,8 @@ public class TabSheetScrollOnTabClose extends AbstractTestUI {
             tab.setId("tab" + i);
         }
         tabSheet.setWidth(250, Unit.PIXELS);
-        addComponent(tabSheet);
-        addComponent(new Label("Close tab number"));
+        add(tabSheet);
+        add(new Label("Close tab number"));
         for (int i = 0; i < 10; i++) {
             final String tabCaption = "tab " + i;
             final Button b = new Button("" + i);
@@ -62,7 +62,7 @@ public class TabSheetScrollOnTabClose extends AbstractTestUI {
                     tabSheet.removeTab(getTab(tabSheet, tabCaption));
                 }
             });
-            addComponent(b);
+            add(b);
         }
     }
 

@@ -35,7 +35,7 @@ public class AccordionRemoveTab extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         final Accordion tabs = new Accordion();
-        addComponent(tabs);
+        add(tabs);
         tabs.setHeight(300, Unit.PIXELS);
         final VerticalLayout one = new VerticalLayout();
         one.setCaption("One");

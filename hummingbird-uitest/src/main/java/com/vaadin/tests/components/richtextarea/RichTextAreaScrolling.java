@@ -26,7 +26,7 @@ public class RichTextAreaScrolling extends TestBase {
 
         HorizontalLayout main = new HorizontalLayout();
         main.setSpacing(true);
-        addComponent(main);
+        add(main);
 
         RichTextArea first = new RichTextArea("Defined height");
         RichTextArea second = new RichTextArea("Full height");

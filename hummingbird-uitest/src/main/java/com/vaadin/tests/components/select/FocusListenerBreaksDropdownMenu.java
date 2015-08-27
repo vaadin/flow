@@ -20,7 +20,7 @@ public class FocusListenerBreaksDropdownMenu extends TestBase {
             }
         });
 
-        addComponent(comboBox);
+        add(comboBox);
     }
 
     @Override

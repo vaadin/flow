@@ -51,7 +51,7 @@ public class HorizontalLayoutFullsizeContentWithErrorMsg
         });
         hl.addComponent(toggleError);
 
-        addComponent(hl);
+        add(hl);
     }
 
     /*

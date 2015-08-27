@@ -25,8 +25,8 @@ public class ComboBoxEnablesComboBox extends TestBase {
         cb2.setEnabled(false);
         populate(cb2);
 
-        addComponent(cb);
-        addComponent(cb2);
+        add(cb);
+        add(cb2);
     }
 
     private void populate(ComboBox cb) {

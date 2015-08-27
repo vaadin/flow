@@ -48,8 +48,8 @@ public class TabSheetDisabling extends TestBase {
                 tabSheet.setEnabled(!tabSheet.isEnabled());
             }
         });
-        addComponent(tabSheet);
-        addComponent(button);
+        add(tabSheet);
+        add(button);
     }
 
     @Override

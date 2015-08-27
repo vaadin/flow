@@ -80,6 +80,6 @@ public class MarginWithExpandRatio extends AbstractTestUI {
         Panel p = new Panel(l.getClass().getSimpleName(), l);
         p.setWidth("600px");
         p.setHeight("200px");
-        addComponent(p);
+        add(p);
     }
 }

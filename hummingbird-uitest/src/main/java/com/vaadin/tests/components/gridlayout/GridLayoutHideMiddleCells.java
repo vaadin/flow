@@ -60,8 +60,8 @@ public class GridLayoutHideMiddleCells extends AbstractTestUI {
         gridLayout.setWidth("500px");
         gridLayout.setSpacing(true);
 
-        addComponent(gridLayout);
-        addComponent(gridLayout2);
+        add(gridLayout);
+        add(gridLayout2);
         mainLayout.addComponent(horLayout);
         gridLayout2.setHeight("500px");
         gridLayout2.setWidth("500px");

@@ -68,9 +68,9 @@ public class LoginFormTest extends TestBase {
             }
         });
 
-        addComponent(loginFormLayout);
-        addComponent(changeWidth);
-        addComponent(changeHeight);
+        add(loginFormLayout);
+        add(changeWidth);
+        add(changeHeight);
 
     }
 

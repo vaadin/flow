@@ -27,7 +27,7 @@ public class SliderFeedback extends AbstractTestUI {
         slider.setWidth(800, Unit.PIXELS);
         slider.setMin(0);
         slider.setMax(1e12);
-        addComponent(slider);
+        add(slider);
     }
 
     @Override

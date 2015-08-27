@@ -27,7 +27,7 @@ public class PopupViewAndFragment extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         final PopupView pw = new PopupView("Open", new Label("Oh, hi"));
-        addComponent(pw);
+        add(pw);
 
         final Button button = new Button("Open and change fragment",
                 new Button.ClickListener() {
@@ -38,7 +38,7 @@ public class PopupViewAndFragment extends AbstractTestUI {
                                 String.valueOf(System.currentTimeMillis()));
                     }
                 });
-        addComponent(button);
+        add(button);
     }
 
     @Override

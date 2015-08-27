@@ -46,7 +46,7 @@ public class NotificationStyle extends AbstractTestUI {
                         notification.show(getPage());
                     }
                 });
-        addComponent(button);
+        add(button);
         button = new Button("Show notification with p",
                 new Button.ClickListener() {
 
@@ -60,7 +60,7 @@ public class NotificationStyle extends AbstractTestUI {
                         notification.show(getPage());
                     }
                 });
-        addComponent(button);
+        add(button);
     }
 
     @Override

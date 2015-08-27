@@ -11,8 +11,8 @@ public class PopUpWidth extends TestBase {
     @Override
     protected void setup() {
 
-        addComponent(createComboBox("Do not touch this"));
-        addComponent(createComboBox(
+        add(createComboBox("Do not touch this"));
+        add(createComboBox(
                 "Browse this (check that width does not change)"));
     }
 

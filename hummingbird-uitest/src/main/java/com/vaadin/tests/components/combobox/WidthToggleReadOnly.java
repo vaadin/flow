@@ -10,11 +10,11 @@ public class WidthToggleReadOnly extends TestBase {
     @Override
     protected void setup() {
         ComboBox combo = createNewComboBoxA("Untouched combobox");
-        addComponent(combo);
+        add(combo);
 
         combo = createNewComboBoxA("Toggled combobox");
-        addComponent(combo);
-        addComponent(createReadOnlyForComboBox(combo));
+        add(combo);
+        add(createReadOnlyForComboBox(combo));
     }
 
     private ComboBox createNewComboBoxA(String caption) {
@@ -22,7 +22,7 @@ public class WidthToggleReadOnly extends TestBase {
         combo.addItem("first");
         combo.setValue("first");
 
-        addComponent(combo);
+        add(combo);
 
         return combo;
     }
@@ -30,7 +30,7 @@ public class WidthToggleReadOnly extends TestBase {
     private CheckBox createReadOnlyForComboBox(ComboBox combo) {
         CheckBox readonly = new CheckBox("Second combobox is read only",
                 new MethodProperty(combo, "readOnly"));
-        addComponent(readonly);
+        add(readonly);
         return readonly;
     }
 

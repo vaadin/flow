@@ -44,8 +44,8 @@ public class ComboBoxSetNullWhenNewItemsAllowed extends AbstractTestUI {
                 }
             }
         });
-        addComponent(comboBox);
-        addComponent(value);
+        add(comboBox);
+        add(value);
     }
 
     @Override

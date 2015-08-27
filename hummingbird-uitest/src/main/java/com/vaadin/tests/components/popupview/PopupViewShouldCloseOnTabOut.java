@@ -43,13 +43,13 @@ public class PopupViewShouldCloseOnTabOut extends TestBase {
                 return vl;
             }
         });
-        addComponent(pv);
+        add(pv);
         TextField main = new TextField();
         main.setValue("main");
-        addComponent(main);
+        add(main);
         TextField main2 = new TextField();
         main2.setValue("main2");
-        addComponent(main2);
+        add(main2);
     }
 
 }

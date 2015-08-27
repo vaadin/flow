@@ -31,7 +31,7 @@ public class VaadinSessionAttribute extends AbstractTestUI {
         getSession().setAttribute(ATTR_NAME, Integer.valueOf(42));
         getSession().setAttribute(Integer.class, Integer.valueOf(42 * 2));
 
-        addComponent(
+        add(
                 new Button("Show attribute values", new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

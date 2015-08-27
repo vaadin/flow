@@ -35,7 +35,7 @@ public class TabsheetScrolling extends TestBase {
             }
         }
 
-        addComponent(fixedSizeTabSheet);
+        add(fixedSizeTabSheet);
 
         autoWideTabSheet = new TabSheet();
         autoWideTabSheet.setHeight("200px");
@@ -59,7 +59,7 @@ public class TabsheetScrolling extends TestBase {
             }
         }
 
-        addComponent(autoWideTabSheet);
+        add(autoWideTabSheet);
 
     }
 

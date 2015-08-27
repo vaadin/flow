@@ -30,9 +30,9 @@ public class HtmlCaptionInFormLayout extends AbstractTestUI {
 
         final TextField asText = new TextField("Contains <b>HTML</b>");
 
-        addComponent(new FormLayout(asHtml, asText));
+        add(new FormLayout(asHtml, asText));
 
-        addComponent(new Button("Toggle", new Button.ClickListener() {
+        add(new Button("Toggle", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 asHtml.setCaptionAsHtml(!asHtml.isCaptionAsHtml());

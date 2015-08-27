@@ -29,14 +29,14 @@ public class ButtonTabIndex extends TestBase {
         TextField tf2 = new TextField("Tab index -1, focused initially");
         tf2.setTabIndex(-1);
         tf2.focus();
-        addComponent(tf1);
-        addComponent(tf2);
+        add(tf1);
+        add(tf2);
 
-        addComponent(createButton(1));
-        addComponent(createButton(5));
-        addComponent(createNativeButton(3));
-        addComponent(createButton(4));
-        addComponent(createNativeButton(2));
+        add(createButton(1));
+        add(createButton(5));
+        add(createNativeButton(3));
+        add(createButton(4));
+        add(createNativeButton(2));
 
     }
 

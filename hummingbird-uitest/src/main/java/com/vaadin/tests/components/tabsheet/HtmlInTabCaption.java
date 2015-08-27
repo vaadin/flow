@@ -37,7 +37,7 @@ public class HtmlInTabCaption extends AbstractTestUI {
         ts.setCaptionAsHtml(true);
         ts.addTab(new Label(), "<font color='red'>red</font>");
         ts.addTab(new Label(), "<font color='blue'>blue</font>");
-        addComponent(ts);
+        add(ts);
 
         ts = new TabSheet();
         ts.setCaption("TabSheet - <b>html</b> in tab captions");
@@ -45,14 +45,14 @@ public class HtmlInTabCaption extends AbstractTestUI {
         ts.setTabCaptionsAsHtml(true);
         ts.addTab(new Label(), "<font color='red'>red</font>");
         ts.addTab(new Label(), "<font color='blue'>blue</font>");
-        addComponent(ts);
+        add(ts);
 
         Accordion acc = new Accordion();
         acc.setCaption("Accordion - no <u>html</u> in tab captions");
         acc.setCaptionAsHtml(true);
         acc.addTab(new Label(), "<font color='red'>red</font>");
         acc.addTab(new Label(), "<font color='blue'>blue</font>");
-        addComponent(acc);
+        add(acc);
 
         acc = new Accordion();
         acc.setCaption("Accordion - <b>html</b> in tab captions");
@@ -60,7 +60,7 @@ public class HtmlInTabCaption extends AbstractTestUI {
         acc.setTabCaptionsAsHtml(true);
         acc.addTab(new Label(), "<font color='red'>red</font>");
         acc.addTab(new Label(), "<font color='blue'>blue</font>");
-        addComponent(acc);
+        add(acc);
 
     }
 

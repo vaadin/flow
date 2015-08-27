@@ -45,7 +45,7 @@ public class MiddleNotificationPosition extends AbstractTestUI {
                 notification.show(getUI().getPage());
             }
         });
-        addComponent(left);
+        add(left);
 
         Button right = new Button("Show Notification in middle right");
         right.addStyleName("show-middle-right");
@@ -59,7 +59,7 @@ public class MiddleNotificationPosition extends AbstractTestUI {
                 notification.show(getUI().getPage());
             }
         });
-        addComponent(right);
+        add(right);
 
     }
 

@@ -14,7 +14,7 @@ public class DisabledPopupView extends AbstractTestUI {
 
         popupView.setEnabled(false);
 
-        addComponent(popupView);
+        add(popupView);
     }
 
     @Override

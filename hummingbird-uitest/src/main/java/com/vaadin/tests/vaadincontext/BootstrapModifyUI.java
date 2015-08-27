@@ -79,7 +79,7 @@ public class BootstrapModifyUI extends AbstractTestUI {
                                 Boolean.TRUE);
                     }
                 });
-        addComponent(c);
+        add(c);
         c.setEnabled(
                 getSession().getAttribute(INSTALLED_ATRIBUTE_NAME) == null);
     }

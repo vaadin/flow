@@ -22,7 +22,7 @@ public class CheckboxIcon extends TestBase {
         CheckBox checkbox = new CheckBox("A checkbox");
         checkbox.setIcon(new ThemeResource("../runo/icons/32/calendar.png"));
 
-        addComponent(checkbox);
+        add(checkbox);
     }
 
 }

@@ -82,7 +82,7 @@ public class FormUsingExistingLayout extends AbstractTestUI {
                 new BeanItem<Notice>(new Notice("John", "Doe", "")));
         fieldGroup.bindMemberFields(myFormLayout);
 
-        addComponent(myFormLayout);
+        add(myFormLayout);
     }
 
     @Override

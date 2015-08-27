@@ -39,20 +39,20 @@ public class EnumSelect extends AbstractTestUIWithLog {
         for (Constant c : Constant.values()) {
             cb.addItem(c);
         }
-        addComponent(cb);
+        add(cb);
 
         NativeSelect ns = new NativeSelect();
         for (Constant c : Constant.values()) {
             ns.addItem(c);
         }
-        addComponent(ns);
+        add(ns);
 
         Tree t = new Tree();
         t.addItem(Constant.SOME_OTHER_VALUE);
         t.addItem(2500.12);
         t.setParent(2500.12, Constant.SOME_OTHER_VALUE);
 
-        addComponent(t);
+        add(t);
 
     }
 

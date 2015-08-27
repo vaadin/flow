@@ -26,10 +26,10 @@ public class MultipleDebugIds extends TestBase {
         textField2.setId("textfield2");
         button2.setId("textfield");
 
-        addComponent(textField);
-        addComponent(textField2);
-        addComponent(button);
-        addComponent(button2);
+        add(textField);
+        add(textField2);
+        add(button);
+        add(button2);
     }
 
 }

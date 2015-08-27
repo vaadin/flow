@@ -63,9 +63,9 @@ public class MenuBarsWithNesting extends AbstractTestUI {
                 label.setValue(selectedItem.getText());
             }
         };
-        addComponent(createFirstMenuBar());
-        addComponent(createSecondMenuBar());
-        addComponent(label);
+        add(createFirstMenuBar());
+        add(createSecondMenuBar());
+        add(label);
     }
 
     /*

@@ -45,7 +45,7 @@ public class NewSelectionAfterTabRemove extends AbstractTestUI {
             tab.setClosable(true);
         }
 
-        addComponent(tabSheet);
+        add(tabSheet);
     }
 
     @Override

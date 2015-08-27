@@ -33,7 +33,7 @@ public class AlignTopIconInButton extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         Button button = new Button();
         button.setIcon(new ThemeResource("../runo/icons/16/document.png"));
-        addComponent(button);
+        add(button);
         button.addStyleName("icon-align-top");
         button.setCaption("caption");
     }

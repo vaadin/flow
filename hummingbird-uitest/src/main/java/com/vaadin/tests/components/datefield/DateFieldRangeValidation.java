@@ -112,11 +112,11 @@ public class DateFieldRangeValidation extends TestBase {
                                 + getMaxValue();
                     }
                 });
-        addComponent(fromField);
-        addComponent(fromInclusive);
-        addComponent(toField);
-        addComponent(toInclusive);
-        addComponent(actualDateField);
+        add(fromField);
+        add(fromInclusive);
+        add(toField);
+        add(toInclusive);
+        add(actualDateField);
     }
 
     private PopupDateField createDateField() {

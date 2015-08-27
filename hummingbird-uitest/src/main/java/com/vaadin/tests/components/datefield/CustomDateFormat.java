@@ -26,7 +26,7 @@ public class CustomDateFormat extends TestBase {
 
         df.setValue(cal.getTime());
 
-        addComponent(df);
+        add(df);
 
     }
 

@@ -14,7 +14,7 @@ public class LabelPropertySourceValue extends AbstractTestUI {
     @Override
     public void setup(VaadinRequest request) {
         label = new Label("Hello Vaadin user");
-        addComponent(label);
+        add(label);
         Button button = new Button("Give label a new property data source...");
         button.addClickListener(new ClickListener() {
             @Override
@@ -25,7 +25,7 @@ public class LabelPropertySourceValue extends AbstractTestUI {
                 label.setPropertyDataSource(p);
             }
         });
-        addComponent(button);
+        add(button);
         button = new Button("Remove data source", new ClickListener() {
 
             @Override
@@ -33,7 +33,7 @@ public class LabelPropertySourceValue extends AbstractTestUI {
                 label.setPropertyDataSource(null);
             }
         });
-        addComponent(button);
+        add(button);
 
         button = new Button("Set label value to 'foo'", new ClickListener() {
 
@@ -42,7 +42,7 @@ public class LabelPropertySourceValue extends AbstractTestUI {
                 label.setValue("foo");
             }
         });
-        addComponent(button);
+        add(button);
     }
 
     @Override

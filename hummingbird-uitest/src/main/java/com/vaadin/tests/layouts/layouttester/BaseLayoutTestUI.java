@@ -236,7 +236,7 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         mainLayout.addComponent(l1);
         mainLayout.addComponent(l2);
-        addComponent(mainLayout);
+        add(mainLayout);
     }
 
     /*

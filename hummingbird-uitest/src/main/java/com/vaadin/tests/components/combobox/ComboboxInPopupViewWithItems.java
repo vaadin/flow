@@ -12,8 +12,8 @@ public class ComboboxInPopupViewWithItems extends TestBase {
 
     @Override
     protected void setup() {
-        addComponent(new TextArea("Some component"));
-        addComponent(new PopupView(new PopupContent()));
+        add(new TextArea("Some component"));
+        add(new PopupView(new PopupContent()));
 
     }
 

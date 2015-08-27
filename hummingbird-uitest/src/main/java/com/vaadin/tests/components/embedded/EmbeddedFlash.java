@@ -28,7 +28,7 @@ public class EmbeddedFlash extends TestBase {
         player.setParameter("movie", "someRandomValue");
         player.setParameter("allowFullScreen", "true");
 
-        addComponent(player);
+        add(player);
     }
 
 }

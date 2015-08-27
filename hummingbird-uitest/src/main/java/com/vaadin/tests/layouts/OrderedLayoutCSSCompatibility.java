@@ -24,7 +24,7 @@ public class OrderedLayoutCSSCompatibility extends TestBase {
         l.addComponent(new TextField("abc"));
         l.addComponent(new TextField("def"));
 
-        addComponent(l);
+        add(l);
 
     }
 

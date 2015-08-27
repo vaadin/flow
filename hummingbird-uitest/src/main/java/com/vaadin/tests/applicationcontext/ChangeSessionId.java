@@ -16,8 +16,8 @@ public class ChangeSessionId extends AbstractTestUIWithLog {
 
     @Override
     public void setup(VaadinRequest res) {
-        addComponent(loginButton);
-        addComponent(new Button("Show session id", new Button.ClickListener() {
+        add(loginButton);
+        add(new Button("Show session id", new Button.ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {

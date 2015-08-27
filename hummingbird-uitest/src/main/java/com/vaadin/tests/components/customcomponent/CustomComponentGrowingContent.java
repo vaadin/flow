@@ -13,7 +13,7 @@ public class CustomComponentGrowingContent extends TestBase {
         final Label label = new Label("Short content");
         label.setWidth(null);
 
-        addComponent(new CustomComponent() {
+        add(new CustomComponent() {
             {
                 GridLayout mainLayout = new GridLayout(1, 1);
                 mainLayout.addComponent(label);
@@ -23,7 +23,7 @@ public class CustomComponentGrowingContent extends TestBase {
             }
         });
 
-        addComponent(new Button("Set long content", new Button.ClickListener() {
+        add(new Button("Set long content", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 label.setValue("Longer content that should be fully visible");

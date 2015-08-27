@@ -32,9 +32,9 @@ public class CustomDeploymentConf extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         DeploymentConfiguration deploymentConfiguration = getSession()
                 .getService().getDeploymentConfiguration();
-        addComponent(new Label("Resource cache time: "
+        add(new Label("Resource cache time: "
                 + deploymentConfiguration.getResourceCacheTime()));
-        addComponent(new Label("Custom config param: " + deploymentConfiguration
+        add(new Label("Custom config param: " + deploymentConfiguration
                 .getApplicationOrSystemProperty("customParam", null)));
     }
 

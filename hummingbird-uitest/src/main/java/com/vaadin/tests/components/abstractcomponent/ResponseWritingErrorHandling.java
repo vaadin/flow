@@ -56,7 +56,7 @@ public class ResponseWritingErrorHandling extends AbstractTestUIWithLog {
         };
         button.setErrorHandler(errorHandler);
 
-        addComponent(button);
+        add(button);
     }
 
 }

@@ -35,11 +35,11 @@ public class IntegerTextFieldStandalone extends AbstractTestUI {
             }
         });
 
-        addComponent(new Label("Text field type: " + textField.getType()));
-        addComponent(new Label("Converterd text field type: "
+        add(new Label("Text field type: " + textField.getType()));
+        add(new Label("Converterd text field type: "
                 + textField.getConverter().getModelType()));
-        addComponent(textField);
-        addComponent(submitButton);
+        add(textField);
+        add(submitButton);
     }
 
     @Override

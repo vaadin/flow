@@ -48,7 +48,7 @@ public class ButtonUpdateAltText extends AbstractTestUI {
         final Button btn = new Button();
         btn.setId("button");
         btn.setIcon(ICON, "initial alt text");
-        addComponent(btn);
+        add(btn);
 
         final CheckBox enable = new CheckBox("Enable alt text", true);
         enable.addValueChangeListener(new Property.ValueChangeListener() {
@@ -62,7 +62,7 @@ public class ButtonUpdateAltText extends AbstractTestUI {
                 }
             }
         });
-        addComponent(enable);
+        add(enable);
     }
 
     /*

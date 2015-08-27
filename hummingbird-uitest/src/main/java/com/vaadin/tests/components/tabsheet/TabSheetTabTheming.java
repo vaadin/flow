@@ -13,7 +13,7 @@ public class TabSheetTabTheming extends TestBase {
         tabsheet.addTab(new Label(), "Brown fox and the fence", null);
         tabsheet.addTab(new Label(), "Something about using all the keys",
                 null);
-        addComponent(tabsheet);
+        add(tabsheet);
         setTheme("tests-tickets");
     }
 

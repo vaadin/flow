@@ -10,7 +10,7 @@ public class ComboxBoxErrorMessage extends TestBase {
         ComboBox cb = new ComboBox("");
         cb.setRequired(true);
         cb.setRequiredError("You must select something");
-        addComponent(cb);
+        add(cb);
     }
 
     @Override

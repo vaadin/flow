@@ -46,20 +46,20 @@ public class AudioTest extends TestBase {
         audio.setAltText("Can't <b>play</b> media");
         audio.setAutoplay(true);
 
-        addComponent(audio);
+        add(audio);
 
         CheckBox checkBox = new CheckBox("Show controls",
                 new MethodProperty<Boolean>(audio, "showControls"));
-        addComponent(checkBox);
+        add(checkBox);
         checkBox = new CheckBox("HtmlContentAllowed",
                 new MethodProperty<Boolean>(audio, "htmlContentAllowed"));
-        addComponent(checkBox);
+        add(checkBox);
         checkBox = new CheckBox("muted",
                 new MethodProperty<Boolean>(audio, "muted"));
-        addComponent(checkBox);
+        add(checkBox);
         checkBox = new CheckBox("autoplay",
                 new MethodProperty<Boolean>(audio, "autoplay"));
-        addComponent(checkBox);
+        add(checkBox);
 
         Button b = new Button("Change", new Button.ClickListener() {
 
@@ -68,7 +68,7 @@ public class AudioTest extends TestBase {
                 audio.setSources(s2);
             }
         });
-        addComponent(b);
+        add(b);
         getLayout().setHeight("400px");
         getLayout().setExpandRatio(b, 1);
     }

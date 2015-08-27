@@ -35,7 +35,7 @@ public class AccordionInactiveTabSize extends TestBase {
         acc.setSizeFull();
 
         sp.addComponent(acc);
-        addComponent(sp);
+        add(sp);
 
     }
 }

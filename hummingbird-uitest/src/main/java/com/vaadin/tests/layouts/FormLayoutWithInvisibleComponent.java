@@ -45,7 +45,7 @@ public class FormLayoutWithInvisibleComponent extends TestBase {
         messages.setEnabled(false);
         formLayout.addComponent(messages);
 
-        addComponent(formLayout);
+        add(formLayout);
     }
 
 }

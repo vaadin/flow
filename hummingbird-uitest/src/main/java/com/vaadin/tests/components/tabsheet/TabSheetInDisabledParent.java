@@ -34,14 +34,14 @@ public class TabSheetInDisabledParent extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         final HorizontalLayout layout = new HorizontalLayout();
-        addComponent(new Button("toggle", new ClickListener() {
+        add(new Button("toggle", new ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {
                 layout.setEnabled(!layout.isEnabled());
             }
         }));
-        addComponent(layout);
+        add(layout);
 
         TabSheet sheet = new TabSheet();
         Label label1 = new Label("Label1");

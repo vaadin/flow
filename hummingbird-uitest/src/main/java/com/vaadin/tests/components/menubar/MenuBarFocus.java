@@ -38,8 +38,8 @@ public class MenuBarFocus extends AbstractTestUI {
         final MenuBar bar = buildMenu();
         Button focusButton = buildButton(bar);
 
-        addComponent(bar);
-        addComponent(focusButton);
+        add(bar);
+        add(focusButton);
         getLayout().setSpacing(true);
     }
 
@@ -50,7 +50,7 @@ public class MenuBarFocus extends AbstractTestUI {
 
             @Override
             public void menuSelected(MenuItem selectedItem) {
-                addComponent(new Label(selectedItem.getText() + " clicked"));
+                add(new Label(selectedItem.getText() + " clicked"));
 
             }
         };

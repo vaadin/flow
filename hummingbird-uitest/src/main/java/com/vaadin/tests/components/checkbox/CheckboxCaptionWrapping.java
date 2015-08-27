@@ -32,7 +32,7 @@ public class CheckboxCaptionWrapping extends TestBase {
                 new Label("Lorem ipsum dolor sit amet, consectetur adipisicing"
                         + " elit, sed do eiusmod tempor."));
 
-        addComponent(mainLayout);
+        add(mainLayout);
 
     }
 

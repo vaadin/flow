@@ -37,9 +37,9 @@ public class DateFieldEmptyValid extends TestBase {
 
     @Override
     protected void setup() {
-        addComponent(new Label("<br/><br/>", ContentMode.HTML));
+        add(new Label("<br/><br/>", ContentMode.HTML));
         log = new Log(8);
-        addComponent(log);
+        add(log);
         df = new MyDateField();
         df.setId("DateField");
         df.setRequired(true);
@@ -54,7 +54,7 @@ public class DateFieldEmptyValid extends TestBase {
                 checkEmpty();
             }
         });
-        addComponent(df);
+        add(df);
         checkEmpty();
         Button b = new Button("Clear date");
         b.setId("clear");
@@ -66,7 +66,7 @@ public class DateFieldEmptyValid extends TestBase {
                 df.setValue(null);
             }
         });
-        addComponent(b);
+        add(b);
 
         b = new Button("Set date to 4.5.1990");
         b.setId("set4.5.1990");
@@ -79,7 +79,7 @@ public class DateFieldEmptyValid extends TestBase {
                 df.setValue(new Date(1990 - 1900, 5 - 1, 4));
             }
         });
-        addComponent(b);
+        add(b);
 
         b = new Button("Set date to 5.6.2000 using a property data source");
         b.addClickListener(new ClickListener() {
@@ -94,7 +94,7 @@ public class DateFieldEmptyValid extends TestBase {
             }
         });
         b.setId("set-by-ds");
-        addComponent(b);
+        add(b);
 
         b = new Button(
                 "Set date to 27.8.2005 by changing a new property data source from null, ds attached before value setting.");
@@ -111,7 +111,7 @@ public class DateFieldEmptyValid extends TestBase {
                 dfProp.setValue(new Date(2005 - 1900, 8 - 1, 27));
             }
         });
-        addComponent(b);
+        add(b);
 
         b = new Button("Check value");
         b.setId("check-value");
@@ -122,7 +122,7 @@ public class DateFieldEmptyValid extends TestBase {
                 checkEmpty();
             }
         });
-        addComponent(b);
+        add(b);
     }
 
     private void checkEmpty() {

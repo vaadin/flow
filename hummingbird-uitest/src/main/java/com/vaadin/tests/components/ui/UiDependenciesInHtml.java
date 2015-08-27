@@ -31,7 +31,7 @@ public class UiDependenciesInHtml extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         Label statusBox = new Label("Status box");
         statusBox.setId("statusBox");
-        addComponent(statusBox);
+        add(statusBox);
 
         getPage().getJavaScript().execute("window.reportUiDependencyStatus();");
     }

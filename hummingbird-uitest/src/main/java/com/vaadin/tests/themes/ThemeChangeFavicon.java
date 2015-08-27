@@ -27,7 +27,7 @@ public class ThemeChangeFavicon extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         for (final String theme : Arrays.asList("valo", "reindeer")) {
-            addComponent(new Button(theme, new Button.ClickListener() {
+            add(new Button(theme, new Button.ClickListener() {
                 @Override
                 public void buttonClick(ClickEvent event) {
                     setTheme(theme);

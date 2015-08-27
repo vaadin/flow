@@ -37,7 +37,7 @@ public class ComponentAlignments extends AbstractTestUI {
         verticalLayout1.setHeight("40px");
         verticalLayout1.setWidth("140px");
         verticalLayout1.setComponentAlignment(topcenter, Alignment.TOP_CENTER);
-        addComponent(verticalLayout1);
+        add(verticalLayout1);
 
         CheckBox topright = new CheckBox("Top Right");
         topright.setSizeUndefined();
@@ -45,7 +45,7 @@ public class ComponentAlignments extends AbstractTestUI {
         verticalLayout2.setHeight("40px");
         verticalLayout2.setWidth("140px");
         verticalLayout2.setComponentAlignment(topright, Alignment.TOP_RIGHT);
-        addComponent(verticalLayout2);
+        add(verticalLayout2);
 
     }
 

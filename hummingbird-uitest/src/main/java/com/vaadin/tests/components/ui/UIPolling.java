@@ -72,7 +72,7 @@ public class UIPolling extends AbstractTestUIWithLog {
                 }
             }
         });
-        addComponent(pollingInterval);
+        add(pollingInterval);
 
     }
 

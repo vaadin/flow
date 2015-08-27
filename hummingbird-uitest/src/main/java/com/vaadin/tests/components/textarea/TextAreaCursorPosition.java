@@ -18,11 +18,11 @@ public class TextAreaCursorPosition extends TestBase {
                 "Test of calculation of cursor position of TextArea");
         TextArea textArea = new TextArea();
         addListener(textArea);
-        addComponent(label);
-        addComponent(textArea);
-        addComponent(cursorPosition);
+        add(label);
+        add(textArea);
+        add(cursorPosition);
         cursorPosition.setValue("?");
-        addComponent(new Button("Force position update"));
+        add(new Button("Force position update"));
     }
 
     public void addListener(AbstractField newField) {

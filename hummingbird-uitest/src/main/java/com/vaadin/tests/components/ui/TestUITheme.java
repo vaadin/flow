@@ -12,7 +12,7 @@ public class TestUITheme extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         Label label = new Label("A green label");
         label.setStyleName("green");
-        addComponent(label);
+        add(label);
     }
 
     @Override

@@ -35,7 +35,7 @@ public class FormLayoutInVerticalLayout extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         CssLayout container = new CssLayout();
-        addComponent(container);
+        add(container);
 
         FormLayout formLayout = new FormLayout();
 

@@ -40,7 +40,7 @@ public class TreeItemClickListening extends AbstractTestUIWithLog {
             }
         });
 
-        addComponent(tree);
+        add(tree);
     }
 
     @Override

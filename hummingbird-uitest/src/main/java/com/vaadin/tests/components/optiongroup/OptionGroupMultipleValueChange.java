@@ -25,11 +25,11 @@ public class OptionGroupMultipleValueChange extends TestBase {
         og.addItem(
                 "Clicking on the text might cause an extra valuechange event");
         og.addItem("Second option, same thing");
-        addComponent(og);
+        add(og);
 
         final Label events = new Label("", ContentMode.PREFORMATTED);
         events.setWidth(null);
-        addComponent(events);
+        add(events);
 
         og.addValueChangeListener(new Property.ValueChangeListener() {
 

@@ -43,7 +43,7 @@ public class HorizontalLayoutAndCaretPosition extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         final HorizontalLayout root = new HorizontalLayout();
         root.setSizeFull();
-        addComponent(root);
+        add(root);
         root.addComponent(new TextField());
 
         Label l = new Label();

@@ -29,7 +29,7 @@ public class DisabledButtons extends TestBase {
         hl.addComponent(createButtons(true));
         hl.addComponent(createButtons(false));
 
-        addComponent(hl);
+        add(hl);
 
     }
 

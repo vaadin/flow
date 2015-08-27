@@ -32,8 +32,8 @@ public class ThreadMemoryLeaksTest extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         label = new Label(String.format("%d workers", workers));
-        addComponent(label);
-        addComponent(new Button("Add worker", new Button.ClickListener() {
+        add(label);
+        add(new Button("Add worker", new Button.ClickListener() {
             @Override
             public void buttonClick(Button.ClickEvent event) {
                 new Worker();

@@ -39,10 +39,10 @@ public class CriticalNotifications extends AbstractTestUI {
                 .getSystemMessages(getLocale(), request);
 
         includeDetails = new CheckBox("Include details");
-        addComponent(includeDetails);
+        add(includeDetails);
 
         Button sessionExpired = new Button("Session expired");
-        addComponent(sessionExpired);
+        add(sessionExpired);
         sessionExpired.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
@@ -56,7 +56,7 @@ public class CriticalNotifications extends AbstractTestUI {
         });
 
         Button authenticationError = new Button("Authentication error");
-        addComponent(authenticationError);
+        add(authenticationError);
         authenticationError.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
@@ -70,7 +70,7 @@ public class CriticalNotifications extends AbstractTestUI {
         });
 
         Button communicationError = new Button("Communication error");
-        addComponent(communicationError);
+        add(communicationError);
         communicationError.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
@@ -84,7 +84,7 @@ public class CriticalNotifications extends AbstractTestUI {
         });
 
         Button internalError = new Button("Internal error");
-        addComponent(internalError);
+        add(internalError);
         internalError.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
@@ -98,7 +98,7 @@ public class CriticalNotifications extends AbstractTestUI {
         });
 
         Button cookiesDisabled = new Button("Cookies disabled");
-        addComponent(cookiesDisabled);
+        add(cookiesDisabled);
         cookiesDisabled.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
@@ -111,7 +111,7 @@ public class CriticalNotifications extends AbstractTestUI {
             }
         });
         Button custom = new Button("Custom");
-        addComponent(custom);
+        add(custom);
         custom.addClickListener(new ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {

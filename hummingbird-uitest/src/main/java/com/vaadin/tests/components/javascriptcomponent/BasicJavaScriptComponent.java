@@ -166,21 +166,21 @@ public class BasicJavaScriptComponent extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(log);
+        add(log);
 
         final ExampleWidget c = new ExampleWidget();
         c.setCaption("Component caption");
-        addComponent(c);
+        add(c);
 
         Button removeButton = new Button("Remove component",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
-                        removeComponent(c);
+                        remove(c);
                     }
                 });
         removeButton.setId("RemoveButton");
-        addComponent(removeButton);
+        add(removeButton);
     }
 
     @Override

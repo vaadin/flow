@@ -23,9 +23,9 @@ public abstract class AbstractComponentDataBindingTest extends TestBase
 
     @Override
     protected void setup() {
-        addComponent(log);
+        add(log);
         localeSelect = createLocaleSelect();
-        addComponent(localeSelect);
+        add(localeSelect);
 
         // Causes fields to be created
         localeSelect.setValue(Locale.US);
@@ -56,7 +56,7 @@ public abstract class AbstractComponentDataBindingTest extends TestBase
     protected void updateLocale(Locale locale) {
         VaadinSession.getCurrent().setLocale(locale);
         for (Component c : fields) {
-            removeComponent(c);
+            remove(c);
         }
         fields.clear();
         createFields();
@@ -67,8 +67,8 @@ public abstract class AbstractComponentDataBindingTest extends TestBase
     private Set<Component> fields = new HashSet<Component>();
 
     @Override
-    protected void addComponent(Component c) {
-        super.addComponent(c);
+    protected void add(Component c) {
+        super.add(c);
         if (c instanceof AbstractField) {
             configureField((AbstractField<?>) c);
             if (c != localeSelect) {

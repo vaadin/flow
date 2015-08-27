@@ -12,13 +12,13 @@ public class DateFieldPrimaryStyleNames extends TestBase {
     protected void setup() {
         final DateField df = new DateField();
         df.setPrimaryStyleName("my-datefield");
-        addComponent(df);
+        add(df);
 
         final InlineDateField idf = new InlineDateField();
         idf.setPrimaryStyleName("my-inline-datefield");
-        addComponent(idf);
+        add(idf);
 
-        addComponent(
+        add(
                 new Button("Set primary stylename", new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {

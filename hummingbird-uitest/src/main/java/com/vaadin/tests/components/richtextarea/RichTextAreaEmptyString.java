@@ -35,9 +35,9 @@ public class RichTextAreaEmptyString extends TestBase {
             }
         });
 
-        addComponent(area);
-        addComponent(b);
-        addComponent(l);
+        add(area);
+        add(b);
+        add(l);
     }
 
 }

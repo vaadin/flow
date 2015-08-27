@@ -37,7 +37,7 @@ public class ComboBoxSelectingWithNewItemsAllowed extends ComboBoxSelecting {
                 label.setValue(String.valueOf(comboBox.getItemIds().size()));
             }
         });
-        addComponent(label);
+        add(label);
     }
 
     @Override

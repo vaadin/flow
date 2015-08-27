@@ -29,7 +29,7 @@ public class SliderResize extends AbstractTestUI {
         final VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(true);
         layout.setWidth("500px");
-        addComponent(layout);
+        add(layout);
 
         Slider slider = new Slider();
         slider.setId("horizontal");

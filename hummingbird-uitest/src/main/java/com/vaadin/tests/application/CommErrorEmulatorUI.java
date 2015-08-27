@@ -79,10 +79,10 @@ public class CommErrorEmulatorUI extends AbstractTestUIWithLog {
             log("Using XHR");
         }
         getLayout().setSpacing(true);
-        addComponent(createConfigPanel());
-        addComponent(createServerConfigPanel());
+        add(createConfigPanel());
+        add(createServerConfigPanel());
 
-        addComponent(new Button("Say hello", new ClickListener() {
+        add(new Button("Say hello", new ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {

@@ -49,7 +49,7 @@ public class TreeWithIcons extends TestBase {
         p.setSizeUndefined();
         p.setContent(hlay);
 
-        addComponent(p);
+        add(p);
     }
 
     @Override

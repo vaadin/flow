@@ -51,7 +51,7 @@ public class PublishedFileHandlerCaching extends AbstractTestUI {
      */
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new CachingJavaScriptComponent());
+        add(new CachingJavaScriptComponent());
     }
 
     /*

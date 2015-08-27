@@ -48,8 +48,8 @@ public class CheckBoxRevertValueChange extends AbstractTestUIWithLog {
                     }
                 });
 
-        addComponent(alwaysUnchecked);
-        addComponent(alwaysChecked);
+        add(alwaysUnchecked);
+        add(alwaysChecked);
     }
 
     @Override

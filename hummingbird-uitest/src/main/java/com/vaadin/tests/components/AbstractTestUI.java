@@ -76,12 +76,11 @@ public abstract class AbstractTestUI extends UI {
     /**
      * This method is inherited from the super class, but it should generally
      * not be used. If you want to just add components to your test, use e.g.
-     * {@link #addComponent(Component)} instead to add the component to the
-     * layout used by this UI. If you don't want to use the top-level layout
-     * used by this class, you instead inherit directly from UI.
+     * {@link #add(Component)} instead to add the component to the layout used
+     * by this UI. If you don't want to use the top-level layout used by this
+     * class, you instead inherit directly from UI.
      *
-     * @deprecated Use {@link #addComponent(Component)} or inherit from UI
-     *             instead.
+     * @deprecated Use {@link #add(Component)} or inherit from UI instead.
      */
     @Override
     @Deprecated
@@ -98,27 +97,26 @@ public abstract class AbstractTestUI extends UI {
 
     protected abstract void setup(VaadinRequest request);
 
-    public void addComponent(Component c) {
-        getLayout().addComponent(c);
-    }
-
-    public void addComponents(Component... c) {
+    @Deprecated
+    public void add(Component... c) {
         getLayout().addComponents(c);
     }
 
-    public void removeComponent(Component c) {
+    @Deprecated
+    public void remove(Component c) {
         getLayout().removeComponent(c);
     }
 
-    public void replaceComponent(Component oldComponent,
-            Component newComponent) {
+    @Deprecated
+    public void replace(Component oldComponent, Component newComponent) {
         getLayout().replaceComponent(oldComponent, newComponent);
     }
 
+    @Deprecated
     protected void addButton(String caption, Button.ClickListener listener) {
         Button button = new Button(caption);
         button.addClickListener(listener);
-        addComponent(button);
+        add(button);
     }
 
     protected String getTestDescription() {

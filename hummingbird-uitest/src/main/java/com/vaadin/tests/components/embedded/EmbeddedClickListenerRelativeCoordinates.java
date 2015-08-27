@@ -25,9 +25,9 @@ public class EmbeddedClickListenerRelativeCoordinates extends TestBase {
                 yLabel.setValue("" + event.getRelativeY());
             }
         });
-        addComponent(e);
-        addComponent(xLabel);
-        addComponent(yLabel);
+        add(e);
+        add(xLabel);
+        add(yLabel);
     }
 
     @Override

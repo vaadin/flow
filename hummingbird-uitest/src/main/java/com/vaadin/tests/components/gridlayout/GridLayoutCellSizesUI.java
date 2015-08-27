@@ -38,7 +38,7 @@ public class GridLayoutCellSizesUI extends AbstractTestUI {
         grid.setMargin(true);
         grid.setSizeUndefined();
 
-        addComponent(grid);
+        add(grid);
     }
 
     @Override

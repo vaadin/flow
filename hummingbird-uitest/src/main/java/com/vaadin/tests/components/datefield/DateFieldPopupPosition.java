@@ -31,7 +31,7 @@ public abstract class DateFieldPopupPosition extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         HorizontalLayout layout = new HorizontalLayout();
-        addComponent(layout);
+        add(layout);
         Label gap = new Label();
         gap.setWidth(250, Unit.PIXELS);
         layout.addComponent(gap);

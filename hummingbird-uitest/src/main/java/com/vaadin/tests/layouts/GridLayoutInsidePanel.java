@@ -34,7 +34,7 @@ public class GridLayoutInsidePanel extends TestBase {
             p.setSizeUndefined();
 
             pl.addComponent(gl);
-            addComponent(p);
+            add(p);
         }
         {
             GridLayout gl = new GridLayout(1, 1);
@@ -47,7 +47,7 @@ public class GridLayoutInsidePanel extends TestBase {
             p.setSizeUndefined();
             gl.setSizeUndefined();
 
-            addComponent(p);
+            add(p);
         }
     }
 

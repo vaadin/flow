@@ -48,7 +48,7 @@ public class ComboboxMenuBarAutoopen extends AbstractTestUI {
         MenuBar menubar = getMenubar();
         layout.addComponent(menubar);
 
-        addComponent(layout);
+        add(layout);
     }
 
     @Override

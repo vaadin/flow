@@ -26,8 +26,8 @@ public class DateFieldDayResolutionOffset extends AbstractTestUI {
         final SimpleDateFormat dateformat = getDateFormat(timezone);
         final DateField dateField = getDateField(timezone, dateformat);
 
-        addComponent(dateValue);
-        addComponent(dateField);
+        add(dateValue);
+        add(dateField);
 
         dateField.addValueChangeListener(new Property.ValueChangeListener() {
             @Override

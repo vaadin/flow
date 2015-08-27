@@ -39,7 +39,7 @@ public class GridSpanEmptyColumns extends AbstractTestUI {
         gridLayout.addComponent(bigCell, 0, 0, 1, 0); // spans first two columns
         gridLayout.addComponent(smallCell, 2, 0, 2, 0); // last column only
 
-        addComponent(gridLayout);
+        add(gridLayout);
     }
 
     @Override

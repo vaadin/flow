@@ -29,7 +29,7 @@ public class UnknownComponentConnector extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         ComponentWithoutConnector component = new ComponentWithoutConnector();
         component.setId("no-connector-component");
-        addComponent(component);
+        add(component);
     }
 
     @Override

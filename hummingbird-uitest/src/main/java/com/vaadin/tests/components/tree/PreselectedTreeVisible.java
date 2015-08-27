@@ -19,7 +19,7 @@ public class PreselectedTreeVisible extends TestBase {
 
         // Removing this line causes the tree to show normally in Firefox
         tree.select(itemId1);
-        addComponent(tree);
+        add(tree);
 
     }
 

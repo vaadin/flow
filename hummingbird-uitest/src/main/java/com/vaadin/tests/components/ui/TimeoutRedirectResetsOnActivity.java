@@ -54,11 +54,11 @@ public class TimeoutRedirectResetsOnActivity extends AbstractTestUI {
         });
         button.setId("reset");
 
-        addComponent(button);
+        add(button);
 
-        addComponent(startedLabel);
-        addComponent(originalLabel);
-        addComponent(expiresLabel);
+        add(startedLabel);
+        add(originalLabel);
+        add(expiresLabel);
     }
 
     private long getExpireTime() {

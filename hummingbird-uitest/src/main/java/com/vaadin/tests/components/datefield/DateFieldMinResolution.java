@@ -27,7 +27,7 @@ public class DateFieldMinResolution extends TestBase {
         df.setDateFormat(dformat.toPattern());
         df.setValue(cal.getTime());
 
-        addComponent(df);
+        add(df);
 
         final Label lbl = new Label(dformat.format(cal.getTime()));
         lbl.setCaption("Selected date");
@@ -44,8 +44,8 @@ public class DateFieldMinResolution extends TestBase {
             }
         });
 
-        addComponent(idf);
-        addComponent(lbl);
+        add(idf);
+        add(lbl);
     }
 
     @Override

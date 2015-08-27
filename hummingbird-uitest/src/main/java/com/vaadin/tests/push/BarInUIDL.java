@@ -38,7 +38,7 @@ public class BarInUIDL extends AbstractTestUI {
         addButton("Click Me", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
-                addComponent(new Label("Thank you for clicking | bar"));
+                add(new Label("Thank you for clicking | bar"));
             }
         });
 

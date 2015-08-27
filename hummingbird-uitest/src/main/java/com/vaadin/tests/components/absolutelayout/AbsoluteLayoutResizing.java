@@ -29,7 +29,7 @@ public class AbsoluteLayoutResizing extends TestBase {
         vertPanel.setSizeFull();
         vertPanel.setFirstComponent(horizPanel);
 
-        addComponent(vertPanel);
+        add(vertPanel);
 
     }
 

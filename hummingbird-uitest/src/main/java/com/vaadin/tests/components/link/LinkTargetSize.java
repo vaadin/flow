@@ -25,7 +25,7 @@ public class LinkTargetSize extends TestBase {
         l.setTargetWidth(300);
         l.setTargetHeight(300);
         l.setTargetBorder(BorderStyle.NONE);
-        addComponent(l);
+        add(l);
     }
 
 }

@@ -49,7 +49,7 @@ public class SliderUpdateFromValueChange extends AbstractTestUI {
         });
         slider.setWidth(200, Unit.PIXELS);
 
-        addComponent(slider);
+        add(slider);
     }
 
     @Override

@@ -19,7 +19,7 @@ public class DatePopupStyleName extends TestBase {
         df.setRequired(true);
         df.setComponentError(new UserError("abc"));
         df.addStyleName("popup-style");
-        addComponent(df);
+        add(df);
     }
 
     @Override

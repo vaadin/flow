@@ -23,7 +23,7 @@ public class ScrollCursor extends TestBase {
                 + "ffffffffffffffffffff\n"
                 + "sdfdsfdsfsdfsdfsd  xxxxxxxxxxxxxxxx\n" + "sdgfsd\n" + "dsf\n"
                 + "ds\n" + "fds\n" + "fds\nfs");
-        addComponent(textArea);
+        add(textArea);
         Button button = new Button("Scroll");
         button.addClickListener(new ClickListener() {
 
@@ -68,11 +68,11 @@ public class ScrollCursor extends TestBase {
             }
         });
 
-        addComponent(button);
-        addComponent(wrap);
-        addComponent(toBegin);
-        addComponent(toMiddle);
-        addComponent(toEnd);
+        add(button);
+        add(wrap);
+        add(toBegin);
+        add(toMiddle);
+        add(toEnd);
     }
 
     @Override

@@ -45,7 +45,7 @@ public class BottomComponentScrollsUp extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         Button b = new Button("Open window");
-        addComponent(b);
+        add(b);
         b.addClickListener(new ClickListener() {
 
             @Override

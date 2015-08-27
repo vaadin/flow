@@ -25,7 +25,7 @@ public class DisabledDateFieldPopup extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         DateField field = new DateField();
         field.setEnabled(false);
-        addComponent(field);
+        add(field);
     }
 
     @Override

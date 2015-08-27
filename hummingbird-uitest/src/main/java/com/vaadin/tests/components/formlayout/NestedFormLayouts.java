@@ -58,7 +58,7 @@ public class NestedFormLayouts extends AbstractTestUI {
         inner4.addComponent(new Label("Test2"));
         outer.addComponent(inner4);
 
-        addComponent(outer);
+        add(outer);
 
         final CheckBox spacingCheckBox = new CheckBox("Spacings", false);
         spacingCheckBox.setId("spacings");
@@ -68,7 +68,7 @@ public class NestedFormLayouts extends AbstractTestUI {
                 setLayoutSpacing(spacingCheckBox.getValue());
             }
         });
-        addComponent(spacingCheckBox);
+        add(spacingCheckBox);
 
         final CheckBox marginCheckBox = new CheckBox("Margins", false);
         marginCheckBox.setId("margins");
@@ -78,7 +78,7 @@ public class NestedFormLayouts extends AbstractTestUI {
                 setLayoutMargin(marginCheckBox.getValue());
             }
         });
-        addComponent(marginCheckBox);
+        add(marginCheckBox);
 
         setLayoutSpacing(false);
         setLayoutMargin(false);

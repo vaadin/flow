@@ -32,7 +32,7 @@ public class ComboPushTiming extends TestBase {
 
         final ComboBox cb = new ComboBox("Combobox", list);
         cb.setInputPrompt("Enter text");
-        addComponent(cb);
+        add(cb);
 
         final ObjectProperty<String> log = new ObjectProperty<String>("");
 
@@ -56,13 +56,13 @@ public class ComboPushTiming extends TestBase {
         });
 
         TextField field = new TextField("Some textfield");
-        addComponent(field);
+        add(field);
 
         Label output = new Label(log);
         output.setCaption("Events:");
 
         output.setContentMode(ContentMode.HTML);
-        addComponent(output);
+        add(output);
         setPollInterval(3000);
     }
 

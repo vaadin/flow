@@ -55,16 +55,16 @@ public class ProgressBarTest extends AbstractTestUI {
         updatedFromBackround = new Label();
         updatedFromBackround.setCaption("Updated from background thread");
         updateLabel();
-        addComponent(updatedFromBackround);
+        add(updatedFromBackround);
 
-        addComponent(new Button("Use ProgressBar", new Button.ClickListener() {
+        add(new Button("Use ProgressBar", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 useComponent(new ProgressBar());
             }
         }));
 
-        addComponent(new Button("Stop background thread",
+        add(new Button("Stop background thread",
                 new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
@@ -77,10 +77,10 @@ public class ProgressBarTest extends AbstractTestUI {
 
     private void useComponent(ProgressBar progressBar) {
         if (this.progressBar != null) {
-            removeComponent(this.progressBar);
+            remove(this.progressBar);
         }
         this.progressBar = progressBar;
-        addComponent(progressBar);
+        add(progressBar);
 
         counter = 0;
         updateLabel();

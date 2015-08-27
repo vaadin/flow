@@ -25,8 +25,8 @@ public class TabSheetDiscardsMovedComponents extends TestBase {
         addTestComponent(textField);
         addTestComponent(new Button("Button"));
 
-        addComponent(tabSheet);
-        addComponent(grid);
+        add(tabSheet);
+        add(grid);
     }
 
     private void addTestComponent(final Component component) {

@@ -10,7 +10,7 @@ public class AccordionTabStylenames extends TestBase {
     @Override
     protected void setup() {
         Accordion acc = new Accordion();
-        addComponent(acc);
+        add(acc);
 
         for (int tabIndex = 0; tabIndex < 5; tabIndex++) {
             Tab tab = acc.addTab(new Label("Tab " + tabIndex));

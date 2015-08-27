@@ -57,7 +57,7 @@ public class TableQueryWithNonUniqueFirstPrimaryKey extends AbstractTestUI {
                     }
                 }
             });
-            addComponent(myCombo);
+            add(myCombo);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

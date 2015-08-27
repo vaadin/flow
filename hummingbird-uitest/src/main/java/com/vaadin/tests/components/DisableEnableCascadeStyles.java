@@ -50,7 +50,7 @@ public class DisableEnableCascadeStyles extends TestBase {
         outerPanel.setContent(innerTabsheet);
         innerTabsheet.addTab(layout, "Tab containing layout");
 
-        addComponent(outerPanel);
+        add(outerPanel);
 
         enableDisablePanelButton = new Button("Disable panel",
                 new ClickListener() {
@@ -111,10 +111,10 @@ public class DisableEnableCascadeStyles extends TestBase {
                         }
                     }
                 });
-        addComponent(enableDisablePanelButton);
-        addComponent(enableDisableTabSheetButton);
-        addComponent(enableDisableLayoutButton);
-        addComponent(enableDisableComponentsButton);
+        add(enableDisablePanelButton);
+        add(enableDisableTabSheetButton);
+        add(enableDisableLayoutButton);
+        add(enableDisableComponentsButton);
     }
 
     protected void enableDisable(Component target, Button button) {

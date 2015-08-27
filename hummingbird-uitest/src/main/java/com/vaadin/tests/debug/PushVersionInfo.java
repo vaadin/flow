@@ -35,7 +35,7 @@ public class PushVersionInfo extends AbstractTestUI {
             getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
             Label label = new Label(Version.getRawVersion());
             label.addStyleName("atmosphere-version");
-            addComponent(label);
+            add(label);
         }
     }
 

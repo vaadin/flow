@@ -27,7 +27,7 @@ public class DateFieldClose extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         final DateField df = new DateField();
         df.setId(DATEFIELD_ID);
-        addComponent(df);
+        add(df);
     }
 
     @Override

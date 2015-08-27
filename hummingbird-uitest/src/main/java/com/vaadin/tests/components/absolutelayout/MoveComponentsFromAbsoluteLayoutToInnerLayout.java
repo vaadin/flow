@@ -33,7 +33,7 @@ public class MoveComponentsFromAbsoluteLayoutToInnerLayout extends TestBase {
         vl = new VerticalLayout();
         al.addComponent(vl, "top: 100px");
 
-        addComponent(al);
+        add(al);
 
         Button b = new Button("Repaint inner layout",
                 new Button.ClickListener() {
@@ -44,7 +44,7 @@ public class MoveComponentsFromAbsoluteLayoutToInnerLayout extends TestBase {
                     }
                 });
 
-        addComponent(b);
+        add(b);
     }
 
     @Override

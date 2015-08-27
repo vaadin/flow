@@ -18,7 +18,7 @@ public class HiddenAndDisabledMenus extends TestBase {
         submenu.addItem("Sub item 3 - visible", null);
         submenu.addItem("Sub item 4 - hidden", null).setVisible(false);
 
-        addComponent(mb);
+        add(mb);
     }
 
     @Override

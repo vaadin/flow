@@ -39,7 +39,7 @@ public class UIAccessExceptionHandling extends AbstractTestUIWithLog
     protected void setup(VaadinRequest request) {
         getSession().setErrorHandler(this);
 
-        addComponent(new Button("Throw RuntimeException on UI.access",
+        add(new Button("Throw RuntimeException on UI.access",
                 new Button.ClickListener() {
 
                     @Override
@@ -58,7 +58,7 @@ public class UIAccessExceptionHandling extends AbstractTestUIWithLog
                     }
                 }));
 
-        addComponent(new Button("Throw RuntimeException on Session.access",
+        add(new Button("Throw RuntimeException on Session.access",
                 new Button.ClickListener() {
 
                     @Override
@@ -81,7 +81,7 @@ public class UIAccessExceptionHandling extends AbstractTestUIWithLog
                     }
                 }));
 
-        addComponent(
+        add(
                 new Button("Throw RuntimeException after removing instances",
                         new Button.ClickListener() {
 
@@ -112,7 +112,7 @@ public class UIAccessExceptionHandling extends AbstractTestUIWithLog
                             }
                         }));
 
-        addComponent(new Button("Clear", new Button.ClickListener() {
+        add(new Button("Clear", new Button.ClickListener() {
 
             @Override
             public void buttonClick(ClickEvent event) {

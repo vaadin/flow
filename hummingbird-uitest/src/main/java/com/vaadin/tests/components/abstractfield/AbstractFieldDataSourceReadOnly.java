@@ -39,8 +39,8 @@ public class AbstractFieldDataSourceReadOnly extends TestBase {
         TextField input = new TextField("Field");
         input.setPropertyDataSource(stateHolder.getTextField());
 
-        addComponent(button);
-        addComponent(input);
+        add(button);
+        add(input);
     }
 
     @Override

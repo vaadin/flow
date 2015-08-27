@@ -32,7 +32,7 @@ public class VerifyJreVersion extends AbstractTestUI {
         Label jreVersionLabel = new Label(jreVersion);
         jreVersionLabel.setId("jreVersionLabel");
 
-        addComponent(jreVersionLabel);
+        add(jreVersionLabel);
     }
 
     @Override

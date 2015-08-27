@@ -44,10 +44,10 @@ public class ComboBoxInvalidNullSelection extends TestBase {
                 log.log("Value is now: " + combo.getValue());
             }
         });
-        addComponent(log);
-        addComponent(b);
-        addComponent(combo);
-        addComponent(new Button("Dummy for TestBench"));
+        add(log);
+        add(b);
+        add(combo);
+        add(new Button("Dummy for TestBench"));
     }
 
     private void createDataSources() {

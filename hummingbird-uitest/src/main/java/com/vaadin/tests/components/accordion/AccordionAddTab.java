@@ -37,7 +37,7 @@ public class AccordionAddTab extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {
         final Accordion tabs = new Accordion();
-        addComponent(tabs);
+        add(tabs);
         tabs.setHeight(500, Unit.PIXELS);
         Button remove = new Button("Remove 'First'");
         final Tab me = tabs.addTab(addTab("First"));
@@ -50,7 +50,7 @@ public class AccordionAddTab extends AbstractTestUI {
                 tabs.setSelectedTab(tab);
             }
         });
-        addComponent(remove);
+        add(remove);
     }
 
     private Component addTab(String tag) {

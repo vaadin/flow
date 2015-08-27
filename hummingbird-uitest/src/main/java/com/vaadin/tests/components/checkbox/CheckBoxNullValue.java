@@ -17,17 +17,17 @@ public class CheckBoxNullValue extends TestBase {
 
         final CheckBox checkbox = new CheckBox("A checkbox");
         checkbox.setValue(null);
-        addComponent(checkbox);
+        add(checkbox);
 
         final CheckBox requiredCheckbox = new CheckBox("A required checkbox");
         requiredCheckbox.setRequired(true);
         requiredCheckbox.setValue(null);
-        addComponent(requiredCheckbox);
+        add(requiredCheckbox);
 
         final Label valueLabel = new Label("");
 
         final Button button = new Button("Validate");
-        addComponent(button);
+        add(button);
         button.addClickListener(new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
@@ -50,7 +50,7 @@ public class CheckBoxNullValue extends TestBase {
                         + requiredCheckbox.getValue());
             }
         });
-        addComponent(valueLabel);
+        add(valueLabel);
     }
 
     @Override

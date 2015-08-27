@@ -53,7 +53,7 @@ public class UploadNoSelection extends AbstractTestUIWithLog
         u.setId(UPLOAD_ID);
         u.setSizeUndefined();
 
-        addComponent(u);
+        add(u);
 
         u.addFinishedListener(new Upload.FinishedListener() {
             @Override

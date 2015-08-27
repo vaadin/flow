@@ -59,7 +59,7 @@ public class BasicPush extends AbstractTestUI {
         Label lbl = new Label(counter);
         lbl.setCaption("Client counter (click 'increment' to update):");
         lbl.setId(CLIENT_COUNTER_ID);
-        addComponent(lbl);
+        add(lbl);
 
         Button incrementButton = new Button("Increment",
                 new Button.ClickListener() {
@@ -70,7 +70,7 @@ public class BasicPush extends AbstractTestUI {
                     }
                 });
         incrementButton.setId(INCREMENT_BUTTON_ID);
-        addComponent(incrementButton);
+        add(incrementButton);
 
         spacer();
 
@@ -80,7 +80,7 @@ public class BasicPush extends AbstractTestUI {
         lbl = new Label(counter2);
         lbl.setCaption("Server counter (updates each 3s by server thread) :");
         lbl.setId(SERVER_COUNTER_ID);
-        addComponent(lbl);
+        add(lbl);
 
         Button startTimer = new Button("Start timer",
                 new Button.ClickListener() {
@@ -108,7 +108,7 @@ public class BasicPush extends AbstractTestUI {
                     }
                 });
         startTimer.setId(START_TIMER_ID);
-        addComponent(startTimer);
+        add(startTimer);
 
         Button stopTimer = new Button("Stop timer", new Button.ClickListener() {
             @Override
@@ -120,7 +120,7 @@ public class BasicPush extends AbstractTestUI {
             }
         });
         stopTimer.setId(STOP_TIMER_ID);
-        addComponent(stopTimer);
+        add(stopTimer);
     }
 
     @Override
@@ -137,7 +137,7 @@ public class BasicPush extends AbstractTestUI {
     }
 
     private void spacer() {
-        addComponent(new Label("<hr/>", ContentMode.HTML));
+        add(new Label("<hr/>", ContentMode.HTML));
     }
 
     @Override

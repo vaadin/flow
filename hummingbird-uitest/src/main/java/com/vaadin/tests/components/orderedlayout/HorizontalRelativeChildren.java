@@ -40,7 +40,7 @@ public class HorizontalRelativeChildren extends TestBase {
         hl.addComponent(areaRelativeTop);
         hl.setComponentAlignment(areaRelativeTop, Alignment.TOP_LEFT);
 
-        addComponent(hl);
+        add(hl);
     }
 
     @Override

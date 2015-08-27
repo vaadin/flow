@@ -17,7 +17,7 @@ public class BrowserFrameIsVisible extends TestBase {
     protected void setup() {
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        addComponent(buttonLayout);
+        add(buttonLayout);
 
         Button page1 = new Button("Hello World");
         buttonLayout.addComponent(page1);
@@ -38,7 +38,7 @@ public class BrowserFrameIsVisible extends TestBase {
                 "initial.txt");
         textResource.setMIMEType("text/plain");
         browser.setSource(textResource);
-        addComponent(browser);
+        add(browser);
 
         page1.addClickListener(new Button.ClickListener() {
 

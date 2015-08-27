@@ -46,8 +46,8 @@ public class ReadOnlyOptionGroup extends AbstractTestUI {
                 });
         readOnlyCheckbox.setValue(Boolean.TRUE);
 
-        addComponent(optionGroup);
-        addComponent(readOnlyCheckbox);
+        add(optionGroup);
+        add(readOnlyCheckbox);
     }
 
     @Override

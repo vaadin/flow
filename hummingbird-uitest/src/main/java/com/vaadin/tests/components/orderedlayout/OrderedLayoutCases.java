@@ -371,9 +371,9 @@ public class OrderedLayoutCases extends AbstractTestUI {
 
         caseBar.setSpacing(true);
 
-        addComponent(caseBar);
-        addComponent(sizeBar);
-        addComponent(currentLayout);
+        add(caseBar);
+        add(sizeBar);
+        add(currentLayout);
 
         getLayout().setSpacing(true);
         getContent().setSizeFull();

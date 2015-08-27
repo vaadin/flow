@@ -16,7 +16,7 @@ public class ButtonErrorMessage extends TestBase {
                 throw new NullPointerException();
             }
         });
-        addComponent(b);
+        add(b);
     }
 
     @Override

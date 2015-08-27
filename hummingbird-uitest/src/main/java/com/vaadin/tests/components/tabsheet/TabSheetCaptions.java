@@ -62,8 +62,8 @@ public class TabSheetCaptions extends TestBase {
             }
         });
 
-        addComponent(tabSheet);
-        addComponent(button);
-        addComponent(button2);
+        add(tabSheet);
+        add(button);
+        add(button2);
     }
 }

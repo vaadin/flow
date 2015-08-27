@@ -33,7 +33,7 @@ public class RequiredTextField extends AbstractTestUI {
     protected void setup(VaadinRequest request) {
         final TextField field = new TextField();
 
-        addComponent(field);
+        add(field);
 
         Button button = new Button("Set/unset required", new ClickListener() {
 
@@ -42,7 +42,7 @@ public class RequiredTextField extends AbstractTestUI {
                 field.setRequired(!field.isRequired());
             }
         });
-        addComponent(button);
+        add(button);
     }
 
     @Override

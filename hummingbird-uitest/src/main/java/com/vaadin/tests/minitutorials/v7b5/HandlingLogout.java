@@ -26,7 +26,7 @@ public class HandlingLogout extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
-        addComponent(new Button("Logout", new Button.ClickListener() {
+        add(new Button("Logout", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 logout();

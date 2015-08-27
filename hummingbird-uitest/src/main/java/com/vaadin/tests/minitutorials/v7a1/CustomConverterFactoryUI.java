@@ -12,7 +12,7 @@ public class CustomConverterFactoryUI extends AbstractTestUI {
         TextField tf = new TextField("This is my double field");
 
         tf.setConverter(Double.class);
-        addComponent(tf);
+        add(tf);
 
         // As we do not set the locale explicitly for the field we set the value
         // after the field has been attached so it uses the application locale

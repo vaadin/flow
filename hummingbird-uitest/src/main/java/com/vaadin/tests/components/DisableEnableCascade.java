@@ -28,7 +28,7 @@ public class DisableEnableCascade extends TestBase {
         outerPanel.setContent(innerTabsheet);
         innerTabsheet.addTab(button, "Tab containing button");
 
-        addComponent(outerPanel);
+        add(outerPanel);
 
         enableDisablePanelButton = new Button("Disable panel",
                 new ClickListener() {
@@ -61,9 +61,9 @@ public class DisableEnableCascade extends TestBase {
                     }
                 });
 
-        addComponent(enableDisablePanelButton);
-        addComponent(enableDisableTabSheetButton);
-        addComponent(enableDisableButtonButton);
+        add(enableDisablePanelButton);
+        add(enableDisableTabSheetButton);
+        add(enableDisableButtonButton);
     }
 
     protected void enableDisable(Component target, Button button) {

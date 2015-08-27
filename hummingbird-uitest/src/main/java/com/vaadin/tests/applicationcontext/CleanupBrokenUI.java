@@ -32,7 +32,7 @@ public class CleanupBrokenUI extends AbstractTestUIWithLog {
     @Override
     protected void setup(VaadinRequest request) {
         logUIs();
-        addComponent(new Label("Label with broken detach") {
+        add(new Label("Label with broken detach") {
             @Override
             public void detach() {
                 throw new IllegalStateException(
@@ -40,7 +40,7 @@ public class CleanupBrokenUI extends AbstractTestUIWithLog {
             }
         });
 
-        addComponent(new Button("Ping", new Button.ClickListener() {
+        add(new Button("Ping", new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {
                 log("pong");

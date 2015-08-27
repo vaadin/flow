@@ -23,7 +23,7 @@ public class AbsoluteLayoutWrapperStyles extends TestBase {
         btn.addStyleName("my-second-button");
         layout.addComponent(btn, "top:50px;");
 
-        addComponent(layout);
+        add(layout);
     }
 
     @Override

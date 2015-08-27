@@ -29,7 +29,7 @@ public class ModalWindowFocus extends AbstractTestUI {
 
         Button button = new Button("Open windows");
         button.setId("firstButton");
-        addComponent(button);
+        add(button);
         button.addClickListener(new Button.ClickListener() {
             @Override
             public void buttonClick(ClickEvent event) {

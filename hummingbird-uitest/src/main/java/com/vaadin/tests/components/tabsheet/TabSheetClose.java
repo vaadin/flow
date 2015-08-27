@@ -47,7 +47,7 @@ public class TabSheetClose extends AbstractTestUI {
         CssLayout layout = new CssLayout();
         layout.addComponent(tabsheet);
         layout.setWidth("150px");
-        addComponent(layout);
+        add(layout);
     }
 
     /*

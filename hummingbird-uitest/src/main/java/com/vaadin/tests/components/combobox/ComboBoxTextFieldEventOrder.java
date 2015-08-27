@@ -23,8 +23,8 @@ public class ComboBoxTextFieldEventOrder extends TestBase {
                                                                             // select.requestRepaint();
             }
         });
-        addComponent(textField);
-        addComponent(select);
+        add(textField);
+        add(select);
     }
 
     @Override

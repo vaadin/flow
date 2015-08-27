@@ -72,7 +72,7 @@ public class TextAreaSizeResetted extends AbstractTestUI {
             }
         });
 
-        addComponent(layout);
+        add(layout);
 
         textArea.getElement().setStyle("resize", "both");
         layout.addComponent(textArea);

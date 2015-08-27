@@ -28,7 +28,7 @@ public class CustomComponentSizeUpdate extends TestBase {
             }
         });
 
-        addComponent(cc);
+        add(cc);
 
     }
 

@@ -70,7 +70,7 @@ public class LoadingIndicatorConfigurationTest extends AbstractTestUIWithLog {
         hl.setMargin(true);
         hl.setDefaultComponentAlignment(Alignment.BOTTOM_RIGHT);
         hl.addComponents(delayField, delayButton);
-        addComponent(hl);
+        add(hl);
 
     }
 
