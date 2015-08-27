@@ -2,30 +2,23 @@ package com.vaadin.hummingbird.kernel;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.vaadin.hummingbird.parser.EventBinding;
 
 public class BoundTemplateBuilder implements TemplateBuilder {
 
-    @FunctionalInterface
-    private interface TemplateCreator {
-        public BoundElementTemplate create(String tag,
-                Collection<AttributeBinding> attributeBindings,
-                Map<String, String> defaultAttributeValues,
-                Collection<EventBinding> events,
-                List<BoundElementTemplate> childTemplates);
-    }
-
     private final String tag;
     private final Collection<AttributeBinding> attributeBindings = new ArrayList<>();
     private final Map<String, String> defaultAttributeValues = new HashMap<>();
     private final Collection<EventBinding> events = new ArrayList<>();
     private List<TemplateBuilder> childTemplates;
-    private TemplateCreator templateCreator = null;
+    private Supplier<BoundElementTemplate> templateCreator = null;
 
     public BoundTemplateBuilder(String tag) {
         this.tag = tag;
@@ -33,13 +26,11 @@ public class BoundTemplateBuilder implements TemplateBuilder {
 
     @Override
     public BoundElementTemplate build() {
-        TemplateCreator actualCreator = templateCreator != null
-                ? templateCreator : BoundElementTemplate::new;
-        return actualCreator.create(tag, new ArrayList<>(attributeBindings),
-                new HashMap<>(defaultAttributeValues), new ArrayList<>(events),
-                childTemplates == null ? null
-                        : childTemplates.stream().map(TemplateBuilder::build)
-                                .collect(Collectors.toList()));
+        if (templateCreator == null) {
+            return new BoundElementTemplate(this);
+        } else {
+            return templateCreator.get();
+        }
     }
 
     public BoundTemplateBuilder addChild(TemplateBuilder childTemplate) {
@@ -57,18 +48,8 @@ public class BoundTemplateBuilder implements TemplateBuilder {
                     "Only one for definition allowed per builder");
         }
 
-        templateCreator = new TemplateCreator() {
-            @Override
-            public BoundElementTemplate create(String tag,
-                    Collection<AttributeBinding> attributeBindings,
-                    Map<String, String> defaultAttributeValues,
-                    Collection<EventBinding> events,
-                    List<BoundElementTemplate> childTemplates) {
-                return new ForElementTemplate(tag, attributeBindings,
-                        defaultAttributeValues, events, listPath, innerScope,
-                        childTemplates);
-            }
-        };
+        templateCreator = () -> new ForElementTemplate(this, listPath,
+                innerScope);
         return this;
     }
 
@@ -93,5 +74,30 @@ public class BoundTemplateBuilder implements TemplateBuilder {
     public BoundTemplateBuilder addEventBinding(EventBinding eventBinding) {
         events.add(eventBinding);
         return this;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public Collection<AttributeBinding> getAttributeBindings() {
+        return Collections.unmodifiableCollection(attributeBindings);
+    }
+
+    public Map<String, String> getDefaultAttributeValues() {
+        return Collections.unmodifiableMap(defaultAttributeValues);
+    }
+
+    public Collection<EventBinding> getEvents() {
+        return Collections.unmodifiableCollection(events);
+    }
+
+    public List<BoundElementTemplate> getChildTemplates() {
+        if (childTemplates == null) {
+            return null;
+        } else {
+            return childTemplates.stream().map(TemplateBuilder::build)
+                    .collect(Collectors.toList());
+        }
     }
 }

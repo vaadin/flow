@@ -9,7 +9,7 @@ public class StaticTextTemplate extends BoundElementTemplate {
     public StaticTextTemplate(String content) {
         super("#text", Collections.emptyList(),
                 Collections.singletonMap("content", content),
-                Collections.emptyList());
+                Collections.emptyList(), null);
         this.content = content;
     }
 

@@ -8,7 +8,7 @@ public class DynamicTextTemplate extends BoundElementTemplate {
 
     private DynamicTextTemplate(AttributeBinding binding) {
         super("#text", Collections.singletonList(binding),
-                Collections.emptyMap(), Collections.emptyList());
+                Collections.emptyMap(), Collections.emptyList(), null);
         this.binding = binding;
     }
 

@@ -1,5 +1,6 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,20 +26,13 @@ public class BoundElementTemplate extends AbstractElementTemplate {
 
     private BoundElementTemplate parentTemplate;
 
-    public BoundElementTemplate(String tag,
-            Collection<AttributeBinding> attributeBindings,
-            Map<String, String> defaultAttributeValues,
-            Collection<EventBinding> events) {
-        this(tag, attributeBindings, defaultAttributeValues, events, null);
-    }
-
-    public BoundElementTemplate(String tag,
+    protected BoundElementTemplate(String tag,
             Collection<AttributeBinding> attributeBindings,
             Map<String, String> defaultAttributeValues,
             Collection<EventBinding> events,
             List<BoundElementTemplate> childTemplates) {
 
-        this.attributeBindings = new HashMap<String, AttributeBinding>();
+        this.attributeBindings = new HashMap<>();
         classPartBindings = new LinkedHashMap<>();
         for (AttributeBinding b : attributeBindings) {
             String attributeName = b.getAttributeName();
@@ -60,12 +54,23 @@ public class BoundElementTemplate extends AbstractElementTemplate {
 
         this.tag = tag;
 
+        // Defensive copy
+        if (childTemplates != null) {
+            childTemplates = new ArrayList<>(childTemplates);
+        }
+
         this.childTemplates = childTemplates;
         if (childTemplates != null) {
             for (BoundElementTemplate childTemplate : childTemplates) {
                 childTemplate.parentTemplate = this;
             }
         }
+    }
+
+    public BoundElementTemplate(BoundTemplateBuilder builder) {
+        this(builder.getTag(), new ArrayList<>(builder.getAttributeBindings()),
+                builder.getDefaultAttributeValues(), builder.getEvents(),
+                builder.getChildTemplates());
     }
 
     @Override

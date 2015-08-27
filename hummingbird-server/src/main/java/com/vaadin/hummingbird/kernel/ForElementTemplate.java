@@ -1,22 +1,15 @@
 package com.vaadin.hummingbird.kernel;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-
-import com.vaadin.hummingbird.parser.EventBinding;
 
 public class ForElementTemplate extends BoundElementTemplate {
 
     private final ModelPath listPath;
     private final String innerScope;
 
-    public ForElementTemplate(String tag,
-            Collection<AttributeBinding> attributeBindings,
-            Map<String, String> defaultAttributes,
-            Collection<EventBinding> events, ModelPath listPath,
-            String innerScope, List<BoundElementTemplate> children) {
-        super(tag, attributeBindings, defaultAttributes, events, children);
+    public ForElementTemplate(BoundTemplateBuilder builder, ModelPath listPath,
+            String innerScope) {
+        super(builder);
         this.listPath = listPath;
         this.innerScope = innerScope;
     }
