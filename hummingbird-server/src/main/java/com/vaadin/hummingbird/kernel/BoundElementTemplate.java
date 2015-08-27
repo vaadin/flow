@@ -26,51 +26,42 @@ public class BoundElementTemplate extends AbstractElementTemplate {
 
     private BoundElementTemplate parentTemplate;
 
-    protected BoundElementTemplate(String tag,
-            Collection<AttributeBinding> attributeBindings,
-            Map<String, String> defaultAttributeValues,
-            Collection<EventBinding> events,
-            List<BoundElementTemplate> childTemplates) {
-
-        this.attributeBindings = new HashMap<>();
+    public BoundElementTemplate(BoundTemplateBuilder builder) {
+        attributeBindings = new HashMap<>();
         classPartBindings = new LinkedHashMap<>();
-        for (AttributeBinding b : attributeBindings) {
+        for (AttributeBinding b : builder.getAttributeBindings()) {
             String attributeName = b.getAttributeName();
             if (attributeName.startsWith("class.")) {
                 classPartBindings
                         .put(attributeName.substring("class.".length()), b);
             } else {
-                this.attributeBindings.put(attributeName, b);
+                attributeBindings.put(attributeName, b);
             }
         }
 
         // this.attributeBindings = attributeBindings.parallelStream()
         // .collect(Collectors.toMap(AttributeBinding::getAttributeName, v ->
         // v));
-        this.defaultAttributeValues = new HashMap<>(defaultAttributeValues);
+        defaultAttributeValues = new HashMap<>(
+                builder.getDefaultAttributeValues());
 
-        this.events = events.stream()
+        events = builder.getEvents().stream()
                 .collect(Collectors.groupingBy(EventBinding::getEventType));
 
-        this.tag = tag;
+        tag = builder.getTag();
 
-        // Defensive copy
-        if (childTemplates != null) {
-            childTemplates = new ArrayList<>(childTemplates);
+        List<BoundElementTemplate> builderChildTemplates = builder
+                .getChildTemplates();
+        if (builderChildTemplates != null) {
+            builderChildTemplates = new ArrayList<>(builderChildTemplates);
         }
 
-        this.childTemplates = childTemplates;
+        childTemplates = builderChildTemplates;
         if (childTemplates != null) {
             for (BoundElementTemplate childTemplate : childTemplates) {
                 childTemplate.parentTemplate = this;
             }
         }
-    }
-
-    public BoundElementTemplate(BoundTemplateBuilder builder) {
-        this(builder.getTag(), new ArrayList<>(builder.getAttributeBindings()),
-                builder.getDefaultAttributeValues(), builder.getEvents(),
-                builder.getChildTemplates());
     }
 
     @Override
