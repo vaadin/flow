@@ -1,8 +1,5 @@
 package com.vaadin.hummingbird.kernel;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.function.Function;
 
 import org.junit.Assert;
@@ -47,15 +44,9 @@ public class ElementTemplateTest {
 
     @Test
     public void boundTemplate_attributesMirrored() {
-        HashMap<String, String> defaultAttributeValues = new HashMap<String, String>() {
-            {
-                put("type", "checkbox");
-            }
-        };
-        ElementTemplate elementTemplate = new BoundElementTemplate("input",
-                Collections.singleton(
-                        new ModelAttributeBinding("value", "modelValue")),
-                defaultAttributeValues, Collections.emptyList());
+        ElementTemplate elementTemplate = TemplateBuilder.withTag("input")
+                .bindAttribute("value", "modelValue")
+                .setAttribute("type", "checkbox").build();
         StateNode node = StateNode.create();
         node.put("modelValue", "My value");
 
@@ -88,10 +79,8 @@ public class ElementTemplateTest {
 
     @Test(expected = IllegalStateException.class)
     public void boundTemplate_setBoundAttribute_throw() {
-        ElementTemplate template = new BoundElementTemplate("input",
-                Collections
-                        .singleton(new ModelAttributeBinding("value", "value")),
-                Collections.emptyMap(), Collections.emptyList());
+        ElementTemplate template = TemplateBuilder.withTag("input")
+                .bindAttribute("value", "value").build();
 
         Element element = Element.getElement(template, StateNode.create());
 
@@ -101,19 +90,16 @@ public class ElementTemplateTest {
     }
 
     public void boundTemplate_for() {
-        BoundElementTemplate childTemplate = new ForElementTemplate("span",
-                Collections.singletonList(new AttributeBinding("class") {
+        TemplateBuilder childTemplate = TemplateBuilder.withTag("class")
+                .bindAttribute(new AttributeBinding("class") {
                     @Override
                     public String getValue(StateNode node) {
                         return node.get("class", String.class);
                     }
-                }), Collections.emptyMap(), Collections.emptyList(),
-                new ModelPath("todos"), null, null);
+                }).setForDefinition(new ModelPath("todos"), null);
 
-        BoundElementTemplate parentTemplate = new BoundElementTemplate("div",
-                Collections.emptyList(), Collections.emptyMap(),
-                Collections.emptyList(),
-                Collections.singletonList(childTemplate));
+        BoundElementTemplate parentTemplate = TemplateBuilder.withTag("div")
+                .addChild(childTemplate).build();
 
         StateNode node = StateNode.create();
         Element element = Element.getElement(parentTemplate, node);
@@ -176,14 +162,10 @@ public class ElementTemplateTest {
     }
 
     private static Element createTemplateElementWithStaticChild() {
-        BoundElementTemplate childTemplate = new BoundElementTemplate("span",
-                Collections.emptyList(), Collections.emptyMap(),
-                Collections.emptyList());
+        TemplateBuilder childTemplate = TemplateBuilder.withTag("span");
 
-        BoundElementTemplate rootTemplate = new BoundElementTemplate("div",
-                Collections.emptyList(), Collections.emptyMap(),
-                Collections.emptyList(),
-                Collections.singletonList(childTemplate));
+        BoundElementTemplate rootTemplate = TemplateBuilder.withTag("div")
+                .addChild(childTemplate).build();
 
         StateNode node = StateNode.create();
         Element element = Element.getElement(rootTemplate, node);
@@ -195,10 +177,8 @@ public class ElementTemplateTest {
         Element parent = new Element("div");
 
         StateNode node = StateNode.create();
-        Element child = Element.getElement(
-                new BoundElementTemplate("span", Collections.emptyList(),
-                        Collections.emptyMap(), Collections.emptyList()),
-                node);
+        Element child = Element
+                .getElement(TemplateBuilder.withTag("span").build(), node);
 
         parent.insertChild(0, child);
 
@@ -215,10 +195,8 @@ public class ElementTemplateTest {
         Element child = new Element("span");
 
         StateNode node = StateNode.create();
-        Element parent = Element.getElement(
-                new BoundElementTemplate("div", Collections.emptyList(),
-                        Collections.emptyMap(), Collections.emptyList()),
-                node);
+        Element parent = Element
+                .getElement(TemplateBuilder.withTag("div").build(), node);
 
         parent.insertChild(0, child);
 
@@ -232,13 +210,11 @@ public class ElementTemplateTest {
 
     @Test
     public void staticTextTemplate() {
-        StaticTextTemplate textTemplate = new StaticTextTemplate("Hello world");
+        TemplateBuilder textTemplate = TemplateBuilder
+                .staticText("Hello world");
 
-        ElementTemplate template = new BoundElementTemplate("span",
-                Collections.emptyList(), Collections.emptyMap(),
-                Collections.emptyList(),
-                Collections.singletonList(textTemplate));
-
+        ElementTemplate template = TemplateBuilder.withTag("span")
+                .addChild(textTemplate).build();
         Element element = Element.getElement(template, StateNode.create());
 
         Assert.assertEquals("<span>Hello world</span>", element.toString());
@@ -246,19 +222,18 @@ public class ElementTemplateTest {
 
     @Test
     public void dynamicTextTemplate() {
-        DynamicTextTemplate boundText = new DynamicTextTemplate("bound");
+        TemplateBuilder boundText = TemplateBuilder.dynamicText("bound");
 
-        DynamicTextTemplate dynamicText = new DynamicTextTemplate(
-                new Function<StateNode, String>() {
+        TemplateBuilder dynamicText = TemplateBuilder
+                .dynamicText(new Function<StateNode, String>() {
                     @Override
                     public String apply(StateNode n) {
                         return n.get("dynamic", String.class).toLowerCase();
                     }
                 });
 
-        ElementTemplate template = new BoundElementTemplate("span",
-                Collections.emptyList(), Collections.emptyMap(),
-                Collections.emptyList(), Arrays.asList(boundText, dynamicText));
+        ElementTemplate template = TemplateBuilder.withTag("span")
+                .addChild(boundText).addChild(dynamicText).build();
 
         StateNode node = StateNode.create();
         node.put("bound", "Hello ");
@@ -271,11 +246,9 @@ public class ElementTemplateTest {
 
     @Test
     public void boundClassPart() {
-        BoundElementTemplate template = new BoundElementTemplate("div",
-                Collections.singletonList(
-                        new ModelAttributeBinding("class.completed", "done")),
-                Collections.singletonMap("class", "baseClass"),
-                Collections.emptyList());
+        BoundElementTemplate template = TemplateBuilder.withTag("div")
+                .bindAttribute("class.completed", "done")
+                .setAttribute("class", "baseClass").build();
         StateNode node = StateNode.create();
 
         Element element = Element.getElement(template, node);
