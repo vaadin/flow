@@ -53,7 +53,7 @@ public class BasicElementListener implements NodeListener {
     }
 
     private void insertChild(int index, JsonObject node) {
-        Node child = treeUpdater.createElement(node);
+        Node child = treeUpdater.getOrCreateElement(node);
         insertNodeAtIndex(element, child, index);
     }
 

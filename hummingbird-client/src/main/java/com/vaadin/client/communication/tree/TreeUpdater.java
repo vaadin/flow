@@ -350,33 +350,43 @@ public class TreeUpdater {
         return (int) jsonHack.getNumber("vTemplateId");
     }
 
-    public Node createElement(JsonObject node) {
+    public Node getOrCreateElement(JsonObject node) {
+        Integer nodeId = nodeToId.get(node);
         if (node.hasKey("TEMPLATE")) {
             int templateId = (int) node.getNumber("TEMPLATE");
             Template template = templates.get(Integer.valueOf(templateId));
             assert template != null;
 
+            Node existingNode = findDomNode(nodeId, templateId);
+            if (existingNode != null) {
+                return existingNode;
+            }
+
             return createElement(template, node,
                     new NodeContext(new ElementNotifier(this, node, ""),
-                            template.createServerProxy(nodeToId.get(node))));
+                            template.createServerProxy(nodeId)));
         } else {
+            if (nodeIdToBasicElement.containsKey(nodeId)) {
+                return nodeIdToBasicElement.get(nodeId);
+            }
+
             String tag = node.getString("TAG");
             if ("#text".equals(tag)) {
                 Text textNode = Document.get().createTextNode("");
                 addNodeListener(node, new TextElementListener(textNode));
-                nodeIdToBasicElement.put(nodeToId.get(node), textNode);
+                nodeIdToBasicElement.put(nodeId, textNode);
                 if (debug) {
-                    debug("Created text node for nodeId=" + nodeToId.get(node));
+                    debug("Created text node for nodeId=" + nodeId);
                 }
                 return textNode;
             } else {
                 Element element = Document.get().createElement(tag);
                 addNodeListener(node,
                         new BasicElementListener(this, node, element));
-                nodeIdToBasicElement.put(nodeToId.get(node), element);
+                nodeIdToBasicElement.put(nodeId, element);
                 if (debug) {
                     debug("Created element: " + debugHtml(element)
-                            + " for nodeId=" + nodeToId.get(node));
+                            + " for nodeId=" + nodeId);
                 }
                 return element;
             }
