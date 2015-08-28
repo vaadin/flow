@@ -36,10 +36,10 @@ public interface NodeListener {
         int getIndex();
 
         @JsProperty
-        JsonValue getValue();
+        JsonValue getRemovedValue();
 
         @JsProperty
-        void setValue(JsonValue value);
+        void setRemovedValue(JsonValue value);
     }
 
     @JsType

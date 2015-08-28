@@ -90,12 +90,14 @@ public class BasicElementListener implements NodeListener {
     public void listRemove(ListRemoveChange change) {
         switch (change.getKey()) {
         case "LISTENERS":
-            removeListener(change.getValue().asString());
+            removeListener(change.getRemovedValue().asString());
             break;
         case "CHILDREN":
-            Node childNode = Polymer.dom(element).getChildNodes()
-                    .get(change.getIndex());
-            Polymer.dom(element).removeChild(childNode);
+            JsonObject removedNode = (JsonObject) change.getRemovedValue();
+            Node removedElement = treeUpdater.getOrCreateElement(removedNode);
+            if (Polymer.dom(element).getParentNode() == element) {
+                Polymer.dom(element).removeChild(removedElement);
+            }
             break;
         default:
             throw new RuntimeException("Not supported: " + change.getKey());

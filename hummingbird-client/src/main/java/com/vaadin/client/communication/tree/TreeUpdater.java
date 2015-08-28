@@ -114,7 +114,7 @@ public class TreeUpdater {
             assert array != null;
 
             JsonValue value = array.get(change.getIndex());
-            change.setValue(value);
+            change.setRemovedValue(value);
 
             array.remove(change.getIndex());
         }
@@ -272,7 +272,6 @@ public class TreeUpdater {
            str +="\"";
        }
        return str+">";
-
     }-*/;
 
     public static String debugHtml(Node node) {
