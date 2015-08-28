@@ -36,6 +36,7 @@ import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.MultiStepDuration;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingStartedEvent;
 import com.vaadin.client.ApplicationConnection.State;
+import com.vaadin.client.communication.tree.TreeUpdater;
 import com.vaadin.client.ConnectorHierarchyChangeEvent;
 import com.vaadin.client.ConnectorMap;
 import com.vaadin.client.FastStringSet;
