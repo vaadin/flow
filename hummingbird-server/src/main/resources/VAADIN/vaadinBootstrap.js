@@ -174,9 +174,10 @@
 							delete window.vaadin.clients[testbenchId];
 							
 							// Show the error in the app's div
-							var appDiv = document.getElementById(appId);
+							var appDiv = document.createElement("div");
 							appDiv.innerHTML = text;
 							appDiv.style['overflow'] = 'auto';
+							document.body.appendChild(appDiv);
 						}
 
 						// Run the fetchRootConfig callback if present.
