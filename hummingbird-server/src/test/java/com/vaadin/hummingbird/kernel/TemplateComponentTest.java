@@ -8,9 +8,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.annotations.TemplateEventHandler;
+import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Template;
+import com.vaadin.ui.UI;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonValue;
 
 public class TemplateComponentTest {
     private static class TestTemplateComponent extends Template {
@@ -20,8 +24,12 @@ public class TemplateComponentTest {
             super(BasicElementTemplate.get());
         }
 
-        public void onBrowserEvent(String methodName, Object... params) {
-            super.onBrowserEvent(getNode(), getElement(), methodName, params);
+        public void onBrowserEvent(String methodName, JsonValue... params) {
+            JsonArray paramsJson = Json.createArray();
+            for (int i = 0; i < params.length; i++) {
+                paramsJson.set(i, params[i]);
+            }
+            super.onBrowserEvent(getNode(), methodName, paramsJson);
         }
     }
 
@@ -41,19 +49,30 @@ public class TemplateComponentTest {
     }
 
     @Test
-    public void testHandlerWithNodeParameter() {
+    public void testHandlerWithElementParameter() {
         TestTemplateComponent template = new TestTemplateComponent() {
             @TemplateEventHandler
-            private void withString(String value, StateNode node) {
-                receivedValues.add(value);
-                receivedValues.add(node);
+            private void withElement(Element element) {
+                receivedValues.add(element);
             }
         };
 
-        template.onBrowserEvent("withString", Json.create("My string"));
+        UI ui = new UI() {
+            @Override
+            protected void init(VaadinRequest request) {
+                // Nothing here, never run
+            }
+        };
+        ui.setContent(template);
+        ui.registerTemplate(template.getElement().getTemplate());
 
-        Assert.assertEquals(
-                Arrays.asList("My string", template.getElement().getNode()),
+        JsonArray elementDescriptor = Json.createArray();
+        elementDescriptor.set(0, template.getElement().getNode().getId());
+        elementDescriptor.set(1, template.getElement().getTemplate().getId());
+
+        template.onBrowserEvent("withElement", elementDescriptor);
+
+        Assert.assertEquals(Arrays.asList(template.getElement()),
                 template.receivedValues);
     }
 

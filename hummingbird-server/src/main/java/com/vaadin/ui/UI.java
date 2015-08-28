@@ -329,9 +329,8 @@ public abstract class UI extends CssLayout
 
     private void handleTemplateEvent(JsonArray json) {
         int nodeId = (int) json.getNumber(0);
-        int templateId = (int) json.getNumber(1);
-        String eventType = json.getString(2);
-        JsonObject eventData = json.getObject(3);
+        String methodName = json.getString(2);
+        JsonArray parameters = json.getArray(3);
 
         StateNode node = root.getRootNode().getById(nodeId);
         if (node == null) {
@@ -340,34 +339,15 @@ public abstract class UI extends CssLayout
             return;
         }
 
-        TemplateEventHandler templateEventHandler = findTemplateEventHandler(
-                node);
+        TemplateCallbackHandler templateEventHandler = node
+                .get(TemplateCallbackHandler.class);
+
         if (templateEventHandler == null) {
             throw new RuntimeException(
                     "No template event handler found for node " + node.getId());
         }
 
-        ElementTemplate template = sentTemplates
-                .get(Integer.valueOf(templateId));
-        if (template == null) {
-            throw new RuntimeException(
-                    "Got template event for non-existing template id: "
-                            + templateId);
-        }
-
-        templateEventHandler.handleEvent(node, template, eventType, eventData);
-    }
-
-    private static TemplateEventHandler findTemplateEventHandler(
-            StateNode node) {
-        while (node != null) {
-            if (node.containsKey(TemplateEventHandler.class)) {
-                return node.get(TemplateEventHandler.class);
-            } else {
-                node = node.getParent();
-            }
-        }
-        return null;
+        templateEventHandler.handleCallback(node, methodName, parameters);
     }
 
     @Override
@@ -1461,6 +1441,10 @@ public abstract class UI extends CssLayout
 
     public void registerTemplate(ElementTemplate template) {
         sentTemplates.put(Integer.valueOf(template.getId()), template);
+    }
+
+    public ElementTemplate getTemplate(int templateId) {
+        return sentTemplates.get(Integer.valueOf(templateId));
     }
 
     private Layer getWindowLayer() {

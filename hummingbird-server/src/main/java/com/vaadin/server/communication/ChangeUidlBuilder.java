@@ -1,8 +1,8 @@
 package com.vaadin.server.communication;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.vaadin.hummingbird.kernel.AbstractElementTemplate;
 import com.vaadin.hummingbird.kernel.AttributeBinding;
@@ -251,15 +251,21 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
         if (events != null && !events.isEmpty()) {
             JsonObject eventsJson = Json.createObject();
             events.forEach((type, list) -> {
-                JsonArray params = Json.createArray();
-                list.stream().map(EventBinding::getParams)
-                        .flatMap(Collection::stream)
-                        .filter(p -> !"element".equals(p)).distinct()
-                        .forEach(p -> params.set(params.length(), p));
+                JsonArray handlers = Json.createArray();
+                list.stream().map(EventBinding::getEventHandler)
+                        .forEach(p -> handlers.set(handlers.length(), p));
 
-                eventsJson.put(type, params);
+                eventsJson.put(type, handlers);
             });
             serialized.put("events", eventsJson);
+        }
+
+        Set<String> eventHandlerMethods = bet.getEventHandlerMethods();
+        if (eventHandlerMethods != null) {
+            JsonArray eventHandlerMethodsJson = Json.createArray();
+            eventHandlerMethods.forEach(m -> eventHandlerMethodsJson
+                    .set(eventHandlerMethodsJson.length(), m));
+            serialized.put("eventHandlerMethods", eventHandlerMethodsJson);
         }
 
         serialized.put("attributeBindings", attributeBindings);

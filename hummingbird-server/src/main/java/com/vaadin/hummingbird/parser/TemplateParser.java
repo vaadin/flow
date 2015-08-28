@@ -2,11 +2,14 @@ package com.vaadin.hummingbird.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
@@ -21,18 +24,17 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
+import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.hummingbird.kernel.BoundTemplateBuilder;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
 import com.vaadin.hummingbird.kernel.ModelPath;
 import com.vaadin.hummingbird.kernel.TemplateBuilder;
+import com.vaadin.ui.Template;
 
 public class TemplateParser {
     private static final Pattern forDefinitionPattern = Pattern
             .compile("#([^\\s]+)\\s+of\\s+([^\\s]+)");
-
-    private static final Pattern elementDefinitionPattern = Pattern
-            .compile("\\s*([^(\\s]+)\\(([^)]*)\\)\\s*");
 
     @FunctionalInterface
     private interface Context {
@@ -45,9 +47,12 @@ public class TemplateParser {
     }
 
     public static ElementTemplate parse(String templateString) {
+        return parseBuilder(templateString).build();
+    }
+
+    private static TemplateBuilder parseBuilder(String templateString) {
         Document bodyFragment = Jsoup.parseBodyFragment(templateString);
-        return createElementTemplate(bodyFragment.body().child(0), l -> l)
-                .build();
+        return createElementTemplate(bodyFragment.body().child(0), l -> l);
     }
 
     private static TemplateBuilder createTemplate(Node node, Context context) {
@@ -131,20 +136,10 @@ public class TemplateParser {
             } else if (name.startsWith("(")) {
                 String eventName = name.substring(1, name.length() - 1);
 
-                Matcher elementMatcher = elementDefinitionPattern
-                        .matcher(value);
-                if (!elementMatcher.matches()) {
-                    throw new RuntimeException(value);
-                }
-
-                String methodName = elementMatcher.group(1);
-                String[] params = elementMatcher.group(2).split("\\s*,\\s*");
-                if (params.length == 1 && params[0].isEmpty()) {
-                    params = new String[0];
-                }
+                String eventHandler = value;
 
                 builder.addEventBinding(
-                        new EventBinding(eventName, methodName, params));
+                        new EventBinding(eventName, eventHandler));
             } else if (name.startsWith("#")) {
                 // Ignore local ids for now
             } else {
@@ -197,7 +192,13 @@ public class TemplateParser {
                     return cacheEntry.template;
                 } else {
                     String templateString = IOUtils.toString(is);
-                    ElementTemplate template = parse(templateString);
+                    BoundTemplateBuilder builder = (BoundTemplateBuilder) parseBuilder(
+                            templateString);
+
+                    Set<String> methodNames = findEventHandlerMethodNames(type);
+                    methodNames.forEach(builder::addEventHandlerMethod);
+
+                    ElementTemplate template = builder.build();
 
                     templateCache.put(type,
                             new ElementTemplateCache(template, lastModified));
@@ -208,4 +209,21 @@ public class TemplateParser {
             throw new RuntimeException(e1);
         }
     }
+
+    private static Set<String> findEventHandlerMethodNames(Class<?> type) {
+        Set<String> names = new HashSet<>();
+        while (type != null && type != Template.class) {
+            Method[] declaredMethods = type.getDeclaredMethods();
+            for (Method method : declaredMethods) {
+                if (method.getAnnotation(TemplateEventHandler.class) != null) {
+                    names.add(method.getName());
+                }
+            }
+
+            type = type.getSuperclass();
+        }
+
+        return names;
+    }
+
 }

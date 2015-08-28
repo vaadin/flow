@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,6 +23,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     private final Map<String, AttributeBinding> classPartBindings;
     private final Map<String, String> defaultAttributeValues;
     private final Map<String, List<EventBinding>> events;
+    private final Set<String> eventHandlerMethods;
 
     private final List<BoundElementTemplate> childTemplates;
 
@@ -61,6 +64,13 @@ public class BoundElementTemplate extends AbstractElementTemplate {
             for (BoundElementTemplate childTemplate : childTemplates) {
                 childTemplate.parentTemplate = this;
             }
+        }
+
+        Set<String> builderHandlerMehtods = builder.getEventHandlerMethods();
+        if (builderHandlerMehtods.isEmpty()) {
+            eventHandlerMethods = null;
+        } else {
+            eventHandlerMethods = new HashSet<>(builderHandlerMehtods);
         }
     }
 
@@ -250,8 +260,12 @@ public class BoundElementTemplate extends AbstractElementTemplate {
         return events;
     }
 
-    public List<EventBinding> getEventBindings(String eventType) {
-        return events.get(eventType);
+    public Set<String> getEventHandlerMethods() {
+        if (eventHandlerMethods != null) {
+            return Collections.unmodifiableSet(eventHandlerMethods);
+        } else {
+            return null;
+        }
     }
 
 }

@@ -50,17 +50,18 @@ public class TreeUpdater {
     private final static boolean debug = Location.getQueryString()
             .contains("superdevmode");
 
-    public class StaticTextTemplate implements Template {
+    public class StaticTextTemplate extends Template {
 
         private String content;
 
         public StaticTextTemplate(JsonObject templateDescription,
                 int templateId) {
+            super(templateId);
             content = templateDescription.getString("content");
         }
 
         @Override
-        public Node createElement(JsonObject node, ElementNotifier notifier) {
+        public Node createElement(JsonObject node, NodeContext context) {
             return Document.get().createTextNode(content);
         }
 
@@ -117,12 +118,13 @@ public class TreeUpdater {
 
     }
 
-    public class DynamicTextTemplate implements Template {
+    public class DynamicTextTemplate extends Template {
 
         private String binding;
 
         public DynamicTextTemplate(JsonObject templateDescription,
                 int templateId) {
+            super(templateId);
             binding = templateDescription.getString("binding");
         }
 
@@ -131,12 +133,31 @@ public class TreeUpdater {
         }
 
         @Override
-        public Node createElement(JsonObject node, ElementNotifier notifier) {
+        public Node createElement(JsonObject node, NodeContext context) {
             Text text = Document.get().createTextNode("");
 
-            notifier.addUpdater(new TextUpdater(this, text));
+            context.getNotifier().addUpdater(new TextUpdater(this, text));
 
             return text;
+        }
+    }
+
+    public class NodeContext {
+        private final ElementNotifier notifier;
+        private final JavaScriptObject serverProxy;
+
+        public NodeContext(ElementNotifier notifier,
+                JavaScriptObject serverProxy) {
+            this.notifier = notifier;
+            this.serverProxy = serverProxy;
+        }
+
+        public ElementNotifier getNotifier() {
+            return notifier;
+        }
+
+        public JavaScriptObject getServerProxy() {
+            return serverProxy;
         }
     }
 
@@ -228,13 +249,14 @@ public class TreeUpdater {
         void put(String scope, PutChange change);
     }
 
-    public class ForElementTemplate implements Template {
+    public class ForElementTemplate extends Template {
         private final BoundElementTemplate childTemplate;
         private final String modelKey;
         private final String innerScope;
 
         public ForElementTemplate(JsonObject templateDescription,
                 int templateId) {
+            super(templateId);
             modelKey = templateDescription.getString("modelKey");
             innerScope = templateDescription.getString("innerScope");
 
@@ -243,10 +265,11 @@ public class TreeUpdater {
         }
 
         @Override
-        public Node createElement(JsonObject node, ElementNotifier notifier) {
+        public Node createElement(JsonObject node, NodeContext context) {
             // Creates anchor element
             Node commentNode = createCommentNode("for " + modelKey);
-            notifier.addUpdater(new ForAnchorListener(commentNode, this));
+            context.getNotifier().addUpdater(
+                    new ForAnchorListener(commentNode, this, context));
             return commentNode;
         }
 
@@ -268,21 +291,21 @@ public class TreeUpdater {
         return $doc.createComment(comment);
     }-*/;
 
-    public class BoundElementTemplate implements Template {
+    public class BoundElementTemplate extends Template {
 
         private final String tag;
         private final Map<String, String> defaultAttributeValues;
         private final Map<String, String> propertyToAttribute;
         private final Map<String, String> classPartBindings;
-        private final Map<String, JsonArray> events;
+        private final Map<String, String[]> events;
+
+        private final String[] eventHandlerMethods;
 
         private final int[] childElementTemplates;
 
-        private final int templateId;
-
         public BoundElementTemplate(JsonObject templateDescription,
                 int templateId) {
-            this.templateId = templateId;
+            super(templateId);
             tag = templateDescription.getString("tag");
 
             defaultAttributeValues = readStringMap(
@@ -308,11 +331,26 @@ public class TreeUpdater {
                 events = new HashMap<>();
                 JsonObject eventsJson = templateDescription.getObject("events");
                 for (String type : eventsJson.keys()) {
-                    JsonArray parametersJson = eventsJson.getArray(type);
-                    events.put(type, parametersJson);
+                    JsonArray handlersJson = eventsJson.getArray(type);
+                    String[] handlers = new String[handlersJson.length()];
+                    for (int i = 0; i < handlers.length; i++) {
+                        handlers[i] = handlersJson.getString(i);
+                    }
+                    events.put(type, handlers);
                 }
             } else {
                 events = null;
+            }
+
+            if (templateDescription.hasKey("eventHandlerMethods")) {
+                JsonArray array = templateDescription
+                        .getArray("eventHandlerMethods");
+                eventHandlerMethods = new String[array.length()];
+                for (int i = 0; i < eventHandlerMethods.length; i++) {
+                    eventHandlerMethods[i] = array.getString(i);
+                }
+            } else {
+                eventHandlerMethods = null;
             }
 
         }
@@ -330,25 +368,21 @@ public class TreeUpdater {
         }
 
         @Override
-        public Node createElement(final JsonObject node,
-                ElementNotifier notifier) {
+        public Node createElement(final JsonObject node, NodeContext context) {
             assert tag != null;
             debug("Create element with tag " + tag);
 
             final Element element = Document.get().createElement(tag);
-            initElement(node, element, notifier);
+            initElement(node, element, context);
 
-            notifier.addUpdater(new BoundElementListener(node, element, this));
+            context.getNotifier()
+                    .addUpdater(new BoundElementListener(node, element, this));
 
             return element;
         }
 
-        public int getTemplateId() {
-            return templateId;
-        }
-
         protected void initElement(JsonObject node, Element element,
-                ElementNotifier notifier) {
+                NodeContext context) {
             assert element != null;
 
             for (Entry<String, String> entry : defaultAttributeValues
@@ -358,19 +392,32 @@ public class TreeUpdater {
             }
 
             if (events != null) {
-                for (Entry<String, JsonArray> entry : events.entrySet()) {
+                for (Entry<String, String[]> entry : events.entrySet()) {
                     String type = entry.getKey();
-                    JsonArray eventDataKeys = entry.getValue();
+                    String[] handlers = entry.getValue();
                     addDomListener(element, type, new DomListener() {
 
                         @Override
                         public void handleEvent(JavaScriptObject event) {
-                            JsonObject eventDetails = extractEventDetails(event,
-                                    element, eventDataKeys);
+                            for (String handler : handlers) {
+                                JsArrayString newFunctionParams = JavaScriptObject
+                                        .createArray().cast();
+                                JsArray<JavaScriptObject> params = JavaScriptObject
+                                        .createArray().cast();
 
-                            sendTemplateEventToServer(
-                                    nodeToId.get(node).intValue(), templateId,
-                                    type, eventDetails);
+                                newFunctionParams.push("event");
+                                params.push(event);
+
+                                newFunctionParams.push("element");
+                                params.push(element);
+
+                                newFunctionParams.push("server");
+                                params.push(context.getServerProxy());
+
+                                newFunctionParams.push(handler);
+
+                                createAndRunFunction(newFunctionParams, params);
+                            }
                         }
                     });
                 }
@@ -379,7 +426,7 @@ public class TreeUpdater {
             if (childElementTemplates != null) {
                 for (int templateId : childElementTemplates) {
                     Node newChildElement = TreeUpdater.this.createElement(
-                            templates.get(templateId), node, notifier);
+                            templates.get(templateId), node, context);
                     Polymer.dom(element).appendChild(newChildElement);
                 }
             }
@@ -396,7 +443,32 @@ public class TreeUpdater {
                 return classPartBindings.get(property);
             }
         }
+
+        @Override
+        public JavaScriptObject createServerProxy(Integer nodeId) {
+            JavaScriptObject proxy = JavaScriptObject.createObject();
+
+            if (eventHandlerMethods != null) {
+                for (String serverMethodName : eventHandlerMethods) {
+                    attachServerProxyMethod(proxy, nodeId.intValue(), getId(),
+                            serverMethodName);
+                }
+            }
+
+            return proxy;
+        }
     }
+
+    private native void attachServerProxyMethod(JavaScriptObject proxy,
+            int nodeId, int templateId, String name)
+            /*-{
+                var self = this;
+                proxy[name] = $entry(function() {
+                    // Convert to proper Array
+                    var args = Array.prototype.slice.call(arguments);
+                    self.@TreeUpdater::sendTemplateEventToServer(*)(nodeId, templateId, name, args);
+                });
+            }-*/;
 
     @JsType
     public interface RemoveChange extends Change {
@@ -472,10 +544,13 @@ public class TreeUpdater {
     public class ForAnchorListener implements ElementUpdater {
         private final Node anchorNode;
         private final ForElementTemplate template;
+        private NodeContext parentContext;
 
-        public ForAnchorListener(Node anchorNode, ForElementTemplate template) {
+        public ForAnchorListener(Node anchorNode, ForElementTemplate template,
+                NodeContext parentContext) {
             this.anchorNode = anchorNode;
             this.template = template;
+            this.parentContext = parentContext;
         }
 
         @Override
@@ -489,7 +564,7 @@ public class TreeUpdater {
             ElementNotifier notifier = new ElementNotifier(childNode,
                     template.getInnerScope() + ".");
             Node child = createElement(template.getChildTemplate(), childNode,
-                    notifier);
+                    new NodeContext(notifier, parentContext.getServerProxy()));
 
             Node insertionPoint = findNodeBefore(change.getIndex());
 
@@ -622,7 +697,7 @@ public class TreeUpdater {
 
         @Override
         public void putOverride(String property, PutOverrideChange change) {
-            if (change.getKey() != template.getTemplateId()) {
+            if (change.getKey() != template.getId()) {
                 return;
             }
 
@@ -848,7 +923,24 @@ public class TreeUpdater {
     }
 
     protected void sendTemplateEventToServer(int nodeId, int templateId,
-            String type, JsonObject eventData) {
+            String type, JsArray<JavaScriptObject> rawArguments) {
+        JsonArray eventData = Json.createArray();
+        for (int i = 0; i < rawArguments.length(); i++) {
+            JavaScriptObject value = rawArguments.get(i);
+            JsonValue jsonValue;
+            if (Node.is(value)) {
+                // Convert element instance to [nodeId, templateId]
+                Node node = Node.as(value);
+                JsonArray identifier = Json.createArray();
+                identifier.set(0, getNodeId(node));
+                identifier.set(1, getTemplateId(node));
+                jsonValue = identifier;
+            } else {
+                jsonValue = value.cast();
+            }
+            eventData.set(i, jsonValue);
+        }
+
         JsonArray arguments = Json.createArray();
         arguments.set(0, nodeId);
         arguments.set(1, templateId);
@@ -1069,8 +1161,24 @@ public class TreeUpdater {
         void putOverride(PutOverrideChange change);
     }
 
-    private interface Template {
-        public Node createElement(JsonObject node, ElementNotifier notifier);
+    private abstract class Template {
+        private int id;
+
+        public Template(int id) {
+            this.id = id;
+        }
+
+        public abstract Node createElement(JsonObject node,
+                NodeContext context);
+
+        public JavaScriptObject createServerProxy(Integer nodeId) {
+            throw new RuntimeException(
+                    "Not supported for " + getClass().getName());
+        }
+
+        public int getId() {
+            return id;
+        }
     }
 
     @JsType
@@ -1243,8 +1351,8 @@ public class TreeUpdater {
             }-*/;
 
     private Node createElement(Template template, JsonObject node,
-            ElementNotifier notifier) {
-        Node element = template.createElement(node, notifier);
+            NodeContext context) {
+        Node element = template.createElement(node, context);
 
         Integer nodeId = nodeToId.get(node);
         Map<Template, Node> templateToElement = nodeIdToTemplateToElement
@@ -1256,7 +1364,26 @@ public class TreeUpdater {
 
         templateToElement.put(template, element);
 
+        storeTemplateAndNodeId(element, nodeId.intValue(), template.getId());
+
         return element;
+    }
+
+    private static void storeTemplateAndNodeId(Node element, int nodeId,
+            int templateId) {
+        JsonObject jsonHack = element.cast();
+        jsonHack.put("vNodeId", nodeId);
+        jsonHack.put("vTemplateId", templateId);
+    }
+
+    private static int getNodeId(Node element) {
+        JsonObject jsonHack = element.cast();
+        return (int) jsonHack.getNumber("vNodeId");
+    }
+
+    private static int getTemplateId(Node element) {
+        JsonObject jsonHack = element.cast();
+        return (int) jsonHack.getNumber("vTemplateId");
     }
 
     private Node createElement(JsonObject node) {
@@ -1265,7 +1392,9 @@ public class TreeUpdater {
             Template template = templates.get(Integer.valueOf(templateId));
             assert template != null;
 
-            return createElement(template, node, new ElementNotifier(node, ""));
+            return createElement(template, node,
+                    new NodeContext(new ElementNotifier(node, ""),
+                            template.createServerProxy(nodeToId.get(node))));
         } else {
             String tag = node.getString("TAG");
             if ("#text".equals(tag)) {

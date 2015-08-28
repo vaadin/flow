@@ -17,17 +17,16 @@ package com.vaadin.ui;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
 
-import com.vaadin.hummingbird.kernel.BoundElementTemplate;
+import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.StateNode;
-import com.vaadin.hummingbird.parser.EventBinding;
 import com.vaadin.hummingbird.parser.TemplateParser;
 
-import elemental.json.JsonObject;
+import elemental.json.JsonArray;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 public abstract class Template extends AbstractComponent {
@@ -43,41 +42,19 @@ public abstract class Template extends AbstractComponent {
         }
         setElement(Element.getElement(elementTemplate, node));
 
-        getNode().put(TemplateEventHandler.class, this::handleTemplateEvent);
+        getNode().put(TemplateCallbackHandler.class, this::onBrowserEvent);
     }
 
-    private void handleTemplateEvent(StateNode node, ElementTemplate template,
-            String eventType, JsonObject eventData) {
-        Element element = Element.getElement(template, node);
-        List<EventBinding> eventBindings = ((BoundElementTemplate) template)
-                .getEventBindings(eventType);
-        for (EventBinding eventBinding : eventBindings) {
-            String methodName = eventBinding.getMethodName();
-            List<String> paramsDefinitions = eventBinding.getParams();
-
-            Object[] params = new Object[paramsDefinitions.size()];
-            for (int i = 0; i < params.length; i++) {
-                String definition = paramsDefinitions.get(i);
-                if ("element".equals(definition)) {
-                    params[i] = element;
-                } else {
-                    params[i] = eventData.get(definition);
-                }
-            }
-
-            onBrowserEvent(node, element, methodName, params);
-        }
-    }
-
-    protected void onBrowserEvent(StateNode node, Element element,
-            String methodName, Object[] params) {
-        Method method = findTemplateEventHandlerMethod(getClass(), methodName);
+    protected void onBrowserEvent(StateNode node, String methodName,
+            JsonArray params) {
+        Method method = findTemplateEventHandlerMethod(getClass(), methodName,
+                params.length());
         if (method == null) {
             throw new RuntimeException("Couldn't find any @"
                     + com.vaadin.annotations.TemplateEventHandler.class
                             .getName()
-                    + " method named " + methodName + " in "
-                    + getClass().getName());
+                    + " method named " + methodName + "with " + params.length()
+                    + " parameters in " + getClass().getName());
         }
 
         int paramIndex = 0;
@@ -86,20 +63,17 @@ public abstract class Template extends AbstractComponent {
         Object[] methodParams = new Object[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             Class<?> type = parameterTypes[i];
-            if (StateNode.class.isAssignableFrom(type)) {
-                methodParams[i] = node;
+            JsonValue param = params.get(paramIndex++);
+            if (type == Element.class && param.getType() == JsonType.ARRAY) {
+                JsonArray elementArray = (JsonArray) param;
+                int nodeId = (int) elementArray.getNumber(0);
+                int templateId = (int) elementArray.getNumber(1);
+
+                StateNode elementNode = node.getRoot().getById(nodeId);
+                ElementTemplate template = getUI().getTemplate(templateId);
+                methodParams[i] = Element.getElement(template, elementNode);
             } else {
-                Object param = params[paramIndex++];
-                if (param == null || type.isInstance(param)) {
-                    methodParams[i] = param;
-                } else if (param instanceof JsonValue) {
-                    methodParams[i] = JsonConverter.fromJson(parameterTypes[i],
-                            (JsonValue) param);
-                } else {
-                    throw new RuntimeException(
-                            "Can't convert " + param.getClass().getName()
-                                    + " to " + type.getName());
-                }
+                methodParams[i] = JsonConverter.fromJson(type, param);
             }
         }
 
@@ -113,12 +87,14 @@ public abstract class Template extends AbstractComponent {
     }
 
     private static Method findTemplateEventHandlerMethod(Class<?> type,
-            String methodName) {
+            String methodName, int paramCount) {
         while (type != null && type != Template.class) {
             Method[] declaredMethods = type.getDeclaredMethods();
             for (Method method : declaredMethods) {
-                if (method.getName().equals(methodName) && method.getAnnotation(
-                        com.vaadin.annotations.TemplateEventHandler.class) != null) {
+                if (method.getName().equals(methodName)
+                        && method.getAnnotation(
+                                TemplateEventHandler.class) != null
+                        && method.getParameterCount() == paramCount) {
                     return method;
                 }
             }

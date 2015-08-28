@@ -1,30 +1,20 @@
 package com.vaadin.hummingbird.parser;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 public class EventBinding {
 
     private final String eventType;
-    private final String methodName;
-    private final List<String> params;
+    private final String eventHandler;
 
-    public EventBinding(String eventType, String methodName, String[] params) {
+    public EventBinding(String eventType, String eventHandler) {
         this.eventType = eventType;
-        this.methodName = methodName;
-        this.params = Collections.unmodifiableList(Arrays.asList(params));
+        this.eventHandler = eventHandler;
     }
 
     public String getEventType() {
         return eventType;
     }
 
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public List<String> getParams() {
-        return params;
+    public String getEventHandler() {
+        return eventHandler;
     }
 }
