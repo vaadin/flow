@@ -10,6 +10,7 @@
 /hummingbird-*/.project
 /hummingbird-*/target
 /hummingbird-*/src/main/generated-*
+/hummingbird-client/extras/
 /work
 /.gwt-cache
 /.externalToolBuilders
