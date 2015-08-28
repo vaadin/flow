@@ -55,7 +55,6 @@ import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.ui.AbstractConnector;
 import com.vaadin.client.ui.AbstractHasComponentsConnector;
 import com.vaadin.client.ui.JavaScriptManager;
-import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.VUI;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
@@ -375,10 +374,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
                     getState().pushConfiguration.mode.isEnabled());
         }
 
-        if (stateChangeEvent.hasPropertyChanged("overlayContainerLabel")) {
-            VOverlay.setOverlayContainerLabel(getConnection(),
-                    getState().overlayContainerLabel);
-        }
     }
 
     private void configurePolling() {
@@ -610,8 +605,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
     protected void activateTheme(String newTheme) {
         if (activeTheme != null) {
             getWidget().getParent().removeStyleName(activeTheme);
-            VOverlay.getOverlayContainer(getConnection())
-                    .removeClassName(activeTheme);
         }
 
         String oldThemeBase = getConnection().translateVaadinUri("theme://");
@@ -620,8 +613,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
 
         if (newTheme != null) {
             getWidget().getParent().addStyleName(newTheme);
-            VOverlay.getOverlayContainer(getConnection())
-                    .addClassName(activeTheme);
 
             updateVaadinFavicon(newTheme);
 

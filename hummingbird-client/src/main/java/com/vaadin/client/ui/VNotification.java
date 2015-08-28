@@ -23,7 +23,6 @@ import java.util.Iterator;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
@@ -31,21 +30,19 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.AnimationUtil;
-import com.vaadin.client.AnimationUtil.AnimationEndListener;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.UIDL;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.ui.aria.AriaHelper;
 import com.vaadin.shared.Position;
 import com.vaadin.shared.ui.ui.NotificationRole;
 import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.shared.ui.ui.UIState.NotificationTypeConfiguration;
 
-public class VNotification extends VOverlay {
+public class VNotification extends PopupPanel {
 
     public static final Position CENTERED = Position.MIDDLE_CENTER;
     public static final Position CENTERED_TOP = Position.TOP_CENTER;
@@ -167,68 +164,19 @@ public class VNotification extends VOverlay {
     }
 
     public void show(Widget widget, Position position, String style) {
-        NotificationTypeConfiguration styleSetup = getUiState(style);
-        setWaiAriaRole(styleSetup);
-
         FlowPanel panel = new FlowPanel();
-        if (hasPrefix(styleSetup)) {
-            panel.add(new Label(styleSetup.prefix));
-            AriaHelper.setVisibleForAssistiveDevicesOnly(panel.getElement(),
-                    true);
-        }
-
         panel.add(widget);
 
-        if (hasPostfix(styleSetup)) {
-            panel.add(new Label(styleSetup.postfix));
-            AriaHelper.setVisibleForAssistiveDevicesOnly(panel.getElement(),
-                    true);
-        }
         setWidget(panel);
         show(position, style);
     }
 
-    private boolean hasPostfix(NotificationTypeConfiguration styleSetup) {
-        return styleSetup != null && styleSetup.postfix != null
-                && !styleSetup.postfix.isEmpty();
-    }
-
-    private boolean hasPrefix(NotificationTypeConfiguration styleSetup) {
-        return styleSetup != null && styleSetup.prefix != null
-                && !styleSetup.prefix.isEmpty();
-    }
-
     public void show(String html, Position position, String style) {
-        NotificationTypeConfiguration styleSetup = getUiState(style);
-        String assistiveDeviceOnlyStyle = AriaHelper.ASSISTIVE_DEVICE_ONLY_STYLE;
-
-        setWaiAriaRole(styleSetup);
-
         String type = "";
         String usage = "";
 
-        if (hasPrefix(styleSetup)) {
-            type = "<span class='" + assistiveDeviceOnlyStyle + "'>"
-                    + styleSetup.prefix + "</span>";
-        }
-
-        if (hasPostfix(styleSetup)) {
-            usage = "<span class='" + assistiveDeviceOnlyStyle + "'>"
-                    + styleSetup.postfix + "</span>";
-        }
-
         setWidget(new HTML(type + html + usage));
         show(position, style);
-    }
-
-    private NotificationTypeConfiguration getUiState(String style) {
-        if (getApplicationConnection() == null
-                || getApplicationConnection().getUIConnector() == null) {
-            return null;
-        }
-
-        return getApplicationConnection().getUIConnector()
-                .getState().notificationConfigurations.get(style);
     }
 
     private void setWaiAriaRole(NotificationTypeConfiguration styleSetup) {
@@ -257,7 +205,6 @@ public class VNotification extends VOverlay {
         super.show();
         updatePositionOffsets(position);
         notifications.add(this);
-        positionOrSizeUpdated();
         /**
          * Android 4 fails to render notifications correctly without a little
          * nudge (#8551) Chrome 41 now requires this too (#17252)
@@ -296,24 +243,9 @@ public class VNotification extends VOverlay {
             // Still animating in, wait for it to finish before touching
             // the animation delay (which would restart the animation-in
             // in some browsers)
-            if (getStyleName()
-                    .contains(VOverlay.ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
-                AnimationUtil.addAnimationEndListener(getElement(),
-                        new AnimationEndListener() {
-                            @Override
-                            public void onAnimationEnd(NativeEvent event) {
-                                if (AnimationUtil.getAnimationName(event)
-                                        .contains(
-                                                VOverlay.ADDITIONAL_CLASSNAME_ANIMATE_IN)) {
-                                    VNotification.this.hide();
-                                }
-                            }
-                        });
-            } else {
-                VNotification.super.hide();
-                fireEvent(new HideEvent(this));
-                notifications.remove(this);
-            }
+            VNotification.super.hide();
+            fireEvent(new HideEvent(this));
+            notifications.remove(this);
         }
     }
 
@@ -573,7 +505,6 @@ public class VNotification extends VOverlay {
                 }
             }.schedule(delayMsec + TOUCH_DEVICE_IDLE_DELAY);
         }
-        notification.setOwner(owner);
         return notification;
     }
 

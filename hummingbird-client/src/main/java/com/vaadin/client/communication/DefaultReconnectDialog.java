@@ -23,9 +23,9 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.ui.VOverlay;
 
 /**
  * The default implementation of the reconnect dialog
@@ -33,7 +33,7 @@ import com.vaadin.client.ui.VOverlay;
  * @since 7.6
  * @author Vaadin Ltd
  */
-public class DefaultReconnectDialog extends VOverlay
+public class DefaultReconnectDialog extends PopupPanel
         implements ReconnectDialog {
     interface MyUiBinder extends UiBinder<HTMLPanel, DefaultReconnectDialog> {
     }
@@ -80,7 +80,6 @@ public class DefaultReconnectDialog extends VOverlay
 
     @Override
     public void show(ApplicationConnection connection) {
-        setOwner(connection.getUIConnector().getWidget());
         show();
     }
 }

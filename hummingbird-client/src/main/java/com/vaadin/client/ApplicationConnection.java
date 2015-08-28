@@ -28,6 +28,7 @@ import com.google.gwt.core.client.js.JsProperty;
 import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
@@ -38,6 +39,7 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
+import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.CommunicationProblemHandler;
@@ -317,6 +319,7 @@ public class ApplicationConnection implements HasHandlers {
     }
 
     public ApplicationConnection() {
+        moveInternalDivs(getInternalsElement());
         // Assuming UI data is eagerly loaded
         uIConnector = GWT.create(UIConnector.class);
         loadingIndicator = GWT.create(VLoadingIndicator.class);
@@ -331,6 +334,13 @@ public class ApplicationConnection implements HasHandlers {
                 .create(ServerCommunicationHandler.class);
         serverCommunicationHandler.setConnection(this);
     }
+
+    private native void moveInternalDivs(Element internalDiv)
+    /*-{
+        @com.google.gwt.uibinder.client.UiBinderUtil::ensureHiddenDiv()();
+        var e = @com.google.gwt.uibinder.client.UiBinderUtil::hiddenDiv;
+        internalDiv.appendChild(e);
+    }-*/;
 
     public void init(ApplicationConfiguration cnf) {
         getLogger().info("Starting application");
@@ -357,10 +367,6 @@ public class ApplicationConnection implements HasHandlers {
 
         initializeClientHooks();
 
-        // Remove the v-app-loading or any splash screen added inside the div by
-        // the user
-        // getContainerElement().setInnerHTML("");
-
         // Activate the initial theme by only adding the class name. Not calling
         // activateTheme here as it will also cause a full layout and updates to
         // the overlay container which has not yet been created at this point
@@ -376,6 +382,20 @@ public class ApplicationConnection implements HasHandlers {
     public Element getContainerElement() {
         // TODO Embedded case
         return Document.get().getBody();
+    }
+
+    public Element getInternalsElement() {
+        for (int i = 0; i < getContainerElement().getChildCount(); i++) {
+            Node child = getContainerElement().getChild(i);
+            if (Element.is(child)) {
+                Element childElement = Element.as(child);
+                if (childElement.hasTagName("vaadin-internals")) {
+                    return childElement;
+                }
+            }
+        }
+        getLogger().warning("No <vaadin-internals> found");
+        return null;
     }
 
     /**

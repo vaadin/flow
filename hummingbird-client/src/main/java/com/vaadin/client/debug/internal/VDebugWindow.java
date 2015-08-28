@@ -49,12 +49,11 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ValueMap;
-import com.vaadin.client.ui.VOverlay;
 
 /**
  * Debug window implementation.
@@ -62,7 +61,7 @@ import com.vaadin.client.ui.VOverlay;
  * @since 7.1
  * @author Vaadin Ltd
  */
-public final class VDebugWindow extends VOverlay {
+public final class VDebugWindow extends PopupPanel {
 
     // CSS classes
     static final String STYLENAME = "v-debugwindow";
@@ -761,18 +760,6 @@ public final class VDebugWindow extends VOverlay {
         }
     }
 
-    /**
-     * Gets the container element for this window. The debug window is always
-     * global to the document and not related to any
-     * {@link ApplicationConnection} in particular.
-     *
-     * @return The global overlay container element.
-     */
-    @Override
-    public com.google.gwt.user.client.Element getOverlayContainer() {
-        return RootPanel.get().getElement();
-    }
-
     /*
      * Inner classes
      */
@@ -783,7 +770,7 @@ public final class VDebugWindow extends VOverlay {
      * @since 7.1
      * @author Vaadin Ltd
      */
-    protected class Menu extends VOverlay {
+    protected class Menu extends PopupPanel {
         FlowPanel content = new FlowPanel();
 
         DebugButton[] sizes = new DebugButton[] {

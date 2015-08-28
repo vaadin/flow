@@ -31,7 +31,6 @@ import com.google.gwt.event.dom.client.KeyEvent;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import com.vaadin.client.ui.VOverlay;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.js.json.JsJsonValue;
@@ -499,17 +498,7 @@ public class Util {
             browseElement = browseElement.getParentElement();
         }
 
-        // No connector found, element is possibly inside a VOverlay
-        // If the overlay has an owner, try to find the owner's connector
-        VOverlay overlay = findWidget(element, VOverlay.class);
-        if (overlay != null && overlay.getOwner() != null) {
-
-            return getConnectorForElement(client,
-                    client.getUIConnector().getWidget(),
-                    overlay.getOwner().getElement());
-        } else {
-            return null;
-        }
+        return null;
     }
 
     /**

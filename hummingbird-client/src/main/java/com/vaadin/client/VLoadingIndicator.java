@@ -244,7 +244,7 @@ public class VLoadingIndicator {
         if (element == null) {
             element = DOM.createDiv();
             element.getStyle().setPosition(Position.ABSOLUTE);
-            getConnection().getContainerElement().appendChild(element);
+            getConnection().getInternalsElement().appendChild(element);
         }
         return DOM.asOld(element);
     }

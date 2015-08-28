@@ -300,9 +300,13 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                     request, context.getSession(), context.getUIClass(),
                     document, headers, fragmentResponse.getUIProvider());
             List<Node> fragmentNodes = fragmentResponse.getFragmentNodes();
-            Element body = document.body();
+
+            Element vaadinInternals = new Element(
+                    Tag.valueOf("vaadin-internals"), "");
+            document.body().appendChild(vaadinInternals);
+
             for (Node node : fragmentNodes) {
-                body.appendChild(node);
+                vaadinInternals.appendChild(node);
             }
 
             setupStandaloneDocument(context, pageResponse);
