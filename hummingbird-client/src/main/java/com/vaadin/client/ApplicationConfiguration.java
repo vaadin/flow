@@ -29,7 +29,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.client.ScriptInjector;
@@ -632,22 +631,8 @@ public class ApplicationConfiguration implements EntryPoint {
             if (isQuietDebugMode()) {
                 window.close();
             } else {
-                // Load debug window styles asynchronously
-                GWT.runAsync(new RunAsyncCallback() {
-                    @Override
-                    public void onSuccess() {
-                        DebugWindowStyles dws = GWT
-                                .create(DebugWindowStyles.class);
-                        dws.css().ensureInjected();
-                    }
-
-                    @Override
-                    public void onFailure(Throwable reason) {
-                        Window.alert(
-                                "Failed to load Vaadin debug window styles");
-                    }
-                });
-
+                DebugWindowStyles dws = GWT.create(DebugWindowStyles.class);
+                dws.css().ensureInjected();
                 window.init();
             }
 
