@@ -5,8 +5,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Component;
@@ -328,6 +330,38 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         }
 
         return (List) dataNode.getMultiValued(Component.class);
+    }
+
+    // Class used as a key to ensure the value is never sent to the client
+    private static class RunBeforeClientResponseKey {
+        // This class has intentionally been left empty
+    }
+
+    @Override
+    public void runBeforeNextClientResponse(Runnable runnable, StateNode node) {
+        StateNode dataNode = getElementDataNode(node, true);
+        @SuppressWarnings("unchecked")
+        Set<Runnable> pendingRunnables = dataNode
+                .get(RunBeforeClientResponseKey.class, Set.class);
+        if (pendingRunnables == null) {
+            pendingRunnables = new HashSet<>();
+            dataNode.put(RunBeforeClientResponseKey.class, pendingRunnables);
+            dataNode.addChangeListener(new NodeChangeListener() {
+                @Override
+                public void onChange(StateNode stateNode,
+                        List<NodeChange> changes) {
+                    dataNode.removeChangeListener(this);
+
+                    @SuppressWarnings("unchecked")
+                    Set<Runnable> pendingRunnables = (Set<Runnable>) dataNode
+                            .remove(RunBeforeClientResponseKey.class);
+                    assert pendingRunnables != null;
+
+                    pendingRunnables.forEach(Runnable::run);
+                }
+            });
+        }
+        pendingRunnables.add(runnable);
     }
 
 }

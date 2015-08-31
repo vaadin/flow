@@ -54,4 +54,6 @@ public interface ElementTemplate {
 
     public Collection<String> getEventData(String eventType, StateNode node);
 
+    public void runBeforeNextClientResponse(Runnable runnable, StateNode node);
+
 }

@@ -976,4 +976,9 @@ public class Element {
         return this;
     }
 
+    public Element runBeforeNextClientResponse(Runnable runnable) {
+        template.runBeforeNextClientResponse(runnable, getNode());
+        return this;
+    }
+
 }
