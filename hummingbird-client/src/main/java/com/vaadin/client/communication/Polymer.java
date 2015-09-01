@@ -2,13 +2,12 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.js.JsProperty;
 import com.google.gwt.core.client.js.JsType;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
 
 public class Polymer {
 
-    public static native PolymerDOM dom(Element element)
+    public static native PolymerDOM dom(Node element)
     /*-{
     return $wnd.Polymer.dom(element);
     }-*/;

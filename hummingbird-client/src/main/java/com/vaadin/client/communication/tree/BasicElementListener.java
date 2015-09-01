@@ -95,7 +95,7 @@ public class BasicElementListener implements NodeListener {
         case "CHILDREN":
             JsonObject removedNode = (JsonObject) change.getRemovedValue();
             Node removedElement = treeUpdater.getOrCreateElement(removedNode);
-            if (Polymer.dom(element).getParentNode() == element) {
+            if (Polymer.dom(removedElement).getParentNode() == element) {
                 Polymer.dom(element).removeChild(removedElement);
             }
             break;
