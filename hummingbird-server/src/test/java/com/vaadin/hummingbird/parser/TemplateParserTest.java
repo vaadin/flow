@@ -1,14 +1,18 @@
 package com.vaadin.hummingbird.parser;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
-
-import com.vaadin.hummingbird.kernel.Element;
-import com.vaadin.hummingbird.kernel.ElementTemplate;
-import com.vaadin.hummingbird.kernel.StateNode;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.hummingbird.kernel.BoundElementTemplate;
+import com.vaadin.hummingbird.kernel.Element;
+import com.vaadin.hummingbird.kernel.ElementTemplate;
+import com.vaadin.hummingbird.kernel.StateNode;
 
 public class TemplateParserTest {
     @Test
@@ -75,7 +79,6 @@ public class TemplateParserTest {
 
     @Test
     public void forLoop() {
-        // This is not exactly the angular syntax
         String templateString = "<ul><li *ng-for='#todo of todos' [innertitle]='todo.title' [outertitle]='title'>{{todo.title}}</li></ul>";
         StateNode node = StateNode.create();
         node.put("title", "Outer title");
@@ -99,5 +102,38 @@ public class TemplateParserTest {
             Assert.assertEquals("Todo " + i, li.getAttribute("innertitle"));
             Assert.assertEquals("Todo " + i, li.getChild(0).getOuterHTML());
         }
+    }
+
+    @SafeVarargs
+    private static <T> Set<T> createSet(T... values) {
+        return new HashSet<>(Arrays.asList(values));
+    }
+
+    @Test
+    public void modelStructureDetection() {
+        String templateString = "<ul>"
+                + "<li *ng-for='#todo of todos' [innertitle]='todo.title' [outertitle]='title'>"
+                + "<span *ng-for='#inner of todo.inners' [innerSomething]='inner.something'>"
+                + "</li>";
+
+        BoundElementTemplate elementTemplate = (BoundElementTemplate) TemplateParser
+                .parse(templateString);
+        ModelStructure structure = elementTemplate.getModelStructure();
+
+        Assert.assertEquals(createSet("todos", "title"), structure.getKeys());
+
+        Assert.assertEquals(1, structure.getSubStructures().size());
+        ModelStructure todoStructure = structure.getSubStructures()
+                .get("todos");
+
+        Assert.assertEquals(createSet("title", "inners"),
+                todoStructure.getKeys());
+
+        Assert.assertEquals(1, todoStructure.getSubStructures().size());
+        ModelStructure innerStructure = todoStructure.getSubStructures()
+                .get("inners");
+
+        Assert.assertEquals(createSet("something"), innerStructure.getKeys());
+        Assert.assertTrue(innerStructure.getSubStructures().isEmpty());
     }
 }

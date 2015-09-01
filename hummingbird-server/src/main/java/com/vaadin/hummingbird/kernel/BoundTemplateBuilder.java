@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.vaadin.hummingbird.parser.EventBinding;
+import com.vaadin.hummingbird.parser.ModelStructure;
 
 public class BoundTemplateBuilder implements TemplateBuilder {
 
@@ -24,6 +25,8 @@ public class BoundTemplateBuilder implements TemplateBuilder {
 
     private List<TemplateBuilder> childTemplates;
     private Supplier<BoundElementTemplate> templateCreator = null;
+
+    private ModelStructure structure;
 
     public BoundTemplateBuilder(String tag) {
         this.tag = tag;
@@ -113,5 +116,14 @@ public class BoundTemplateBuilder implements TemplateBuilder {
 
     public Set<String> getEventHandlerMethods() {
         return Collections.unmodifiableSet(eventHandlerMethods);
+    }
+
+    public void setModelStructure(ModelStructure structure) {
+        assert this.structure == null;
+        this.structure = structure;
+    }
+
+    public ModelStructure getModelStructure() {
+        return structure;
     }
 }

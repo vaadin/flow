@@ -8,6 +8,8 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,13 +38,69 @@ public class TemplateParser {
     private static final Pattern forDefinitionPattern = Pattern
             .compile("#([^\\s]+)\\s+of\\s+([^\\s]+)");
 
-    @FunctionalInterface
-    private interface Context {
-        public List<String> resolve(List<String> path);
+    private static class Context {
+        private Element element;
+        private String outerName;
+        private String innerVar;
 
-        public default ModelPath getPath(String definition) {
-            List<String> path = resolve(Arrays.asList(definition.split("\\.")));
+        public Context(Element element, String outerName, String innerVar) {
+            this.element = element;
+            this.outerName = outerName;
+            this.innerVar = innerVar;
+        }
+    }
+
+    private static class Scope {
+        private LinkedList<Context> contexts = new LinkedList<>();
+
+        private Set<List<String>> seenPaths = new HashSet<>();
+
+        public ModelPath getPath(String definition) {
+
+            List<String> globalPath = new ArrayList<>();
+            List<String> path = Arrays.asList(definition.split("\\."));
+            int depth = 0;
+            Iterator<Context> iterator = contexts.iterator();
+            while (iterator.hasNext()) {
+                Context context = iterator.next();
+                if (path.isEmpty()) {
+                    throw new RuntimeException(definition);
+                }
+
+                if (context.innerVar.equals(path.get(0))) {
+                    path = path.subList(1, path.size());
+                    globalPath.add(0, context.outerName);
+                    break;
+                } else {
+                    depth++;
+                }
+            }
+
+            while (iterator.hasNext()) {
+                Context context = iterator.next();
+                globalPath.add(0, context.outerName);
+            }
+            globalPath.addAll(path);
+
+            seenPaths.add(globalPath);
+
+            path = new ArrayList<>(path);
+            for (int i = 0; i < depth; i++) {
+                path.add(0, "..");
+            }
+
             return new ModelPath(definition, path);
+        }
+
+        public void enterContext(Element element, String outerName,
+                String innerName) {
+            contexts.addFirst(new Context(element, outerName, innerName));
+        }
+
+        public void endContext(Element element) {
+            if (!contexts.isEmpty() && contexts.getFirst().element == element) {
+                contexts.removeFirst();
+            }
         }
     }
 
@@ -52,14 +110,19 @@ public class TemplateParser {
 
     private static TemplateBuilder parseBuilder(String templateString) {
         Document bodyFragment = Jsoup.parseBodyFragment(templateString);
-        return createElementTemplate(bodyFragment.body().child(0), l -> l);
+        Scope scope = new Scope();
+        BoundTemplateBuilder template = createElementTemplate(
+                bodyFragment.body().child(0), scope);
+        ModelStructure structure = ModelStructure.build(scope.seenPaths);
+        template.setModelStructure(structure);
+        return template;
     }
 
-    private static TemplateBuilder createTemplate(Node node, Context context) {
+    private static TemplateBuilder createTemplate(Node node, Scope scope) {
         if (node instanceof Element) {
-            return createElementTemplate((Element) node, context);
+            return createElementTemplate((Element) node, scope);
         } else if (node instanceof TextNode) {
-            return createTextTemplate((TextNode) node, context);
+            return createTextTemplate((TextNode) node, scope);
         } else if (node instanceof Comment) {
             return null;
         } else {
@@ -68,22 +131,21 @@ public class TemplateParser {
     }
 
     private static TemplateBuilder createTextTemplate(TextNode node,
-            Context context) {
+            Scope scope) {
         String text = node.text();
         if (text.startsWith("{{")) {
             if (!text.endsWith("}}")) {
                 throw new RuntimeException();
             }
             String modelPath = text.substring(2, text.length() - 2);
-            return TemplateBuilder.dynamicText(context.getPath(modelPath));
+            return TemplateBuilder.dynamicText(scope.getPath(modelPath));
         } else {
             return TemplateBuilder.staticText(text);
         }
     }
 
-    private static TemplateBuilder createElementTemplate(Element element,
-            Context context) {
-
+    private static BoundTemplateBuilder createElementTemplate(Element element,
+            Scope scope) {
         BoundTemplateBuilder builder = TemplateBuilder
                 .withTag(element.tagName());
 
@@ -98,22 +160,11 @@ public class TemplateParser {
                     }
 
                     String innerVarName = matcher.group(1);
-                    ModelPath listPath = context.getPath(matcher.group(2));
+                    String outerVarName = matcher.group(2);
+                    ModelPath listPath = scope.getPath(outerVarName);
 
-                    context = new Context() {
-                        @Override
-                        public List<String> resolve(List<String> path) {
-                            if (path.isEmpty()) {
-                                throw new IndexOutOfBoundsException();
-                            } else if (innerVarName.equals(path.get(0))) {
-                                return path.subList(1, path.size());
-                            } else {
-                                path = new ArrayList<>(path);
-                                path.add(0, "..");
-                                return path;
-                            }
-                        }
-                    };
+                    scope.enterContext(element, listPath.getNodeProperty(),
+                            innerVarName);
 
                     builder.setForDefinition(listPath, innerVarName);
                 } else {
@@ -132,7 +183,7 @@ public class TemplateParser {
             } else if (name.startsWith("[")) {
                 String attibuteName = name.substring(1, name.length() - 1);
                 builder.bindAttribute(new ModelAttributeBinding(attibuteName,
-                        context.getPath(value)));
+                        scope.getPath(value)));
             } else if (name.startsWith("(")) {
                 String eventName = name.substring(1, name.length() - 1);
 
@@ -148,12 +199,13 @@ public class TemplateParser {
         }
 
         for (Node node : element.childNodes()) {
-            TemplateBuilder childTemplate = createTemplate(node, context);
+            TemplateBuilder childTemplate = createTemplate(node, scope);
             if (childTemplate != null) {
                 builder.addChild(childTemplate);
             }
         }
 
+        scope.endContext(element);
         return builder;
     }
 
