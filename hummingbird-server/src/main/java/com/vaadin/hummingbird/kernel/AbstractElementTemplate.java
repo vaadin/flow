@@ -238,7 +238,8 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
             childNode.put(Keys.PARENT_TEMPLATE, this);
         }
 
-        List<Component> components = getComponents(childNode, false);
+        List<Component> components = child.getTemplate()
+                .getComponents(childNode, false);
         for (int i = components.size() - 1; i >= 0; i--) {
             // Parent before child
             components.get(i).elementAttached();
@@ -271,7 +272,8 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
         getChildrenList(node).ifPresent(list -> {
             // Detach event while still attached to the DOM
-            List<Component> components = getComponents(childNode, false);
+            List<Component> components = element.getTemplate()
+                    .getComponents(childNode, false);
             for (int i = components.size() - 1; i >= 0; i--) {
                 // Parent before child
                 components.get(i).elementDetached();
