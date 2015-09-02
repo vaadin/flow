@@ -132,7 +132,9 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
             }
             change.put("value", JsonConverter.toJson(value));
         }
-        assert key instanceof String || key instanceof Enum;
+        assert key instanceof String || key instanceof Enum
+                || key instanceof Integer : "key type "
+                        + key.getClass().getName() + " not supported";
         change.put("key", String.valueOf(key));
 
         int length = changes.length();
