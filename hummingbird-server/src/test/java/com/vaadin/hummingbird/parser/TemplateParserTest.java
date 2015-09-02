@@ -1,9 +1,7 @@
 package com.vaadin.hummingbird.parser;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.junit.Assert;
@@ -104,15 +102,10 @@ public class TemplateParserTest {
         }
     }
 
-    @SafeVarargs
-    private static <T> Set<T> createSet(T... values) {
-        return new HashSet<>(Arrays.asList(values));
-    }
-
     @Test
     public void modelStructureDetection() {
         String templateString = "<ul>"
-                + "<li *ng-for='#todo of todos' [innertitle]='todo.title' [outertitle]='title'>"
+                + "<li *ng-for='#todo of todos' [innertitle]='todo.title2' [outertitle]='title'>"
                 + "<span *ng-for='#inner of todo.inners' [innerSomething]='inner.something'>"
                 + "</li>";
 
@@ -120,20 +113,22 @@ public class TemplateParserTest {
                 .parse(templateString);
         ModelStructure structure = elementTemplate.getModelStructure();
 
-        Assert.assertEquals(createSet("todos", "title"), structure.getKeys());
+        Assert.assertEquals(Collections.singleton("title"),
+                structure.getSimpleKeys());
 
         Assert.assertEquals(1, structure.getSubStructures().size());
         ModelStructure todoStructure = structure.getSubStructures()
                 .get("todos");
 
-        Assert.assertEquals(createSet("title", "inners"),
-                todoStructure.getKeys());
+        Assert.assertEquals(Collections.singleton("title2"),
+                todoStructure.getSimpleKeys());
 
         Assert.assertEquals(1, todoStructure.getSubStructures().size());
         ModelStructure innerStructure = todoStructure.getSubStructures()
                 .get("inners");
 
-        Assert.assertEquals(createSet("something"), innerStructure.getKeys());
+        Assert.assertEquals(Collections.singleton("something"),
+                innerStructure.getSimpleKeys());
         Assert.assertTrue(innerStructure.getSubStructures().isEmpty());
     }
 }

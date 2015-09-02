@@ -11,18 +11,19 @@ import java.util.stream.Collectors;
 
 public class ModelStructure {
 
-    private Set<String> keys;
+    private Set<String> simpleKeys;
     private Map<String, ModelStructure> subStructures;
 
-    public ModelStructure(Set<String> keys,
+    public ModelStructure(Set<String> simpleKeys,
             Map<String, ModelStructure> subStructures) {
-        this.keys = Collections.unmodifiableSet(new HashSet<>(keys));
+        this.simpleKeys = Collections
+                .unmodifiableSet(new HashSet<>(simpleKeys));
         this.subStructures = Collections
                 .unmodifiableMap(new HashMap<>(subStructures));
     }
 
-    public Set<String> getKeys() {
-        return keys;
+    public Set<String> getSimpleKeys() {
+        return simpleKeys;
     }
 
     public Map<String, ModelStructure> getSubStructures() {
@@ -44,7 +45,10 @@ public class ModelStructure {
             }
         });
 
-        return new ModelStructure(groupedByPrefix.keySet(), subStructures);
+        Set<String> simpleKeys = groupedByPrefix.keySet().stream()
+                .filter(key -> !subStructures.containsKey(key))
+                .collect(Collectors.toSet());
+        return new ModelStructure(simpleKeys, subStructures);
     }
 
 }
