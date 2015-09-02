@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.core.client.js.JsFunction;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
@@ -322,24 +323,34 @@ public class BoundElementTemplate extends Template {
         treeUpdater.sendRpc("vTemplateEvent", arguments);
     }
 
+    @JsFunction
+    @FunctionalInterface
+    private interface Setter {
+        public void set(JsonValue value);
+    }
+
     @Override
-    public JavaScriptObject createModelProxy(JsonObject node) {
+    public JavaScriptObject createModelProxy(JsonObject node,
+            TreeUpdater updater) {
         if (modelStructure == null
                 || modelStructure.getType() == JsonType.NULL) {
             throw new RuntimeException();
         }
+        int nodeId = updater.getNodeId(node).intValue();
 
         JavaScriptObject object = JavaScriptObject.createObject();
         for (int i = 0; i < modelStructure.length(); i++) {
-            JsonValue value = modelStructure.get(i);
-            if (value.getType() == JsonType.STRING) {
-                String name = value.asString();
-                defineModelProperty(object, node, name);
-            } else if (value.getType() == JsonType.OBJECT) {
+            JsonValue entry = modelStructure.get(i);
+            if (entry.getType() == JsonType.STRING) {
+                String name = entry.asString();
+                defineModelProperty(object, node, name, value -> {
+                    updater.applyLocalChange(Changes.put(nodeId, name, value));
+                });
+            } else if (entry.getType() == JsonType.OBJECT) {
                 throw new RuntimeException("Not yet supported");
             } else {
                 throw new RuntimeException(
-                        "Unexpected model structure value: " + value.toJson());
+                        "Unexpected model structure value: " + entry.toJson());
             }
         }
 
@@ -347,17 +358,14 @@ public class BoundElementTemplate extends Template {
     }
 
     private static native void defineModelProperty(JavaScriptObject object,
-            JsonObject node, String name)
+            JsonObject node, String name, Setter setter)
             /*-{
                 Object.defineProperty(object, name, {
                     enumerable: true,
                     get: function() {
-                        console.log("Getting value for " + name);
                         return node[name];
                     },
-                    set: function(value) {
-                        console.log("Setting " + name + " to", value);
-                    }
+                    set: setter
                 });
             }-*/;
 }

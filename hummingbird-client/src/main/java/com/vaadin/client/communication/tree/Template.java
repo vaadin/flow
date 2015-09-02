@@ -18,7 +18,7 @@ public abstract class Template {
         throw new RuntimeException("Not supported for " + getClass().getName());
     }
 
-    public JavaScriptObject createModelProxy(JsonObject node) {
+    public JavaScriptObject createModelProxy(JsonObject node, TreeUpdater updater) {
         throw new RuntimeException("Not supported for " + getClass().getName());
     }
 

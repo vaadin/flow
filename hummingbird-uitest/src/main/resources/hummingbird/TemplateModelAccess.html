@@ -1,1 +1,4 @@
-<input [value]=data (change)="console.log(model.data); model.data=element.value; server.dataUpdated()"/>
+<div>
+	<input [value]="data" (change)="model.data=element.value; console.log(model.data)" />
+	<div>{{data}}</div>
+</div>

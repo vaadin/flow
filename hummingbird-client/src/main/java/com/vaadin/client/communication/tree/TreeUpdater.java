@@ -364,7 +364,7 @@ public class TreeUpdater {
             return createElement(template, node,
                     new NodeContext(new ElementNotifier(this, node, ""),
                             template.createServerProxy(nodeId),
-                            template.createModelProxy(node)));
+                            template.createModelProxy(node, this)));
         } else {
             if (nodeIdToBasicElement.containsKey(nodeId)) {
                 return nodeIdToBasicElement.get(nodeId);
@@ -393,11 +393,25 @@ public class TreeUpdater {
         }
     }
 
+    public void applyLocalChange(Change change) {
+        JsonArray transactionChanges = Json.createArray();
+        transactionChanges.set(transactionChanges.length(), (JsonValue) change);
+        applyNodeChanges(transactionChanges);
+    }
+
     public void update(JsonObject elementTemplates, JsonArray elementChanges,
             JsonArray rpc) {
         extractTemplates(elementTemplates);
 
-        updateTree(elementChanges);
+        applyNodeChanges(elementChanges);
+
+        if (rpc != null) {
+            runRpc(rpc);
+        }
+    }
+
+    private void applyNodeChanges(JsonArray nodeChanges) {
+        updateTree(nodeChanges);
 
         logTree("After changes", idToNode.get(Integer.valueOf(1)));
 
@@ -406,11 +420,7 @@ public class TreeUpdater {
             rootInitialized = true;
         }
 
-        notifyListeners(elementChanges);
-
-        if (rpc != null) {
-            runRpc(rpc);
-        }
+        notifyListeners(nodeChanges);
     }
 
     private void runRpc(JsonArray rpcInvocations) {
