@@ -5,19 +5,21 @@ import com.google.gwt.dom.client.Node;
 
 import elemental.json.JsonObject;
 
-abstract class Template {
+public abstract class Template {
     private int id;
 
     public Template(int id) {
         this.id = id;
     }
 
-    public abstract Node createElement(JsonObject node,
-            NodeContext context);
+    public abstract Node createElement(JsonObject node, NodeContext context);
 
     public JavaScriptObject createServerProxy(Integer nodeId) {
-        throw new RuntimeException(
-                "Not supported for " + getClass().getName());
+        throw new RuntimeException("Not supported for " + getClass().getName());
+    }
+
+    public JavaScriptObject createModelProxy(JsonObject node) {
+        throw new RuntimeException("Not supported for " + getClass().getName());
     }
 
     public int getId() {

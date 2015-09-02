@@ -37,9 +37,11 @@ public class ForElementTemplate extends Template {
 
             ElementNotifier notifier = new ElementNotifier(treeUpdater,
                     childNode, getInnerScope() + ".");
-            Node child = treeUpdater.createElement(getChildTemplate(),
-                    childNode,
-                    new NodeContext(notifier, parentContext.getServerProxy()));
+            Node child = treeUpdater
+                    .createElement(getChildTemplate(), childNode,
+                            new NodeContext(notifier,
+                                    parentContext.getServerProxy(),
+                                    parentContext.getModelProxy()));
 
             Node insertionPoint = findNodeBefore(change.getIndex());
 

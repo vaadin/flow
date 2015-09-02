@@ -126,6 +126,8 @@ public class BoundElementTemplate extends Template {
 
     private final int[] childElementTemplates;
 
+    private final JsonArray modelStructure;
+
     public BoundElementTemplate(TreeUpdater treeUpdater,
             JsonObject templateDescription, int templateId) {
         super(templateId);
@@ -177,6 +179,7 @@ public class BoundElementTemplate extends Template {
             eventHandlerMethods = null;
         }
 
+        modelStructure = templateDescription.getArray("modelStructure");
     }
 
     private static Map<String, String> readStringMap(JsonObject json) {
@@ -234,6 +237,9 @@ public class BoundElementTemplate extends Template {
 
                             newFunctionParams.push("server");
                             params.push(context.getServerProxy());
+
+                            newFunctionParams.push("model");
+                            params.push(context.getModelProxy());
 
                             newFunctionParams.push(handler);
 
@@ -315,4 +321,43 @@ public class BoundElementTemplate extends Template {
 
         treeUpdater.sendRpc("vTemplateEvent", arguments);
     }
+
+    @Override
+    public JavaScriptObject createModelProxy(JsonObject node) {
+        if (modelStructure == null
+                || modelStructure.getType() == JsonType.NULL) {
+            throw new RuntimeException();
+        }
+
+        JavaScriptObject object = JavaScriptObject.createObject();
+        for (int i = 0; i < modelStructure.length(); i++) {
+            JsonValue value = modelStructure.get(i);
+            if (value.getType() == JsonType.STRING) {
+                String name = value.asString();
+                defineModelProperty(object, node, name);
+            } else if (value.getType() == JsonType.OBJECT) {
+                throw new RuntimeException("Not yet supported");
+            } else {
+                throw new RuntimeException(
+                        "Unexpected model structure value: " + value.toJson());
+            }
+        }
+
+        return object;
+    }
+
+    private static native void defineModelProperty(JavaScriptObject object,
+            JsonObject node, String name)
+            /*-{
+                Object.defineProperty(object, name, {
+                    enumerable: true,
+                    get: function() {
+                        console.log("Getting value for " + name);
+                        return node[name];
+                    },
+                    set: function(value) {
+                        console.log("Setting " + name + " to", value);
+                    }
+                });
+            }-*/;
 }

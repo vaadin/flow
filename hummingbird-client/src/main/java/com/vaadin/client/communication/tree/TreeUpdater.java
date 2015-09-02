@@ -363,7 +363,8 @@ public class TreeUpdater {
 
             return createElement(template, node,
                     new NodeContext(new ElementNotifier(this, node, ""),
-                            template.createServerProxy(nodeId)));
+                            template.createServerProxy(nodeId),
+                            template.createModelProxy(node)));
         } else {
             if (nodeIdToBasicElement.containsKey(nodeId)) {
                 return nodeIdToBasicElement.get(nodeId);
