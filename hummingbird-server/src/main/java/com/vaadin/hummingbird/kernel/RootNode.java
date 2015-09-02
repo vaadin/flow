@@ -200,4 +200,8 @@ public class RootNode extends MapStateNode {
         pendingRpc.add(new PendingRpc(context, javascript, params));
     }
 
+    public boolean isDirty() {
+        return !dirtyInTransaction.isEmpty();
+    }
+
 }

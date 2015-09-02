@@ -38,6 +38,7 @@ import com.vaadin.hummingbird.kernel.AbstractElementTemplate.Keys;
 import com.vaadin.hummingbird.kernel.BasicElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
+import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.RootNode;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.navigator.Navigator;
@@ -66,6 +67,7 @@ import com.vaadin.util.CurrentInstance;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -299,7 +301,8 @@ public abstract class UI extends CssLayout
             addComponent(content);
         }
 
-        getPage().getJavaScript().addFunction("vEvent", json -> {
+        com.vaadin.ui.JavaScript js = getPage().getJavaScript();
+        js.addFunction("vEvent", json -> {
             int nodeId = (int) json.getNumber(0);
             String eventType = json.getString(1);
             JsonObject eventData = json.getObject(2);
@@ -318,13 +321,49 @@ public abstract class UI extends CssLayout
             e.dispatchEvent(eventType, eventData);
         });
 
-        getPage().getJavaScript().addFunction("vTemplateEvent",
-                this::handleTemplateEvent);
+        js.addFunction("vModelChange", this::handleModelChange);
+        js.addFunction("vTemplateEvent", this::handleTemplateEvent);
     }
 
     @Override
     public int getLayerIndex() {
         return Layer.UI_LAYER_INDEX;
+    }
+
+    private void handleModelChange(JsonArray json) {
+        RootNode rootNode = root.getRootNode();
+        if (rootNode.isDirty()) {
+            throw new RuntimeException(
+                    "Applying model changes from the client while the tree is dirty is not yet supported.");
+        }
+
+        for (int i = 0; i < json.length(); i++) {
+            JsonObject change = json.getObject(i);
+            int nodeId = (int) change.getNumber("id");
+            StateNode node = rootNode.getById(nodeId);
+            if (node == null) {
+                throw new RuntimeException(
+                        "Got change for missing node: " + change.toJson());
+            }
+
+            String type = change.getString("type");
+            switch (type) {
+            case "put": {
+                String key = change.getString("key");
+                JsonValue value = change.get("value");
+                Object decodedValue = JsonConverter
+                        .fromJson(JsonConverter.findType(value), value);
+                node.put(key, decodedValue);
+                break;
+            }
+            default:
+                throw new RuntimeException(
+                        "Change type not yet? supported: " + change.toJson());
+            }
+        }
+
+        // Flush changes without producing any changes to send to the client
+        rootNode.commit();
     }
 
     private void handleTemplateEvent(JsonArray json) {

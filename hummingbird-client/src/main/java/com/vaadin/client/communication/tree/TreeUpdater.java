@@ -194,13 +194,33 @@ public class TreeUpdater {
         this.client = client;
     }
 
+    private JsonArray pendingChanges = Json.createArray();
+    private ArrayList<MethodInvocation> pendingInvocations;
+
     public void sendRpc(String callbackName, JsonArray arguments) {
+        if (pendingInvocations == null) {
+            pendingInvocations = new ArrayList<>();
+            Scheduler.get().scheduleFinally(() -> {
+                if (pendingChanges.length() != 0) {
+                    rpcQueue.add(new MethodInvocation("vModelChange",
+                            pendingChanges), false);
+                    pendingChanges = Json.createArray();
+                }
+
+                for (MethodInvocation methodInvocation : pendingInvocations) {
+                    rpcQueue.add(methodInvocation, false);
+                }
+                pendingInvocations = null;
+
+                rpcQueue.flush();
+            });
+        }
+
         /*
          * Must invoke manually as the RPC interface can't be used in GWT
          * because of the JSONArray parameter
          */
-        rpcQueue.add(new MethodInvocation(callbackName, arguments), false);
-        rpcQueue.flush();
+        pendingInvocations.add(new MethodInvocation(callbackName, arguments));
     }
 
     public static void setAttributeOrProperty(Element element, String key,
@@ -394,6 +414,8 @@ public class TreeUpdater {
     }
 
     public void applyLocalChange(Change change) {
+        pendingChanges.set(pendingChanges.length(), (JsonValue) change);
+
         JsonArray transactionChanges = Json.createArray();
         transactionChanges.set(transactionChanges.length(), (JsonValue) change);
         applyNodeChanges(transactionChanges);

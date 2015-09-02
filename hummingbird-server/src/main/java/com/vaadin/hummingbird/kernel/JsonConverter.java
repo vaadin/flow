@@ -58,4 +58,19 @@ public class JsonConverter {
                     "Can't encode value of type " + value.getClass().getName());
         }
     }
+
+    public static Type findType(JsonValue value) {
+        switch (value.getType()) {
+        case BOOLEAN:
+            return Boolean.class;
+        case NUMBER:
+            return Double.class;
+        case STRING:
+        case NULL:
+            return String.class;
+        default:
+            throw new RuntimeException(
+                    "No simple type available for " + value.toJson());
+        }
+    }
 }
