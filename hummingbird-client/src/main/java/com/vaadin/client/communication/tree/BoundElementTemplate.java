@@ -347,7 +347,7 @@ public class BoundElementTemplate extends Template {
                     updater.applyLocalChange(Changes.put(nodeId, name, value));
                 });
             } else if (entry.getType() == JsonType.OBJECT) {
-                throw new RuntimeException("Not yet supported");
+                // Silently ignore for now to avoid breaking existing apps
             } else {
                 throw new RuntimeException(
                         "Unexpected model structure value: " + entry.toJson());
