@@ -3,7 +3,7 @@ package com.vaadin.client.communication.tree;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
-import com.vaadin.client.communication.Polymer;
+import com.vaadin.client.communication.DomApi;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -59,16 +59,16 @@ public class BasicElementListener implements NodeListener {
 
     private static void insertNodeAtIndex(Element parent, Node child,
             int index) {
-        if (Polymer.dom(parent).getChildNodes().size() == index) {
-            Polymer.dom(parent).appendChild(child);
+        if (DomApi.wrap(parent).getChildNodes().size() == index) {
+            DomApi.wrap(parent).appendChild(child);
             if (TreeUpdater.debug) {
                 TreeUpdater
                         .debug("Appended node " + TreeUpdater.debugHtml(child)
                                 + " into " + TreeUpdater.debugHtml(parent));
             }
         } else {
-            Node reference = Polymer.dom(parent).getChildNodes().get(index);
-            Polymer.dom(parent).insertBefore(child, reference);
+            Node reference = DomApi.wrap(parent).getChildNodes().get(index);
+            DomApi.wrap(parent).insertBefore(child, reference);
             if (TreeUpdater.debug) {
                 TreeUpdater.debug("Inserted node "
                         + TreeUpdater.debugHtml(child) + " into "
@@ -95,8 +95,8 @@ public class BasicElementListener implements NodeListener {
         case "CHILDREN":
             JsonObject removedNode = (JsonObject) change.getRemovedValue();
             Node removedElement = treeUpdater.getOrCreateElement(removedNode);
-            if (Polymer.dom(removedElement).getParentNode() == element) {
-                Polymer.dom(element).removeChild(removedElement);
+            if (DomApi.wrap(removedElement).getParentNode() == element) {
+                DomApi.wrap(element).removeChild(removedElement);
             }
             break;
         default:

@@ -32,7 +32,7 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Text;
 import com.google.gwt.user.client.Window.Location;
 import com.vaadin.client.ApplicationConnection.Client;
-import com.vaadin.client.communication.Polymer;
+import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.tree.NodeListener.Change;
 import com.vaadin.shared.communication.MethodInvocation;
@@ -234,7 +234,7 @@ public class TreeUpdater {
                 element.setPropertyString(key, null);
             }
             if (element.hasAttribute(key)) {
-                Polymer.dom(element).removeAttribute(key);
+                DomApi.wrap(element).removeAttribute(key);
                 if (debug) {
                     debug("Removed attribute " + key + " from "
                             + debugHtml(element));
@@ -247,7 +247,7 @@ public class TreeUpdater {
                     debug("Set attribute " + key + "=\"" + value + "\" for "
                             + debugHtml(element));
                 }
-                Polymer.dom(element).setAttribute(key, value.asString());
+                DomApi.wrap(element).setAttribute(key, value.asString());
             } else {
                 if (value.getType() == JsonType.BOOLEAN) {
                     if (debug) {

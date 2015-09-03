@@ -11,7 +11,7 @@ import com.google.gwt.core.client.js.JsFunction;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
-import com.vaadin.client.communication.Polymer;
+import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.tree.ElementNotifier.ElementUpdater;
 import com.vaadin.client.communication.tree.NodeListener.ListInsertChange;
 import com.vaadin.client.communication.tree.NodeListener.ListInsertNodeChange;
@@ -52,9 +52,9 @@ public class BoundElementTemplate extends Template {
             String classPartMapping = getClassPartMapping(property);
             if (classPartMapping != null) {
                 if (isTrueIsh(change.getValue())) {
-                    Polymer.dom(element).getClassList().add(classPartMapping);
+                    DomApi.wrap(element).getClassList().add(classPartMapping);
                 } else {
-                    Polymer.dom(element).getClassList()
+                    DomApi.wrap(element).getClassList()
                             .remove(classPartMapping);
                 }
             }
@@ -97,7 +97,7 @@ public class BoundElementTemplate extends Template {
 
             String classPartMapping = getClassPartMapping(property);
             if (classPartMapping != null) {
-                Polymer.dom(element).getClassList().remove(classPartMapping);
+                DomApi.wrap(element).getClassList().remove(classPartMapping);
             }
         }
 
@@ -214,7 +214,7 @@ public class BoundElementTemplate extends Template {
         assert element != null;
 
         for (Entry<String, String> entry : defaultAttributeValues.entrySet()) {
-            Polymer.dom(element).setAttribute(entry.getKey(), entry.getValue());
+            DomApi.wrap(element).setAttribute(entry.getKey(), entry.getValue());
         }
 
         if (events != null) {
@@ -256,7 +256,7 @@ public class BoundElementTemplate extends Template {
             for (int templateId : childElementTemplates) {
                 Node newChildElement = treeUpdater.createElement(
                         treeUpdater.getTemplate(templateId), node, context);
-                Polymer.dom(element).appendChild(newChildElement);
+                DomApi.wrap(element).appendChild(newChildElement);
             }
         }
     }
