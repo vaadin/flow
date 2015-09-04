@@ -131,7 +131,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     @Override
     public void setId(String id) {
-        getState().id = id;
         getElement().setAttribute("id", id);
     }
 
@@ -142,7 +141,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     @Override
     public String getId() {
-        return getState(false).id;
+        return getElement().getAttribute("id");
     }
 
     /*

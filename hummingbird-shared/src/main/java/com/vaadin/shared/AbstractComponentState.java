@@ -33,7 +33,6 @@ public class AbstractComponentState extends SharedState {
     // Note: for the caption, there is a difference between null and an empty
     // string!
     public String caption = null;
-    public String id = null;
     public String primaryStyleName = null;
 
     // HTML formatted error message for the component

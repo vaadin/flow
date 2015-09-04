@@ -107,15 +107,6 @@ public abstract class AbstractComponentConnector extends AbstractConnector
     @Override
     public void onStateChanged(StateChangeEvent stateChangeEvent) {
         Profiler.enter("AbstractComponentConnector.onStateChanged");
-        Profiler.enter("AbstractComponentConnector.onStateChanged update id");
-        if (stateChangeEvent.hasPropertyChanged("id")) {
-            if (getState().id != null) {
-                getWidget().getElement().setId(getState().id);
-            } else if (!stateChangeEvent.isInitialStateChange()) {
-                getWidget().getElement().removeAttribute("id");
-            }
-        }
-        Profiler.leave("AbstractComponentConnector.onStateChanged update id");
 
         /*
          * Disabled state may affect (override) tabindex so the order must be
