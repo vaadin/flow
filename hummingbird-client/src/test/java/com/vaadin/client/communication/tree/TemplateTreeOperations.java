@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Text;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.json.Json;
@@ -90,5 +91,49 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals("doSomething", parameters.getString(2));
         // Parameter (element.something)
         assertEquals(10, (int) parameters.getNumber(3));
+    }
+
+    public void testChildTemplates() {
+        String boundTextJson = "{'type': 'DynamicTextTemplate', 'binding':'boundText'}";
+        applyTemplate(1, Json.parse(boundTextJson.replace('\'', '"')));
+
+        String basicChildJson = "{'type': 'BoundElementTemplate', 'tag':'input',"
+                + "'defaultAttributes': {'type': 'password'},"
+                + "'attributeBindings': {'value': 'value'}}";
+        applyTemplate(2, Json.parse(basicChildJson.replace('\'', '"')));
+
+        String staticTextJson = "{'type': 'StaticTextTemplate', 'content': 'static text'}";
+        applyTemplate(3, Json.parse(staticTextJson.replace('\'', '"')));
+
+        String parentJson = "{'type': 'BoundElementTemplate', 'tag':'div',"
+                + "'children': [1, 2, 3],"
+                + "'modelStructure': ['value', 'boundText']}";
+
+        applyTemplate(4, Json.parse(parentJson.replace('\'', '"')));
+
+        applyChanges(
+                Changes.listInsertNode(containerElementId, "CHILDREN", 0, 3),
+                Changes.put(3, "TEMPLATE", Json.create(4)),
+                Changes.put(3, "value", "Hello"),
+                Changes.put(3, "boundText", "dynamic text"));
+
+        Element parent = updater.getRootElement().getFirstChildElement();
+        assertEquals(3, parent.getChildCount());
+
+        Text boundText = Text.as(parent.getChild(0));
+        assertEquals("dynamic text", boundText.getData());
+
+        Element basicChild = Element.as(parent.getChild(1));
+        assertEquals("password", basicChild.getAttribute("type"));
+        assertEquals("Hello", basicChild.getPropertyString("value"));
+
+        Text staticText = Text.as(parent.getChild(2));
+        assertEquals("static text", staticText.getData());
+
+        applyChanges(Changes.put(3, "value", "new value"),
+                Changes.put(3, "boundText", "very dynamic text"));
+
+        assertEquals("new value", basicChild.getPropertyString("value"));
+        assertEquals("very dynamic text", boundText.getData());
     }
 }
