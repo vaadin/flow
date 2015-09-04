@@ -1,4 +1,4 @@
-package com.vaadin.ui;
+package com.vaadin.hummingbird.component;
 
 import javax.servlet.http.HttpSession;
 
@@ -11,6 +11,10 @@ import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WrappedHttpSession;
+import com.vaadin.ui.AbstractOrderedLayout;
+import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.UI;
 
 public class AbstractOrderedLayoutTest
         extends AbstractSimpleDOMComponentContainerTest {

@@ -1,4 +1,4 @@
-package com.vaadin.ui;
+package com.vaadin.hummingbird.component;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -22,6 +22,11 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WrappedHttpSession;
 import com.vaadin.server.WrappedSession;
 import com.vaadin.server.communication.UIInitHandler;
+import com.vaadin.ui.AbstractSimpleDOMComponentContainer;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentTestBase;
+import com.vaadin.ui.UI;
 
 public class AbstractSimpleDOMComponentContainerTest extends ComponentTestBase {
 

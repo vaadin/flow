@@ -1,9 +1,10 @@
-package com.vaadin.ui;
+package com.vaadin.hummingbird.component;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.kernel.ElementTest;
+import com.vaadin.ui.VerticalLayout;
 
 public class VerticalLayoutTest {
 
