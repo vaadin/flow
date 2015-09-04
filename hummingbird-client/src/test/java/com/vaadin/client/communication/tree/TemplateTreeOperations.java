@@ -136,4 +136,47 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals("new value", basicChild.getPropertyString("value"));
         assertEquals("very dynamic text", boundText.getData());
     }
+
+    public void testForTemplate() {
+        String forJson = "{'type': 'ForElementTemplate', 'tag':'input',"
+                + "'modelKey': 'items', 'innerScope':'item',"
+                + "'defaultAttributes': {'type': 'checkbox'},"
+                + "'attributeBindings': {'item.checked': 'checked'}" + "}";
+        applyTemplate(1, Json.parse(forJson.replace('\'', '"')));
+
+        String parentJson = "{'type': 'BoundElementTemplate', 'tag':'div',"
+                + "'children': [1],"
+                + "'modelStructure': [{'items': ['checked']}]}";
+        applyTemplate(2, Json.parse(parentJson.replace('\'', '"')));
+
+        applyChanges(
+                Changes.listInsertNode(containerElementId, "CHILDREN", 0, 3),
+                Changes.put(3, "TEMPLATE", Json.create(2)));
+
+        Element parent = updater.getRootElement().getFirstChildElement();
+        assertEquals(1, parent.getChildCount());
+        // 8 = comment node
+        assertEquals(8, parent.getChild(0).getNodeType());
+
+        applyChanges(Changes.listInsertNode(3, "items", 0, 4),
+                Changes.put(4, "checked", Json.create(true)));
+
+        assertEquals(2, parent.getChildCount());
+
+        Element firstChild = Element.as(parent.getChild(1));
+        assertEquals("INPUT", firstChild.getTagName());
+        assertEquals("checkbox", firstChild.getAttribute("type"));
+        assertTrue(firstChild.getPropertyBoolean("checked"));
+
+        applyChanges(Changes.listInsertNode(3, "items", 1, 5));
+        assertEquals(3, parent.getChildCount());
+        Element secondChild = firstChild.getNextSiblingElement();
+        assertTrue(secondChild == parent.getChild(2));
+
+        applyChanges(Changes.listRemove(3, "items", 0));
+
+        assertEquals(2, parent.getChildCount());
+        assertSame(parent, secondChild.getParentElement());
+        assertNull(firstChild.getParentElement());
+    }
 }
