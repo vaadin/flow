@@ -15,6 +15,7 @@ import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
@@ -101,6 +102,10 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
 
     protected void applyRpc(JsonArray rpcData) {
         updater.update(Json.createObject(), Json.createArray(), rpcData);
+    }
+
+    protected void applyTemplate(JsonObject templateMap) {
+        updater.update(templateMap, Json.createArray(), null);
     }
 
 }
