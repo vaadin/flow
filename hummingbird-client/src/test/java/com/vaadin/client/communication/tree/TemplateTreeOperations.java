@@ -12,7 +12,6 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
                 + "'attributeBindings': {'value': 'bound'},"
                 + "'classPartBindings': {'conditional': 'part'},"
                 + "'modelStructure': ['value', 'conditional']}";
-        TreeUpdater.debug(json.replace('\'', '"'));
         JsonObject template = Json.parse(json.replace('\'', '"'));
 
         JsonObject templates = Json.createObject();
