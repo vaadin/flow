@@ -2,6 +2,7 @@ package com.vaadin.client.communication.tree;
 
 import com.vaadin.client.communication.tree.NodeListener.Change;
 import com.vaadin.client.communication.tree.NodeListener.ListInsertChange;
+import com.vaadin.client.communication.tree.NodeListener.ListInsertNodeChange;
 import com.vaadin.client.communication.tree.NodeListener.ListRemoveChange;
 import com.vaadin.client.communication.tree.NodeListener.PutChange;
 import com.vaadin.client.communication.tree.NodeListener.PutNodeChange;
@@ -39,12 +40,12 @@ public class Changes {
         return (PutNodeChange) change;
     }
 
-    public static ListInsertChange listInsertNode(int id, String key, int index,
-            int childId) {
+    public static ListInsertNodeChange listInsertNode(int id, String key,
+            int index, int childId) {
         JsonObject change = createChange(id, "listInsertNode", key);
         change.put("index", index);
         change.put("value", childId);
-        return (ListInsertChange) change;
+        return (ListInsertNodeChange) change;
     }
 
     public static RemoveChange remove(int id, String key) {
@@ -56,5 +57,18 @@ public class Changes {
         JsonObject change = createChange(id, "listRemove", key);
         change.put("index", index);
         return (ListRemoveChange) change;
+    }
+
+    public static ListInsertChange listInsert(int id, String key, int index,
+            JsonValue value) {
+        JsonObject change = createChange(id, "listInsert", key);
+        change.put("index", index);
+        change.put("value", value);
+        return (ListInsertChange) change;
+    }
+
+    public static ListInsertChange listInsert(int id, String key, int index,
+            String value) {
+        return listInsert(id, key, index, Json.create(value));
     }
 }

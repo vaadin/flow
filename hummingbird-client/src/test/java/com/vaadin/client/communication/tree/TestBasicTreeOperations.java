@@ -1,6 +1,14 @@
 package com.vaadin.client.communication.tree;
 
+import java.util.List;
+
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
+import com.vaadin.shared.communication.MethodInvocation;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
     public void testAddRemoveElements() {
@@ -70,5 +78,38 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
 
         applyChanges(Changes.remove(containerElementId, "style"));
         assertEquals("", element.getStyle().getHeight());
+    }
+
+    public void testEventHandling() {
+        applyChanges(
+                Changes.listInsert(containerElementId, "LISTENERS", 0, "click"),
+                Changes.putNode(containerElementId, "EVENT_DATA", 3),
+                Changes.listInsert(3, "click", 0, "clientX"));
+
+        NativeEvent event = Document.get().createClickEvent(0, 1, 2, 3, 4,
+                false, false, false, false);
+        updater.getRootElement().dispatchEvent(event);
+
+        List<MethodInvocation> enqueuedInvocations = updater
+                .getEnqueuedInvocations();
+        assertEquals(1, enqueuedInvocations.size());
+
+        MethodInvocation invocation = enqueuedInvocations.get(0);
+        assertEquals("com.vaadin.ui.JavaScript$JavaScriptCallbackRpc",
+                invocation.getInterfaceName());
+        assertEquals("call", invocation.getMethodName());
+        assertEquals("vEvent", invocation.getJavaScriptCallbackRpcName());
+
+        JsonArray parameters = invocation.getParameters();
+        assertEquals(3, parameters.length());
+
+        // node ID
+        assertEquals(containerElementId, (int) parameters.getNumber(0));
+        // Event name
+        assertEquals(event.getType(), parameters.getString(1));
+        // Event data
+        JsonObject eventData = parameters.getObject(2);
+        assertEquals(1, eventData.keys().length);
+        assertEquals(event.getClientX(), (int) eventData.getNumber("clientX"));
     }
 }

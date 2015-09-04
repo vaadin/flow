@@ -29,12 +29,14 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
             ServerRpcQueue rpcQueue = new ServerRpcQueue() {
                 @Override
                 public void add(MethodInvocation invocation, boolean lastOnly) {
-                    enqueuedInvocations.add(invocation);
+                    throw new RuntimeException(
+                            "Mock should never invoke this method");
                 }
 
                 @Override
                 public void flush() {
-                    // nop
+                    throw new RuntimeException(
+                            "Mock should never invoke this method");
                 }
             };
 
@@ -57,6 +59,12 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
                     null);
         }
 
+        @Override
+        public void sendRpc(String callbackName, JsonArray arguments) {
+            enqueuedInvocations
+                    .add(new MethodInvocation(callbackName, arguments));
+        }
+
         public Element getRootElement() {
             return rootElement;
         }
@@ -76,6 +84,7 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
         return array;
     }
 
+    @Override
     public void gwtSetUp() throws Exception {
         // Can't run this in the class initializer since it uses GWT.create
         updater = new MockTreeUpdater();
