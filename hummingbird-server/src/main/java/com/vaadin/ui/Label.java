@@ -24,7 +24,6 @@ import com.vaadin.data.Property;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.ConverterUtil;
 import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.shared.ui.label.LabelState;
 
 /**
  * Label component for showing non-editable short texts.
@@ -50,7 +49,7 @@ import com.vaadin.shared.ui.label.LabelState;
  */
 @SuppressWarnings("serial")
 @Tag("div")
-public class Label extends AbstractComponent implements Property<String>,
+public class Label extends Composite implements Property<String>,
         Property.Viewer, Property.ValueChangeListener,
         Property.ValueChangeNotifier, Comparable<Label> {
 
@@ -61,6 +60,8 @@ public class Label extends AbstractComponent implements Property<String>,
     private Converter<String, Object> converter = null;
 
     private Property<String> dataSource = null;
+
+    private ContentMode contentMode = ContentMode.TEXT;
 
     /**
      * Creates an empty Label.
@@ -112,16 +113,6 @@ public class Label extends AbstractComponent implements Property<String>,
         setContentMode(contentMode);
     }
 
-    @Override
-    protected LabelState getState() {
-        return (LabelState) super.getState();
-    }
-
-    @Override
-    protected LabelState getState(boolean markAsDirty) {
-        return (LabelState) super.getState(markAsDirty);
-    }
-
     /**
      * Gets the value of the label.
      * <p>
@@ -135,9 +126,24 @@ public class Label extends AbstractComponent implements Property<String>,
     public String getValue() {
         if (getPropertyDataSource() == null) {
             // Use internal value if we are running without a data source
-            return getElement().getTextContent();
+            return getDomValue();
         }
         return getDataSourceValue();
+    }
+
+    private String getDomValue() {
+        if (getContentMode() == ContentMode.TEXT) {
+            return getContent().getElement().getTextContent();
+        } else if (getContentMode() == ContentMode.HTML) {
+            return getContent().getInnerHtml();
+        } else if (getContentMode() == ContentMode.PREFORMATTED) {
+            // "<pre>" + newStringValue + "</pre>"
+            String innerHtml = getContent().getInnerHtml();
+            return innerHtml.substring("<pre>".length(),
+                    innerHtml.length() - "</pre>".length());
+        } else {
+            throw new IllegalStateException("Unknown content mode");
+        }
     }
 
     /**
@@ -168,13 +174,40 @@ public class Label extends AbstractComponent implements Property<String>,
 
         if (getPropertyDataSource() == null) {
             if (!Objects.equals(getValue(), newStringValue)) {
-                getElement().setTextContent(newStringValue);
-                fireValueChange();
+                setDomValue(newStringValue, true);
             }
         } else {
             throw new IllegalStateException(
                     "Label is only a Property.Viewer and cannot update its data source");
         }
+    }
+
+    /**
+     * Sets the text to the given value and optionally fires a value change
+     * event.
+     *
+     * Does not check in any way if the value has changed, this is on the
+     * callers responsibility.
+     *
+     * @param newValue
+     *            the text to set
+     * @param fireEvent
+     *            true to fire a value change event, false otherwise
+     */
+    private void setDomValue(String newValue, boolean fireEvent) {
+        if (getContentMode() == ContentMode.TEXT) {
+            getContent().setInnerHtml("");
+            getContent().getElement().setTextContent(newValue);
+        } else if (getContentMode() == ContentMode.HTML) {
+            getContent().setInnerHtml(newValue);
+        } else if (getContentMode() == ContentMode.PREFORMATTED) {
+            getContent().setInnerHtml("<pre>" + newValue + "</pre>");
+        }
+
+        if (fireEvent) {
+            fireValueChange();
+        }
+
     }
 
     /**
@@ -250,7 +283,7 @@ public class Label extends AbstractComponent implements Property<String>,
      * @see ContentMode
      */
     public ContentMode getContentMode() {
-        return getState(false).contentMode;
+        return contentMode;
     }
 
     /**
@@ -265,8 +298,13 @@ public class Label extends AbstractComponent implements Property<String>,
         if (contentMode == null) {
             throw new IllegalArgumentException("Content mode can not be null");
         }
+        if (this.contentMode == contentMode) {
+            return;
+        }
 
-        getState().contentMode = contentMode;
+        String oldValue = getValue();
+        this.contentMode = contentMode;
+        setDomValue(oldValue, false);
     }
 
     /**
@@ -315,10 +353,9 @@ public class Label extends AbstractComponent implements Property<String>,
     private void updateValueFromDataSource() {
         // Update the internal value from the data source
         String newConvertedValue = getDataSourceValue();
-        String domValue = getElement().getTextContent();
-        if (!Objects.equals(newConvertedValue, domValue)) {
-            getElement().setTextContent(newConvertedValue);
-            fireValueChange();
+        String currentDomValue = getDomValue();
+        if (!Objects.equals(newConvertedValue, currentDomValue)) {
+            setDomValue(newConvertedValue, true);
         }
     }
 
@@ -435,6 +472,16 @@ public class Label extends AbstractComponent implements Property<String>,
     public void setConverter(Converter<String, ?> converter) {
         this.converter = (Converter<String, Object>) converter;
         markAsDirty();
+    }
+
+    @Override
+    protected HTML getContent() {
+        return (HTML) super.getContent();
+    }
+
+    @Override
+    protected Component initContent() {
+        return new HTML("<div></div>");
     }
 
 }

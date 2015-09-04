@@ -9,10 +9,14 @@ import org.jsoup.nodes.Element;
 public class HTML extends AbstractComponent {
 
     public HTML(String html) {
-        Document d = Jsoup.parse(html);
+        setOuterHtml(html);
+    }
+
+    private void setOuterHtml(String outerHtml) {
+        Document d = Jsoup.parse(outerHtml);
         int nrChildren = d.body().children().size();
         if (nrChildren == 0) {
-            d = Jsoup.parse("<span>" + html + "</span>");
+            d = Jsoup.parse("<span>" + outerHtml + "</span>");
         } else if (nrChildren > 1) {
             throw new IllegalArgumentException(
                     "Html cannot have more than one root element");
@@ -26,10 +30,15 @@ public class HTML extends AbstractComponent {
         }
 
         getElement().setAttribute("innerHTML", e.html());
+
     }
 
     public void setInnerHtml(String innerHtml) {
         getElement().setAttribute("innerHTML", innerHtml);
+    }
+
+    public String getInnerHtml() {
+        return getElement().getAttribute("innerHTML");
     }
 
 }

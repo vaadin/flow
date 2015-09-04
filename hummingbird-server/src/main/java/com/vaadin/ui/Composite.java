@@ -17,7 +17,7 @@ public abstract class Composite extends AbstractComponent
     public Composite() {
     }
 
-    private Component getContent() {
+    protected Component getContent() {
         if (compositionRoot == null) {
             setContent(initContent());
         }

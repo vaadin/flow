@@ -44,7 +44,7 @@ public abstract class AbstractOrderedLayout
     // }
     // };
 
-    protected static final String CLASS_FLEX_CHILDREN = "flex-children";
+    public static final String CLASS_FLEX_CHILDREN = "flex-children";
 
     public static final Alignment ALIGNMENT_DEFAULT = Alignment.TOP_LEFT;
 
