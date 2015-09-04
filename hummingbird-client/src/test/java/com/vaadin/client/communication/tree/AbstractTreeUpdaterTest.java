@@ -104,7 +104,24 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
         updater.update(Json.createObject(), Json.createArray(), rpcData);
     }
 
-    protected void applyTemplate(JsonObject templateMap) {
+    protected void applyTemplate(int id, JsonObject template) {
+        if (!template.hasKey("type")) {
+            throw new RuntimeException("Template should have a type");
+        }
+
+        JsonObject templateMap = Json.createObject();
+        templateMap.put(Integer.toString(id), template);
+
+        applyTemplates(templateMap);
+    }
+
+    protected void applyTemplates(JsonObject templateMap) {
+        for (String key : templateMap.keys()) {
+            if (!templateMap.getObject(key).hasKey("type")) {
+                throw new RuntimeException("Template " + key + " has no type");
+            }
+        }
+
         updater.update(templateMap, Json.createArray(), null);
     }
 

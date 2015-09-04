@@ -14,9 +14,7 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
                 + "'modelStructure': ['value', 'conditional']}";
         JsonObject template = Json.parse(json.replace('\'', '"'));
 
-        JsonObject templates = Json.createObject();
-        templates.put("1", template);
-        applyTemplate(templates);
+        applyTemplate(1, template);
 
         applyChanges(
                 Changes.listInsertNode(containerElementId, "CHILDREN", 0, 3),
