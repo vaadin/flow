@@ -99,4 +99,8 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
         updater.update(Json.createObject(), changesJson, null);
     }
 
+    protected void applyRpc(JsonArray rpcData) {
+        updater.update(Json.createObject(), Json.createArray(), rpcData);
+    }
+
 }

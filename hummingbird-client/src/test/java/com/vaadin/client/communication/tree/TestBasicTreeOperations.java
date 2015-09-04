@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.vaadin.shared.communication.MethodInvocation;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
@@ -123,5 +124,25 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         updater.getRootElement().dispatchEvent(event);
 
         assertEquals(0, enqueuedInvocations.size());
+    }
+
+    public void testReceivingRpc() {
+        JsonArray invocation = Json.createArray();
+
+        invocation.set(0, "$0.foobarProperty=$1");
+        JsonObject elementDescriptor = Json.createObject();
+        elementDescriptor.put("node", containerElementId);
+        // BasicElementTemplate.id = 0
+        elementDescriptor.put("template", 0);
+        invocation.set(1, elementDescriptor);
+        invocation.set(2, "Hello");
+
+        JsonArray invocations = Json.createArray();
+        invocations.set(0, invocation);
+
+        applyRpc(invocations);
+
+        assertEquals("Hello",
+                updater.getRootElement().getPropertyString("foobarProperty"));
     }
 }

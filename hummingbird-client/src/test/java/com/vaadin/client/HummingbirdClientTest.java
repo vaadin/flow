@@ -9,6 +9,7 @@ public class HummingbirdClientTest extends GWTTestCase {
     static {
         if (GWT.isClient()) {
             useDomImpl(new PlainDomApiImpl());
+            // setTreeDebugging(true);
         }
     }
 
@@ -20,6 +21,11 @@ public class HummingbirdClientTest extends GWTTestCase {
     private static native void useDomImpl(DomApiImpl impl)
     /*-{
         @com.vaadin.client.communication.DomApi::impl = impl;
+    }-*/;
+
+    private static native void setTreeDebugging(boolean debug)
+    /*-{
+        @com.vaadin.client.communication.tree.TreeUpdater::debug = debug;
     }-*/;
 
 }
