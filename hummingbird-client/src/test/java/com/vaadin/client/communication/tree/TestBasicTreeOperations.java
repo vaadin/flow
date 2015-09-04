@@ -111,5 +111,17 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         JsonObject eventData = parameters.getObject(2);
         assertEquals(1, eventData.keys().length);
         assertEquals(event.getClientX(), (int) eventData.getNumber("clientX"));
+
+        enqueuedInvocations.clear();
+
+        // Remove the listener
+        applyChanges(Changes.listRemove(containerElementId, "LISTENERS", 0));
+
+        // Fire a new event
+        event = Document.get().createClickEvent(0, 1, 2, 3, 4, false, false,
+                false, false);
+        updater.getRootElement().dispatchEvent(event);
+
+        assertEquals(0, enqueuedInvocations.size());
     }
 }
