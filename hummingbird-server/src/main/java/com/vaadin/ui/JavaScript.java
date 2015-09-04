@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +36,7 @@ import elemental.json.JsonException;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public class JavaScript {
+public class JavaScript implements Serializable {
     private Map<String, JavaScriptFunction> functions = new HashMap<String, JavaScriptFunction>();
     private UI ui;
 

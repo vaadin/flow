@@ -15,9 +15,11 @@
  */
 package com.vaadin.hummingbird.kernel;
 
+import java.io.Serializable;
+
 import elemental.json.JsonObject;
 
 @FunctionalInterface
-public interface DomEventListener {
+public interface DomEventListener extends Serializable {
     public void handleEvent(JsonObject eventData);
 }

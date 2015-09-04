@@ -1,5 +1,6 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -20,7 +21,7 @@ import com.vaadin.ui.Component;
 
 import elemental.json.JsonObject;
 
-public class Element {
+public class Element implements Serializable {
 
     private static final String TEXT_NODE_TEXT_ATTRIBUTE = "content";
     private static final String STYLE_SEPARATOR = ";";

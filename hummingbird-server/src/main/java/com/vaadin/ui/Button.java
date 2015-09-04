@@ -20,10 +20,13 @@ import java.io.Serializable;
 import java.util.EventListener;
 
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.kernel.DomEventListener;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.button.ButtonServerRpc;
 import com.vaadin.shared.ui.button.ButtonState;
+
+import elemental.json.JsonObject;
 
 /**
  * A generic button component.
@@ -301,8 +304,11 @@ public class Button extends AbstractFocusable {
         if (!hasListeners(ClickListener.class)) {
             getElement().addEventData("click",
                     MouseEventDetails.getEventProperties());
-            getElement().addEventListener("click", e -> {
-                fireClick(new MouseEventDetails(e));
+            getElement().addEventListener("click", new DomEventListener() {
+                @Override
+                public void handleEvent(JsonObject eventData) {
+                    fireClick(new MouseEventDetails(eventData));
+                }
             });
         }
         addListener(ClickListener.class, listener);

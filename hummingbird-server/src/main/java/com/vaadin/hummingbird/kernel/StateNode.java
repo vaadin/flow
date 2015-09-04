@@ -1,5 +1,6 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,12 +23,12 @@ import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
 
-public abstract class StateNode {
+public abstract class StateNode implements Serializable {
     private enum Keys {
         TRANSACTION_LOG, NEXT_UNPREVIEWED_LOG_INDEX;
     }
 
-    private class ListView extends AbstractList<Object> {
+    private class ListView extends AbstractList<Object>implements Serializable {
         private Object key;
         private ArrayList<Object> backing;
 

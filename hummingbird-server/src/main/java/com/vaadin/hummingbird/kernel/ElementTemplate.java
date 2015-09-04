@@ -1,11 +1,12 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
 import com.vaadin.ui.Component;
 
-public interface ElementTemplate {
+public interface ElementTemplate extends Serializable {
 
     public String getTag(StateNode node);
 
