@@ -23,10 +23,17 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<gwt.version>2.8.0-SNAPSHOT</gwt.version>
+		<gwt.version>2.8.0.snapshot20150828</gwt.version>
 	</properties>
 
 	<repositories>
+		<repository>
+			<id>hummingbird-internal-snapshots</id>
+			<url>http://vaadin.com/download/internal/hummingbird/hummingbird-ef6448/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
 		<repository>
 			<id>vaadin-addons</id>
 			<url>http://maven.vaadin.com/vaadin-addons</url>
@@ -46,6 +53,16 @@
 			<url>scpexe://vaadin.com/home/vaadin/download/internal/hummingbird/hummingbird-ef6448</url>
 		</repository>
 	</distributionManagement>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>hummingbird-internal-snapshots</id>
+			<url>http://vaadin.com/download/internal/hummingbird/hummingbird-ef6448/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<dependencyManagement>
 		<dependencies>
