@@ -179,4 +179,35 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertSame(parent, secondChild.getParentElement());
         assertNull(firstChild.getParentElement());
     }
+
+    public void testOverrideNode() {
+        String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
+                + "'defaultAttributes': {'foo': 'bar'},"
+                + "'modelStructure': ['value', 'conditional']}";
+        JsonObject template = Json.parse(json.replace('\'', '"'));
+
+        int templateId = 1;
+        int templateNodeId = 3;
+        int overrideNodeId = 4;
+
+        applyTemplate(templateId, template);
+
+        applyChanges(
+                Changes.listInsertNode(containerElementId, "CHILDREN", 0,
+                        templateNodeId),
+                Changes.put(templateNodeId, "TEMPLATE",
+                        Json.create(templateId)));
+
+        Element templateElement = updater.getRootElement()
+                .getFirstChildElement();
+        assertEquals("bar", templateElement.getAttribute("foo"));
+        assertNull(templateElement.getPropertyString("attr"));
+
+        applyChanges(
+                Changes.putOverrideNode(templateNodeId, templateId,
+                        overrideNodeId),
+                Changes.put(overrideNodeId, "attr", "attrValue"));
+
+        assertEquals("attrValue", templateElement.getPropertyString("attr"));
+    }
 }

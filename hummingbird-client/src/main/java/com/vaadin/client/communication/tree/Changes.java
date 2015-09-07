@@ -6,6 +6,7 @@ import com.vaadin.client.communication.tree.NodeListener.ListInsertNodeChange;
 import com.vaadin.client.communication.tree.NodeListener.ListRemoveChange;
 import com.vaadin.client.communication.tree.NodeListener.PutChange;
 import com.vaadin.client.communication.tree.NodeListener.PutNodeChange;
+import com.vaadin.client.communication.tree.NodeListener.PutOverrideChange;
 import com.vaadin.client.communication.tree.NodeListener.RemoveChange;
 
 import elemental.json.Json;
@@ -70,5 +71,13 @@ public class Changes {
     public static ListInsertChange listInsert(int id, String key, int index,
             String value) {
         return listInsert(id, key, index, Json.create(value));
+    }
+
+    public static PutOverrideChange putOverrideNode(int id, int templateId,
+            int overrideId) {
+        JsonObject change = createChange(id, "putOverride",
+                String.valueOf(templateId));
+        change.put("value", overrideId);
+        return (PutOverrideChange) change;
     }
 }
