@@ -1,14 +1,9 @@
 package com.vaadin.client.communication.tree;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Node;
-import com.vaadin.client.communication.tree.ElementNotifier.ElementUpdater;
-import com.vaadin.client.communication.tree.NodeListener.ListInsertChange;
-import com.vaadin.client.communication.tree.NodeListener.ListInsertNodeChange;
-import com.vaadin.client.communication.tree.NodeListener.ListRemoveChange;
-import com.vaadin.client.communication.tree.NodeListener.PutChange;
-import com.vaadin.client.communication.tree.NodeListener.PutNodeChange;
-import com.vaadin.client.communication.tree.NodeListener.PutOverrideChange;
-import com.vaadin.client.communication.tree.NodeListener.RemoveChange;
+import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.communication.tree.EventArray.ArrayEventListener;
 
 import elemental.json.JsonObject;
 
@@ -17,82 +12,6 @@ public class ForElementTemplate extends Template {
     private final Template childTemplate;
     private final String modelKey;
     private final String innerScope;
-
-    private class ForAnchorListener implements ElementUpdater {
-        private final Node anchorNode;
-        private final NodeContext parentContext;
-
-        public ForAnchorListener(Node anchorNode, NodeContext parentContext) {
-            this.anchorNode = anchorNode;
-            this.parentContext = parentContext;
-        }
-
-        @Override
-        public void listInsertNode(String property,
-                ListInsertNodeChange change) {
-            if (!getModelKey().equals(property)) {
-                return;
-            }
-            JsonObject childNode = treeUpdater.getNode(change.getValue());
-
-            ElementNotifier notifier = new ElementNotifier(treeUpdater,
-                    childNode, getInnerScope() + ".");
-            Node child = treeUpdater
-                    .createElement(getChildTemplate(), childNode,
-                            new NodeContext(notifier,
-                                    parentContext.getServerProxy(),
-                                    parentContext.getModelProxy()));
-
-            Node insertionPoint = findNodeBefore(change.getIndex());
-
-            insertionPoint.getParentElement().insertAfter(child,
-                    insertionPoint);
-        }
-
-        private Node findNodeBefore(int index) {
-            Node refChild = anchorNode;
-            for (int i = 0; i < index; i++) {
-                refChild = refChild.getNextSibling();
-            }
-            return refChild;
-        }
-
-        @Override
-        public void putNode(String property, PutNodeChange change) {
-            // Don't care
-        }
-
-        @Override
-        public void put(String property, PutChange change) {
-            // Don't care
-        }
-
-        @Override
-        public void listInsert(String property, ListInsertChange change) {
-            // Don't care
-        }
-
-        @Override
-        public void listRemove(String property, ListRemoveChange change) {
-            if (!getModelKey().equals(property)) {
-                return;
-            }
-
-            Node node = findNodeBefore(change.getIndex()).getNextSibling();
-
-            node.removeFromParent();
-        }
-
-        @Override
-        public void remove(String property, RemoveChange change) {
-            // Don't care
-        }
-
-        @Override
-        public void putOverride(String property, PutOverrideChange change) {
-            // Don't care
-        }
-    }
 
     public ForElementTemplate(TreeUpdater treeUpdater,
             JsonObject templateDescription, int templateId) {
@@ -106,12 +25,85 @@ public class ForElementTemplate extends Template {
     }
 
     @Override
-    public Node createElement(JsonObject node, NodeContext context) {
+    public Node createElement(TreeNode node, NodeContext outerContext) {
         // Creates anchor element
         Node commentNode = createCommentNode("for " + modelKey);
-        context.getNotifier()
-                .addUpdater(new ForAnchorListener(commentNode, context));
+
+        outerContext.resolveArrayProperty(getModelKey())
+                .addArrayEventListener(new ArrayEventListener() {
+
+                    @Override
+                    public void splice(EventArray eventArray, int startIndex,
+                            JsArrayObject<Object> removed,
+                            JsArrayObject<Object> added) {
+                        // TODO Reuse reference node if processing multiple
+                        // items
+                        for (int i = 0; i < removed.size(); i++) {
+                            Node node = findNodeBefore(commentNode, startIndex)
+                                    .getNextSibling();
+
+                            node.removeFromParent();
+                        }
+
+                        for (int i = 0; i < added.size(); i++) {
+                            TreeNode childNode = (TreeNode) added.get(i);
+
+                            NodeContext innerContext = new NodeContext() {
+                                @Override
+                                public EventArray resolveArrayProperty(
+                                        String name) {
+                                    if (name.startsWith(getInnerScope())) {
+                                        return childNode.getArrayProperty(
+                                                name.substring(getInnerScope()
+                                                        .length()));
+                                    } else {
+                                        return outerContext
+                                                .resolveArrayProperty(name);
+                                    }
+                                }
+
+                                @Override
+                                public TreeNodeProperty resolveProperty(
+                                        String name) {
+                                    if (name.startsWith(getInnerScope())) {
+                                        String innerProperty = name.substring(
+                                                getInnerScope().length() + 1);
+                                        return childNode
+                                                .getProperty(innerProperty);
+                                    } else {
+                                        return outerContext
+                                                .resolveProperty(name);
+                                    }
+                                }
+
+                                @Override
+                                public JavaScriptObject getServerProxy() {
+                                    return outerContext.getServerProxy();
+                                }
+                            };
+
+                            Node child = treeUpdater.createElement(
+                                    getChildTemplate(), childNode,
+                                    innerContext);
+
+                            Node insertionPoint = findNodeBefore(commentNode,
+                                    startIndex + i);
+
+                            insertionPoint.getParentElement().insertAfter(child,
+                                    insertionPoint);
+                        }
+                    }
+                });
+
         return commentNode;
+    }
+
+    private static Node findNodeBefore(Node anchorNode, int index) {
+        Node refChild = anchorNode;
+        for (int i = 0; i < index; i++) {
+            refChild = refChild.getNextSibling();
+        }
+        return refChild;
     }
 
     private static native Node createCommentNode(String comment)

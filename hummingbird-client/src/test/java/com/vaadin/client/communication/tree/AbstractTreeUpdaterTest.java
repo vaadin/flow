@@ -8,9 +8,10 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.vaadin.client.ApplicationConnection.Client;
+import com.vaadin.client.ChangeUtil.Change;
+import com.vaadin.client.ChangeUtil;
 import com.vaadin.client.HummingbirdClientTest;
 import com.vaadin.client.communication.ServerRpcQueue;
-import com.vaadin.client.communication.tree.NodeListener.Change;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.json.Json;
@@ -56,7 +57,7 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
 
             // initialize the containerElement node
             update(Json.createObject(), buildChanges(
-                    Changes.putNode(1, "containerElement", containerElementId)),
+                    ChangeUtil.putNode(1, "containerElement", containerElementId)),
                     null);
         }
 

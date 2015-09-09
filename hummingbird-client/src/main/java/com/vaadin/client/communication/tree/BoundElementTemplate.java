@@ -12,14 +12,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.communication.DomApi;
-import com.vaadin.client.communication.tree.ElementNotifier.ElementUpdater;
-import com.vaadin.client.communication.tree.NodeListener.ListInsertChange;
-import com.vaadin.client.communication.tree.NodeListener.ListInsertNodeChange;
-import com.vaadin.client.communication.tree.NodeListener.ListRemoveChange;
-import com.vaadin.client.communication.tree.NodeListener.PutChange;
-import com.vaadin.client.communication.tree.NodeListener.PutNodeChange;
-import com.vaadin.client.communication.tree.NodeListener.PutOverrideChange;
-import com.vaadin.client.communication.tree.NodeListener.RemoveChange;
+import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -28,94 +21,6 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 public class BoundElementTemplate extends Template {
-    private class BoundElementListener implements ElementUpdater {
-
-        private final Element element;
-
-        public BoundElementListener(Element element) {
-            this.element = element;
-        }
-
-        @Override
-        public void putNode(String property, PutNodeChange change) {
-            // Don't care
-        }
-
-        @Override
-        public void put(String property, PutChange change) {
-            String targetAttribute = getTargetAttribute(property);
-            if (targetAttribute != null) {
-                TreeUpdater.setAttributeOrProperty(element, targetAttribute,
-                        change.getValue());
-            }
-
-            String classPartMapping = getClassPartMapping(property);
-            if (classPartMapping != null) {
-                if (isTrueIsh(change.getValue())) {
-                    DomApi.wrap(element).getClassList().add(classPartMapping);
-                } else {
-                    DomApi.wrap(element).getClassList()
-                            .remove(classPartMapping);
-                }
-            }
-        }
-
-        private boolean isTrueIsh(JsonValue value) {
-            switch (value.getType()) {
-            case BOOLEAN:
-                return value.asBoolean();
-            case STRING:
-                return !"false".equalsIgnoreCase(value.asString());
-            default:
-                throw new RuntimeException(value.getType().name());
-            }
-        }
-
-        @Override
-        public void listInsertNode(String property,
-                ListInsertNodeChange change) {
-            // Don't care
-        }
-
-        @Override
-        public void listInsert(String property, ListInsertChange change) {
-            // Don't care
-        }
-
-        @Override
-        public void listRemove(String property, ListRemoveChange change) {
-            // Don't care
-        }
-
-        @Override
-        public void remove(String property, RemoveChange change) {
-            String targetAttribute = getTargetAttribute(property);
-            if (targetAttribute != null) {
-                TreeUpdater.setAttributeOrProperty(element, targetAttribute,
-                        null);
-            }
-
-            String classPartMapping = getClassPartMapping(property);
-            if (classPartMapping != null) {
-                DomApi.wrap(element).getClassList().remove(classPartMapping);
-            }
-        }
-
-        @Override
-        public void putOverride(String property, PutOverrideChange change) {
-            if (change.getKey() != getId()) {
-                return;
-            }
-
-            int nodeId = change.getValue();
-            JsonObject overrideNode = treeUpdater.getNode(nodeId);
-
-            BasicElementListener basicElementListener = new BasicElementListener(
-                    treeUpdater, overrideNode, element);
-            treeUpdater.addNodeListener(overrideNode, basicElementListener);
-        }
-    }
-
     private final TreeUpdater treeUpdater;
     private final String tag;
     private final Map<String, String> defaultAttributeValues;
@@ -196,7 +101,7 @@ public class BoundElementTemplate extends Template {
     }
 
     @Override
-    public Node createElement(final JsonObject node, NodeContext context) {
+    public Node createElement(final TreeNode node, NodeContext context) {
         assert tag != null;
         TreeUpdater.debug("Create element with tag " + tag);
 
@@ -204,12 +109,83 @@ public class BoundElementTemplate extends Template {
 
         initElement(node, element, context);
 
-        context.getNotifier().addUpdater(new BoundElementListener(element));
+        for (Entry<String, String> entry : propertyToAttribute.entrySet()) {
+            String property = entry.getKey();
+            String attribute = entry.getValue();
+
+            TreeUpdater.debug("Binding " + property + " to " + attribute);
+
+            context.resolveProperty(property).addPropertyChangeListener(
+                    new TreeNodePropertyValueChangeListener() {
+                        @Override
+                        public void changeValue(TreeNodeProperty property,
+                                Object oldValue) {
+                            Object value = property.getValue();
+                            TreeUpdater.debug("Binding (" + property + " to "
+                                    + attribute + ") changed to " + value);
+
+                            TreeUpdater.setAttributeOrProperty(element,
+                                    attribute, value);
+                        }
+                    });
+        }
+
+        if (classPartBindings != null) {
+            for (Entry<String, String> entry : classPartBindings.entrySet()) {
+                String property = entry.getKey();
+                String classPart = entry.getValue();
+                context.resolveProperty(property).addPropertyChangeListener(
+                        new TreeNodePropertyValueChangeListener() {
+                            @Override
+                            public void changeValue(TreeNodeProperty property,
+                                    Object oldValue) {
+                                Object value = property.getValue();
+
+                                if (isTrueIsh(TreeUpdater.asJsonValue(value))) {
+                                    DomApi.wrap(element).getClassList()
+                                            .add(classPart);
+                                } else {
+                                    DomApi.wrap(element).getClassList()
+                                            .remove(classPart);
+                                }
+                            }
+                        });
+            }
+        }
+
+        node.getProperty(Integer.toString(getId())).addPropertyChangeListener(
+                new TreeNodePropertyValueChangeListener() {
+                    @Override
+                    public void changeValue(TreeNodeProperty property,
+                            Object oldValue) {
+                        if (oldValue != null) {
+                            throw new RuntimeException("Not yet supported");
+                        }
+
+                        TreeNode overrideNode = (TreeNode) property.getValue();
+
+                        BasicElementListener.bind(overrideNode, element,
+                                treeUpdater);
+                    }
+                });
 
         return element;
     }
 
-    protected void initElement(JsonObject node, Element element,
+    private static boolean isTrueIsh(JsonValue value) {
+        switch (value.getType()) {
+        case BOOLEAN:
+            return value.asBoolean();
+        case STRING:
+            return !"false".equalsIgnoreCase(value.asString());
+        case NULL:
+            return false;
+        default:
+            throw new RuntimeException(value.getType().name());
+        }
+    }
+
+    protected void initElement(TreeNode node, Element element,
             NodeContext context) {
         assert element != null;
 
@@ -240,7 +216,7 @@ public class BoundElementTemplate extends Template {
                             params.push(context.getServerProxy());
 
                             newFunctionParams.push("model");
-                            params.push(context.getModelProxy());
+                            params.push(node.getProxy());
 
                             newFunctionParams.push(handler);
 
@@ -261,26 +237,14 @@ public class BoundElementTemplate extends Template {
         }
     }
 
-    private String getTargetAttribute(String property) {
-        return propertyToAttribute.get(property);
-    }
-
-    private String getClassPartMapping(String property) {
-        if (classPartBindings == null) {
-            return null;
-        } else {
-            return classPartBindings.get(property);
-        }
-    }
-
     @Override
-    public JavaScriptObject createServerProxy(Integer nodeId) {
+    public JavaScriptObject createServerProxy(int nodeId) {
         JavaScriptObject proxy = JavaScriptObject.createObject();
 
         if (eventHandlerMethods != null) {
             for (String serverMethodName : eventHandlerMethods) {
-                attachServerProxyMethod(treeUpdater, proxy, nodeId.intValue(),
-                        getId(), serverMethodName);
+                attachServerProxyMethod(treeUpdater, proxy, nodeId, getId(),
+                        serverMethodName);
             }
         }
 
@@ -328,44 +292,4 @@ public class BoundElementTemplate extends Template {
     private interface Setter {
         public void set(JsonValue value);
     }
-
-    @Override
-    public JavaScriptObject createModelProxy(JsonObject node,
-            TreeUpdater updater) {
-        if (modelStructure == null
-                || modelStructure.getType() == JsonType.NULL) {
-            throw new RuntimeException();
-        }
-        int nodeId = updater.getNodeId(node).intValue();
-
-        JavaScriptObject object = JavaScriptObject.createObject();
-        for (int i = 0; i < modelStructure.length(); i++) {
-            JsonValue entry = modelStructure.get(i);
-            if (entry.getType() == JsonType.STRING) {
-                String name = entry.asString();
-                defineModelProperty(object, node, name, value -> {
-                    updater.applyLocalChange(Changes.put(nodeId, name, value));
-                });
-            } else if (entry.getType() == JsonType.OBJECT) {
-                // Silently ignore for now to avoid breaking existing apps
-            } else {
-                throw new RuntimeException(
-                        "Unexpected model structure value: " + entry.toJson());
-            }
-        }
-
-        return object;
-    }
-
-    private static native void defineModelProperty(JavaScriptObject object,
-            JsonObject node, String name, Setter setter)
-            /*-{
-                Object.defineProperty(object, name, {
-                    enumerable: true,
-                    get: function() {
-                        return node[name];
-                    },
-                    set: setter
-                });
-            }-*/;
 }

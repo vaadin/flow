@@ -16,7 +16,7 @@ public class StaticTextTemplate extends Template {
     }
 
     @Override
-    public Node createElement(JsonObject node, NodeContext context) {
+    public Node createElement(TreeNode node, NodeContext context) {
         return Document.get().createTextNode(content);
     }
 

@@ -1,19 +1,88 @@
-package com.vaadin.client.communication.tree;
+package com.vaadin.client;
 
-import com.vaadin.client.communication.tree.NodeListener.Change;
-import com.vaadin.client.communication.tree.NodeListener.ListInsertChange;
-import com.vaadin.client.communication.tree.NodeListener.ListInsertNodeChange;
-import com.vaadin.client.communication.tree.NodeListener.ListRemoveChange;
-import com.vaadin.client.communication.tree.NodeListener.PutChange;
-import com.vaadin.client.communication.tree.NodeListener.PutNodeChange;
-import com.vaadin.client.communication.tree.NodeListener.PutOverrideChange;
-import com.vaadin.client.communication.tree.NodeListener.RemoveChange;
+import com.google.gwt.core.client.js.JsProperty;
+import com.google.gwt.core.client.js.JsType;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
-public class Changes {
+public class ChangeUtil {
+
+    @JsType
+    public interface Change {
+        @JsProperty
+        public int getId();
+
+        @JsProperty
+        public String getType();
+    }
+
+    @JsType
+    public interface RemoveChange extends Change {
+        @JsProperty
+        String getKey();
+
+        @JsProperty
+        JsonValue getValue();
+
+        @JsProperty
+        void setValue(JsonValue value);
+    }
+
+    @JsType
+    public interface ListRemoveChange extends Change {
+        @JsProperty
+        String getKey();
+
+        @JsProperty
+        int getIndex();
+
+        @JsProperty
+        JsonValue getRemovedValue();
+
+        @JsProperty
+        void setRemovedValue(JsonValue value);
+    }
+
+    @JsType
+    public interface ListInsertChange extends PutChange {
+        @JsProperty
+        int getIndex();
+    }
+
+    @JsType
+    public interface ListInsertNodeChange extends PutNodeChange {
+        @JsProperty
+        int getIndex();
+    }
+
+    @JsType
+    public interface PutChange extends Change {
+        @JsProperty
+        String getKey();
+
+        @JsProperty
+        JsonValue getValue();
+    }
+
+    @JsType
+    public interface PutOverrideChange extends Change {
+        @JsProperty
+        int getKey();
+
+        @JsProperty
+        int getValue();
+    }
+
+    @JsType
+    public interface PutNodeChange extends Change {
+        @JsProperty
+        int getValue();
+
+        @JsProperty
+        String getKey();
+    }
 
     private static JsonObject createChange(int id, String type, String key) {
         JsonObject change = Json.createObject();

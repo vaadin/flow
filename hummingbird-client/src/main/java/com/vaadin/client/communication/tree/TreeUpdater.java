@@ -17,7 +17,6 @@ package com.vaadin.client.communication.tree;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -25,7 +24,6 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
@@ -34,7 +32,6 @@ import com.google.gwt.user.client.Window.Location;
 import com.vaadin.client.ApplicationConnection.Client;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
-import com.vaadin.client.communication.tree.NodeListener.Change;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.js.json.JsJsonValue;
@@ -53,131 +50,13 @@ public class TreeUpdater {
 
     private Map<Integer, Template> templates = new HashMap<>();
 
-    private Map<Integer, JsonObject> idToNode = new HashMap<>();
-    private Map<JsonObject, Integer> nodeToId = new HashMap<>();
-
-    // Node id -> template id -> override node id
-    // XXX seems like this is never actually read, could maybe be removed?
-    private Map<Integer, Map<Integer, Integer>> overrides = new HashMap<>();
-
-    private Map<Integer, List<NodeListener>> listeners = new HashMap<>();
+    private Map<Integer, TreeNode> idToNode = new HashMap<>();
 
     private Map<Integer, Map<String, JavaScriptObject>> domListeners = new HashMap<>();
 
     private boolean rootInitialized = false;
 
-    private Map<Integer, Node> nodeIdToBasicElement = new HashMap<>();
-
-    private Map<Integer, Map<Template, Node>> nodeIdToTemplateToElement = new HashMap<>();
-
-    private NodeListener treeUpdater = new NodeListener() {
-        @Override
-        public void putNode(PutNodeChange change) {
-            JsonObject parent = idToNode.get(change.getId());
-            JsonObject childNode = ensureNodeExists(change.getValue());
-            parent.put(change.getKey(), childNode);
-        }
-
-        @Override
-        public void put(PutChange change) {
-            JsonObject node = idToNode.get(change.getId());
-            node.put(change.getKey(), change.getValue());
-        }
-
-        @Override
-        public void listInsertNode(ListInsertNodeChange change) {
-            JsonObject node = idToNode.get(change.getId());
-            JsonArray array = node.getArray(change.getKey());
-            if (array == null) {
-                array = Json.createArray();
-                node.put(change.getKey(), array);
-            }
-            JsonObject child = ensureNodeExists(change.getValue());
-            array.set(change.getIndex(), child);
-        }
-
-        @Override
-        public void listInsert(ListInsertChange change) {
-            JsonObject node = idToNode.get(change.getId());
-            JsonArray array = node.getArray(change.getKey());
-            if (array == null) {
-                array = Json.createArray();
-                node.put(change.getKey(), array);
-            }
-            array.set(change.getIndex(), change.getValue());
-        }
-
-        @Override
-        public void listRemove(ListRemoveChange change) {
-            JsonObject node = idToNode.get(change.getId());
-            JsonArray array = node.getArray(change.getKey());
-            assert array != null;
-
-            JsonValue value = array.get(change.getIndex());
-            change.setRemovedValue(value);
-
-            array.remove(change.getIndex());
-        }
-
-        @Override
-        public void remove(RemoveChange change) {
-            JsonObject node = idToNode.get(change.getId());
-            JsonValue value = node.get(change.getKey());
-            change.setValue(value);
-
-            unregisterValue(value);
-            node.remove(change.getKey());
-        }
-
-        private void unregisterValue(JsonValue value) {
-            switch (value.getType()) {
-            case OBJECT:
-                unregisterNode((JsonObject) value);
-                break;
-            case ARRAY:
-                JsonArray array = (JsonArray) value;
-                for (int i = 0; i < array.length(); i++) {
-                    unregisterValue(array.get(i));
-                }
-                break;
-            default:
-                // All other are ok
-            }
-        }
-
-        private void unregisterNode(final JsonObject node) {
-            // Clean up after all listeners have been run
-            Scheduler.get().scheduleFinally(new ScheduledCommand() {
-                @Override
-                public void execute() {
-                    Integer id = nodeToId.remove(node);
-                    idToNode.remove(id);
-
-                    nodeIdToBasicElement.remove(id);
-
-                    listeners.remove(id);
-                    domListeners.remove(id);
-                }
-            });
-        }
-
-        @Override
-        public void putOverride(PutOverrideChange change) {
-            int nodeId = change.getId();
-            int templateId = change.getKey();
-            int overrideNodeId = change.getValue();
-
-            ensureNodeExists(overrideNodeId);
-
-            Map<Integer, Integer> nodeOverrides = overrides.get(nodeId);
-            if (nodeOverrides == null) {
-                nodeOverrides = new HashMap<>();
-                overrides.put(nodeId, nodeOverrides);
-            }
-
-            nodeOverrides.put(templateId, overrideNodeId);
-        }
-    };
+    private CallbackQueue callbackQueue = new CallbackQueue();
 
     private ServerRpcQueue rpcQueue;
 
@@ -223,8 +102,14 @@ public class TreeUpdater {
         pendingInvocations.add(new MethodInvocation(callbackName, arguments));
     }
 
+    public static native JsonValue asJsonValue(Object value)
+    /*-{
+        return value;
+    }-*/;
+
     public static void setAttributeOrProperty(Element element, String key,
-            JsonValue value) {
+            Object objectValue) {
+        JsonValue value = asJsonValue(objectValue);
         assert element != null;
         if (value == null || value.getType() == JsonType.NULL) {
             // Null property and/or remove attribute
@@ -326,21 +211,14 @@ public class TreeUpdater {
                 element.removeEventListener(type, listener);
             }-*/;
 
-    public Node createElement(Template template, JsonObject node,
+    public Node createElement(Template template, TreeNode node,
             NodeContext context) {
         Node element = template.createElement(node, context);
 
-        Integer nodeId = nodeToId.get(node);
-        Map<Template, Node> templateToElement = nodeIdToTemplateToElement
-                .get(nodeId);
-        if (templateToElement == null) {
-            templateToElement = new HashMap<>();
-            nodeIdToTemplateToElement.put(nodeId, templateToElement);
-        }
+        int nodeId = node.getId();
+        node.setElement(template.getId(), element);
 
-        templateToElement.put(template, element);
-
-        storeTemplateAndNodeId(element, nodeId.intValue(), template.getId());
+        storeTemplateAndNodeId(element, nodeId, template.getId());
 
         return element;
     }
@@ -369,10 +247,10 @@ public class TreeUpdater {
         return (int) jsonHack.getNumber("vTemplateId");
     }
 
-    public Node getOrCreateElement(JsonObject node) {
-        Integer nodeId = nodeToId.get(node);
-        if (node.hasKey("TEMPLATE")) {
-            int templateId = (int) node.getNumber("TEMPLATE");
+    public Node getOrCreateElement(TreeNode node) {
+        int nodeId = node.getId();
+        if (node.hasProperty("TEMPLATE")) {
+            int templateId = node.getProperty("TEMPLATE").getIntValue();
             Template template = templates.get(Integer.valueOf(templateId));
             assert template != null;
 
@@ -381,29 +259,44 @@ public class TreeUpdater {
                 return existingNode;
             }
 
-            return createElement(template, node,
-                    new NodeContext(new ElementNotifier(this, node, ""),
-                            template.createServerProxy(nodeId),
-                            template.createModelProxy(node, this)));
+            JavaScriptObject serverProxy = template.createServerProxy(nodeId);
+            return createElement(template, node, new NodeContext() {
+                @Override
+                public JavaScriptObject getServerProxy() {
+                    return serverProxy;
+                }
+
+                @Override
+                public TreeNodeProperty resolveProperty(String name) {
+                    return node.getProperty(name);
+                }
+
+                @Override
+                public EventArray resolveArrayProperty(String name) {
+                    return node.getArrayProperty(name);
+                }
+
+            });
         } else {
-            if (nodeIdToBasicElement.containsKey(nodeId)) {
-                return nodeIdToBasicElement.get(nodeId);
+            int templateId = 0;
+            Node existingElement = node.getElement(templateId);
+            if (existingElement != null) {
+                return existingElement;
             }
 
-            String tag = node.getString("TAG");
+            String tag = (String) node.getProperty("TAG").getValue();
             if ("#text".equals(tag)) {
                 Text textNode = Document.get().createTextNode("");
-                addNodeListener(node, new TextElementListener(textNode));
-                nodeIdToBasicElement.put(nodeId, textNode);
+                TextElementListener.bind(node, textNode);
+                node.setElement(templateId, textNode);
                 if (debug) {
                     debug("Created text node for nodeId=" + nodeId);
                 }
                 return textNode;
             } else {
                 Element element = Document.get().createElement(tag);
-                addNodeListener(node,
-                        new BasicElementListener(this, node, element));
-                nodeIdToBasicElement.put(nodeId, element);
+                BasicElementListener.bind(node, element, this);
+                node.setElement(templateId, element);
                 if (debug) {
                     debug("Created element: " + debugHtml(element)
                             + " for nodeId=" + nodeId);
@@ -411,14 +304,6 @@ public class TreeUpdater {
                 return element;
             }
         }
-    }
-
-    public void applyLocalChange(Change change) {
-        pendingChanges.set(pendingChanges.length(), (JsonValue) change);
-
-        JsonArray transactionChanges = Json.createArray();
-        transactionChanges.set(transactionChanges.length(), (JsonValue) change);
-        applyNodeChanges(transactionChanges);
     }
 
     public void update(JsonObject elementTemplates, JsonArray elementChanges,
@@ -435,14 +320,15 @@ public class TreeUpdater {
     private void applyNodeChanges(JsonArray nodeChanges) {
         updateTree(nodeChanges);
 
-        logTree("After changes", idToNode.get(Integer.valueOf(1)));
+        logTree("After changes",
+                (JsonObject) idToNode.get(Integer.valueOf(1)).getProxy());
 
         if (!rootInitialized) {
             initRoot();
             rootInitialized = true;
         }
 
-        notifyListeners(nodeChanges);
+        callbackQueue.flush();
     }
 
     private void runRpc(JsonArray rpcInvocations) {
@@ -501,21 +387,15 @@ public class TreeUpdater {
             }-*/;
 
     private Node findDomNode(int nodeId, int templateId) {
-        if (templateId == 0) {
-            Node n = nodeIdToBasicElement.get(Integer.valueOf(nodeId));
-            if (n == null) {
+        TreeNode node = idToNode.get(Integer.valueOf(nodeId));
+        if (node == null) {
+            return null;
+        } else {
+            Node element = node.getElement(templateId);
+            if (element == null) {
                 getLogger().warning("No element found for nodeId=" + nodeId);
             }
-            return n;
-        } else {
-            Map<Template, Node> templateToElement = nodeIdToTemplateToElement
-                    .get(Integer.valueOf(nodeId));
-            if (templateToElement == null) {
-                return null;
-            }
-
-            return templateToElement
-                    .get(templates.get(Integer.valueOf(templateId)));
+            return element;
         }
     }
 
@@ -524,60 +404,84 @@ public class TreeUpdater {
         console.log(string, jsonObject);
     }-*/;
 
-    private void notifyListeners(JsonArray elementChanges) {
-        for (int i = 0; i < elementChanges.length(); i++) {
-            Change change = elementChanges.get(i);
-            int id = change.getId();
-
-            List<NodeListener> list = listeners.get(Integer.valueOf(id));
-            if (list != null) {
-                for (NodeListener nodeListener : new ArrayList<>(list)) {
-                    nodeListener.notify(change);
-                }
-            }
-        }
-    }
-
     private void initRoot() {
-        JsonObject rootNode = idToNode.get(Integer.valueOf(1));
-        JsonObject bodyNode = rootNode.get("containerElement");
+        TreeNode rootNode = idToNode.get(Integer.valueOf(1));
+        TreeNode bodyNode = (TreeNode) rootNode.getProperty("containerElement")
+                .getValue();
 
-        // TODO Remove UI element hack
-        nodeIdToBasicElement.put(2, rootElement);
+        bodyNode.setElement(0, rootElement);
         debug("Registered root element: " + debugHtml(rootElement)
-                + " for nodeId=" + 2);
+                + " for nodeId=" + bodyNode.getId());
 
-        addNodeListener(bodyNode,
-                new BasicElementListener(this, bodyNode, rootElement));
-    }
-
-    public void addNodeListener(JsonObject node, NodeListener listener) {
-        Integer id = nodeToId.get(node);
-        List<NodeListener> list = listeners.get(id);
-        if (list == null) {
-            list = new ArrayList<>();
-            listeners.put(id, list);
-        }
-        list.add(listener);
+        BasicElementListener.bind(bodyNode, rootElement, this);
     }
 
     private void updateTree(JsonArray elementChanges) {
         for (int i = 0; i < elementChanges.length(); i++) {
-            Change change = elementChanges.get(i);
+            JsonObject change = elementChanges.get(i);
 
-            ensureNodeExists(change.getId());
+            int nodeId = (int) change.getNumber("id");
+            TreeNode node = ensureNodeExists(nodeId);
+            String type = change.getString("type");
+            JsonValue key = change.get("key");
+            JsonValue value = change.get("value");
 
-            treeUpdater.notify(change);
+            switch (type) {
+            case "putNode": {
+                TreeNode child = ensureNodeExists(
+                        (int) change.getNumber("value"));
+                node.getProperty(key.asString()).setValue(child);
+                break;
+            }
+            case "put":
+                node.getProperty(key.asString()).setValue(value);
+                break;
+            case "listInsertNode": {
+                EventArray array = node.getArrayProperty(key.asString());
+                TreeNode child = ensureNodeExists((int) value.asNumber());
+                array.splice((int) change.getNumber("index"), 0, child);
+                break;
+            }
+            case "listInsert": {
+                EventArray array = node.getArrayProperty(key.asString());
+                array.splice((int) change.getNumber("index"), 0, value);
+                break;
+            }
+            case "listRemove": {
+                EventArray array = node.getArrayProperty(key.asString());
+                array.splice((int) change.getNumber("index"), 1);
+                break;
+            }
+            case "remove": {
+                TreeNodeProperty property = node.getProperty(key.asString());
+                Object oldValue = property.getValue();
+
+                property.setValue(null);
+
+                break;
+            }
+            case "putOverride": {
+                int templateId = (int) key.asNumber();
+                int overrideNodeId = (int) value.asNumber();
+
+                TreeNode overrideNode = ensureNodeExists(overrideNodeId);
+                node.getProperty(String.valueOf(templateId))
+                        .setValue(overrideNode);
+                break;
+            }
+            default:
+                throw new RuntimeException(
+                        "Unsupported change type: " + change.getType());
+            }
         }
     }
 
-    private JsonObject ensureNodeExists(int id) {
+    private TreeNode ensureNodeExists(int id) {
         Integer key = Integer.valueOf(id);
-        JsonObject node = idToNode.get(key);
+        TreeNode node = idToNode.get(key);
         if (node == null) {
-            node = Json.createObject();
+            node = new TreeNode(id, callbackQueue);
             idToNode.put(key, node);
-            nodeToId.put(node, key);
         }
         return node;
     }
@@ -613,12 +517,8 @@ public class TreeUpdater {
         }
     }
 
-    public JsonObject getNode(Integer id) {
+    public TreeNode getNode(Integer id) {
         return idToNode.get(id);
-    }
-
-    public Integer getNodeId(JsonObject node) {
-        return nodeToId.get(node);
     }
 
     public void saveDomListener(Integer id, String type,
