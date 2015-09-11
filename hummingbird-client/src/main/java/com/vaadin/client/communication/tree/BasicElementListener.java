@@ -78,8 +78,7 @@ public class BasicElementListener {
                 public void splice(EventArray eventArray, int startIndex,
                         JsArrayObject<Object> removed,
                         JsArrayObject<Object> added) {
-                    JsArrayObject<Object> newValues = JavaScriptObject
-                            .createArray().cast();
+                    JsArrayObject<Object> newValues = added;
                     if (added != null && added.size() != 0) {
                         Object firstAdded = added.get(0);
                         if (firstAdded instanceof TreeNode) {

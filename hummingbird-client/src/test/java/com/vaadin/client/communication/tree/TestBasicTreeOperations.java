@@ -195,4 +195,15 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals(1, newArray.length());
         assertTrue(newArray.getObject(0).getBoolean("checked"));
     }
+
+    public void testStructuredProperties_basicArray() {
+        applyChanges(
+                ChangeUtil.listInsert(containerElementId, "array", 0, "Hello"));
+
+        Element element = updater.getRootElement();
+        JsonArray array = element.getPropertyJSO("array").cast();
+
+        assertEquals(1, array.length());
+        assertEquals("Hello", array.getString(0));
+    }
 }

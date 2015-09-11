@@ -41,10 +41,19 @@ public class EventArray {
         return proxy.size();
     }
 
-    public void splice(int index, int removeCount, Object... newValues) {
-        boolean hasNewValues = newValues != null && newValues.length != 0;
+    public void splice(int index, int removeCount,
+            JsArrayObject<Object> newValues) {
+
+        boolean hasNewValues;
+        if (newValues == null) {
+            newValues = JavaScriptObject.createArray().cast();
+            hasNewValues = false;
+        } else {
+            hasNewValues = newValues.size() != 0;
+        }
+
         if (hasNewValues && proxy.size() == 0
-                && newValues[0] instanceof TreeNode && nodes == null) {
+                && newValues.get(0) instanceof TreeNode && nodes == null) {
             nodes = JavaScriptObject.createArray().cast();
         }
 
@@ -53,11 +62,13 @@ public class EventArray {
         if (nodes != null) {
             JsArrayObject<Object> removedNodes = doSplice(nodes, index,
                     removeCount, newValues);
-            Object[] newNodes = newValues;
+            JsArrayObject<Object> newNodes = newValues;
             if (hasNewValues) {
-                Object[] newProxyValues = new Object[newValues.length];
-                for (int i = 0; i < newProxyValues.length; i++) {
-                    newProxyValues[i] = ((TreeNode) newValues[i]).getProxy();
+                JsArrayObject<Object> newProxyValues = JavaScriptObject
+                        .createArray().cast();
+                for (int i = 0; i < newValues.size(); i++) {
+                    newProxyValues
+                            .add(((TreeNode) newValues.get(i)).getProxy());
                 }
                 newValues = newProxyValues;
             }
@@ -71,9 +82,10 @@ public class EventArray {
 
     }
 
-    private static boolean typesAreConsistent(Object[] newValues,
+    private static boolean typesAreConsistent(JsArrayObject<Object> newValues,
             boolean onlyNodes) {
-        for (Object value : newValues) {
+        for (int i = 0; i < newValues.size(); i++) {
+            Object value = newValues.get(i);
             // !! because of https://github.com/gwtproject/gwt/issues/9187
             assert onlyNodes == !!(value instanceof TreeNode);
         }
@@ -81,7 +93,7 @@ public class EventArray {
     }
 
     public static native JsArrayObject<Object> doSplice(JsArrayObject<Object> a,
-            int index, int removeCount, Object... newValues)
+            int index, int removeCount, JsArrayObject<Object> newValues)
             /*-{
                 var args = [index, removeCount];
                 if (newValues) {
@@ -102,8 +114,7 @@ public class EventArray {
             }-*/;
 
     private void onSplice(int startIndex, JsArrayObject<Object> removed,
-            Object[] addedObjects) {
-        JsArrayObject<Object> added = asJsArray(addedObjects);
+            JsArrayObject<Object> added) {
         callbackQueue.enqueue(() -> {
             if (listeners.isEmpty()) {
                 return;
@@ -113,11 +124,6 @@ public class EventArray {
             }
         });
     }
-
-    private static native JsArrayObject<Object> asJsArray(Object[] value)
-    /*-{
-        return value;
-    }-*/;
 
     public JavaScriptObject getProxy() {
         return proxy;

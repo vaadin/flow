@@ -30,6 +30,7 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Text;
 import com.google.gwt.user.client.Window.Location;
 import com.vaadin.client.ApplicationConnection.Client;
+import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.shared.communication.MethodInvocation;
@@ -439,17 +440,19 @@ public class TreeUpdater {
             case "listInsertNode": {
                 EventArray array = node.getArrayProperty(key.asString());
                 TreeNode child = ensureNodeExists((int) value.asNumber());
-                array.splice((int) change.getNumber("index"), 0, child);
+                array.splice((int) change.getNumber("index"), 0,
+                        createSingleArray(child));
                 break;
             }
             case "listInsert": {
                 EventArray array = node.getArrayProperty(key.asString());
-                array.splice((int) change.getNumber("index"), 0, value);
+                array.splice((int) change.getNumber("index"), 0,
+                        createSingleArray(value));
                 break;
             }
             case "listRemove": {
                 EventArray array = node.getArrayProperty(key.asString());
-                array.splice((int) change.getNumber("index"), 1);
+                array.splice((int) change.getNumber("index"), 1, null);
                 break;
             }
             case "remove": {
@@ -475,6 +478,11 @@ public class TreeUpdater {
             }
         }
     }
+
+    private static native JsArrayObject<Object> createSingleArray(Object value)
+    /*-{
+        return [value];
+    }-*/;
 
     private TreeNode ensureNodeExists(int id) {
         Integer key = Integer.valueOf(id);
