@@ -12,6 +12,8 @@ import com.vaadin.client.FastStringMap;
 public class TreeNode {
     public interface TreeNodeChangeListener {
         public void addProperty(String name, TreeNodeProperty property);
+
+        public void addArray(String name, EventArray array);
     }
 
     private final JavaScriptObject proxy = JavaScriptObject.createObject();
@@ -88,6 +90,17 @@ public class TreeNode {
             arrayProperties.put(name, eventArray);
 
             addPropertyDescriptor(proxy, name, createEventArrayPd(eventArray));
+
+            final EventArray finalArray = eventArray;
+            callbackQueue.enqueue(() -> {
+                if (listeners == null || listeners.isEmpty()) {
+                    return;
+                }
+                for (TreeNodeChangeListener treeNodeChangeListener : new ArrayList<>(
+                        listeners)) {
+                    treeNodeChangeListener.addArray(name, finalArray);
+                }
+            });
         }
         return eventArray;
     }

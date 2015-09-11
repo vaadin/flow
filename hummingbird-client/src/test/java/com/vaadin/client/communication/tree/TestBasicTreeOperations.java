@@ -2,6 +2,7 @@ package com.vaadin.client.communication.tree;
 
 import java.util.List;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -75,7 +76,8 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         assertNull(element.getPropertyString("class"));
 
         // Style should be set as attribute, not property
-        applyChanges(ChangeUtil.put(containerElementId, "style", "height: 100%"));
+        applyChanges(
+                ChangeUtil.put(containerElementId, "style", "height: 100%"));
         assertEquals("100%", element.getStyle().getHeight());
 
         applyChanges(ChangeUtil.remove(containerElementId, "style"));
@@ -84,7 +86,8 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
 
     public void testEventHandling() {
         applyChanges(
-                ChangeUtil.listInsert(containerElementId, "LISTENERS", 0, "click"),
+                ChangeUtil.listInsert(containerElementId, "LISTENERS", 0,
+                        "click"),
                 ChangeUtil.putNode(containerElementId, "EVENT_DATA", 3),
                 ChangeUtil.listInsert(3, "click", 0, "clientX"));
 
@@ -145,5 +148,51 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
 
         assertEquals("Hello",
                 updater.getRootElement().getPropertyString("foobarProperty"));
+    }
+
+    public void testStructuredProperties() {
+        Element element = updater.getRootElement();
+
+        JsonObject existingObject = Json.createObject();
+        existingObject.put("foo", "bar");
+        element.setPropertyJSO("existingobject",
+                (JavaScriptObject) existingObject);
+
+        JsonArray existingArray = Json.createArray();
+        element.setPropertyJSO("existingarray",
+                (JavaScriptObject) existingArray);
+
+        int existingObjectId = 3;
+        int newObjectId = 4;
+        int existingMemberId = 5;
+        int newMemberId = 6;
+        applyChanges(
+                ChangeUtil.putNode(containerElementId, "existingobject",
+                        existingObjectId),
+                ChangeUtil.put(existingObjectId, "baz", "asdf"),
+                ChangeUtil.putNode(containerElementId, "newobject",
+                        newObjectId),
+                ChangeUtil.put(newObjectId, "new", "value"),
+                ChangeUtil.listInsertNode(containerElementId, "existingarray",
+                        0, existingMemberId),
+                ChangeUtil.put(existingMemberId, "value", "yes"),
+                ChangeUtil.listInsertNode(containerElementId, "newarray", 0,
+                        newMemberId),
+                ChangeUtil.put(newMemberId, "checked", Json.create(true)));
+
+        assertSame(existingObject, element.getPropertyJSO("existingobject"));
+        assertEquals("bar", existingObject.getString("foo"));
+        assertEquals("asdf", existingObject.getString("baz"));
+
+        JsonObject newObject = element.getPropertyJSO("newobject").cast();
+        assertEquals("value", newObject.getString("new"));
+
+        assertSame(existingArray, element.getPropertyJSO("existingarray"));
+        assertEquals(1, existingArray.length());
+        assertEquals("yes", existingArray.getObject(0).getString("value"));
+
+        JsonArray newArray = element.getPropertyJSO("newarray").cast();
+        assertEquals(1, newArray.length());
+        assertTrue(newArray.getObject(0).getBoolean("checked"));
     }
 }

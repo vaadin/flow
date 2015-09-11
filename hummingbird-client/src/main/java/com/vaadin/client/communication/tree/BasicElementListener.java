@@ -6,13 +6,105 @@ import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.tree.EventArray.ArrayEventListener;
+import com.vaadin.client.communication.tree.TreeNode.TreeNodeChangeListener;
 
+import elemental.js.json.JsJsonArray;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 public class BasicElementListener {
+
+    private static final class PropertyPropagator
+            implements TreeNodeChangeListener {
+        private JsonObject target;
+        private boolean alwaysSetProperty;
+
+        public PropertyPropagator(JsonObject target) {
+            this.target = target;
+            alwaysSetProperty = true;
+        }
+
+        public PropertyPropagator(Element target) {
+            this.target = (JsonObject) target;
+            alwaysSetProperty = false;
+        }
+
+        @Override
+        public void addProperty(String name, TreeNodeProperty property) {
+            // Ignore metadata, e.g. TAG
+            if (!name.toLowerCase().equals(name)) {
+                return;
+            }
+            property.addPropertyChangeListener((p, old) -> {
+                Object value = p.getValue();
+                if (value instanceof TreeNode) {
+                    TreeNode child = (TreeNode) value;
+                    JsonValue childValue = target.get(name);
+                    if (childValue == null
+                            || childValue.getType() != JsonType.OBJECT) {
+                        target.put(name, Json.createObject());
+                        // Read back again in case the setter did some magic
+                        childValue = target.get(name);
+                    }
+                    child.addTreeNodeChangeListener(
+                            new PropertyPropagator((JsonObject) childValue));
+                } else if (alwaysSetProperty) {
+                    target.put(name, TreeUpdater.asJsonValue(value));
+                } else {
+                    TreeUpdater.setAttributeOrProperty(
+                            Element.as((JavaScriptObject) target), name, value);
+                }
+            });
+        }
+
+        @Override
+        public void addArray(String name, EventArray array) {
+            if (!name.toLowerCase().equals(name)) {
+                return;
+            }
+
+            JsonValue oldValue = target.get(name);
+            if (oldValue == null || oldValue.getType() != JsonType.ARRAY) {
+                target.put(name, Json.createArray());
+            }
+            JsArrayObject<Object> targetArray = ((JsJsonArray) target
+                    .getArray(name)).cast();
+
+            array.addArrayEventListener(new ArrayEventListener() {
+                @Override
+                public void splice(EventArray eventArray, int startIndex,
+                        JsArrayObject<Object> removed,
+                        JsArrayObject<Object> added) {
+                    JsArrayObject<Object> newValues = JavaScriptObject
+                            .createArray().cast();
+                    if (added != null && added.size() != 0) {
+                        Object firstAdded = added.get(0);
+                        if (firstAdded instanceof TreeNode) {
+                            newValues = JavaScriptObject.createArray().cast();
+                            for (int i = 0; i < added.size(); i++) {
+                                newValues.add(JavaScriptObject.createObject());
+                            }
+                        }
+                    }
+                    EventArray.doSplice(targetArray, startIndex, removed.size(),
+                            newValues);
+                    if (newValues != added) {
+                        for (int i = 0; i < added.size(); i++) {
+                            JsonValue childObject = TreeUpdater.asJsonValue(
+                                    targetArray.get(startIndex + i));
+                            TreeNode childNode = (TreeNode) added.get(i);
+                            childNode.addTreeNodeChangeListener(
+                                    new PropertyPropagator(
+                                            (JsonObject) childObject));
+                        }
+                    }
+                }
+            });
+        }
+    }
 
     private static void insertNodeAtIndex(Element parent, Node child,
             int index) {
@@ -130,15 +222,7 @@ public class BasicElementListener {
 
     public static void bind(TreeNode node, Element element,
             TreeUpdater treeUpdater) {
-        node.addTreeNodeChangeListener((name, property) -> {
-            // Ignore metadata, e.g. TAG
-            if (name.toLowerCase().equals(name)) {
-                property.addPropertyChangeListener((p, old) -> {
-                    TreeUpdater.setAttributeOrProperty(element, name,
-                            p.getValue());
-                });
-            }
-        });
+        node.addTreeNodeChangeListener(new PropertyPropagator(element));
 
         EventArray children = node.getArrayProperty("CHILDREN");
         children.addArrayEventListener(new ArrayEventListener() {
