@@ -23,7 +23,7 @@ public class GridUI extends AbstractTestUIWithLog {
         s.addValueChangeListener(e -> {
             int count = s.getValue().intValue();
             grid.setFrozenColumnCount(count);
-            log("Set frozen columns to " + count);
+            // log("Set frozen columns to " + count);
         });
 
         Slider s2 = new Slider();
@@ -34,7 +34,7 @@ public class GridUI extends AbstractTestUIWithLog {
         s2.addValueChangeListener(e -> {
             int count = s2.getValue().intValue();
             grid.setHeightByRows(count);
-            log("Set rows to " + count);
+            // log("Set rows to " + count);
         });
         s2.setValue(5.0);
 
