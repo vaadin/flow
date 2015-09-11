@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>vaadin-grid Code Examples – Sizing and Styling</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="common.html">
+
+  <style>
+    .activity-design {
+      color: #ff6961;
+    }
+    .activity-implement {
+      color: #03c03c;
+    }
+    .activity-polish {
+      color: #966fd6;
+    }
+    .activity-deliver {
+      color: #779ecb;
+    }
+
+    td.white {
+      font-size: xx-large;
+    }
+
+    td.black {
+      background-color: #77dd77 !important;
+      font-size: xx-large;
+    }
+
+    .chessboard .vaadin-grid-cell {
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body unresolved>
+  <section>
+    <h1><a href="./">vaadin-grid</a>
+      <span>Sizing and Styling</span>
+    </h1>
+    <table-of-contents select="h3" class="toc"></table-of-contents>
+  </section>
+
+  <section>
+    <h3>Sizing the grid</h3>
+    <p>If <code>vaadin-grid</code> is not assigned any bounds externally it will size automatically by itself. By default it
+    will take 100% of the horizontal space available and its default height depends on the number of
+    contained data rows.</p>
+    <p>Standard CSS rules can be used to set a size for the grid or alternatively <code>vaadin-grid</code> can be
+    assigned a pre-defined height (in rows) either declaratively in the DOM API or programmatically
+    with the JS API</p>
+    <code-example source>
+      <vaadin-grid rows=5 demo>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Surname">
+            <col header-text="Activity">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code hidden>
+        var employees = [];
+        var names = ["Artur", "Patrik", "Henrik", "Teemu"];
+        var surnames = ["Signell","Lehtinen","Ahlroos","Paul"];
+        var activities = ["Design","Implement","Polish","Deliver"];
+        var targets = ["soup","Vaadin","dog","world peace"];
+        for (var i = 0; i < 400; i++){
+            var row = [];
+            [names, surnames, activities, targets].forEach(function(array){
+              row.push(array[Math.floor(Math.random()*array.length)]);
+            });
+            employees.push(row);
+        }
+      </code>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          grid.data.source = employees;
+          // code
+          // Setting the explicit row count in JavaScript
+          grid.rows = 5;
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Styling Rows</h3>
+    <p><code>vaadin-grid</code> data rows can be labeled with individual class names by setting a <code>rowClassGenerator</code>.</p>
+    <code-example source>
+      <vaadin-grid demo hidden>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Surname">
+            <col header-text="Activity">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code hidden>
+        var employees = [];
+        var names = ["Artur", "Patrik", "Henrik", "Teemu"];
+        var surnames = ["Signell","Lehtinen","Ahlroos","Paul"];
+        var activities = ["Design","Implement","Polish","Deliver"];
+        var targets = ["soup","Vaadin","dog","world peace"];
+        for (var i = 0; i < 400; i++){
+            var row = [];
+            [names, surnames, activities, targets].forEach(function(array){
+              row.push(array[Math.floor(Math.random()*array.length)]);
+            });
+            employees.push(row);
+        }
+      </code>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          grid.data.source = employees;
+          // code
+          grid.rowClassGenerator = function(row) {
+            var activity = row.data[2];
+            return 'activity-' + activity.toLowerCase();
+          };
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Styling Cells</h3>
+    <p>Single data cells can be styled with the help of a <code>cellClassGenerator</code>.</p>
+    <code-example source>
+      <vaadin-grid demo hidden>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Surname">
+            <col header-text="Activity">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code hidden>
+        var employees = [];
+        var names = ["Artur", "Patrik", "Henrik", "Teemu"];
+        var surnames = ["Signell","Lehtinen","Ahlroos","Paul"];
+        var activities = ["Design","Implement","Polish","Deliver"];
+        var targets = ["soup","Vaadin","dog","world peace"];
+        for (var i = 0; i < 400; i++){
+            var row = [];
+            [names, surnames, activities, targets].forEach(function(array){
+              row.push(array[Math.floor(Math.random()*array.length)]);
+            });
+            employees.push(row);
+        }
+      </code>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          grid.data.source = employees;
+          // code
+
+          grid.cellClassGenerator = function(cell) {
+            if (cell.index == 2) {
+              var activity = cell.row.data[2];
+              return 'activity-' + activity.toLowerCase();
+            }
+            return '';
+          };
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+</body>
+</html>

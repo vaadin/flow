@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>vaadin-grid Code Examples – Formatting data</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="common.html">
+</head>
+
+<body unresolved>
+  <section>
+    <h1><a href="./">vaadin-grid</a>
+      <span>Formatting Data</span>
+    </h1>
+    <table-of-contents select="h3" class="toc"></table-of-contents>
+  </section>
+
+  <section>
+    <h3>Inline Formatted Data</h3>
+    <p>Any regular HTML can be placed inside the grid cells with the DOM api.</p>
+    <code-example source>
+      <vaadin-grid demo>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Value">
+            <col header-text="Progress">
+          </colgroup>
+          <tbody>
+            <tr>
+              <td>Project A</td>
+              <td>10 000€</td>
+              <td><progress value="0.8" /></td>
+            </tr>
+            <tr>
+              <td>Project B</td>
+              <td>982 999€</td>
+              <td><progress value="0.2" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </vaadin-grid>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Defining Data Renderers</h3>
+    <p>Column data can be presented in any format using a renderer function.</p>
+    <code-example source>
+      <vaadin-grid demo>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Value">
+            <col header-text="Progress">
+          </colgroup>
+          <tbody>
+            <tr>
+              <td>Project A</td><td>10 000</td><td>0.8</td>
+            </tr>
+            <tr>
+              <td>Project B</td><td>982 999</td><td>0.2</td>
+            </tr>
+          </tbody>
+        </table>
+      </vaadin-grid>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          // code
+          var currencyRenderer = function(cell) {
+            cell.element.innerHTML = '$' + cell.data;
+          };
+
+          var progressRenderer = function(cell) {
+            cell.element.innerHTML = '';
+            var child = document.createElement('progress');
+            child.setAttribute('value', cell.data);
+            cell.element.appendChild(child);
+          };
+
+          grid.columns[1].renderer = currencyRenderer;
+          grid.columns[2].renderer = progressRenderer;
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+
+</body>
+
+</html>

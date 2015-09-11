@@ -1,0 +1,36 @@
+{
+  "name": "vaadin-grid",
+  "version": "0.9.0-beta1",
+  "authors": [
+    "Vaadin Ltd"
+  ],
+  "license": "Apache License 2.0",
+  "keywords": [
+    "web-components",
+    "vaadin",
+    "vaadin components",
+    "grid"
+  ],
+  "main": "vaadin-grid.html",
+  "ignore": [
+    "**/.*",
+    "**/node_modules",
+    "**/bower_components",
+    "**/test",
+    "**/java",
+    "**/tasks",
+    "gulpfile.js",
+    "package.json",
+    "wct.conf.js"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#v1.1.1",
+    "components-demo-resources": "vaadin/components-demo-resources#master"
+  },
+  "devDependencies": {
+    "web-component-tester": "~3.3.21"
+  },
+  "resolutions": {
+    "polymer": "v1.1.1"
+  }
+}

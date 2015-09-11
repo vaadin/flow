@@ -466,4 +466,36 @@ public abstract class StateNode implements Serializable {
             runOnAttach.add(runnable);
         }
     }
+
+    public boolean get(String key, boolean defaultValue) {
+        if (containsKey(key)) {
+            return (boolean) get(key);
+        } else {
+            return defaultValue;
+        }
+    }
+
+    public double get(String key, double defaultValue) {
+        if (containsKey(key)) {
+            return (double) get(key);
+        } else {
+            return defaultValue;
+        }
+    }
+
+    public int get(String key, int defaultValue) {
+        if (containsKey(key)) {
+            return (int) get(key);
+        } else {
+            return defaultValue;
+        }
+    }
+
+    public String get(String key, String defaultValue) {
+        if (containsKey(key)) {
+            return (String) get(key);
+        } else {
+            return defaultValue;
+        }
+    }
 }

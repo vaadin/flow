@@ -1,0 +1,89 @@
+<link rel='import' href='../polymer/polymer.html'>
+
+<dom-module id="table-of-contents">
+  <style>
+  :host {
+    display: block;
+  }
+  :host ol {
+    margin: 0;
+    padding-left: 1em;
+  }
+  </style>
+  <template>
+    <ol>
+    </ol>
+  </template>
+</dom-module>
+
+<script>
+TableOfContents = Polymer({
+
+  is: "table-of-contents",
+
+  properties: {
+    select: String
+  },
+
+  idCount: 0,
+
+  attached: function() {
+    if(this.select) {
+      this.level(this.select.split(","), 0, document, null);
+    }
+  },
+
+  level: function(selectors, level, context, tocContext) {
+    var elements = context.querySelectorAll(selectors[level].trim());
+    for(var i = 0; i < elements.length; i++) {
+      var el = elements[i];
+      var li = this.addLink(el, level, tocContext);
+
+      if(el.parentNode.querySelector(selectors[level + 1])) {
+        this.level(selectors, level + 1, el.parentNode, li);
+      }
+    }
+  },
+
+  _createHash: function(el) {
+    return "toc_" + (this.idCount++) + "_" + el.textContent.toLowerCase().replace(/\s+/g, "_").substring(0,20);
+  },
+
+  addLink: function(el, level, tocContext) {
+    var a = document.createElement("a");
+    var hash = this._createHash(el);
+
+    // Check if the hash is used and scroll to that element
+    if(document.location.hash == "#" + hash && el.scrollIntoView) {
+      // Delay to allow other custom elements to render
+      // TODO hacky, would need a way to listen for an event when the content size has settled
+      setTimeout(function() {
+        el.scrollIntoView();
+      }, 1500);
+    }
+
+    el.id = hash;
+    a.href = "#" + hash;
+    a.className = "level-" + level;
+    a.textContent = el.textContent;
+
+    var li = document.createElement("li");
+    li.appendChild(a);
+
+
+    if(tocContext) {
+      var ol = tocContext.querySelector("ol");
+      if(!ol) {
+        ol = document.createElement("ol");
+        tocContext.appendChild(ol);
+      }
+      ol.appendChild(li);
+    } else {
+      Polymer.dom(this.root).querySelector("ol").appendChild(li);
+    }
+
+    return li;
+  }
+
+});
+</script>

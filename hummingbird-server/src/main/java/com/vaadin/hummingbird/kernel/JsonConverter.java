@@ -53,10 +53,13 @@ public class JsonConverter {
             return Json.create(((Number) value).doubleValue());
         } else if (value instanceof Boolean) {
             return Json.create(((Boolean) value).booleanValue());
+        } else if (value instanceof JsonValue) {
+            return (JsonValue) value;
         } else {
             throw new RuntimeException(
                     "Can't encode value of type " + value.getClass().getName());
         }
+
     }
 
     public static Type findType(JsonValue value) {

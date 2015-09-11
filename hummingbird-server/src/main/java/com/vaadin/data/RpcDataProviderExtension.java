@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.appengine.repackaged.com.google.common.collect.ImmutableSet;
-import com.google.appengine.repackaged.com.google.common.collect.Maps;
 import com.vaadin.data.Container.Indexed;
 import com.vaadin.data.Container.Indexed.ItemAddEvent;
 import com.vaadin.data.Container.Indexed.ItemRemoveEvent;
@@ -241,8 +239,7 @@ public class RpcDataProviderExtension {
          * {@link Collection#isEmpty() empty}, then this field is consistent
          * with the connector hierarchy.
          */
-        private final Map<Object, Component> visibleDetailsComponents = Maps
-                .newHashMap();
+        private final Map<Object, Component> visibleDetailsComponents = new HashMap<>();
 
         /**
          * Keeps tabs on all the details that did not get a component during
@@ -838,7 +835,7 @@ public class RpcDataProviderExtension {
      * @since 7.5.0
      */
     public void refreshDetails() {
-        for (Object itemId : ImmutableSet.copyOf(visibleDetails)) {
+        for (Object itemId : new HashSet<>(visibleDetails)) {
             detailComponentManager.refresh(itemId);
             updateRowData(itemId);
         }

@@ -348,9 +348,7 @@ public class TreeUpdater {
                 JavaScriptObject value;
                 JsonValue paramValue = invocation.get(i + 1);
 
-                if (paramValue.getType() == JsonType.ARRAY) {
-                    throw new RuntimeException("Not supported");
-                } else if (paramValue.getType() == JsonType.OBJECT) {
+                if (paramValue.getType() == JsonType.OBJECT) {
                     JsonObject object = (JsonObject) paramValue;
                     if (object.hasKey("template") && object.hasKey("node")) {
                         int templateId = (int) object.getNumber("template");

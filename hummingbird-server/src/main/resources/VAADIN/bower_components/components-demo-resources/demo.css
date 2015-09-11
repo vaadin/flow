@@ -1,0 +1,156 @@
+body {
+  font: 400 100%/1.5 Roboto, sans-serif;
+  color: rgba(0,0,0,0.83);
+  background: #fff;
+  max-width: 1100px;
+  padding: 0 2em;
+  margin: 4em auto;
+}
+
+h1 {
+  font-size: 28px;
+  line-height: 1.2;
+  margin-bottom: 1em;
+}
+
+h1 span,
+h2 {
+  display: block;
+  font-weight: 400;
+  color: rgba(0,0,0,0.56);
+}
+
+h3 {
+  margin-top: 2em;
+}
+
+h5 {
+  margin-bottom: 0.5em;
+}
+
+h5 + p {
+  margin-top: 0.5em;
+}
+
+a {
+  text-decoration: none;
+  color: #03A9F4;
+}
+
+.toc {
+  font-size: 0.9em;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 3em;
+}
+
+.big {
+  color: rgba(0,0,0,0.56);
+}
+
+.big a {
+  font-size: 1.3em;
+  font-weight: 500;
+}
+
+pre, code {
+  font-family: Source Code Pro, Consolas, monospace;
+  background-color: rgba(0,0,0,0.06);
+  padding: 0 0.2em;
+  max-height: 300px !important;
+}
+
+p {
+  max-width: 55em;
+}
+
+section {
+  margin-bottom: 1.5em;
+}
+
+.demo-button {
+  line-height: 1.55;
+  margin: 9px;
+  background: rgb(0, 167, 247);
+  color: #fff;
+  border: none;
+  outline: none;
+  border-radius: 2px;
+  -webkit-box-shadow: 0px 0px 15px -3px rgba(0,0,0,0.75);
+  -moz-box-shadow: 0px 0px 15px -3px rgba(0,0,0,0.75);
+  box-shadow: 0px 0px 15px -3px rgba(0,0,0,0.75);
+  font-size: 13px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.demo-button:active {
+  -webkit-box-shadow: 0px 0px 15px -6px rgba(0,0,0,0.75);
+  -moz-box-shadow: 0px 0px 15px -6px rgba(0,0,0,0.75);
+  box-shadow: 0px 0px 15px -6px rgba(0,0,0,0.75);
+}
+
+.demo-button.whitebutton {
+  background: #fff;
+  color: rgb(0, 167, 247);
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+
+table-of-contents ol {
+  color: rgba(0,0,0,0.4);
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.v-ie code-example > * {
+  width: 100%;
+}
+
+.v-ie code-example code {
+  height: auto !important;
+}
+
+blockquote {
+  font-size: 0.9em;
+  color: rgba(0,0,0,0.56);
+  border-left: 2px solid rgba(0,0,0,0.2);
+  padding-left: 1em;
+  margin: 1em 2em;
+}
+
+.user-image {
+  width: 240px;
+  height: 240px;
+  margin:15px 0 0 65px;
+  border-radius:5px;
+  border: 3px solid rgb(232,232,232);
+}
+
+.user-image img {
+  width: 240px;
+}
+
+#readme table {
+  display: block;
+  width: 100%;
+  overflow: auto;
+  word-break: normal;
+  word-break: keep-all;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+#readme table tr {
+  background-color: #fff;
+  border-top: 1px solid #ccc;
+}
+
+#readme table th,
+#readme table td{
+  padding: 6px 13px;
+  border: 1px solid #ddd;
+}

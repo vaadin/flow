@@ -1,0 +1,21 @@
+<vaadin-grid #grid (select)="onSelect()">
+  <table>
+    <colgroup>
+      <col width=80 name="user.picture.thumbnail">
+      <col header-text="Gender" name="user.gender">
+      <col header-text="First name" name="user.name.first">
+      <col header-text="Last name" name="user.name.last">
+      <col header-text="Email" name="user.email">
+    </colgroup>
+  </table>
+</vaadin-grid>
+
+<img *ng-if="selected" class="user-image" src="{{selected.user.picture.large}}">
+
+<div style="display: none">
+  <select maxlength=5 type="select" (change)="grid.data.clearCache(); grid.scrollToStart();">
+    <option value=''></option>
+    <option value='male'>Men only</option>
+    <option value='female'>Women only</option>
+  </select>
+</div>

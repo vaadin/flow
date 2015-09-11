@@ -1,0 +1,31 @@
+<!doctype html>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="../webcomponentsjs/webcomponents-lite.min.js"></script>
+
+<script>
+window.xCodeExampleSourceHead =
+    "  <script src='../webcomponentsjs/webcomponents-lite.js'><\/script>\n"+
+    "  <link href='code-example.html' rel='import'>\n";
+</script>
+<link rel="import" href="code-example.html">
+
+
+<code-example source>
+
+<div demo>
+  <input>
+  <button>Button</button>
+</div>
+
+  <code demo-var="div">
+    var input = div.querySelector("input");
+    var button = div.querySelector("button");
+
+    input.value = "Value for the input";
+
+    button.addEventListener("click", function() {
+      alert(input.value);
+    });
+  </code>
+
+</code-example>

@@ -1,0 +1,290 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>vaadin-grid Code Examples. Columns</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="common.html">
+</head>
+
+<body unresolved>
+
+  <section>
+    <h1><a href="./">vaadin-grid</a>
+      <span>Selection</span>
+    </h1>
+    <table-of-contents select="h3" class="toc"></table-of-contents>
+  </section>
+
+  <section>
+    <h3>Selecting rows</h3>
+    <p>Data rows can be selected either through UI
+      interaction (by clicking, tapping or hitting space on a highlighted cell) or alternatively by using the
+      selection JavaScript API.</p>
+    <code-example source>
+      <vaadin-grid demo hidden>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Value">
+            <col header-text="Progress">
+          </colgroup>
+          <tbody>
+            <tr>
+              <td>Project A</td>
+              <td>123</td>
+              <td>0.8</td>
+            </tr>
+            <tr>
+              <td>Project B</td>
+              <td>456</td>
+              <td>0.9</td>
+            </tr>
+          </tbody>
+        </table>
+      </vaadin-grid>
+
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          // code
+          grid.selection.deselect(0);
+          grid.selection.select(1);
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Selection modes</h3>
+    <p>
+      <ul>
+        <li><b>Single</b> is the default selection mode for <code>vaadin-grid</code>. It allows only one row to be selected at once.</li>
+        <li><b>Multi</b> selection mode reveals an additional checkbox column allowing the user to select multiple rows.</li>
+        <li><b>All</b> selection mode has each row selected by default allowing the user to deselect individual rows.</li>
+        <li><b>Disabled</b> disables the selection functionality.</li>
+      </ul>
+    </p>
+    <p>
+      You can toggle between <b>multi</b> and <b>all</b> modes by clicking the checkbox in <code>vaadin-grid</code> header.
+    </p>
+    <code-example source>
+      <vaadin-grid demo selection-mode="multi">
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Surname">
+            <col header-text="Activity">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code hidden>
+        var employees = [];
+        var names = ["Artur", "Patrik", "Henrik", "Teemu"];
+        var surnames = ["Signell","Lehtinen","Ahlroos","Paul"];
+        var activities = ["Design","Implement","Polish","Deliver"];
+        var targets = ["soup","Vaadin","dog","world peace"];
+        for (var i = 0; i < 400; i++){
+            var row = [];
+            [names, surnames, activities, targets].forEach(function(array){
+              row.push(array[Math.floor(Math.random()*array.length)]);
+            });
+            employees.push(row);
+        }
+      </code>
+      <code demo-var="grid" hidden>
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        var controls = document.createElement("div");
+        controls.innerHTML = 'Selection mode:';
+
+        var modeSelect = document.createElement("select");
+        ["single", "multi", "all", "disabled"].forEach(function(it){
+          var option = document.createElement("option");
+          option.value = it;
+          option.innerHTML = it;
+          modeSelect.appendChild(option);
+        });
+        modeSelect.value = "multi";
+
+        controls.appendChild(modeSelect);
+        grid.parentElement.appendChild(controls);
+
+        // Bind the mode select value to vgrid.selection.mode
+        modeSelect.addEventListener("change", function() {
+          grid.selection.mode = modeSelect.value;
+        });
+        grid.addEventListener("select", function() {
+          modeSelect.value = grid.selection.mode;
+        });
+      </code>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          grid.data.source = employees;
+          // code
+          // Set the selection mode to "multi"
+          grid.selection.mode = "multi";
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Processing the selections as arrays</h3>
+    <p>You can simply ask <code>vaadin-grid</code> for all the selected row indexes with <code>selection.selected()</code>
+      function which returns an array of integers for you to process further.</p>
+    <p>This works fine on most cases with <i>single</i> and <i>multi</i> selection modes, but if your grid contains tons
+      of data and the selection mode is set to <i>all</i>, you're better off with <code>selection.deselected()</code>.</p>
+    <code-example source>
+      <vaadin-grid demo selection-mode="multi" hidden>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Surname">
+            <col header-text="Activity">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code hidden>
+        var employees = [];
+        var names = ["Artur", "Patrik", "Henrik", "Teemu"];
+        var surnames = ["Signell","Lehtinen","Ahlroos","Paul"];
+        var activities = ["Design","Implement","Polish","Deliver"];
+        var targets = ["soup","Vaadin","dog","world peace"];
+        for (var i = 0; i < 400; i++){
+            var row = [];
+            [names, surnames, activities, targets].forEach(function(array){
+              row.push(array[Math.floor(Math.random()*array.length)]);
+            });
+            employees.push(row);
+        }
+      </code>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          grid.data.source = employees;
+          // code
+          // Log the selections / deselection to console on select event
+          grid.addEventListener("select", function() {
+            console.log("Selected: " + grid.selection.selected());
+            console.log("Deselected: " + grid.selection.deselected());
+          });
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Iterating the selections</h3>
+    <p>Another option for processing the selections is to iterate trough them.
+    The <code>selection.selected()</code> and <code>selection.deselected()</code> functions accept an iterator function
+    as the first argument so you can loop trough all the selections without ever populating an array.</p>
+    <p>If however your iterator function returns a value, then it's considered a mapper function meaning that
+    the selection API function will return an array of pre-mapped values.</p>
+    <code-example source>
+      <vaadin-grid demo selection-mode="multi" hidden>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Surname">
+            <col header-text="Activity">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code hidden>
+        var employees = [];
+        var names = ["Artur", "Patrik", "Henrik", "Teemu"];
+        var surnames = ["Signell","Lehtinen","Ahlroos","Paul"];
+        var activities = ["Design","Implement","Polish","Deliver"];
+        var targets = ["soup","Vaadin","dog","world peace"];
+        for (var i = 0; i < 400; i++){
+            var row = [];
+            [names, surnames, activities, targets].forEach(function(array){
+              row.push(array[Math.floor(Math.random()*array.length)]);
+            });
+            employees.push(row);
+        }
+      </code>
+
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          grid.data.source = employees;
+          // code
+          // Log selected designers list on select event
+          grid.addEventListener("select", function() {
+            console.log("Selected designers:");
+            grid.selection.selected(function(index) {
+              var data = employees[index];
+              if (data[2] === "Design") {
+                console.log("-" + data[0] + " " + data[1]);
+              }
+            });
+          });
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Processing selections in batches</h3>
+    <p>The <code>selection.selected()</code> and <code>selection.deselected()</code> functions also accept
+    <i>startIndex</i> and <i>endIndex</i> as the second and third argument. These can be used to process
+    the selections in batches. <code>selection.size</code> property comes in handy here.</p>
+    <p>All the three parameters <i>(iterator/mapper, startIndex, endIndex)</i> have default values so any of
+    them can be omitted (or set as undefined).</p>
+    <code-example source>
+      <vaadin-grid demo selection-mode="multi" hidden>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Surname">
+            <col header-text="Activity">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code hidden>
+        var employees = [];
+        var names = ["Artur", "Patrik", "Henrik", "Teemu"];
+        var surnames = ["Signell","Lehtinen","Ahlroos","Paul"];
+        var activities = ["Design","Implement","Polish","Deliver"];
+        var targets = ["soup","Vaadin","dog","world peace"];
+        for (var i = 0; i < 400; i++){
+            var row = [];
+            [names, surnames, activities, targets].forEach(function(array){
+              row.push(array[Math.floor(Math.random()*array.length)]);
+            });
+            employees.push(row);
+        }
+      </code>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          grid.data.source = employees;
+          // code
+          // Log selected indexes in batches of 5
+          grid.addEventListener("select", function() {
+            for (var i = 0; i < grid.selection.size; i += 5){
+              console.log(grid.selection.selected(undefined, i, i+4));
+            }
+          });
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+</body>
+
+</html>

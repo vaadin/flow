@@ -1,0 +1,568 @@
+<link rel='import' href='vaadin-grid.html'>
+
+<!-- Object for controlling and accessing the columns in the grid. -->
+<dom-module id="Column"></dom-module>
+<script>
+  Polymer({
+    is: 'Column',
+    properties: {
+      /**
+       * Name of the column.
+       * Must be a valid JS variable name so that the same name can be used in
+       * the data source object fields.
+       */
+      name: String,
+      /**
+       * Content of the column in the default header row object.
+       *
+       * Attribute: `header-text`
+       */
+      headerContent: String,
+      /**
+       * Enables sorting the data in the column by the end user.
+       *
+       * Attribute: `sortable`
+       *
+       * @property {boolean} sortable
+       * @type {boolean}
+       * @default false
+       */
+      sortable: false,
+      /**
+       * Minimum width of the column in pixels.
+       *
+       * Attribute: `min-width`
+       *
+       * @property {number} minWidth
+       * @type {number}
+       * @default 10
+       */
+      minWidth: Number,
+      /**
+       * Maximum width of the column in pixels.
+       *
+       * Attribute: `max-width`
+       */
+      maxWidth: Number,
+      /**
+       * Width of the column in pixels.
+       *
+       * Attribute: `width`
+       */
+      width: Number,
+      /**
+       * Flex ratio of the column (expand ratio in Vaadin-speak). Uses integers.
+       *
+       * Attribute: `flex`
+       *
+       * @property {number} flex
+       * @type {number}
+       * @default -1
+       */
+      flex: Number,
+
+      /**
+       * Custom renderer function for the columns data items.
+       *
+       *  Example:
+       *  ```
+       *  column.renderer = function(cell) {
+       *      cell.element.innerHTML = '$' + cell.data;
+       *  };
+       *  ```
+       * @property {function} renderer
+       * @param {Cell} cell - Reference to the cell being rendered.
+       * @type {function}
+       */
+      renderer: function(cell) {},
+      /**
+       * Set whether it is possible for the user to hide this column or not.
+       *
+       * Attribute: `hidable`
+       *
+       * @property {boolean} hidable
+       * @type {boolean}
+       * @default false
+       */
+      hidable: false,
+      /**
+       * Hides or shows the column. By default columns are visible before
+       * explicitly hiding them.
+       *
+       * Attribute: `hidden`
+       *
+       * @property {boolean} hidden
+       * @type {boolean}
+       * @default false
+       */
+      hidden: false,
+      /**
+       * Sets the hiding toggle's caption for this column. Shown in the toggle
+       * for this column in the grid's sidebar when the column is hidable.
+       *
+       * Attribute: `hiding-toggle-text`
+       *
+       * @property {String} hidingToggleText
+       * @type {String}
+       */
+      hidingToggleText: String
+    }
+  });
+</script>
+
+<!--
+Object for accessing and controlling data source used in the grid.
+-->
+<dom-module id="Data"></dom-module>
+<script>
+  Polymer({
+    is: 'Data',
+    properties: {
+      /**
+       * Data source for the grid.
+       *
+       * If an array is used, it is wrapped with a function internally.
+       * Reading the property value will still return the array.       *
+       *
+       *  Example:
+       *  ```
+       *  data.source = [
+       *      ["horse", 150, "domestic"],
+       *      ["wolf", 100, "wild"]
+       *  };
+       *  ```
+       * or
+       *  ```
+       *  var myArray = [...];
+       *  data.source = function(req) {
+       *      var from = req.index;
+       *      var to = req.index + req.count;
+       *      var array = myArray.slice(from, to);
+       *
+       *      req.success(array, myArray.length);
+       *  };
+       *  ```
+       *
+       * Params:
+       *  - {DataRequest} req – Reference to the DataRequest object
+       *
+       * @property {Array|Function} source
+       * @type {Array|Function}
+       */
+      source: Object,
+      /**
+       * Order of sorting.
+       *
+       * @property {Array<SortOrder>} source
+       * @type {Array<SortOrder>}
+       */
+      sortOrder: Array,
+
+      /**
+       * Clears the cache.
+       *
+       * @type {Function}
+       */
+      clearCache: Function,
+
+      /**
+       * Invokes the callback with row data of the provided row index as the
+       * parameter. If the row is not cached, it's fetched from the data source
+       * first.
+       *
+       * @method getItem
+       * @param {number} rowIndex - Index of the row.
+       * @param {Function} callback - Gets arguments (err, item) where item is the desired data item.
+       * @param {boolean} onlyCached - Only fetch cached rows (don't fall back to data source request).
+       */
+      getItem: Function
+    }
+  });
+</script>
+
+<!--
+Object used to request data from the data source.
+-->
+<dom-module id="DataRequest"></dom-module>
+<script>
+  Polymer({
+    is: 'DataRequest',
+    properties: {
+      /**
+       * Index of the first data item to fetch.
+       */
+      index:  Number,
+
+      /**
+       * Number of data items to fetch.
+       */
+      count:  Number,
+
+      /**
+       * Sorting order of the fetched data items.
+       *
+       * @property {Array<SortOrder>} sortOrder
+       * @type {Array<SortOrder>}
+       * */
+      sortOrder: Object
+    },
+    /**
+     * Callback function to pass along the data items to the grid and the total size of the data source.
+     *
+     *  Example:
+     *  ```
+     *  var myArray = [...];
+     *
+     *  var from = req.index;
+     *  var to = req.index + req.count;
+     *  var array = myArray.slice(from, to);
+     *
+     *  req.success(array, myArray.length);
+     *  ```
+     *
+     * @method success
+     * @param {Array<*>} items - Fetched data items.
+     * @param {number} totalSize – Total quantity of the data items.
+     */
+    success: function(items, totalSize) {},
+    /**
+     * Callback function to inform the grid that something failed while getting the data.
+     *
+     *  Example:
+     *  ```
+     *  req.failure();
+     *  ```
+     *
+     * @method failure
+     */
+    failure: function() {}
+  });
+</script>
+
+<!--
+Object for accessing and controlling footer rows.
+-->
+<dom-module id="Footer"></dom-module>
+<script>
+  Polymer({
+    is: 'Footer',
+    properties: {
+      /**
+       * Hides all footers in the grid.
+       *
+       * @property {boolean} hidden
+       * @default false
+       * @type {boolean}
+       */
+      hidden: Boolean,
+
+      /**
+       * Number of rows in the footer.
+       *
+       * @property {number} rowCount
+       * @type {number}
+       */
+      rowCount: Number
+    },
+    /**
+     * Adds a new footer row.
+     *
+     * @method addRow
+     * @param {number} index - Index of the new footer row. If undefined, it is inserted as the last row.
+     */
+    addRow: function(index) {},
+
+    /**
+     * Removes a specific footer row.
+     *
+     * @method removeRow
+     * @param {number} index - Index of the row to be removed.
+     */
+    removeRow: function(index) {},
+
+    /**
+     * Returns an object reference to a particular footer cell.
+     *
+     * @method getCell
+     * @param {number} rowIndex - Index of the row.
+     * @param {number|string} column - Index or name of the column.
+     * @return {StaticCell} An object reference to a particular footer cell
+     */
+    getCell: function(rowIndex, column) {},
+
+    /**
+     * Sets the class name for a footer row.
+     *
+     * @method setRowClassName
+     * @param {number} rowIndex - Index of the row.
+     * @param {string} className - New class name
+     */
+    setRowClassName: function(rowIndex, className) {}
+  });
+</script>
+
+<!--
+Object for accessing and controlling header rows.
+-->
+<dom-module id="Header"></dom-module>
+<script>
+  Polymer({
+    is: 'Header',
+    properties: {
+      /**
+       * Hides all headers in the grid.
+       *
+       * @property {boolean} hidden
+       * @default false
+       * @type {boolean}
+       */
+      hidden: Boolean,
+      /**
+       * Index of the default header row if multiple header rows exist.
+       *
+       * @property {number} defaultRow
+       * @type {number}
+       */
+      defaultRow: Number,
+
+      /**
+       * Number of rows in the header.
+       *
+       * @property {number} rowCount
+       * @type {number}
+       */
+      rowCount: Number
+    },
+    /**
+     * Adds a new header row.
+     *
+     * @method addRow
+     * @param {number} index - Index of the new header row. If undefined, it is inserted as the last row.
+     */
+    addRow: function(index) {},
+    /**
+     * Removes a specific header row.
+     *
+     * @method removeRow
+     * @param {number} index - Index of the row to be removed.
+     */
+    removeRow: function(index) {},
+    /**
+     * Returns an object reference to a particular header cell.
+     *
+     * @method getCell
+     * @param {number} rowIndex - Index of the row.
+     * @param {number|string} column - Index or name of the column.
+     * @return {StaticCell} An object reference to a particular header cell
+     */
+    getCell: function(rowIndex, column) {},
+
+    /**
+     * Sets the class name for a header row.
+     *
+     * @method setRowClassName
+     * @param {number} rowIndex - Index of the row.
+     * @param {string} className - New class name
+     */
+    setRowClassName: function(rowIndex, className) {}
+  });
+</script>
+
+<!--
+Object referencing to a row and it's data.
+-->
+<dom-module id="Row"></dom-module>
+<script>
+  Polymer({
+    is: 'Row',
+    properties: {
+      /**
+       * Index of the row.
+       */
+      index:  Number,
+      /**
+       * Data object of the row.
+       *
+       * @property {*} data
+       * @type {*}
+       */
+      data:  Object,
+      /**
+       * Reference to the &lt;vaadin-grid> element
+       *
+       * @property {HTMLElement} grid
+       * @type {HTMLElement}
+       */
+      grid:  Object,
+      /**
+       * Reference to the TR element
+       *
+       * @property {HTMLElement} element
+       * @type {HTMLElement}
+       */
+      element:  Object
+    }
+  });
+</script>
+
+<!--
+Object for accessing and controlling selected rows of the grid.
+-->
+<dom-module id="Selection"></dom-module>
+<script>
+  Polymer({
+    is: 'Selection',
+    properties: {
+      /**
+       * Mode of the selection.
+       *
+       * Attribute: `selection-mode`
+       *
+       * @property {"single"|"multi"|"all"|"disabled"} mode
+       * @type {"single"|"multi"|"all"|"disabled"}
+       */
+      mode: String,
+      /**
+       * Size of the selection.
+       */
+      size: Number
+    },
+    /**
+     * Selects a row.
+     *
+     * @method select
+     * @param {number} index – Index of the row.
+     */
+    select: function(index) {},
+    /**
+     * Deselects a row.
+     *
+     * @method deselect
+     * @param {number} index – Index of the row.
+     */
+    deselect: function(index) {},
+    /**
+     * Clears the selection.
+     *
+     * @method clear
+     */
+    clear: function() {},
+    /**
+     * Selects all rows.
+     *
+     * @method selectAll
+     */
+    selectAll: function() {},
+    /**
+     * Selected row indexes.
+     *
+     * @method selected
+     * @return {Array<number>} Indexes of the selected rows.
+     */
+    selected: function() {},
+    /**
+     * Deselected row indexes.
+     *
+     * @method deselected
+     * @return {Array<number>} Indexes of the deselected rows.
+     */
+    deselected: function() {}
+  });
+</script>
+
+<!--
+Object for defining the sorting order of the columns.
+-->
+<dom-module id="SortOrder"></dom-module>
+<script>
+  Polymer({
+    is: 'SortOrder',
+    properties: {
+      /**
+       * Sort direction.
+       *
+       * Attribute: `sort-direction`
+       *
+       * @property {string} direction
+       * @default "asc"
+       * @type {string}
+       */
+      direction:  String,
+      /**
+       * Index of the column.
+       */
+      column:  Number
+    }
+  });
+</script>
+
+<!--
+Represents a grid header/footer cell configuration.
+-->
+<dom-module id="StaticCell"></dom-module>
+<script>
+  Polymer({
+    is: 'StaticCell',
+    properties: {
+      /**
+       * Class name of the cell.
+       */
+      className:  String,
+
+      /**
+       * Contents of the cell.
+       */
+      content: Object,
+
+      /**
+       * Number of columns which the cell should span/group.
+       *
+       * @default 0
+       */
+      colspan:  Number
+    }
+  });
+</script>
+
+<!--
+Object referencing to a cell and it's data.
+-->
+<dom-module id="Cell"></dom-module>
+<script>
+  Polymer({
+    is: 'Cell',
+    properties: {
+
+      /**
+       * Column name of the cell.
+       */
+      columnName: String,
+
+      /**
+       * HTML element of the cell.
+       *
+       * @property {HTMLElement} element
+       * @type {HTMLElement}
+       */
+      element: Object,
+
+      /**
+       * Parent row of the cell.
+       *
+       * @property {Row} row
+       * @type {Row}
+       */
+      row: Object,
+
+      /**
+       * Contents of the cell.
+       */
+      data: Object,
+
+      /**
+       * Column index of the cell.
+       */
+      index: Number
+    }
+  });
+</script>

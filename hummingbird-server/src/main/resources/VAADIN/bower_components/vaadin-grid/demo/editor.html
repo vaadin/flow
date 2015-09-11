@@ -1,0 +1,182 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>vaadin-grid Code Examples – Formatting data</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="common.html">
+</head>
+
+<body unresolved>
+  <section>
+    <h1><a href="./">vaadin-grid</a>
+      <span><code>vaadin-grid</code> Editor</span>
+    </h1>
+    <table-of-contents select="h3" class="toc"></table-of-contents>
+  </section>
+
+  <section>
+    <h3>Default Editor</h3>
+    <p>With the editor feature of <code>vaadin-grid</code>, it is easy to offer the end-user the possibility
+      to edit individual items/rows of data in <code>vaadin-grid</code>. The editor can be activated by the
+      end-user either by double-clicking a row or by focusing a row and pressing the Enter key.
+      <code>editable</code> and <code>editor.enabled</code> properties are used to enable the
+      editor feature.</p>
+    <p><code>vaadin-grid</code> has a built-in default editor implementation which uses simple HTML text input elements
+      for editing the values. <code>editor.save</code> function is not defined by default,
+      so clicking the "save" button only closes the default editor.
+    </p>
+    <code-example>
+      <vaadin-grid editable demo>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Surname">
+            <col header-text="Activity">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code demo-var="grid" hidden>
+        grid.data.source = myBigData;
+      </code>
+
+      <code demo-var="grid">
+        // Enabling the editor in JavaScript
+        grid.editor.enabled = true;
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Custom Editor Handler</h3>
+    <p>To provide custom editor fields for <code>vaadin-grid</code> cells or to actually persist the modified data
+    to data source after clicking save a custom <code>editor.handler</code> should be implemented.
+    It consists of four callback functions:
+      <ul>
+        <li><code>handler.getCellEditor</code></li> should return an editor field for a requested column.
+        <li><code>handler.bind</code></li> should populate the editor fields with data.
+        <li><code>handler.save</code></li> should commit the changes to the data source.
+        <li><code>handler.cancel</code></li> defines an action to be performed on editor cancel.
+      </ul>
+      Remember to call <code>request.sucess()</code> at the end of binding and saving functions in order to close the editor popup.
+      In case the data source is changed on save <code>grid.data.clearCache()</code> should also be called.
+    </p>
+    <code-example>
+      <vaadin-grid editable demo>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Value">
+            <col header-text="Progress" name="progress">
+          </colgroup>
+          <tbody>
+            <tr>
+              <td>Project A</td><td>10000</td><td>0.8</td>
+            </tr>
+            <tr>
+              <td>Project B</td><td>999999</td><td>0.8</td>
+            </tr>
+          </tbody>
+        </table>
+      </vaadin-grid>
+      <code demo-var="grid">
+        // Define a custom editor handler
+        grid.editor.handler = {
+          getCellEditor: function(col) {
+            window.haha = col;
+            var result = document.createElement("input");
+            if (col.name === "progress"){
+              result.setAttribute("type", "range");
+              result.min = 0;
+              result.max = 100;
+            }
+            return result;
+          },
+          bind: function(req) {
+            for (var i = 0; i < req.grid.columns.length; i++) {
+              var col = req.grid.columns[i];
+              var el = req.getCellEditor(col);
+              if (col.name === "progress") {
+                el.value = + req.dataItem[i] * 100;
+              } else {
+                el.value = req.dataItem[i];
+              }
+            }
+            req.success();
+          },
+          save: function(req) {
+            for (var i = 0; i < req.grid.columns.length; i++) {
+              var col = req.grid.columns[i];
+              var el = req.getCellEditor(col);
+
+              // This example uses a light dom data source so we'll just modify the dom
+              var cell = Polymer.dom(grid).querySelectorAll("tbody tr")[req.rowIndex].querySelectorAll("td")[i];
+              if (col.name === "progress") {
+                cell.innerHTML = el.value / 100;
+              } else {
+                cell.innerHTML = el.value;
+              }
+            }
+            req.success();
+            req.grid.data.clearCache();
+          }
+        };
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Read-only columns</h3>
+    <p>Labeling individual columns with <code>read-only</code> excludes them from
+      the editor.</p>
+
+    <code-example>
+      <vaadin-grid rows=4 editable demo>
+        <table>
+          <colgroup>
+            <col header-text="Name" read-only>
+            <col header-text="Surname">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code demo-var="grid" hidden>
+        grid.data.source = myBigData;
+      </code>
+
+      <code demo-var="grid">
+        // Setting a column read-only in JavaScript
+        grid.columns[0].readOnly = true;
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Save and cancel buttons</h3>
+    <p>Editor buttons have <i>Save</i> and <i>Cancel</i> as default captions. They can be changed
+    by modifying the <code>editor.saveButtonText</code> and <code>editor.cancelButtonText</code> properties</p>
+
+    <code-example>
+      <vaadin-grid rows=4 editable demo hidden>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Surname">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code demo-var="grid" hidden>
+        grid.data.source = myBigData;
+      </code>
+
+      <code demo-var="grid">
+        grid.editor.saveButtonText = "Commit";
+        grid.editor.cancelButtonText = "Discard";
+      </code>
+    </code-example>
+  </section>
+
+</body>
+
+</html>

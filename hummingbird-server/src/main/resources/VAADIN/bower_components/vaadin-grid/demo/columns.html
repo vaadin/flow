@@ -1,0 +1,232 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>vaadin-grid Code Examples – Columns</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="common.html">
+</head>
+
+<body unresolved>
+  <section>
+    <h1><a href="./">vaadin-grid</a>
+      <span>Columns</span>
+    </h1>
+    <table-of-contents select="h3" class="toc"></table-of-contents>
+  </section>
+
+  <section>
+    <h3>Defining Columns</h3>
+    <p>Columns can be defined using HTML or Javascript.</p>
+    <p>For the HTML version, the <code>table</code> element might seem
+       redundant, but it is required in order for the browsers to parse the
+        contained markup correctly. We also need to provide some data for the
+         grid, using <code>tbody</code>, in order to render something.</p>
+    <code-example source>
+      <vaadin-grid demo>
+        <table>
+          <colgroup>
+            <col header-text="First column">
+            <col header-text="Second column">
+          </colgroup>
+          <tbody>
+            <tr>
+              <td>One</td>
+              <td>Two</td>
+            </tr>
+          </tbody>
+        </table>
+      </vaadin-grid>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          /*
+          // code
+          // Columns can also be configured in JS
+          grid.columns = [
+            { headerContent: "First column" },
+            { headerContent: "Second column" }
+          ];
+          // end-code
+          */
+        });
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Adding Columns Dynamically</h3>
+    <p>Columns can be added dynamically using the JavaScript API. You can also
+       modify the lightDom of the component, but it is not the recommended
+       way.</p>
+    <code-example source>
+      <vaadin-grid demo hidden></vaadin-grid>
+
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          grid.data.source = [["One", "Two"]];
+          // code
+          grid.addColumn({ headerContent: "Column one" });
+          // Specify the index or name of the column before which to add the new column
+          grid.addColumn({ headerContent: "I’m First"}, 0);
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Column width</h3>
+    <p>By default all the columns share the available size equally.
+    <code>column.flex</code> property can be used to adjust how much a column spans
+    in width in relation to other columns.</p>
+    <p>Columns may also be assigend an explicit width, a maximum width and a minimum width.</p>
+    <code-example source>
+      <vaadin-grid demo>
+        <table>
+          <colgroup>
+            <col header-text="Name" width=100 flex=1>
+            <col header-text="Surname" max-width=200 flex=2>
+            <col header-text="Activity" min-width=100 flex=1>
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code hidden>
+        var employees = [];
+        var names = ["Artur", "Patrik", "Henrik", "Teemu"];
+        var surnames = ["Signell","Lehtinen","Ahlroos","Paul"];
+        var activities = ["Design","Implement","Polish","Deliver"];
+        var targets = ["soup","Vaadin","dog","world peace"];
+        for (var i = 0; i < 400; i++){
+            var row = [];
+            [names, surnames, activities, targets].forEach(function(array){
+              row.push(array[Math.floor(Math.random()*array.length)]);
+            });
+            employees.push(row);
+        }
+      </code>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          grid.data.source = employees;
+          // code
+          // Setting the width properties with JS api
+          grid.columns[0].width = 100;
+          grid.columns[1].maxWidth = 200;
+          grid.columns[2].minWidth = 100;
+          // Setting the flex properties with JS api
+          grid.columns[0].flex = 1;
+          grid.columns[1].flex = 2;
+          grid.columns[2].flex = 1;
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Frozen columns</h3>
+    <p>A number of columns starting from the leftmost may be set frozen which forces them to remain
+    horizontally still while rest of the columns scroll normally. On multi-select mode the selection column
+    containing the checkboxes is frozen by default but setting <code>grid.frozenColumns</code> to
+    -1 will unfreeze it as well.</p>
+    <code-example source>
+      <vaadin-grid selection-mode="multi" frozen-columns="1" demo>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Surname">
+            <col header-text="Operation">
+            <col header-text="Product">
+            <col header-text="Progress">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code hidden>
+        var employees = [];
+        var names = ["Artur", "Patrik", "Henrik", "Teemu"];
+        var surnames = ["Signell","Lehtinen","Ahlroos","Paul"];
+        var activities = ["Design","Implement","Polish","Deliver"];
+        var targets = ["soup","Vaadin","dog","world peace"];
+        for (var i = 0; i < 400; i++){
+            var row = [];
+            [names, surnames, activities, targets].forEach(function(array){
+              row.push(array[Math.floor(Math.random()*array.length)]);
+            });
+            employees.push(row);
+        }
+      </code>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          grid.data.source = employees;
+
+          grid.columns[4].renderer = function(cell) {
+            cell.element.textContent = Math.random(1).toFixed(2);
+          };
+          // code
+          // Alternatively set the frozen columns in JS
+          grid.frozenColumns = 1;
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Column hiding</h3>
+    <p>Columns can be hidden or visible.
+      By default none of the columns are user-hidable. Setting a column's <code>hidable</code> property
+      true appends it to the dropdown menu on the right where individual columns can be toggled
+      hidden/visible by the user.</p>
+    <code-example source>
+      <vaadin-grid demo>
+        <table>
+          <colgroup>
+            <col header-text="Name">
+            <col header-text="Surname" hidable>
+            <col header-text="Activity" hidable hidden>
+            <col header-text="Target" hidden>
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code hidden>
+        var employees = [];
+        var names = ["Artur", "Patrik", "Henrik", "Teemu"];
+        var surnames = ["Signell","Lehtinen","Ahlroos","Paul"];
+        var activities = ["Design","Implement","Polish","Deliver"];
+        var targets = ["soup","Vaadin","dog","world peace"];
+        for (var i = 0; i < 400; i++){
+          var row = [];
+          [names, surnames, activities, targets].forEach(function(array){
+            row.push(array[Math.floor(Math.random()*array.length)]);
+          });
+          employees.push(row);
+        }
+      </code>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          grid.data.source = employees;
+          // code
+          // Setting the properties with JS api
+          grid.columns[1].hidable = true;
+          grid.columns[2].hidable = true;
+          grid.columns[2].hidden = true;
+          grid.columns[3].hidden = true;
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+</body>
+
+</html>

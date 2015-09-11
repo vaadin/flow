@@ -1,0 +1,27 @@
+{
+  "name": "table-of-contents",
+  "version": "0.0.2",
+  "homepage": "https://github.com/jounik/table-of-contents",
+  "authors": [
+    "Jouni Koivuviita <jouni@jouni.me>"
+  ],
+  "description": "A custom HTML element for showing a table of contents list, generated from specific elements on the page",
+  "main": "table-of-contents.html",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "table-of-contents",
+    "toc"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#~v1.0.5"
+  }
+}

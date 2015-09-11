@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>vaadin-grid Code Examples – Scrolling</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="common.html">
+</head>
+
+<body unresolved>
+  <section>
+    <h1><a href="./">vaadin-grid</a>
+      <span>Scrolling</span>
+    </h1>
+    <table-of-contents select="h3" class="toc"></table-of-contents>
+  </section>
+
+  <section>
+    <h3>Scrolling <code>vaadin-grid</code></h3>
+    <p>JS API provides functions for scrolling <code>vaadin-grid</code> programmatically.
+    <ul>
+      <li><code>scrollToStart()</code> restores the scroll position back to the beginning.</li>
+      <li><code>scrollToEnd()</code> scrolls <code>vaadin-grid</code> all the way to the last data row.</li>
+      <li><code>scrollToRow(index [, destination])</code> allows scrolling to a specific row index. The optional <code>destination</code> parameter accepts the values <code>"start"</code> and <code>"end"</code>.</li>
+    </ul>
+    </p>
+    <code-example source>
+      <vaadin-grid demo hidden>
+        <table>
+          <colgroup>
+            <col header-text="#">
+            <col header-text="Name">
+            <col header-text="Surname">
+            <col header-text="Activity">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <button class="demo-button" id="scrollToStart">scrollToStart</button>
+      <button class="demo-button" id="scrollToEnd">scrollToEnd</button>
+      <button class="demo-button" id="scrollToRow">scrollToRow(100)</button>
+
+      <code hidden>
+        var employees = [];
+        var names = ["Artur", "Patrik", "Henrik", "Teemu"];
+        var surnames = ["Signell","Lehtinen","Ahlroos","Paul"];
+        var activities = ["Design","Implement","Polish","Deliver"];
+        var targets = ["soup","Vaadin","dog","world peace"];
+        for (var i = 0; i < 400; i++){
+            var row = [];
+            [names, surnames, activities, targets].forEach(function(array){
+              row.push(array[Math.floor(Math.random()*array.length)]);
+            });
+            employees.push(row);
+        }
+      </code>
+
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          grid.data.source = employees;
+          // code
+          // Some functionality requires all the previous processes
+          // to be finished before executing. Scrolling to a row
+          // naturally needs rows to exist so we'll wrap the
+          // actual call inside a function and pass it to vaadin-grid as a "then"
+          // callback so it's executed only after everything
+          // else is finished.
+          grid.then(function() {
+            // Scroll to a specific row.
+            grid.scrollToRow(70);
+          });
+          // end-code
+
+          grid.columns[0].renderer = function(cell) {
+            cell.element.innerHTML = cell.row.index;
+          }
+
+          document.getElementById("scrollToStart").addEventListener("click", function() {
+            grid.scrollToStart();
+          });
+
+          document.getElementById("scrollToEnd").addEventListener("click", function() {
+            grid.scrollToEnd();
+          });
+
+          document.getElementById("scrollToRow").addEventListener("click", function() {
+            grid.scrollToRow(100);
+          });
+        });
+      </code>
+    </code-example>
+  </section>
+
+</body>
+</html>

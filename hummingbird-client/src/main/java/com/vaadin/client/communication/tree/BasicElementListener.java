@@ -35,11 +35,13 @@ public class BasicElementListener {
         @Override
         public void addProperty(String name, TreeNodeProperty property) {
             // Ignore metadata, e.g. TAG
-            if (!name.toLowerCase().equals(name)) {
+            if (isMetadata(name)) {
                 return;
             }
+
             property.addPropertyChangeListener((p, old) -> {
                 Object value = p.getValue();
+
                 if (value instanceof TreeNode) {
                     TreeNode child = (TreeNode) value;
                     JsonValue childValue = target.get(name);
@@ -49,9 +51,13 @@ public class BasicElementListener {
                         // Read back again in case the setter did some magic
                         childValue = target.get(name);
                     }
+                    TreeUpdater.debug("Set property " + name + " to " + value
+                            + " for element " + target);
                     child.addTreeNodeChangeListener(
                             new PropertyPropagator((JsonObject) childValue));
                 } else if (alwaysSetProperty) {
+                    TreeUpdater.debug("Set property " + name + " to " + value
+                            + " for element " + target);
                     target.put(name, TreeUpdater.asJsonValue(value));
                 } else {
                     TreeUpdater.setAttributeOrProperty(
@@ -62,7 +68,7 @@ public class BasicElementListener {
 
         @Override
         public void addArray(String name, EventArray array) {
-            if (!name.toLowerCase().equals(name)) {
+            if (isMetadata(name)) {
                 return;
             }
 
@@ -72,6 +78,8 @@ public class BasicElementListener {
             }
             JsArrayObject<Object> targetArray = ((JsJsonArray) target
                     .getArray(name)).cast();
+            TreeUpdater.debug("Set property " + name + " to empty array"
+                    + " for element " + target);
 
             array.addArrayEventListener(new ArrayEventListener() {
                 @Override
@@ -98,6 +106,10 @@ public class BasicElementListener {
                             childNode.addTreeNodeChangeListener(
                                     new PropertyPropagator(
                                             (JsonObject) childObject));
+                            TreeUpdater.debug("Add listener for child "
+                                    + (startIndex + i) + " in property " + name
+                                    + " for element " + target);
+
                         }
                     }
                 }
@@ -123,6 +135,10 @@ public class BasicElementListener {
                         + TreeUpdater.debugHtml(parent) + " at index " + index);
             }
         }
+    }
+
+    private static boolean isMetadata(String name) {
+        return name.toUpperCase().equals(name); // Metadata is in ALLUPPERCASE
     }
 
     private static void addListener(String type, TreeUpdater treeUpdater,

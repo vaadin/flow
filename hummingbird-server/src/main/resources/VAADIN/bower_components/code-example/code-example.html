@@ -1,0 +1,252 @@
+<link rel='import' href='../polymer/polymer.html'>
+<link rel="stylesheet" href="vendor/prismjs/prism.css">
+<script src="vendor/prismjs/prism.js"></script>
+<script src="../zeroclipboard/dist/ZeroClipboard.js"></script>
+
+<dom-module id="code-example">
+  <style>
+  :host {
+    display: -webkit-flex;
+    display: flex;
+    margin: 3em 0;
+  }
+
+  .demo-wrapper {
+    min-width: 40%;
+  }
+
+  :host > .code {
+    white-space: normal;
+    text-align: right;
+  }
+
+  .code {
+    white-space: pre;
+    font-family: Source Code Pro, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.3;
+    padding-left: 2em;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .source, .copy.source {
+    display: none;
+    max-height: none !important;
+  }
+  :host(.source-visible) code, :host(.source-visible) .copy {
+    display: none;
+  }
+  :host(.source-visible) code.source {
+    display: block;
+  }
+  :host(.source-visible) .copy.source {
+    display: inline-block;
+  }
+  :host(:not([source])) .source-toggle {
+    display: none;
+  }
+  .source-toggle {
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+  }
+  .source-toggle:before {
+    content: "Show full source";
+  }
+  :host(.source-visible) .source-toggle:before {
+    content: "Hide full source";
+  }
+
+  .code code {
+    max-height: 20em;
+    height: auto;
+  }
+
+  .copy {
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0 0.3em 0 0.3em;
+    padding: 3px;
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+    top: 1px;
+    right: 1px;
+    transform: translatey(100%);
+    -webkit-transform: translatey(100%);
+  }
+
+  a.copy {
+    text-decoration: none;
+    color: #1990b8;
+    font-family: Consolas, Monaco, 'Andale Mono', monospace;
+    font-size: 12px;
+    background: rgba(250,250,250,0.9);
+  }
+
+  @media screen and (max-width: 750px) {
+    :host {
+      -webkit-flex-direction: column;
+      flex-direction: column;
+    }
+
+    .code {
+      padding-left: 0;
+      padding-top: 3em;
+    }
+  }
+  </style>
+  <template>
+    <div class="demo-wrapper">
+      <content select=":not(code)"></content>
+    </div>
+    <div class="code">
+      <a class="source-toggle" on-click="toggleSourceVisible"></a>
+    </div>
+
+  </template>
+</dom-module>
+
+<script>
+CodeExample = Polymer({
+
+  is: "code-example",
+
+  toggleSourceVisible: function(){
+    this.toggleClass("source-visible");
+  },
+
+  _unIndent: function(str, ignoreFirstLine) {
+    var spaces = str.replace(/^[^\n]*\n*(\s+)[\s\S]*/, '$1');
+
+    if(ignoreFirstLine) {
+      spaces = str.match(/^(\s+)[\s\S]*$/m, '$1');
+      if(spaces && spaces[1]) {
+        spaces = spaces[1].substring(2);
+      }
+    }
+
+    return str.replace(/\t/g, "  ").replace(/\s{2,}$/mg, "").replace(new RegExp("^" + spaces, "mg"), "");
+  },
+
+  created: function() {
+    // Gather lightDOM strings before any components are initialized
+    this._lightDomHTML = this._unIndent(this.innerHTML);
+
+    this._demoHtmlContent = "";
+    var demos = this.root.querySelectorAll("[demo]:not([hidden])");
+    for(var i = 0; i < demos.length; i++) {
+      this._demoHtmlContent += demos[i].outerHTML;
+    }
+    this._demoHtmlContent = this._demoHtmlContent.replace(/ demo=\"\"/g, "");
+
+    this._demoHtmlContent = this._unIndent(this._demoHtmlContent, true);
+  },
+
+  attached: function() {
+    if(!window.xCodeExampleIdCount)
+      window.xCodeExampleIdCount = 0;
+
+    function parseCode(h) {
+      var regex = /\/\/\s?code([.\s\S]*)\/\/\s?end-code/m;
+      var result = regex.exec(h);
+      return result ? result[1] : h;
+    }
+
+    function addCopyButton(targetId) {
+      var copyButton = document.createElement("a");
+      copyButton.href = "javascript:void(0);";
+      copyButton.setAttribute("data-clipboard-target", targetId);
+      copyButton.textContent = "copy";
+      copyButton.classList.add("copy");
+      copyButton.title = "Copy to clipboard";
+      code.appendChild(copyButton);
+      Polymer.StyleTransformer.element(copyButton, this.is);
+      new ZeroClipboard(copyButton);
+      return copyButton;
+    }
+
+    var code = Polymer.dom(this.root).querySelector(".code");
+    var demoComponent = Polymer.dom(this.root).querySelector(".demo-wrapper").querySelector("[demo]");
+
+    if(this._demoHtmlContent) {
+      var demoCode = document.createElement("code");
+      demoCode.id = "code_" + window.xCodeExampleIdCount;
+      demoCode.className = "language-markup";
+      demoCode.textContent = this._demoHtmlContent;
+      addCopyButton.call(this, demoCode.id);
+      code.appendChild(demoCode);
+      Prism.highlightElement(demoCode);
+      Polymer.StyleTransformer.element(demoCode, this.is);
+    }
+
+    demoComponent.id = "demo_" + window.xCodeExampleIdCount++;
+
+    // Get any script code
+    var script = document.createElement("script");
+    var demoVar, scriptContent = '';
+    for(var i=0; i < Polymer.dom(this).childNodes.length; i++) {
+      var c = Polymer.dom(this).childNodes[i];
+      if(c.nodeName == "CODE") {
+        // Use the same demo-var for all code blocks
+        demoVar = demoVar || c.getAttribute("demo-var");
+        // Join all code blocks
+        scriptContent += c.textContent;
+        // Only no hidden code blocks are shown in the page
+        if(c.getAttribute("hidden") == null) {
+          var scriptCode = document.createElement("code");
+          scriptCode.id = "code_" + window.xCodeExampleIdCount + "_js" + i;
+          scriptCode.className = "language-javascript";
+          scriptCode.textContent = this._unIndent(parseCode(c.textContent));
+          addCopyButton.call(this, scriptCode.id);
+          code.appendChild(scriptCode);
+          Prism.highlightElement(scriptCode);
+          Polymer.StyleTransformer.element(scriptCode, this.is);
+        }
+
+      }
+    }
+
+    var sourceContent = this._lightDomHTML.replace(/ demo=\"\"/g,"")
+      .replace(/ hidden=\"\"/g, "")
+      .replace(/<(\/?)code/g, "<$1script")
+      .replace(/ demo-var=\".*\"/g, "")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&");
+    var source = document.createElement("code");
+    this.toggleClass("source", true, source);
+    this.toggleClass("language-markup", true, source);
+
+    var fullContent = "<!doctype html>\n<html>\n\n";
+    if (window.xCodeExampleSourceHead) {
+      fullContent+="<head>\n" + window.xCodeExampleSourceHead + "</head>\n\n";
+    }
+    fullContent+="<body>"+ sourceContent + "\n</body>\n\n</html>";
+    source.textContent = fullContent;
+    source.id = "code_" + window.xCodeExampleIdCount + "s";
+    var button = addCopyButton.call(this, source.id);
+    button.classList.add("source");
+    code.appendChild(source);
+    Prism.highlightElement(source);
+    Polymer.StyleTransformer.element(source, this.is);
+
+    if (scriptContent) {
+      // Wrap the code in a function to avoid sharing the scope.
+      scriptContent =
+        "(function(" + (demoVar ? demoVar : 'demo') +  "){" +
+          scriptContent +
+        "}(document.getElementById('" + demoComponent.id + "')))";
+
+      script.text = scriptContent;
+      // Delay the execution of the script, so as the component is ready
+      setTimeout(function() {
+        document.head.appendChild(script);
+      }, 0);
+    }
+  }
+
+});
+</script>

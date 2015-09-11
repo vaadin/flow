@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>vaadin-grid Code Examples – Sorting Data</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="common.html">
+</head>
+
+<body unresolved>
+  <section>
+    <h1><a href="./">vaadin-grid</a>
+      <span>Sorting Data</span>
+    </h1>
+    <table-of-contents select="h3" class="toc"></table-of-contents>
+  </section>
+
+  <section>
+    <h3>Sortable columns</h3>
+    <p>Clicking a grid header cell updates <code>vaadin-grid</code> sort order indicators assuming the column is marked sortable.
+    Doing so also updates the <code>data.sortOrder</code> property behind the scenes. The property may also
+    be set programmatically or even declaratively by pre-defining <code>sort-direction</code> attributes for columns.</p>
+    <code-example source>
+      <vaadin-grid demo>
+        <table>
+          <colgroup>
+            <col header-text="Name" sortable sort-direction="asc">
+            <col header-text="Value" sortable sort-direction="desc">
+            <col header-text="Progress" sortable>
+          </colgroup>
+          <tbody>
+            <tr>
+              <td>Project A</td><td>10000</td><td>0.8</td>
+            </tr>
+          </tbody>
+        </table>
+
+      </vaadin-grid>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          // code
+          // Setting the sort definitions in JavaScript
+          grid.columns[0].sortable = true;
+          grid.columns[1].sortable = true;
+          grid.columns[2].sortable = true;
+
+          grid.data.sortOrder = [{column: 0, direction: "asc"}, {column: 1, direction: "desc"}];
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Sorting the Data Source</h3>
+    <p>As mentioned in the previous example, there's multiple ways to change <code>vaadin-grid</code> sort order.
+    None of them will however automatically order any data inside <code>vaadin-grid</code>. The data source implementation
+    is always responsible of providing appropriate data that's ordered by the sort-order definitions.</p>
+    <code-example source>
+      <vaadin-grid demo>
+        <table>
+          <colgroup>
+            <col header-text="Name" sortable>
+            <col header-text="Value" sortable>
+            <col header-text="Progress" sortable>
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+
+        HTMLImports.whenReady(function() {
+          // code
+          // Set a data source for the grid
+          var data = [ [ "Project A", 10000, 0.8 ],
+                       [ "Project D", 999999, 0.2 ],
+                       [ "Project C", 43256, 0.01 ],
+                       [ "Project E", 1967, 0.9 ],
+                       [ "Project B", 19672, 1 ] ];
+          grid.data.source = data;
+
+          // Re-order the data array on sort event
+          grid.addEventListener('sort', function() {
+            var idx = grid.data.sortOrder[0].column;
+            var asc = grid.data.sortOrder[0].direction == 'asc';
+            data.sort(function(a, b) {
+              return a[idx] < b[idx] && asc ? -1 : 1;
+            });
+          });
+          // end-code
+        });
+      </code>
+    </code-example>
+  </section>
+
+</body>
+</html>

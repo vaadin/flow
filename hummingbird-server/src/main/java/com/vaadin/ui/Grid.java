@@ -38,6 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.annotations.Bower;
+import com.vaadin.annotations.JavaScriptModule;
 import com.vaadin.annotations.Tag;
 import com.vaadin.data.Container;
 import com.vaadin.data.Container.Indexed;
@@ -73,6 +74,8 @@ import com.vaadin.event.SelectionEvent.SelectionNotifier;
 import com.vaadin.event.SortEvent;
 import com.vaadin.event.SortEvent.SortListener;
 import com.vaadin.event.SortEvent.SortNotifier;
+import com.vaadin.hummingbird.kernel.Element;
+import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.server.EncodeResult;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.server.JsonCodec;
@@ -84,6 +87,7 @@ import com.vaadin.shared.ui.grid.EditorClientRpc;
 import com.vaadin.shared.ui.grid.EditorServerRpc;
 import com.vaadin.shared.ui.grid.GridClientRpc;
 import com.vaadin.shared.ui.grid.GridColumnState;
+import com.vaadin.shared.ui.grid.GridConstants;
 import com.vaadin.shared.ui.grid.GridServerRpc;
 import com.vaadin.shared.ui.grid.GridState;
 import com.vaadin.shared.ui.grid.GridStaticCellType;
@@ -100,6 +104,7 @@ import com.vaadin.ui.renderers.TextRenderer;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -166,7 +171,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  */
 @Tag("vaadin-grid")
-@Bower("vaadin-components")
+@Bower("vaadin-grid")
 public class Grid extends AbstractFocusable implements SelectionNotifier,
         SortNotifier, SelectiveRenderer, ItemClickNotifier {
 
@@ -1837,8 +1842,9 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
             protected void addCell(Object propertyId) {
                 CELLTYPE cell = createCell();
-                cell.setColumnId(
-                        section.grid.getColumn(propertyId).getState().id);
+                // FIXME
+                // cell.setColumnId(
+                // section.grid.getColumn(propertyId).getState().id);
                 cells.put(propertyId, cell);
                 rowState.cells.add(cell.getCellState());
             }
@@ -2341,16 +2347,16 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          *             if merged cells are not i n continuous range
          */
         protected void sanityCheck() throws IllegalStateException {
-            List<String> columnOrder = grid.getState().columnOrder;
-            for (ROWTYPE row : rows) {
-                for (Set<String> cellGroup : row.getRowState().cellGroups
-                        .keySet()) {
-                    if (!checkCellGroupAndOrder(columnOrder, cellGroup)) {
-                        throw new IllegalStateException(
-                                "Not all merged cells were in a continuous range.");
-                    }
-                }
-            }
+            // List<String> columnOrder = grid.getState().columnOrder;
+            // for (ROWTYPE row : rows) {
+            // for (Set<String> cellGroup : row.getRowState().cellGroups
+            // .keySet()) {
+            // if (!checkCellGroupAndOrder(columnOrder, cellGroup)) {
+            // throw new IllegalStateException(
+            // "Not all merged cells were in a continuous range.");
+            // }
+            // }
+            // }
         }
 
         private boolean checkCellGroupAndOrder(List<String> columnOrder,
@@ -2583,7 +2589,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         /**
          * The state of the column shared to the client
          */
-        private final GridColumnState state;
+        private final StateNode state;
 
         /**
          * The grid this column is associated with
@@ -2605,6 +2611,9 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          */
         private boolean isFirstConverterAssignment = true;
 
+        // TODO Remove
+        private Renderer<?> renderer = new TextRenderer();
+
         /**
          * Internally used constructor.
          *
@@ -2615,7 +2624,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          * @param propertyId
          *            the backing property id for this column
          */
-        Column(Grid grid, GridColumnState state, Object propertyId) {
+        Column(Grid grid, StateNode state, Object propertyId) {
             this.grid = grid;
             this.state = state;
             this.propertyId = propertyId;
@@ -2628,7 +2637,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          *
          * @return the internal state of the column
          */
-        GridColumnState getState() {
+        private StateNode getState() {
             return state;
         }
 
@@ -2654,8 +2663,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             checkColumnIsAttached();
             HeaderRow row = grid.getHeader().getDefaultRow();
             if (row != null) {
-                return row.getCell(grid.getPropertyIdByColumnId(state.id))
-                        .getText();
+                return row.getCell(getPropertyId()).getText();
             }
             return null;
         }
@@ -2676,12 +2684,12 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                 throws IllegalStateException {
             checkColumnIsAttached();
 
-            state.headerCaption = caption;
+            state.put("headerContent", caption);
 
             HeaderRow row = grid.getHeader().getDefaultRow();
             if (row != null) {
-                row.getCell(grid.getPropertyIdByColumnId(state.id))
-                        .setText(caption);
+
+                row.getCell(getPropertyId()).setText(caption);
             }
             return this;
         }
@@ -2697,7 +2705,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          */
         public String getHidingToggleCaption() throws IllegalStateException {
             checkColumnIsAttached();
-            return state.hidingToggleCaption;
+            return state.get("hidingToggleCaption", (String) null);
         }
 
         /**
@@ -2720,8 +2728,9 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          */
         public Column setHidingToggleCaption(String hidingToggleCaption)
                 throws IllegalStateException {
+            // FIXME does not work
             checkColumnIsAttached();
-            state.hidingToggleCaption = hidingToggleCaption;
+            state.put("hidingToggleCaption", hidingToggleCaption);
             grid.markAsDirty();
             return this;
         }
@@ -2735,7 +2744,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          */
         public double getWidth() throws IllegalStateException {
             checkColumnIsAttached();
-            return state.width;
+            return state.get("width", GridConstants.DEFAULT_COLUMN_WIDTH_PX);
         }
 
         /**
@@ -2762,7 +2771,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                         "Pixel width should be greated than 0 (in " + toString()
                                 + ")");
             }
-            state.width = pixelWidth;
+            state.put("width", pixelWidth);
             grid.markAsDirty();
             return this;
         }
@@ -2776,7 +2785,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          */
         public Column setWidthUndefined() {
             checkColumnIsAttached();
-            state.width = -1;
+            state.put("width", -1);
             grid.markAsDirty();
             return this;
         }
@@ -2789,9 +2798,10 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          *             if the column is no longer attached to any grid
          */
         protected void checkColumnIsAttached() throws IllegalStateException {
-            if (grid.getColumnByColumnId(state.id) == null) {
-                throw new IllegalStateException("Column no longer exists.");
-            }
+            // FIXME
+            // if (grid.getColumnByColumnId(state.id) == null) {
+            // throw new IllegalStateException("Column no longer exists.");
+            // }
         }
 
         /**
@@ -2805,9 +2815,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          */
         public Column setLastFrozenColumn() {
             checkColumnIsAttached();
-            grid.setFrozenColumnCount(
-                    grid.getState(false).columnOrder.indexOf(getState().id)
-                            + 1);
+            grid.setFrozenColumnCount(grid.getColumns().indexOf(this) + 1);
             return this;
         }
 
@@ -2866,7 +2874,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             }
 
             grid.addRenderer(renderer);
-            state.rendererConnector = renderer;
+            // FIXME
+            // state.rendererConnector = renderer;
             setConverter(converter);
             return this;
         }
@@ -2946,7 +2955,9 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          * @return the renderer
          */
         public Renderer<?> getRenderer() {
-            return getState().rendererConnector;
+            // FIXME
+            return renderer;
+            // return getState().rendererConnector;
         }
 
         /**
@@ -2991,8 +3002,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         }
 
         private Class<?> getModelType() {
-            return grid.getContainerDataSource()
-                    .getType(grid.getPropertyIdByColumnId(state.id));
+            return grid.getContainerDataSource().getType(propertyId);
         }
 
         /**
@@ -3016,7 +3026,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                             + " sortable. The Container of Grid does not implement Sortable");
                 } else if (!((Sortable) grid.datasource)
                         .getSortableContainerPropertyIds()
-                        .contains(propertyId)) {
+                        .contains(getPropertyId())) {
                     throw new IllegalStateException(
                             "Can't set column " + toString()
                                     + " sortable. Container doesn't support sorting by property "
@@ -3024,8 +3034,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                 }
             }
 
-            state.sortable = sortable;
-            grid.markAsDirty();
+            state.put("sortable", sortable);
             return this;
         }
 
@@ -3035,13 +3044,13 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          * @return true if the column is sortable by the user, false otherwise
          */
         public boolean isSortable() {
-            return state.sortable;
+            return state.get("sortable", true);
         }
 
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "[propertyId:"
-                    + grid.getPropertyIdByColumnId(state.id) + "]";
+            return getClass().getSimpleName() + "[propertyId:" + getPropertyId()
+                    + "]";
         }
 
         /**
@@ -3076,8 +3085,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                 throws IllegalStateException {
             checkColumnIsAttached();
 
-            getState().expandRatio = expandRatio;
-            grid.markAsDirty();
+            getState().put("flex", expandRatio);
             return this;
         }
 
@@ -3088,7 +3096,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          * @see #setExpandRatio(int)
          */
         public int getExpandRatio() {
-            return getState().expandRatio;
+            return getState().get("flex", GridConstants.DEFAULT_EXPAND_RATIO);
         }
 
         /**
@@ -3123,8 +3131,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                         + pixels + ") was greater than maximum width ("
                         + maxwidth + ")");
             }
-            getState().minWidth = pixels;
-            grid.markAsDirty();
+            getState().put("minWidth", pixels);
             return this;
         }
 
@@ -3135,7 +3142,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          * @see #setMinimumWidth(double)
          */
         public double getMinimumWidth() {
-            return getState().minWidth;
+            return getState().get("minWidth", GridConstants.DEFAULT_MIN_WIDTH);
         }
 
         /**
@@ -3160,8 +3167,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                         + ")");
             }
 
-            getState().maxWidth = pixels;
-            grid.markAsDirty();
+            getState().put("maxWidth", pixels);
             return this;
         }
 
@@ -3172,7 +3178,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          * @see #setMaximumWidth(double)
          */
         public double getMaximumWidth() {
-            return getState().maxWidth;
+            return getState().get("maxWidth", GridConstants.DEFAULT_MAX_WIDTH);
         }
 
         /**
@@ -3203,7 +3209,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                 throw new IllegalStateException(
                         "Cannot change column editable status while the editor is active");
             }
-            getState().editable = editable;
+            // TODO ensure editable == false => editable removed
+            getState().put("editable", editable);
             grid.markAsDirty();
             return this;
         }
@@ -3220,7 +3227,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          */
 
         public boolean isEditable() {
-            return getState().editable;
+            return getState().get("editable", false);
         }
 
         /**
@@ -3280,9 +3287,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          * @return this column
          */
         public Column setHidden(boolean hidden) {
-            if (hidden != getState().hidden) {
-                getState().hidden = hidden;
-                grid.markAsDirty();
+            if (hidden != isHidden()) {
+                getState().put("hidden", hidden);
                 grid.fireColumnVisibilityChangeEvent(this, hidden, false);
             }
             return this;
@@ -3296,7 +3302,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          *         <code>false</code> otherwise
          */
         public boolean isHidden() {
-            return getState().hidden;
+            return getState().get("hidden", false);
         }
 
         /**
@@ -3313,10 +3319,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          * @return this column
          */
         public Column setHidable(boolean hidable) {
-            if (hidable != getState().hidable) {
-                getState().hidable = hidable;
-                grid.markAsDirty();
-            }
+            getState().put("hidable", hidable);
             return this;
         }
 
@@ -3332,7 +3335,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          *         <code>false</code> if not
          */
         public boolean isHidable() {
-            return getState().hidable;
+            return getState().get("hidable", false);
         }
 
     }
@@ -3583,7 +3586,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             // + getParent().getClass().getSimpleName()
             // + " instead");
             // }
-            throw new UnsupportedOperationException("not implemented");
+            return null;
+            // throw new UnsupportedOperationException("not implemented");
         }
 
         /**
@@ -3728,22 +3732,6 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
     private DetailComponentManager detailComponentManager = null;
 
-    private static final Method SELECTION_CHANGE_METHOD = ReflectTools
-            .findMethod(SelectionListener.class, "select",
-                    SelectionEvent.class);
-
-    private static final Method SORT_ORDER_CHANGE_METHOD = ReflectTools
-            .findMethod(SortListener.class, "sort", SortEvent.class);
-
-    private static final Method COLUMN_REORDER_METHOD = ReflectTools.findMethod(
-            ColumnReorderListener.class, "columnReorder",
-            ColumnReorderEvent.class);
-
-    private static final Method COLUMN_VISIBILITY_METHOD = ReflectTools
-            .findMethod(ColumnVisibilityChangeListener.class,
-                    "columnVisibilityChanged",
-                    ColumnVisibilityChangeEvent.class);
-
     /**
      * Creates a new Grid with a new {@link IndexedContainer} as the data
      * source.
@@ -3841,51 +3829,53 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             @Override
             public void columnsReordered(List<String> newColumnOrder,
                     List<String> oldColumnOrder) {
-                final String diffStateKey = "columnOrder";
-                ConnectorTracker connectorTracker = getUI()
-                        .getConnectorTracker();
-                JsonObject diffState = connectorTracker.getDiffState(Grid.this);
+                // FIXME
+                // final String diffStateKey = "columnOrder";
+                // ConnectorTracker connectorTracker = getUI()
+                // .getConnectorTracker();
+                // JsonObject diffState =
+                // connectorTracker.getDiffState(Grid.this);
                 // discard the change if the columns have been reordered from
                 // the server side, as the server side is always right
-                if (getState(false).columnOrder.equals(oldColumnOrder)) {
-                    // Don't mark as dirty since client has the state already
-                    getState(false).columnOrder = newColumnOrder;
-                    // write changes to diffState so that possible reverting the
-                    // column order is sent to client
-                    assert diffState
-                            .hasKey(diffStateKey) : "Field name has changed";
-                    Type type = null;
-                    try {
-                        type = (getState(false).getClass()
-                                .getDeclaredField(diffStateKey)
-                                .getGenericType());
-                    } catch (NoSuchFieldException e) {
-                        e.printStackTrace();
-                    } catch (SecurityException e) {
-                        e.printStackTrace();
-                    }
-                    EncodeResult encodeResult = JsonCodec.encode(
-                            getState(false).columnOrder, diffState, type,
-                            connectorTracker);
-
-                    diffState.put(diffStateKey, encodeResult.getEncodedValue());
-                    fireColumnReorderEvent(true);
-                } else {
-                    // make sure the client is reverted to the order that the
-                    // server thinks it is
-                    diffState.remove(diffStateKey);
-                    markAsDirty();
-                }
+                // if (getState(false).columnOrder.equals(oldColumnOrder)) {
+                // // Don't mark as dirty since client has the state already
+                // getState(false).columnOrder = newColumnOrder;
+                // // write changes to diffState so that possible reverting the
+                // // column order is sent to client
+                // assert diffState
+                // .hasKey(diffStateKey) : "Field name has changed";
+                // Type type = null;
+                // try {
+                // type = (getState(false).getClass()
+                // .getDeclaredField(diffStateKey)
+                // .getGenericType());
+                // } catch (NoSuchFieldException e) {
+                // e.printStackTrace();
+                // } catch (SecurityException e) {
+                // e.printStackTrace();
+                // }
+                // EncodeResult encodeResult = JsonCodec.encode(
+                // getState(false).columnOrder, diffState, type,
+                // connectorTracker);
+                //
+                // diffState.put(diffStateKey, encodeResult.getEncodedValue());
+                // fireColumnReorderEvent(true);
+                // } else {
+                // // make sure the client is reverted to the order that the
+                // // server thinks it is
+                // diffState.remove(diffStateKey);
+                // markAsDirty();
+                // }
             }
 
             @Override
             public void columnVisibilityChanged(String id, boolean hidden,
                     boolean userOriginated) {
                 final Column column = getColumnByColumnId(id);
-                final GridColumnState columnState = column.getState();
+                // final GridColumnState columnState = column.getState();
 
-                if (columnState.hidden != hidden) {
-                    columnState.hidden = hidden;
+                if (column.isHidden() != hidden) {
+                    column.setHidden(hidden);
 
                     final String diffStateKey = "columns";
                     ConnectorTracker connectorTracker = getUI()
@@ -4000,7 +3990,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
                         errorColumnIds = new ArrayList<String>();
                         for (Column column : event.getErrorColumns()) {
-                            errorColumnIds.add(column.state.id);
+                            // FIXME
+                            // errorColumnIds.add(column.state.id);
                         }
                     } catch (Exception ee) {
                         // A badly written error handler can throw an exception,
@@ -4200,10 +4191,11 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      * @return unmodifiable copy of current columns in visual order
      */
     public List<Column> getColumns() {
-        List<Column> columns = new ArrayList<Grid.Column>();
-        for (String columnId : getState(false).columnOrder) {
-            columns.add(getColumnByColumnId(columnId));
+        List<Column> columns = new ArrayList<>();
+        for (StateNode columnStateNode : getColumnStateNodes()) {
+            columns.add(columnStateNode.get(Column.class));
         }
+
         return Collections.unmodifiableList(columns);
     }
 
@@ -4392,14 +4384,13 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         assert datasource.getContainerPropertyIds().contains(
                 datasourcePropertyId) : "Datasource should contain the property id";
 
-        GridColumnState columnState = new GridColumnState();
-        columnState.id = columnKeys.key(datasourcePropertyId);
-
+        StateNode columnState = StateNode.create();
+        getColumnStateNodes().add(columnState);
         Column column = new Column(this, columnState, datasourcePropertyId);
+        columnState.put(Column.class, column);
         columns.put(datasourcePropertyId, column);
 
-        getState().columns.add(columnState);
-        getState().columnOrder.add(columnState.id);
+        // getState().columns.add(columnState);
         header.addColumn(datasourcePropertyId);
         footer.addColumn(datasourcePropertyId);
 
@@ -4414,6 +4405,11 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         }
 
         return column;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<StateNode> getColumnStateNodes() {
+        return (List) getElement().getNode().getMultiValued("columns");
     }
 
     /**
@@ -4443,8 +4439,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         header.removeColumn(propertyId);
         footer.removeColumn(propertyId);
         Column column = columns.remove(propertyId);
-        getState().columnOrder.remove(columnKeys.key(propertyId));
         getState().columns.remove(column.getState());
+        getColumnStateNodes().remove(column.getState());
         // removeExtension(column.getRenderer());
     }
 
@@ -4493,12 +4489,12 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             }
         }
 
-        List<String> stateColumnOrder = getState().columnOrder;
-        if (stateColumnOrder.size() != columnOrder.size()) {
-            stateColumnOrder.removeAll(columnOrder);
-            columnOrder.addAll(stateColumnOrder);
-        }
-        getState().columnOrder = columnOrder;
+        // FIXME
+        // List<String> stateColumnOrder = getState().columnOrder;
+        // if (stateColumnOrder.size() != columnOrder.size()) {
+        // stateColumnOrder.removeAll(columnOrder);
+        // columnOrder.addAll(stateColumnOrder);
+        // }
         fireColumnReorderEvent(false);
     }
 
@@ -4523,7 +4519,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                             + columns.size() + "): " + numberOfColumns);
         }
 
-        getState().frozenColumnCount = numberOfColumns;
+        getElement().setAttribute("frozenColumns", numberOfColumns);
     }
 
     /**
@@ -4540,7 +4536,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      * @return the number of frozen columns
      */
     public int getFrozenColumnCount() {
-        return getState(false).frozenColumnCount;
+        return getElement().getAttribute("frozenColumns", 0);
     }
 
     /**
@@ -4631,7 +4627,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             throw new IllegalArgumentException("NaN is not a valid row count");
         }
 
-        getState().heightByRows = rows;
+        getElement().setAttribute("rows", rows);
     }
 
     /**
@@ -4642,7 +4638,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      * @see #setHeightByRows(double)
      */
     public double getHeightByRows() {
-        return getState(false).heightByRows;
+        return getElement().getAttribute("rows", -1.0);
     }
 
     /**
@@ -5697,17 +5693,18 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         }
 
         Indexed dataSource = getContainerDataSource();
-        List<String> columnOrder = getState(false).columnOrder;
 
-        if (values.length != columnOrder.size()) {
+        List<Column> columns = getColumns();
+        if (values.length != columns.size()) {
             throw new IllegalArgumentException(
-                    "There are " + columnOrder.size() + " visible columns, but "
+                    "There are " + columns.size() + " visible columns, but "
                             + values.length + " cell values were provided.");
         }
 
         // First verify all parameter types
-        for (int i = 0; i < columnOrder.size(); i++) {
-            Object propertyId = getPropertyIdByColumnId(columnOrder.get(i));
+        for (int i = 0; i < columns.size(); i++) {
+            Column c = columns.get(i);
+            Object propertyId = c.getPropertyId();
 
             Class<?> propertyType = dataSource.getType(propertyId);
             if (values[i] != null && !propertyType.isInstance(values[i])) {
@@ -5720,8 +5717,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         Object itemId = dataSource.addItem();
         try {
             Item item = dataSource.getItem(itemId);
-            for (int i = 0; i < columnOrder.size(); i++) {
-                Object propertyId = getPropertyIdByColumnId(columnOrder.get(i));
+            for (int i = 0; i < columns.size(); i++) {
+                Object propertyId = columns.get(i).getPropertyId();
                 Property<Object> property = item.getItemProperty(propertyId);
                 property.setValue(values[i]);
             }
@@ -5735,7 +5732,18 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             throw e;
         }
 
+        // FIXME Temp hack
+        JsonArray jsonData = Json.createArray();
+        for (Object o : values) {
+            jsonData.set(jsonData.length(), String.valueOf(o));
+        }
+        getJS(JS.class).addRow(getElement(), jsonData);
         return itemId;
+    }
+
+    @JavaScriptModule("Grid.js")
+    public interface JS {
+        public void addRow(Element e, JsonArray rowData);
     }
 
     private static Logger getLogger() {
@@ -5897,8 +5905,9 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         editorFieldGroup.setItemDataSource(item);
 
         for (Column column : getColumns()) {
-            column.getState().editorConnector = getEditorField(
-                    column.getPropertyId());
+            // FIXME
+            // column.getState().editorConnector = getEditorField(
+            // column.getPropertyId());
         }
 
         editorActive = true;

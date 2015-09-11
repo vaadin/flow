@@ -1,0 +1,24 @@
+
+<!-- Common imports for all examples -->
+  <link rel="stylesheet" href="../../components-demo-resources/demo.css">
+  <link rel="import" href="../../code-example/code-example.html">
+  <link rel="import" href="../../table-of-contents/table-of-contents.html">
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../vaadin-grid.html">
+  <script src="demodata.js"></script>
+  <script src="../ga.js"></script>
+
+<!-- Common JS code for all examples -->
+  <script>
+    var componentsVersion = "0.3.0-beta8";
+    window.xCodeExampleSourceHead =
+    "  <script src='https://cdn.vaadin.com/vaadin-components/"+componentsVersion+"/webcomponentsjs/webcomponents-lite.js'><\/script>\n"+
+    "  <link href='https://cdn.vaadin.com/vaadin-components/"+componentsVersion+"/vaadin-grid/vaadin-grid.html' rel='import'>\n";
+
+    function createButton(text, fnc) {
+      var button = document.createElement("button");
+      button.innerHTML = text;
+      button.addEventListener("click", fnc);
+      return button;
+    }
+  </script>

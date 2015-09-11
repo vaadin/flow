@@ -1,0 +1,29 @@
+{
+  "name": "components-demo-resources",
+  "authors": [
+    "Vaadin Ltd"
+  ],
+  "keywords": [
+    "web-components",
+    "vaadin",
+    "vaadin components"
+  ],
+  "license": "Apache License 2.0",
+  "ignore": [
+    "bower_components"
+  ],
+  "dependencies": {
+    "code-example": "~0.0.13",
+    "table-of-contents": "~0.0.2"
+  },
+  "homepage": "https://github.com/vaadin/components-demo-resources",
+  "_release": "50143756f9",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "50143756f912f7ddf5a4835c8d8b097b946c6759"
+  },
+  "_source": "git://github.com/vaadin/components-demo-resources.git",
+  "_target": "master",
+  "_originalSource": "vaadin/components-demo-resources"
+}
