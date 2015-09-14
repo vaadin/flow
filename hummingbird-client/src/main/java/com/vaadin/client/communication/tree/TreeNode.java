@@ -89,7 +89,8 @@ public class TreeNode {
             eventArray = new EventArray(callbackQueue);
             arrayProperties.put(name, eventArray);
 
-            addPropertyDescriptor(proxy, name, createEventArrayPd(eventArray));
+            addPropertyDescriptor(proxy, name,
+                    createEventArrayPd(eventArray.getProxy()));
 
             final EventArray finalArray = eventArray;
             callbackQueue.enqueue(() -> {
@@ -105,13 +106,14 @@ public class TreeNode {
         return eventArray;
     }
 
-    private static native JavaScriptObject createEventArrayPd(EventArray value)
-    /*-{
-        return {
-          enumerable: false,
-          value: value
-        }
-    }-*/;
+    private static native JavaScriptObject createEventArrayPd(
+            JavaScriptObject proxy)
+            /*-{
+                return {
+                  enumerable: true,
+                  value: proxy
+                }
+            }-*/;
 
     public void setElement(int templateId, Node element) {
         if (elements == null) {

@@ -263,10 +263,6 @@ public class TreeUpdater {
 
             JavaScriptObject serverProxy = template.createServerProxy(nodeId);
             return createElement(template, node, new NodeContext() {
-                @Override
-                public JavaScriptObject getServerProxy() {
-                    return serverProxy;
-                }
 
                 @Override
                 public TreeNodeProperty resolveProperty(String name) {
@@ -276,6 +272,14 @@ public class TreeUpdater {
                 @Override
                 public EventArray resolveArrayProperty(String name) {
                     return node.getArrayProperty(name);
+                }
+
+                @Override
+                public Map<String, JavaScriptObject> buildEventHandlerContext() {
+                    Map<String, JavaScriptObject> contextMap = new HashMap<>();
+                    contextMap.put("server", serverProxy);
+                    contextMap.put("model", node.getProxy());
+                    return contextMap;
                 }
 
             });

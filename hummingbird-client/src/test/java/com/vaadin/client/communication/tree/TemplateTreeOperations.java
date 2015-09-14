@@ -9,6 +9,7 @@ import com.google.gwt.dom.client.Text;
 import com.vaadin.client.ChangeUtil;
 import com.vaadin.shared.communication.MethodInvocation;
 
+import elemental.js.json.JsJsonObject;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -142,6 +143,7 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         String forJson = "{'type': 'ForElementTemplate', 'tag':'input',"
                 + "'modelKey': 'items', 'innerScope':'item',"
                 + "'defaultAttributes': {'type': 'checkbox'},"
+                + "'events': {'click': ['model.foo = 1; item.foo = 2;']},"
                 + "'attributeBindings': {'item.checked': 'checked'}" + "}";
         applyTemplate(1, Json.parse(forJson.replace('\'', '"')));
 
@@ -179,6 +181,18 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals(2, parent.getChildCount());
         assertSame(parent, secondChild.getParentElement());
         assertNull(firstChild.getParentElement());
+
+        // Click and verify that the click handler has updated the right objects
+        NativeEvent event = Document.get().createClickEvent(0, 1, 2, 3, 4,
+                false, false, false, false);
+        secondChild.dispatchEvent(event);
+
+        // Use as JsonObject for convenient property access
+        JsJsonObject model = updater.getNode(3).getProxy().cast();
+        assertEquals(1, (int) model.getNumber("foo"));
+
+        JsJsonObject item = updater.getNode(5).getProxy().cast();
+        assertEquals(2, (int) item.getNumber("foo"));
     }
 
     public void testOverrideNode() {

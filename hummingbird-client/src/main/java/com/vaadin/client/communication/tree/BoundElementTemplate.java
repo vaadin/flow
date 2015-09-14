@@ -200,11 +200,10 @@ public class BoundElementTemplate extends Template {
                     @Override
                     public void handleEvent(JavaScriptObject event) {
                         for (String handler : handlers) {
-                            Map<String, JavaScriptObject> contextMap = new HashMap<>();
+                            Map<String, JavaScriptObject> contextMap = context
+                                    .buildEventHandlerContext();
                             contextMap.put("event", event);
                             contextMap.put("element", element);
-                            contextMap.put("server", context.getServerProxy());
-                            contextMap.put("model", node.getProxy());
                             TreeUpdater.evalWithContext(contextMap, handler);
                         }
                     }

@@ -1,5 +1,7 @@
 package com.vaadin.client.communication.tree;
 
+import java.util.Map;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
@@ -77,8 +79,12 @@ public class ForElementTemplate extends Template {
                                 }
 
                                 @Override
-                                public JavaScriptObject getServerProxy() {
-                                    return outerContext.getServerProxy();
+                                public Map<String, JavaScriptObject> buildEventHandlerContext() {
+                                    Map<String, JavaScriptObject> contextMap = outerContext
+                                            .buildEventHandlerContext();
+                                    contextMap.put(getInnerScope(),
+                                            childNode.getProxy());
+                                    return contextMap;
                                 }
                             };
 
