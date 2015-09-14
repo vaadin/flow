@@ -286,6 +286,7 @@ public class TreeUpdater {
             }
 
             String tag = (String) node.getProperty("TAG").getValue();
+            assert tag != null;
             if ("#text".equals(tag)) {
                 Text textNode = Document.get().createTextNode("");
                 TextElementListener.bind(node, textNode);

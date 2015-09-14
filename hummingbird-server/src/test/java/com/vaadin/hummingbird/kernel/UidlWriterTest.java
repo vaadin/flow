@@ -1,12 +1,12 @@
 package com.vaadin.hummingbird.kernel;
 
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.communication.ChangeUidlBuilder;
-import com.vaadin.ui.UI;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.communication.ChangeUidlBuilder;
+import com.vaadin.ui.UI;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -61,5 +61,15 @@ public class UidlWriterTest {
         Assert.assertNotNull(value);
         Assert.assertEquals(JsonType.BOOLEAN, value.getType());
         Assert.assertTrue(value.asBoolean());
+    }
+
+    @Test
+    public void removeRecentlyAddedElement() {
+        Element child = new Element("div");
+        element.appendChild(child);
+        child.removeFromParent();
+
+        JsonArray changes = encodeElementChanges();
+        Assert.assertEquals(changes.toJson(), 0, changes.length());
     }
 }

@@ -1,5 +1,6 @@
 package com.vaadin.server.communication;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +35,8 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
     private JsonArray changes = Json.createArray();
     private JsonObject newTemplates = Json.createObject();
     private UI ui;
+    // Nodes that are attached and detached in the same transaction - ignored
+    private HashSet<StateNode> detachedNodes = new HashSet<>();
 
     public ChangeUidlBuilder(UI ui) {
         this.ui = ui;
@@ -51,6 +54,8 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
         if (node == null) {
             return false;
         } else if (node.containsKey(AbstractElementTemplate.Keys.SERVER_ONLY)) {
+            return true;
+        } else if (detachedNodes.contains(node)) {
             return true;
         } else {
             return isServerOnly(node.getParent());
@@ -112,6 +117,10 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
         if (value instanceof StateNode) {
             StateNode childNode = (StateNode) value;
             if (isServerOnly(childNode)) {
+                return;
+            }
+            if (!childNode.isAttached()) {
+                detachedNodes.add(childNode);
                 return;
             }
             if (key instanceof ElementTemplate) {
@@ -340,6 +349,13 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
         if (isServerOnlyKey(key)) {
             return;
         }
+        Object removedValue = listRemoveChange.getValue();
+        if (removedValue instanceof StateNode) {
+            StateNode childNode = (StateNode) removedValue;
+            if (isServerOnly(childNode)) {
+                return;
+            }
+        }
 
         JsonObject change = createChange(node, "listRemove");
         change.put("index", listRemoveChange.getIndex());
@@ -361,8 +377,13 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
         JsonObject change;
         Object value = listInsertChange.getValue();
         if (value instanceof StateNode) {
+            StateNode child = (StateNode) value;
+            if (!child.isAttached()) {
+                detachedNodes.add(child);
+                return;
+            }
             change = createChange(node, "listInsertNode");
-            change.put("value", ((StateNode) value).getId());
+            change.put("value", child.getId());
         } else {
             change = createChange(node, "listInsert");
             change.put("value", JsonConverter.toJson(value));
