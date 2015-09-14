@@ -206,6 +206,7 @@ public class BoundElementTemplate extends Template {
                             contextMap.put("element", element);
                             TreeUpdater.evalWithContext(contextMap, handler);
                         }
+                        node.getCallbackQueue().flush();
                     }
                 });
             }

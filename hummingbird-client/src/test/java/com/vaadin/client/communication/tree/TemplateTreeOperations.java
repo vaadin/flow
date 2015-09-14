@@ -56,9 +56,10 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
     public void testTemplateEvents() {
         String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
-                + "'events': {'click': ['element.something=10','server.doSomething(element.something)']},"
+                + "'events': {'click': ['element.something=10','server.doSomething(element.something)', 'model.value=1']},"
+                + "'attributeBindings': {'value': 'value'},"
                 + "'eventHandlerMethods': ['doSomething'],"
-                + "'modelStructure': []}";
+                + "'modelStructure': ['value']}";
         JsonObject template = Json.parse(json.replace('\'', '"'));
 
         applyTemplate(1, template);
@@ -69,10 +70,13 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         Element templateElement = updater.getRootElement()
                 .getFirstChildElement();
+        assertNull(templateElement.getPropertyObject("value"));
 
         NativeEvent event = Document.get().createClickEvent(0, 1, 2, 3, 4,
                 false, false, false, false);
         templateElement.dispatchEvent(event);
+
+        assertEquals(1, templateElement.getPropertyInt("value"));
 
         assertEquals(10, templateElement.getPropertyInt("something"));
 
