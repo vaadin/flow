@@ -12,6 +12,7 @@ import com.vaadin.shared.communication.MethodInvocation;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 
 public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
     public void testAddRemoveElements() {
@@ -206,4 +207,36 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals(1, array.length());
         assertEquals("Hello", array.getString(0));
     }
+
+    public void testEventDataCallback() {
+        applyChanges(
+                ChangeUtil.listInsert(containerElementId, "LISTENERS", 0,
+                        "click"),
+                ChangeUtil.putNode(containerElementId, "EVENT_DATA", 3),
+                ChangeUtil.listInsert(3, "click", 0,
+                        "[typeof event, element.tagName]"));
+
+        NativeEvent event = Document.get().createClickEvent(0, 1, 2, 3, 4,
+                false, false, false, false);
+        updater.getRootElement().dispatchEvent(event);
+
+        List<MethodInvocation> enqueuedInvocations = updater
+                .getEnqueuedInvocations();
+        assertEquals(1, enqueuedInvocations.size());
+
+        MethodInvocation invocation = enqueuedInvocations.get(0);
+        JsonArray parameters = invocation.getParameters();
+
+        JsonObject eventData = parameters.getObject(2);
+        assertEquals(1, eventData.keys().length);
+
+        JsonArray jsonValue = eventData.get("[typeof event, element.tagName]");
+        assertEquals(JsonType.ARRAY, jsonValue.getType());
+        assertEquals(2, jsonValue.length());
+        assertEquals("object", jsonValue.getString(0));
+        assertEquals("DIV", jsonValue.getString(1));
+    }
+
+    private static native String typeOf(
+            Object object) /*-{ return typeof object; }-*/;
 }

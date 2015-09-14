@@ -378,12 +378,12 @@ public class TreeUpdater {
         }
     }
 
-    public static native void createAndRunFunction(
+    public static native JavaScriptObject createAndRunFunction(
             JsArrayString newFunctionParams, JsArray<JavaScriptObject> params)
             /*-{
                 // Using Function.apply to call Function constructor with variable number of parameters
                 // Then use apply on the created function to run the actual code
-                $wnd.Function.apply($wnd.Function, newFunctionParams).apply(null, params);
+                return $wnd.Function.apply($wnd.Function, newFunctionParams).apply(null, params);
             }-*/;
 
     private Node findDomNode(int nodeId, int templateId) {

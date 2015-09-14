@@ -1,6 +1,8 @@
 package com.vaadin.client.communication.tree;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
@@ -197,13 +199,7 @@ public class BasicElementListener {
         for (int i = 0; i < eventDataKeys.getLength(); i++) {
             String eventDataKey = (String) eventDataKeys.get(i);
             JsonValue value;
-            if (eventDataKey.startsWith("event.")) {
-                String jsKey = eventDataKey.substring("event.".length());
-                value = getValue((JsonObject) event, jsKey);
-            } else if (eventDataKey.startsWith("element.")) {
-                String jsKey = eventDataKey.substring("element.".length());
-                value = getValue((JsonObject) element, jsKey);
-            } else {
+            if (eventDataKey.matches("^[a-zA-Z0-9]*$")) {
                 String jsKey = eventDataKey;
 
                 // Try event first, then element
@@ -211,9 +207,24 @@ public class BasicElementListener {
                 if (value == null) {
                     value = getValue((JsonObject) element, jsKey);
                 }
+            } else {
+                JsArrayString newFunctionParams = JavaScriptObject.createArray()
+                        .cast();
+                JsArray<JavaScriptObject> params = JavaScriptObject
+                        .createArray().cast();
+
+                newFunctionParams.push("element");
+                params.push(element);
+
+                newFunctionParams.push("event");
+                params.push(event);
+
+                newFunctionParams.push("return " + eventDataKey);
+
+                value = TreeUpdater
+                        .createAndRunFunction(newFunctionParams, params).cast();
             }
-            // FIXME This logs errors for "0"
-            if (value == null) {
+            if (value.getType() == JsonType.NULL) {
                 TreeUpdater
                         .debug("No value found for event key " + eventDataKey);
             }
