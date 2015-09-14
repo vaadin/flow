@@ -18,6 +18,7 @@ package com.vaadin.client.communication.tree;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -339,12 +340,10 @@ public class TreeUpdater {
             JsonArray invocation = rpcInvocations.getArray(invocationIndex);
             String script = invocation.getString(0);
 
+            Map<String, JavaScriptObject> context = new HashMap<>();
+
             int paramCount = invocation.length() - 1;
 
-            JsArray<JavaScriptObject> params = JavaScriptObject.createArray()
-                    .cast();
-            JsArrayString newFunctionParams = JavaScriptObject.createArray()
-                    .cast();
             for (int i = 0; i < paramCount; i++) {
                 JavaScriptObject value;
                 JsonValue paramValue = invocation.get(i + 1);
@@ -363,22 +362,40 @@ public class TreeUpdater {
                     value = (JsJsonValue) paramValue;
                 }
 
-                params.push(value);
-                newFunctionParams.push("$" + i);
-            }
-            if (debug) {
-                String paramString = params.join(", ");
-                debug("Executing: " + script + " (" + paramString + ")");
+                context.put("$" + i, value);
             }
 
-            newFunctionParams.push("modules");
-            params.push(client.getModules());
-            newFunctionParams.push(script);
-            createAndRunFunction(newFunctionParams, params);
+            context.put("modules", client.getModules());
+            evalWithContext(context, script);
         }
     }
 
-    public static native JavaScriptObject createAndRunFunction(
+    public static JavaScriptObject evalWithContext(
+            Map<String, JavaScriptObject> context, String script) {
+
+        if (debug) {
+            debug("Executing: " + script + " (" + context + ")");
+        }
+
+        JsArrayString newFunctionParams = JavaScriptObject.createArray().cast();
+        JsArray<JavaScriptObject> params = JavaScriptObject.createArray()
+                .cast();
+
+        for (Entry<String, JavaScriptObject> entry : context.entrySet()) {
+            newFunctionParams.push(entry.getKey());
+
+            // Can't directly use the value as JavaScriptObject because of some
+            // silly runtime type checks
+            Object value = entry.getValue();
+            params.push((JsJsonValue) asJsonValue(value));
+        }
+
+        newFunctionParams.push(script);
+
+        return createAndRunFunction(newFunctionParams, params);
+    }
+
+    private static native JavaScriptObject createAndRunFunction(
             JsArrayString newFunctionParams, JsArray<JavaScriptObject> params)
             /*-{
                 // Using Function.apply to call Function constructor with variable number of parameters

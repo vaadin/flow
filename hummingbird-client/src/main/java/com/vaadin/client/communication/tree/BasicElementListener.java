@@ -1,8 +1,9 @@
 package com.vaadin.client.communication.tree;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
@@ -208,21 +209,12 @@ public class BasicElementListener {
                     value = getValue((JsonObject) element, jsKey);
                 }
             } else {
-                JsArrayString newFunctionParams = JavaScriptObject.createArray()
-                        .cast();
-                JsArray<JavaScriptObject> params = JavaScriptObject
-                        .createArray().cast();
-
-                newFunctionParams.push("element");
-                params.push(element);
-
-                newFunctionParams.push("event");
-                params.push(event);
-
-                newFunctionParams.push("return " + eventDataKey);
-
+                Map<String, JavaScriptObject> context = new HashMap<>();
+                context.put("element", element);
+                context.put("event", event);
                 value = TreeUpdater
-                        .createAndRunFunction(newFunctionParams, params).cast();
+                        .evalWithContext(context, "return " + eventDataKey)
+                        .cast();
             }
             if (value.getType() == JsonType.NULL) {
                 TreeUpdater

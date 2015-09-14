@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.js.JsFunction;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -201,27 +200,12 @@ public class BoundElementTemplate extends Template {
                     @Override
                     public void handleEvent(JavaScriptObject event) {
                         for (String handler : handlers) {
-                            JsArrayString newFunctionParams = JavaScriptObject
-                                    .createArray().cast();
-                            JsArray<JavaScriptObject> params = JavaScriptObject
-                                    .createArray().cast();
-
-                            newFunctionParams.push("event");
-                            params.push(event);
-
-                            newFunctionParams.push("element");
-                            params.push(element);
-
-                            newFunctionParams.push("server");
-                            params.push(context.getServerProxy());
-
-                            newFunctionParams.push("model");
-                            params.push(node.getProxy());
-
-                            newFunctionParams.push(handler);
-
-                            TreeUpdater.createAndRunFunction(newFunctionParams,
-                                    params);
+                            Map<String, JavaScriptObject> contextMap = new HashMap<>();
+                            contextMap.put("event", event);
+                            contextMap.put("element", element);
+                            contextMap.put("server", context.getServerProxy());
+                            contextMap.put("model", node.getProxy());
+                            TreeUpdater.evalWithContext(contextMap, handler);
                         }
                     }
                 });
