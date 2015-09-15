@@ -9,6 +9,26 @@ See the tutorial at https://vaadin.com/wiki/-/wiki/Main/Vaadin+Spring .
 
 See also the companion add-on Vaadin Spring Boot.
 
+Changes in 1.0.0
+----
+
+* Fixed handling of URLs not ending in a slash.
+* Support just slash as UI mapping
+* Made VaadinServlet overridable by defining the bean "vaadinServlet" in the application configuration
+
+Changes in 1.0.0.beta3
+----
+
+* Fixed Vaadin Spring Boot interoperation with Spring MVC.
+* Fixed context path handling.  
+
+Changes in 1.0.0.beta2
+----
+
+Vaadin Spring Boot 1.0.0.beta2 uses Spring @ConfigurationProperties to make configuration of the Vaadin servlet more flexible.
+
+The access denied view is presented when configured and the user tries to navigate to a non-existent view.
+
 Changes in 1.0.0.beta1
 ----
 
