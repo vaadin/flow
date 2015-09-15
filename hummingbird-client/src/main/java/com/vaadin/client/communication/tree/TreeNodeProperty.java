@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 
 import elemental.json.Json;
 import elemental.json.JsonNumber;
+import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
@@ -14,6 +16,29 @@ public class TreeNodeProperty {
 
     public interface TreeNodePropertyValueChangeListener {
         void changeValue(TreeNodeProperty property, Object oldValue);
+    }
+
+    public class ValueChangeEvent extends NodeChangeEvent {
+
+        private final Object oldValue;
+
+        public ValueChangeEvent(Object oldValue) {
+            this.oldValue = oldValue;
+        }
+
+        @Override
+        public void dispatch() {
+            if (listeners != null) {
+                for (TreeNodePropertyValueChangeListener listener : listeners) {
+                    listener.changeValue(TreeNodeProperty.this, oldValue);
+                }
+            }
+        }
+
+        @Override
+        public JsonObject serialize() {
+            throw new RuntimeException("Not yet supported");
+        }
     }
 
     private TreeNode owner;
@@ -57,15 +82,7 @@ public class TreeNodeProperty {
         }
 
         this.value = value;
-        owner.getCallbackQueue().enqueue(() -> {
-            if (listeners == null || listeners.isEmpty()) {
-                return;
-            }
-            for (TreeNodePropertyValueChangeListener listener : new ArrayList<>(
-                    listeners)) {
-                listener.changeValue(this, oldValue);
-            }
-        });
+        owner.getCallbackQueue().enqueue(new ValueChangeEvent(oldValue));
     }
 
     public native JavaScriptObject getPropertyDescriptor()

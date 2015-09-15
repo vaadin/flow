@@ -8,12 +8,65 @@ import java.util.Map;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.FastStringMap;
+import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
+
+import elemental.json.JsonObject;
 
 public class TreeNode {
     public interface TreeNodeChangeListener {
         public void addProperty(String name, TreeNodeProperty property);
 
         public void addArray(String name, EventArray array);
+    }
+
+    public class PropertyAddEvent extends NodeChangeEvent {
+        private final String name;
+        private final TreeNodeProperty property;
+
+        public PropertyAddEvent(String name, TreeNodeProperty property) {
+            this.name = name;
+            this.property = property;
+        }
+
+        @Override
+        public void dispatch() {
+            if (listeners != null) {
+                for (TreeNodeChangeListener treeNodeChangeListener : listeners) {
+                    treeNodeChangeListener.addProperty(name, property);
+                }
+            }
+        }
+
+        @Override
+        public JsonObject serialize() {
+            // Event is not serialized
+            return null;
+        }
+    }
+
+    public class ArrayAddEvent extends NodeChangeEvent {
+        private final String name;
+        private final EventArray array;
+
+        public ArrayAddEvent(String name, EventArray array) {
+            this.name = name;
+            this.array = array;
+        }
+
+        @Override
+        public void dispatch() {
+            if (listeners != null) {
+                for (TreeNodeChangeListener treeNodeChangeListener : listeners) {
+                    treeNodeChangeListener.addArray(name, array);
+                }
+            }
+        }
+
+        @Override
+        public JsonObject serialize() {
+            // Event is not serialized
+            return null;
+        }
     }
 
     private final JavaScriptObject proxy = JavaScriptObject.createObject();
@@ -58,16 +111,7 @@ public class TreeNode {
             properties.put(name, property);
             addPropertyDescriptor(proxy, name,
                     property.getPropertyDescriptor());
-            final TreeNodeProperty finalProperty = property;
-            callbackQueue.enqueue(() -> {
-                if (listeners == null || listeners.isEmpty()) {
-                    return;
-                }
-                for (TreeNodeChangeListener treeNodeChangeListener : new ArrayList<>(
-                        listeners)) {
-                    treeNodeChangeListener.addProperty(name, finalProperty);
-                }
-            });
+            callbackQueue.enqueue(new PropertyAddEvent(name, property));
         }
         return property;
     }
@@ -92,16 +136,7 @@ public class TreeNode {
             addPropertyDescriptor(proxy, name,
                     createEventArrayPd(eventArray.getProxy()));
 
-            final EventArray finalArray = eventArray;
-            callbackQueue.enqueue(() -> {
-                if (listeners == null || listeners.isEmpty()) {
-                    return;
-                }
-                for (TreeNodeChangeListener treeNodeChangeListener : new ArrayList<>(
-                        listeners)) {
-                    treeNodeChangeListener.addArray(name, finalArray);
-                }
-            });
+            callbackQueue.enqueue(new ArrayAddEvent(name, eventArray));
         }
         return eventArray;
     }

@@ -335,7 +335,7 @@ public class TreeUpdater {
             rootInitialized = true;
         }
 
-        callbackQueue.flush();
+        callbackQueue.flush(null);
     }
 
     private void runRpc(JsonArray rpcInvocations) {

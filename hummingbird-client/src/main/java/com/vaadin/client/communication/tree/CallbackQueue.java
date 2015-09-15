@@ -3,19 +3,34 @@ package com.vaadin.client.communication.tree;
 import java.util.ArrayList;
 import java.util.List;
 
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+
 public class CallbackQueue {
 
-    private List<Runnable> callbacks = new ArrayList<>();
+    public abstract static class NodeChangeEvent {
+        public abstract void dispatch();
 
-    public void enqueue(Runnable runnable) {
-        callbacks.add(runnable);
+        public abstract JsonObject serialize();
     }
 
-    public void flush() {
-        List<Runnable> callbacks = this.callbacks;
-        this.callbacks = new ArrayList<>();
-        for (Runnable runnable : callbacks) {
-            runnable.run();
+    private List<NodeChangeEvent> events = new ArrayList<>();
+
+    public void enqueue(NodeChangeEvent event) {
+        events.add(event);
+    }
+
+    public void flush(JsonArray serializeTo) {
+        List<NodeChangeEvent> callbacks = events;
+        events = new ArrayList<>();
+        for (NodeChangeEvent event : callbacks) {
+            event.dispatch();
+            if (serializeTo != null) {
+                JsonObject serialize = event.serialize();
+                if (serialize != null) {
+                    serializeTo.set(serializeTo.length(), serialize);
+                }
+            }
         }
     }
 }

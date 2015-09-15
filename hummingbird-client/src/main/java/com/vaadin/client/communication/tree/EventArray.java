@@ -4,11 +4,42 @@ import java.util.ArrayList;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
+
+import elemental.json.JsonObject;
 
 public class EventArray {
     public interface ArrayEventListener {
         void splice(EventArray eventArray, int startIndex,
                 JsArrayObject<Object> removed, JsArrayObject<Object> added);
+    }
+
+    public class EventArraySpliceEvent extends NodeChangeEvent {
+        private final int startIndex;
+        private final JsArrayObject<Object> removed;
+        private final JsArrayObject<Object> added;
+
+        public EventArraySpliceEvent(int startIndex,
+                JsArrayObject<Object> removed, JsArrayObject<Object> added) {
+            this.startIndex = startIndex;
+            this.removed = removed;
+            this.added = added;
+        }
+
+        @Override
+        public void dispatch() {
+            if (listeners != null) {
+                for (ArrayEventListener arrayEventListener : listeners) {
+                    arrayEventListener.splice(EventArray.this, startIndex,
+                            removed, added);
+                }
+            }
+        }
+
+        @Override
+        public JsonObject serialize() {
+            throw new RuntimeException("Not yet supported");
+        }
     }
 
     private final CallbackQueue callbackQueue;
@@ -115,14 +146,8 @@ public class EventArray {
 
     private void onSplice(int startIndex, JsArrayObject<Object> removed,
             JsArrayObject<Object> added) {
-        callbackQueue.enqueue(() -> {
-            if (listeners.isEmpty()) {
-                return;
-            }
-            for (ArrayEventListener listener : new ArrayList<>(listeners)) {
-                listener.splice(this, startIndex, removed, added);
-            }
-        });
+        callbackQueue
+                .enqueue(new EventArraySpliceEvent(startIndex, removed, added));
     }
 
     public JavaScriptObject getProxy() {
