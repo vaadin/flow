@@ -80,6 +80,15 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         assertEquals(10, templateElement.getPropertyInt("something"));
 
+        List<JsonObject> enqueuedNodeChanges = updater.getEnqueuedNodeChanges();
+        assertEquals(1, enqueuedNodeChanges.size());
+
+        JsonObject enquedNodeChange = enqueuedNodeChanges.get(0);
+        assertEquals(3, (int) enquedNodeChange.getNumber("id"));
+        assertEquals("put", enquedNodeChange.getString("type"));
+        assertEquals("value", enquedNodeChange.getString("key"));
+        assertEquals(1, (int) enquedNodeChange.getNumber("value"));
+
         List<MethodInvocation> enqueuedInvocations = updater
                 .getEnqueuedInvocations();
         assertEquals(1, enqueuedInvocations.size());

@@ -37,7 +37,16 @@ public class TreeNodeProperty {
 
         @Override
         public JsonObject serialize() {
-            throw new RuntimeException("Not yet supported");
+            if (value instanceof TreeNode) {
+                throw new RuntimeException("Not yet supported");
+            }
+
+            JsonObject json = Json.createObject();
+            json.put("type", "put");
+            json.put("id", owner.getId());
+            json.put("key", name);
+            json.put("value", TreeUpdater.asJsonValue(value));
+            return json;
         }
     }
 

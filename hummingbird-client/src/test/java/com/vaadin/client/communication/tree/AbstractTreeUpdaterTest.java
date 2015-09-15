@@ -8,8 +8,8 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.vaadin.client.ApplicationConnection.Client;
-import com.vaadin.client.ChangeUtil.Change;
 import com.vaadin.client.ChangeUtil;
+import com.vaadin.client.ChangeUtil.Change;
 import com.vaadin.client.HummingbirdClientTest;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.shared.communication.MethodInvocation;
@@ -25,6 +25,7 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
 
     protected static class MockTreeUpdater extends TreeUpdater {
         private List<MethodInvocation> enqueuedInvocations = new ArrayList<>();
+        private List<JsonObject> enqueuedNodeChanges = new ArrayList<>();
         private Element rootElement;
 
         public MockTreeUpdater() {
@@ -56,9 +57,8 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
             init(rootElement, rpcQueue, client);
 
             // initialize the containerElement node
-            update(Json.createObject(), buildChanges(
-                    ChangeUtil.putNode(1, "containerElement", containerElementId)),
-                    null);
+            update(Json.createObject(), buildChanges(ChangeUtil.putNode(1,
+                    "containerElement", containerElementId)), null);
         }
 
         @Override
@@ -67,12 +67,21 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
                     .add(new MethodInvocation(callbackName, arguments));
         }
 
+        @Override
+        public void addPendingNodeChange(JsonObject nodeChnage) {
+            enqueuedNodeChanges.add(nodeChnage);
+        }
+
         public Element getRootElement() {
             return rootElement;
         }
 
         public List<MethodInvocation> getEnqueuedInvocations() {
             return enqueuedInvocations;
+        }
+
+        public List<JsonObject> getEnqueuedNodeChanges() {
+            return enqueuedNodeChanges;
         }
     }
 

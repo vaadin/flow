@@ -206,7 +206,15 @@ public class BoundElementTemplate extends Template {
                             contextMap.put("element", element);
                             TreeUpdater.evalWithContext(contextMap, handler);
                         }
-                        node.getCallbackQueue().flush(null);
+
+                        JsonArray modelChanges = Json.createArray();
+
+                        node.getCallbackQueue().flush(modelChanges);
+
+                        for (int i = 0; i < modelChanges.length(); i++) {
+                            treeUpdater.addPendingNodeChange(
+                                    modelChanges.getObject(i));
+                        }
                     }
                 });
             }

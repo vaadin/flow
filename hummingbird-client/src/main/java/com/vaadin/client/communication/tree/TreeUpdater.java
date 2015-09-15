@@ -104,6 +104,10 @@ public class TreeUpdater {
         pendingInvocations.add(new MethodInvocation(callbackName, arguments));
     }
 
+    public void addPendingNodeChange(JsonObject nodeChnage) {
+        pendingChanges.set(pendingChanges.length(), nodeChnage);
+    }
+
     public static native JsonValue asJsonValue(Object value)
     /*-{
         return value;
