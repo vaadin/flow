@@ -15,7 +15,6 @@
  */
 package com.vaadin.ui;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,8 +35,6 @@ import com.vaadin.server.GlobalResourceHandler;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.StreamVariable;
 
-import elemental.json.Json;
-import elemental.json.JsonException;
 import elemental.json.JsonObject;
 
 /**
@@ -76,7 +73,6 @@ public class ConnectorTracker implements Serializable {
     private boolean writingResponse = false;
 
     private UI uI;
-    private transient Map<ClientConnector, JsonObject> diffStates = new HashMap<ClientConnector, JsonObject>();
 
     /** Maps connectorIds to a map of named StreamVariables */
     private Map<String, Map<String, StreamVariable>> pidToNameToStreamVariable;
@@ -248,7 +244,6 @@ public class ConnectorTracker implements Serializable {
      */
     public void markAllClientSidesUninitialized() {
         uninitializedConnectors.addAll(connectorIdToConnector.values());
-        diffStates.clear();
     }
 
     /**
@@ -313,13 +308,11 @@ public class ConnectorTracker implements Serializable {
                     globalResourceHandler.unregisterConnector(connector);
                 }
                 uninitializedConnectors.remove(connector);
-                diffStates.remove(connector);
                 iterator.remove();
             } else if (!uninitializedConnectors.contains(connector)
                     && !LegacyCommunicationManager
                             .isConnectorVisibleToClient(connector)) {
                 uninitializedConnectors.add(connector);
-                diffStates.remove(connector);
                 if (getLogger().isLoggable(Level.FINE)) {
                     getLogger().log(Level.FINE,
                             "cleanConnectorMap removed state for {0} as it is not visible",
@@ -344,7 +337,6 @@ public class ConnectorTracker implements Serializable {
                 globalResourceHandler.unregisterConnector(connector);
             }
             uninitializedConnectors.remove(connector);
-            diffStates.remove(connector);
         }
         unregisteredConnectors.clear();
     }
@@ -549,12 +541,12 @@ public class ConnectorTracker implements Serializable {
 
     public JsonObject getDiffState(ClientConnector connector) {
         assert getConnector(connector.getConnectorId()) == connector;
-        return diffStates.get(connector);
+        return null;
     }
 
     public void setDiffState(ClientConnector connector, JsonObject diffState) {
+        assert false : "This method should not be used any more";
         assert getConnector(connector.getConnectorId()) == connector;
-        diffStates.put(connector, diffState);
     }
 
     public boolean isDirty(ClientConnector connector) {
@@ -612,43 +604,6 @@ public class ConnectorTracker implements Serializable {
             currentSyncId++;
         }
         this.writingResponse = writingResponse;
-    }
-
-    /* Special serialization to JsonObjects which are not serializable */
-    private void writeObject(java.io.ObjectOutputStream out)
-            throws IOException {
-        out.defaultWriteObject();
-        // Convert JsonObjects in diff state to String representation as
-        // JsonObject is not serializable
-        HashMap<ClientConnector, String> stringDiffStates = new HashMap<ClientConnector, String>(
-                diffStates.size() * 2);
-        for (ClientConnector key : diffStates.keySet()) {
-            stringDiffStates.put(key, diffStates.get(key).toString());
-        }
-        out.writeObject(stringDiffStates);
-    }
-
-    /* Special serialization to JsonObjects which are not serializable */
-    private void readObject(java.io.ObjectInputStream in)
-            throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-
-        // Read String versions of JsonObjects and parse into JsonObjects as
-        // JsonObject is not serializable
-        diffStates = new HashMap<ClientConnector, JsonObject>();
-        @SuppressWarnings("unchecked")
-        HashMap<ClientConnector, String> stringDiffStates = (HashMap<ClientConnector, String>) in
-                .readObject();
-        diffStates = new HashMap<ClientConnector, JsonObject>(
-                stringDiffStates.size() * 2);
-        for (ClientConnector key : stringDiffStates.keySet()) {
-            try {
-                diffStates.put(key, Json.parse(stringDiffStates.get(key)));
-            } catch (JsonException e) {
-                throw new IOException(e);
-            }
-        }
-
     }
 
     /**
