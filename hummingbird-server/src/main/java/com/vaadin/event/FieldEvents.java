@@ -199,22 +199,32 @@ public interface FieldEvents {
      * @see TextField#setTextChangeEventMode(com.vaadin.ui.TextField.TextChangeEventMode)
      * @since 6.5
      */
-    public static abstract class TextChangeEvent extends Component.Event {
+    public static class TextChangeEvent extends Component.Event {
 
-        public TextChangeEvent(Component source) {
+        private String text;
+        private int cursorPosition;
+
+        public TextChangeEvent(Component source, String text,
+                int cursorPosition) {
             super(source);
+            this.text = text;
+            this.cursorPosition = cursorPosition;
         }
 
         /**
          * @return the text content of the field after the
          *         {@link TextChangeEvent}
          */
-        public abstract String getText();
+        public String getText() {
+            return text;
+        }
 
         /**
          * @return the cursor position during after the {@link TextChangeEvent}
          */
-        public abstract int getCursorPosition();
+        public int getCursorPosition() {
+            return cursorPosition;
+        }
     }
 
     /**

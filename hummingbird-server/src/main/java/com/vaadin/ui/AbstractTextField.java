@@ -18,9 +18,24 @@ package com.vaadin.ui;
 
 import com.vaadin.event.FieldEvents.BlurNotifier;
 import com.vaadin.event.FieldEvents.FocusNotifier;
+import com.vaadin.event.FieldEvents.TextChangeEvent;
+import com.vaadin.event.FieldEvents.TextChangeListener;
+import com.vaadin.hummingbird.kernel.DomEventListener;
+
+import elemental.json.JsonObject;
 
 public abstract class AbstractTextField extends AbstractField<String>
         implements BlurNotifier, FocusNotifier {
+
+    private final DomEventListener textChangeDomListener = new DomEventListener() {
+        @Override
+        public void handleEvent(JsonObject e) {
+            String text = e.getString("value");
+            int cursorPos = (int) e.getNumber("selectionStart");
+            fireEvent(new TextChangeEvent(AbstractTextField.this, text,
+                    cursorPos));
+        }
+    };
 
     protected AbstractTextField() {
         super();
@@ -139,5 +154,21 @@ public abstract class AbstractTextField extends AbstractField<String>
      */
     public void setCursorPosition(int pos) {
         setSelectionRange(pos, 0);
+    }
+
+    public void addTextChangeListener(TextChangeListener listener) {
+        if (!hasListeners(TextChangeListener.class)) {
+            getElement().addEventData("input", "value", "selectionStart");
+            getElement().addEventListener("input", textChangeDomListener);
+        }
+
+        addListener(TextChangeListener.class, listener);
+    }
+
+    public void removeTextChangeListener(TextChangeListener listener) {
+        removeListener(TextChangeListener.class, listener);
+        if (!hasListeners(TextChangeListener.class)) {
+            getElement().removeEventListener("input", textChangeDomListener);
+        }
     }
 }
