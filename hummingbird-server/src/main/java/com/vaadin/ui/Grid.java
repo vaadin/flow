@@ -74,6 +74,7 @@ import com.vaadin.event.SelectionEvent.SelectionNotifier;
 import com.vaadin.event.SortEvent;
 import com.vaadin.event.SortEvent.SortListener;
 import com.vaadin.event.SortEvent.SortNotifier;
+import com.vaadin.hummingbird.kernel.DomEventListener;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.server.EncodeResult;
@@ -3501,6 +3502,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      */
     public static abstract class AbstractGridExtension {
 
+        private Grid parent;
+
         /**
          * Constructs a new Grid extension.
          */
@@ -3520,6 +3523,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         }
 
         protected void extend(AbstractClientConnector target) {
+            parent = (Grid) target;
             // super.extend(target);
 
             // if (this instanceof DataGenerator) {
@@ -3529,6 +3533,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         }
 
         public void remove() {
+            parent = null;
             // if (this instanceof DataGenerator) {
             // getParent().datasourceExtension
             // .removeDataGenerator((DataGenerator) this);
@@ -3575,6 +3580,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
          *             if parent is not Grid
          */
         public Grid getParent() {
+            return parent;
             // if (getParent() instanceof Grid) {
             // Grid grid = (Grid) getParent();
             // return grid;
@@ -3587,8 +3593,6 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             // + getParent().getClass().getSimpleName()
             // + " instead");
             // }
-            return null;
-            // throw new UnsupportedOperationException("not implemented");
         }
 
         /**
@@ -3732,6 +3736,43 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
     private DetailsGenerator detailsGenerator = DetailsGenerator.NULL;
 
     private DetailComponentManager detailComponentManager = null;
+
+    private final DomEventListener selectionDomListener = new DomEventListener() {
+        @Override
+        public void handleEvent(JsonObject eventData) {
+            JsonArray selectedIndices = eventData
+                    .getArray("element.selection.selected()");
+            Indexed container = getContainerDataSource();
+            SelectionModel selectionModel = getSelectionModel();
+            if (selectionModel instanceof SelectionModel.Single) {
+                SelectionModel.Single ssm = (SelectionModel.Single) selectionModel;
+                switch (selectedIndices.length()) {
+                case 0:
+                    ssm.reset();
+                    break;
+                case 1:
+                    Object selectedItemId = container
+                            .getIdByIndex((int) selectedIndices.getNumber(0));
+                    ssm.select(selectedItemId);
+                    break;
+                default:
+                    throw new RuntimeException(
+                            "Got multiple selected values for a single selection model");
+
+                }
+            } else if (selectionModel instanceof SelectionModel.Multi) {
+                SelectionModel.Multi msm = (SelectionModel.Multi) selectionModel;
+                List<Object> itemids = new ArrayList<>();
+                for (int i = 0; i < selectedIndices.length(); i++) {
+                    itemids.add(container
+                            .getIdByIndex((int) selectedIndices.getNumber(i)));
+                }
+                msm.select(itemids);
+            } else {
+                throw new RuntimeException("Unsupported selection model");
+            }
+        }
+    };
 
     /**
      * Creates a new Grid with a new {@link IndexedContainer} as the data
@@ -4964,12 +5005,19 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
     @Override
     public void addSelectionListener(SelectionListener listener) {
+        if (!hasListeners(SelectionListener.class)) {
+            getElement().addEventData("select", "element.selection.selected()");
+            getElement().addEventListener("select", selectionDomListener);
+        }
         addListener(SelectionListener.class, listener);
     }
 
     @Override
     public void removeSelectionListener(SelectionListener listener) {
         removeListener(SelectionListener.class, listener);
+        if (!hasListeners(SelectionListener.class)) {
+            getElement().removeEventListener("select", selectionDomListener);
+        }
     }
 
     private void fireColumnReorderEvent(boolean userOriginated) {
