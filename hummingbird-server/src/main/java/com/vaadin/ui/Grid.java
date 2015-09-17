@@ -99,6 +99,7 @@ import com.vaadin.shared.ui.grid.ScrollDestination;
 import com.vaadin.shared.ui.grid.selection.MultiSelectionModelState;
 import com.vaadin.shared.ui.grid.selection.SingleSelectionModelState;
 import com.vaadin.shared.util.SharedUtil;
+import com.vaadin.ui.Grid.SelectionModel;
 import com.vaadin.ui.renderers.Renderer;
 import com.vaadin.ui.renderers.TextRenderer;
 import com.vaadin.util.ReflectTools;
@@ -4162,6 +4163,20 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                 }
             }
         }
+
+        JsonArray rows = Json.createArray();
+        for (Object itemId : datasource.getItemIds()) {
+            Item item = datasource.getItem(itemId);
+            JsonArray rowData = Json.createArray();
+
+            for (Column column : getColumns()) {
+                Object propertyId = column.getPropertyId();
+                Object value = item.getItemProperty(propertyId).getValue();
+                rowData.set(rowData.length(), String.valueOf(value));
+            }
+            rows.set(rows.length(), rowData);
+        }
+        getJS(JS.class).setRows(getElement(), rows);
     }
 
     /**
@@ -5744,6 +5759,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
     @JavaScriptModule("Grid.js")
     public interface JS {
         public void addRow(Element e, JsonArray rowData);
+
+        public void setRows(Element e, JsonArray rows);
     }
 
     private static Logger getLogger() {
