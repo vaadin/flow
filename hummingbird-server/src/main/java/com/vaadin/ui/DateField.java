@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property;
 import com.vaadin.data.Validator;
 import com.vaadin.data.Validator.InvalidValueException;
@@ -51,6 +53,7 @@ import com.vaadin.shared.ui.datefield.TextualDateFieldState;
  * @since 3.0
  */
 @SuppressWarnings("serial")
+@Tag("input")
 public class DateField extends AbstractField<Date>
         implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 
@@ -94,6 +97,9 @@ public class DateField extends AbstractField<Date>
 
     private String dateOutOfRangeMessage = "Date is out of allowed range";
 
+    private static final DateFormat elementDateFormat = new SimpleDateFormat(
+            "yyyy-MM-dd");
+
     private DateRangeValidator currentRangeValidator;
 
     /**
@@ -118,6 +124,22 @@ public class DateField extends AbstractField<Date>
      * Constructs an empty <code>DateField</code> with no caption.
      */
     public DateField() {
+        getElement().setAttribute("type", "date");
+
+        // Always "immediate"
+        getElement().addEventData("change", "value");
+        getElement().addEventListener("change", e -> {
+            String valueString = e.getString("value");
+            if (valueString == null || valueString.isEmpty()) {
+                setValue(null);
+            } else {
+                try {
+                    setValue(elementDateFormat.parse(valueString));
+                } catch (Exception e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        });
     }
 
     /**
@@ -127,6 +149,7 @@ public class DateField extends AbstractField<Date>
      *            the caption of the datefield.
      */
     public DateField(String caption) {
+        this();
         setCaption(caption);
     }
 
@@ -152,6 +175,7 @@ public class DateField extends AbstractField<Date>
      *            the Property to be edited with this editor.
      */
     public DateField(Property dataSource) throws IllegalArgumentException {
+        this();
         if (!Date.class.isAssignableFrom(dataSource.getType())) {
             throw new IllegalArgumentException(
                     "Can't use " + dataSource.getType().getName()
@@ -174,6 +198,7 @@ public class DateField extends AbstractField<Date>
      *            the Date value.
      */
     public DateField(String caption, Date value) {
+        this();
         setValue(value);
         setCaption(caption);
     }
@@ -459,6 +484,12 @@ public class DateField extends AbstractField<Date>
         }
 
         super.setInternalValue(newValue);
+        if (newValue == null) {
+            getElement().setAttribute("value", null);
+        } else {
+            getElement().setAttribute("value",
+                    elementDateFormat.format(newValue));
+        }
     }
 
     /**
