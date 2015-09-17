@@ -74,11 +74,24 @@ public class FormLayout extends AbstractOrderedLayout {
             return;
         }
 
-        Element e = c.getElement();
-        while (e.getParent() != getElement()) {
-            e = e.getParent();
-        }
+        Element e = findRowElement(c);
         e.removeFromParent();
+    }
+
+    private Element findRowElement(Component c) {
+        assert c.getParent() == this;
+
+        Element root = getElement();
+        Element e = c.getElement();
+
+        while (e != null) {
+            Element parent = e.getParent();
+            if (root.equals(parent)) {
+                return e;
+            }
+            e = parent;
+        }
+        throw new RuntimeException();
     }
 
     private Element createTableRow(Component c) {
@@ -90,6 +103,15 @@ public class FormLayout extends AbstractOrderedLayout {
         Element row = new Element("tr").appendChild(captionCell)
                 .appendChild(contentCell);
         return row;
+    }
+
+    @Override
+    public int getComponentIndex(Component component) {
+        if (component.getParent() != this) {
+            return -1;
+        }
+        Element e = findRowElement(component);
+        return getElement().getChildIndex(e);
     }
 
     /**
