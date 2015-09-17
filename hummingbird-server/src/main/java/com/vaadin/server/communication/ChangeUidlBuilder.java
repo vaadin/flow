@@ -1,6 +1,5 @@
 package com.vaadin.server.communication;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,8 +34,6 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
     private JsonArray changes = Json.createArray();
     private JsonObject newTemplates = Json.createObject();
     private UI ui;
-    // Nodes that are attached and detached in the same transaction - ignored
-    private HashSet<StateNode> detachedNodes = new HashSet<>();
 
     public ChangeUidlBuilder(UI ui) {
         this.ui = ui;
@@ -54,8 +51,6 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
         if (node == null) {
             return false;
         } else if (node.containsKey(AbstractElementTemplate.Keys.SERVER_ONLY)) {
-            return true;
-        } else if (detachedNodes.contains(node)) {
             return true;
         } else {
             return isServerOnly(node.getParent());
@@ -119,10 +114,6 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
             if (isServerOnly(childNode)) {
                 return;
             }
-            if (!childNode.isAttached()) {
-                detachedNodes.add(childNode);
-                return;
-            }
             if (key instanceof ElementTemplate) {
                 change = createChange(node, "putOverride");
 
@@ -132,7 +123,7 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
             } else {
                 change = createChange(node, "putNode");
             }
-            change.put("value", childNode.getId());
+            change.put("value", Math.abs(childNode.getId()));
         } else {
             change = createChange(node, "put");
             if (value instanceof ElementTemplate) {
@@ -329,7 +320,7 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
         Object value = listReplaceChange.getNewValue();
         if (value instanceof StateNode) {
             change = createChange(node, "listReplaceNode");
-            change.put("value", ((StateNode) value).getId());
+            change.put("value", Math.abs(((StateNode) value).getId()));
         } else {
             change = createChange(node, "listReplace");
             change.put("value", JsonConverter.toJson(value));
@@ -378,12 +369,8 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
         Object value = listInsertChange.getValue();
         if (value instanceof StateNode) {
             StateNode child = (StateNode) value;
-            if (!child.isAttached()) {
-                detachedNodes.add(child);
-                return;
-            }
             change = createChange(node, "listInsertNode");
-            change.put("value", child.getId());
+            change.put("value", Math.abs(child.getId()));
         } else {
             change = createChange(node, "listInsert");
             change.put("value", JsonConverter.toJson(value));

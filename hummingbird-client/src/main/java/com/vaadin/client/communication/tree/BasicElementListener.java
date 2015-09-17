@@ -26,6 +26,7 @@ public class BasicElementListener {
         private boolean alwaysSetProperty;
 
         public PropertyPropagator(JsonObject target) {
+            assert target != null;
             this.target = target;
             alwaysSetProperty = true;
         }
