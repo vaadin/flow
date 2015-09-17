@@ -154,6 +154,10 @@ $valo-global-included: false !default;
       display: inline-block;
       line-height: inherit;
     }
+    
+    .v-hidden {
+      display: none;
+    }
 
     $valo-global-included: true;
   }

@@ -413,6 +413,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
 
         this.visible = visible;
+        setStyleName("v-hidden", !visible);
         if (visible) {
             /*
              * If the visibility state is toggled from invisible to visible it
