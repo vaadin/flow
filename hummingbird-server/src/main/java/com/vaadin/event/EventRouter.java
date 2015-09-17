@@ -18,7 +18,9 @@ package com.vaadin.event;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventListener;
@@ -29,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandler;
@@ -180,16 +183,19 @@ public class EventRouter implements EventSource {
         }
 
         Method listenerMethod;
-        Method[] methods = listenerInterface.getDeclaredMethods();
+        List<Method> methods = Arrays
+                .stream(listenerInterface.getDeclaredMethods())
+                .filter(m -> !Modifier.isVolatile(m.getModifiers()))
+                .collect(Collectors.toList());
 
-        if (methods.length != 1) {
+        if (methods.size() != 1) {
             throw new IllegalArgumentException(
                     "The listener type " + listenerInterface.getName()
-                            + " contains " + methods.length
+                            + " contains " + methods.size()
                             + " methods, but must contain exactly one");
         }
 
-        listenerMethod = methods[0];
+        listenerMethod = methods.get(0);
         if (listenerMethod.getParameterCount() != 1 || !EventObject.class
                 .isAssignableFrom(listenerMethod.getParameterTypes()[0])) {
             throw new IllegalArgumentException("The listener type "
