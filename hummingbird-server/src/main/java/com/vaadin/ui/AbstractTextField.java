@@ -24,6 +24,12 @@ public abstract class AbstractTextField extends AbstractField<String>
 
     protected AbstractTextField() {
         super();
+
+        // Always immediate
+        getElement().addEventData("change", "element.value");
+        addElementEventListener("change", e -> {
+            setValue(e.getString("element.value"));
+        });
     }
 
     @Override
@@ -134,18 +140,4 @@ public abstract class AbstractTextField extends AbstractField<String>
     public void setCursorPosition(int pos) {
         setSelectionRange(pos, 0);
     }
-
-    @Override
-    public void addValueChangeListener(ValueChangeListener listener) {
-        super.addValueChangeListener(listener);
-
-        if (!hasElementEventListener("change")) {
-            getElement().addEventData("change", "element.value");
-            addElementEventListener("change", e -> {
-                setValue(e.getString("element.value"));
-            });
-        }
-
-    }
-
 }
