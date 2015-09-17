@@ -18,6 +18,9 @@ package com.vaadin.ui;
 
 import java.text.Normalizer.Form;
 
+import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.kernel.Element;
+
 /**
  * FormLayout is used by {@link Form} to layout fields. It may also be used
  * separately without {@link Form}.
@@ -30,10 +33,13 @@ import java.text.Normalizer.Form;
  * bottom are by default on.
  *
  */
+@Tag("table")
 public class FormLayout extends AbstractOrderedLayout {
 
     public FormLayout() {
         super();
+        getElement().setStyle("table-layout", "fixed");
+
         setSpacing(true);
         setMargin(true);
         setWidth(100, Unit.PERCENTAGE);
@@ -50,6 +56,40 @@ public class FormLayout extends AbstractOrderedLayout {
     public FormLayout(Component... children) {
         this();
         addComponents(children);
+    }
+
+    @Override
+    public void addComponent(Component c) {
+        getElement().appendChild(createTableRow(c));
+    }
+
+    @Override
+    public void addComponent(Component c, int index) {
+        getElement().insertChild(index, createTableRow(c));
+    }
+
+    @Override
+    public void removeComponent(Component c) {
+        if (c.getParent() != this) {
+            return;
+        }
+
+        Element e = c.getElement();
+        while (e.getParent() != getElement()) {
+            e = e.getParent();
+        }
+        e.removeFromParent();
+    }
+
+    private Element createTableRow(Component c) {
+        String caption = c.getCaption();
+
+        Element captionCell = new Element("td").setTextContent(caption);
+        Element contentCell = new Element("td").appendChild(c.getElement());
+
+        Element row = new Element("tr").appendChild(captionCell)
+                .appendChild(contentCell);
+        return row;
     }
 
     /**
