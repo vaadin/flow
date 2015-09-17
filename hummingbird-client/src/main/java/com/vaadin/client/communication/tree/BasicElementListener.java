@@ -217,7 +217,9 @@ public class BasicElementListener {
                         .evalWithContext(context, "return " + eventDataKey)
                         .cast();
             }
-            if (value.getType() == JsonType.NULL) {
+
+            if (value == null) {
+                // value is either null or undefined
                 TreeUpdater
                         .debug("No value found for event key " + eventDataKey);
             }
