@@ -6,14 +6,14 @@
   <link rel="import" href="../../polymer/polymer.html">
   <link rel="import" href="../vaadin-grid.html">
   <script src="demodata.js"></script>
-  <script src="../ga.js"></script>
+  <script src="../../vaadin-components/ga.js"></script>
 
 <!-- Common JS code for all examples -->
   <script>
-    var componentsVersion = "0.3.0-beta8";
     window.xCodeExampleSourceHead =
-    "  <script src='https://cdn.vaadin.com/vaadin-components/"+componentsVersion+"/webcomponentsjs/webcomponents-lite.js'><\/script>\n"+
-    "  <link href='https://cdn.vaadin.com/vaadin-components/"+componentsVersion+"/vaadin-grid/vaadin-grid.html' rel='import'>\n";
+    "  <script src='https://cdn.vaadin.com/vaadin-components/latest/webcomponentsjs/webcomponents-lite.js'><\/script>\n"+
+    "  <link href='https://cdn.vaadin.com/vaadin-components/latest/vaadin-grid/vaadin-grid.html' rel='import'>\n"+
+    "  <script>var randomUserUrl = 'https://randomuser.me/api/';<\/script>\n";
 
     function createButton(text, fnc) {
       var button = document.createElement("button");
@@ -21,4 +21,6 @@
       button.addEventListener("click", fnc);
       return button;
     }
+
+    var randomUserUrl = 'https://randomuser.me/api/';
   </script>

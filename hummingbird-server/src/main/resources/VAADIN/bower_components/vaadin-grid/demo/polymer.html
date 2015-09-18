@@ -81,7 +81,7 @@
                   }
                 }
               }
-              xhr.open("GET", "http://api.randomuser.me/?results=25", true);
+              xhr.open("GET", randomUserUrl + "?results=25", true);
               xhr.send();
             }
           });
@@ -145,7 +145,7 @@
                     }
                   }
                 };
-                xhr.open("GET", 'http://api.randomuser.me/?results=' + Math.max(req.count, 1), true);
+                xhr.open("GET", randomUserUrl + '?results=' + Math.max(req.count, 1), true);
                 xhr.send();
               };
 

@@ -34,7 +34,7 @@ export class AngularGrid {
   }
 
   getUrl(gender: string, results: number) : string {
-    return 'http://api.randomuser.me?nat=us&gender=' + gender + '&results=' + results;
+    return randomUserUrl + '?nat=us&gender=' + gender + '&results=' + results;
   }
 
   onSelect() {

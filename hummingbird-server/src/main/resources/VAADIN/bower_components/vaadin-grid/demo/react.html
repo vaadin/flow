@@ -28,6 +28,10 @@
       As React doesn't support custom attributes for elements,
       vaadin-grid DOM API can't be fully utilized in the initialization.</p>
     <p>Fortunately vaadin-grid also provides corresponding JavaScript APIs.</p>
+    <p><strong>Note:</strong> vaadin-grid is not a React component. Instead, it must be
+      used with React like any JavaScript class. Please see the code example below or the
+      <a href='https://facebook.github.io/react/docs/component-specs.html'>React documentation</a>
+      for more information.</p>
     <code-example>
       <div demo>
         <div id="reactdemo">
@@ -77,7 +81,7 @@
                   }
                 }
               };
-              xhr.open("GET", 'http://api.randomuser.me/?results=' + Math.max(req.count, 1), true);
+              xhr.open("GET", randomUserUrl + '?results=' + Math.max(req.count, 1), true);
               xhr.send();
             },
 

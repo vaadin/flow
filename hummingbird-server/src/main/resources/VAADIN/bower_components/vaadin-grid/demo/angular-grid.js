@@ -29,7 +29,7 @@ var AngularGrid = (function () {
         });
     }
     AngularGrid.prototype.getUrl = function (gender, results) {
-        return 'http://api.randomuser.me?nat=us&gender=' + gender + '&results=' + results;
+        return randomUserUrl + '?nat=us&gender=' + gender + '&results=' + results;
     };
     AngularGrid.prototype.onSelect = function () {
         var _this = this;

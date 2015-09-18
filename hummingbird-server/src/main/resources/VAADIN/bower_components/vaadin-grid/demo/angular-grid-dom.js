@@ -10,9 +10,9 @@ var angular2_1 = require('angular2/angular2');
 var AngularGridDom = (function () {
     function AngularGridDom() {
         this.users = [
-            { "firstname": "raul", "lastname": "diez", "thumbnail": "http://api.randomuser.me/portraits/thumb/men/39.jpg" },
-            { "firstname": "sonia", "lastname": "benitez", "thumbnail": "http://api.randomuser.me/portraits/thumb/women/91.jpg" },
-            { "firstname": "luis", "lastname": "torres", "thumbnail": "http://api.randomuser.me/portraits/thumb/men/11.jpg" },
+            { "firstname": "raul", "lastname": "diez", "thumbnail": randomUserUrl + "portraits/thumb/men/39.jpg" },
+            { "firstname": "sonia", "lastname": "benitez", "thumbnail": randomUserUrl + "portraits/thumb/women/91.jpg" },
+            { "firstname": "luis", "lastname": "torres", "thumbnail": randomUserUrl + "portraits/thumb/men/11.jpg" },
         ];
     }
     AngularGridDom = __decorate([

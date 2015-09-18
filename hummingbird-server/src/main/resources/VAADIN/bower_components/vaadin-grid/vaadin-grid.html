@@ -186,6 +186,7 @@ More examples available at http://vaadin.github.io/components-examples/vaadin-gr
       padding: 0;
       top: 0;
       left: 0;
+      width: 100%;
   }
 
   .vaadin-grid-body td {
@@ -203,7 +204,7 @@ More examples available at http://vaadin.github.io/components-examples/vaadin-gr
     display: block;
   }
 
-  tbody .vaadin-grid-row:hover td {
+  tbody:not(.touch):not(.scrolling) .vaadin-grid-row:hover td {
     background-color: #eeeeee;
   }
 
@@ -876,13 +877,21 @@ More examples available at http://vaadin.github.io/components-examples/vaadin-gr
       attributeChanged: function(name, type, value) {
         switch (name) {
           case 'disabled':
-            this.disabled = typeof value == "string";
+            var disabled = typeof value == "string";
+            if (this.disabled != disabled) {
+              this.disabled = disabled;
+            }
             break;
           case 'selection-mode':
-            this.selection.mode = value;
+            if (this.selection.mode != value) {
+              this.selection.mode = value;
+            }
             break;
           default:
-            this[Polymer.CaseMap.dashToCamelCase(name)] = value;
+            var property = Polymer.CaseMap.dashToCamelCase(name);
+            if (this[property] != value) {
+              this[property] = value;
+            }
         }
       },
 

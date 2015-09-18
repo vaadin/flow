@@ -123,7 +123,7 @@
               }
             }
             var rowsNeeded = req.count > 0 ? req.count : 10;
-            xhr.open("GET", "http://api.randomuser.me/?results=" + rowsNeeded, true);
+            xhr.open("GET", randomUserUrl + "?results=" + rowsNeeded, true);
             xhr.send();
           };
 
