@@ -205,9 +205,14 @@ public class BasicElementListener {
                 String jsKey = eventDataKey;
 
                 // Try event first, then element
-                value = getValue((JsonObject) event, jsKey);
-                if (value == null) {
-                    value = getValue((JsonObject) element, jsKey);
+                if (((JsonObject) event).hasKey(jsKey)) {
+                    value = ((JsonObject) event).get(jsKey);
+                } else if (((JsonObject) element).hasKey(jsKey)) {
+                    value = ((JsonObject) element).get(jsKey);
+                } else {
+                    value = null;
+                    TreeUpdater.debug(
+                            "No value found for event key " + eventDataKey);
                 }
             } else {
                 Map<String, JavaScriptObject> context = new HashMap<>();
@@ -218,11 +223,6 @@ public class BasicElementListener {
                         .cast();
             }
 
-            if (value == null) {
-                // value is either null or undefined
-                TreeUpdater
-                        .debug("No value found for event key " + eventDataKey);
-            }
             eventData.put(eventDataKey, value);
         }
         return eventData;
