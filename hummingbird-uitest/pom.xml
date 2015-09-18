@@ -141,6 +141,7 @@
 					</httpConnector>
 					<stopPort>8889</stopPort>
 					<stopKey>foo</stopKey>
+					<stopWait>5</stopWait>
 				</configuration>
 			</plugin>
 		</plugins>
