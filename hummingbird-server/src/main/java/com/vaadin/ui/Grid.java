@@ -4052,6 +4052,32 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                         .error(new ConnectorErrorEvent(Grid.this, e));
             }
         });
+
+        // Listen to requests for more data
+        getElement().addEventData("hData", "id", "index", "count");
+        getElement().addEventListener("hData", e -> {
+            String id = e.getString("id");
+            int index = (int) e.getNumber("index");
+            int count = (int) e.getNumber("count");
+
+            JsonArray rows = Json.createArray();
+
+            Indexed container = getContainerDataSource();
+            for (Object itemId : container.getItemIds(index, count)) {
+                Item item = container.getItem(itemId);
+
+                JsonArray row = Json.createArray();
+                for (Column column : getColumns()) {
+                    Object value = item.getItemProperty(column.getPropertyId())
+                            .getValue();
+                    row.set(row.length(), String.valueOf(value));
+                }
+                rows.set(rows.length(), row);
+            }
+
+            getJS(JS.class).provideRows(getElement(), id, rows,
+                    container.size());
+        });
     }
 
     @Override
@@ -4205,19 +4231,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             }
         }
 
-        JsonArray rows = Json.createArray();
-        for (Object itemId : datasource.getItemIds()) {
-            Item item = datasource.getItem(itemId);
-            JsonArray rowData = Json.createArray();
-
-            for (Column column : getColumns()) {
-                Object propertyId = column.getPropertyId();
-                Object value = item.getItemProperty(propertyId).getValue();
-                rowData.set(rowData.length(), String.valueOf(value));
-            }
-            rows.set(rows.length(), rowData);
-        }
-        getJS(JS.class).setRows(getElement(), rows);
+        getJS(JS.class).resetDataSource(getElement(), datasource.size());
     }
 
     /**
@@ -5795,20 +5809,15 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             throw e;
         }
 
-        // FIXME Temp hack
-        JsonArray jsonData = Json.createArray();
-        for (Object o : values) {
-            jsonData.set(jsonData.length(), String.valueOf(o));
-        }
-        getJS(JS.class).addRow(getElement(), jsonData);
         return itemId;
     }
 
     @JavaScriptModule("Grid.js")
     public interface JS {
-        public void addRow(Element e, JsonArray rowData);
+        public void provideRows(Element grid, String id, JsonArray rows,
+                int totalSize);
 
-        public void setRows(Element e, JsonArray rows);
+        public void resetDataSource(Element grid, int containerSize);
     }
 
     private static Logger getLogger() {

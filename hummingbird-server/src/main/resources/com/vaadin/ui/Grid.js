@@ -1,13 +1,25 @@
-module.addRow = function(grid, rowData) {
-	if (!grid.data.source) {
-		grid.data.source = [];
+(function(module) {
+	var callbacks = {};
+	var nextCallbackId = 0;
+	
+	module.provideRows = function(grid, id, rows, totalSize) {
+		callbacks[id](rows, totalSize);
+		delete callbacks[id];
 	}
-	grid.data.source.push(rowData);
 
-	// Workaround to make vaadin-grid notice changes in data
-	grid.data.source = grid.data.source;
-}
+	module.resetDataSource = function(grid, containerSize) {
+		grid.data.source = function(req) {
+			var id = "" + nextCallbackId++;
+			callbacks[id] = req.success;
 
-module.setRows = function(grid, rows) {
-	grid.data.source = rows;
-}
+			var event = new Event("hData");
+			event.id = id;
+			event.index = req.index;
+			event.count = req.count;
+
+			grid.dispatchEvent(event);
+		}
+
+		grid.data.clearCache(containerSize);
+	}
+})(module);
