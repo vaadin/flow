@@ -4548,10 +4548,10 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      *            properties in the order columns should be
      */
     public void setColumnOrder(Object... propertyIds) {
-        List<String> columnOrder = new ArrayList<String>();
+        List<StateNode> columnOrder = new ArrayList<>();
         for (Object propertyId : propertyIds) {
             if (columns.containsKey(propertyId)) {
-                columnOrder.add(columnKeys.key(propertyId));
+                columnOrder.add(columns.get(propertyId).getState());
             } else {
                 throw new IllegalArgumentException(
                         "Grid does not contain column for property "
@@ -4559,12 +4559,17 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             }
         }
 
-        // FIXME
-        // List<String> stateColumnOrder = getState().columnOrder;
-        // if (stateColumnOrder.size() != columnOrder.size()) {
-        // stateColumnOrder.removeAll(columnOrder);
-        // columnOrder.addAll(stateColumnOrder);
-        // }
+        List<StateNode> columnStateNodes = getColumnStateNodes();
+        for (int i = 0; i < columnOrder.size(); i++) {
+            StateNode column = columnOrder.get(i);
+            assert columnStateNodes.contains(column);
+
+            if (columnStateNodes.get(i) != column) {
+                columnStateNodes.remove(column);
+                columnStateNodes.add(i, column);
+            }
+        }
+
         fireColumnReorderEvent(false);
     }
 
