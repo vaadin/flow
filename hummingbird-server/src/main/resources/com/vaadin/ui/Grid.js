@@ -12,7 +12,8 @@
 			var id = "" + nextCallbackId++;
 			callbacks[id] = req.success;
 
-			var event = new Event("hData");
+			var event = document.createEvent("Event");
+			event.initEvent("hData", false, true);
 			event.id = id;
 			event.index = req.index;
 			event.count = req.count;
