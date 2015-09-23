@@ -3607,6 +3607,13 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         }
     }
 
+    private static final Map<String, SortDirection> sortDirections = new HashMap<>();
+
+    static {
+        sortDirections.put("asc", SortDirection.ASCENDING);
+        sortDirections.put("desc", SortDirection.DESCENDING);
+    }
+
     /**
      * The data source attached to the grid
      */
@@ -4054,11 +4061,38 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         });
 
         // Listen to requests for more data
-        getElement().addEventData("hData", "id", "index", "count");
+        getElement().addEventData("hData", "id", "index", "count",
+                "element.data.sortOrder");
         getElement().addEventListener("hData", e -> {
             String id = e.getString("id");
             int index = (int) e.getNumber("index");
             int count = (int) e.getNumber("count");
+            JsonArray clientSortOrder = e.getArray("element.data.sortOrder");
+
+            if (clientSortOrder == null) {
+                clientSortOrder = Json.createArray();
+            }
+
+            ArrayList<SortOrder> newSortOrder = new ArrayList<>();
+            for (int i = 0; i < clientSortOrder.length(); i++) {
+                JsonObject columnOrder = clientSortOrder.getObject(i);
+                int columnIndex = (int) columnOrder.getNumber("column");
+                String direction = columnOrder.getString("direction");
+
+                SortDirection directionEnum = sortDirections.get(direction);
+                if (directionEnum == null) {
+                    throw new RuntimeException(
+                            "Unsupported sort direction: " + direction);
+                }
+
+                newSortOrder.add(new SortOrder(
+                        getColumns().get(columnIndex).getPropertyId(),
+                        directionEnum));
+            }
+
+            if (!sortOrder.equals(newSortOrder)) {
+                setSortOrder(newSortOrder);
+            }
 
             JsonArray rows = Json.createArray();
 
