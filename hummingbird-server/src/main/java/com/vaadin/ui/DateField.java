@@ -124,8 +124,6 @@ public class DateField extends AbstractField<Date>
      * Constructs an empty <code>DateField</code> with no caption.
      */
     public DateField() {
-        getElement().setAttribute("type", "date");
-
         // Always "immediate"
         getElement().addEventData("change", "value");
         getElement().addEventListener("change", e -> {
@@ -140,6 +138,15 @@ public class DateField extends AbstractField<Date>
                 }
             }
         });
+    }
+
+    @Override
+    public void attach() {
+        super.attach();
+
+        if (!getUI().getPage().getWebBrowser().isIE()) {
+            getElement().setAttribute("type", "date");
+        }
     }
 
     /**
