@@ -36,7 +36,6 @@ import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.MultiStepDuration;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingStartedEvent;
 import com.vaadin.client.ApplicationConnection.State;
-import com.vaadin.client.communication.tree.TreeUpdater;
 import com.vaadin.client.ConnectorHierarchyChangeEvent;
 import com.vaadin.client.ConnectorMap;
 import com.vaadin.client.FastStringSet;
@@ -44,9 +43,16 @@ import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.communication.tree.EventArray;
+import com.vaadin.client.communication.tree.TreeNode;
+import com.vaadin.client.communication.tree.TreeNode.TreeNodeChangeListener;
+import com.vaadin.client.communication.tree.TreeNodeProperty;
+import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
+import com.vaadin.client.communication.tree.TreeUpdater;
 import com.vaadin.client.ui.VNotification;
 import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.shared.communication.PushMode;
 
 import elemental.json.JsonObject;
 
@@ -192,6 +198,61 @@ public class ServerMessageHandler {
         this.connection = connection;
         treeUpdater.init(connection.getContainerElement(),
                 connection.getServerRpcQueue(), connection.getCurrentClient());
+
+        // XXX Should really refactor something to make this more manageable
+        treeUpdater.getRootNode()
+                .addTreeNodeChangeListener(new TreeNodeChangeListener() {
+                    @Override
+                    public void addProperty(String name,
+                            TreeNodeProperty property) {
+                        if ("pushConfiguration".equals(name)) {
+                            TreeNode pushConfiguration = (TreeNode) property
+                                    .getValue();
+                            pushConfiguration.addTreeNodeChangeListener(
+                                    new TreeNodeChangeListener() {
+                                @Override
+                                public void addProperty(String name,
+                                        TreeNodeProperty property) {
+                                    if ("mode".equals(name)) {
+                                        property.addPropertyChangeListener(
+                                                new TreeNodePropertyValueChangeListener() {
+                                            @Override
+                                            public void changeValue(
+                                                    TreeNodeProperty property,
+                                                    Object oldValue) {
+                                                String value = (String) property
+                                                        .getValue();
+                                                PushMode mode;
+                                                if (value == null
+                                                        || value.isEmpty()) {
+                                                    mode = PushMode.DEFAULT;
+                                                } else {
+                                                    mode = PushMode
+                                                            .valueOf(value);
+                                                }
+                                                connection
+                                                        .getServerCommunicationHandler()
+                                                        .setPushEnabled(mode
+                                                                .isEnabled());
+                                            }
+                                        });
+                                    }
+                                }
+
+                                @Override
+                                public void addArray(String name,
+                                        EventArray array) {
+                                    // Don't care
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void addArray(String name, EventArray array) {
+                        // Don't care
+                    }
+                });
     }
 
     public static Logger getLogger() {
@@ -741,4 +802,7 @@ public class ServerMessageHandler {
         return connection.getServerCommunicationHandler();
     }
 
+    public TreeUpdater getTreeUpdater() {
+        return treeUpdater;
+    }
 }

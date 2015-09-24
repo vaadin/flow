@@ -20,6 +20,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.vaadin.hummingbird.kernel.RootNode;
+import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.shared.communication.PushMode;
@@ -170,6 +172,7 @@ public interface PushConfiguration extends Serializable {
 
 class PushConfigurationImpl implements PushConfiguration {
     private UI ui;
+    private StateNode node;
 
     public PushConfigurationImpl(UI ui) {
         this.ui = ui;
@@ -182,7 +185,11 @@ class PushConfigurationImpl implements PushConfiguration {
      */
     @Override
     public PushMode getPushMode() {
-        return getState(false).mode;
+        PushMode mode = getNode().get("mode", PushMode.class);
+        if (mode == null) {
+            return PushMode.DEFAULT;
+        }
+        return mode;
     }
 
     /*
@@ -212,9 +219,9 @@ class PushConfigurationImpl implements PushConfiguration {
                     "Push is not available. See previous log messages for more information.");
         }
 
-        PushMode oldMode = getState().mode;
+        PushMode oldMode = getPushMode();
         if (oldMode != pushMode) {
-            getState().mode = pushMode;
+            getNode().put("mode", pushMode);
 
             if (!oldMode.isEnabled() && pushMode.isEnabled()) {
                 // The push connection is initially in a disconnected state;
@@ -302,6 +309,18 @@ class PushConfigurationImpl implements PushConfiguration {
     public void setParameter(String parameter, String value) {
         getState().parameters.put(parameter, value);
 
+    }
+
+    private StateNode getNode() {
+        if (node == null) {
+            RootNode rootNode = ui.getRoot().getRootNode();
+            node = rootNode.get("pushConfiguration", StateNode.class);
+            if (node == null) {
+                node = StateNode.create();
+                rootNode.put("pushConfiguration", node);
+            }
+        }
+        return node;
     }
 
     private PushConfigurationState getState() {

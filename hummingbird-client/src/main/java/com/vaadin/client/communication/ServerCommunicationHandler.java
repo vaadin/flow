@@ -26,8 +26,10 @@ import com.vaadin.client.ApplicationConnection.RequestStartingEvent;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingEndedEvent;
 import com.vaadin.client.Util;
 import com.vaadin.client.VLoadingIndicator;
+import com.vaadin.client.communication.tree.TreeNode;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
+import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 
 import elemental.json.Json;
@@ -214,8 +216,22 @@ public class ServerCommunicationHandler {
                      * the old connection to disconnect, now is the right time
                      * to open a new connection
                      */
-                    if (pushState.mode.isEnabled()) {
-                        setPushEnabled(true);
+                    TreeNode rootNode = connection.getServerMessageHandler()
+                            .getTreeUpdater().getRootNode();
+                    if (rootNode.hasProperty("pushConfiguration")) {
+                        TreeNode configuration = (TreeNode) rootNode
+                                .getProperty("pushConfiguration").getValue();
+                        String modeString = (String) configuration
+                                .getProperty("mode").getValue();
+                        PushMode mode;
+                        if (modeString == null) {
+                            mode = PushMode.DEFAULT;
+                        } else {
+                            mode = PushMode.valueOf(modeString);
+                        }
+                        if (mode.isEnabled()) {
+                            setPushEnabled(true);
+                        }
                     }
 
                     /*

@@ -368,12 +368,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
                 com.google.gwt.user.client.Window.setTitle(title);
             }
         }
-
-        if (stateChangeEvent.hasPropertyChanged("pushConfiguration")) {
-            getConnection().getServerCommunicationHandler().setPushEnabled(
-                    getState().pushConfiguration.mode.isEnabled());
-        }
-
     }
 
     private void configurePolling() {

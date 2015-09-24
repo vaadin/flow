@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.extension.javascriptmanager.JavaScriptManagerState;
 import com.vaadin.shared.ui.JavaScriptComponentState;
 
@@ -110,7 +109,6 @@ public class UIState extends JavaScriptComponentState {
         public static final String FALLBACK_TRANSPORT_PARAM = "fallbackTransport";
 
         public boolean alwaysUseXhrForServerRequests = false;
-        public PushMode mode = PushMode.DISABLED;
         public Map<String, String> parameters = new HashMap<String, String>();
 
         {

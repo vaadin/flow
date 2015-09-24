@@ -430,7 +430,7 @@ public class TreeUpdater {
     }-*/;
 
     private void initRoot() {
-        TreeNode rootNode = idToNode.get(Integer.valueOf(1));
+        TreeNode rootNode = getRootNode();
         TreeNode bodyNode = (TreeNode) rootNode.getProperty("containerElement")
                 .getValue();
 
@@ -439,6 +439,10 @@ public class TreeUpdater {
                 + " for nodeId=" + bodyNode.getId());
 
         BasicElementListener.bind(bodyNode, rootElement, this);
+    }
+
+    public TreeNode getRootNode() {
+        return ensureNodeExists(1);
     }
 
     private void updateTree(JsonArray elementChanges) {

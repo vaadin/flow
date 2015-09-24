@@ -134,6 +134,12 @@ public class UidlWriter implements Serializable {
         try {
             JsonObject response = Json.createObject();
 
+            if (async) {
+                JsonObject meta = Json.createObject();
+                meta.put("async", true);
+                response.put("meta", meta);
+            }
+
             int syncId = service.getDeploymentConfiguration()
                     .isSyncIdCheckEnabled()
                             ? uiConnectorTracker.getCurrentSyncId() : -1;

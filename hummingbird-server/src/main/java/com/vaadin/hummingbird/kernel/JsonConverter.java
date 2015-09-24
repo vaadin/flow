@@ -55,6 +55,9 @@ public class JsonConverter {
             return Json.create(((Boolean) value).booleanValue());
         } else if (value instanceof JsonValue) {
             return (JsonValue) value;
+        } else if (value instanceof Enum<?>) {
+            Enum<?> enumValue = (Enum<?>) value;
+            return Json.create(enumValue.name());
         } else {
             throw new RuntimeException(
                     "Can't encode value of type " + value.getClass().getName());

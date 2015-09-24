@@ -53,6 +53,8 @@ public enum PushMode {
      */
     AUTOMATIC;
 
+    public static final PushMode DEFAULT = DISABLED;
+
     /**
      * Checks whether the push mode is using push functionality
      *
