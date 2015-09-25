@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 
 import elemental.json.Json;
@@ -76,12 +77,24 @@ public class TreeNodeProperty {
         }
     }
 
-    public void addPropertyChangeListener(
+    public HandlerRegistration addPropertyChangeListener(
             TreeNodePropertyValueChangeListener listener) {
         if (listeners == null) {
             listeners = new ArrayList<>();
         }
         listeners.add(listener);
+
+        return new HandlerRegistration() {
+            @Override
+            public void removeHandler() {
+                if (listeners != null) {
+                    listeners.remove(listener);
+                    if (listeners.isEmpty()) {
+                        listeners = null;
+                    }
+                }
+            }
+        };
     }
 
     public void setValue(Object value) {

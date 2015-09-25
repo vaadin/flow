@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.vaadin.client.FastStringMap;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 
@@ -88,11 +89,25 @@ public class TreeNode {
         return id;
     }
 
-    public void addTreeNodeChangeListener(TreeNodeChangeListener listener) {
+    public HandlerRegistration addTreeNodeChangeListener(
+            TreeNodeChangeListener listener) {
         if (listeners == null) {
             listeners = new ArrayList<>();
         }
         listeners.add(listener);
+
+        return new HandlerRegistration() {
+            @Override
+            public void removeHandler() {
+                if (listeners == null) {
+                    return;
+                }
+                listeners.remove(listener);
+                if (listeners.isEmpty()) {
+                    listeners = null;
+                }
+            }
+        };
     }
 
     public JavaScriptObject getProxy() {

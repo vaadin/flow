@@ -43,10 +43,7 @@ import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.communication.tree.EventArray;
-import com.vaadin.client.communication.tree.TreeNode;
-import com.vaadin.client.communication.tree.TreeNode.TreeNodeChangeListener;
-import com.vaadin.client.communication.tree.TreeNodeProperty;
+import com.vaadin.client.communication.tree.TreeListenerHelper;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 import com.vaadin.client.communication.tree.TreeUpdater;
 import com.vaadin.client.ui.VNotification;
@@ -199,58 +196,20 @@ public class ServerMessageHandler {
         treeUpdater.init(connection.getContainerElement(),
                 connection.getServerRpcQueue(), connection.getCurrentClient());
 
-        // XXX Should really refactor something to make this more manageable
-        treeUpdater.getRootNode()
-                .addTreeNodeChangeListener(new TreeNodeChangeListener() {
+        TreeListenerHelper.addListener(treeUpdater.getRootNode(),
+                "pushConfiguration.mode",
+                new TreeNodePropertyValueChangeListener() {
                     @Override
-                    public void addProperty(String name,
-                            TreeNodeProperty property) {
-                        if ("pushConfiguration".equals(name)) {
-                            TreeNode pushConfiguration = (TreeNode) property
-                                    .getValue();
-                            pushConfiguration.addTreeNodeChangeListener(
-                                    new TreeNodeChangeListener() {
-                                @Override
-                                public void addProperty(String name,
-                                        TreeNodeProperty property) {
-                                    if ("mode".equals(name)) {
-                                        property.addPropertyChangeListener(
-                                                new TreeNodePropertyValueChangeListener() {
-                                            @Override
-                                            public void changeValue(
-                                                    Object oldValue,
-                                                    Object newValue) {
-                                                String value = (String) property
-                                                        .getValue();
-                                                PushMode mode;
-                                                if (value == null
-                                                        || value.isEmpty()) {
-                                                    mode = PushMode.DEFAULT;
-                                                } else {
-                                                    mode = PushMode
-                                                            .valueOf(value);
-                                                }
-                                                connection
-                                                        .getServerCommunicationHandler()
-                                                        .setPushEnabled(mode
-                                                                .isEnabled());
-                                            }
-                                        });
-                                    }
-                                }
-
-                                @Override
-                                public void addArray(String name,
-                                        EventArray array) {
-                                    // Don't care
-                                }
-                            });
+                    public void changeValue(Object oldValue, Object newValue) {
+                        String value = (String) newValue;
+                        PushMode mode;
+                        if (value == null || value.isEmpty()) {
+                            mode = PushMode.DEFAULT;
+                        } else {
+                            mode = PushMode.valueOf(value);
                         }
-                    }
-
-                    @Override
-                    public void addArray(String name, EventArray array) {
-                        // Don't care
+                        connection.getServerCommunicationHandler()
+                                .setPushEnabled(mode.isEnabled());
                     }
                 });
     }
