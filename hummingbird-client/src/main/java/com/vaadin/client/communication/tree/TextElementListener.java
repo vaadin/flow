@@ -5,8 +5,7 @@ import com.google.gwt.dom.client.Text;
 public class TextElementListener {
     public static void bind(TreeNode node, Text textNode) {
         node.getProperty("content")
-                .addPropertyChangeListener((property, oldValue) -> {
-                    Object value = property.getValue();
+                .addPropertyChangeListener((oldValue, value) -> {
                     textNode.setData(value == null ? "" : value.toString());
                 });
 

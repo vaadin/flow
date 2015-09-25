@@ -43,9 +43,7 @@ public class BasicElementListener {
                 return;
             }
 
-            property.addPropertyChangeListener((p, old) -> {
-                Object value = p.getValue();
-
+            property.addPropertyChangeListener((old, value) -> {
                 if (value instanceof TreeNode) {
                     TreeNode child = (TreeNode) value;
                     JsonValue childValue = target.get(name);

@@ -117,9 +117,7 @@ public class BoundElementTemplate extends Template {
             context.resolveProperty(property).addPropertyChangeListener(
                     new TreeNodePropertyValueChangeListener() {
                         @Override
-                        public void changeValue(TreeNodeProperty property,
-                                Object oldValue) {
-                            Object value = property.getValue();
+                        public void changeValue(Object oldValue, Object value) {
                             TreeUpdater.debug("Binding (" + property + " to "
                                     + attribute + ") changed to " + value);
 
@@ -136,10 +134,8 @@ public class BoundElementTemplate extends Template {
                 context.resolveProperty(property).addPropertyChangeListener(
                         new TreeNodePropertyValueChangeListener() {
                             @Override
-                            public void changeValue(TreeNodeProperty property,
-                                    Object oldValue) {
-                                Object value = property.getValue();
-
+                            public void changeValue(Object oldValue,
+                                    Object value) {
                                 if (isTrueIsh(TreeUpdater.asJsonValue(value))) {
                                     DomApi.wrap(element).getClassList()
                                             .add(classPart);
@@ -155,13 +151,12 @@ public class BoundElementTemplate extends Template {
         node.getProperty(Integer.toString(getId())).addPropertyChangeListener(
                 new TreeNodePropertyValueChangeListener() {
                     @Override
-                    public void changeValue(TreeNodeProperty property,
-                            Object oldValue) {
+                    public void changeValue(Object oldValue, Object newValue) {
                         if (oldValue != null) {
                             throw new RuntimeException("Not yet supported");
                         }
 
-                        TreeNode overrideNode = (TreeNode) property.getValue();
+                        TreeNode overrideNode = (TreeNode) newValue;
 
                         BasicElementListener.bind(overrideNode, element,
                                 treeUpdater);

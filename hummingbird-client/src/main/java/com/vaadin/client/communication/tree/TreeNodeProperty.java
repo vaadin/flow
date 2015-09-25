@@ -15,22 +15,24 @@ import elemental.json.JsonValue;
 public class TreeNodeProperty {
 
     public interface TreeNodePropertyValueChangeListener {
-        void changeValue(TreeNodeProperty property, Object oldValue);
+        void changeValue(Object oldValue, Object newValue);
     }
 
     public class ValueChangeEvent extends NodeChangeEvent {
 
         private final Object oldValue;
+        private final Object newValue;
 
-        public ValueChangeEvent(Object oldValue) {
+        public ValueChangeEvent(Object oldValue, Object newValue) {
             this.oldValue = oldValue;
+            this.newValue = newValue;
         }
 
         @Override
         public void dispatch() {
             if (listeners != null) {
                 for (TreeNodePropertyValueChangeListener listener : listeners) {
-                    listener.changeValue(TreeNodeProperty.this, oldValue);
+                    listener.changeValue(oldValue, newValue);
                 }
             }
         }
@@ -91,7 +93,7 @@ public class TreeNodeProperty {
         }
 
         this.value = value;
-        owner.getCallbackQueue().enqueue(new ValueChangeEvent(oldValue));
+        owner.getCallbackQueue().enqueue(new ValueChangeEvent(oldValue, value));
     }
 
     public native JavaScriptObject getPropertyDescriptor()

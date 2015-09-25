@@ -19,8 +19,7 @@ public class DynamicTextTemplate extends Template {
         Text textNode = Document.get().createTextNode("");
 
         context.resolveProperty(binding)
-                .addPropertyChangeListener((property, oldValue) -> {
-                    Object value = property.getValue();
+                .addPropertyChangeListener((oldValue, value) -> {
                     textNode.setData(value == null ? "" : value.toString());
                 });
 

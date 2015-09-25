@@ -218,8 +218,8 @@ public class ServerMessageHandler {
                                                 new TreeNodePropertyValueChangeListener() {
                                             @Override
                                             public void changeValue(
-                                                    TreeNodeProperty property,
-                                                    Object oldValue) {
+                                                    Object oldValue,
+                                                    Object newValue) {
                                                 String value = (String) property
                                                         .getValue();
                                                 PushMode mode;
