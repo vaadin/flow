@@ -824,7 +824,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void addBootstrapListener(BootstrapListener listener) {
         assert hasLock();
-        eventRouter.addListener(BootstrapListener.class, listener);
+        eventRouter.addListener(BootstrapPageResponse.class, listener);
     }
 
     /**
@@ -837,7 +837,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void removeBootstrapListener(BootstrapListener listener) {
         assert hasLock();
-        eventRouter.removeListener(BootstrapListener.class, listener);
+        eventRouter.removeListener(BootstrapPageResponse.class, listener);
     }
 
     /**
@@ -851,7 +851,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public void removeBootstrapFragmentListener(
             BootstrapFragmentListener listener) {
         assert hasLock();
-        eventRouter.removeListener(BootstrapFragmentListener.class, listener);
+        eventRouter.removeListener(BootstrapFragmentResponse.class, listener);
     }
 
     /**
@@ -869,7 +869,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public void addBootstrapFragmentListener(
             BootstrapFragmentListener listener) {
         assert hasLock();
-        eventRouter.addListener(BootstrapFragmentListener.class, listener);
+        eventRouter.addListener(BootstrapFragmentResponse.class, listener);
     }
 
     /**

@@ -103,8 +103,11 @@ public class Page implements Serializable, EventSource {
     }
 
     /**
-     * Listener that that gets notified when the URI fragment of the page
-     * changes.
+     * Listener invoked when the URI fragment of the page changes.
+     * <p>
+     * Please note that the initial URI fragment has already been set when a new
+     * UI is initialized, so there will not be any initial event for listeners
+     * added during {@link UI#init(VaadinRequest)}.
      *
      * @see Page#addUriFragmentChangedListener(UriFragmentChangedListener)
      */
@@ -198,38 +201,39 @@ public class Page implements Serializable, EventSource {
     }
 
     @Override
-    public <T extends EventListener> void addListener(Class<T> listenerType,
-            T listener) {
+    public void addListener(Class<? extends EventObject> eventType,
+            EventListener listener) {
         if (eventRouter == null) {
             eventRouter = new EventRouter();
         }
-        eventRouter.addListener(listenerType, listener);
+        eventRouter.addListener(eventType, listener);
+
     }
 
     @Override
-    public <T extends EventListener> void removeListener(Class<T> listenerType,
-            T listener) {
+    public void removeListener(Class<? extends EventObject> eventType,
+            EventListener listener) {
         if (eventRouter == null) {
             return;
         }
-        eventRouter.removeListener(listenerType, listener);
+        eventRouter.removeListener(eventType, listener);
     }
 
     @Override
-    public boolean hasListeners(Class<? extends EventListener> listenerType) {
+    public boolean hasListeners(Class<? extends EventObject> eventType) {
         if (eventRouter == null) {
             return false;
         }
-        return eventRouter.hasListeners(listenerType);
+        return eventRouter.hasListeners(eventType);
     }
 
     @Override
-    public <T extends EventListener> java.util.Collection<T> getListeners(
-            Class<T> listenerType) {
+    public java.util.Collection<EventListener> getListeners(
+            Class<? extends EventObject> eventType) {
         if (eventRouter == null) {
             return Collections.emptyList();
         }
-        return eventRouter.getListeners(listenerType);
+        return eventRouter.getListeners(eventType);
     }
 
     /**
@@ -247,7 +251,7 @@ public class Page implements Serializable, EventSource {
      */
     public void addUriFragmentChangedListener(
             Page.UriFragmentChangedListener listener) {
-        addListener(UriFragmentChangedListener.class, listener);
+        addListener(UriFragmentChangedEvent.class, listener);
     }
 
     /**
@@ -260,7 +264,7 @@ public class Page implements Serializable, EventSource {
      */
     public void removeUriFragmentChangedListener(
             Page.UriFragmentChangedListener listener) {
-        removeListener(UriFragmentChangedListener.class, listener);
+        removeListener(UriFragmentChangedEvent.class, listener);
     }
 
     /**
@@ -449,7 +453,7 @@ public class Page implements Serializable, EventSource {
      */
     public void addBrowserWindowResizeListener(
             BrowserWindowResizeListener listener) {
-        addListener(BrowserWindowResizeListener.class, listener);
+        addListener(BrowserWindowResizeEvent.class, listener);
     }
 
     /**
@@ -461,7 +465,7 @@ public class Page implements Serializable, EventSource {
      */
     public void removeBrowserWindowResizeListener(
             BrowserWindowResizeListener listener) {
-        removeListener(BrowserWindowResizeListener.class, listener);
+        removeListener(BrowserWindowResizeEvent.class, listener);
     }
 
     /**

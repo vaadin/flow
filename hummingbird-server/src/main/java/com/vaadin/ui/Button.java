@@ -301,7 +301,7 @@ public class Button extends AbstractFocusable {
      *            the Listener to be added.
      */
     public void addClickListener(ClickListener listener) {
-        if (!hasListeners(ClickListener.class)) {
+        if (!hasListeners(ClickEvent.class)) {
             getElement().addEventData("click",
                     MouseEventDetails.getEventProperties());
             getElement().addEventListener("click", new DomEventListener() {
@@ -311,7 +311,7 @@ public class Button extends AbstractFocusable {
                 }
             });
         }
-        addListener(ClickListener.class, listener);
+        addListener(ClickEvent.class, listener);
     }
 
     /**
@@ -321,7 +321,7 @@ public class Button extends AbstractFocusable {
      *            the Listener to be removed.
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(ClickListener.class, listener);
+        removeListener(ClickEvent.class, listener);
     }
 
     /**

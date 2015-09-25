@@ -11,13 +11,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.easymock.EasyMock;
-import org.junit.Assert;
 
 import com.vaadin.event.EventSource;
 import com.vaadin.hummingbird.kernel.DomEventListener;
 import com.vaadin.hummingbird.kernel.Element.DomEventListenerWrapper;
 import com.vaadin.tests.VaadinClasses;
 import com.vaadin.ui.Component;
+
+import org.junit.Assert;
 
 import junit.framework.TestCase;
 
@@ -117,23 +118,23 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
         Object mockListener2 = EasyMock.createMock(listenerClass);
 
         // Verify we start from no listeners
-        verifyListeners(c, listenerClass);
+        verifyListeners(c, eventClass);
 
         // Add one listener and verify
         addListener(c, mockListener1, listenerClass);
-        verifyListeners(c, listenerClass, mockListener1);
+        verifyListeners(c, eventClass, mockListener1);
 
         // Add another listener and verify
         addListener(c, mockListener2, listenerClass);
-        verifyListeners(c, listenerClass, mockListener1, mockListener2);
+        verifyListeners(c, eventClass, mockListener1, mockListener2);
 
         // Remove the first and verify
         removeListener(c, mockListener1, listenerClass);
-        verifyListeners(c, listenerClass, mockListener2);
+        verifyListeners(c, eventClass, mockListener2);
 
         // Remove the remaining and verify
         removeListener(c, mockListener2, listenerClass);
-        verifyListeners(c, listenerClass);
+        verifyListeners(c, eventClass);
 
     }
 
@@ -188,24 +189,24 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
         Object mockListener2 = EasyMock.createMock(listenerClass);
 
         // Verify we start from no listeners
-        verifyNonEventSourceListeners(c, listenerClass);
+        verifyNonEventSourceListeners(c, eventClass);
 
         // Add one listener and verify
         addListener(c, mockListener1, listenerClass);
-        verifyNonEventSourceListeners(c, listenerClass, mockListener1);
+        verifyNonEventSourceListeners(c, eventClass, mockListener1);
 
         // Add another listener and verify
         addListener(c, mockListener2, listenerClass);
-        verifyNonEventSourceListeners(c, listenerClass, mockListener1,
+        verifyNonEventSourceListeners(c, eventClass, mockListener1,
                 mockListener2);
 
         // Remove the first and verify
         removeListener(c, mockListener1, listenerClass);
-        verifyNonEventSourceListeners(c, listenerClass, mockListener2);
+        verifyNonEventSourceListeners(c, eventClass, mockListener2);
 
         // Remove the remaining and verify
         removeListener(c, mockListener2, listenerClass);
-        verifyNonEventSourceListeners(c, listenerClass);
+        verifyNonEventSourceListeners(c, eventClass);
 
     }
 
@@ -226,13 +227,12 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
         method.invoke(c, listener1);
     }
 
-    private Collection<?> getListeners(Object c,
-            Class<? extends EventListener> listenerType)
-                    throws IllegalArgumentException, IllegalAccessException,
-                    InvocationTargetException, SecurityException,
-                    NoSuchMethodException {
+    private Collection<?> getListeners(Object c, Class<?> eventType)
+            throws IllegalArgumentException, IllegalAccessException,
+            InvocationTargetException, SecurityException,
+            NoSuchMethodException {
         Method method = getGetListenersMethod(c.getClass());
-        return (Collection<?>) method.invoke(c, listenerType);
+        return (Collection<?>) method.invoke(c, eventType);
     }
 
     private Method getGetListenersMethod(Class<? extends Object> cls)
@@ -264,12 +264,12 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
     }
 
     private void verifyListeners(EventSource c,
-            Class<? extends EventListener> listenerType,
-            Object... expectedListeners) throws IllegalArgumentException,
-                    SecurityException, IllegalAccessException,
-                    InvocationTargetException, NoSuchMethodException {
+            Class<? extends EventObject> eventType, Object... expectedListeners)
+                    throws IllegalArgumentException, SecurityException,
+                    IllegalAccessException, InvocationTargetException,
+                    NoSuchMethodException {
         Collection<? extends EventListener> registeredListeners = c
-                .getListeners(listenerType);
+                .getListeners(eventType);
         assertEquals("Number of listeners", expectedListeners.length,
                 registeredListeners.size());
 
@@ -299,12 +299,11 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
                 registeredListeners.toArray());
     }
 
-    private void verifyNonEventSourceListeners(Object c,
-            Class<? extends EventListener> listenerClass,
+    private void verifyNonEventSourceListeners(Object c, Class<?> eventType,
             Object... expectedListeners) throws IllegalArgumentException,
                     SecurityException, IllegalAccessException,
                     InvocationTargetException, NoSuchMethodException {
-        Collection<?> registeredListeners = getListeners(c, listenerClass);
+        Collection<?> registeredListeners = getListeners(c, eventType);
         assertEquals("Number of listeners", expectedListeners.length,
                 registeredListeners.size());
 

@@ -1342,25 +1342,25 @@ public abstract class AbstractSelect extends AbstractField<Object>implements
     }
 
     @Override
-    public <T extends EventListener> Collection<T> getListeners(
-            Class<T> listenerType) {
-        if (listenerType == Container.ItemSetChangeListener.class) {
+    public Collection<EventListener> getListeners(
+            Class<? extends EventObject> eventType) {
+        if (eventType == Container.ItemSetChangeEvent.class) {
             if (itemSetEventListeners == null) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             } else {
-                return (Collection<T>) Collections
+                return (Collection) Collections
                         .unmodifiableCollection(itemSetEventListeners);
             }
-        } else if (listenerType == Container.PropertySetChangeListener.class) {
+        } else if (eventType == Container.PropertySetChangeEvent.class) {
             if (propertySetEventListeners == null) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             } else {
-                return (Collection<T>) Collections
+                return (Collection) Collections
                         .unmodifiableCollection(propertySetEventListeners);
             }
         }
 
-        return super.getListeners(listenerType);
+        return super.getListeners(eventType);
     }
 
     /**

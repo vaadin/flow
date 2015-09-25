@@ -574,7 +574,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the Listener to be added.
      */
     public void addStartedListener(StartedListener listener) {
-        addListener(StartedListener.class, listener);
+        addListener(StartedEvent.class, listener);
     }
 
     /**
@@ -584,7 +584,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the Listener to be removed.
      */
     public void removeStartedListener(StartedListener listener) {
-        removeListener(StartedListener.class, listener);
+        removeListener(StartedEvent.class, listener);
     }
 
     /**
@@ -594,7 +594,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the Listener to be added.
      */
     public void addFinishedListener(FinishedListener listener) {
-        addListener(FinishedListener.class, listener);
+        addListener(FinishedEvent.class, listener);
     }
 
     /**
@@ -604,7 +604,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the Listener to be removed.
      */
     public void removeFinishedListener(FinishedListener listener) {
-        removeListener(FinishedListener.class, listener);
+        removeListener(FinishedEvent.class, listener);
     }
 
     /**
@@ -614,7 +614,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the Listener to be added.
      */
     public void addFailedListener(FailedListener listener) {
-        addListener(FailedListener.class, listener);
+        addListener(FailedEvent.class, listener);
     }
 
     /**
@@ -624,7 +624,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the Listener to be removed.
      */
     public void removeFailedListener(FailedListener listener) {
-        removeListener(FailedListener.class, listener);
+        removeListener(FailedEvent.class, listener);
     }
 
     /**
@@ -634,7 +634,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the Listener to be added.
      */
     public void addSucceededListener(SucceededListener listener) {
-        addListener(SucceededListener.class, listener);
+        addListener(SucceededEvent.class, listener);
     }
 
     /**
@@ -644,7 +644,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the Listener to be removed.
      */
     public void removeSucceededListener(SucceededListener listener) {
-        removeListener(SucceededListener.class, listener);
+        removeListener(SucceededEvent.class, listener);
     }
 
     /**
@@ -654,7 +654,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the progress listener to be added
      */
     public void addProgressListener(ProgressListener listener) {
-        super.addListener(ProgressListener.class, listener);
+        super.addListener(ProgressEvent.class, listener);
     }
 
     /**
@@ -664,7 +664,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the progress listener to be removed
      */
     public void removeProgressListener(ProgressListener listener) {
-        super.removeListener(ProgressListener.class, listener);
+        super.removeListener(ProgressEvent.class, listener);
     }
 
     /**
@@ -674,7 +674,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the Listener to add
      */
     public void addChangeListener(ChangeListener listener) {
-        super.addListener(ChangeListener.class, listener);
+        super.addListener(ChangeEvent.class, listener);
     }
 
     /**
@@ -684,7 +684,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
      *            the listener to be removed
      */
     public void removeChangeListener(ChangeListener listener) {
-        super.removeListener(ChangeListener.class, listener);
+        super.removeListener(ChangeEvent.class, listener);
     }
 
     /**
@@ -954,7 +954,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
 
                 @Override
                 public boolean listenProgress() {
-                    return hasListeners(ProgressListener.class);
+                    return hasListeners(ProgressEvent.class);
                 }
 
                 @Override

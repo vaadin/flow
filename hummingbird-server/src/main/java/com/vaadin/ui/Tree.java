@@ -33,6 +33,7 @@ import com.vaadin.data.util.ContainerHierarchicalWrapper;
 import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.event.ComponentEventListener;
 import com.vaadin.event.DataBoundTransferable;
+import com.vaadin.event.ItemClickEvent;
 import com.vaadin.event.ItemClickEvent.ItemClickListener;
 import com.vaadin.event.ItemClickEvent.ItemClickNotifier;
 import com.vaadin.server.Resource;
@@ -675,7 +676,7 @@ public class Tree extends AbstractSelect
      *            the Listener to be added.
      */
     public void addExpandListener(ExpandListener listener) {
-        addListener(ExpandListener.class, listener);
+        addListener(ExpandEvent.class, listener);
     }
 
     /**
@@ -685,7 +686,7 @@ public class Tree extends AbstractSelect
      *            the Listener to be removed.
      */
     public void removeExpandListener(ExpandListener listener) {
-        removeListener(ExpandListener.class, listener);
+        removeListener(ExpandEvent.class, listener);
     }
 
     /**
@@ -756,7 +757,7 @@ public class Tree extends AbstractSelect
      *            the Listener to be added.
      */
     public void addCollapseListener(CollapseListener listener) {
-        addListener(CollapseListener.class, listener);
+        addListener(CollapseEvent.class, listener);
     }
 
     /**
@@ -766,7 +767,7 @@ public class Tree extends AbstractSelect
      *            the Listener to be removed.
      */
     public void removeCollapseListener(CollapseListener listener) {
-        removeListener(CollapseListener.class, listener);
+        removeListener(CollapseEvent.class, listener);
     }
 
     /**
@@ -856,12 +857,12 @@ public class Tree extends AbstractSelect
 
     @Override
     public void addItemClickListener(ItemClickListener listener) {
-        addListener(ItemClickListener.class, listener);
+        addListener(ItemClickEvent.class, listener);
     }
 
     @Override
     public void removeItemClickListener(ItemClickListener listener) {
-        removeListener(ItemClickListener.class, listener);
+        removeListener(ItemClickEvent.class, listener);
     }
 
     /**

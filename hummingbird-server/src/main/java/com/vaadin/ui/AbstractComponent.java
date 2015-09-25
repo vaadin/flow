@@ -19,6 +19,7 @@ package com.vaadin.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventListener;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -858,22 +859,22 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     @Override
     public void addAttachListener(AttachListener listener) {
-        addListener(AttachListener.class, listener);
+        addListener(AttachEvent.class, listener);
     }
 
     @Override
     public void removeAttachListener(AttachListener listener) {
-        removeListener(AttachListener.class, listener);
+        removeListener(AttachEvent.class, listener);
     }
 
     @Override
     public void addDetachListener(DetachListener listener) {
-        addListener(DetachListener.class, listener);
+        addListener(DetachEvent.class, listener);
     }
 
     @Override
     public void removeDetachListener(DetachListener listener) {
-        removeListener(DetachListener.class, listener);
+        removeListener(DetachEvent.class, listener);
     }
 
     /*
@@ -900,39 +901,38 @@ public abstract class AbstractComponent extends AbstractClientConnector
     /* Listener code starts */
 
     @Override
-    public boolean hasListeners(
-            Class<? extends java.util.EventListener> listenerType) {
+    public boolean hasListeners(Class<? extends EventObject> eventType) {
         if (eventRouter == null) {
             return false;
         }
-        return eventRouter.hasListeners(listenerType);
+        return eventRouter.hasListeners(eventType);
     }
 
     @Override
-    public <T extends java.util.EventListener> void addListener(
-            Class<T> listenerType, T listener) {
+    public void addListener(Class<? extends EventObject> eventType,
+            EventListener listener) {
         if (eventRouter == null) {
             eventRouter = new EventRouter();
         }
-        eventRouter.addListener(listenerType, listener);
+        eventRouter.addListener(eventType, listener);
     }
 
     @Override
-    public <T extends java.util.EventListener> void removeListener(
-            Class<T> listenerType, T listener) {
+    public void removeListener(Class<? extends EventObject> eventType,
+            EventListener listener) {
         if (eventRouter != null) {
-            eventRouter.removeListener(listenerType, listener);
+            eventRouter.removeListener(eventType, listener);
         }
     }
 
     @Override
-    public <T extends java.util.EventListener> Collection<T> getListeners(
-            Class<T> listenerType) {
+    public Collection<EventListener> getListeners(
+            Class<? extends EventObject> eventType) {
         if (eventRouter == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
-        return eventRouter.getListeners(listenerType);
+        return eventRouter.getListeners(eventType);
     }
 
     @Override

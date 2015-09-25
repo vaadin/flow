@@ -90,12 +90,12 @@ public class ColorPickerGradient extends AbstractComponent
 
     @Override
     public void addColorChangeListener(ColorChangeListener listener) {
-        addListener(ColorChangeListener.class, listener);
+        addListener(ColorChangeEvent.class, listener);
     }
 
     @Override
     public void removeColorChangeListener(ColorChangeListener listener) {
-        removeListener(ColorChangeListener.class, listener);
+        removeListener(ColorChangeEvent.class, listener);
     }
 
     /**

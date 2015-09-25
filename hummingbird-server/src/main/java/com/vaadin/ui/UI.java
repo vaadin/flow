@@ -846,7 +846,7 @@ public abstract class UI extends CssLayout
      *            The listener to add
      */
     public void addClickListener(ClickListener listener) {
-        addListener(ClickListener.class, listener);
+        addListener(ClickEvent.class, listener);
     }
 
     /**
@@ -857,7 +857,7 @@ public abstract class UI extends CssLayout
      *            The listener to remove
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(ClickListener.class, listener);
+        removeListener(ClickEvent.class, listener);
     }
 
     @Override
@@ -1360,12 +1360,12 @@ public abstract class UI extends CssLayout
 
     @Override
     public void addPollListener(PollListener listener) {
-        addListener(PollListener.class, listener);
+        addListener(PollEvent.class, listener);
     }
 
     @Override
     public void removePollListener(PollListener listener) {
-        removeListener(PollListener.class, listener);
+        removeListener(PollEvent.class, listener);
     }
 
     /**

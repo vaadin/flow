@@ -17,7 +17,7 @@ package com.vaadin.data.util;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EventListener;
+import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
@@ -146,15 +146,14 @@ public abstract class AbstractProperty<T> implements Property<T>,
         }
     }
 
-    public Collection<?> getListeners(
-            Class<? extends EventListener> listenerType) {
-        if (listenerType == ValueChangeListener.class) {
+    public Collection<?> getListeners(Class<? extends EventObject> eventType) {
+        if (eventType == ValueChangeEvent.class) {
             if (valueChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
                 return Collections.unmodifiableCollection(valueChangeListeners);
             }
-        } else if (listenerType == ReadOnlyStatusChangeListener.class) {
+        } else if (eventType == ReadOnlyStatusChangeEvent.class) {
             if (readOnlyStatusChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {

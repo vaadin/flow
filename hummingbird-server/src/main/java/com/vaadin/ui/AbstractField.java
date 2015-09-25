@@ -1028,7 +1028,7 @@ public abstract class AbstractField<T> extends AbstractComponent
      */
     @Override
     public void addValueChangeListener(Property.ValueChangeListener listener) {
-        addListener(ValueChangeListener.class, listener);
+        addListener(ValueChangeEvent.class, listener);
     }
 
     /*
@@ -1039,7 +1039,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     @Override
     public void removeValueChangeListener(
             Property.ValueChangeListener listener) {
-        removeListener(ValueChangeListener.class, listener);
+        removeListener(ValueChangeEvent.class, listener);
     }
 
     /**
@@ -1074,7 +1074,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     @Override
     public void addReadOnlyStatusChangeListener(
             Property.ReadOnlyStatusChangeListener listener) {
-        addListener(ReadOnlyStatusChangeListener.class, listener);
+        addListener(ReadOnlyStatusChangeEvent.class, listener);
     }
 
     /*
@@ -1085,7 +1085,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     @Override
     public void removeReadOnlyStatusChangeListener(
             Property.ReadOnlyStatusChangeListener listener) {
-        removeListener(ReadOnlyStatusChangeListener.class, listener);
+        removeListener(ReadOnlyStatusChangeEvent.class, listener);
     }
 
     /**

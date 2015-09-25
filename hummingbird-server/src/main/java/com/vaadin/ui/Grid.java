@@ -100,7 +100,6 @@ import com.vaadin.shared.ui.grid.ScrollDestination;
 import com.vaadin.shared.ui.grid.selection.MultiSelectionModelState;
 import com.vaadin.shared.ui.grid.selection.SingleSelectionModelState;
 import com.vaadin.shared.util.SharedUtil;
-import com.vaadin.ui.Grid.SelectionModel;
 import com.vaadin.ui.renderers.Renderer;
 import com.vaadin.ui.renderers.TextRenderer;
 import com.vaadin.util.ReflectTools;
@@ -521,11 +520,11 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
     public interface EditorListener extends Serializable {
 
         public static final Method EDITOR_OPEN_METHOD = ReflectTools.findMethod(
-                EditorListener.class, "editorOpened", EditorOpenEvent.class);
+                EditorEvent.class, "editorOpened", EditorOpenEvent.class);
         public static final Method EDITOR_MOVE_METHOD = ReflectTools.findMethod(
-                EditorListener.class, "editorMoved", EditorMoveEvent.class);
+                EditorEvent.class, "editorMoved", EditorMoveEvent.class);
         public static final Method EDITOR_CLOSE_METHOD = ReflectTools
-                .findMethod(EditorListener.class, "editorClosed",
+                .findMethod(EditorEvent.class, "editorClosed",
                         EditorCloseEvent.class);
 
         /**
@@ -5058,17 +5057,17 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
     @Override
     public void addSelectionListener(SelectionListener listener) {
-        if (!hasListeners(SelectionListener.class)) {
+        if (!hasListeners(SelectionEvent.class)) {
             getElement().addEventData("select", "element.selection.selected()");
             getElement().addEventListener("select", selectionDomListener);
         }
-        addListener(SelectionListener.class, listener);
+        addListener(SelectionEvent.class, listener);
     }
 
     @Override
     public void removeSelectionListener(SelectionListener listener) {
-        removeListener(SelectionListener.class, listener);
-        if (!hasListeners(SelectionListener.class)) {
+        removeListener(SelectionEvent.class, listener);
+        if (!hasListeners(SelectionEvent.class)) {
             getElement().removeEventListener("select", selectionDomListener);
         }
     }
@@ -5085,7 +5084,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      *            the listener to register
      */
     public void addColumnReorderListener(ColumnReorderListener listener) {
-        addListener(ColumnReorderListener.class, listener);
+        addListener(ColumnReorderEvent.class, listener);
     }
 
     /**
@@ -5096,7 +5095,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      *            the listener to remove
      */
     public void removeColumnReorderListener(ColumnReorderListener listener) {
-        removeListener(ColumnReorderListener.class, listener);
+        removeListener(ColumnReorderEvent.class, listener);
     }
 
     /**
@@ -5308,7 +5307,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      */
     @Override
     public void addSortListener(SortListener listener) {
-        addListener(SortListener.class, listener);
+        addListener(SortEvent.class, listener);
     }
 
     /**
@@ -5320,7 +5319,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      */
     @Override
     public void removeSortListener(SortListener listener) {
-        removeListener(SortListener.class, listener);
+        removeListener(SortEvent.class, listener);
     }
 
     /* Grid Headers */
@@ -6301,12 +6300,12 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
     @Override
     public void addItemClickListener(ItemClickListener listener) {
-        addListener(ItemClickListener.class, listener);
+        addListener(ItemClickEvent.class, listener);
     }
 
     @Override
     public void removeItemClickListener(ItemClickListener listener) {
-        removeListener(ItemClickListener.class, listener);
+        removeListener(ItemClickEvent.class, listener);
     }
 
     /**
@@ -6331,7 +6330,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      */
     public void addColumnVisibilityChangeListener(
             ColumnVisibilityChangeListener listener) {
-        addListener(ColumnVisibilityChangeListener.class, listener);
+        addListener(ColumnVisibilityChangeEvent.class, listener);
     }
 
     /**
@@ -6343,7 +6342,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      */
     public void removeColumnVisibilityChangeListener(
             ColumnVisibilityChangeListener listener) {
-        removeListener(ColumnVisibilityChangeListener.class, listener);
+        removeListener(ColumnVisibilityChangeEvent.class, listener);
     }
 
     private void fireColumnVisibilityChangeEvent(Column column, boolean hidden,

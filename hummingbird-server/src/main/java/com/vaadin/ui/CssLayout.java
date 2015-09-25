@@ -102,12 +102,12 @@ public class CssLayout extends AbstractSimpleDOMComponentContainer
 
     @Override
     public void addLayoutClickListener(LayoutClickListener listener) {
-        addListener(LayoutClickListener.class, listener);
+        addListener(LayoutClickEvent.class, listener);
     }
 
     @Override
     public void removeLayoutClickListener(LayoutClickListener listener) {
-        removeListener(LayoutClickListener.class, listener);
+        removeListener(LayoutClickEvent.class, listener);
     }
 
 }

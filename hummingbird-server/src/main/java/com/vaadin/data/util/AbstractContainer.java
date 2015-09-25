@@ -246,21 +246,19 @@ public abstract class AbstractContainer implements Container {
         return itemSetChangeListeners;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends java.util.EventListener> Collection<T> getListeners(
-            Class<T> listenerType) {
-        if (listenerType == Container.PropertySetChangeListener.class) {
+    public Collection<?> getListeners(Class<?> eventType) {
+        if (eventType == Container.PropertySetChangeEvent.class) {
             if (propertySetChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return (Collection<T>) Collections
+                return Collections
                         .unmodifiableCollection(propertySetChangeListeners);
             }
-        } else if (listenerType == Container.ItemSetChangeListener.class) {
+        } else if (eventType == Container.ItemSetChangeEvent.class) {
             if (itemSetChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return (Collection<T>) Collections
+                return Collections
                         .unmodifiableCollection(itemSetChangeListeners);
             }
         }

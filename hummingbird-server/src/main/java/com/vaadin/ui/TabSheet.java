@@ -786,7 +786,7 @@ public class TabSheet extends AbstractComponentContainer
      */
     public void addSelectedTabChangeListener(
             SelectedTabChangeListener listener) {
-        addListener(SelectedTabChangeListener.class, listener);
+        addListener(SelectedTabChangeEvent.class, listener);
     }
 
     /**
@@ -797,7 +797,7 @@ public class TabSheet extends AbstractComponentContainer
      */
     public void removeSelectedTabChangeListener(
             SelectedTabChangeListener listener) {
-        removeListener(SelectedTabChangeListener.class, listener);
+        removeListener(SelectedTabChangeEvent.class, listener);
     }
 
     /**

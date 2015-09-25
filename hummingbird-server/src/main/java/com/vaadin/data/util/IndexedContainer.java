@@ -545,17 +545,16 @@ public class IndexedContainer
     }
 
     @Override
-    public <T extends java.util.EventListener> Collection<T> getListeners(
-            Class<T> listenerType) {
-        if (listenerType == Property.ValueChangeListener.class) {
+    public Collection<?> getListeners(Class<?> eventType) {
+        if (eventType == Property.ValueChangeEvent.class) {
             if (propertyValueChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {
-                return (Collection<T>) Collections
+                return Collections
                         .unmodifiableCollection(propertyValueChangeListeners);
             }
         }
-        return super.getListeners(listenerType);
+        return super.getListeners(eventType);
     }
 
     @Override

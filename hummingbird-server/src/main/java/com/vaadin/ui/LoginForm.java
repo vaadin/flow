@@ -228,7 +228,7 @@ public class LoginForm extends CustomComponent {
      * @param listener
      */
     public void addLoginListener(LoginListener listener) {
-        addListener(LoginListener.class, listener);
+        addListener(LoginEvent.class, listener);
     }
 
     /**
@@ -237,7 +237,7 @@ public class LoginForm extends CustomComponent {
      * @param listener
      */
     public void removeLoginListener(LoginListener listener) {
-        removeListener(LoginListener.class, listener);
+        removeListener(LoginEvent.class, listener);
     }
 
     @Override

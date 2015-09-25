@@ -558,11 +558,11 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
     }
 
     public void addSplitterClickListener(SplitterClickListener listener) {
-        addListener(SplitterClickListener.class, listener);
+        addListener(SplitterClickEvent.class, listener);
     }
 
     public void removeSplitterClickListener(SplitterClickListener listener) {
-        removeListener(SplitterClickListener.class, listener);
+        removeListener(SplitterClickEvent.class, listener);
     }
 
     /**
@@ -574,7 +574,7 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      */
     public void addSplitPositionChangeListener(
             SplitPositionChangeListener listener) {
-        addListener(SplitPositionChangeListener.class, listener);
+        addListener(SplitPositionChangeEvent.class, listener);
     }
 
     /**
@@ -586,7 +586,7 @@ public abstract class AbstractSplitPanel extends AbstractComponentContainer {
      */
     public void removeSplitPositionChangeListener(
             SplitPositionChangeListener listener) {
-        removeListener(SplitPositionChangeListener.class, listener);
+        removeListener(SplitPositionChangeEvent.class, listener);
     }
 
     @Override

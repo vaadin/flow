@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 
 import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.Tag;
+import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.LayoutEvents.LayoutClickNotifier;
 import com.vaadin.hummingbird.kernel.Element;
@@ -207,12 +208,12 @@ public abstract class AbstractOrderedLayout
 
     @Override
     public void addLayoutClickListener(LayoutClickListener listener) {
-        addListener(LayoutClickListener.class, listener);
+        addListener(LayoutClickEvent.class, listener);
     }
 
     @Override
     public void removeLayoutClickListener(LayoutClickListener listener) {
-        removeListener(LayoutClickListener.class, listener);
+        removeListener(LayoutClickEvent.class, listener);
     }
 
     @Override

@@ -378,7 +378,7 @@ public abstract class VaadinService implements Serializable {
      *            the Vaadin service session initialization listener
      */
     public void addSessionInitListener(SessionInitListener listener) {
-        eventRouter.addListener(SessionInitListener.class, listener);
+        eventRouter.addListener(SessionInitEvent.class, listener);
     }
 
     /**
@@ -391,7 +391,7 @@ public abstract class VaadinService implements Serializable {
      *            the Vaadin service session initialization listener to remove.
      */
     public void removeSessionInitListener(SessionInitListener listener) {
-        eventRouter.removeListener(SessionInitListener.class, listener);
+        eventRouter.removeListener(SessionInitEvent.class, listener);
     }
 
     /**
@@ -407,7 +407,7 @@ public abstract class VaadinService implements Serializable {
      *            the vaadin service session destroy listener
      */
     public void addSessionDestroyListener(SessionDestroyListener listener) {
-        eventRouter.addListener(SessionDestroyListener.class, listener);
+        eventRouter.addListener(SessionDestroyEvent.class, listener);
     }
 
     /**
@@ -467,7 +467,7 @@ public abstract class VaadinService implements Serializable {
      *            the vaadin service session destroy listener
      */
     public void removeSessionDestroyListener(SessionDestroyListener listener) {
-        eventRouter.removeListener(SessionDestroyListener.class, listener);
+        eventRouter.removeListener(SessionDestroyEvent.class, listener);
     }
 
     /**
@@ -1749,7 +1749,7 @@ public abstract class VaadinService implements Serializable {
      * @see ServiceDestroyListener
      */
     public void addServiceDestroyListener(ServiceDestroyListener listener) {
-        eventRouter.addListener(ServiceDestroyListener.class, listener);
+        eventRouter.addListener(ServiceDestroyEvent.class, listener);
     }
 
     /**
@@ -1761,7 +1761,7 @@ public abstract class VaadinService implements Serializable {
      *            the service destroy listener to remove
      */
     public void removeServiceDestroyListener(ServiceDestroyListener listener) {
-        eventRouter.removeListener(ServiceDestroyListener.class, listener);
+        eventRouter.removeListener(ServiceDestroyEvent.class, listener);
     }
 
     /**

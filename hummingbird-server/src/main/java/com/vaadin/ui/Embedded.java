@@ -454,7 +454,7 @@ public class Embedded extends AbstractComponent {
      *            The listener to add
      */
     public void addClickListener(ClickListener listener) {
-        addListener(ClickListener.class, listener);
+        addListener(ClickEvent.class, listener);
     }
 
     /**
@@ -465,7 +465,7 @@ public class Embedded extends AbstractComponent {
      *            The listener to remove
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(ClickListener.class, listener);
+        removeListener(ClickEvent.class, listener);
     }
 
 }

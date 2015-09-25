@@ -53,39 +53,27 @@ public class EventRouter implements EventSource {
      * event type is removed
      */
     private LinkedHashMap<Class<? extends EventObject>, List<EventListener>> listeners = new LinkedHashMap<>();
-    private static ConcurrentHashMap<Class<? extends EventObject>, Class<? extends EventListener>> eventTypeToListenerType = new ConcurrentHashMap<>();
+
+    private static transient Map<Class<? extends EventObject>, Method> listenerMethods = new ConcurrentHashMap<>();
 
     @Override
-    public <T extends EventListener> void addListener(Class<T> listenerType,
-            T listener) {
-        Class<? extends EventObject> eventType = getEventType(listenerType);
+    public void addListener(Class<? extends EventObject> eventType,
+            EventListener listener) {
+        // Class<? extends EventObject> eventType = getEventType(listenerType);
+        // Class<EventListener> listenerType = getListenerType(eventType);
         List<EventListener> eventListeners = listeners
                 .computeIfAbsent(eventType, e -> {
                     return new ArrayList<>();
                 });
-        eventTypeToListenerType.put(eventType, listenerType);
         if (!eventListeners.contains(listener)) {
             eventListeners.add(listener);
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private Class<? extends EventObject> getEventType(
-            Class<? extends EventListener> listenerType) {
-        return (Class<? extends EventObject>) getListenerMethod(listenerType)
-                .getParameterTypes()[0];
-    }
-
-    /*
-     * Removes all registered listeners matching the given parameters. Don't add
-     * a JavaDoc comment here, we use the default documentation from implemented
-     * interface.
-     */
     @Override
-    public <T extends EventListener> void removeListener(Class<T> listenerType,
-            T listener) {
-        Class<? extends EventObject> eventType = getEventType(listenerType);
-        List<EventListener> eventListeners = listeners.get(eventType);
+    public void removeListener(Class<? extends EventObject> eventType,
+            EventListener listener) {
+        List<EventListener> eventListeners = getRegisteredListeners(eventType);
         if (eventListeners == null) {
             return;
         }
@@ -131,15 +119,9 @@ public class EventRouter implements EventSource {
      */
     public void fireEvent(EventObject event, ErrorHandler errorHandler) {
         Class<? extends EventObject> eventType = event.getClass();
-        List<EventListener> eventListeners = listeners.get(eventType);
-        if (eventListeners == null) {
-            return;
-        }
+        List<EventListener> eventListeners = getRegisteredListeners(eventType);
 
-        Class<? extends EventListener> listenerType = eventTypeToListenerType
-                .get(eventType);
-        if (listenerType == null) {
-            // No listeners have been registered for this event type
+        if (eventListeners == null) {
             return;
         }
 
@@ -150,7 +132,7 @@ public class EventRouter implements EventSource {
         for (EventListener l : listenerArray) {
             try {
                 Method listenerMethod = getListenerMethod(eventType,
-                        listenerType);
+                        l.getClass());
                 listenerMethod.invoke(l, event);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 getLogger().log(Level.SEVERE,
@@ -169,55 +151,59 @@ public class EventRouter implements EventSource {
 
     }
 
-    private static transient Map<Class<? extends EventListener>, Method> listenerMethods = new ConcurrentHashMap<>();
+    private Method getListenerMethod(Class<? extends EventObject> eventType,
+            Class<? extends EventListener> listenerType) {
 
-    private Method getListenerMethod(
-            Class<? extends EventListener> listenerInterface) {
-        if (listenerMethods.containsKey(listenerInterface)) {
-            return listenerMethods.get(listenerInterface);
-        }
-
-        if (!listenerInterface.isInterface()) {
-            throw new IllegalArgumentException("The listener type "
-                    + listenerInterface.getName() + " is not an interface");
+        if (listenerMethods.containsKey(eventType)) {
+            return listenerMethods.get(eventType);
         }
 
         Method listenerMethod;
-        List<Method> methods = Arrays
-                .stream(listenerInterface.getDeclaredMethods())
-                .filter(m -> !Modifier.isVolatile(m.getModifiers()))
+        List<Method> methods = Arrays.stream(listenerType.getMethods())
+                .filter(m -> m.getParameterCount() == 1
+                        && m.getParameterTypes()[0] == eventType
+                        && !Modifier.isVolatile(m.getModifiers()))
                 .collect(Collectors.toList());
 
         if (methods.size() != 1) {
-            throw new IllegalArgumentException(
-                    "The listener type " + listenerInterface.getName()
-                            + " contains " + methods.size()
-                            + " methods, but must contain exactly one");
+            throw new IllegalArgumentException("The listener type "
+                    + listenerType.getName() + " contains " + methods.size()
+                    + " methods taking " + eventType.getName()
+                    + " as a parameter, but must contain exactly one");
         }
 
         listenerMethod = methods.get(0);
-        if (listenerMethod.getParameterCount() != 1 || !EventObject.class
-                .isAssignableFrom(listenerMethod.getParameterTypes()[0])) {
-            throw new IllegalArgumentException("The listener type "
-                    + listenerInterface.getName()
-                    + " must contain exactly one method, which takes a sub class of "
-                    + EventObject.class.getSimpleName() + " as its parameter");
-        }
-        listenerMethods.put(listenerInterface, listenerMethod);
+        listenerMethod = findInterfaceMethod(listenerMethod);
+        listenerMethods.put(eventType, listenerMethod);
         return listenerMethod;
-
     }
 
-    private Method getListenerMethod(Class<? extends EventObject> eventType,
-            Class<? extends EventListener> listenerType) {
-        Method listenerMethod = getListenerMethod(listenerType);
-        if (listenerMethod.getParameterTypes()[0] != eventType) {
-            throw new IllegalArgumentException(
-                    "The listener class " + listenerType.getName()
-                            + " must contain exactly one method, which takes "
-                            + eventType.getName() + " as its parameter");
+    private Method findInterfaceMethod(Method listenerMethod) {
+        Class<?> listenerClass = listenerMethod.getDeclaringClass();
+        for (Class<?> c : listenerMethod.getDeclaringClass().getInterfaces()) {
+            Method interfaceMethod;
+            try {
+                interfaceMethod = c.getMethod(listenerMethod.getName(),
+                        listenerMethod.getParameterTypes());
+                return interfaceMethod;
+            } catch (NoSuchMethodException | SecurityException e) {
+            }
         }
-        return listenerMethod;
+
+        // Not found in any interface, try superclass
+        Method superMethod;
+        try {
+            superMethod = listenerClass.getSuperclass().getMethod(
+                    listenerMethod.getName(),
+                    listenerMethod.getParameterTypes());
+        } catch (NoSuchMethodException | SecurityException e) {
+            // Should not happen, unless the listener method is for some reason
+            // defined in a class and not an interface
+            return null;
+        }
+
+        return findInterfaceMethod(superMethod);
+
     }
 
     /**
@@ -229,9 +215,8 @@ public class EventRouter implements EventSource {
      * @return true if a listener is registered for the given event type
      */
     @Override
-    public boolean hasListeners(Class<? extends EventListener> listenerType) {
-        List<EventListener> eventListeners = listeners
-                .get(getEventType(listenerType));
+    public boolean hasListeners(Class<? extends EventObject> eventType) {
+        List<?> eventListeners = getRegisteredListeners(eventType);
         return (eventListeners != null);
     }
 
@@ -244,16 +229,20 @@ public class EventRouter implements EventSource {
      *         are found.
      */
     @Override
-    public <T extends EventListener> Collection<T> getListeners(
-            Class<T> listenerType) {
-        @SuppressWarnings("unchecked")
-        List<T> eventListeners = (List<T>) listeners
-                .get(getEventType(listenerType));
+    public Collection<EventListener> getListeners(
+            Class<? extends EventObject> eventType) {
+        List<EventListener> eventListeners = getRegisteredListeners(eventType);
         if (eventListeners == null) {
             return Collections.emptyList();
         }
 
-        return new ArrayList<T>(eventListeners);
+        return new ArrayList<EventListener>(eventListeners);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private List<EventListener> getRegisteredListeners(
+            Class<? extends EventObject> eventType) {
+        return listeners.get(eventType);
     }
 
     private static Logger getLogger() {

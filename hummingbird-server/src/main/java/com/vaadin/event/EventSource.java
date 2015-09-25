@@ -34,13 +34,13 @@ public interface EventSource extends Serializable {
      * Registers a new event listener.
      * </p>
      * An event listener must be a functional interface, i.e. contains one
-     * method. The method has one parameter, which is the even type.
+     * method. The method has one parameter, which is the event type.
      *
      * @param listener
      *            the event listener which contains an listener method.
      */
-    public <T extends EventListener> void addListener(Class<T> listenerType,
-            T listener);
+    public void addListener(Class<? extends EventObject> eventType,
+            EventListener listener);
 
     /**
      * Removes the given listener.
@@ -48,29 +48,29 @@ public interface EventSource extends Serializable {
      * @param listener
      *            the listener to remove
      */
-    public <T extends EventListener> void removeListener(Class<T> listenerType,
-            T listener);
+    public void removeListener(Class<? extends EventObject> eventType,
+            EventListener listener);
 
     /**
-     * Returns all registered listeners of the given type
+     * Returns all registered listeners for the given event type
      *
-     * @param listenerType
-     *            the type of listener
+     * @param eventType
+     *            the type of event
      * @return A collection with all registered listeners. Empty if no listeners
      *         are found.
      */
-    public <T extends EventListener> Collection<T> getListeners(
-            Class<T> listenerType);
+    public Collection<EventListener> getListeners(
+            Class<? extends EventObject> eventType);
 
     /**
      * Checks if any listeners of the given type are registered.
      *
-     * @param listenerType
-     *            the type of listener
+     * @param eventType
+     *            the type of event
      * @return true if there is at least one listener registered, false
      *         otherwise
      */
-    public boolean hasListeners(Class<? extends EventListener> listenerType);
+    public boolean hasListeners(Class<? extends EventObject> eventType);
 
     /**
      * Sends the given event to all registered listeners

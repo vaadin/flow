@@ -241,7 +241,7 @@ public class PropertysetItem
 
     public Collection<?> getListeners(
             Class<? extends EventListener> listenerType) {
-        if (listenerType == Item.PropertySetChangeListener.class) {
+        if (listenerType == Item.PropertySetChangeEvent.class) {
             if (propertySetChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {

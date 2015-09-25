@@ -85,7 +85,7 @@ public class Image extends AbstractEmbedded {
      *            The listener to add
      */
     public void addClickListener(ClickListener listener) {
-        addListener(ClickListener.class, listener);
+        addListener(ClickEvent.class, listener);
     }
 
     /**
@@ -96,6 +96,6 @@ public class Image extends AbstractEmbedded {
      *            The listener to remove
      */
     public void removeClickListener(ClickListener listener) {
-        removeListener(ClickListener.class, listener);
+        removeListener(ClickEvent.class, listener);
     }
 }

@@ -269,7 +269,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      *            the CloseListener to add.
      */
     public void addCloseListener(CloseListener listener) {
-        addListener(CloseListener.class, listener);
+        addListener(CloseEvent.class, listener);
     }
 
     /**
@@ -283,7 +283,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      *            the CloseListener to remove.
      */
     public void removeCloseListener(CloseListener listener) {
-        removeListener(CloseListener.class, listener);
+        removeListener(CloseEvent.class, listener);
     }
 
     protected void fireClose() {
@@ -362,7 +362,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      *            the WindowModeChangeListener to add.
      */
     public void addWindowModeChangeListener(WindowModeChangeListener listener) {
-        addListener(WindowModeChangeListener.class, listener);
+        addListener(WindowModeChangeEvent.class, listener);
     }
 
     /**
@@ -373,7 +373,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      */
     public void removeWindowModeChangeListener(
             WindowModeChangeListener listener) {
-        removeListener(WindowModeChangeListener.class, listener);
+        removeListener(WindowModeChangeEvent.class, listener);
     }
 
     protected void fireWindowWindowModeChange() {
@@ -421,7 +421,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      * @param listener
      */
     public void addResizeListener(ResizeListener listener) {
-        addListener(ResizeListener.class, listener);
+        addListener(ResizeEvent.class, listener);
     }
 
     /**
@@ -430,7 +430,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier {
      * @param listener
      */
     public void removeResizeListener(ResizeListener listener) {
-        removeListener(ResizeListener.class, listener);
+        removeListener(ResizeEvent.class, listener);
     }
 
     /**

@@ -300,7 +300,7 @@ public class Slider extends AbstractField<Double> {
     @Override
     public void addValueChangeListener(
             com.vaadin.data.Property.ValueChangeListener listener) {
-        if (!hasListeners(ValueChangeListener.class)) {
+        if (!hasListeners(ValueChangeEvent.class)) {
             getElement().addEventData("change", "element.value");
             getElement().addEventListener("change", e -> {
                 setValue(e.getNumber("element.value"));

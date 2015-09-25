@@ -157,17 +157,17 @@ public abstract class AbstractTextField extends AbstractField<String>
     }
 
     public void addTextChangeListener(TextChangeListener listener) {
-        if (!hasListeners(TextChangeListener.class)) {
+        if (!hasListeners(TextChangeEvent.class)) {
             getElement().addEventData("input", "value", "selectionStart");
             getElement().addEventListener("input", textChangeDomListener);
         }
 
-        addListener(TextChangeListener.class, listener);
+        addListener(TextChangeEvent.class, listener);
     }
 
     public void removeTextChangeListener(TextChangeListener listener) {
-        removeListener(TextChangeListener.class, listener);
-        if (!hasListeners(TextChangeListener.class)) {
+        removeListener(TextChangeEvent.class, listener);
+        if (!hasListeners(TextChangeEvent.class)) {
             getElement().removeEventListener("input", textChangeDomListener);
         }
     }

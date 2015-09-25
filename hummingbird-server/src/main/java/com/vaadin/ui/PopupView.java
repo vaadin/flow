@@ -238,6 +238,7 @@ public class PopupView extends AbstractComponent implements HasComponents {
      *
      * @return the number of contained components (zero or one)
      */
+    @Override
     public int getComponentCount() {
         return (visibleComponent != null ? 1 : 0);
     }
@@ -286,7 +287,7 @@ public class PopupView extends AbstractComponent implements HasComponents {
      *
      */
     public void addPopupVisibilityListener(PopupVisibilityListener listener) {
-        addListener(PopupVisibilityListener.class, listener);
+        addListener(PopupVisibilityEvent.class, listener);
     }
 
     /**
@@ -300,7 +301,7 @@ public class PopupView extends AbstractComponent implements HasComponents {
      */
     public void removePopupVisibilityListener(
             PopupVisibilityListener listener) {
-        removeListener(PopupVisibilityListener.class, listener);
+        removeListener(PopupVisibilityEvent.class, listener);
     }
 
     /**

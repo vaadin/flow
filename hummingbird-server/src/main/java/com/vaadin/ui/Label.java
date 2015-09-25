@@ -316,7 +316,7 @@ public class Label extends Composite implements Property<String>,
      */
     @Override
     public void addValueChangeListener(Property.ValueChangeListener listener) {
-        addListener(ValueChangeListener.class, listener);
+        addListener(ValueChangeEvent.class, listener);
     }
 
     /**
@@ -329,7 +329,7 @@ public class Label extends Composite implements Property<String>,
     @Override
     public void removeValueChangeListener(
             Property.ValueChangeListener listener) {
-        removeListener(ValueChangeListener.class, listener);
+        removeListener(ValueChangeEvent.class, listener);
     }
 
     /**
