@@ -113,8 +113,6 @@ public class TemplateParser {
         Scope scope = new Scope();
         BoundTemplateBuilder template = createElementTemplate(
                 bodyFragment.body().child(0), scope);
-        ModelStructure structure = ModelStructure.build(scope.seenPaths);
-        template.setModelStructure(structure);
         return template;
     }
 

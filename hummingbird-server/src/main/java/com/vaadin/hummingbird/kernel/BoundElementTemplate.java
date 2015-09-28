@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.parser.EventBinding;
-import com.vaadin.hummingbird.parser.ModelStructure;
 
 public class BoundElementTemplate extends AbstractElementTemplate {
 
@@ -27,8 +26,6 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     private final Set<String> eventHandlerMethods;
 
     private final List<BoundElementTemplate> childTemplates;
-
-    private final ModelStructure modelStructure;
 
     private BoundElementTemplate parentTemplate;
 
@@ -75,8 +72,6 @@ public class BoundElementTemplate extends AbstractElementTemplate {
         } else {
             eventHandlerMethods = new HashSet<>(builderHandlerMehtods);
         }
-
-        modelStructure = builder.getModelStructure();
     }
 
     @Override
@@ -272,9 +267,4 @@ public class BoundElementTemplate extends AbstractElementTemplate {
             return null;
         }
     }
-
-    public ModelStructure getModelStructure() {
-        return modelStructure;
-    }
-
 }

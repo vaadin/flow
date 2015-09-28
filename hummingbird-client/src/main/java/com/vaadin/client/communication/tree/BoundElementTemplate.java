@@ -31,8 +31,6 @@ public class BoundElementTemplate extends Template {
 
     private final int[] childElementTemplates;
 
-    private final JsonArray modelStructure;
-
     public BoundElementTemplate(TreeUpdater treeUpdater,
             JsonObject templateDescription, int templateId) {
         super(templateId);
@@ -83,8 +81,6 @@ public class BoundElementTemplate extends Template {
         } else {
             eventHandlerMethods = null;
         }
-
-        modelStructure = templateDescription.getArray("modelStructure");
     }
 
     private static Map<String, String> readStringMap(JsonObject json) {

@@ -11,9 +11,12 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.vaadin.client.FastStringMap;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 
+import elemental.js.json.JsJsonObject;
 import elemental.json.JsonObject;
 
 public class TreeNode {
+    private static final String ID_PROPERTY = "$hid";
+
     public interface TreeNodeChangeListener {
         public void addProperty(String name, TreeNodeProperty property);
 
@@ -83,6 +86,15 @@ public class TreeNode {
     public TreeNode(int id, CallbackQueue callbackQueue) {
         this.id = id;
         this.callbackQueue = callbackQueue;
+        ((JsJsonObject) proxy.cast()).put(ID_PROPERTY, id);
+    }
+
+    public static int getProxyId(JavaScriptObject proxy) {
+        JsonObject json = (JsJsonObject) proxy.cast();
+        if (!json.hasKey(ID_PROPERTY)) {
+            throw new RuntimeException("Object is not a TreeNode proxy");
+        }
+        return (int) json.getNumber(ID_PROPERTY);
     }
 
     public int getId() {

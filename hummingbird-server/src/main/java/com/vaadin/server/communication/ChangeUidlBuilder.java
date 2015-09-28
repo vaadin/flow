@@ -23,7 +23,6 @@ import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
 import com.vaadin.hummingbird.parser.EventBinding;
-import com.vaadin.hummingbird.parser.ModelStructure;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -271,33 +270,9 @@ public final class ChangeUidlBuilder implements NodeChangeVisitor {
             serialized.put("eventHandlerMethods", eventHandlerMethodsJson);
         }
 
-        ModelStructure modelStructure = bet.getModelStructure();
-        if (modelStructure != null) {
-            serialized.put("modelStructure",
-                    serializeModelStructure(modelStructure));
-        }
-
         serialized.put("attributeBindings", attributeBindings);
         serialized.put("defaultAttributes", defaultAttributes);
         serialized.put("tag", bet.getTag());
-    }
-
-    private JsonArray serializeModelStructure(ModelStructure modelStructure) {
-        // ["simpleKey1", "simpleKey2", {"subKey1": ..., "subKey2": ...}]
-        JsonArray array = Json.createArray();
-        modelStructure.getSimpleKeys()
-                .forEach(key -> array.set(array.length(), key));
-
-        Map<String, ModelStructure> subStructures = modelStructure
-                .getSubStructures();
-        if (!subStructures.isEmpty()) {
-            JsonObject subStructuresJson = Json.createObject();
-            subStructures.forEach((key, structure) -> subStructuresJson.put(key,
-                    serializeModelStructure(structure)));
-            array.set(array.length(), subStructuresJson);
-        }
-
-        return array;
     }
 
     @Override

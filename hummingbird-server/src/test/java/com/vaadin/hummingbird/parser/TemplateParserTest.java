@@ -1,13 +1,11 @@
 package com.vaadin.hummingbird.parser;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
@@ -100,35 +98,5 @@ public class TemplateParserTest {
             Assert.assertEquals("Todo " + i, li.getAttribute("innertitle"));
             Assert.assertEquals("Todo " + i, li.getChild(0).getOuterHTML());
         }
-    }
-
-    @Test
-    public void modelStructureDetection() {
-        String templateString = "<ul>"
-                + "<li *ng-for='#todo of todos' [innertitle]='todo.title2' [outertitle]='title'>"
-                + "<span *ng-for='#inner of todo.inners' [innerSomething]='inner.something'>"
-                + "</li>";
-
-        BoundElementTemplate elementTemplate = (BoundElementTemplate) TemplateParser
-                .parse(templateString);
-        ModelStructure structure = elementTemplate.getModelStructure();
-
-        Assert.assertEquals(Collections.singleton("title"),
-                structure.getSimpleKeys());
-
-        Assert.assertEquals(1, structure.getSubStructures().size());
-        ModelStructure todoStructure = structure.getSubStructures()
-                .get("todos");
-
-        Assert.assertEquals(Collections.singleton("title2"),
-                todoStructure.getSimpleKeys());
-
-        Assert.assertEquals(1, todoStructure.getSubStructures().size());
-        ModelStructure innerStructure = todoStructure.getSubStructures()
-                .get("inners");
-
-        Assert.assertEquals(Collections.singleton("something"),
-                innerStructure.getSimpleKeys());
-        Assert.assertTrue(innerStructure.getSubStructures().isEmpty());
     }
 }
