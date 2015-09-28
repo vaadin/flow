@@ -3,9 +3,11 @@ package com.vaadin.client.communication.tree;
 import java.util.Map;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
 public interface NodeContext {
-    public TreeNodeProperty resolveProperty(String name);
+    public void listenToProperty(String name,
+            TreeNodePropertyValueChangeListener listener);
 
     public EventArray resolveArrayProperty(String name);
 

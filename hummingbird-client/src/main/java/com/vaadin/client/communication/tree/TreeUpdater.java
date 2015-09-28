@@ -34,6 +34,7 @@ import com.vaadin.client.ApplicationConnection.Client;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
+import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.js.json.JsJsonValue;
@@ -269,8 +270,9 @@ public class TreeUpdater {
             return createElement(template, node, new NodeContext() {
 
                 @Override
-                public TreeNodeProperty resolveProperty(String name) {
-                    return node.getProperty(name);
+                public void listenToProperty(String name,
+                        TreeNodePropertyValueChangeListener listener) {
+                    TreeListenerHelper.addListener(node, name, true, listener);
                 }
 
                 @Override

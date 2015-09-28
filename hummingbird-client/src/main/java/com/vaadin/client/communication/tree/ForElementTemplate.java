@@ -6,6 +6,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.communication.tree.EventArray.ArrayEventListener;
+import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
 import elemental.json.JsonObject;
 
@@ -65,16 +66,17 @@ public class ForElementTemplate extends Template {
                                 }
 
                                 @Override
-                                public TreeNodeProperty resolveProperty(
-                                        String name) {
+                                public void listenToProperty(String name,
+                                        TreeNodePropertyValueChangeListener listener) {
                                     if (name.startsWith(getInnerScope())) {
                                         String innerProperty = name.substring(
                                                 getInnerScope().length() + 1);
-                                        return childNode
-                                                .getProperty(innerProperty);
+                                        TreeListenerHelper.addListener(
+                                                childNode, innerProperty, true,
+                                                listener);
                                     } else {
-                                        return outerContext
-                                                .resolveProperty(name);
+                                        outerContext.listenToProperty(name,
+                                                listener);
                                     }
                                 }
 

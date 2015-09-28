@@ -114,7 +114,7 @@ public class BoundElementTemplate extends Template {
 
             TreeUpdater.debug("Binding " + property + " to " + attribute);
 
-            context.resolveProperty(property).addPropertyChangeListener(
+            context.listenToProperty(property,
                     new TreeNodePropertyValueChangeListener() {
                         @Override
                         public void changeValue(Object oldValue, Object value) {
@@ -131,7 +131,7 @@ public class BoundElementTemplate extends Template {
             for (Entry<String, String> entry : classPartBindings.entrySet()) {
                 String property = entry.getKey();
                 String classPart = entry.getValue();
-                context.resolveProperty(property).addPropertyChangeListener(
+                context.listenToProperty(property,
                         new TreeNodePropertyValueChangeListener() {
                             @Override
                             public void changeValue(Object oldValue,

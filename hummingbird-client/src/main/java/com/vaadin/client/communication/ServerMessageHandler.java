@@ -197,7 +197,7 @@ public class ServerMessageHandler {
                 connection.getServerRpcQueue(), connection.getCurrentClient());
 
         TreeListenerHelper.addListener(treeUpdater.getRootNode(),
-                "pushConfiguration.mode",
+                "pushConfiguration.mode", false,
                 new TreeNodePropertyValueChangeListener() {
                     @Override
                     public void changeValue(Object oldValue, Object newValue) {

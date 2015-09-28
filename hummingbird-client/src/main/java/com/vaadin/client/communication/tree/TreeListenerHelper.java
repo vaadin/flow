@@ -9,14 +9,19 @@ import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyVal
 public class TreeListenerHelper {
 
     public static HandlerRegistration addListener(TreeNode node, String path,
+            boolean createIfNecessary,
             TreeNodePropertyValueChangeListener listener) {
+        TreeUpdater.debug("Binding listener to " + path);
         int firstDot = path.indexOf('.');
         if (firstDot == -1) {
             // No hierarchy
-            if (node.hasProperty(path)) {
+            if (createIfNecessary || node.hasProperty(path)) {
+                TreeUpdater
+                        .debug("Adding property change listener for " + path);
                 return node.getProperty(path)
                         .addPropertyChangeListener(listener);
             } else {
+                TreeUpdater.debug("Waiting for " + path + " to be created");
                 return new HandlerRegistration() {
                     HandlerRegistration subRegistration;
 
@@ -27,9 +32,11 @@ public class TreeListenerHelper {
                             public void addProperty(String name,
                                     TreeNodeProperty property) {
                                 if (path.equals(name)) {
+                                    TreeUpdater.debug(path
+                                            + " created, adding real listener");
                                     subRegistration.removeHandler();
                                     subRegistration = addListener(node, path,
-                                            listener);
+                                            createIfNecessary, listener);
                                 }
                             }
 
@@ -43,6 +50,8 @@ public class TreeListenerHelper {
 
                     @Override
                     public void removeHandler() {
+                        TreeUpdater.debug("Remove handler waiting for " + path
+                                + " to be created");
                         subRegistration.removeHandler();
                     }
                 };
@@ -51,10 +60,11 @@ public class TreeListenerHelper {
             String start = path.substring(0, firstDot);
             String rest = path.substring(firstDot + 1);
 
+            TreeUpdater.debug("Adding listener for " + start + " for " + path);
+
             return new HandlerRegistration() {
                 HandlerRegistration innerRegistration;
-                HandlerRegistration outerRegistration = addListener(node, start,
-                        new TreeNodePropertyValueChangeListener() {
+                TreeNodePropertyValueChangeListener childListener = new TreeNodePropertyValueChangeListener() {
                     @Override
                     public void changeValue(Object oldValue, Object newValue) {
                         if (innerRegistration != null) {
@@ -68,13 +78,24 @@ public class TreeListenerHelper {
                         Object oldPropertyValue = findValue(oldNode, rest);
                         Object newPropertyValue = findValue(newNode, rest);
 
+                        TreeUpdater.debug("Listener of " + start + " for "
+                                + path + " triggered old value: " + oldValue
+                                + ", new value: " + newValue
+                                + ", old property value: " + oldPropertyValue
+                                + ", new property value: " + newPropertyValue);
+
+                        if (newNode == null && createIfNecessary) {
+                            throw new RuntimeException();
+                        }
                         if (newNode != null) {
                             innerRegistration = addListener(newNode, rest,
-                                    listener);
+                                    createIfNecessary, listener);
                         }
 
-                        if (Objects.equals(oldPropertyValue,
+                        if (!Objects.equals(oldPropertyValue,
                                 newPropertyValue)) {
+                            TreeUpdater.debug("Notifying listener because "
+                                    + start + " for " + path + " changed");
                             listener.changeValue(oldPropertyValue,
                                     newPropertyValue);
                         }
@@ -98,10 +119,24 @@ public class TreeListenerHelper {
                         }
                         throw new RuntimeException();
                     }
-                });
+                };
+                HandlerRegistration outerRegistration = addListener(node, start,
+                        createIfNecessary, childListener);
+
+                {
+                    if (node.hasProperty(start)) {
+                        Object value = node.getProperty(start).getValue();
+                        if (value != null) {
+                            childListener.changeValue(null, value);
+                        }
+                    }
+                }
 
                 @Override
                 public void removeHandler() {
+                    TreeUpdater.debug("No longer listening for " + start
+                            + " for " + path);
+
                     if (innerRegistration != null) {
                         innerRegistration.removeHandler();
                     }

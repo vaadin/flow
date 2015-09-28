@@ -238,4 +238,29 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         assertEquals("attrValue", templateElement.getPropertyString("attr"));
     }
+
+    public void testMoveNode() {
+        String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
+                + "'attributeBindings': {'child1.value': 'value1', 'child2.value': 'value2'},"
+                + "'modelStructure': [{'child1': ['value'], 'child2': ['value']}]}";
+        JsonObject template = Json.parse(json.replace('\'', '"'));
+
+        int templateId = 1;
+        int templateNodeId = 3;
+        int childNodeId = 4;
+
+        applyTemplate(templateId, template);
+
+        applyChanges(ChangeUtil.put(childNodeId, "value", "childValue"),
+                ChangeUtil.put(templateNodeId, "TEMPLATE",
+                        Json.create(templateId)),
+                ChangeUtil.putNode(templateNodeId, "child1", childNodeId),
+                ChangeUtil.listInsertNode(containerElementId, "CHILDREN", 0,
+                        templateNodeId));
+
+        Element templateElement = updater.getRootElement()
+                .getFirstChildElement();
+        assertEquals("SPAN", templateElement.getTagName());
+        assertEquals("childValue", templateElement.getPropertyString("value1"));
+    }
 }
