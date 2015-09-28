@@ -13,6 +13,7 @@ import org.easymock.EasyMock;
 import com.vaadin.event.ElementEvents;
 import com.vaadin.event.ElementEvents.DOMEventForwarder;
 import com.vaadin.event.EventSource;
+import com.vaadin.event.HasEventRouter;
 import com.vaadin.hummingbird.kernel.DomEventListener;
 import com.vaadin.tests.VaadinClasses;
 import com.vaadin.ui.Component;
@@ -145,7 +146,7 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
         EventListener mockListener2 = EasyMock.createMock(listenerClass);
         DOMEventForwarder[] noDOMForwarders = new DOMEventForwarder[] {};
         DOMEventForwarder[] oneDOMForwarder = new DOMEventForwarder[] {
-                new DOMEventForwarder(eventClass, (EventSource) c) };
+                new DOMEventForwarder(eventClass, (HasEventRouter) c) };
 
         // Verify we start from no listeners
         verifyDOMListeners(c, eventClass, noDOMForwarders);

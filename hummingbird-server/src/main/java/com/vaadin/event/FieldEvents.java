@@ -24,6 +24,7 @@ import com.vaadin.shared.communication.FieldRpc.FocusAndBlurServerRpc;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Component.Event;
 import com.vaadin.ui.Field;
+import com.vaadin.ui.HasElement;
 import com.vaadin.ui.TextField;
 
 /**
@@ -48,7 +49,7 @@ public interface FieldEvents {
      * @see FocusListener
      * @see FocusEvent
      */
-    public interface FocusNotifier extends Component, EventSource {
+    public interface FocusNotifier extends HasElement, HasEventRouter {
         /**
          * Adds a <code>FocusListener</code> to the Component which gets fired
          * when a <code>Field</code> receives keyboard focus.
@@ -91,7 +92,7 @@ public interface FieldEvents {
      * @see BlurListener
      * @see BlurEvent
      */
-    public interface BlurNotifier extends Component, EventSource {
+    public interface BlurNotifier extends HasElement, HasEventRouter {
         /**
          * Adds a <code>BlurListener</code> to the Component which gets fired
          * when a <code>Field</code> loses keyboard focus.
@@ -101,8 +102,7 @@ public interface FieldEvents {
          * @since 6.2
          */
         default public void addBlurListener(BlurListener listener) {
-            ElementEvents.addElementListener(BlurNotifier.this, BlurEvent.class,
-                    listener);
+            ElementEvents.addElementListener(this, BlurEvent.class, listener);
         }
 
         /**
@@ -113,8 +113,8 @@ public interface FieldEvents {
          * @since 6.2
          */
         default public void removeBlurListener(BlurListener listener) {
-            ElementEvents.removeElementListener(BlurNotifier.this,
-                    BlurEvent.class, listener);
+            ElementEvents.removeElementListener(this, BlurEvent.class,
+                    listener);
         }
 
     }

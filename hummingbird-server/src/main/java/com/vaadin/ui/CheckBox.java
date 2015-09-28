@@ -21,6 +21,7 @@ import com.vaadin.data.Property;
 import com.vaadin.event.FieldEvents.BlurNotifier;
 import com.vaadin.event.FieldEvents.FocusAndBlurServerRpcImpl;
 import com.vaadin.event.FieldEvents.FocusNotifier;
+import com.vaadin.hummingbird.kernel.Element.EventRegistrationHandle;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.checkbox.CheckBoxServerRpc;
 
@@ -112,17 +113,29 @@ public class CheckBox extends AbstractField<Boolean>
     @Override
     public boolean isEmpty() {
         return getValue() == null || getValue().equals(Boolean.FALSE);
-
     }
+
+    private EventRegistrationHandle valueChangeEventRegistration = null;
 
     @Override
     public void addValueChangeListener(ValueChangeListener listener) {
         super.addValueChangeListener(listener);
-        if (!hasElementEventListener("change")) {
+        if (valueChangeEventRegistration == null) {
             getElement().addEventData("change", "element.checked");
-            addElementEventListener("change", e -> {
-                setValue(e.get("element.checked").asBoolean());
-            });
+            valueChangeEventRegistration = getElement()
+                    .addEventListener("change", e -> {
+                        setValue(e.get("element.checked").asBoolean());
+                    });
+        }
+    }
+
+    @Override
+    public void removeValueChangeListener(
+            com.vaadin.data.Property.ValueChangeListener listener) {
+        super.removeValueChangeListener(listener);
+        if (!hasListeners(ValueChangeEvent.class)) {
+            assert valueChangeEventRegistration != null;
+            valueChangeEventRegistration.remove();
         }
     }
 

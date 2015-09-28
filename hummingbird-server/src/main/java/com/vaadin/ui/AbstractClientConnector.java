@@ -31,7 +31,6 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import com.vaadin.event.EventSource;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.ClientMethodInvocation;
 import com.vaadin.server.ConnectorResource;
@@ -58,8 +57,10 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public abstract class AbstractClientConnector
-        implements ClientConnector, EventSource {
+// TODO Remove class
+@Deprecated
+public abstract class AbstractClientConnector extends AbstractHasElement
+        implements ClientConnector {
     /**
      * A map from client to server RPC interface class name to the RPC call
      * manager that handles incoming RPC calls for that interface.
@@ -88,6 +89,14 @@ public abstract class AbstractClientConnector
     private String connectorId;
 
     private static final ConcurrentHashMap<Class<? extends AbstractClientConnector>, Class<? extends SharedState>> stateTypeCache = new ConcurrentHashMap<Class<? extends AbstractClientConnector>, Class<? extends SharedState>>();
+
+    public AbstractClientConnector() {
+        super();
+    }
+
+    public AbstractClientConnector(String tagName) {
+        super(tagName);
+    }
 
     /* Documentation copied from interface */
     @Override

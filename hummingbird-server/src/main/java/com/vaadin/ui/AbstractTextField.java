@@ -42,7 +42,7 @@ public abstract class AbstractTextField extends AbstractField<String>
 
         // Always immediate
         getElement().addEventData("change", "element.value");
-        addElementEventListener("change", e -> {
+        getElement().addEventListener("change", e -> {
             setValue(e.getString("element.value"));
         });
     }

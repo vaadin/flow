@@ -18,21 +18,16 @@ package com.vaadin.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EventListener;
 import java.util.EventObject;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import com.vaadin.annotations.Tag;
-import com.vaadin.event.EventRouter;
 import com.vaadin.event.EventSource;
-import com.vaadin.hummingbird.kernel.DomEventListener;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.ErrorMessage;
@@ -83,17 +78,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     private boolean visible = true;
 
-    // private HasComponents parent;
     private ErrorHandler errorHandler = null;
-    /**
-     * The EventRouter used for the event model.
-     */
-    private EventRouter eventRouter = null;
-
-    private Element element;
-
-    private Map<String, DomEventListener> elementEventListeners;
-
     private List<Runnable> runOnAttach;
 
     protected static final String DESIGN_ATTR_PLAIN_TEXT = "plain-text";
@@ -104,23 +89,11 @@ public abstract class AbstractComponent extends AbstractClientConnector
      * Constructs a new Component.
      */
     public AbstractComponent() {
-        // ComponentSizeValidator.setCreationLocation(this);
-
-        Tag tag = getClass().getAnnotation(Tag.class);
-        if (tag == null) {
-            throw new IllegalStateException(
-                    "No @Tag defined for " + getClass().getName());
-        }
-        createElement(tag.value());
+        super();
     }
 
     protected AbstractComponent(String tagName) {
-        createElement(tagName);
-        // ComponentSizeValidator.setCreationLocation(this);
-    }
-
-    private void createElement(String tagName) {
-        setElement(new Element(tagName));
+        super(tagName);
     }
 
     /* Get/Set component properties */
@@ -453,29 +426,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
     public void setParent(Component parent) {
         getLogger().severe("setParent() called - this should not be needed");
     }
-    // // If the parent is not changed, don't do anything
-    // if (parent == null ? this.parent == null : parent.equals(this.parent)) {
-    // return;
-    // }
-    //
-    // if (parent != null && this.parent != null) {
-    // throw new IllegalStateException(
-    // getClass().getName() + " already has a parent.");
-    // }
-    //
-    // // Send a detach event if the component is currently attached
-    // if (isAttached()) {
-    // detach();
-    // }
-    //
-    // // Connect to new parent
-    // this.parent = parent;
-    //
-    // // Send attach event if the component is now attached
-    // if (isAttached()) {
-    // attach();
-    // }
-    // }
 
     /**
      * Returns the closest ancestor with the given type.
@@ -902,69 +852,43 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     @Override
     public boolean hasListeners(Class<? extends EventObject> eventType) {
-        if (eventRouter == null) {
-            return false;
-        }
-        return eventRouter.hasListeners(eventType);
+        return getEventRouter().hasListeners(eventType);
     }
 
     @Override
     public void addListener(Class<? extends EventObject> eventType,
             EventListener listener) {
-        if (eventRouter == null) {
-            eventRouter = new EventRouter();
-        }
-        eventRouter.addListener(eventType, listener);
+        getEventRouter().addListener(eventType, listener);
     }
 
     @Override
     public void removeListener(Class<? extends EventObject> eventType,
             EventListener listener) {
-        if (eventRouter != null) {
-            eventRouter.removeListener(eventType, listener);
-        }
+        getEventRouter().removeListener(eventType, listener);
     }
 
     @Override
     public Collection<EventListener> getListeners(
             Class<? extends EventObject> eventType) {
-        if (eventRouter == null) {
-            return Collections.emptyList();
-        }
-
-        return eventRouter.getListeners(eventType);
+        return getEventRouter().getListeners(eventType);
     }
 
     @Override
     public void fireEvent(EventObject event) {
-        if (eventRouter != null) {
-            eventRouter.fireEvent(event);
-        }
-    }
-
-    @Override
-    public Element getElement() {
-        return element;
-    }
-
-    protected void setElement(Element element) {
-        this.element = element;
-        if (!element.getComponents().isEmpty()) {
-            if (element.getComponents().size() == 1
-                    && element.getComponents().get(0) == this) {
-                getLogger().warning("Element already set for this component");
-                return;
-            } else {
-                throw new IllegalArgumentException(
-                        "The given element is already attached to another component");
-            }
-        }
-        this.element.getTemplate().getComponents(this.element.getNode(), true)
-                .add(this);
+        getEventRouter().fireEvent(event);
     }
 
     private static final Logger getLogger() {
         return Logger.getLogger(AbstractComponent.class.getName());
+    }
+
+    /* Element related */
+
+    @Override
+    protected void setElement(Element element) {
+        super.setElement(element);
+        // Map the element to this component
+        element.getTemplate().getComponents(element.getNode(), true).add(this);
     }
 
     @Override
@@ -978,33 +902,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
     public void elementDetached() {
         if (isAttached()) {
             detach();
-        }
-    }
-
-    protected void addElementEventListener(String eventType,
-            DomEventListener listener) {
-        getElement().addEventListener(eventType, listener);
-        if (elementEventListeners == null) {
-            elementEventListeners = new HashMap<>();
-        }
-        elementEventListeners.put(eventType, listener);
-
-    }
-
-    protected boolean hasElementEventListener(String eventType) {
-        if (elementEventListeners == null) {
-            return false;
-        }
-        return elementEventListeners.containsKey(eventType);
-    }
-
-    protected void removeElementEventListener(String eventType) {
-        assert hasElementEventListener(eventType);
-
-        getElement().removeEventListener(eventType,
-                elementEventListeners.remove(eventType));
-        if (elementEventListeners.isEmpty()) {
-            elementEventListeners = null;
         }
     }
 

@@ -62,7 +62,8 @@ import com.vaadin.server.Sizeable;
  * @author Vaadin Ltd.
  * @since 3.0
  */
-public interface Component extends ClientConnector, Sizeable, Serializable {
+public interface Component
+        extends ClientConnector, Sizeable, Serializable, HasElement {
 
     /**
      * Gets all user-defined CSS style names of a component. If the component
@@ -992,6 +993,7 @@ public interface Component extends ClientConnector, Sizeable, Serializable {
      */
     public void setErrorHandler(ErrorHandler errorHandler);
 
+    @Override
     public Element getElement();
 
     /**

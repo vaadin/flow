@@ -178,13 +178,31 @@ public class Element implements Serializable {
         return template.getEventData(eventType, node);
     }
 
-    public Element addEventListener(String eventType,
+    public interface EventRegistrationHandle {
+        public void remove();
+    }
+
+    /**
+     * Adds an event listener for the given event type
+     *
+     * @param eventType
+     *            the type of event to listen to
+     * @param listener
+     *            the listener to add
+     * @return a handle which can be used for removing the listener
+     */
+    public EventRegistrationHandle addEventListener(String eventType,
             DomEventListener listener) {
         assert eventType != null;
         assert listener != null;
 
         template.addEventListener(eventType, listener, node);
-        return this;
+        return new EventRegistrationHandle() {
+            @Override
+            public void remove() {
+                Element.this.removeEventListener(eventType, listener);
+            }
+        };
     }
 
     public Element removeEventListener(String eventType,

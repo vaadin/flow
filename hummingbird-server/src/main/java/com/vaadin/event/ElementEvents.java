@@ -14,7 +14,7 @@ import com.vaadin.annotations.EventType;
 import com.vaadin.hummingbird.kernel.DomEventListener;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.JsonConverter;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.HasElement;
 
 import elemental.json.JsonObject;
 
@@ -23,13 +23,13 @@ public class ElementEvents {
     public static class DOMEventForwarder<E extends EventObject>
             implements DomEventListener {
 
-        private Component component;
         private Class<E> eventType;
+        private HasElement hasElementAndEventRouter;
 
-        public <T extends EventObject, C extends EventSource & Component> DOMEventForwarder(
+        public <T extends EventObject, C extends HasEventRouter & HasElement> DOMEventForwarder(
                 Class<E> eventType, C component) {
             this.eventType = eventType;
-            this.component = component;
+            this.hasElementAndEventRouter = component;
         }
 
         @Override
@@ -39,15 +39,18 @@ public class ElementEvents {
             E eventObject = createEventObject();
 
             populateEvent(eventObject, eventData);
-            ((EventSource) component).fireEvent(eventObject);
+            ((HasEventRouter) hasElementAndEventRouter).getEventRouter()
+                    .fireEvent(eventObject);
         }
 
         private E createEventObject() {
             for (Constructor<?> c : eventType.getConstructors()) {
-                if (c.getParameterCount() == 1 && c.getParameterTypes()[0]
-                        .isAssignableFrom(component.getClass())) {
+                if (c.getParameterCount() == 1
+                        && c.getParameterTypes()[0].isAssignableFrom(
+                                hasElementAndEventRouter.getClass())) {
                     try {
-                        return eventType.cast(c.newInstance(component));
+                        return eventType
+                                .cast(c.newInstance(hasElementAndEventRouter));
                     } catch (InstantiationException | IllegalAccessException
                             | IllegalArgumentException
                             | InvocationTargetException e) {
@@ -61,7 +64,8 @@ public class ElementEvents {
             throw new RuntimeException(
                     "Unable to create event of type " + eventType.getName()
                             + ". No constructor accepting the event source of type "
-                            + component.getClass().getName() + " found.");
+                            + hasElementAndEventRouter.getClass().getName()
+                            + " found.");
         }
 
         private void populateEvent(E eventObject, JsonObject eventData) {
@@ -93,23 +97,33 @@ public class ElementEvents {
             }
 
             DOMEventForwarder<?> other = (DOMEventForwarder<?>) obj;
-            return component.equals(other.component)
+            return hasElementAndEventRouter
+                    .equals(other.hasElementAndEventRouter)
                     && eventType.equals(other.eventType);
         }
 
     }
 
-    public static <T extends EventObject, C extends EventSource & Component> void addElementListener(
-            C component, Class<T> eventType, java.util.EventListener listener) {
+    /**
+     * Adds a listener for the event specified by {@code eventType}, mapped to a
+     * DOM event using the {@link EventType} annotation
+     *
+     * @param hasElementAndEvents
+     * @param eventType
+     * @param listener
+     */
+    public static <T extends EventObject, HasElementAndEvents extends HasEventRouter & HasElement> void addElementListener(
+            HasElementAndEvents hasElementAndEvents, Class<T> eventType,
+            java.util.EventListener listener) {
 
-        if (!component.hasListeners(eventType)) {
-            addForwarder(component, eventType);
+        if (!hasElementAndEvents.getEventRouter().hasListeners(eventType)) {
+            addForwarder(hasElementAndEvents, eventType);
         }
 
-        component.addListener(eventType, listener);
+        hasElementAndEvents.getEventRouter().addListener(eventType, listener);
     }
 
-    private static <C extends EventSource & Component, E extends EventObject> void addForwarder(
+    private static <C extends HasEventRouter & HasElement, E extends EventObject> void addForwarder(
             C component, Class<E> eventType) {
         if (eventType.getEnclosingClass() != null
                 && !Modifier.isStatic(eventType.getModifiers())) {
@@ -180,18 +194,22 @@ public class ElementEvents {
         return ann.value();
     }
 
-    private static <C extends EventSource & Component> void removeForwarder(
-            C component, Class<? extends EventObject> eventType) {
-        component.getElement().removeEventListener(getDomEventType(eventType),
-                new DOMEventForwarder(eventType, component));
+    private static <HasElementAndEvents extends HasEventRouter & HasElement> void removeForwarder(
+            HasElementAndEvents hasElementAndEvents,
+            Class<? extends EventObject> eventType) {
+        hasElementAndEvents.getElement().removeEventListener(
+                getDomEventType(eventType),
+                new DOMEventForwarder(eventType, hasElementAndEvents));
 
     }
 
-    public static <T extends EventObject, C extends EventSource & Component> void removeElementListener(
-            C c, Class<T> eventType, java.util.EventListener listener) {
-        c.removeListener(eventType, listener);
-        if (!c.hasListeners(eventType)) {
-            removeForwarder(c, eventType);
+    public static <T extends EventObject, HasElementAndEvents extends HasEventRouter & HasElement> void removeElementListener(
+            HasElementAndEvents hasElementAndEvents, Class<T> eventType,
+            java.util.EventListener listener) {
+        hasElementAndEvents.getEventRouter().removeListener(eventType,
+                listener);
+        if (!hasElementAndEvents.getEventRouter().hasListeners(eventType)) {
+            removeForwarder(hasElementAndEvents, eventType);
         }
 
     }
