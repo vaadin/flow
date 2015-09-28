@@ -8,11 +8,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import com.vaadin.event.EventListener;
-import com.vaadin.event.FieldEvents;
 import com.vaadin.event.FieldEvents.BlurEvent;
+import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.FieldEvents.BlurNotifier;
 import com.vaadin.event.FieldEvents.FocusEvent;
+import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.event.FieldEvents.FocusNotifier;
 import com.vaadin.server.DefaultErrorHandler;
 import com.vaadin.server.Resource;
@@ -239,17 +239,17 @@ public abstract class AbstractComponentTest<T extends AbstractComponent>
         createFocusActions();
     }
 
-    private EventListener<FocusEvent> focusListener = new EventListener<FocusEvent>() {
+    private FocusListener focusListener = new FocusListener() {
 
         @Override
-        public void onEvent(FocusEvent event) {
+        public void focus(FocusEvent event) {
             log(event.getClass().getSimpleName());
         }
     };
-    private EventListener<BlurEvent> blurListener = new EventListener<FieldEvents.BlurEvent>() {
+    private BlurListener blurListener = new BlurListener() {
 
         @Override
-        public void onEvent(BlurEvent event) {
+        public void blur(BlurEvent event) {
             log(event.getClass().getSimpleName());
         }
     };

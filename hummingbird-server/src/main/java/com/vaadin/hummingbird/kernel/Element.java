@@ -1,21 +1,12 @@
 package com.vaadin.hummingbird.kernel;
 
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EventObject;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.vaadin.annotations.EventParameter;
-import com.vaadin.annotations.EventType;
-import com.vaadin.event.EventListener;
 import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.Component;
 
@@ -783,177 +774,6 @@ public class Element implements Serializable {
     public Element setScrollLeft(int scrollLeft) {
         getNode().enqueueRpc("$0.scrollLeft=$1", this, scrollLeft);
         return this;
-    }
-
-    public <E extends EventObject> Element removeEventListener(
-            Class<E> eventType, EventListener<E> listener, Object source) {
-        assert eventType != null;
-        assert listener != null;
-        assert source != null;
-
-        removeEventListener(getDomEventType(eventType),
-                new DomEventListenerWrapper<E>(eventType, listener, source));
-
-        return this;
-    }
-
-    public <E extends EventObject> Element addEventListener(Class<E> eventType,
-            com.vaadin.event.EventListener<E> listener, Object source) {
-        assert eventType != null;
-        assert listener != null;
-        assert source != null;
-
-        if (eventType.getEnclosingClass() != null
-                && !Modifier.isStatic(eventType.getModifiers())) {
-            // Non static inner class
-            throw new IllegalArgumentException(
-                    "Event classes must be top level classes or static inner classes. "
-                            + eventType.getName()
-                            + " is a non-static inner class");
-        }
-
-        String domEventType = getDomEventType(eventType);
-        addEventData(domEventType, eventType);
-        addEventListener(domEventType,
-                new DomEventListenerWrapper<E>(eventType, listener, source));
-
-        return this;
-    }
-
-    private void addEventData(String domEventType,
-            Class<? extends EventObject> eventType) {
-        assert domEventType != null && !domEventType.isEmpty();
-        assert eventType != null;
-
-        for (Field f : getEventParameterFields(eventType)) {
-            String eventParameter = getDomEventParameterName(f);
-            addEventData(domEventType, eventParameter);
-        }
-    }
-
-    private String getDomEventType(Class<? extends EventObject> eventType) {
-        assert eventType != null;
-
-        EventType ann = eventType.getAnnotation(EventType.class);
-        if (ann == null) {
-            throw new IllegalArgumentException(
-                    "Event type " + eventType.getName() + " should have an @"
-                            + EventType.class.getSimpleName() + " annotation");
-        }
-        return ann.value();
-    }
-
-    public static class DomEventListenerWrapper<E extends EventObject>
-            implements DomEventListener {
-
-        private EventListener<E> listener;
-        private Object eventSource;
-        private Class<E> eventType;
-
-        public DomEventListenerWrapper(Class<E> eventType,
-                EventListener<E> listener, Object eventSource) {
-            assert eventType != null;
-            assert listener != null;
-            assert eventSource != null;
-
-            this.eventType = eventType;
-            this.listener = listener;
-            this.eventSource = eventSource;
-        }
-
-        @Override
-        public void handleEvent(JsonObject eventData) {
-            assert eventData != null;
-
-            E eventObject = createEventObject();
-
-            populateEvent(eventObject, eventData);
-            listener.onEvent(eventObject);
-        }
-
-        private E createEventObject() {
-            for (Constructor<?> c : eventType.getConstructors()) {
-                if (c.getParameterCount() == 1 && c.getParameterTypes()[0]
-                        .isAssignableFrom(eventSource.getClass())) {
-                    try {
-                        return eventType.cast(c.newInstance(eventSource));
-                    } catch (InstantiationException | IllegalAccessException
-                            | IllegalArgumentException
-                            | InvocationTargetException e) {
-                        throw new RuntimeException(
-                                "Unable to create event object instanceof of type "
-                                        + eventType.getName(),
-                                e);
-                    }
-                }
-            }
-            throw new RuntimeException(
-                    "Unable to create event of type " + eventType.getName()
-                            + ". No constructor accepting the event source of type "
-                            + eventSource.getClass().getName() + " found.");
-        }
-
-        private void populateEvent(E eventObject, JsonObject eventData) {
-            assert eventObject != null;
-            assert eventData != null;
-
-            for (Field f : getEventParameterFields(eventType)) {
-                String value = getDomEventParameterName(f);
-
-                f.setAccessible(true);
-                try {
-                    Object decodedValue = JsonConverter.fromJson(f.getType(),
-                            eventData.get(value));
-                    f.set(eventObject, decodedValue);
-                } catch (IllegalArgumentException | IllegalAccessException e) {
-                    throw new RuntimeException(
-                            "Unable to assign value to field " + f.getName()
-                                    + " in event object of type "
-                                    + eventType.getName(),
-                            e);
-                }
-            }
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof DomEventListenerWrapper<?>)) {
-                return false;
-            }
-            return listener.equals(((DomEventListenerWrapper<?>) obj).listener);
-        }
-
-        @Override
-        public int hashCode() {
-            return listener.hashCode() * 37 + eventSource.hashCode();
-        }
-    }
-
-    private static String getDomEventParameterName(Field f) {
-        assert f != null;
-
-        EventParameter param = f.getAnnotation(EventParameter.class);
-        assert param != null;
-        String value = param.value();
-        if (value.equals("")) {
-            value = f.getName();
-        }
-
-        return value;
-    }
-
-    private static List<Field> getEventParameterFields(Class<?> eventType) {
-        assert eventType != null;
-
-        List<Field> fields = new ArrayList<>();
-        // TODO Cache
-        while (eventType != Object.class) {
-            Arrays.stream(eventType.getDeclaredFields())
-                    .filter(f -> f.getAnnotation(EventParameter.class) != null)
-                    .forEach(fields::add);
-            eventType = eventType.getSuperclass();
-        }
-        return fields;
     }
 
     public Element dispatchEvent(String eventType, JsonObject eventData) {

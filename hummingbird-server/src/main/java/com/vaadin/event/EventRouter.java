@@ -158,22 +158,36 @@ public class EventRouter implements EventSource {
             return listenerMethods.get(eventType);
         }
 
-        Method listenerMethod;
-        List<Method> methods = Arrays.stream(listenerType.getMethods())
-                .filter(m -> m.getParameterCount() == 1
-                        && m.getParameterTypes()[0] == eventType
-                        && !Modifier.isVolatile(m.getModifiers()))
-                .collect(Collectors.toList());
-
-        if (methods.size() != 1) {
-            throw new IllegalArgumentException("The listener type "
-                    + listenerType.getName() + " contains " + methods.size()
-                    + " methods taking " + eventType.getName()
-                    + " as a parameter, but must contain exactly one");
+        Method listenerMethod = null;
+        if (com.vaadin.event.EventListener.class
+                .isAssignableFrom(listenerType)) {
+            try {
+                listenerMethod = com.vaadin.event.EventListener.class
+                        .getMethod("onEvent", EventObject.class);
+            } catch (NoSuchMethodException | SecurityException e) {
+                getLogger().log(Level.SEVERE,
+                        "EventListener.onEvent not available or accessible", e);
+            }
         }
 
-        listenerMethod = methods.get(0);
-        listenerMethod = findInterfaceMethod(listenerMethod);
+        if (listenerMethod == null) {
+            List<Method> methods = Arrays.stream(listenerType.getMethods())
+                    .filter(m -> m.getParameterCount() == 1
+                            && m.getParameterTypes()[0] == eventType
+                            && !Modifier.isVolatile(m.getModifiers()))
+                    .collect(Collectors.toList());
+
+            if (methods.size() != 1) {
+                throw new IllegalArgumentException("The listener type "
+                        + listenerType.getName() + " contains " + methods.size()
+                        + " methods taking " + eventType.getName()
+                        + " as a parameter, but must contain exactly one");
+            }
+
+            listenerMethod = methods.get(0);
+            listenerMethod = findInterfaceMethod(listenerMethod);
+        }
+
         listenerMethods.put(eventType, listenerMethod);
         return listenerMethod;
     }
@@ -187,6 +201,7 @@ public class EventRouter implements EventSource {
                         listenerMethod.getParameterTypes());
                 return interfaceMethod;
             } catch (NoSuchMethodException | SecurityException e) {
+                getLogger().log(Level.SEVERE, "Unable to invoke listener", e);
             }
         }
 
@@ -239,7 +254,6 @@ public class EventRouter implements EventSource {
         return new ArrayList<EventListener>(eventListeners);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     private List<EventListener> getRegisteredListeners(
             Class<? extends EventObject> eventType) {
         return listeners.get(eventType);

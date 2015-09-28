@@ -57,10 +57,8 @@ public interface FieldEvents {
          * @see FocusListener
          * @since 6.2
          */
-        default public void addFocusListener(
-                EventListener<FocusEvent> listener) {
-            getElement().addEventListener(FocusEvent.class, listener,
-                    FocusNotifier.this);
+        default public void addFocusListener(FocusListener listener) {
+            ElementEvents.addElementListener(this, FocusEvent.class, listener);
         }
 
         /**
@@ -70,10 +68,9 @@ public interface FieldEvents {
          * @see FocusListener
          * @since 6.2
          */
-        default public void removeFocusListener(
-                EventListener<FocusEvent> listener) {
-            getElement().removeEventListener(FocusEvent.class, listener,
-                    FocusNotifier.this);
+        default public void removeFocusListener(FocusListener listener) {
+            ElementEvents.removeElementListener(this, FocusEvent.class,
+                    listener);
         }
     }
 
@@ -103,9 +100,9 @@ public interface FieldEvents {
          * @see BlurListener
          * @since 6.2
          */
-        default public void addBlurListener(EventListener<BlurEvent> listener) {
-            getElement().addEventListener(BlurEvent.class, listener,
-                    BlurNotifier.this);
+        default public void addBlurListener(BlurListener listener) {
+            ElementEvents.addElementListener(BlurNotifier.this, BlurEvent.class,
+                    listener);
         }
 
         /**
@@ -115,10 +112,9 @@ public interface FieldEvents {
          * @see BlurListener
          * @since 6.2
          */
-        default public void removeBlurListener(
-                EventListener<BlurEvent> listener) {
-            getElement().removeEventListener(BlurEvent.class, listener,
-                    BlurNotifier.this);
+        default public void removeBlurListener(BlurListener listener) {
+            ElementEvents.removeElementListener(BlurNotifier.this,
+                    BlurEvent.class, listener);
         }
 
     }
@@ -137,21 +133,13 @@ public interface FieldEvents {
         }
     }
 
-    public interface BlurListener extends EventListener<BlurEvent> {
-        @Override
-        default void onEvent(BlurEvent event) {
-            blur(event);
-        }
+    public interface BlurListener extends java.util.EventListener {
 
         public void blur(BlurEvent event);
 
     }
 
-    public interface FocusListener extends EventListener<FocusEvent> {
-        @Override
-        default void onEvent(FocusEvent event) {
-            focus(event);
-        }
+    public interface FocusListener extends java.util.EventListener {
 
         public void focus(FocusEvent event);
 
