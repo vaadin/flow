@@ -15,10 +15,8 @@
  */
 package com.vaadin.data.util;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -145,87 +143,6 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
             return getUnfilteredItem(itemId);
         } else {
             return null;
-        }
-    }
-
-    private static abstract class BaseItemAddOrRemoveEvent extends EventObject
-            implements Serializable {
-        protected Object itemId;
-        protected int index;
-        protected int count;
-
-        public BaseItemAddOrRemoveEvent(Container source, Object itemId,
-                int index, int count) {
-            super(source);
-            this.itemId = itemId;
-            this.index = index;
-            this.count = count;
-        }
-
-        public Container getContainer() {
-            return (Container) getSource();
-        }
-
-        public Object getFirstItemId() {
-            return itemId;
-        }
-
-        public int getFirstIndex() {
-            return index;
-        }
-
-        public int getAffectedItemsCount() {
-            return count;
-        }
-    }
-
-    /**
-     * An <code>Event</code> object specifying information about the added
-     * items.
-     *
-     * <p>
-     * This class provides information about the first added item and the number
-     * of added items.
-     * </p>
-     *
-     * @since 7.4
-     */
-    protected static class BaseItemAddEvent extends BaseItemAddOrRemoveEvent
-            implements Container.Indexed.ItemAddEvent {
-
-        public BaseItemAddEvent(Container source, Object itemId, int index,
-                int count) {
-            super(source, itemId, index, count);
-        }
-
-        @Override
-        public int getAddedItemsCount() {
-            return getAffectedItemsCount();
-        }
-    }
-
-    /**
-     * An <code>Event</code> object specifying information about the removed
-     * items.
-     *
-     * <p>
-     * This class provides information about the first removed item and the
-     * number of removed items.
-     * </p>
-     *
-     * @since 7.4
-     */
-    protected static class BaseItemRemoveEvent extends BaseItemAddOrRemoveEvent
-            implements Container.Indexed.ItemRemoveEvent {
-
-        public BaseItemRemoveEvent(Container source, Object itemId, int index,
-                int count) {
-            super(source, itemId, index, count);
-        }
-
-        @Override
-        public int getRemovedItemsCount() {
-            return getAffectedItemsCount();
         }
     }
 
@@ -988,7 +905,7 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      */
     protected void fireItemsAdded(int firstPosition, ITEMIDTYPE firstItemId,
             int numberOfItems) {
-        BaseItemAddEvent addEvent = new BaseItemAddEvent(this, firstItemId,
+        ItemAddEvent addEvent = new ItemAddEvent(this, firstItemId,
                 firstPosition, numberOfItems);
         fireItemSetChange(addEvent);
     }
@@ -1026,8 +943,8 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
      */
     protected void fireItemsRemoved(int firstPosition, Object firstItemId,
             int numberOfItems) {
-        BaseItemRemoveEvent removeEvent = new BaseItemRemoveEvent(this,
-                firstItemId, firstPosition, numberOfItems);
+        ItemRemoveEvent removeEvent = new ItemRemoveEvent(this, firstItemId,
+                firstPosition, numberOfItems);
         fireItemSetChange(removeEvent);
     }
 

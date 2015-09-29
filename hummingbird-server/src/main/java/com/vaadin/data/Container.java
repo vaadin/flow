@@ -19,6 +19,7 @@ package com.vaadin.data;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.EventListener;
+import java.util.EventObject;
 import java.util.List;
 
 import com.vaadin.data.util.filter.SimpleStringFilter;
@@ -586,57 +587,102 @@ public interface Container extends Serializable {
          *
          * @since 7.4
          */
-        public interface ItemAddEvent extends ItemSetChangeEvent {
+        public static class ItemAddOrRemoveEvent extends ItemSetChangeEvent {
+            protected Object itemId;
+            protected int index;
+            protected int count;
+
+            public ItemAddOrRemoveEvent(Container source, Object itemId,
+                    int index, int count) {
+                super(source);
+                this.itemId = itemId;
+                this.index = index;
+                this.count = count;
+            }
 
             /**
-             * Gets the item id of the first added item.
+             * Gets the item id of the first added or removed item.
              *
-             * @return item id of the first added item
+             * @return item id of the first added or removed item
              */
-            public Object getFirstItemId();
+            public Object getFirstItemId() {
+                return itemId;
+            }
 
             /**
-             * Gets the index of the first added item.
+             * Gets the index of the first added or removed item.
              *
-             * @return index of the first added item
+             * @return index of the first added or removed item
              */
-            public int getFirstIndex();
+            public int getFirstIndex() {
+                return index;
+            }
 
             /**
-             * Gets the number of the added items.
+             * Gets the number of added or removed items.
+             *
+             * @return the number of added or removed items.
+             */
+            protected int getAffectedItemsCount() {
+                return count;
+            }
+
+        }
+
+        /**
+         * An <code>Event</code> object specifying information about the added
+         * items.
+         *
+         * <p>
+         * This class provides information about the first added item and the
+         * number of added items.
+         * </p>
+         *
+         * @since 7.4
+         */
+        public static class ItemAddEvent extends ItemAddOrRemoveEvent {
+            public ItemAddEvent(Container source, Object itemId, int index,
+                    int count) {
+                super(source, itemId, index, count);
+            }
+
+            /**
+             * Gets the number of added items.
              *
              * @return the number of added items.
              */
-            public int getAddedItemsCount();
+            public int getAddedItemsCount() {
+                return getAffectedItemsCount();
+            }
+
         }
 
         /**
          * An <code>Event</code> object specifying information about the removed
          * items.
          *
+         * <p>
+         * This class provides information about the first removed item and the
+         * number of removed items.
+         * </p>
+         *
          * @since 7.4
          */
-        public interface ItemRemoveEvent extends ItemSetChangeEvent {
-            /**
-             * Gets the item id of the first removed item.
-             *
-             * @return item id of the first removed item
-             */
-            public Object getFirstItemId();
+        public static class ItemRemoveEvent extends ItemAddOrRemoveEvent {
+            public ItemRemoveEvent(Container source, Object itemId, int index,
+                    int count) {
+                super(source, itemId, index, count);
+            }
 
             /**
-             * Gets the index of the first removed item.
+             * Gets the number of removed items.
              *
-             * @return index of the first removed item
+             * @return the number of removed items.
              */
-            public int getFirstIndex();
+            public int getRemovedItemsCount() {
+                return getAffectedItemsCount();
+            }
 
-            /**
-             * Gets the number of the removed items.
-             *
-             * @return the number of removed items
-             */
-            public int getRemovedItemsCount();
         }
     }
 
@@ -1062,19 +1108,26 @@ public interface Container extends Serializable {
     /* Contents change event */
 
     /**
-     * An <code>Event</code> object specifying the Container whose Item set has
-     * changed (items added, removed or reordered).
+     * An <code>Event</code> specifying the Container whose Item set has changed
+     * (items added, removed or reordered).
      *
      * A simple property value change is not an item set change.
      */
-    public interface ItemSetChangeEvent extends Serializable {
+    public static class ItemSetChangeEvent extends EventObject
+            implements Serializable {
+
+        public ItemSetChangeEvent(Container source) {
+            super(source);
+        }
 
         /**
          * Gets the Property where the event occurred.
          *
          * @return source of the event
          */
-        public Container getContainer();
+        public Container getContainer() {
+            return (Container) getSource();
+        }
     }
 
     /**
@@ -1146,15 +1199,21 @@ public interface Container extends Serializable {
      * items in the container and their property values are not property set
      * changes.
      */
-    public interface PropertySetChangeEvent
-            extends EventListener, Serializable {
+    public static class PropertySetChangeEvent extends EventObject
+            implements Serializable {
+
+        public PropertySetChangeEvent(Container container) {
+            super(container);
+        }
 
         /**
          * Retrieves the Container whose contents have been modified.
          *
          * @return Source Container of the event.
          */
-        public Container getContainer();
+        public Container getContainer() {
+            return (Container) getSource();
+        }
     }
 
     /**

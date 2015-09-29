@@ -15,10 +15,8 @@
  */
 package com.vaadin.data.util;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EventObject;
 import java.util.LinkedList;
 
 import com.vaadin.data.Container;
@@ -48,48 +46,6 @@ public abstract class AbstractContainer implements Container {
      * List of all container Item set change event listeners.
      */
     private Collection<Container.ItemSetChangeListener> itemSetChangeListeners = null;
-
-    /**
-     * An <code>event</code> object specifying the container whose Property set
-     * has changed.
-     *
-     * This class does not provide information about which properties were
-     * concerned by the change, but subclasses can provide additional
-     * information about the changes.
-     */
-    protected static class BasePropertySetChangeEvent extends EventObject
-            implements Container.PropertySetChangeEvent, Serializable {
-
-        protected BasePropertySetChangeEvent(Container source) {
-            super(source);
-        }
-
-        @Override
-        public Container getContainer() {
-            return (Container) getSource();
-        }
-    }
-
-    /**
-     * An <code>event</code> object specifying the container whose Item set has
-     * changed.
-     *
-     * This class does not provide information about the exact changes
-     * performed, but subclasses can add provide additional information about
-     * the changes.
-     */
-    protected static class BaseItemSetChangeEvent extends EventObject
-            implements Container.ItemSetChangeEvent, Serializable {
-
-        protected BaseItemSetChangeEvent(Container source) {
-            super(source);
-        }
-
-        @Override
-        public Container getContainer() {
-            return (Container) getSource();
-        }
-    }
 
     // PropertySetChangeNotifier
 
@@ -160,7 +116,7 @@ public abstract class AbstractContainer implements Container {
      * Sends a simple Property set change event to all interested listeners.
      */
     protected void fireContainerPropertySetChange() {
-        fireContainerPropertySetChange(new BasePropertySetChangeEvent(this));
+        fireContainerPropertySetChange(new PropertySetChangeEvent(this));
     }
 
     /**
@@ -191,7 +147,7 @@ public abstract class AbstractContainer implements Container {
      * removed etc.).
      */
     protected void fireItemSetChange() {
-        fireItemSetChange(new BaseItemSetChangeEvent(this));
+        fireItemSetChange(new ItemSetChangeEvent(this));
     }
 
     /**

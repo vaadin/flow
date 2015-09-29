@@ -19,6 +19,7 @@ package com.vaadin.data;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.EventListener;
+import java.util.EventObject;
 
 /**
  * <p>
@@ -131,14 +132,21 @@ public interface Item extends Serializable {
      * this event.
      * </p>
      */
-    public interface PropertySetChangeEvent extends Serializable {
+    public static class PropertySetChangeEvent extends EventObject
+            implements Serializable {
+
+        public PropertySetChangeEvent(Item item) {
+            super(item);
+        }
 
         /**
          * Retrieves the Item whose contents has been modified.
          *
          * @return source Item of the event
          */
-        public Item getItem();
+        public Item getItem() {
+            return (Item) getSource();
+        }
     }
 
     /**

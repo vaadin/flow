@@ -18,7 +18,6 @@ package com.vaadin.data.util;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EventListener;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -171,31 +170,6 @@ public class PropertysetItem
     /* Notifiers */
 
     /**
-     * An <code>event</code> object specifying an Item whose Property set has
-     * changed.
-     *
-     * @author Vaadin Ltd.
-     * @since 3.0
-     */
-    private static class PropertySetChangeEvent extends EventObject
-            implements Item.PropertySetChangeEvent {
-
-        private PropertySetChangeEvent(Item source) {
-            super(source);
-        }
-
-        /**
-         * Gets the Item whose Property set has changed.
-         *
-         * @return source object of the event as an <code>Item</code>
-         */
-        @Override
-        public Item getItem() {
-            return (Item) getSource();
-        }
-    }
-
-    /**
      * Registers a new property set change listener for this Item.
      *
      * @param listener
@@ -239,9 +213,8 @@ public class PropertysetItem
         }
     }
 
-    public Collection<?> getListeners(
-            Class<? extends EventListener> listenerType) {
-        if (listenerType == Item.PropertySetChangeEvent.class) {
+    public Collection<?> getListeners(Class<? extends EventObject> eventType) {
+        if (eventType == Item.PropertySetChangeEvent.class) {
             if (propertySetChangeListeners == null) {
                 return Collections.EMPTY_LIST;
             } else {

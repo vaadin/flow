@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -1620,23 +1619,6 @@ public class SQLContainer implements Container, Container.Filterable,
                 ((Container.ItemSetChangeListener) l[i])
                         .containerItemSetChange(event);
             }
-        }
-    }
-
-    /**
-     * Simple ItemSetChangeEvent implementation.
-     */
-    @SuppressWarnings("serial")
-    public static class ItemSetChangeEvent extends EventObject
-            implements Container.ItemSetChangeEvent {
-
-        private ItemSetChangeEvent(SQLContainer source) {
-            super(source);
-        }
-
-        @Override
-        public Container getContainer() {
-            return (Container) getSource();
         }
     }
 

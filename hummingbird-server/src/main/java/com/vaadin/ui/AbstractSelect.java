@@ -1398,60 +1398,17 @@ public abstract class AbstractSelect extends AbstractField<Object>implements
      * Fires the item set change event.
      */
     protected void fireItemSetChange() {
-        if (itemSetEventListeners != null && !itemSetEventListeners.isEmpty()) {
-            final Container.ItemSetChangeEvent event = new ItemSetChangeEvent(
-                    this);
-            final Object[] listeners = itemSetEventListeners.toArray();
-            for (int i = 0; i < listeners.length; i++) {
-                ((Container.ItemSetChangeListener) listeners[i])
-                        .containerItemSetChange(event);
-            }
-        }
+        // if (itemSetEventListeners != null &&
+        // !itemSetEventListeners.isEmpty()) {
+        // final Container.ItemSetChangeEvent event = new ItemSetChangeEvent(
+        // this);
+        // final Object[] listeners = itemSetEventListeners.toArray();
+        // for (int i = 0; i < listeners.length; i++) {
+        // ((Container.ItemSetChangeListener) listeners[i])
+        // .containerItemSetChange(event);
+        // }
+        // }
         markAsDirty();
-    }
-
-    /**
-     * Implementation of item set change event.
-     */
-    private static class ItemSetChangeEvent extends EventObject
-            implements Serializable, Container.ItemSetChangeEvent {
-
-        private ItemSetChangeEvent(Container source) {
-            super(source);
-        }
-
-        /**
-         * Gets the Property where the event occurred.
-         *
-         * @see com.vaadin.data.Container.ItemSetChangeEvent#getContainer()
-         */
-        @Override
-        public Container getContainer() {
-            return (Container) getSource();
-        }
-
-    }
-
-    /**
-     * Implementation of property set change event.
-     */
-    private static class PropertySetChangeEvent extends EventObject
-            implements Container.PropertySetChangeEvent, Serializable {
-
-        private PropertySetChangeEvent(Container source) {
-            super(source);
-        }
-
-        /**
-         * Retrieves the Container whose contents have been modified.
-         *
-         * @see com.vaadin.data.Container.PropertySetChangeEvent#getContainer()
-         */
-        @Override
-        public Container getContainer() {
-            return (Container) getSource();
-        }
-
     }
 
     /**

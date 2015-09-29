@@ -436,35 +436,6 @@ public class IndexedContainer
 
     /* Event notifiers */
 
-    /**
-     * An <code>event</code> object specifying the list whose Item set has
-     * changed.
-     *
-     * @author Vaadin Ltd.
-     * @since 3.0
-     */
-    public static class ItemSetChangeEvent extends BaseItemSetChangeEvent {
-
-        private final int addedItemIndex;
-
-        private ItemSetChangeEvent(IndexedContainer source,
-                int addedItemIndex) {
-            super(source);
-            this.addedItemIndex = addedItemIndex;
-        }
-
-        /**
-         * Iff one item is added, gives its index.
-         *
-         * @return -1 if either multiple items are changed or some other change
-         *         than add is done.
-         */
-        public int getAddedItemIndex() {
-            return addedItemIndex;
-        }
-
-    }
-
     @Override
     public void addPropertySetChangeListener(
             Container.PropertySetChangeListener listener) {
@@ -566,7 +537,7 @@ public class IndexedContainer
 
     @Override
     protected void fireItemSetChange() {
-        fireItemSetChange(new IndexedContainer.ItemSetChangeEvent(this, -1));
+        fireItemSetChange(new ItemSetChangeEvent(this));
     }
 
     /**
