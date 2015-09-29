@@ -12,7 +12,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<gwt.module.output>${project.build.outputDirectory}/VAADIN/gwt</gwt.module.output>
+		<gwt.module.output>${project.build.outputDirectory}/VAADIN</gwt.module.output>
 	</properties>
 
 	<dependencies>
@@ -103,6 +103,7 @@
 						<module>com.vaadin.ClientEngine</module>
 					</modules>
 					<webMode>true</webMode>
+					<style>OBF</style>
 				</configuration>
 			</plugin>
 		</plugins>

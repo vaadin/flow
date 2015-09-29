@@ -18,6 +18,7 @@ package com.vaadin.server;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -520,18 +522,31 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         VaadinRequest request = context.getRequest();
 
         VaadinService vaadinService = request.getService();
-        String vaadinLocation = vaadinService.getStaticFileLocation(request)
-                + "/VAADIN/";
+        String staticFileLocation = vaadinService
+                .getStaticFileLocation(request);
+        String vaadinLocation = staticFileLocation + "/VAADIN/";
 
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
 
-        // Client engine
+        String gwtModuleDir = "/VAADIN/client";
+        String jsFile;
+
+        try {
+            InputStream prop = getClass()
+                    .getResourceAsStream(gwtModuleDir + "/compile.properties");
+            Properties p = new Properties();
+            p.load(prop);
+            jsFile = p.getProperty("jsFile");
+        } catch (Exception e) {
+            jsFile = "COMPILE_PROPERTIES_NOT_FOUND";
+            getLogger().severe(
+                    "No compile.properties file found for ClientEngine");
+        }
+
         fragmentNodes.add(new Element(Tag.valueOf("script"), "")
-                .attr("type", "text/javascript").attr("src",
-                        vaadinLocation + "gwt/" + Constants.CLIENT_ENGINE_MODULE
-                                + "/" + Constants.CLIENT_ENGINE_MODULE
-                                + ".nocache.js"));
+                .attr("type", "text/javascript")
+                .attr("src", staticFileLocation + gwtModuleDir + "/" + jsFile));
 
         // Push
         if (context.getPushMode().isEnabled()) {

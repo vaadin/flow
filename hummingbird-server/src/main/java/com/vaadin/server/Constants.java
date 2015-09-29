@@ -144,7 +144,7 @@ public interface Constants {
 
     static final String WIDGETSET_DIR_PATH = "VAADIN/widgetsets";
 
-    static final String CLIENT_ENGINE_MODULE = "com.vaadin.ClientEngine";
+    static final String CLIENT_ENGINE_MODULE = "client";
 
     static final String DEFAULT_THEME_NAME = "valo";
 
