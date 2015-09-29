@@ -129,6 +129,11 @@ public class VaadinSessionTest {
             }
 
             @Override
+            public String getPathInfo() {
+                return null;
+            }
+
+            @Override
             public String getMethod() {
                 return "POST";
             }
