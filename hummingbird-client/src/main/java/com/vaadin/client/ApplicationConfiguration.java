@@ -53,7 +53,7 @@ import com.vaadin.shared.ui.ui.UIConstants;
 public class ApplicationConfiguration implements EntryPoint {
 
     /**
-     * Helper class for reading configuration options from the bootstap
+     * Helper class for reading configuration options from the bootstrap
      * javascript
      *
      * @since 7.0
@@ -192,10 +192,9 @@ public class ApplicationConfiguration implements EntryPoint {
             }
         }-*/;
 
-        private native String getUIDL()
-        /*-{
-           return this.getConfig("uidl");
-         }-*/;
+        private String getUIDL() {
+            return getConfigString("uidl");
+        }
     }
 
     /**

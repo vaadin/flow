@@ -45,7 +45,6 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.vaadin.server.communication.PortletDummyRequestHandler;
-import com.vaadin.server.communication.PortletUIInitHandler;
 import com.vaadin.util.CurrentInstance;
 
 /**
@@ -433,8 +432,6 @@ public class VaadinPortlet extends GenericPortlet
         } else if (request instanceof ResourceRequest) {
             if (ServletPortletHelper.isUIDLRequest(vaadinRequest)) {
                 return RequestType.UIDL;
-            } else if (PortletUIInitHandler.isUIInitRequest(vaadinRequest)) {
-                return RequestType.BROWSER_DETAILS;
             } else
                 if (ServletPortletHelper.isFileUploadRequest(vaadinRequest)) {
                 return RequestType.FILE_UPLOAD;

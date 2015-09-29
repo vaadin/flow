@@ -17,6 +17,7 @@
 package com.vaadin.server.communication;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.logging.Level;
@@ -68,7 +69,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         if (uI == null) {
             // This should not happen but it will if the UI has been closed. We
             // really don't want to see it in the server logs though
-            UIInitHandler.commitJsonResponse(request, response,
+            commitJsonResponse(request, response,
                     getUINotFoundErrorJSON(session.getService(), request));
             return true;
         }
@@ -95,15 +96,14 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             stringWriter.close();
         }
 
-        return UIInitHandler.commitJsonResponse(request, response,
-                stringWriter.toString());
+        return commitJsonResponse(request, response, stringWriter.toString());
     }
 
     private void writeRefresh(VaadinRequest request, VaadinResponse response)
             throws IOException {
         String json = VaadinService.createCriticalNotificationJSON(null, null,
                 null, null);
-        UIInitHandler.commitJsonResponse(request, response, json);
+        commitJsonResponse(request, response, json);
     }
 
     private void writeUidl(VaadinRequest request, VaadinResponse response,
@@ -186,6 +186,41 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
                 ci.getCommunicationErrorURL());
 
         return json;
+    }
+
+    /**
+     * Commit the JSON response. We can't write immediately to the output stream
+     * as we want to write only a critical notification if something goes wrong
+     * during the response handling.
+     *
+     * @param request
+     *            The request that resulted in this response
+     * @param response
+     *            The response to write to
+     * @param json
+     *            The JSON to write
+     * @return true if the JSON was written successfully, false otherwise
+     * @throws IOException
+     *             If there was an exception while writing to the output
+     */
+    public static boolean commitJsonResponse(VaadinRequest request,
+            VaadinResponse response, String json) throws IOException {
+        // The response was produced without errors so write it to the client
+        response.setContentType(JsonConstants.JSON_CONTENT_TYPE);
+
+        // Ensure that the browser does not cache UIDL responses.
+        // iOS 6 Safari requires this (#9732)
+        response.setHeader("Cache-Control", "no-cache");
+
+        byte[] b = json.getBytes("UTF-8");
+        response.setContentLength(b.length);
+
+        OutputStream outputStream = response.getOutputStream();
+        outputStream.write(b);
+        // NOTE GateIn requires the buffers to be flushed to work
+        outputStream.flush();
+
+        return true;
     }
 
 }

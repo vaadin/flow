@@ -1,4 +1,4 @@
-<module rename-to="client">
+<module rename-to="hummingbird.client">
 	<!-- This GWT module defines the Vaadin client side engine. -->
 
 	<inherits name="com.google.gwt.user.User" />

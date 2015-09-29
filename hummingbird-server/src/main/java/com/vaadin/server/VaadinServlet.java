@@ -42,7 +42,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.VaadinServletConfiguration.InitParameterName;
-import com.vaadin.server.communication.ServletUIInitHandler;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
@@ -941,7 +940,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      */
     @Deprecated
     protected enum RequestType {
-        FILE_UPLOAD, BROWSER_DETAILS, UIDL, OTHER, STATIC_FILE, APP, PUBLISHED_FILE, HEARTBEAT;
+        FILE_UPLOAD, UIDL, OTHER, STATIC_FILE, APP, PUBLISHED_FILE, HEARTBEAT;
     }
 
     /**
@@ -959,8 +958,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
             return RequestType.FILE_UPLOAD;
         } else if (ServletPortletHelper.isPublishedFileRequest(request)) {
             return RequestType.PUBLISHED_FILE;
-        } else if (ServletUIInitHandler.isUIInitRequest(request)) {
-            return RequestType.BROWSER_DETAILS;
         } else if (ServletPortletHelper.isUIDLRequest(request)) {
             return RequestType.UIDL;
         } else if (isStaticResourceRequest(request)) {

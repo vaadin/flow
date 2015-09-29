@@ -35,7 +35,6 @@ import com.vaadin.server.communication.PortletBootstrapHandler;
 import com.vaadin.server.communication.PortletDummyRequestHandler;
 import com.vaadin.server.communication.PortletListenerNotifier;
 import com.vaadin.server.communication.PortletStateAwareRequestHandler;
-import com.vaadin.server.communication.PortletUIInitHandler;
 import com.vaadin.ui.UI;
 
 public class VaadinPortletService extends VaadinService {
@@ -53,7 +52,6 @@ public class VaadinPortletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
 
-        handlers.add(new PortletUIInitHandler());
         handlers.add(new PortletListenerNotifier());
         handlers.add(0, new PortletDummyRequestHandler());
         handlers.add(0, new PortletBootstrapHandler());
@@ -181,10 +179,6 @@ public class VaadinPortletService extends VaadinService {
             // A portlet can also be sent an event even though it has not
             // been rendered, e.g. portlet on one page sends an event to a
             // portlet on another page and then moves the user to that page.
-            return true;
-        } else if (PortletUIInitHandler.isUIInitRequest(request)) {
-            // In some cases, the RenderRequest seems to be cached, causing the
-            // first request be the one triggered by vaadinBootstrap.js.
             return true;
         }
         return false;

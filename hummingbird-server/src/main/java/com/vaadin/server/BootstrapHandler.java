@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -53,6 +54,8 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
+import com.vaadin.shared.ui.ui.Transport;
+import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
@@ -62,21 +65,13 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 /**
+ * Request handler which handles bootstrapping of the application, i.e. the
+ * initial GET request
  *
  * @author Vaadin Ltd
  * @since 7.0.0
- *
- * @deprecated As of 7.0. Will likely change or be removed in a future version
  */
-@Deprecated
 public abstract class BootstrapHandler extends SynchronizedRequestHandler {
-
-    /**
-     * Parameter that is added to the UI init request if the session has already
-     * been restarted when generating the bootstrap HTML and ?restartApplication
-     * should thus be ignored when handling the UI init request.
-     */
-    public static final String IGNORE_RESTART_PARAM = "ignoreRestart";
 
     protected class BootstrapContext implements Serializable {
 
@@ -107,8 +102,12 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             return bootstrapResponse.getSession();
         }
 
+        public UI getUI() {
+            return bootstrapResponse.getUI();
+        }
+
         public Class<? extends UI> getUIClass() {
-            return bootstrapResponse.getUiClass();
+            return bootstrapResponse.getUI().getClass();
         }
 
         public String getThemeName() {
@@ -121,7 +120,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         public PushMode getPushMode() {
             if (pushMode == null) {
                 UICreateEvent event = new UICreateEvent(getRequest(),
-                        getUIClass());
+                        getUI().getClass());
 
                 pushMode = getBootstrapResponse().getUIProvider()
                         .getPushMode(event);
@@ -267,9 +266,11 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 return false;
             }
 
+            UI ui = createAndInitUI(provider, uiClass, request, session);
+
             BootstrapContext context = new BootstrapContext(response,
-                    new BootstrapFragmentResponse(this, request, session,
-                            uiClass, new ArrayList<Node>(), provider));
+                    new BootstrapFragmentResponse(this, request, session, ui,
+                            new ArrayList<Node>(), provider));
 
             setupMainDiv(context);
 
@@ -299,8 +300,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             Map<String, Object> headers = new LinkedHashMap<String, Object>();
             Document document = Document.createShell("");
             BootstrapPageResponse pageResponse = new BootstrapPageResponse(this,
-                    request, context.getSession(), context.getUIClass(),
-                    document, headers, fragmentResponse.getUIProvider());
+                    request, context.getSession(), context.getUI(), document,
+                    headers, fragmentResponse.getUIProvider());
             List<Node> fragmentNodes = fragmentResponse.getFragmentNodes();
 
             Element vaadinInternals = new Element(
@@ -358,9 +359,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     private void setupStandaloneDocument(BootstrapContext context,
             BootstrapPageResponse response) {
-        response.setHeader("Cache-Control", "no-cache");
-        response.setHeader("Pragma", "no-cache");
-        response.setDateHeader("Expires", 0);
+        setNoCacheHeaders(response);
 
         Document document = response.getDocument();
 
@@ -420,6 +419,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         String themeName = context.getThemeName();
         if (themeName != null) {
             String themeUri = getThemeUri(context, themeName);
+            head.appendElement("link").attr("rel", "stylesheet").attr("href",
+                    themeUri + "/styles.css");
             head.appendElement("link").attr("rel", "shortcut icon")
                     .attr("type", "image/vnd.microsoft.icon")
                     .attr("href", themeUri + "/favicon.ico");
@@ -465,6 +466,12 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         body.addClass(ApplicationConstants.GENERATED_BODY_CLASSNAME);
     }
 
+    private void setNoCacheHeaders(BootstrapPageResponse response) {
+        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+    }
+
     /**
      * @since
      * @param uiClass
@@ -490,10 +497,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return url;
     }
 
-    protected String getMainDivStyle(BootstrapContext context) {
-        return null;
-    }
-
     /**
      * Method to write the div element into which that actual Vaadin application
      * is rendered.
@@ -507,8 +510,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
      * @throws IOException
      */
     private void setupMainDiv(BootstrapContext context) throws IOException {
-        String style = getMainDivStyle(context);
-
         /*- Add classnames;
          *      .v-app
          *      .v-app-loading
@@ -529,7 +530,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
 
-        String gwtModuleDir = "/VAADIN/client";
+        String gwtModuleDir = "/VAADIN/hummingbird.client";
         String jsFile;
 
         try {
@@ -633,17 +634,20 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         JsonObject appConfig = Json.createObject();
 
+        appConfig.put(UIConstants.UI_ID_PARAMETER, context.getUI().getUIId());
+        String initialUIDL = "";
+        try {
+            initialUIDL = getInitialUidl(request, context.getUI());
+        } catch (IOException e) {
+            getLogger().log(Level.SEVERE, "Unable to create initial UIDL", e);
+        }
+        appConfig.put("uidl", initialUIDL);
+
         String themeName = context.getThemeName();
         if (themeName != null) {
             appConfig.put("theme", themeName);
         }
         appConfig.put("client-engine", Constants.CLIENT_ENGINE_MODULE);
-
-        // Ignore restartApplication that might be passed to UI init
-        if (request.getParameter(
-                VaadinService.URL_PARAMETER_RESTART_APPLICATION) != null) {
-            appConfig.put("extraParams", "&" + IGNORE_RESTART_PARAM + "=1");
-        }
 
         JsonObject versionInfo = Json.createObject();
         versionInfo.put("vaadinVersion", Version.getFullVersion());
@@ -793,4 +797,114 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             object.put(key, value);
         }
     }
+
+    protected UI createAndInitUI(UIProvider provider,
+            Class<? extends UI> uiClass, VaadinRequest request,
+            VaadinSession session) {
+        // Check for an existing UI based on embed id
+        String embedId = getEmbedId(request);
+        Integer uiId = Integer.valueOf(session.getNextUIid());
+
+        // Explicit Class.cast to detect if the UIProvider does something
+        // unexpected
+        UICreateEvent event = new UICreateEvent(request, uiClass, uiId);
+        UI ui = uiClass.cast(provider.createInstance(event));
+
+        // Initialize some fields for a newly created UI
+        if (ui.getSession() != session) {
+            // Session already set
+            ui.setSession(session);
+        }
+
+        PushMode pushMode = provider.getPushMode(event);
+        if (pushMode == null) {
+            pushMode = session.getService().getDeploymentConfiguration()
+                    .getPushMode();
+        }
+        ui.getPushConfiguration().setPushMode(pushMode);
+
+        Transport transport = provider.getPushTransport(event);
+        if (transport != null) {
+            ui.getPushConfiguration().setTransport(transport);
+        }
+
+        // Set thread local here so it is available in init
+        UI.setCurrent(ui);
+
+        ui.doInit(request, uiId.intValue(), embedId);
+
+        session.addUI(ui);
+
+        return ui;
+    }
+
+    /**
+     * Generates the initial UIDL message that can e.g. be included in a html
+     * page to avoid a separate round trip just for getting the UIDL.
+     *
+     * @param request
+     *            the request that caused the initialization
+     * @param uI
+     *            the UI for which the UIDL should be generated
+     * @return a string with the initial UIDL message
+     * @throws IOException
+     */
+    protected String getInitialUidl(VaadinRequest request, UI uI)
+            throws IOException {
+        StringWriter writer = new StringWriter();
+        try {
+            writer.write("{");
+
+            VaadinSession session = uI.getSession();
+            if (session.getConfiguration().isXsrfProtectionEnabled()) {
+                writer.write(getSecurityKeyUIDL(session));
+            }
+            new UidlWriter().write(uI, writer, false);
+            writer.write("}");
+
+            String initialUIDL = writer.toString();
+            getLogger().log(Level.FINE, "Initial UIDL:" + initialUIDL);
+            return initialUIDL;
+        } finally {
+            writer.close();
+        }
+    }
+
+    /**
+     * Gets the security key (and generates one if needed) as UIDL.
+     *
+     * @param session
+     *            the vaadin session to which the security key belongs
+     * @return the security key UIDL or "" if the feature is turned off
+     */
+    private static String getSecurityKeyUIDL(VaadinSession session) {
+        String seckey = session.getCsrfToken();
+
+        return "\"" + ApplicationConstants.UIDL_SECURITY_TOKEN_ID + "\":\""
+                + seckey + "\",";
+    }
+
+    /**
+     * Constructs an embed id based on information in the request.
+     *
+     * @since 7.2
+     *
+     * @param request
+     *            the request to get embed information from
+     * @return the embed id, or <code>null</code> if id is not available.
+     *
+     * @see UI#getEmbedId()
+     */
+    protected String getEmbedId(VaadinRequest request) {
+        // Parameters sent by vaadinBootstrap.js
+        String windowName = request.getParameter("v-wn");
+        String appId = request.getParameter("v-appId");
+
+        if (windowName != null && appId != null) {
+            return windowName + '.' + appId;
+        } else {
+            return null;
+        }
+    }
+
 }

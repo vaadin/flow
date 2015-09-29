@@ -56,10 +56,9 @@ public class BootstrapFragmentResponse extends BootstrapResponse {
      *            the UI provider for the bootstrap
      */
     public BootstrapFragmentResponse(BootstrapHandler handler,
-            VaadinRequest request, VaadinSession session,
-            Class<? extends UI> uiClass, List<Node> fragmentNodes,
-            UIProvider uiProvider) {
-        super(handler, request, session, uiClass, uiProvider);
+            VaadinRequest request, VaadinSession session, UI ui,
+            List<Node> fragmentNodes, UIProvider uiProvider) {
+        super(handler, request, session, ui, uiProvider);
         this.fragmentNodes = fragmentNodes;
     }
 

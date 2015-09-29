@@ -21,11 +21,13 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
 import com.vaadin.server.RequestHandler;
+import com.vaadin.server.VaadinPortletRequest;
 import com.vaadin.server.VaadinPortletResponse;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
@@ -69,14 +71,36 @@ public class PortletDummyRequestHandler implements RequestHandler {
     }
 
     public static boolean isDummyRequest(VaadinRequest request) {
-        ResourceRequest resourceRequest = PortletUIInitHandler
-                .getResourceRequest(request);
+        ResourceRequest resourceRequest = getResourceRequest(request);
         if (resourceRequest == null) {
             return false;
         }
 
         return resourceRequest.getResourceID() != null
                 && resourceRequest.getResourceID().equals("DUMMY");
+    }
+
+    /**
+     * Returns the {@link ResourceRequest} for the given request or null if none
+     * could be found.
+     *
+     * @param request
+     *            The original request, must be a {@link VaadinPortletRequest}
+     * @return The resource request from the request parameter or null
+     */
+    static ResourceRequest getResourceRequest(VaadinRequest request) {
+        if (!(request instanceof VaadinPortletRequest)) {
+            throw new IllegalArgumentException(
+                    "Request must a VaadinPortletRequest");
+        }
+        PortletRequest portletRequest = ((VaadinPortletRequest) request)
+                .getPortletRequest();
+        if (!(portletRequest instanceof ResourceRequest)) {
+            return null;
+        }
+
+        return (ResourceRequest) portletRequest;
+
     }
 
 }

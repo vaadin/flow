@@ -6,9 +6,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.easymock.EasyMock;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinRequest;
@@ -17,7 +14,10 @@ import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WrappedHttpSession;
 import com.vaadin.server.WrappedSession;
-import com.vaadin.server.communication.UIInitHandler;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class AbstractSingleComponentContainerTest extends ComponentTestBase {
 
@@ -48,9 +48,7 @@ public class AbstractSingleComponentContainerTest extends ComponentTestBase {
             @Override
             public String getParameter(String name) {
 
-                if (UIInitHandler.BROWSER_DETAILS_PARAMETER.equals(name)) {
-                    return "1";
-                } else if (name.equals("v-cw") || name.equals("v-ch")) {
+                if (name.equals("v-cw") || name.equals("v-ch")) {
                     return "1000";
                 }
                 return "";

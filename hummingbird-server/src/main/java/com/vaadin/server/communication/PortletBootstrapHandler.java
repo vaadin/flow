@@ -32,7 +32,6 @@ import com.vaadin.server.VaadinPortletRequest;
 import com.vaadin.server.VaadinPortletResponse;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
-import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
 
@@ -82,14 +81,6 @@ public class PortletBootstrapHandler extends BootstrapHandler {
         }
 
         super.appendMainScriptTagContents(context, builder);
-    }
-
-    @Override
-    protected String getMainDivStyle(BootstrapContext context) {
-        VaadinService vaadinService = context.getRequest().getService();
-        return vaadinService.getDeploymentConfiguration()
-                .getApplicationOrSystemProperty(
-                        VaadinPortlet.PORTLET_PARAMETER_STYLE, null);
     }
 
     @Override

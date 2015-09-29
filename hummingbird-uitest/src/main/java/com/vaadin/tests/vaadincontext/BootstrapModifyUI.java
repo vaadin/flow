@@ -40,7 +40,8 @@ public class BootstrapModifyUI extends AbstractTestUI {
                 new Button.ClickListener() {
 
                     private boolean shouldModify(BootstrapResponse response) {
-                        Class<? extends UI> uiClass = response.getUiClass();
+                        Class<? extends UI> uiClass = response.getUI()
+                                .getClass();
                         boolean shouldModify = uiClass == BootstrapModifyUI.class;
                         return shouldModify;
                     }

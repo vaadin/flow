@@ -59,10 +59,10 @@ public class BootstrapPageResponse extends BootstrapResponse {
      *            the UI provider for the bootstrap
      */
     public BootstrapPageResponse(BootstrapHandler handler,
-            VaadinRequest request, VaadinSession session,
-            Class<? extends UI> uiClass, Document document,
-            Map<String, Object> headers, UIProvider uiProvider) {
-        super(handler, request, session, uiClass, uiProvider);
+            VaadinRequest request, VaadinSession session, UI ui,
+            Document document, Map<String, Object> headers,
+            UIProvider uiProvider) {
+        super(handler, request, session, ui, uiProvider);
         this.headers = headers;
         this.document = document;
     }

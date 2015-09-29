@@ -30,7 +30,7 @@ import com.vaadin.ui.UI;
 public abstract class BootstrapResponse extends EventObject {
     private final VaadinRequest request;
     private final VaadinSession session;
-    private final Class<? extends UI> uiClass;
+    private final UI ui;
     private final UIProvider uiProvider;
 
     /**
@@ -49,12 +49,11 @@ public abstract class BootstrapResponse extends EventObject {
      *            the UI provider for the bootstrap
      */
     public BootstrapResponse(BootstrapHandler handler, VaadinRequest request,
-            VaadinSession session, Class<? extends UI> uiClass,
-            UIProvider uiProvider) {
+            VaadinSession session, UI ui, UIProvider uiProvider) {
         super(handler);
         this.request = request;
         this.session = session;
-        this.uiClass = uiClass;
+        this.ui = ui;
         this.uiProvider = uiProvider;
     }
 
@@ -91,13 +90,12 @@ public abstract class BootstrapResponse extends EventObject {
     }
 
     /**
-     * Gets the class of the UI that will be displayed on the generated
-     * bootstrap page.
+     * Gets the UI that will be displayed on the generated bootstrap page.
      *
-     * @return the class of the UI
+     * @return the UI
      */
-    public Class<? extends UI> getUiClass() {
-        return uiClass;
+    public UI getUI() {
+        return ui;
     }
 
     /**
