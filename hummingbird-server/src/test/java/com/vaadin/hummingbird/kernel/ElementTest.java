@@ -31,6 +31,7 @@ public class ElementTest {
         ignore.add("toString");
         ignore.add("hashCode");
         ignore.add("equals");
+        ignore.add("addEventListener");
         ignore.add("debug");
 
         for (Method m : Element.class.getDeclaredMethods()) {
