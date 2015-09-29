@@ -76,23 +76,23 @@ public class TreeNode {
     private final JavaScriptObject proxy = JavaScriptObject.createObject();
     private final FastStringMap<TreeNodeProperty> properties = FastStringMap
             .create();
-    private final CallbackQueue callbackQueue;
+    private final TreeUpdater treeUpdater;
     private final int id;
 
     private List<TreeNodeChangeListener> listeners;
     private FastStringMap<EventArray> arrayProperties;
     private Map<Integer, Node> elements;
 
-    public TreeNode(int id, CallbackQueue callbackQueue) {
+    public TreeNode(int id, TreeUpdater treeUpdater) {
         this.id = id;
-        this.callbackQueue = callbackQueue;
+        this.treeUpdater = treeUpdater;
         ((JsJsonObject) proxy.cast()).put(ID_PROPERTY, id);
     }
 
     public static int getProxyId(JavaScriptObject proxy) {
         JsonObject json = (JsJsonObject) proxy.cast();
         if (!json.hasKey(ID_PROPERTY)) {
-            throw new RuntimeException("Object is not a TreeNode proxy");
+            return -1;
         }
         return (int) json.getNumber(ID_PROPERTY);
     }
@@ -127,7 +127,7 @@ public class TreeNode {
     }
 
     public CallbackQueue getCallbackQueue() {
-        return callbackQueue;
+        return getTreeUpdater().getCallbackQueue();
     }
 
     public TreeNodeProperty getProperty(String name) {
@@ -138,7 +138,7 @@ public class TreeNode {
             properties.put(name, property);
             addPropertyDescriptor(proxy, name,
                     property.getPropertyDescriptor());
-            callbackQueue.enqueue(new PropertyAddEvent(name, property));
+            getCallbackQueue().enqueue(new PropertyAddEvent(name, property));
         }
         return property;
     }
@@ -153,6 +153,8 @@ public class TreeNode {
         if (arrayProperties == null) {
             arrayProperties = FastStringMap.create();
         }
+
+        CallbackQueue callbackQueue = getCallbackQueue();
 
         // TODO check for existing non-array property
         EventArray eventArray = arrayProperties.get(name);
@@ -194,6 +196,10 @@ public class TreeNode {
         } else {
             return elements.get(Integer.valueOf(templateId));
         }
+    }
+
+    public TreeUpdater getTreeUpdater() {
+        return treeUpdater;
     }
 
 }

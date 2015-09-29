@@ -518,7 +518,7 @@ public class TreeUpdater {
         Integer key = Integer.valueOf(id);
         TreeNode node = idToNode.get(key);
         if (node == null) {
-            node = new TreeNode(id, callbackQueue);
+            node = new TreeNode(id, this);
             idToNode.put(key, node);
         }
         return node;
@@ -586,6 +586,10 @@ public class TreeUpdater {
 
     public Template getTemplate(int templateId) {
         return templates.get(Integer.valueOf(templateId));
+    }
+
+    public CallbackQueue getCallbackQueue() {
+        return callbackQueue;
     }
 
 }

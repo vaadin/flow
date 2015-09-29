@@ -84,9 +84,6 @@ public class TreeListenerHelper {
                                 + ", old property value: " + oldPropertyValue
                                 + ", new property value: " + newPropertyValue);
 
-                        if (newNode == null && createIfNecessary) {
-                            throw new RuntimeException();
-                        }
                         if (newNode != null) {
                             innerRegistration = addListener(newNode, rest,
                                     createIfNecessary, listener);

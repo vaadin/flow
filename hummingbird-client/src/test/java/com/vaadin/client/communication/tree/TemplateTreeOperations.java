@@ -242,6 +242,7 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
     public void testMoveNode() {
         String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
                 + "'attributeBindings': {'child1.value': 'value1', 'child2.value': 'value2'},"
+                + "'events': {'click': ['model.child2 = model.child1; model.child1 = null;']},"
                 + "'modelStructure': [{'child1': ['value'], 'child2': ['value']}]}";
         JsonObject template = Json.parse(json.replace('\'', '"'));
 
@@ -262,5 +263,13 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
                 .getFirstChildElement();
         assertEquals("SPAN", templateElement.getTagName());
         assertEquals("childValue", templateElement.getPropertyString("value1"));
+        assertNull(templateElement.getPropertyObject("value2"));
+
+        NativeEvent event = Document.get().createClickEvent(0, 1, 2, 3, 4,
+                false, false, false, false);
+        templateElement.dispatchEvent(event);
+
+        assertNull(templateElement.getPropertyString("value1"));
+        assertEquals("childValue", templateElement.getPropertyString("value2"));
     }
 }

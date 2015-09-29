@@ -40,15 +40,17 @@ public class TreeNodeProperty {
 
         @Override
         public JsonObject serialize() {
-            if (value instanceof TreeNode) {
-                throw new RuntimeException("Not yet supported");
-            }
-
             JsonObject json = Json.createObject();
-            json.put("type", "put");
             json.put("id", owner.getId());
             json.put("key", name);
-            json.put("value", TreeUpdater.asJsonValue(value));
+
+            if (value instanceof TreeNode) {
+                json.put("type", "putNode");
+                json.put("value", ((TreeNode) value).getId());
+            } else {
+                json.put("type", "put");
+                json.put("value", TreeUpdater.asJsonValue(value));
+            }
             return json;
         }
     }
@@ -101,8 +103,14 @@ public class TreeNodeProperty {
         final Object oldValue = this.value;
         if (value instanceof JavaScriptObject
                 && ((JsonValue) value).getType() == JsonType.OBJECT) {
-            throw new RuntimeException(
-                    "Setting nodes from JavaScript is not yet supported");
+            int proxyId = TreeNode.getProxyId((JavaScriptObject) value);
+            if (proxyId == -1) {
+                throw new RuntimeException(
+                        "Setting arbitrary objects from JavaScript is not yet supported");
+            } else {
+                value = owner.getTreeUpdater()
+                        .getNode(Integer.valueOf(proxyId));
+            }
         }
 
         this.value = value;
