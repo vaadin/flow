@@ -3746,8 +3746,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
     private final DomEventListener selectionDomListener = new DomEventListener() {
         @Override
         public void handleEvent(JsonObject eventData) {
-            JsonArray selectedIndices = eventData
-                    .getArray("element.selection.selected()");
+            JsonArray selectedIndices = eventData.getArray("selection");
             Indexed container = getContainerDataSource();
             SelectionModel selectionModel = getSelectionModel();
             if (selectionModel instanceof SelectionModel.Single) {
@@ -4111,6 +4110,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             getJS(JS.class).provideRows(getElement(), id, rows,
                     container.size());
         });
+
+        getJS(JS.class).init(getElement());
     }
 
     @Override
@@ -5058,8 +5059,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
     @Override
     public void addSelectionListener(SelectionListener listener) {
         if (!hasListeners(SelectionEvent.class)) {
-            getElement().addEventData("select", "element.selection.selected()");
-            getElement().addEventListener("select", selectionDomListener);
+            getElement().addEventData("hSelect", "selection");
+            getElement().addEventListener("hSelect", selectionDomListener);
         }
         addListener(SelectionEvent.class, listener);
     }
@@ -5068,7 +5069,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
     public void removeSelectionListener(SelectionListener listener) {
         removeListener(SelectionEvent.class, listener);
         if (!hasListeners(SelectionEvent.class)) {
-            getElement().removeEventListener("select", selectionDomListener);
+            getElement().removeEventListener("hSelect", selectionDomListener);
         }
     }
 
@@ -5852,6 +5853,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
     @JavaScriptModule("Grid.js")
     public interface JS {
+        public void init(Element grid);
+
         public void provideRows(Element grid, String id, JsonArray rows,
                 int totalSize);
 
