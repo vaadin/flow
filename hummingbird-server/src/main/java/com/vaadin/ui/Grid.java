@@ -4092,26 +4092,33 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                 setSortOrder(newSortOrder);
             }
 
-            JsonArray rows = Json.createArray();
+            JsonArray rows = serializeData(index, count);
 
             Indexed container = getContainerDataSource();
-            for (Object itemId : container.getItemIds(index, count)) {
-                Item item = container.getItem(itemId);
-
-                JsonArray row = Json.createArray();
-                for (Column column : getColumns()) {
-                    Object value = item.getItemProperty(column.getPropertyId())
-                            .getValue();
-                    row.set(row.length(), String.valueOf(value));
-                }
-                rows.set(rows.length(), row);
-            }
-
             getJS(JS.class).provideRows(getElement(), id, rows,
                     container.size());
         });
 
         getJS(JS.class).init(getElement());
+    }
+
+    private JsonArray serializeData(int index, int count) {
+        Indexed container = getContainerDataSource();
+
+        JsonArray rows = Json.createArray();
+
+        for (Object itemId : container.getItemIds(index, count)) {
+            Item item = container.getItem(itemId);
+
+            JsonArray row = Json.createArray();
+            for (Column column : getColumns()) {
+                Object value = item.getItemProperty(column.getPropertyId())
+                        .getValue();
+                row.set(row.length(), String.valueOf(value));
+            }
+            rows.set(rows.length(), row);
+        }
+        return rows;
     }
 
     @Override
@@ -4265,7 +4272,10 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             }
         }
 
-        getJS(JS.class).resetDataSource(getElement(), datasource.size());
+        int datasourceSize = datasource.size();
+        JsonArray initialRows = serializeData(0, Math.max(50, datasourceSize));
+        getJS(JS.class).resetDataSource(getElement(), initialRows,
+                datasourceSize);
     }
 
     /**
@@ -5858,7 +5868,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         public void provideRows(Element grid, String id, JsonArray rows,
                 int totalSize);
 
-        public void resetDataSource(Element grid, int containerSize);
+        public void resetDataSource(Element grid, JsonArray initialRows,
+                int containerSize);
     }
 
     private static Logger getLogger() {

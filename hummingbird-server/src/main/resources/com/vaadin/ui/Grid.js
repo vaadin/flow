@@ -23,12 +23,23 @@
 		delete callbacks[id];
 	}
 
-	module.resetDataSource = function(grid, containerSize) {
+	module.resetDataSource = function(grid, initialRows, containerSize) {
 		grid.data.source = function(req) {
 			if (req.count == 0) {
 				req.success([], containerSize);
 				return;
 			}
+			
+			if (initialRows != null) {
+				var rows = initialRows;
+				initialRows = null;
+				
+				if (req.index == 0) {
+					req.success(rows, containerSize);
+					return;
+				}
+			}
+			
 			var id = "" + nextCallbackId++;
 			callbacks[id] = req.success;
 
