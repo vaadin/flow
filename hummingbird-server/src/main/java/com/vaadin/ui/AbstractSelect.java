@@ -1398,16 +1398,15 @@ public abstract class AbstractSelect extends AbstractField<Object>implements
      * Fires the item set change event.
      */
     protected void fireItemSetChange() {
-        // if (itemSetEventListeners != null &&
-        // !itemSetEventListeners.isEmpty()) {
-        // final Container.ItemSetChangeEvent event = new ItemSetChangeEvent(
-        // this);
-        // final Object[] listeners = itemSetEventListeners.toArray();
-        // for (int i = 0; i < listeners.length; i++) {
-        // ((Container.ItemSetChangeListener) listeners[i])
-        // .containerItemSetChange(event);
-        // }
-        // }
+        if (itemSetEventListeners != null && !itemSetEventListeners.isEmpty()) {
+            final Container.ItemSetChangeEvent event = new ItemSetChangeEvent(
+                    this);
+            final Object[] listeners = itemSetEventListeners.toArray();
+            for (int i = 0; i < listeners.length; i++) {
+                ((Container.ItemSetChangeListener) listeners[i])
+                        .containerItemSetChange(event);
+            }
+        }
         markAsDirty();
     }
 
