@@ -305,6 +305,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 "vaadin://bower_components/webcomponentsjs/webcomponents-lite.min.js"));
         deps.add(new Dependency(Type.HTML,
                 "vaadin://bower_components/polymer/polymer-mini.html"));
+        deps.add(new Dependency(Type.HTML,
+                "vaadin://bower_components/polymer/polymer-micro.html"));
 
         VaadinService vaadinService = request.getService();
         String staticFileLocation = vaadinService
