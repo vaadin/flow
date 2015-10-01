@@ -11,6 +11,10 @@ public class TemplateModelTest {
         public String getValue();
 
         public void setValue(String value);
+
+        public boolean isBoolean();
+
+        public void setBoolean(boolean value);
     }
 
     public class MyTestTemplate extends Template {
@@ -30,16 +34,27 @@ public class TemplateModelTest {
         }
     }
 
+    private MyTestTemplate template = new MyTestTemplate();
+    private MyTestModel model = template.getModel();
+    private StateNode node = template.getNode();
+
     @Test
     public void testTemplateModelAccess() {
-        MyTestTemplate template = new MyTestTemplate();
-        MyTestModel model = template.getModel();
-        StateNode node = template.getNode();
-
         model.setValue("foo");
         Assert.assertEquals("foo", node.get("value"));
 
         template.getNode().put("value", "bar");
         Assert.assertEquals("bar", model.getValue());
+    }
+
+    @Test
+    public void testBooleanFalseRemovesProperty() {
+        Assert.assertFalse(model.isBoolean());
+
+        model.setBoolean(true);
+        Assert.assertEquals(Boolean.TRUE, node.get("boolean"));
+
+        model.setBoolean(false);
+        Assert.assertFalse(node.containsKey("boolean"));
     }
 }

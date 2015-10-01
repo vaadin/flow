@@ -178,10 +178,19 @@ public abstract class Template extends AbstractComponent {
 
                         private void set(String propertyName, Class<?> type,
                                 Object value) {
-                            getNode().put(propertyName, value);
+                            if (type == boolean.class
+                                    && Boolean.FALSE.equals(value)) {
+                                getNode().remove(propertyName);
+                            } else {
+                                getNode().put(propertyName, value);
+                            }
                         }
 
                         private Object get(String propertyName, Class<?> type) {
+                            if (type == boolean.class) {
+                                return Boolean.valueOf(
+                                        getNode().containsKey(propertyName));
+                            }
                             return getNode().get(propertyName, type);
                         }
 
