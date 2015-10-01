@@ -15,8 +15,10 @@
  */
 package com.vaadin.ui;
 
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.hummingbird.kernel.Element;
@@ -30,6 +32,12 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 public abstract class Template extends AbstractComponent {
+    public interface Model {
+        // Only a marker
+    }
+
+    private Model model;
+
     private final StateNode node = StateNode.create();
 
     public Template() {
@@ -109,4 +117,94 @@ public abstract class Template extends AbstractComponent {
         return node;
     }
 
+    protected Model getModel() {
+        if (model == null) {
+            model = createModel();
+        }
+        return model;
+    }
+
+    private Class<? extends Model> getModelType() {
+        // TODO cache the result (preferably without leaking classloaders)
+        Class<?> type = getClass();
+        while (type != Template.class) {
+            try {
+                Method method = type.getDeclaredMethod("getModel");
+                return method.getReturnType().asSubclass(Model.class);
+            } catch (NoSuchMethodException e) {
+                type = type.getSuperclass();
+            }
+        }
+
+        return Model.class;
+    }
+
+    private Model createModel() {
+        Class<? extends Model> modelType = getModelType();
+        if (modelType == Model.class) {
+            return new Model() {
+                // Don't bother with a proxy if there's nothing in the interface
+            };
+        } else {
+            Object proxy = Proxy.newProxyInstance(modelType.getClassLoader(),
+                    new Class[] { modelType }, new InvocationHandler() {
+                        @Override
+                        public Object invoke(Object proxy, Method method,
+                                Object[] args) throws Throwable {
+                            if (method.getDeclaringClass() == Object.class) {
+                                return handleObjectMethod(proxy, method, args);
+                            }
+
+                            String name = method.getName();
+                            if (name.startsWith("get")
+                                    || name.startsWith("is")) {
+                                assert args.length == 0;
+                                assert method.getReturnType() != void.class;
+
+                                return get(getPropertyName(method.getName()),
+                                        method.getReturnType());
+                            } else if (name.startsWith("set")) {
+                                assert args.length == 1;
+                                assert method.getReturnType() == void.class;
+
+                                set(getPropertyName(method.getName()),
+                                        method.getParameterTypes()[0], args[0]);
+                                return null;
+                            } else {
+                                throw new RuntimeException(
+                                        "Method not supported: " + method);
+                            }
+                        }
+
+                        private void set(String propertyName, Class<?> type,
+                                Object value) {
+                            getNode().put(propertyName, value);
+                        }
+
+                        private Object get(String propertyName, Class<?> type) {
+                            return getNode().get(propertyName, type);
+                        }
+
+                        private String getPropertyName(String methodName) {
+                            String propertyName = methodName
+                                    .replaceFirst("^(set|get|is)", "");
+                            propertyName = Character
+                                    .toLowerCase(propertyName.charAt(0))
+                                    + propertyName.substring(1);
+                            return propertyName;
+                        }
+
+                        private Object handleObjectMethod(Object proxy,
+                                Method method, Object[] args) {
+                            switch (method.getName()) {
+                            default:
+                                throw new RuntimeException(
+                                        "Method not yet supported: " + method);
+                            }
+                        }
+
+                    });
+            return (Model) proxy;
+        }
+    }
 }
