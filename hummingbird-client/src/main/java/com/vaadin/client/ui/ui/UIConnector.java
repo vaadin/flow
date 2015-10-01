@@ -50,6 +50,7 @@ import com.vaadin.client.ServerConnector;
 import com.vaadin.client.UIDL;
 import com.vaadin.client.VConsole;
 import com.vaadin.client.ValueMap;
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.annotations.OnStateChange;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.ui.AbstractConnector;
@@ -499,8 +500,8 @@ public class UIConnector extends AbstractHasComponentsConnector {
     }
 
     private void updateVaadinFavicon(String newTheme) {
-        NodeList<Element> iconElements = querySelectorAll(
-                "link[rel~=\"icon\"]");
+        NodeList<Element> iconElements = WidgetUtil
+                .querySelectorAll("link[rel~=\"icon\"]");
         for (int i = 0; i < iconElements.getLength(); i++) {
             Element iconElement = iconElements.getItem(i);
 
@@ -513,11 +514,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
             }
         }
     }
-
-    private static native NodeList<Element> querySelectorAll(String selector)
-    /*-{
-        return $doc.querySelectorAll(selector);
-    }-*/;
 
     /**
      * Finds a link tag for a style sheet with the given URL
@@ -652,7 +648,7 @@ public class UIConnector extends AbstractHasComponentsConnector {
             String newPrefix) {
         // Find all "attributeName=" which start with "oldPrefix" using e.g.
         // [^src='http://oldpath']
-        NodeList<Element> elements = querySelectorAll(
+        NodeList<Element> elements = WidgetUtil.querySelectorAll(
                 "[" + attributeName + "^='" + oldPrefix + "']");
         for (int i = 0; i < elements.getLength(); i++) {
             Element element = elements.getItem(i);

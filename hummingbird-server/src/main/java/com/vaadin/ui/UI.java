@@ -27,7 +27,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.Tag;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
@@ -100,10 +99,6 @@ import elemental.json.JsonValue;
  *
  * @since 7.0
  */
-@JavaScript({
-        "vaadin://bower_components/webcomponentsjs/webcomponents-lite.min.js" })
-@com.vaadin.annotations.HTML({
-        "vaadin://bower_components/polymer/polymer-mini.html" })
 @Tag("div")
 public abstract class UI extends CssLayout
         implements PollNotifier, Focusable, Layer {

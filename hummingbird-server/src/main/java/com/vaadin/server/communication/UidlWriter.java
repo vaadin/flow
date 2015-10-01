@@ -160,40 +160,14 @@ public class UidlWriter implements Serializable {
 
             Collection<ClientConnector> dirtyVisibleConnectors = ui
                     .getConnectorTracker().getDirtyVisibleConnectors();
-            JsonObject dependencies = Json.createObject();
-            List<Class<? extends ClientConnector>> dependencyClasses = new ArrayList<>();
+
+            Set<Class<? extends ClientConnector>> dependencyClasses = new HashSet<>();
             for (ClientConnector c : dirtyVisibleConnectors) {
-                Class<? extends ClientConnector> cls = c.getClass();
-                if (!ui.getResourcesHandled().contains(cls)) {
-                    dependencyClasses.add(cls);
-                }
+                dependencyClasses.add(c.getClass());
             }
 
-            // /*
-            // * Ensure super classes come before sub classes to get script
-            // * dependency order right. Sub class @JavaScript might assume that
-            // *
-            // * @JavaScript defined by super class is already loaded.
-            // */
-            Collections.sort(dependencyClasses, new Comparator<Class<?>>() {
-                @Override
-                public int compare(Class<?> o1, Class<?> o2) {
-                    // TODO optimize using Class.isAssignableFrom?
-                    return hierarchyDepth(o1) - hierarchyDepth(o2);
-                }
-
-                private int hierarchyDepth(Class<?> type) {
-                    if (type == Object.class) {
-                        return 0;
-                    } else {
-                        return hierarchyDepth(type.getSuperclass()) + 1;
-                    }
-                }
-            });
-            for (Class<? extends ClientConnector> cls : dependencyClasses) {
-                handleDependencies(ui, cls, response);
-            }
-
+            List<Dependency> deps = collectDependencies(ui, dependencyClasses);
+            writeDependencies(ui, deps, response);
             encodeChanges(ui, response);
 
             encodeRpc(ui, response);
@@ -204,6 +178,161 @@ public class UidlWriter implements Serializable {
             uiConnectorTracker.setWritingResponse(false);
             uiConnectorTracker.cleanConnectorMap();
         }
+    }
+
+    private void writeDependencies(UI ui, List<Dependency> deps,
+            JsonObject response) {
+        LegacyCommunicationManager manager = ui.getSession()
+                .getCommunicationManager();
+
+        for (Dependency d : deps) {
+            JsonArray json;
+
+            if (d.getType() == Dependency.Type.SCRIPT) {
+                if (!response.hasKey(DEPENDENCY_JAVASCRIPT)) {
+                    response.put(DEPENDENCY_JAVASCRIPT, Json.createArray());
+                }
+                json = response.getArray(DEPENDENCY_JAVASCRIPT);
+            } else if (d.getType() == Dependency.Type.HTML) {
+                if (!response.hasKey(DEPENDENCY_HTML)) {
+                    response.put(DEPENDENCY_HTML, Json.createArray());
+                }
+                json = response.getArray(DEPENDENCY_HTML);
+            } else if (d.getType() == Dependency.Type.STYLSHEET) {
+                if (!response.hasKey(DEPENDENCY_STYLESHEET)) {
+                    response.put(DEPENDENCY_STYLESHEET, Json.createArray());
+                }
+                json = response.getArray(DEPENDENCY_STYLESHEET);
+            } else {
+                throw new IllegalStateException("Unknown type: " + d.getType());
+            }
+
+            json.set(json.length(), d.getUrl());
+        }
+    }
+
+    public static List<Dependency> collectDependencies(UI ui,
+            Set<Class<? extends ClientConnector>> classes) {
+        List<Class<? extends ClientConnector>> unhandledClasses = new ArrayList<>();
+        for (Class<? extends ClientConnector> cls : classes) {
+            if (!ui.getResourcesHandled().contains(cls)) {
+                unhandledClasses.add(cls);
+            }
+        }
+
+        if (unhandledClasses.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        /*
+         * Ensure super classes come before sub classes to get script dependency
+         * order right. Sub class @JavaScript might assume that
+         *
+         * @JavaScript defined by super class is already loaded.
+         */
+        Collections.sort(unhandledClasses, new Comparator<Class<?>>() {
+            @Override
+            public int compare(Class<?> o1, Class<?> o2) {
+                if (o1.isAssignableFrom(o2)) {
+                    return -1;
+                } else if (o2.isAssignableFrom(o1)) {
+                    return 1;
+                }
+                if (UI.class.isAssignableFrom(o1)) {
+                    return -1;
+                } else if (UI.class.isAssignableFrom(o2)) {
+                    return 1;
+                }
+
+                return 0;
+            }
+        });
+
+        List<Dependency> dependencies = new ArrayList<>();
+        LegacyCommunicationManager manager = ui.getSession()
+                .getCommunicationManager();
+        for (Class<? extends ClientConnector> cls : unhandledClasses) {
+            collectDependencies(ui, cls, dependencies, manager);
+        }
+        return dependencies;
+    }
+
+    private static void collectDependencies(UI ui,
+            Class<? extends ClientConnector> cls, List<Dependency> dependencies,
+            LegacyCommunicationManager manager) {
+
+        if (ui.getResourcesHandled().contains(cls)) {
+            return;
+        }
+
+        getLogger().info("Collecting dependencies for " + cls.getName());
+        ui.getResourcesHandled().add(cls);
+
+        JavaScript jsAnnotation = cls.getAnnotation(JavaScript.class);
+        if (jsAnnotation != null) {
+            for (String uri : jsAnnotation.value()) {
+                Dependency dependency = new Dependency(Dependency.Type.SCRIPT,
+                        manager.registerDependency(uri, cls));
+                dependencies.add(dependency);
+                getLogger().info("Dependency found: " + dependency);
+            }
+        }
+
+        StyleSheet styleAnnotation = cls.getAnnotation(StyleSheet.class);
+        if (styleAnnotation != null) {
+            for (String uri : styleAnnotation.value()) {
+                Dependency dependency = new Dependency(
+                        Dependency.Type.STYLSHEET,
+                        manager.registerDependency(uri, cls));
+                dependencies.add(dependency);
+                getLogger().info("Dependency found: " + dependency);
+            }
+        }
+
+        List<String> htmlResources = getHtmlResources(cls);
+        if (!htmlResources.isEmpty()) {
+
+            for (String uri : htmlResources) {
+                Dependency dependency = new Dependency(Dependency.Type.HTML,
+                        manager.registerDependency(uri, cls));
+                dependencies.add(dependency);
+                getLogger().info("Dependency found: " + dependency);
+            }
+        }
+
+        if (Component.class.isAssignableFrom(cls.getSuperclass())) {
+            collectDependencies(ui,
+                    (Class<? extends ClientConnector>) cls.getSuperclass(),
+                    dependencies, manager);
+        }
+    }
+
+    public static class Dependency {
+        public enum Type {
+            SCRIPT, HTML, STYLSHEET
+        };
+
+        private Type type;
+        private String url;
+
+        public Dependency(Type type, String url) {
+            this.type = type;
+            this.url = url;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        @Override
+        public String toString() {
+            return "Dependency [type=" + type + ", url=" + url + "]";
+        }
+
     }
 
     public static void encodeRpc(UI ui, JsonObject response) {
@@ -261,58 +390,7 @@ public class UidlWriter implements Serializable {
      */
     private void handleDependencies(UI ui, Class<? extends ClientConnector> cls,
             JsonObject response) {
-        if (ui.getResourcesHandled().contains(cls)) {
-            return;
-        }
 
-        ui.getResourcesHandled().add(cls);
-        LegacyCommunicationManager manager = ui.getSession()
-                .getCommunicationManager();
-
-        JavaScript jsAnnotation = cls.getAnnotation(JavaScript.class);
-        if (jsAnnotation != null) {
-            if (!response.hasKey(DEPENDENCY_JAVASCRIPT)) {
-                response.put(DEPENDENCY_JAVASCRIPT, Json.createArray());
-            }
-            JsonArray scriptsJson = response.getArray(DEPENDENCY_JAVASCRIPT);
-
-            for (String uri : jsAnnotation.value()) {
-                scriptsJson.set(scriptsJson.length(),
-                        manager.registerDependency(uri, cls));
-            }
-        }
-
-        StyleSheet styleAnnotation = cls.getAnnotation(StyleSheet.class);
-        if (styleAnnotation != null) {
-            if (!response.hasKey(DEPENDENCY_STYLESHEET)) {
-                response.put(DEPENDENCY_STYLESHEET, Json.createArray());
-            }
-            JsonArray stylesJson = response.getArray(DEPENDENCY_STYLESHEET);
-
-            for (String uri : styleAnnotation.value()) {
-                stylesJson.set(stylesJson.length(),
-                        manager.registerDependency(uri, cls));
-            }
-        }
-
-        List<String> htmlResources = getHtmlResources(cls);
-        if (!htmlResources.isEmpty()) {
-            if (!response.hasKey(DEPENDENCY_HTML)) {
-                response.put(DEPENDENCY_HTML, Json.createArray());
-            }
-            JsonArray htmlJson = response.getArray(DEPENDENCY_HTML);
-
-            for (String uri : htmlResources) {
-                htmlJson.set(htmlJson.length(),
-                        manager.registerDependency(uri, cls));
-            }
-        }
-
-        if (Component.class.isAssignableFrom(cls.getSuperclass())) {
-            handleDependencies(ui,
-                    (Class<? extends ClientConnector>) cls.getSuperclass(),
-                    response);
-        }
     }
 
     public static List<String> getHtmlResources(

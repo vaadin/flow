@@ -691,7 +691,7 @@ public class WidgetUtil {
                      return @com.vaadin.client.WidgetUtil::getRequiredHeightBoundingClientRectDouble(Lcom/google/gwt/dom/client/Element;)(element);
                  }
                  var height = parseFloat(heightPx); // Will automatically skip "px" suffix
-                 var border = parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth); // Will automatically skip "px" suffix 
+                 var border = parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth); // Will automatically skip "px" suffix
                  var padding = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom); // Will automatically skip "px" suffix
                  return height+border+padding;
              }-*/;
@@ -801,7 +801,7 @@ public class WidgetUtil {
             com.google.gwt.dom.client.Element el, String p)
             /*-{
                 try {
-            
+
                 if (el.currentStyle) {
                     // IE
                     return el.currentStyle[p];
@@ -816,7 +816,7 @@ public class WidgetUtil {
                 } catch (e) {
                     return "";
                 }
-            
+
              }-*/;
 
     /**
@@ -830,7 +830,7 @@ public class WidgetUtil {
         try {
             el.focus();
         } catch (e) {
-    
+
         }
     }-*/;
 
@@ -1137,7 +1137,7 @@ public class WidgetUtil {
        if ($wnd.document.activeElement) {
            return $wnd.document.activeElement;
        }
-    
+
        return null;
      }-*/;
 
@@ -1208,11 +1208,11 @@ public class WidgetUtil {
     /*-{
         var top = elem.offsetTop;
         var height = elem.offsetHeight;
-    
+
         if (elem.parentNode != elem.offsetParent) {
           top -= elem.parentNode.offsetTop;
         }
-    
+
         var cur = elem.parentNode;
         while (cur && (cur.nodeType == 1)) {
           if (top < cur.scrollTop) {
@@ -1221,12 +1221,12 @@ public class WidgetUtil {
           if (top + height > cur.scrollTop + cur.clientHeight) {
             cur.scrollTop = (top + height) - cur.clientHeight;
           }
-    
+
           var offsetTop = cur.offsetTop;
           if (cur.parentNode != cur.offsetParent) {
             offsetTop -= cur.parentNode.offsetTop;
           }
-    
+
           top += offsetTop - cur.scrollTop;
           cur = cur.parentNode;
         }
@@ -1649,7 +1649,7 @@ public class WidgetUtil {
                     }
                     var heightWithoutBorder = cloneElement.offsetHeight;
                     parentElement.removeChild(cloneElement);
-                    
+
                     return heightWithBorder - heightWithoutBorder;
                 }
             }-*/;
@@ -1783,4 +1783,10 @@ public class WidgetUtil {
         // 12 + int(30.6) / 60 = 12 + 30/60 = 12.5
         return integerPart + ((int) nrFractions) / divisor;
     }
+
+    public static native NodeList<Element> querySelectorAll(String selector)
+    /*-{
+        return $doc.querySelectorAll(selector);
+    }-*/;
+
 }

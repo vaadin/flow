@@ -593,12 +593,12 @@ public class ApplicationConnection implements HasHandlers {
 
     static final int MAX_CSS_WAITS = 100;
 
-    public void executeWhenCSSLoaded(final Command c) {
-        if (!isCSSLoaded() && cssWaits < MAX_CSS_WAITS) {
+    public void executeWhenDependenciesLoaded(final Command c) {
+        if (isResourcesPending() && cssWaits < MAX_CSS_WAITS) {
             (new Timer() {
                 @Override
                 public void run() {
-                    executeWhenCSSLoaded(c);
+                    executeWhenDependenciesLoaded(c);
                 }
             }).schedule(50);
 
@@ -624,10 +624,13 @@ public class ApplicationConnection implements HasHandlers {
      *
      * @return
      */
-    protected boolean isCSSLoaded() {
-        return cssLoaded
-                || getLoadingIndicator().getElement().getOffsetHeight() != 0;
+    protected boolean isResourcesPending() {
+        return WidgetUtil.querySelectorAll("[pending]").getLength() != 0;
     }
+
+    protected native boolean isPolymerLoaded()/*-{
+                                              return !!$wnd.Polymer;
+                                              }-*/;
 
     /**
      * Shows the communication error notification.

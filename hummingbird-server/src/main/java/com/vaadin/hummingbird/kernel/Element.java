@@ -65,7 +65,7 @@ public class Element implements Serializable {
     public static void debug(String string) {
         assert string != null;
 
-        if (true) {
+        if (false) {
             getLogger().info(string);
         }
 

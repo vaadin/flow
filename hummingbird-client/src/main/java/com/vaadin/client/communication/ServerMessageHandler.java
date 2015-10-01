@@ -256,7 +256,7 @@ public class ServerMessageHandler {
         } else if (connection.getState() == State.INITIALIZING) {
             // Application is starting up for the first time
             connection.setApplicationRunning(true);
-            connection.executeWhenCSSLoaded(new Command() {
+            connection.executeWhenDependenciesLoaded(new Command() {
                 @Override
                 public void execute() {
                     handleJSON(json);

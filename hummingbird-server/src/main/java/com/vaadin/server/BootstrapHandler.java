@@ -25,6 +25,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -44,12 +45,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.parser.Tag;
 
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Viewport;
 import com.vaadin.annotations.ViewportGeneratorClass;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
+import com.vaadin.server.communication.UidlWriter.Dependency;
+import com.vaadin.server.communication.UidlWriter.Dependency.Type;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
@@ -272,13 +273,21 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                     new BootstrapFragmentResponse(this, request, session, ui,
                             new ArrayList<Node>(), provider));
 
+            // Required scripts, html files, stylesheets
+            Set<Class<? extends ClientConnector>> dependencyClasses = new HashSet<>();
+            addComponentClasses(ui, dependencyClasses);
+            List<Dependency> deps = UidlWriter.collectDependencies(ui,
+                    dependencyClasses);
+            List<Dependency> builtInDeps = getBuiltInDeps(context);
+            deps.addAll(0, builtInDeps);
+
             setupMainDiv(context);
 
             BootstrapFragmentResponse fragmentResponse = context
                     .getBootstrapResponse();
             session.modifyBootstrapResponse(fragmentResponse);
 
-            String html = getBootstrapHtml(context);
+            String html = getBootstrapHtml(context, deps);
 
             writeBootstrapPage(response, html);
         } catch (JsonException e) {
@@ -288,7 +297,71 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return true;
     }
 
-    private String getBootstrapHtml(BootstrapContext context) {
+    private List<Dependency> getBuiltInDeps(BootstrapContext context) {
+        List<Dependency> deps = new ArrayList<>();
+        VaadinRequest request = context.getRequest();
+
+        deps.add(new Dependency(Type.SCRIPT,
+                "vaadin://bower_components/webcomponentsjs/webcomponents-lite.min.js"));
+        deps.add(new Dependency(Type.HTML,
+                "vaadin://bower_components/polymer/polymer-mini.html"));
+
+        VaadinService vaadinService = request.getService();
+        String staticFileLocation = vaadinService
+                .getStaticFileLocation(request);
+        String vaadinLocation = staticFileLocation + "/VAADIN/";
+
+        deps.add(new Dependency(Type.SCRIPT,
+                getClientEngineUrl(staticFileLocation)));
+
+        // Parameter appended to JS to bypass caches after version upgrade.
+        String versionQueryParam = "?v=" + Version.getFullVersion();
+
+        // Push
+        if (context.getPushMode().isEnabled()) {
+            // Load client-side dependencies for push support
+            String pushJS = vaadinLocation;
+            if (context.getRequest().getService().getDeploymentConfiguration()
+                    .isProductionMode()) {
+                pushJS += ApplicationConstants.VAADIN_PUSH_JS;
+            } else {
+                pushJS += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+            }
+
+            pushJS += versionQueryParam;
+            deps.add(new Dependency(Type.SCRIPT, pushJS));
+        }
+
+        String bootstrapLocation = vaadinLocation
+                + ApplicationConstants.VAADIN_BOOTSTRAP_JS + versionQueryParam;
+        deps.add(new Dependency(Type.SCRIPT, bootstrapLocation));
+
+        return deps;
+    }
+
+    private String getClientEngineUrl(String staticFileLocation) {
+
+        String gwtModuleDir = "/VAADIN/hummingbird.client";
+        String jsFile;
+
+        try {
+            InputStream prop = getClass()
+                    .getResourceAsStream(gwtModuleDir + "/compile.properties");
+            Properties p = new Properties();
+            p.load(prop);
+            jsFile = p.getProperty("jsFile");
+        } catch (Exception e) {
+            jsFile = "COMPILE_PROPERTIES_NOT_FOUND";
+            getLogger().severe(
+                    "No compile.properties file found for ClientEngine");
+        }
+
+        return staticFileLocation + gwtModuleDir + "/" + jsFile;
+
+    }
+
+    private String getBootstrapHtml(BootstrapContext context,
+            List<Dependency> deps) {
         VaadinRequest request = context.getRequest();
         VaadinResponse response = context.getResponse();
         VaadinService vaadinService = request.getService();
@@ -312,7 +385,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 vaadinInternals.appendChild(node);
             }
 
-            setupStandaloneDocument(context, pageResponse);
+            setupStandaloneDocument(context, pageResponse, deps);
             context.getSession().modifyBootstrapResponse(pageResponse);
 
             sendBootstrapHeaders(response, headers);
@@ -358,7 +431,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private void setupStandaloneDocument(BootstrapContext context,
-            BootstrapPageResponse response) {
+            BootstrapPageResponse response, List<Dependency> deps) {
         setNoCacheHeaders(response);
 
         Document document = response.getDocument();
@@ -429,41 +502,46 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                     .attr("href", themeUri + "/favicon.ico");
         }
 
-        List<Class<? extends Component>> uiClassAndParents = getComponentAndParents(
-                uiClass);
-        for (Class<? extends Component> c : uiClassAndParents) {
-            JavaScript javaScript = c.getAnnotation(JavaScript.class);
-            if (javaScript != null) {
-                String[] resources = javaScript.value();
-                for (String resource : resources) {
-                    String url = registerDependency(context, uiClass, resource);
-                    head.appendElement("script").attr("type", "text/javascript")
-                            .attr("src", url);
-                }
-            }
-
-            List<String> htmlResources = UidlWriter.getHtmlResources(c);
-
-            for (String resource : htmlResources) {
-                String url = registerDependency(context, uiClass, resource);
-                head.appendElement("link").attr("rel", "import").attr("href",
-                        url);
-            }
-
-            StyleSheet styleSheet = c.getAnnotation(StyleSheet.class);
-            if (styleSheet != null) {
-                String[] resources = styleSheet.value();
-                for (String resource : resources) {
-                    String url = registerDependency(context, uiClass, resource);
-                    head.appendElement("link").attr("rel", "stylesheet")
-                            .attr("type", "text/css").attr("href", url);
-                }
-            }
-        }
+        writeUsedScriptsImportsStylesheets(context.getUriResolver(), deps,
+                head);
 
         Element body = document.body();
         body.attr("scroll", "auto");
         body.addClass(ApplicationConstants.GENERATED_BODY_CLASSNAME);
+    }
+
+    private void writeUsedScriptsImportsStylesheets(VaadinUriResolver resolver,
+            List<Dependency> deps, Element head) {
+        for (Dependency d : deps) {
+            String resolvedUrl = resolver.resolveVaadinUri(d.getUrl());
+            if (d.getType() == Type.HTML) {
+                head.appendElement("link").attr("rel", "import")
+                        .attr("href", resolvedUrl).attr("pending", "1")
+                        .attr("onload",
+                                "this.removeAttribute('pending');this.removeAttribute('onload');");
+            } else if (d.getType() == Type.SCRIPT) {
+                head.appendElement("script").attr("type", "text/javascript")
+                        .attr("src", resolvedUrl).attr("pending", "1")
+                        .attr("onload",
+                                "this.removeAttribute('pending');this.removeAttribute('onload');");
+            } else if (d.getType() == Type.STYLSHEET) {
+                head.appendElement("link").attr("rel", "stylesheet")
+                        .attr("type", "text/css").attr("href", resolvedUrl)
+                        .attr("pending", "1").attr("onload",
+                                "this.removeAttribute('pending');this.removeAttribute('onload');");
+            } else {
+                throw new IllegalStateException("Unknown type " + d.getType());
+            }
+        }
+    }
+
+    private void addComponentClasses(Component c,
+            Set<Class<? extends ClientConnector>> dependencyClasses) {
+        dependencyClasses.add(c.getClass());
+        for (Component child : c.getChildComponents()) {
+            addComponentClasses(child, dependencyClasses);
+        }
+
     }
 
     private void setNoCacheHeaders(BootstrapPageResponse response) {
@@ -485,16 +563,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             cls = cls.getSuperclass();
         }
         return result;
-    }
-
-    private String registerDependency(BootstrapContext context,
-            Class<? extends UI> uiClass, String resource) {
-        String url = context.getSession().getCommunicationManager()
-                .registerDependency(resource, uiClass);
-
-        url = context.getUriResolver().resolveVaadinUri(url);
-
-        return url;
     }
 
     /**
@@ -520,65 +588,13 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         List<Node> fragmentNodes = context.getBootstrapResponse()
                 .getFragmentNodes();
 
-        VaadinRequest request = context.getRequest();
-
-        VaadinService vaadinService = request.getService();
-        String staticFileLocation = vaadinService
-                .getStaticFileLocation(request);
-        String vaadinLocation = staticFileLocation + "/VAADIN/";
-
-        // Parameter appended to JS to bypass caches after version upgrade.
-        String versionQueryParam = "?v=" + Version.getFullVersion();
-
-        String gwtModuleDir = "/VAADIN/hummingbird.client";
-        String jsFile;
-
-        try {
-            InputStream prop = getClass()
-                    .getResourceAsStream(gwtModuleDir + "/compile.properties");
-            Properties p = new Properties();
-            p.load(prop);
-            jsFile = p.getProperty("jsFile");
-        } catch (Exception e) {
-            jsFile = "COMPILE_PROPERTIES_NOT_FOUND";
-            getLogger().severe(
-                    "No compile.properties file found for ClientEngine");
-        }
-
-        fragmentNodes.add(new Element(Tag.valueOf("script"), "")
-                .attr("type", "text/javascript")
-                .attr("src", staticFileLocation + gwtModuleDir + "/" + jsFile));
-
-        // Push
-        if (context.getPushMode().isEnabled()) {
-            // Load client-side dependencies for push support
-            String pushJS = vaadinLocation;
-            if (context.getRequest().getService().getDeploymentConfiguration()
-                    .isProductionMode()) {
-                pushJS += ApplicationConstants.VAADIN_PUSH_JS;
-            } else {
-                pushJS += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
-            }
-
-            pushJS += versionQueryParam;
-
-            fragmentNodes.add(new Element(Tag.valueOf("script"), "")
-                    .attr("type", "text/javascript").attr("src", pushJS));
-        }
-
-        String bootstrapLocation = vaadinLocation
-                + ApplicationConstants.VAADIN_BOOTSTRAP_JS + versionQueryParam;
-        fragmentNodes.add(new Element(Tag.valueOf("script"), "")
-                .attr("type", "text/javascript")
-                .attr("src", bootstrapLocation));
-
         Element mainScriptTag = new Element(Tag.valueOf("script"), "")
                 .attr("type", "text/javascript");
 
         StringBuilder builder = new StringBuilder();
         builder.append("//<![CDATA[\n");
-        builder.append("if (!window.vaadin) alert(" + JsonUtil.quote(
-                "Failed to load the bootstrap javascript: " + bootstrapLocation)
+        builder.append("if (!window.vaadin) alert("
+                + JsonUtil.quote("Failed to load the bootstrap javascript")
                 + ");\n");
 
         appendMainScriptTagContents(context, builder);
