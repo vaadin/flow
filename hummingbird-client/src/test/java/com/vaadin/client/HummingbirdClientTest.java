@@ -15,7 +15,7 @@ public class HummingbirdClientTest extends GWTTestCase {
 
     @Override
     public String getModuleName() {
-        return "com.vaadin.ClientEngine";
+        return "com.vaadin.ClientEngineXSI";
     }
 
     private static native void useDomImpl(DomApiImpl impl)

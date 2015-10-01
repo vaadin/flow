@@ -12,6 +12,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
+		<gwt.module>com.vaadin.ClientEngine</gwt.module>
 		<gwt.module.output>${project.build.outputDirectory}/VAADIN</gwt.module.output>
 	</properties>
 
@@ -100,7 +101,7 @@
 					<persistentunitcache>false</persistentunitcache>
 					<webappDirectory>${gwt.module.output}</webappDirectory>
 					<modules>
-						<module>com.vaadin.ClientEngine</module>
+						<module>${gwt.module}</module>
 					</modules>
 					<webMode>true</webMode>
 					<style>OBF</style>
@@ -109,5 +110,12 @@
 		</plugins>
 
 	</build>
-
+	<profiles>
+		<profile>
+			<id>sdm</id>
+			<properties>
+				<gwt.module>com.vaadin.ClientEngineXSI</gwt.module>
+			</properties>
+		</profile>
+	</profiles>
 </project>

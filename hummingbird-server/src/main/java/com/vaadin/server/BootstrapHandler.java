@@ -351,7 +351,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             p.load(prop);
             jsFile = p.getProperty("jsFile");
         } catch (Exception e) {
-            jsFile = "COMPILE_PROPERTIES_NOT_FOUND";
+            jsFile = "hummingbird.client.nocache.js";
             getLogger().severe(
                     "No compile.properties file found for ClientEngine");
         }
