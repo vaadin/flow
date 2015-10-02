@@ -34,8 +34,119 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 public abstract class Template extends AbstractComponent {
+    private static class ProxyHandler implements InvocationHandler {
+
+        private StateNode node;
+
+        public ProxyHandler(StateNode node) {
+            this.node = node;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args)
+                throws Throwable {
+            Class<?> declaringClass = method.getDeclaringClass();
+            if (declaringClass == Object.class) {
+                return handleObjectMethod(proxy, method, args);
+            } else if (declaringClass == Model.class) {
+                return handleModelMethod(proxy, method, args);
+            }
+
+            String name = method.getName();
+            if (name.startsWith("get") || name.startsWith("is")) {
+                assert args == null || args.length == 0;
+                assert method.getReturnType() != void.class;
+
+                return get(getPropertyName(method.getName()),
+                        method.getReturnType());
+            } else if (name.startsWith("set")) {
+                assert args.length == 1;
+                assert method.getReturnType() == void.class;
+
+                set(getPropertyName(method.getName()),
+                        method.getParameterTypes()[0], args[0]);
+                return null;
+            } else {
+                throw new RuntimeException("Method not supported: " + method);
+            }
+        }
+
+        private Object handleModelMethod(Object proxy, Method method,
+                Object[] args) {
+            switch (method.getName()) {
+            case "create": {
+                assert args.length == 1;
+                assert args[0] instanceof Class<?>;
+                Class<?> type = (Class<?>) args[0];
+
+                return createProxy(type, StateNode.create());
+            }
+            default:
+                throw new RuntimeException("Method not supported " + method);
+            }
+        }
+
+        private void set(String propertyName, Class<?> type, Object value) {
+            if (type == boolean.class && Boolean.FALSE.equals(value)) {
+                node.remove(propertyName);
+                return;
+            }
+            if (Proxy.isProxyClass(value.getClass())) {
+                InvocationHandler handler = Proxy.getInvocationHandler(value);
+                if (handler instanceof ProxyHandler) {
+                    value = ((ProxyHandler) handler).node;
+                } else {
+                    throw new RuntimeException(handler.getClass().toString());
+                }
+            }
+            node.put(propertyName, value);
+        }
+
+        private Object get(String propertyName, Class<?> type) {
+            if (type == boolean.class) {
+                return Boolean.valueOf(node.containsKey(propertyName));
+            }
+
+            if (type.isPrimitive()) {
+                if (!node.containsKey(propertyName)) {
+                    // Find the default value, somehow
+                    return primitiveDefaults.get(type);
+                } else {
+                    // Can't get by type int if value is Integer
+                    return node.get(propertyName);
+                }
+            }
+
+            if (type.isInterface()) {
+                StateNode childNode = node.get(propertyName, StateNode.class);
+                if (childNode == null) {
+                    return null;
+                }
+                return createProxy(type, childNode);
+            }
+
+            return node.get(propertyName, type);
+        }
+
+        private String getPropertyName(String methodName) {
+            String propertyName = methodName.replaceFirst("^(set|get|is)", "");
+            propertyName = Character.toLowerCase(propertyName.charAt(0))
+                    + propertyName.substring(1);
+            return propertyName;
+        }
+
+        private Object handleObjectMethod(Object proxy, Method method,
+                Object[] args) {
+            switch (method.getName()) {
+            default:
+                throw new RuntimeException(
+                        "Method not yet supported: " + method);
+            }
+        }
+    }
+
     public interface Model {
-        // Only a marker
+        public <T> T create(Class<T> type);
     }
 
     private Model model;
@@ -155,90 +266,12 @@ public abstract class Template extends AbstractComponent {
 
     private Model createModel() {
         Class<? extends Model> modelType = getModelType();
-        if (modelType == Model.class) {
-            return new Model() {
-                // Don't bother with a proxy if there's nothing in the interface
-            };
-        } else {
-            Object proxy = Proxy.newProxyInstance(modelType.getClassLoader(),
-                    new Class[] { modelType }, new InvocationHandler() {
-                        @Override
-                        public Object invoke(Object proxy, Method method,
-                                Object[] args) throws Throwable {
-                            if (method.getDeclaringClass() == Object.class) {
-                                return handleObjectMethod(proxy, method, args);
-                            }
+        Object proxy = createProxy(modelType, getNode());
+        return (Model) proxy;
+    }
 
-                            String name = method.getName();
-                            if (name.startsWith("get")
-                                    || name.startsWith("is")) {
-                                assert args == null || args.length == 0;
-                                assert method.getReturnType() != void.class;
-
-                                return get(getPropertyName(method.getName()),
-                                        method.getReturnType());
-                            } else if (name.startsWith("set")) {
-                                assert args.length == 1;
-                                assert method.getReturnType() == void.class;
-
-                                set(getPropertyName(method.getName()),
-                                        method.getParameterTypes()[0], args[0]);
-                                return null;
-                            } else {
-                                throw new RuntimeException(
-                                        "Method not supported: " + method);
-                            }
-                        }
-
-                        private void set(String propertyName, Class<?> type,
-                                Object value) {
-                            if (type == boolean.class
-                                    && Boolean.FALSE.equals(value)) {
-                                getNode().remove(propertyName);
-                            } else {
-                                getNode().put(propertyName, value);
-                            }
-                        }
-
-                        private Object get(String propertyName, Class<?> type) {
-                            if (type == boolean.class) {
-                                return Boolean.valueOf(
-                                        getNode().containsKey(propertyName));
-                            }
-
-                            if (type.isPrimitive()) {
-                                if (!getNode().containsKey(propertyName)) {
-                                    // Find the default value, somehow
-                                    return primitiveDefaults.get(type);
-                                } else {
-                                    // Can't get by type int if value is Integer
-                                    return getNode().get(propertyName);
-                                }
-                            }
-
-                            return getNode().get(propertyName, type);
-                        }
-
-                        private String getPropertyName(String methodName) {
-                            String propertyName = methodName
-                                    .replaceFirst("^(set|get|is)", "");
-                            propertyName = Character
-                                    .toLowerCase(propertyName.charAt(0))
-                                    + propertyName.substring(1);
-                            return propertyName;
-                        }
-
-                        private Object handleObjectMethod(Object proxy,
-                                Method method, Object[] args) {
-                            switch (method.getName()) {
-                            default:
-                                throw new RuntimeException(
-                                        "Method not yet supported: " + method);
-                            }
-                        }
-
-                    });
-            return (Model) proxy;
-        }
+    private static Object createProxy(Class<?> type, StateNode node) {
+        return Proxy.newProxyInstance(type.getClassLoader(),
+                new Class[] { type }, new ProxyHandler(node));
     }
 }

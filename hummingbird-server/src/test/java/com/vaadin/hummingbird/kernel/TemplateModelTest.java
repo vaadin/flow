@@ -7,6 +7,12 @@ import com.vaadin.ui.Template;
 import com.vaadin.ui.Template.Model;
 
 public class TemplateModelTest {
+    public interface SubModelType {
+        public String getValue();
+
+        public void setValue(String value);
+    }
+
     public interface MyTestModel extends Model {
         public String getValue();
 
@@ -19,6 +25,10 @@ public class TemplateModelTest {
         public int getInt();
 
         public void setInt(int value);
+
+        public SubModelType getSubValue();
+
+        public void setSubValue(SubModelType subValue);
     }
 
     public class MyTestTemplate extends Template {
@@ -71,5 +81,24 @@ public class TemplateModelTest {
 
         node.put("int", Integer.valueOf(2));
         Assert.assertEquals(2, model.getInt());
+    }
+
+    @Test
+    public void testSubModelType() {
+        Assert.assertNull(model.getSubValue());
+
+        model.setSubValue(model.create(SubModelType.class));
+
+        // TODO What do I do here?
+
+        SubModelType value = model.getSubValue();
+        Assert.assertNotNull(value);
+        Assert.assertTrue(node.get("subValue") instanceof StateNode);
+
+        StateNode subNode = node.get("subValue", StateNode.class);
+
+        Assert.assertNull(value.getValue());
+        value.setValue("lorem");
+        Assert.assertEquals("lorem", subNode.get("value"));
     }
 }
