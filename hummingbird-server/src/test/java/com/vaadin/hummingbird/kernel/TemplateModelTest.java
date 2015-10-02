@@ -15,6 +15,10 @@ public class TemplateModelTest {
         public boolean isBoolean();
 
         public void setBoolean(boolean value);
+
+        public int getInt();
+
+        public void setInt(int value);
     }
 
     public class MyTestTemplate extends Template {
@@ -56,5 +60,16 @@ public class TemplateModelTest {
 
         model.setBoolean(false);
         Assert.assertFalse(node.containsKey("boolean"));
+    }
+
+    @Test
+    public void testPrimitiveType() {
+        Assert.assertEquals(0, model.getInt());
+
+        model.setInt(1);
+        Assert.assertEquals(Integer.valueOf(1), node.get("int"));
+
+        node.put("int", Integer.valueOf(2));
+        Assert.assertEquals(2, model.getInt());
     }
 }

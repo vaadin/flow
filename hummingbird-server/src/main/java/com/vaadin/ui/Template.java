@@ -19,6 +19,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.hummingbird.kernel.Element;
@@ -139,6 +141,18 @@ public abstract class Template extends AbstractComponent {
         return Model.class;
     }
 
+    private static final Map<Class<?>, Object> primitiveDefaults = new HashMap<>();
+
+    static {
+        primitiveDefaults.put(byte.class, Byte.valueOf((byte) 0));
+        primitiveDefaults.put(short.class, Short.valueOf((short) 0));
+        primitiveDefaults.put(char.class, Character.valueOf((char) 0));
+        primitiveDefaults.put(int.class, Integer.valueOf(0));
+        primitiveDefaults.put(long.class, Long.valueOf(0));
+        primitiveDefaults.put(float.class, Float.valueOf(0f));
+        primitiveDefaults.put(double.class, Double.valueOf(0));
+    }
+
     private Model createModel() {
         Class<? extends Model> modelType = getModelType();
         if (modelType == Model.class) {
@@ -191,6 +205,17 @@ public abstract class Template extends AbstractComponent {
                                 return Boolean.valueOf(
                                         getNode().containsKey(propertyName));
                             }
+
+                            if (type.isPrimitive()) {
+                                if (!getNode().containsKey(propertyName)) {
+                                    // Find the default value, somehow
+                                    return primitiveDefaults.get(type);
+                                } else {
+                                    // Can't get by type int if value is Integer
+                                    return getNode().get(propertyName);
+                                }
+                            }
+
                             return getNode().get(propertyName, type);
                         }
 
