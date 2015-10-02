@@ -158,7 +158,7 @@ public abstract class Template extends AbstractComponent {
                             String name = method.getName();
                             if (name.startsWith("get")
                                     || name.startsWith("is")) {
-                                assert args.length == 0;
+                                assert args == null || args.length == 0;
                                 assert method.getReturnType() != void.class;
 
                                 return get(getPropertyName(method.getName()),
