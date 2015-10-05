@@ -21,13 +21,18 @@ import com.vaadin.data.Property;
 import com.vaadin.event.FieldEvents.BlurNotifier;
 import com.vaadin.event.FieldEvents.FocusAndBlurServerRpcImpl;
 import com.vaadin.event.FieldEvents.FocusNotifier;
+import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.Element.EventRegistrationHandle;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.checkbox.CheckBoxServerRpc;
 
-@Tag("input")
+@Tag("span")
 public class CheckBox extends AbstractField<Boolean>
         implements FocusNotifier, BlurNotifier {
+
+    private Element inputElement;
+    private Element labelElement;
+
     private CheckBoxServerRpc rpc = new CheckBoxServerRpc() {
 
         @Override
@@ -49,7 +54,14 @@ public class CheckBox extends AbstractField<Boolean>
      * Creates a new checkbox.
      */
     public CheckBox() {
-        getElement().setAttribute("type", "checkbox");
+        inputElement = new Element("input");
+        inputElement.setAttribute("type", "checkbox");
+
+        labelElement = new Element("label");
+
+        getElement().appendChild(inputElement);
+        getElement().appendChild(labelElement);
+
         registerRpc(rpc);
         registerRpc(focusBlurRpc);
         setValue(Boolean.FALSE);
@@ -58,24 +70,24 @@ public class CheckBox extends AbstractField<Boolean>
     /**
      * Creates a new checkbox with a set caption.
      *
-     * @param caption
+     * @param text
      *            the Checkbox caption.
      */
-    public CheckBox(String caption) {
+    public CheckBox(String text) {
         this();
-        setCaption(caption);
+        setText(text);
     }
 
     /**
      * Creates a new checkbox with a caption and a set initial state.
      *
-     * @param caption
+     * @param text
      *            the caption of the checkbox
      * @param initialState
      *            the initial state of the checkbox
      */
-    public CheckBox(String caption, boolean initialState) {
-        this(caption);
+    public CheckBox(String text, boolean initialState) {
+        this(text);
         setValue(initialState);
     }
 
@@ -86,9 +98,17 @@ public class CheckBox extends AbstractField<Boolean>
      *            the Initial state of the switch-button.
      * @param dataSource
      */
-    public CheckBox(String caption, Property<?> dataSource) {
-        this(caption);
+    public CheckBox(String text, Property<?> dataSource) {
+        this(text);
         setPropertyDataSource(dataSource);
+    }
+
+    public void setText(String text) {
+        labelElement.setTextContent(text);
+    }
+
+    public String getText() {
+        return labelElement.getTextContent();
     }
 
     @Override
@@ -97,12 +117,25 @@ public class CheckBox extends AbstractField<Boolean>
     }
 
     @Override
+    public void attach() {
+        super.attach();
+
+        if (inputElement.getAttribute("id") == null) {
+            // We need an id to be able to map label to input
+            inputElement.setAttribute("id", IdGenerator.generateId(getUI()));
+        }
+
+        labelElement.setAttribute("for", inputElement.getAttribute("id"));
+
+    }
+
+    @Override
     protected void setInternalValue(Boolean newValue) {
         super.setInternalValue(newValue);
         if (newValue == null) {
             newValue = false;
         }
-        getElement().setAttribute("checked", newValue);
+        inputElement.setAttribute("checked", newValue);
     }
 
     @Override
@@ -121,7 +154,7 @@ public class CheckBox extends AbstractField<Boolean>
     public void addValueChangeListener(ValueChangeListener listener) {
         super.addValueChangeListener(listener);
         if (valueChangeEventRegistration == null) {
-            getElement().addEventData("change", "element.checked");
+            inputElement.addEventData("change", "element.checked");
             valueChangeEventRegistration = getElement()
                     .addEventListener("change", e -> {
                         setValue(e.get("element.checked").asBoolean());
