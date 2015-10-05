@@ -49,8 +49,4 @@ public abstract class Composite extends AbstractComponent
         return getContent().getElement();
     }
 
-    @Override
-    public Component getParent() {
-        return super.getParent();
-    }
 }
