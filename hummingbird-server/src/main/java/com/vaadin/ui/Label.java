@@ -196,11 +196,13 @@ public class Label extends Composite implements Property<String>,
      */
     private void setDomValue(String newValue, boolean fireEvent) {
         if (getContentMode() == ContentMode.TEXT) {
-            getContent().setInnerHtml("");
+            getContent().setInnerHtml(null);
             getContent().getElement().setTextContent(newValue);
         } else if (getContentMode() == ContentMode.HTML) {
+            getContent().getElement().setTextContent(null);
             getContent().setInnerHtml(newValue);
         } else if (getContentMode() == ContentMode.PREFORMATTED) {
+            getContent().getElement().setTextContent(null);
             getContent().setInnerHtml("<pre>" + newValue + "</pre>");
         }
 
