@@ -39,6 +39,7 @@ public class ElementTest {
                 continue;
             }
             if (m.getName().startsWith("get") || m.getName().startsWith("has")
+                    || m.getName().startsWith("is")
                     || ignore.contains(m.getName())) {
                 // Ignore
                 /*

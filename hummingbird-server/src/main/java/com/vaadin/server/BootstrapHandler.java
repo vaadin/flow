@@ -74,6 +74,8 @@ import elemental.json.impl.JsonUtil;
  */
 public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
+    private static final String PARAMETER_TEST_PRE_RENDERING = "pre-only";
+
     protected class BootstrapContext implements Serializable {
 
         private final VaadinResponse response;
@@ -279,16 +281,21 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             List<Dependency> deps = UidlWriter.collectDependencies(ui,
                     dependencyClasses);
             List<Dependency> builtInDeps = getBuiltInDeps(context);
-            deps.addAll(0, builtInDeps);
+            if (request.getParameter(PARAMETER_TEST_PRE_RENDERING) == null) {
+                // Add deps unless we are testing only pre-rendering
+                deps.addAll(0, builtInDeps);
+            }
 
             setupMainDiv(context);
 
             BootstrapFragmentResponse fragmentResponse = context
                     .getBootstrapResponse();
             session.modifyBootstrapResponse(fragmentResponse);
-
+            if (request.getParameter(PARAMETER_TEST_PRE_RENDERING) != null) {
+                // Remove startup scripts if we are only testing pre-rendering
+                fragmentResponse.getFragmentNodes().clear();
+            }
             String html = getBootstrapHtml(context, deps);
-
             writeBootstrapPage(response, html);
         } catch (JsonException e) {
             writeError(response, e);
@@ -379,6 +386,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                     headers, fragmentResponse.getUIProvider());
             List<Node> fragmentNodes = fragmentResponse.getFragmentNodes();
 
+            preRender(document, context);
+
             Element vaadinInternals = new Element(
                     Tag.valueOf("vaadin-internals"), "");
             document.body().appendChild(vaadinInternals);
@@ -404,6 +413,14 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
             return sb.toString();
         }
+    }
+
+    private void preRender(Document document, BootstrapContext context) {
+        com.vaadin.hummingbird.kernel.Element preRenderedUI = context.getUI()
+                .preRender();
+        preRenderedUI.setAttribute("pre-render", true);
+        preRenderedUI.addClass(context.getThemeName());
+        document.body().html(preRenderedUI.getOuterHTML());
     }
 
     private void sendBootstrapHeaders(VaadinResponse response,

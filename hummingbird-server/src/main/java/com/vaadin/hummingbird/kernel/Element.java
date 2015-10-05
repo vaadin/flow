@@ -14,7 +14,7 @@ import elemental.json.JsonObject;
 
 public class Element implements Serializable {
 
-    private static final String TEXT_NODE_TEXT_ATTRIBUTE = "content";
+    public static final String TEXT_NODE_TEXT_ATTRIBUTE = "content";
     private static final String STYLE_SEPARATOR = ";";
     private static final String CLASS_ATTRIBUTE = "class";
     private static final String STYLE_ATTRIBUTE = "style";
@@ -330,6 +330,9 @@ public class Element implements Serializable {
             b.append('<');
             b.append(tag);
             for (String attribute : getAttributeNames()) {
+                if (attribute.equals("innerHTML")) {
+                    continue;
+                }
                 String value = getAttribute(attribute);
                 if (value != null) {
                     b.append(' ');
@@ -340,6 +343,10 @@ public class Element implements Serializable {
                 }
             }
             b.append('>');
+
+            if (hasAttribute("innerHTML")) {
+                b.append(getAttribute("innerHTML"));
+            }
 
             for (int i = 0; i < getChildCount(); i++) {
                 getChild(i).getOuterHTML(b);
@@ -758,7 +765,7 @@ public class Element implements Serializable {
         return e.getAttribute(TEXT_NODE_TEXT_ATTRIBUTE);
     }
 
-    private static boolean isTextNode(Element e) {
+    public static boolean isTextNode(Element e) {
         return e != null && TEXT_NODE_TAG.equals(e.getTag());
     }
 

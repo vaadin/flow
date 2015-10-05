@@ -442,6 +442,17 @@ public class TreeUpdater {
         debug("Registered root element: " + debugHtml(rootElement)
                 + " for nodeId=" + bodyNode.getId());
 
+        // Remove pre-render element, they will be replaced by tree node
+        // elements
+        Element childElement = rootElement.getFirstChildElement();
+        while (childElement != null) {
+            Element next = childElement.getNextSiblingElement();
+            if (childElement.hasAttribute("pre-render")) {
+                childElement.removeFromParent();
+            }
+
+            childElement = next;
+        }
         BasicElementListener.bind(bodyNode, rootElement, this);
     }
 

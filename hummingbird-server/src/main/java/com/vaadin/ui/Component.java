@@ -1023,6 +1023,28 @@ public interface Component
 
     default public int getComponentCount() {
         return getChildComponents().size();
-    };
+    }
+
+    /**
+     * Returns a pre-rendered version of the Component.
+     *
+     * Used by the framework during the first request to produce the HTML on the
+     * first page.
+     *
+     * Each component which supports pre-rendering should output the HTML tree
+     * for itself, call preRender for its children and ensure they are attached
+     * to the pre-rendered element tree.
+     *
+     * By default, the data in the {@link #getElement() element} tree is used to
+     * produce the HTML. A component should override this method to pre-render
+     * something else than the default.
+     *
+     * The {@link PreRenderer} class provides some helper methods related to
+     * pre-rendering.
+     *
+     * @return an element with the pre-rendered DOM structure of the component
+     *         and its children
+     */
+    Element preRender();
 
 }

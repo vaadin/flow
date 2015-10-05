@@ -1030,4 +1030,9 @@ public abstract class AbstractComponent extends AbstractClientConnector
         return JS.get(javascriptInterface, this);
     }
 
+    @Override
+    public Element preRender() {
+        return PreRenderer.preRenderElementTree(getElement());
+    }
+
 }
