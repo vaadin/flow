@@ -1,5 +1,8 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,6 +32,10 @@ public class TemplateModelTest {
         public SubModelType getSubValue();
 
         public void setSubValue(SubModelType subValue);
+
+        public List<String> getSimpleList();
+
+        public void setSimpleList(List<String> simpleList);
     }
 
     public class MyTestTemplate extends Template {
@@ -100,5 +107,28 @@ public class TemplateModelTest {
         Assert.assertNull(value.getValue());
         value.setValue("lorem");
         Assert.assertEquals("lorem", subNode.get("value"));
+    }
+
+    @Test
+    public void testModelSimpleList() {
+        Assert.assertNull(model.getSimpleList());
+
+        List<String> initialList = Arrays.asList("Foo");
+        model.setSimpleList(initialList);
+        List<String> modelLList = model.getSimpleList();
+
+        Assert.assertEquals(1, modelLList.size());
+        Assert.assertEquals("Foo", modelLList.get(0));
+
+        List<Object> nodeList = node.getMultiValued("simpleList");
+        Assert.assertEquals(1, nodeList.size());
+        Assert.assertEquals("Foo", nodeList.get(0));
+
+        nodeList.add("Bar");
+        Assert.assertEquals(2, modelLList.size());
+        Assert.assertEquals("Bar", modelLList.get(1));
+
+        node.remove("simpleList");
+        Assert.assertNull(model.getSimpleList());
     }
 }

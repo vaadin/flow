@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.vaadin.annotations.TemplateEventHandler;
@@ -91,6 +92,20 @@ public abstract class Template extends AbstractComponent {
                 node.remove(propertyName);
                 return;
             }
+
+            if (value == null) {
+                node.remove(propertyName);
+                return;
+            }
+
+            if (List.class.isAssignableFrom(type)) {
+                List<?> values = (List<?>) value;
+                List<Object> nodeValues = node.getMultiValued(propertyName);
+                nodeValues.clear();
+                nodeValues.addAll(values);
+                return;
+            }
+
             if (Proxy.isProxyClass(value.getClass())) {
                 InvocationHandler handler = Proxy.getInvocationHandler(value);
                 if (handler instanceof ProxyHandler) {
@@ -117,11 +132,16 @@ public abstract class Template extends AbstractComponent {
                 }
             }
 
+            if (!node.containsKey(propertyName)) {
+                return null;
+            }
+
+            if (List.class.isAssignableFrom(type)) {
+                return node.getMultiValued(propertyName);
+            }
+
             if (type.isInterface()) {
                 StateNode childNode = node.get(propertyName, StateNode.class);
-                if (childNode == null) {
-                    return null;
-                }
                 return createProxy(type, childNode);
             }
 
