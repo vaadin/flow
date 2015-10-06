@@ -9,9 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
@@ -21,6 +18,9 @@ import com.vaadin.hummingbird.kernel.change.NodeChangeVisitor;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class StateNodeTest {
 
@@ -483,7 +483,7 @@ public class StateNodeTest {
                 Assert.assertEquals("list", listReplaceChange.getKey());
                 Assert.assertSame(rootNode, node);
                 rootList.set(listReplaceChange.getIndex(),
-                        listReplaceChange.getNewValue());
+                        listReplaceChange.getValue());
             }
 
             @Override
@@ -770,4 +770,5 @@ public class StateNodeTest {
         // PutChange (count)
         Assert.assertEquals(Integer.valueOf(1), changesCounts.get(1));
     }
+
 }

@@ -1,12 +1,14 @@
 package com.vaadin.hummingbird.kernel;
 
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.communication.TransactionLogBuilder;
+import com.vaadin.server.communication.TransactionLogJsonProducer;
+import com.vaadin.server.communication.TransactionLogOptimizer;
+import com.vaadin.ui.UI;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.communication.ChangeUidlBuilder;
-import com.vaadin.ui.UI;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -38,9 +40,16 @@ public class UidlWriterTest {
     }
 
     private JsonArray encodeElementChanges() {
-        ChangeUidlBuilder visitor = new ChangeUidlBuilder(ui);
-        ui.getRoot().getRootNode().commit(visitor);
-        return visitor.getChanges();
+        TransactionLogBuilder logBuilder = new TransactionLogBuilder();
+        ui.getRoot().getRootNode().commit(logBuilder.getVisitor());
+
+        TransactionLogOptimizer optimizer = new TransactionLogOptimizer(ui,
+                logBuilder.getChanges(), logBuilder.getTemplates());
+
+        TransactionLogJsonProducer jsonProducer = new TransactionLogJsonProducer(
+                ui, optimizer.getChanges(), optimizer.getTemplates());
+
+        return jsonProducer.getChangesJson();
     }
 
     @Test

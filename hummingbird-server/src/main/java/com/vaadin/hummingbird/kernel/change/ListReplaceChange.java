@@ -2,33 +2,21 @@ package com.vaadin.hummingbird.kernel.change;
 
 import com.vaadin.hummingbird.kernel.StateNode;
 
-public class ListReplaceChange extends NodeChange {
+public class ListReplaceChange extends NodeListChange {
 
-    private int index;
     private Object oldValue;
-    private Object newValue;
-    private Object key;
 
     public ListReplaceChange(int index, Object key, Object oldValue,
             Object newValue) {
-        this.index = index;
-        this.key = key;
+        super(index, key, newValue);
         this.oldValue = oldValue;
-        this.newValue = newValue;
     }
 
-    public int getIndex() {
-        return index;
-    }
-
-    public Object getKey() {
-        return key;
-    }
-
-    public Object getNewValue() {
-        return newValue;
-    }
-
+    /**
+     * Returns the previous value of the changed object in the list
+     *
+     * @return the value of the changed object in the list before the change
+     */
     public Object getOldValue() {
         return oldValue;
     }
@@ -36,6 +24,12 @@ public class ListReplaceChange extends NodeChange {
     @Override
     public void accept(StateNode node, NodeChangeVisitor visitor) {
         visitor.visitListReplaceChange(node, this);
+    }
+
+    @Override
+    public String toString() {
+        return "ListReplaceChange [key=" + getKey() + ", index=" + getIndex()
+                + ", value=" + getValue() + ", oldValue=" + oldValue + "]";
     }
 
 }

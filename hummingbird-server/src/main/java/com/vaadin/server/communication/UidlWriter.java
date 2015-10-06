@@ -173,6 +173,8 @@ public class UidlWriter implements Serializable {
             encodeRpc(ui, response);
 
             String r = response.toString();
+            System.out.println("UIDL");
+            System.out.println(r);
             writer.write(r.substring(1, r.length() - 1));
         } finally {
             uiConnectorTracker.setWritingResponse(false);
@@ -343,10 +345,17 @@ public class UidlWriter implements Serializable {
     }
 
     private static void encodeChanges(UI ui, JsonObject response) {
-        ChangeUidlBuilder uidlBuilder = new ChangeUidlBuilder(ui);
-        ui.getRoot().getRootNode().commit(uidlBuilder);
-        response.put("elementTemplates", uidlBuilder.getNewTemplates());
-        response.put("elementChanges", uidlBuilder.getChanges());
+        TransactionLogBuilder logBuilder = new TransactionLogBuilder();
+        ui.getRoot().getRootNode().commit(logBuilder.getVisitor());
+
+        TransactionLogOptimizer optimizer = new TransactionLogOptimizer(ui,
+                logBuilder.getChanges(), logBuilder.getTemplates());
+
+        TransactionLogJsonProducer jsonProducer = new TransactionLogJsonProducer(
+                ui, optimizer.getChanges(), optimizer.getTemplates());
+
+        response.put("elementTemplates", jsonProducer.getTemplatesJson());
+        response.put("elementChanges", jsonProducer.getChangesJson());
     }
 
     private static JsonArray encodeRpcQueue(List<PendingRpc> rpcQueue) {
