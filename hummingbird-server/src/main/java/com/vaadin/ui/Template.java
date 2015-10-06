@@ -25,6 +25,7 @@ import java.util.AbstractList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.hummingbird.kernel.Element;
@@ -103,12 +104,13 @@ public abstract class Template extends AbstractComponent {
         private void set(StateNode node, String propertyName, Type type,
                 Object value) {
             if (type == boolean.class && Boolean.FALSE.equals(value)) {
-                node.remove(propertyName);
-                return;
+                value = null;
             }
 
             if (value == null) {
-                node.remove(propertyName);
+                if (node.containsKey(propertyName)) {
+                    node.remove(propertyName);
+                }
                 return;
             }
 
@@ -117,8 +119,15 @@ public abstract class Template extends AbstractComponent {
 
                 if (clazz.isInterface()) {
                     value = unwrapProxy(value);
+
+                    if (Objects.equals(value, node.get(propertyName))) {
+                        return;
+                    }
                 }
-                node.put(propertyName, value);
+
+                if (!Objects.equals(value, get(node, propertyName, type))) {
+                    node.put(propertyName, value);
+                }
 
                 return;
             } else if (type instanceof ParameterizedType) {
@@ -137,8 +146,10 @@ public abstract class Template extends AbstractComponent {
                         List<?> values = (List<?>) value;
                         List<Object> nodeValues = node
                                 .getMultiValued(propertyName);
-                        nodeValues.clear();
-                        nodeValues.addAll(values);
+                        if (!Objects.equals(values, nodeValues)) {
+                            nodeValues.clear();
+                            nodeValues.addAll(values);
+                        }
                         return;
                     }
                 }

@@ -6,6 +6,14 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.kernel.change.IdChange;
+import com.vaadin.hummingbird.kernel.change.ListInsertChange;
+import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
+import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
+import com.vaadin.hummingbird.kernel.change.NodeChangeVisitor;
+import com.vaadin.hummingbird.kernel.change.ParentChange;
+import com.vaadin.hummingbird.kernel.change.PutChange;
+import com.vaadin.hummingbird.kernel.change.RemoveChange;
 import com.vaadin.ui.Template;
 import com.vaadin.ui.Template.Model;
 
@@ -177,5 +185,62 @@ public class TemplateModelTest {
         SubModelType modelValue = model.wrap(node, SubModelType.class);
         modelValue.setValue("foo");
         Assert.assertEquals("foo", node.get("value"));
+    }
+
+    @Test
+    public void testSameValueNoChange() {
+        model.setSubValue(model.create(SubModelType.class));
+        model.setSimpleList(Arrays.asList("foo", "bar"));
+        RootNode root = new RootNode();
+        root.put("child", node);
+        root.commit();
+
+        model.setBoolean(model.isBoolean());
+        model.setInt(model.getInt());
+        model.setValue(model.getValue());
+        model.setSimpleList(model.getSimpleList());
+        model.setSubValue(model.getSubValue());
+
+        root.commit(new NodeChangeVisitor() {
+            @Override
+            public void visitRemoveChange(StateNode node,
+                    RemoveChange removeChange) {
+                Assert.fail(String.valueOf(removeChange.getKey()));
+            }
+
+            @Override
+            public void visitPutChange(StateNode node, PutChange putChange) {
+                Assert.fail(String.valueOf(putChange.getKey()));
+            }
+
+            @Override
+            public void visitParentChange(StateNode node,
+                    ParentChange parentChange) {
+                Assert.fail(parentChange.toString());
+            }
+
+            @Override
+            public void visitListReplaceChange(StateNode node,
+                    ListReplaceChange listReplaceChange) {
+                Assert.fail(listReplaceChange.toString());
+            }
+
+            @Override
+            public void visitListRemoveChange(StateNode node,
+                    ListRemoveChange listRemoveChange) {
+                Assert.fail(listRemoveChange.toString());
+            }
+
+            @Override
+            public void visitListInsertChange(StateNode node,
+                    ListInsertChange listInsertChange) {
+                Assert.fail(listInsertChange.toString());
+            }
+
+            @Override
+            public void visitIdChange(StateNode node, IdChange idChange) {
+                Assert.fail(idChange.toString());
+            }
+        });
     }
 }
