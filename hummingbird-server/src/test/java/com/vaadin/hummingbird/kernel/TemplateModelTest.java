@@ -36,6 +36,10 @@ public class TemplateModelTest {
         public List<String> getSimpleList();
 
         public void setSimpleList(List<String> simpleList);
+
+        public List<SubModelType> getComplexList();
+
+        public void setComplexList(List<SubModelType> complexList);
     }
 
     public class MyTestTemplate extends Template {
@@ -130,5 +134,39 @@ public class TemplateModelTest {
 
         node.remove("simpleList");
         Assert.assertNull(model.getSimpleList());
+    }
+
+    @Test
+    public void testComplexList() {
+        Assert.assertNull(model.getComplexList());
+
+        List<Object> nodeList = node.getMultiValued("complexList");
+
+        List<SubModelType> modelList = model.getComplexList();
+        Assert.assertEquals(0, modelList.size());
+
+        // Add through node
+        StateNode child = StateNode.create();
+        child.put("value", "foo");
+        nodeList.add(child);
+
+        Assert.assertEquals(1, modelList.size());
+        Assert.assertEquals("foo", modelList.get(0).getValue());
+
+        // Add through model
+        SubModelType subItem = model.create(SubModelType.class);
+        modelList.add(subItem);
+        Assert.assertEquals(2, nodeList.size());
+        Assert.assertNull(((StateNode) nodeList.get(1)).get("value"));
+        subItem.setValue("bar");
+        Assert.assertEquals("bar", ((StateNode) nodeList.get(1)).get("value"));
+
+        // Remove through model
+        modelList.remove(0);
+        Assert.assertEquals(1, nodeList.size());
+        Assert.assertNull(child.getParent());
+
+        nodeList.remove(0);
+        Assert.assertEquals(0, modelList.size());
     }
 }

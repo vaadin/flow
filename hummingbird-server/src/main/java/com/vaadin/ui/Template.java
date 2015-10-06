@@ -18,7 +18,10 @@ package com.vaadin.ui;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
+import java.util.AbstractList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,14 +61,14 @@ public abstract class Template extends AbstractComponent {
                 assert args == null || args.length == 0;
                 assert method.getReturnType() != void.class;
 
-                return get(getPropertyName(method.getName()),
-                        method.getReturnType());
+                return get(node, getPropertyName(method.getName()),
+                        method.getGenericReturnType());
             } else if (name.startsWith("set")) {
                 assert args.length == 1;
                 assert method.getReturnType() == void.class;
 
-                set(getPropertyName(method.getName()),
-                        method.getParameterTypes()[0], args[0]);
+                set(node, getPropertyName(method.getName()),
+                        method.getGenericParameterTypes()[0], args[0]);
                 return null;
             } else {
                 throw new RuntimeException("Method not supported: " + method);
@@ -87,7 +90,8 @@ public abstract class Template extends AbstractComponent {
             }
         }
 
-        private void set(String propertyName, Class<?> type, Object value) {
+        private void set(StateNode node, String propertyName, Type type,
+                Object value) {
             if (type == boolean.class && Boolean.FALSE.equals(value)) {
                 node.remove(propertyName);
                 return;
@@ -98,31 +102,60 @@ public abstract class Template extends AbstractComponent {
                 return;
             }
 
-            if (List.class.isAssignableFrom(type)) {
-                List<?> values = (List<?>) value;
-                List<Object> nodeValues = node.getMultiValued(propertyName);
-                nodeValues.clear();
-                nodeValues.addAll(values);
-                return;
-            }
+            if (type instanceof Class<?>) {
+                Class<?> clazz = (Class<?>) type;
 
-            if (Proxy.isProxyClass(value.getClass())) {
-                InvocationHandler handler = Proxy.getInvocationHandler(value);
-                if (handler instanceof ProxyHandler) {
-                    value = ((ProxyHandler) handler).node;
-                } else {
-                    throw new RuntimeException(handler.getClass().toString());
+                if (clazz.isInterface()) {
+                    value = unwrapProxy(value);
+                }
+                node.put(propertyName, value);
+
+                return;
+            } else if (type instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType) type;
+                if (pt.getRawType() instanceof Class<?>) {
+                    Class<?> rawType = (Class<?>) pt.getRawType();
+                    if (List.class.isAssignableFrom(rawType)) {
+                        assert(pt
+                                .getActualTypeArguments()[0] instanceof Class<?>) : "Multi-level generics not supported for now";
+                        Class<?> childType = (Class<?>) pt
+                                .getActualTypeArguments()[0];
+                        if (childType.isInterface()) {
+                            throw new RuntimeException("This is complicated");
+                        }
+
+                        List<?> values = (List<?>) value;
+                        List<Object> nodeValues = node
+                                .getMultiValued(propertyName);
+                        nodeValues.clear();
+                        nodeValues.addAll(values);
+                        return;
+                    }
                 }
             }
-            node.put(propertyName, value);
+
+            throw new RuntimeException(
+                    type.getClass().toString() + ": " + type.toString());
         }
 
-        private Object get(String propertyName, Class<?> type) {
+        private StateNode unwrapProxy(Object value) {
+            if (!Proxy.isProxyClass(value.getClass())) {
+                throw new RuntimeException(value.getClass().toString());
+            }
+            InvocationHandler handler = Proxy.getInvocationHandler(value);
+            if (handler instanceof ProxyHandler) {
+                return ((ProxyHandler) handler).node;
+            } else {
+                throw new RuntimeException(handler.getClass().toString());
+            }
+        }
+
+        private Object get(StateNode node, String propertyName, Type type) {
             if (type == boolean.class) {
                 return Boolean.valueOf(node.containsKey(propertyName));
             }
 
-            if (type.isPrimitive()) {
+            if (type instanceof Class<?> && ((Class<?>) type).isPrimitive()) {
                 if (!node.containsKey(propertyName)) {
                     // Find the default value, somehow
                     return primitiveDefaults.get(type);
@@ -136,16 +169,68 @@ public abstract class Template extends AbstractComponent {
                 return null;
             }
 
-            if (List.class.isAssignableFrom(type)) {
-                return node.getMultiValued(propertyName);
-            }
+            if (type instanceof Class<?>) {
+                Class<?> clazz = (Class<?>) type;
+                if (clazz.isInterface()) {
+                    StateNode childNode = node.get(propertyName,
+                            StateNode.class);
+                    return createProxy(clazz, childNode);
+                }
 
-            if (type.isInterface()) {
-                StateNode childNode = node.get(propertyName, StateNode.class);
-                return createProxy(type, childNode);
-            }
+                return node.get(propertyName, clazz);
+            } else if (type instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType) type;
+                if (pt.getRawType() instanceof Class<?>) {
+                    Class<?> rawType = (Class<?>) pt.getRawType();
+                    if (List.class.isAssignableFrom(rawType)) {
+                        assert(pt
+                                .getActualTypeArguments()[0] instanceof Class<?>) : "Multi-level generics not supported for now";
+                        Class<?> childType = (Class<?>) pt
+                                .getActualTypeArguments()[0];
+                        List<Object> backingList = node
+                                .getMultiValued(propertyName);
+                        if (childType.isInterface()) {
+                            return new AbstractList<Object>() {
+                                @Override
+                                public Object get(int index) {
+                                    StateNode childNode = (StateNode) backingList
+                                            .get(index);
+                                    if (childNode == null) {
+                                        return null;
+                                    }
+                                    return createProxy(childType, childNode);
+                                }
 
-            return node.get(propertyName, type);
+                                @Override
+                                public void add(int index, Object element) {
+                                    if (element == null) {
+                                        backingList.add(index, null);
+                                    } else {
+                                        backingList.add(index,
+                                                unwrapProxy(element));
+                                    }
+                                }
+
+                                @Override
+                                public Object remove(int index) {
+                                    Object oldValue = get(index);
+                                    backingList.remove(index);
+                                    return oldValue;
+                                }
+
+                                @Override
+                                public int size() {
+                                    return backingList.size();
+                                }
+                            };
+                        } else {
+                            return backingList;
+                        }
+                    }
+                }
+            }
+            throw new RuntimeException(
+                    type.getClass().toString() + ": " + type.toString());
         }
 
         private String getPropertyName(String methodName) {
