@@ -169,4 +169,13 @@ public class TemplateModelTest {
         nodeList.remove(0);
         Assert.assertEquals(0, modelList.size());
     }
+
+    @Test
+    public void testWrapNode() {
+        StateNode node = StateNode.create();
+
+        SubModelType modelValue = model.wrap(node, SubModelType.class);
+        modelValue.setValue("foo");
+        Assert.assertEquals("foo", node.get("value"));
+    }
 }

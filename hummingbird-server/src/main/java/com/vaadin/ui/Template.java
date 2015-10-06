@@ -85,6 +85,16 @@ public abstract class Template extends AbstractComponent {
 
                 return createProxy(type, StateNode.create());
             }
+            case "wrap": {
+                assert args.length == 2;
+                assert args[0] instanceof StateNode;
+                assert args[1] instanceof Class<?>;
+
+                StateNode node = (StateNode) args[0];
+                Class<?> type = (Class<?>) args[1];
+
+                return createProxy(type, node);
+            }
             default:
                 throw new RuntimeException("Method not supported " + method);
             }
@@ -252,6 +262,8 @@ public abstract class Template extends AbstractComponent {
 
     public interface Model {
         public <T> T create(Class<T> type);
+
+        public <T> T wrap(StateNode node, Class<T> type);
     }
 
     private Model model;
