@@ -79,23 +79,6 @@ public abstract class Template extends AbstractComponent {
         private Object handleModelMethod(Object proxy, Method method,
                 Object[] args) {
             switch (method.getName()) {
-            case "create": {
-                assert args.length == 1;
-                assert args[0] instanceof Class<?>;
-                Class<?> type = (Class<?>) args[0];
-
-                return createProxy(type, StateNode.create());
-            }
-            case "wrap": {
-                assert args.length == 2;
-                assert args[0] instanceof StateNode;
-                assert args[1] instanceof Class<?>;
-
-                StateNode node = (StateNode) args[0];
-                Class<?> type = (Class<?>) args[1];
-
-                return createProxy(type, node);
-            }
             default:
                 throw new RuntimeException("Method not supported " + method);
             }
@@ -195,7 +178,7 @@ public abstract class Template extends AbstractComponent {
                 if (clazz.isInterface()) {
                     StateNode childNode = node.get(propertyName,
                             StateNode.class);
-                    return createProxy(clazz, childNode);
+                    return Model.wrap(childNode, clazz);
                 }
 
                 return node.get(propertyName, clazz);
@@ -219,7 +202,7 @@ public abstract class Template extends AbstractComponent {
                                     if (childNode == null) {
                                         return null;
                                     }
-                                    return createProxy(childType, childNode);
+                                    return Model.wrap(childNode, childType);
                                 }
 
                                 @Override
@@ -285,9 +268,14 @@ public abstract class Template extends AbstractComponent {
     }
 
     public interface Model {
-        public <T> T create(Class<T> type);
+        public static <T> T create(Class<T> type) {
+            return wrap(StateNode.create(), type);
+        }
 
-        public <T> T wrap(StateNode node, Class<T> type);
+        public static <T> T wrap(StateNode node, Class<T> type) {
+            return type.cast(Proxy.newProxyInstance(type.getClassLoader(),
+                    new Class[] { type }, new ProxyHandler(node)));
+        }
     }
 
     private Model model;
@@ -407,12 +395,7 @@ public abstract class Template extends AbstractComponent {
 
     private Model createModel() {
         Class<? extends Model> modelType = getModelType();
-        Object proxy = createProxy(modelType, getNode());
+        Object proxy = Model.wrap(getNode(), modelType);
         return (Model) proxy;
-    }
-
-    private static Object createProxy(Class<?> type, StateNode node) {
-        return Proxy.newProxyInstance(type.getClassLoader(),
-                new Class[] { type }, new ProxyHandler(node));
     }
 }

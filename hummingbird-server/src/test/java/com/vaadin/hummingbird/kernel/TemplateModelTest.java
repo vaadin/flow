@@ -106,7 +106,7 @@ public class TemplateModelTest {
     public void testSubModelType() {
         Assert.assertNull(model.getSubValue());
 
-        model.setSubValue(model.create(SubModelType.class));
+        model.setSubValue(Model.create(SubModelType.class));
 
         // TODO What do I do here?
 
@@ -162,7 +162,7 @@ public class TemplateModelTest {
         Assert.assertEquals("foo", modelList.get(0).getValue());
 
         // Add through model
-        SubModelType subItem = model.create(SubModelType.class);
+        SubModelType subItem = Model.create(SubModelType.class);
         modelList.add(subItem);
         Assert.assertEquals(2, nodeList.size());
         Assert.assertNull(((StateNode) nodeList.get(1)).get("value"));
@@ -182,14 +182,14 @@ public class TemplateModelTest {
     public void testWrapNode() {
         StateNode node = StateNode.create();
 
-        SubModelType modelValue = model.wrap(node, SubModelType.class);
+        SubModelType modelValue = Model.wrap(node, SubModelType.class);
         modelValue.setValue("foo");
         Assert.assertEquals("foo", node.get("value"));
     }
 
     @Test
     public void testSameValueNoChange() {
-        model.setSubValue(model.create(SubModelType.class));
+        model.setSubValue(Model.create(SubModelType.class));
         model.setSimpleList(Arrays.asList("foo", "bar"));
         RootNode root = new RootNode();
         root.put("child", node);
@@ -246,11 +246,11 @@ public class TemplateModelTest {
 
     @Test
     public void testProxyEqualsHashCode() {
-        SubModelType value1 = model.create(SubModelType.class);
+        SubModelType value1 = Model.create(SubModelType.class);
         model.setSubValue(value1);
-        SubModelType value2 = model.wrap(node.get("subValue", StateNode.class),
+        SubModelType value2 = Model.wrap(node.get("subValue", StateNode.class),
                 SubModelType.class);
-        SubModelType value3 = model.create(SubModelType.class);
+        SubModelType value3 = Model.create(SubModelType.class);
 
         Assert.assertEquals(value1, value2);
         Assert.assertNotEquals(value1, value3);
