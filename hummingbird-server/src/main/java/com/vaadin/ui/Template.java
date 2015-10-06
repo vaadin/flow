@@ -264,6 +264,19 @@ public abstract class Template extends AbstractComponent {
         private Object handleObjectMethod(Object proxy, Method method,
                 Object[] args) {
             switch (method.getName()) {
+            case "equals": {
+                assert args.length == 1;
+                Object other = args[0];
+                if (other == null) {
+                    return Boolean.FALSE;
+                }
+                StateNode otherNode = unwrapProxy(other);
+                return Boolean.valueOf(Objects.equals(otherNode, node));
+            }
+            case "hashCode": {
+                assert args == null;
+                return Integer.valueOf(node.hashCode());
+            }
             default:
                 throw new RuntimeException(
                         "Method not yet supported: " + method);

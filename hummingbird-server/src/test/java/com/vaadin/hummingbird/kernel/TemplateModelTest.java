@@ -243,4 +243,20 @@ public class TemplateModelTest {
             }
         });
     }
+
+    @Test
+    public void testProxyEqualsHashCode() {
+        SubModelType value1 = model.create(SubModelType.class);
+        model.setSubValue(value1);
+        SubModelType value2 = model.wrap(node.get("subValue", StateNode.class),
+                SubModelType.class);
+        SubModelType value3 = model.create(SubModelType.class);
+
+        Assert.assertEquals(value1, value2);
+        Assert.assertNotEquals(value1, value3);
+
+        Assert.assertEquals(value1.hashCode(), value2.hashCode());
+        Assert.assertNotEquals(value1.hashCode(), value3.hashCode());
+
+    }
 }
