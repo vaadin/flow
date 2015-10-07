@@ -201,7 +201,9 @@ public class TreeUpdater {
     }
 
     private static boolean isAlwaysAttribute(String key) {
-        return key.equals("class") || key.equals("style");
+        // FIXME There should be separate API for attribute and property and
+        // eitherOr
+        return key.equals("class") || key.equals("style") || key.equals("for");
     }
 
     public static native JavaScriptObject addDomListener(Element element,
