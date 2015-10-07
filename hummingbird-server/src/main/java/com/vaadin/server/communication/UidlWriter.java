@@ -173,8 +173,9 @@ public class UidlWriter implements Serializable {
             encodeRpc(ui, response);
 
             String r = response.toString();
-            System.out.println("UIDL");
-            System.out.println(r);
+            if (getLogger().isLoggable(Level.FINE)) {
+                getLogger().fine("Sending UIDL " + r);
+            }
             writer.write(r.substring(1, r.length() - 1));
         } finally {
             uiConnectorTracker.setWritingResponse(false);

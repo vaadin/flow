@@ -39,7 +39,7 @@ public class TransactionLogJsonProducer {
     private static final String TYPE_LIST_REMOVE = "listRemove";
 
     private JsonArray changesJson = Json.createArray();
-    private JsonArray templatesJson = Json.createArray();
+    private JsonObject templatesJson = Json.createObject();
     private UI ui;
 
     public TransactionLogJsonProducer(UI ui,
@@ -54,21 +54,20 @@ public class TransactionLogJsonProducer {
         return changesJson;
     }
 
-    public JsonArray getTemplatesJson() {
+    public JsonObject getTemplatesJson() {
         return templatesJson;
     }
 
-    private JsonObject templatesToJson(Set<ElementTemplate> templates) {
-        JsonObject templateJson = Json.createObject();
+    private void templatesToJson(Set<ElementTemplate> templates) {
+        templatesJson = Json.createObject();
 
         TemplateSerializer templateSerializer = new TemplateSerializer(ui);
 
         for (ElementTemplate template : templates) {
-            templateJson.put(Integer.toString(template.getId()),
+            templatesJson.put(Integer.toString(template.getId()),
                     templateSerializer.serializeTemplate(template));
             ui.registerTemplate(template);
         }
-        return templateJson;
     }
 
     private void changesToJson(

@@ -48,9 +48,12 @@ public class TransactionLogBuilder {
 
             templates.add((ElementTemplate) value);
             if (value instanceof BoundElementTemplate) {
-                for (BoundElementTemplate child : ((BoundElementTemplate) value)
-                        .getChildTemplates()) {
-                    handleTemplate(child);
+                List<BoundElementTemplate> childTemplates = ((BoundElementTemplate) value)
+                        .getChildTemplates();
+                if (childTemplates != null) {
+                    for (BoundElementTemplate child : childTemplates) {
+                        handleTemplate(child);
+                    }
                 }
             }
         }
