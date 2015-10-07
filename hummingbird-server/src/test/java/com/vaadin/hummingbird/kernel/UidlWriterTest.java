@@ -72,32 +72,4 @@ public class UidlWriterTest {
         Assert.assertTrue(value.asBoolean());
     }
 
-    @Test
-    public void removedElementHasTag() {
-        Element child = new Element("div");
-        element.appendChild(child);
-        child.removeFromParent();
-
-        JsonArray changes = encodeElementChanges();
-        Assert.assertEquals(3, changes.length());
-
-        JsonObject insert = changes.getObject(0);
-        Assert.assertEquals("listInsertNode", insert.getString("type"));
-        Assert.assertEquals("CHILDREN", insert.getString("key"));
-        Assert.assertEquals(3, (int) insert.getNumber("id"));
-        Assert.assertEquals(4, (int) insert.getNumber("value"));
-        Assert.assertEquals(0, (int) insert.getNumber("index"));
-
-        JsonObject remove = changes.getObject(1);
-        Assert.assertEquals("listRemove", remove.getString("type"));
-        Assert.assertEquals("CHILDREN", remove.getString("key"));
-        Assert.assertEquals(3, (int) remove.getNumber("id"));
-        Assert.assertEquals(0, (int) remove.getNumber("index"));
-
-        JsonObject put = changes.getObject(2);
-        Assert.assertEquals("put", put.getString("type"));
-        Assert.assertEquals("TAG", put.getString("key"));
-        Assert.assertEquals(4, (int) put.getNumber("id"));
-        Assert.assertEquals("div", put.getString("value"));
-    }
 }

@@ -49,13 +49,14 @@ public class TransactionLogBuilder {
         }
 
         if (key != null) {
-            assert key instanceof String || key instanceof Enum
-                    || key instanceof Integer : "key type "
-                            + key.getClass().getName() + " not supported";
-
             if (isServerOnlyKey(key)) {
                 return;
             }
+            // Key types for server only values is not restricted, key types
+            // going to the client are restricted
+            assert key instanceof String || key instanceof Enum
+                    || key instanceof Integer : "key type "
+                            + key.getClass().getName() + " not supported";
 
             handleTemplate(key);
         }

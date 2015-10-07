@@ -20,6 +20,16 @@ public abstract class NodeListChange extends NodeContentsChange {
     }
 
     /**
+     * Sets the index of the modified value in the list
+     *
+     * @param index
+     *            the index of the modified value in the list
+     */
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    /**
      * Returns the value of the changed object in the list
      *
      * @return the value of the changed object in the list
