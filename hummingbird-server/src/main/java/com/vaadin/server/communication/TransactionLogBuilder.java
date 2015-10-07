@@ -16,6 +16,9 @@ import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.NodeChangeVisitor;
+import com.vaadin.hummingbird.kernel.change.NodeContentsChange;
+import com.vaadin.hummingbird.kernel.change.NodeDataChange;
+import com.vaadin.hummingbird.kernel.change.NodeListChange;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
@@ -36,6 +39,41 @@ public class TransactionLogBuilder {
     }
 
     private void addChange(StateNode node, NodeChange change) {
+        if (isServerOnly(node)) {
+            return;
+        }
+
+        Object key = null;
+        if (change instanceof NodeContentsChange) {
+            key = ((NodeContentsChange) change).getKey();
+        }
+
+        if (key != null) {
+            assert key instanceof String || key instanceof Enum
+                    || key instanceof Integer : "key type "
+                            + key.getClass().getName() + " not supported";
+
+            if (isServerOnlyKey(key)) {
+                return;
+            }
+
+            handleTemplate(key);
+        }
+
+        Object value = null;
+        if (change instanceof NodeDataChange) {
+            value = ((NodeDataChange) change).getValue();
+        } else if (change instanceof NodeListChange) {
+            value = ((NodeListChange) change).getValue();
+        }
+
+        if (value != null) {
+            if (value instanceof StateNode && isServerOnly((StateNode) value)) {
+                return;
+            }
+            handleTemplate(value);
+        }
+
         changes.putIfAbsent(node, new ArrayList<>());
         changes.get(node).add(change);
     }
@@ -102,47 +140,12 @@ public class TransactionLogBuilder {
         @Override
         public void visitRemoveChange(StateNode node,
                 RemoveChange removeChange) {
-            if (isServerOnly(node)) {
-                return;
-            }
-            if (removeChange.getValue() instanceof StateNode
-                    && isServerOnly((StateNode) removeChange.getValue())) {
-                return;
-            }
-            Object key = removeChange.getKey();
-            if (isServerOnlyKey(key)) {
-                return;
-            }
-
             logBuilder.addChange(node, removeChange);
         }
 
         @Override
         public void visitPutChange(StateNode node, PutChange putChange) {
-            if (isServerOnly(node)) {
-                return;
-            }
-            Object key = putChange.getKey();
-            if (isServerOnlyKey(key)) {
-                return;
-            }
-
-            Object value = putChange.getValue();
-            if (value instanceof StateNode) {
-                StateNode childNode = (StateNode) value;
-                if (isServerOnly(childNode)) {
-                    return;
-                }
-                logBuilder.addChange(node, putChange);
-                logBuilder.handleTemplate(key);
-            } else {
-                logBuilder.addChange(node, putChange);
-                logBuilder.handleTemplate(value);
-            }
-            assert key instanceof String || key instanceof Enum
-                    || key instanceof Integer : "key type "
-                            + key.getClass().getName() + " not supported";
-
+            logBuilder.addChange(node, putChange);
         }
 
         @Override
@@ -159,55 +162,18 @@ public class TransactionLogBuilder {
         @Override
         public void visitListInsertChange(StateNode node,
                 ListInsertChange listInsertChange) {
-            if (isServerOnly(node)) {
-                return;
-            }
-            Object key = listInsertChange.getKey();
-            if (isServerOnlyKey(key)) {
-                return;
-            }
-
-            assert isValidListKey(key);
             logBuilder.addChange(node, listInsertChange);
         }
 
         @Override
         public void visitListRemoveChange(StateNode node,
                 ListRemoveChange listRemoveChange) {
-            if (isServerOnly(node)) {
-                return;
-            }
-            Object key = listRemoveChange.getKey();
-            if (isServerOnlyKey(key)) {
-                return;
-            }
-            Object removedValue = listRemoveChange.getValue();
-            if (removedValue instanceof StateNode) {
-                if (isServerOnly(((StateNode) removedValue))) {
-                    return;
-                }
-            }
-
-            assert isValidListKey(key);
             logBuilder.addChange(node, listRemoveChange);
-        }
-
-        private boolean isValidListKey(Object key) {
-            return key instanceof String || key instanceof Enum;
         }
 
         @Override
         public void visitListReplaceChange(StateNode node,
                 ListReplaceChange listReplaceChange) {
-            if (isServerOnly(node)) {
-                return;
-            }
-            Object key = listReplaceChange.getKey();
-            if (isServerOnlyKey(key)) {
-                return;
-            }
-
-            assert isValidListKey(key);
             logBuilder.addChange(node, listReplaceChange);
         }
     }
