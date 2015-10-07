@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.vaadin.hummingbird.kernel.ElementTemplate;
+import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
@@ -108,7 +109,7 @@ public class TransactionLogJsonProducer {
         } else if (value instanceof ElementTemplate) {
             changeJson.put(VALUE, ((ElementTemplate) value).getId());
         } else {
-            changeJson.put(VALUE, String.valueOf(value));
+            changeJson.put(VALUE, JsonConverter.toJson(value));
         }
     }
 
