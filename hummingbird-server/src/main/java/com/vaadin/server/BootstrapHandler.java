@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.DocumentType;
@@ -231,6 +232,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
     }
+
+    private static String bootstrapJS;
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -612,11 +615,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         StringBuilder builder = new StringBuilder();
         builder.append("//<![CDATA[\n");
-        builder.append("if (!window.vaadin) alert("
-                + JsonUtil.quote("Failed to load the bootstrap javascript")
-                + ");\n");
-
-        appendMainScriptTagContents(context, builder);
+        builder.append(getBootstrapJS(context));
 
         builder.append("//]]>");
         mainScriptTag.appendChild(
@@ -625,41 +624,34 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     }
 
-    protected void appendMainScriptTagContents(BootstrapContext context,
-            StringBuilder builder) throws IOException {
-        JsonObject appConfig = context.getApplicationParameters();
+    private String getBootstrapJS(BootstrapContext context) {
+        if (bootstrapJS == null) {
+            try (InputStream stream = BootstrapHandler.class
+                    .getResourceAsStream("BootstrapHandler.js")) {
+                if (stream == null) {
+                    throw new RuntimeException(
+                            "Unable to load BootstrapHandler.js");
+                }
 
+                bootstrapJS = IOUtils.toString(stream);
+            } catch (IOException e) {
+                throw new RuntimeException(
+                        "Unable to load BootstrapHandler.js");
+            }
+        }
+        String result = bootstrapJS.replace("{{appId}}", context.getAppId());
+        JsonObject appConfig = context.getApplicationParameters();
         boolean isDebug = !context.getSession().getConfiguration()
                 .isProductionMode();
 
         if (isDebug) {
-            /*
-             * Add tracking needed for getting bootstrap metrics to the client
-             * side Profiler if another implementation hasn't already been
-             * added.
-             */
-            builder.append(
-                    "if (typeof window.__gwtStatsEvent != 'function') {\n");
-            builder.append("vaadin.gwtStatsEvents = [];\n");
-            builder.append(
-                    "window.__gwtStatsEvent = function(event) {vaadin.gwtStatsEvents.push(event); return true;};\n");
-            builder.append("}\n");
-        }
-
-        builder.append("vaadin.initApplication(\"");
-        builder.append(context.getAppId());
-        builder.append("\",");
-        appendJsonObject(builder, appConfig, isDebug);
-        builder.append(");\n");
-    }
-
-    private static void appendJsonObject(StringBuilder builder,
-            JsonObject jsonObject, boolean isDebug) {
-        if (isDebug) {
-            builder.append(JsonUtil.stringify(jsonObject, 4));
+            result = result.replace("{{configJSON}}",
+                    JsonUtil.stringify(appConfig, 4));
         } else {
-            builder.append(JsonUtil.stringify(jsonObject));
+            result = result.replace("{{configJSON}}",
+                    JsonUtil.stringify(appConfig));
         }
+        return result;
     }
 
     protected JsonObject getApplicationParameters(BootstrapContext context) {
