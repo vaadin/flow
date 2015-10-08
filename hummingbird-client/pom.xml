@@ -12,7 +12,9 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<gwt.module>com.vaadin.ClientEngine</gwt.module>
+<!-- 	Disabled until document.write problem is resolved -->
+<!-- 		<gwt.module>com.vaadin.ClientEngine</gwt.module> -->
+		<gwt.module>com.vaadin.ClientEngineXSI</gwt.module>
 		<gwt.module.output>${project.build.outputDirectory}/VAADIN</gwt.module.output>
 	</properties>
 
