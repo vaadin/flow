@@ -37,12 +37,13 @@
 		return true;
 	};
 
-	window.vaadin = window.vaadin || {
+	window.vaadin = window.vaadin || {};
+	window.vaadin.framework = window.vaadin.framework || {
 		initApplication: function(appId, config) {
 			var testbenchId = appId.replace(/-\d+$/, '');
 			
 			if (apps[appId]) {
-				if (window.vaadin && window.vaadin.clients && window.vaadin.clients[testbenchId] && window.vaadin.clients[testbenchId].initializing) {
+				if (window.vaadin && window.vaadin.framework && window.vaadin.framework.clients && window.vaadin.framework.clients[testbenchId] && window.vaadin.framework.clients[testbenchId].initializing) {
 					throw "Application " + appId + " is already being initialized";
 				}
 				if (isInitializedInDom(appId)) {
@@ -52,7 +53,7 @@
 
 			log("init application", appId, config);
 			
-			window.vaadin.clients[testbenchId] = {
+			window.vaadin.framework.clients[testbenchId] = {
 					isActive: function() {
 						return true;
 					},
@@ -112,7 +113,7 @@
 
 			if (getConfig("debug")) {
 				// TODO debug state is now global for the entire page, but should somehow only be set for the current application  
-				window.vaadin.debug = true;
+				window.vaadin.framework.debug = true;
 			}
 			
 			return app;

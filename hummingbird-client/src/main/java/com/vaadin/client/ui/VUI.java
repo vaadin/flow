@@ -400,7 +400,7 @@ public class VUI extends SimplePanel
     private native static void loadAppIdListFromDOM(ArrayList<String> list)
     /*-{
          var j;
-         for(j in $wnd.vaadin.vaadinConfigurations) {
+         for(j in $wnd.vaadin.framework.vaadinConfigurations) {
             // $entry not needed as function is not exported
             list.@java.util.Collection::add(Ljava/lang/Object;)(j);
          }

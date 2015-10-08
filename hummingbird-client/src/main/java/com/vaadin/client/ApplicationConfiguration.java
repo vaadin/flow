@@ -461,7 +461,7 @@ public class ApplicationConfiguration implements EntryPoint {
      */
     private native static JsoConfiguration getJsoConfiguration(String appId)
     /*-{
-        return $wnd.vaadin.getApp(appId);
+        return $wnd.vaadin.framework.getApp(appId);
      }-*/;
 
     public static ApplicationConfiguration getConfigFromDOM(String appId) {
@@ -715,7 +715,7 @@ public class ApplicationConfiguration implements EntryPoint {
     public native static void registerCallback(String widgetsetName)
     /*-{
         var callbackHandler = $entry(@com.vaadin.client.ApplicationConfiguration::startApplication(Ljava/lang/String;));
-        $wnd.vaadin.registerWidgetset(widgetsetName, callbackHandler);
+        $wnd.vaadin.framework.registerWidgetset(widgetsetName, callbackHandler);
     }-*/;
 
     /**
@@ -748,7 +748,7 @@ public class ApplicationConfiguration implements EntryPoint {
 
     private native static boolean isDebugAvailable()
     /*-{
-        if($wnd.vaadin.debug) {
+        if($wnd.vaadin.framework.debug) {
             return true;
         } else {
             return false;

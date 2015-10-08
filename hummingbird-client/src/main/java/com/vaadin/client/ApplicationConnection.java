@@ -485,7 +485,7 @@ public class ApplicationConnection implements HasHandlers {
             });
             client.initializing = false;
             
-            $wnd.vaadin.clients[TTAppId] = client;
+            $wnd.vaadin.framework.clients[TTAppId] = client;
             
             return client;
             }-*/;
@@ -534,10 +534,10 @@ public class ApplicationConnection implements HasHandlers {
     /*-{
     	var app = this;
     	var oldSync;
-    	if ($wnd.vaadin.forceSync) {
-    		oldSync = $wnd.vaadin.forceSync;
+    	if ($wnd.vaadin.framework.forceSync) {
+    		oldSync = $wnd.vaadin.framework.forceSync;
     	}
-    	$wnd.vaadin.forceSync = $entry(function() {
+    	$wnd.vaadin.framework.forceSync = $entry(function() {
     		if (oldSync) {
     			oldSync();
     		}
@@ -553,11 +553,11 @@ public class ApplicationConnection implements HasHandlers {
      */
     public static native void runPostRequestHooks(String appId)
     /*-{
-    	if ($wnd.vaadin.postRequestHooks) {
-    		for ( var hook in $wnd.vaadin.postRequestHooks) {
-    			if (typeof ($wnd.vaadin.postRequestHooks[hook]) == "function") {
+    	if ($wnd.vaadin.framework.postRequestHooks) {
+    		for ( var hook in $wnd.vaadin.framework.postRequestHooks) {
+    			if (typeof ($wnd.vaadin.framework.postRequestHooks[hook]) == "function") {
     				try {
-    					$wnd.vaadin.postRequestHooks[hook](appId);
+    					$wnd.vaadin.framework.postRequestHooks[hook](appId);
     				} catch (e) {
     				}
     			}

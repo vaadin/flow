@@ -43,10 +43,10 @@ public class RpcExamples extends AbstractTestUI {
 
         getElement().appendChild(new Element("button") {
             {
-                setTextContent("Log window.vaadin property names");
+                setTextContent("Log window.vaadin.framework property names");
                 addEventListener("click", e -> {
                     getRoot().getRootNode().enqueueRpc(getRoot().getRootNode(),
-                            "console.log(Object.getOwnPropertyNames(window.vaadin))");
+                            "console.log(Object.getOwnPropertyNames(window.vaadin.framework))");
                 });
             }
         });

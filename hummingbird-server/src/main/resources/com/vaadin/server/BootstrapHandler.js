@@ -1,4 +1,4 @@
-if (!window.vaadin) {
+if (!window.vaadin.framework) {
 	alert("Failed to load the bootstrap javascript");
 }
 
@@ -10,4 +10,4 @@ if (typeof window.__gwtStatsEvent != 'function') {
 	};
 }
 
-vaadin.initApplication("{{appId}}", {{configJSON}});
+window.vaadin.framework.initApplication("{{appId}}", {{configJSON}});
