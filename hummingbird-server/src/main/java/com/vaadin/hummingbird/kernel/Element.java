@@ -334,7 +334,7 @@ public class Element implements Serializable {
                     continue;
                 }
                 String value = getAttribute(attribute);
-                if (value != null) {
+                if (value != null && !value.equals("false")) {
                     b.append(' ');
                     b.append(attribute);
                     b.append("=\"");
