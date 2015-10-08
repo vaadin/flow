@@ -38,6 +38,7 @@ import com.vaadin.shared.ApplicationConstants;
 import elemental.json.JsonObject;
 
 public class PortletBootstrapHandler extends BootstrapHandler {
+
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
@@ -64,23 +65,6 @@ public class PortletBootstrapHandler extends BootstrapHandler {
 
         RenderResponse renderResponse = (RenderResponse) response;
         return renderResponse;
-    }
-
-    @Override
-    protected void appendMainScriptTagContents(BootstrapContext context,
-            StringBuilder builder) throws IOException {
-        // fixed base theme to use - all portal pages with Vaadin
-        // applications will load this exactly once
-        String portalTheme = ((VaadinPortletRequest) context.getRequest())
-                .getPortalProperty(VaadinPortlet.PORTAL_PARAMETER_VAADIN_THEME);
-        if (portalTheme != null
-                && !portalTheme.equals(context.getThemeName())) {
-            String portalThemeUri = getThemeUri(context, portalTheme);
-            // XSS safe - originates from portal properties
-            builder.append("vaadin.loadTheme('" + portalThemeUri + "');");
-        }
-
-        super.appendMainScriptTagContents(context, builder);
     }
 
     @Override
