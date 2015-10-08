@@ -145,6 +145,6 @@
 			}
 		},
 	};
-	
+	window.vaadin.clients = window.vaadin.framework.clients; // TestBench compatibility
 	log('Vaadin bootstrap loaded');
 })();
