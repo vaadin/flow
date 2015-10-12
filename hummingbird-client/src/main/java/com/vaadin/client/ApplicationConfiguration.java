@@ -83,6 +83,11 @@ public class ApplicationConfiguration implements EntryPoint {
             }
         }-*/;
 
+        private native ValueMap getConfigJson(String name)
+        /*-{
+            return this.getConfig(name);
+        }-*/;
+
         /**
          * Reads a configuration parameter as a boolean object. Please note that
          * the javascript value of the parameter should also be a boolean, or
@@ -192,8 +197,8 @@ public class ApplicationConfiguration implements EntryPoint {
             }
         }-*/;
 
-        private String getUIDL() {
-            return getConfigString("uidl");
+        private ValueMap getUIDL() {
+            return getConfigJson("uidl");
         }
     }
 
@@ -329,7 +334,7 @@ public class ApplicationConfiguration implements EntryPoint {
      *
      * @return
      */
-    public String getUIDL() {
+    public ValueMap getUIDL() {
         return getJsoConfiguration(id).getUIDL();
     }
 

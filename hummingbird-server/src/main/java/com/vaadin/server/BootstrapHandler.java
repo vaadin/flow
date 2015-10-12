@@ -645,13 +645,25 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         boolean isDebug = !context.getSession().getConfiguration()
                 .isProductionMode();
 
+        int indent = 0;
         if (isDebug) {
-            result = result.replace("{{configJSON}}",
-                    JsonUtil.stringify(appConfig, 4));
-        } else {
-            result = result.replace("{{configJSON}}",
-                    JsonUtil.stringify(appConfig));
+            indent = 4;
         }
+        String initialUIDL = "";
+        try {
+            initialUIDL = getInitialUidl(context.getRequest(), context.getUI());
+        } catch (IOException e) {
+            getLogger().log(Level.SEVERE, "Unable to create initial UIDL", e);
+        }
+        String appConfigString = JsonUtil.stringify(appConfig, indent);
+        if (isDebug) {
+            JsonObject uidl = Json.parse(initialUIDL);
+            initialUIDL = JsonUtil.stringify(uidl, indent);
+            initialUIDL = initialUIDL.replace("\n", "\n       ");
+            appConfigString = appConfigString.replace("\n", "\n       ");
+        }
+        result = result.replace("{{initialUIDL}}", initialUIDL);
+        result = result.replace("{{configJSON}}", appConfigString);
         return result;
     }
 
@@ -663,13 +675,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         JsonObject appConfig = Json.createObject();
 
         appConfig.put(UIConstants.UI_ID_PARAMETER, context.getUI().getUIId());
-        String initialUIDL = "";
-        try {
-            initialUIDL = getInitialUidl(request, context.getUI());
-        } catch (IOException e) {
-            getLogger().log(Level.SEVERE, "Unable to create initial UIDL", e);
-        }
-        appConfig.put("uidl", initialUIDL);
 
         String themeName = context.getThemeName();
         if (themeName != null) {

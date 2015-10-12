@@ -246,6 +246,11 @@ public class ServerMessageHandler {
         getLogger().info("JSON parsing took "
                 + (new Date().getTime() - start.getTime()) + "ms");
 
+        handleMessage(json);
+    }
+
+    public void handleMessage(ValueMap json) {
+
         if (getServerId(json) == -1) {
             getLogger().severe("Response didn't contain a server id. "
                     + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
@@ -764,4 +769,5 @@ public class ServerMessageHandler {
     public TreeUpdater getTreeUpdater() {
         return treeUpdater;
     }
+
 }

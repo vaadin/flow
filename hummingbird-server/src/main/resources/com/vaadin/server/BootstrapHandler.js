@@ -20,7 +20,10 @@ loadPoller = function (){
 		};
 	}
 	
-	window.vaadin.framework.initApplication("{{appId}}", {{configJSON}});
+	var uidl = {{initialUIDL}};
+	var config = {{configJSON}};
+	config.uidl = uidl;
+	  window.vaadin.framework.initApplication("{{appId}}", config);
 };
 
 setTimeout(loadPoller,0);

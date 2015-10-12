@@ -39,7 +39,6 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.CommunicationProblemHandler;
@@ -407,8 +406,8 @@ public class ApplicationConnection implements HasHandlers {
      *
      */
     public void start() {
-        String jsonText = configuration.getUIDL();
-        if (jsonText == null) {
+        ValueMap json = configuration.getUIDL();
+        if (json == null) {
             // initial UIDL not in DOM, request from server
             getServerCommunicationHandler().resynchronize();
         } else {
@@ -416,7 +415,7 @@ public class ApplicationConnection implements HasHandlers {
 
             // Hack to avoid logging an error in endRequest()
             getServerCommunicationHandler().startRequest();
-            getServerMessageHandler().handleMessage(jsonText);
+            getServerMessageHandler().handleMessage(json);
         }
     }
 
