@@ -1032,7 +1032,20 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     @Override
     public Element preRender() {
-        return PreRenderer.preRenderElementTree(getElement());
+        if (getElement().getTag().contains("-")) {
+            // Web component, just render an empty div for now
+            Element div = new Element("div");
+            if (getElement().hasAttribute("style")) {
+                div.setAttribute("style", getElement().getAttribute("style"));
+            }
+            if (getElement().hasAttribute("class")) {
+                div.setAttribute("class", getElement().getAttribute("class"));
+            }
+
+            return div;
+        } else {
+            return PreRenderer.preRenderElementTree(getElement());
+        }
     }
 
 }
