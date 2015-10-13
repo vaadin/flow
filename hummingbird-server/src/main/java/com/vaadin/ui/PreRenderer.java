@@ -21,6 +21,12 @@ public class PreRenderer {
                 Component lastComponent = components.get(components.size() - 1);
                 childPreRenderedElement = lastComponent.preRender();
             } else {
+                if (Element.isTextNode(childElement)
+                        && (childElement.getAttribute("content") == null
+                                || childElement.getTextContent().isEmpty())) {
+                    continue;
+                }
+
                 childPreRenderedElement = preRenderElementTree(childElement);
             }
             preRenderedElement.appendChild(childPreRenderedElement);
