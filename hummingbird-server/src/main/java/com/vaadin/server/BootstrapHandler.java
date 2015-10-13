@@ -644,6 +644,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         JsonObject appConfig = context.getApplicationParameters();
         boolean isDebug = !context.getSession().getConfiguration()
                 .isProductionMode();
+        boolean preTiming = context.getRequest()
+                .getParameter("pre-timing") != null;
 
         int indent = 0;
         if (isDebug) {
@@ -664,6 +666,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
         result = result.replace("{{initialUIDL}}", initialUIDL);
         result = result.replace("{{configJSON}}", appConfigString);
+        result = result.replace("{{preTiming}}", Boolean.toString(preTiming));
         return result;
     }
 

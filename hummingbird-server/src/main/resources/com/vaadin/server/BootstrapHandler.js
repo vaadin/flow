@@ -1,4 +1,24 @@
-var attempts = 1000;
+/* Pre-rendering timing */
+if ({{preTiming}}) {
+	var doneAfterNext = false;
+	var raf = function() {
+		if (doneAfterNext) {
+			window.alert("Pre-render done in "+window.performance.now()+"ms");
+			return;
+		}
+		
+		if (document.querySelectorAll("vaadin-internals").length > 0) {
+			doneAfterNext = true;
+		} 
+	
+		if (window.performance.now() < 5000)
+			window.requestAnimationFrame(raf);
+		
+	};
+
+	window.requestAnimationFrame(raf);
+}
+/* Pre-rendering timing end */
 
 loadPoller = function (){
 	window.console.log("Checking for window.vaadin.framework...");
@@ -19,11 +39,10 @@ loadPoller = function (){
 			return true;
 		};
 	}
-	
-	var uidl = {{initialUIDL}};
-	var config = {{configJSON}};
-	config.uidl = uidl;
-	  window.vaadin.framework.initApplication("{{appId}}", config);
+    var uidl = {{initialUIDL}};
+    var config = {{configJSON}};
+    config.uidl = uidl;
+    window.vaadin.framework.initApplication("{{appId}}", config);
 };
 
 setTimeout(loadPoller,0);
