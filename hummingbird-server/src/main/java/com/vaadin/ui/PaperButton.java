@@ -17,6 +17,7 @@
 package com.vaadin.ui;
 
 import com.vaadin.annotations.Bower;
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.annotations.Tag;
 
 /**
@@ -28,6 +29,7 @@ import com.vaadin.annotations.Tag;
 @SuppressWarnings("serial")
 @Tag("paper-button")
 @Bower("paper-button")
+@NotYetImplemented("Mostly a test. Needs a decision on how to integrated Paper components")
 public class PaperButton extends Button {
 
     /**

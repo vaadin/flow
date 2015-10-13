@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.event.ComponentEventListener;
 import com.vaadin.event.FieldEvents.BlurNotifier;
 import com.vaadin.event.FieldEvents.FocusNotifier;
@@ -52,6 +53,7 @@ import com.vaadin.shared.ui.window.WindowState;
  * @since 3.0
  */
 @SuppressWarnings("serial")
+@NotYetImplemented("Could be done using paper-dialog")
 public class Window extends Panel implements FocusNotifier, BlurNotifier {
 
     private WindowServerRpc rpc = new WindowServerRpc() {

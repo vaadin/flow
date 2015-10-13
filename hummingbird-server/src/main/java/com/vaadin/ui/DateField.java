@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property;
 import com.vaadin.data.Validator;
@@ -54,6 +55,7 @@ import com.vaadin.shared.ui.datefield.TextualDateFieldState;
  */
 @SuppressWarnings("serial")
 @Tag("input")
+@NotYetImplemented("Basic implementation but the whole class should be removed and replaced by PopupDateField/InlineDateField")
 public class DateField extends AbstractField<Date>
         implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 

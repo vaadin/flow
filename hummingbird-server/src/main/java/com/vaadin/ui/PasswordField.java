@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property;
 
@@ -23,6 +24,7 @@ import com.vaadin.data.Property;
  * entered text is not displayed on the screen.
  */
 @Tag("input")
+@Implemented("Seems to be implemented. Needs testing")
 public class PasswordField extends AbstractTextField {
 
     /**

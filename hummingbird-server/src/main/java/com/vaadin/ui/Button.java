@@ -19,6 +19,7 @@ package com.vaadin.ui;
 import java.io.Serializable;
 import java.util.EventListener;
 
+import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.kernel.DomEventListener;
 import com.vaadin.server.Resource;
@@ -36,6 +37,7 @@ import elemental.json.JsonObject;
  */
 @SuppressWarnings("serial")
 @Tag("button")
+@Implemented
 public class Button extends AbstractFocusable {
 
     private ButtonServerRpc rpc = new ButtonServerRpc() {

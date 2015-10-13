@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.ui.flash.FlashState;
 
@@ -30,6 +31,7 @@ import com.vaadin.shared.ui.flash.FlashState;
  * @since 7.0
  */
 @SuppressWarnings("serial")
+@NotYetImplemented("Probably should not be here")
 public class Flash extends AbstractEmbedded {
 
     /**

@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.data.Container;
 import com.vaadin.event.FieldEvents;
 
@@ -27,6 +28,7 @@ import com.vaadin.event.FieldEvents;
  * Configures select to be used as an option group.
  */
 @SuppressWarnings("serial")
+@NotYetImplemented
 public class OptionGroup extends AbstractSelect
         implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 

@@ -3,8 +3,10 @@ package com.vaadin.ui;
 import java.util.Collections;
 import java.util.List;
 
+import com.vaadin.annotations.Implemented;
 import com.vaadin.hummingbird.kernel.Element;
 
+@Implemented
 public abstract class Composite extends AbstractComponent
         implements HasComponents {
     /*

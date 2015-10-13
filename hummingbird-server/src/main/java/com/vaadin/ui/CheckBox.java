@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property;
 import com.vaadin.event.FieldEvents.BlurNotifier;
@@ -27,6 +28,7 @@ import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.checkbox.CheckBoxServerRpc;
 
 @Tag("span")
+@Implemented
 public class CheckBox extends AbstractField<Boolean>
         implements FocusNotifier, BlurNotifier {
 

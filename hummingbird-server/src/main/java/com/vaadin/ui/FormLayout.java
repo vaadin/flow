@@ -18,6 +18,7 @@ package com.vaadin.ui;
 
 import java.text.Normalizer.Form;
 
+import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.kernel.Element;
 
@@ -34,6 +35,7 @@ import com.vaadin.hummingbird.kernel.Element;
  *
  */
 @Tag("table")
+@Implemented("Expand ratio should be removed")
 public class FormLayout extends AbstractOrderedLayout {
 
     public FormLayout() {

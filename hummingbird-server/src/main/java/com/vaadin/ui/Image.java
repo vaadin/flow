@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
 import com.vaadin.server.Resource;
@@ -30,6 +31,7 @@ import com.vaadin.shared.ui.image.ImageState;
  * @since 7.0
  */
 @SuppressWarnings("serial")
+@NotYetImplemented
 public class Image extends AbstractEmbedded {
 
     protected ImageServerRpc rpc = new ImageServerRpc() {

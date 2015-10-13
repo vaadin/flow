@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 import com.vaadin.annotations.Bower;
+import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.Resource;
@@ -66,6 +67,7 @@ import com.vaadin.shared.Position;
  */
 @Bower("vaadin-notification")
 @Tag("vaadin-notification")
+@Implemented("Using an external proto of vaadin-notification. Does not size correctly in Chrome, #13")
 public class Notification extends AbstractComponent implements Serializable {
     public enum Type {
         HUMANIZED_MESSAGE("humanized"), WARNING_MESSAGE(

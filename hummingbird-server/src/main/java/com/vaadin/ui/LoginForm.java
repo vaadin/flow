@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.event.ComponentEventListener;
 import com.vaadin.server.ConnectorResource;
 import com.vaadin.server.ExternalResource;
@@ -51,6 +52,7 @@ import com.vaadin.shared.ApplicationConstants;
  *             {@link TextField}s can be used instead.
  */
 @Deprecated
+@NotYetImplemented("Should it be?")
 public class LoginForm extends CustomComponent {
 
     private String usernameCaption = "Username";

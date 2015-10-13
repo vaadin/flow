@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.ui.BorderStyle;
 import com.vaadin.shared.ui.link.LinkConstants;
@@ -28,6 +29,7 @@ import com.vaadin.shared.ui.link.LinkState;
  * @since 3.0
  */
 @SuppressWarnings("serial")
+@NotYetImplemented
 public class Link extends AbstractComponent {
 
     /**

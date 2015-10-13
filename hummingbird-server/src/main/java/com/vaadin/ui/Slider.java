@@ -17,6 +17,7 @@
 package com.vaadin.ui;
 
 import com.vaadin.annotations.Bower;
+import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.Tag;
 
 /**
@@ -26,6 +27,7 @@ import com.vaadin.annotations.Tag;
  */
 @Tag("paper-slider")
 @Bower("paper-slider")
+@Implemented("Implemented using <paper-slider>. Missing some features")
 public class Slider extends AbstractField<Double> {
 
     /**

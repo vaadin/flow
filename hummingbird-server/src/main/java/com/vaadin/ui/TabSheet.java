@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.event.ComponentEventListener;
 import com.vaadin.event.FieldEvents.BlurNotifier;
 import com.vaadin.event.FieldEvents.FocusAndBlurServerRpcImpl;
@@ -62,6 +63,7 @@ import com.vaadin.ui.Component.Focusable;
  * @author Vaadin Ltd.
  * @since 3.0
  */
+@NotYetImplemented
 public class TabSheet extends AbstractComponentContainer
         implements Focusable, FocusNotifier, BlurNotifier, SelectiveRenderer {
 

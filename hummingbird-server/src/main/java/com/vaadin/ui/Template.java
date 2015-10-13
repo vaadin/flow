@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
@@ -38,6 +39,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
+@Implemented("Missing quite a few features such as computed properties")
 public abstract class Template extends AbstractComponent {
     private static class ProxyHandler implements InvocationHandler {
 

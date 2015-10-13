@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.event.ComponentEventListener;
 import com.vaadin.shared.ui.popupview.PopupViewServerRpc;
 import com.vaadin.shared.ui.popupview.PopupViewState;
@@ -33,6 +34,7 @@ import com.vaadin.shared.ui.popupview.PopupViewState;
  * @author Vaadin Ltd.
  */
 @SuppressWarnings("serial")
+@NotYetImplemented
 public class PopupView extends AbstractComponent implements HasComponents {
 
     private Content content;

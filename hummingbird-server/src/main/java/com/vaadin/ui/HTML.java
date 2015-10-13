@@ -6,6 +6,14 @@ import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import com.vaadin.annotations.Implemented;
+
+/**
+ * Component containing a custom HTML tree given as a string.
+ * <p>
+ * Must have exactly one root element
+ */
+@Implemented
 public class HTML extends AbstractComponent {
 
     public HTML(String html) {

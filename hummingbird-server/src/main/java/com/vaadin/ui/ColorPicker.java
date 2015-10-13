@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.shared.ui.colorpicker.Color;
 
 /**
@@ -26,6 +27,7 @@ import com.vaadin.shared.ui.colorpicker.Color;
  * @see ColorPickerArea
  *
  */
+@NotYetImplemented
 public class ColorPicker extends AbstractColorPicker {
 
     /**

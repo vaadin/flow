@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.annotations.Implemented;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.LayoutEvents.LayoutClickNotifier;
@@ -63,6 +64,7 @@ import com.vaadin.shared.ui.csslayout.CssLayoutServerRpc;
  * @since 6.1 brought in from "FastLayouts" incubator project
  *
  */
+@Implemented
 public class CssLayout extends AbstractSimpleDOMComponentContainer
         implements LayoutClickNotifier {
 

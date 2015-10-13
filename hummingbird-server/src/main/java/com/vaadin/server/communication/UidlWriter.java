@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import com.vaadin.annotations.Bower;
 import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.JsonConverter;
@@ -220,6 +221,17 @@ public class UidlWriter implements Serializable {
         for (Class<? extends ClientConnector> cls : classes) {
             if (!ui.getResourcesHandled().contains(cls)) {
                 unhandledClasses.add(cls);
+
+                NotYetImplemented annotation = cls
+                        .getAnnotation(NotYetImplemented.class);
+                if (annotation != null) {
+                    String msg = "Using " + cls.getName()
+                            + " which has not yet been implemented properly";
+                    if (annotation.value().length() > 0) {
+                        msg += ": " + annotation.value();
+                    }
+                    getLogger().warning(msg);
+                }
             }
         }
 
@@ -268,7 +280,7 @@ public class UidlWriter implements Serializable {
             return;
         }
 
-        getLogger().info("Collecting dependencies for " + cls.getName());
+        getLogger().fine("Collecting dependencies for " + cls.getName());
         ui.getResourcesHandled().add(cls);
 
         JavaScript jsAnnotation = cls.getAnnotation(JavaScript.class);
@@ -277,7 +289,7 @@ public class UidlWriter implements Serializable {
                 Dependency dependency = new Dependency(Dependency.Type.SCRIPT,
                         manager.registerDependency(uri, cls));
                 dependencies.add(dependency);
-                getLogger().info("Dependency found: " + dependency);
+                getLogger().fine("Dependency found: " + dependency);
             }
         }
 
@@ -288,7 +300,7 @@ public class UidlWriter implements Serializable {
                         Dependency.Type.STYLSHEET,
                         manager.registerDependency(uri, cls));
                 dependencies.add(dependency);
-                getLogger().info("Dependency found: " + dependency);
+                getLogger().fine("Dependency found: " + dependency);
             }
         }
 
@@ -299,7 +311,7 @@ public class UidlWriter implements Serializable {
                 Dependency dependency = new Dependency(Dependency.Type.HTML,
                         manager.registerDependency(uri, cls));
                 dependencies.add(dependency);
-                getLogger().info("Dependency found: " + dependency);
+                getLogger().fine("Dependency found: " + dependency);
             }
         }
 
@@ -391,16 +403,6 @@ public class UidlWriter implements Serializable {
         } else {
             return JsonConverter.toJson(param);
         }
-    }
-
-    /**
-     * @since
-     * @param cls
-     * @param response
-     */
-    private void handleDependencies(UI ui, Class<? extends ClientConnector> cls,
-            JsonObject response) {
-
     }
 
     public static List<String> getHtmlResources(

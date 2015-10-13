@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.server.Resource;
 
 /**
@@ -39,6 +40,7 @@ import com.vaadin.server.Resource;
  * @author Vaadin Ltd
  * @since 6.7.0
  */
+@NotYetImplemented
 public class Audio extends AbstractMedia {
 
     public Audio() {

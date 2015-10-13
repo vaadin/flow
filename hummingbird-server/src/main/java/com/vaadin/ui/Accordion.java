@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.shared.ui.accordion.AccordionState;
 
 /**
@@ -28,6 +29,7 @@ import com.vaadin.shared.ui.accordion.AccordionState;
  *
  * @see TabSheet
  */
+@NotYetImplemented
 public class Accordion extends TabSheet {
     /**
      * Creates an empty accordion.

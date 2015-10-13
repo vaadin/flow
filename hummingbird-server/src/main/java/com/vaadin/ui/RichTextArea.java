@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.data.Property;
 
 /**
@@ -25,6 +26,7 @@ import com.vaadin.data.Property;
  * {@link RichTextArea} may produce unexpected results as formatting is counted
  * into length of field.
  */
+@NotYetImplemented("What do we want to do about this?")
 public class RichTextArea extends AbstractField<String> {
 
     /**

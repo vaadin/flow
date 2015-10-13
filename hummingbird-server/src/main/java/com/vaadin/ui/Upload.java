@@ -18,6 +18,7 @@ package com.vaadin.ui;
 import java.io.OutputStream;
 import java.io.Serializable;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.event.ComponentEventListener;
 import com.vaadin.server.NoInputStreamException;
 import com.vaadin.server.NoOutputStreamException;
@@ -63,6 +64,7 @@ import com.vaadin.shared.ui.upload.UploadServerRpc;
  * @since 3.0
  */
 @SuppressWarnings("serial")
+@NotYetImplemented()
 public class Upload extends AbstractComponent implements Component.Focusable {
 
     /**

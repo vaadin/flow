@@ -15,6 +15,8 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
+
 /**
  * A vertical split panel contains two components and lays them vertically. The
  * first component is above the second component.
@@ -32,6 +34,7 @@ package com.vaadin.ui;
  * </pre>
  *
  */
+@NotYetImplemented
 public class VerticalSplitPanel extends AbstractSplitPanel {
 
     public VerticalSplitPanel() {

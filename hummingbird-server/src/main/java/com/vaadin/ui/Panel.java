@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
 import com.vaadin.server.Scrollable;
@@ -31,6 +32,7 @@ import com.vaadin.ui.Component.Focusable;
  * @since 3.0
  */
 @SuppressWarnings("serial")
+@NotYetImplemented
 public class Panel extends AbstractSingleComponentContainer
         implements Scrollable, Focusable {
 

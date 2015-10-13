@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.LayoutEvents.LayoutClickNotifier;
@@ -36,6 +37,7 @@ import com.vaadin.shared.ui.absolutelayout.AbsoluteLayoutState;
  *
  */
 @SuppressWarnings("serial")
+@NotYetImplemented
 public class AbsoluteLayout extends AbstractComponentContainer
         implements LayoutClickNotifier {
 

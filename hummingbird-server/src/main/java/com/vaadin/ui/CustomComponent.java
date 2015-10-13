@@ -19,6 +19,8 @@ package com.vaadin.ui;
 import java.util.Collections;
 import java.util.Iterator;
 
+import com.vaadin.annotations.NotYetImplemented;
+
 /**
  * Custom component provides a simple implementation of the {@link Component}
  * interface to allow creating new UI components by composition of existing
@@ -52,6 +54,7 @@ import java.util.Iterator;
  * @author Vaadin Ltd.
  * @since 3.0
  */
+@NotYetImplemented("Should be removed / replaced by Composite")
 @SuppressWarnings("serial")
 public class CustomComponent extends AbstractComponent
         implements HasComponents {
@@ -143,6 +146,7 @@ public class CustomComponent extends AbstractComponent
      *
      * @return the number of contained components (zero or one)
      */
+    @Override
     public int getComponentCount() {
         return (root != null ? 1 : 0);
     }

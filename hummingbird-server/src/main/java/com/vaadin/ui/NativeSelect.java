@@ -18,6 +18,7 @@ package com.vaadin.ui;
 
 import java.util.Collection;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.data.Container;
 import com.vaadin.event.FieldEvents;
 import com.vaadin.event.FieldEvents.FocusAndBlurServerRpcImpl;
@@ -29,6 +30,7 @@ import com.vaadin.event.FieldEvents.FocusAndBlurServerRpcImpl;
  * better choice.
  */
 @SuppressWarnings("serial")
+@NotYetImplemented
 public class NativeSelect extends AbstractSelect
         implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 

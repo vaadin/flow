@@ -18,6 +18,7 @@ package com.vaadin.ui;
 
 import java.util.Date;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.data.Property;
 
 /**
@@ -31,6 +32,7 @@ import com.vaadin.data.Property;
  * @author Vaadin Ltd.
  * @since 5.0
  */
+@NotYetImplemented
 public class InlineDateField extends DateField {
 
     public InlineDateField() {

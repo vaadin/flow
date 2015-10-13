@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.ui.browserframe.BrowserFrameState;
 
@@ -26,6 +27,7 @@ import com.vaadin.shared.ui.browserframe.BrowserFrameState;
  * @version @VERSION@
  * @since 7.0
  */
+@NotYetImplemented
 public class BrowserFrame extends AbstractEmbedded {
 
     /**

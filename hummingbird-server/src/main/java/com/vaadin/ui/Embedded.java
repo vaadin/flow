@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
 import com.vaadin.server.Resource;
@@ -46,6 +47,7 @@ import com.vaadin.shared.ui.embedded.EmbeddedServerRpc;
  * @since 3.0
  */
 @SuppressWarnings("serial")
+@NotYetImplemented("Should be removed")
 public class Embedded extends AbstractComponent {
 
     /**

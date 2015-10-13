@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.Tag;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
@@ -100,6 +101,7 @@ import elemental.json.JsonValue;
  * @since 7.0
  */
 @Tag("div")
+@Implemented("Many features missing. Push + more...")
 public abstract class UI extends CssLayout
         implements PollNotifier, Focusable, Layer {
 

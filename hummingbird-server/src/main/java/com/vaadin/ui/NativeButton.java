@@ -15,7 +15,10 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
+
 @SuppressWarnings("serial")
+@NotYetImplemented("This is not needed (except to help porting) if Button is based on <button>")
 public class NativeButton extends Button {
 
     public NativeButton() {

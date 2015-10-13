@@ -18,6 +18,7 @@ package com.vaadin.ui;
 
 import java.util.Collection;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.data.Container;
 
 /**
@@ -25,6 +26,7 @@ import com.vaadin.data.Container;
  * side for selected items.
  */
 @SuppressWarnings("serial")
+@NotYetImplemented()
 public class TwinColSelect extends AbstractSelect {
 
     private int columns = 0;

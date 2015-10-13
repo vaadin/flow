@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property;
 
@@ -39,6 +40,7 @@ import com.vaadin.data.Property;
  */
 @SuppressWarnings("serial")
 @Tag("input")
+@Implemented("Basic implementation, needs testing")
 public class TextField extends AbstractTextField {
 
     /**

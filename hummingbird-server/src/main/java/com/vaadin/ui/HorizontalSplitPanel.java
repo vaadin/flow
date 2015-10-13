@@ -15,6 +15,8 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
+
 /**
  * A horizontal split panel contains two components and lays them horizontally.
  * The first component is on the left side.
@@ -26,7 +28,7 @@ package com.vaadin.ui;
  *      | The first component || The second component |
  *      |                     ||                      |
  *      +---------------------++----------------------+
- *                              
+ *
  *                            ^
  *                            |
  *                      the splitter
@@ -36,6 +38,7 @@ package com.vaadin.ui;
  * @author Vaadin Ltd.
  * @since 6.5
  */
+@NotYetImplemented
 public class HorizontalSplitPanel extends AbstractSplitPanel {
     /**
      * Creates an empty horizontal split panel

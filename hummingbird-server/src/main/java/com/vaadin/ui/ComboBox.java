@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.data.Container;
 import com.vaadin.data.util.filter.SimpleStringFilter;
 import com.vaadin.event.FieldEvents;
@@ -36,6 +37,7 @@ import com.vaadin.shared.ui.combobox.FilteringMode;
  *
  */
 @SuppressWarnings("serial")
+@NotYetImplemented
 public class ComboBox extends AbstractSelect
         implements AbstractSelect.Filtering, FieldEvents.BlurNotifier,
         FieldEvents.FocusNotifier {

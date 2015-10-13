@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.ContainerHierarchicalWrapper;
@@ -47,6 +48,7 @@ import com.vaadin.shared.ui.MultiSelectMode;
  * @since 3.0
  */
 @SuppressWarnings({ "serial", "deprecation" })
+@NotYetImplemented("No implementation. Is Components going to do this?")
 public class Tree extends AbstractSelect
         implements Container.Hierarchical, ItemClickNotifier {
 

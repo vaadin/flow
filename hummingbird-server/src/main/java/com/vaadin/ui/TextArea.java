@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.Tag;
 import com.vaadin.data.Property;
 
@@ -23,6 +24,7 @@ import com.vaadin.data.Property;
  * A text field that supports multi line editing.
  */
 @Tag("textarea")
+@Implemented("Basic implementation, needs testing")
 public class TextArea extends AbstractTextField {
 
     /**

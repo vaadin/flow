@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.ui.menubar.MenuBarState;
 import com.vaadin.ui.Component.Focusable;
@@ -31,6 +32,7 @@ import com.vaadin.ui.Component.Focusable;
  * </p>
  */
 @SuppressWarnings("serial")
+@NotYetImplemented
 public class MenuBar extends AbstractComponent implements Focusable {
 
     // Items of the top-level menu

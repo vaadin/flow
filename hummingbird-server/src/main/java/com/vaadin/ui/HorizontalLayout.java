@@ -15,6 +15,8 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.annotations.Implemented;
+
 /**
  * Horizontal layout
  *
@@ -25,6 +27,7 @@ package com.vaadin.ui;
  * @since 5.3
  */
 @SuppressWarnings("serial")
+@Implemented("Undefined sizes do not work like in Vaadin 7, yet")
 public class HorizontalLayout extends AbstractOrderedLayout {
 
     /**

@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.ui.video.VideoConstants;
 import com.vaadin.shared.ui.video.VideoState;
@@ -41,6 +42,7 @@ import com.vaadin.shared.ui.video.VideoState;
  * @author Vaadin Ltd
  * @since 6.7.0
  */
+@NotYetImplemented()
 public class Video extends AbstractMedia {
 
     @Override

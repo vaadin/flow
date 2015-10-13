@@ -16,6 +16,7 @@
 
 package com.vaadin.ui;
 
+import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.JavaScriptModule;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.ClassResource;
@@ -52,6 +53,7 @@ import com.vaadin.server.ThemeResource;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
+@Implemented
 public class FileDownloader {
 
     private Resource fileDownloadResource;

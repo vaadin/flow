@@ -18,6 +18,7 @@ package com.vaadin.ui;
 
 import java.util.Collection;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.data.Container;
 
 /**
@@ -25,6 +26,7 @@ import com.vaadin.data.Container;
  * lazyloading, and other advanced features.
  */
 @SuppressWarnings("serial")
+@NotYetImplemented
 public class ListSelect extends AbstractSelect {
 
     private int columns = 0;

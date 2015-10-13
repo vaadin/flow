@@ -19,6 +19,7 @@ package com.vaadin.ui;
 import java.io.Serializable;
 import java.util.Iterator;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.data.Property;
 
 /**
@@ -43,6 +44,7 @@ import com.vaadin.data.Property;
  *
  * @since 7.0
  */
+@NotYetImplemented("Should be a composite")
 public abstract class CustomField<T> extends AbstractField<T>
         implements HasComponents {
 

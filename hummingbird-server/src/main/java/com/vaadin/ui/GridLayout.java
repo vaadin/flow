@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.LayoutEvents.LayoutClickNotifier;
@@ -58,6 +59,7 @@ import com.vaadin.shared.ui.gridlayout.GridLayoutState.ChildComponentData;
  * @since 3.0
  */
 @SuppressWarnings("serial")
+@NotYetImplemented("Needs measurements and interesting stuff")
 public class GridLayout extends AbstractComponentContainer implements
         ComponentContainer.AlignmentHandler, ComponentContainer.SpacingHandler,
         ComponentContainer.MarginHandler, LayoutClickNotifier {

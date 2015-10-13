@@ -18,6 +18,7 @@ package com.vaadin.ui;
 
 import java.util.Date;
 
+import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.data.Property;
 import com.vaadin.shared.ui.datefield.PopupDateFieldState;
 
@@ -32,6 +33,7 @@ import com.vaadin.shared.ui.datefield.PopupDateFieldState;
  * @author Vaadin Ltd.
  * @since 5.0
  */
+@NotYetImplemented("Partly implemented in super class. Should use Components date-picker?")
 public class PopupDateField extends DateField {
 
     private String inputPrompt = null;
