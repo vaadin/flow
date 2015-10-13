@@ -272,4 +272,31 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertNull(templateElement.getPropertyString("value1"));
         assertEquals("childValue", templateElement.getPropertyString("value2"));
     }
+
+    public void testScriptTag() {
+        String scriptContentJson = "{'type': 'StaticTextTemplate', 'content':'window.scriptLoaded = 5'}";
+        applyTemplate(1, Json.parse(scriptContentJson.replace('\'', '"')));
+
+        String scriptTagJson = "{'type': 'BoundElementTemplate', 'tag':'script',"
+                + "'defaultAttributes': {'type': 'text/javascript'},"
+                + "'children': [1]}";
+
+        applyTemplate(2, Json.parse(scriptTagJson.replace('\'', '"')));
+
+        String parentTagJson = "{'type': 'BoundElementTemplate', 'tag':'div',"
+                + "'children': [2]}";
+        applyTemplate(3, Json.parse(parentTagJson.replace('\'', '"')));
+
+        assertFalse(isScriptLoaded());
+
+        applyChanges(ChangeUtil.put(3, "TEMPLATE", Json.create(3)), ChangeUtil
+                .listInsertNode(containerElementId, "CHILDREN", 0, 3));
+
+        assertTrue(isScriptLoaded());
+    }
+
+    private static native boolean isScriptLoaded()
+    /*-{
+        return $wnd.scriptLoaded === 5;
+    }-*/;
 }

@@ -99,4 +99,20 @@ public class TemplateParserTest {
             Assert.assertEquals("Todo " + i, li.getChild(0).getOuterHTML());
         }
     }
+
+    @Test
+    public void testScriptTag() {
+        String templateString = "<div><script type='text/javascript'>window.alert('hello');</script></div>";
+        ElementTemplate template = TemplateParser.parse(templateString);
+
+        Element element = Element.getElement(template, StateNode.create());
+        Assert.assertEquals(1, element.getChildCount());
+
+        Element script = element.getChild(0);
+
+        Assert.assertEquals("script", script.getTag());
+        Assert.assertEquals("text/javascript", script.getAttribute("type"));
+        Assert.assertEquals("window.alert('hello');", script.getTextContent());
+    }
+
 }

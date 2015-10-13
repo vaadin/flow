@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Comment;
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -121,11 +122,19 @@ public class TemplateParser {
             return createElementTemplate((Element) node, scope);
         } else if (node instanceof TextNode) {
             return createTextTemplate((TextNode) node, scope);
+        } else if (node instanceof DataNode) {
+            return crateDataTemplate((DataNode) node, scope);
         } else if (node instanceof Comment) {
             return null;
         } else {
             throw new RuntimeException(node.getClass().getName());
         }
+    }
+
+    private static TemplateBuilder crateDataTemplate(DataNode node,
+            Scope scope) {
+        String data = node.getWholeData();
+        return TemplateBuilder.staticText(data);
     }
 
     private static TemplateBuilder createTextTemplate(TextNode node,
