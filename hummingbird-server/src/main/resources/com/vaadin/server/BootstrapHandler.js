@@ -20,6 +20,7 @@ if ({{preTiming}}) {
 }
 /* Pre-rendering timing end */
 
+var attempts = 1000;
 loadPoller = function (){
 	window.console.log("Checking for window.vaadin.framework...");
 	if (!window.vaadin || !window.vaadin.framework) {
