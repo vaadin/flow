@@ -55,7 +55,8 @@ public class TransactionLogBuilder {
             // Key types for server only values is not restricted, key types
             // going to the client are restricted
             assert key instanceof String || key instanceof Enum
-                    || key instanceof Integer : "key type "
+                    || key instanceof Integer
+                    || key instanceof ElementTemplate : "key type "
                             + key.getClass().getName() + " not supported";
 
             handleTemplate(key);
