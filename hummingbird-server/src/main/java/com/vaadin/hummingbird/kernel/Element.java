@@ -304,7 +304,7 @@ public class Element implements Serializable {
     @Override
     public String toString() {
         if (isTextNode(this)) {
-            return "#text: " + getTextNodeText(this);
+            return "#text: " + getTextNodeText();
         }
         return getOuterHTML();
     }
@@ -322,7 +322,7 @@ public class Element implements Serializable {
     private void getOuterHTML(StringBuilder b) {
         String tag = getTag();
         if (TEXT_NODE_TAG.equals(tag)) {
-            String content = getTextNodeText(this);
+            String content = getTextNodeText();
             if (content != null) {
                 b.append(content);
             }
@@ -741,28 +741,26 @@ public class Element implements Serializable {
      */
     public String getTextContent() {
         StringBuilder b = new StringBuilder();
-        getTextContent(this, b);
+        getTextContent(b);
         return b.toString();
     }
 
-    private void getTextContent(Element e, StringBuilder b) {
-        assert e != null;
+    private void getTextContent(StringBuilder b) {
         assert b != null;
-
-        for (int i = 0; i < e.getChildCount(); i++) {
-            Element child = e.getChild(i);
-            if (isTextNode(child)) {
-                b.append(getTextNodeText(child));
-            } else {
-                getTextContent(child, b);
+        if (isTextNode(this)) {
+            b.append(getTextNodeText());
+        } else {
+            for (int i = 0; i < getChildCount(); i++) {
+                Element child = getChild(i);
+                child.getTextContent(b);
             }
         }
     }
 
-    private String getTextNodeText(Element e) {
-        assert isTextNode(e);
-        assert e.hasAttribute(TEXT_NODE_TEXT_ATTRIBUTE);
-        return e.getAttribute(TEXT_NODE_TEXT_ATTRIBUTE);
+    private String getTextNodeText() {
+        assert isTextNode(this);
+        assert hasAttribute(TEXT_NODE_TEXT_ATTRIBUTE);
+        return getAttribute(TEXT_NODE_TEXT_ATTRIBUTE);
     }
 
     public static boolean isTextNode(Element e) {
