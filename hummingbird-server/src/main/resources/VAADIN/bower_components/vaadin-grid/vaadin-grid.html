@@ -1,5 +1,7 @@
 <!--
-@element vaadin-grid
+@license
+Copyright (c) 2015 Vaadin Ltd.
+This program is available under Apache License Version 2.0, available at https://vaadin.com/license/
 -->
 
 <link rel='import' href='../polymer/polymer.html'>
@@ -35,7 +37,7 @@ Basic usage:
 </vaadin-grid>
 ```
 
-More examples available at http://vaadin.github.io/components-examples/vaadin-grid/
+More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadin-grid/demo/
 -->
 <dom-module id="vaadin-grid">
 <style>
@@ -697,49 +699,6 @@ More examples available at http://vaadin.github.io/components-examples/vaadin-gr
       _grid: undefined,
 
       properties: {
-        /**
-         * Object for controlling and accessing the data source of the grid.
-         *
-         * @property {Data} data
-         * @type {Data}
-         */
-        data: {
-          type: Object,
-          readOnly: true,
-          value: function() {
-            var _this = this;
-            return {
-
-              get source() {
-                return this._source;
-              },
-              set source(source) {
-                var sourceFunction = source;
-                if (Array.isArray(source)) {
-                  sourceFunction = function(req) {
-                    var array = source.slice(req.index, req.index + req.count);
-                    req.success(array, source.length);
-                  };
-                }
-                _this._grid.setDataSource(sourceFunction);
-
-                this._source = source;
-              },
-              get sortOrder() {
-                return _this._grid.getSortOrder();
-              },
-              set sortOrder(sortOrder) {
-                _this._grid.setSortOrder(sortOrder);
-              },
-              getItem: function(rowIndex, callback, onlyCached) {
-                _this._grid.getItem(rowIndex, callback, onlyCached);
-              },
-              clearCache: function(estimatedNewSize) {
-                _this._grid.getDataSource().clearCache(estimatedNewSize);
-              }
-            };
-          }
-        },
 
         /**
          * Object for controlling and accessing the header rows in the grid.
@@ -822,6 +781,43 @@ More examples available at http://vaadin.github.io/components-examples/vaadin-gr
         },
 
         /**
+         * A function returning the items determining rows in the grid.
+         *
+         * Example:
+         * ```
+         * grid.datasource = function(req) {
+         *  req.success(['foo', 'bar'], 2);
+         * };
+         * ```
+         *
+         * @property {function} datasource
+         * @type {function}
+         */
+        datasource: {
+          type: Object,
+          observer: '_datasourceChanged'
+        },
+
+        /**
+         * An array containing items determining rows in the grid.
+         *
+         *  Example:
+         *  ```
+         *  grid.items = [
+         *      ["horse", 150, "domestic"],
+         *      ["wolf", 100, "wild"]
+         *  ];
+         *  ```
+         *
+         * @property {Array<Object>} items
+         * @type {Array<Object>}
+         */
+        items: {
+          type: Array,
+          observer: '_itemsChanged'
+        },
+
+        /**
          * Object for controlling and accessing the selected rows in the grid.
          *
          * @property {Selection} selection
@@ -871,6 +867,18 @@ More examples available at http://vaadin.github.io/components-examples/vaadin-gr
               }
             };
           }
+        },
+
+        /**
+         * Order of sorting.
+         *
+         * @property {Array<SortOrder>} source
+         * @type {Array<SortOrder>}
+         */
+        sortOrder: {
+          type: Array,
+          notify: true,
+          observer: '_sortOrderChanged'
         }
       },
 
@@ -914,8 +922,27 @@ More examples available at http://vaadin.github.io/components-examples/vaadin-gr
         'selectionmodechange': '_onSelectionModeChange'
       },
 
+      _datasourceChanged: function(datasource) {
+        this._grid.setDataSource(datasource);
+      },
+
+      _itemsChanged: function(items) {
+        if(Array.isArray(items)) {
+          this._grid.setDataSource(function(req) {
+            var array = items.slice(req.index, req.index + req.count);
+            req.success(array, items.length);
+          });
+        } else {
+          throw new Error('Unknown items type: ' + items + '. Arrays are supported only.');
+        }
+      },
+
       _onSelectionModeChange: function() {
         this.serializeValueToAttribute(this.selection.mode, "selection-mode");
+      },
+
+      _sortOrderChanged: function(sortOrder) {
+        this._grid.setSortOrder(sortOrder);
       },
 
       created: function() {
@@ -1164,16 +1191,6 @@ More examples available at http://vaadin.github.io/components-examples/vaadin-gr
       },
 
       /**
-       * An array containing items determining rows in the grid.
-       *
-       * @property {Array<Object>} columns
-       * @type {Array<Object>}
-       */
-      set items(items) {
-        this.data.source = items;
-      },
-
-      /**
        * Executes a callback when the grid has finished any pending work.
        *
        * @method then
@@ -1215,6 +1232,29 @@ More examples available at http://vaadin.github.io/components-examples/vaadin-gr
        */
       setRowDetailsVisible: function(rowIndex, visible) {
         this._grid.setRowDetailsVisible(rowIndex, visible);
+      },
+
+      /**
+       * Clears the cache.
+       *
+       * @type {Function}
+       */
+      clearCache: function(estimatedNewSize) {
+        this._grid.getDataSource().clearCache(estimatedNewSize);
+      },
+
+      /**
+       * Invokes the callback with row data of the provided row index as the
+       * parameter. If the row is not cached, it's fetched from the data source
+       * first.
+       *
+       * @method getItem
+       * @param {number} rowIndex - Index of the row.
+       * @param {Function} callback - Gets arguments (err, item) where item is the desired data item.
+       * @param {boolean} onlyCached - Only fetch cached rows (don't fall back to data source request).
+       */
+      getItem: function(rowIndex, callback, onlyCached) {
+        this._grid.getItem(rowIndex, callback, onlyCached);
       }
     }); // End Polymer prototype
 </script>

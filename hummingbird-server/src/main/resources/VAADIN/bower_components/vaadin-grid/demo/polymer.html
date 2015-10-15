@@ -1,4 +1,9 @@
 <!doctype html>
+<!--
+title: Polymer Integration
+order: 10
+layout: page
+-->
 <html>
 
 <head>
@@ -21,70 +26,63 @@
     <h3 id="headers">Polymer Integration (Light DOM data source)</h3>
     <p>Static data can be easily bound to vaadin-grid <a href="datasources.html#toc_0_inline_data">light DOM cells</a> with <a href="https://www.polymer-project.org/1.0/docs/devguide/templates.html#dom-repeat">the template repeater</a>.</p>
     <code-example source>
-      <div demo>
-        <dom-module id="my-grid-with-template" demo>
-          <template>
-            <vaadin-grid>
-              <table>
-                <col header-text="#" width="64">
-                <col width="100">
-                <col header-text="First Name">
-                <col header-text="Last Name">
-                <col header-text="Email">
-                <tbody>
-                <template is="dom-repeat" items="{{users}}">
-                  <tr>
-                    <td>{{index}}</td>
-                    <td>
-                      <img src="{{item.user.picture.thumbnail}}" style="width: 24px"/>
-                    </td>
-                    <td>{{item.user.name.first}}</td>
-                    <td>{{item.user.name.last}}</td>
-                    <td>{{item.user.email}}</td>
-                  </tr>
-                </template>
-                </tbody>
-              </table>
-            </vaadin-grid>
-            <template is="dom-if" if="{{selected}}">
-              <div class="user-image">
-                <img src="{{selected.user.picture.large}}" />
-              </div>
-            </template>
+      <div>
+        <template is="dom-bind" class="my-grid-with-template" demo>
+          <vaadin-grid id="my-grid-with-template" on-select="onSelect">
+            <table>
+              <col header-text="#" width="64">
+              <col width="100">
+              <col header-text="First Name">
+              <col header-text="Last Name">
+              <col header-text="Email">
+              <tbody>
+              <template is="dom-repeat" items="[[users]]">
+                <tr>
+                  <td>{{index}}</td>
+                  <td>
+                    <img src="{{item.user.picture.thumbnail}}" style="width: 24px"/>
+                  </td>
+                  <td>{{item.user.name.first}}</td>
+                  <td>{{item.user.name.last}}</td>
+                  <td>{{item.user.email}}</td>
+                </tr>
+              </template>
+              </tbody>
+            </table>
+          </vaadin-grid>
+          <template is="dom-if" if="{{selected}}">
+            <div class="user-image">
+              <img src="{{selected.user.picture.large}}" />
+            </div>
           </template>
-        </dom-module>
-        <my-grid-with-template></my-grid-with-template>
+        </template>
       </div>
-      <code demo-var="grid">
+      <code demo-var="template">
         HTMLImports.whenReady(function() {
           // code
-          Polymer({
-            is: 'my-grid-with-template',
-            ready: function() {
-              var _this = this;
-              var grid = document.querySelector('vaadin-grid');
+          var template = template || document.querySelector('template.my-grid-with-template');
+          var grid = document.querySelector('#my-grid-with-template');
 
-              grid.addEventListener('select', function() {
-                if(grid.selection.selected().length === 0) {
-                  _this.selected = null;
-                } else {
-                  _this.selected = _this.users[grid.selection.selected()];
-                }
-              });
-
-              var xhr = new XMLHttpRequest();
-              xhr.onreadystatechange = function() {
-
-                if (xhr.readyState == XMLHttpRequest.DONE ) {
-                  if(xhr.status == 200){
-                    _this.users = JSON.parse(xhr.responseText).results;
-                  }
-                }
-              }
-              xhr.open("GET", randomUserUrl + "?results=25", true);
-              xhr.send();
+          template.onSelect = function() {
+            if(grid.selection.selected().length === 0) {
+              template.selected = null;
+            } else {
+              template.selected = template.users[grid.selection.selected()];
             }
-          });
+          };
+
+          var xhr = new XMLHttpRequest();
+          xhr.onreadystatechange = function() {
+
+            if (xhr.readyState == XMLHttpRequest.DONE ) {
+              if(xhr.status == 200){
+                template.users = JSON.parse(xhr.responseText).results;
+              }
+            }
+          }
+          xhr.open("GET", randomUserUrl + "?results=25", true);
+          xhr.send();
+
           // end-code
         });
       </code>
@@ -97,63 +95,59 @@
       <a href="datasources.html#toc_1_function_data_source">function datasource</a> is a better option.
       Click a row to see an enlarged user image.</p>
     <code-example source>
-      <div demo>
-        <dom-module id="my-grid-with-ds" demo>
-          <template>
-            <vaadin-grid>
-              <table>
-                <colgroup>
-                  <col name="user.picture.thumbnail" width="100">
-                  <col header-text="First Name" name="user.name.first">
-                  <col header-text="Last Name" name="user.name.last">
-                  <col header-text="Email" name="user.email">
-                </colgroup></table>
-            </vaadin-grid>
-            <template is="dom-if" if="{{selected}}">
-              <div class="user-image">
-                <img src="{{selected.user.picture.large}}">
-              </div>
-            </template>
+      <div>
+        <template is="dom-bind" class="my-grid-with-ds" demo>
+          <vaadin-grid id="my-grid-with-ds" datasource="[[datasource]]" on-select="onSelect">
+            <table>
+              <colgroup>
+                <col header-text="" name="user.picture.thumbnail" width="100">
+                <col header-text="First Name" name="user.name.first">
+                <col header-text="Last Name" name="user.name.last">
+                <col header-text="Email" name="user.email">
+              </colgroup>
+            </table>
+          </vaadin-grid>
+          <template is="dom-if" if="{{selected}}">
+            <div class="user-image">
+              <img src="{{selected.user.picture.large}}">
+            </div>
           </template>
-        </dom-module>
-        <my-grid-with-ds></my-grid-with-ds>
+        </template>
       </div>
-      <code demo-var="grid">
+      <code demo-var="template">
         HTMLImports.whenReady(function() {
           // code
-          Polymer({
-            is: 'my-grid-with-ds',
-            ready: function() {
-              var _this = this;
-              var grid = this.$$('vaadin-grid');
+          var template = template || document.querySelector('template.my-grid-with-ds');
+          var grid = document.querySelector('#my-grid-with-ds');
 
-              grid.addEventListener('select', function() {
-                if(grid.selection.selected().length === 0) {
-                  _this.selected = null;
-                } else {
-                  _this.selected = _this.users[grid.selection.selected()];
+          template.datasource = function(req) {
+            var xhr = new XMLHttpRequest();
+
+            xhr.onreadystatechange = function() {
+              if (xhr.readyState == XMLHttpRequest.DONE ) {
+                if(xhr.status == 200) {
+                  req.success(JSON.parse(xhr.responseText).results, 100);
                 }
+              }
+            };
+
+            xhr.open("GET", randomUserUrl + '?results=' + Math.max(req.count, 1), true);
+            xhr.send();
+          };
+
+          template.onSelect = function() {
+            if(grid.selection.selected().length === 0) {
+              template.selected = null;
+            } else {
+              grid.getItem([grid.selection.selected()], function(err, item) {
+                template.selected = item;
               });
-
-              grid.data.source = function(req) {
-                var xhr = new XMLHttpRequest();
-                xhr.onreadystatechange = function() {
-                  if (xhr.readyState == XMLHttpRequest.DONE ) {
-                    if(xhr.status == 200){
-                      _this.users = JSON.parse(xhr.responseText).results;
-                      req.success(_this.users, 100);
-                    }
-                  }
-                };
-                xhr.open("GET", randomUserUrl + '?results=' + Math.max(req.count, 1), true);
-                xhr.send();
-              };
-
-              grid.columns[0].renderer = function(cell) {
-                cell.element.innerHTML = "&lt;img style='width: 30px' src='" + cell.data + "' /&gt;";
-              };
             }
-          });
+          };
+
+          grid.columns[0].renderer = function(cell) {
+            cell.element.innerHTML = "&lt;img style='width: 30px' src='" + cell.data + "' /&gt;";
+          };
           // end-code
         });
       </code>

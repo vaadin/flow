@@ -39,7 +39,7 @@
         </table>
       </vaadin-grid>
       <code demo-var="grid" hidden>
-        grid.data.source = myBigData;
+        grid.items = myBigData;
       </code>
 
       <code demo-var="grid">
@@ -61,7 +61,7 @@
         <li><code>handler.cancel</code></li> defines an action to be performed on editor cancel.
       </ul>
       Remember to call <code>request.sucess()</code> at the end of binding and saving functions in order to close the editor popup.
-      In case the data source is changed on save <code>grid.data.clearCache()</code> should also be called.
+      In case the data source is changed on save <code>grid.clearCache()</code> should also be called.
     </p>
     <code-example>
       <vaadin-grid editable demo>
@@ -120,7 +120,7 @@
               }
             }
             req.success();
-            req.grid.data.clearCache();
+            req.grid.clearCache();
           }
         };
       </code>
@@ -142,7 +142,7 @@
         </table>
       </vaadin-grid>
       <code demo-var="grid" hidden>
-        grid.data.source = myBigData;
+        grid.items = myBigData;
       </code>
 
       <code demo-var="grid">
@@ -167,7 +167,7 @@
         </table>
       </vaadin-grid>
       <code demo-var="grid" hidden>
-        grid.data.source = myBigData;
+        grid.items = myBigData;
       </code>
 
       <code demo-var="grid">

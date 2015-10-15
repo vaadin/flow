@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>vaadin-grid Code Examples - Angular 2 Integration</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../vaadin-grid.html">
+  <script src="xhrpatch.js"></script>
+  <script>
+    var randomUserUrl = 'https://randomuser.me/api/';
+  </script>
+  <script src="js_dependencies/traceur-runtime.js"></script>
+  <script src="js_dependencies/system@0.16.js"></script>
+  <script src="js_dependencies/angular2.dev.js"></script>
+
+
+</head>
+
+<body unresolved style="padding: 0; margin: 0;">
+  <style>
+  .user-image img,
+  img.user-image {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    max-width: 33%;
+    max-height: 33%;
+  }
+
+  .demo-wrapper > * {
+    position: relative;
+  }
+  </style>
+  <script>
+    var tagName = window.location.hash.substr(1);
+    document.body.appendChild(document.createElement(tagName));
+    HTMLImports.whenReady(function(){
+      System.import(tagName);
+    });
+  </script>
+
+</body>
+</html>

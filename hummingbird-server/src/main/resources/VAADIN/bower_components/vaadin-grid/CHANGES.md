@@ -1,6 +1,5 @@
 ## Vaadin Grid v0.9.0 (2015-xx-xx)
-- The project is extrated from vaadin-components, so as each component
-has its own repository.
+- The project is extracted from vaadin-components, so as each component has its own repository.
 - Improved the way to contribute. Now is easier to debug java code in SuperDevMode, and any demo or test work in SDM without modifications.
 - Now demos are bundled with the component instead of on a separated project.
 - Removed old demos used for developing.
@@ -11,6 +10,15 @@ has its own repository.
   - Touch scrolling at the edges fires default behavior
   - Fixed double finger zooming
   - Hiding the header/footer declarative requires the element to have at least one cell (#135)
+  - JSRow reference data with single column ds fixed
+  - Column header text should default to name if none is given (#136)
+
+  #### API changes:
+  - `grid.data.source` is now `grid.items` for Arrays and `grid.datasource` for Functions. (#160)
+  - `grid.data.sortOrder` is now `grid.sortOrder`. (#160)
+  - `sort` event is now `sort-order-changed`. (#160)
+  - `grid.data.clearCache()` is now `grid.clearCache()`. (#160)
+  - `grid.data.getItem(rowIndex, callback, onlyCached)` is now `grid.getItem(rowIndex, callback, onlyCached)`. (#160)
 
 ## Vaadin Grid v0.3.0.beta7 (2015-Sept)
 - Polymer updated to v1.1.1
@@ -81,4 +89,3 @@ has its own repository.
   - Editing headers, footers and columns dynamically
   - Inline row editing
   - For more, see the [Examples](http://vaadin.github.io/components-examples/)
-

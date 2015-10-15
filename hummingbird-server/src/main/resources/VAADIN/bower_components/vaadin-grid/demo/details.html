@@ -1,4 +1,10 @@
 <!doctype html>
+<!--
+title: Row Details
+order: 10
+layout: page
+-->
+
 <html>
 
 <head>
@@ -69,7 +75,7 @@
             <style>.userdata {-webkit-flex: 1; flex: 1; max-height: 20px;}
             .usercolumn { display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }</style>
             <div class="userdetails" style="display: -webkit-flex; display: flex; height: 170px;">
-              <img src="{{user.picture.medium}}" style="height: 100px; width: 100px;" />
+              <img src="{{user.picture.large}}" style="height: 100px; width: 100px;" />
               <div class="usercolumn">
                 <small>Name</small>
                 <div class="userdata">{{user.name.first}}</div>
@@ -111,7 +117,7 @@
 
         HTMLImports.whenReady(function() {
           var dataSourceSize = 1000;
-          grid.data.source = function(req) {
+          grid.datasource = function(req) {
             // Fetch the JSON data from a URL
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
@@ -133,7 +139,7 @@
             var elem = document.createElement('div');
             elem.setAttribute('class', 'userdetailswrapper');
 
-            grid.data.getItem(rowIndex, function(error, item) {
+            grid.getItem(rowIndex, function(error, item) {
               if (!error) {
                 elem.innerHTML = getUserDetails(item.user);
               }

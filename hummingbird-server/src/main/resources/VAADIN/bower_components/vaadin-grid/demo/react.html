@@ -1,4 +1,10 @@
 <!doctype html>
+<!--
+title: React Integration
+order: 12
+layout: page
+-->
+
 <html>
 
 <head>
@@ -8,9 +14,6 @@
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="common.html">
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.0/react.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.0/JSXTransformer.js"></script>
 
 </head>
 
@@ -47,29 +50,33 @@
 
             componentDidMount: function() {
               var _this = this;
+              var vGrid = _this.getDOMNode();
 
               // Let the mounted <vaadin-grid> upgrade
-              Polymer.Async.run(function() {
-                var vGrid = _this.getDOMNode();
+              (function wait() {
+                if (vGrid.selection) {
+                  // Assign the data source
+                  vGrid.datasource = _this.dataSource;
 
-                // Assign the data source
-                vGrid.data.source = _this.dataSource;
+                  // Bind selection listener
+                  vGrid.addEventListener("select", _this.onRowSelect);
 
-                // Bind selection listener
-                vGrid.addEventListener("select", _this.onRowSelect);
+                  var pictureRenderer = function(cell) {
+                    cell.element.innerHTML = "<img style='width: 30px' src='" + cell.data + "' />";
+                  };
 
-                var pictureRenderer = function(cell) {
-                  cell.element.innerHTML = "<img style='width: 30px' src='" + cell.data + "' />";
-                };
+                  // Define columns
+                  vGrid.columns = [
+                    {name: "user.picture.thumbnail", headerContent: "", width: 100, renderer: pictureRenderer },
+                    {name: "user.name.first", headerContent: "First Name" },
+                    {name: "user.name.last", headerContent: "Last Name" },
+                    {name: "user.email", headerContent: "Email" },
+                  ];
 
-                // Define columns
-                vGrid.columns = [
-                  {name: "user.picture.thumbnail", width: 100, renderer: pictureRenderer },
-                  {name: "user.name.first", headerContent: "First Name" },
-                  {name: "user.name.last", headerContent: "Last Name" },
-                  {name: "user.email", headerContent: "Email" },
-                ];
-              });
+                } else {
+                    setTimeout( wait, 50 );
+                }
+              })();
             },
 
             dataSource: function(req) {
@@ -88,7 +95,7 @@
             onRowSelect: function(e) {
               var onUserSelect = this.props.onUserSelect;
               var index = e.target.selection.selected()[0];
-              e.target.data.getItem(index, function(err, data) {
+              e.target.getItem(index, function(err, data) {
                 onUserSelect(err ? undefined : data.user);
               });
             }
@@ -125,7 +132,25 @@
 
         </script>
       </div>
+
     </code-example>
+    <iframe id='react-embed' src='react-demo-embed.html' style='width: 100%; height: 550px; border: none; display: none;'></iframe>
+    <script>
+      var codeExample = document.querySelector("code-example");
+      (function wait() {
+        if (codeExample.async) {
+          codeExample.async(function() {
+            var demo = document.querySelector("div[demo]");
+            var embed = document.getElementById("react-embed");
+            demo.innerHTML = "";
+            demo.appendChild(embed);
+            embed.style.display = "block";
+          });
+        } else {
+            setTimeout( wait, 50 );
+        }
+      })();
+    </script>
   </section>
 
 </body>

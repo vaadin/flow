@@ -1,4 +1,9 @@
 <!doctype html>
+<!--
+title: Scrolling
+order: 9
+layout: page
+-->
 <html>
 
 <head>
@@ -60,7 +65,7 @@
         var grid = grid || document.querySelector("vaadin-grid");
 
         HTMLImports.whenReady(function() {
-          grid.data.source = employees;
+          grid.items = employees;
           // code
           // Some functionality requires all the previous processes
           // to be finished before executing. Scrolling to a row

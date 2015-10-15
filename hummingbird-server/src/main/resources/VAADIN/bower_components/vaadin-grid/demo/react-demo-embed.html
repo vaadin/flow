@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>vaadin-grid Code Examples - React Integration</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="common.html">
+
+  <script src="js_dependencies/react.min.js"></script>
+  <script src="js_dependencies/JSXTransformer.js"></script>
+
+</head>
+
+<body unresolved style="padding: 0; margin: 0;">
+  <div id="reactdemo"></div>
+
+  <script>
+    // Want to avoid maintaining the React demo source in 2 places so we'll
+    // evaluate the jsx code in react.html manually here
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == XMLHttpRequest.DONE ) {
+        if(xhr.status == 200) {
+          var text = xhr.responseText;
+          var scriptTag = "<script type=\"text/jsx\">";
+          var start = text.indexOf(scriptTag) + scriptTag.length;
+          var end = text.indexOf("<\/script>", start);
+          HTMLImports.whenReady(function(){
+            JSXTransformer.exec(text.substr(start, end-start));
+          });
+        }
+      }
+    }
+    xhr.open("GET", "react.html", true);
+    xhr.send();
+  </script>
+
+</body>
+</html>

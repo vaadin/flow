@@ -1,4 +1,10 @@
 <!doctype html>
+<!--
+title: Angular2 Integration
+order: 11
+layout: page
+-->
+
 <html>
 
 <head>
@@ -9,15 +15,6 @@
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="common.html">
 
-  <script src="https://github.jspm.io/jmcriffey/bower-traceur-runtime@0.0.90/traceur-runtime.js"></script>
-  <script src="https://jspm.io/system@0.16.js"></script>
-  <script src="https://code.angularjs.org/2.0.0-alpha.28/angular2.dev.js"></script>
-
-  <style type="text/css">
-    div[demo] {
-      display: none;
-    }
-  </style>
 </head>
 
 <body unresolved>
@@ -32,12 +29,7 @@
     <h3>Angular2 Integration (Light DOM data source)</h3>
     <p>Static data can be easily bound to vaadin-grid <a href="datasources.html#toc_0_inline_data">light DOM cells</a> with Angular data binding.</p>
     <code-example>
-      <vaadin-grid demo hidden></vaadin-grid>
-      <code demo hidden>
-        var ag = document.createElement("angular-grid-dom");
-        demo.parentElement.appendChild(ag);
-        System.import('angular-grid-dom');
-      </code>
+      <iframe demo hidden src="angular-demo-embed.html#angular-grid-dom" style="width: 100%; height: 200px; border: none; display: inline;"></iframe>
       <code>
         /*
         // code
@@ -89,12 +81,18 @@
       <a href="datasources.html#toc_1_function_data_source">function datasource</a> is a better option.
     Click a row to see an enlarged user image.</p>
     <code-example>
+      <iframe src="angular-demo-embed.html#angular-grid" style="width: 100%; height: 600px; border: none; display: inline;"></iframe>
+      <style>
+        iframe ~ [demo] {
+          display: none !important;
+        }
+      </style>
       <div demo>
         <vaadin-grid #grid (select)="onSelect()">
           <table>
             <colgroup>
+              <col header-text="" name="user.picture.thumbnail">
               <col header-text="Gender" name="user.gender">
-              <col name="user.picture.thumbnail">
               <col header-text="First name" name="user.name.first">
               <col header-text="Last name" name="user.name.last">
               <col header-text="Email" name="user.email">
@@ -105,19 +103,14 @@
         <img *ng-if="selected" class="user-image" src="{{selected.user.picture.large}}">
 
         <div style="display: none">
-          <select maxlength=5 type="select" (change)="grid.data.clearCache(); grid.scrollToStart();">
+          <select maxlength=5 type="select" (change)="grid.clearCache(); grid.scrollToStart();">
             <option value=''></option>
             <option value='male'>Men only</option>
             <option value='female'>Women only</option>
           </select>
         </div>
       </div>
-
       <code>
-        var ag = document.createElement("angular-grid");
-        demo.parentElement.appendChild(ag);
-        System.import('angular-grid');
-
         /*
         // code
         // Component file: angular-grid.ts
@@ -139,7 +132,7 @@
 
           constructor(@Inject(Http) http: Http) {
             // Set a datasource for the vaadin-grid
-            this.grid.data.source = req =>
+            this.grid.datasource = req =>
               http.get(this.getUrl(this.gender.value, Math.max(req.count, 1)))
                 .map(res => res.json().results)
                 .subscribe(results => req.success(results, this.gender.value ? 50 : 100));
@@ -161,7 +154,7 @@
           onSelect() {
             this.selected = undefined;
             const selectedIndex = this.grid.selection.selected()[0];
-            this.grid.data.getItem(selectedIndex, (err, data) => this.selected = data);
+            this.grid.getItem(selectedIndex, (err, data) => this.selected = data);
           }
         }
 
@@ -169,7 +162,6 @@
         // end-code
         */
       </code>
-
     </code-example>
   </section>
 

@@ -16,7 +16,7 @@ export class AngularGrid {
 
   constructor(@Inject(Http) http: Http) {
     // Set a datasource for the vaadin-grid
-    this.grid.data.source = req =>
+    this.grid.datasource = req =>
       http.get(this.getUrl(this.gender.value, Math.max(req.count, 1)))
         .map(res => res.json().results)
         .subscribe(results => req.success(results, this.gender.value ? 50 : 100));
@@ -40,7 +40,7 @@ export class AngularGrid {
   onSelect() {
     this.selected = undefined;
     const selectedIndex = this.grid.selection.selected()[0];
-    this.grid.data.getItem(selectedIndex, (err, data) => this.selected = data);
+    this.grid.getItem(selectedIndex, (err, data) => this.selected = data);
   }
 }
 

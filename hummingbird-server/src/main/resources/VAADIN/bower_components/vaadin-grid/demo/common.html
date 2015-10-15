@@ -1,26 +1,78 @@
+<link rel="stylesheet" href="../../components-demo-resources/demo.css">
+<script src="xhrpatch.js"></script>
+<script>
+  var randomUserUrl = 'https://randomuser.me/api/';
+  var bowerComponents = '../../';
 
-<!-- Common imports for all examples -->
-  <link rel="stylesheet" href="../../components-demo-resources/demo.css">
-  <link rel="import" href="../../code-example/code-example.html">
-  <link rel="import" href="../../table-of-contents/table-of-contents.html">
-  <link rel="import" href="../../polymer/polymer.html">
-  <link rel="import" href="../vaadin-grid.html">
-  <script src="demodata.js"></script>
-  <script src="../../vaadin-components/ga.js"></script>
+  window.xCodeExampleSourceHead =
+  "  <script src='https://cdn.vaadin.com/vaadin-components/latest/webcomponentsjs/webcomponents-lite.js'><\/script>\n"+
+  "  <link href='https://cdn.vaadin.com/vaadin-components/latest/vaadin-grid/vaadin-grid.html' rel='import'>\n"+
+  "  <script>var randomUserUrl = '" + randomUserUrl + "';<\/script>\n";
 
-<!-- Common JS code for all examples -->
-  <script>
-    window.xCodeExampleSourceHead =
-    "  <script src='https://cdn.vaadin.com/vaadin-components/latest/webcomponentsjs/webcomponents-lite.js'><\/script>\n"+
-    "  <link href='https://cdn.vaadin.com/vaadin-components/latest/vaadin-grid/vaadin-grid.html' rel='import'>\n"+
-    "  <script>var randomUserUrl = 'https://randomuser.me/api/';<\/script>\n";
+  function createButton(text, fnc) {
+    var button = document.createElement("button");
+    button.innerHTML = text;
+    button.addEventListener("click", fnc);
+    return button;
+  }
 
-    function createButton(text, fnc) {
-      var button = document.createElement("button");
-      button.innerHTML = text;
-      button.addEventListener("click", fnc);
-      return button;
+  if (!window.Polymer) {
+    var link = document.querySelector('link[href$="common.html"]')
+    var baseCommon = link.href.replace(/common.html/, '');
+    var base = baseCommon + bowerComponents;
+    // Delay all HTMLImports.whenReady calls until polymer and
+    // grid are ready.
+    var _whenReady = HTMLImports.whenReady;
+    HTMLImports.whenReady = function(done) {
+      var id = setInterval(function() {
+        if (window.Polymer && window.vaadin && window.vaadin.GridComponent) {
+          clearInterval(id);
+          // Restore whenReady
+          HTMLImports.whenReady = _whenReady
+          // Run original whenReady
+          _whenReady(done);
+          _whenReady(function(){
+            // For some reason this is not removed in polyfilled browsers
+            document.body.removeAttribute('unresolved');
+          })
+        }
+      }, 3);
     }
 
-    var randomUserUrl = 'https://randomuser.me/api/';
-  </script>
+    var pol = document.createElement('link');
+    pol.rel = 'import';
+    pol.href = base + 'polymer/polymer.html';
+    pol.onload = function() {
+      // Set base url for xhrpatch
+      window.randomUserUrl = baseCommon + 'users.json';
+      Polymer.Base.importHref(base + 'code-example/code-example.html');
+      Polymer.Base.importHref(base + 'table-of-contents/table-of-contents.html');
+      Polymer.Base.importHref(base + 'vaadin-grid/vaadin-grid.html');
+    };
+    document.head.appendChild(pol);
+  }
+</script>
+
+<style>
+  .user-image.user-image {
+    width: auto;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+  }
+
+  .user-image img,
+  img.user-image {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: auto;
+    max-width: 33%;
+    max-height: 33%;
+  }
+
+  .demo-wrapper > * {
+    position: relative;
+  }
+</style>

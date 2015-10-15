@@ -1,4 +1,9 @@
 <!doctype html>
+<!--
+title: Selection
+order: 6
+layout: page
+-->
 <html>
 
 <head>
@@ -126,7 +131,7 @@
         var grid = grid || document.querySelector("vaadin-grid");
 
         HTMLImports.whenReady(function() {
-          grid.data.source = employees;
+          grid.items = employees;
           // code
           // Set the selection mode to "multi"
           grid.selection.mode = "multi";
@@ -170,7 +175,7 @@
         var grid = grid || document.querySelector("vaadin-grid");
 
         HTMLImports.whenReady(function() {
-          grid.data.source = employees;
+          grid.items = employees;
           // code
           // Log the selections / deselection to console on select event
           grid.addEventListener("select", function() {
@@ -219,7 +224,7 @@
         var grid = grid || document.querySelector("vaadin-grid");
 
         HTMLImports.whenReady(function() {
-          grid.data.source = employees;
+          grid.items = employees;
           // code
           // Log selected designers list on select event
           grid.addEventListener("select", function() {
@@ -272,7 +277,7 @@
         var grid = grid || document.querySelector("vaadin-grid");
 
         HTMLImports.whenReady(function() {
-          grid.data.source = employees;
+          grid.items = employees;
           // code
           // Log selected indexes in batches of 5
           grid.addEventListener("select", function() {

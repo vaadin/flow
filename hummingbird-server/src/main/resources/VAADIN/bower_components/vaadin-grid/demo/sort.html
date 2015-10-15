@@ -1,4 +1,9 @@
 <!doctype html>
+<!--
+title: Sorting Data
+order: 7
+layout: page
+-->
 <html>
 
 <head>
@@ -20,7 +25,7 @@
   <section>
     <h3>Sortable columns</h3>
     <p>Clicking a grid header cell updates <code>vaadin-grid</code> sort order indicators assuming the column is marked sortable.
-    Doing so also updates the <code>data.sortOrder</code> property behind the scenes. The property may also
+    Doing so also updates the <code>sortOrder</code> property behind the scenes. The property may also
     be set programmatically or even declaratively by pre-defining <code>sort-direction</code> attributes for columns.</p>
     <code-example source>
       <vaadin-grid demo>
@@ -48,7 +53,7 @@
           grid.columns[1].sortable = true;
           grid.columns[2].sortable = true;
 
-          grid.data.sortOrder = [{column: 0, direction: "asc"}, {column: 1, direction: "desc"}];
+          grid.sortOrder = [{column: 0, direction: "asc"}, {column: 1, direction: "desc"}];
           // end-code
         });
       </code>
@@ -81,12 +86,12 @@
                        [ "Project C", 43256, 0.01 ],
                        [ "Project E", 1967, 0.9 ],
                        [ "Project B", 19672, 1 ] ];
-          grid.data.source = data;
+          grid.items = data;
 
-          // Re-order the data array on sort event
-          grid.addEventListener('sort', function() {
-            var idx = grid.data.sortOrder[0].column;
-            var asc = grid.data.sortOrder[0].direction == 'asc';
+          // Re-order the data array on sort-order-changed event
+          grid.addEventListener('sort-order-changed', function() {
+            var idx = grid.sortOrder[0].column;
+            var asc = grid.sortOrder[0].direction == 'asc';
             data.sort(function(a, b) {
               return a[idx] < b[idx] && asc ? -1 : 1;
             });

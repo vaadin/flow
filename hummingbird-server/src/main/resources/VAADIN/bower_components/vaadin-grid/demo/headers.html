@@ -1,4 +1,9 @@
 <!doctype html>
+<!--
+title: Headers and Footers
+order: 4
+layout: page
+-->
 <html>
 
 <head>
@@ -74,7 +79,7 @@
         var grid = grid || document.querySelector("vaadin-grid");
 
         HTMLImports.whenReady(function() {
-          grid.data.source = employees;
+          grid.items = employees;
           // code
           // Adding and removing headers and footers in JavaScript
           grid.header.addRow(1, ["First Name", "Last Name", "Operation", "Product"]);
@@ -130,7 +135,7 @@
         var grid = grid || document.querySelector("vaadin-grid");
 
         HTMLImports.whenReady(function() {
-          grid.data.source = employees;
+          grid.items = employees;
           // code
           // Cell API can be used to define cell colspans.
           grid.header.getCell(0, 0).colspan = 2;
@@ -188,14 +193,14 @@
         var timer = 0;
         function filter(){
           clearTimeout(timer);
-          timer = setTimeout(grid.data.clearCache, 500);
+          timer = setTimeout(grid.clearCache, 500);
         }
 
         filterElement.addEventListener("keyup", filter);
         filterElement.addEventListener("click", filter);
 
         HTMLImports.whenReady(function() {
-          grid.data.source = function(req) {
+          grid.datasource = function(req) {
             var filterValue = filterElement.value.toLowerCase();
             var data = employees.filter(function(val){ return (val.toString().toLowerCase()).indexOf(filterValue) != -1 } );
             var slice = data.slice(req.index, req.index + req.count);
@@ -248,7 +253,7 @@
         var grid = grid || document.querySelector("vaadin-grid");
 
         HTMLImports.whenReady(function() {
-          grid.data.source = employees;
+          grid.items = employees;
           // code
           // Set the class names using JavaScript API
           grid.header.setRowClassName(0, "firstrow");
@@ -297,7 +302,7 @@
         var grid = grid || document.querySelector("vaadin-grid");
 
         HTMLImports.whenReady(function() {
-          grid.data.source = employees;
+          grid.items = employees;
           // code
           // Set the default row using JavaScript API
           grid.header.defaultRow = 1;
@@ -353,7 +358,7 @@
         }
 
         HTMLImports.whenReady(function() {
-          grid.data.source = employees;
+          grid.items = employees;
 
           // code
           grid.addEventListener("select", function(e) {
@@ -375,7 +380,7 @@
         <table>
           <colgroup>
             <col name="index" header-text="#" width="60">
-            <col name="user.picture.thumbnail" width="100">
+            <col name="user.picture.thumbnail" header-text="" width="100">
             <col name="user.name.first" header-text="First Name">
             <col name="user.name.last" header-text="Last Name">
             <col name="user.email" header-text="Email" flex="">
@@ -408,7 +413,7 @@
                 json.results.forEach(function(row, index){
                   row.index = (page - 1) * count + index + 1;
                 });
-                grid.data.source = json.results;
+                grid.items = json.results;
                 grid.$$(".spinner-loader").classList.add('hidden');
               }
             }

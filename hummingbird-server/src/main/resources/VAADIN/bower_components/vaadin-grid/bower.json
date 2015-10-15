@@ -1,6 +1,6 @@
 {
   "name": "vaadin-grid",
-  "version": "0.9.0-beta2",
+  "version": "0.9.0-beta3",
   "authors": [
     "Vaadin Ltd"
   ],
@@ -24,13 +24,10 @@
     "wct.conf.js"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#v1.1.1",
+    "polymer": "Polymer/polymer#^1.1.1",
     "components-demo-resources": "vaadin/components-demo-resources#master"
   },
   "devDependencies": {
     "web-component-tester": "~3.3.21"
-  },
-  "resolutions": {
-    "polymer": "v1.1.1"
   }
 }
