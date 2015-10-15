@@ -139,6 +139,9 @@ public class BoundElementTemplate extends AbstractElementTemplate {
                 value = String.valueOf(bindingValue);
             }
         }
+        if (value == null) {
+            return null;
+        }
 
         if ("class".equals(name)) {
             assert value instanceof String;
@@ -180,6 +183,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
         if (createIfNeeded && elementData == null) {
             elementData = StateNode.create();
             node.put(this, elementData);
+            elementData.put(Keys.OVERRIDE_TEMPLATE, this);
         }
 
         return elementData;

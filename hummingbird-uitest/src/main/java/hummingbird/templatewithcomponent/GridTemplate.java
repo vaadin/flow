@@ -4,7 +4,6 @@ import com.vaadin.annotations.Bower;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Grid;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Template;
 
@@ -26,6 +25,10 @@ public class GridTemplate extends Template {
         System.out.println(
                 "Button template id: " + buttonElement.getTemplate().getId());
         button.addStyleName("foo");
+
+        button.addClickListener(e -> {
+            Notification.show("Hello!");
+        });
 
     }
 

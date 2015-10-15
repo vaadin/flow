@@ -17,7 +17,7 @@ import com.vaadin.ui.UI.Root;
 public abstract class AbstractElementTemplate implements ElementTemplate {
 
     public enum Keys {
-        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY, EVENT_DATA;
+        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY, EVENT_DATA, OVERRIDE_TEMPLATE;
     }
 
     private static final AtomicInteger nextId = new AtomicInteger(1);
@@ -109,6 +109,10 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
 
     private StateNode getListenerNode(StateNode node, boolean createIfNeeded) {
         StateNode dataNode = getElementDataNode(node, createIfNeeded);
+        if (dataNode == null && !createIfNeeded) {
+            return null;
+        }
+
         StateNode listeners = dataNode.get(DomEventListener.class,
                 StateNode.class);
         if (listeners == null) {

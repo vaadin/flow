@@ -1,14 +1,14 @@
 package com.vaadin.hummingbird.kernel;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.communication.TransactionLogBuilder;
 import com.vaadin.server.communication.TransactionLogJsonProducer;
 import com.vaadin.server.communication.TransactionLogOptimizer;
 import com.vaadin.ui.UI;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -86,12 +86,19 @@ public class UidlWriterTest {
 
         JsonArray changes = encodeElementChanges();
 
-        Assert.assertEquals(2, changes.length());
+        Assert.assertEquals(3, changes.length());
 
         JsonObject putOverride = changes.getObject(0);
         Assert.assertEquals("putOverride", putOverride.getString("type"));
 
-        JsonObject putAttribute = changes.getObject(1);
+        JsonObject putOverrideTemplate = changes.getObject(1);
+        Assert.assertEquals("put", putOverrideTemplate.getString("type"));
+        Assert.assertEquals("OVERRIDE_TEMPLATE",
+                putOverrideTemplate.getString("key"));
+        Assert.assertEquals(template.getId(),
+                (int) putOverrideTemplate.getNumber("value"));
+
+        JsonObject putAttribute = changes.getObject(2);
         Assert.assertEquals("put", putAttribute.getString("type"));
         Assert.assertEquals("foo", putAttribute.getString("key"));
         Assert.assertEquals("bar", putAttribute.getString("value"));

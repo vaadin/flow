@@ -306,14 +306,18 @@ public abstract class UI extends CssLayout
 
             StateNode elementStateNode = getRoot().rootNode.getById(nodeId);
 
-            ElementTemplate template;
+            ElementTemplate template = null;
             if (elementStateNode.containsKey(Keys.TAG)) {
                 template = BasicElementTemplate.get();
-            } else {
-                throw new RuntimeException(
-                        "Only BasicElementTemplate currently supported for events");
+            } else if (elementStateNode.containsKey(Keys.OVERRIDE_TEMPLATE)) {
+                template = (ElementTemplate) elementStateNode
+                        .get(Keys.OVERRIDE_TEMPLATE);
+                elementStateNode = elementStateNode.getParent();
             }
 
+            if (template == null) {
+                throw new RuntimeException("Unable to find template for node");
+            }
             Element e = Element.getElement(template, elementStateNode);
             e.dispatchEvent(eventType, eventData);
         });
