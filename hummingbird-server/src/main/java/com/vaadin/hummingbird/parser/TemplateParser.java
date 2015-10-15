@@ -199,7 +199,7 @@ public class TemplateParser {
                 builder.addEventBinding(
                         new EventBinding(eventName, eventHandler));
             } else if (name.startsWith("#")) {
-                // Ignore local ids for now
+                builder.setAttribute("LOCAL_ID", name.substring(1));
             } else {
                 builder.setAttribute(name, value);
             }

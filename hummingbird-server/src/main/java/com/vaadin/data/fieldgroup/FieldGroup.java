@@ -17,6 +17,7 @@ package com.vaadin.data.fieldgroup;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.text.Normalizer.Form;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -815,11 +816,11 @@ public class FieldGroup implements Serializable {
      * public class MyForm extends VerticalLayout {
      * private TextField firstName = new TextField("First name");
      * &#64;PropertyId("last")
-     * private TextField lastName = new TextField("Last name"); 
+     * private TextField lastName = new TextField("Last name");
      * private TextField age = new TextField("Age"); ... }
      *
-     * MyForm myForm = new MyForm(); 
-     * ... 
+     * MyForm myForm = new MyForm();
+     * ...
      * fieldGroup.bindMemberFields(myForm);
      * </pre>
      *
@@ -857,11 +858,11 @@ public class FieldGroup implements Serializable {
      * public class MyForm extends VerticalLayout {
      * private TextField firstName = new TextField("First name");
      * &#64;PropertyId("last")
-     * private TextField lastName = new TextField("Last name"); 
+     * private TextField lastName = new TextField("Last name");
      * private TextField age;
      *
-     * MyForm myForm = new MyForm(); 
-     * ... 
+     * MyForm myForm = new MyForm();
+     * ...
      * fieldGroup.buildAndBindMemberFields(myForm);
      * </pre>
      *
@@ -1225,7 +1226,7 @@ public class FieldGroup implements Serializable {
      * @param searchClass
      * @return
      */
-    protected static List<java.lang.reflect.Field> getFieldsInDeclareOrder(
+    public static List<java.lang.reflect.Field> getFieldsInDeclareOrder(
             Class searchClass) {
         ArrayList<java.lang.reflect.Field> memberFieldInOrder = new ArrayList<java.lang.reflect.Field>();
 

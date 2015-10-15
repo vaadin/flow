@@ -884,6 +884,24 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /* Element related */
 
+    /**
+     * Sets the root element for this component.
+     * <p>
+     * The root element is the base of the component and is the element which is
+     * added to the DOM. A component must always have a single root element.
+     * <p>
+     * As far as possible, the component should aim to store its state
+     * information in the element or in sub elements, i.e. the Component class
+     * should be as stateless as possible.
+     * <p>
+     * The root element is typically set when the component is created but it
+     * can also be set again later, when binding a Component instance to an
+     * existing element. If the component stores state outside the element, this
+     * method should be overridden to handle updating this state information.
+     *
+     * @param element
+     *            the element to use for the component
+     */
     @Override
     protected void setElement(Element element) {
         super.setElement(element);
@@ -1050,6 +1068,14 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
     }
 
+    /**
+     * Maps the component to the existing element.
+     *
+     * @deprecated Because the API is not thought through
+     * @param component
+     * @param element
+     */
+    @Deprecated
     public static void mapComponent(AbstractComponent component,
             Element element) {
         if (component.isAttached()) {

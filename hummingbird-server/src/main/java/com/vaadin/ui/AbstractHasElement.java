@@ -43,7 +43,17 @@ public class AbstractHasElement implements HasElement, HasEventRouter {
         return element;
     }
 
+    /**
+     * Assigns the root element.
+     *
+     * @param element
+     *            the element to use
+     */
     protected void setElement(Element element) {
+        if (element.getComponents().contains(this)) {
+            throw new IllegalArgumentException(
+                    "The same element is already set for this component");
+        }
         this.element = element;
         if (!element.getComponents().isEmpty()) {
             if (element.getComponents().size() == 1

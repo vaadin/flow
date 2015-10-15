@@ -40,7 +40,8 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 @Implemented("Missing quite a few features such as computed properties")
-public abstract class Template extends AbstractComponent {
+public abstract class Template extends AbstractComponent
+        implements HasComponents {
     private static class ProxyHandler implements InvocationHandler {
 
         private StateNode node;
@@ -295,6 +296,12 @@ public abstract class Template extends AbstractComponent {
         setElement(Element.getElement(elementTemplate, node));
 
         getNode().put(TemplateCallbackHandler.class, this::onBrowserEvent);
+
+        getBinder().bindComponents(this);
+    }
+
+    protected TemplateComponentBinder getBinder() {
+        return new TemplateComponentBinder();
     }
 
     protected void onBrowserEvent(StateNode node, String methodName,
@@ -399,5 +406,57 @@ public abstract class Template extends AbstractComponent {
         Class<? extends Model> modelType = getModelType();
         Object proxy = Model.wrap(getNode(), modelType);
         return (Model) proxy;
+    }
+
+    /**
+     * Finds an element in the template based on a local (primarily) and global
+     * (secondarily) id.
+     *
+     * @param id
+     * @return
+     */
+    public Element getElementById(String id) {
+        // TODO Optimize
+        Element e = getElementByLocalId(getElement(), id);
+        if (e == null) {
+            e = getElementById(getElement(), id);
+        }
+
+        return e;
+    }
+
+    private Element getElementById(Element element, String id) {
+        if (Element.isTextNode(element)) {
+            return null;
+        }
+
+        if (id.equals(element.getAttribute("id"))) {
+            return element;
+        }
+        for (int i = 0; i < element.getChildCount(); i++) {
+            Element e = getElementById(element.getChild(i), id);
+            if (e != null) {
+                return e;
+            }
+        }
+
+        return null;
+    }
+
+    private Element getElementByLocalId(Element element, String id) {
+        if (Element.isTextNode(element)) {
+            return null;
+        }
+        if (id.equals(element.getAttribute("LOCAL_ID"))) {
+            return element;
+        }
+        for (int i = 0; i < element.getChildCount(); i++) {
+            Element e = getElementByLocalId(element.getChild(i), id);
+            if (e != null) {
+                return e;
+            }
+        }
+
+        return null;
     }
 }
