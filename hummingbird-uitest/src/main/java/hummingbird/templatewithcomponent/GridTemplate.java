@@ -2,6 +2,9 @@ package hummingbird.templatewithcomponent;
 
 import com.vaadin.annotations.Bower;
 import com.vaadin.annotations.Id;
+import com.vaadin.data.Container;
+import com.vaadin.data.Item;
+import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Notification;
@@ -31,8 +34,47 @@ public class GridTemplate extends Template {
         });
         theSameButton.addStyleName("foo");
 
-        localid.addColumn("Hello");
-        globalId.addColumn("World");
+        TestIndexedContainer ic = new TestIndexedContainer("First", "Last");
+        ic.addRow("Artur", "Signell");
+        ic.addRow("Olli", "Tietäväinen");
+        ic.addRow("Leif", "Åstrand");
+        globalId.setContainerDataSource(ic);
+
+        localid.addSelectionListener(e -> {
+            if (localid.getSelectedRow() == null) {
+                Notification.show("Deselected "
+                        + getName(ic, e.getRemoved().iterator().next()));
+            } else {
+                Notification.show(
+                        "Selected: " + getName(ic, localid.getSelectedRow()));
+            }
+        });
+    }
+
+    private String getName(Container c, Object itemId) {
+        Item item = c.getItem(itemId);
+        return item.getItemProperty("First").getValue() + " "
+                + item.getItemProperty("Last").getValue();
+    }
+
+    public static class TestIndexedContainer extends IndexedContainer {
+
+        public TestIndexedContainer(Object... propertyIds) {
+            super();
+            for (Object propertyId : propertyIds) {
+                addContainerProperty(propertyId, String.class, "");
+            }
+        }
+
+        public void addRow(Object... rowData) {
+            int i = 0;
+            Object itemId = addItem();
+            for (Object propertyId : getContainerPropertyIds()) {
+                getItem(itemId).getItemProperty(propertyId)
+                        .setValue(rowData[i++]);
+            }
+        }
+
     }
 
 }

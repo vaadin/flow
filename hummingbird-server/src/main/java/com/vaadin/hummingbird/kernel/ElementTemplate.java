@@ -57,4 +57,6 @@ public interface ElementTemplate extends Serializable {
 
     public void runBeforeNextClientResponse(Runnable runnable, StateNode node);
 
+    public StateNode getElementDataNode(StateNode node, boolean createIfNeeded);
+
 }

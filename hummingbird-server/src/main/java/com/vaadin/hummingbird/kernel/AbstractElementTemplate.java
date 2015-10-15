@@ -172,7 +172,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
                 .intValue();
     }
 
-    protected abstract StateNode getElementDataNode(StateNode node,
+    public abstract StateNode getElementDataNode(StateNode node,
             boolean createIfNeeded);
 
     private Optional<List<Object>> getChildrenList(StateNode node) {

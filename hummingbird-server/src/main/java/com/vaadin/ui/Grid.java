@@ -102,6 +102,7 @@ import com.vaadin.shared.ui.grid.ScrollDestination;
 import com.vaadin.shared.ui.grid.selection.MultiSelectionModelState;
 import com.vaadin.shared.ui.grid.selection.SingleSelectionModelState;
 import com.vaadin.shared.util.SharedUtil;
+import com.vaadin.ui.Grid.SelectionModel;
 import com.vaadin.ui.renderers.Renderer;
 import com.vaadin.ui.renderers.TextRenderer;
 import com.vaadin.util.ReflectTools;
@@ -4064,6 +4065,12 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             }
         });
 
+    }
+
+    @Override
+    protected void setElement(Element element) {
+        super.setElement(element);
+
         // Listen to requests for more data
         getElement().addEventData("hData", "id", "index", "count",
                 "element.sortOrder");
@@ -4105,7 +4112,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                     container.size());
         });
 
-        getJS(JS.class).init(getElement());
+        getJS(JS.class).init(element);
     }
 
     private JsonArray serializeData(int index, int count) {
@@ -4529,7 +4536,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
     @SuppressWarnings("unchecked")
     private List<StateNode> getColumnStateNodes() {
-        return (List) getElement().getNode().getMultiValued("columns");
+        return (List) getElement().getElementDataNode()
+                .getMultiValued("columns");
     }
 
     /**

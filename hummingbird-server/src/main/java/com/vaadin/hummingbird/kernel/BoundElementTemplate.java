@@ -177,7 +177,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     }
 
     @Override
-    protected StateNode getElementDataNode(StateNode node,
+    public StateNode getElementDataNode(StateNode node,
             boolean createIfNeeded) {
         StateNode elementData = node.get(this, StateNode.class);
         if (createIfNeeded && elementData == null) {

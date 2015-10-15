@@ -825,4 +825,8 @@ public class Element implements Serializable {
         return this;
     }
 
+    public StateNode getElementDataNode() {
+        return template.getElementDataNode(node, true);
+    }
+
 }
