@@ -319,4 +319,13 @@ public class ElementTest {
                 e.getEventData("foo").toArray());
     }
 
+    @Test
+    public void textContentForTextNode() {
+        Element e = new Element("div");
+        e.setTextContent("foobar123");
+
+        Assert.assertEquals("foobar123", e.getTextContent());
+        Assert.assertEquals("foobar123", e.getChild(0).getTextContent());
+    }
+
 }
