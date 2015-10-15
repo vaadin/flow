@@ -24,7 +24,7 @@
 	}
 
 	module.resetDataSource = function(grid, initialRows, containerSize) {
-		grid.data.source = function(req) {
+		grid.datasource = function(req) {
 			if (req.count == 0) {
 				req.success([], containerSize);
 				return;
@@ -52,6 +52,6 @@
 			grid.dispatchEvent(event);
 		}
 
-		grid.data.clearCache(containerSize);
+		grid.clearCache(containerSize);
 	}
 })(module);

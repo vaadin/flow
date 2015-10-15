@@ -4066,12 +4066,12 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
         // Listen to requests for more data
         getElement().addEventData("hData", "id", "index", "count",
-                "element.data.sortOrder");
+                "element.sortOrder");
         getElement().addEventListener("hData", e -> {
             String id = e.getString("id");
             int index = (int) e.getNumber("index");
             int count = (int) e.getNumber("count");
-            JsonArray clientSortOrder = e.getArray("element.data.sortOrder");
+            JsonArray clientSortOrder = e.getArray("element.sortOrder");
 
             if (clientSortOrder == null) {
                 clientSortOrder = Json.createArray();
