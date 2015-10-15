@@ -889,6 +889,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
         super.setElement(element);
         // Map the element to this component
         element.getTemplate().getComponents(element.getNode(), true).add(this);
+        // TODO remove old component reference if changed?
+        // TODO What about Composite?
     }
 
     @Override
@@ -1046,6 +1048,17 @@ public abstract class AbstractComponent extends AbstractClientConnector
         } else {
             return PreRenderer.preRenderElementTree(getElement());
         }
+    }
+
+    public static void mapComponent(AbstractComponent component,
+            Element element) {
+        if (component.isAttached()) {
+            // Detach from old position
+            component.detach();
+        }
+
+        component.setElement(element);
+        component.elementAttached();
     }
 
 }
