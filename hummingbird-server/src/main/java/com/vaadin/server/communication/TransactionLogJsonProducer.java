@@ -1,5 +1,7 @@
 package com.vaadin.server.communication;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -8,6 +10,7 @@ import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
+import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
@@ -21,6 +24,7 @@ import com.vaadin.ui.UI;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 public class TransactionLogJsonProducer {
 
@@ -33,7 +37,9 @@ public class TransactionLogJsonProducer {
     private static final String TYPE_REMOVE = "remove";
     private static final String TYPE_PUT_OVERRIDE = "putOverride";
     private static final String TYPE_LIST_INSERT_NODE = "listInsertNode";
+    private static final String TYPE_LIST_INSERT_NODES = "listInsertNodes";
     private static final String TYPE_LIST_INSERT = "listInsert";
+    private static final String TYPE_LIST_INSERTS = "listInserts";
     private static final String TYPE_LIST_REPLACE = "listReplace";
     private static final String TYPE_LIST_REPLACE_NODE = "listReplaceNode";
     private static final String TYPE_LIST_REMOVE = "listRemove";
@@ -103,12 +109,25 @@ public class TransactionLogJsonProducer {
     }
 
     private void putValue(JsonObject changeJson, Object value) {
+        changeJson.put(VALUE, encode(value));
+    }
+
+    private JsonValue encode(Object value) {
         if (value instanceof StateNode) {
-            changeJson.put(VALUE, Math.abs(((StateNode) value).getId()));
+            return Json.create(Math.abs(((StateNode) value).getId()));
         } else if (value instanceof ElementTemplate) {
-            changeJson.put(VALUE, ((ElementTemplate) value).getId());
+            return Json.create(((ElementTemplate) value).getId());
+        } else if (value instanceof Collection) {
+            JsonArray arr = Json.createArray();
+            Iterator<Object> i = ((Collection) value).iterator();
+            int index = 0;
+            while (i.hasNext()) {
+                arr.set(index++, encode(i.next()));
+            }
+            return arr;
+
         } else {
-            changeJson.put(VALUE, JsonConverter.toJson(value));
+            return JsonConverter.toJson(value);
         }
     }
 
@@ -150,9 +169,15 @@ public class TransactionLogJsonProducer {
             } else {
                 return TYPE_LIST_INSERT;
             }
-
         } else if (change instanceof ListRemoveChange) {
             return TYPE_LIST_REMOVE;
+        } else if (change instanceof ListInsertManyChange) {
+            ListInsertManyChange lic = (ListInsertManyChange) change;
+            if (lic.getValue().get(0) instanceof StateNode) {
+                return TYPE_LIST_INSERT_NODES;
+            } else {
+                return TYPE_LIST_INSERTS;
+            }
         } else {
             throw new IllegalArgumentException(
                     "Unknown change type: " + change.getClass().getName());

@@ -32,6 +32,7 @@ import com.google.gwt.dom.client.Text;
 import com.google.gwt.user.client.Window.Location;
 import com.vaadin.client.ApplicationConnection.Client;
 import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.Util;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
@@ -487,10 +488,29 @@ public class TreeUpdater {
                         createSingleArray(child));
                 break;
             }
+            case "listInsertNodes": {
+                EventArray array = node.getArrayProperty(key.asString());
+                JsonArray valueArray = (JsonArray) value;
+
+                for (int valueIndex = 0; valueIndex < valueArray
+                        .length(); valueIndex++) {
+                    TreeNode child = ensureNodeExists(
+                            (int) valueArray.getNumber(valueIndex));
+                    array.splice((int) change.getNumber("index") + valueIndex,
+                            0, createSingleArray(child));
+                }
+                break;
+            }
             case "listInsert": {
                 EventArray array = node.getArrayProperty(key.asString());
                 array.splice((int) change.getNumber("index"), 0,
                         createSingleArray(value));
+                break;
+            }
+            case "listInserts": {
+                EventArray array = node.getArrayProperty(key.asString());
+                array.splice((int) change.getNumber("index"), 0,
+                        (JsArrayObject<Object>) Util.json2jso(value));
                 break;
             }
             case "listRemove": {

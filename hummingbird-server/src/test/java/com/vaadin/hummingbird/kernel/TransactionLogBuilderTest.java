@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
+import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
@@ -136,8 +137,43 @@ public class TransactionLogBuilderTest {
         Assert.assertFalse(
                 "No changes related to the removed node should be in the optimized log",
                 optimizedLogContainsNode(node1));
-        assertOptimizedChanges(new ListInsertChange(0, LIST_KEY, node2),
-                new ListInsertChange(1, LIST_KEY, node3));
+        assertOptimizedChanges(
+                new ListInsertManyChange(0, LIST_KEY, node2, node3));
+
+    }
+
+    @Test
+    public void listAddFiveToInitializedList() {
+        List<Object> list = node.getMultiValued(LIST_KEY);
+        list.add(new DebugStateNode("pre-created1"));
+        list.add(new DebugStateNode("pre-created2"));
+        list.add(new DebugStateNode("pre-created3"));
+        commit();
+        list.add(node1);
+        list.add(node2);
+        list.add(node3);
+        list.add(node4);
+        list.add(node5);
+
+        commit();
+
+        assertOptimizedChanges(new ListInsertManyChange(0, LIST_KEY, node1,
+                node2, node3, node4, node5));
+
+    }
+
+    @Test
+    public void listAddAddNonEmptyList() {
+        List<Object> list = node.getMultiValued(LIST_KEY);
+        list.add(node1);
+        commit();
+
+        list.add(node2);
+        list.add(node3);
+        commit();
+
+        assertOptimizedChanges(
+                new ListInsertManyChange(1, LIST_KEY, node2, node3));
 
     }
 
@@ -163,6 +199,9 @@ public class TransactionLogBuilderTest {
         if (change1.getClass() == IdChange.class) {
             assertChangesEquals((IdChange) change1, (IdChange) change2);
         } else if (change1.getClass() == ListInsertChange.class) {
+            assertChangesEquals((NodeListChange) change1,
+                    (NodeListChange) change2);
+        } else if (change1.getClass() == ListInsertManyChange.class) {
             assertChangesEquals((NodeListChange) change1,
                     (NodeListChange) change2);
         } else if (change1.getClass() == ListRemoveChange.class) {
@@ -244,6 +283,36 @@ public class TransactionLogBuilderTest {
     }
 
     @Test
+    public void listAddReplaceAdd() {
+        List<Object> list = node.getMultiValued(LIST_KEY);
+        list.add(node1);
+        list.set(0, node2);
+        list.add(node3);
+
+        commit();
+
+        Assert.assertFalse(
+                "No changes related to the removed node should be in the optimized log",
+                optimizedLogContainsNode(node1));
+        assertOptimizedChanges(
+                new ListInsertManyChange(0, LIST_KEY, node2, node3));
+    }
+
+    @Test
+    public void listAddReplace() {
+        List<Object> list = node.getMultiValued(LIST_KEY);
+        list.add(node1);
+        list.set(0, node2);
+
+        commit();
+
+        Assert.assertFalse(
+                "No changes related to the removed node should be in the optimized log",
+                optimizedLogContainsNode(node1));
+        assertOptimizedChanges(new ListInsertChange(0, LIST_KEY, node2));
+    }
+
+    @Test
     public void listInsertWithNodesBeforeAndAfter() {
         List<Object> list = node.getMultiValued(LIST_KEY);
         list.add(node1);
@@ -264,10 +333,31 @@ public class TransactionLogBuilderTest {
         Assert.assertFalse(
                 "No changes related to the removed node should be in the optimized log",
                 optimizedLogContainsNode(node3));
-        assertOptimizedChanges(new ListInsertChange(0, LIST_KEY, node1),
-                new ListInsertChange(1, LIST_KEY, node2),
+        // TODO Optimize out-of-order adds
+        // assertOptimizedChanges(new ListInsertManyChange(0, LIST_KEY, node4,
+        // node1, node2, node5));
+
+        assertOptimizedChanges(
+                new ListInsertManyChange(0, LIST_KEY, node1, node2),
                 new ListInsertChange(0, LIST_KEY, node4),
-                new ListInsertChange(3, LIST_KEY, node5));
+                new ListInsertChange(4, LIST_KEY, node5));
+    }
+
+    @Test
+    public void listAddOutOfOrder() {
+        List<Object> list = node.getMultiValued(LIST_KEY);
+        list.add(node1);
+        list.add(node2);
+        // Insert between two existing
+        list.add(1, node3);
+
+        commit();
+
+        // TODO Should optimize no matter the order of the inserts
+        assertOptimizedChanges(
+                new ListInsertManyChange(0, LIST_KEY, node1, node3),
+                new ListInsertChange(1, LIST_KEY, node3));
+
     }
 
     @Test
@@ -318,7 +408,83 @@ public class TransactionLogBuilderTest {
     }
 
     @Test
-    public void detachedNodesRemoved() {
+    public void listAddAfterCommit() {
+        List<Object> list = node.getMultiValued(LIST_KEY);
+        list.add(node1);
+        list.add(node2);
+        commit();
+        list.add(1, node3);
+        commit();
+        assertOptimizedChanges(new ListInsertChange(1, LIST_KEY, node3));
+    }
+
+    @Test
+    public void listRemoveAfterCommit() {
+        List<Object> list = node.getMultiValued(LIST_KEY);
+        list.add(node1);
+        list.add(node2);
+        commit();
+        list.remove(0);
+        commit();
+        assertOptimizedChanges(new ListRemoveChange(0, LIST_KEY, node1));
+    }
+
+    @Test
+    public void listRemovesAfterCommit() {
+        List<Object> list = node.getMultiValued(LIST_KEY);
+        list.add(node1);
+        list.add(node2);
+        commit();
+        list.remove(0);
+        list.remove(0);
+        commit();
+        // This could be optimized to be one operation
+        assertOptimizedChanges(new ListRemoveChange(0, LIST_KEY, node1),
+                new ListRemoveChange(0, LIST_KEY, node1));
+    }
+
+    @Test
+    public void listRemoveAddAfterCommit() {
+        List<Object> list = node.getMultiValued(LIST_KEY);
+        list.add(node1);
+        list.add(node2);
+        commit();
+        list.remove(0);
+        list.add(0, node1);
+        commit();
+        // This could be optimized to be a no-op
+        assertOptimizedChanges(new ListRemoveChange(0, LIST_KEY, node1),
+                new ListInsertChange(0, LIST_KEY, node1));
+    }
+
+    @Test
+    public void putPutShouldBeOnePut() {
+        node.put("foo", "bar");
+        node.put("foo", "baz");
+        commit();
+        Assert.assertEquals(1, optimizedTransactionLogSize);
+        assertOptimizedChanges(new PutChange("foo", "baz"));
+
+    }
+
+    @Test
+    public void putRemovePutShouldBeOnePut() {
+        node.put("foo", "bar");
+        node.remove("foo");
+        node.put("foo", "baz");
+        commit();
+        Assert.assertEquals(1, optimizedTransactionLogSize);
+        assertOptimizedChanges(new PutChange("foo", "baz"));
+
+    }
+
+    @Test
+    public void putRemoveShouldBeRemove() {
+        node.put("foo", "bar");
+        node.remove("foo");
+        commit();
+        assertOptimizedChanges(new RemoveChange("foo", "bar"));
+
     }
 
     private List<NodeChange> flatten(
@@ -332,7 +498,7 @@ public class TransactionLogBuilderTest {
         return list;
     }
 
-    private LinkedHashMap<StateNode, List<NodeChange>> getOptimizedTransactionLog(
+    public static LinkedHashMap<StateNode, List<NodeChange>> getOptimizedTransactionLog(
             LinkedHashMap<StateNode, List<NodeChange>> transactionLog) {
         TransactionLogOptimizer optimizer = new TransactionLogOptimizer(null,
                 transactionLog, new HashSet<>());
@@ -340,7 +506,7 @@ public class TransactionLogBuilderTest {
         return optimizer.getChanges();
     }
 
-    private LinkedHashMap<StateNode, List<NodeChange>> getTransactionLog(
+    public static LinkedHashMap<StateNode, List<NodeChange>> getTransactionLog(
             RootNode root) {
         TransactionLogBuilder logBuilder = new TransactionLogBuilder();
         root.commit(logBuilder.getVisitor());

@@ -10,9 +10,12 @@ import java.util.Set;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
+import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.NodeListChange;
+import com.vaadin.hummingbird.kernel.change.PutChange;
+import com.vaadin.hummingbird.kernel.change.RemoveChange;
 import com.vaadin.ui.UI;
 
 public class TransactionLogOptimizer {
@@ -65,19 +68,94 @@ public class TransactionLogOptimizer {
     private LinkedHashMap<StateNode, List<NodeChange>> optimizeChanges(
             LinkedHashMap<StateNode, List<NodeChange>> changes) {
 
-        removeAddedAndRemovedListItems(changes);
+        perNodeOptimizations(changes);
 
         removeDetachedNodes(changes);
 
         return changes;
     }
 
-    private void removeAddedAndRemovedListItems(
+    private void perNodeOptimizations(
             LinkedHashMap<StateNode, List<NodeChange>> changes) {
         for (StateNode node : changes.keySet()) {
-            removeAddedAndRemovedListItems(node, changes.get(node));
+            List<NodeChange> nodeChanges = changes.get(node);
+            removeAddedAndRemovedListItems(node, nodeChanges);
+            removeDuplicatePuts(node, nodeChanges);
+            joinListInserts(node, nodeChanges);
         }
 
+    }
+
+    /**
+     * Combines subsequent list inserts to one insert with many values
+     *
+     * @param node
+     * @param list
+     */
+    private void joinListInserts(StateNode node, List<NodeChange> nodeChanges) {
+        Map<Object, Integer> insertsInProgress = new HashMap<>();
+
+        for (int changeIndex = 0; changeIndex < nodeChanges
+                .size(); changeIndex++) {
+            NodeChange change = nodeChanges.get(changeIndex);
+            if (change instanceof ListInsertChange) {
+                ListInsertChange lic = (ListInsertChange) change;
+                Object key = lic.getKey();
+
+                if (!insertsInProgress.containsKey(key)) {
+                    // First insert for this key
+                    insertsInProgress.put(key, changeIndex);
+                } else {
+                    // Subsequent insert
+
+                    int firstChangeIndex = insertsInProgress.get(key);
+                    NodeChange firstChange = nodeChanges.get(firstChangeIndex);
+                    int lastInsertIndex;
+                    if (firstChange instanceof ListInsertChange) {
+                        int firstInsertIndex = ((ListInsertChange) firstChange)
+                                .getIndex();
+                        if (lic.getIndex() == firstInsertIndex + 1) {
+                            // Replace insert change with a multiple value
+                            // insert change
+                            ListInsertManyChange listInsertManyChange = new ListInsertManyChange(
+                                    firstInsertIndex, key,
+                                    ((ListInsertChange) firstChange)
+                                            .getValue());
+                            listInsertManyChange.addValue(lic.getValue());
+
+                            nodeChanges.set(firstChangeIndex,
+                                    listInsertManyChange);
+
+                            // Remove current change
+                            nodeChanges.remove(changeIndex);
+                            changeIndex--;
+                        } else {
+                            // Not an insert for a subsequent index
+                            insertsInProgress.remove(key);
+                            continue;
+                        }
+                    } else {
+                        ListInsertManyChange insertManyChange = (ListInsertManyChange) firstChange;
+                        lastInsertIndex = insertManyChange.getIndex()
+                                + insertManyChange.getValue().size() - 1;
+                        if (lic.getIndex() == lastInsertIndex + 1) {
+                            // Insert following the last one -> merge
+                            insertManyChange.addValue(lic.getValue());
+                            // Remove current change
+                            nodeChanges.remove(changeIndex);
+                            changeIndex--;
+                        } else {
+                            // Not an insert for a subsequent index
+                            insertsInProgress.remove(key);
+                            continue;
+                        }
+                    }
+
+                }
+            } else if (change instanceof ListRemoveChange) {
+                insertsInProgress.remove(((ListRemoveChange) change).getKey());
+            }
+        }
     }
 
     private void removeAddedAndRemovedListItems(StateNode node,
@@ -128,6 +206,53 @@ public class TransactionLogOptimizer {
             }
         }
 
+    }
+
+    /**
+     * Optimizes
+     *
+     * put "foo=bar" remove "foo" put "foo=foo"
+     *
+     * into
+     *
+     * put "foo=foo"
+     *
+     * @param node
+     * @param list
+     */
+    private void removeDuplicatePuts(StateNode node, List<NodeChange> list) {
+        Map<Object, Object> finalValues = new HashMap<>();
+
+        for (int i = list.size() - 1; i >= 0; i--) {
+            NodeChange change = list.get(i);
+
+            if (change instanceof PutChange) {
+                PutChange pc = (PutChange) change;
+                if (!finalValues.containsKey(pc.getKey())) {
+                    // This is the last put/remove for the key
+                    finalValues.put(pc.getKey(), pc.getValue());
+                } else {
+                    // There has been a later put/remove for the same key - skip
+                    // this
+                    list.remove(i);
+                }
+            } else if (change instanceof RemoveChange) {
+                RemoveChange rc = (RemoveChange) change;
+                if (!finalValues.containsKey(rc.getKey())) {
+                    // The key should be removed in the end
+
+                    // If we knew that this was a new key, we could skip the
+                    // change but we do not
+                    finalValues.put(rc.getKey(), null);
+                } else {
+                    // There has been a later put/remove for the same key - skip
+                    // this
+                    list.remove(i);
+                }
+
+            }
+
+        }
     }
 
     private void removeDetachedNodes(

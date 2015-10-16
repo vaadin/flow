@@ -12,6 +12,7 @@ import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
+import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
@@ -168,6 +169,12 @@ public class TransactionLogBuilder {
         }
 
         @Override
+        public void visitListInsertManyChange(StateNode node,
+                ListInsertManyChange listInsertManyChange) {
+            logBuilder.addChange(node, listInsertManyChange);
+        }
+
+        @Override
         public void visitListRemoveChange(StateNode node,
                 ListRemoveChange listRemoveChange) {
             logBuilder.addChange(node, listRemoveChange);
@@ -176,7 +183,14 @@ public class TransactionLogBuilder {
         @Override
         public void visitListReplaceChange(StateNode node,
                 ListReplaceChange listReplaceChange) {
-            logBuilder.addChange(node, listReplaceChange);
+            logBuilder.addChange(node,
+                    new ListRemoveChange(listReplaceChange.getIndex(),
+                            listReplaceChange.getKey(),
+                            listReplaceChange.getOldValue()));
+            logBuilder.addChange(node,
+                    new ListInsertChange(listReplaceChange.getIndex(),
+                            listReplaceChange.getKey(),
+                            listReplaceChange.getValue()));
         }
     }
 

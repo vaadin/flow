@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
+import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
@@ -504,6 +505,19 @@ public class StateNodeTest {
             }
 
             @Override
+            public void visitListInsertManyChange(StateNode node,
+                    ListInsertManyChange listInsertManyChange) {
+                Assert.assertEquals("list", listInsertManyChange.getKey());
+                Assert.assertSame(rootNode, node);
+                for (int i = 0; i < listInsertManyChange.getValue()
+                        .size(); i++) {
+                    rootList.add(listInsertManyChange.getIndex() + i,
+                            listInsertManyChange.getValue().get(i));
+                }
+
+            }
+
+            @Override
             public void visitIdChange(StateNode node, IdChange idChange) {
                 if (node == rootNode) {
                     Assert.assertEquals(rootNode.getId(), idChange.getNewId());
@@ -513,6 +527,7 @@ public class StateNodeTest {
                     Assert.fail();
                 }
             }
+
         });
 
         rootNode.put(key, "value");

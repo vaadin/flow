@@ -9,6 +9,9 @@ public interface NodeChangeVisitor {
     void visitListInsertChange(StateNode node,
             ListInsertChange listInsertChange);
 
+    void visitListInsertManyChange(StateNode node,
+            ListInsertManyChange listInsertManyChange);
+
     void visitListRemoveChange(StateNode node,
             ListRemoveChange listRemoveChange);
 

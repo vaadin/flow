@@ -3,11 +3,9 @@ package com.vaadin.hummingbird.kernel;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
+import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
 import com.vaadin.hummingbird.kernel.change.NodeChangeVisitor;
@@ -16,6 +14,9 @@ import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
 import com.vaadin.ui.Template;
 import com.vaadin.ui.Template.Model;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class TemplateModelTest {
     public interface SubModelType {
@@ -238,9 +239,16 @@ public class TemplateModelTest {
             }
 
             @Override
+            public void visitListInsertManyChange(StateNode node,
+                    ListInsertManyChange listInsertManyChange) {
+                Assert.fail(listInsertManyChange.toString());
+            }
+
+            @Override
             public void visitIdChange(StateNode node, IdChange idChange) {
                 Assert.fail(idChange.toString());
             }
+
         });
     }
 
