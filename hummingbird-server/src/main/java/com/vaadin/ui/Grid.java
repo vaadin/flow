@@ -3750,6 +3750,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
     private DetailComponentManager detailComponentManager = null;
 
+    private Runnable sendDataSource = this::sendDataSource;
+
     private final DomEventListener selectionDomListener = new DomEventListener() {
         @Override
         public void handleEvent(JsonObject eventData) {
@@ -4285,6 +4287,10 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             }
         }
 
+        getElement().runBeforeNextClientResponse(sendDataSource);
+    }
+
+    private void sendDataSource() {
         int datasourceSize = datasource.size();
         JsonArray initialRows = serializeData(0, Math.max(50, datasourceSize));
         getJS(JS.class).resetDataSource(getElement(), initialRows,
@@ -5871,6 +5877,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             }
             throw e;
         }
+
+        getElement().runBeforeNextClientResponse(sendDataSource);
 
         return itemId;
     }

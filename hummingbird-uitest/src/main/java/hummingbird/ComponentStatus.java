@@ -4,8 +4,6 @@ import java.util.List;
 
 import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.NotYetImplemented;
-import com.vaadin.data.Item;
-import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.VaadinClasses;
 import com.vaadin.ui.Component;
@@ -19,10 +17,9 @@ public class ComponentStatus extends UI {
         Grid grid = new Grid();
         grid.setSizeFull();
 
-        IndexedContainer ic = new IndexedContainer();
-        ic.addContainerProperty("Component", String.class, "");
-        ic.addContainerProperty("Status", String.class, "");
-        ic.addContainerProperty("Comment", String.class, "");
+        grid.addColumn("Component");
+        grid.addColumn("Status");
+        grid.addColumn("Comment");
 
         for (Class<?> c : getComponents()) {
             Implemented impl = c.getAnnotation(Implemented.class);
@@ -35,20 +32,15 @@ public class ComponentStatus extends UI {
                 comment = impl.value();
             } else if (notImpl != null) {
                 status = "Not implemented";
-                if (notImpl != null) {
-                    comment = notImpl.value();
-                }
+                comment = notImpl.value();
             } else {
                 System.out.println("Component without status: " + c.getName());
                 continue;
             }
 
-            Item item = ic.addItem(c);
-            item.getItemProperty("Component").setValue(c.getSimpleName());
-            item.getItemProperty("Status").setValue(status);
-            item.getItemProperty("Comment").setValue(comment);
+            grid.addRow(c.getSimpleName(), status, comment);
+
         }
-        grid.setContainerDataSource(ic);
 
         addComponent(grid);
     }
