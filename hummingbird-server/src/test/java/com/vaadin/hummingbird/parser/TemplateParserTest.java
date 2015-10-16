@@ -6,6 +6,7 @@ import java.util.stream.IntStream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
@@ -113,6 +114,33 @@ public class TemplateParserTest {
         Assert.assertEquals("script", script.getTag());
         Assert.assertEquals("text/javascript", script.getAttribute("type"));
         Assert.assertEquals("window.alert('hello');", script.getTextContent());
+    }
+
+    @Test
+    public void acceptRootComments() {
+        String templateString = "<!-- pre --><div></div><!-- post -->";
+        BoundElementTemplate template = (BoundElementTemplate) TemplateParser
+                .parse(templateString);
+
+        Assert.assertEquals("div", template.getTag());
+    }
+
+    @Test(expected = TemplateException.class)
+    public void failForMultipleRoots() {
+        String templateString = "<div></div><div></div>";
+        TemplateParser.parse(templateString);
+    }
+
+    @Test(expected = TemplateException.class)
+    public void failForEmptyTemplate() {
+        String templateString = "";
+        TemplateParser.parse(templateString);
+    }
+
+    @Test(expected = TemplateException.class)
+    public void failForCommentOnlyTemplate() {
+        String templateString = "<!-- comment -->";
+        TemplateParser.parse(templateString);
     }
 
 }

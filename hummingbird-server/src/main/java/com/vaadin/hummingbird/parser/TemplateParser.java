@@ -26,6 +26,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.jsoup.select.Elements;
 
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.hummingbird.kernel.BoundTemplateBuilder;
@@ -111,9 +112,20 @@ public class TemplateParser {
 
     private static TemplateBuilder parseBuilder(String templateString) {
         Document bodyFragment = Jsoup.parseBodyFragment(templateString);
+        Elements children = bodyFragment.body().children();
         Scope scope = new Scope();
-        BoundTemplateBuilder template = createElementTemplate(
-                bodyFragment.body().child(0), scope);
+
+        int childNodeSize = children.size();
+        if (childNodeSize != 1) {
+            if (childNodeSize == 0) {
+                throw new TemplateException("Tempalte is empty");
+            } else {
+                throw new TemplateException(
+                        "Template has multiple root elements");
+            }
+        }
+        BoundTemplateBuilder template = createElementTemplate(children.get(0),
+                scope);
         return template;
     }
 
