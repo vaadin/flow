@@ -54,7 +54,7 @@ import com.vaadin.annotations.NotYetImplemented;
  * @author Vaadin Ltd.
  * @since 3.0
  */
-@NotYetImplemented("Should be removed / replaced by Composite")
+@NotYetImplemented("Should be removed / replaced by Composite. Maybe kept as deprecated in Vaadin 8 to help migration.")
 @SuppressWarnings("serial")
 public class CustomComponent extends AbstractComponent
         implements HasComponents {
