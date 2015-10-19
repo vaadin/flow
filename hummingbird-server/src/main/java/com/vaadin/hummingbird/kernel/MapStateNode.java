@@ -8,12 +8,12 @@ public class MapStateNode extends StateNode {
     private final Map<Object, Object> values = new HashMap<>();
 
     @Override
-    public Object get(Object key) {
+    protected Object doGet(Object key) {
         return values.get(key);
     }
 
     @Override
-    public boolean containsKey(Object key) {
+    protected boolean doesContainKey(Object key) {
         return values.containsKey(key);
     }
 
@@ -28,7 +28,7 @@ public class MapStateNode extends StateNode {
     }
 
     @Override
-    protected Stream<Object> getKeys() {
+    protected Stream<Object> doGetKeys() {
         return values.keySet().stream();
     }
 

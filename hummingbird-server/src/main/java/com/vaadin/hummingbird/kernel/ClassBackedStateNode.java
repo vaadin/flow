@@ -34,7 +34,7 @@ public abstract class ClassBackedStateNode extends StateNode {
     }
 
     @Override
-    public Object get(Object key) {
+    protected Object doGet(Object key) {
         Field field = getField(key);
         if (field != null) {
             try {
@@ -53,7 +53,7 @@ public abstract class ClassBackedStateNode extends StateNode {
     }
 
     @Override
-    public boolean containsKey(Object key) {
+    protected boolean doesContainKey(Object key) {
         Field field = getField(key);
         if (field != null) {
             return true;
@@ -104,7 +104,7 @@ public abstract class ClassBackedStateNode extends StateNode {
     }
 
     @Override
-    protected Stream<Object> getKeys() {
+    protected Stream<Object> doGetKeys() {
         Stream<Object> objectKeys = getFieldMap().keySet().stream();
         Map<Object, Object> map = getMap(false);
         if (map != null) {

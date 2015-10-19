@@ -5,11 +5,15 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,7 +29,7 @@ import com.vaadin.hummingbird.kernel.change.RemoveChange;
 
 public abstract class StateNode implements Serializable {
     private enum Keys {
-        TRANSACTION_LOG, NEXT_UNPREVIEWED_LOG_INDEX;
+        TRANSACTION_LOG, NEXT_UNPREVIEWED_LOG_INDEX, COMPUTED, COMPUTED_CACHE, DEPENDENTS;
     }
 
     private class ListView extends AbstractList<Object>implements Serializable {
@@ -153,7 +157,7 @@ public abstract class StateNode implements Serializable {
 
     private List<NodeChange> getTransactionLog() {
         @SuppressWarnings("unchecked")
-        List<NodeChange> log = (List<NodeChange>) get(Keys.TRANSACTION_LOG);
+        List<NodeChange> log = (List<NodeChange>) doGet(Keys.TRANSACTION_LOG);
         if (log == null) {
             log = new ArrayList<>();
             setValue(Keys.TRANSACTION_LOG, log);
@@ -209,15 +213,91 @@ public abstract class StateNode implements Serializable {
         };
     }
 
-    public abstract Object get(Object key);
+    public Object get(Object key) {
+        StateNode computed = getOrCreateInternalMap(Keys.COMPUTED, false);
+        if (computed != null && computed.containsKey(key)) {
+            StateNode cache = getOrCreateInternalMap(Keys.COMPUTED_CACHE, true);
+            if (cache.containsKey(key)) {
+                return cache.get(key);
+            } else {
+                Supplier<?> supplier = computed.get(key, Supplier.class);
+                Reactive.compute(() -> {
+                    Object value = supplier.get();
+                    cache.put(key, value);
+                    logChange(new PutChange(key, value));
+                } , () -> {
+                    Object oldValue = cache.remove(key);
+                    logChange(new RemoveChange(key, oldValue));
+                });
+                return cache.get(key);
+            }
+        } else {
+            updateDependents(key, Reactive::registerRead);
+            return doGet(key);
+        }
+    }
 
-    public abstract boolean containsKey(Object key);
+    private void updateDependents(Object key,
+            Function<HashSet<Runnable>, HashSet<Runnable>> updater) {
+        StateNode map = getOrCreateInternalMap(Keys.DEPENDENTS, false);
+
+        HashSet<Runnable> dependents;
+        if (map == null) {
+            dependents = null;
+        } else {
+            /*
+             * The contents of the set is not transactional, but that's
+             * acceptable since we only add entries, which means that after a
+             * rollback there might be some redundant items, but nothing
+             * missing.
+             */
+            dependents = (HashSet<Runnable>) map.doGet(key);
+        }
+
+        HashSet<Runnable> newDependents = updater.apply(dependents);
+
+        if (dependents == newDependents) {
+            return;
+        }
+
+        if (newDependents != null) {
+            if (map == null) {
+                map = getOrCreateInternalMap(Keys.DEPENDENTS, true);
+            }
+            map.put(key, newDependents);
+        } else if (map != null) {
+            map.remove(key);
+        }
+    }
+
+    protected abstract Object doGet(Object key);
+
+    public boolean containsKey(Object key) {
+        if (doesContainKey(key)) {
+            return true;
+        } else {
+            StateNode computed = getOrCreateInternalMap(Keys.COMPUTED, false);
+            return computed != null && computed.containsKey(key);
+        }
+    }
+
+    protected abstract boolean doesContainKey(Object key);
 
     protected abstract Object removeValue(Object key);
 
     protected abstract Object setValue(Object key, Object value);
 
-    protected abstract Stream<Object> getKeys();
+    protected Stream<Object> getKeys() {
+        StateNode computed = getOrCreateInternalMap(Keys.COMPUTED, false);
+        Stream<Object> keys = doGetKeys();
+        if (computed == null) {
+            return keys;
+        } else {
+            return Stream.concat(keys, computed.getKeys());
+        }
+    }
+
+    protected abstract Stream<Object> doGetKeys();
 
     public abstract Class<?> getType(Object key);
 
@@ -311,7 +391,7 @@ public abstract class StateNode implements Serializable {
                 }
             }
         };
-        getKeys().map(this::get).forEach(action);
+        getKeys().map(this::doGet).forEach(action);
     }
 
     private void detach(Object value) {
@@ -383,6 +463,11 @@ public abstract class StateNode implements Serializable {
         }
         logChange(new PutChange(key, value));
         attach(value);
+
+        if (!Objects.equals(previous, value)) {
+            updateDependents(key, Reactive::registerWrite);
+        }
+
         return previous;
     }
 
@@ -497,5 +582,24 @@ public abstract class StateNode implements Serializable {
         } else {
             return defaultValue;
         }
+    }
+
+    public void putComputed(Object key, Supplier<?> supplier) {
+        if (containsKey(key)) {
+            throw new IllegalStateException(
+                    "Can't replace existing property with a computed property");
+        }
+        getOrCreateInternalMap(Keys.COMPUTED, true).put(key, supplier);
+    }
+
+    private StateNode getOrCreateInternalMap(Object key,
+            boolean createIfNeeded) {
+        StateNode map = (StateNode) doGet(key);
+        if (map == null && createIfNeeded) {
+            map = StateNode.create();
+            map.put(AbstractElementTemplate.Keys.SERVER_ONLY, Boolean.TRUE);
+            put(key, map);
+        }
+        return map;
     }
 }
