@@ -17,6 +17,7 @@ package com.vaadin.data;
 
 import java.io.Serializable;
 
+import com.vaadin.ui.GridJSDataProvider;
 import com.vaadin.ui.Grid.AbstractGridExtension;
 import com.vaadin.ui.Grid.AbstractRenderer;
 
@@ -24,7 +25,7 @@ import elemental.json.JsonObject;
 
 /**
  * Interface for {@link AbstractGridExtension}s that allows adding data to row
- * objects being sent to client by the {@link RpcDataProviderExtension}.
+ * objects being sent to client by the {@link GridJSDataProvider}.
  * <p>
  * {@link AbstractRenderer} implements this interface to provide encoded data to
  * client for {@link Renderer}s automatically.

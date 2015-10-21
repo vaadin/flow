@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.data;
+package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,12 +26,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.data.Container;
 import com.vaadin.data.Container.Indexed;
 import com.vaadin.data.Container.Indexed.ItemAddEvent;
 import com.vaadin.data.Container.Indexed.ItemRemoveEvent;
 import com.vaadin.data.Container.ItemSetChangeEvent;
 import com.vaadin.data.Container.ItemSetChangeListener;
 import com.vaadin.data.Container.ItemSetChangeNotifier;
+import com.vaadin.data.DataGenerator;
+import com.vaadin.data.Item;
+import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.Property.ValueChangeNotifier;
@@ -41,8 +45,6 @@ import com.vaadin.shared.data.DataProviderRpc;
 import com.vaadin.shared.ui.grid.GridClientRpc;
 import com.vaadin.shared.ui.grid.GridState;
 import com.vaadin.shared.ui.grid.Range;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.Column;
 import com.vaadin.ui.Grid.DetailsGenerator;
 import com.vaadin.ui.Grid.RowReference;
@@ -61,7 +63,7 @@ import elemental.json.JsonObject;
  * @since 7.4
  * @author Vaadin Ltd
  */
-public class RpcDataProviderExtension {
+public class GridJSDataProvider {
 
     /**
      * Class for keeping track of current items and ValueChangeListeners.
@@ -218,7 +220,7 @@ public class RpcDataProviderExtension {
 
     /**
      * A class that makes detail component related internal communication
-     * possible between {@link RpcDataProviderExtension} and grid.
+     * possible between {@link GridJSDataProvider} and grid.
      *
      * @since 7.5.0
      * @author Vaadin Ltd
@@ -292,7 +294,7 @@ public class RpcDataProviderExtension {
                 details.setParent(grid);
                 grid.markAsDirty();
 
-                assert!emptyDetails.contains(itemId) : "Bookeeping thinks "
+                assert !emptyDetails.contains(itemId) : "Bookeeping thinks "
                         + "itemId is empty even though we just created a "
                         + "component for it (" + itemId + ")";
             } else {
@@ -475,7 +477,7 @@ public class RpcDataProviderExtension {
      * @param container
      *            the container to make available
      */
-    public RpcDataProviderExtension(Indexed container) {
+    public GridJSDataProvider(Indexed container) {
         this.container = container;
         // rpc = getRpcProxy(DataProviderRpc.class);
 

@@ -54,8 +54,6 @@ import com.vaadin.data.Container.Sortable;
 import com.vaadin.data.DataGenerator;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
-import com.vaadin.data.RpcDataProviderExtension;
-import com.vaadin.data.RpcDataProviderExtension.DetailComponentManager;
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.fieldgroup.DefaultFieldGroupFieldFactory;
 import com.vaadin.data.fieldgroup.FieldGroup;
@@ -103,6 +101,7 @@ import com.vaadin.shared.ui.grid.selection.MultiSelectionModelState;
 import com.vaadin.shared.ui.grid.selection.SingleSelectionModelState;
 import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.Grid.SelectionModel;
+import com.vaadin.ui.GridJSDataProvider.DetailComponentManager;
 import com.vaadin.ui.renderers.Renderer;
 import com.vaadin.ui.renderers.TextRenderer;
 import com.vaadin.util.ReflectTools;
@@ -3501,7 +3500,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      * An abstract base class for server-side Grid extensions.
      * <p>
      * Note: If the extension is an instance of {@link DataGenerator} it will
-     * automatically register itself to {@link RpcDataProviderExtension} of
+     * automatically register itself to {@link GridJSDataProvider} of
      * extended Grid. On remove this registration is automatically removed.
      *
      * @since 7.5
@@ -3701,7 +3700,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         }
     };
 
-    private RpcDataProviderExtension datasourceExtension;
+    private GridJSDataProvider datasourceExtension;
 
     /**
      * The selection model that is currently in use. Never <code>null</code>
@@ -4224,7 +4223,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             sortOrder.clear();
         }
 
-        datasourceExtension = new RpcDataProviderExtension(container);
+        datasourceExtension = new GridJSDataProvider(container);
         datasourceExtension.extend(this);
         datasourceExtension.addDataGenerator(new RowDataGenerator());
 
@@ -5131,7 +5130,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
     /**
      * Gets the
-     * {@link com.vaadin.data.RpcDataProviderExtension.DataProviderKeyMapper
+     * {@link com.vaadin.data.GridJSDataProvider.DataProviderKeyMapper
      * DataProviderKeyMapper} being used by the data source.
      *
      * @return the key mapper being used by the data source
