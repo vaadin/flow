@@ -45,4 +45,8 @@ public class Reactive {
         }
         return null;
     }
+
+    public static boolean inComputation() {
+        return currentComputation.get() != null;
+    }
 }

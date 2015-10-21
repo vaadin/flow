@@ -260,7 +260,9 @@ public abstract class StateNode implements Serializable {
                 return cache.get(key);
             }
         } else {
-            updateDependents(key, Reactive::registerRead);
+            if (Reactive.inComputation()) {
+                updateDependents(key, Reactive::registerRead);
+            }
             return doGet(key);
         }
     }
