@@ -320,7 +320,7 @@ public abstract class StateNode implements Serializable {
                 return true;
             }
 
-            if (!(key instanceof Keys)) {
+            if (!(key instanceof Keys) && Reactive.inComputation()) {
                 updateDependents(key, Reactive::registerRead);
             }
         }
@@ -512,7 +512,8 @@ public abstract class StateNode implements Serializable {
         logChange(new PutChange(key, value));
         attach(value);
 
-        if (!Objects.equals(previous, value) || !contained) {
+        if ((!contained || !Objects.equals(previous, value))
+                && doesContainKey(Keys.DEPENDENTS)) {
             updateDependents(key, Reactive::registerWrite);
         }
 
