@@ -324,11 +324,14 @@ public class TreeUpdater {
 
     public void update(JsonObject elementTemplates, JsonArray elementChanges,
             JsonArray rpc) {
+        getLogger().info("Handling template updates");
         extractTemplates(elementTemplates);
 
+        getLogger().info("Handling tree node changes");
         applyNodeChanges(elementChanges);
 
         if (rpc != null) {
+            getLogger().info("Running rpcs");
             runRpc(rpc);
         }
     }

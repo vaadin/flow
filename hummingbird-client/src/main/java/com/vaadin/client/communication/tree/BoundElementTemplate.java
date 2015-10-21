@@ -215,6 +215,12 @@ public class BoundElementTemplate extends Template {
             for (int templateId : childElementTemplates) {
                 Node newChildElement = treeUpdater.createElement(
                         treeUpdater.getTemplate(templateId), node, context);
+                if (TreeUpdater.debug) {
+                    TreeUpdater.debug("Appended node "
+                            + TreeUpdater.debugHtml(newChildElement) + " into "
+                            + TreeUpdater.debugHtml(element));
+                }
+
                 DomApi.wrap(element).appendChild(newChildElement);
             }
         }
