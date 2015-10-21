@@ -2,9 +2,12 @@ package com.vaadin.hummingbird.kernel;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.hummingbird.kernel.AbstractElementTemplate.Keys;
 
 public class ComputedPropertyTest {
     @Test
@@ -27,6 +30,21 @@ public class ComputedPropertyTest {
 
         Assert.assertTrue(stringKeys.contains("computed"));
         Assert.assertEquals(1, stringKeys.size());
+    }
+
+    @Test
+    public void computedNodeNotServerOnly() {
+        StateNode node = StateNode.create();
+        node.putComputed("computed", () -> "foo");
+
+        Assert.assertFalse(
+                node.getKeys().anyMatch(Predicate.isEqual(Keys.SERVER_ONLY)));
+        Assert.assertFalse(node.containsKey(Keys.SERVER_ONLY));
+
+        node.put(Keys.SERVER_ONLY, null);
+        Assert.assertTrue(
+                node.getKeys().anyMatch(Predicate.isEqual(Keys.SERVER_ONLY)));
+        Assert.assertTrue(node.containsKey(Keys.SERVER_ONLY));
     }
 
     @Test
@@ -99,5 +117,23 @@ public class ComputedPropertyTest {
 
         node.put("a", "D");
         Assert.assertEquals("D", node.get("computed"));
+    }
+
+    @Test
+    public void testContainsIsDependency() {
+        StateNode node = StateNode.create();
+
+        node.putComputed("computed",
+                () -> Boolean.valueOf(node.containsKey("foo")));
+
+        Assert.assertFalse(node.get("computed", Boolean.class).booleanValue());
+
+        node.put("foo", null);
+
+        Assert.assertTrue(node.get("computed", Boolean.class).booleanValue());
+
+        node.remove("foo");
+
+        Assert.assertFalse(node.get("computed", Boolean.class).booleanValue());
     }
 }

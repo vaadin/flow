@@ -29,8 +29,10 @@ import com.vaadin.hummingbird.kernel.change.RemoveChange;
 
 public abstract class StateNode implements Serializable {
     private enum Keys {
-        TRANSACTION_LOG, NEXT_UNPREVIEWED_LOG_INDEX, COMPUTED, COMPUTED_CACHE, DEPENDENTS;
+        TRANSACTION_LOG, NEXT_UNPREVIEWED_LOG_INDEX, COMPUTED_PENDING_FLUSH, COMPUTED, COMPUTED_CACHE, DEPENDENTS;
     }
+
+    private static final Object EMPTY_FLUSH_MARKER = new Object();
 
     private class ListView extends AbstractList<Object>implements Serializable {
         private Object key;
@@ -149,10 +151,18 @@ public abstract class StateNode implements Serializable {
     }
 
     private void logChange(NodeChange change) {
-        getTransactionLog().add(change);
+        List<NodeChange> transactionLog = markAsDirty();
+        transactionLog.add(change);
+    }
+
+    private List<NodeChange> markAsDirty() {
+        // Access transaction log so that we will mark ourselves as dirty later
+        // on if we're not attached right now
+        List<NodeChange> transactionLog = getTransactionLog();
         if (rootNode != null) {
             rootNode.markAsDirty(this);
         }
+        return transactionLog;
     }
 
     private List<NodeChange> getTransactionLog() {
@@ -180,15 +190,19 @@ public abstract class StateNode implements Serializable {
                     node.rollback(log.get(i));
                 }
 
+                clearTransactionData();
+            }
+
+            private void clearTransactionData() {
                 removeValue(Keys.TRANSACTION_LOG);
                 removeValue(Keys.NEXT_UNPREVIEWED_LOG_INDEX);
+                removeValue(Keys.COMPUTED_PENDING_FLUSH);
             }
 
             @Override
             public List<NodeChange> commit() {
                 List<NodeChange> log = getTransactionLog();
-                removeValue(Keys.TRANSACTION_LOG);
-                removeValue(Keys.NEXT_UNPREVIEWED_LOG_INDEX);
+                clearTransactionData();
                 return log;
             }
 
@@ -224,10 +238,24 @@ public abstract class StateNode implements Serializable {
                 Reactive.compute(() -> {
                     Object value = supplier.get();
                     cache.put(key, value);
-                    logChange(new PutChange(key, value));
+
+                    Map<Object, Object> pendingFlush = getPendingFlush(false);
+                    if (pendingFlush != null && pendingFlush.containsKey(key)) {
+                        Object oldValue = pendingFlush.remove(key);
+                        if (oldValue != EMPTY_FLUSH_MARKER) {
+                            // Add to log without marking as dirty
+                            getTransactionLog()
+                                    .add(new RemoveChange(key, oldValue));
+                        }
+                    }
+                    // Add to log without marking as dirty
+                    getTransactionLog().add(new PutChange(key, value));
                 } , () -> {
                     Object oldValue = cache.remove(key);
-                    logChange(new RemoveChange(key, oldValue));
+
+                    Map<Object, Object> pendingFlush = getPendingFlush(true);
+                    pendingFlush.put(key, oldValue);
+                    markAsDirty();
                 });
                 return cache.get(key);
             }
@@ -235,6 +263,17 @@ public abstract class StateNode implements Serializable {
             updateDependents(key, Reactive::registerRead);
             return doGet(key);
         }
+    }
+
+    private Map<Object, Object> getPendingFlush(boolean create) {
+        @SuppressWarnings("unchecked")
+        Map<Object, Object> pendingFlush = (Map<Object, Object>) doGet(
+                Keys.COMPUTED_PENDING_FLUSH);
+        if (pendingFlush == null && create) {
+            pendingFlush = new HashMap<>();
+            setValue(Keys.COMPUTED_PENDING_FLUSH, pendingFlush);
+        }
+        return pendingFlush;
     }
 
     private void updateDependents(Object key,
@@ -273,12 +312,18 @@ public abstract class StateNode implements Serializable {
     protected abstract Object doGet(Object key);
 
     public boolean containsKey(Object key) {
-        if (doesContainKey(key)) {
-            return true;
-        } else {
+        if (key != AbstractElementTemplate.Keys.SERVER_ONLY) {
             StateNode computed = getOrCreateInternalMap(Keys.COMPUTED, false);
-            return computed != null && computed.containsKey(key);
+            if (computed != null && computed.containsKey(key)) {
+                return true;
+            }
+
+            if (!(key instanceof Keys)) {
+                updateDependents(key, Reactive::registerRead);
+            }
         }
+
+        return doesContainKey(key);
     }
 
     protected abstract boolean doesContainKey(Object key);
@@ -293,7 +338,8 @@ public abstract class StateNode implements Serializable {
         if (computed == null) {
             return keys;
         } else {
-            return Stream.concat(keys, computed.getKeys());
+            return Stream.concat(keys, computed.getKeys().filter(
+                    key -> key != AbstractElementTemplate.Keys.SERVER_ONLY));
         }
     }
 
@@ -455,7 +501,7 @@ public abstract class StateNode implements Serializable {
     }
 
     public Object put(Object key, Object value) {
-        boolean contained = containsKey(key);
+        boolean contained = doesContainKey(key);
         Object previous = setValue(key, value);
         if (contained) {
             logChange(new RemoveChange(key, previous));
@@ -464,7 +510,7 @@ public abstract class StateNode implements Serializable {
         logChange(new PutChange(key, value));
         attach(value);
 
-        if (!Objects.equals(previous, value)) {
+        if (!Objects.equals(previous, value) || !contained) {
             updateDependents(key, Reactive::registerWrite);
         }
 
@@ -480,6 +526,8 @@ public abstract class StateNode implements Serializable {
 
     public Object remove(Object key) {
         if (containsKey(key)) {
+            updateDependents(key, Reactive::registerWrite);
+
             Object removed = removeValue(key);
             logChange(new RemoveChange(key, removed));
             detach(removed);
@@ -590,6 +638,8 @@ public abstract class StateNode implements Serializable {
                     "Can't replace existing property with a computed property");
         }
         getOrCreateInternalMap(Keys.COMPUTED, true).put(key, supplier);
+        getPendingFlush(true).put(key, EMPTY_FLUSH_MARKER);
+        markAsDirty();
     }
 
     private StateNode getOrCreateInternalMap(Object key,
@@ -601,5 +651,15 @@ public abstract class StateNode implements Serializable {
             put(key, map);
         }
         return map;
+    }
+
+    public void flushComputedProperties() {
+        Map<Object, Object> pendingFlush = getPendingFlush(false);
+        if (pendingFlush != null) {
+            new ArrayList<>(pendingFlush.keySet()).forEach(t -> {
+                get(t);
+            });
+            pendingFlush.clear();
+        }
     }
 }

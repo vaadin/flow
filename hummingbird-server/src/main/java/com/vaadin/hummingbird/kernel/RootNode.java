@@ -122,6 +122,7 @@ public class RootNode extends MapStateNode {
             preCommitChanges.clear();
 
             for (StateNode stateNode : changes) {
+                stateNode.flushComputedProperties();
                 if (stateNode.containsKey(NodeChangeListener.class)) {
                     List<Object> listeners = stateNode
                             .getMultiValued(NodeChangeListener.class);
