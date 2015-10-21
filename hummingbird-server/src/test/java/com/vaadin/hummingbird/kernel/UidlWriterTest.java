@@ -104,4 +104,16 @@ public class UidlWriterTest {
         Assert.assertEquals("bar", putAttribute.getString("value"));
     }
 
+    @Test
+    public void testAddRemoveListener() {
+        DomEventListener listener = e -> {
+        };
+        element.addEventListener("bar", listener);
+        element.removeEventListener("bar", listener);
+        element.addEventListener("bar", listener);
+
+        JsonArray json = encodeElementChanges();
+        System.out.println(json);
+    }
+
 }

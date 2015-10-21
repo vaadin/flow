@@ -34,7 +34,8 @@ public abstract class StateNode implements Serializable {
 
     private static final Object EMPTY_FLUSH_MARKER = new Object();
 
-    private class ListView extends AbstractList<Object>implements Serializable {
+    private class ListView extends AbstractList<Object>
+            implements Serializable {
         private Object key;
         private ArrayList<Object> backing;
 
@@ -55,8 +56,12 @@ public abstract class StateNode implements Serializable {
             return previous;
         }
 
+        private boolean isAttached() {
+            return backing != null;
+        }
+
         private void ensureAttached() {
-            if (backing == null) {
+            if (!isAttached()) {
                 throw new IllegalStateException();
             }
         }
@@ -89,7 +94,9 @@ public abstract class StateNode implements Serializable {
 
         @Override
         public int size() {
-            ensureAttached();
+            if (!isAttached()) {
+                return 0;
+            }
 
             return backing.size();
         }
@@ -120,7 +127,7 @@ public abstract class StateNode implements Serializable {
     }
 
     private void attach(Object value) {
-        assert!(value instanceof ListView);
+        assert !(value instanceof ListView);
 
         if (value instanceof StateNode) {
             StateNode stateNode = (StateNode) value;
@@ -461,7 +468,7 @@ public abstract class StateNode implements Serializable {
     private void register() {
         RootNode root = getRoot();
         assert root != null;
-        assert!isAttached();
+        assert !isAttached();
 
         setId(root.register(this));
         forEachChildNode(StateNode::register);

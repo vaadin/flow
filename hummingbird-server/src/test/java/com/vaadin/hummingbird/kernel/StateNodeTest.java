@@ -574,13 +574,6 @@ public class StateNodeTest {
         stateNode.put(key, "foo");
 
         try {
-            asList.size();
-            Assert.fail();
-        } catch (IllegalStateException expected) {
-            // All is OK
-        }
-
-        try {
             asList.get(0);
             Assert.fail();
         } catch (IllegalStateException expected) {

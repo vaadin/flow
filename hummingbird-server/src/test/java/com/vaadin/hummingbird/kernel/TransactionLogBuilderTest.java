@@ -532,4 +532,17 @@ public class TransactionLogBuilderTest {
         return clone;
     }
 
+    @Test
+    public void addRemoveAddList() {
+        List<Object> l = node.getMultiValued(LIST_KEY);
+        l.add("bar");
+        l.remove("bar");
+        node.remove(LIST_KEY);
+        l = node.getMultiValued(LIST_KEY);
+        l.add("foo");
+        commit();
+        // TODO #36, this should only be a ListInsertChange
+        assertOptimizedChanges(new RemoveChange(LIST_KEY, null),
+                new ListInsertChange(0, LIST_KEY, "foo"));
+    }
 }

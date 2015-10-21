@@ -519,11 +519,16 @@ public class TreeUpdater {
                 break;
             }
             case "remove": {
-                TreeNodeProperty property = node.getProperty(key.asString());
-                Object oldValue = property.getValue();
+                // node.getProperty adds the property if it does not exist -
+                // this is unnecessary if we are going to remove it
+                if (node.hasProperty(key.asString())) {
+                    TreeNodeProperty property = node
+                            .getProperty(key.asString());
+                    Object oldValue = property.getValue();
 
-                property.setValue(null);
+                    property.setValue(null);
 
+                }
                 break;
             }
             case "putOverride": {
@@ -600,7 +605,7 @@ public class TreeUpdater {
             domListeners.put(id, nodeListeners);
         }
 
-        assert!nodeListeners.containsKey(type);
+        assert !nodeListeners.containsKey(type);
         nodeListeners.put(type, listener);
     }
 
