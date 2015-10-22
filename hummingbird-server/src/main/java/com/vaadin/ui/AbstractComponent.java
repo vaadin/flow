@@ -81,6 +81,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
     private ErrorHandler errorHandler = null;
     private List<Runnable> runOnAttach;
 
+    private boolean initCalled = false;
+
     protected static final String DESIGN_ATTR_PLAIN_TEXT = "plain-text";
 
     /* Constructor */
@@ -529,6 +531,11 @@ public abstract class AbstractComponent extends AbstractClientConnector
             runOnAttach.forEach(Runnable::run);
             runOnAttach = null;
         }
+
+        if (!initCalled) {
+            initCalled = true;
+            init();
+        }
     }
 
     /**
@@ -904,6 +911,10 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     @Override
     protected void setElement(Element element) {
+        if (initCalled) {
+            throw new IllegalStateException(
+                    "setElement must not be called after the component has been initialized through init()");
+        }
         super.setElement(element);
         // Map the element to this component
         element.getTemplate().getComponents(element.getNode(), true).add(this);
@@ -954,7 +965,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     private static Component findChildComponent(Component parent,
             Element childElementWithComponent) {
-        assert!childElementWithComponent.getComponents().isEmpty();
+        assert !childElementWithComponent.getComponents().isEmpty();
 
         List<Component> components = childElementWithComponent.getComponents();
         if (components.size() == 1) {
@@ -985,10 +996,10 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     private static Component findParentComponent(Component child,
             Element parentElementWithComponent) {
-        assert!parentElementWithComponent.getComponents().isEmpty();
+        assert !parentElementWithComponent.getComponents().isEmpty();
 
         Element childElementWithComponent = child.getElement();
-        assert!childElementWithComponent.getComponents().isEmpty();
+        assert !childElementWithComponent.getComponents().isEmpty();
 
         // Composite is a special, special case...
         List<Component> childComponents = childElementWithComponent
@@ -1012,8 +1023,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
                         "Composite hierarchy is incorrect: "
                                 + child.getClass().getName()
                                 + " not found in Composite chain");
-            } else
-                if (childIndexInCompositeChain == childComponents.size() - 1) {
+            } else if (childIndexInCompositeChain == childComponents.size()
+                    - 1) {
                 // This is the last Composite parent
                 // -> the parent component is the parentElement's component
                 return parentElementWithComponent.getComponents().get(0);
@@ -1085,6 +1096,18 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
         component.setElement(element);
         component.elementAttached();
+    }
+
+    /**
+     * Method for performing initialization of the component.
+     * <p>
+     * This method is called once for each component after the component has
+     * been attached to a UI for the first time. T
+     * <p>
+     * The element for the component has been set to the final instance when
+     * this method is called and must never change in or after init().
+     */
+    protected void init() {
     }
 
 }

@@ -3500,8 +3500,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      * An abstract base class for server-side Grid extensions.
      * <p>
      * Note: If the extension is an instance of {@link DataGenerator} it will
-     * automatically register itself to {@link GridJSDataProvider} of
-     * extended Grid. On remove this registration is automatically removed.
+     * automatically register itself to {@link GridJSDataProvider} of extended
+     * Grid. On remove this registration is automatically removed.
      *
      * @since 7.5
      */
@@ -4069,9 +4069,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
     }
 
     @Override
-    protected void setElement(Element element) {
-        super.setElement(element);
-
+    protected void init() {
+        super.init();
         // Listen to requests for more data
         getElement().addEventData("hData", "id", "index", "count",
                 "element.sortOrder");
@@ -4113,7 +4112,8 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                     container.size());
         });
 
-        getJS(JS.class).init(element);
+        getJS(JS.class).init(getElement());
+
     }
 
     private JsonArray serializeData(int index, int count) {
@@ -5129,8 +5129,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
     }
 
     /**
-     * Gets the
-     * {@link com.vaadin.data.GridJSDataProvider.DataProviderKeyMapper
+     * Gets the {@link com.vaadin.data.GridJSDataProvider.DataProviderKeyMapper
      * DataProviderKeyMapper} being used by the data source.
      *
      * @return the key mapper being used by the data source
