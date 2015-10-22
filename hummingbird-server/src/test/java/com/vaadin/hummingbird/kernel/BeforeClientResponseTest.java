@@ -1,13 +1,15 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.UI;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class BeforeClientResponseTest {
     private static class TestComponent extends AbstractComponent {
@@ -70,5 +72,22 @@ public class BeforeClientResponseTest {
 
         Assert.assertEquals("Callback should only be run once", 1,
                 commitAndGetCount());
+    }
+
+    @Test
+    public void testMultipleBeforeClientResponseOrder() {
+        List<Integer> result = new ArrayList<>();
+        c.runBeforeNextClientResponse(() -> {
+            result.add(1);
+        });
+        c.runBeforeNextClientResponse(() -> {
+            result.add(2);
+        });
+        c.runBeforeNextClientResponse(() -> {
+            result.add(3);
+        });
+
+        ui.getRoot().getRootNode().commit();
+        Assert.assertArrayEquals(new Integer[] { 1, 2, 3 }, result.toArray());
     }
 }

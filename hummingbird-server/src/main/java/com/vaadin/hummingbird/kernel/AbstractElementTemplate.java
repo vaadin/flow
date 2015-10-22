@@ -3,9 +3,9 @@ package com.vaadin.hummingbird.kernel;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.hummingbird.kernel.change.NodeChange;
@@ -172,6 +172,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
                 .intValue();
     }
 
+    @Override
     public abstract StateNode getElementDataNode(StateNode node,
             boolean createIfNeeded);
 
@@ -347,10 +348,10 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     public void runBeforeNextClientResponse(Runnable runnable, StateNode node) {
         StateNode dataNode = getElementDataNode(node, true);
         @SuppressWarnings("unchecked")
-        Set<Runnable> pendingRunnables = dataNode
-                .get(RunBeforeClientResponseKey.class, Set.class);
+        LinkedHashSet<Runnable> pendingRunnables = dataNode
+                .get(RunBeforeClientResponseKey.class, LinkedHashSet.class);
         if (pendingRunnables == null) {
-            pendingRunnables = new HashSet<>();
+            pendingRunnables = new LinkedHashSet<>();
             dataNode.put(RunBeforeClientResponseKey.class, pendingRunnables);
             dataNode.addChangeListener(new NodeChangeListener() {
                 @Override
@@ -359,7 +360,7 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
                     dataNode.removeChangeListener(this);
 
                     @SuppressWarnings("unchecked")
-                    Set<Runnable> pendingRunnables = (Set<Runnable>) dataNode
+                    LinkedHashSet<Runnable> pendingRunnables = (LinkedHashSet) dataNode
                             .remove(RunBeforeClientResponseKey.class);
                     assert pendingRunnables != null;
 

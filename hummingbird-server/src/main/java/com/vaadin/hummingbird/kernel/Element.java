@@ -193,8 +193,8 @@ public class Element implements Serializable {
      */
     public EventRegistrationHandle addEventListener(String eventType,
             DomEventListener listener) {
-        assert eventType != null;
-        assert listener != null;
+        assert eventType != null : "Event type must not be null";
+        assert listener != null : "Listener must not be null";
 
         template.addEventListener(eventType, listener, node);
         return new EventRegistrationHandle() {
