@@ -88,7 +88,7 @@ public class JS {
         }
         String jsResource = jsModule.value();
         if (jsResource.equals("")) {
-            jsResource = javascriptInterface.getClass().getSimpleName() + ".js";
+            jsResource = javascriptInterface.getSimpleName() + ".js";
         }
         return jsResource;
     }
