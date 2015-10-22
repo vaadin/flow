@@ -1,10 +1,12 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonBoolean;
 import elemental.json.JsonNull;
 import elemental.json.JsonNumber;
@@ -58,6 +60,17 @@ public class JsonConverter {
         } else if (value instanceof Enum<?>) {
             Enum<?> enumValue = (Enum<?>) value;
             return Json.create(enumValue.name());
+        } else if (value.getClass().isArray()) {
+            int length = Array.getLength(value);
+
+            JsonArray array = Json.createArray();
+            for (int i = 0; i < length; i++) {
+                Object childValue = Array.get(value, i);
+                JsonValue childJson = toJson(childValue);
+                array.set(i, childJson);
+            }
+
+            return array;
         } else {
             throw new RuntimeException(
                     "Can't encode value of type " + value.getClass().getName());

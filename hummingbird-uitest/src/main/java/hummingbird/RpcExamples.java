@@ -51,6 +51,19 @@ public class RpcExamples extends AbstractTestUI {
             }
         });
 
+        getElement().appendChild(new Element("button") {
+            {
+                setTextContent("Send arrays");
+                addEventListener("click", e -> {
+                    // Define as object to avoid interpreting as varargs
+                    getRoot().getRootNode().enqueueRpc(getRoot().getRootNode(),
+                            "console.log($0, $1)",
+                            new String[] { "Lorem", "Ipsum" },
+                            new int[] { 1, 2 });
+                });
+            }
+        });
+
     }
 
 }
