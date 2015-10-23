@@ -146,7 +146,8 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
         EventListener mockListener2 = EasyMock.createMock(listenerClass);
         DOMEventForwarder[] noDOMForwarders = new DOMEventForwarder[] {};
         DOMEventForwarder[] oneDOMForwarder = new DOMEventForwarder[] {
-                new DOMEventForwarder(eventClass, (HasEventRouter) c) };
+                new DOMEventForwarder(eventClass, c.getElement(),
+                        (HasEventRouter) c) };
 
         // Verify we start from no listeners
         verifyDOMListeners(c, eventClass, noDOMForwarders);

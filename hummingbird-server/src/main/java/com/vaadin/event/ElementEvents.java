@@ -24,12 +24,14 @@ public class ElementEvents {
             implements DomEventListener {
 
         private Class<E> eventType;
-        private HasElement hasElementAndEventRouter;
+        private Element element;
+        private HasEventRouter hasEventRouter;
 
-        public <T extends EventObject, C extends HasEventRouter & HasElement> DOMEventForwarder(
-                Class<E> eventType, C component) {
+        public <T extends EventObject> DOMEventForwarder(Class<E> eventType,
+                Element element, HasEventRouter hasEventRouter) {
             this.eventType = eventType;
-            this.hasElementAndEventRouter = component;
+            this.element = element;
+            this.hasEventRouter = hasEventRouter;
         }
 
         @Override
@@ -39,18 +41,15 @@ public class ElementEvents {
             E eventObject = createEventObject();
 
             populateEvent(eventObject, eventData);
-            ((HasEventRouter) hasElementAndEventRouter).getEventRouter()
-                    .fireEvent(eventObject);
+            hasEventRouter.getEventRouter().fireEvent(eventObject);
         }
 
         private E createEventObject() {
             for (Constructor<?> c : eventType.getConstructors()) {
-                if (c.getParameterCount() == 1
-                        && c.getParameterTypes()[0].isAssignableFrom(
-                                hasElementAndEventRouter.getClass())) {
+                if (c.getParameterCount() == 1 && c.getParameterTypes()[0]
+                        .isAssignableFrom(hasEventRouter.getClass())) {
                     try {
-                        return eventType
-                                .cast(c.newInstance(hasElementAndEventRouter));
+                        return eventType.cast(c.newInstance(hasEventRouter));
                     } catch (InstantiationException | IllegalAccessException
                             | IllegalArgumentException
                             | InvocationTargetException e) {
@@ -64,8 +63,7 @@ public class ElementEvents {
             throw new RuntimeException(
                     "Unable to create event of type " + eventType.getName()
                             + ". No constructor accepting the event source of type "
-                            + hasElementAndEventRouter.getClass().getName()
-                            + " found.");
+                            + hasEventRouter.getClass().getName() + " found.");
         }
 
         private void populateEvent(E eventObject, JsonObject eventData) {
@@ -97,9 +95,9 @@ public class ElementEvents {
             }
 
             DOMEventForwarder<?> other = (DOMEventForwarder<?>) obj;
-            return hasElementAndEventRouter
-                    .equals(other.hasElementAndEventRouter)
-                    && eventType.equals(other.eventType);
+            return eventType.equals(other.eventType)
+                    && hasEventRouter.equals(other.hasEventRouter)
+                    && element.equals(other.element);
         }
 
     }
@@ -115,16 +113,32 @@ public class ElementEvents {
     public static <T extends EventObject, HasElementAndEvents extends HasEventRouter & HasElement> void addElementListener(
             HasElementAndEvents hasElementAndEvents, Class<T> eventType,
             java.util.EventListener listener) {
+        addElementListener(hasElementAndEvents.getElement(),
+                hasElementAndEvents, eventType, listener);
+    }
 
-        if (!hasElementAndEvents.getEventRouter().hasListeners(eventType)) {
-            addForwarder(hasElementAndEvents, eventType);
+    /**
+     * Adds a listener for the event specified by {@code eventType}, mapped to a
+     * DOM event using the {@link EventType} annotation
+     *
+     * @param hasElementAndEvents
+     * @param eventType
+     * @param listener
+     */
+    public static <T extends EventObject> void addElementListener(
+            Element element, HasEventRouter hasEventRouter, Class<T> eventType,
+            java.util.EventListener listener) {
+
+        if (!hasEventRouter.getEventRouter().hasListeners(eventType)) {
+            addForwarder(element, hasEventRouter, eventType);
         }
 
-        hasElementAndEvents.getEventRouter().addListener(eventType, listener);
+        hasEventRouter.getEventRouter().addListener(eventType, listener);
     }
 
     private static <C extends HasEventRouter & HasElement, E extends EventObject> void addForwarder(
-            C component, Class<E> eventType) {
+            Element element, HasEventRouter hasEventRouter,
+            Class<E> eventType) {
         if (eventType.getEnclosingClass() != null
                 && !Modifier.isStatic(eventType.getModifiers())) {
             // Non static inner class
@@ -134,13 +148,11 @@ public class ElementEvents {
                             + " is a non-static inner class");
         }
 
-        Element element = component.getElement();
-
         String domEventType = getDomEventType(eventType);
         element.addEventData(domEventType, getDomEventData(eventType));
 
         element.addEventListener(domEventType,
-                new DOMEventForwarder<E>(eventType, component));
+                new DOMEventForwarder<E>(eventType, element, hasEventRouter));
     }
 
     private static String[] getDomEventData(
@@ -198,8 +210,8 @@ public class ElementEvents {
             HasElementAndEvents hasElementAndEvents,
             Class<? extends EventObject> eventType) {
         hasElementAndEvents.getElement().removeEventListener(
-                getDomEventType(eventType),
-                new DOMEventForwarder(eventType, hasElementAndEvents));
+                getDomEventType(eventType), new DOMEventForwarder(eventType,
+                        hasElementAndEvents.getElement(), hasElementAndEvents));
 
     }
 
