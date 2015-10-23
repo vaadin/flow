@@ -79,7 +79,6 @@
 	};
 	cache.prototype.set = function(index, data) {
 		window.console.log("set(", index, data.length, ")");
-		debugger;
 		if (this.first == -1) {
 			// Empty cache
 			this.first = index;
@@ -178,7 +177,6 @@
 				}
 
 				window.console.log("grid requests ", req.index, req.count);
-				debugger;
 				var sortorder = "";
 				if (req.sortOrder) {
 					req.sortOrder.forEach(function(f) {
@@ -235,7 +233,6 @@
 				delete ds.callbacks[id];
 			},
 			"insertRows" : function(index, rows) {
-				debugger;
 				ds.cache.insert(index, rows);
 				ds.totalSize += rows.length;
 				// If (rowIsInGridCache)
