@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.annotations.JavaScriptModule;
 import com.vaadin.data.Container;
 import com.vaadin.data.Container.Indexed;
 import com.vaadin.data.Container.Indexed.ItemAddEvent;
@@ -39,15 +40,13 @@ import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.Property.ValueChangeNotifier;
-import com.vaadin.server.ClientConnector;
+import com.vaadin.data.sort.SortOrder;
+import com.vaadin.hummingbird.kernel.DomEventListener;
+import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.KeyMapper;
-import com.vaadin.shared.data.DataProviderRpc;
-import com.vaadin.shared.ui.grid.GridClientRpc;
+import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.shared.ui.grid.GridState;
-import com.vaadin.shared.ui.grid.Range;
 import com.vaadin.ui.Grid.Column;
-import com.vaadin.ui.Grid.DetailsGenerator;
-import com.vaadin.ui.Grid.RowReference;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -55,15 +54,15 @@ import elemental.json.JsonObject;
 
 /**
  * Provides Vaadin server-side container data source to a
- * {@link com.vaadin.client.ui.grid.GridConnector}. This is currently
- * implemented as an Extension hardcoded to support a specific connector type.
- * This will be changed once framework support for something more flexible has
- * been implemented.
+ * {@link com.vaadin.client.ui.grid.GridConnector}.
  *
  * @since 7.4
  * @author Vaadin Ltd
  */
 public class GridJSDataProvider {
+
+    private Indexed container;
+    private final ActiveItemHandler activeItemHandler = new ActiveItemHandler();
 
     /**
      * Class for keeping track of current items and ValueChangeListeners.
@@ -71,7 +70,6 @@ public class GridJSDataProvider {
      * @since 7.6
      */
     private class ActiveItemHandler implements Serializable, DataGenerator {
-
         private final Map<Object, GridValueChangeListener> activeItemMap = new HashMap<Object, GridValueChangeListener>();
         private final KeyMapper<Object> keyMapper = new KeyMapper<Object>();
         private final Set<Object> droppedItems = new HashSet<Object>();
@@ -145,6 +143,16 @@ public class GridJSDataProvider {
             rowData.put(GridState.JSONKEY_ROWKEY, keyMapper.key(itemId));
         }
 
+        public void clear() {
+            for (GridValueChangeListener l : getValueChangeListeners()) {
+                l.removeListener();
+            }
+
+            activeItemMap.clear();
+            keyMapper.removeAll();
+            droppedItems.clear();
+
+        }
     }
 
     /**
@@ -177,8 +185,7 @@ public class GridJSDataProvider {
             assert itemId != null : "null itemId not accepted";
             this.itemId = itemId;
             this.item = item;
-
-            internalAddColumns(getGrid().getColumns());
+            internalAddColumns(grid.getColumns());
         }
 
         @Override
@@ -187,7 +194,7 @@ public class GridJSDataProvider {
         }
 
         public void removeListener() {
-            removeColumns(getGrid().getColumns());
+            removeColumns(grid.getColumns());
         }
 
         public void addColumns(Collection<Column> addedColumns) {
@@ -217,162 +224,6 @@ public class GridJSDataProvider {
             }
         }
     }
-
-    /**
-     * A class that makes detail component related internal communication
-     * possible between {@link GridJSDataProvider} and grid.
-     *
-     * @since 7.5.0
-     * @author Vaadin Ltd
-     */
-    // TODO this should probably be a static nested class
-    public final class DetailComponentManager implements DataGenerator {
-        /**
-         * This map represents all the components that have been requested for
-         * each item id.
-         * <p>
-         * Normally this map is consistent with what is displayed in the
-         * component hierarchy (and thus the DOM). The only time this map is out
-         * of sync with the DOM is between the any calls to
-         * {@link #createDetails(Object)} or {@link #destroyDetails(Object)},
-         * and {@link GridClientRpc#setDetailsConnectorChanges(Set)}.
-         * <p>
-         * This is easily checked: if {@link #unattachedComponents} is
-         * {@link Collection#isEmpty() empty}, then this field is consistent
-         * with the connector hierarchy.
-         */
-        private final Map<Object, Component> visibleDetailsComponents = new HashMap<>();
-
-        /**
-         * Keeps tabs on all the details that did not get a component during
-         * {@link #createDetails(Object)}.
-         */
-        private final Set<Object> emptyDetails = new HashSet<>();
-
-        private Grid grid;
-
-        /**
-         * Creates a details component by the request of the client side, with
-         * the help of the user-defined {@link DetailsGenerator}.
-         * <p>
-         * Also keeps internal bookkeeping up to date.
-         *
-         * @param itemId
-         *            the item id for which to create the details component.
-         *            Assumed not <code>null</code> and that a component is not
-         *            currently present for this item previously
-         * @throws IllegalStateException
-         *             if the current details generator provides a component
-         *             that was manually attached, or if the same instance has
-         *             already been provided
-         */
-        public void createDetails(Object itemId) throws IllegalStateException {
-            assert itemId != null : "itemId was null";
-
-            if (visibleDetailsComponents.containsKey(itemId)
-                    || emptyDetails.contains(itemId)) {
-                // Don't overwrite existing components
-                return;
-            }
-
-            RowReference rowReference = new RowReference(grid);
-            rowReference.set(itemId);
-
-            DetailsGenerator detailsGenerator = grid.getDetailsGenerator();
-            Component details = detailsGenerator.getDetails(rowReference);
-            if (details != null) {
-                if (details.getParent() != null) {
-                    String name = detailsGenerator.getClass().getName();
-                    throw new IllegalStateException(
-                            name + " generated a details component that already "
-                                    + "was attached. (itemId: " + itemId
-                                    + ", component: " + details + ")");
-                }
-
-                visibleDetailsComponents.put(itemId, details);
-
-                details.setParent(grid);
-                grid.markAsDirty();
-
-                assert !emptyDetails.contains(itemId) : "Bookeeping thinks "
-                        + "itemId is empty even though we just created a "
-                        + "component for it (" + itemId + ")";
-            } else {
-                emptyDetails.add(itemId);
-            }
-
-        }
-
-        /**
-         * Destroys correctly a details component, by the request of the client
-         * side.
-         * <p>
-         * Also keeps internal bookkeeping up to date.
-         *
-         * @param itemId
-         *            the item id for which to destroy the details component
-         */
-        public void destroyDetails(Object itemId) {
-            emptyDetails.remove(itemId);
-
-            Component removedComponent = visibleDetailsComponents
-                    .remove(itemId);
-            if (removedComponent == null) {
-                return;
-            }
-
-            removedComponent.setParent(null);
-            grid.markAsDirty();
-        }
-
-        /**
-         * Gets all details components that are currently attached to the grid.
-         * <p>
-         * Used internally by the Grid object.
-         *
-         * @return all details components that are currently attached to the
-         *         grid
-         */
-        public Collection<Component> getComponents() {
-            Set<Component> components = new HashSet<Component>(
-                    visibleDetailsComponents.values());
-            return components;
-        }
-
-        public void refresh(Object itemId) {
-            destroyDetails(itemId);
-            createDetails(itemId);
-        }
-
-        void setGrid(Grid grid) {
-            if (this.grid != null) {
-                throw new IllegalStateException("Grid may injected only once.");
-            }
-            this.grid = grid;
-        }
-
-        /**
-         * {@inheritDoc}
-         *
-         * @since 7.6
-         */
-        @Override
-        public void generateData(Object itemId, Item item, JsonObject rowData) {
-            if (visibleDetails.contains(itemId)) {
-                // Double check to be sure details component exists.
-                detailComponentManager.createDetails(itemId);
-                Component detailsComponent = visibleDetailsComponents
-                        .get(itemId);
-                rowData.put(GridState.JSONKEY_DETAILS_VISIBLE,
-                        (detailsComponent != null
-                                ? detailsComponent.getConnectorId() : ""));
-            }
-        }
-    }
-
-    private final Indexed container;
-
-    private DataProviderRpc rpc;
 
     private final ItemSetChangeListener itemListener = new ItemSetChangeListener() {
         @Override
@@ -432,164 +283,102 @@ public class GridJSDataProvider {
                  * taking all the corner cases into account.
                  */
 
-                for (Object itemId : visibleDetails) {
-                    detailComponentManager.destroyDetails(itemId);
-                }
-
-                /* Mark as dirty to push changes in beforeClientResponse */
-                bareItemSetTriggeredSizeChange = true;
-                // markAsDirty();
+                sendAllData = true;
+                sendChangesLater();
             }
         }
     };
 
-    /** RpcDataProvider should send the current cache again. */
-    private boolean refreshCache = false;
+    private List<RowChange> rowChanges = new ArrayList<RowChange>();
 
-    /** Set of updated item ids */
-    private Set<Object> updatedItemIds = new LinkedHashSet<Object>();
+    private static abstract class RowChange {
+        private int index;
 
-    /**
-     * Queued RPC calls for adding and removing rows. Queue will be handled in
-     * {@link beforeClientResponse}
-     */
-    private List<Runnable> rowChanges = new ArrayList<Runnable>();
+        public RowChange(int index) {
+            this.index = index;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+    }
+
+    private static class InsertChange extends RowChange {
+
+        private List<?> itemIds;
+
+        public InsertChange(int index, List<?> itemIds) {
+            super(index);
+            this.itemIds = itemIds;
+        }
+
+        public List<?> getItemIds() {
+            return itemIds;
+        }
+    }
+
+    private static class RemoveChange extends RowChange {
+        private int count;
+
+        public RemoveChange(int index, int count) {
+            super(index);
+            this.count = count;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+    }
+
+    private static class UpdateChange extends RowChange {
+
+        private Object itemId;
+
+        public UpdateChange(int index, Object itemId) {
+            super(index);
+            this.itemId = itemId;
+        }
+
+        public Object getItemId() {
+            return itemId;
+        }
+
+    }
 
     /** Size possibly changed with a bare ItemSetChangeEvent */
-    private boolean bareItemSetTriggeredSizeChange = false;
-
-    /**
-     * This map represents all the details that are user-defined as visible.
-     * This does not reflect the status in the DOM.
-     */
-    // TODO this should probably be inside DetailComponentManager
-    private final Set<Object> visibleDetails = new HashSet<Object>();
-
-    private final DetailComponentManager detailComponentManager = new DetailComponentManager();
+    private boolean sendAllData = false;
 
     private final Set<DataGenerator> dataGenerators = new LinkedHashSet<DataGenerator>();
 
-    private final ActiveItemHandler activeItemHandler = new ActiveItemHandler();
+    private Grid grid;
+    private Element element;
+
+    private Runnable sendDataSource = this::sendDataSource;
+
+    private boolean initial = true;
 
     /**
      * Creates a new data provider using the given container.
      *
-     * @param container
+     * @param grid
      *            the container to make available
      */
-    public GridJSDataProvider(Indexed container) {
-        this.container = container;
-        // rpc = getRpcProxy(DataProviderRpc.class);
+    public GridJSDataProvider(Grid grid) {
+        attach(grid);
 
-        // registerRpc(new DataRequestRpc() {
-        // @Override
-        // public void requestRows(int firstRow, int numberOfRows,
-        // int firstCachedRowIndex, int cacheSize) {
-        // pushRowData(firstRow, numberOfRows, firstCachedRowIndex,
-        // cacheSize);
-        // }
-        //
-        // @Override
-        // public void dropRows(JsonArray rowKeys) {
-        // for (int i = 0; i < rowKeys.length(); ++i) {
-        // activeItemHandler.dropActiveItem(
-        // getKeyMapper().get(rowKeys.getString(i)));
-        // }
-        // }
-        // });
-
-        if (container instanceof ItemSetChangeNotifier) {
-            ((ItemSetChangeNotifier) container)
-                    .addItemSetChangeListener(itemListener);
-        }
-
-        addDataGenerator(activeItemHandler);
-        addDataGenerator(detailComponentManager);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * RpcDataProviderExtension makes all actual RPC calls from this function
-     * based on changes in the container.
-     */
-    public void beforeClientResponse(boolean initial) {
-        if (initial || bareItemSetTriggeredSizeChange) {
-            /*
-             * Push initial set of rows, assuming Grid will initially be
-             * rendered scrolled to the top and with a decent amount of rows
-             * visible. If this guess is right, initial data can be shown
-             * without a round-trip and if it's wrong, the data will simply be
-             * discarded.
-             */
-            int size = container.size();
-            rpc.resetDataAndSize(size);
-
-            int numberOfRows = Math.min(40, size);
-            pushRowData(0, numberOfRows, 0, 0);
-        } else {
-            // Only do row changes if not initial response.
-            for (Runnable r : rowChanges) {
-                r.run();
-            }
-
-            // Send current rows again if needed.
-            if (refreshCache) {
-                updatedItemIds.addAll(activeItemHandler.getActiveItemIds());
-            }
-        }
-
-        internalUpdateRows(updatedItemIds);
-
-        // Clear all changes.
-        rowChanges.clear();
-        refreshCache = false;
-        updatedItemIds.clear();
-        bareItemSetTriggeredSizeChange = false;
-
-        // super.beforeClientResponse(initial);
     }
 
     private void pushRowData(int firstRowToPush, int numberOfRows,
-            int firstCachedRowIndex, int cacheSize) {
-        Range newRange = Range.withLength(firstRowToPush, numberOfRows);
-        Range cached = Range.withLength(firstCachedRowIndex, cacheSize);
-        Range fullRange = newRange;
-        if (!cached.isEmpty()) {
-            fullRange = newRange.combineWith(cached);
-        }
+            int firstCachedRowIndex, int cacheSize, String callbackId) {
 
-        List<?> itemIds = container.getItemIds(fullRange.getStart(),
-                fullRange.length());
-
-        JsonArray rows = Json.createArray();
-
-        // Offset the index to match the wanted range.
-        int diff = 0;
-        if (!cached.isEmpty() && newRange.getStart() > cached.getStart()) {
-            diff = cached.length();
-        }
-
-        for (int i = 0; i < newRange.length()
-                && i + diff < itemIds.size(); ++i) {
-            Object itemId = itemIds.get(i + diff);
-
-            rows.set(i, getRowData(getGrid().getColumns(), itemId));
-        }
-        rpc.setRowData(firstRowToPush, rows);
+        List<?> itemIds = container.getItemIds(firstRowToPush, numberOfRows);
+        JsonArray rows = serializeItems(itemIds);
 
         activeItemHandler.addActiveItems(itemIds);
-    }
-
-    private JsonObject getRowData(Collection<Column> columns, Object itemId) {
-        Item item = container.getItem(itemId);
-
-        final JsonObject rowObject = Json.createObject();
-        for (DataGenerator dg : dataGenerators) {
-            dg.generateData(itemId, item, rowObject);
-        }
-
-        return rowObject;
+        getJS().provideRows(element, firstRowToPush, rows, container.size(),
+                callbackId);
     }
 
     /**
@@ -600,35 +389,157 @@ public class GridJSDataProvider {
      * @param columnKeys
      *            the key mapper for columns
      */
-    public void extend(Grid component) {
-        detailComponentManager.setGrid(component);
-        // super.extend(component);
+    private void attach(Grid component) {
+        resetState();
+        grid = component;
+        element = grid.getElement();
+        initial = true;
+
+        Element element = this.element;
+
+        // Listen to requests for more data
+        element.addEventData("hData", "id", "index", "count", "cacheFirst",
+                "cacheCount", "element.sortOrder");
+        element.addEventListener("hData", elementDataRequestListener);
+
+        getJS().init(element);
+        sendChangesLater();
     }
 
-    /**
-     * Adds a {@link DataGenerator} for this {@code RpcDataProviderExtension}.
-     * DataGenerators are called when sending row data to client. If given
-     * DataGenerator is already added, this method does nothing.
-     *
-     * @since 7.6
-     * @param generator
-     *            generator to add
-     */
-    public void addDataGenerator(DataGenerator generator) {
-        dataGenerators.add(generator);
+    private DomEventListener elementDataRequestListener = e -> {
+        String id = e.getString("id");
+        int index = (int) e.getNumber("index");
+        int count = (int) e.getNumber("count");
+        int cacheFirst = (int) e.getNumber("cacheFirst");
+        int cacheCount = (int) e.getNumber("cacheCount");
+        JsonArray clientSortOrder = e.getArray("element.sortOrder");
+
+        if (clientSortOrder == null) {
+            clientSortOrder = Json.createArray();
+        }
+
+        ArrayList<SortOrder> newSortOrder = new ArrayList<>();
+        for (int i = 0; i < clientSortOrder.length(); i++) {
+            JsonObject columnOrder = clientSortOrder.getObject(i);
+            int columnIndex = (int) columnOrder.getNumber("column");
+            String direction = columnOrder.getString("direction");
+
+            SortDirection directionEnum = Grid.sortDirections.get(direction);
+            if (directionEnum == null) {
+                throw new RuntimeException(
+                        "Unsupported sort direction: " + direction);
+            }
+
+            newSortOrder.add(new SortOrder(
+                    grid.getColumns().get(columnIndex).getPropertyId(),
+                    directionEnum));
+        }
+
+        if (!grid.getSortOrder().equals(newSortOrder)) {
+            grid.setSortOrder(newSortOrder);
+        }
+
+        pushRowData(index, count, cacheFirst, cacheCount, id);
+    };
+
+    private void resetState() {
+        rowChanges.clear();
+        sendAllData = false;
     }
 
-    /**
-     * Removes a {@link DataGenerator} from this
-     * {@code RpcDataProviderExtension}. If given DataGenerator is not added to
-     * this data provider, this method does nothing.
-     *
-     * @since 7.6
-     * @param generator
-     *            generator to remove
-     */
-    public void removeDataGenerator(DataGenerator generator) {
-        dataGenerators.remove(generator);
+    private void sendChangesLater() {
+        element.runBeforeNextClientResponse(sendDataSource);
+    }
+
+    private void sendDataSource() {
+        if (initial || sendAllData) {
+            /*
+             * Push initial set of rows, assuming Grid will initially be
+             * rendered scrolled to the top and with a decent amount of rows
+             * visible. If this guess is right, initial data can be shown
+             * without a round-trip and if it's wrong, the data will simply be
+             * discarded.
+             */
+            int datasourceSize = container.size();
+            getJS().invalidateCache(element, datasourceSize);
+            pushRowData(0, Math.min(50, datasourceSize), 0, 0, null);
+        } else {
+            Set<Object> insertedIds = new HashSet<>();
+            // Send updates
+            for (RowChange r : rowChanges) {
+                if (r instanceof InsertChange) {
+                    InsertChange ic = (InsertChange) r;
+                    JsonArray data = Json.createArray();
+
+                    for (Object itemId : ic.getItemIds()) {
+                        JsonArray row = null;
+                        if (container.containsId(itemId)) {
+                            row = serializeItem(itemId);
+                        }
+                        data.set(data.length(), row);
+                    }
+                    getJS().insertRows(element, ic.getIndex(), data);
+                    insertedIds.addAll(ic.getItemIds());
+                } else if (r instanceof RemoveChange) {
+                    RemoveChange rc = (RemoveChange) r;
+                    getJS().removeRows(element, rc.getIndex(), rc.getCount());
+                } else if (r instanceof UpdateChange) {
+                    UpdateChange uc = (UpdateChange) r;
+                    JsonArray row = serializeItem(uc.getItemId());
+                    getJS().updateRow(element, uc.getIndex(), row);
+                }
+            }
+            activeItemHandler.addActiveItems(insertedIds);
+
+        }
+
+        // Clear all changes.
+        resetState();
+        initial = false;
+    }
+
+    private JsonArray serializeItems(List<?> itemIds) {
+        JsonArray rows = Json.createArray();
+        for (Object itemId : itemIds) {
+            JsonArray row = serializeItem(itemId);
+            rows.set(rows.length(), row);
+        }
+        return rows;
+    }
+
+    private JsonArray serializeItem(Object itemId) {
+        Item item = container.getItem(itemId);
+
+        JsonArray row = Json.createArray();
+        for (Column column : grid.getColumns()) {
+            Object value = item.getItemProperty(column.getPropertyId())
+                    .getValue();
+            row.set(row.length(), String.valueOf(value));
+        }
+        return row;
+    }
+
+    @JavaScriptModule("Grid.js")
+    public interface JS {
+        public void init(Element context);
+
+        public void updateRow(Element element, int index, JsonArray rows);
+
+        public void provideRows(Element context, int firstIndex, JsonArray rows,
+                int totalSize, String id);
+
+        public void provideRows(Element context, int firstIndex, JsonArray rows,
+                int totalSize);
+
+        public void invalidateCache(Element context, int containerSize);
+
+        public void insertRows(Element context, int index, JsonArray rows);
+
+        public void removeRows(Element context, int index, int count);
+    }
+
+    private JS getJS() {
+        return com.vaadin.ui.JS.get(JS.class, element);
     }
 
     /**
@@ -641,22 +552,20 @@ public class GridJSDataProvider {
      *            the number of rows inserted at <code>index</code>
      */
     private void insertRowData(final int index, final int count) {
-        if (rowChanges.isEmpty()) {
-            // markAsDirty();
+        if (sendAllData) {
+            // Don't bother, the changes will be ignored anyway
+            return;
         }
-
         /*
          * Since all changes should be processed in a consistent order, we don't
          * send the RPC call immediately. beforeClientResponse will decide
          * whether to send these or not. Valid situation to not send these is
          * initial response or bare ItemSetChange event.
          */
-        rowChanges.add(new Runnable() {
-            @Override
-            public void run() {
-                rpc.insertRowData(index, count);
-            }
-        });
+
+        List<?> itemIds = new ArrayList(container.getItemIds(index, count));
+        rowChanges.add(new InsertChange(index, itemIds));
+        sendChangesLater();
     }
 
     /**
@@ -670,17 +579,13 @@ public class GridJSDataProvider {
      *            the item id of the first removed item
      */
     private void removeRowData(final int index, final int count) {
-        if (rowChanges.isEmpty()) {
-            // markAsDirty();
+        if (sendAllData) {
+            // Don't bother, the changes will be ignored anyway
+            return;
         }
 
-        /* See comment in insertRowData */
-        rowChanges.add(new Runnable() {
-            @Override
-            public void run() {
-                rpc.removeRowData(index, count);
-            }
-        });
+        rowChanges.add(new RemoveChange(index, count));
+        sendChangesLater();
     }
 
     /**
@@ -691,165 +596,39 @@ public class GridJSDataProvider {
      *            the item Id the row that was updated
      */
     public void updateRowData(Object itemId) {
-        if (updatedItemIds.isEmpty()) {
-            // At least one new item will be updated. Mark as dirty to actually
-            // update before response to client.
-            // markAsDirty();
-        }
-
-        updatedItemIds.add(itemId);
-    }
-
-    private void internalUpdateRows(Set<Object> itemIds) {
-        if (itemIds.isEmpty()) {
-            return;
-        }
-
-        JsonArray rowData = Json.createArray();
-        int i = 0;
-        for (Object itemId : itemIds) {
-            if (activeItemHandler.getActiveItemIds().contains(itemId)) {
-                JsonObject row = getRowData(getGrid().getColumns(), itemId);
-                rowData.set(i++, row);
-            }
-        }
-        // rpc.updateRowData(rowData);
+        rowChanges.add(new UpdateChange(container.indexOfId(itemId), itemId));
+        sendChangesLater();
     }
 
     /**
      * Pushes a new version of all the rows in the active cache range.
      */
     public void refreshCache() {
-        if (!refreshCache) {
-            refreshCache = true;
-            // markAsDirty();
+        if (!sendAllData) {
+            sendAllData = true;
+            sendChangesLater();
         }
     }
 
-    public void setParent(ClientConnector parent) {
-        if (parent == null) {
+    public void setContainer(Indexed container) {
+        if (this.container != null) {
             // We're being detached, release various listeners
-            activeItemHandler.internalDropActiveItems(
-                    activeItemHandler.getActiveItemIds());
-
             if (container instanceof ItemSetChangeNotifier) {
                 ((ItemSetChangeNotifier) container)
                         .removeItemSetChangeListener(itemListener);
             }
 
-        } else if (!(parent instanceof Grid)) {
-            throw new IllegalStateException(
-                    "Grid is the only accepted parent type");
-        }
-        // super.setParent(parent);
-    }
-
-    /**
-     * Informs this data provider that given columns have been removed from
-     * grid.
-     *
-     * @param removedColumns
-     *            a list of removed columns
-     */
-    public void columnsRemoved(List<Column> removedColumns) {
-        for (GridValueChangeListener l : activeItemHandler
-                .getValueChangeListeners()) {
-            l.removeColumns(removedColumns);
+            activeItemHandler.clear();
         }
 
-        // No need to resend unchanged data. Client will remember the old
-        // columns until next set of rows is sent.
-    }
-
-    /**
-     * Informs this data provider that given columns have been added to grid.
-     *
-     * @param addedColumns
-     *            a list of added columns
-     */
-    public void columnsAdded(List<Column> addedColumns) {
-        for (GridValueChangeListener l : activeItemHandler
-                .getValueChangeListeners()) {
-            l.addColumns(addedColumns);
+        this.container = container;
+        if (container instanceof ItemSetChangeNotifier) {
+            ((ItemSetChangeNotifier) container)
+                    .addItemSetChangeListener(itemListener);
         }
 
-        // Resend all rows to contain new data.
+        resetState();
         refreshCache();
     }
 
-    public KeyMapper<Object> getKeyMapper() {
-        return activeItemHandler.keyMapper;
-    }
-
-    protected Grid getGrid() {
-        // return (Grid) getParent();
-        return null;
-    }
-
-    /**
-     * Marks a row's details to be visible or hidden.
-     * <p>
-     * If that row is currently in the client side's cache, this information
-     * will be sent over to the client.
-     *
-     * @since 7.5.0
-     * @param itemId
-     *            the id of the item of which to change the details visibility
-     * @param visible
-     *            <code>true</code> to show the details, <code>false</code> to
-     *            hide
-     */
-    public void setDetailsVisible(Object itemId, boolean visible) {
-        if (visible) {
-            visibleDetails.add(itemId);
-
-            /*
-             * This might be an issue with a huge number of open rows, but as of
-             * now this works in most of the cases.
-             */
-            detailComponentManager.createDetails(itemId);
-        } else {
-            visibleDetails.remove(itemId);
-
-            detailComponentManager.destroyDetails(itemId);
-        }
-
-        updateRowData(itemId);
-    }
-
-    /**
-     * Checks whether the details for a row is marked as visible.
-     *
-     * @since 7.5.0
-     * @param itemId
-     *            the id of the item of which to check the visibility
-     * @return <code>true</code> iff the detials are visible for the item. This
-     *         might return <code>true</code> even if the row is not currently
-     *         visible in the DOM
-     */
-    public boolean isDetailsVisible(Object itemId) {
-        return visibleDetails.contains(itemId);
-    }
-
-    /**
-     * Refreshes all visible detail sections.
-     *
-     * @since 7.5.0
-     */
-    public void refreshDetails() {
-        for (Object itemId : new HashSet<>(visibleDetails)) {
-            detailComponentManager.refresh(itemId);
-            updateRowData(itemId);
-        }
-    }
-
-    /**
-     * Gets the detail component manager for this data provider
-     *
-     * @since 7.5.0
-     * @return the detail component manager
-     */
-    public DetailComponentManager getDetailComponentManager() {
-        return detailComponentManager;
-    }
 }

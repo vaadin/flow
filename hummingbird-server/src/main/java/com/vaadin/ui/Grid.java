@@ -40,7 +40,6 @@ import java.util.logging.Logger;
 import com.vaadin.annotations.Bower;
 import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.JavaScriptModule;
 import com.vaadin.annotations.Tag;
 import com.vaadin.data.Container;
 import com.vaadin.data.Container.Indexed;
@@ -75,14 +74,12 @@ import com.vaadin.event.SortEvent;
 import com.vaadin.event.SortEvent.SortListener;
 import com.vaadin.event.SortEvent.SortNotifier;
 import com.vaadin.hummingbird.kernel.DomEventListener;
-import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.server.EncodeResult;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.server.JsonCodec;
 import com.vaadin.server.KeyMapper;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.shared.ui.grid.EditorClientRpc;
 import com.vaadin.shared.ui.grid.EditorServerRpc;
@@ -100,8 +97,6 @@ import com.vaadin.shared.ui.grid.ScrollDestination;
 import com.vaadin.shared.ui.grid.selection.MultiSelectionModelState;
 import com.vaadin.shared.ui.grid.selection.SingleSelectionModelState;
 import com.vaadin.shared.util.SharedUtil;
-import com.vaadin.ui.Grid.SelectionModel;
-import com.vaadin.ui.GridJSDataProvider.DetailComponentManager;
 import com.vaadin.ui.renderers.Renderer;
 import com.vaadin.ui.renderers.TextRenderer;
 import com.vaadin.util.ReflectTools;
@@ -259,42 +254,6 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         public boolean isUserOriginated() {
             return userOriginated;
         }
-    }
-
-    /**
-     * A callback interface for generating details for a particular row in Grid.
-     *
-     * @since 7.5.0
-     * @author Vaadin Ltd
-     * @see DetailsGenerator#NULL
-     */
-    public interface DetailsGenerator extends Serializable {
-
-        /** A details generator that provides no details */
-        public DetailsGenerator NULL = new DetailsGenerator() {
-            @Override
-            public Component getDetails(RowReference rowReference) {
-                return null;
-            }
-        };
-
-        /**
-         * This method is called for whenever a new details row needs to be
-         * generated.
-         * <p>
-         * <em>Note:</em> If a component gets generated, it may not be manually
-         * attached anywhere, nor may it be a reused instance &ndash; each
-         * invocation of this method should produce a unique and isolated
-         * component instance. Essentially, this should mostly be a
-         * self-contained fire-and-forget method, as external references to the
-         * generated component might cause unexpected behavior.
-         *
-         * @param rowReference
-         *            the reference for the row for which to generate details
-         * @return the details for the given row, or <code>null</code> to leave
-         *         the details empty.
-         */
-        Component getDetails(RowReference rowReference);
     }
 
     /**
@@ -1060,10 +1019,10 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             }
         }
 
-        @Override
-        protected Object getItemId(String rowKey) {
-            return rowKey != null ? super.getItemId(rowKey) : null;
-        }
+        // @Override
+        // protected Object getItemId(String rowKey) {
+        // return rowKey != null ? super.getItemId(rowKey) : null;
+        // }
     }
 
     /**
@@ -3547,20 +3506,20 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             // super.remove();
         }
 
-        /**
-         * Gets the item id for a row key.
-         * <p>
-         * A key is used to identify a particular row on both a server and a
-         * client. This method can be used to get the item id for the row key
-         * that the client has sent.
-         *
-         * @param rowKey
-         *            the row key for which to retrieve an item id
-         * @return the item id corresponding to {@code key}
-         */
-        protected Object getItemId(String rowKey) {
-            return getParent().getKeyMapper().get(rowKey);
-        }
+        // /**
+        // * Gets the item id for a row key.
+        // * <p>
+        // * A key is used to identify a particular row on both a server and a
+        // * client. This method can be used to get the item id for the row key
+        // * that the client has sent.
+        // *
+        // * @param rowKey
+        // * the row key for which to retrieve an item id
+        // * @return the item id corresponding to {@code key}
+        // */
+        // protected Object getItemId(String rowKey) {
+        // return getParent().getKeyMapper().get(rowKey);
+        // }
 
         /**
          * Gets the column for a column id.
@@ -3612,7 +3571,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         }
     }
 
-    private static final Map<String, SortDirection> sortDirections = new HashMap<>();
+    public static final Map<String, SortDirection> sortDirections = new HashMap<>();
 
     static {
         sortDirections.put("asc", SortDirection.ASCENDING);
@@ -3663,7 +3622,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                 internalRemoveColumn(propertyId);
                 columnKeys.remove(propertyId);
             }
-            datasourceExtension.columnsRemoved(removedColumns);
+            // datasourceExtension.columnsRemoved(removedColumns);
 
             // Add new columns
             List<Column> addedColumns = new LinkedList<Column>();
@@ -3672,7 +3631,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                     addedColumns.add(appendColumn(propertyId));
                 }
             }
-            datasourceExtension.columnsAdded(addedColumns);
+            // datasourceExtension.columnsAdded(addedColumns);
 
             if (getFrozenColumnCount() > columns.size()) {
                 setFrozenColumnCount(columns.size());
@@ -3700,7 +3659,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         }
     };
 
-    private GridJSDataProvider datasourceExtension;
+    private GridJSDataProvider dataProvider;
 
     /**
      * The selection model that is currently in use. Never <code>null</code>
@@ -3739,17 +3698,6 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
     private boolean defaultContainer = true;
 
     private EditorErrorHandler editorErrorHandler = new DefaultEditorErrorHandler();
-
-    /**
-     * The user-defined details generator.
-     *
-     * @see #setDetailsGenerator(DetailsGenerator)
-     */
-    private DetailsGenerator detailsGenerator = DetailsGenerator.NULL;
-
-    private DetailComponentManager detailComponentManager = null;
-
-    private Runnable sendDataSource = this::sendDataSource;
 
     private final DomEventListener selectionDomListener = new DomEventListener() {
         @Override
@@ -3871,15 +3819,15 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                 }
             }
 
-            @Override
-            public void itemClick(String rowKey, String columnId,
-                    MouseEventDetails details) {
-                Object itemId = getKeyMapper().get(rowKey);
-                Item item = datasource.getItem(itemId);
-                Object propertyId = getPropertyIdByColumnId(columnId);
-                fireEvent(new ItemClickEvent(Grid.this, item, itemId,
-                        propertyId, details));
-            }
+            // @Override
+            // public void itemClick(String rowKey, String columnId,
+            // MouseEventDetails details) {
+            // Object itemId = getKeyMapper().get(rowKey);
+            // Item item = datasource.getItem(itemId);
+            // Object propertyId = getPropertyIdByColumnId(columnId);
+            // fireEvent(new ItemClickEvent(Grid.this, item, itemId,
+            // propertyId, details));
+            // }
 
             @Override
             public void columnsReordered(List<String> newColumnOrder,
@@ -3961,23 +3909,23 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                 }
             }
 
-            @Override
-            public void editorOpen(String rowKey) {
-                fireEvent(new EditorOpenEvent(Grid.this,
-                        getKeyMapper().get(rowKey)));
-            }
-
-            @Override
-            public void editorMove(String rowKey) {
-                fireEvent(new EditorMoveEvent(Grid.this,
-                        getKeyMapper().get(rowKey)));
-            }
-
-            @Override
-            public void editorClose(String rowKey) {
-                fireEvent(new EditorCloseEvent(Grid.this,
-                        getKeyMapper().get(rowKey)));
-            }
+            // @Override
+            // public void editorOpen(String rowKey) {
+            // fireEvent(new EditorOpenEvent(Grid.this,
+            // getKeyMapper().get(rowKey)));
+            // }
+            //
+            // @Override
+            // public void editorMove(String rowKey) {
+            // fireEvent(new EditorMoveEvent(Grid.this,
+            // getKeyMapper().get(rowKey)));
+            // }
+            //
+            // @Override
+            // public void editorClose(String rowKey) {
+            // fireEvent(new EditorCloseEvent(Grid.this,
+            // getKeyMapper().get(rowKey)));
+            // }
         });
 
         registerRpc(new EditorServerRpc() {
@@ -4071,68 +4019,14 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
     @Override
     protected void init() {
         super.init();
-        // Listen to requests for more data
-        getElement().addEventData("hData", "id", "index", "count",
-                "element.sortOrder");
-        getElement().addEventListener("hData", e -> {
-            String id = e.getString("id");
-            int index = (int) e.getNumber("index");
-            int count = (int) e.getNumber("count");
-            JsonArray clientSortOrder = e.getArray("element.sortOrder");
 
-            if (clientSortOrder == null) {
-                clientSortOrder = Json.createArray();
-            }
+        // Always listen to selection events so selection on server is up to
+        // date
+        getElement().addEventData("hSelect", "selection");
+        getElement().addEventListener("hSelect", selectionDomListener);
 
-            ArrayList<SortOrder> newSortOrder = new ArrayList<>();
-            for (int i = 0; i < clientSortOrder.length(); i++) {
-                JsonObject columnOrder = clientSortOrder.getObject(i);
-                int columnIndex = (int) columnOrder.getNumber("column");
-                String direction = columnOrder.getString("direction");
-
-                SortDirection directionEnum = sortDirections.get(direction);
-                if (directionEnum == null) {
-                    throw new RuntimeException(
-                            "Unsupported sort direction: " + direction);
-                }
-
-                newSortOrder.add(new SortOrder(
-                        getColumns().get(columnIndex).getPropertyId(),
-                        directionEnum));
-            }
-
-            if (!sortOrder.equals(newSortOrder)) {
-                setSortOrder(newSortOrder);
-            }
-
-            JsonArray rows = serializeData(index, count);
-
-            Indexed container = getContainerDataSource();
-            getJS(JS.class).provideRows(getElement(), id, rows,
-                    container.size());
-        });
-
-        getJS(JS.class).init(getElement());
-
-    }
-
-    private JsonArray serializeData(int index, int count) {
-        Indexed container = getContainerDataSource();
-
-        JsonArray rows = Json.createArray();
-
-        for (Object itemId : container.getItemIds(index, count)) {
-            Item item = container.getItem(itemId);
-
-            JsonArray row = Json.createArray();
-            for (Column column : getColumns()) {
-                Object value = item.getItemProperty(column.getPropertyId())
-                        .getValue();
-                row.set(row.length(), String.valueOf(value));
-            }
-            rows.set(rows.length(), row);
-        }
-        return rows;
+        dataProvider = new GridJSDataProvider(this);
+        dataProvider.setContainer(getContainerDataSource());
     }
 
     @Override
@@ -4188,11 +4082,12 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                     .removePropertySetChangeListener(propertyListener);
         }
 
-        if (datasourceExtension != null) {
-            // removeExtension(datasourceExtension);
-        }
-
         resetEditor();
+        // Remove old container to allow data provider to remove listeners while
+        // the old properties still exist in this grid
+        if (dataProvider != null) {
+            dataProvider.setContainer(null);
+        }
 
         datasource = container;
 
@@ -4223,12 +4118,9 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             sortOrder.clear();
         }
 
-        datasourceExtension = new GridJSDataProvider(container);
-        datasourceExtension.extend(this);
-        datasourceExtension.addDataGenerator(new RowDataGenerator());
-
-        detailComponentManager = datasourceExtension
-                .getDetailComponentManager();
+        if (dataProvider != null) {
+            dataProvider.setContainer(container);
+        }
 
         /*
          * selectionModel == null when the invocation comes from the
@@ -4286,14 +4178,6 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             }
         }
 
-        getElement().runBeforeNextClientResponse(sendDataSource);
-    }
-
-    private void sendDataSource() {
-        int datasourceSize = datasource.size();
-        JsonArray initialRows = serializeData(0, Math.max(50, datasourceSize));
-        getJS(JS.class).resetDataSource(getElement(), initialRows,
-                datasourceSize);
     }
 
     /**
@@ -4369,7 +4253,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         Column column = getColumn(propertyId);
         List<Column> addedColumns = new ArrayList<Column>();
         addedColumns.add(column);
-        datasourceExtension.columnsAdded(addedColumns);
+        // datasourceExtension.columnsAdded(addedColumns);
 
         return column;
     }
@@ -4437,7 +4321,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         for (Object propertyId : properties) {
             removeColumn(propertyId);
         }
-        datasourceExtension.columnsRemoved(removed);
+        // datasourceExtension.columnsRemoved(removed);
     }
 
     /**
@@ -4564,7 +4448,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         List<Column> removed = new ArrayList<Column>();
         removed.add(getColumn(propertyId));
         internalRemoveColumn(propertyId);
-        datasourceExtension.columnsRemoved(removed);
+        // datasourceExtension.columnsRemoved(removed);
     }
 
     private void internalRemoveColumn(Object propertyId) {
@@ -5087,19 +4971,12 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
     @Override
     public void addSelectionListener(SelectionListener listener) {
-        if (!hasListeners(SelectionEvent.class)) {
-            getElement().addEventData("hSelect", "selection");
-            getElement().addEventListener("hSelect", selectionDomListener);
-        }
         addListener(SelectionEvent.class, listener);
     }
 
     @Override
     public void removeSelectionListener(SelectionListener listener) {
         removeListener(SelectionEvent.class, listener);
-        if (!hasListeners(SelectionEvent.class)) {
-            getElement().removeEventListener("hSelect", selectionDomListener);
-        }
     }
 
     private void fireColumnReorderEvent(boolean userOriginated) {
@@ -5128,15 +5005,16 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         removeListener(ColumnReorderEvent.class, listener);
     }
 
-    /**
-     * Gets the {@link com.vaadin.data.GridJSDataProvider.DataProviderKeyMapper
-     * DataProviderKeyMapper} being used by the data source.
-     *
-     * @return the key mapper being used by the data source
-     */
-    KeyMapper<Object> getKeyMapper() {
-        return datasourceExtension.getKeyMapper();
-    }
+    // /**
+    // * Gets the {@link
+    // com.vaadin.data.GridJSDataProvider.DataProviderKeyMapper
+    // * DataProviderKeyMapper} being used by the data source.
+    // *
+    // * @return the key mapper being used by the data source
+    // */
+    // KeyMapper<Object> getKeyMapper() {
+    // return datasourceExtension.getKeyMapper();
+    // }
 
     /**
      * Adds a renderer to this grid's connector hierarchy.
@@ -5672,8 +5550,6 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
 
         componentList.addAll(getEditorFields());
 
-        componentList.addAll(detailComponentManager.getComponents());
-
         return componentList.iterator();
     }
 
@@ -5713,7 +5589,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         cellDescriptionGenerator = generator;
         getState().hasDescriptions = (generator != null
                 || rowDescriptionGenerator != null);
-        datasourceExtension.refreshCache();
+        dataProvider.refreshCache();
     }
 
     /**
@@ -5748,7 +5624,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
         rowDescriptionGenerator = generator;
         getState().hasDescriptions = (generator != null
                 || cellDescriptionGenerator != null);
-        datasourceExtension.refreshCache();
+        dataProvider.refreshCache();
     }
 
     /**
@@ -5772,7 +5648,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      */
     public void setCellStyleGenerator(CellStyleGenerator cellStyleGenerator) {
         this.cellStyleGenerator = cellStyleGenerator;
-        datasourceExtension.refreshCache();
+        dataProvider.refreshCache();
     }
 
     /**
@@ -5794,7 +5670,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
      */
     public void setRowStyleGenerator(RowStyleGenerator rowStyleGenerator) {
         this.rowStyleGenerator = rowStyleGenerator;
-        datasourceExtension.refreshCache();
+        dataProvider.refreshCache();
     }
 
     /**
@@ -5876,20 +5752,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             throw e;
         }
 
-        getElement().runBeforeNextClientResponse(sendDataSource);
-
         return itemId;
-    }
-
-    @JavaScriptModule("Grid.js")
-    public interface JS {
-        public void init(Element grid);
-
-        public void provideRows(Element grid, String id, JsonArray rows,
-                int totalSize);
-
-        public void resetDataSource(Element grid, JsonArray initialRows,
-                int containerSize);
     }
 
     private static Logger getLogger() {
@@ -6383,70 +6246,6 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
             boolean isUserOriginated) {
         fireEvent(new ColumnVisibilityChangeEvent(this, column, hidden,
                 isUserOriginated));
-    }
-
-    /**
-     * Sets a new details generator for row details.
-     * <p>
-     * The currently opened row details will be re-rendered.
-     *
-     * @since 7.5.0
-     * @param detailsGenerator
-     *            the details generator to set
-     * @throws IllegalArgumentException
-     *             if detailsGenerator is <code>null</code>;
-     */
-    public void setDetailsGenerator(DetailsGenerator detailsGenerator)
-            throws IllegalArgumentException {
-        if (detailsGenerator == null) {
-            throw new IllegalArgumentException(
-                    "Details generator may not be null");
-        } else if (detailsGenerator == this.detailsGenerator) {
-            return;
-        }
-
-        this.detailsGenerator = detailsGenerator;
-
-        datasourceExtension.refreshDetails();
-    }
-
-    /**
-     * Gets the current details generator for row details.
-     *
-     * @since 7.5.0
-     * @return the detailsGenerator the current details generator
-     */
-    public DetailsGenerator getDetailsGenerator() {
-        return detailsGenerator;
-    }
-
-    /**
-     * Shows or hides the details for a specific item.
-     *
-     * @since 7.5.0
-     * @param itemId
-     *            the id of the item for which to set details visibility
-     * @param visible
-     *            <code>true</code> to show the details, or <code>false</code>
-     *            to hide them
-     */
-    public void setDetailsVisible(Object itemId, boolean visible) {
-        if (DetailsGenerator.NULL.equals(detailsGenerator)) {
-            return;
-        }
-        datasourceExtension.setDetailsVisible(itemId, visible);
-    }
-
-    /**
-     * Checks whether details are visible for the given item.
-     *
-     * @since 7.5.0
-     * @param itemId
-     *            the id of the item for which to check details visibility
-     * @return <code>true</code> iff the details are visible
-     */
-    public boolean isDetailsVisible(Object itemId) {
-        return datasourceExtension.isDetailsVisible(itemId);
     }
 
     private static SelectionMode getDefaultSelectionMode() {
