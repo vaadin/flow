@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -672,4 +673,33 @@ public abstract class StateNode implements Serializable {
             pendingFlush.clear();
         }
     }
+
+    // Class used as a key to ensure the value is never sent to the client
+    private static class RunBeforeClientResponseKey {
+        // This class has intentionally been left empty
+    }
+
+    public void runBeforeNextClientResponse(Runnable runnable) {
+        @SuppressWarnings("unchecked")
+        LinkedHashSet<Runnable> pendingRunnables = get(
+                RunBeforeClientResponseKey.class, LinkedHashSet.class);
+        if (pendingRunnables == null) {
+            pendingRunnables = new LinkedHashSet<>();
+            put(RunBeforeClientResponseKey.class, pendingRunnables);
+            addChangeListener(new NodeChangeListener() {
+                @Override
+                public void onChange(StateNode stateNode,
+                        List<NodeChange> changes) {
+                    removeChangeListener(this);
+                    @SuppressWarnings("unchecked")
+                    LinkedHashSet<Runnable> pendingRunnables = (LinkedHashSet<Runnable>) remove(
+                            RunBeforeClientResponseKey.class);
+                    assert pendingRunnables != null;
+                    pendingRunnables.forEach(Runnable::run);
+                }
+            });
+        }
+        pendingRunnables.add(runnable);
+    }
+
 }
