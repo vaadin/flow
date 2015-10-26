@@ -2,6 +2,7 @@ package com.vaadin.hummingbird.kernel;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,6 +72,8 @@ public class JsonConverter {
             }
 
             return array;
+        } else if (value instanceof Date) {
+            return Json.create(((Date) value).getTime());
         } else {
             throw new RuntimeException(
                     "Can't encode value of type " + value.getClass().getName());

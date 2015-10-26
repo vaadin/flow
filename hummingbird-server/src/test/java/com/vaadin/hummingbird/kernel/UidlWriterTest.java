@@ -1,14 +1,16 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.util.Date;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.communication.TransactionLogBuilder;
 import com.vaadin.server.communication.TransactionLogJsonProducer;
 import com.vaadin.server.communication.TransactionLogOptimizer;
 import com.vaadin.ui.UI;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -114,6 +116,19 @@ public class UidlWriterTest {
 
         JsonArray json = encodeElementChanges();
         System.out.println(json);
+    }
+
+    @Test
+    public void testDateInNode() {
+        long timestamp = 1445855880l;
+        element.getNode().put("date", new Date(timestamp));
+
+        JsonArray json = encodeElementChanges();
+        Assert.assertEquals(1, json.length());
+
+        JsonObject putChange = json.getObject(0);
+        Assert.assertEquals("put", putChange.getString("type"));
+        Assert.assertEquals(timestamp, (long) putChange.getNumber("value"));
     }
 
 }
