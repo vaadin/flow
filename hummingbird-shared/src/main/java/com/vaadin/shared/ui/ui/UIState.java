@@ -64,10 +64,6 @@ public class UIState extends JavaScriptComponentState {
      */
     public LocaleServiceState localeServiceState = new LocaleServiceState();
     /**
-     * Configuration for the push channel
-     */
-    public PushConfigurationState pushConfiguration = new PushConfigurationState();
-    /**
      * Currently used theme.
      *
      * @since 7.3
@@ -101,21 +97,6 @@ public class UIState extends JavaScriptComponentState {
             this.prefix = prefix;
             this.postfix = postfix;
             notificationRole = role;
-        }
-    }
-
-    public static class PushConfigurationState implements Serializable {
-        public static final String TRANSPORT_PARAM = "transport";
-        public static final String FALLBACK_TRANSPORT_PARAM = "fallbackTransport";
-
-        public boolean alwaysUseXhrForServerRequests = false;
-        public Map<String, String> parameters = new HashMap<String, String>();
-
-        {
-            parameters.put(TRANSPORT_PARAM,
-                    Transport.WEBSOCKET.getIdentifier());
-            parameters.put(FALLBACK_TRANSPORT_PARAM,
-                    Transport.LONG_POLLING.getIdentifier());
         }
     }
 

@@ -26,11 +26,11 @@ import com.vaadin.client.ApplicationConnection.RequestStartingEvent;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingEndedEvent;
 import com.vaadin.client.Util;
 import com.vaadin.client.VLoadingIndicator;
+import com.vaadin.client.ValueMap;
 import com.vaadin.client.communication.tree.TreeNode;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
-import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -199,13 +199,10 @@ public class ServerCommunicationHandler {
      *            <code>true</code> to enable the push connection;
      *            <code>false</code> to disable the push connection.
      */
-    public void setPushEnabled(boolean enabled) {
-        final PushConfigurationState pushState = connection.getUIConnector()
-                .getState().pushConfiguration;
-
+    public void setPushEnabled(boolean enabled, ValueMap parameters) {
         if (enabled && push == null) {
             push = GWT.create(PushConnection.class);
-            push.init(connection, pushState);
+            push.init(connection, parameters);
         } else if (!enabled && push != null && push.isActive()) {
             push.disconnect(new Command() {
                 @Override
@@ -230,7 +227,11 @@ public class ServerCommunicationHandler {
                             mode = PushMode.valueOf(modeString);
                         }
                         if (mode.isEnabled()) {
-                            setPushEnabled(true);
+                            setPushEnabled(true,
+                                    (ValueMap) rootNode
+                                            .getProperty(
+                                                    "pushConfiguration.parameters")
+                                            .getValue());
                         }
                     }
 

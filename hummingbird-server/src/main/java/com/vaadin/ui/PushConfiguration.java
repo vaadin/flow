@@ -26,7 +26,6 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.Transport;
-import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 
 /**
  * Provides method for configuring the push channel.
@@ -141,210 +140,159 @@ public interface PushConfiguration extends Serializable {
      */
     public void setParameter(String parameter, String value);
 
-    /**
-     * Sets whether to force the use of XHR when sending data from the client to
-     * the server.
-     *
-     * This settings currently only has effect when using websockets, which by
-     * default send client to server requests through the websockets channel. If
-     * you need to support cookies, HTTP auth or similar features not available
-     * in websockets communication you can set this to true.
-     *
-     * @since 7.6
-     * @param alwaysUseXhrForServerRequests
-     *            true to always use XHR for server requests, false otherwise
-     */
-    public void setAlwaysUseXhrForServerRequests(
-            boolean alwaysUseXhrForServerRequests);
+    public static class PushConfigurationImpl implements PushConfiguration {
+        public static final String TRANSPORT_PARAM = "transport";
+        public static final String FALLBACK_TRANSPORT_PARAM = "fallbackTransport";
 
-    /**
-     * Checks whether to force the use of XHR when sending data from the client
-     * to the server.
-     *
-     * @see #setAlwaysUseXhrForServerRequests(boolean)
-     *
-     * @since 7.6
-     * @return true to always use XHR for server requests, false otherwise
-     */
-    public boolean isAlwaysUseXhrForServerRequests();
+        private UI ui;
+        private StateNode node;
 
-}
-
-class PushConfigurationImpl implements PushConfiguration {
-    private UI ui;
-    private StateNode node;
-
-    public PushConfigurationImpl(UI ui) {
-        this.ui = ui;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.PushConfiguration#getPushMode()
-     */
-    @Override
-    public PushMode getPushMode() {
-        PushMode mode = getNode().get("mode", PushMode.class);
-        if (mode == null) {
-            return PushMode.DEFAULT;
-        }
-        return mode;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.PushConfiguration#setPushMode(com.vaadin.shared.
-     * communication .PushMode)
-     */
-    @Override
-    public void setPushMode(PushMode pushMode) {
-        if (pushMode == null) {
-            throw new IllegalArgumentException("Push mode cannot be null");
+        public PushConfigurationImpl(UI ui) {
+            this.ui = ui;
         }
 
-        VaadinSession session = ui.getSession();
-
-        if (session == null) {
-            throw new UIDetachedException(
-                    "Cannot set the push mode for a detached UI");
-        }
-
-        assert session.hasLock();
-
-        if (pushMode.isEnabled()
-                && !session.getService().ensurePushAvailable()) {
-            throw new IllegalStateException(
-                    "Push is not available. See previous log messages for more information.");
-        }
-
-        PushMode oldMode = getPushMode();
-        if (oldMode != pushMode) {
-            getNode().put("mode", pushMode);
-
-            if (!oldMode.isEnabled() && pushMode.isEnabled()) {
-                // The push connection is initially in a disconnected state;
-                // the client will establish the connection
-                ui.setPushConnection(new AtmospherePushConnection(ui));
+        /*
+         * (non-Javadoc)
+         *
+         * @see com.vaadin.ui.PushConfiguration#getPushMode()
+         */
+        @Override
+        public PushMode getPushMode() {
+            PushMode mode = getConfigurationNode().get("mode", PushMode.class);
+            if (mode == null) {
+                return PushMode.DEFAULT;
             }
-            // Nothing to do here if disabling push;
-            // the client will close the connection
+            return mode;
         }
-    }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.PushConfiguration#getTransport()
-     */
-    @Override
-    public Transport getTransport() {
-        try {
-            return Transport.getByIdentifier(
-                    getParameter(PushConfigurationState.TRANSPORT_PARAM));
-        } catch (IllegalArgumentException e) {
-            return null;
+        /*
+         * (non-Javadoc)
+         *
+         * @see com.vaadin.ui.PushConfiguration#setPushMode(com.vaadin.shared.
+         * communication .PushMode)
+         */
+        @Override
+        public void setPushMode(PushMode pushMode) {
+            if (pushMode == null) {
+                throw new IllegalArgumentException("Push mode cannot be null");
+            }
+
+            VaadinSession session = ui.getSession();
+
+            if (session == null) {
+                throw new UIDetachedException(
+                        "Cannot set the push mode for a detached UI");
+            }
+
+            assert session.hasLock();
+
+            if (pushMode.isEnabled()
+                    && !session.getService().ensurePushAvailable()) {
+                throw new IllegalStateException(
+                        "Push is not available. See previous log messages for more information.");
+            }
+
+            PushMode oldMode = getPushMode();
+            if (oldMode != pushMode) {
+                getConfigurationNode().put("mode", pushMode);
+
+                if (!oldMode.isEnabled() && pushMode.isEnabled()) {
+                    // The push connection is initially in a disconnected state;
+                    // the client will establish the connection
+                    ui.setPushConnection(new AtmospherePushConnection(ui));
+                }
+                // Nothing to do here if disabling push;
+                // the client will close the connection
+            }
         }
-    }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.vaadin.ui.PushConfiguration#setTransport(com.vaadin.shared.ui.ui.
-     * Transport)
-     */
-    @Override
-    public void setTransport(Transport transport) {
-        setParameter(PushConfigurationState.TRANSPORT_PARAM,
-                transport.getIdentifier());
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.PushConfiguration#getFallbackTransport()
-     */
-    @Override
-    public Transport getFallbackTransport() {
-        try {
-            return Transport.valueOf(getParameter(
-                    PushConfigurationState.FALLBACK_TRANSPORT_PARAM));
-        } catch (IllegalArgumentException e) {
-            return null;
+        /*
+         * (non-Javadoc)
+         *
+         * @see com.vaadin.ui.PushConfiguration#getTransport()
+         */
+        @Override
+        public Transport getTransport() {
+            String transport = getParameter(TRANSPORT_PARAM);
+            try {
+                return Transport.getByIdentifier(transport);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
         }
-    }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.vaadin.ui.PushConfiguration#setFallbackTransport(com.vaadin.shared
-     * .ui.ui.Transport)
-     */
-    @Override
-    public void setFallbackTransport(Transport fallbackTransport) {
-        setParameter(PushConfigurationState.FALLBACK_TRANSPORT_PARAM,
-                fallbackTransport.getIdentifier());
-    }
+        /*
+         * (non-Javadoc)
+         *
+         * @see
+         * com.vaadin.ui.PushConfiguration#setTransport(com.vaadin.shared.ui.ui.
+         * Transport)
+         */
+        @Override
+        public void setTransport(Transport transport) {
+            setParameter(TRANSPORT_PARAM, transport.getIdentifier());
+        }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.PushConfiguration#getParameter(java.lang.String)
-     */
-    @Override
-    public String getParameter(String parameter) {
-        return getState(false).parameters.get(parameter);
-    }
+        /*
+         * (non-Javadoc)
+         *
+         * @see com.vaadin.ui.PushConfiguration#getFallbackTransport()
+         */
+        @Override
+        public Transport getFallbackTransport() {
+            try {
+                return Transport
+                        .valueOf(getParameter(FALLBACK_TRANSPORT_PARAM));
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.PushConfiguration#setParameter(java.lang.String,
-     * java.lang.String)
-     */
-    @Override
-    public void setParameter(String parameter, String value) {
-        getState().parameters.put(parameter, value);
+        /*
+         * (non-Javadoc)
+         *
+         * @see com.vaadin.ui.PushConfiguration#setFallbackTransport(com.vaadin.
+         * shared .ui.ui.Transport)
+         */
+        @Override
+        public void setFallbackTransport(Transport fallbackTransport) {
+            setParameter(FALLBACK_TRANSPORT_PARAM,
+                    fallbackTransport.getIdentifier());
+        }
 
-    }
+        /*
+         * (non-Javadoc)
+         *
+         * @see com.vaadin.ui.PushConfiguration#getParameter(java.lang.String)
+         */
+        @Override
+        public String getParameter(String parameter) {
+            return getConfigurationNode().get(parameter, String.class);
+        }
 
-    private StateNode getNode() {
-        if (node == null) {
-            RootNode rootNode = ui.getRoot().getRootNode();
-            node = rootNode.get("pushConfiguration", StateNode.class);
+        @Override
+        public void setParameter(String parameter, String value) {
+            getConfigurationNode().put(parameter, value);
+        }
+
+        private StateNode getConfigurationNode() {
             if (node == null) {
-                node = StateNode.create();
-                rootNode.put("pushConfiguration", node);
+                RootNode rootNode = ui.getRoot().getRootNode();
+                node = rootNode.get("pushConfiguration", StateNode.class);
+                if (node == null) {
+                    node = StateNode.create();
+                    rootNode.put("pushConfiguration", node);
+                }
             }
+            return node;
         }
-        return node;
+
+        @Override
+        public Collection<String> getParameterNames() {
+            return Collections.unmodifiableCollection(
+                    getConfigurationNode().getStringKeys());
+        }
+
     }
 
-    private PushConfigurationState getState() {
-        return ui.getState().pushConfiguration;
-    }
-
-    private PushConfigurationState getState(boolean markAsDirty) {
-        return ui.getState(markAsDirty).pushConfiguration;
-    }
-
-    @Override
-    public Collection<String> getParameterNames() {
-        return Collections
-                .unmodifiableCollection(getState(false).parameters.keySet());
-    }
-
-    @Override
-    public void setAlwaysUseXhrForServerRequests(
-            boolean alwaysUseXhrForServerRequests) {
-        getState().alwaysUseXhrForServerRequests = alwaysUseXhrForServerRequests;
-    }
-
-    @Override
-    public boolean isAlwaysUseXhrForServerRequests() {
-        return getState(false).alwaysUseXhrForServerRequests;
-    }
 }

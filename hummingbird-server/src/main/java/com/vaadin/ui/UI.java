@@ -62,6 +62,7 @@ import com.vaadin.shared.ui.ui.UIClientRpc;
 import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
 import com.vaadin.ui.Component.Focusable;
+import com.vaadin.ui.PushConfiguration.PushConfigurationImpl;
 import com.vaadin.util.ConnectorHelper;
 import com.vaadin.util.CurrentInstance;
 
@@ -1296,7 +1297,7 @@ public abstract class UI extends CssLayout
      *         not available.
      */
     public PushConnection getPushConnection() {
-        assert!(getPushConfiguration().getPushMode().isEnabled()
+        assert !(getPushConfiguration().getPushMode().isEnabled()
                 && pushConnection == null);
         return pushConnection;
     }
@@ -1314,7 +1315,7 @@ public abstract class UI extends CssLayout
     public void setPushConnection(PushConnection pushConnection) {
         // If pushMode is disabled then there should never be a pushConnection;
         // if enabled there should always be
-        assert(pushConnection == null)
+        assert (pushConnection == null)
                 ^ getPushConfiguration().getPushMode().isEnabled();
 
         if (pushConnection == this.pushConnection) {

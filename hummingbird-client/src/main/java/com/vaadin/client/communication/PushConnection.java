@@ -18,7 +18,7 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.user.client.Command;
 import com.vaadin.client.ApplicationConnection;
-import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
+import com.vaadin.client.ValueMap;
 
 import elemental.json.JsonObject;
 
@@ -40,8 +40,7 @@ public interface PushConnection {
      * @param connection
      *            The ApplicationConnection
      */
-    public void init(ApplicationConnection connection,
-            PushConfigurationState pushConfigurationState);
+    public void init(ApplicationConnection connection, ValueMap parameters);
 
     /**
      * Pushes a message to the server. Will throw an exception if the connection

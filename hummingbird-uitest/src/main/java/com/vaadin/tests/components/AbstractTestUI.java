@@ -5,11 +5,11 @@ import com.vaadin.server.WebBrowser;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.shared.ui.ui.Transport;
-import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.PushConfiguration;
+import com.vaadin.ui.PushConfiguration.PushConfigurationImpl;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
@@ -70,7 +70,7 @@ public abstract class AbstractTestUI extends UI {
         config.setTransport(transport);
         // Ensure no fallback is used
         getPushConfiguration().setParameter(
-                PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
+                PushConfigurationImpl.FALLBACK_TRANSPORT_PARAM, "none");
     }
 
     /**

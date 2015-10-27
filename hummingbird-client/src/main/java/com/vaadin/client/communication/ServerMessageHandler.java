@@ -44,6 +44,7 @@ import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.tree.TreeListenerHelper;
+import com.vaadin.client.communication.tree.TreeNodeProperty;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 import com.vaadin.client.communication.tree.TreeUpdater;
 import com.vaadin.client.ui.VNotification;
@@ -208,8 +209,12 @@ public class ServerMessageHandler {
                         } else {
                             mode = PushMode.valueOf(value);
                         }
+                        TreeNodeProperty property = treeUpdater.getRootNode()
+                                .getProperty("pushConfiguration");
+                        ValueMap pushConfig = (ValueMap) property
+                                .getProxyValue();
                         connection.getServerCommunicationHandler()
-                                .setPushEnabled(mode.isEnabled());
+                                .setPushEnabled(mode.isEnabled(), pushConfig);
                     }
                 });
     }

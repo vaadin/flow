@@ -18,7 +18,7 @@ package com.vaadin.tests.push;
 import com.vaadin.annotations.Push;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.ui.Transport;
-import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
+import com.vaadin.ui.PushConfiguration.PushConfigurationImpl;
 
 @Push(transport = Transport.WEBSOCKET)
 public class ExtremelyLongPushTimeWebsocket extends ExtremelyLongPushTime {
@@ -28,7 +28,7 @@ public class ExtremelyLongPushTimeWebsocket extends ExtremelyLongPushTime {
         super.init(request);
         // Don't use fallback so we can easier detect if websocket fails
         getPushConfiguration().setParameter(
-                PushConfigurationState.FALLBACK_TRANSPORT_PARAM, "none");
+                PushConfigurationImpl.FALLBACK_TRANSPORT_PARAM, "none");
     }
 
 }

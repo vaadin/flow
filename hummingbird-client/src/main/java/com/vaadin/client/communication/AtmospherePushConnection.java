@@ -29,11 +29,11 @@ import com.vaadin.client.ApplicationConnection.ApplicationStoppedHandler;
 import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
+import com.vaadin.client.ValueMap;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushConstants;
 import com.vaadin.shared.ui.ui.UIConstants;
-import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 import com.vaadin.shared.util.SharedUtil;
 
 import elemental.json.JsonObject;
@@ -141,7 +141,7 @@ public class AtmospherePushConnection implements PushConnection {
      */
     @Override
     public void init(final ApplicationConnection connection,
-            final PushConfigurationState pushConfiguration) {
+            final ValueMap pushConfiguration) {
         this.connection = connection;
 
         connection.addHandler(ApplicationStoppedEvent.TYPE,
@@ -168,9 +168,8 @@ public class AtmospherePushConnection implements PushConnection {
         if ("push".equals(debugParameter)) {
             config.setStringValue("logLevel", "debug");
         }
-        for (String param : pushConfiguration.parameters.keySet()) {
-            config.setStringValue(param,
-                    pushConfiguration.parameters.get(param));
+        for (String param : pushConfiguration.getKeySet()) {
+            config.setStringValue(param, pushConfiguration.getString(param));
         }
 
         runWhenAtmosphereLoaded(new Command() {
@@ -227,10 +226,10 @@ public class AtmospherePushConnection implements PushConnection {
             // If we are not using websockets, we want to send XHRs
             return false;
         }
-        if (getPushConfigurationState().alwaysUseXhrForServerRequests) {
-            // If user has forced us to use XHR, let's abide
-            return false;
-        }
+        // if (getPushConfigurationState().alwaysUseXhrForServerRequests) {
+        // // If user has forced us to use XHR, let's abide
+        // return false;
+        // }
         if (state == State.CONNECT_PENDING) {
             // Not sure yet, let's go for using websockets still as still will
             // delay the message until a connection is established. When the
@@ -240,10 +239,6 @@ public class AtmospherePushConnection implements PushConnection {
         return true;
 
     };
-
-    private PushConfigurationState getPushConfigurationState() {
-        return connection.getUIConnector().getState().pushConfiguration;
-    }
 
     @Override
     public void push(JsonObject message) {
