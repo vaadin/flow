@@ -123,4 +123,16 @@ public class TextField extends AbstractTextField {
         getElement().setAttribute("value", getInternalValue());
     }
 
+    @Override
+    public void addValueChangeListener(
+            com.vaadin.data.Property.ValueChangeListener listener) {
+        if (!hasListeners(ValueChangeEvent.class)) {
+            getElement().addEventData("change", "element.value");
+            getElement().addEventListener("change", e -> {
+                setValue(e.getString("element.value"));
+            });
+        }
+        super.addValueChangeListener(listener);
+
+    }
 }
