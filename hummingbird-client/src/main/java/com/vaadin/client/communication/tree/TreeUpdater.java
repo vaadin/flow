@@ -192,9 +192,13 @@ public class TreeUpdater {
             return debugHtml((Element) node);
         } else if (node.getNodeType() == Node.TEXT_NODE) {
             return "#text " + ((Text) node).getNodeValue();
+        } else if (node.getNodeType() == 8) {
+            return "#comment: " + node.getNodeValue();
         } else {
-            return "#Unknown: " + node.getNodeValue();
+            return "#Unknown(" + node.getNodeType() + "): "
+                    + node.getNodeValue();
         }
+
     }
 
     private static Logger getLogger() {
