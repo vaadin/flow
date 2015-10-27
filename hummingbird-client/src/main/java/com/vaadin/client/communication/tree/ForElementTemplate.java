@@ -5,6 +5,7 @@ import java.util.Map;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.tree.EventArray.ArrayEventListener;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
@@ -42,7 +43,8 @@ public class ForElementTemplate extends Template {
                         // TODO Reuse reference node if processing multiple
                         // items
                         for (int i = 0; i < removed.size(); i++) {
-                            Node node = findNodeBefore(commentNode, startIndex)
+                            Node node = DomApi.wrap(
+                                    findNodeBefore(commentNode, startIndex))
                                     .getNextSibling();
 
                             node.removeFromParent();
@@ -97,8 +99,11 @@ public class ForElementTemplate extends Template {
                             Node insertionPoint = findNodeBefore(commentNode,
                                     startIndex + i);
 
-                            insertionPoint.getParentElement().insertAfter(child,
-                                    insertionPoint);
+                            Node parent = DomApi.wrap(insertionPoint)
+                                    .getParentNode();
+                            Node sibling = DomApi.wrap(insertionPoint)
+                                    .getNextSibling();
+                            DomApi.wrap(parent).insertBefore(child, sibling);
                         }
                     }
                 });
@@ -109,7 +114,7 @@ public class ForElementTemplate extends Template {
     private static Node findNodeBefore(Node anchorNode, int index) {
         Node refChild = anchorNode;
         for (int i = 0; i < index; i++) {
-            refChild = refChild.getNextSibling();
+            refChild = DomApi.wrap(refChild).getNextSibling();
         }
         return refChild;
     }
