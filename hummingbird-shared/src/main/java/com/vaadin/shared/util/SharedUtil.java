@@ -252,4 +252,16 @@ public class SharedUtil implements Serializable {
         return join(parts, "");
     }
 
+    public static String camelCaseToDashSeparated(String camelCase) {
+        if (camelCase == null) {
+            return null;
+        }
+        String[] parts = splitCamelCase(camelCase);
+        for (int i = 1; i < parts.length; i++) {
+            parts[i] = parts[i].toLowerCase(Locale.ENGLISH);
+        }
+
+        return join(parts, "-");
+    }
+
 }

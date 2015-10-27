@@ -3,6 +3,7 @@ package com.vaadin.ui;
 import com.vaadin.annotations.Id;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.hummingbird.kernel.Element;
+import com.vaadin.shared.util.SharedUtil;
 
 public class TemplateComponentBinder {
 
@@ -21,14 +22,15 @@ public class TemplateComponentBinder {
 
             // TODO Add support for @Id or similar
             String componentId = memberField.getName();
+            componentId = SharedUtil.camelCaseToDashSeparated(componentId);
             if (memberField.getAnnotation(Id.class) != null) {
                 componentId = memberField.getAnnotation(Id.class).value();
             }
             Element element = template.getElementById(componentId);
             if (element == null) {
-                throw new IllegalStateException(
-                        "No component found to bind to field "
-                                + memberField.getName());
+                throw new IllegalStateException("No element with id "
+                        + componentId + " found to bind to field "
+                        + memberField.getName());
             }
 
             if (element.getComponents().size() == 1) {
