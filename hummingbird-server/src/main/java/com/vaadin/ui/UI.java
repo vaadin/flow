@@ -1276,13 +1276,13 @@ public abstract class UI extends CssLayout
          * to push.
          */
         session.getService().runPendingAccessTasks(session);
-
-        if (!getConnectorTracker().hasDirtyConnectors()) {
+        if (!getElement().getNode().getRoot().isDirty()) {
             // Do not push if there is nothing to push
             return;
         }
 
         pushConnection.push();
+
     }
 
     /**

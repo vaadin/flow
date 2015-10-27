@@ -513,15 +513,6 @@ public class ConnectorTracker implements Serializable {
     }
 
     /**
-     * Checks if there a dirty connectors.
-     *
-     * @return true if there are dirty connectors, false otherwise
-     */
-    public boolean hasDirtyConnectors() {
-        return !getDirtyConnectors().isEmpty();
-    }
-
-    /**
      * Returns a collection of those {@link #getDirtyConnectors() dirty
      * connectors} that are actually visible to the client.
      *
