@@ -246,13 +246,16 @@ public class BoundElementTemplate extends Template {
                 proxy[name] = $entry(function() {
                     // Convert to proper Array
                     var args = Array.prototype.slice.call(arguments);
-                    @BoundElementTemplate::sendTemplateEventToServer(*)(treeUpdater, nodeId, templateId, name, args);
+                    return new Promise(function(resolve, reject) {
+                        @BoundElementTemplate::sendTemplateEventToServer(*)(treeUpdater, nodeId, templateId, name, args, resolve, reject);
+                    });
                 });
             }-*/;
 
     private static void sendTemplateEventToServer(TreeUpdater treeUpdater,
             int nodeId, int templateId, String type,
-            JsArray<JavaScriptObject> rawArguments) {
+            JsArray<JavaScriptObject> rawArguments, JavaScriptObject resolve,
+            JavaScriptObject reject) {
         JsonArray eventData = Json.createArray();
         for (int i = 0; i < rawArguments.length(); i++) {
             JavaScriptObject value = rawArguments.get(i);
@@ -267,11 +270,14 @@ public class BoundElementTemplate extends Template {
             eventData.set(i, jsonValue);
         }
 
+        int promiseId = treeUpdater.registerPromise(resolve, reject);
+
         JsonArray arguments = Json.createArray();
         arguments.set(0, nodeId);
         arguments.set(1, templateId);
         arguments.set(2, type);
         arguments.set(3, eventData);
+        arguments.set(4, promiseId);
 
         treeUpdater.sendRpc("vTemplateEvent", arguments);
     }

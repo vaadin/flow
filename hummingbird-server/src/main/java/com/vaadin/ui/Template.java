@@ -305,7 +305,7 @@ public abstract class Template extends AbstractComponent
     }
 
     protected void onBrowserEvent(StateNode node, String methodName,
-            JsonArray params) {
+            JsonArray params, int promiseId) {
         Method method = findTemplateEventHandlerMethod(getClass(), methodName,
                 params.length());
         if (method == null) {
@@ -337,11 +337,23 @@ public abstract class Template extends AbstractComponent
         }
 
         method.setAccessible(true);
+        Object promiseResult = "Unkonwn error, consult server logs";
+        boolean promiseSuccess = false;
         try {
-            method.invoke(this, methodParams);
-        } catch (IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e) {
+            promiseResult = method.invoke(this, methodParams);
+            promiseSuccess = true;
+        } catch (InvocationTargetException e) {
+            promiseResult = e.getCause().getMessage();
+
+            throw new RuntimeException(
+                    "Exception from tempalte handler " + method, e);
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            promiseResult = e.getMessage();
+
             throw new RuntimeException("Couldn't invoke " + method, e);
+        } finally {
+            getNode().enqueueRpc("}promise", promiseId, promiseSuccess,
+                    promiseResult);
         }
     }
 

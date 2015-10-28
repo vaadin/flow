@@ -66,6 +66,10 @@ public class TreeUpdater {
 
     private Client client;
 
+    private int nextPromiseId = 0;
+
+    private Map<Integer, JavaScriptObject[]> promises = new HashMap<>();
+
     public void init(Element rootElement, ServerRpcQueue rpcQueue,
             Client client) {
         assert this.rootElement == null : "Can only init once";
@@ -360,6 +364,24 @@ public class TreeUpdater {
             JsonArray invocation = rpcInvocations.getArray(invocationIndex);
             String script = invocation.getString(0);
 
+            // Magic token that would cause syntax error for ordinary code
+            if (script.length() > 1 && script.charAt(0) == '}') {
+                switch (script.substring(1)) {
+                case "promise": {
+                    int id = (int) invocation.getNumber(1);
+                    boolean success = invocation.getBoolean(2);
+                    JavaScriptObject result = invocation.get(3);
+                    resolvePromise(id, success, result);
+
+                    break;
+                }
+                default:
+                    throw new RuntimeException(
+                            "Unsupported special RPC token: " + script);
+                }
+                continue;
+            }
+
             Map<String, JavaScriptObject> context = new HashMap<>();
 
             int paramCount = invocation.length() - 1;
@@ -637,4 +659,32 @@ public class TreeUpdater {
         return callbackQueue;
     }
 
+    public int registerPromise(JavaScriptObject resolve,
+            JavaScriptObject reject) {
+        int id = nextPromiseId++;
+
+        promises.put(Integer.valueOf(id),
+                new JavaScriptObject[] { resolve, reject });
+
+        return id;
+    }
+
+    public void resolvePromise(int id, boolean success,
+            JavaScriptObject result) {
+        JavaScriptObject[] resolvers = promises.remove(Integer.valueOf(id));
+        if (resolvers == null) {
+            throw new RuntimeException("Promise " + id
+                    + " is already resolved (or never registered)");
+        }
+
+        JavaScriptObject resolver = resolvers[success ? 0 : 1];
+
+        callResolveFunction(resolver, result);
+    }
+
+    private static native void callResolveFunction(JavaScriptObject f,
+            JavaScriptObject result)
+            /*-{
+                f(result);
+            }-*/;
 }

@@ -372,6 +372,7 @@ public abstract class UI extends CssLayout
         int nodeId = (int) json.getNumber(0);
         String methodName = json.getString(2);
         JsonArray parameters = json.getArray(3);
+        int promiseId = (int) json.getNumber(4);
 
         StateNode node = root.getRootNode().getById(nodeId);
         if (node == null) {
@@ -388,7 +389,8 @@ public abstract class UI extends CssLayout
                     "No template event handler found for node " + node.getId());
         }
 
-        templateEventHandler.handleCallback(node, methodName, parameters);
+        templateEventHandler.handleCallback(node, methodName, parameters,
+                promiseId);
     }
 
     @Override
@@ -1297,7 +1299,7 @@ public abstract class UI extends CssLayout
      *         not available.
      */
     public PushConnection getPushConnection() {
-        assert !(getPushConfiguration().getPushMode().isEnabled()
+        assert!(getPushConfiguration().getPushMode().isEnabled()
                 && pushConnection == null);
         return pushConnection;
     }
@@ -1315,7 +1317,7 @@ public abstract class UI extends CssLayout
     public void setPushConnection(PushConnection pushConnection) {
         // If pushMode is disabled then there should never be a pushConnection;
         // if enabled there should always be
-        assert (pushConnection == null)
+        assert(pushConnection == null)
                 ^ getPushConfiguration().getPushMode().isEnabled();
 
         if (pushConnection == this.pushConnection) {

@@ -29,7 +29,10 @@ public class TemplateComponentTest {
             for (int i = 0; i < params.length; i++) {
                 paramsJson.set(i, params[i]);
             }
-            super.onBrowserEvent(getNode(), methodName, paramsJson);
+
+            int promiseId = 0;
+
+            super.onBrowserEvent(getNode(), methodName, paramsJson, promiseId);
         }
     }
 

@@ -7,5 +7,5 @@ import elemental.json.JsonArray;
 @FunctionalInterface
 public interface TemplateCallbackHandler {
     void handleCallback(StateNode node, String callbackName,
-            JsonArray parameters);
+            JsonArray parameters, int promiseId);
 }
