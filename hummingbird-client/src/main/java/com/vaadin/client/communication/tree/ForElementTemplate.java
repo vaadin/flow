@@ -46,8 +46,8 @@ public class ForElementTemplate extends Template {
                             Node node = DomApi.wrap(
                                     findNodeBefore(commentNode, startIndex))
                                     .getNextSibling();
-
-                            node.removeFromParent();
+                            DomApi.wrap(DomApi.wrap(node).getParentNode())
+                                    .removeChild(node);
                         }
 
                         for (int i = 0; i < added.size(); i++) {

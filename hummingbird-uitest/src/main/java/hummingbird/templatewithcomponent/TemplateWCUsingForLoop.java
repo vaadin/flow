@@ -60,6 +60,19 @@ public class TemplateWCUsingForLoop extends UI {
             List<Item> i = t.getModel().getItems();
             i.remove(0);
         }));
+        addComponent(new Button("Add new", e -> {
+            List<Item> i = t.getModel().getItems();
+            Item item = com.vaadin.ui.Template.Model.create(Item.class);
+            item.setBar(12);
+            item.setFoo("foo12");
+            i.add(item);
+        }));
+        addComponent(new Button("Reset", e -> {
+            List<Item> i = t.getModel().getItems();
+            i.clear();
+            i.add(item1);
+            i.add(item2);
+        }));
     }
 
 }
