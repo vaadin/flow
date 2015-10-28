@@ -157,7 +157,7 @@ public class TransactionLogBuilderTest {
 
         commit();
 
-        assertOptimizedChanges(new ListInsertManyChange(0, LIST_KEY, node1,
+        assertOptimizedChanges(new ListInsertManyChange(3, LIST_KEY, node1,
                 node2, node3, node4, node5));
 
     }
@@ -240,20 +240,24 @@ public class TransactionLogBuilderTest {
             NodeListChange change2) {
         assertChangesEquals((NodeContentsChange) change1,
                 (NodeContentsChange) change2);
-        Assert.assertEquals(change1.getIndex(), change1.getIndex());
-        Assert.assertEquals(change1.getValue(), change1.getValue());
+        Assert.assertEquals("Unexpected index for change", change1.getIndex(),
+                change2.getIndex());
+        Assert.assertEquals(change1.getValue(), change2.getValue());
     }
 
     private void assertChangesEquals(NodeContentsChange change1,
             NodeContentsChange change2) {
-        Assert.assertEquals(change1.getKey(), change1.getKey());
+        Assert.assertEquals(change1.getKey(), change2.getKey());
     }
 
     private void assertChangesEquals(NodeDataChange change1,
             NodeDataChange change2) {
         assertChangesEquals((NodeContentsChange) change1,
                 (NodeContentsChange) change2);
-        Assert.assertEquals(change1.getValue(), change1.getValue());
+        if (!"IGNORE".equals(change1.getValue())
+                && !"IGNORE".equals(change2.getValue())) {
+            Assert.assertEquals(change1.getValue(), change2.getValue());
+        }
     }
 
     private void assertChangesEquals(IdChange change1, IdChange change2) {
@@ -340,7 +344,7 @@ public class TransactionLogBuilderTest {
         assertOptimizedChanges(
                 new ListInsertManyChange(0, LIST_KEY, node1, node2),
                 new ListInsertChange(0, LIST_KEY, node4),
-                new ListInsertChange(4, LIST_KEY, node5));
+                new ListInsertChange(3, LIST_KEY, node5));
     }
 
     @Test
@@ -355,7 +359,7 @@ public class TransactionLogBuilderTest {
 
         // TODO Should optimize no matter the order of the inserts
         assertOptimizedChanges(
-                new ListInsertManyChange(0, LIST_KEY, node1, node3),
+                new ListInsertManyChange(0, LIST_KEY, node1, node2),
                 new ListInsertChange(1, LIST_KEY, node3));
 
     }
@@ -440,7 +444,7 @@ public class TransactionLogBuilderTest {
         commit();
         // This could be optimized to be one operation
         assertOptimizedChanges(new ListRemoveChange(0, LIST_KEY, node1),
-                new ListRemoveChange(0, LIST_KEY, node1));
+                new ListRemoveChange(0, LIST_KEY, node2));
     }
 
     @Test
@@ -542,7 +546,8 @@ public class TransactionLogBuilderTest {
         l.add("foo");
         commit();
         // TODO #36, this should only be a ListInsertChange
-        assertOptimizedChanges(new RemoveChange(LIST_KEY, null),
+        assertOptimizedChanges(new RemoveChange(LIST_KEY, "IGNORE"),
                 new ListInsertChange(0, LIST_KEY, "foo"));
     }
+
 }
