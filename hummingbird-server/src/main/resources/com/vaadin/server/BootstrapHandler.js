@@ -1,3 +1,13 @@
+if (!window.Promise) {
+	var ps = document.createElement("script");
+	ps.setAttribute("type", "text/javascript");
+	ps.setAttribute("src", "{{promisePolyfill}}");
+	ps.setAttribute("defer", "true");
+	ps.setAttribute("pending", "1");
+	ps.addEventListener("load", ps.removeAttribute("pending"));
+	document.head.appendChild(ps);
+}
+
 /* Pre-rendering timing */
 if ({{preTiming}}) {
 	var doneAfterNext = false;

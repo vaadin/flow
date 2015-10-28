@@ -246,7 +246,7 @@ public class BoundElementTemplate extends Template {
                 proxy[name] = $entry(function() {
                     // Convert to proper Array
                     var args = Array.prototype.slice.call(arguments);
-                    return new Promise(function(resolve, reject) {
+                    return new $wnd.Promise(function(resolve, reject) {
                         @BoundElementTemplate::sendTemplateEventToServer(*)(treeUpdater, nodeId, templateId, name, args, resolve, reject);
                     });
                 });

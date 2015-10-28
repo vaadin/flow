@@ -641,6 +641,11 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
         String result = bootstrapJS.replace("{{appId}}", context.getAppId());
+
+        result = result.replace("{{promisePolyfill}}",
+                context.getUriResolver().resolveVaadinUri(
+                        "vaadin://bower_components/promise-polyfill/Promise.min.js"));
+
         JsonObject appConfig = context.getApplicationParameters();
         boolean isDebug = !context.getSession().getConfiguration()
                 .isProductionMode();

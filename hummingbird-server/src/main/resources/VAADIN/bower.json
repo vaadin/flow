@@ -19,6 +19,7 @@
     "polymer": "Polymer/polymer#1.1.1",
     "vaadin-notification": "Artur-/vaadin-notification#~0.9.0",
     "vaadin-grid": "0.9.0-beta3",
-    "paper-menu": "PolymerElements/paper-menu#1.1.1"
+    "paper-menu": "PolymerElements/paper-menu#1.1.1",
+    "promise-polyfill": "2.1.0"
   }
 }
