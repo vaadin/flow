@@ -6,6 +6,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.communication.DomApi;
+import com.vaadin.client.communication.DomElement;
 import com.vaadin.client.communication.tree.EventArray.ArrayEventListener;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
@@ -16,6 +17,7 @@ public class ForElementTemplate extends Template {
     private final Template childTemplate;
     private final String modelKey;
     private final String innerScope;
+    int commentNodeIndex = -1;
 
     public ForElementTemplate(TreeUpdater treeUpdater,
             JsonObject templateDescription, int templateId) {
@@ -40,30 +42,45 @@ public class ForElementTemplate extends Template {
                     public void splice(EventArray eventArray, int startIndex,
                             JsArrayObject<Object> removed,
                             JsArrayObject<Object> added) {
-                        // TODO Reuse reference node if processing multiple
-                        // items
+                        DomElement forNode = DomApi
+                                .wrap(DomApi.wrap(commentNode).getParentNode());
+
+                        if (commentNodeIndex == -1 || forNode.getChildNodes()
+                                .get(commentNodeIndex) != commentNode) {
+                            // Uses indexOf in order to avoid nextSibling
+                            // because of
+                            // https://github.com/Polymer/polymer/issues/2645
+
+                            // Find commentNode again as it has moved
+                            commentNodeIndex = forNode.getChildNodes()
+                                    .indexOf(commentNode);
+
+                        }
+
+                        // Node to remove is "startIndex" positions forward from
+                        // comment node
+
                         for (int i = 0; i < removed.size(); i++) {
-                            Node node = DomApi.wrap(
-                                    findNodeBefore(commentNode, startIndex))
-                                    .getNextSibling();
-                            DomApi.wrap(DomApi.wrap(node).getParentNode())
-                                    .removeChild(node);
+                            int nodeIndex = commentNodeIndex + 1 + startIndex
+                                    + i;
+
+                            // Does not use nextSibling because of
+                            // https://github.com/Polymer/polymer/issues/2645
+                            Node removeNode = forNode.getChildNodes()
+                                    .get(nodeIndex);
+                            forNode.removeChild(removeNode);
                         }
 
                         for (int i = 0; i < added.size(); i++) {
                             TreeNode childNode = (TreeNode) added.get(i);
-
+                            int insertIndex = commentNodeIndex + startIndex + i;
                             NodeContext innerContext = new NodeContext() {
                                 @Override
                                 public EventArray resolveArrayProperty(
                                         String name) {
                                     if (isInnerScope(name)) {
-                                        // FIXME Typo?
-                                        // name.substring(scope.length) ->
-                                        // string starting with "."
                                         return childNode.getArrayProperty(
-                                                name.substring(getInnerScope()
-                                                        .length()));
+                                                getInnerProperty(name));
                                     } else {
                                         return outerContext
                                                 .resolveArrayProperty(name);
@@ -111,14 +128,17 @@ public class ForElementTemplate extends Template {
                                     getChildTemplate(), childNode,
                                     innerContext);
 
-                            Node insertionPoint = findNodeBefore(commentNode,
-                                    startIndex + i);
+                            // Does not use nextSibling because of
+                            // https://github.com/Polymer/polymer/issues/2645
+                            Node sibling = null;
+                            int nodeAfterIndex = insertIndex + 1;
+                            if (nodeAfterIndex < forNode.getChildNodes()
+                                    .size()) {
+                                sibling = forNode.getChildNodes()
+                                        .get(nodeAfterIndex);
+                            }
 
-                            Node parent = DomApi.wrap(insertionPoint)
-                                    .getParentNode();
-                            Node sibling = DomApi.wrap(insertionPoint)
-                                    .getNextSibling();
-                            DomApi.wrap(parent).insertBefore(child, sibling);
+                            forNode.insertBefore(child, sibling);
                         }
                     }
                 });

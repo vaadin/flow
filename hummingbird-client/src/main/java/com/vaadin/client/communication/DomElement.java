@@ -4,7 +4,6 @@ import com.google.gwt.core.client.js.JsProperty;
 import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
-import com.vaadin.client.communication.DomElement.TokenList;
 
 // See https://www.polymer-project.org/1.0/docs/devguide/local-dom.html
 @JsType
@@ -12,18 +11,19 @@ public interface DomElement {
 
     // Adding and removing children
 
-    @JsType interface TokenList {
+    @JsType
+    interface TokenList {
         @JsProperty
         public int getLength();
-    
+
         public String item(int index);
-    
+
         public boolean contains(String token);
-    
+
         public void add(String item);
-    
+
         public void remove(String item);
-    
+
         public boolean toggle(String item);
     }
 
@@ -35,6 +35,8 @@ public interface DomElement {
 
     // Parent and child APIs
 
+    // Polymer returns an array for childNodes even though element.childNodes
+    // and element.children both are NodeLists
     @JsProperty
     public JsArrayObject<Node> getChildNodes();
 
@@ -53,10 +55,20 @@ public interface DomElement {
     @JsProperty
     public Node getLastElementChild();
 
+    /**
+     * @deprecated Avoid, it is slow at least in Polymer 1.2.0
+     * @return
+     */
     @JsProperty
+    @Deprecated
     public Node getPreviousSibling();
 
+    /**
+     * @deprecated Avoid, it is slow at least in Polymer 1.2.0
+     * @return
+     */
     @JsProperty
+    @Deprecated
     public Node getNextSibling();
 
     @JsProperty

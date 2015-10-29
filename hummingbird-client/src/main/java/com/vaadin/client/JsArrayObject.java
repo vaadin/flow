@@ -39,4 +39,9 @@ public final class JsArrayObject<T> extends JavaScriptObject {
         return this[i];
     }-*/;
 
+    public native int indexOf(T value)
+    /*-{
+        return this.indexOf(value);
+    }-*/;
+
 }
