@@ -240,13 +240,12 @@ public class TemplateParser {
 
     private static final ConcurrentMap<Class<?>, ElementTemplateCache> templateCache = new ConcurrentHashMap<>();
 
-    public static ElementTemplate parse(Class<?> type) {
-        String fileName = type.getSimpleName() + ".html";
+    public static ElementTemplate parse(Class<?> type, String fileName) {
 
-        URL resourceUrl = type.getResource(fileName);
+        URL resourceUrl = type.getClassLoader().getResource(fileName);
         if (resourceUrl == null) {
-            throw new RuntimeException("File not found from classpath: "
-                    + type.getPackage().getName() + "/" + fileName);
+            throw new RuntimeException(
+                    "File not found from classpath: " + fileName);
         }
 
         ElementTemplateCache cacheEntry = templateCache.get(type);

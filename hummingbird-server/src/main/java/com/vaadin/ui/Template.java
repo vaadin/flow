@@ -29,6 +29,7 @@ import java.util.Objects;
 
 import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.TemplateEventHandler;
+import com.vaadin.annotations.TemplateHTML;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
@@ -121,7 +122,7 @@ public abstract class Template extends AbstractComponent
                 if (pt.getRawType() instanceof Class<?>) {
                     Class<?> rawType = (Class<?>) pt.getRawType();
                     if (List.class.isAssignableFrom(rawType)) {
-                        assert(pt
+                        assert (pt
                                 .getActualTypeArguments()[0] instanceof Class<?>) : "Multi-level generics not supported for now";
                         Class<?> childType = (Class<?>) pt
                                 .getActualTypeArguments()[0];
@@ -190,7 +191,7 @@ public abstract class Template extends AbstractComponent
                 if (pt.getRawType() instanceof Class<?>) {
                     Class<?> rawType = (Class<?>) pt.getRawType();
                     if (List.class.isAssignableFrom(rawType)) {
-                        assert(pt
+                        assert (pt
                                 .getActualTypeArguments()[0] instanceof Class<?>) : "Multi-level generics not supported for now";
                         Class<?> childType = (Class<?>) pt
                                 .getActualTypeArguments()[0];
@@ -291,13 +292,34 @@ public abstract class Template extends AbstractComponent
 
     protected Template(ElementTemplate elementTemplate) {
         if (elementTemplate == null) {
-            elementTemplate = TemplateParser.parse(getClass());
+            String htmlFileName = getTemplateFilename();
+            elementTemplate = TemplateParser.parse(getClass(), htmlFileName);
         }
         setElement(Element.getElement(elementTemplate, node));
 
         getNode().put(TemplateCallbackHandler.class, this::onBrowserEvent);
 
         getBinder().bindComponents(this);
+    }
+
+    private String getTemplateFilename() {
+        Class<?> c = getClass();
+        Class<?> classExtendingTemplate = null;
+        while (c != null) {
+            TemplateHTML templateAnnotation = c
+                    .getAnnotation(TemplateHTML.class);
+            if (templateAnnotation != null) {
+                return c.getPackage().getName().replace(".", "/") + "/"
+                        + templateAnnotation.value();
+            }
+            if (c.getSuperclass() == Template.class) {
+                classExtendingTemplate = c;
+            }
+            c = c.getSuperclass();
+        }
+
+        return classExtendingTemplate.getPackage().getName().replace(".", "/")
+                + "/" + classExtendingTemplate.getSimpleName() + ".html";
     }
 
     protected TemplateComponentBinder getBinder() {
