@@ -98,7 +98,7 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
                 methodInvocation.getJavaScriptCallbackRpcName());
 
         JsonArray parameters = methodInvocation.getParameters();
-        assertEquals(4, parameters.length());
+        assertEquals(5, parameters.length());
         // Node id
         assertEquals(3, (int) parameters.getNumber(0));
         // Template id
@@ -106,6 +106,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals("doSomething", parameters.getString(2));
         // Parameter (element.something)
         assertEquals(10, (int) parameters.getNumber(3));
+        // Promise id
+        assertEquals(0, (int) parameters.getNumber(4));
     }
 
     public void testChildTemplates() {
