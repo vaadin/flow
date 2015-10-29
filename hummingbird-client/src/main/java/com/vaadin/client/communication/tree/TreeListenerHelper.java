@@ -8,6 +8,38 @@ import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyVal
 
 public class TreeListenerHelper {
 
+    public static TreeNodeProperty getProperty(TreeNode node, String path) {
+        int firstDot = path.indexOf('.');
+        if (firstDot == -1) {
+            // No hierarchy
+            if (!node.hasProperty(path)) {
+                return null;
+            } else {
+                return node.getProperty(path);
+            }
+        } else {
+            // Hierarchy
+            String firstPart = path.substring(0, firstDot);
+            String rest = path.substring(firstDot + 1);
+
+            if (!node.hasProperty(firstPart)) {
+                return null;
+            }
+
+            TreeNodeProperty firstProperty = node.getProperty(firstPart);
+            if (firstProperty == null) {
+                return null;
+            }
+
+            if (firstProperty.getValue() instanceof TreeNode) {
+                return getProperty((TreeNode) firstProperty.getValue(), rest);
+            } else {
+                return null;
+            }
+
+        }
+    }
+
     public static HandlerRegistration addListener(TreeNode node, String path,
             boolean createIfNecessary,
             TreeNodePropertyValueChangeListener listener) {
@@ -65,6 +97,7 @@ public class TreeListenerHelper {
             return new HandlerRegistration() {
                 HandlerRegistration innerRegistration;
                 TreeNodePropertyValueChangeListener childListener = new TreeNodePropertyValueChangeListener() {
+
                     @Override
                     public void changeValue(Object oldValue, Object newValue) {
                         if (innerRegistration != null) {
@@ -117,16 +150,20 @@ public class TreeListenerHelper {
                         throw new RuntimeException();
                     }
                 };
+
                 HandlerRegistration outerRegistration = addListener(node, start,
                         createIfNecessary, childListener);
 
                 {
-                    if (node.hasProperty(start)) {
+                    if (node.hasProperty(start))
+
+                    {
                         Object value = node.getProperty(start).getValue();
                         if (value != null) {
                             childListener.changeValue(null, value);
                         }
                     }
+
                 }
 
                 @Override

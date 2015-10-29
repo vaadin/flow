@@ -281,6 +281,11 @@ public class TreeUpdater {
             return createElement(template, node, new NodeContext() {
 
                 @Override
+                public TreeNodeProperty getProperty(String name) {
+                    return TreeListenerHelper.getProperty(node, name);
+                }
+
+                @Override
                 public void listenToProperty(String name,
                         TreeNodePropertyValueChangeListener listener) {
                     TreeListenerHelper.addListener(node, name, true, listener);
@@ -567,6 +572,12 @@ public class TreeUpdater {
                 TreeNode overrideNode = ensureNodeExists(overrideNodeId);
                 node.getProperty(String.valueOf(templateId))
                         .setValue(overrideNode);
+                break;
+            }
+            case "rangeStart":
+            case "rangeEnd": {
+                getLogger().info(
+                        "Got " + type + " for " + change.getString("key"));
                 break;
             }
             default:

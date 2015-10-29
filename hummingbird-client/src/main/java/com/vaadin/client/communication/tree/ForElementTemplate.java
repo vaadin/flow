@@ -57,7 +57,10 @@ public class ForElementTemplate extends Template {
                                 @Override
                                 public EventArray resolveArrayProperty(
                                         String name) {
-                                    if (name.startsWith(getInnerScope())) {
+                                    if (isInnerScope(name)) {
+                                        // FIXME Typo?
+                                        // name.substring(scope.length) ->
+                                        // string starting with "."
                                         return childNode.getArrayProperty(
                                                 name.substring(getInnerScope()
                                                         .length()));
@@ -70,9 +73,10 @@ public class ForElementTemplate extends Template {
                                 @Override
                                 public void listenToProperty(String name,
                                         TreeNodePropertyValueChangeListener listener) {
-                                    if (name.startsWith(getInnerScope())) {
-                                        String innerProperty = name.substring(
-                                                getInnerScope().length() + 1);
+                                    if (isInnerScope(name)) {
+
+                                        String innerProperty = getInnerProperty(
+                                                name);
                                         TreeListenerHelper.addListener(
                                                 childNode, innerProperty, true,
                                                 listener);
@@ -89,6 +93,17 @@ public class ForElementTemplate extends Template {
                                     contextMap.put(getInnerScope(),
                                             childNode.getProxy());
                                     return contextMap;
+                                }
+
+                                @Override
+                                public TreeNodeProperty getProperty(
+                                        String name) {
+                                    if (isInnerScope(name)) {
+                                        return childNode.getProperty(
+                                                getInnerProperty(name));
+                                    } else {
+                                        return outerContext.getProperty(name);
+                                    }
                                 }
                             };
 
@@ -130,6 +145,14 @@ public class ForElementTemplate extends Template {
 
     private String getInnerScope() {
         return innerScope;
+    }
+
+    private boolean isInnerScope(String path) {
+        return path.startsWith(getInnerScope());
+    }
+
+    private String getInnerProperty(String path) {
+        return path.substring(getInnerScope().length() + 1);
     }
 
     private Template getChildTemplate() {
