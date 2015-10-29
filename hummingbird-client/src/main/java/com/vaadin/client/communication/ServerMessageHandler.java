@@ -41,6 +41,7 @@ import com.vaadin.client.ConnectorMap;
 import com.vaadin.client.FastStringSet;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.Profiler;
+import com.vaadin.client.Util;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.tree.TreeListenerHelper;
@@ -53,6 +54,7 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.communication.PushMode;
 
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * ServerMessageHandler is responsible for handling all incoming messages (JSON)
@@ -250,9 +252,19 @@ public class ServerMessageHandler {
         }
         getLogger().info("JSON parsing took "
                 + (new Date().getTime() - start.getTime()) + "ms");
-
         handleMessage(json);
     }
+
+    private native String formatJson(JsonValue jsonObject, int indent)
+    /*-{
+        // skip hashCode field
+        return $wnd.JSON.stringify(jsonObject, function(keyName, value) {
+            if (keyName == "$H") {
+              return undefined; // skip hashCode property
+            }
+            return value;
+          }, indent);
+      }-*/;
 
     public void handleMessage(ValueMap json) {
 
@@ -286,6 +298,8 @@ public class ServerMessageHandler {
 
     protected void handleJSON(final ValueMap json) {
         final int serverId = getServerId(json);
+        JsonValue jsonObject = Util.jso2json(json);
+        getLogger().info("Handling JSON:\n" + formatJson(jsonObject, 4));
 
         if (isResynchronize(json) && !isNextExpectedMessage(serverId)) {
             // Resynchronize request. We must remove any old pending
