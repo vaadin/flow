@@ -1,0 +1,3 @@
+<div id="outer" (created)="document.querySelector('#inner').innerText += 'outer created called when parent is '+element.parentElement+'\n';">
+	<div id="inner" (created)="document.querySelector('#inner').innerText += 'inner created called when parent is '+element.parentElement+'\n';"></div>
+</div>

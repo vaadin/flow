@@ -17,6 +17,7 @@ package com.vaadin.client.communication.tree;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -27,6 +28,7 @@ import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Text;
 import com.google.gwt.user.client.Window.Location;
@@ -83,6 +85,8 @@ public class TreeUpdater {
 
     private JsonArray pendingChanges = Json.createArray();
     private ArrayList<MethodInvocation> pendingInvocations;
+
+    private List<Element> createdElements = new ArrayList<>();
 
     public void sendRpc(String callbackName, JsonArray arguments) {
         if (pendingInvocations == null) {
@@ -232,7 +236,11 @@ public class TreeUpdater {
     public Node createElement(Template template, TreeNode node,
             NodeContext context) {
         Node element = template.createElement(node, context);
-
+        if (Element.is(element)) {
+            getLogger().info(
+                    "Created element of type " + element.getClass().getName());
+            createdElements.add((Element) element);
+        }
         int nodeId = node.getId();
         node.setElement(template.getId(), element);
 
@@ -343,10 +351,23 @@ public class TreeUpdater {
         getLogger().info("Handling tree node changes");
         applyNodeChanges(elementChanges);
 
+        getLogger().info("Sending created events");
+        sendCreatedEvents();
+
         if (rpc != null) {
             getLogger().info("Running rpcs");
             runRpc(rpc);
         }
+    }
+
+    private void sendCreatedEvents() {
+        for (Element e : createdElements) {
+            NativeEvent event = Document.get().createHtmlEvent("created", false,
+                    false);
+            e.dispatchEvent(event);
+        }
+        createdElements.clear();
+
     }
 
     private void applyNodeChanges(JsonArray nodeChanges) {
