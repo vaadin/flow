@@ -1,8 +1,14 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,10 +16,34 @@ import org.junit.Test;
 import com.vaadin.hummingbird.kernel.AbstractElementTemplate.Keys;
 
 public class ComputedPropertyTest {
+    private static Map<String, ComputedProperty> createComputedPropertyMap(
+            String name, Function<StateNode, Object> supplier) {
+        return Collections.singletonMap(name,
+                createComputedProperty(name, supplier));
+    }
+
+    private static Map<String, ComputedProperty> createMap(
+            ComputedProperty... properties) {
+        return Collections.unmodifiableMap(
+                Arrays.stream(properties).collect(Collectors.toMap(
+                        ComputedProperty::getName, Function.identity())));
+    }
+
+    private static ComputedProperty createComputedProperty(String name,
+            Function<StateNode, Object> supplier) {
+        return new ComputedProperty(name) {
+            @Override
+            public Object compute(StateNode context) {
+                return supplier.apply(context);
+            }
+        };
+    }
+
     @Test
     public void simpleComputedProperty() {
         StateNode node = StateNode.create();
-        node.putComputed("computed", () -> "foo");
+        node.setComputedProperties(
+                createComputedPropertyMap("computed", n -> "foo"));
 
         Assert.assertTrue(node.containsKey("computed"));
 
@@ -24,7 +54,8 @@ public class ComputedPropertyTest {
     @Test
     public void hasComputedProperty() {
         StateNode node = StateNode.create();
-        node.putComputed("computed", () -> "foo");
+        node.setComputedProperties(
+                createComputedPropertyMap("computed", n -> "foo"));
 
         Set<String> stringKeys = node.getStringKeys();
 
@@ -35,7 +66,8 @@ public class ComputedPropertyTest {
     @Test
     public void computedNodeNotServerOnly() {
         StateNode node = StateNode.create();
-        node.putComputed("computed", () -> "foo");
+        node.setComputedProperties(
+                createComputedPropertyMap("computed", n -> "foo"));
 
         Assert.assertFalse(
                 node.getKeys().anyMatch(Predicate.isEqual(Keys.SERVER_ONLY)));
@@ -48,18 +80,22 @@ public class ComputedPropertyTest {
     }
 
     @Test
-    public void replacePropertyWithCompouted_throws() {
+    public void replacePropertyWithCompouted_usesComputed() {
         StateNode node = StateNode.create();
         node.put("foo", "bar");
 
-        try {
-            node.putComputed("foo", () -> "baz");
-            Assert.fail();
-        } catch (IllegalStateException e) {
-            // Expected
-        }
+        node.setComputedProperties(
+                createComputedPropertyMap("foo", n -> "foo"));
+        Assert.assertEquals("foo", node.get("foo"));
+    }
 
-        Assert.assertEquals("bar", node.get("foo"));
+    @Test(expected = IllegalStateException.class)
+    public void setComputedMultipleTimes_throws() {
+        StateNode node = StateNode.create();
+        node.setComputedProperties(
+                createComputedPropertyMap("computed", n -> "foo"));
+        node.setComputedProperties(
+                createComputedPropertyMap("computed", n -> "foo"));
     }
 
     @Test
@@ -68,10 +104,10 @@ public class ComputedPropertyTest {
         StateNode node = StateNode.create();
 
         node.put("a", Integer.valueOf(5));
-        node.putComputed("b", () -> {
+        node.setComputedProperties(createComputedPropertyMap("b", n -> {
             invokeCount.incrementAndGet();
             return Integer.valueOf(2 * node.get("a", Integer.class).intValue());
-        });
+        }));
 
         Assert.assertEquals(0, invokeCount.get());
 
@@ -98,8 +134,9 @@ public class ComputedPropertyTest {
         node.put("b", "B");
         node.put("which", "a");
 
-        node.putComputed("computed", () -> node.get(node.get("which")));
-        node.putComputed("another", () -> node.get("a"));
+        node.setComputedProperties(createMap(
+                createComputedProperty("computed", n -> n.get(n.get("which"))),
+                createComputedProperty("another", n -> n.get("a"))));
 
         Assert.assertEquals("A", node.get("computed"));
         Assert.assertEquals("A", node.get("another"));
@@ -123,8 +160,8 @@ public class ComputedPropertyTest {
     public void testContainsIsDependency() {
         StateNode node = StateNode.create();
 
-        node.putComputed("computed",
-                () -> Boolean.valueOf(node.containsKey("foo")));
+        node.setComputedProperties(createComputedPropertyMap("computed",
+                n -> Boolean.valueOf(n.containsKey("foo"))));
 
         Assert.assertFalse(node.get("computed", Boolean.class).booleanValue());
 
@@ -135,5 +172,12 @@ public class ComputedPropertyTest {
         node.remove("foo");
 
         Assert.assertFalse(node.get("computed", Boolean.class).booleanValue());
+    }
+
+    @Test(expected = AssertionError.class)
+    public void setModifiableThrows() {
+        StateNode node = StateNode.create();
+
+        node.setComputedProperties(new HashMap<>());
     }
 }

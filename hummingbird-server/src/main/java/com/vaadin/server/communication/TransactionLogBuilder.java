@@ -127,6 +127,8 @@ public class TransactionLogBuilder {
             return false;
         } else if (key instanceof Class) {
             return true;
+        } else if (key instanceof ServerOnlyKey) {
+            return true;
         } else {
             return false;
         }

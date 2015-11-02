@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,16 +26,16 @@ import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
+import com.vaadin.server.communication.ServerOnlyKey;
 
 public abstract class StateNode implements Serializable {
-    private enum Keys {
+    private enum Keys implements ServerOnlyKey {
         TRANSACTION_LOG, NEXT_UNPREVIEWED_LOG_INDEX, COMPUTED_PENDING_FLUSH, COMPUTED, COMPUTED_CACHE, DEPENDENTS;
     }
 
     private static final Object EMPTY_FLUSH_MARKER = new Object();
 
-    private class ListView extends AbstractList<Object>
-            implements Serializable {
+    private class ListView extends AbstractList<Object>implements Serializable {
         private Object key;
         private ArrayList<Object> backing;
 
@@ -128,7 +127,7 @@ public abstract class StateNode implements Serializable {
     }
 
     private void attach(Object value) {
-        assert !(value instanceof ListView);
+        assert!(value instanceof ListView);
 
         if (value instanceof StateNode) {
             StateNode stateNode = (StateNode) value;
@@ -236,15 +235,15 @@ public abstract class StateNode implements Serializable {
     }
 
     public Object get(Object key) {
-        StateNode computed = getOrCreateInternalMap(Keys.COMPUTED, false);
+        Map<String, ComputedProperty> computed = getComputedProperties();
         if (computed != null && computed.containsKey(key)) {
             StateNode cache = getOrCreateInternalMap(Keys.COMPUTED_CACHE, true);
             if (cache.containsKey(key)) {
                 return cache.get(key);
             } else {
-                Supplier<?> supplier = computed.get(key, Supplier.class);
+                ComputedProperty property = computed.get(key);
                 Reactive.compute(() -> {
-                    Object value = supplier.get();
+                    Object value = property.compute(this);
                     cache.put(key, value);
 
                     Map<Object, Object> pendingFlush = getPendingFlush(false);
@@ -323,7 +322,7 @@ public abstract class StateNode implements Serializable {
 
     public boolean containsKey(Object key) {
         if (key != AbstractElementTemplate.Keys.SERVER_ONLY) {
-            StateNode computed = getOrCreateInternalMap(Keys.COMPUTED, false);
+            Map<String, ComputedProperty> computed = getComputedProperties();
             if (computed != null && computed.containsKey(key)) {
                 return true;
             }
@@ -336,6 +335,11 @@ public abstract class StateNode implements Serializable {
         return doesContainKey(key);
     }
 
+    @SuppressWarnings("unchecked")
+    private Map<String, ComputedProperty> getComputedProperties() {
+        return (Map<String, ComputedProperty>) doGet(Keys.COMPUTED);
+    }
+
     protected abstract boolean doesContainKey(Object key);
 
     protected abstract Object removeValue(Object key);
@@ -343,13 +347,12 @@ public abstract class StateNode implements Serializable {
     protected abstract Object setValue(Object key, Object value);
 
     protected Stream<Object> getKeys() {
-        StateNode computed = getOrCreateInternalMap(Keys.COMPUTED, false);
+        Map<String, ComputedProperty> computed = getComputedProperties();
         Stream<Object> keys = doGetKeys();
         if (computed == null) {
             return keys;
         } else {
-            return Stream.concat(keys, computed.getKeys().filter(
-                    key -> key != AbstractElementTemplate.Keys.SERVER_ONLY));
+            return Stream.concat(keys, computed.keySet().stream());
         }
     }
 
@@ -469,7 +472,7 @@ public abstract class StateNode implements Serializable {
     private void register() {
         RootNode root = getRoot();
         assert root != null;
-        assert !isAttached();
+        assert!isAttached();
 
         setId(root.register(this));
         forEachChildNode(StateNode::register);
@@ -643,14 +646,32 @@ public abstract class StateNode implements Serializable {
         }
     }
 
-    public void putComputed(Object key, Supplier<?> supplier) {
-        if (containsKey(key)) {
+    public void setComputedProperties(
+            Map<String, ComputedProperty> computedProperties) {
+        assert isUnmodifiable(computedProperties);
+
+        if (containsKey(Keys.COMPUTED)) {
             throw new IllegalStateException(
-                    "Can't replace existing property with a computed property");
+                    "Computed properties has already been set for this node");
         }
-        getOrCreateInternalMap(Keys.COMPUTED, true).put(key, supplier);
-        getPendingFlush(true).put(key, EMPTY_FLUSH_MARKER);
+
+        put(Keys.COMPUTED, computedProperties);
+
+        Map<Object, Object> pendingFlush = getPendingFlush(true);
+
+        computedProperties.keySet()
+                .forEach(key -> pendingFlush.put(key, EMPTY_FLUSH_MARKER));
+
         markAsDirty();
+    }
+
+    private static boolean isUnmodifiable(Map<String, ?> map) {
+        try {
+            map.put("foo", null);
+            return false;
+        } catch (Exception expected) {
+            return true;
+        }
     }
 
     private StateNode getOrCreateInternalMap(Object key,
