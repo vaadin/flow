@@ -1,5 +1,6 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.util.Collections;
 import java.util.List;
 
 public class ForElementTemplate extends BoundElementTemplate {
@@ -20,8 +21,13 @@ public class ForElementTemplate extends BoundElementTemplate {
     }
 
     private List<Object> getChildNodes(StateNode node) {
-        return listPath.getNode(node)
-                .getMultiValued(listPath.getNodeProperty());
+        // Don't create a list if it does not exist.
+        // Inefficient and can be of wrong type
+        if (listPath.getNode(node).containsKey(listPath.getNodeProperty())) {
+            return listPath.getNode(node)
+                    .getMultiValued(listPath.getNodeProperty());
+        }
+        return Collections.emptyList();
     }
 
     @Override
