@@ -568,7 +568,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private void setNoCacheHeaders(BootstrapPageResponse response) {
-        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("Cache-Control", "no-cache, no-store");
         response.setHeader("Pragma", "no-cache");
         response.setDateHeader("Expires", 0);
     }
