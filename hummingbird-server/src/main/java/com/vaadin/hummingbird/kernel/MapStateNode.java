@@ -37,4 +37,9 @@ public class MapStateNode extends StateNode {
         return Object.class;
     }
 
+    @Override
+    public String toString() {
+        return "MapStateNode [values=" + values + "]";
+    }
+
 }
