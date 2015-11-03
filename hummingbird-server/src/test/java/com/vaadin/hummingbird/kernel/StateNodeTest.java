@@ -18,6 +18,8 @@ import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.NodeChangeVisitor;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
+import com.vaadin.hummingbird.kernel.change.RangeEndChange;
+import com.vaadin.hummingbird.kernel.change.RangeStartChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
 
 import org.junit.Assert;
@@ -526,6 +528,18 @@ public class StateNodeTest {
                 } else {
                     Assert.fail();
                 }
+            }
+
+            @Override
+            public void rangeStartChange(StateNode node,
+                    RangeStartChange rangeStartChange) {
+                Assert.fail();
+            }
+
+            @Override
+            public void rangeEndChange(StateNode node,
+                    RangeEndChange rangeEndChange) {
+                Assert.fail();
             }
 
         });

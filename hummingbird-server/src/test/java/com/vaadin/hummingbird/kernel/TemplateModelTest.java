@@ -11,6 +11,8 @@ import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
 import com.vaadin.hummingbird.kernel.change.NodeChangeVisitor;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
+import com.vaadin.hummingbird.kernel.change.RangeEndChange;
+import com.vaadin.hummingbird.kernel.change.RangeStartChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
 import com.vaadin.ui.Template;
 import com.vaadin.ui.Template.Model;
@@ -247,6 +249,18 @@ public class TemplateModelTest {
             @Override
             public void visitIdChange(StateNode node, IdChange idChange) {
                 Assert.fail(idChange.toString());
+            }
+
+            @Override
+            public void rangeStartChange(StateNode node,
+                    RangeStartChange rangeStartChange) {
+                Assert.fail(rangeStartChange.toString());
+            }
+
+            @Override
+            public void rangeEndChange(StateNode node,
+                    RangeEndChange rangeEndChange) {
+                Assert.fail(rangeEndChange.toString());
             }
 
         });

@@ -1,0 +1,15 @@
+<div>
+	<div>
+<!--
+ 		<span>Showing items <span>{{items.activeRangeStart}}</span>-<span>{{items.activeRangeEnd}}</span></span>
+ -->
+		<ul id="list">
+			<li *ng-for="#item of items"><span>{{item.string}}</span> (<span>{{item.integer}}</span>)</li>
+		</ul>
+	</div>
+	<button (click)="server.prev();">&lt;&lt; Prev</button>
+	<button (click)="server.next();">Next &gt;&gt;</button>
+	<br/>
+	<button (click)="server.increasePageSize();">Increase page size by 10</button>
+	<button (click)="server.decreasePageSize();">Decrease page size by 10</button>
+</div>

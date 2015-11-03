@@ -15,6 +15,8 @@ import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.NodeListChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
+import com.vaadin.hummingbird.kernel.change.RangeEndChange;
+import com.vaadin.hummingbird.kernel.change.RangeStartChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
 import com.vaadin.ui.UI;
 
@@ -29,7 +31,7 @@ public class TransactionLogOptimizer {
             Set<ElementTemplate> templates) {
         this.ui = ui;
         this.changes = optimizeChanges(changes);
-        assert!hasDetachedNodes(
+        assert !hasDetachedNodes(
                 this.changes) : "There must be no detached nodes in the optimized list";
         this.templates = optimizeTemplates(templates);
     }
@@ -82,6 +84,7 @@ public class TransactionLogOptimizer {
             removeAddedAndRemovedListItems(node, nodeChanges);
             removeDuplicatePuts(node, nodeChanges);
             joinListInserts(node, nodeChanges);
+            keepOnlyLastRangeChange(node, nodeChanges);
         }
 
     }
@@ -258,6 +261,36 @@ public class TransactionLogOptimizer {
     private void removeDetachedNodes(
             LinkedHashMap<StateNode, List<NodeChange>> changes) {
         changes.keySet().removeIf(n -> !n.isAttached());
+    }
+
+    private void keepOnlyLastRangeChange(StateNode node,
+            List<NodeChange> nodeChanges) {
+        Set<Object> rangeStarts = new HashSet<>();
+        Set<Object> rangeEnds = new HashSet<>();
+        for (int i = nodeChanges.size() - 1; i >= 0; i--) {
+            NodeChange change = nodeChanges.get(i);
+
+            if (change instanceof RangeStartChange) {
+                RangeStartChange rangeChange = (RangeStartChange) change;
+                Object key = rangeChange.getKey();
+                if (rangeStarts.contains(key)) {
+                    // Earlier start -> not needed
+                    nodeChanges.remove(i);
+                } else {
+                    rangeStarts.add(key);
+                }
+            } else if (change instanceof RangeEndChange) {
+                RangeEndChange rangeChange = (RangeEndChange) change;
+                Object key = rangeChange.getKey();
+                if (rangeEnds.contains(key)) {
+                    // Earlier start -> not needed
+                    nodeChanges.remove(i);
+                } else {
+                    rangeEnds.add(key);
+                }
+            }
+        }
+
     }
 
 }

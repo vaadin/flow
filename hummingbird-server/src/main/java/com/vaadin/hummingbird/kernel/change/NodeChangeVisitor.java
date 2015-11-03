@@ -24,4 +24,8 @@ public interface NodeChangeVisitor {
 
     void visitRemoveChange(StateNode node, RemoveChange removeChange);
 
+    void rangeStartChange(StateNode node, RangeStartChange rangeStartChange);
+
+    void rangeEndChange(StateNode node, RangeEndChange rangeEndChange);
+
 }

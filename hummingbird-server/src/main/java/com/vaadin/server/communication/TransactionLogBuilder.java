@@ -22,6 +22,8 @@ import com.vaadin.hummingbird.kernel.change.NodeDataChange;
 import com.vaadin.hummingbird.kernel.change.NodeListChange;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
+import com.vaadin.hummingbird.kernel.change.RangeEndChange;
+import com.vaadin.hummingbird.kernel.change.RangeStartChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
 
 public class TransactionLogBuilder {
@@ -193,6 +195,18 @@ public class TransactionLogBuilder {
                     new ListInsertChange(listReplaceChange.getIndex(),
                             listReplaceChange.getKey(),
                             listReplaceChange.getValue()));
+        }
+
+        @Override
+        public void rangeStartChange(StateNode node,
+                RangeStartChange rangeStartChange) {
+            logBuilder.addChange(node, rangeStartChange);
+        }
+
+        @Override
+        public void rangeEndChange(StateNode node,
+                RangeEndChange rangeEndChange) {
+            logBuilder.addChange(node, rangeEndChange);
         }
     }
 

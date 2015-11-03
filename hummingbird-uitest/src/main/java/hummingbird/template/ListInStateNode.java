@@ -2,6 +2,7 @@ package hummingbird.template;
 
 import java.util.List;
 
+import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.annotations.TemplateHTML;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.server.VaadinRequest;
@@ -13,6 +14,8 @@ public class ListInStateNode extends UI {
 
     @TemplateHTML("ItemsLoop.html")
     public static class ListInStateNodeTemplate extends Template {
+        int counter = 0;
+        int earlierCounter = -1;
 
         private List<Object> list;
 
@@ -31,35 +34,39 @@ public class ListInStateNode extends UI {
         protected MyModel getModel() {
             return (MyModel) super.getModel();
         }
-    }
 
-    int counter = 0;
-    int earlierCounter = -1;
-
-    @Override
-    protected void init(VaadinRequest request) {
-
-        ListInStateNodeTemplate listInStateNodeTemplate = new ListInStateNodeTemplate();
-        List<Object> list = listInStateNodeTemplate.getList();
-        for (int i = 0; i < 2; i++) {
-            StateNode sn = StateNode.create();
-            sn.put("value", "Value " + counter++);
-            list.add(sn);
-        }
-        addComponent(listInStateNodeTemplate);
-        addComponent(new Button("Show more...", e -> {
+        @TemplateEventHandler
+        public void extend() {
             for (int i = 0; i < 2; i++) {
                 StateNode sn = StateNode.create();
                 sn.put("value", "Value " + counter++);
                 list.add(sn);
             }
-        }));
-        addComponent(new Button("Show earlier...", e -> {
+        }
+
+        public void prepend() {
             for (int i = 0; i < 2; i++) {
                 StateNode sn = StateNode.create();
                 sn.put("value", "Value " + earlierCounter--);
                 list.add(0, sn);
             }
+
+        }
+
+    }
+
+    @Override
+    protected void init(VaadinRequest request) {
+
+        ListInStateNodeTemplate template = new ListInStateNodeTemplate();
+        template.extend();
+
+        addComponent(template);
+        addComponent(new Button("Show more...", e -> {
+            template.extend();
+        }));
+        addComponent(new Button("Show earlier...", e -> {
+            template.prepend();
         }));
     }
 

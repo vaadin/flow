@@ -36,9 +36,9 @@ public class JsonConverter {
                         || targetType == Double.class) {
                     return Double.valueOf(value.asNumber());
                 }
-            } else
-                if ((targetType == boolean.class || targetType == Boolean.class)
-                        && value instanceof JsonBoolean) {
+            } else if ((targetType == boolean.class
+                    || targetType == Boolean.class)
+                    && value instanceof JsonBoolean) {
                 return Boolean.valueOf(value.asBoolean());
             }
         }
@@ -94,5 +94,28 @@ public class JsonConverter {
             throw new RuntimeException(
                     "No simple type available for " + value.toJson());
         }
+    }
+
+    public static boolean isSupportedType(Class<?> type) {
+
+        if (type.isPrimitive() || type.isArray()) {
+            return true;
+        }
+        if (Number.class.isAssignableFrom(type)) {
+            return true;
+        }
+        if (String.class == type) {
+            return true;
+        }
+        if (Date.class == type) {
+            return true;
+        }
+        if (Boolean.class == type) {
+            return true;
+        }
+        if (JsonValue.class.isAssignableFrom(type)) {
+            return true;
+        }
+        return false;
     }
 }

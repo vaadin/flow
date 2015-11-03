@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
+import com.vaadin.hummingbird.kernel.StateNode.DataProvider;
+import com.vaadin.hummingbird.kernel.StateNode.LazyList;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
@@ -16,6 +19,8 @@ import com.vaadin.hummingbird.kernel.change.NodeDataChange;
 import com.vaadin.hummingbird.kernel.change.NodeListChange;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
+import com.vaadin.hummingbird.kernel.change.RangeEndChange;
+import com.vaadin.hummingbird.kernel.change.RangeStartChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
 import com.vaadin.server.communication.TransactionLogBuilder;
 import com.vaadin.server.communication.TransactionLogOptimizer;
@@ -218,6 +223,12 @@ public class TransactionLogBuilderTest {
                     (NodeDataChange) change2);
         } else if (change1.getClass() == ParentChange.class) {
             assertChangesEquals((ParentChange) change1, (ParentChange) change2);
+        } else if (change1.getClass() == RangeEndChange.class) {
+            assertChangesEquals((RangeEndChange) change1,
+                    (RangeEndChange) change2);
+        } else if (change1.getClass() == RangeStartChange.class) {
+            assertChangesEquals((RangeStartChange) change1,
+                    (RangeStartChange) change2);
         } else {
             Assert.fail("Unknown change type: " + change1.getClass().getName());
         }
@@ -248,6 +259,18 @@ public class TransactionLogBuilderTest {
     private void assertChangesEquals(NodeContentsChange change1,
             NodeContentsChange change2) {
         Assert.assertEquals(change1.getKey(), change2.getKey());
+    }
+
+    private void assertChangesEquals(RangeStartChange change1,
+            RangeStartChange change2) {
+        Assert.assertEquals(change1.getKey(), change2.getKey());
+        Assert.assertEquals(change1.getRangeStart(), change2.getRangeStart());
+    }
+
+    private void assertChangesEquals(RangeEndChange change1,
+            RangeEndChange change2) {
+        Assert.assertEquals(change1.getKey(), change2.getKey());
+        Assert.assertEquals(change1.getRangeEnd(), change2.getRangeEnd());
     }
 
     private void assertChangesEquals(NodeDataChange change1,
@@ -548,6 +571,151 @@ public class TransactionLogBuilderTest {
         // TODO #36, this should only be a ListInsertChange
         assertOptimizedChanges(new RemoveChange(LIST_KEY, "IGNORE"),
                 new ListInsertChange(0, LIST_KEY, "foo"));
+    }
+
+    @Test
+    public void basicLazyList() {
+        node.getLazyMultiValued(LIST_KEY, new DataProvider<SimpleBean>() {
+
+            @Override
+            public List<SimpleBean> getValues(int index, int count) {
+                Assert.fail("Should not fetch row without active range");
+                return null;
+            }
+
+            @Override
+            public Class<SimpleBean> getType() {
+                return SimpleBean.class;
+            }
+        });
+        commit();
+        assertOptimizedChanges();
+    }
+
+    @Test
+    public void basicLazyListRangeChange() {
+        node.getLazyMultiValued(LIST_KEY, new DataProvider<SimpleBean>() {
+
+            @Override
+            public List<SimpleBean> getValues(int index, int count) {
+                List<SimpleBean> l = new ArrayList<>();
+                for (int i = 0; i < count; i++) {
+                    l.add(new SimpleBean("Value " + (index + i)));
+                }
+                return l;
+            }
+
+            @Override
+            public Class<SimpleBean> getType() {
+                return SimpleBean.class;
+            }
+        });
+        LazyList<StateNode> ll = node.get(LIST_KEY, LazyList.class);
+        ll.setActiveRangeEnd(110);
+        ll.setActiveRangeStart(100);
+        commit();
+
+        // Should have rangeStart:100, rangeEnd:100, create 10 data nodes,
+        // insert nodes into the list
+        Assert.assertEquals(optimizedTransactionLogSize, 1 + 1 + 10 + 1);
+        assertChangesEquals(new RangeEndChange(LIST_KEY, 110),
+                (RangeEndChange) flatten(optimizedTransactionLog).get(0));
+        assertChangesEquals(new RangeStartChange(LIST_KEY, 100),
+                (RangeStartChange) flatten(optimizedTransactionLog).get(1));
+                // assertOptimizedChanges(,
+
+        // Insert nodes
+        ListInsertManyChange insert = (ListInsertManyChange) flatten(
+                optimizedTransactionLog).get(2);
+        Assert.assertEquals(LIST_KEY, insert.getKey());
+        Assert.assertEquals(0, insert.getIndex());
+        Assert.assertEquals(10, insert.getValue().size()); // ListInsert
+                                                           // contains 10 nodes
+        for (int i = 0; i < 10; i++) {
+            PutChange putChange = (PutChange) flatten(optimizedTransactionLog)
+                    .get(3 + i);
+            assertChangesEquals(new PutChange("value", "Value " + (100 + i)),
+                    putChange); // The value should match the generated one
+
+            StateNode putNode = getNodeForChange(putChange);
+
+            StateNode insertNode = ((StateNode) ((List) insert.getValue())
+                    .get(i));
+            Assert.assertSame(insertNode, putNode); // Node in listinsert should
+                                                    // be the same as in the put
+                                                    // which sets the value
+        }
+
+    }
+
+    private StateNode getNodeForChange(NodeChange change) {
+        for (Entry<StateNode, List<NodeChange>> entry : optimizedTransactionLog
+                .entrySet()) {
+            if (entry.getValue().contains(change)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+
+    }
+
+    @Test
+    public void basicLazyListRangeChangeAfterCommit() {
+        node.getLazyMultiValued(LIST_KEY, new DataProvider<SimpleBean>() {
+
+            @Override
+            public List<SimpleBean> getValues(int index, int count) {
+                List<SimpleBean> l = new ArrayList<>();
+                for (int i = 0; i < count; i++) {
+                    l.add(new SimpleBean("Value " + (index + i)));
+                }
+                return l;
+            }
+
+            @Override
+            public Class<SimpleBean> getType() {
+                return SimpleBean.class;
+            }
+        });
+
+        LazyList<StateNode> ll = node.get(LIST_KEY, LazyList.class);
+        commit();
+        ll.setActiveRangeEnd(120);
+        ll.setActiveRangeStart(90);
+        ll.setActiveRangeEnd(105);
+        ll.setActiveRangeStart(100);
+        commit();
+
+        // Should have rangeStart:100, rangeEnd:105, create 5 data nodes,
+        // insert nodes into the list
+        Assert.assertEquals(optimizedTransactionLogSize, 1 + 1 + 5 + 1);
+        assertChangesEquals(new RangeEndChange(LIST_KEY, 105),
+                (RangeEndChange) flatten(optimizedTransactionLog).get(0));
+
+        assertChangesEquals(new RangeStartChange(LIST_KEY, 100),
+                (RangeStartChange) flatten(optimizedTransactionLog).get(1));
+        // assertOptimizedChanges(,
+        // Insert nodes
+        ListInsertManyChange insert = (ListInsertManyChange) flatten(
+                optimizedTransactionLog).get(2);
+        Assert.assertEquals(LIST_KEY, insert.getKey());
+        Assert.assertEquals(0, insert.getIndex());
+        Assert.assertEquals(5, insert.getValue().size()); // ListInsert
+                                                          // contains 10 nodes
+        for (int i = 0; i < 5; i++) {
+            PutChange putChange = (PutChange) flatten(optimizedTransactionLog)
+                    .get(3 + i);
+            assertChangesEquals(new PutChange("value", "Value " + (100 + i)),
+                    putChange); // The value should match the generated one
+
+            StateNode putNode = getNodeForChange(putChange);
+
+            StateNode insertNode = ((StateNode) ((List) insert.getValue())
+                    .get(i));
+            Assert.assertSame(insertNode, putNode); // Node in listinsert should
+                                                    // be the same as in the put
+                                                    // which sets the value
+        }
     }
 
 }

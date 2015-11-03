@@ -1,0 +1,30 @@
+<div (created)="srv = server;">
+	<div>
+		<ul id="list">
+			<li *ng-for="#item of items"><span>{{item.string}}</span> (<span>{{item.integer}}</span>)</li>
+		</ul>
+	</div>
+	<script>
+	var doc = document;
+	var ui = doc.querySelector(".ui");
+	var list = doc.getElementById("list");
+	
+	var lastCheckedCount = 0;
+	var loadTriggered = 0;
+	
+	ui.addEventListener("scroll", function(e) {
+		var childCount = list.childElementCount;
+		if (childCount <= loadTriggered)
+			return;
+
+		var lastChild = list.lastElementChild.offsetTop;
+		var lastVisiblePixel = ui.offsetHeight+ui.scrollTop;
+		if (lastChild < lastVisiblePixel) {
+			// Spinner visible
+			srv.extend();
+			loadTriggered = childCount;
+		}
+	});
+	</script>
+	
+</div>

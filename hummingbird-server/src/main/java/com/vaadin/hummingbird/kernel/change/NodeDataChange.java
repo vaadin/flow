@@ -17,4 +17,10 @@ public abstract class NodeDataChange extends NodeContentsChange {
         return value;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " [key=" + getKey() + ", value="
+                + getValue() + "]";
+    }
+
 }

@@ -15,6 +15,8 @@
  */
 package com.vaadin.ui;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -26,10 +28,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.annotations.TemplateHTML;
+import com.vaadin.data.util.BeanUtil;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
@@ -148,13 +153,20 @@ public abstract class Template extends AbstractComponent
 
         private StateNode unwrapProxy(Object value) {
             if (!Proxy.isProxyClass(value.getClass())) {
-                throw new RuntimeException(value.getClass().toString());
+                throw new RuntimeException("class " + value.getClass().getName()
+                        + " is not a proxy class");
             }
             InvocationHandler handler = Proxy.getInvocationHandler(value);
             if (handler instanceof ProxyHandler) {
                 return ((ProxyHandler) handler).node;
             } else {
-                throw new RuntimeException(handler.getClass().toString());
+                String handlerType = "null";
+                if (handler != null) {
+                    handlerType = handler.getClass().getName();
+                }
+
+                throw new RuntimeException("class " + value.getClass().getName()
+                        + " handler " + handlerType + " is not a ProxyHandler");
             }
         }
 
@@ -276,6 +288,58 @@ public abstract class Template extends AbstractComponent
             return wrap(StateNode.create(), type);
         }
 
+        /**
+         * Converts the given bean to a stand alone StateNode, disconnected from
+         * the bean
+         *
+         * @param bean
+         * @return
+         */
+        public static <T> StateNode beanToStateNode(Class<T> beanType, T bean) {
+            StateNode node = StateNode.create();
+            beanToStateNode(beanType, bean, node);
+            return node;
+        }
+
+        public static <T> void beanToStateNode(Class<T> beanType, T bean,
+                StateNode node) {
+            List<PropertyDescriptor> propertyDescriptors;
+            try {
+                propertyDescriptors = BeanUtil
+                        .getBeanPropertyDescriptor(beanType);
+
+                for (PropertyDescriptor pd : propertyDescriptors) {
+                    try {
+                        if (pd.getReadMethod() != null
+                                && pd.getWriteMethod() != null) {
+                            Object value = pd.getReadMethod().invoke(bean);
+                            if (isSimpleType(pd.getPropertyType())) {
+                                node.put(pd.getName(), value);
+                            } else {
+                                node.put(pd.getName(), beanToStateNode(
+                                        (Class) pd.getPropertyType(), value));
+                            }
+                        }
+                    } catch (IllegalAccessException | IllegalArgumentException
+                            | InvocationTargetException e) {
+                        // Ignore what cannot be read
+                    }
+                }
+            } catch (IntrospectionException e1) {
+                getLogger().log(Level.SEVERE,
+                        "Unable to convert bean to state node", e1);
+            }
+        }
+
+        public static Logger getLogger() {
+            return Logger.getLogger(Model.class.getName());
+        }
+
+        public static boolean isSimpleType(Class<?> type) {
+            // FIXME Is this really the correct check to do?
+            return JsonConverter.isSupportedType(type);
+        }
+
         public static <T> T wrap(StateNode node, Class<T> type) {
             return type.cast(Proxy.newProxyInstance(type.getClassLoader(),
                     new Class[] { type }, new ProxyHandler(node)));
@@ -368,7 +432,7 @@ public abstract class Template extends AbstractComponent
             promiseResult = e.getCause().getMessage();
 
             throw new RuntimeException(
-                    "Exception from tempalte handler " + method, e);
+                    "Exception from template handler " + method, e);
         } catch (IllegalAccessException | IllegalArgumentException e) {
             promiseResult = e.getMessage();
 

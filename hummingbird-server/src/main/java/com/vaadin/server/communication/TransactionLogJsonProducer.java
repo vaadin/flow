@@ -18,6 +18,8 @@ import com.vaadin.hummingbird.kernel.change.NodeContentsChange;
 import com.vaadin.hummingbird.kernel.change.NodeDataChange;
 import com.vaadin.hummingbird.kernel.change.NodeListChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
+import com.vaadin.hummingbird.kernel.change.RangeEndChange;
+import com.vaadin.hummingbird.kernel.change.RangeStartChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
 import com.vaadin.ui.UI;
 
@@ -43,6 +45,8 @@ public class TransactionLogJsonProducer {
     private static final String TYPE_LIST_REPLACE = "listReplace";
     private static final String TYPE_LIST_REPLACE_NODE = "listReplaceNode";
     private static final String TYPE_LIST_REMOVE = "listRemove";
+    private static final String TYPE_RANGE_START = "rangeStart";
+    private static final String TYPE_RANGE_END = "rangeEnd";
 
     private JsonArray changesJson = Json.createArray();
     private JsonObject templatesJson = Json.createObject();
@@ -96,12 +100,18 @@ public class TransactionLogJsonProducer {
             NodeContentsChange contentsChange = (NodeContentsChange) change;
             putKey(changeJson, contentsChange);
 
-            if (change instanceof NodeDataChange) {
+            if (contentsChange instanceof NodeDataChange) {
                 putValue(changeJson, ((NodeDataChange) change).getValue());
             } else if (contentsChange instanceof NodeListChange) {
                 NodeListChange listChange = (NodeListChange) contentsChange;
                 changeJson.put(LIST_INDEX, listChange.getIndex());
                 putValue(changeJson, listChange.getValue());
+            } else if (contentsChange instanceof RangeEndChange) {
+                changeJson.put(VALUE,
+                        ((RangeEndChange) contentsChange).getRangeEnd());
+            } else if (contentsChange instanceof RangeStartChange) {
+                changeJson.put(VALUE,
+                        ((RangeStartChange) contentsChange).getRangeStart());
             }
         }
 
@@ -178,6 +188,10 @@ public class TransactionLogJsonProducer {
             } else {
                 return TYPE_LIST_INSERTS;
             }
+        } else if (change instanceof RangeStartChange) {
+            return TYPE_RANGE_START;
+        } else if (change instanceof RangeEndChange) {
+            return TYPE_RANGE_END;
         } else {
             throw new IllegalArgumentException(
                     "Unknown change type: " + change.getClass().getName());
