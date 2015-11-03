@@ -2,7 +2,6 @@ package hummingbird.template;
 
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.annotations.TemplateHTML;
-import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.StateNode.LazyList;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Template;
@@ -15,12 +14,7 @@ public class LazyListPaging extends UI {
     @TemplateHTML("LazyListPaging.html")
     public static class Tpl extends Template {
 
-        private LazyList<StateNode> lazyList;
         private MyDataProvider dataProvider;
-
-        public LazyList<StateNode> getLazyList() {
-            return lazyList;
-        }
 
         public Tpl() {
         }
@@ -30,9 +24,9 @@ public class LazyListPaging extends UI {
 
             public void setPageSize(int pageSize);
 
-            // public LazyList getItems();
-            //
-            // public void setItems(LazyList items);
+            public LazyList getItems();
+
+            public void setItems(LazyList items);
         }
 
         @Override
@@ -45,40 +39,36 @@ public class LazyListPaging extends UI {
             super.init();
             getModel().setPageSize(10);
             dataProvider = new MyDataProvider();
-            lazyList = getElement().getNode().getLazyMultiValued("items",
-                    dataProvider);
+            getModel().setItems(LazyList.create(dataProvider));
 
-            // LazyList items = LazyList.create(dataProvider);
-            // getModel().setItems(items);
-            // getModel().getItems().setActiveRangeEnd(getModel().getPageSize());
-            lazyList.setActiveRangeEnd(getModel().getPageSize());
+            getModel().getItems().setActiveRangeEnd(getModel().getPageSize());
         }
 
         @TemplateEventHandler
         public void increasePageSize() {
             getModel().setPageSize(getModel().getPageSize() + 10);
-            lazyList.increaseActiveRangeEnd(10);
+            getModel().getItems().increaseActiveRangeEnd(10);
         }
 
         @TemplateEventHandler
         public void decreasePageSize() {
             getModel().setPageSize(getModel().getPageSize() - 10);
-            lazyList.decreaseActiveRangeEnd(10);
+            getModel().getItems().decreaseActiveRangeEnd(10);
         }
 
         @TemplateEventHandler
         public void next() {
             int pageSize = getModel().getPageSize();
-            lazyList.increaseActiveRangeEnd(pageSize);
-            lazyList.increaseActiveRangeStart(pageSize);
+            getModel().getItems().increaseActiveRangeEnd(pageSize);
+            getModel().getItems().increaseActiveRangeStart(pageSize);
         }
 
         @TemplateEventHandler
         public void prev() {
             int pageSize = getModel().getPageSize();
-            lazyList.decreaseActiveRangeStart(pageSize);
-            lazyList.setActiveRangeEnd(
-                    lazyList.getActiveRangeStart() + pageSize);
+            LazyList items = getModel().getItems();
+            items.decreaseActiveRangeStart(pageSize);
+            items.setActiveRangeEnd(items.getActiveRangeStart() + pageSize);
         }
     }
 

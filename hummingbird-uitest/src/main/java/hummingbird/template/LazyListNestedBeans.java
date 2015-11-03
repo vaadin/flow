@@ -90,6 +90,10 @@ public class LazyListNestedBeans extends UI {
             public int getPageSize();
 
             public void setPageSize(int pageSize);
+
+            public LazyList getItems();
+
+            public void setItems(LazyList items);
         }
 
         @Override
@@ -102,8 +106,7 @@ public class LazyListNestedBeans extends UI {
             super.init();
             getModel().setPageSize(10);
             dataProvider = new ComplexDataProvider();
-            lazyList = getElement().getNode().getLazyMultiValued("items",
-                    dataProvider);
+            getModel().setItems(LazyList.create(dataProvider));
             lazyList.setActiveRangeEnd(getModel().getPageSize());
         }
 

@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.annotations.TemplateHTML;
-import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.StateNode.DataProvider;
 import com.vaadin.hummingbird.kernel.StateNode.LazyList;
 import com.vaadin.server.VaadinRequest;
@@ -17,21 +16,17 @@ public class LazyListScrolling extends UI {
     @TemplateHTML("LazyListScrolling.html")
     public static class LazyListInStateNodeTemplate extends Template {
 
-        private LazyList<StateNode> lazyList;
         private MyDataProvider dataProvider;
-
-        public LazyList<StateNode> getLazyList() {
-            return lazyList;
-        }
 
         public LazyListInStateNodeTemplate() {
             dataProvider = new MyDataProvider();
-            lazyList = getElement().getNode()
-                    .getLazyMultiValued("items", dataProvider)
-                    .setActiveRangeEnd(2);
+            getModel().setItems(LazyList.create(dataProvider));
         }
 
         public interface MyModel extends Template.Model {
+            public void setItems(LazyList items);
+
+            public LazyList getItems();
         }
 
         @Override
@@ -50,7 +45,7 @@ public class LazyListScrolling extends UI {
         }
 
         public void extend(int count) {
-            lazyList.increaseActiveRangeEnd(count);
+            getModel().getItems().increaseActiveRangeEnd(count);
         }
     }
 

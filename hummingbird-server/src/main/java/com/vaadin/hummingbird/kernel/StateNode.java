@@ -945,19 +945,19 @@ public abstract class StateNode implements Serializable {
         return get(key, LazyList.class);
     }
 
-    public LazyList<StateNode> getLazyMultiValued(Object key,
-            DataProvider dataProvider) {
-        if (containsKey(key)) {
-            throw new IllegalStateException("Key '" + key + "' already exists");
-        }
-
-        LazyList<StateNode> list = new LazyListImpl(dataProvider);
-        list.attach(this, key);
-        setValue(key, list);
-        return list;
-    }
-
     public Object put(Object key, Object value) {
+        if (value instanceof LazyList) {
+            if (containsKey(key)) {
+                throw new IllegalStateException(
+                        "Key '" + key + "' already exists");
+            }
+
+            LazyList list = (LazyList) value;
+            list.attach(this, key);
+            setValue(key, list);
+            return null;
+
+        }
         boolean contained = doesContainKey(key);
         Object previous = setValue(key, value);
         if (contained) {

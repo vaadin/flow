@@ -39,6 +39,7 @@ import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.StateNode.LazyList;
 import com.vaadin.hummingbird.parser.TemplateParser;
 
 import elemental.json.JsonArray;
@@ -108,6 +109,12 @@ public abstract class Template extends AbstractComponent
 
             if (type instanceof Class<?>) {
                 Class<?> clazz = (Class<?>) type;
+
+                if (LazyList.class.isAssignableFrom(clazz)) {
+                    LazyList lazyList = (LazyList) value;
+                    node.put(propertyName, lazyList);
+                    return;
+                }
 
                 if (clazz.isInterface()) {
                     value = unwrapProxy(value);
@@ -191,6 +198,9 @@ public abstract class Template extends AbstractComponent
 
             if (type instanceof Class<?>) {
                 Class<?> clazz = (Class<?>) type;
+                if (LazyList.class.isAssignableFrom(clazz)) {
+                    return node.get(propertyName, LazyList.class);
+                }
                 if (clazz.isInterface()) {
                     StateNode childNode = node.get(propertyName,
                             StateNode.class);

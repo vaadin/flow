@@ -136,8 +136,8 @@ public class UidlWriterTest {
 
     @Test
     public void testCreateLazyList() {
-        element.getElementDataNode().getLazyMultiValued("list",
-                new DataProvider<SimpleBean>() {
+        element.getElementDataNode().put("list",
+                LazyList.create(new DataProvider<SimpleBean>() {
                     @Override
                     public List<SimpleBean> getValues(int index, int count) {
                         List<SimpleBean> l = new ArrayList<>();
@@ -151,7 +151,7 @@ public class UidlWriterTest {
                     public Class<SimpleBean> getType() {
                         return SimpleBean.class;
                     }
-                });
+                }));
 
         JsonArray changes = encodeElementChanges();
         Assert.assertEquals(0, changes.length());
@@ -160,22 +160,22 @@ public class UidlWriterTest {
 
     @Test
     public void changeLazyListRangeEnd() {
-        LazyList<StateNode> list = element.getElementDataNode()
-                .getLazyMultiValued("list", new DataProvider<SimpleBean>() {
-                    @Override
-                    public List<SimpleBean> getValues(int index, int count) {
-                        List<SimpleBean> l = new ArrayList<>();
-                        for (int i = 0; i < count; i++) {
-                            l.add(new SimpleBean("Value " + (index + i)));
-                        }
-                        return l;
-                    }
+        LazyList list = LazyList.create(new DataProvider<SimpleBean>() {
+            @Override
+            public List<SimpleBean> getValues(int index, int count) {
+                List<SimpleBean> l = new ArrayList<>();
+                for (int i = 0; i < count; i++) {
+                    l.add(new SimpleBean("Value " + (index + i)));
+                }
+                return l;
+            }
 
-                    @Override
-                    public Class<SimpleBean> getType() {
-                        return SimpleBean.class;
-                    }
-                });
+            @Override
+            public Class<SimpleBean> getType() {
+                return SimpleBean.class;
+            }
+        });
+        element.getElementDataNode().put("list", list);
 
         list.setActiveRangeEnd(10); // 0-0 -> 0-10
         JsonArray changes = encodeElementChanges();

@@ -575,7 +575,7 @@ public class TransactionLogBuilderTest {
 
     @Test
     public void basicLazyList() {
-        node.getLazyMultiValued(LIST_KEY, new DataProvider<SimpleBean>() {
+        node.put(LIST_KEY, LazyList.create(new DataProvider<SimpleBean>() {
 
             @Override
             public List<SimpleBean> getValues(int index, int count) {
@@ -587,14 +587,14 @@ public class TransactionLogBuilderTest {
             public Class<SimpleBean> getType() {
                 return SimpleBean.class;
             }
-        });
+        }));
         commit();
         assertOptimizedChanges();
     }
 
     @Test
     public void basicLazyListRangeChange() {
-        node.getLazyMultiValued(LIST_KEY, new DataProvider<SimpleBean>() {
+        node.put(LIST_KEY, LazyList.create(new DataProvider<SimpleBean>() {
 
             @Override
             public List<SimpleBean> getValues(int index, int count) {
@@ -609,7 +609,7 @@ public class TransactionLogBuilderTest {
             public Class<SimpleBean> getType() {
                 return SimpleBean.class;
             }
-        });
+        }));
         LazyList<StateNode> ll = node.get(LIST_KEY, LazyList.class);
         ll.setActiveRangeEnd(110);
         ll.setActiveRangeStart(100);
@@ -661,7 +661,7 @@ public class TransactionLogBuilderTest {
 
     @Test
     public void basicLazyListRangeChangeAfterCommit() {
-        node.getLazyMultiValued(LIST_KEY, new DataProvider<SimpleBean>() {
+        node.put(LIST_KEY, LazyList.create(new DataProvider<SimpleBean>() {
 
             @Override
             public List<SimpleBean> getValues(int index, int count) {
@@ -676,7 +676,7 @@ public class TransactionLogBuilderTest {
             public Class<SimpleBean> getType() {
                 return SimpleBean.class;
             }
-        });
+        }));
 
         LazyList<StateNode> ll = node.get(LIST_KEY, LazyList.class);
         commit();
