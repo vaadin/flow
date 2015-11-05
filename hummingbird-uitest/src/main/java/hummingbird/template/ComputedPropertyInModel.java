@@ -1,5 +1,6 @@
 package hummingbird.template;
 
+import com.vaadin.annotations.JS;
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.annotations.TemplateHTML;
 import com.vaadin.server.VaadinRequest;
@@ -17,6 +18,9 @@ public class ComputedPropertyInModel extends UI {
             int value = getValue();
             return value * value;
         }
+
+        @JS("model.value * model.value")
+        public int getSquaredJs();
     }
 
     @TemplateHTML("ComputedPropertyInModel.html")

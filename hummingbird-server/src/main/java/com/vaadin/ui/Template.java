@@ -34,7 +34,13 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import javax.script.SimpleBindings;
+
 import com.vaadin.annotations.Implemented;
+import com.vaadin.annotations.JS;
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.annotations.TemplateHTML;
 import com.vaadin.data.util.BeanUtil;
@@ -283,6 +289,10 @@ public abstract class Template extends AbstractComponent
                 assert args == null;
                 return Integer.valueOf(node.hashCode());
             }
+            case "toString": {
+                assert args == null;
+                return "Model for " + node.getId();
+            }
             default:
                 throw new RuntimeException(
                         "Method not yet supported: " + method);
@@ -385,49 +395,82 @@ public abstract class Template extends AbstractComponent
         Class<? extends Model> modelType = getModelType();
         Method[] methods = modelType.getMethods();
         for (Method method : methods) {
-            if (method.isDefault()) {
-                String methodName = method.getName();
-                if (method.getReturnType() == void.class) {
-                    throw new IllegalStateException("Computed property "
-                            + method.toString() + " has no return type");
-                } else if (method.getParameterCount() != 0) {
-                    throw new IllegalStateException(
-                            "Computed property " + method.toString()
-                                    + " should require zero parameters");
-                } else if (!methodName.startsWith("get")
-                        && !methodName.startsWith("is")) {
-                    throw new IllegalStateException("Computed property "
-                            + method.toString() + " isn't named as a getter");
-                }
+            ComputedProperty computedProperty = findComputedProperty(modelType,
+                    method);
 
-                String name = getPropertyName(methodName);
-
-                properites.put(name, new ComputedProperty(name) {
-                    @Override
-                    public Object compute(StateNode context) {
-                        try {
-                            // Invoke the default method implementation instead
-                            // of triggering the proxy handler
-                            // http://zeroturnaround.com/rebellabs/recognize-and-conquer-java-proxies-default-methods-and-method-handles/
-                            Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
-                                    .getDeclaredConstructor(Class.class,
-                                            int.class);
-                            constructor.setAccessible(true);
-                            return constructor
-                                    .newInstance(modelType,
-                                            MethodHandles.Lookup.PRIVATE)
-                                    .unreflectSpecial(method, modelType)
-                                    .bindTo(model).invokeWithArguments();
-
-                        } catch (Throwable e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
+            if (computedProperty != null) {
+                properites.put(computedProperty.getName(), computedProperty);
             }
         }
 
         return Collections.unmodifiableMap(properites);
+    }
+
+    private ComputedProperty findComputedProperty(
+            Class<? extends Model> modelType, Method method) {
+        String methodName = method.getName();
+        String name = getPropertyName(methodName);
+
+        if (!methodName.startsWith("get") && !methodName.startsWith("is")) {
+            return null;
+        }
+
+        if (method.isDefault()) {
+            if (method.getReturnType() == void.class) {
+                throw new IllegalStateException("Computed property "
+                        + method.toString() + " has no return type");
+            } else if (method.getParameterCount() != 0) {
+                throw new IllegalStateException(
+                        "Computed property " + method.toString()
+                                + " should require zero parameters");
+            }
+
+            return new ComputedProperty(name) {
+                @Override
+                public Object compute(StateNode context) {
+                    try {
+                        // Invoke the default method implementation instead
+                        // of triggering the proxy handler
+                        // http://zeroturnaround.com/rebellabs/recognize-and-conquer-java-proxies-default-methods-and-method-handles/
+                        Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
+                                .getDeclaredConstructor(Class.class, int.class);
+                        constructor.setAccessible(true);
+                        return constructor
+                                .newInstance(modelType,
+                                        MethodHandles.Lookup.PRIVATE)
+                                .unreflectSpecial(method, modelType)
+                                .bindTo(model).invokeWithArguments();
+
+                    } catch (Throwable e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+        }
+
+        JS jsAnnotation = method.getAnnotation(JS.class);
+        if (jsAnnotation != null) {
+            String script = jsAnnotation.value();
+
+            return new ComputedProperty(name) {
+                @Override
+                public Object compute(StateNode context) {
+                    ScriptEngine engine = new ScriptEngineManager()
+                            .getEngineByName("nashorn");
+
+                    SimpleBindings bindings = new SimpleBindings();
+                    bindings.put("model", model);
+
+                    try {
+                        return engine.eval(script, bindings);
+                    } catch (ScriptException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+        }
+
+        return null;
     }
 
     private String getTemplateFilename() {
