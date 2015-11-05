@@ -545,7 +545,7 @@ public class ServerMessageHandler {
         ApplicationConfiguration.runWhenDependenciesLoaded(c);
     }
 
-    private static final native double getPerformanceTiming(String name)
+    public static final native double getPerformanceTiming(String name)
     /*-{
         if ($wnd.performance && $wnd.performance.timing && $wnd.performance.timing[name]) {
             return $wnd.performance.timing[name];
