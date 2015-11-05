@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.Component;
@@ -771,7 +772,7 @@ public class Element implements Serializable {
      * Focuses the element when it is attached to the DOM.
      */
     public Element focus() {
-        getNode().enqueueRpc("$0.focus()", this);
+        invoke("focus");
         return this;
     }
 
@@ -779,7 +780,7 @@ public class Element implements Serializable {
      * Scrolls the element when it is attached to the DOM.
      */
     public Element scrollIntoView() {
-        getNode().enqueueRpc("$0.scrollIntoView()", this);
+        invoke("scrollIntoView");
         return this;
     }
 
@@ -827,6 +828,21 @@ public class Element implements Serializable {
 
     public StateNode getElementDataNode() {
         return template.getElementDataNode(node, true);
+    }
+
+    public Element invoke(String methodName, Object... arguments) {
+        String paramString = IntStream.range(1, arguments.length + 1)
+                .mapToObj(i -> ("$" + i)).collect(Collectors.joining(","));
+
+        Object[] rpcArgs = new Object[arguments.length + 1];
+        rpcArgs[0] = this;
+        for (int i = 0; i < arguments.length; i++) {
+            rpcArgs[i + 1] = arguments[i];
+        }
+        getNode().enqueueRpc("$0." + methodName + "(" + paramString + ")",
+                rpcArgs);
+
+        return this;
     }
 
 }
