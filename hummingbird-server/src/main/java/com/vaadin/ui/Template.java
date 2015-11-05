@@ -17,6 +17,8 @@ package com.vaadin.ui;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -24,6 +26,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.AbstractList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +38,7 @@ import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.annotations.TemplateHTML;
 import com.vaadin.data.util.BeanUtil;
+import com.vaadin.hummingbird.kernel.ComputedProperty;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
@@ -263,13 +267,6 @@ public abstract class Template extends AbstractComponent
                     type.getClass().toString() + ": " + type.toString());
         }
 
-        private String getPropertyName(String methodName) {
-            String propertyName = methodName.replaceFirst("^(set|get|is)", "");
-            propertyName = Character.toLowerCase(propertyName.charAt(0))
-                    + propertyName.substring(1);
-            return propertyName;
-        }
-
         private Object handleObjectMethod(Object proxy, Method method,
                 Object[] args) {
             switch (method.getName()) {
@@ -371,9 +368,66 @@ public abstract class Template extends AbstractComponent
         }
         setElement(Element.getElement(elementTemplate, node));
 
+        Map<String, ComputedProperty> computedProperties = findComputedProperties();
+        if (!computedProperties.isEmpty()) {
+            node.setComputedProperties(computedProperties);
+        }
+
         getNode().put(TemplateCallbackHandler.class, this::onBrowserEvent);
 
         getBinder().bindComponents(this);
+    }
+
+    private Map<String, ComputedProperty> findComputedProperties() {
+        // Should be made static so that the result can be cached
+        Map<String, ComputedProperty> properites = new HashMap<>();
+
+        Class<? extends Model> modelType = getModelType();
+        Method[] methods = modelType.getMethods();
+        for (Method method : methods) {
+            if (method.isDefault()) {
+                String methodName = method.getName();
+                if (method.getReturnType() == void.class) {
+                    throw new IllegalStateException("Computed property "
+                            + method.toString() + " has no return type");
+                } else if (method.getParameterCount() != 0) {
+                    throw new IllegalStateException(
+                            "Computed property " + method.toString()
+                                    + " should require zero parameters");
+                } else if (!methodName.startsWith("get")
+                        && !methodName.startsWith("is")) {
+                    throw new IllegalStateException("Computed property "
+                            + method.toString() + " isn't named as a getter");
+                }
+
+                String name = getPropertyName(methodName);
+
+                properites.put(name, new ComputedProperty(name) {
+                    @Override
+                    public Object compute(StateNode context) {
+                        try {
+                            // Invoke the default method implementation instead
+                            // of triggering the proxy handler
+                            // http://zeroturnaround.com/rebellabs/recognize-and-conquer-java-proxies-default-methods-and-method-handles/
+                            Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
+                                    .getDeclaredConstructor(Class.class,
+                                            int.class);
+                            constructor.setAccessible(true);
+                            return constructor
+                                    .newInstance(modelType,
+                                            MethodHandles.Lookup.PRIVATE)
+                                    .unreflectSpecial(method, modelType)
+                                    .bindTo(model).invokeWithArguments();
+
+                        } catch (Throwable e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }
+
+        return Collections.unmodifiableMap(properites);
     }
 
     private String getTemplateFilename() {
@@ -566,5 +620,12 @@ public abstract class Template extends AbstractComponent
         }
 
         return null;
+    }
+
+    private static String getPropertyName(String methodName) {
+        String propertyName = methodName.replaceFirst("^(set|get|is)", "");
+        propertyName = Character.toLowerCase(propertyName.charAt(0))
+                + propertyName.substring(1);
+        return propertyName;
     }
 }
