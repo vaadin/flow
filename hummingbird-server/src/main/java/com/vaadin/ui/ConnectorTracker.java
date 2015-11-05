@@ -352,9 +352,10 @@ public class ConnectorTracker implements Serializable {
         while (!stack.isEmpty()) {
             ClientConnector connector = stack.pop();
             danglingConnectors.remove(connector);
+            Component component = (Component) connector;
 
-            Iterable<? extends ClientConnector> children = AbstractClientConnector
-                    .getAllChildrenIterable(connector);
+            Iterable<? extends ClientConnector> children = component
+                    .getChildComponents();
             for (ClientConnector child : children) {
                 stack.add(child);
 
@@ -492,8 +493,8 @@ public class ConnectorTracker implements Serializable {
             return;
         }
         markDirty(c);
-        for (ClientConnector child : AbstractClientConnector
-                .getAllChildrenIterable(c)) {
+        Component component = (Component) c;
+        for (ClientConnector child : component.getChildComponents()) {
             markConnectorsDirtyRecursively(child);
         }
     }

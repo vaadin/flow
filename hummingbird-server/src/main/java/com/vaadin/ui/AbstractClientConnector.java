@@ -24,10 +24,8 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -449,70 +447,6 @@ public abstract class AbstractClientConnector extends AbstractHasElement
 
     private static Logger getLogger() {
         return Logger.getLogger(AbstractClientConnector.class.getName());
-    }
-
-    @Override
-    public void markAsDirtyRecursive() {
-        markAsDirty();
-
-        for (ClientConnector connector : getAllChildrenIterable(this)) {
-            connector.markAsDirtyRecursive();
-        }
-    }
-
-    /**
-     * Get an Iterable for iterating over all child connectors, including both
-     * extensions and child components.
-     *
-     * @param connector
-     *            the connector to get children for
-     * @return an Iterable giving all child connectors.
-     */
-    public static Iterable<? extends Component> getAllChildrenIterable(
-            final ClientConnector connector) {
-
-        boolean hasComponents = connector instanceof HasComponents;
-        if (!hasComponents) {
-            // If has neither component nor extensions, return immutable empty
-            // list as iterable.
-            return Collections.emptyList();
-        }
-        if (hasComponents) {
-            // only components
-            return (HasComponents) connector;
-        }
-
-        // combine the iterators of extensions and components to a new iterable.
-        final Iterator<Component> componentsIterator = ((HasComponents) connector)
-                .iterator();
-        Iterable<Component> combinedIterable = new Iterable<Component>() {
-
-            @Override
-            public Iterator<Component> iterator() {
-                return new Iterator<Component>() {
-
-                    @Override
-                    public boolean hasNext() {
-                        return componentsIterator.hasNext();
-                    }
-
-                    @Override
-                    public Component next() {
-                        if (componentsIterator.hasNext()) {
-                            return componentsIterator.next();
-                        }
-                        throw new NoSuchElementException();
-                    }
-
-                    @Override
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-
-                };
-            }
-        };
-        return combinedIterable;
     }
 
     /*

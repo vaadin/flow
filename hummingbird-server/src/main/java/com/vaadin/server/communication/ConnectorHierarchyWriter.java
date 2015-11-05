@@ -24,7 +24,7 @@ import java.util.Collection;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.PaintException;
-import com.vaadin.ui.AbstractClientConnector;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -62,8 +62,8 @@ public class ConnectorHierarchyWriter implements Serializable {
             String connectorId = connector.getConnectorId();
             JsonArray children = Json.createArray();
 
-            for (ClientConnector child : AbstractClientConnector
-                    .getAllChildrenIterable(connector)) {
+            Component component = (Component) connector;
+            for (ClientConnector child : component.getChildComponents()) {
                 if (LegacyCommunicationManager
                         .isConnectorVisibleToClient(child)) {
                     children.set(children.length(), child.getConnectorId());

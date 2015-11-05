@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 import com.vaadin.annotations.Tag;
 import com.vaadin.event.EventSource;
 import com.vaadin.hummingbird.kernel.Element;
+import com.vaadin.server.ClientConnector;
 import com.vaadin.server.ErrorHandler;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.server.Resource;
@@ -519,7 +520,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
         fireEvent(new AttachEvent(this));
 
-        for (Component component : getAllChildrenIterable(this)) {
+        for (Component component : getChildComponents()) {
             component.attach();
         }
 
@@ -538,6 +539,15 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
     }
 
+    @Override
+    public void markAsDirtyRecursive() {
+        markAsDirty();
+
+        for (ClientConnector connector : getChildComponents()) {
+            connector.markAsDirtyRecursive();
+        }
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -549,7 +559,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
     @Override
     public void detach() {
         assert isAttached() : "detach() should never be called for a detached component";
-        for (Component component : getAllChildrenIterable(this)) {
+        for (Component component : getChildComponents()) {
             component.detach();
         }
 
