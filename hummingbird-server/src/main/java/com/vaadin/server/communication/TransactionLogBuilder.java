@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-import com.vaadin.hummingbird.kernel.AbstractElementTemplate;
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
@@ -42,7 +41,7 @@ public class TransactionLogBuilder {
     }
 
     private void addChange(StateNode node, NodeChange change) {
-        if (isServerOnly(node)) {
+        if (node.isServerOnly()) {
             return;
         }
 
@@ -52,7 +51,7 @@ public class TransactionLogBuilder {
         }
 
         if (key != null) {
-            if (isServerOnlyKey(key)) {
+            if (node.isServerOnlyKey(key)) {
                 return;
             }
             // Key types for server only values is not restricted, key types
@@ -73,7 +72,8 @@ public class TransactionLogBuilder {
         }
 
         if (value != null) {
-            if (value instanceof StateNode && isServerOnly((StateNode) value)) {
+            if (value instanceof StateNode
+                    && ((StateNode) value).isServerOnly()) {
                 return;
             }
             handleTemplate(value);
@@ -112,28 +112,6 @@ public class TransactionLogBuilder {
 
     public Set<ElementTemplate> getTemplates() {
         return templates;
-    }
-
-    private static boolean isServerOnly(StateNode node) {
-        if (node == null) {
-            return false;
-        } else if (node.containsKey(AbstractElementTemplate.Keys.SERVER_ONLY)) {
-            return true;
-        } else {
-            return isServerOnly(node.getParent());
-        }
-    }
-
-    private static boolean isServerOnlyKey(Object key) {
-        if (key == null) {
-            return false;
-        } else if (key instanceof Class) {
-            return true;
-        } else if (key instanceof ServerOnlyKey) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public static class NodeVisitor implements NodeChangeVisitor {

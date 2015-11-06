@@ -1170,4 +1170,26 @@ public abstract class StateNode implements Serializable {
     private static Logger getLogger() {
         return Logger.getLogger(StateNode.class.getName());
     }
+
+    public boolean isServerOnly() {
+        if (containsKey(AbstractElementTemplate.Keys.SERVER_ONLY)) {
+            return true;
+        }
+        if (getParent() != null) {
+            return getParent().isServerOnly();
+        }
+        return false;
+    }
+
+    public boolean isServerOnlyKey(Object key) {
+        assert key != null;
+        if (key instanceof Class) {
+            return true;
+        } else if (key instanceof ServerOnlyKey) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
 }
