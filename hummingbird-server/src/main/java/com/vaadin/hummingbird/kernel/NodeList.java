@@ -12,16 +12,14 @@ import com.vaadin.hummingbird.kernel.change.NodeListChange;
 
 public class NodeList extends AbstractList<Object> implements Serializable {
     private Object key;
-    private ArrayList<Object> backing;
+    private ArrayList<Object> backing = new ArrayList<>();
     private StateNode node;
 
-    public NodeList(StateNode node, Object key, ArrayList<Object> backing) {
+    public NodeList(StateNode node, Object key) {
         assert key != null;
         assert node != null;
-        assert backing != null;
         this.node = node;
         this.key = key;
-        this.backing = backing;
     }
 
     @Override

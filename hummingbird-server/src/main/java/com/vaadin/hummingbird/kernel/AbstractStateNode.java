@@ -395,12 +395,8 @@ public abstract class AbstractStateNode implements StateNode {
             return (List) new LazyListActiveRangeView<StateNode>(
                     (LazyList<StateNode>) value);
         } else {
-            ArrayList<Object> backing = new ArrayList<>();
-            if (containsKey(key)) {
-                backing.add(get(key));
-            }
 
-            NodeList NodeList = new NodeList(this, key, backing);
+            NodeList NodeList = new NodeList(this, key);
             setValue(key, NodeList);
             return NodeList;
         }
