@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.vaadin.hummingbird.kernel.StateNode.DataProvider;
-import com.vaadin.hummingbird.kernel.StateNode.LazyList;
+import com.vaadin.hummingbird.kernel.LazyList.DataProvider;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.communication.TransactionLogBuilder;
 import com.vaadin.server.communication.TransactionLogJsonProducer;

@@ -48,8 +48,8 @@ import com.vaadin.hummingbird.kernel.ComputedProperty;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
+import com.vaadin.hummingbird.kernel.LazyList;
 import com.vaadin.hummingbird.kernel.StateNode;
-import com.vaadin.hummingbird.kernel.StateNode.LazyList;
 import com.vaadin.hummingbird.parser.TemplateParser;
 
 import elemental.json.JsonArray;

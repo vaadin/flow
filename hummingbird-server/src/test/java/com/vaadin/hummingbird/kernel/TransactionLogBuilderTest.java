@@ -6,8 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import com.vaadin.hummingbird.kernel.StateNode.DataProvider;
-import com.vaadin.hummingbird.kernel.StateNode.LazyList;
+import com.vaadin.hummingbird.kernel.LazyList.DataProvider;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;

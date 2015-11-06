@@ -2,7 +2,7 @@ package hummingbird.template;
 
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.annotations.TemplateHTML;
-import com.vaadin.hummingbird.kernel.StateNode.LazyList;
+import com.vaadin.hummingbird.kernel.LazyList;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Template;
 import com.vaadin.ui.UI;
