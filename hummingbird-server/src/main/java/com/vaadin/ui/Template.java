@@ -383,7 +383,16 @@ public abstract class Template extends AbstractComponent
             node.setComputedProperties(computedProperties);
         }
 
-        getNode().put(TemplateCallbackHandler.class, this::onBrowserEvent);
+        getNode().put(TemplateCallbackHandler.class,
+                new TemplateCallbackHandler() {
+                    @Override
+                    public void handleCallback(StateNode node,
+                            String callbackName, JsonArray parameters,
+                            int promiseId) {
+                        onBrowserEvent(node, callbackName, parameters,
+                                promiseId);
+                    }
+                });
 
         getBinder().bindComponents(this);
     }

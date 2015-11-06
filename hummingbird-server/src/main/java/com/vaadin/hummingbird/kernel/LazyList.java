@@ -184,10 +184,10 @@ class LazyListImpl implements Serializable, LazyList<StateNode> {
         this.dataProvider = dataProvider;
         cache = new SingleRangeCache<>(addedObject -> {
             assert node != null : "Node must be set";
-            addedObject.forEach(o -> node.attach(o));
+            addedObject.forEach(o -> node.attachChild(o));
         } , removedObject -> {
             assert node != null : "Node must be set";
-            removedObject.forEach(o -> node.detach(o));
+            removedObject.forEach(o -> node.detachChild(o));
         });
     }
 

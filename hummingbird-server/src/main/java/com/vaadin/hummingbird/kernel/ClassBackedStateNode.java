@@ -17,7 +17,7 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.utility.ByteBuddyCommons;
 
-public abstract class ClassBackedStateNode extends StateNode {
+public abstract class ClassBackedStateNode extends AbstractStateNode {
     private Map<Object, Object> values;
 
     protected abstract Map<Object, Field> getFieldMap();
@@ -126,7 +126,8 @@ public abstract class ClassBackedStateNode extends StateNode {
 
     private static final ConcurrentMap<Map<Object, Class<?>>, Class<? extends ClassBackedStateNode>> typeCache = new ConcurrentHashMap<>();
 
-    public static StateNode create(Map<Object, Class<?>> explicitTypes) {
+    public static ClassBackedStateNode create(
+            Map<Object, Class<?>> explicitTypes) {
         Class<? extends ClassBackedStateNode> typeDescriptor = typeCache
                 .computeIfAbsent(explicitTypes,
                         ClassBackedStateNode::createMapping);

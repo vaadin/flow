@@ -381,7 +381,7 @@ public abstract class UI extends CssLayout
             return;
         }
 
-        TemplateCallbackHandler templateEventHandler = node
+        TemplateCallbackHandler templateEventHandler = (TemplateCallbackHandler) node
                 .get(TemplateCallbackHandler.class);
 
         if (templateEventHandler == null) {
@@ -1299,7 +1299,7 @@ public abstract class UI extends CssLayout
      *         not available.
      */
     public PushConnection getPushConnection() {
-        assert!(getPushConfiguration().getPushMode().isEnabled()
+        assert !(getPushConfiguration().getPushMode().isEnabled()
                 && pushConnection == null);
         return pushConnection;
     }
@@ -1317,7 +1317,7 @@ public abstract class UI extends CssLayout
     public void setPushConnection(PushConnection pushConnection) {
         // If pushMode is disabled then there should never be a pushConnection;
         // if enabled there should always be
-        assert(pushConnection == null)
+        assert (pushConnection == null)
                 ^ getPushConfiguration().getPushMode().isEnabled();
 
         if (pushConnection == this.pushConnection) {

@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class MapStateNode extends StateNode {
+public class MapStateNode extends AbstractStateNode {
     private final Map<Object, Object> values = new HashMap<>();
 
     @Override

@@ -97,6 +97,7 @@ import com.vaadin.shared.ui.grid.ScrollDestination;
 import com.vaadin.shared.ui.grid.selection.MultiSelectionModelState;
 import com.vaadin.shared.ui.grid.selection.SingleSelectionModelState;
 import com.vaadin.shared.util.SharedUtil;
+import com.vaadin.ui.Grid.SelectionModel;
 import com.vaadin.ui.renderers.Renderer;
 import com.vaadin.ui.renderers.TextRenderer;
 import com.vaadin.util.ReflectTools;
@@ -4209,7 +4210,7 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
     public List<Column> getColumns() {
         List<Column> columns = new ArrayList<>();
         for (StateNode columnStateNode : getColumnStateNodes()) {
-            columns.add(columnStateNode.get(Column.class));
+            columns.add(columnStateNode.get(Column.class, Column.class));
         }
 
         return Collections.unmodifiableList(columns);

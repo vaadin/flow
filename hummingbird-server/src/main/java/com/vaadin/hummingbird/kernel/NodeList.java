@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
+import com.vaadin.hummingbird.kernel.change.NodeListChange;
 
 public class NodeList extends AbstractList<Object> implements Serializable {
     private Object key;
@@ -29,8 +30,8 @@ public class NodeList extends AbstractList<Object> implements Serializable {
 
         Object previous = backing.set(index, element);
         node.logChange(new ListReplaceChange(index, key, previous, element));
-        node.detach(previous);
-        node.attach(element);
+        node.detachChild(previous);
+        node.attachChild(element);
         return previous;
     }
 
@@ -50,7 +51,7 @@ public class NodeList extends AbstractList<Object> implements Serializable {
 
         backing.add(index, element);
         node.logChange(new ListInsertChange(index, key, element));
-        node.attach(element);
+        node.attachChild(element);
     }
 
     @Override
@@ -58,7 +59,7 @@ public class NodeList extends AbstractList<Object> implements Serializable {
         ensureAttached();
         Object removed = backing.remove(index);
         node.logChange(new ListRemoveChange(index, key, removed));
-        node.detach(removed);
+        node.detachChild(removed);
 
         return removed;
     }
@@ -80,7 +81,7 @@ public class NodeList extends AbstractList<Object> implements Serializable {
     }
 
     void detach() {
-        backing.forEach(node::detach);
+        backing.forEach(node::detachChild);
         backing = null;
     }
 
@@ -88,15 +89,17 @@ public class NodeList extends AbstractList<Object> implements Serializable {
         backing.forEach(consumer);
     }
 
-    void rollback(ListInsertChange change) {
-        backing.remove(change.getIndex());
-    }
-
-    public void rollback(ListRemoveChange change) {
-        backing.add(change.getIndex(), change.getValue());
-    }
-
-    public void rollback(ListReplaceChange change) {
-        backing.set(change.getIndex(), change.getOldValue());
+    void rollback(NodeListChange change) {
+        if (change instanceof ListInsertChange) {
+            backing.remove(change.getIndex());
+        } else if (change instanceof ListRemoveChange) {
+            backing.add(change.getIndex(), change.getValue());
+        } else if (change instanceof ListReplaceChange) {
+            ListReplaceChange replaceChange = (ListReplaceChange) change;
+            backing.set(change.getIndex(), replaceChange.getOldValue());
+        } else {
+            throw new IllegalArgumentException("Unkown change type "
+                    + change.getClass().getName() + " passed to rollback");
+        }
     }
 }

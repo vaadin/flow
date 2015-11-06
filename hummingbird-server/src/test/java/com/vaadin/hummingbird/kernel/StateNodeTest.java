@@ -636,7 +636,7 @@ public class StateNodeTest {
         fields.put("string", String.class);
         fields.put(customKey, int.class);
 
-        StateNode node = StateNode.create(fields);
+        ClassBackedStateNode node = ClassBackedStateNode.create(fields);
 
         Assert.assertSame(String.class, node.getType("string"));
         Assert.assertSame(int.class, node.getType(customKey));
@@ -651,13 +651,14 @@ public class StateNodeTest {
 
     @Test
     public void backedNode_sameDefinition_sameClass() {
-        StateNode node1 = StateNode.create(new HashMap<Object, Class<?>>() {
-            {
-                put("string", String.class);
-            }
-        });
+        StateNode node1 = ClassBackedStateNode
+                .create(new HashMap<Object, Class<?>>() {
+                    {
+                        put("string", String.class);
+                    }
+                });
 
-        StateNode node2 = StateNode
+        StateNode node2 = ClassBackedStateNode
                 .create(Collections.singletonMap("string", String.class));
 
         Assert.assertSame(node1.getClass(), node2.getClass());
@@ -665,14 +666,14 @@ public class StateNodeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void backedNode_invalidType_throws() {
-        StateNode node = StateNode
+        StateNode node = ClassBackedStateNode
                 .create(Collections.singletonMap("string", String.class));
         node.put("string", Integer.valueOf(5));
     }
 
     @Test
     public void backedNodeAlwaysContainsKey() {
-        StateNode node = StateNode
+        StateNode node = ClassBackedStateNode
                 .create(Collections.singletonMap("string", String.class));
 
         Assert.assertTrue(node.containsKey("string"));
@@ -685,7 +686,7 @@ public class StateNodeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void backedNodeRemoveThrows() {
-        StateNode node = StateNode
+        StateNode node = ClassBackedStateNode
                 .create(Collections.singletonMap("string", String.class));
         node.remove("string");
     }
@@ -711,7 +712,7 @@ public class StateNodeTest {
         Map<Object, Class<?>> fields = keys.stream()
                 .collect(Collectors.toMap(key -> key, key -> String.class));
 
-        StateNode node = StateNode.create(fields);
+        StateNode node = ClassBackedStateNode.create(fields);
 
         for (int i = 0; i < keys.size(); i++) {
             node.put(keys.get(i), Integer.toString(i));

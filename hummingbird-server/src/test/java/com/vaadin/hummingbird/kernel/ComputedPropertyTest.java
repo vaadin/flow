@@ -10,10 +10,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.vaadin.hummingbird.kernel.AbstractElementTemplate.Keys;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.vaadin.hummingbird.kernel.AbstractElementTemplate.Keys;
 
 public class ComputedPropertyTest {
     private static Map<String, ComputedProperty> createComputedPropertyMap(
@@ -69,13 +69,13 @@ public class ComputedPropertyTest {
         node.setComputedProperties(
                 createComputedPropertyMap("computed", n -> "foo"));
 
-        Assert.assertFalse(
-                node.getKeys().anyMatch(Predicate.isEqual(Keys.SERVER_ONLY)));
+        Assert.assertFalse(node.getKeys().stream()
+                .anyMatch(Predicate.isEqual(Keys.SERVER_ONLY)));
         Assert.assertFalse(node.containsKey(Keys.SERVER_ONLY));
 
         node.put(Keys.SERVER_ONLY, null);
-        Assert.assertTrue(
-                node.getKeys().anyMatch(Predicate.isEqual(Keys.SERVER_ONLY)));
+        Assert.assertTrue(node.getKeys().stream()
+                .anyMatch(Predicate.isEqual(Keys.SERVER_ONLY)));
         Assert.assertTrue(node.containsKey(Keys.SERVER_ONLY));
     }
 

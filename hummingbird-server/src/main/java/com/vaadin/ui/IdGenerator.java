@@ -10,7 +10,8 @@ public class IdGenerator {
 
     public static String generateId(UI ui) {
         StateNode uiNode = ui.getElement().getNode();
-        SequenceNumber seqNum = uiNode.get(SequenceNumber.class);
+        SequenceNumber seqNum = uiNode.get(SequenceNumber.class,
+                SequenceNumber.class);
         if (seqNum == null) {
             seqNum = new SequenceNumber();
             uiNode.put(SequenceNumber.class, seqNum);
