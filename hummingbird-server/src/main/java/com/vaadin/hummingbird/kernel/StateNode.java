@@ -35,74 +35,6 @@ public abstract class StateNode implements Serializable {
 
     private static final Object EMPTY_FLUSH_MARKER = new Object();
 
-    private class ListView extends AbstractList<Object>
-            implements Serializable {
-        private Object key;
-        private ArrayList<Object> backing;
-
-        public ListView(Object key, ArrayList<Object> backing) {
-            assert key != null;
-            this.key = key;
-            this.backing = backing;
-        }
-
-        @Override
-        public Object set(int index, Object element) {
-            ensureAttached();
-
-            Object previous = backing.set(index, element);
-            logChange(new ListReplaceChange(index, key, previous, element));
-            detach(previous);
-            attach(element);
-            return previous;
-        }
-
-        private boolean isAttached() {
-            return backing != null;
-        }
-
-        private void ensureAttached() {
-            if (!isAttached()) {
-                throw new IllegalStateException();
-            }
-        }
-
-        @Override
-        public void add(int index, Object element) {
-            ensureAttached();
-
-            backing.add(index, element);
-            logChange(new ListInsertChange(index, key, element));
-            attach(element);
-        }
-
-        @Override
-        public Object remove(int index) {
-            ensureAttached();
-            Object removed = backing.remove(index);
-            logChange(new ListRemoveChange(index, key, removed));
-            detach(removed);
-
-            return removed;
-        }
-
-        @Override
-        public Object get(int index) {
-            ensureAttached();
-
-            return backing.get(index);
-        }
-
-        @Override
-        public int size() {
-            if (!isAttached()) {
-                return 0;
-            }
-
-            return backing.size();
-        }
-    }
-
     private StateNode parent;
     private int id = 0;
 
@@ -128,7 +60,7 @@ public abstract class StateNode implements Serializable {
     }
 
     void attach(Object value) {
-        assert !(value instanceof ListView);
+        assert !(value instanceof NodeList);
 
         if (value instanceof StateNode) {
             StateNode stateNode = (StateNode) value;
@@ -377,19 +309,12 @@ public abstract class StateNode implements Serializable {
                 (node, change) -> node.removeValue(change.getKey()));
         addRollbackHandler(RemoveChange.class, (node, change) -> node
                 .setValue(change.getKey(), change.getValue()));
-        addRollbackHandler(
-                ListInsertChange.class, (node,
-                        change) -> node.get(change.getKey(),
-                                ListView.class).backing
-                                        .remove(change.getIndex()));
-        addRollbackHandler(ListRemoveChange.class,
-                (node, change) -> node.get(change.getKey(),
-                        ListView.class).backing.add(change.getIndex(),
-                                change.getValue()));
-        addRollbackHandler(ListReplaceChange.class,
-                (node, change) -> node.get(change.getKey(),
-                        ListView.class).backing.set(change.getIndex(),
-                                change.getOldValue()));
+        addRollbackHandler(ListInsertChange.class, (node, change) -> node
+                .get(change.getKey(), NodeList.class).rollback(change));
+        addRollbackHandler(ListRemoveChange.class, (node, change) -> node
+                .get(change.getKey(), NodeList.class).rollback(change));
+        addRollbackHandler(ListReplaceChange.class, (node, change) -> node
+                .get(change.getKey(), NodeList.class).rollback(change));
     }
 
     private <T extends NodeChange> void rollback(T change) {
@@ -439,15 +364,15 @@ public abstract class StateNode implements Serializable {
         logChange(new IdChange(oldId, newId));
     }
 
-    private void forEachChildNode(Consumer<StateNode> consumer) {
+    void forEachChildNode(Consumer<StateNode> consumer) {
         Consumer<Object> action = new Consumer<Object>() {
             @Override
             public void accept(Object v) {
                 if (v instanceof StateNode) {
                     StateNode childNode = (StateNode) v;
                     consumer.accept(childNode);
-                } else if (v instanceof ListView) {
-                    ((ListView) v).backing.forEach(this);
+                } else if (v instanceof NodeList) {
+                    ((NodeList) v).forEachChildNode(this);
                 }
             }
         };
@@ -463,10 +388,8 @@ public abstract class StateNode implements Serializable {
             if (isAttached()) {
                 childNode.unregister();
             }
-        } else if (value instanceof ListView) {
-            ListView listView = (ListView) value;
-            listView.backing.forEach(this::detach);
-            listView.backing = null;
+        } else if (value instanceof NodeList) {
+            ((NodeList) value).detach();
         }
     }
 
@@ -497,11 +420,8 @@ public abstract class StateNode implements Serializable {
 
     public List<Object> getMultiValued(Object key) {
         Object value = get(key);
-        if (value instanceof ListView) {
-            ListView listView = (ListView) value;
-            assert listView.key.equals(key);
-            assert listView.backing != null;
-            return listView;
+        if (value instanceof NodeList) {
+            return (NodeList) value;
         } else if (value instanceof LazyList) {
             return (List) new LazyListActiveRangeView<StateNode>(
                     (LazyList<StateNode>) value);
@@ -511,9 +431,9 @@ public abstract class StateNode implements Serializable {
                 backing.add(get(key));
             }
 
-            ListView listView = new ListView(key, backing);
-            setValue(key, listView);
-            return listView;
+            NodeList NodeList = new NodeList(this, key, backing);
+            setValue(key, NodeList);
+            return NodeList;
         }
     }
 
