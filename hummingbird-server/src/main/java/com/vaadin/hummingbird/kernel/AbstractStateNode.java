@@ -402,12 +402,6 @@ public abstract class AbstractStateNode implements StateNode {
         }
     }
 
-    public interface DataProvider<T> {
-        public List<T> getValues(int index, int count);
-
-        public Class<T> getType();
-    }
-
     /**
      * Class for providing the active range of a LazyList in a List format. The
      * list is offset so that index 0 corresponds to the start of the active
