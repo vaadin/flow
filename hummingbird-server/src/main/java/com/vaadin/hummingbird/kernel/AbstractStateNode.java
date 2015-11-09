@@ -1,6 +1,5 @@
 package com.vaadin.hummingbird.kernel;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -400,36 +399,6 @@ public abstract class AbstractStateNode implements StateNode {
             setValue(key, NodeList);
             return NodeList;
         }
-    }
-
-    /**
-     * Class for providing the active range of a LazyList in a List format. The
-     * list is offset so that index 0 corresponds to the start of the active
-     * range.
-     */
-    public static class LazyListActiveRangeView<T extends StateNode>
-            extends AbstractList<T> {
-
-        private LazyList<T> lazyList;
-
-        public LazyListActiveRangeView(LazyList<T> lazyList) {
-            this.lazyList = lazyList;
-        }
-
-        @Override
-        public T get(int index) {
-            if (index < 0 || index >= size()) {
-                throw new ArrayIndexOutOfBoundsException(index);
-            }
-            return lazyList.get(index + lazyList.getActiveRangeStart());
-        }
-
-        @Override
-        public int size() {
-            return lazyList.getActiveRangeEnd()
-                    - lazyList.getActiveRangeStart();
-        }
-
     }
 
     public LazyList<StateNode> getLazyMultiValued(Object key) {
