@@ -154,7 +154,8 @@ public class TemplateParser {
         String text = node.text();
         if (text.startsWith("{{")) {
             if (!text.endsWith("}}")) {
-                throw new RuntimeException();
+                throw new RuntimeException(
+                        "Invalid text node '" + text + "'. Must end with }}");
             }
             String modelPath = text.substring(2, text.length() - 2);
             return TemplateBuilder.dynamicText(scope.getPath(modelPath));
