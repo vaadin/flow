@@ -47,7 +47,7 @@ public abstract class AbstractStateNode implements StateNode {
 
     @Override
     public void attachChild(Object value) {
-        assert !(value instanceof NodeList);
+        assert !(value instanceof ListNode);
 
         if (value instanceof StateNode) {
             StateNode stateNode = (StateNode) value;
@@ -333,8 +333,8 @@ public abstract class AbstractStateNode implements StateNode {
                 if (v instanceof StateNode) {
                     StateNode childNode = (StateNode) v;
                     consumer.accept(childNode);
-                } else if (v instanceof NodeList) {
-                    ((NodeList) v).forEachChildNode(this);
+                } else if (v instanceof ListNode) {
+                    ((ListNode) v).forEachChildNode(this);
                 }
             }
         };
@@ -351,8 +351,8 @@ public abstract class AbstractStateNode implements StateNode {
             if (isAttached()) {
                 childNode.unregister();
             }
-        } else if (value instanceof NodeList) {
-            ((NodeList) value).detach();
+        } else if (value instanceof ListNode) {
+            ((ListNode) value).detach();
         }
     }
 
@@ -388,14 +388,14 @@ public abstract class AbstractStateNode implements StateNode {
     @Override
     public List<Object> getMultiValued(Object key) {
         Object value = get(key);
-        if (value instanceof NodeList) {
-            return (NodeList) value;
+        if (value instanceof ListNode) {
+            return (ListNode) value;
         } else if (value instanceof LazyList) {
             return (List) new LazyListActiveRangeView<StateNode>(
                     (LazyList<StateNode>) value);
         } else {
 
-            NodeList NodeList = new NodeList(this, key);
+            ListNode NodeList = new ListNode(this, key);
             setValue(key, NodeList);
             return NodeList;
         }
@@ -632,7 +632,7 @@ public abstract class AbstractStateNode implements StateNode {
             setValue(removeChange.getKey(), removeChange.getValue());
         } else if (change instanceof NodeListChange) {
             NodeListChange nodeListChange = (NodeListChange) change;
-            get(nodeListChange.getKey(), NodeList.class)
+            get(nodeListChange.getKey(), ListNode.class)
                     .rollback(nodeListChange);
         } else {
             throw new IllegalArgumentException("Unkown change type "

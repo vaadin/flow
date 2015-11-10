@@ -10,12 +10,12 @@ import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
 import com.vaadin.hummingbird.kernel.change.NodeListChange;
 
-public class NodeList extends AbstractList<Object> implements Serializable {
+public class ListNode extends AbstractList<Object> implements Serializable {
     private Object key;
     private ArrayList<Object> backing = new ArrayList<>();
     private StateNode node;
 
-    public NodeList(StateNode node, Object key) {
+    public ListNode(StateNode node, Object key) {
         assert key != null;
         assert node != null;
         this.node = node;
