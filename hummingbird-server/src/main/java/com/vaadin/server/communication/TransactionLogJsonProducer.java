@@ -8,6 +8,8 @@ import java.util.Set;
 
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
+import com.vaadin.hummingbird.kernel.LazyList;
+import com.vaadin.hummingbird.kernel.ListNode;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.change.ListChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
@@ -35,6 +37,7 @@ public class TransactionLogJsonProducer {
     private static final String VALUE = "value";
     private static final String TYPE_PUT = "put";
     private static final String TYPE_PUT_NODE = "putNode";
+    private static final String TYPE_PUT_LIST_NODE = "putListNode";
     private static final String LIST_INDEX = "index";
     private static final String TYPE_REMOVE = "remove";
     private static final String TYPE_PUT_OVERRIDE = "putOverride";
@@ -154,7 +157,10 @@ public class TransactionLogJsonProducer {
             return TYPE_REMOVE;
         } else if (change instanceof PutChange) {
             PutChange pc = (PutChange) change;
-            if (pc.getValue() instanceof StateNode) {
+            if (pc.getValue() instanceof ListNode
+                    || pc.getValue() instanceof LazyList) {
+                return TYPE_PUT_LIST_NODE;
+            } else if (pc.getValue() instanceof StateNode) {
                 if (pc.getKey() instanceof ElementTemplate) {
                     return TYPE_PUT_OVERRIDE;
                 } else {

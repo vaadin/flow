@@ -11,7 +11,7 @@ public interface NodeContext {
     public void listenToProperty(String name,
             TreeNodePropertyValueChangeListener listener);
 
-    public EventArray resolveArrayProperty(String name);
+    public ListTreeNode resolveListTreeNode(String name);
 
     public Map<String, JavaScriptObject> buildEventHandlerContext();
 }

@@ -7,7 +7,7 @@ import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.DomElement;
-import com.vaadin.client.communication.tree.EventArray.ArrayEventListener;
+import com.vaadin.client.communication.tree.ListTreeNode.ArrayEventListener;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
 import elemental.json.JsonObject;
@@ -35,12 +35,12 @@ public class ForElementTemplate extends Template {
         // Creates anchor element
         Node commentNode = createCommentNode("for " + modelKey);
 
-        outerContext.resolveArrayProperty(getModelKey())
+        outerContext.resolveListTreeNode(getModelKey())
                 .addArrayEventListener(new ArrayEventListener() {
 
                     @Override
-                    public void splice(EventArray eventArray, int startIndex,
-                            JsArrayObject<Object> removed,
+                    public void splice(ListTreeNode listTreeNode,
+                            int startIndex, JsArrayObject<Object> removed,
                             JsArrayObject<Object> added) {
                         DomElement forNode = DomApi
                                 .wrap(DomApi.wrap(commentNode).getParentNode());
@@ -76,14 +76,17 @@ public class ForElementTemplate extends Template {
                             int insertIndex = commentNodeIndex + startIndex + i;
                             NodeContext innerContext = new NodeContext() {
                                 @Override
-                                public EventArray resolveArrayProperty(
+                                public ListTreeNode resolveListTreeNode(
                                         String name) {
                                     if (isInnerScope(name)) {
-                                        return childNode.getArrayProperty(
-                                                getInnerProperty(name));
+                                        ListTreeNode listTreeNode = (ListTreeNode) childNode
+                                                .getProperty(
+                                                        getInnerProperty(name))
+                                                .getValue();
+                                        return listTreeNode;
                                     } else {
                                         return outerContext
-                                                .resolveArrayProperty(name);
+                                                .resolveListTreeNode(name);
                                     }
                                 }
 
