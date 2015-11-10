@@ -1,0 +1,18 @@
+<div (created)="init()">
+	<span id="count">{{count}}</span>
+	<script>
+			debugger;
+		function init() {
+			debugger;
+			var lastSeen = 0;
+			var span = document.querySelector("#count");
+			setInterval(function() {
+				if (span.innerText != lastSeen) {
+					lastSeen = span.innerText;
+					var event = new Event("count");
+					span.parentElement.dispatchEvent(event);
+				}
+			}, 1);
+		}
+	</script>
+</div>
