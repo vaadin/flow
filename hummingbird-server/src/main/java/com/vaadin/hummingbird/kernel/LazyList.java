@@ -153,20 +153,10 @@ public interface LazyList<T extends StateNode> {
         return new LazyListImpl(dataProvider);
     }
 
-    /**
-     * Attach the lazy list to the given state node using the given key.
-     *
-     * @deprecated This method should be refactored and ultimately removed
-     *
-     * @param stateNode
-     * @param key
-     */
-    @Deprecated
-    public void attach(StateNode stateNode, Object key);
-
 }
 
-class LazyListImpl implements Serializable, LazyList<StateNode> {
+class LazyListImpl extends MapStateNode
+        implements Serializable, LazyList<StateNode> {
     private DataProvider<Object> dataProvider;
     /**
      * The range which the client currently has data for
@@ -175,39 +165,24 @@ class LazyListImpl implements Serializable, LazyList<StateNode> {
     private Runnable sendPendingData = this::sendPendingData;
     private SingleRangeCache<StateNode> cache;
 
-    private StateNode node;
-    private Object key;
     private Class<Object> type;
 
     public LazyListImpl(DataProvider<Object> dataProvider) {
         type = dataProvider.getType();
         this.dataProvider = dataProvider;
         cache = new SingleRangeCache<>(addedObject -> {
-            assert node != null : "Node must be set";
-            addedObject.forEach(o -> node.attachChild(o));
+            addedObject.forEach(o -> attachChild(o));
         } , removedObject -> {
-            assert node != null : "Node must be set";
-            removedObject.forEach(o -> node.detachChild(o));
+            removedObject.forEach(o -> detachChild(o));
         });
     }
 
     @Override
-    public void attach(StateNode node, Object key) {
-        assert this.node == null : "Node cannot be changed";
-        assert node != null : "Node cannot be null";
-        assert this.key == null : "Key cannot be changed";
-        assert key != null : "Key cannot be null";
-        this.key = key;
-        this.node = node;
-    }
-
-    @Override
     public LazyList<StateNode> setActiveRangeStart(int activeRangeStart) {
-        assert node != null;
         int oldRangeStart = getActiveRangeStart();
         getLogger().info("setActiveRangeStart(" + activeRangeStart + ")");
         cache.setRangeStart(activeRangeStart);
-        node.logChange(new RangeStartChange(key, activeRangeStart));
+        logChange(new RangeStartChange(activeRangeStart));
         if (activeRangeStart > oldRangeStart) {
             if (!clientRange.isEmpty()
                     && clientRange.getStart() < activeRangeStart) {
@@ -219,24 +194,23 @@ class LazyListImpl implements Serializable, LazyList<StateNode> {
                         .getStart(); i < activeRangeStart; i++) {
                     // Client side maps [0,N] to
                     // [clientRangeStart,clientRangeEnd]
-                    node.logChange(new ListRemoveChange(0, key, null));
+                    logChange(new ListRemoveChange(0, null));
                 }
                 clientRange = Range.between(activeRangeStart,
                         clientRange.getEnd());
             }
         }
-        node.runBeforeNextClientResponse(sendPendingData);
+        runBeforeNextClientResponse(sendPendingData);
         return this;
     }
 
     @Override
     public LazyList<StateNode> setActiveRangeEnd(int activeRangeEnd) {
-        assert node != null : "Node must be set";
         int oldRangeEnd = getActiveRangeEnd();
 
         getLogger().info("setActiveRangeEnd(" + activeRangeEnd + ")");
         cache.setRangeEnd(activeRangeEnd);
-        node.logChange(new RangeEndChange(key, activeRangeEnd));
+        logChange(new RangeEndChange(activeRangeEnd));
         if (activeRangeEnd < oldRangeEnd) {
             if (!clientRange.isEmpty()
                     && clientRange.getEnd() > activeRangeEnd) {
@@ -247,15 +221,14 @@ class LazyListImpl implements Serializable, LazyList<StateNode> {
                 for (int i = activeRangeEnd; i < clientRange.getEnd(); i++) {
                     // Client side maps [0,N] to
                     // [clientRangeStart,clientRangeEnd]
-                    node.logChange(new ListRemoveChange(
-                            activeRangeEnd - clientRange.getStart(), key,
-                            null));
+                    logChange(new ListRemoveChange(
+                            activeRangeEnd - clientRange.getStart(), null));
                 }
                 clientRange = Range.between(clientRange.getStart(),
                         activeRangeEnd);
             }
         }
-        node.runBeforeNextClientResponse(sendPendingData);
+        runBeforeNextClientResponse(sendPendingData);
         return this;
     }
 
@@ -384,15 +357,12 @@ class LazyListImpl implements Serializable, LazyList<StateNode> {
     }
 
     private void sendData(Range range) {
-        assert node != null : "Node must be set";
-        assert key != null;
-
         List<StateNode> data = get(range.getStart(), range.length());
         getLogger().info("Sending data for " + range + ": " + data);
 
         // Client uses indexes [0,N] for [activeRangeStart,activeRangeEnd]
-        node.logChange(new ListInsertManyChange(
-                range.getStart() - getActiveRangeStart(), key, data.toArray()));
+        logChange(new ListInsertManyChange(
+                range.getStart() - getActiveRangeStart(), data.toArray()));
     }
 
 }

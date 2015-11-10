@@ -89,6 +89,8 @@ public class TemplateParser {
             path = new ArrayList<>(path);
             for (int i = 0; i < depth; i++) {
                 path.add(0, "..");
+                // FIXME Is it always two levels, through a ListNode?
+                path.add(0, "..");
             }
 
             return new ModelPath(definition, path);

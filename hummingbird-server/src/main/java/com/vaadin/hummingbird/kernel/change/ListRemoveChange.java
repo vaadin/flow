@@ -2,10 +2,10 @@ package com.vaadin.hummingbird.kernel.change;
 
 import com.vaadin.hummingbird.kernel.StateNode;
 
-public class ListRemoveChange extends NodeListChange {
+public class ListRemoveChange extends ListChange {
 
-    public ListRemoveChange(int index, Object key, Object value) {
-        super(index, key, value);
+    public ListRemoveChange(int index, Object value) {
+        super(index, value);
     }
 
     @Override

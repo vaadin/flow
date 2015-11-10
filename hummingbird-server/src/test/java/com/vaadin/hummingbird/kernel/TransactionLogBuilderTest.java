@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import com.vaadin.hummingbird.kernel.LazyList.DataProvider;
 import com.vaadin.hummingbird.kernel.change.IdChange;
+import com.vaadin.hummingbird.kernel.change.ListChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
@@ -15,7 +16,6 @@ import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.NodeContentsChange;
 import com.vaadin.hummingbird.kernel.change.NodeDataChange;
-import com.vaadin.hummingbird.kernel.change.NodeListChange;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RangeEndChange;
@@ -76,11 +76,7 @@ public class TransactionLogBuilderTest {
 
         commit();
 
-        Assert.assertEquals(
-                "Add + remove should generate an add and remove change", 2,
-                transactionLogSize);
-        assertOptimizedChanges();
-
+        assertOptimizedChanges(new PutChange(LIST_KEY, node.get(LIST_KEY)));
     }
 
     @Test
@@ -92,8 +88,8 @@ public class TransactionLogBuilderTest {
 
         commit();
 
-        Assert.assertEquals(3, transactionLogSize);
-        assertOptimizedChanges(new ListInsertChange(0, LIST_KEY, "2"));
+        assertOptimizedChanges(new PutChange(LIST_KEY, node.get(LIST_KEY)),
+                new ListInsertChange(0, "2"));
 
     }
 
@@ -106,8 +102,8 @@ public class TransactionLogBuilderTest {
 
         commit();
 
-        Assert.assertEquals(3, transactionLogSize);
-        assertOptimizedChanges(new ListInsertChange(0, LIST_KEY, "1"));
+        assertOptimizedChanges(new PutChange(LIST_KEY, node.get(LIST_KEY)),
+                new ListInsertChange(0, "1"));
 
     }
 
@@ -120,9 +116,9 @@ public class TransactionLogBuilderTest {
         commit();
 
         Assert.assertEquals(
-                "Add + remove should generate an add and remove change", 2,
-                transactionLogSize);
-        assertOptimizedChanges();
+                "Add + remove should generate a put (node), an add and a remove change",
+                3, transactionLogSize);
+        assertOptimizedChanges(new PutChange(LIST_KEY, node.get(LIST_KEY)));
 
     }
 
@@ -136,13 +132,13 @@ public class TransactionLogBuilderTest {
 
         commit();
 
-        Assert.assertEquals(4, transactionLogSize);
+        Assert.assertEquals(5, transactionLogSize);
 
         Assert.assertFalse(
                 "No changes related to the removed node should be in the optimized log",
                 optimizedLogContainsNode(node1));
-        assertOptimizedChanges(
-                new ListInsertManyChange(0, LIST_KEY, node2, node3));
+        assertOptimizedChanges(new PutChange(LIST_KEY, node2.getParent()),
+                new ListInsertManyChange(0, node2, node3));
 
     }
 
@@ -161,8 +157,8 @@ public class TransactionLogBuilderTest {
 
         commit();
 
-        assertOptimizedChanges(new ListInsertManyChange(3, LIST_KEY, node1,
-                node2, node3, node4, node5));
+        assertOptimizedChanges(
+                new ListInsertManyChange(3, node1, node2, node3, node4, node5));
 
     }
 
@@ -176,8 +172,7 @@ public class TransactionLogBuilderTest {
         list.add(node3);
         commit();
 
-        assertOptimizedChanges(
-                new ListInsertManyChange(1, LIST_KEY, node2, node3));
+        assertOptimizedChanges(new ListInsertManyChange(1, node2, node3));
 
     }
 
@@ -203,14 +198,11 @@ public class TransactionLogBuilderTest {
         if (change1.getClass() == IdChange.class) {
             assertChangesEquals((IdChange) change1, (IdChange) change2);
         } else if (change1.getClass() == ListInsertChange.class) {
-            assertChangesEquals((NodeListChange) change1,
-                    (NodeListChange) change2);
+            assertChangesEquals((ListChange) change1, (ListChange) change2);
         } else if (change1.getClass() == ListInsertManyChange.class) {
-            assertChangesEquals((NodeListChange) change1,
-                    (NodeListChange) change2);
+            assertChangesEquals((ListChange) change1, (ListChange) change2);
         } else if (change1.getClass() == ListRemoveChange.class) {
-            assertChangesEquals((NodeListChange) change1,
-                    (NodeListChange) change2);
+            assertChangesEquals((ListChange) change1, (ListChange) change2);
         } else if (change1.getClass() == ListReplaceChange.class) {
             assertChangesEquals((ListReplaceChange) change1,
                     (ListReplaceChange) change2);
@@ -242,14 +234,11 @@ public class TransactionLogBuilderTest {
 
     private void assertChangesEquals(ListReplaceChange change1,
             ListReplaceChange change2) {
-        assertChangesEquals((NodeListChange) change1, (NodeListChange) change2);
+        assertChangesEquals((ListChange) change1, (ListChange) change2);
         Assert.assertEquals(change1.getOldValue(), change2.getOldValue());
     }
 
-    private void assertChangesEquals(NodeListChange change1,
-            NodeListChange change2) {
-        assertChangesEquals((NodeContentsChange) change1,
-                (NodeContentsChange) change2);
+    private void assertChangesEquals(ListChange change1, ListChange change2) {
         Assert.assertEquals("Unexpected index for change", change1.getIndex(),
                 change2.getIndex());
         Assert.assertEquals(change1.getValue(), change2.getValue());
@@ -262,13 +251,11 @@ public class TransactionLogBuilderTest {
 
     private void assertChangesEquals(RangeStartChange change1,
             RangeStartChange change2) {
-        Assert.assertEquals(change1.getKey(), change2.getKey());
         Assert.assertEquals(change1.getRangeStart(), change2.getRangeStart());
     }
 
     private void assertChangesEquals(RangeEndChange change1,
             RangeEndChange change2) {
-        Assert.assertEquals(change1.getKey(), change2.getKey());
         Assert.assertEquals(change1.getRangeEnd(), change2.getRangeEnd());
     }
 
@@ -300,12 +287,14 @@ public class TransactionLogBuilderTest {
 
         commit();
 
-        Assert.assertEquals("Add + add + remove should generate 3 changes", 3,
+        Assert.assertEquals(
+                "Unexpected number of changes from 'Add + add + remove'", 4,
                 transactionLogSize);
         Assert.assertFalse(
                 "No changes related to the removed node should be in the optimized log",
                 optimizedLogContainsNode(node1));
-        assertOptimizedChanges(new ListInsertChange(0, LIST_KEY, node2));
+        assertOptimizedChanges(new PutChange(LIST_KEY, node2.getParent()),
+                new ListInsertChange(0, node2));
     }
 
     @Test
@@ -320,8 +309,8 @@ public class TransactionLogBuilderTest {
         Assert.assertFalse(
                 "No changes related to the removed node should be in the optimized log",
                 optimizedLogContainsNode(node1));
-        assertOptimizedChanges(
-                new ListInsertManyChange(0, LIST_KEY, node2, node3));
+        assertOptimizedChanges(new PutChange(LIST_KEY, "IGNORE"),
+                new ListInsertManyChange(0, node2, node3));
     }
 
     @Test
@@ -335,7 +324,8 @@ public class TransactionLogBuilderTest {
         Assert.assertFalse(
                 "No changes related to the removed node should be in the optimized log",
                 optimizedLogContainsNode(node1));
-        assertOptimizedChanges(new ListInsertChange(0, LIST_KEY, node2));
+        assertOptimizedChanges(new PutChange(LIST_KEY, node2.getParent()),
+                new ListInsertChange(0, node2));
     }
 
     @Test
@@ -355,18 +345,16 @@ public class TransactionLogBuilderTest {
 
         commit();
 
-        Assert.assertEquals(6, transactionLogSize);
         Assert.assertFalse(
                 "No changes related to the removed node should be in the optimized log",
                 optimizedLogContainsNode(node3));
         // TODO Optimize out-of-order adds
-        // assertOptimizedChanges(new ListInsertManyChange(0, LIST_KEY, node4,
+        // assertOptimizedChanges(new ListInsertManyChange(0, node4,
         // node1, node2, node5));
 
-        assertOptimizedChanges(
-                new ListInsertManyChange(0, LIST_KEY, node1, node2),
-                new ListInsertChange(0, LIST_KEY, node4),
-                new ListInsertChange(3, LIST_KEY, node5));
+        assertOptimizedChanges(new PutChange(LIST_KEY, node.get(LIST_KEY)),
+                new ListInsertManyChange(0, node1, node2),
+                new ListInsertChange(0, node4), new ListInsertChange(3, node5));
     }
 
     @Test
@@ -380,9 +368,9 @@ public class TransactionLogBuilderTest {
         commit();
 
         // TODO Should optimize no matter the order of the inserts
-        assertOptimizedChanges(
-                new ListInsertManyChange(0, LIST_KEY, node1, node2),
-                new ListInsertChange(1, LIST_KEY, node3));
+        assertOptimizedChanges(new PutChange(LIST_KEY, node1.getParent()),
+                new ListInsertManyChange(0, node1, node2),
+                new ListInsertChange(1, node3));
 
     }
 
@@ -395,11 +383,11 @@ public class TransactionLogBuilderTest {
 
         commit();
 
-        Assert.assertEquals(3, transactionLogSize); // add + put + remove
+        Assert.assertEquals(4, transactionLogSize); // add + put + remove
         Assert.assertFalse(
                 "No changes related to the removed node should be in the optimized log",
                 optimizedLogContainsNode(node1));
-        assertOptimizedChanges();
+        assertOptimizedChanges(new PutChange(LIST_KEY, node.get(LIST_KEY)));
     }
 
     @Test
@@ -411,8 +399,9 @@ public class TransactionLogBuilderTest {
 
         commit();
 
-        Assert.assertEquals(3, transactionLogSize); // add + remove + add
-        assertOptimizedChanges(new ListInsertChange(0, LIST_KEY, node1));
+        Assert.assertEquals(4, transactionLogSize); // add + remove + add
+        assertOptimizedChanges(new PutChange(LIST_KEY, node1.getParent()),
+                new ListInsertChange(0, node1));
     }
 
     @Test
@@ -423,14 +412,13 @@ public class TransactionLogBuilderTest {
         list.clear();
         commit();
 
-        Assert.assertEquals(4, transactionLogSize);
         Assert.assertFalse(
                 "No changes related to the removed node should be in the optimized log",
                 optimizedLogContainsNode(node1));
         Assert.assertFalse(
                 "No changes related to the removed node should be in the optimized log",
                 optimizedLogContainsNode(node2));
-        assertOptimizedChanges();
+        assertOptimizedChanges(new PutChange(LIST_KEY, node.get(LIST_KEY)));
     }
 
     @Test
@@ -441,7 +429,7 @@ public class TransactionLogBuilderTest {
         commit();
         list.add(1, node3);
         commit();
-        assertOptimizedChanges(new ListInsertChange(1, LIST_KEY, node3));
+        assertOptimizedChanges(new ListInsertChange(1, node3));
     }
 
     @Test
@@ -452,7 +440,7 @@ public class TransactionLogBuilderTest {
         commit();
         list.remove(0);
         commit();
-        assertOptimizedChanges(new ListRemoveChange(0, LIST_KEY, node1));
+        assertOptimizedChanges(new ListRemoveChange(0, node1));
     }
 
     @Test
@@ -465,8 +453,8 @@ public class TransactionLogBuilderTest {
         list.remove(0);
         commit();
         // This could be optimized to be one operation
-        assertOptimizedChanges(new ListRemoveChange(0, LIST_KEY, node1),
-                new ListRemoveChange(0, LIST_KEY, node2));
+        assertOptimizedChanges(new ListRemoveChange(0, node1),
+                new ListRemoveChange(0, node2));
     }
 
     @Test
@@ -479,8 +467,8 @@ public class TransactionLogBuilderTest {
         list.add(0, node1);
         commit();
         // This could be optimized to be a no-op
-        assertOptimizedChanges(new ListRemoveChange(0, LIST_KEY, node1),
-                new ListInsertChange(0, LIST_KEY, node1));
+        assertOptimizedChanges(new ListRemoveChange(0, node1),
+                new ListInsertChange(0, node1));
     }
 
     @Test
@@ -568,8 +556,8 @@ public class TransactionLogBuilderTest {
         l.add("foo");
         commit();
         // TODO #36, this should only be a ListInsertChange
-        assertOptimizedChanges(new RemoveChange(LIST_KEY, "IGNORE"),
-                new ListInsertChange(0, LIST_KEY, "foo"));
+        assertOptimizedChanges(new PutChange(LIST_KEY, node.get(LIST_KEY)),
+                new ListInsertChange(0, "foo"));
     }
 
     @Test
@@ -588,7 +576,7 @@ public class TransactionLogBuilderTest {
             }
         }));
         commit();
-        assertOptimizedChanges();
+        assertOptimizedChanges(new PutChange(LIST_KEY, node.get(LIST_KEY)));
     }
 
     @Test
@@ -616,23 +604,26 @@ public class TransactionLogBuilderTest {
 
         // Should have rangeStart:100, rangeEnd:100, create 10 data nodes,
         // insert nodes into the list
-        Assert.assertEquals(optimizedTransactionLogSize, 1 + 1 + 10 + 1);
-        assertChangesEquals(new RangeEndChange(LIST_KEY, 110),
-                (RangeEndChange) flatten(optimizedTransactionLog).get(0));
-        assertChangesEquals(new RangeStartChange(LIST_KEY, 100),
-                (RangeStartChange) flatten(optimizedTransactionLog).get(1));
+        Assert.assertEquals(optimizedTransactionLogSize, 1 + 1 + 10 + 1 + 1);
+
+        int idx = 0;
+        assertChangesEquals(new PutChange(LIST_KEY, node.get(LIST_KEY)),
+                (PutChange) flatten(optimizedTransactionLog).get(idx++));
+        assertChangesEquals(new RangeEndChange(110),
+                (RangeEndChange) flatten(optimizedTransactionLog).get(idx++));
+        assertChangesEquals(new RangeStartChange(100),
+                (RangeStartChange) flatten(optimizedTransactionLog).get(idx++));
                 // assertOptimizedChanges(,
 
         // Insert nodes
         ListInsertManyChange insert = (ListInsertManyChange) flatten(
-                optimizedTransactionLog).get(2);
-        Assert.assertEquals(LIST_KEY, insert.getKey());
+                optimizedTransactionLog).get(idx++);
         Assert.assertEquals(0, insert.getIndex());
         Assert.assertEquals(10, insert.getValue().size()); // ListInsert
                                                            // contains 10 nodes
         for (int i = 0; i < 10; i++) {
             PutChange putChange = (PutChange) flatten(optimizedTransactionLog)
-                    .get(3 + i);
+                    .get(idx++);
             assertChangesEquals(new PutChange("value", "Value " + (100 + i)),
                     putChange); // The value should match the generated one
 
@@ -688,16 +679,15 @@ public class TransactionLogBuilderTest {
         // Should have rangeStart:100, rangeEnd:105, create 5 data nodes,
         // insert nodes into the list
         Assert.assertEquals(optimizedTransactionLogSize, 1 + 1 + 5 + 1);
-        assertChangesEquals(new RangeEndChange(LIST_KEY, 105),
+        assertChangesEquals(new RangeEndChange(105),
                 (RangeEndChange) flatten(optimizedTransactionLog).get(0));
 
-        assertChangesEquals(new RangeStartChange(LIST_KEY, 100),
+        assertChangesEquals(new RangeStartChange(100),
                 (RangeStartChange) flatten(optimizedTransactionLog).get(1));
         // assertOptimizedChanges(,
         // Insert nodes
         ListInsertManyChange insert = (ListInsertManyChange) flatten(
                 optimizedTransactionLog).get(2);
-        Assert.assertEquals(LIST_KEY, insert.getKey());
         Assert.assertEquals(0, insert.getIndex());
         Assert.assertEquals(5, insert.getValue().size()); // ListInsert
                                                           // contains 10 nodes

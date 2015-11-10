@@ -2,12 +2,12 @@ package com.vaadin.hummingbird.kernel.change;
 
 import com.vaadin.hummingbird.kernel.StateNode;
 
-public class RangeEndChange extends NodeContentsChange {
+public class RangeEndChange extends NodeChange {
 
     private int rangeEnd;
 
-    public RangeEndChange(Object key, int rangeEnd) {
-        super(key);
+    public RangeEndChange(int rangeEnd) {
+        super();
         this.rangeEnd = rangeEnd;
     }
 
@@ -22,8 +22,7 @@ public class RangeEndChange extends NodeContentsChange {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [key=" + getKey() + ", rangeEnd="
-                + rangeEnd + "]";
+        return getClass().getSimpleName() + " [rangeEnd=" + rangeEnd + "]";
     }
 
 }

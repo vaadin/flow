@@ -9,11 +9,11 @@ import java.util.Set;
 
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.change.ListChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
-import com.vaadin.hummingbird.kernel.change.NodeListChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RangeEndChange;
 import com.vaadin.hummingbird.kernel.change.RangeStartChange;
@@ -96,22 +96,21 @@ public class TransactionLogOptimizer {
      * @param list
      */
     private void joinListInserts(StateNode node, List<NodeChange> nodeChanges) {
-        Map<Object, Integer> insertsInProgress = new HashMap<>();
+        Integer insertInProgress = null;
 
         for (int changeIndex = 0; changeIndex < nodeChanges
                 .size(); changeIndex++) {
             NodeChange change = nodeChanges.get(changeIndex);
             if (change instanceof ListInsertChange) {
                 ListInsertChange lic = (ListInsertChange) change;
-                Object key = lic.getKey();
 
-                if (!insertsInProgress.containsKey(key)) {
-                    // First insert for this key
-                    insertsInProgress.put(key, changeIndex);
+                if (insertInProgress == null) {
+                    // First insert
+                    insertInProgress = changeIndex;
                 } else {
                     // Subsequent insert
 
-                    int firstChangeIndex = insertsInProgress.get(key);
+                    int firstChangeIndex = insertInProgress;
                     NodeChange firstChange = nodeChanges.get(firstChangeIndex);
                     int lastInsertIndex;
                     if (firstChange instanceof ListInsertChange) {
@@ -121,7 +120,7 @@ public class TransactionLogOptimizer {
                             // Replace insert change with a multiple value
                             // insert change
                             ListInsertManyChange listInsertManyChange = new ListInsertManyChange(
-                                    firstInsertIndex, key,
+                                    firstInsertIndex,
                                     ((ListInsertChange) firstChange)
                                             .getValue());
                             listInsertManyChange.addValue(lic.getValue());
@@ -134,7 +133,7 @@ public class TransactionLogOptimizer {
                             changeIndex--;
                         } else {
                             // Not an insert for a subsequent index
-                            insertsInProgress.remove(key);
+                            insertInProgress = null;
                             continue;
                         }
                     } else {
@@ -149,14 +148,14 @@ public class TransactionLogOptimizer {
                             changeIndex--;
                         } else {
                             // Not an insert for a subsequent index
-                            insertsInProgress.remove(key);
+                            insertInProgress = null;
                             continue;
                         }
                     }
 
                 }
             } else if (change instanceof ListRemoveChange) {
-                insertsInProgress.remove(((ListRemoveChange) change).getKey());
+                insertInProgress = null;
             }
         }
     }
@@ -184,8 +183,8 @@ public class TransactionLogOptimizer {
                     for (int j = addChangeIndex
                             + 1; j < removeChangeIndex; j++) {
                         NodeChange c = list.get(j);
-                        if (c instanceof NodeListChange) {
-                            NodeListChange nlc = (NodeListChange) list.get(j);
+                        if (c instanceof ListChange) {
+                            ListChange nlc = (ListChange) list.get(j);
                             if (nlc.getIndex() > addChangeIndex) {
                                 // Add/remove/replace after insert index?
                                 // Decrement
@@ -265,32 +264,28 @@ public class TransactionLogOptimizer {
 
     private void keepOnlyLastRangeChange(StateNode node,
             List<NodeChange> nodeChanges) {
-        Set<Object> rangeStarts = new HashSet<>();
-        Set<Object> rangeEnds = new HashSet<>();
+        Integer rangeStart = null;
+        Integer rangeEnd = null;
+
         for (int i = nodeChanges.size() - 1; i >= 0; i--) {
             NodeChange change = nodeChanges.get(i);
 
             if (change instanceof RangeStartChange) {
-                RangeStartChange rangeChange = (RangeStartChange) change;
-                Object key = rangeChange.getKey();
-                if (rangeStarts.contains(key)) {
+                if (rangeStart != null) {
                     // Earlier start -> not needed
                     nodeChanges.remove(i);
                 } else {
-                    rangeStarts.add(key);
+                    rangeStart = i;
                 }
             } else if (change instanceof RangeEndChange) {
-                RangeEndChange rangeChange = (RangeEndChange) change;
-                Object key = rangeChange.getKey();
-                if (rangeEnds.contains(key)) {
+                if (rangeEnd != null) {
                     // Earlier start -> not needed
                     nodeChanges.remove(i);
                 } else {
-                    rangeEnds.add(key);
+                    rangeEnd = i;
                 }
             }
         }
-
     }
 
 }

@@ -9,6 +9,7 @@ import java.util.Set;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.change.ListChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
@@ -16,7 +17,6 @@ import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.NodeContentsChange;
 import com.vaadin.hummingbird.kernel.change.NodeDataChange;
-import com.vaadin.hummingbird.kernel.change.NodeListChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RangeEndChange;
 import com.vaadin.hummingbird.kernel.change.RangeStartChange;
@@ -102,17 +102,15 @@ public class TransactionLogJsonProducer {
 
             if (contentsChange instanceof NodeDataChange) {
                 putValue(changeJson, ((NodeDataChange) change).getValue());
-            } else if (contentsChange instanceof NodeListChange) {
-                NodeListChange listChange = (NodeListChange) contentsChange;
-                changeJson.put(LIST_INDEX, listChange.getIndex());
-                putValue(changeJson, listChange.getValue());
-            } else if (contentsChange instanceof RangeEndChange) {
-                changeJson.put(VALUE,
-                        ((RangeEndChange) contentsChange).getRangeEnd());
-            } else if (contentsChange instanceof RangeStartChange) {
-                changeJson.put(VALUE,
-                        ((RangeStartChange) contentsChange).getRangeStart());
             }
+        } else if (change instanceof ListChange) {
+            ListChange listChange = (ListChange) change;
+            changeJson.put(LIST_INDEX, listChange.getIndex());
+            putValue(changeJson, listChange.getValue());
+        } else if (change instanceof RangeEndChange) {
+            changeJson.put(VALUE, ((RangeEndChange) change).getRangeEnd());
+        } else if (change instanceof RangeStartChange) {
+            changeJson.put(VALUE, ((RangeStartChange) change).getRangeStart());
         }
 
         return changeJson;

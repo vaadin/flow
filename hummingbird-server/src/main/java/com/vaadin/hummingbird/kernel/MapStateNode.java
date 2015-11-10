@@ -39,7 +39,8 @@ public class MapStateNode extends AbstractStateNode {
 
     @Override
     public String toString() {
-        return "MapStateNode [values=" + values + "]";
+        return getClass().getSimpleName() + " [id=" + getId() + ", values="
+                + values + "]";
     }
 
 }

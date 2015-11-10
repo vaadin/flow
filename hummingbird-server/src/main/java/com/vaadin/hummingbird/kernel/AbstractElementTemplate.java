@@ -186,6 +186,8 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         StateNode elementDataNode = getElementDataNode(node, create);
         if (elementDataNode == null) {
             return null;
+        } else if (!create && !elementDataNode.containsKey(Keys.CHILDREN)) {
+            return Collections.emptyList();
         } else {
             return elementDataNode.getMultiValued(Keys.CHILDREN);
         }
@@ -255,7 +257,10 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         if (parentNode == null || parentNode == node.getRoot()) {
             return null;
         }
-
+        // Hmm..
+        if (parentNode instanceof ListNode) {
+            parentNode = parentNode.getParent();
+        }
         ElementTemplate parentTemplate = node.get(Keys.PARENT_TEMPLATE,
                 ElementTemplate.class);
         if (parentTemplate == null) {
