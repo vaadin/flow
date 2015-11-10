@@ -3,13 +3,13 @@ package com.vaadin.hummingbird.parser;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class TemplateParserTest {
     @Test
@@ -98,6 +98,95 @@ public class TemplateParserTest {
             Assert.assertEquals("Outer title", li.getAttribute("outertitle"));
             Assert.assertEquals("Todo " + i, li.getAttribute("innertitle"));
             Assert.assertEquals("Todo " + i, li.getChild(0).getOuterHTML());
+        }
+    }
+
+    @Test
+    public void nestedForLoops() {
+        String templateString = "<ul [modeltitle]='title'>" //
+                + "<li *ng-for='#outer of outerlist' [outertitle]='outer.title' [modeltitle]='title'>" //
+                + "<ul>" //
+                + "<li *ng-for='#inner of outer.innerlist' [innertitle]='inner.title' [outertitle]='outer.title' [modeltitle]='title'>" //
+                + "<span>{{title}}</span><span>{{outer.title}}</span><span>{{inner.title}}</span>" //
+                + "</li>" //
+                + "</ul>" //
+                + "</li>" //
+                + "</ul>"; //
+
+        StateNode node = StateNode.create();
+        node.put("title", "Global title");
+        List<Object> outerlist = node.getMultiValued("outerlist");
+
+        IntStream.range(0, 2).forEach(outerIndex -> {
+            StateNode outerlistChild = StateNode.create();
+            outerlist.add(outerlistChild);
+
+            outerlistChild.put("title", "Outer title " + outerIndex);
+
+            IntStream.range(0, 2).forEach(innerIndex -> {
+                List<Object> innerlist = outerlistChild
+                        .getMultiValued("innerlist");
+                StateNode innerlistChild = StateNode.create();
+                innerlistChild.put("title",
+                        "Inner title " + outerIndex + " " + innerIndex);
+                innerlist.add(innerlistChild);
+            });
+
+        });
+
+        ElementTemplate template = TemplateParser.parse(templateString);
+        Element element = Element.getElement(template, node);
+
+        // <ul modeltitle='Global title'>
+        // // <li outertitle='Outer title 0' modeltitle='Global title'>
+        // // // <ul>
+        // // // // <li outertitle='Outer title 0' innertitle='Inner title 0'
+        // modeltitle='Global title'>
+        // // // // <li outertitle='Outer title 0' innertitle='Inner title 1'
+        // modeltitle='Global title'>
+        // // // </ul>
+        // // </li>
+        // // <li outertitle='1' modeltitle='Global title'>
+        // // // <ul>
+        // // // // <li outertitle='Outer title 1' innertitle='Inner title 0'
+        // modeltitle='Global title'>
+        // // // // <li outertitle='Outer title 1' innertitle='Inner title 1'
+        // modeltitle='Global title'>
+        // // // </ul>
+        // // </li>
+
+        Assert.assertEquals("ul", element.getTag());
+        Assert.assertEquals("Global title", element.getAttribute("modeltitle"));
+        Assert.assertEquals(2, element.getChildCount());
+        for (int outerIndex = 0; outerIndex < 2; outerIndex++) {
+            Element outerLi = element.getChild(outerIndex);
+            Assert.assertEquals("Outer title " + outerIndex,
+                    outerLi.getAttribute("outertitle"));
+            Assert.assertEquals("Global title",
+                    outerLi.getAttribute("modeltitle"));
+            Assert.assertEquals(1, outerLi.getChildCount());
+            Element innerUl = outerLi.getChild(0);
+
+            for (int innerIndex = 0; innerIndex < 2; innerIndex++) {
+                Element innerLi = innerUl.getChild(innerIndex);
+                Assert.assertEquals(
+                        "Inner title " + outerIndex + " " + innerIndex,
+                        innerLi.getAttribute("innertitle"));
+                Assert.assertEquals("Outer title " + outerIndex,
+                        innerLi.getAttribute("outertitle"));
+                Assert.assertEquals("Global title",
+                        innerLi.getAttribute("modeltitle"));
+
+                String expectedHTML = "<span>Global title</span><span>Outer title "
+                        + outerIndex + "</span><span>Inner title " + outerIndex
+                        + " " + innerIndex + "</span>";
+
+                // outerHTML includes <li></li>
+                String innerHTML = innerLi.getOuterHTML()
+                        .replaceFirst("<li[^>]*>", "")
+                        .replaceFirst("</li>", "");
+                Assert.assertEquals(expectedHTML, innerHTML);
+            }
         }
     }
 

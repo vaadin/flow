@@ -5,9 +5,9 @@ import java.util.List;
 
 import com.vaadin.hummingbird.kernel.StateNode;
 
-public class ListInsertManyChange extends NodeListChange {
-    public ListInsertManyChange(int index, Object key, Object... values) {
-        super(index, key, new ArrayList<Object>());
+public class ListInsertManyChange extends ListChange {
+    public ListInsertManyChange(int index, Object... values) {
+        super(index, new ArrayList<Object>());
         for (Object value : values) {
             getValue().add(value);
         }

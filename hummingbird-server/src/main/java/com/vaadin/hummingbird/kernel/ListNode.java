@@ -1,103 +1,103 @@
 package com.vaadin.hummingbird.kernel;
 
 import java.io.Serializable;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
+import com.vaadin.hummingbird.kernel.change.ListChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
 import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
-import com.vaadin.hummingbird.kernel.change.NodeListChange;
+import com.vaadin.hummingbird.kernel.change.NodeChange;
 
-public class ListNode extends AbstractList<Object> implements Serializable {
-    private Object key;
+public class ListNode extends MapStateNode implements Serializable {
     private ArrayList<Object> backing = new ArrayList<>();
-    private StateNode node;
 
-    public ListNode(StateNode node, Object key) {
-        assert key != null;
-        assert node != null;
-        this.node = node;
-        this.key = key;
+    public ListNode() {
     }
 
-    @Override
     public Object set(int index, Object element) {
-        ensureAttached();
-
         Object previous = backing.set(index, element);
-        node.logChange(new ListReplaceChange(index, key, previous, element));
-        node.detachChild(previous);
-        node.attachChild(element);
+        logChange(new ListReplaceChange(index, previous, element));
+        detachChild(previous);
+        attachChild(element);
         return previous;
     }
 
-    private boolean isAttached() {
-        return backing != null;
-    }
-
-    private void ensureAttached() {
-        if (!isAttached()) {
-            throw new IllegalStateException();
-        }
-    }
-
-    @Override
     public void add(int index, Object element) {
-        ensureAttached();
-
         backing.add(index, element);
-        node.logChange(new ListInsertChange(index, key, element));
-        node.attachChild(element);
+        logChange(new ListInsertChange(index, element));
+        attachChild(element);
     }
 
-    @Override
     public Object remove(int index) {
-        ensureAttached();
         Object removed = backing.remove(index);
-        node.logChange(new ListRemoveChange(index, key, removed));
-        node.detachChild(removed);
+        logChange(new ListRemoveChange(index, removed));
+        detachChild(removed);
 
         return removed;
     }
 
-    @Override
     public Object get(int index) {
-        ensureAttached();
-
         return backing.get(index);
     }
 
-    @Override
     public int size() {
-        if (!isAttached()) {
+        if (backing == null) {
             return 0;
         }
 
         return backing.size();
+
     }
 
     void detach() {
-        backing.forEach(node::detachChild);
+        backing.forEach(this::detachChild);
         backing = null;
     }
 
-    void forEachChildNode(Consumer<Object> consumer) {
-        backing.forEach(consumer);
+    @Override
+    protected void forEachChildNode(Consumer<StateNode> consumer) {
+        super.forEachChildNode(consumer);
+        Consumer<Object> action = new Consumer<Object>() {
+            @Override
+            public void accept(Object v) {
+                if (v instanceof StateNode) {
+                    StateNode childNode = (StateNode) v;
+                    consumer.accept(childNode);
+                }
+            }
+        };
+        backing.forEach(action);
+
     }
 
-    void rollback(NodeListChange change) {
-        if (change instanceof ListInsertChange) {
-            backing.remove(change.getIndex());
-        } else if (change instanceof ListRemoveChange) {
-            backing.add(change.getIndex(), change.getValue());
-        } else if (change instanceof ListReplaceChange) {
-            ListReplaceChange replaceChange = (ListReplaceChange) change;
-            backing.set(change.getIndex(), replaceChange.getOldValue());
+    @Override
+    public void rollback(NodeChange change) {
+        if (change instanceof ListChange) {
+            ListChange listChange = (ListChange) change;
+            if (change instanceof ListInsertChange) {
+                backing.remove(listChange.getIndex());
+            } else if (change instanceof ListRemoveChange) {
+                ListRemoveChange removeChange = (ListRemoveChange) change;
+                backing.add(removeChange.getIndex(), removeChange.getValue());
+            } else if (change instanceof ListReplaceChange) {
+                ListReplaceChange replaceChange = (ListReplaceChange) change;
+                backing.set(listChange.getIndex(), replaceChange.getOldValue());
+            } else {
+                throw new IllegalArgumentException("Unkown change type "
+                        + change.getClass().getName() + " passed to rollback");
+            }
         } else {
-            throw new IllegalArgumentException("Unkown change type "
-                    + change.getClass().getName() + " passed to rollback");
+            super.rollback(change);
         }
+    }
+
+    @Override
+    public String toString() {
+        String sup = super.toString();
+        sup = sup.substring(0, sup.length() - 1);
+        sup += ", backing: " + backing + "]";
+        return sup;
     }
 }

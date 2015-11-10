@@ -2,12 +2,12 @@ package com.vaadin.hummingbird.kernel.change;
 
 import com.vaadin.hummingbird.kernel.StateNode;
 
-public class RangeStartChange extends NodeContentsChange {
+public class RangeStartChange extends NodeChange {
 
     private int rangeStart;
 
-    public RangeStartChange(Object key, int rangeStart) {
-        super(key);
+    public RangeStartChange(int rangeStart) {
+        super();
         this.rangeStart = rangeStart;
     }
 
@@ -22,8 +22,7 @@ public class RangeStartChange extends NodeContentsChange {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [key=" + getKey()
-                + ", rangeStart=" + rangeStart + "]";
+        return getClass().getSimpleName() + " [rangeStart=" + rangeStart + "]";
     }
 
 }
