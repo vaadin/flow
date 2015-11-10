@@ -300,8 +300,8 @@ public class TreeUpdater {
                 }
 
                 @Override
-                public EventArray resolveArrayProperty(String name) {
-                    return node.getArrayProperty(name);
+                public ListTreeNode resolveListTreeNode(String name) {
+                    return (ListTreeNode) node.getProperty(name).getValue();
                 }
 
                 @Override
@@ -527,6 +527,12 @@ public class TreeUpdater {
             JsonValue value = change.get("value");
 
             switch (type) {
+            case "putListNode": {
+                ListTreeNode child = ensureListNodeExists(
+                        (int) change.getNumber("value"));
+                node.getProperty(key.asString()).setValue(child);
+                break;
+            }
             case "putNode": {
                 TreeNode child = ensureNodeExists(
                         (int) change.getNumber("value"));
@@ -537,40 +543,42 @@ public class TreeUpdater {
                 node.getProperty(key.asString()).setValue(value);
                 break;
             case "listInsertNode": {
-                EventArray array = node.getArrayProperty(key.asString());
-                TreeNode child = ensureNodeExists((int) value.asNumber());
-                array.splice((int) change.getNumber("index"), 0,
-                        createSingleArray(child));
+                ListTreeNode childNode = ensureListNodeExists(
+                        (int) value.asNumber());
+                listNodeInsert((ListTreeNode) node,
+                        (int) change.getNumber("index"), childNode);
                 break;
             }
             case "listInsertNodes": {
-                EventArray array = node.getArrayProperty(key.asString());
+                ListTreeNode listNode = (ListTreeNode) node;
+
                 JsonArray valueArray = (JsonArray) value;
 
                 for (int valueIndex = 0; valueIndex < valueArray
                         .length(); valueIndex++) {
-                    TreeNode child = ensureNodeExists(
+                    TreeNode childNode = ensureNodeExists(
                             (int) valueArray.getNumber(valueIndex));
-                    array.splice((int) change.getNumber("index") + valueIndex,
-                            0, createSingleArray(child));
+                    listNodeInsert(listNode,
+                            (int) change.getNumber("index") + valueIndex,
+                            childNode);
                 }
                 break;
             }
             case "listInsert": {
-                EventArray array = node.getArrayProperty(key.asString());
-                array.splice((int) change.getNumber("index"), 0,
+                ListTreeNode listNode = (ListTreeNode) node;
+                listNode.splice((int) change.getNumber("index"), 0,
                         createSingleArray(value));
                 break;
             }
             case "listInserts": {
-                EventArray array = node.getArrayProperty(key.asString());
-                array.splice((int) change.getNumber("index"), 0,
+                ListTreeNode listNode = (ListTreeNode) node;
+                listNode.splice((int) change.getNumber("index"), 0,
                         (JsArrayObject<Object>) Util.json2jso(value));
                 break;
             }
             case "listRemove": {
-                EventArray array = node.getArrayProperty(key.asString());
-                array.splice((int) change.getNumber("index"), 1, null);
+                ListTreeNode listNode = (ListTreeNode) node;
+                listNode.splice((int) change.getNumber("index"), 1, null);
                 break;
             }
             case "remove": {
@@ -596,9 +604,10 @@ public class TreeUpdater {
                 break;
             }
             case "rangeStart":
+                node.getProperty("rangeStart").setValue(value);
+                break;
             case "rangeEnd": {
-                getLogger().info(
-                        "Got " + type + " for " + change.getString("key"));
+                node.getProperty("rangeEnd").setValue(value);
                 break;
             }
             default:
@@ -606,6 +615,12 @@ public class TreeUpdater {
                         "Unsupported change type: " + change.getType());
             }
         }
+    }
+
+    private void listNodeInsert(ListTreeNode listNode, int insertIndex,
+            TreeNode childNode) {
+        listNode.splice(insertIndex, 0, createSingleArray(childNode));
+
     }
 
     private static native JsArrayObject<Object> createSingleArray(Object value)
@@ -618,6 +633,16 @@ public class TreeUpdater {
         TreeNode node = idToNode.get(key);
         if (node == null) {
             node = new TreeNode(id, this);
+            idToNode.put(key, node);
+        }
+        return node;
+    }
+
+    private ListTreeNode ensureListNodeExists(int id) {
+        Integer key = Integer.valueOf(id);
+        ListTreeNode node = (ListTreeNode) idToNode.get(key);
+        if (node == null) {
+            node = new ListTreeNode(id, this);
             idToNode.put(key, node);
         }
         return node;

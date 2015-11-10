@@ -128,7 +128,8 @@ public class UidlWriterTest {
         int idx = 0;
 
         JsonObject addListenerListNode = changes.getObject(idx++);
-        Assert.assertEquals("putNode", addListenerListNode.getString("type"));
+        Assert.assertEquals("putListNode",
+                addListenerListNode.getString("type"));
         Assert.assertEquals("LISTENERS", addListenerListNode.getString("key"));
         int listNodeId = (int) addListenerListNode.getNumber("value");
 
@@ -163,7 +164,7 @@ public class UidlWriterTest {
 
         Assert.assertEquals(1, changes.length());
         JsonObject change = changes.get(0);
-        Assert.assertEquals("putNode", change.getString("type"));
+        Assert.assertEquals("putListNode", change.getString("type"));
         Assert.assertEquals("list", change.getString("key"));
 
     }
@@ -196,7 +197,7 @@ public class UidlWriterTest {
         // Ramge end + data through list insert for 0
         int idx = 0;
         JsonObject putList = changes.getObject(idx++);
-        Assert.assertEquals("putNode", putList.getString("type"));
+        Assert.assertEquals("putListNode", putList.getString("type"));
         Assert.assertEquals("list", putList.getString("key"));
         int listId = (int) putList.getNumber("value");
 

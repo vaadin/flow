@@ -72,11 +72,6 @@ public class TreeListenerHelper {
                                 }
                             }
 
-                            @Override
-                            public void addArray(String name,
-                                    EventArray array) {
-                                // Don't care
-                            }
                         });
                     }
 
