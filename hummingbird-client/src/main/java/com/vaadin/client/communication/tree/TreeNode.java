@@ -19,8 +19,6 @@ public class TreeNode {
 
     public interface TreeNodeChangeListener {
         public void addProperty(String name, TreeNodeProperty property);
-
-        public void addArray(String name, EventArray array);
     }
 
     public class PropertyAddEvent extends NodeChangeEvent {
@@ -48,44 +46,24 @@ public class TreeNode {
         }
     }
 
-    public class ArrayAddEvent extends NodeChangeEvent {
-        private final String name;
-        private final EventArray array;
-
-        public ArrayAddEvent(String name, EventArray array) {
-            this.name = name;
-            this.array = array;
-        }
-
-        @Override
-        public void dispatch() {
-            if (listeners != null) {
-                for (TreeNodeChangeListener treeNodeChangeListener : listeners) {
-                    treeNodeChangeListener.addArray(name, array);
-                }
-            }
-        }
-
-        @Override
-        public JsonObject serialize() {
-            // Event is not serialized
-            return null;
-        }
-    }
-
-    private final JavaScriptObject proxy = JavaScriptObject.createObject();
+    private final JavaScriptObject proxy;
     private final FastStringMap<TreeNodeProperty> properties = FastStringMap
             .create();
     private final TreeUpdater treeUpdater;
     private final int id;
 
     private List<TreeNodeChangeListener> listeners;
-    private FastStringMap<EventArray> arrayProperties;
     private Map<Integer, Node> elements;
 
     public TreeNode(int id, TreeUpdater treeUpdater) {
+        this(id, treeUpdater, JavaScriptObject.createObject());
+    }
+
+    protected TreeNode(int id, TreeUpdater treeUpdater,
+            JavaScriptObject proxy) {
         this.id = id;
         this.treeUpdater = treeUpdater;
+        this.proxy = proxy;
         ((JsJsonObject) proxy.cast()).put(ID_PROPERTY, id);
     }
 
@@ -148,27 +126,6 @@ public class TreeNode {
             /*-{
                 Object.defineProperty(proxy, name, descriptor);
             }-*/;
-
-    public EventArray getArrayProperty(String name) {
-        if (arrayProperties == null) {
-            arrayProperties = FastStringMap.create();
-        }
-
-        CallbackQueue callbackQueue = getCallbackQueue();
-
-        // TODO check for existing non-array property
-        EventArray eventArray = arrayProperties.get(name);
-        if (eventArray == null) {
-            eventArray = new EventArray(callbackQueue);
-            arrayProperties.put(name, eventArray);
-
-            addPropertyDescriptor(proxy, name,
-                    createEventArrayPd(eventArray.getProxy()));
-
-            callbackQueue.enqueue(new ArrayAddEvent(name, eventArray));
-        }
-        return eventArray;
-    }
 
     private static native JavaScriptObject createEventArrayPd(
             JavaScriptObject proxy)

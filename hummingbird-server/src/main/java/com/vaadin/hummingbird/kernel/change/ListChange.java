@@ -1,11 +1,11 @@
 package com.vaadin.hummingbird.kernel.change;
 
-public abstract class NodeListChange extends NodeContentsChange {
+public abstract class ListChange extends NodeChange {
     private int index;
     private Object value;
 
-    public NodeListChange(int index, Object key, Object value) {
-        super(key);
+    public ListChange(int index, Object value) {
+        super();
         this.index = index;
         this.value = value;
     }
@@ -40,8 +40,8 @@ public abstract class NodeListChange extends NodeContentsChange {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [key=" + getKey() + ", index="
-                + index + ", value=" + value + "]";
+        return getClass().getSimpleName() + " [index=" + index + ", value="
+                + value + "]";
     }
 
 }

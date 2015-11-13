@@ -2,13 +2,12 @@ package com.vaadin.hummingbird.kernel.change;
 
 import com.vaadin.hummingbird.kernel.StateNode;
 
-public class ListReplaceChange extends NodeListChange {
+public class ListReplaceChange extends ListChange {
 
     private Object oldValue;
 
-    public ListReplaceChange(int index, Object key, Object oldValue,
-            Object newValue) {
-        super(index, key, newValue);
+    public ListReplaceChange(int index, Object oldValue, Object newValue) {
+        super(index, newValue);
         this.oldValue = oldValue;
     }
 
@@ -28,8 +27,8 @@ public class ListReplaceChange extends NodeListChange {
 
     @Override
     public String toString() {
-        return "ListReplaceChange [key=" + getKey() + ", index=" + getIndex()
-                + ", value=" + getValue() + ", oldValue=" + oldValue + "]";
+        return "ListReplaceChange [index=" + getIndex() + ", value="
+                + getValue() + ", oldValue=" + oldValue + "]";
     }
 
 }

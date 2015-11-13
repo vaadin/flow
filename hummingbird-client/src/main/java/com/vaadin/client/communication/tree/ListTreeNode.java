@@ -8,18 +8,26 @@ import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 
 import elemental.json.JsonObject;
 
-public class EventArray {
+public class ListTreeNode extends TreeNode {
+
+    private final ArrayList<ArrayEventListener> listeners = new ArrayList<>();
+
+    // Used for storing Java node instances if this is a node array
+    private JsArrayObject<Object> nodes;
+
+    // private final JsArrayObject<Object> proxy;
+
     public interface ArrayEventListener {
-        void splice(EventArray eventArray, int startIndex,
+        void splice(ListTreeNode listTreeNode, int startIndex,
                 JsArrayObject<Object> removed, JsArrayObject<Object> added);
     }
 
-    public class EventArraySpliceEvent extends NodeChangeEvent {
+    public class ListTreeNodeSpliceEvent extends NodeChangeEvent {
         private final int startIndex;
         private final JsArrayObject<Object> removed;
         private final JsArrayObject<Object> added;
 
-        public EventArraySpliceEvent(int startIndex,
+        public ListTreeNodeSpliceEvent(int startIndex,
                 JsArrayObject<Object> removed, JsArrayObject<Object> added) {
             this.startIndex = startIndex;
             this.removed = removed;
@@ -30,7 +38,7 @@ public class EventArray {
         public void dispatch() {
             if (listeners != null) {
                 for (ArrayEventListener arrayEventListener : listeners) {
-                    arrayEventListener.splice(EventArray.this, startIndex,
+                    arrayEventListener.splice(ListTreeNode.this, startIndex,
                             removed, added);
                 }
             }
@@ -42,34 +50,26 @@ public class EventArray {
         }
     }
 
-    private final CallbackQueue callbackQueue;
-    private final JsArrayObject<Object> proxy;
-    private final ArrayList<ArrayEventListener> listeners = new ArrayList<>();
-
-    // Used for storing Java node instances if this is a node array
-    private JsArrayObject<Object> nodes;
-
-    public EventArray(CallbackQueue callbackQueue) {
-        this.callbackQueue = callbackQueue;
-        proxy = createProxy(this);
+    public ListTreeNode(int id, TreeUpdater treeUpdater) {
+        super(id, treeUpdater, createProxy());
     }
+
+    private static native JsArrayObject<Object> createProxy()
+    /*-{
+        var a = [];
+        a.splice = function(arguments) {
+            throw "splice from JS is not yet implemented";
+        }
+        return a;
+    }-*/;
 
     public void addArrayEventListener(ArrayEventListener listener) {
         listeners.add(listener);
     }
 
-    public Object get(int index) {
-        if (nodes != null) {
-            Object value = nodes.get(index);
-            if (value != null) {
-                return value;
-            }
-        }
-        return proxy.get(index);
-    }
-
-    public int getLength() {
-        return proxy.size();
+    @Override
+    public JsArrayObject<Object> getProxy() {
+        return (JsArrayObject<Object>) super.getProxy();
     }
 
     public void splice(int index, int removeCount,
@@ -83,12 +83,12 @@ public class EventArray {
             hasNewValues = newValues.size() != 0;
         }
 
-        if (hasNewValues && proxy.size() == 0
+        if (hasNewValues && getProxy().size() == 0
                 && newValues.get(0) instanceof TreeNode && nodes == null) {
             nodes = JavaScriptObject.createArray().cast();
         }
 
-        assert!hasNewValues || typesAreConsistent(newValues, nodes != null);
+        assert !hasNewValues || typesAreConsistent(newValues, nodes != null);
 
         if (nodes != null) {
             JsArrayObject<Object> removedNodes = doSplice(nodes, index,
@@ -103,17 +103,37 @@ public class EventArray {
                 }
                 newValues = newProxyValues;
             }
-            doSplice(proxy, index, removeCount, newValues);
+            doSplice(getProxy(), index, removeCount, newValues);
             onSplice(index, removedNodes, newNodes);
         } else {
-            JsArrayObject<Object> removedValues = doSplice(proxy, index,
+            JsArrayObject<Object> removedValues = doSplice(getProxy(), index,
                     removeCount, newValues);
             onSplice(index, removedValues, newValues);
         }
 
     }
 
-    private static boolean typesAreConsistent(JsArrayObject<Object> newValues,
+    private void onSplice(int startIndex, JsArrayObject<Object> removed,
+            JsArrayObject<Object> added) {
+        getTreeUpdater().getCallbackQueue().enqueue(
+                new ListTreeNodeSpliceEvent(startIndex, removed, added));
+    }
+
+    public int getLength() {
+        return getProxy().size();
+    }
+
+    public Object get(int index) {
+        if (nodes != null) {
+            Object value = nodes.get(index);
+            if (value != null) {
+                return value;
+            }
+        }
+        return getProxy().get(index);
+    }
+
+    public static boolean typesAreConsistent(JsArrayObject<Object> newValues,
             boolean onlyNodes) {
         for (int i = 0; i < newValues.size(); i++) {
             Object value = newValues.get(i);
@@ -134,23 +154,4 @@ public class EventArray {
                 return Array.prototype.splice.apply(a, args);
             }-*/;
 
-    private static native JsArrayObject<Object> createProxy(
-            EventArray eventArray)
-            /*-{
-                var a = [];
-                a.splice = function(arguments) {
-                    throw "splice from JS is not yet implemented";
-                }
-                return a;
-            }-*/;
-
-    private void onSplice(int startIndex, JsArrayObject<Object> removed,
-            JsArrayObject<Object> added) {
-        callbackQueue
-                .enqueue(new EventArraySpliceEvent(startIndex, removed, added));
-    }
-
-    public JavaScriptObject getProxy() {
-        return proxy;
-    }
 }

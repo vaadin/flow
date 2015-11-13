@@ -82,8 +82,9 @@ public class UidlWriterTest {
     public void testTemplateOverrideNode() {
         BoundElementTemplate template = TemplateBuilder.withTag("div").build();
 
+        StateNode templateElementNode = StateNode.create();
         Element templateElement = Element.getElement(template,
-                StateNode.create());
+                templateElementNode);
         element.appendChild(templateElement);
         // Flush setup changes
         encodeElementChanges();
@@ -93,18 +94,21 @@ public class UidlWriterTest {
         JsonArray changes = encodeElementChanges();
 
         Assert.assertEquals(3, changes.length());
+        int idx = 0;
 
-        JsonObject putOverride = changes.getObject(0);
+        JsonObject putOverride = changes.getObject(idx++);
         Assert.assertEquals("putOverride", putOverride.getString("type"));
+        Assert.assertEquals(templateElementNode.getId(),
+                (int) putOverride.getNumber("id"));
 
-        JsonObject putOverrideTemplate = changes.getObject(1);
+        JsonObject putOverrideTemplate = changes.getObject(idx++);
         Assert.assertEquals("put", putOverrideTemplate.getString("type"));
         Assert.assertEquals("OVERRIDE_TEMPLATE",
                 putOverrideTemplate.getString("key"));
         Assert.assertEquals(template.getId(),
                 (int) putOverrideTemplate.getNumber("value"));
 
-        JsonObject putAttribute = changes.getObject(2);
+        JsonObject putAttribute = changes.getObject(idx++);
         Assert.assertEquals("put", putAttribute.getString("type"));
         Assert.assertEquals("foo", putAttribute.getString("key"));
         Assert.assertEquals("bar", putAttribute.getString("value"));
@@ -121,14 +125,18 @@ public class UidlWriterTest {
         JsonArray changes = encodeElementChanges();
         Assert.assertEquals(2, changes.length());
 
-        JsonObject change = changes.getObject(0);
-        Assert.assertEquals("remove", change.getString("type"));
-        Assert.assertEquals("LISTENERS", change.getString("key"));
+        int idx = 0;
 
-        change = changes.getObject(1);
+        JsonObject addListenerListNode = changes.getObject(idx++);
+        Assert.assertEquals("putListNode",
+                addListenerListNode.getString("type"));
+        Assert.assertEquals("LISTENERS", addListenerListNode.getString("key"));
+        int listNodeId = (int) addListenerListNode.getNumber("value");
+
+        JsonObject change = changes.getObject(idx++);
         Assert.assertEquals("listInsert", change.getString("type"));
         Assert.assertEquals(0, (int) change.getNumber("index"));
-        Assert.assertEquals("LISTENERS", change.getString("key"));
+        Assert.assertEquals(listNodeId, (int) change.getNumber("id"));
         Assert.assertEquals("bar", change.getString("value"));
 
     }
@@ -153,7 +161,11 @@ public class UidlWriterTest {
                 }));
 
         JsonArray changes = encodeElementChanges();
-        Assert.assertEquals(0, changes.length());
+
+        Assert.assertEquals(1, changes.length());
+        JsonObject change = changes.get(0);
+        Assert.assertEquals("putListNode", change.getString("type"));
+        Assert.assertEquals("list", change.getString("key"));
 
     }
 
@@ -180,13 +192,20 @@ public class UidlWriterTest {
         JsonArray changes = encodeElementChanges();
         System.out.println(JsonUtil.stringify(changes, 2));
 
-        // RangeEnd + listInsert + 10 data nodes
-        Assert.assertEquals(12, changes.length());
+        // create list + RangeEnd + listInsert + 10 data nodes
+        Assert.assertEquals(1 + 1 + 1 + 10, changes.length());
         // Ramge end + data through list insert for 0
-        JsonObject rangeEnd = changes.getObject(0);
+        int idx = 0;
+        JsonObject putList = changes.getObject(idx++);
+        Assert.assertEquals("putListNode", putList.getString("type"));
+        Assert.assertEquals("list", putList.getString("key"));
+        int listId = (int) putList.getNumber("value");
+
+        JsonObject rangeEnd = changes.getObject(idx++);
         Assert.assertEquals("rangeEnd", rangeEnd.getString("type"));
-        Assert.assertEquals("list", rangeEnd.getString("key"));
-        JsonObject data = changes.getObject(1);
+        Assert.assertEquals(listId, (int) rangeEnd.getNumber("id"));
+
+        JsonObject data = changes.getObject(idx++);
         Assert.assertEquals("listInsertNodes", data.getString("type"));
         Assert.assertEquals(0, (int) data.getNumber("index"));
 
@@ -197,7 +216,7 @@ public class UidlWriterTest {
         }
 
         for (int i = 0; i < 10; i++) {
-            JsonObject nodePut = changes.getObject(2 + i);
+            JsonObject nodePut = changes.getObject(idx++);
             Assert.assertEquals(nodeIds.get(i), (int) nodePut.getNumber("id"),
                     0);
             Assert.assertEquals("put", nodePut.getString("type"));
