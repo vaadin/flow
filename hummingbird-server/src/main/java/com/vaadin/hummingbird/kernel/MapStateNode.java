@@ -1,12 +1,11 @@
 package com.vaadin.hummingbird.kernel;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
 public class MapStateNode extends AbstractStateNode {
-    // TODO Memory consumption HashMap vs LinkedHashMap?
-    private final Map<Object, Object> values = new LinkedHashMap<>();
+    private final Map<Object, Object> values = new HashMap<>();
 
     @Override
     protected Object doGet(Object key) {
