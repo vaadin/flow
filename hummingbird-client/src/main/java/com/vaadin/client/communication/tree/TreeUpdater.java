@@ -150,19 +150,29 @@ public class TreeUpdater {
                 }
                 DomApi.wrap(element).setAttribute(key, value.asString());
             } else {
-                if (value.getType() == JsonType.BOOLEAN) {
+                switch (value.getType()) {
+                case BOOLEAN:
                     if (debug) {
                         debug("Set property " + key + "=\"" + value
                                 + "\" (boolean) for " + debugHtml(element));
                     }
                     element.setPropertyBoolean(key, value.asBoolean());
-                } else if (value.getType() == JsonType.NUMBER) {
+                    break;
+                case NUMBER:
                     if (debug) {
                         debug("Set property " + key + "=\"" + value
                                 + "\" (number) for " + debugHtml(element));
                     }
                     element.setPropertyDouble(key, value.asNumber());
-                } else {
+                    break;
+                case ARRAY:
+                    if (debug) {
+                        debug("Set property " + key + "=\"" + value
+                                + "\" (array) for " + debugHtml(element));
+                    }
+                    element.setPropertyJSO(key, Util.json2jso(value));
+                    break;
+                default:
                     if (debug) {
                         debug("Set property " + key + "=\"" + value
                                 + "\" (string) for " + debugHtml(element));
@@ -666,7 +676,7 @@ public class TreeUpdater {
             domListeners.put(id, nodeListeners);
         }
 
-        assert !nodeListeners.containsKey(type);
+        assert!nodeListeners.containsKey(type);
         nodeListeners.put(type, listener);
     }
 
