@@ -126,7 +126,8 @@ public abstract class Template extends AbstractComponent
                     return;
                 }
 
-                if (clazz.isInterface()) {
+                if (clazz.isInterface()
+                        && !JsonValue.class.isAssignableFrom(clazz)) {
                     value = unwrapProxy(value);
 
                     if (Objects.equals(value, node.get(propertyName))) {
