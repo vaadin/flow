@@ -44,6 +44,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Tag;
 
 import com.vaadin.annotations.Viewport;
@@ -423,7 +424,23 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 .preRender();
         preRenderedUI.setAttribute("pre-render", true);
         preRenderedUI.addClass(context.getThemeName());
-        document.body().html(preRenderedUI.getOuterHTML());
+        document.body().appendChild(buildJSoup(document, preRenderedUI));
+    }
+
+    private Node buildJSoup(Document document,
+            com.vaadin.hummingbird.kernel.Element source) {
+        if (com.vaadin.hummingbird.kernel.Element.isTextNode(source)) {
+            return new TextNode(source.getTextContent(), document.baseUri());
+        } else {
+            Element target = document.createElement(source.getTag());
+            source.getAttributeNames().forEach(
+                    name -> target.attr(name, source.getAttribute(name)));
+            int childCount = source.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                target.appendChild(buildJSoup(document, source.getChild(i)));
+            }
+            return target;
+        }
     }
 
     private void sendBootstrapHeaders(VaadinResponse response,
