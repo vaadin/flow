@@ -514,8 +514,8 @@ public abstract class Template extends AbstractComponent
         if (method == null) {
             throw new RuntimeException("Couldn't find any @"
                     + com.vaadin.annotations.TemplateEventHandler.class
-                            .getName()
-                    + " method named " + methodName + "with " + params.length()
+                            .getSimpleName()
+                    + " method named " + methodName + " with " + params.length()
                     + " parameters in " + getClass().getName());
         }
 
