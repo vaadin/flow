@@ -486,7 +486,7 @@ public class TreeUpdater {
 
     private static native void logTree(String string, JsonObject jsonObject)
     /*-{
-        console.log(string, jsonObject);
+        console.log(string, JSON.parse(JSON.stringify(jsonObject)));
     }-*/;
 
     private void initRoot() {
