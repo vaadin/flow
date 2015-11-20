@@ -237,8 +237,9 @@ public class TreeUpdater {
             NodeContext context) {
         Node element = template.createElement(node, context);
         if (Element.is(element)) {
-            getLogger().info(
-                    "Created element of type " + element.getClass().getName());
+            getLogger().info("Created element of type "
+                    + Element.as(element).getTagName() + " for node "
+                    + node.getId());
             createdElements.add((Element) element);
         }
         int nodeId = node.getId();
@@ -564,7 +565,7 @@ public class TreeUpdater {
             }
             case "putOverride": {
                 int templateId = (int) key.asNumber();
-                int overrideNodeId = (int) change.getNumber("value");
+                int overrideNodeId = (int) change.getNumber("mapValue");
 
                 TreeNode overrideNode = ensureNodeExists(overrideNodeId);
                 node.getProperty(String.valueOf(templateId))
