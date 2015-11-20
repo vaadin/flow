@@ -524,61 +524,29 @@ public class TreeUpdater {
             TreeNode node = ensureNodeExists(nodeId);
             String type = change.getString("type");
             JsonValue key = change.get("key");
-            JsonValue value = change.get("value");
 
             switch (type) {
-            case "putListNode": {
-                ListTreeNode child = ensureListNodeExists(
-                        (int) change.getNumber("value"));
-                node.getProperty(key.asString()).setValue(child);
+            case "put": {
+                Object convertedValue = getConvertedValue(change);
+                node.getProperty(key.asString()).setValue(convertedValue);
                 break;
             }
-            case "putNode": {
-                TreeNode child = ensureNodeExists(
-                        (int) change.getNumber("value"));
-                node.getProperty(key.asString()).setValue(child);
-                break;
-            }
-            case "put":
-                node.getProperty(key.asString()).setValue(value);
-                break;
-            case "listInsertNode": {
-                ListTreeNode childNode = ensureListNodeExists(
-                        (int) value.asNumber());
-                listNodeInsert((ListTreeNode) node,
-                        (int) change.getNumber("index"), childNode);
-                break;
-            }
-            case "listInsertNodes": {
+            case "splice": {
                 ListTreeNode listNode = (ListTreeNode) node;
 
-                JsonArray valueArray = (JsonArray) value;
+                int index = (int) change.getNumber("index");
 
-                for (int valueIndex = 0; valueIndex < valueArray
-                        .length(); valueIndex++) {
-                    TreeNode childNode = ensureNodeExists(
-                            (int) valueArray.getNumber(valueIndex));
-                    listNodeInsert(listNode,
-                            (int) change.getNumber("index") + valueIndex,
-                            childNode);
+                int removeCount;
+                if (change.hasKey("remove")) {
+                    removeCount = (int) change.getNumber("remove");
+                } else {
+                    removeCount = 0;
                 }
-                break;
-            }
-            case "listInsert": {
-                ListTreeNode listNode = (ListTreeNode) node;
-                listNode.splice((int) change.getNumber("index"), 0,
-                        createSingleArray(value));
-                break;
-            }
-            case "listInserts": {
-                ListTreeNode listNode = (ListTreeNode) node;
-                listNode.splice((int) change.getNumber("index"), 0,
-                        (JsArrayObject<Object>) Util.json2jso(value));
-                break;
-            }
-            case "listRemove": {
-                ListTreeNode listNode = (ListTreeNode) node;
-                listNode.splice((int) change.getNumber("index"), 1, null);
+
+                JsArrayObject<Object> newValues = getConvertedValues(change);
+
+                listNode.splice(index, removeCount, newValues);
+
                 break;
             }
             case "remove": {
@@ -596,7 +564,7 @@ public class TreeUpdater {
             }
             case "putOverride": {
                 int templateId = (int) key.asNumber();
-                int overrideNodeId = (int) value.asNumber();
+                int overrideNodeId = (int) change.getNumber("value");
 
                 TreeNode overrideNode = ensureNodeExists(overrideNodeId);
                 node.getProperty(String.valueOf(templateId))
@@ -604,16 +572,53 @@ public class TreeUpdater {
                 break;
             }
             case "rangeStart":
-                node.getProperty("rangeStart").setValue(value);
+                node.getProperty("rangeStart").setValue(change.get("value"));
                 break;
             case "rangeEnd": {
-                node.getProperty("rangeEnd").setValue(value);
+                node.getProperty("rangeEnd").setValue(change.get("value"));
                 break;
             }
             default:
                 throw new RuntimeException(
                         "Unsupported change type: " + change.getType());
             }
+        }
+    }
+
+    private JsArrayObject<Object> getConvertedValues(JsonObject change) {
+        if (change.hasKey("value")) {
+            return Util.json2jso(change.getArray("value")).cast();
+        } else if (change.hasKey("mapValue")) {
+            JsonArray mapValues = change.getArray("mapValue");
+            JsArrayObject<Object> newValues = JavaScriptObject.createArray()
+                    .cast();
+            for (int j = 0; j < mapValues.length(); j++) {
+                TreeNode node = ensureNodeExists((int) mapValues.getNumber(j));
+                newValues.add(node);
+            }
+            return newValues;
+        } else if (change.hasKey("listValue")) {
+            JsonArray listValues = change.getArray("listValue");
+            JsArrayObject<Object> newValues = JavaScriptObject.createArray()
+                    .cast();
+            for (int j = 0; j < listValues.length(); j++) {
+                ListTreeNode node = ensureListNodeExists(
+                        (int) listValues.getNumber(j));
+                newValues.add(node);
+            }
+            return newValues;
+        } else {
+            return null;
+        }
+    }
+
+    private Object getConvertedValue(JsonObject change) {
+        if (change.hasKey("mapValue")) {
+            return ensureNodeExists((int) change.getNumber("mapValue"));
+        } else if (change.hasKey("listValue")) {
+            return ensureListNodeExists((int) change.getNumber("listValue"));
+        } else {
+            return change.get("value");
         }
     }
 
@@ -691,7 +696,7 @@ public class TreeUpdater {
             domListeners.put(id, nodeListeners);
         }
 
-        assert !nodeListeners.containsKey(type);
+        assert!nodeListeners.containsKey(type);
         nodeListeners.put(type, listener);
     }
 

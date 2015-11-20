@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.vaadin.hummingbird.kernel.LazyList.DataProvider;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.communication.TransactionLogBuilder;
 import com.vaadin.server.communication.TransactionLogJsonProducer;
 import com.vaadin.server.communication.TransactionLogOptimizer;
 import com.vaadin.ui.UI;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -128,16 +128,15 @@ public class UidlWriterTest {
         int idx = 0;
 
         JsonObject addListenerListNode = changes.getObject(idx++);
-        Assert.assertEquals("putListNode",
-                addListenerListNode.getString("type"));
+        Assert.assertEquals("put", addListenerListNode.getString("type"));
         Assert.assertEquals("LISTENERS", addListenerListNode.getString("key"));
-        int listNodeId = (int) addListenerListNode.getNumber("value");
+        int listNodeId = (int) addListenerListNode.getNumber("listValue");
 
         JsonObject change = changes.getObject(idx++);
-        Assert.assertEquals("listInsert", change.getString("type"));
+        Assert.assertEquals("splice", change.getString("type"));
         Assert.assertEquals(0, (int) change.getNumber("index"));
         Assert.assertEquals(listNodeId, (int) change.getNumber("id"));
-        Assert.assertEquals("bar", change.getString("value"));
+        Assert.assertEquals("bar", change.getArray("value").getString(0));
 
     }
 
@@ -164,9 +163,9 @@ public class UidlWriterTest {
 
         Assert.assertEquals(1, changes.length());
         JsonObject change = changes.get(0);
-        Assert.assertEquals("putListNode", change.getString("type"));
+        Assert.assertEquals("put", change.getString("type"));
         Assert.assertEquals("list", change.getString("key"));
-
+        Assert.assertTrue(change.hasKey("listValue"));
     }
 
     @Test
@@ -197,22 +196,22 @@ public class UidlWriterTest {
         // Ramge end + data through list insert for 0
         int idx = 0;
         JsonObject putList = changes.getObject(idx++);
-        Assert.assertEquals("putListNode", putList.getString("type"));
+        Assert.assertEquals("put", putList.getString("type"));
         Assert.assertEquals("list", putList.getString("key"));
-        int listId = (int) putList.getNumber("value");
+        int listId = (int) putList.getNumber("listValue");
 
         JsonObject rangeEnd = changes.getObject(idx++);
         Assert.assertEquals("rangeEnd", rangeEnd.getString("type"));
         Assert.assertEquals(listId, (int) rangeEnd.getNumber("id"));
 
         JsonObject data = changes.getObject(idx++);
-        Assert.assertEquals("listInsertNodes", data.getString("type"));
+        Assert.assertEquals("splice", data.getString("type"));
         Assert.assertEquals(0, (int) data.getNumber("index"));
 
         // JsonArray values = Json.createArray();
         ArrayList<Integer> nodeIds = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            nodeIds.add((int) data.getArray("value").getNumber(i));
+            nodeIds.add((int) data.getArray("mapValue").getNumber(i));
         }
 
         for (int i = 0; i < 10; i++) {

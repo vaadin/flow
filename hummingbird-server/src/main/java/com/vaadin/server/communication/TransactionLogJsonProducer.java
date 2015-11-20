@@ -1,10 +1,12 @@
 package com.vaadin.server.communication;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
@@ -27,6 +29,7 @@ import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonNumber;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -35,19 +38,13 @@ public class TransactionLogJsonProducer {
     private static final String ID = "id";
     private static final String KEY = "key";
     private static final String VALUE = "value";
+    private static final String VALUE_MAP = "mapValue";
+    private static final String VALUE_LIST = "listValue";
     private static final String TYPE_PUT = "put";
-    private static final String TYPE_PUT_NODE = "putNode";
-    private static final String TYPE_PUT_LIST_NODE = "putListNode";
     private static final String LIST_INDEX = "index";
     private static final String TYPE_REMOVE = "remove";
     private static final String TYPE_PUT_OVERRIDE = "putOverride";
-    private static final String TYPE_LIST_INSERT_NODE = "listInsertNode";
-    private static final String TYPE_LIST_INSERT_NODES = "listInsertNodes";
-    private static final String TYPE_LIST_INSERT = "listInsert";
-    private static final String TYPE_LIST_INSERTS = "listInserts";
-    private static final String TYPE_LIST_REPLACE = "listReplace";
-    private static final String TYPE_LIST_REPLACE_NODE = "listReplaceNode";
-    private static final String TYPE_LIST_REMOVE = "listRemove";
+    private static final String TYPE_SPLICE = "splice";
     private static final String TYPE_RANGE_START = "rangeStart";
     private static final String TYPE_RANGE_END = "rangeEnd";
 
@@ -104,12 +101,60 @@ public class TransactionLogJsonProducer {
             putKey(changeJson, contentsChange);
 
             if (contentsChange instanceof NodeDataChange) {
-                putValue(changeJson, ((NodeDataChange) change).getValue());
+                Object value = ((NodeDataChange) change).getValue();
+                if (value instanceof StateNode) {
+                    StateNode child = (StateNode) value;
+                    JsonNumber id = Json.create(Math.abs(child.getId()));
+                    if (value instanceof ListNode
+                            || value instanceof LazyList<?>) {
+                        changeJson.put(VALUE_LIST, id);
+                    } else {
+                        changeJson.put(VALUE_MAP, id);
+                    }
+                } else {
+                    changeJson.put(VALUE, encode(value));
+                }
             }
         } else if (change instanceof ListChange) {
+            List<?> values = null;
             ListChange listChange = (ListChange) change;
             changeJson.put(LIST_INDEX, listChange.getIndex());
-            putValue(changeJson, listChange.getValue());
+
+            if (listChange instanceof ListInsertChange) {
+                values = Collections.singletonList(listChange.getValue());
+            } else if (listChange instanceof ListReplaceChange) {
+                changeJson.put("remove", 1);
+                values = Collections.singletonList(listChange.getValue());
+            } else if (listChange instanceof ListRemoveChange) {
+                changeJson.put("remove", 1);
+            } else if (listChange instanceof ListInsertManyChange) {
+                values = (List<?>) listChange.getValue();
+            }
+
+            if (values != null && !values.isEmpty()) {
+                String key;
+                Stream<JsonValue> valueStream;
+
+                // Assumes all children are of the same kind
+                Object first = values.get(0);
+                if (first instanceof StateNode) {
+                    if (first instanceof ListNode
+                            || first instanceof LazyList<?>) {
+                        key = VALUE_LIST;
+                    } else {
+                        key = VALUE_MAP;
+                    }
+                    valueStream = values.stream()
+                            .map(v -> Json.create(((StateNode) v).getId()));
+                } else {
+                    key = VALUE;
+                    valueStream = values.stream().map(this::encode);
+                }
+
+                JsonArray value = Json.createArray();
+                valueStream.forEach(v -> value.set(value.length(), v));
+                changeJson.put(key, value);
+            }
         } else if (change instanceof RangeEndChange) {
             changeJson.put(VALUE, ((RangeEndChange) change).getRangeEnd());
         } else if (change instanceof RangeStartChange) {
@@ -119,14 +164,8 @@ public class TransactionLogJsonProducer {
         return changeJson;
     }
 
-    private void putValue(JsonObject changeJson, Object value) {
-        changeJson.put(VALUE, encode(value));
-    }
-
     private JsonValue encode(Object value) {
-        if (value instanceof StateNode) {
-            return Json.create(Math.abs(((StateNode) value).getId()));
-        } else if (value instanceof ElementTemplate) {
+        if (value instanceof ElementTemplate) {
             return Json.create(((ElementTemplate) value).getId());
         } else if (value instanceof Collection) {
             JsonArray arr = Json.createArray();
@@ -157,41 +196,14 @@ public class TransactionLogJsonProducer {
             return TYPE_REMOVE;
         } else if (change instanceof PutChange) {
             PutChange pc = (PutChange) change;
-            if (pc.getValue() instanceof ListNode
-                    || pc.getValue() instanceof LazyList) {
-                return TYPE_PUT_LIST_NODE;
-            } else if (pc.getValue() instanceof StateNode) {
-                if (pc.getKey() instanceof ElementTemplate) {
-                    return TYPE_PUT_OVERRIDE;
-                } else {
-                    return TYPE_PUT_NODE;
-                }
+            if (pc.getValue() instanceof StateNode
+                    && pc.getKey() instanceof ElementTemplate) {
+                return TYPE_PUT_OVERRIDE;
             } else {
                 return TYPE_PUT;
             }
-        } else if (change instanceof ListReplaceChange) {
-            ListReplaceChange lrc = (ListReplaceChange) change;
-            if (lrc.getValue() instanceof StateNode) {
-                return TYPE_LIST_REPLACE_NODE;
-            } else {
-                return TYPE_LIST_REPLACE;
-            }
-        } else if (change instanceof ListInsertChange) {
-            ListInsertChange lic = (ListInsertChange) change;
-            if (lic.getValue() instanceof StateNode) {
-                return TYPE_LIST_INSERT_NODE;
-            } else {
-                return TYPE_LIST_INSERT;
-            }
-        } else if (change instanceof ListRemoveChange) {
-            return TYPE_LIST_REMOVE;
-        } else if (change instanceof ListInsertManyChange) {
-            ListInsertManyChange lic = (ListInsertManyChange) change;
-            if (lic.getValue().get(0) instanceof StateNode) {
-                return TYPE_LIST_INSERT_NODES;
-            } else {
-                return TYPE_LIST_INSERTS;
-            }
+        } else if (change instanceof ListChange) {
+            return TYPE_SPLICE;
         } else if (change instanceof RangeStartChange) {
             return TYPE_RANGE_START;
         } else if (change instanceof RangeEndChange) {
