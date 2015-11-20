@@ -11,6 +11,7 @@ import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.tree.ListTreeNode.ArrayEventListener;
 import com.vaadin.client.communication.tree.TreeNode.TreeNodeChangeListener;
 
+import elemental.js.json.JsJsonArray;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -43,7 +44,58 @@ public class BasicElementListener {
             }
 
             property.addPropertyChangeListener((old, value) -> {
-                if (value instanceof TreeNode) {
+                if (value instanceof ListTreeNode) {
+                    ListTreeNode child = (ListTreeNode) value;
+
+                    JsonValue oldValue = target.get(name);
+                    if (oldValue == null
+                            || oldValue.getType() != JsonType.ARRAY) {
+                        target.put(name, Json.createArray());
+                        TreeUpdater.debug("Set property " + name
+                                + " to empty array" + " for " + target);
+                    }
+                    JsArrayObject<Object> targetArray = ((JsJsonArray) target
+                            .getArray(name)).cast();
+
+                    child.addArrayEventListener(new ArrayEventListener() {
+                        @Override
+                        public void splice(ListTreeNode listTreeNode,
+                                int startIndex, JsArrayObject<Object> removed,
+                                JsArrayObject<Object> added) {
+                            JsArrayObject<Object> newValues = added;
+                            if (added != null && added.size() != 0) {
+                                Object firstAdded = added.get(0);
+                                if (firstAdded instanceof TreeNode) {
+                                    newValues = JavaScriptObject.createArray()
+                                            .cast();
+                                    for (int i = 0; i < added.size(); i++) {
+                                        newValues.add(JavaScriptObject
+                                                .createObject());
+                                    }
+                                }
+                            }
+                            ListTreeNode.doSplice(targetArray, startIndex,
+                                    removed.size(), newValues);
+                            if (newValues != added) {
+                                for (int i = 0; i < added.size(); i++) {
+                                    JsonValue childObject = TreeUpdater
+                                            .asJsonValue(targetArray
+                                                    .get(startIndex + i));
+                                    TreeNode childNode = (TreeNode) added
+                                            .get(i);
+                                    childNode.addTreeNodeChangeListener(
+                                            new PropertyPropagator(
+                                                    (JsonObject) childObject));
+                                    TreeUpdater.debug("Add listener for child "
+                                            + (startIndex + i) + " in property "
+                                            + name + " for element " + target);
+
+                                }
+                            }
+                        }
+                    });
+
+                } else if (value instanceof TreeNode) {
                     TreeNode child = (TreeNode) value;
                     JsonValue childValue = target.get(name);
                     if (childValue == null
