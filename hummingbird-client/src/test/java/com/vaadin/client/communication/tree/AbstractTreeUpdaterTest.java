@@ -57,7 +57,7 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
             init(rootElement, rpcQueue, client);
 
             // initialize the containerElement node
-            update(Json.createObject(), buildChanges(ChangeUtil.putNode(1,
+            update(Json.createObject(), buildChanges(ChangeUtil.putMap(1,
                     "containerElement", containerElementId)), null);
         }
 

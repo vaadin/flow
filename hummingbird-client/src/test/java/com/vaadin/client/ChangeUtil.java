@@ -4,6 +4,7 @@ import com.google.gwt.core.client.js.JsProperty;
 import com.google.gwt.core.client.js.JsType;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -31,30 +32,21 @@ public class ChangeUtil {
     }
 
     @JsType
-    public interface ListRemoveChange extends Change {
-        @JsProperty
-        String getKey();
-
+    public interface SpliceChange extends Change {
         @JsProperty
         int getIndex();
 
         @JsProperty
-        JsonValue getRemovedValue();
+        int getRemove();
 
         @JsProperty
-        void setRemovedValue(JsonValue value);
-    }
+        JsonArray getValue();
 
-    @JsType
-    public interface ListInsertChange extends PutChange {
         @JsProperty
-        int getIndex();
-    }
+        JsonArray getMapValue();
 
-    @JsType
-    public interface ListInsertNodeChange extends PutNodeChange {
         @JsProperty
-        int getIndex();
+        JsonArray getListValue();
     }
 
     @JsType
@@ -69,16 +61,25 @@ public class ChangeUtil {
     @JsType
     public interface PutOverrideChange extends Change {
         @JsProperty
-        int getKey();
+        int getMapValue();
 
         @JsProperty
         int getValue();
     }
 
     @JsType
-    public interface PutNodeChange extends Change {
+    public interface PutMapChange extends Change {
         @JsProperty
-        int getValue();
+        int getMapValue();
+
+        @JsProperty
+        String getKey();
+    }
+
+    @JsType
+    public interface PutListChange extends Change {
+        @JsProperty
+        int getListValue();
 
         @JsProperty
         String getKey();
@@ -104,18 +105,23 @@ public class ChangeUtil {
         return put(id, key, Json.create(value));
     }
 
-    public static PutNodeChange putNode(int id, String key, int nodeId) {
-        JsonObject change = createChange(id, "putNode", key);
-        change.put("value", nodeId);
-        return (PutNodeChange) change;
+    public static PutMapChange putMap(int id, String key, int nodeId) {
+        JsonObject change = createChange(id, "put", key);
+        change.put("mapValue", nodeId);
+        return (PutMapChange) change;
     }
 
-    public static ListInsertNodeChange listInsertNode(int id, String key,
-            int index, int childId) {
-        JsonObject change = createChange(id, "listInsertNode", key);
+    public static PutListChange putList(int id, String key, int nodeId) {
+        JsonObject change = createChange(id, "put", key);
+        change.put("listValue", nodeId);
+        return (PutListChange) change;
+    }
+
+    public static SpliceChange listInsertNode(int id, int index, int childId) {
+        JsonObject change = createChange(id, "splice", null);
         change.put("index", index);
-        change.put("value", childId);
-        return (ListInsertNodeChange) change;
+        change.put("mapValue", createArray(Json.create(childId)));
+        return (SpliceChange) change;
     }
 
     public static RemoveChange remove(int id, String key) {
@@ -123,30 +129,37 @@ public class ChangeUtil {
         return (RemoveChange) change;
     }
 
-    public static ListRemoveChange listRemove(int id, String key, int index) {
-        JsonObject change = createChange(id, "listRemove", key);
+    public static SpliceChange listRemove(int id, int index) {
+        JsonObject change = createChange(id, "splice", null);
         change.put("index", index);
-        return (ListRemoveChange) change;
+        change.put("remove", 1);
+        return (SpliceChange) change;
     }
 
-    public static ListInsertChange listInsert(int id, String key, int index,
-            JsonValue value) {
-        JsonObject change = createChange(id, "listInsert", key);
+    public static SpliceChange listInsert(int id, int index, JsonValue value) {
+        JsonObject change = createChange(id, "splice", null);
         change.put("index", index);
-        change.put("value", value);
-        return (ListInsertChange) change;
+        change.put("value", createArray(value));
+        return (SpliceChange) change;
     }
 
-    public static ListInsertChange listInsert(int id, String key, int index,
-            String value) {
-        return listInsert(id, key, index, Json.create(value));
+    public static SpliceChange listInsert(int id, int index, String value) {
+        return listInsert(id, index, Json.create(value));
     }
 
     public static PutOverrideChange putOverrideNode(int id, int templateId,
             int overrideId) {
         JsonObject change = createChange(id, "putOverride",
                 String.valueOf(templateId));
-        change.put("value", overrideId);
+        change.put("mapValue", overrideId);
         return (PutOverrideChange) change;
+    }
+
+    private static JsonArray createArray(JsonValue... values) {
+        JsonArray array = Json.createArray();
+        for (JsonValue child : values) {
+            array.set(array.length(), child);
+        }
+        return array;
     }
 }

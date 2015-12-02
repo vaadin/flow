@@ -25,11 +25,15 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         applyTemplate(1, template);
 
+        int childId = 3;
+        int childrenId = 4;
+
         applyChanges(
-                ChangeUtil.listInsertNode(containerElementId, "CHILDREN", 0, 3),
-                ChangeUtil.put(3, "TEMPLATE", Json.create(1)),
-                ChangeUtil.put(3, "value", "Hello"),
-                ChangeUtil.put(3, "conditional", Json.create(true)));
+                ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.listInsertNode(childrenId, 0, childId),
+                ChangeUtil.put(childId, "TEMPLATE", Json.create(1)),
+                ChangeUtil.put(childId, "value", "Hello"),
+                ChangeUtil.put(childId, "conditional", Json.create(true)));
 
         Element rootElement = updater.getRootElement();
         assertEquals(1, rootElement.getChildCount());
@@ -47,8 +51,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         assertEquals("part", templateElement.getClassName());
 
-        applyChanges(ChangeUtil.put(3, "value", "Bye"),
-                ChangeUtil.put(3, "conditional", Json.create(false)));
+        applyChanges(ChangeUtil.put(childId, "value", "Bye"),
+                ChangeUtil.put(childId, "conditional", Json.create(false)));
 
         assertEquals("Bye", templateElement.getPropertyString("bound"));
         assertEquals("", templateElement.getClassName());
@@ -64,8 +68,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         applyTemplate(1, template);
 
-        applyChanges(
-                ChangeUtil.listInsertNode(containerElementId, "CHILDREN", 0, 3),
+        applyChanges(ChangeUtil.putList(containerElementId, "CHILDREN", 4),
+                ChangeUtil.listInsertNode(4, 0, 3),
                 ChangeUtil.put(3, "TEMPLATE", Json.create(1)));
 
         Element templateElement = updater.getRootElement()
@@ -128,11 +132,15 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         applyTemplate(4, Json.parse(parentJson.replace('\'', '"')));
 
+        int childId = 3;
+        int childrenId = 4;
+
         applyChanges(
-                ChangeUtil.listInsertNode(containerElementId, "CHILDREN", 0, 3),
-                ChangeUtil.put(3, "TEMPLATE", Json.create(4)),
-                ChangeUtil.put(3, "value", "Hello"),
-                ChangeUtil.put(3, "boundText", "dynamic text"));
+                ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.listInsertNode(childrenId, 0, childId),
+                ChangeUtil.put(childId, "TEMPLATE", Json.create(4)),
+                ChangeUtil.put(childId, "value", "Hello"),
+                ChangeUtil.put(childId, "boundText", "dynamic text"));
 
         Element parent = updater.getRootElement().getFirstChildElement();
         assertEquals(3, parent.getChildCount());
@@ -147,8 +155,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         Text staticText = Text.as(parent.getChild(2));
         assertEquals("static text", staticText.getData());
 
-        applyChanges(ChangeUtil.put(3, "value", "new value"),
-                ChangeUtil.put(3, "boundText", "very dynamic text"));
+        applyChanges(ChangeUtil.put(childId, "value", "new value"),
+                ChangeUtil.put(childId, "boundText", "very dynamic text"));
 
         assertEquals("new value", basicChild.getPropertyString("value"));
         assertEquals("very dynamic text", boundText.getData());
@@ -167,16 +175,22 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
                 + "'modelStructure': [{'items': ['checked']}]}";
         applyTemplate(2, Json.parse(parentJson.replace('\'', '"')));
 
+        int childrenId = 6;
+        int itemsId = 7;
+        int templateRootNode = 3;
+
         applyChanges(
-                ChangeUtil.listInsertNode(containerElementId, "CHILDREN", 0, 3),
-                ChangeUtil.put(3, "TEMPLATE", Json.create(2)));
+                ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.listInsertNode(childrenId, 0, templateRootNode),
+                ChangeUtil.putList(templateRootNode, "items", itemsId),
+                ChangeUtil.put(templateRootNode, "TEMPLATE", Json.create(2)));
 
         Element parent = updater.getRootElement().getFirstChildElement();
         assertEquals(1, parent.getChildCount());
         // 8 = comment node
         assertEquals(8, parent.getChild(0).getNodeType());
 
-        applyChanges(ChangeUtil.listInsertNode(3, "items", 0, 4),
+        applyChanges(ChangeUtil.listInsertNode(itemsId, 0, 4),
                 ChangeUtil.put(4, "checked", Json.create(true)));
 
         assertEquals(2, parent.getChildCount());
@@ -186,12 +200,12 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals("checkbox", firstChild.getAttribute("type"));
         assertTrue(firstChild.getPropertyBoolean("checked"));
 
-        applyChanges(ChangeUtil.listInsertNode(3, "items", 1, 5));
+        applyChanges(ChangeUtil.listInsertNode(itemsId, 1, 5));
         assertEquals(3, parent.getChildCount());
         Element secondChild = firstChild.getNextSiblingElement();
         assertTrue(secondChild == parent.getChild(2));
 
-        applyChanges(ChangeUtil.listRemove(3, "items", 0));
+        applyChanges(ChangeUtil.listRemove(itemsId, 0));
 
         assertEquals(2, parent.getChildCount());
         assertSame(parent, secondChild.getParentElement());
@@ -219,26 +233,27 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         int templateId = 1;
         int templateNodeId = 3;
         int overrideNodeId = 4;
+        int childrenId = 5;
 
         applyTemplate(templateId, template);
 
         applyChanges(
-                ChangeUtil.listInsertNode(containerElementId, "CHILDREN", 0,
-                        templateNodeId),
+                ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.listInsertNode(childrenId, 0, templateNodeId),
                 ChangeUtil.put(templateNodeId, "TEMPLATE",
                         Json.create(templateId)));
 
         Element templateElement = updater.getRootElement()
                 .getFirstChildElement();
         assertEquals("bar", templateElement.getAttribute("foo"));
-        assertNull(templateElement.getPropertyString("attr"));
+        assertNull(templateElement.getPropertyString("asdf"));
 
         applyChanges(
                 ChangeUtil.putOverrideNode(templateNodeId, templateId,
                         overrideNodeId),
-                ChangeUtil.put(overrideNodeId, "attr", "attrValue"));
+                ChangeUtil.put(overrideNodeId, "asdf", "attrValue"));
 
-        assertEquals("attrValue", templateElement.getPropertyString("attr"));
+        assertEquals("attrValue", templateElement.getPropertyString("asdf"));
     }
 
     public void testMoveNode() {
@@ -251,15 +266,16 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         int templateId = 1;
         int templateNodeId = 3;
         int childNodeId = 4;
+        int childrenId = 5;
 
         applyTemplate(templateId, template);
 
         applyChanges(ChangeUtil.put(childNodeId, "value", "childValue"),
                 ChangeUtil.put(templateNodeId, "TEMPLATE",
                         Json.create(templateId)),
-                ChangeUtil.putNode(templateNodeId, "child1", childNodeId),
-                ChangeUtil.listInsertNode(containerElementId, "CHILDREN", 0,
-                        templateNodeId));
+                ChangeUtil.putMap(templateNodeId, "child1", childNodeId),
+                ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.listInsertNode(childrenId, 0, templateNodeId));
 
         Element templateElement = updater.getRootElement()
                 .getFirstChildElement();
@@ -291,8 +307,9 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         assertFalse(isScriptLoaded());
 
-        applyChanges(ChangeUtil.put(3, "TEMPLATE", Json.create(3)), ChangeUtil
-                .listInsertNode(containerElementId, "CHILDREN", 0, 3));
+        applyChanges(ChangeUtil.put(3, "TEMPLATE", Json.create(3)),
+                ChangeUtil.putList(containerElementId, "CHILDREN", 4),
+                ChangeUtil.listInsertNode(4, 0, 3));
 
         assertTrue(isScriptLoaded());
     }

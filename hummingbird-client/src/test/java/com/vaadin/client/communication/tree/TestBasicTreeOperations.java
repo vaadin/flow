@@ -16,9 +16,16 @@ import elemental.json.JsonType;
 
 public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
     public void testAddRemoveElements() {
+        int containerChildrenId = 6;
+        int divId = 3;
+        int spanId = 4;
+        int imgId = 5;
+
         applyChanges(
-                ChangeUtil.listInsertNode(containerElementId, "CHILDREN", 0, 3),
-                ChangeUtil.put(3, "TAG", "div"));
+                ChangeUtil.putList(containerElementId, "CHILDREN",
+                        containerChildrenId),
+                ChangeUtil.listInsertNode(containerChildrenId, 0, divId),
+                ChangeUtil.put(divId, "TAG", "div"));
 
         Element root = updater.getRootElement();
         assertEquals(1, root.getChildCount());
@@ -27,30 +34,28 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals("DIV", divChild.getTagName());
         assertFalse(divChild.hasAttribute("tag"));
 
-        applyChanges(
-                ChangeUtil.listInsertNode(containerElementId, "CHILDREN", 1, 4),
-                ChangeUtil.put(4, "TAG", "span"));
+        applyChanges(ChangeUtil.listInsertNode(containerChildrenId, 1, spanId),
+                ChangeUtil.put(spanId, "TAG", "span"));
         assertEquals(2, root.getChildCount());
 
         Element spanChild = divChild.getNextSiblingElement();
         assertEquals("SPAN", spanChild.getTagName());
 
-        applyChanges(
-                ChangeUtil.listInsertNode(containerElementId, "CHILDREN", 2, 5),
-                ChangeUtil.put(5, "TAG", "img"));
-        assertEquals(3, root.getChildCount());
+        applyChanges(ChangeUtil.listInsertNode(containerChildrenId, 2, imgId),
+                ChangeUtil.put(imgId, "TAG", "img"));
+        assertEquals(divId, root.getChildCount());
 
         Element imgChild = Element.as(root.getChild(2));
         assertEquals("IMG", imgChild.getTagName());
 
         // Remove middle child
-        applyChanges(ChangeUtil.listRemove(containerElementId, "CHILDREN", 1));
+        applyChanges(ChangeUtil.listRemove(containerChildrenId, 1));
         assertEquals(2, root.getChildCount());
         assertNull(spanChild.getParentElement());
 
         // Remove first child even though it's no longer in the DOM
         spanChild.removeFromParent();
-        applyChanges(ChangeUtil.listRemove(containerElementId, "CHILDREN", 0));
+        applyChanges(ChangeUtil.listRemove(containerChildrenId, 0));
         assertEquals(1, root.getChildCount());
         assertEquals(root, imgChild.getParentElement());
     }
@@ -86,11 +91,18 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
     }
 
     public void testEventHandling() {
+        int eventDataId = 3;
+        int listenersId = 4;
+        int clickDataId = 5;
+
         applyChanges(
-                ChangeUtil.listInsert(containerElementId, "LISTENERS", 0,
-                        "click"),
-                ChangeUtil.putNode(containerElementId, "EVENT_DATA", 3),
-                ChangeUtil.listInsert(3, "click", 0, "clientX"));
+                ChangeUtil.putList(containerElementId, "LISTENERS",
+                        listenersId),
+                ChangeUtil.listInsert(listenersId, 0, "click"),
+                ChangeUtil.putMap(containerElementId, "EVENT_DATA",
+                        eventDataId),
+                ChangeUtil.putList(eventDataId, "click", clickDataId),
+                ChangeUtil.listInsert(clickDataId, 0, "clientX"));
 
         NativeEvent event = Document.get().createClickEvent(0, 1, 2, 3, 4,
                 false, false, false, false);
@@ -121,7 +133,7 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         enqueuedInvocations.clear();
 
         // Remove the listener
-        applyChanges(ChangeUtil.listRemove(containerElementId, "LISTENERS", 0));
+        applyChanges(ChangeUtil.listRemove(listenersId, 0));
 
         // Fire a new event
         event = Document.get().createClickEvent(0, 1, 2, 3, 4, false, false,
@@ -167,18 +179,21 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         int newObjectId = 4;
         int existingMemberId = 5;
         int newMemberId = 6;
+        int existingArrayId = 7;
+        int newArrayId = 8;
+
         applyChanges(
-                ChangeUtil.putNode(containerElementId, "existingobject",
+                ChangeUtil.putMap(containerElementId, "existingobject",
                         existingObjectId),
                 ChangeUtil.put(existingObjectId, "baz", "asdf"),
-                ChangeUtil.putNode(containerElementId, "newobject",
-                        newObjectId),
+                ChangeUtil.putMap(containerElementId, "newobject", newObjectId),
                 ChangeUtil.put(newObjectId, "new", "value"),
-                ChangeUtil.listInsertNode(containerElementId, "existingarray",
-                        0, existingMemberId),
+                ChangeUtil.putList(containerElementId, "existingarray",
+                        existingArrayId),
+                ChangeUtil.listInsertNode(existingArrayId, 0, existingMemberId),
                 ChangeUtil.put(existingMemberId, "value", "yes"),
-                ChangeUtil.listInsertNode(containerElementId, "newarray", 0,
-                        newMemberId),
+                ChangeUtil.putList(containerElementId, "newarray", newArrayId),
+                ChangeUtil.listInsertNode(newArrayId, 0, newMemberId),
                 ChangeUtil.put(newMemberId, "checked", Json.create(true)));
 
         assertSame(existingObject, element.getPropertyJSO("existingobject"));
@@ -198,8 +213,9 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
     }
 
     public void testStructuredProperties_basicArray() {
-        applyChanges(
-                ChangeUtil.listInsert(containerElementId, "array", 0, "Hello"));
+        int arrayId = 3;
+        applyChanges(ChangeUtil.putList(containerElementId, "array", arrayId),
+                ChangeUtil.listInsert(arrayId, 0, "Hello"));
 
         Element element = updater.getRootElement();
         JsonArray array = element.getPropertyJSO("array").cast();
@@ -209,11 +225,18 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
     }
 
     public void testEventDataCallback() {
+        int eventDataId = 3;
+        int clickDataId = 5;
+        int listenersId = 4;
+
         applyChanges(
-                ChangeUtil.listInsert(containerElementId, "LISTENERS", 0,
-                        "click"),
-                ChangeUtil.putNode(containerElementId, "EVENT_DATA", 3),
-                ChangeUtil.listInsert(3, "click", 0,
+                ChangeUtil.putList(containerElementId, "LISTENERS",
+                        listenersId),
+                ChangeUtil.listInsert(listenersId, 0, "click"),
+                ChangeUtil.putMap(containerElementId, "EVENT_DATA",
+                        eventDataId),
+                ChangeUtil.putList(eventDataId, "click", clickDataId),
+                ChangeUtil.listInsert(clickDataId, 0,
                         "[typeof event, element.tagName]"));
 
         NativeEvent event = Document.get().createClickEvent(0, 1, 2, 3, 4,
