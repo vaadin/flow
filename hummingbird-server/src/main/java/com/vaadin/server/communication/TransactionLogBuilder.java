@@ -10,6 +10,7 @@ import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.change.IdChange;
+import com.vaadin.hummingbird.kernel.change.ListChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
 import com.vaadin.hummingbird.kernel.change.ListRemoveChange;
@@ -18,7 +19,6 @@ import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.NodeChangeVisitor;
 import com.vaadin.hummingbird.kernel.change.NodeContentsChange;
 import com.vaadin.hummingbird.kernel.change.NodeDataChange;
-import com.vaadin.hummingbird.kernel.change.NodeListChange;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RangeEndChange;
@@ -67,8 +67,8 @@ public class TransactionLogBuilder {
         Object value = null;
         if (change instanceof NodeDataChange) {
             value = ((NodeDataChange) change).getValue();
-        } else if (change instanceof NodeListChange) {
-            value = ((NodeListChange) change).getValue();
+        } else if (change instanceof ListChange) {
+            value = ((ListChange) change).getValue();
         }
 
         if (value != null) {
@@ -167,11 +167,9 @@ public class TransactionLogBuilder {
                 ListReplaceChange listReplaceChange) {
             logBuilder.addChange(node,
                     new ListRemoveChange(listReplaceChange.getIndex(),
-                            listReplaceChange.getKey(),
                             listReplaceChange.getOldValue()));
             logBuilder.addChange(node,
                     new ListInsertChange(listReplaceChange.getIndex(),
-                            listReplaceChange.getKey(),
                             listReplaceChange.getValue()));
         }
 
@@ -186,6 +184,7 @@ public class TransactionLogBuilder {
                 RangeEndChange rangeEndChange) {
             logBuilder.addChange(node, rangeEndChange);
         }
+
     }
 
 }

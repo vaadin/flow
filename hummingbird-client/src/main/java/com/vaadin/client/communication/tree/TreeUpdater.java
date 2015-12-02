@@ -247,8 +247,9 @@ public class TreeUpdater {
             NodeContext context) {
         Node element = template.createElement(node, context);
         if (Element.is(element)) {
-            getLogger().info(
-                    "Created element of type " + element.getClass().getName());
+            getLogger().info("Created element of type "
+                    + Element.as(element).getTagName() + " for node "
+                    + node.getId());
             createdElements.add((Element) element);
         }
         int nodeId = node.getId();
@@ -310,8 +311,8 @@ public class TreeUpdater {
                 }
 
                 @Override
-                public EventArray resolveArrayProperty(String name) {
-                    return node.getArrayProperty(name);
+                public ListTreeNode resolveListTreeNode(String name) {
+                    return (ListTreeNode) node.getProperty(name).getValue();
                 }
 
                 @Override
@@ -496,7 +497,7 @@ public class TreeUpdater {
 
     private static native void logTree(String string, JsonObject jsonObject)
     /*-{
-        console.log(string, jsonObject);
+        console.log(string, JSON.parse(JSON.stringify(jsonObject)));
     }-*/;
 
     private void initRoot() {
@@ -534,53 +535,29 @@ public class TreeUpdater {
             TreeNode node = ensureNodeExists(nodeId);
             String type = change.getString("type");
             JsonValue key = change.get("key");
-            JsonValue value = change.get("value");
 
             switch (type) {
-            case "putNode": {
-                TreeNode child = ensureNodeExists(
-                        (int) change.getNumber("value"));
-                node.getProperty(key.asString()).setValue(child);
+            case "put": {
+                Object convertedValue = getConvertedValue(change);
+                node.getProperty(key.asString()).setValue(convertedValue);
                 break;
             }
-            case "put":
-                node.getProperty(key.asString()).setValue(value);
-                break;
-            case "listInsertNode": {
-                EventArray array = node.getArrayProperty(key.asString());
-                TreeNode child = ensureNodeExists((int) value.asNumber());
-                array.splice((int) change.getNumber("index"), 0,
-                        createSingleArray(child));
-                break;
-            }
-            case "listInsertNodes": {
-                EventArray array = node.getArrayProperty(key.asString());
-                JsonArray valueArray = (JsonArray) value;
+            case "splice": {
+                ListTreeNode listNode = (ListTreeNode) node;
 
-                for (int valueIndex = 0; valueIndex < valueArray
-                        .length(); valueIndex++) {
-                    TreeNode child = ensureNodeExists(
-                            (int) valueArray.getNumber(valueIndex));
-                    array.splice((int) change.getNumber("index") + valueIndex,
-                            0, createSingleArray(child));
+                int index = (int) change.getNumber("index");
+
+                int removeCount;
+                if (change.hasKey("remove")) {
+                    removeCount = (int) change.getNumber("remove");
+                } else {
+                    removeCount = 0;
                 }
-                break;
-            }
-            case "listInsert": {
-                EventArray array = node.getArrayProperty(key.asString());
-                array.splice((int) change.getNumber("index"), 0,
-                        createSingleArray(value));
-                break;
-            }
-            case "listInserts": {
-                EventArray array = node.getArrayProperty(key.asString());
-                array.splice((int) change.getNumber("index"), 0,
-                        (JsArrayObject<Object>) Util.json2jso(value));
-                break;
-            }
-            case "listRemove": {
-                EventArray array = node.getArrayProperty(key.asString());
-                array.splice((int) change.getNumber("index"), 1, null);
+
+                JsArrayObject<Object> newValues = getConvertedValues(change);
+
+                listNode.splice(index, removeCount, newValues);
+
                 break;
             }
             case "remove": {
@@ -598,7 +575,7 @@ public class TreeUpdater {
             }
             case "putOverride": {
                 int templateId = (int) key.asNumber();
-                int overrideNodeId = (int) value.asNumber();
+                int overrideNodeId = (int) change.getNumber("mapValue");
 
                 TreeNode overrideNode = ensureNodeExists(overrideNodeId);
                 node.getProperty(String.valueOf(templateId))
@@ -606,9 +583,10 @@ public class TreeUpdater {
                 break;
             }
             case "rangeStart":
+                node.getProperty("rangeStart").setValue(change.get("value"));
+                break;
             case "rangeEnd": {
-                getLogger().info(
-                        "Got " + type + " for " + change.getString("key"));
+                node.getProperty("rangeEnd").setValue(change.get("value"));
                 break;
             }
             default:
@@ -616,6 +594,49 @@ public class TreeUpdater {
                         "Unsupported change type: " + change.getType());
             }
         }
+    }
+
+    private JsArrayObject<Object> getConvertedValues(JsonObject change) {
+        if (change.hasKey("value")) {
+            return Util.json2jso(change.getArray("value")).cast();
+        } else if (change.hasKey("mapValue")) {
+            JsonArray mapValues = change.getArray("mapValue");
+            JsArrayObject<Object> newValues = JavaScriptObject.createArray()
+                    .cast();
+            for (int j = 0; j < mapValues.length(); j++) {
+                TreeNode node = ensureNodeExists((int) mapValues.getNumber(j));
+                newValues.add(node);
+            }
+            return newValues;
+        } else if (change.hasKey("listValue")) {
+            JsonArray listValues = change.getArray("listValue");
+            JsArrayObject<Object> newValues = JavaScriptObject.createArray()
+                    .cast();
+            for (int j = 0; j < listValues.length(); j++) {
+                ListTreeNode node = ensureListNodeExists(
+                        (int) listValues.getNumber(j));
+                newValues.add(node);
+            }
+            return newValues;
+        } else {
+            return null;
+        }
+    }
+
+    private Object getConvertedValue(JsonObject change) {
+        if (change.hasKey("mapValue")) {
+            return ensureNodeExists((int) change.getNumber("mapValue"));
+        } else if (change.hasKey("listValue")) {
+            return ensureListNodeExists((int) change.getNumber("listValue"));
+        } else {
+            return change.get("value");
+        }
+    }
+
+    private void listNodeInsert(ListTreeNode listNode, int insertIndex,
+            TreeNode childNode) {
+        listNode.splice(insertIndex, 0, createSingleArray(childNode));
+
     }
 
     private static native JsArrayObject<Object> createSingleArray(Object value)
@@ -628,6 +649,16 @@ public class TreeUpdater {
         TreeNode node = idToNode.get(key);
         if (node == null) {
             node = new TreeNode(id, this);
+            idToNode.put(key, node);
+        }
+        return node;
+    }
+
+    private ListTreeNode ensureListNodeExists(int id) {
+        Integer key = Integer.valueOf(id);
+        ListTreeNode node = (ListTreeNode) idToNode.get(key);
+        if (node == null) {
+            node = new ListTreeNode(id, this);
             idToNode.put(key, node);
         }
         return node;

@@ -82,6 +82,7 @@ public class RootNode extends MapStateNode {
             id = -id;
         }
 
+        System.out.println(id + " for " + node.getClass().getSimpleName());
         assert getById(id) == null;
 
         transactionIdToNode.put(Integer.valueOf(id), node);

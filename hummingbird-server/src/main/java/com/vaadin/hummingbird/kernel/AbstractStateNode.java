@@ -18,7 +18,6 @@ import java.util.stream.Stream;
 import com.vaadin.hummingbird.kernel.RootNode.TransactionHandler;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
-import com.vaadin.hummingbird.kernel.change.NodeListChange;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
@@ -47,8 +46,6 @@ public abstract class AbstractStateNode implements StateNode {
 
     @Override
     public void attachChild(Object value) {
-        assert !(value instanceof NodeList);
-
         if (value instanceof StateNode) {
             StateNode stateNode = (StateNode) value;
             RootNode ownRoot = getRoot();
@@ -326,15 +323,13 @@ public abstract class AbstractStateNode implements StateNode {
         logChange(new IdChange(oldId, newId));
     }
 
-    void forEachChildNode(Consumer<StateNode> consumer) {
+    protected void forEachChildNode(Consumer<StateNode> consumer) {
         Consumer<Object> action = new Consumer<Object>() {
             @Override
             public void accept(Object v) {
                 if (v instanceof StateNode) {
                     StateNode childNode = (StateNode) v;
                     consumer.accept(childNode);
-                } else if (v instanceof NodeList) {
-                    ((NodeList) v).forEachChildNode(this);
                 }
             }
         };
@@ -351,8 +346,8 @@ public abstract class AbstractStateNode implements StateNode {
             if (isAttached()) {
                 childNode.unregister();
             }
-        } else if (value instanceof NodeList) {
-            ((NodeList) value).detach();
+        } else if (value instanceof ListNode) {
+            ((ListNode) value).detach();
         }
     }
 
@@ -388,41 +383,25 @@ public abstract class AbstractStateNode implements StateNode {
     @Override
     public List<Object> getMultiValued(Object key) {
         Object value = get(key);
-        if (value instanceof NodeList) {
-            return (NodeList) value;
+        if (value instanceof ListNode) {
+            return new ListNodeAsList((ListNode) value);
         } else if (value instanceof LazyList) {
             return (List) new LazyListActiveRangeView<StateNode>(
                     (LazyList<StateNode>) value);
         } else {
-
-            NodeList NodeList = new NodeList(this, key);
-            setValue(key, NodeList);
-            return NodeList;
+            // FIXME Why should these be auto-created?
+            ListNode nodeList = new ListNode();
+            put(key, nodeList);
+            if (isServerOnlyKey(key)) {
+                nodeList.put(AbstractElementTemplate.Keys.SERVER_ONLY,
+                        Boolean.TRUE);
+            }
+            return new ListNodeAsList(nodeList);
         }
-    }
-
-    public LazyList<StateNode> getLazyMultiValued(Object key) {
-        if (!containsKey(key)) {
-            return null;
-        }
-        return get(key, LazyList.class);
     }
 
     @Override
     public Object put(Object key, Object value) {
-        if (value instanceof LazyList) {
-            if (containsKey(key)) {
-                throw new IllegalStateException(
-                        "Key '" + key + "' already exists");
-            }
-
-            LazyList list = (LazyList) value;
-            list.attach(this, key);
-            setValue(key, list);
-            return null;
-
-        }
-
         boolean contained = doesContainKey(key);
         Object previous = setValue(key, value);
         if (contained) {
@@ -630,10 +609,6 @@ public abstract class AbstractStateNode implements StateNode {
         } else if (change instanceof RemoveChange) {
             RemoveChange removeChange = (RemoveChange) change;
             setValue(removeChange.getKey(), removeChange.getValue());
-        } else if (change instanceof NodeListChange) {
-            NodeListChange nodeListChange = (NodeListChange) change;
-            get(nodeListChange.getKey(), NodeList.class)
-                    .rollback(nodeListChange);
         } else {
             throw new IllegalArgumentException("Unkown change type "
                     + change.getClass().getName() + " passed to rollback");
