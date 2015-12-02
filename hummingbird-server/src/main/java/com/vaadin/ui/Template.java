@@ -461,6 +461,7 @@ public abstract class Template extends AbstractComponent
         JS jsAnnotation = method.getAnnotation(JS.class);
         if (jsAnnotation != null) {
             String script = jsAnnotation.value();
+            Class<?> type = method.getReturnType();
 
             return new ComputedProperty(name) {
                 @Override
@@ -472,7 +473,21 @@ public abstract class Template extends AbstractComponent
                     bindings.put("model", model);
 
                     try {
-                        return engine.eval(script, bindings);
+                        Object value = engine.eval(script, bindings);
+                        if (!type.isInstance(value)) {
+                            if (value instanceof Number) {
+                                if (type == Integer.class
+                                        || type == int.class) {
+                                    return Integer.valueOf(
+                                            ((Number) value).intValue());
+                                }
+                            }
+                            throw new RuntimeException("Expected" + type
+                                    + ", but got " + value.getClass()
+                                    + " from JS expression " + script);
+                        }
+
+                        return value;
                     } catch (ScriptException e) {
                         throw new RuntimeException(e);
                     }
