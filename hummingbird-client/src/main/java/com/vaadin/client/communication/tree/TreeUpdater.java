@@ -590,8 +590,7 @@ public class TreeUpdater {
                 break;
             }
             default:
-                throw new RuntimeException(
-                        "Unsupported change type: " + change.getType());
+                throw new RuntimeException("Unsupported change type: " + type);
             }
         }
     }
