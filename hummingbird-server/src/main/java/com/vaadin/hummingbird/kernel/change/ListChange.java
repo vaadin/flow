@@ -1,5 +1,7 @@
 package com.vaadin.hummingbird.kernel.change;
 
+import java.util.Objects;
+
 public abstract class ListChange extends NodeChange {
     private int index;
     private Object value;
@@ -42,6 +44,23 @@ public abstract class ListChange extends NodeChange {
     public String toString() {
         return getClass().getSimpleName() + " [index=" + index + ", value="
                 + value + "]";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        } else if (obj == null || obj.getClass() != getClass()) {
+            return false;
+        }
+
+        ListChange that = (ListChange) obj;
+        return index == that.index && Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return index * 37 + Objects.hashCode(value);
     }
 
 }

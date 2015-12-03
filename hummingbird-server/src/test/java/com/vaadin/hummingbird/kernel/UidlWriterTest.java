@@ -9,12 +9,17 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.kernel.LazyList.DataProvider;
+import com.vaadin.server.ServerRpcManager.RpcInvocationException;
+import com.vaadin.server.ServerRpcMethodInvocation;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.communication.TransactionLogBuilder;
 import com.vaadin.server.communication.TransactionLogJsonProducer;
 import com.vaadin.server.communication.TransactionLogOptimizer;
+import com.vaadin.server.communication.TransactionLogPruner;
+import com.vaadin.ui.JavaScript.JavaScriptCallbackRpc;
 import com.vaadin.ui.UI;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
@@ -52,8 +57,11 @@ public class UidlWriterTest {
         TransactionLogOptimizer optimizer = new TransactionLogOptimizer(ui,
                 logBuilder.getChanges(), logBuilder.getTemplates());
 
+        TransactionLogPruner pruner = new TransactionLogPruner(ui,
+                optimizer.getChanges(), optimizer.getTemplates());
+
         TransactionLogJsonProducer jsonProducer = new TransactionLogJsonProducer(
-                ui, optimizer.getChanges(), optimizer.getTemplates());
+                ui, pruner.getChanges(), pruner.getTemplates());
 
         return jsonProducer.getChangesJson();
     }
@@ -247,6 +255,35 @@ public class UidlWriterTest {
         JsonObject putChange = json.getObject(0);
         Assert.assertEquals("put", putChange.getString("type"));
         Assert.assertEquals(timestamp, (long) putChange.getNumber("value"));
+    }
+
+    @Test
+    public void clientSideModelChangeEmptyReponse()
+            throws RpcInvocationException {
+        Assert.assertNull("Should be no attribute by default",
+                element.getAttribute("foo"));
+
+        JsonObject changeJson = Json.createObject();
+        changeJson.put("id", element.getNode().getId());
+        changeJson.put("type", "put");
+        changeJson.put("key", "foo");
+        changeJson.put("value", Json.create("bar"));
+
+        JsonArray parameters = Json.createArray();
+        parameters.set(0, changeJson);
+
+        ServerRpcMethodInvocation invocation = new ServerRpcMethodInvocation();
+        invocation.setJavaScriptCallbackRpcName("vModelChange");
+        invocation.setParameters(parameters);
+
+        ui.getRpcManager(JavaScriptCallbackRpc.class.getName())
+                .applyInvocation(invocation);
+
+        Assert.assertEquals("Tree should be updated", "bar",
+                element.getAttribute("foo"));
+
+        JsonArray json = encodeElementChanges();
+        Assert.assertEquals("There should be no changes", 0, json.length());
     }
 
 }

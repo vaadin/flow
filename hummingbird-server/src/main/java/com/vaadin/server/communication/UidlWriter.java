@@ -364,8 +364,11 @@ public class UidlWriter implements Serializable {
         TransactionLogOptimizer optimizer = new TransactionLogOptimizer(ui,
                 logBuilder.getChanges(), logBuilder.getTemplates());
 
+        TransactionLogPruner pruner = new TransactionLogPruner(ui,
+                optimizer.getChanges(), optimizer.getTemplates());
+
         TransactionLogJsonProducer jsonProducer = new TransactionLogJsonProducer(
-                ui, optimizer.getChanges(), optimizer.getTemplates());
+                ui, pruner.getChanges(), pruner.getTemplates());
 
         response.put("elementTemplates", jsonProducer.getTemplatesJson());
         response.put("elementChanges", jsonProducer.getChangesJson());

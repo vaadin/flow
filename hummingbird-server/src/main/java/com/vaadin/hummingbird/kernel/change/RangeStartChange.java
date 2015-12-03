@@ -25,4 +25,20 @@ public class RangeStartChange extends NodeChange {
         return getClass().getSimpleName() + " [rangeStart=" + rangeStart + "]";
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj == null || obj.getClass() != getClass()) {
+            return false;
+        } else {
+            return rangeStart == ((RangeStartChange) obj).rangeStart;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return rangeStart;
+    }
+
 }

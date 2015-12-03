@@ -3,4 +3,6 @@
 	<p>Squared (Java): <span>{{squaredJava}}</span></p>
 	<p>Squared (JS): <span>{{squaredJs}}</span></p>
 	<button (click)="server.incrementValue()">Increment value on server</button>
+	<button (click)="model.value++">Increment value on client</button>
+	<button (click)="server.ping()">Trigger round trip</button>
 </div>

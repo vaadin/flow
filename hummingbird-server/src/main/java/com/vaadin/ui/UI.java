@@ -43,6 +43,9 @@ import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.RootNode;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.change.NodeChange;
+import com.vaadin.hummingbird.kernel.change.PutChange;
+import com.vaadin.hummingbird.kernel.change.RemoveChange;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.DefaultErrorHandler;
@@ -199,6 +202,12 @@ public abstract class UI extends CssLayout
     private int lastProcessedClientToServerId = -1;
 
     private Root root;
+
+    /**
+     * Changes that should be ignored the next time something is sent to the
+     * client, mapped by state node id.
+     */
+    private final Map<Integer, Set<NodeChange>> ignoreChanges = new HashMap<>();
 
     /**
      * Creates a new empty UI without a caption. The content of the UI must be
@@ -377,7 +386,15 @@ public abstract class UI extends CssLayout
                     valueType = JsonConverter.findType(value);
                 }
                 Object decodedValue = JsonConverter.fromJson(valueType, value);
-                node.put(key, decodedValue);
+                Object oldValue = node.put(key, decodedValue);
+
+                // Keep track of changes that should not be sent back to the
+                // client
+                Set<NodeChange> nodeIgnores = ignoreChanges
+                        .computeIfAbsent(nodeId, k -> new HashSet<>());
+                nodeIgnores.add(new RemoveChange(key, oldValue));
+                nodeIgnores.add(new PutChange(key, decodedValue));
+
                 break;
             }
             default:
@@ -385,9 +402,6 @@ public abstract class UI extends CssLayout
                         "Change type not yet? supported: " + change.toJson());
             }
         }
-
-        // Flush changes without producing any changes to send to the client
-        rootNode.commit();
     }
 
     // XXX this belongs somewhere else, and the result should be cached
@@ -1544,6 +1558,10 @@ public abstract class UI extends CssLayout
 
     public Root getRoot() {
         return root;
+    }
+
+    public Map<Integer, Set<NodeChange>> getIgnoreChanges() {
+        return ignoreChanges;
     }
 
 }

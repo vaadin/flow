@@ -25,4 +25,20 @@ public class RangeEndChange extends NodeChange {
         return getClass().getSimpleName() + " [rangeEnd=" + rangeEnd + "]";
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj == null || obj.getClass() != getClass()) {
+            return false;
+        } else {
+            return rangeEnd == ((RangeEndChange) obj).rangeEnd;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return rangeEnd;
+    }
+
 }

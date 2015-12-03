@@ -39,6 +39,11 @@ public class ComputedPropertyInModel extends UI {
         public void incrementValue() {
             getModel().setValue(getModel().getValue() + 1);
         }
+
+        @TemplateEventHandler
+        public void ping() {
+            // nop
+        }
     }
 
     @Override

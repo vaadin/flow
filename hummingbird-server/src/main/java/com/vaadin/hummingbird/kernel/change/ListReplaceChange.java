@@ -1,5 +1,7 @@
 package com.vaadin.hummingbird.kernel.change;
 
+import java.util.Objects;
+
 import com.vaadin.hummingbird.kernel.StateNode;
 
 public class ListReplaceChange extends ListChange {
@@ -29,6 +31,17 @@ public class ListReplaceChange extends ListChange {
     public String toString() {
         return "ListReplaceChange [index=" + getIndex() + ", value="
                 + getValue() + ", oldValue=" + oldValue + "]";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj)
+                && Objects.equals(oldValue, ((ListReplaceChange) obj).oldValue);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() * 37 + Objects.hashCode(oldValue);
     }
 
 }

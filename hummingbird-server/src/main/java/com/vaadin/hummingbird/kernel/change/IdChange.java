@@ -25,4 +25,22 @@ public class IdChange extends NodeChange {
         visitor.visitIdChange(node, this);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != getClass()) {
+            return false;
+        }
+
+        IdChange that = (IdChange) obj;
+        return newId == that.newId && oldId == that.oldId;
+    }
+
+    @Override
+    public int hashCode() {
+        return oldId * 37 + newId;
+    }
+
 }
