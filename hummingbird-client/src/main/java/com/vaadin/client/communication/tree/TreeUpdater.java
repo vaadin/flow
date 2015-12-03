@@ -31,7 +31,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Text;
-import com.google.gwt.user.client.Window.Location;
 import com.vaadin.client.ApplicationConnection.Client;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.Util;
@@ -49,8 +48,9 @@ import elemental.json.JsonValue;
 
 public class TreeUpdater {
 
-    public static final boolean debug = Location.getQueryString()
-            .contains("superdevmode");
+    public static final boolean debug = true;
+    // Location.getQueryString()
+    // .contains("superdevmode");
 
     private Element rootElement;
 
@@ -127,7 +127,20 @@ public class TreeUpdater {
             Object objectValue) {
         JsonValue value = asJsonValue(objectValue);
         assert element != null;
-        if (value == null || value.getType() == JsonType.NULL) {
+        String attrKey = isAttribute(key);
+        if (attrKey != null) {
+            if (value == null || value.getType() == JsonType.NULL) {
+                // NULL value is interpreted as adding attribute with empty
+                // value, or removing attribute if it has been set already
+                if (element.hasAttribute(attrKey)) {
+                    DomApi.wrap(element).removeAttribute(attrKey);
+                } else {
+                    DomApi.wrap(element).setAttribute(attrKey, "");
+                }
+            } else {
+                DomApi.wrap(element).setAttribute(attrKey, value.asString());
+            }
+        } else if (value == null || value.getType() == JsonType.NULL) {
             // Null property and/or remove attribute
             // Sets property to null before as e.g. <input> will set maxlength=0
             // when we null the property..
@@ -223,9 +236,17 @@ public class TreeUpdater {
         return Logger.getLogger(TreeUpdater.class.getName());
     }
 
+    private static String isAttribute(String key) {
+        if (key.startsWith("attr.")) {
+            return key.substring(5);
+        } else {
+            return null;
+        }
+    }
+
     private static boolean isAlwaysAttribute(String key) {
         // FIXME There should be separate API for attribute and property and
-        // eitherOr
+        // eitherOr (https://github.com/vaadin/hummingbird/issues/5)
         return key.equals("class") || key.equals("style") || key.equals("for");
     }
 
@@ -706,7 +727,7 @@ public class TreeUpdater {
             domListeners.put(id, nodeListeners);
         }
 
-        assert!nodeListeners.containsKey(type);
+        assert !nodeListeners.containsKey(type);
         nodeListeners.put(type, listener);
     }
 
