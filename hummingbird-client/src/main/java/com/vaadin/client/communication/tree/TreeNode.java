@@ -113,12 +113,23 @@ public class TreeNode {
         // TODO check for existing array property
         if (property == null) {
             property = new TreeNodeProperty(this, name);
-            properties.put(name, property);
-            addPropertyDescriptor(proxy, name,
-                    property.getPropertyDescriptor());
-            getCallbackQueue().enqueue(new PropertyAddEvent(name, property));
+            addProperty(property);
         }
         return property;
+    }
+
+    private void addProperty(TreeNodeProperty property) {
+        String name = property.getName();
+        properties.put(name, property);
+        addPropertyDescriptor(proxy, name, property.getPropertyDescriptor());
+        getCallbackQueue().enqueue(new PropertyAddEvent(name, property));
+    }
+
+    public void addComputedProperty(String name, String code) {
+        assert !properties.containsKey(name) : name
+                + " is already registered as a property";
+
+        addProperty(new ComputedTreeNodeProperty(this, name, code));
     }
 
     private static native void addPropertyDescriptor(JavaScriptObject proxy,

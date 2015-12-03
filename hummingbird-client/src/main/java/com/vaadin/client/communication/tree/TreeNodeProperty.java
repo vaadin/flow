@@ -134,4 +134,12 @@ public class TreeNodeProperty {
     public void setIntValue(int value) {
         setValue(Json.create(value));
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public TreeNode getOwner() {
+        return owner;
+    }
 }

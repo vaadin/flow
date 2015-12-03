@@ -10,10 +10,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.vaadin.hummingbird.kernel.AbstractElementTemplate.Keys;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.hummingbird.kernel.AbstractElementTemplate.Keys;
 
 public class ComputedPropertyTest {
     private static Map<String, ComputedProperty> createComputedPropertyMap(
@@ -22,16 +22,16 @@ public class ComputedPropertyTest {
                 createComputedProperty(name, supplier));
     }
 
-    private static Map<String, ComputedProperty> createMap(
+    public static Map<String, ComputedProperty> createMap(
             ComputedProperty... properties) {
         return Collections.unmodifiableMap(
                 Arrays.stream(properties).collect(Collectors.toMap(
                         ComputedProperty::getName, Function.identity())));
     }
 
-    private static ComputedProperty createComputedProperty(String name,
+    public static ComputedProperty createComputedProperty(String name,
             Function<StateNode, Object> supplier) {
-        return new ComputedProperty(name) {
+        return new ComputedProperty(name, null) {
             @Override
             public Object compute(StateNode context) {
                 return supplier.apply(context);

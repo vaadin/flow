@@ -88,7 +88,8 @@ public class UidlWriter implements Serializable {
 
     private static final List<Processor<LinkedHashMap<StateNode, List<NodeChange>>>> changeProcessors = Arrays
             .asList(TransactionLogOptimizer::optimizeChanges,
-                    TransactionLogPruner::prune);
+                    TransactionLogPruner::removeChangesFromClient,
+                    TransactionLogPruner::removeClientComputed);
     private static final List<Processor<Set<ElementTemplate>>> templateProcessors = Arrays
             .asList(TransactionLogOptimizer::optimizeTemplates);
 
@@ -427,6 +428,9 @@ public class UidlWriter implements Serializable {
             object.put("template", element.getTemplate().getId());
 
             return object;
+        } else if (param instanceof StateNode) {
+            StateNode node = (StateNode) param;
+            return Json.create(node.getId());
         } else {
             return JsonConverter.toJson(param);
         }

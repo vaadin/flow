@@ -381,7 +381,7 @@ public class TreeUpdater {
         extractTemplates(elementTemplates);
 
         getLogger().info("Handling tree node changes");
-        applyNodeChanges(elementChanges);
+        applyNodeChanges(elementChanges, rpc);
 
         getLogger().info("Sending created events");
         sendCreatedEvents();
@@ -389,6 +389,21 @@ public class TreeUpdater {
         if (rpc != null) {
             getLogger().info("Running rpcs");
             runRpc(rpc);
+        }
+    }
+
+    private void extractComputedProperties(JsonArray rpc) {
+        for (int i = 0; i < rpc.length(); i++) {
+            JsonArray invocation = rpc.getArray(i);
+            String script = invocation.getString(0);
+            if ("}computed".equals(script)) {
+                int nodeId = (int) invocation.getNumber(1);
+                String name = invocation.getString(2);
+                String code = invocation.getString(3);
+
+                TreeNode node = getNode(nodeId);
+                node.addComputedProperty(name, code);
+            }
         }
     }
 
@@ -402,7 +417,7 @@ public class TreeUpdater {
 
     }
 
-    private void applyNodeChanges(JsonArray nodeChanges) {
+    private void applyNodeChanges(JsonArray nodeChanges, JsonArray rpc) {
         updateTree(nodeChanges);
 
         logTree("After changes",
@@ -411,6 +426,12 @@ public class TreeUpdater {
         if (!rootInitialized) {
             initRoot();
             rootInitialized = true;
+        }
+
+        // Apply any computed properties added sent as rcp before delivering
+        // events
+        if (rpc != null) {
+            extractComputedProperties(rpc);
         }
 
         callbackQueue.flush(null);
@@ -433,6 +454,9 @@ public class TreeUpdater {
 
                     break;
                 }
+                case "computed":
+                    // Already handled, explicit case here just to avoid default
+                    break;
                 default:
                     throw new RuntimeException(
                             "Unsupported special RPC token: " + script);

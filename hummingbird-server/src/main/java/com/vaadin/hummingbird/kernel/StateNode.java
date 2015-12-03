@@ -377,4 +377,11 @@ public interface StateNode extends Serializable {
     public void setComputedProperties(
             Map<String, ComputedProperty> computedProperties);
 
+    /**
+     * Gets the currently defined computed properties.
+     * 
+     * @return a map of computed properties
+     */
+    public Map<String, ComputedProperty> getComputedProperties();
+
 }

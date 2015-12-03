@@ -390,6 +390,12 @@ public abstract class Template extends AbstractComponent
         Map<String, ComputedProperty> computedProperties = findComputedProperties();
         if (!computedProperties.isEmpty()) {
             node.setComputedProperties(computedProperties);
+
+            computedProperties.values().stream()
+                    .filter(ComputedProperty::hasClientCode).forEach(p -> {
+                        node.enqueueRpc("}computed", node, p.getName(),
+                                p.getClientCode());
+                    });
         }
 
         getNode().put(TemplateCallbackHandler.class,
@@ -446,7 +452,7 @@ public abstract class Template extends AbstractComponent
                                 + " should require zero parameters");
             }
 
-            return new ComputedProperty(name) {
+            return new ComputedProperty(name, null) {
                 @Override
                 public Object compute(StateNode context) {
                     try {
@@ -474,7 +480,7 @@ public abstract class Template extends AbstractComponent
             String script = jsAnnotation.value();
             Class<?> type = method.getReturnType();
 
-            return new ComputedProperty(name) {
+            return new ComputedProperty(name, script) {
                 @Override
                 public Object compute(StateNode context) {
                     ScriptEngine engine = new ScriptEngineManager()

@@ -1,13 +1,18 @@
 package com.vaadin.hummingbird.kernel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.json.JsonStream;
 import com.vaadin.hummingbird.kernel.LazyList.DataProvider;
 import com.vaadin.server.ServerRpcManager.RpcInvocationException;
 import com.vaadin.server.ServerRpcMethodInvocation;
@@ -273,6 +278,38 @@ public class UidlWriterTest {
 
         JsonArray json = encodeElementChanges();
         Assert.assertEquals("There should be no changes", 0, json.length());
+    }
+
+    @Test
+    public void clientComputedProperty_dontSentValue() {
+        ComputedProperty property = new ComputedProperty("computedJs", "") {
+            @Override
+            public Object compute(StateNode context) {
+                return context.get("value", String.class).toUpperCase();
+            }
+        };
+        element.getNode()
+                .setComputedProperties(ComputedPropertyTest.createMap(property,
+                        ComputedPropertyTest.createComputedProperty(
+                                "computedJava", property::compute)));
+
+        element.setAttribute("value", "myValue");
+
+        Assert.assertEquals("Computed property should return uppercase string",
+                "MYVALUE", element.getAttribute("computedJs"));
+        Assert.assertEquals("Computed property should return uppercase string",
+                "MYVALUE", element.getAttribute("computedJava"));
+
+        JsonArray changes = encodeElementChanges();
+        Assert.assertEquals("There should only be one change", 2,
+                changes.length());
+
+        Set<String> affectedKeys = JsonStream.objectStream(changes)
+                .map(o -> o.getString("key")).collect(Collectors.toSet());
+
+        Assert.assertEquals(
+                new HashSet<>(Arrays.asList("computedJava", "value")),
+                affectedKeys);
     }
 
 }

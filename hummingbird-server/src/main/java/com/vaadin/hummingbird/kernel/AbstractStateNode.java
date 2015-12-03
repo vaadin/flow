@@ -257,8 +257,8 @@ public abstract class AbstractStateNode implements StateNode {
         return doesContainKey(key);
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, ComputedProperty> getComputedProperties() {
+    @Override
+    public Map<String, ComputedProperty> getComputedProperties() {
         return (Map<String, ComputedProperty>) doGet(Keys.COMPUTED);
     }
 

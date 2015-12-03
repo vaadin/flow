@@ -20,8 +20,8 @@ public class SimpleComputedProperty extends AbstractTestUI {
                 .addChild(TemplateBuilder.dynamicText("foo")).build();
 
         StateNode node = StateNode.create();
-        node.setComputedProperties(
-                Collections.singletonMap("foo", new ComputedProperty("foo") {
+        node.setComputedProperties(Collections.singletonMap("foo",
+                new ComputedProperty("foo", null) {
                     @Override
                     public Object compute(StateNode context) {
                         return String.valueOf(context.get("count", 0));
