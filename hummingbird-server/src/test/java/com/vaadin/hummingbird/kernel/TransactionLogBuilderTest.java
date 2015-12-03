@@ -1,7 +1,6 @@
 package com.vaadin.hummingbird.kernel;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -514,10 +513,7 @@ public class TransactionLogBuilderTest {
 
     public static LinkedHashMap<StateNode, List<NodeChange>> getOptimizedTransactionLog(
             LinkedHashMap<StateNode, List<NodeChange>> transactionLog) {
-        TransactionLogOptimizer optimizer = new TransactionLogOptimizer(null,
-                transactionLog, new HashSet<>());
-
-        return optimizer.getChanges();
+        return TransactionLogOptimizer.optimizeChanges(transactionLog, null);
     }
 
     public static LinkedHashMap<StateNode, List<NodeChange>> getTransactionLog(

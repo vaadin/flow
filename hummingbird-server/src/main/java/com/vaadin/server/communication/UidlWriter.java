@@ -20,10 +20,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -35,8 +37,11 @@ import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.NotYetImplemented;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.hummingbird.kernel.Element;
+import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.RootNode.PendingRpc;
+import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.Constants;
 import com.vaadin.server.LegacyCommunicationManager;
@@ -67,6 +72,25 @@ public class UidlWriter implements Serializable {
     private static final String DEPENDENCY_STYLESHEET = "stylesheetDependencies";
     private static final String DEPENDENCY_HTML = "htmlDependencies";
     private final Set<Class<? extends ClientConnector>> usedClientConnectors = new HashSet<Class<? extends ClientConnector>>();
+
+    @FunctionalInterface
+    public interface Processor<T> {
+        public T process(T input, UI ui);
+
+        public static <T> T processChain(T value,
+                Collection<Processor<T>> processors, UI ui) {
+            for (Processor<T> processor : processors) {
+                value = processor.process(value, ui);
+            }
+            return value;
+        }
+    }
+
+    private static final List<Processor<LinkedHashMap<StateNode, List<NodeChange>>>> changeProcessors = Arrays
+            .asList(TransactionLogOptimizer::optimizeChanges,
+                    TransactionLogPruner::prune);
+    private static final List<Processor<Set<ElementTemplate>>> templateProcessors = Arrays
+            .asList(TransactionLogOptimizer::optimizeTemplates);
 
     /**
      * Writes a JSON object containing all pending changes to the given UI.
@@ -357,18 +381,18 @@ public class UidlWriter implements Serializable {
         }
     }
 
-    private static void encodeChanges(UI ui, JsonObject response) {
+    public static void encodeChanges(UI ui, JsonObject response) {
         TransactionLogBuilder logBuilder = new TransactionLogBuilder();
         ui.getRoot().getRootNode().commit(logBuilder.getVisitor());
 
-        TransactionLogOptimizer optimizer = new TransactionLogOptimizer(ui,
-                logBuilder.getChanges(), logBuilder.getTemplates());
+        LinkedHashMap<StateNode, List<NodeChange>> changes = Processor
+                .processChain(logBuilder.getChanges(), changeProcessors, ui);
 
-        TransactionLogPruner pruner = new TransactionLogPruner(ui,
-                optimizer.getChanges(), optimizer.getTemplates());
+        Set<ElementTemplate> templates = Processor.processChain(
+                logBuilder.getTemplates(), templateProcessors, ui);
 
         TransactionLogJsonProducer jsonProducer = new TransactionLogJsonProducer(
-                ui, pruner.getChanges(), pruner.getTemplates());
+                ui, changes, templates);
 
         response.put("elementTemplates", jsonProducer.getTemplatesJson());
         response.put("elementChanges", jsonProducer.getChangesJson());

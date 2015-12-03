@@ -12,10 +12,7 @@ import com.vaadin.hummingbird.kernel.LazyList.DataProvider;
 import com.vaadin.server.ServerRpcManager.RpcInvocationException;
 import com.vaadin.server.ServerRpcMethodInvocation;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.communication.TransactionLogBuilder;
-import com.vaadin.server.communication.TransactionLogJsonProducer;
-import com.vaadin.server.communication.TransactionLogOptimizer;
-import com.vaadin.server.communication.TransactionLogPruner;
+import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.ui.JavaScript.JavaScriptCallbackRpc;
 import com.vaadin.ui.UI;
 
@@ -51,19 +48,11 @@ public class UidlWriterTest {
     }
 
     private JsonArray encodeElementChanges() {
-        TransactionLogBuilder logBuilder = new TransactionLogBuilder();
-        ui.getRoot().getRootNode().commit(logBuilder.getVisitor());
+        JsonObject response = Json.createObject();
 
-        TransactionLogOptimizer optimizer = new TransactionLogOptimizer(ui,
-                logBuilder.getChanges(), logBuilder.getTemplates());
+        UidlWriter.encodeChanges(ui, response);
 
-        TransactionLogPruner pruner = new TransactionLogPruner(ui,
-                optimizer.getChanges(), optimizer.getTemplates());
-
-        TransactionLogJsonProducer jsonProducer = new TransactionLogJsonProducer(
-                ui, pruner.getChanges(), pruner.getTemplates());
-
-        return jsonProducer.getChangesJson();
+        return response.getArray("elementChanges");
     }
 
     @Test

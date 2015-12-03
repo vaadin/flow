@@ -22,21 +22,7 @@ import com.vaadin.ui.UI;
 
 public class TransactionLogOptimizer {
 
-    private UI ui;
-    private LinkedHashMap<StateNode, List<NodeChange>> changes;
-    private Set<ElementTemplate> templates;
-
-    public TransactionLogOptimizer(UI ui,
-            LinkedHashMap<StateNode, List<NodeChange>> changes,
-            Set<ElementTemplate> templates) {
-        this.ui = ui;
-        this.changes = optimizeChanges(changes);
-        assert !hasDetachedNodes(
-                this.changes) : "There must be no detached nodes in the optimized list";
-        this.templates = optimizeTemplates(templates);
-    }
-
-    private boolean hasDetachedNodes(
+    private static boolean hasDetachedNodes(
             LinkedHashMap<StateNode, List<NodeChange>> changes) {
         for (StateNode n : changes.keySet()) {
             if (!n.isAttached()) {
@@ -48,16 +34,8 @@ public class TransactionLogOptimizer {
 
     }
 
-    public Set<ElementTemplate> getTemplates() {
-        return templates;
-    }
-
-    public LinkedHashMap<StateNode, List<NodeChange>> getChanges() {
-        return changes;
-    }
-
-    private Set<ElementTemplate> optimizeTemplates(
-            Set<ElementTemplate> templates) {
+    public static Set<ElementTemplate> optimizeTemplates(
+            Set<ElementTemplate> templates, UI ui) {
         HashSet<ElementTemplate> newTemplates = new HashSet<>();
         for (ElementTemplate t : templates) {
             if (!ui.knowsTemplate(t)) {
@@ -67,17 +45,20 @@ public class TransactionLogOptimizer {
         return newTemplates;
     }
 
-    private LinkedHashMap<StateNode, List<NodeChange>> optimizeChanges(
-            LinkedHashMap<StateNode, List<NodeChange>> changes) {
+    public static LinkedHashMap<StateNode, List<NodeChange>> optimizeChanges(
+            LinkedHashMap<StateNode, List<NodeChange>> changes, UI ui) {
 
         perNodeOptimizations(changes);
 
         removeDetachedNodes(changes);
 
+        assert !hasDetachedNodes(
+                changes) : "There must be no detached nodes in the optimized list";
+
         return changes;
     }
 
-    private void perNodeOptimizations(
+    private static void perNodeOptimizations(
             LinkedHashMap<StateNode, List<NodeChange>> changes) {
         for (StateNode node : changes.keySet()) {
             List<NodeChange> nodeChanges = changes.get(node);
@@ -95,7 +76,8 @@ public class TransactionLogOptimizer {
      * @param node
      * @param list
      */
-    private void joinListInserts(StateNode node, List<NodeChange> nodeChanges) {
+    private static void joinListInserts(StateNode node,
+            List<NodeChange> nodeChanges) {
         Integer insertInProgress = null;
 
         for (int changeIndex = 0; changeIndex < nodeChanges
@@ -160,7 +142,7 @@ public class TransactionLogOptimizer {
         }
     }
 
-    private void removeAddedAndRemovedListItems(StateNode node,
+    private static void removeAddedAndRemovedListItems(StateNode node,
             List<NodeChange> list) {
         Map<Object, Integer> removedValues = new HashMap<>();
 
@@ -222,7 +204,8 @@ public class TransactionLogOptimizer {
      * @param node
      * @param list
      */
-    private void removeDuplicatePuts(StateNode node, List<NodeChange> list) {
+    private static void removeDuplicatePuts(StateNode node,
+            List<NodeChange> list) {
         Map<Object, Object> finalValues = new HashMap<>();
 
         for (int i = list.size() - 1; i >= 0; i--) {
@@ -257,12 +240,12 @@ public class TransactionLogOptimizer {
         }
     }
 
-    private void removeDetachedNodes(
+    private static void removeDetachedNodes(
             LinkedHashMap<StateNode, List<NodeChange>> changes) {
         changes.keySet().removeIf(n -> !n.isAttached());
     }
 
-    private void keepOnlyLastRangeChange(StateNode node,
+    private static void keepOnlyLastRangeChange(StateNode node,
             List<NodeChange> nodeChanges) {
         Integer rangeStart = null;
         Integer rangeEnd = null;
