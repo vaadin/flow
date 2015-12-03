@@ -16,6 +16,8 @@
 
 package com.vaadin.ui;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,6 +65,7 @@ import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
 import com.vaadin.ui.Component.Focusable;
 import com.vaadin.ui.PushConfiguration.PushConfigurationImpl;
+import com.vaadin.ui.Template.Model;
 import com.vaadin.util.ConnectorHelper;
 import com.vaadin.util.CurrentInstance;
 
@@ -353,8 +356,27 @@ public abstract class UI extends CssLayout
             case "put": {
                 String key = change.getString("key");
                 JsonValue value = change.get("value");
-                Object decodedValue = JsonConverter
-                        .fromJson(JsonConverter.findType(value), value);
+
+                // Find model interface type and get type from there
+                Type valueType;
+
+                Object modelType = node.get(Model.class);
+                if (modelType != null) {
+                    Class<?> modelClass = (Class<?>) modelType;
+                    valueType = findPropertyType(modelClass, key);
+                    if (valueType == null) {
+                        throw new RuntimeException(
+                                "Could not find any type for " + key + " in "
+                                        + modelClass
+                                        + " when processing value change for node "
+                                        + nodeId);
+                    }
+                } else {
+                    // Fall back to deducting type from the json type if there's
+                    // no model to worry about
+                    valueType = JsonConverter.findType(value);
+                }
+                Object decodedValue = JsonConverter.fromJson(valueType, value);
                 node.put(key, decodedValue);
                 break;
             }
@@ -366,6 +388,27 @@ public abstract class UI extends CssLayout
 
         // Flush changes without producing any changes to send to the client
         rootNode.commit();
+    }
+
+    // XXX this belongs somewhere else, and the result should be cached
+    private static Type findPropertyType(Class<?> modelClass,
+            String propertyName) {
+        String methodBase = Character.toUpperCase(propertyName.charAt(0))
+                + propertyName.substring(1);
+
+        Method method;
+
+        try {
+            method = modelClass.getMethod("get" + methodBase);
+        } catch (NoSuchMethodException e) {
+            try {
+                method = modelClass.getMethod("is" + methodBase);
+            } catch (NoSuchMethodException e1) {
+                return null;
+            }
+        }
+
+        return method.getGenericReturnType();
     }
 
     private void handleTemplateEvent(JsonArray json) {

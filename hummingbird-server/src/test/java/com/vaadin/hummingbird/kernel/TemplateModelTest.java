@@ -3,6 +3,9 @@ package com.vaadin.hummingbird.kernel;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
@@ -14,11 +17,16 @@ import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RangeEndChange;
 import com.vaadin.hummingbird.kernel.change.RangeStartChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
+import com.vaadin.server.ServerRpcManager.RpcInvocationException;
+import com.vaadin.server.ServerRpcMethodInvocation;
+import com.vaadin.tests.util.MockUI;
+import com.vaadin.ui.JavaScript.JavaScriptCallbackRpc;
 import com.vaadin.ui.Template;
 import com.vaadin.ui.Template.Model;
 
-import org.junit.Assert;
-import org.junit.Test;
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 public class TemplateModelTest {
     public interface SubModelType {
@@ -280,5 +288,33 @@ public class TemplateModelTest {
         Assert.assertEquals(value1.hashCode(), value2.hashCode());
         Assert.assertNotEquals(value1.hashCode(), value3.hashCode());
 
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testModelChangeType() throws RpcInvocationException {
+        MockUI ui = new MockUI();
+        ui.addComponent(template);
+        ui.getRoot().getRootNode().commit();
+
+        Assert.assertEquals(0, model.getInt());
+
+        JsonObject changeJson = Json.createObject();
+        changeJson.put("id", template.getNode().getId());
+        changeJson.put("type", "put");
+        changeJson.put("key", "int");
+        changeJson.put("value", Json.create(42));
+
+        JsonArray parameters = Json.createArray();
+        parameters.set(0, changeJson);
+
+        ServerRpcMethodInvocation invocation = new ServerRpcMethodInvocation();
+        invocation.setJavaScriptCallbackRpcName("vModelChange");
+        invocation.setParameters(parameters);
+
+        ui.getRpcManager(JavaScriptCallbackRpc.class.getName())
+                .applyInvocation(invocation);
+
+        Assert.assertEquals(42, model.getInt());
     }
 }

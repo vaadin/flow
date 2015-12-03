@@ -359,12 +359,20 @@ public abstract class Template extends AbstractComponent
         }
 
         public static <T> T wrap(StateNode node, Class<T> type) {
+            Object modelType = node.get(Model.class);
+            if (modelType == null) {
+                node.put(Model.class, type);
+            } else if (modelType != type) {
+                throw new RuntimeException("Trying to use state node "
+                        + node.getId() + " as " + type
+                        + ", but it has already been used as " + modelType);
+            }
             return type.cast(Proxy.newProxyInstance(type.getClassLoader(),
                     new Class[] { type }, new ProxyHandler(node)));
         }
     }
 
-    private Model model;
+    private final Model model;
 
     private final StateNode node = StateNode.create();
 
@@ -396,6 +404,9 @@ public abstract class Template extends AbstractComponent
                 });
 
         getBinder().bindComponents(this);
+
+        // Always trigger so that model type is stored in the state node
+        model = createModel();
     }
 
     private Map<String, ComputedProperty> findComputedProperties() {
@@ -599,9 +610,6 @@ public abstract class Template extends AbstractComponent
     }
 
     protected Model getModel() {
-        if (model == null) {
-            model = createModel();
-        }
         return model;
     }
 
