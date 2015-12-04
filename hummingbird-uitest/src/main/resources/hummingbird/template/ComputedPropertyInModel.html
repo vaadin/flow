@@ -2,6 +2,7 @@
 	<p>Value: <span>{{value}}</span></p>
 	<p>Squared (Java): <span>{{squaredJava}}</span></p>
 	<p>Squared (JS): <span>{{squaredJs}}</span></p>
+	<p>sqrt(Squared (JS)) (Java): <span>{{rootOfJs}}</span></p> 
 	<button (click)="server.incrementValue()">Increment value on server</button>
 	<button (click)="model.value++">Increment value on client</button>
 	<button (click)="server.ping()">Trigger round trip</button>

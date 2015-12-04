@@ -19,6 +19,10 @@ public class ComputedPropertyInModel extends UI {
             return value * value;
         }
 
+        public default int getRootOfJs() {
+            return (int) Math.sqrt(getSquaredJs());
+        }
+
         @JS("model.value * model.value")
         public int getSquaredJs();
     }
