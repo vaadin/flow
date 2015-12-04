@@ -175,10 +175,12 @@ public class TransactionLogOptimizer {
                         }
                     }
 
-                    // The previously found removes are also off by one
+                    // The previously found removes are also off by one or two
                     for (Object value : removedValues.keySet()) {
                         Integer index = removedValues.get(value);
-                        if (index > addChangeIndex) {
+                        if (index > removeChangeIndex) {
+                            removedValues.put(value, index - 2);
+                        } else if (index > addChangeIndex) {
                             removedValues.put(value, index - 1);
                         }
                     }
