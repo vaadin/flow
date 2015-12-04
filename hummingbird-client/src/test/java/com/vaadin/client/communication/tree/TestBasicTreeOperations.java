@@ -163,6 +163,15 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
                 updater.getRootElement().getPropertyString("foobarProperty"));
     }
 
+    public void testGWTWorkaroundNeeded() {
+        assertEquals(
+                "GWT has been fixed, buildChanges no longer needs to re-parse the json",
+                JsonType.OBJECT, Json.create(true).getType());
+        assertEquals(
+                "GWT has been fixed, buildChanges no longer needs to re-parse the json",
+                JsonType.OBJECT, Json.create(1).getType());
+    }
+
     public void testStructuredProperties() {
         Element element = updater.getRootElement();
 

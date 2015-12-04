@@ -8,7 +8,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 
 import elemental.json.Json;
-import elemental.json.JsonNumber;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
@@ -133,8 +132,13 @@ public class TreeNodeProperty {
     }-*/;
 
     public int getIntValue() {
-        return (int) ((JsonNumber) getValue()).getNumber();
+        return getAsInt(getValue());
     }
+
+    private static native int getAsInt(Object object)
+    /*-{
+        return +object
+    }-*/;
 
     public void setIntValue(int value) {
         setValue(Json.create(value));

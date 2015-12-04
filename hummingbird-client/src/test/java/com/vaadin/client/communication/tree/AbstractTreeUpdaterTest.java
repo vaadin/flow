@@ -90,7 +90,7 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
     private static JsonArray buildChanges(Change... changes) {
         JsonArray array = Json.createArray();
         for (int i = 0; i < changes.length; i++) {
-            array.set(i, (JsonValue) changes[i]);
+            array.set(i, Json.parse(((JsonValue) changes[i]).toJson()));
         }
         return array;
     }
