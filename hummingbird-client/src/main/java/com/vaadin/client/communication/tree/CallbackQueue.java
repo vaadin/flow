@@ -21,14 +21,16 @@ public class CallbackQueue {
     }
 
     public void flush(JsonArray serializeTo) {
-        List<NodeChangeEvent> callbacks = events;
-        events = new ArrayList<>();
-        for (NodeChangeEvent event : callbacks) {
-            event.dispatch();
-            if (serializeTo != null) {
-                JsonObject serialize = event.serialize();
-                if (serialize != null) {
-                    serializeTo.set(serializeTo.length(), serialize);
+        while (!events.isEmpty()) {
+            List<NodeChangeEvent> callbacks = events;
+            events = new ArrayList<>();
+            for (NodeChangeEvent event : callbacks) {
+                event.dispatch();
+                if (serializeTo != null) {
+                    JsonObject serialize = event.serialize();
+                    if (serialize != null) {
+                        serializeTo.set(serializeTo.length(), serialize);
+                    }
                 }
             }
         }

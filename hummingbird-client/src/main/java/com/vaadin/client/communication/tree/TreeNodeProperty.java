@@ -40,6 +40,9 @@ public class TreeNodeProperty {
 
         @Override
         public JsonObject serialize() {
+            if (TreeNodeProperty.this instanceof ComputedTreeNodeProperty) {
+                return null;
+            }
             JsonObject json = Json.createObject();
             json.put("id", owner.getId());
             json.put("key", name);
@@ -67,10 +70,12 @@ public class TreeNodeProperty {
     }
 
     public Object getValue() {
+        Reactive.setAccessed(this);
         return value;
     }
 
     public Object getProxyValue() {
+        Object value = getValue();
         if (value instanceof TreeNode) {
             TreeNode node = (TreeNode) value;
             return node.getProxy();
@@ -141,5 +146,9 @@ public class TreeNodeProperty {
 
     public TreeNode getOwner() {
         return owner;
+    }
+
+    protected List<TreeNodePropertyValueChangeListener> getListeners() {
+        return listeners;
     }
 }
