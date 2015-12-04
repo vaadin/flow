@@ -198,12 +198,7 @@ public class Element implements Serializable {
         assert listener != null : "Listener must not be null";
 
         template.addEventListener(eventType, listener, node);
-        return new EventRegistrationHandle() {
-            @Override
-            public void remove() {
-                Element.this.removeEventListener(eventType, listener);
-            }
-        };
+        return () -> Element.this.removeEventListener(eventType, listener);
     }
 
     public Element removeEventListener(String eventType,
@@ -358,7 +353,7 @@ public class Element implements Serializable {
         }
     }
 
-    private static Element createText(String content) {
+    public static Element createText(String content) {
         assert content != null;
 
         Element element = new Element(TEXT_NODE_TAG);
