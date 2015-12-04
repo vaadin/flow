@@ -31,6 +31,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Text;
+import com.google.gwt.user.client.Window.Location;
 import com.vaadin.client.ApplicationConnection.Client;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.Util;
@@ -48,9 +49,8 @@ import elemental.json.JsonValue;
 
 public class TreeUpdater {
 
-    public static final boolean debug = true;
-    // Location.getQueryString()
-    // .contains("superdevmode");
+    public static final boolean debug = Location.getQueryString()
+            .contains("superdevmode");
 
     private Element rootElement;
 
