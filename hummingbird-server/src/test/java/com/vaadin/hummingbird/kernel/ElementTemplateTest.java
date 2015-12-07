@@ -89,8 +89,9 @@ public class ElementTemplateTest {
         element.setAttribute("value", "foobar");
     }
 
+    @Test
     public void boundTemplate_for() {
-        TemplateBuilder childTemplate = TemplateBuilder.withTag("class")
+        TemplateBuilder childTemplate = TemplateBuilder.withTag("span")
                 .bindAttribute(new AttributeBinding("class") {
                     @Override
                     public String getValue(StateNode node) {
