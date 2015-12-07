@@ -2,6 +2,10 @@ package com.vaadin.ui;
 
 import java.util.List;
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
+
 import com.vaadin.hummingbird.kernel.Element;
 
 public class PreRenderer {
@@ -46,6 +50,34 @@ public class PreRenderer {
     private static String escapeAttribute(String attribute) {
         // FIXME
         return attribute;
+    }
+
+    /**
+     * Converts the given pre-render tree to a JSoup tree
+     *
+     * @param document
+     *            The JSoup document
+     * @param preRenderTree
+     *            The pre-render tree to convert
+     * @return A JSoup node containing the converted pre-render tree
+     */
+    public static Node toJSoup(Document document,
+            com.vaadin.hummingbird.kernel.Element preRenderTree) {
+        if (com.vaadin.hummingbird.kernel.Element.isTextNode(preRenderTree)) {
+            return new TextNode(preRenderTree.getTextContent(),
+                    document.baseUri());
+        } else {
+            org.jsoup.nodes.Element target = document
+                    .createElement(preRenderTree.getTag());
+            preRenderTree.getAttributeNames().forEach(name -> target.attr(name,
+                    preRenderTree.getAttribute(name)));
+            int childCount = preRenderTree.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                target.appendChild(
+                        toJSoup(document, preRenderTree.getChild(i)));
+            }
+            return target;
+        }
     }
 
 }

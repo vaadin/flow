@@ -1,13 +1,15 @@
 package com.vaadin.hummingbird.component;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.jsoup.nodes.Document;
 
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.TemplateBuilder;
 import com.vaadin.ui.PreRenderer;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class PreRenderTest {
     @Test
@@ -51,4 +53,18 @@ public class PreRenderTest {
         Assert.assertEquals("div", prerendered.getTag());
         Assert.assertEquals(0, prerendered.getChildCount());
     }
+
+    @Test
+    public void testConvertToJsoup() {
+        Element element = new Element("div");
+        element.setTextContent("Hello world");
+
+        Element prerendered = PreRenderer.preRenderElementTree(element);
+        Document document = new Document("");
+        org.jsoup.nodes.Element jsoup = (org.jsoup.nodes.Element) PreRenderer
+                .toJSoup(document, prerendered);
+
+        Assert.assertEquals("<div>\n Hello world\n</div>", jsoup.outerHtml());
+    }
+
 }

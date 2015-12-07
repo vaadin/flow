@@ -44,7 +44,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Tag;
 
 import com.vaadin.annotations.Viewport;
@@ -60,6 +59,7 @@ import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.Transport;
 import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.PreRenderer;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -424,23 +424,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 .preRender();
         preRenderedUI.setAttribute("pre-render", true);
         preRenderedUI.addClass(context.getThemeName());
-        document.body().appendChild(buildJSoup(document, preRenderedUI));
-    }
-
-    private Node buildJSoup(Document document,
-            com.vaadin.hummingbird.kernel.Element source) {
-        if (com.vaadin.hummingbird.kernel.Element.isTextNode(source)) {
-            return new TextNode(source.getTextContent(), document.baseUri());
-        } else {
-            Element target = document.createElement(source.getTag());
-            source.getAttributeNames().forEach(
-                    name -> target.attr(name, source.getAttribute(name)));
-            int childCount = source.getChildCount();
-            for (int i = 0; i < childCount; i++) {
-                target.appendChild(buildJSoup(document, source.getChild(i)));
-            }
-            return target;
-        }
+        document.body()
+                .appendChild(PreRenderer.toJSoup(document, preRenderedUI));
     }
 
     private void sendBootstrapHeaders(VaadinResponse response,
