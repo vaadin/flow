@@ -26,6 +26,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.AbstractList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -34,19 +35,16 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
-
 import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.JS;
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.annotations.TemplateHTML;
 import com.vaadin.data.util.BeanUtil;
+import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.ComputedProperty;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
+import com.vaadin.hummingbird.kernel.JsComputedProperty;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.LazyList;
 import com.vaadin.hummingbird.kernel.StateNode;
@@ -387,7 +385,14 @@ public abstract class Template extends AbstractComponent
         }
         setElement(Element.getElement(elementTemplate, node));
 
-        Map<String, ComputedProperty> computedProperties = findComputedProperties();
+        Collection<ComputedProperty> templateComputedProperties = null;
+        if (elementTemplate instanceof BoundElementTemplate) {
+            BoundElementTemplate bet = (BoundElementTemplate) elementTemplate;
+            templateComputedProperties = bet.getComputedProperties();
+        }
+
+        Map<String, ComputedProperty> computedProperties = findComputedProperties(
+                templateComputedProperties);
         if (!computedProperties.isEmpty()) {
             node.setComputedProperties(computedProperties);
 
@@ -415,9 +420,13 @@ public abstract class Template extends AbstractComponent
         model = createModel();
     }
 
-    private Map<String, ComputedProperty> findComputedProperties() {
+    private Map<String, ComputedProperty> findComputedProperties(
+            Collection<ComputedProperty> initialProperties) {
         // Should be made static so that the result can be cached
         Map<String, ComputedProperty> properites = new HashMap<>();
+        if (initialProperties != null) {
+            initialProperties.forEach(p -> properites.put(p.getName(), p));
+        }
 
         Class<? extends Model> modelType = getModelType();
         Method[] methods = modelType.getMethods();
@@ -480,36 +489,7 @@ public abstract class Template extends AbstractComponent
             String script = jsAnnotation.value();
             Class<?> type = method.getReturnType();
 
-            return new ComputedProperty(name, script) {
-                @Override
-                public Object compute(StateNode context) {
-                    ScriptEngine engine = new ScriptEngineManager()
-                            .getEngineByName("nashorn");
-
-                    SimpleBindings bindings = new SimpleBindings();
-                    bindings.put("model", model);
-
-                    try {
-                        Object value = engine.eval(script, bindings);
-                        if (!type.isInstance(value)) {
-                            if (value instanceof Number) {
-                                if (type == Integer.class
-                                        || type == int.class) {
-                                    return Integer.valueOf(
-                                            ((Number) value).intValue());
-                                }
-                            }
-                            throw new RuntimeException("Expected" + type
-                                    + ", but got " + value.getClass()
-                                    + " from JS expression " + script);
-                        }
-
-                        return value;
-                    } catch (ScriptException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            };
+            return new JsComputedProperty(name, script, type);
         }
 
         return null;

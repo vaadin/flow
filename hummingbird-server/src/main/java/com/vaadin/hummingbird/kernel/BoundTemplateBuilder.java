@@ -22,6 +22,8 @@ public class BoundTemplateBuilder implements TemplateBuilder {
     private final Collection<EventBinding> events = new ArrayList<>();
     private final Set<String> eventHandlerMethods = new HashSet<>();
 
+    private final Set<ComputedProperty> computedProperties = new HashSet<>();
+
     private List<TemplateBuilder> childTemplates;
     private Supplier<BoundElementTemplate> templateCreator = null;
 
@@ -113,5 +115,13 @@ public class BoundTemplateBuilder implements TemplateBuilder {
 
     public Set<String> getEventHandlerMethods() {
         return Collections.unmodifiableSet(eventHandlerMethods);
+    }
+
+    public void addComputedProperty(ComputedProperty computedProperty) {
+        computedProperties.add(computedProperty);
+    }
+
+    public Collection<ComputedProperty> getComputedProperties() {
+        return computedProperties;
     }
 }

@@ -31,6 +31,7 @@ import org.jsoup.select.Elements;
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.hummingbird.kernel.BoundTemplateBuilder;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
+import com.vaadin.hummingbird.kernel.JsComputedProperty;
 import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
 import com.vaadin.hummingbird.kernel.ModelPath;
 import com.vaadin.hummingbird.kernel.TemplateBuilder;
@@ -39,6 +40,9 @@ import com.vaadin.ui.Template;
 public class TemplateParser {
     private static final Pattern forDefinitionPattern = Pattern
             .compile("#([^\\s]+)\\s+of\\s+([^\\s]+)");
+
+    private static final Pattern basicBlacklistPattern = Pattern
+            .compile("[^a-zA-Z0-9]");
 
     private static class Context {
         private Element element;
@@ -56,6 +60,8 @@ public class TemplateParser {
         private LinkedList<Context> contexts = new LinkedList<>();
 
         private Set<List<String>> seenPaths = new HashSet<>();
+
+        private BoundTemplateBuilder rootBuilder;
 
         public ModelPath getPath(String definition) {
 
@@ -105,6 +111,14 @@ public class TemplateParser {
             if (!contexts.isEmpty() && contexts.getFirst().element == element) {
                 contexts.removeFirst();
             }
+        }
+
+        public BoundTemplateBuilder getRootBuilder() {
+            return rootBuilder;
+        }
+
+        public void setRootBuilder(BoundTemplateBuilder rootBuilder) {
+            this.rootBuilder = rootBuilder;
         }
     }
 
@@ -160,6 +174,8 @@ public class TemplateParser {
                         "Invalid text node '" + text + "'. Must end with }}");
             }
             String modelPath = text.substring(2, text.length() - 2);
+            modelPath = maybeCreateComputed(modelPath, scope.getRootBuilder());
+
             return TemplateBuilder.dynamicText(scope.getPath(modelPath));
         } else {
             return TemplateBuilder.staticText(text);
@@ -170,6 +186,9 @@ public class TemplateParser {
             Scope scope) {
         BoundTemplateBuilder builder = TemplateBuilder
                 .withTag(element.tagName());
+        if (scope.getRootBuilder() == null) {
+            scope.setRootBuilder(builder);
+        }
 
         for (Attribute a : element.attributes()) {
             String name = a.getKey();
@@ -203,9 +222,14 @@ public class TemplateParser {
                 // Handled above
                 continue;
             } else if (name.startsWith("[")) {
-                String attibuteName = name.substring(1, name.length() - 1);
-                builder.bindAttribute(new ModelAttributeBinding(attibuteName,
-                        scope.getPath(value)));
+                String attributeName = name.substring(1, name.length() - 1);
+
+                attributeName = maybeCreateComputed(attributeName,
+                        scope.getRootBuilder());
+
+                ModelAttributeBinding attributeBinding = new ModelAttributeBinding(
+                        attributeName, scope.getPath(value));
+                builder.bindAttribute(attributeBinding);
             } else if (name.startsWith("(")) {
                 String eventName = name.substring(1, name.length() - 1);
 
@@ -229,6 +253,23 @@ public class TemplateParser {
 
         scope.endContext(element);
         return builder;
+    }
+
+    private static String maybeCreateComputed(String binding,
+            BoundTemplateBuilder builder) {
+        Matcher matcher = basicBlacklistPattern.matcher(binding);
+        if (!matcher.find()) {
+            return binding;
+        }
+
+        String generatedName = matcher.replaceAll("");
+
+        JsComputedProperty computedProperty = new JsComputedProperty(
+                generatedName, binding, Object.class);
+
+        builder.addComputedProperty(computedProperty);
+
+        return generatedName;
     }
 
     private static class ElementTemplateCache {
