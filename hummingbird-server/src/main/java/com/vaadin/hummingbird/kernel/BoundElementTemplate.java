@@ -146,7 +146,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
             if (bindingValue == null) {
                 value = null;
             } else {
-                value = String.valueOf(bindingValue);
+                value = bindingValue;
             }
         }
         if (value == null) {

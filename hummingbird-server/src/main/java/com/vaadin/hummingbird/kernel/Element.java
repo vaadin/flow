@@ -112,6 +112,15 @@ public class Element implements Serializable {
         assert validAttribute(name);
 
         Object value = template.getAttribute(name, node);
+        // Integer-ish floating point values are shown as integers in
+        // JS, but as e.g. 1.0 in Java.
+        if (value instanceof Double || value instanceof Float) {
+            Number number = (Number) value;
+            long longValue = number.longValue();
+            if (longValue == number.doubleValue()) {
+                return Long.toString(longValue);
+            }
+        }
         return value == null ? null : value.toString();
     }
 

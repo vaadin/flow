@@ -8,9 +8,10 @@ import java.util.Set;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.hummingbird.parser.TemplateParser;
 
 public class ElementTest {
     @Test
@@ -23,6 +24,39 @@ public class ElementTest {
         String html = element.getOuterHTML();
         Assert.assertEquals("<span class=\"foobar\"><strong></strong></span>",
                 html);
+    }
+
+    @Test
+    public void tempalteElementContentNumberFormatting() {
+        ElementTemplate template = TemplateParser
+                .parse("<span>{{value}}</span>");
+        StateNode stateNode = StateNode.create();
+
+        Element element = Element.getElement(template, stateNode);
+
+        stateNode.put("value", Integer.valueOf(5));
+        Assert.assertEquals("5", element.getTextContent());
+
+        stateNode.put("value", Double.valueOf(5));
+        Assert.assertEquals("5", element.getTextContent());
+
+        stateNode.put("value", Double.valueOf(1 / 3d));
+        Assert.assertEquals("0.3333333333333333", element.getTextContent());
+    }
+
+    @Test
+    public void basicElementContentNumberFormatting() {
+        Element element = Element.createText("");
+        StateNode stateNode = element.getNode();
+
+        stateNode.put("content", Integer.valueOf(5));
+        Assert.assertEquals("5", element.getTextContent());
+
+        stateNode.put("content", Double.valueOf(5));
+        Assert.assertEquals("5", element.getTextContent());
+
+        stateNode.put("content", Double.valueOf(1 / 3d));
+        Assert.assertEquals("0.3333333333333333", element.getTextContent());
     }
 
     @Test
