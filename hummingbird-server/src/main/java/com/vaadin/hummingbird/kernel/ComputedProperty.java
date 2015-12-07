@@ -1,7 +1,5 @@
 package com.vaadin.hummingbird.kernel;
 
-import java.util.Objects;
-
 public abstract class ComputedProperty {
 
     private final String name;
@@ -25,23 +23,5 @@ public abstract class ComputedProperty {
     }
 
     public abstract Object compute(StateNode context);
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        } else if (obj == null || obj.getClass() != getClass()) {
-            return false;
-        }
-        ComputedProperty that = (ComputedProperty) obj;
-
-        return Objects.equals(name, that.name)
-                && Objects.equals(clientCode, that.clientCode);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, clientCode);
-    }
 
 }

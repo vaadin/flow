@@ -25,8 +25,6 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     private final Map<String, List<EventBinding>> events;
     private final Set<String> eventHandlerMethods;
 
-    private final Collection<ComputedProperty> computedProperties;
-
     private final List<BoundElementTemplate> childTemplates;
 
     private BoundElementTemplate parentTemplate;
@@ -73,14 +71,6 @@ public class BoundElementTemplate extends AbstractElementTemplate {
             eventHandlerMethods = null;
         } else {
             eventHandlerMethods = new HashSet<>(builderHandlerMehtods);
-        }
-
-        Collection<ComputedProperty> builderComputedProperties = builder
-                .getComputedProperties();
-        if (builderComputedProperties.isEmpty()) {
-            computedProperties = null;
-        } else {
-            computedProperties = new HashSet<>(builderComputedProperties);
         }
     }
 
@@ -280,9 +270,5 @@ public class BoundElementTemplate extends AbstractElementTemplate {
         } else {
             return null;
         }
-    }
-
-    public Collection<ComputedProperty> getComputedProperties() {
-        return computedProperties;
     }
 }
