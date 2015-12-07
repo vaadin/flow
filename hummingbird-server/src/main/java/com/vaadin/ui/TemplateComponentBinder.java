@@ -12,6 +12,10 @@ public class TemplateComponentBinder {
         for (java.lang.reflect.Field memberField : FieldGroup
                 .getFieldsInDeclareOrder(templateClass)) {
 
+            if (memberField.isSynthetic()) {
+                continue;
+            }
+
             if (!Component.class.isAssignableFrom(memberField.getType())) {
                 // Not a Component field - move on
                 continue;
