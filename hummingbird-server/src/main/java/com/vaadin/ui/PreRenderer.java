@@ -69,8 +69,13 @@ public class PreRenderer {
         } else {
             org.jsoup.nodes.Element target = document
                     .createElement(preRenderTree.getTag());
-            preRenderTree.getAttributeNames().forEach(name -> target.attr(name,
-                    preRenderTree.getAttribute(name)));
+            preRenderTree.getAttributeNames().forEach(name -> {
+                if (name.equals("innerHTML")) {
+                    target.html(preRenderTree.getAttribute(name));
+                } else {
+                    target.attr(name, preRenderTree.getAttribute(name));
+                }
+            });
             int childCount = preRenderTree.getChildCount();
             for (int i = 0; i < childCount; i++) {
                 target.appendChild(

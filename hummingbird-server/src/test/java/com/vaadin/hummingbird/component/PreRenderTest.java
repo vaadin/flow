@@ -6,6 +6,7 @@ import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.TemplateBuilder;
+import com.vaadin.ui.HTML;
 import com.vaadin.ui.PreRenderer;
 
 import org.junit.Assert;
@@ -67,4 +68,16 @@ public class PreRenderTest {
         Assert.assertEquals("<div>\n Hello world\n</div>", jsoup.outerHtml());
     }
 
+    @Test
+    public void testPreRenderHTML() {
+        HTML html = new HTML("<p>Hello</p>");
+
+        Element prerendered = PreRenderer
+                .preRenderElementTree(html.getElement());
+        Document document = new Document("");
+        org.jsoup.nodes.Element jsoup = (org.jsoup.nodes.Element) PreRenderer
+                .toJSoup(document, prerendered);
+
+        Assert.assertEquals("<p>Hello</p>", jsoup.outerHtml());
+    }
 }
