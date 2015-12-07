@@ -43,6 +43,10 @@ public class ForElementTemplate extends BoundElementTemplate {
         if (parentNode == null) {
             return null;
         }
+        parentNode = parentNode.getParent();
+        if (parentNode == null) {
+            return null;
+        }
         return super.getParent(parentNode);
     }
 

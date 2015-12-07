@@ -122,6 +122,7 @@ public class ElementTemplateTest {
             Assert.assertEquals("span", child.getTag());
             Assert.assertEquals("div", child.getParent().getTag());
             Assert.assertEquals("child" + i, child.getAttribute("class"));
+            Assert.assertEquals(element, child.getParent());
         }
 
         Element firstChild = element.getChild(0);
