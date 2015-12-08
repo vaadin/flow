@@ -22,8 +22,6 @@ import com.vaadin.shared.Connector;
 import com.vaadin.shared.communication.SharedState;
 import com.vaadin.ui.UI;
 
-import elemental.json.JsonObject;
-
 /**
  * Interface implemented by all connectors that are capable of communicating
  * with the client side
@@ -141,16 +139,6 @@ public interface ClientConnector extends Connector {
      * @since 7.0
      */
     public void beforeClientResponse(boolean initial);
-
-    /**
-     * Called by the framework to encode the state to a JSONObject. This is
-     * typically done by calling the static method
-     * {@link LegacyCommunicationManager#encodeState(ClientConnector, SharedState)}
-     * .
-     *
-     * @return a JSON object with the encoded connector state
-     */
-    public JsonObject encodeState();
 
     /**
      * Handle a request directed to this connector. This can be used by

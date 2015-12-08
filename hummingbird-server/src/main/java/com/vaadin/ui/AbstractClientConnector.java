@@ -33,7 +33,6 @@ import com.vaadin.server.ClientConnector;
 import com.vaadin.server.ClientMethodInvocation;
 import com.vaadin.server.ConnectorResource;
 import com.vaadin.server.DownloadStream;
-import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.Resource;
 import com.vaadin.server.ResourceReference;
 import com.vaadin.server.ServerRpcManager;
@@ -45,8 +44,6 @@ import com.vaadin.shared.communication.ClientRpc;
 import com.vaadin.shared.communication.ServerRpc;
 import com.vaadin.shared.communication.SharedState;
 import com.vaadin.ui.UI.Root;
-
-import elemental.json.JsonObject;
 
 /**
  * An abstract base class for ClientConnector implementations. This class
@@ -229,11 +226,6 @@ public abstract class AbstractClientConnector extends AbstractHasElement
             }
         }
         return sharedState;
-    }
-
-    @Override
-    public JsonObject encodeState() {
-        return LegacyCommunicationManager.encodeState(this, getState(false));
     }
 
     /**
