@@ -34,9 +34,6 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
 import com.vaadin.annotations.Implemented;
@@ -50,6 +47,7 @@ import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.LazyList;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.TemplateScriptHelper;
 import com.vaadin.hummingbird.parser.TemplateParser;
 
 import elemental.json.JsonArray;
@@ -483,31 +481,10 @@ public abstract class Template extends AbstractComponent
             return new ComputedProperty(name, script) {
                 @Override
                 public Object compute(StateNode context) {
-                    ScriptEngine engine = new ScriptEngineManager()
-                            .getEngineByName("nashorn");
-
                     SimpleBindings bindings = new SimpleBindings();
                     bindings.put("model", model);
 
-                    try {
-                        Object value = engine.eval(script, bindings);
-                        if (!type.isInstance(value)) {
-                            if (value instanceof Number) {
-                                if (type == Integer.class
-                                        || type == int.class) {
-                                    return Integer.valueOf(
-                                            ((Number) value).intValue());
-                                }
-                            }
-                            throw new RuntimeException("Expected" + type
-                                    + ", but got " + value.getClass()
-                                    + " from JS expression " + script);
-                        }
-
-                        return value;
-                    } catch (ScriptException e) {
-                        throw new RuntimeException(e);
-                    }
+                    return TemplateScriptHelper.evaluateScript(bindings, script, type);
                 }
             };
         }
