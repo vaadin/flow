@@ -7,13 +7,13 @@ if (!XMLHttpRequest.prototype.___open && window.randomUserUrl) {
   //patches XMLHttpRequest and uses single underscore.
   XMLHttpRequest.prototype.___open = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function(method, url, type) {
-   if (url.indexOf(randomUserUrl) === 0) {
+   if (url.indexOf(window.randomUserUrl) === 0) {
      var tokens, re = /[?&]([^=]+)=([^&]*)/g;
      this.params = {};
      while (tokens = re.exec(url)) {
          this.params[tokens[1]] = tokens[2];
      }
-     url = window.randomUserUrl + "?results=" + this.params.results + "&gender=" + (this.params.gender || '');
+     url = window.localUserUrl + "?results=" + this.params.results + "&gender=" + (this.params.gender || '');
    }
    // Angular uses sync open, but we want it async.
    this.___open(method, url, true)

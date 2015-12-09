@@ -7,7 +7,7 @@ layout: page
 <html>
 
 <head>
-  <title>vaadin-grid Code Examples. Columns</title>
+  <title>vaadin-grid Code Examples - Selection</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
@@ -32,10 +32,17 @@ layout: page
       <vaadin-grid demo hidden>
         <table>
           <colgroup>
-            <col header-text="Name">
-            <col header-text="Value">
-            <col header-text="Progress">
+            <col>
+            <col>
+            <col>
           </colgroup>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Value</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
           <tbody>
             <tr>
               <td>Project A</td>
@@ -81,10 +88,17 @@ layout: page
       <vaadin-grid demo selection-mode="multi">
         <table>
           <colgroup>
-            <col header-text="Name">
-            <col header-text="Surname">
-            <col header-text="Activity">
+            <col>
+            <col>
+            <col>
           </colgroup>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Surname</th>
+              <th>Activity</th>
+            </tr>
+          </thead>
         </table>
       </vaadin-grid>
       <code hidden>
@@ -123,7 +137,7 @@ layout: page
         modeSelect.addEventListener("change", function() {
           grid.selection.mode = modeSelect.value;
         });
-        grid.addEventListener("select", function() {
+        grid.addEventListener("selection-mode-changed", function() {
           modeSelect.value = grid.selection.mode;
         });
       </code>
@@ -151,10 +165,17 @@ layout: page
       <vaadin-grid demo selection-mode="multi" hidden>
         <table>
           <colgroup>
-            <col header-text="Name">
-            <col header-text="Surname">
-            <col header-text="Activity">
+            <col>
+            <col>
+            <col>
           </colgroup>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Surname</th>
+              <th>Activity</th>
+            </tr>
+          </thead>
         </table>
       </vaadin-grid>
       <code hidden>
@@ -178,7 +199,7 @@ layout: page
           grid.items = employees;
           // code
           // Log the selections / deselection to console on select event
-          grid.addEventListener("select", function() {
+          grid.addEventListener("selected-items-changed", function() {
             console.log("Selected: " + grid.selection.selected());
             console.log("Deselected: " + grid.selection.deselected());
           });
@@ -199,10 +220,17 @@ layout: page
       <vaadin-grid demo selection-mode="multi" hidden>
         <table>
           <colgroup>
-            <col header-text="Name">
-            <col header-text="Surname">
-            <col header-text="Activity">
+            <col>
+            <col>
+            <col>
           </colgroup>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Surname</th>
+              <th>Activity</th>
+            </tr>
+          </thead>
         </table>
       </vaadin-grid>
       <code hidden>
@@ -227,7 +255,7 @@ layout: page
           grid.items = employees;
           // code
           // Log selected designers list on select event
-          grid.addEventListener("select", function() {
+          grid.addEventListener("selected-items-changed", function() {
             console.log("Selected designers:");
             grid.selection.selected(function(index) {
               var data = employees[index];
@@ -253,10 +281,17 @@ layout: page
       <vaadin-grid demo selection-mode="multi" hidden>
         <table>
           <colgroup>
-            <col header-text="Name">
-            <col header-text="Surname">
-            <col header-text="Activity">
+            <col>
+            <col>
+            <col>
           </colgroup>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Surname</th>
+              <th>Activity</th>
+            </tr>
+          </thead>
         </table>
       </vaadin-grid>
       <code hidden>
@@ -280,7 +315,7 @@ layout: page
           grid.items = employees;
           // code
           // Log selected indexes in batches of 5
-          grid.addEventListener("select", function() {
+          grid.addEventListener("selected-items-changed", function() {
             for (var i = 0; i < grid.selection.size; i += 5){
               console.log(grid.selection.selected(undefined, i, i+4));
             }

@@ -1,6 +1,6 @@
 {
   "name": "vaadin-notification",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "authors": [
     "Artur Signell"
   ],
@@ -21,16 +21,16 @@
   "dependencies": {
     "neon-animation": "PolymerElements/neon-animation#~1.0.6",
     "paper-dialog": "PolymerElements/paper-dialog#~1.0.1",
-    "polymer": "Polymer/polymer#~1.1.1"
+    "polymer": "Polymer/polymer#^1.1.0"
   },
   "homepage": "https://github.com/Artur-/vaadin-notification",
-  "_release": "0.9.0",
+  "_release": "0.9.1",
   "_resolution": {
     "type": "version",
-    "tag": "0.9.0",
-    "commit": "5c694fb0a8645e29366cd4bacb4e83720be23836"
+    "tag": "0.9.1",
+    "commit": "5aa0c4b8b18f70fb8d9ed744e8e4cbcebee85b83"
   },
   "_source": "git://github.com/Artur-/vaadin-notification.git",
-  "_target": "~0.9.0",
+  "_target": "0.9.1",
   "_originalSource": "Artur-/vaadin-notification"
 }

@@ -28,13 +28,24 @@ layout: page
     <code-example source>
       <div>
         <template is="dom-bind" class="my-grid-with-template" demo>
-          <vaadin-grid id="my-grid-with-template" on-select="onSelect">
+          <vaadin-grid id="my-grid-with-template" on-selected-items-changed="onSelect">
             <table>
-              <col header-text="#" width="64">
-              <col width="100">
-              <col header-text="First Name">
-              <col header-text="Last Name">
-              <col header-text="Email">
+              <colgroup>
+                <col width="64">
+                <col width="100">
+                <col>
+                <col>
+                <col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th></th>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Email</th>
+                </tr>
+              </thead>
               <tbody>
               <template is="dom-repeat" items="[[users]]">
                 <tr>
@@ -97,13 +108,13 @@ layout: page
     <code-example source>
       <div>
         <template is="dom-bind" class="my-grid-with-ds" demo>
-          <vaadin-grid id="my-grid-with-ds" datasource="[[datasource]]" on-select="onSelect">
+          <vaadin-grid id="my-grid-with-ds" items="[[items]]" size="[[size]]" on-selected-items-changed="onSelect">
             <table>
               <colgroup>
-                <col header-text="" name="user.picture.thumbnail" width="100">
-                <col header-text="First Name" name="user.name.first">
-                <col header-text="Last Name" name="user.name.last">
-                <col header-text="Email" name="user.email">
+                <col name="user.picture.thumbnail" width="100">
+                <col name="user.name.first">
+                <col name="user.name.last">
+                <col name="user.email">
               </colgroup>
             </table>
           </vaadin-grid>
@@ -120,18 +131,29 @@ layout: page
           var template = template || document.querySelector('template.my-grid-with-ds');
           var grid = document.querySelector('#my-grid-with-ds');
 
-          template.datasource = function(req) {
+          template.onSelect = function() {
+            if(grid.selection.selected().length === 0) {
+              template.selected = null;
+            } else {
+              grid.getItem([grid.selection.selected()], function(err, item) {
+                template.selected = item;
+              });
+            }
+          };
+
+          template.size = 100;
+          template.items = function(params, callback) {
             var xhr = new XMLHttpRequest();
 
             xhr.onreadystatechange = function() {
               if (xhr.readyState == XMLHttpRequest.DONE ) {
                 if(xhr.status == 200) {
-                  req.success(JSON.parse(xhr.responseText).results, 100);
+                  callback(JSON.parse(xhr.responseText).results);
                 }
               }
             };
 
-            xhr.open("GET", randomUserUrl + '?results=' + Math.max(req.count, 1), true);
+            xhr.open("GET", randomUserUrl + '?results=' + Math.max(params.count, 1), true);
             xhr.send();
           };
 

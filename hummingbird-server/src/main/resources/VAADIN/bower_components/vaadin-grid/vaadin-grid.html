@@ -14,39 +14,75 @@ This program is available under Apache License Version 2.0, available at https:/
 </style>
 
 <!--
-Data grid for showing large amounts of tabular data.
+High quality data grid for showing large amounts of tabular data.
 
-Basic usage:
+Simple usage (static HTML data source):
 ```html
 <vaadin-grid>
   <table>
     <colgroup>
-      <col header-text="Name">
-      <col header-text="Value">
-      <col header-text="Progress">
+      <col name="firstName">
+      <col name="lastName">
+      <col name="email">
     </colgroup>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Value</th>
+        <th>Progress</th>
+      </tr>
+    </thead>
     <tbody>
       <tr>
-        <td>Project A</td><td>10000</td><td>0.8</td>
+        <td>Jonathan</td>
+        <td>Doe</td>
+        <td>jonathan.doe@example.com</td>
       </tr>
       <tr>
-        <td>Project B</td><td>999999</td><td>0.8</td>
+        <td>Jane</td>
+        <td>Smith</td>
+        <td>jane.smith@example.com</td>
       </tr>
     </tbody>
   </table>
 </vaadin-grid>
 ```
 
-More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadin-grid/demo/
+### Styling
+
+The grid uses `--default-primary-color` from [paper-styles](https://github.com/PolymerElements/paper-styles) as a highlight color. You can customize the color by defining your own primary default color.
+
+```html
+<style is="custom-style">
+  vaadin-grid {
+    --default-primary-color: red;
+  }
+</style>
+```
+The following custom properties are available for styling:
+
+Custom property | Description | Default
+:----------------|:-------------|----------:
+`--vaadin-grid-row-height` | Data row height | `48px`
+`--vaadin-grid-header-row-height` | Header row height | `56px`
+`--vaadin-grid-footer-row-height` | Footer row height | `56px`
+
+See the [demo](demo/index.html) for use case examples.
+
+@element vaadin-grid
+@demo demo/index.html
 -->
 <dom-module id="vaadin-grid">
-<style>
-  /* Host styles */
+  <style>
+ /* Host styles */
   :host {
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     box-sizing: border-box;
-    font: 400 13px/1.1 Roboto, sans-serif;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.1;
     color: rgba(0, 0, 0, 0.87);
     cursor: default;
     transition: opacity 50ms;
@@ -56,6 +92,9 @@ More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadi
     display: flex;
     -webkit-flex-direction: column;
     flex-direction: column;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
   }
 
   :host(.vaadin-grid-loading) {
@@ -171,7 +210,7 @@ More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadi
   }
 
   .vaadin-grid-body tr {
-    height: 48px;
+    height: var(--vaadin-grid-row-height, 48px);
     left: 0;
     top: 0;
     position: absolute;
@@ -216,7 +255,7 @@ More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadi
 
    /* Focus styles */
   .vaadin-grid-row:after {
-    background-color: #03A9F4;
+    background-color: var(--default-primary-color, #03A9F4);
     bottom: 0;
     content: "";
     height: 2px;
@@ -271,7 +310,10 @@ More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadi
 
   /* Grid header */
   .vaadin-grid-header {
-    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06),
+                0 2px 0 rgba(0, 0, 0, 0.075),
+                0 3px 0 rgba(0, 0, 0, 0.05),
+                0 4px 0 rgba(0, 0, 0, 0.015);
     box-sizing: border-box;
     display: block;
     left: 0;
@@ -284,7 +326,7 @@ More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadi
   .vaadin-grid-header tr {
     color: rgba(0, 0, 0, 0.54);
     font-size: 12px;
-    height: 56px;
+    height: var(--vaadin-grid-header-row-height, 56px);
   }
 
   .vaadin-grid-header th {
@@ -341,7 +383,7 @@ More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadi
     font-size: 12px;
     font-weight: 500;
     color: rgba(0, 0, 0, 0.56);
-    height: 56px;
+    height: var(--vaadin-grid-footer-row-height, 56px);
   }
 
   .vaadin-grid-footer-deco {
@@ -353,38 +395,21 @@ More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadi
   }
 
   .vaadin-grid-spacer-deco-container {
-  	display: none;
+    display: none;
   }
 
   /* Cell padding */
   .vaadin-grid-header th,
   .vaadin-grid-body td,
   .vaadin-grid-footer td {
-    /* Google Material Design specifies 56dp inbetween columns.
-       Columns are as wide as their widest item. This approach
-       might not be applicable for us, as we allow column expand
-       ratio, etc. Options 1, 2 and 3 listed below. */
-    /* Divide padding equally among cells. */
        padding: 0 24px 0 24px;
-    /* Put all padding on right side.
-       padding: 0 56px 0 0; */
-    /* No padding, allow users to specify expand ratio.
-       padding: 0; */
   }
 
-  .vaadin-grid-header th.last-frozen,
-  .vaadin-grid-body td.last-frozen,
-  .vaadin-grid-footer td.last-frozen {
+  .vaadin-grid-cell.last-frozen {
     border-right: 1px solid #e3e3e3;
   }
 
-  /* TODO We need some other way of defining the frozen column divider than
-   using the cell, since this will affect all frozen columns, when we only
-    want to apply it to the last frozen column .*/
-  /* Double selector to increase specificity. Otherwise Polymer increases the
-   specificity of the ".vaadin-grid-header th" more than this, and we can't
-   override the border */
-  .vaadin-grid-cell.frozen.frozen {
+  .vaadin-grid-cell.frozen {
     position: relative;
     z-index: 1;
   }
@@ -428,7 +453,7 @@ More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadi
   }
 
   input[type="checkbox"]:checked + label {
-    background-color: #03A9F4;
+    background-color: var(--default-primary-color, #03A9F4);
     border-color: transparent;
   }
 
@@ -439,11 +464,14 @@ More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadi
 
   input[type="checkbox"]:indeterminate + label:after {
     content: "–";
-    left: -2px;
-    font-size: 13px;
+    font-family: arial;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1;
     text-align: center;
-    -webkit-transform: none;
-    transform: none;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    transition: none;
   }
 
   /* Activation "splash" */
@@ -470,17 +498,12 @@ More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadi
   }
 
   input[type="checkbox"]:checked + label:before {
-    background-color: #03A9F4;
-  }
-
-  /* Small adjustment for the checkbox in the header */
-  .vaadin-grid-header input[type="checkbox"] + label:after {
-    transition: none;
+    background-color: var(--default-primary-color, #03A9F4);
   }
 
   #measureobject {
     width: 100% !important;
-    height: 100% !important;
+    height: 100%;
     z-index: -1 !important;
     pointer-events: none !important;
     position: absolute !important;
@@ -541,18 +564,10 @@ More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadi
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    opacity: 0;
-    background: #000;
-    transition: opacity 0.1s ease-in;
+    background: #fff;
+    box-shadow: 0 0 10px 4px #fff;
   }
 
-  .vaadin-grid-sidebar-button:hover:before {
-    opacity: 0.1;
-  }
-
-  .vaadin-grid-sidebar-button:active:before {
-    opacity: 0.2;
-  }
   .vaadin-grid-sidebar-button:after {
     content: url(img/ic_view_column_black_24px.svg);
     display: inline-block;
@@ -652,609 +667,695 @@ More examples available at https://cdn.vaadin.com/vaadin-components/latest/vaadi
   .vaadin-grid-sidebar.closed:hover:after {
     opacity: 1;
   }
-
-</style>
+  </style>
   <template>
     <iframe id="measureobject" class="vaadin-grid"></iframe>
-    <content></content>
   </template>
 </dom-module>
 
 <script>
-    if (!window.vaadin || !window.vaadin.GridComponent) {
-      // This is needed when vaadin-grid.min.js is loaded asynchronously like
-      // in SDM. We must guarantee that gwt grid is loaded and exported before
-      // Polymer is called.
-      var _Polymer = Polymer;
-      // Override Polymer
-      Polymer = function(obj) {
-        // Restore Polymer
-        Polymer = _Polymer;
-        var _done = false;
-        // Overwrite whenReady
-        var _whenReady = HTMLImports.whenReady;
-        HTMLImports.whenReady = function(done) {
-          var id = setInterval(function() {
-            if (window.vaadin && window.vaadin.GridComponent) {
-              clearInterval(id);
-              if (!_done) {
-                // Run original Polymer
-                _Polymer(obj);
-                _done = true;
-              }
-              // Restore whenReady
-              HTMLImports.whenReady = _whenReady
-              // Run original whenReady
-              _whenReady(done);
+  function gridLoaded() {
+    return window.vaadin && vaadin.elements && vaadin.elements.grid && vaadin.elements.grid.GridElement;
+  }
+  if (!gridLoaded()) {
+    // This is needed when vaadin-grid.min.js is loaded asynchronously like
+    // in SDM. We must guarantee that gwt grid is loaded and exported before
+    // Polymer is called.
+    var _Polymer = Polymer;
+    // Override Polymer
+    Polymer = function(obj) {
+      // Restore Polymer
+      Polymer = _Polymer;
+      var _done = false;
+      // Overwrite whenReady
+      var _whenReady = HTMLImports.whenReady;
+      HTMLImports.whenReady = function(done) {
+        var id = setInterval(function() {
+          if (gridLoaded()) {
+            clearInterval(id);
+            if (!_done) {
+              // Run original Polymer
+              _Polymer(obj);
+              _done = true;
             }
-          }, 3);
-        }
-      }
-    }
-
-    Polymer({
-
-      is: "vaadin-grid",
-
-      _grid: undefined,
-
-      properties: {
-
-        /**
-         * Object for controlling and accessing the header rows in the grid.
-         *
-         * @property {Header} header
-         * @type {Header}
-         */
-        header: {
-          type: Object,
-          readOnly: true,
-          value: function() {
-            var _this = this;
-            return {
-              getCell: function(rowIndex, columnId) {
-                return _this._grid.getStaticSection().getHeaderCell(rowIndex, columnId);
-              },
-              addRow: function(rowIndex, cellContent) {
-                _this._grid.getStaticSection().addHeader(rowIndex, cellContent);
-              },
-              removeRow: function(rowIndex) {
-                _this._grid.getStaticSection().removeHeader(rowIndex);
-              },
-              setRowClassName: function(rowIndex, className) {
-                _this._grid.getStaticSection().setHeaderRowClassName(rowIndex, className);
-              },
-              get defaultRow() {
-                return _this._grid.getStaticSection().getDefaultHeader();
-              },
-              set defaultRow(rowIndex) {
-                _this._grid.getStaticSection().setDefaultHeader(rowIndex);
-              },
-              get hidden() {
-                return _this._grid.getStaticSection().isHeaderHidden();
-              },
-              set hidden(hidden) {
-                _this._grid.getStaticSection().setHeaderHidden(hidden);
-              },
-              get rowCount() {
-                return _this._grid.getStaticSection().getHeaderRowCount();
-              }
-            };
+            // Restore whenReady
+            HTMLImports.whenReady = _whenReady;
+            // Run original whenReady
+            _whenReady(done);
           }
-        },
+        }, 3);
+      };
+    };
+  }
 
-        /**
-         * Object for controlling and accessing the footer rows in the grid.
-         *
-         * @property {Footer} footer
-         * @type {Footer}
-         */
-        footer: {
-          type: Object,
-          readOnly: true,
-          value: function() {
-            var _this = this;
-            return {
-              getCell: function(rowIndex, columnId) {
-                return _this._grid.getStaticSection().getFooterCell(rowIndex, columnId);
-              },
-              addRow: function(rowIndex, cellContent) {
-                _this._grid.getStaticSection().addFooter(rowIndex, cellContent);
-              },
-              removeRow: function(rowIndex) {
-                _this._grid.getStaticSection().removeFooter(rowIndex);
-              },
-              setRowClassName: function(rowIndex, className) {
-                _this._grid.getStaticSection().setFooterRowClassName(rowIndex, className);
-              },
-              get hidden() {
-                return _this._grid.getStaticSection().isFooterHidden();
-              },
-              set hidden(hidden) {
-                _this._grid.getStaticSection().setFooterHidden(hidden);
-              },
-              get rowCount() {
-                return _this._grid.getStaticSection().getFooterRowCount();
-              }
-            };
-          }
-        },
+  Polymer({
 
-        /**
-         * A function returning the items determining rows in the grid.
-         *
-         * Example:
-         * ```
-         * grid.datasource = function(req) {
-         *  req.success(['foo', 'bar'], 2);
-         * };
-         * ```
-         *
-         * @property {function} datasource
-         * @type {function}
-         */
-        datasource: {
-          type: Object,
-          observer: '_datasourceChanged'
-        },
+    is: "vaadin-grid",
 
-        /**
-         * An array containing items determining rows in the grid.
-         *
-         *  Example:
-         *  ```
-         *  grid.items = [
-         *      ["horse", 150, "domestic"],
-         *      ["wolf", 100, "wild"]
-         *  ];
-         *  ```
-         *
-         * @property {Array<Object>} items
-         * @type {Array<Object>}
-         */
-        items: {
-          type: Array,
-          observer: '_itemsChanged'
-        },
+    _grid: undefined,
 
-        /**
-         * Object for controlling and accessing the selected rows in the grid.
-         *
-         * @property {Selection} selection
-         * @type {Selection}
-         */
-        selection: {
-          type: Object,
-          readOnly: true,
-          value: function() {
-            var _this = this;
-            return {
-              select: function(index) {
-                _this._grid.getSelectionModel().select(index);
+    properties: {
 
-                return _this;
-              },
-              deselect: function(index) {
-                _this._grid.getSelectionModel().deselect(index);
-
-                return _this;
-              },
-              clear: function() {
-                _this._grid.getSelectionModel().clear();
-
-                return _this;
-              },
-              selectAll: function() {
-                _this._grid.getSelectionModel().selectAll();
-
-                return _this;
-              },
-              selected: function(mapper, from, to) {
-                return _this._grid.getSelectionModel().selected(mapper, from, to);
-              },
-              deselected: function(mapper, from, to) {
-                return _this._grid.getSelectionModel().deselected(mapper, from, to);
-              },
-              get size() {
-                return _this._grid.getSelectionModel().size();
-              },
-              get mode() {
-                return _this._grid.getSelectionMode();
-              },
-              set mode(mode) {
-                _this._grid.setSelectionMode(mode);
-                _this.serializeValueToAttribute(_this.selection.mode, "selection-mode");
-              }
-            };
-          }
-        },
-
-        /**
-         * Order of sorting.
-         *
-         * @property {Array<SortOrder>} source
-         * @type {Array<SortOrder>}
-         */
-        sortOrder: {
-          type: Array,
-          notify: true,
-          observer: '_sortOrderChanged'
+      /**
+       * Object for controlling and accessing the header rows in the grid.
+       *
+       * See the API documentation for “header” for more details.
+       *
+       * @property {header} footer
+       * @type {header}
+       */
+      header: {
+        type: Object,
+        readOnly: true,
+        value: function() {
+          var _this = this;
+          return {
+            getCell: function(rowIndex, columnId) {
+              return _this._grid.getStaticSection().getHeaderCell(rowIndex, columnId);
+            },
+            addRow: function(rowIndex, cellContent) {
+              _this._grid.getStaticSection().addHeader(rowIndex, cellContent);
+            },
+            removeRow: function(rowIndex) {
+              _this._grid.getStaticSection().removeHeader(rowIndex);
+            },
+            setRowClassName: function(rowIndex, className) {
+              _this._grid.getStaticSection().setHeaderRowClassName(rowIndex, className);
+            },
+            get defaultRow() {
+              return _this._grid.getStaticSection().getDefaultHeader();
+            },
+            set defaultRow(rowIndex) {
+              _this._grid.getStaticSection().setDefaultHeader(rowIndex);
+            },
+            get hidden() {
+              return _this._grid.getStaticSection().isHeaderHidden();
+            },
+            set hidden(hidden) {
+              _this._grid.getStaticSection().setHeaderHidden(hidden);
+            },
+            get rowCount() {
+              return _this._grid.getStaticSection().getHeaderRowCount();
+            }
+          };
         }
       },
 
-      attributeChanged: function(name, type, value) {
-        switch (name) {
-          case 'disabled':
-            var disabled = typeof value == "string";
-            if (this.disabled != disabled) {
-              this.disabled = disabled;
+      /**
+       * Object for controlling and accessing the footer rows in the grid.
+       *
+       * See the API documentation for “footer” for more details.
+       *
+       * @property {footer} footer
+       * @type {footer}
+       */
+      footer: {
+        type: Object,
+        readOnly: true,
+        value: function() {
+          var _this = this;
+          return {
+            getCell: function(rowIndex, columnId) {
+              return _this._grid.getStaticSection().getFooterCell(rowIndex, columnId);
+            },
+            addRow: function(rowIndex, cellContent) {
+              _this._grid.getStaticSection().addFooter(rowIndex, cellContent);
+            },
+            removeRow: function(rowIndex) {
+              _this._grid.getStaticSection().removeFooter(rowIndex);
+            },
+            setRowClassName: function(rowIndex, className) {
+              _this._grid.getStaticSection().setFooterRowClassName(rowIndex, className);
+            },
+            get hidden() {
+              return _this._grid.getStaticSection().isFooterHidden();
+            },
+            set hidden(hidden) {
+              _this._grid.getStaticSection().setFooterHidden(hidden);
+            },
+            get rowCount() {
+              return _this._grid.getStaticSection().getFooterRowCount();
             }
-            break;
-          case 'selection-mode':
-            if (this.selection.mode != value) {
-              this.selection.mode = value;
-            }
-            break;
-          default:
-            var property = Polymer.CaseMap.dashToCamelCase(name);
-            if (this[property] != value) {
-              this[property] = value;
-            }
+          };
         }
       },
 
-      listeners: {
-        /**
-         * A change in the sorting order.
-         *
-         * @event sort
-         */
-        /**
-         * Row is selected or deselected.
-         *
-         * @event select
-         */
-        /**
-         * A change in the selection mode.
-         *
-         * @event selectionmodechange
-         */
-        'selectionmodechange': '_onSelectionModeChange'
-      },
-
-      _datasourceChanged: function(datasource) {
-        this._grid.setDataSource(datasource);
-      },
-
-      _itemsChanged: function(items) {
-        if(Array.isArray(items)) {
-          this._grid.setDataSource(function(req) {
-            var array = items.slice(req.index, req.index + req.count);
-            req.success(array, items.length);
-          });
-        } else {
-          throw new Error('Unknown items type: ' + items + '. Arrays are supported only.');
-        }
-      },
-
-      _onSelectionModeChange: function() {
-        this.serializeValueToAttribute(this.selection.mode, "selection-mode");
-      },
-
-      _sortOrderChanged: function(sortOrder) {
-        this._grid.setSortOrder(sortOrder);
-      },
-
-      created: function() {
-        this._grid = new vaadin.GridComponent();
-      },
-
-      ready: function() {
-        // hide until fully loaded
-        this.toggleClass('vaadin-grid-loading', true);
-        this.async(function() {
-          for (var i = 0; i < this.attributes.length; i++) {
-            this.attributeChanged(this.attributes[i].nodeName, null, this.attributes[i].nodeValue);
-          }
-        });
-        this._grid.init(this, Polymer.dom(this).querySelector("table"), Polymer.dom(this.root));
-      },
-
-      _bindResizeListener: function() {
-        var _this = this;
-        this.$.measureobject.addEventListener("load", function() {
-          var defaultView = this.contentDocument.defaultView;
-          var prevW = -1;
-          var prevH = -1;
-          defaultView.addEventListener('resize', function(e) {
-            var newW = defaultView.innerWidth;
-            var newH = defaultView.innerHeight;
-            if(newW != prevW || newH != prevH) {
-              prevW = newW;
-              prevH = newH;
-              _this._grid.updateSize();
-            }
-          }.bind(this));
-          _this._grid.updateSize();
-        });
-
-        this.$.measureobject.src = "about:blank";
-      },
-
-      attached: function() {
-        var _this = this;
-        this._bindResizeListener();
-        this.then(function() {
-          _this.toggleClass('vaadin-grid-loading', false);
-        });
-      },
-
       /**
-       * Scrolls to a certain row, using user-specified scroll destination.
+       * An array or a function containing or returning items determining
+       * the row data in the grid (i.e. the data source).
        *
-       * Scrolling happens asynchronously, so this method returns a 'thenable'
-       * which can be used to be notified when the scrolling is finished.
+       * Implement the property as a function if you wish to provide data
+       * lazily to the grid, for example from a REST service, to get only the
+       * items that are necessary in the grid viewport.
        *
-       * Example: `grid.scrollToRow(10, 'end').then(doMoreStuff);`
+       * See the API documentation for "items function" for more details.
        *
-       * @method scrollToRow
-       * @param {number} index - Zero-based index of the row to scroll to.
-       * @param {string} scrollDestination - Desired destination placement of scrolled-to-row. Valid values are `any`, `start`, `middle` and `end`. Defaults to `any`.
-       * @return {vaadin-grid}
-       */
-      scrollToRow: function(index, scrollDestination) {
-        this._grid.scrollToRow(index, scrollDestination);
-        return this;
-      },
-
-      /**
-       * Scrolls to the beginning of the grid.
+       * For an in-memory list of items, use the `items` array property instead.
        *
-       * Scrolling happens asynchronously, so this method returns a 'thenable'
-       * which can be used to be notified when the scrolling is finished.
+       * In both options, at the end the grid expects to receive an array, which
+       * can contain either arrays, objects or primitive types.
        *
-       * Example: `grid.scrollToStart().then(doMoreStuff);`
-       *
-       * @method scrollToStart
-       * @return {vaadin-grid}
-       */
-      scrollToStart: function() {
-        this._grid.scrollToStart();
-        return this;
-      },
-
-      /**
-       * Scrolls to the end of the grid.
-       *
-       * Scrolling happens asynchronously, so this method returns a 'thenable'
-       * which can be used to be notified when the scrolling is finished.
-       *
-       * Example: `grid.scrollToEnd().then(doMoreStuff);`
-       *
-       * @method scrollToEnd
-       * @return {vaadin-grid}
-       */
-      scrollToEnd: function() {
-        this._grid.scrollToEnd();
-        return this;
-      },
-
-      /**
-       * Adds a new column. Column is added at the end if `beforeColumn` is not defined.
-       *
-       * @method addColumn
-       * @param {Column} column - Column to be added.
-       * @param {string} beforeColumn - Index or id of the column before which the new column should be added.
-       */
-      addColumn: function(column, beforeColumn) {
-        this._grid.addColumn(column, beforeColumn);
-      },
-
-      /**
-       * Removes a column with certain id
-       *
-       * @method removeColumn
-       * @param {string} id - Column to be removed.
-       */
-      removeColumn: function(id) {
-        this._grid.removeColumn(id);
-      },
-
-      get rowClassGenerator() {
-        return this._grid.getRowClassGenerator();
-      },
-
-      /**
-       * The style generator that is used for generating styles for rows.
-       *
-       * Example:
-       * ```
-       * grid.rowClassGenerator = function(row) {
-       *  var activity = row.data[2];
-       *  return 'activity-' + activity.toLowerCase();
-       * };
-       *```
-       *
-       * @property {function} rowClassGenerator
-       * @param {Row} row - Reference to the row being rendered.
-       * @type {function}
-       */
-      set rowClassGenerator(row) {
-        this._grid.setRowClassGenerator(row);
-      },
-
-      get cellClassGenerator() {
-        return this._grid.getCellClassGenerator();
-      },
-
-      /**
-       * The style generator that is used for generating styles for cells.
-       *
-       * Example:
-       * ```
-       * grid.cellClassGenerator = function(cell) {
-       *   if (cell.index == 2) {
-       *      var activity = cell.row.data[2];
-       *      return 'activity-' + activity.toLowerCase();
-       *    }
-       *    return '';
+       * #### Examples:
+       *  ```
+       *  grid.items = [
+       *      {
+       *        firsName: "Jonathan",
+       *        lastName: "Doe",
+       *        email: "jonathan.doe@example.com"
+       *      },
+       *      {
+       *        firstName: "Jane",
+       *        lastName: "Smith",
+       *        email: "jane.smith@example.com"
+       *      }
+       *  ];
+       *  ```
+       *  ```
+       *  grid.items = function(params, callback) {
+       *    callback(["foo", "bar"], 2);
        *  };
-       * ```
-       * @property {function} cellClassGenerator
-       * @param {Cell} cell - Reference to the cell being rendered.
-       * @type {function}
+       *  ```
        *
+       * @property {(Array<Object>|function)} items
+       * @type {(Array<Object>|function)}
        */
-      set cellClassGenerator(cell) {
-        this._grid.setCellClassGenerator(cell);
+      items: {
+        type: Object,
+        observer: '_itemsChanged'
       },
 
       /**
-       * Disables the grid.
+       * Object for controlling and accessing the selected rows in the grid.
        *
-       * Attribute: `disabled`
+       * See the API documentation for the “selection” object for more details.
        *
-       * @property {boolean} disabled
-       * @default false
-       * @type {boolean}
+       * @property {selection} selection
+       * @type {selection}
+       * @default {}
        */
-      get disabled() {
-        return this._grid.isDisabled();
-      },
-      set disabled(disabled) {
-        this._grid.setDisabled(disabled);
-        this.reflectPropertyToAttribute("disabled");
+      selection: {
+        type: Object,
+        readOnly: true,
+        value: function() {
+          var _this = this;
+          return {
+            select: function(index) {
+              _this._grid.getSelectionModel().select(index);
+
+              return _this;
+            },
+            deselect: function(index) {
+              _this._grid.getSelectionModel().deselect(index);
+
+              return _this;
+            },
+            clear: function() {
+              _this._grid.getSelectionModel().clear();
+
+              return _this;
+            },
+            selectAll: function() {
+              _this._grid.getSelectionModel().selectAll();
+
+              return _this;
+            },
+            selected: function(mapper, from, to) {
+              return _this._grid.getSelectionModel().selected(mapper, from, to);
+            },
+            deselected: function(mapper, from, to) {
+              return _this._grid.getSelectionModel().deselected(mapper, from, to);
+            },
+            get size() {
+              return _this._grid.getSelectionModel().size();
+            },
+            get mode() {
+              return _this._grid.getSelectionMode();
+            },
+            set mode(mode) {
+              _this._grid.setSelectionMode(mode);
+            }
+          };
+        }
       },
 
       /**
-       * The number of frozen columns in this grid. Setting it to 0
-       * means that no data columns will be frozen, but the built-in selection
-       * checkbox column will still be frozen if it's in use. Setting the count to
-       * -1 will also disable the selection column.
+       * An array defining the sorting of columns. The order of the objects in
+       * the array defines the order of sort (if the grid is sorted by
+       * multiple columns).
        *
-       * Attribute: `frozen-columns`
+       * See the API documentation for the “sort-order” object for more details.
        *
-       * @property {number} frozenColumns
-       * @default 0
-       * @type {number}
+       * @property {Array<sort-order>}
+       * @type {Array<sort-order>}
        */
-      get frozenColumns() {
-        return this._grid.getFrozenColumns();
-      },
-      set frozenColumns(frozenColumns) {
-        this._grid.setFrozenColumns(frozenColumns);
-        this.reflectPropertyToAttribute("frozenColumns");
+      sortOrder: {
+        type: Array,
+        notify: true,
+        observer: '_sortOrderChanged'
       },
 
       /**
-       * Returns an array of the currently visible columns in the grid.
-       * No hidden columns included.
+       * Explicitly sets the number of records the `items` array/function
+       * provides for the grid to display.
        *
-       * @property {Array<Column>} visibleColumns
-       * @type {Array<Column>}
+       * This may also be set indirectly by passing the value as the second
+       * parameter for data request callback function.
+       *
+       * @property {Number} size
+       * @type {Number}
        */
-      get visibleColumns() {
-        return this._grid.getVisibleColumns();
-      },
-
-      /**
-       * The number of visible rows in the grid. Implicitly sets the height
-       * in the inline style, overriding any previous height. Setting style.height
-       * in this case should be ignored if possible.
-       *
-       * Attribute: `rows`
-       *
-       * @property {number} rows
-       * @default 10
-       * @type {number}
-       */
-      get rows() {
-        var rows = this._grid.getRows();
-        return rows > 0 ? rows : undefined;
-      },
-      set rows(rows) {
-        this._grid.setRows(rows);
-        this.reflectPropertyToAttribute("rows");
-      },
-
-      /**
-       * The array of Columns attached to the grid.
-       *
-       * @property {Array<Column>} columns
-       * @type {Array<Column>}
-       */
-      get columns() {
-        return this._grid.getColumns();
-      },
-      set columns(cols) {
-        this._grid.setColumns(cols);
-      },
-
-      /**
-       * Executes a callback when the grid has finished any pending work.
-       *
-       * @method then
-       * @param {Function} callback
-       * @return {Promise}
-       */
-      then: function(callback) {
-        return this._grid.then(callback);
-      },
-
-      /**
-       * The row detail generator that is used for generating detail content for rows.
-       *
-       * Example:
-       * ```
-       * grid.rowDetails.detailsGenerator = function(rowIndex) {
-       *  var detail = document.createElement('div');
-       *  detail.textContent = 'Row detail content for row ' + rowIndex;
-       *  return detail;
-       * };
-       *```
-       *
-       * @property {function} rowDetailsGenerator
-       * @type {function}
-       */
-      set rowDetailsGenerator(rowDetailsGenerator) {
-        this._grid.setRowDetailsGenerator(rowDetailsGenerator);
-      },
-      get rowDetailsGenerator() {
-        return this._grid.getRowDetailsGenerator();
-      },
-
-      /**
-       * Shows or hides row details for the row at the given index.
-       *
-       * @method setRowDetailsVisible
-       * @param {number} rowIndex
-       * @param {boolean} visible
-       */
-      setRowDetailsVisible: function(rowIndex, visible) {
-        this._grid.setRowDetailsVisible(rowIndex, visible);
-      },
-
-      /**
-       * Clears the cache.
-       *
-       * @type {Function}
-       */
-      clearCache: function(estimatedNewSize) {
-        this._grid.getDataSource().clearCache(estimatedNewSize);
-      },
-
-      /**
-       * Invokes the callback with row data of the provided row index as the
-       * parameter. If the row is not cached, it's fetched from the data source
-       * first.
-       *
-       * @method getItem
-       * @param {number} rowIndex - Index of the row.
-       * @param {Function} callback - Gets arguments (err, item) where item is the desired data item.
-       * @param {boolean} onlyCached - Only fetch cached rows (don't fall back to data source request).
-       */
-      getItem: function(rowIndex, callback, onlyCached) {
-        this._grid.getItem(rowIndex, callback, onlyCached);
+      size: {
+        type: Number,
+        observer: '_sizeChanged'
       }
-    }); // End Polymer prototype
+    },
+
+    attributeChanged: function(name, type, value) {
+      switch (name) {
+        case 'disabled':
+          var disabled = typeof value == "string";
+          if (this.disabled != disabled) {
+            this.disabled = disabled;
+          }
+          break;
+        case 'selection-mode':
+          if (this.selection.mode != value) {
+            this.selection.mode = value;
+          }
+          break;
+        default:
+          var property = Polymer.CaseMap.dashToCamelCase(name);
+          if (this[property] != value) {
+            this[property] = value;
+          }
+      }
+    },
+
+    listeners: {
+      /**
+       * A change in the sorting order.
+       *
+       * @event sort-order-changed
+       */
+
+      /**
+       * A row is selected or deselected.
+       *
+       * @event selected-items-changed
+       */
+
+      /**
+       * A change in the selection mode.
+       *
+       * @event selection-mode-changed
+       */
+      'selection-mode-changed': '_onSelectionModeChange'
+    },
+
+    _itemsChanged: function(items) {
+      if (Array.isArray(items)) {
+        this._grid.setDataSource(function(params, callback) {
+          var array = items.slice(params.index, params.index + params.count);
+          callback(array);
+        });
+        this.size = items.length;
+        this.refreshItems();
+      } else if (typeof items === 'function') {
+        this._grid.setDataSource(items);
+      } else {
+        throw new Error('Unknown items type: ' + items + '. Only arrays and functions are supported.');
+      }
+    },
+
+    _sizeChanged: function(size, oldSize) {
+      this._grid.sizeChanged(size, oldSize);
+    },
+
+    _onSelectionModeChange: function() {
+      this.serializeValueToAttribute(this.selection.mode, "selection-mode");
+    },
+
+    _sortOrderChanged: function(sortOrder) {
+      this._grid.setSortOrder(sortOrder);
+    },
+
+    created: function() {
+      this._grid = new vaadin.elements.grid.GridElement();
+    },
+
+    ready: function() {
+      // hide until fully loaded
+      this.toggleClass('vaadin-grid-loading', true);
+      this.async(function() {
+        for (var i = 0; i < this.attributes.length; i++) {
+          this.attributeChanged(this.attributes[i].nodeName, null, this.attributes[i].nodeValue);
+        }
+      });
+      this._grid.init(this, this._findTableElement(Polymer.dom(this).children), Polymer.dom(this.root), this.$.measureobject);
+    },
+
+    _findTableElement: function(nodes) {
+      for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].nodeName === 'TABLE') {
+          return nodes[i];
+        } else if (nodes[i].nodeName === 'CONTENT') {
+          var contentNodes = Polymer.dom(nodes[i]).getDistributedNodes();
+          return this._findTableElement(contentNodes);
+        }
+      }
+    },
+
+    _bindResizeListener: function() {
+      var _this = this;
+      this.$.measureobject.addEventListener("load", function() {
+        var defaultView = this.contentDocument.defaultView;
+        var prevW = -1;
+        var prevH = -1;
+        defaultView.addEventListener('resize', function(e) {
+          var newW = defaultView.innerWidth;
+          var newH = defaultView.innerHeight;
+          if (newW != prevW || newH != prevH) {
+            prevW = newW;
+            prevH = newH;
+            _this._grid.updateSize();
+          }
+        }.bind(this));
+        _this._grid.updateSize();
+      });
+
+      this.$.measureobject.src = "about:blank";
+    },
+
+    attached: function() {
+      var _this = this;
+      this._bindResizeListener();
+      this.then(function() {
+        _this.toggleClass('vaadin-grid-loading', false);
+      });
+    },
+
+    /**
+     * Scrolls to a certain row, using user-specified scroll destination.
+     *
+     * Scrolling happens asynchronously, so this method returns a 'thenable'
+     * which can be used to be notified when the scrolling is finished.
+     *
+     * #### Example:
+     * ```js
+     * grid.scrollToRow(10, "end").then(function() {...});
+     * ```
+     *
+     * @param {number} index - Zero-based index of the row to scroll to.
+     * @param {string} scrollDestination - Desired destination placement of scrolled-to-row. Valid values are `any`, `start`, `middle` and `end`. Defaults to `any`.
+     * @return {vaadin-grid}
+     */
+    scrollToRow: function(index, scrollDestination) {
+      this._grid.scrollToRow(index, scrollDestination);
+      return this;
+    },
+
+    /**
+     * Scrolls to the beginning of the grid.
+     *
+     * Scrolling happens asynchronously, so this method returns a 'thenable'
+     * which can be used to be notified when the scrolling is finished.
+     *
+     * #### Example:
+     * ```js
+     * grid.scrollToStart().then(function() {...});
+     * ```
+     *
+     * @return {vaadin-grid}
+     */
+    scrollToStart: function() {
+      this._grid.scrollToStart();
+      return this;
+    },
+
+    /**
+     * Scrolls to the end of the grid.
+     *
+     * Scrolling happens asynchronously, so this method returns a 'thenable'
+     * which can be used to be notified when the scrolling is finished.
+     *
+     * #### Example:
+     * ```js
+     * grid.scrollToEnd().then(function() {...});
+     * ```
+     *
+     * @return {vaadin-grid}
+     */
+    scrollToEnd: function() {
+      this._grid.scrollToEnd();
+      return this;
+    },
+
+    /**
+     * Adds a new column. Column is added at the end if `beforeColumn` is not defined.
+     *
+     * @param {column} column - Column object to be added.
+     * @param {string} beforeColumn - Index or id of the column before which the new column should be added.
+     */
+    addColumn: function(column, beforeColumn) {
+      this._grid.addColumn(column, beforeColumn);
+    },
+
+    /**
+     * Removes a column with certain id
+     *
+     * @method removeColumn
+     * @param {string} id - Column to be removed.
+     */
+    removeColumn: function(id) {
+      this._grid.removeColumn(id);
+    },
+
+    /**
+     * @private
+     */
+    get rowClassGenerator() {
+      return this._grid.getRowClassGenerator();
+    },
+
+    /**
+     * A function which is used for generating CSS class names for data rows.
+     *
+     * See the API documentation for the “row” object for more details about
+     * the parameter of this function.
+     *
+     * #### Example:
+     * ```js
+     * grid.rowClassGenerator = function(row) {
+     *   var activity = row.data[2];
+     *   return "activity-" + activity.toLowerCase();
+     * };
+     *```
+     *
+     * @property {function} rowClassGenerator
+     * @type {function}
+     */
+    set rowClassGenerator(row) {
+      this._grid.setRowClassGenerator(row);
+    },
+
+    /**
+     * @private
+     */
+    get cellClassGenerator() {
+      return this._grid.getCellClassGenerator();
+    },
+
+    /**
+     * A function which is used for generating CSS class names for data cells.
+     *
+     * See the API documentation for the “cell” object for more details about
+     * the parameter of this function.
+     *
+     * #### Example:
+     * ```js
+     * grid.cellClassGenerator = function(cell) {
+     *   if (cell.index == 2) {
+     *      return "activity-" + cell.data.toLowerCase();
+     *    }
+     *  };
+     * ```
+     * @property {function} cellClassGenerator
+     * @type {function}
+     */
+    set cellClassGenerator(cell) {
+      this._grid.setCellClassGenerator(cell);
+    },
+
+    /**
+     * Disables the grid.
+     *
+     * #### Declarative example:
+     * ```html
+     * <vaadin-grid disabled>...</vaadin-grid>
+     * ```
+     *
+     * @default false
+     * @type {boolean}
+     */
+    get disabled() {
+      return this._grid.isDisabled();
+    },
+    /**
+     * @private
+     */
+    set disabled(disabled) {
+      this._grid.setDisabled(disabled);
+      this.reflectPropertyToAttribute("disabled");
+    },
+
+    /**
+     * The index of the last frozen columns in this grid. A frozen column will
+     * always stay visible in the grid viewport when the user scrolls the grid
+     * viewport horizontally.
+     *
+     * Setting the property to 0 means that no columns will be frozen,
+     * but the built-in selection checkbox column will still be frozen if
+     * it’s in use. Setting the count to -1 will unfreeze the selection
+     * column also.
+     *
+     * #### Declarative example:
+     * ```html
+     * <vaadin-grid frozen-columns="2">...</vaadin-grid>
+     * ```
+     *
+     * @default 0
+     * @type {number}
+     */
+    get frozenColumns() {
+      return this._grid.getFrozenColumns();
+    },
+    /**
+     * @private
+     */
+    set frozenColumns(frozenColumns) {
+      this._grid.setFrozenColumns(frozenColumns);
+      this.reflectPropertyToAttribute("frozenColumns");
+    },
+
+    /**
+     * Sets the height of the grid so that the specified amount of data rows
+     * is visible. Overrides any height specified in CSS.
+     *
+     * #### Declarative example:
+     * ```html
+     * <vaadin-grid rows="5">...</vaadin-grid>
+     * ```
+     *
+     * @property {number} visibleRows
+     * @default 10
+     * @type {number}
+     */
+    get visibleRows() {
+      var rows = this._grid.getVisibleRows();
+      return rows > 0 ? rows : undefined;
+    },
+
+    /**
+     * @private
+     */
+    set visibleRows(visibleRows) {
+      this._grid.setVisibleRows(visibleRows);
+      this.reflectPropertyToAttribute("visibleRows");
+    },
+
+    /**
+     * The array of columns attached to the grid.
+     *
+     * See the API documentation for “column” for more details about the
+     * column objects.
+     *
+     * @property {Array<object>} columns
+     * @type {Array<object>}
+     */
+    get columns() {
+      return this._grid.getColumns();
+    },
+    /**
+     * @private
+     */
+    set columns(cols) {
+      this._grid.setColumns(cols);
+    },
+
+    /**
+     * Executes a callback when the grid has finished any pending work.
+     *
+     * @method then
+     * @param {Function} callback
+     * @return {Promise}
+     */
+    then: function(callback) {
+      return this._grid.then(callback);
+    },
+
+    /**
+     * The row details generator is used for generating detail content for
+     * data rows. The details element is added directly under the row.
+     *
+     * #### Example:
+     * ```js
+     * grid.rowDetails.detailsGenerator = function(rowIndex) {
+     *   var detail = document.createElement("div");
+     *   detail.textContent = "Row detail content for row " + rowIndex;
+     *   return detail;
+     * };
+     *```
+     *
+     * @property {function} rowDetailsGenerator
+     * @type {function}
+     */
+    set rowDetailsGenerator(rowDetailsGenerator) {
+      this._grid.setRowDetailsGenerator(rowDetailsGenerator);
+    },
+    /**
+     * @private
+     */
+    get rowDetailsGenerator() {
+      return this._grid.getRowDetailsGenerator();
+    },
+
+    /**
+     * Shows or hides row details for the row at the given index.
+     *
+     * @method setRowDetailsVisible
+     * @param {number} rowIndex
+     * @param {boolean} visible
+     */
+    setRowDetailsVisible: function(rowIndex, visible) {
+      this._grid.setRowDetailsVisible(rowIndex, visible);
+    },
+
+    /**
+     * Clears the grid’s internal data cache, causing it to request the
+     * visible items in the grid viewport from the `items` property or the
+     * `datasource` function, and to scroll back to the top of the grid viewport.
+     *
+     * Needs to be called whenever the data items are modified in some way
+     * (added, removed, updated, re-ordered etc.).
+     *
+     * @type {Function}
+     */
+    refreshItems: function() {
+      this._grid.getDataSource().refreshItems();
+    },
+
+    /**
+     * Invokes the callback with row data of the provided row index as the
+     * parameter. If the row is not cached, it's fetched from the data source
+     * first.
+     *
+     * @method getItem
+     * @param {number} rowIndex - Index of the row.
+     * @param {Function} callback - Gets arguments (err, item) where item is the desired data item.
+     * @param {boolean} onlyCached - Only fetch cached rows (don't fall back to data source request).
+     */
+    getItem: function(rowIndex, callback, onlyCached) {
+      this._grid.getItem(rowIndex, callback, onlyCached);
+    }
+  }); // End Polymer prototype
 </script>

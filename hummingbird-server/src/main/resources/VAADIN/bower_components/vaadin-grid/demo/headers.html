@@ -12,17 +12,10 @@ layout: page
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="common.html">
-  <link rel="stylesheet" href="http://css-spinners.com/css/spinner/spinner.css" type="text/css">
 
   <style>
     #page:invalid {
       border: 1px solid red;
-    }
-    .small.spinner-loader {
-      font-size: 3px;
-    }
-    .hidden.spinner-loader {
-      display: none;
     }
   </style>
 </head>
@@ -44,22 +37,29 @@ layout: page
     footers share the same exact API.</p>
     <code-example source>
       <vaadin-grid demo>
-        <table>
-          <colgroup>
-            <col><col><col><col>
-          </colgroup>
-          <thead>
-            <tr>
-              <th colspan=2>Employee</th><th colspan=2>Responsibility</th>
-            </tr>
-            <tr>
-              <th>First Name</th><th>Last Name</th><th>Operation</th><th>Product</th>
-            </tr>
-          </thead>
-          <tfoot>
-            <tr></tr>
-          </tfoot>
-        </table>
+      <table>
+        <colgroup>
+          <col>
+          <col>
+          <col>
+          <col>
+        </colgroup>
+        <thead>
+          <tr>
+            <th colspan=2>Employee</th>
+            <th colspan=2>Responsibility</th>
+          </tr>
+          <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Operation</th>
+            <th>Product</th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr></tr>
+        </tfoot>
+      </table>
       </vaadin-grid>
       <code hidden>
         var employees = [];
@@ -105,11 +105,15 @@ layout: page
       <vaadin-grid demo>
         <table>
           <colgroup>
-            <col><col><col><col>
+            <col>
+            <col>
+            <col>
+            <col>
           </colgroup>
           <thead>
             <tr>
-              <th colspan=2>Employee</th><th colspan=2>Responsibility</th>
+              <th colspan=2>Employee</th>
+              <th colspan=2>Responsibility</th>
             </tr>
           </thead>
           <tfoot>
@@ -152,22 +156,28 @@ layout: page
     <h3>Cell content</h3>
     <p>Typically header/footer cells contain plain text but also HTML or even custom
       elements may be wrapped in the cells.</p>
+    <p>Cell content can be placed declaratively using the <code>table</code> element's
+      <code>thead</code> section or in JavaScript by modifying
+      <code>header.getCell(rowIndex, colIndex).content</code> property.</p>
     <code-example source>
-      <vaadin-grid demo>
-        <table>
-          <colgroup>
-            <col><col><col>
-          </colgroup>
-          <thead>
-            <tr>
-              <th colspan=2><b>Employee</b></th><th>Activity</th>
-            </tr>
-            <tr>
-              <th colspan=3>
-            </tr>
-          </thead>
-        </table>
-      </vaadin-grid>
+    <vaadin-grid demo>
+      <table>
+        <colgroup>
+          <col>
+          <col>
+          <col>
+        </colgroup>
+        <thead>
+          <tr>
+            <th colspan=2><b>Employee</b></th>
+            <th>Activity</th>
+          </tr>
+          <tr>
+            <th colspan=3></th>
+          </tr>
+        </thead>
+      </table>
+    </vaadin-grid>
       <code hidden>
         var employees = [];
         var names = ["Artur", "Patrik", "Henrik", "Teemu"];
@@ -193,18 +203,18 @@ layout: page
         var timer = 0;
         function filter(){
           clearTimeout(timer);
-          timer = setTimeout(grid.clearCache, 500);
+          timer = setTimeout(grid.refreshItems.bind(grid), 500);
         }
 
         filterElement.addEventListener("keyup", filter);
         filterElement.addEventListener("click", filter);
 
         HTMLImports.whenReady(function() {
-          grid.datasource = function(req) {
+          grid.items = function(params, callback) {
             var filterValue = filterElement.value.toLowerCase();
             var data = employees.filter(function(val){ return (val.toString().toLowerCase()).indexOf(filterValue) != -1 } );
-            var slice = data.slice(req.index, req.index + req.count);
-            req.success(slice, data.length == 0 ? 1 : data.length);
+            var slice = data.slice(params.index, params.index + params.count);
+            callback(slice, data.length);
           };
 
           grid.then(function(){
@@ -226,11 +236,13 @@ layout: page
       <vaadin-grid demo>
         <table>
           <colgroup>
-            <col><col>
+            <col>
+            <col>
           </colgroup>
           <thead>
             <tr class="firstrow">
-              <th>First Name</th><th class="lastcell">Last Name</th>
+              <th>First Name</th>
+              <th class="lastcell">Last Name</th>
             </tr>
           </thead>
         </table>
@@ -272,14 +284,21 @@ layout: page
       <vaadin-grid selection-mode="multi" demo>
         <table>
           <colgroup>
-            <col sortable sort-direction="asc"><col sortable sort-direction="desc"><col><col>
+            <col sortable sort-direction="asc">
+            <col sortable sort-direction="desc">
+            <col>
+            <col>
           </colgroup>
           <thead>
             <tr>
-              <th colspan=2>Employee</th><th colspan=2>Responsibility</th>
+              <th colspan=2>Employee</th>
+              <th colspan=2>Responsibility</th>
             </tr>
             <tr>
-              <th>First</th><th>Last</th><th>Operation</th><th>Product</th>
+              <th>First</th>
+              <th>Last</th>
+              <th>Operation</th>
+              <th>Product</th>
             </tr>
           </thead>
         </table>
@@ -319,18 +338,26 @@ layout: page
       <vaadin-grid demo selection-mode="multi">
         <table>
           <colgroup>
-            <col><col><col>
+            <col>
+            <col>
+            <col>
           </colgroup>
           <thead>
-          <tr>
-            <th>First Name</th><th>Last Name</th><th>Score</th>
-          </tr>
+            <tr>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Score</th>
+            </tr>
           </thead>
           <tfoot>
-          <tr>
-            <th colspan=2>Number of selected rows: <span id="selected-counter">0</span></th>
-            <th><span id="total-score">total</span></th>
-          </tr>
+            <tr>
+              <th colspan=2>Number of selected rows:
+                <span id="selected-counter">0</span>
+              </th>
+              <th>
+                <span id="total-score">total</span>
+              </th>
+            </tr>
           </tfoot>
         </table>
       </vaadin-grid>
@@ -361,7 +388,7 @@ layout: page
           grid.items = employees;
 
           // code
-          grid.addEventListener("select", function(e) {
+          grid.addEventListener("selected-items-changed", function(e) {
             grid.$$("#selected-counter").textContent = grid.selection.size;
           });
 
@@ -379,12 +406,21 @@ layout: page
       <vaadin-grid demo>
         <table>
           <colgroup>
-            <col name="index" header-text="#" width="60">
-            <col name="user.picture.thumbnail" header-text="" width="100">
-            <col name="user.name.first" header-text="First Name">
-            <col name="user.name.last" header-text="Last Name">
-            <col name="user.email" header-text="Email" flex="">
+            <col name="index" width="60">
+            <col name="user.picture.thumbnail" width="100">
+            <col name="user.name.first" >
+            <col name="user.name.last">
+            <col name="user.email" flex="">
           </colgroup>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th></th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Email</th>
+            </tr>
+          </thead>
           <tfoot>
           <tr>
             <th colspan=5>
@@ -392,7 +428,6 @@ layout: page
               <input id="page" type="number" min="1" max="10" value="1" required/>
               /10
               <button class="demo-button" id="next">Next</button>
-              <div class="small spinner-loader hidden">Loading…</div>
             </th>
           </tr>
           </tfoot>
@@ -402,7 +437,6 @@ layout: page
         var grid = grid || document.querySelector("vaadin-grid");
 
         function loadData(page, count) {
-          grid.$$(".spinner-loader").classList.remove('hidden');
 
           // Fetch the JSON data from a URL
           var xhr = new XMLHttpRequest();
@@ -414,7 +448,6 @@ layout: page
                   row.index = (page - 1) * count + index + 1;
                 });
                 grid.items = json.results;
-                grid.$$(".spinner-loader").classList.add('hidden');
               }
             }
           };
@@ -431,7 +464,7 @@ layout: page
           grid.$$("#prev").addEventListener('click', function(e) {
             var input = grid.$$("#page");
             var value = parseInt(input.value);
-            if (value < parseInt(input.max)) {
+            if (value > parseInt(input.min)) {
               var page = value - 1;
               input.value = page;
               loadData(page, count);
@@ -474,6 +507,51 @@ layout: page
             img.setAttribute("src", cell.data);
             cell.element.appendChild(img);
           };
+        });
+      </code>
+    </code-example>
+  </section>
+
+  <section>
+    <h3>Auto generated header text</h3>
+    When the content of a header cell on the default header row hasn't content defined, it falls back to the column name (if available) converted to human-readable form.
+    <p></p>
+    <code-example source>
+      <vaadin-grid demo>
+        <table>
+          <colgroup>
+            <col name="index">
+            <col name="user.name.firstName">
+            <col name="user.name.surname">
+            <col name="user.email">
+            <col name="user.job_info">
+          </colgroup>
+        </table>
+      </vaadin-grid>
+      <code demo-var="grid">
+        var grid = grid || document.querySelector("vaadin-grid");
+        HTMLImports.whenReady(function() {
+          grid.items = [{
+               index: 1,
+               user: {
+                 name: {
+                   firstName: "Manolo",
+                   surname: "Pirolo"
+                 },
+                 email: "manu@foo.com",
+                 job_info: "Developer"
+               }
+              },{
+               index: 1,
+               user: {
+                 name: {
+                   firstName: "Julián",
+                   surname: "Gañán"
+                 },
+                 email: "juli@bar.com",
+                 job_info: "Designer"
+               }
+              }];
         });
       </code>
     </code-example>

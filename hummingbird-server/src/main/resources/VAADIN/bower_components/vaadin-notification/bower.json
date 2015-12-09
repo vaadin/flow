@@ -21,6 +21,6 @@
   "dependencies": {
     "neon-animation": "PolymerElements/neon-animation#~1.0.6",
     "paper-dialog": "PolymerElements/paper-dialog#~1.0.1",
-    "polymer": "Polymer/polymer#~1.1.1"
+    "polymer": "Polymer/polymer#^1.1.0"
   }
 }

@@ -26,7 +26,7 @@ layout: page
   </section>
 
   <section>
-    <h3>Angular2 Integration (Light DOM data source)</h3>
+    <h3>Angular2 (alpha44) Integration (Light DOM data source)</h3>
     <p>Static data can be easily bound to vaadin-grid <a href="datasources.html#toc_0_inline_data">light DOM cells</a> with Angular data binding.</p>
     <code-example>
       <iframe demo hidden src="angular-demo-embed.html#angular-grid-dom" style="width: 100%; height: 200px; border: none; display: inline;"></iframe>
@@ -34,7 +34,7 @@ layout: page
         /*
         // code
         // Component file: angular-grid-dom.ts
-        import {bootstrap, Component, View, NgIf, NgFor} from 'angular2/angular2';
+        import {bootstrap, Component, View, NgFor} from 'angular2/angular2';
 
         @Component({
           selector: 'angular-grid-dom'
@@ -45,9 +45,16 @@ layout: page
             &lt;table&gt;
               &lt;colgroup&gt;
                 &lt;col width="80"&gt;
-                &lt;col header-text="First name"&gt;
-                &lt;col header-text="Last name"&gt;
+                &lt;col&gt;
+                &lt;col&gt;
               &lt;/colgroup&gt;
+              &lt;thead&gt;
+                &lt;tr&gt;
+                  &lt;th&gt;Name&lt;/th&gt;
+                  &lt;th&gt;First name&lt;/th&gt;
+                  &lt;th&gt;Last name&lt;/th&gt;
+                &lt;/tr&gt;
+              &lt;/thead&gt;
               &lt;tbody&gt;
                 &lt;tr *ng-for="var user of users"&gt;
                   &lt;td&gt;&lt;img src="{{user.thumbnail}}" style="width: 30px"&gt;&lt;/td&gt;
@@ -58,7 +65,7 @@ layout: page
             &lt;/table&gt;
           &lt;/vaadin-grid&gt;
           `,
-          directives: [NgFor, NgIf]
+          directives: [NgFor]
         })
         export class AngularGridDom {
           users = [
@@ -76,7 +83,7 @@ layout: page
   </section>
 
   <section>
-    <h3>Angular2 Integration (Function data source)</h3>
+    <h3>Angular2 (alpha44) Integration (Function data source)</h3>
     <p>In case the data is loaded lazily or it changes dynamically a
       <a href="datasources.html#toc_1_function_data_source">function datasource</a> is a better option.
     Click a row to see an enlarged user image.</p>
@@ -88,14 +95,14 @@ layout: page
         }
       </style>
       <div demo>
-        <vaadin-grid #grid (select)="onSelect()">
+        <vaadin-grid #grid (selected-items-changed)="onSelect()">
           <table>
             <colgroup>
-              <col header-text="" name="user.picture.thumbnail">
-              <col header-text="Gender" name="user.gender">
-              <col header-text="First name" name="user.name.first">
-              <col header-text="Last name" name="user.name.last">
-              <col header-text="Email" name="user.email">
+              <col name="user.picture.thumbnail">
+              <col name="user.gender">
+              <col name="user.name.first">
+              <col name="user.name.last">
+              <col name="user.email">
             </colgroup>
           </table>
         </vaadin-grid>
@@ -103,7 +110,7 @@ layout: page
         <img *ng-if="selected" class="user-image" src="{{selected.user.picture.large}}">
 
         <div style="display: none">
-          <select maxlength=5 type="select" (change)="grid.clearCache(); grid.scrollToStart();">
+          <select maxlength=5 type="select" (change)="grid.refreshItems(); grid.scrollToStart();">
             <option value=''></option>
             <option value='male'>Men only</option>
             <option value='female'>Women only</option>
@@ -115,11 +122,10 @@ layout: page
         // code
         // Component file: angular-grid.ts
         import {Inject, bootstrap, Component, View, NgIf} from 'angular2/angular2';
-        import {Http, httpInjectables} from 'angular2/http';
+        import {Http, HTTP_BINDINGS} from 'angular2/http';
 
         @Component({
-          selector: 'angular-grid',
-          appInjector: [httpInjectables]
+          selector: 'angular-grid'
         })
         @View({
           templateUrl: 'angular-grid.html',
@@ -131,20 +137,25 @@ layout: page
           gender = document.querySelector("angular-grid select");
 
           constructor(@Inject(Http) http: Http) {
-            // Set a datasource for the vaadin-grid
-            this.grid.datasource = req =>
-              http.get(this.getUrl(this.gender.value, Math.max(req.count, 1)))
-                .map(res => res.json().results)
-                .subscribe(results => req.success(results, this.gender.value ? 50 : 100));
+            HTMLImports.whenReady(function() {
+              // Set a datasource for the vaadin-grid
+              this.grid.items = (params, callback) =>
+                http.get(this.getUrl(this.gender.value, Math.max(params.count, 1)))
+                  .map(res => res.json().results)
+                  .subscribe(results => {callback(results, this.gender.value ? 50 : 100)});
 
-            this.grid.then(() => {
               // Set a renderer for the picture column
               this.grid.columns[0].renderer = cell =>
               cell.element.innerHTML = "<img style='width: 30px' src='" + cell.data + "' />"
 
               // Add a new header row with the gender select in it
               this.grid.header.addRow(1, ["", this.gender]);
-            });
+
+              // Add the selected-items-changed event listener manually.
+              // (can be removed once https://github.com/angular/angular/issues/4923 in use)
+              this.grid.addEventListener("selected-items-changed", this.onSelect.bind(this));
+            }.bind(this));
+
           }
 
           getUrl(gender: string, results: number) : string {
@@ -158,7 +169,7 @@ layout: page
           }
         }
 
-        bootstrap(AngularGrid);
+        bootstrap(AngularGrid, [HTTP_BINDINGS]);
         // end-code
         */
       </code>

@@ -20,6 +20,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script src="../../test-fixture/test-fixture-mocha.js"></script>
 
   <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../../iron-test-helpers/iron-test-helpers.html">
   <link rel="import" href="../iron-selector.html">
 
   <style>
@@ -43,6 +44,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <!--
+  NOTE(cdata): Enable test-fixture when polymer/polymer#2495 is resolved
+  -->
+  <!--<test-fixture id="repeatedItems">
+    <template>-->
+      <iron-selector multi id="repeatedItems">
+        <template is="dom-repeat" items='["foo", "bar", "baz"]'>
+          <div>[[item]]</div>
+        </template>
+        <div>vim</div>
+      </iron-selector>
+    <!--</template>
+  </test-fixture>-->
+
   <script>
 
     suite('multi', function() {
@@ -51,6 +66,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       setup(function () {
         s = fixture('test');
+        t = Polymer.dom(s).querySelector('[is="dom-repeat"]');
       });
 
       test('honors the multi attribute', function() {
@@ -113,6 +129,63 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // check events
         assert.equal(selectEventCounter, 1);
         assert.equal(deselectEventCounter, 1);
+      });
+
+      test('fires selected-values-changed when selection changes', function() {
+        var selectedValuesChangedEventCounter = 0;
+
+        s.addEventListener('selected-values-changed', function(e) {
+          selectedValuesChangedEventCounter++;
+        });
+
+        MockInteractions.tap(Polymer.dom(s).children[0]);
+        MockInteractions.tap(Polymer.dom(s).children[0]);
+        MockInteractions.tap(Polymer.dom(s).children[0]);
+
+        expect(selectedValuesChangedEventCounter);
+      });
+
+      test('selects from items created by dom-repeat', function(done) {
+        var selectEventCounter = 0;
+        var firstChild;
+
+        s = document.querySelector('#repeatedItems');
+        s.addEventListener('iron-select', function(e) {
+          selectEventCounter++;
+        });
+
+        // NOTE(cdata): I guess `dom-repeat` doesn't stamp synchronously..
+        Polymer.Base.async(function() {
+          firstChild = Polymer.dom(s).querySelector('div');
+          MockInteractions.tap(firstChild);
+
+          assert.equal(s.selectedItems[0].textContent, 'foo');
+          done();
+        });
+      });
+
+      test('updates selection when dom changes', function(done) {
+        var selectEventCounter = 0;
+
+        s = fixture('test');
+
+        Polymer.Base.async(function() {
+          var firstChild = Polymer.dom(s).querySelector(':first-child');
+          var lastChild = Polymer.dom(s).querySelector(':last-child');
+
+          MockInteractions.tap(firstChild);
+          MockInteractions.tap(lastChild);
+
+          expect(s.selectedItems.length).to.be.equal(2);
+
+          Polymer.dom(s).removeChild(lastChild);
+
+          Polymer.Base.async(function() {
+            expect(s.selectedItems.length).to.be.equal(1);
+            done();
+          });
+        });
+
       });
 
       /* test('toggle multi from true to false', function() {

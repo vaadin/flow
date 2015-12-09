@@ -1,11 +1,11 @@
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vaadin/components?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vaadin/vaadin-elements?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 [![Build Status](https://travis-ci.org/vaadin/vaadin-grid.svg?branch=master)](https://travis-ci.org/vaadin/vaadin-grid)
 
 # vaadin-grid
 
-`vaadin-grid` is a Web Component for showing large amounts of tabular data, part of the [vaadin-components](https://github.com/vaadin/vaadin-components) component bundle.
+`vaadin-grid` is a Web Component for showing large amounts of tabular data, part of the [vaadin-elements](https://github.com/vaadin/vaadin-elements) element bundle.
 
 **Features:**
  - Lazy-loading
@@ -21,19 +21,19 @@
 
 ## Getting started
 
- - [Demos](https://cdn.vaadin.com/vaadin-components/latest/vaadin-grid/demo/)
- - [Getting started instructions](https://cdn.vaadin.com/vaadin-components/latest/vaadin-components/demo/)
+ - [Demos](https://cdn.vaadin.com/vaadin-elements/latest/vaadin-grid/demo/)
+ - [Getting started instructions](https://cdn.vaadin.com/vaadin-elements/latest/vaadin-elements/demo/)
 
 ## Overview of this repository
 
 - **demo**:
-  A set of examples using the component
+  A set of examples using the element
 
 - **test**:
   Unit and visual tests
 
 - **java**:
-  The internal GWT implementation of the component
+  The internal GWT implementation of the element
   exported to JavaScript which is used by the Polymer-based implementation.
 
 
@@ -71,7 +71,7 @@ Then do the following:
 ## Demos / examples
 
 Start a server in the root folder, and access one of the demo files inside 
-the component folders, e.g:
+the elements folders, e.g:
 ```shell
 $ polyserve
 ```

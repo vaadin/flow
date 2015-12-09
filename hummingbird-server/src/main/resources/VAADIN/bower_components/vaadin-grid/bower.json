@@ -1,6 +1,6 @@
 {
   "name": "vaadin-grid",
-  "version": "0.9.0-beta3",
+  "version": "1.0.0-rc1",
   "authors": [
     "Vaadin Ltd"
   ],
@@ -8,7 +8,7 @@
   "keywords": [
     "web-components",
     "vaadin",
-    "vaadin components",
+    "vaadin elements",
     "grid"
   ],
   "main": "vaadin-grid.html",
@@ -24,10 +24,13 @@
     "wct.conf.js"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.1.1",
-    "components-demo-resources": "vaadin/components-demo-resources#master"
+    "polymer": "Polymer/polymer#^1.1.1"
   },
   "devDependencies": {
-    "web-component-tester": "~3.3.21"
+    "web-component-tester": "~3.3.21",
+    "iron-test-helpers": "polymerelements/iron-test-helpers#~1.0.6",
+    "test-fixture": "polymerelements/test-fixture#~1.0.1",
+    "iron-component-page": "polymerelements/iron-component-page#~1.1.0",
+    "elements-demo-resources": "vaadin/elements-demo-resources#master"
   }
 }

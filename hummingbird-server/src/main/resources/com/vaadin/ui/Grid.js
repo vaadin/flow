@@ -145,7 +145,7 @@
 		var lastSentSelection = [] + "";
 		// Custom select listener to ignore extra events and include selected
 		// rows
-		grid.addEventListener("select", function() {
+		grid.addEventListener("selected-items-changed", function() {
 			var newSelection = grid.selection.selected();
 			if (newSelection + "" == lastSentSelection) {
 				window.console.log("Ignored selection event with no new info");
@@ -168,28 +168,32 @@
 			"clearCache" : function(containerSize) {
 				ds.cache.clear();
 				ds.totalSize = containerSize;
-				grid.clearCache(containerSize);
+				grid.size = containerSize;
+				grid.refreshItems();
 			},
-			"gridDatasource" : function(req) {
-				if (req.count == 0) {
-					req.success([], ds.totalSize);
+			"gridDatasource" : function(params, callback) {
+				var reqIndex = params.index;
+				var reqCount = params.count;
+
+				if (reqCount == 0) {
+					callback([]);
+					grid.size = ds.totalSize;
 					return;
 				}
 
-				window.console.log("grid requests ", req.index, req.count);
+				window.console.log("grid requests ", reqIndex, reqCount);
 				var sortorder = "";
-				if (req.sortOrder) {
-					req.sortOrder.forEach(function(f) {
+				if (params.sortOrder) {
+					params.sortOrder.forEach(function(f) {
 						sortorder += f.column + "-" + f.direction;
 					});
 				}
 
 				if (ds.cache.sortorder == sortorder
-						&& ds.cache.containsRows(req.index, req.count)) {
+						&& ds.cache.containsRows(reqIndex, reqCount)) {
 					// In cache
-					window.console.log("found in cache", req.index, req.count);
-					req.success(ds.cache.get(req.index, req.count),
-							ds.totalSize);
+					window.console.log("found in cache", reqIndex, reqCount);
+					callback(ds.cache.get(reqIndex, reqCount));
 					return;
 				} else {
 					if (ds.cache.sortorder != sortorder) {
@@ -199,8 +203,8 @@
 					}
 
 					// Fetch what is not in cache
-					window.console.log("not in cache", req.index, req.count);
-					missing = ds.cache.getRowsNotInCache(req.index, req.count);
+					window.console.log("not in cache", reqIndex, reqCount);
+					missing = ds.cache.getRowsNotInCache(reqIndex, reqCount);
 
 					// FIXME To be reliable we can't use the same callback ids
 					// with the server, we need to store the callbacks locally
@@ -208,7 +212,9 @@
 					// the needs of the request
 
 					var id = "" + ds.nextCallbackId++;
-					ds.callbacks[id] = req;
+					ds.callbacks[id] = callback;
+					callback.reqIndex = reqIndex;
+					callback.reqCount = reqCount;
 
 					window.console.log("fetching ", id, missing.index,
 							missing.count);
@@ -225,34 +231,38 @@
 
 			},
 			"gridDatasourceCallback" : function(id, totalSize) {
-				var req = ds.callbacks[id];
-				req.success(ds.cache.get(req.index, req.count), totalSize);
+				var callback = ds.callbacks[id];
+				callback(ds.cache.get(callback.reqIndex, callback.reqCount));
+				grid.size = totalSize;
 
-				window.console.log("Rows ", req.index, req.count,
-						"sent to grid: ", ds.cache.get(req.index, req.row));
+				window.console.log("Rows ", callback.reqIndex,
+						callback.reqCount, "sent to grid: ", ds.cache.get(
+								callback.reqIndex, callback.reqCount));
 				delete ds.callbacks[id];
 			},
 			"insertRows" : function(index, rows) {
 				ds.cache.insert(index, rows);
 				ds.totalSize += rows.length;
+				grid.size += rows.length;
 				// If (rowIsInGridCache)
-				grid.clearCache();
+				grid.refreshItems();
 			},
 			"updateRow" : function(index, row) {
 				ds.cache.update(index, [ row ]);
 				// If (rowIsInGridCache)
-				grid.clearCache();
+				grid.refreshItems();
 			},
 			"removeRows" : function(index, count) {
 				ds.cache.remove(index, count);
 				ds.totalSize -= count;
+				grid.size -= count;
 				// If (rowIsInGridCache)
-				grid.clearCache();
+				grid.refreshItems();
 			}
 		}
 
 		grid.serverdata = ds;
-		grid.datasource = ds.gridDatasource;
+		grid.items = ds.gridDatasource;
 	}
 
 	module.provideRows = function(grid, index, rows, totalSize, id) {

@@ -1,9 +1,8 @@
 import {Inject, bootstrap, Component, View, NgIf} from 'angular2/angular2';
-import {Http, httpInjectables} from 'angular2/http';
+import {Http, HTTP_BINDINGS} from 'angular2/http';
 
 @Component({
-  selector: 'angular-grid',
-  appInjector: [httpInjectables]
+  selector: 'angular-grid'
 })
 @View({
   templateUrl: 'angular-grid.html',
@@ -15,21 +14,24 @@ export class AngularGrid {
   gender = document.querySelector("angular-grid select");
 
   constructor(@Inject(Http) http: Http) {
-    // Set a datasource for the vaadin-grid
-    this.grid.datasource = req =>
-      http.get(this.getUrl(this.gender.value, Math.max(req.count, 1)))
-        .map(res => res.json().results)
-        .subscribe(results => req.success(results, this.gender.value ? 50 : 100));
+    HTMLImports.whenReady(function() {
+      // Set a datasource for the vaadin-grid
+      this.grid.items = (params, callback) =>
+        http.get(this.getUrl(this.gender.value, Math.max(params.count, 1)))
+          .map(res => res.json().results)
+          .subscribe(results => {callback(results, this.gender.value ? 50 : 100)});
 
-    this.grid.then(() => {
       // Set a renderer for the picture column
       this.grid.columns[0].renderer = cell =>
       cell.element.innerHTML = "<img style='width: 30px' src='" + cell.data + "' />"
 
       // Add a new header row with the gender select in it
       this.grid.header.addRow(1, ["", this.gender]);
-    });
 
+      // Add the selected-items-changed event listener manually.
+      // (can be removed once https://github.com/angular/angular/issues/4923 in use)
+      this.grid.addEventListener("selected-items-changed", this.onSelect.bind(this));
+    }.bind(this));
 
   }
 
@@ -44,4 +46,4 @@ export class AngularGrid {
   }
 }
 
-bootstrap(AngularGrid);
+bootstrap(AngularGrid, [HTTP_BINDINGS]);

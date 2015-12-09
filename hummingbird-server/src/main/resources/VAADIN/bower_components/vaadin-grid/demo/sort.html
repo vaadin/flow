@@ -31,13 +31,22 @@ layout: page
       <vaadin-grid demo>
         <table>
           <colgroup>
-            <col header-text="Name" sortable sort-direction="asc">
-            <col header-text="Value" sortable sort-direction="desc">
-            <col header-text="Progress" sortable>
+            <col sortable sort-direction="asc">
+            <col sortable sort-direction="desc">
+            <col sortable>
           </colgroup>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Value</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
           <tbody>
             <tr>
-              <td>Project A</td><td>10000</td><td>0.8</td>
+              <td>Project A</td>
+              <td>10000</td>
+              <td>0.8</td>
             </tr>
           </tbody>
         </table>
@@ -69,10 +78,17 @@ layout: page
       <vaadin-grid demo>
         <table>
           <colgroup>
-            <col header-text="Name" sortable>
-            <col header-text="Value" sortable>
-            <col header-text="Progress" sortable>
+            <col sortable>
+            <col sortable>
+            <col sortable>
           </colgroup>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Value</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
         </table>
       </vaadin-grid>
       <code demo-var="grid">
@@ -91,9 +107,9 @@ layout: page
           // Re-order the data array on sort-order-changed event
           grid.addEventListener('sort-order-changed', function() {
             var idx = grid.sortOrder[0].column;
-            var asc = grid.sortOrder[0].direction == 'asc';
+            var lesser = grid.sortOrder[0].direction == 'asc' ? -1 : 1;
             data.sort(function(a, b) {
-              return a[idx] < b[idx] && asc ? -1 : 1;
+              return (a[idx] < b[idx]) ? lesser : -lesser;
             });
           });
           // end-code

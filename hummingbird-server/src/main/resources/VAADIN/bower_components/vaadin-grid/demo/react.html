@@ -56,10 +56,11 @@ layout: page
               (function wait() {
                 if (vGrid.selection) {
                   // Assign the data source
-                  vGrid.datasource = _this.dataSource;
+                  vGrid.items = _this.items;
+                  vGrid.size = 1000;
 
                   // Bind selection listener
-                  vGrid.addEventListener("select", _this.onRowSelect);
+                  vGrid.addEventListener("selected-items-changed", _this.onRowSelect);
 
                   var pictureRenderer = function(cell) {
                     cell.element.innerHTML = "<img style='width: 30px' src='" + cell.data + "' />";
@@ -67,10 +68,10 @@ layout: page
 
                   // Define columns
                   vGrid.columns = [
-                    {name: "user.picture.thumbnail", headerContent: "", width: 100, renderer: pictureRenderer },
-                    {name: "user.name.first", headerContent: "First Name" },
-                    {name: "user.name.last", headerContent: "Last Name" },
-                    {name: "user.email", headerContent: "Email" },
+                    {name: "user.picture.thumbnail", width: 100, renderer: pictureRenderer},
+                    {name: "user.name.first"},
+                    {name: "user.name.last"},
+                    {name: "user.email"},
                   ];
 
                 } else {
@@ -79,16 +80,16 @@ layout: page
               })();
             },
 
-            dataSource: function(req) {
+            items: function(params, callback) {
               var xhr = new XMLHttpRequest();
               xhr.onreadystatechange = function() {
                 if (xhr.readyState == XMLHttpRequest.DONE ) {
                   if(xhr.status == 200){
-                    req.success(JSON.parse(xhr.responseText).results, 1000);
+                    callback(JSON.parse(xhr.responseText).results);
                   }
                 }
               };
-              xhr.open("GET", randomUserUrl + '?results=' + Math.max(req.count, 1), true);
+              xhr.open("GET", randomUserUrl + '?results=' + Math.max(params.count, 1), true);
               xhr.send();
             },
 

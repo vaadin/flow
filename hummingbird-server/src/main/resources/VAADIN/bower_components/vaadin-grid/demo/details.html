@@ -8,7 +8,7 @@ layout: page
 <html>
 
 <head>
-  <title>vaadin-grid Code Examples – Formatting data</title>
+  <title>vaadin-grid Code Examples – Row Details</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
@@ -63,9 +63,9 @@ layout: page
         <vaadin-grid demo hidden>
           <table>
             <colgroup>
-              <col name="user.name.first" header-text="First Name">
-              <col name="user.name.last" header-text="Last Name">
-              <col name="user.email" header-text="Email" flex>
+              <col name="user.name.first">
+              <col name="user.name.last">
+              <col name="user.email" flex>
             </colgroup>
           </table>
         </vaadin-grid>
@@ -116,19 +116,19 @@ layout: page
         var grid = grid || document.querySelector("vaadin-grid");
 
         HTMLImports.whenReady(function() {
-          var dataSourceSize = 1000;
-          grid.datasource = function(req) {
+          grid.size = 1000;
+          grid.items = function(params, callback) {
             // Fetch the JSON data from a URL
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
-              if (xhr.readyState == XMLHttpRequest.DONE ) {
-                if(xhr.status == 200){
+              if (xhr.readyState == XMLHttpRequest.DONE) {
+                if (xhr.status == 200) {
                   var json = JSON.parse(xhr.responseText);
-                  req.success(json.results, dataSourceSize);
+                  callback(json.results);
                 }
               }
             }
-            var rowsNeeded = req.count > 0 ? req.count : 10;
+            var rowsNeeded = params.count > 0 ? params.count : 10;
             xhr.open("GET", randomUserUrl + "?results=" + rowsNeeded, true);
             xhr.send();
           };
@@ -151,7 +151,7 @@ layout: page
           var detailsOpenIndex = -1;
 
           // Show details for the selected row
-          grid.addEventListener('select', function() {
+          grid.addEventListener('selected-items-changed', function() {
             grid.setRowDetailsVisible(detailsOpenIndex, false);
             var selected = grid.selection.selected();
             if (selected.length == 1) {
