@@ -17,7 +17,7 @@ public class BoundTemplateBuilder implements TemplateBuilder {
 
     private final String tag;
 
-    private final Collection<AttributeBinding> attributeBindings = new ArrayList<>();
+    private final Map<String, Binding> attributeBindings = new HashMap<>();
     private final Map<String, String> defaultAttributeValues = new HashMap<>();
     private final Collection<EventBinding> events = new ArrayList<>();
     private final Set<String> eventHandlerMethods = new HashSet<>();
@@ -58,16 +58,15 @@ public class BoundTemplateBuilder implements TemplateBuilder {
         return this;
     }
 
-    public BoundTemplateBuilder bindAttribute(
-            AttributeBinding attributeBinding) {
-        attributeBindings.add(attributeBinding);
+    public BoundTemplateBuilder bindAttribute(String attributeName,
+            Binding attributeBinding) {
+        attributeBindings.put(attributeName, attributeBinding);
         return this;
     }
 
     public BoundTemplateBuilder bindAttribute(String attributeName,
             String propertyName) {
-        return bindAttribute(
-                new ModelAttributeBinding(attributeName, propertyName));
+        return bindAttribute(attributeName, new ModelBinding(propertyName));
     }
 
     public BoundTemplateBuilder setAttribute(String attributeName,
@@ -90,8 +89,8 @@ public class BoundTemplateBuilder implements TemplateBuilder {
         return tag;
     }
 
-    public Collection<AttributeBinding> getAttributeBindings() {
-        return Collections.unmodifiableCollection(attributeBindings);
+    public Map<String, Binding> getAttributeBindings() {
+        return Collections.unmodifiableMap(attributeBindings);
     }
 
     public Map<String, String> getDefaultAttributeValues() {

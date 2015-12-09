@@ -2,14 +2,15 @@ package com.vaadin.server.communication;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
-import com.vaadin.hummingbird.kernel.AttributeBinding;
+import com.vaadin.hummingbird.kernel.Binding;
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.DynamicTextTemplate;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.ForElementTemplate;
-import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
+import com.vaadin.hummingbird.kernel.ModelBinding;
 import com.vaadin.hummingbird.kernel.StaticTextTemplate;
 import com.vaadin.hummingbird.parser.EventBinding;
 import com.vaadin.ui.UI;
@@ -55,10 +56,10 @@ public class TemplateSerializer {
 
     private void serializeDynamicTextTemplate(JsonObject serialized,
             DynamicTextTemplate template, UI ui) {
-        AttributeBinding binding = template.getBinding();
-        if (binding instanceof ModelAttributeBinding) {
-            ModelAttributeBinding mab = (ModelAttributeBinding) binding;
-            serialized.put("binding", mab.getPath().getFullPath());
+        Binding binding = template.getBinding();
+        if (binding instanceof ModelBinding) {
+            ModelBinding mb = (ModelBinding) binding;
+            serialized.put("binding", mb.getPath().getFullPath());
         } else {
             throw new RuntimeException(binding.toString());
         }
@@ -75,12 +76,14 @@ public class TemplateSerializer {
     private void serializeBoundElementTemplate(JsonObject serialized,
             BoundElementTemplate bet) {
         JsonObject attributeBindings = Json.createObject();
-        for (AttributeBinding attributeBinding : bet.getAttributeBindings()
-                .values()) {
-            if (attributeBinding instanceof ModelAttributeBinding) {
-                ModelAttributeBinding mab = (ModelAttributeBinding) attributeBinding;
-                attributeBindings.put(mab.getPath().getFullPath(),
-                        mab.getAttributeName());
+        for (Entry<String, Binding> entry : bet.getAttributeBindings()
+                .entrySet()) {
+            String attributeName = entry.getKey();
+            Binding attributeBinding = entry.getValue();
+            if (attributeBinding instanceof ModelBinding) {
+                ModelBinding mb = (ModelBinding) attributeBinding;
+                attributeBindings.put(mb.getPath().getFullPath(),
+                        attributeName);
             } else {
                 // Not yet supported
                 throw new RuntimeException(attributeBinding.toString());
@@ -101,9 +104,9 @@ public class TemplateSerializer {
 
         JsonObject classPartBindings = Json.createObject();
         bet.getClassPartBindings().forEach((key, binding) -> {
-            if (binding instanceof ModelAttributeBinding) {
-                ModelAttributeBinding mab = (ModelAttributeBinding) binding;
-                classPartBindings.put(mab.getPath().getFullPath(), key);
+            if (binding instanceof ModelBinding) {
+                ModelBinding mb = (ModelBinding) binding;
+                classPartBindings.put(mb.getPath().getFullPath(), key);
             } else {
                 // Not yet supported
                 throw new RuntimeException(binding.toString());

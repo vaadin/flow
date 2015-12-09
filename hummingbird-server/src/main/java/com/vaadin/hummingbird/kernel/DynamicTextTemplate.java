@@ -3,8 +3,9 @@ package com.vaadin.hummingbird.kernel;
 import java.util.function.Function;
 
 public class DynamicTextTemplate extends BoundElementTemplate {
-    private DynamicTextTemplate(AttributeBinding binding) {
-        super(TemplateBuilder.withTag("#text").bindAttribute(binding));
+    private DynamicTextTemplate(Binding binding) {
+        super(TemplateBuilder.withTag("#text").bindAttribute("content",
+                binding));
     }
 
     public DynamicTextTemplate(Function<StateNode, String> function) {
@@ -12,16 +13,15 @@ public class DynamicTextTemplate extends BoundElementTemplate {
     }
 
     public DynamicTextTemplate(ModelPath modelPath) {
-        this(new ModelAttributeBinding("content", modelPath));
+        this(new ModelBinding(modelPath));
     }
 
     public DynamicTextTemplate(String modelPath) {
         this(new ModelPath(modelPath));
     }
 
-    private static AttributeBinding createBinding(
-            Function<StateNode, String> function) {
-        return new AttributeBinding("content") {
+    private static Binding createBinding(Function<StateNode, String> function) {
+        return new Binding() {
             @Override
             public String getValue(StateNode node) {
                 return function.apply(node);
@@ -29,7 +29,7 @@ public class DynamicTextTemplate extends BoundElementTemplate {
         };
     }
 
-    public AttributeBinding getBinding() {
+    public Binding getBinding() {
         return getAttributeBindings().get("content");
     }
 }

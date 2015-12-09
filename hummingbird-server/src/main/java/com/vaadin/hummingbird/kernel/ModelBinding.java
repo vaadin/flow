@@ -1,16 +1,15 @@
 package com.vaadin.hummingbird.kernel;
 
-public class ModelAttributeBinding extends AttributeBinding {
+public class ModelBinding implements Binding {
 
     private ModelPath path;
 
-    public ModelAttributeBinding(String attributeName, ModelPath path) {
-        super(attributeName);
+    public ModelBinding(ModelPath path) {
         this.path = path;
     }
 
-    public ModelAttributeBinding(String attributeName, String propertyName) {
-        this(attributeName, new ModelPath(propertyName));
+    public ModelBinding(String propertyName) {
+        this(new ModelPath(propertyName));
     }
 
     public ModelPath getPath() {

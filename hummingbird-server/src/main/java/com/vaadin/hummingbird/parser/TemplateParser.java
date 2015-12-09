@@ -31,7 +31,7 @@ import org.jsoup.select.Elements;
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.hummingbird.kernel.BoundTemplateBuilder;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
-import com.vaadin.hummingbird.kernel.ModelAttributeBinding;
+import com.vaadin.hummingbird.kernel.ModelBinding;
 import com.vaadin.hummingbird.kernel.ModelPath;
 import com.vaadin.hummingbird.kernel.TemplateBuilder;
 import com.vaadin.ui.Template;
@@ -204,8 +204,8 @@ public class TemplateParser {
                 continue;
             } else if (name.startsWith("[")) {
                 String attibuteName = name.substring(1, name.length() - 1);
-                builder.bindAttribute(new ModelAttributeBinding(attibuteName,
-                        scope.getPath(value)));
+                builder.bindAttribute(attibuteName,
+                        new ModelBinding(scope.getPath(value)));
             } else if (name.startsWith("(")) {
                 String eventName = name.substring(1, name.length() - 1);
 

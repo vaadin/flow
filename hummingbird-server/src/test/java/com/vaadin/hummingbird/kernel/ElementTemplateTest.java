@@ -92,7 +92,7 @@ public class ElementTemplateTest {
     @Test
     public void boundTemplate_for() {
         TemplateBuilder childTemplate = TemplateBuilder.withTag("span")
-                .bindAttribute(new AttributeBinding("class") {
+                .bindAttribute("class", new Binding() {
                     @Override
                     public String getValue(StateNode node) {
                         return node.get("class", String.class);
