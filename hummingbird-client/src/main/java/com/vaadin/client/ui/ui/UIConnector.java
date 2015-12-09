@@ -60,8 +60,6 @@ import com.vaadin.client.ui.VUI;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.SharedState;
-import com.vaadin.shared.ui.Connect;
-import com.vaadin.shared.ui.Connect.LoadStyle;
 import com.vaadin.shared.ui.ui.DebugWindowClientRpc;
 import com.vaadin.shared.ui.ui.DebugWindowServerRpc;
 import com.vaadin.shared.ui.ui.PageClientRpc;
@@ -69,9 +67,7 @@ import com.vaadin.shared.ui.ui.PageState;
 import com.vaadin.shared.ui.ui.UIClientRpc;
 import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
-import com.vaadin.ui.UI;
 
-@Connect(value = UI.class, loadStyle = LoadStyle.EAGER)
 public class UIConnector extends AbstractHasComponentsConnector {
 
     private String activeTheme = null;

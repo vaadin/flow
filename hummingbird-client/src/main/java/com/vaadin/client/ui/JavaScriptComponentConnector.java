@@ -18,11 +18,8 @@ package com.vaadin.client.ui;
 import com.vaadin.client.ConnectorHierarchyChangeEvent;
 import com.vaadin.client.JavaScriptConnectorHelper;
 import com.vaadin.client.communication.HasJavaScriptConnectorHelper;
-import com.vaadin.shared.ui.Connect;
 import com.vaadin.shared.ui.JavaScriptComponentState;
-import com.vaadin.ui.AbstractJavaScriptComponent;
 
-@Connect(AbstractJavaScriptComponent.class)
 public final class JavaScriptComponentConnector extends
         AbstractHasComponentsConnector implements HasJavaScriptConnectorHelper {
 

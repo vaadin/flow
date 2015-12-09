@@ -22,8 +22,6 @@ import java.util.Set;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
-import com.vaadin.ui.AbstractComponent;
-import com.vaadin.ui.Component;
 
 /**
  * When a component is updated, it's client side widget's
@@ -61,11 +59,10 @@ public final class UIDL extends JavaScriptObject {
     /**
      * Gets the name of this UIDL section, as created with
      * {@link PaintTarget#startTag(String) PaintTarget.startTag()} in the
-     * server-side {@link Component#paint(PaintTarget) Component.paint()} or
-     * (usually) {@link AbstractComponent#paintContent(PaintTarget)
-     * AbstractComponent.paintContent()}. Note that if the UIDL corresponds to a
-     * Paintable, a component identifier will be returned instead - this is used
-     * internally and is not needed within
+     * server-side Component#paint(PaintTarget) or (usually)
+     * AbstractComponent#paintContent(PaintTarget). Note that if the UIDL
+     * corresponds to a Paintable, a component identifier will be returned
+     * instead - this is used internally and is not needed within
      * {@link ComponentConnector#updateFromUIDL(UIDL, ApplicationConnection)
      * updateFromUIDL()}.
      *

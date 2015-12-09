@@ -12,8 +12,8 @@
 	<packaging>jar</packaging>
 
 	<properties>
-<!-- 	Disabled until document.write problem is resolved -->
-<!-- 		<gwt.module>com.vaadin.ClientEngine</gwt.module> -->
+		<!-- Disabled until document.write problem is resolved -->
+		<!-- <gwt.module>com.vaadin.ClientEngine</gwt.module> -->
 		<gwt.module>com.vaadin.ClientEngineXSI</gwt.module>
 		<gwt.module.output>${project.build.outputDirectory}/VAADIN</gwt.module.output>
 	</properties>
@@ -22,10 +22,9 @@
 
 		<!-- Project dependencies -->
 
-		<!-- FIXME: Remove -->
 		<dependency>
 			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird-server</artifactId>
+			<artifactId>hummingbird-shared</artifactId>
 			<version>1.0-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
