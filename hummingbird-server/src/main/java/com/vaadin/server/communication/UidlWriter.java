@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,6 +34,7 @@ import com.vaadin.annotations.Bower;
 import com.vaadin.annotations.HTML;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.NotYetImplemented;
+import com.vaadin.annotations.PolymerStyle;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
@@ -70,6 +70,7 @@ public class UidlWriter implements Serializable {
 
     private static final String DEPENDENCY_JAVASCRIPT = "scriptDependencies";
     private static final String DEPENDENCY_STYLESHEET = "stylesheetDependencies";
+    private static final String DEPENDENCY_POLYMER_STYLE = "polymerStyleDependencies";
     private static final String DEPENDENCY_HTML = "htmlDependencies";
     private final Set<Class<? extends ClientConnector>> usedClientConnectors = new HashSet<Class<? extends ClientConnector>>();
 
@@ -232,6 +233,11 @@ public class UidlWriter implements Serializable {
                     response.put(DEPENDENCY_STYLESHEET, Json.createArray());
                 }
                 json = response.getArray(DEPENDENCY_STYLESHEET);
+            } else if (d.getType() == Dependency.Type.POLYMER_STYLE) {
+                if (!response.hasKey(DEPENDENCY_POLYMER_STYLE)) {
+                    response.put(DEPENDENCY_POLYMER_STYLE, Json.createArray());
+                }
+                json = response.getArray(DEPENDENCY_POLYMER_STYLE);
             } else {
                 throw new IllegalStateException("Unknown type: " + d.getType());
             }
@@ -270,22 +276,19 @@ public class UidlWriter implements Serializable {
          *
          * @JavaScript defined by super class is already loaded.
          */
-        Collections.sort(unhandledClasses, new Comparator<Class<?>>() {
-            @Override
-            public int compare(Class<?> o1, Class<?> o2) {
-                if (o1.isAssignableFrom(o2)) {
-                    return -1;
-                } else if (o2.isAssignableFrom(o1)) {
-                    return 1;
-                }
-                if (UI.class.isAssignableFrom(o1)) {
-                    return -1;
-                } else if (UI.class.isAssignableFrom(o2)) {
-                    return 1;
-                }
-
-                return 0;
+        Collections.sort(unhandledClasses, (o1, o2) -> {
+            if (o1.isAssignableFrom(o2)) {
+                return -1;
+            } else if (o2.isAssignableFrom(o1)) {
+                return 1;
             }
+            if (UI.class.isAssignableFrom(o1)) {
+                return -1;
+            } else if (UI.class.isAssignableFrom(o2)) {
+                return 1;
+            }
+
+            return 0;
         });
 
         List<Dependency> dependencies = new ArrayList<>();
@@ -329,6 +332,17 @@ public class UidlWriter implements Serializable {
             }
         }
 
+        PolymerStyle polymerStyleAnnotation = cls
+                .getAnnotation(PolymerStyle.class);
+        if (polymerStyleAnnotation != null) {
+            for (String moduleId : polymerStyleAnnotation.value()) {
+                Dependency dependency = new Dependency(
+                        Dependency.Type.POLYMER_STYLE, moduleId);
+                dependencies.add(dependency);
+                getLogger().fine("Dependency found: " + dependency);
+            }
+        }
+
         List<String> htmlResources = getHtmlResources(cls);
         if (!htmlResources.isEmpty()) {
 
@@ -349,7 +363,7 @@ public class UidlWriter implements Serializable {
 
     public static class Dependency {
         public enum Type {
-            SCRIPT, HTML, STYLSHEET
+            SCRIPT, HTML, STYLSHEET, POLYMER_STYLE
         };
 
         private Type type;

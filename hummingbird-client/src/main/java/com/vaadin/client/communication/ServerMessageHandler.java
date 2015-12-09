@@ -404,6 +404,10 @@ public class ServerMessageHandler {
             connection.loadHtmlDependencies(
                     json.getJSStringArray("htmlDependencies"));
         }
+        if(json.containsKey("polymerStyleDependencies")) {
+            connection.loadPolymerStyleDependencies(
+                    json.getJSStringArray("polymerStyleDependencies"));
+        }
 
         handleUIDLDuration.logDuration(
                 " * Handling type mappings from server completed", 10);

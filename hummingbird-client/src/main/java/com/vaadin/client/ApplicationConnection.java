@@ -773,6 +773,27 @@ public class ApplicationConnection implements HasHandlers {
         }
     }
 
+    public void loadPolymerStyleDependencies(JsArrayString dependencies) {
+        if (dependencies.length() == 0) {
+            return;
+        }
+
+        for (int i = 0; i < dependencies.length(); i++) {
+            final String moduleName = dependencies.get(i);
+            getLogger().info("Adding Polymer custom style tag " + moduleName);
+            insertCustomStyleElement(moduleName);
+        }
+    }
+
+    // TODO should be moved to the correct place (TM)
+    private native void insertCustomStyleElement(String moduleName)
+    /*-{
+        // $wnd.document needed or won't work!
+        var x = $wnd.document.createElement('style', 'custom-style');
+        $wnd.Polymer.dom(x).setAttribute('include', moduleName);
+        $wnd.document.head.appendChild(x);
+    }-*/;
+
     public void loadHtmlDependencies(JsArrayString dependencies) {
         if (dependencies.length() == 0) {
             return;
