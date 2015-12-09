@@ -46,6 +46,7 @@ import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.LazyList;
+import com.vaadin.hummingbird.kernel.ModelDescriptor;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.TemplateScriptHelper;
 import com.vaadin.hummingbird.parser.TemplateParser;
@@ -357,13 +358,16 @@ public abstract class Template extends AbstractComponent
         }
 
         public static <T> T wrap(StateNode node, Class<T> type) {
-            Object modelType = node.get(Model.class);
-            if (modelType == null) {
-                node.put(Model.class, type);
-            } else if (modelType != type) {
-                throw new RuntimeException("Trying to use state node "
-                        + node.getId() + " as " + type
-                        + ", but it has already been used as " + modelType);
+            ModelDescriptor modelDescriptor = node.get(ModelDescriptor.class,
+                    ModelDescriptor.class);
+            if (modelDescriptor == null) {
+                modelDescriptor = ModelDescriptor.get(type);
+                node.put(ModelDescriptor.class, modelDescriptor);
+            } else if (modelDescriptor.getModelType() != type) {
+                throw new RuntimeException(
+                        "Trying to use state node " + node.getId() + " as "
+                                + type + ", but it has already been used as "
+                                + modelDescriptor.getModelType());
             }
             return type.cast(Proxy.newProxyInstance(type.getClassLoader(),
                     new Class[] { type }, new ProxyHandler(node)));
@@ -484,7 +488,8 @@ public abstract class Template extends AbstractComponent
                     SimpleBindings bindings = new SimpleBindings();
                     bindings.put("model", model);
 
-                    return TemplateScriptHelper.evaluateScript(bindings, script, type);
+                    return TemplateScriptHelper.evaluateScript(bindings, script,
+                            type);
                 }
             };
         }
