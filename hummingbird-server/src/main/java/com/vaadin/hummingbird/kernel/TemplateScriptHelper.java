@@ -6,6 +6,25 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 public class TemplateScriptHelper {
+    @SuppressWarnings("restriction")
+    private static final class StateNodeWrapper
+            extends jdk.nashorn.api.scripting.AbstractJSObject {
+        private StateNode node;
+
+        public StateNodeWrapper(StateNode node) {
+            this.node = node;
+        }
+
+        @Override
+        public Object getMember(String name) {
+            Object value = node.get(name);
+            if (value instanceof StateNode) {
+                StateNode childNode = (StateNode) value;
+                return wrapNode(childNode);
+            }
+            return value;
+        }
+    }
 
     public static Object evaluateScript(Bindings bindings, String script,
             Class<?> resultType) {
@@ -29,6 +48,10 @@ public class TemplateScriptHelper {
         } catch (ScriptException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Object wrapNode(StateNode node) {
+        return new StateNodeWrapper(node);
     }
 
 }

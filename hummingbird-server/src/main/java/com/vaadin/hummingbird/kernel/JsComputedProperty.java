@@ -2,8 +2,6 @@ package com.vaadin.hummingbird.kernel;
 
 import javax.script.SimpleBindings;
 
-import com.vaadin.ui.Template.Model;
-
 public class JsComputedProperty extends ComputedProperty {
     private Class<?> type;
 
@@ -14,12 +12,8 @@ public class JsComputedProperty extends ComputedProperty {
 
     @Override
     public Object compute(StateNode context) {
-        ModelDescriptor modelDescriptor = context.get(ModelDescriptor.class,
-                ModelDescriptor.class);
-        Object model = Model.wrap(context, modelDescriptor.getModelType());
-
         SimpleBindings bindings = new SimpleBindings();
-        bindings.put("model", model);
+        bindings.put("model", TemplateScriptHelper.wrapNode(context));
 
         return TemplateScriptHelper.evaluateScript(bindings, getClientCode(),
                 type);
