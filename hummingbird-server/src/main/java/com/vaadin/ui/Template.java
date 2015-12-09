@@ -34,8 +34,6 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.script.SimpleBindings;
-
 import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.JS;
 import com.vaadin.annotations.TemplateEventHandler;
@@ -44,11 +42,11 @@ import com.vaadin.data.util.BeanUtil;
 import com.vaadin.hummingbird.kernel.ComputedProperty;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
+import com.vaadin.hummingbird.kernel.JsComputedProperty;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.LazyList;
 import com.vaadin.hummingbird.kernel.ModelDescriptor;
 import com.vaadin.hummingbird.kernel.StateNode;
-import com.vaadin.hummingbird.kernel.TemplateScriptHelper;
 import com.vaadin.hummingbird.parser.TemplateParser;
 
 import elemental.json.JsonArray;
@@ -482,16 +480,7 @@ public abstract class Template extends AbstractComponent
             String script = jsAnnotation.value();
             Class<?> type = method.getReturnType();
 
-            return new ComputedProperty(name, script) {
-                @Override
-                public Object compute(StateNode context) {
-                    SimpleBindings bindings = new SimpleBindings();
-                    bindings.put("model", model);
-
-                    return TemplateScriptHelper.evaluateScript(bindings, script,
-                            type);
-                }
-            };
+            return new JsComputedProperty(name, script, type);
         }
 
         return null;
