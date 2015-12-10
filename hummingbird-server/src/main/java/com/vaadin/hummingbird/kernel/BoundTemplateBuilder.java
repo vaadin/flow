@@ -46,14 +46,14 @@ public class BoundTemplateBuilder implements TemplateBuilder {
         return this;
     }
 
-    public BoundTemplateBuilder setForDefinition(ModelPath listPath,
+    public BoundTemplateBuilder setForDefinition(Binding binding,
             String innerScope) {
         if (templateCreator != null) {
             throw new IllegalStateException(
                     "Only one for definition allowed per builder");
         }
 
-        templateCreator = () -> new ForElementTemplate(this, listPath,
+        templateCreator = () -> new ForElementTemplate(this, binding,
                 innerScope);
         return this;
     }
@@ -66,7 +66,7 @@ public class BoundTemplateBuilder implements TemplateBuilder {
 
     public BoundTemplateBuilder bindAttribute(String attributeName,
             String propertyName) {
-        return bindAttribute(attributeName, new ModelBinding(propertyName));
+        return bindAttribute(attributeName, new StateNodeBinding(propertyName));
     }
 
     public BoundTemplateBuilder setAttribute(String attributeName,

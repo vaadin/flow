@@ -1,7 +1,5 @@
 package com.vaadin.hummingbird.kernel;
 
-import java.util.function.Function;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -97,7 +95,7 @@ public class ElementTemplateTest {
                     public String getValue(StateNode node) {
                         return node.get("class", String.class);
                     }
-                }).setForDefinition(new ModelPath("todos"), null);
+                }).setForDefinition(new StateNodeBinding("todos"), null);
 
         BoundElementTemplate parentTemplate = TemplateBuilder.withTag("div")
                 .addChild(childTemplate).build();
@@ -227,12 +225,7 @@ public class ElementTemplateTest {
         TemplateBuilder boundText = TemplateBuilder.dynamicText("bound");
 
         TemplateBuilder dynamicText = TemplateBuilder
-                .dynamicText(new Function<StateNode, String>() {
-                    @Override
-                    public String apply(StateNode n) {
-                        return n.get("dynamic", String.class).toLowerCase();
-                    }
-                });
+                .dynamicText(n -> n.get("dynamic", String.class).toLowerCase());
 
         ElementTemplate template = TemplateBuilder.withTag("span")
                 .addChild(boundText).addChild(dynamicText).build();

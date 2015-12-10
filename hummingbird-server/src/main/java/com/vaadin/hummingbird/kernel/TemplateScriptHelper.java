@@ -1,5 +1,12 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -26,12 +33,100 @@ public class TemplateScriptHelper {
         }
     }
 
+    private static class DynamicBindings implements Bindings {
+        private Function<String, Supplier<Object>> bindingFactory;
+        private Map<String, Object> values = new HashMap<>();
+
+        public DynamicBindings(
+                Function<String, Supplier<Object>> bindingFactory) {
+            this.bindingFactory = bindingFactory;
+        }
+
+        @Override
+        public Object put(String name, Object value) {
+            return values.put(name, value);
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return true;
+        }
+
+        @Override
+        public Object get(Object key) {
+            if (!values.containsKey(key)) {
+                Supplier<Object> supplier = bindingFactory.apply((String) key);
+                if (supplier != null) {
+                    values.put((String) key, supplier.get());
+                }
+            }
+
+            return values.get(key);
+        }
+
+        @Override
+        public Object remove(Object key) {
+            throw new RuntimeException();
+        }
+
+        @Override
+        public int size() {
+            throw new RuntimeException();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            throw new RuntimeException();
+        }
+
+        @Override
+        public boolean containsValue(Object value) {
+            throw new RuntimeException();
+        }
+
+        @Override
+        public void clear() {
+            throw new RuntimeException();
+        }
+
+        @Override
+        public Set<String> keySet() {
+            throw new RuntimeException();
+        }
+
+        @Override
+        public Collection<Object> values() {
+            throw new RuntimeException();
+        }
+
+        @Override
+        public Set<java.util.Map.Entry<String, Object>> entrySet() {
+            throw new RuntimeException();
+        }
+
+        @Override
+        public void putAll(Map<? extends String, ? extends Object> toMerge) {
+            throw new RuntimeException();
+        }
+    }
+
+    public static Object evaluateScript(
+            Function<String, Supplier<Object>> bindingFactory, String script,
+            Class<?> resultType) {
+        return evaluateScript(new DynamicBindings(bindingFactory), script,
+                resultType);
+    }
+
     public static Object evaluateScript(Bindings bindings, String script,
             Class<?> resultType) {
         ScriptEngine engine = new ScriptEngineManager()
                 .getEngineByName("nashorn");
         try {
             Object value = engine.eval(script, bindings);
+            if (value == null) {
+                // XXX Is this acceptable it resultType is a primitive?
+                return null;
+            }
             if (!resultType.isInstance(value)) {
                 if (value instanceof Number) {
                     if (resultType == Integer.class

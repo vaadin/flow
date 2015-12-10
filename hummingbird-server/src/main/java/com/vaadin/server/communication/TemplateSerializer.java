@@ -59,7 +59,7 @@ public class TemplateSerializer {
         Binding binding = template.getBinding();
         if (binding instanceof ModelBinding) {
             ModelBinding mb = (ModelBinding) binding;
-            serialized.put("binding", mb.getPath().getFullPath());
+            serialized.put("binding", mb.getBinding());
         } else {
             throw new RuntimeException(binding.toString());
         }
@@ -67,7 +67,14 @@ public class TemplateSerializer {
 
     private void serializeForTemplate(JsonObject serialized,
             ForElementTemplate template, UI ui) {
-        serialized.put("modelKey", template.getModelProperty().getFullPath());
+        Binding binding = template.getListBinding();
+        if (binding instanceof ModelBinding) {
+            ModelBinding mb = (ModelBinding) binding;
+            serialized.put("modelKey", mb.getBinding());
+        } else {
+            throw new RuntimeException(
+                    "Only " + ModelBinding.class.getName() + " is supported");
+        }
         serialized.put("innerScope", template.getInnerScope());
 
         serializeBoundElementTemplate(serialized, template);
@@ -82,8 +89,7 @@ public class TemplateSerializer {
             Binding attributeBinding = entry.getValue();
             if (attributeBinding instanceof ModelBinding) {
                 ModelBinding mb = (ModelBinding) attributeBinding;
-                attributeBindings.put(mb.getPath().getFullPath(),
-                        attributeName);
+                attributeBindings.put(mb.getBinding(), attributeName);
             } else {
                 // Not yet supported
                 throw new RuntimeException(attributeBinding.toString());
@@ -106,7 +112,7 @@ public class TemplateSerializer {
         bet.getClassPartBindings().forEach((key, binding) -> {
             if (binding instanceof ModelBinding) {
                 ModelBinding mb = (ModelBinding) binding;
-                classPartBindings.put(mb.getPath().getFullPath(), key);
+                classPartBindings.put(mb.getBinding(), key);
             } else {
                 // Not yet supported
                 throw new RuntimeException(binding.toString());

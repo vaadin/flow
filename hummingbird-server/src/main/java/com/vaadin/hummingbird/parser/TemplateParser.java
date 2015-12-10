@@ -5,15 +5,12 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,81 +29,15 @@ import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.hummingbird.kernel.BoundTemplateBuilder;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.ModelBinding;
-import com.vaadin.hummingbird.kernel.ModelPath;
+import com.vaadin.hummingbird.kernel.ModelContext;
+import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.TemplateBuilder;
+import com.vaadin.hummingbird.kernel.TemplateScriptHelper;
 import com.vaadin.ui.Template;
 
 public class TemplateParser {
     private static final Pattern forDefinitionPattern = Pattern
             .compile("#([^\\s]+)\\s+of\\s+([^\\s]+)");
-
-    private static class Context {
-        private Element element;
-        private String outerName;
-        private String innerVar;
-
-        public Context(Element element, String outerName, String innerVar) {
-            this.element = element;
-            this.outerName = outerName;
-            this.innerVar = innerVar;
-        }
-    }
-
-    private static class Scope {
-        private LinkedList<Context> contexts = new LinkedList<>();
-
-        private Set<List<String>> seenPaths = new HashSet<>();
-
-        public ModelPath getPath(String definition) {
-
-            List<String> globalPath = new ArrayList<>();
-            List<String> path = Arrays.asList(definition.split("\\."));
-            int depth = 0;
-            Iterator<Context> iterator = contexts.iterator();
-            while (iterator.hasNext()) {
-                Context context = iterator.next();
-                if (path.isEmpty()) {
-                    throw new RuntimeException(definition);
-                }
-
-                if (context.innerVar.equals(path.get(0))) {
-                    path = path.subList(1, path.size());
-                    globalPath.add(0, context.outerName);
-                    break;
-                } else {
-                    depth++;
-                }
-            }
-
-            while (iterator.hasNext()) {
-                Context context = iterator.next();
-                globalPath.add(0, context.outerName);
-            }
-            globalPath.addAll(path);
-
-            seenPaths.add(globalPath);
-
-            path = new ArrayList<>(path);
-            for (int i = 0; i < depth; i++) {
-                path.add(0, "..");
-                // FIXME Is it always two levels, through a ListNode?
-                path.add(0, "..");
-            }
-
-            return new ModelPath(definition, path);
-        }
-
-        public void enterContext(Element element, String outerName,
-                String innerName) {
-            contexts.addFirst(new Context(element, outerName, innerName));
-        }
-
-        public void endContext(Element element) {
-            if (!contexts.isEmpty() && contexts.getFirst().element == element) {
-                contexts.removeFirst();
-            }
-        }
-    }
 
     public static ElementTemplate parse(String templateString) {
         return parseBuilder(templateString).build();
@@ -115,7 +46,28 @@ public class TemplateParser {
     private static TemplateBuilder parseBuilder(String templateString) {
         Document bodyFragment = Jsoup.parseBodyFragment(templateString);
         Elements children = bodyFragment.body().children();
-        Scope scope = new Scope();
+
+        ModelContext context = new ModelContext() {
+            @Override
+            public Function<String, Supplier<Object>> getBindingFactory(
+                    StateNode node) {
+                return name -> {
+                    if (node.containsKey(name)) {
+                        return () -> {
+                            Object value = node.get(name);
+                            if (value instanceof StateNode) {
+                                StateNode stateNode = (StateNode) value;
+                                return TemplateScriptHelper.wrapNode(stateNode);
+                            } else {
+                                return value;
+                            }
+                        };
+                    } else {
+                        return null;
+                    }
+                };
+            }
+        };
 
         int childNodeSize = children.size();
         if (childNodeSize != 1) {
@@ -127,17 +79,18 @@ public class TemplateParser {
             }
         }
         BoundTemplateBuilder template = createElementTemplate(children.get(0),
-                scope);
+                context);
         return template;
     }
 
-    private static TemplateBuilder createTemplate(Node node, Scope scope) {
+    private static TemplateBuilder createTemplate(Node node,
+            ModelContext context) {
         if (node instanceof Element) {
-            return createElementTemplate((Element) node, scope);
+            return createElementTemplate((Element) node, context);
         } else if (node instanceof TextNode) {
-            return createTextTemplate((TextNode) node, scope);
+            return createTextTemplate((TextNode) node, context);
         } else if (node instanceof DataNode) {
-            return crateDataTemplate((DataNode) node, scope);
+            return crateDataTemplate((DataNode) node, context);
         } else if (node instanceof Comment) {
             return null;
         } else {
@@ -146,28 +99,29 @@ public class TemplateParser {
     }
 
     private static TemplateBuilder crateDataTemplate(DataNode node,
-            Scope scope) {
+            ModelContext context) {
         String data = node.getWholeData();
         return TemplateBuilder.staticText(data);
     }
 
     private static TemplateBuilder createTextTemplate(TextNode node,
-            Scope scope) {
+            ModelContext context) {
         String text = node.text();
         if (text.startsWith("{{")) {
             if (!text.endsWith("}}")) {
                 throw new RuntimeException(
                         "Invalid text node '" + text + "'. Must end with }}");
             }
-            String modelPath = text.substring(2, text.length() - 2);
-            return TemplateBuilder.dynamicText(scope.getPath(modelPath));
+            String binding = text.substring(2, text.length() - 2);
+            return TemplateBuilder
+                    .dynamicText(new ModelBinding(binding, context));
         } else {
             return TemplateBuilder.staticText(text);
         }
     }
 
     private static BoundTemplateBuilder createElementTemplate(Element element,
-            Scope scope) {
+            ModelContext context) {
         BoundTemplateBuilder builder = TemplateBuilder
                 .withTag(element.tagName());
 
@@ -182,13 +136,32 @@ public class TemplateParser {
                     }
 
                     String innerVarName = matcher.group(1);
-                    String outerVarName = matcher.group(2);
-                    ModelPath listPath = scope.getPath(outerVarName);
+                    String outerBinding = matcher.group(2);
 
-                    scope.enterContext(element, listPath.getNodeProperty(),
+                    ModelContext outerContext = context;
+                    context = new ModelContext() {
+                        @Override
+                        public Function<String, Supplier<Object>> getBindingFactory(
+                                StateNode node) {
+                            StateNode baseNode = node.getParent().getParent();
+                            Function<String, Supplier<Object>> baseFactory = outerContext
+                                    .getBindingFactory(baseNode);
+                            return name -> {
+                                if (innerVarName.equals(name)) {
+                                    return () -> {
+                                        return TemplateScriptHelper
+                                                .wrapNode(node);
+                                    };
+                                } else {
+                                    return baseFactory.apply(name);
+                                }
+                            };
+                        }
+                    };
+
+                    builder.setForDefinition(
+                            new ModelBinding(outerBinding, outerContext),
                             innerVarName);
-
-                    builder.setForDefinition(listPath, innerVarName);
                 } else {
                     throw new RuntimeException(
                             "Unsupported * attribute: " + name);
@@ -205,7 +178,7 @@ public class TemplateParser {
             } else if (name.startsWith("[")) {
                 String attibuteName = name.substring(1, name.length() - 1);
                 builder.bindAttribute(attibuteName,
-                        new ModelBinding(scope.getPath(value)));
+                        new ModelBinding(value, context));
             } else if (name.startsWith("(")) {
                 String eventName = name.substring(1, name.length() - 1);
 
@@ -221,13 +194,12 @@ public class TemplateParser {
         }
 
         for (Node node : element.childNodes()) {
-            TemplateBuilder childTemplate = createTemplate(node, scope);
+            TemplateBuilder childTemplate = createTemplate(node, context);
             if (childTemplate != null) {
                 builder.addChild(childTemplate);
             }
         }
 
-        scope.endContext(element);
         return builder;
     }
 

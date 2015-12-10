@@ -1,7 +1,5 @@
 package com.vaadin.hummingbird.kernel;
 
-import java.util.function.Function;
-
 public interface TemplateBuilder {
 
     public BoundElementTemplate build();
@@ -15,15 +13,10 @@ public interface TemplateBuilder {
     }
 
     public static TemplateBuilder dynamicText(String modelPath) {
-        return () -> new DynamicTextTemplate(modelPath);
+        return dynamicText(new StateNodeBinding(modelPath));
     }
 
-    public static TemplateBuilder dynamicText(
-            Function<StateNode, String> function) {
-        return () -> new DynamicTextTemplate(function);
-    }
-
-    public static TemplateBuilder dynamicText(ModelPath path) {
-        return () -> new DynamicTextTemplate(path);
+    public static TemplateBuilder dynamicText(Binding binding) {
+        return () -> new DynamicTextTemplate(binding);
     }
 }

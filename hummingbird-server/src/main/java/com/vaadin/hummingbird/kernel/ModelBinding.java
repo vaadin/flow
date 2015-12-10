@@ -1,24 +1,28 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 public class ModelBinding implements Binding {
 
-    private ModelPath path;
+    private String binding;
+    private ModelContext context;
 
-    public ModelBinding(ModelPath path) {
-        this.path = path;
+    public ModelBinding(String binding, ModelContext context) {
+        this.binding = binding;
+        this.context = context;
     }
 
-    public ModelBinding(String propertyName) {
-        this(new ModelPath(propertyName));
-    }
-
-    public ModelPath getPath() {
-        return path;
+    public String getBinding() {
+        return binding;
     }
 
     @Override
     public Object getValue(StateNode node) {
-        return path.getNode(node).get(path.getNodeProperty());
+        Function<String, Supplier<Object>> bindingFactory = context
+                .getBindingFactory(node);
+        return TemplateScriptHelper.evaluateScript(bindingFactory, binding,
+                Object.class);
     }
 
 }

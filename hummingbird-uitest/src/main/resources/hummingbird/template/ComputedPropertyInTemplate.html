@@ -1,0 +1,7 @@
+<div>
+  Value: <span>{{value}}</span>
+  <br>
+  Value squared: <span #squared>{{value * value}}</span>
+  <br>
+  <button (click)="model.value++;">Increment</button><button (click)="server.log()">Log on server</button>
+</div>
