@@ -24,7 +24,7 @@ public class JsonConverter {
     }
 
     public static Object fromJson(Type targetType, JsonValue value) {
-        if (value instanceof JsonNull) {
+        if (value == null || value instanceof JsonNull) {
             return defaultPrimitiveValues.getOrDefault(targetType, null);
         } else {
             if (targetType == String.class && value instanceof JsonString) {

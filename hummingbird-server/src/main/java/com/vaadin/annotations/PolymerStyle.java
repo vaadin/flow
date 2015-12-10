@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * <p>
  * The actual style sheets should be .html files with proper syntax and must be
  * imported separately, e.g. with the {@link com.vaadin.annotations.HTML}
- * annotation. The name of module specified here should match the defined
+ * annotation. The value returned by {@link #value()} should match the defined
  * dom-module id in the file. Example of file content:
  * <p>
  * {@code
