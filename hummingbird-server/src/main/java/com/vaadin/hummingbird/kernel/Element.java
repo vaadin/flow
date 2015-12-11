@@ -17,7 +17,6 @@ public class Element implements Serializable {
 
     public static final String TEXT_NODE_TEXT_ATTRIBUTE = "content";
     private static final String STYLE_SEPARATOR = ";";
-    private static final String CLASS_ATTRIBUTE = "class";
     private static final String STYLE_ATTRIBUTE = "style";
     private static final String TEXT_NODE_TAG = "#text";
     private ElementTemplate template;
@@ -540,7 +539,7 @@ public class Element implements Serializable {
     /**
      * Removes the given class from the element.
      * <p>
-     * Modifies the "class" attribute.
+     * Modifies the "classList" attribute.
      * <p>
      * Has no effect if the element does not have the given class attribute
      *
@@ -551,13 +550,14 @@ public class Element implements Serializable {
     public Element removeClass(String className) {
         assert className != null;
 
-        return removeAttributeValue(CLASS_ATTRIBUTE, className, " ");
+        template.getClassList(node, false).remove(className);
+        return this;
     }
 
     /**
      * Adds the given class to the element.
      * <p>
-     * Modifies the "class" attribute.
+     * Modifies the "classList" property.
      * <p>
      * Has no effect if the element already has the given class name
      *
@@ -568,11 +568,12 @@ public class Element implements Serializable {
     public Element addClass(String className) {
         assert className != null;
 
-        if (!hasAttribute(CLASS_ATTRIBUTE)) {
-            setAttribute(CLASS_ATTRIBUTE, className);
-        } else {
-            addAttributeValue(CLASS_ATTRIBUTE, className, " ");
+        List<String> classList = template.getClassList(node, true);
+
+        if (!classList.contains(className)) {
+            classList.add(className);
         }
+
         return this;
     }
 
@@ -586,7 +587,24 @@ public class Element implements Serializable {
     public boolean hasClass(String className) {
         assert className != null;
 
-        return hasAttributeValue(CLASS_ATTRIBUTE, className, " ");
+        return template.getClassList(node, false).contains(className);
+    }
+
+    /**
+     * Returns the current classes for this element, if any.
+     *
+     * @return the class list
+     */
+    public List<String> getClasses() {
+        return template.getClassList(node, false);
+    }
+
+    /**
+     * Removes all classes for this element, if any.
+     */
+    public Element removeAllClasses() {
+        getClasses().clear();
+        return this;
     }
 
     /**

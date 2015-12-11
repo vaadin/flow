@@ -15,7 +15,7 @@ import com.vaadin.ui.UI.Root;
 public abstract class AbstractElementTemplate implements ElementTemplate {
 
     public enum Keys {
-        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY, EVENT_DATA, OVERRIDE_TEMPLATE;
+        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY, EVENT_DATA, OVERRIDE_TEMPLATE, CLASS_LIST;
     }
 
     private static final AtomicInteger nextId = new AtomicInteger(1);
@@ -346,6 +346,17 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     public void runBeforeNextClientResponse(Runnable runnable, StateNode node) {
         StateNode dataNode = getElementDataNode(node, true);
         dataNode.runBeforeNextClientResponse(runnable);
+    }
+
+    @Override
+    public List<String> getClassList(StateNode node, boolean createIfNeeded) {
+        StateNode dataNode = getElementDataNode(node, createIfNeeded);
+        if (dataNode == null
+                || !dataNode.containsKey(Keys.CLASS_LIST) && !createIfNeeded) {
+            return Collections.emptyList();
+        }
+
+        return (List) dataNode.getMultiValued(Keys.CLASS_LIST);
     }
 
 }

@@ -247,7 +247,7 @@ public class TreeUpdater {
     private static boolean isAlwaysAttribute(String key) {
         // FIXME There should be separate API for attribute and property and
         // eitherOr (https://github.com/vaadin/hummingbird/issues/5)
-        return key.equals("class") || key.equals("style") || key.equals("for");
+        return key.equals("style") || key.equals("for");
     }
 
     public static native JavaScriptObject addDomListener(Element element,
