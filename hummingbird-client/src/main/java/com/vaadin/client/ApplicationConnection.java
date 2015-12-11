@@ -39,10 +39,10 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.CommunicationProblemHandler;
+import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.ReconnectingCommunicationProblemHandler;
 import com.vaadin.client.communication.ServerCommunicationHandler;
@@ -385,6 +385,10 @@ public class ApplicationConnection implements HasHandlers {
         serverMessageHandler.setConnection(this);
 
         heartbeat.init(this);
+
+        // Check if polymer was loaded in the bootstrap or previously by
+        // somebody else on the page
+        DomApi.polymerMaybeLoaded();
     }
 
     public Element getContainerElement() {
@@ -454,7 +458,7 @@ public class ApplicationConnection implements HasHandlers {
             return vi;
             }
             }
-
+            
             client.modules = {};
             client.modules.publish = function(namespace,moduleCode) {
                 var module = {};
@@ -464,7 +468,7 @@ public class ApplicationConnection implements HasHandlers {
                 }
                 client.modules[namespace] = module;
             }
-
+            
             client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::getServerMessageHandler();
             var pd = [
@@ -475,7 +479,7 @@ public class ApplicationConnection implements HasHandlers {
             pd[pd.length] = smh.@com.vaadin.client.communication.ServerMessageHandler::bootstrapTime;
             return pd;
             });
-
+            
             client.getElementByPath = $entry(function(id) {
             return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getElementByPath(Ljava/lang/String;)(id);
             });
@@ -492,9 +496,9 @@ public class ApplicationConnection implements HasHandlers {
             return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getPathForElement(Lcom/google/gwt/dom/client/Element;)(element);
             });
             client.initializing = false;
-
+            
             $wnd.vaadin.framework.clients[TTAppId] = client;
-
+            
             return client;
             }-*/;
 
@@ -635,10 +639,6 @@ public class ApplicationConnection implements HasHandlers {
     protected boolean isResourcesPending() {
         return WidgetUtil.querySelectorAll("[pending]").getLength() != 0;
     }
-
-    protected native boolean isPolymerLoaded()/*-{
-                                              return !!$wnd.Polymer;
-                                              }-*/;
 
     /**
      * Shows the communication error notification.
@@ -809,6 +809,7 @@ public class ApplicationConnection implements HasHandlers {
             loader.loadHtml(url, new ResourceLoadListener() {
                 @Override
                 public void onLoad(ResourceLoadEvent event) {
+                    DomApi.polymerMaybeLoaded();
                     ApplicationConfiguration.endDependencyLoading();
                 }
 
