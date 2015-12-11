@@ -2,6 +2,7 @@ package com.vaadin.client.communication.tree;
 
 import com.google.gwt.dom.client.Element;
 import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.tree.ListTreeNode.ArrayEventListener;
 
 public class ClassListListener implements ArrayEventListener {
@@ -17,22 +18,11 @@ public class ClassListListener implements ArrayEventListener {
             JsArrayObject<Object> removed, JsArrayObject<Object> added) {
         for (int i = 0; i < removed.size(); i++) {
             String className = (String) removed.get(i);
-            removeClass(element, className);
+            DomApi.wrap(element).getClassList().add(className);
         }
         for (int i = 0; i < added.size(); i++) {
             String className = (String) added.get(i);
-            addClass(element, className);
+            DomApi.wrap(element).getClassList().remove(className);
         }
     }
-
-    public static native void addClass(Element element, String className)
-    /*-{
-        element.classList.add(className);
-     }-*/;
-
-    public static native void removeClass(Element element, String className)
-    /*-{
-        element.classList.remove(className);
-     }-*/;
-
 }

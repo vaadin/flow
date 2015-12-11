@@ -127,12 +127,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     @Override
     public String getStyleName() {
-        StringBuilder sb = new StringBuilder();
-        getElement().getClasses().forEach(str -> {
-            sb.append(str);
-            sb.append(" ");
-        });
-        return sb.toString().trim();
+        return getElement().getClassNames();
     }
 
     /*

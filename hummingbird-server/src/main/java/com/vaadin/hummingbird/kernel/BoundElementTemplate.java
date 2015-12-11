@@ -190,6 +190,20 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     }
 
     @Override
+    public List<String> getAllClasses(StateNode node) {
+        String boundClassNames = (String) getAttribute("class", node);
+        if (boundClassNames == null || boundClassNames.isEmpty()) {
+            return super.getAllClasses(node);
+        } else {
+            ArrayList<String> classList = new ArrayList<>();
+            classList.addAll(super.getClassList(node, false));
+            Stream.of(boundClassNames.split(" "))
+                    .forEach(str -> classList.add(str));
+            return Collections.unmodifiableList(classList);
+        }
+    }
+
+    @Override
     public boolean supports(StateNode node) {
         return node.get(Keys.TAG) == null;
     }
