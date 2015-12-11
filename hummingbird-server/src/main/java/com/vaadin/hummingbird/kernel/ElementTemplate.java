@@ -59,4 +59,6 @@ public interface ElementTemplate extends Serializable {
 
     public StateNode getElementDataNode(StateNode node, boolean createIfNeeded);
 
+    public List<String> getClassList(StateNode node, boolean createIfNeeded);
+
 }
