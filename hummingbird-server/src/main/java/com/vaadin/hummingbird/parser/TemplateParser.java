@@ -30,9 +30,10 @@ import com.vaadin.hummingbird.kernel.BoundTemplateBuilder;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.ModelBinding;
 import com.vaadin.hummingbird.kernel.ModelContext;
+import com.vaadin.hummingbird.kernel.ScriptModelBinding;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.StaticModelBinding;
 import com.vaadin.hummingbird.kernel.TemplateBuilder;
-import com.vaadin.hummingbird.kernel.TemplateScriptHelper;
 import com.vaadin.ui.Template;
 
 public class TemplateParser {
@@ -107,10 +108,20 @@ public class TemplateParser {
                         "Invalid text node '" + text + "'. Must end with }}");
             }
             String binding = text.substring(2, text.length() - 2);
-            return TemplateBuilder
-                    .dynamicText(new ModelBinding(binding, context));
+            return TemplateBuilder.dynamicText(createBinding(binding, context));
         } else {
             return TemplateBuilder.staticText(text);
+        }
+    }
+
+    private static ModelBinding createBinding(String expression,
+            ModelContext context) {
+        // Use static binding instead of passing through Nashorn for simple
+        // foo.bar bindings
+        if (StaticModelBinding.isStaticExpression(expression)) {
+            return new StaticModelBinding(expression, context);
+        } else {
+            return new ScriptModelBinding(expression, context);
         }
     }
 
@@ -153,7 +164,7 @@ public class TemplateParser {
                     };
 
                     builder.setForDefinition(
-                            new ModelBinding(outerBinding, outerContext),
+                            createBinding(outerBinding, outerContext),
                             innerVarName);
                 } else {
                     throw new RuntimeException(
@@ -171,7 +182,7 @@ public class TemplateParser {
             } else if (name.startsWith("[")) {
                 String attibuteName = name.substring(1, name.length() - 1);
                 builder.bindAttribute(attibuteName,
-                        new ModelBinding(value, context));
+                        createBinding(value, context));
             } else if (name.startsWith("(")) {
                 String eventName = name.substring(1, name.length() - 1);
 

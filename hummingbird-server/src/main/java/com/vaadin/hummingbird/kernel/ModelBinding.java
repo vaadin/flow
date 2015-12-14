@@ -3,10 +3,10 @@ package com.vaadin.hummingbird.kernel;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class ModelBinding implements Binding {
+public abstract class ModelBinding implements Binding {
 
-    private String binding;
-    private ModelContext context;
+    private final String binding;
+    private final ModelContext context;
 
     public ModelBinding(String binding, ModelContext context) {
         this.binding = binding;
@@ -21,8 +21,9 @@ public class ModelBinding implements Binding {
     public Object getValue(StateNode node) {
         Function<String, Supplier<Object>> bindingFactory = context
                 .getBindingFactory(node);
-        return TemplateScriptHelper.evaluateScript(bindingFactory, binding,
-                Object.class);
+        return getValue(bindingFactory);
     }
 
+    protected abstract Object getValue(
+            Function<String, Supplier<Object>> bindingFactory);
 }
