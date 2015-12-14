@@ -41,7 +41,12 @@ public class PreRenderer {
     private static Element cloneElementForPreRendering(Element source) {
         Element target = new Element(source.getTag());
         for (String key : source.getAttributeNames()) {
-            target.setAttribute(key, escapeAttribute(source.getAttribute(key)));
+            if (key.equals("class")) {
+                target.addClass(source.getAttribute(key));
+            } else {
+                target.setAttribute(key,
+                        escapeAttribute(source.getAttribute(key)));
+            }
         }
 
         return target;

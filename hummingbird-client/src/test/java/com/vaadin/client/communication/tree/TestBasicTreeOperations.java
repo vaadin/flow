@@ -92,6 +92,38 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals("", element.getAttribute("fox"));
     }
 
+    public void testClassList() {
+        Element element = updater.getRootElement();
+        JsonArray array = Json.createArray();
+        array.set(0, "foo");
+        array.set(1, "bar");
+        array.set(2, "baz");
+        applyChanges(ChangeUtil.putList(containerElementId, "CLASS_LIST", 500),
+                ChangeUtil.listInsert(500, 0, array));
+
+        assertTrue(element.hasAttribute("class"));
+        assertEquals("foo bar baz", element.getAttribute("class"));
+
+        // remove bar
+        applyChanges(ChangeUtil.listRemove(500, 1));
+
+        assertTrue(element.hasAttribute("class"));
+        assertEquals("foo baz", element.getAttribute("class"));
+
+        // remove foo
+        applyChanges(ChangeUtil.listRemove(500, 0));
+
+        assertTrue(element.hasAttribute("class"));
+        assertEquals("baz", element.getAttribute("class"));
+
+        // remove baz, class is not removed completely but will be an empty
+        // string
+        applyChanges(ChangeUtil.listRemove(500, 0));
+
+        assertTrue(element.hasAttribute("class"));
+        assertEquals("", element.getAttribute("class"));
+    }
+
     public void testEventHandling() {
         int eventDataId = 3;
         int listenersId = 4;

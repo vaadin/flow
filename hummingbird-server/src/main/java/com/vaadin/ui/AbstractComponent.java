@@ -1071,7 +1071,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
                 div.setAttribute("style", getElement().getAttribute("style"));
             }
             if (getElement().hasAttribute("class")) {
-                div.setAttribute("class", getElement().getAttribute("class"));
+                div.addClass(getElement().getAttribute("class"));
             }
 
             return div;

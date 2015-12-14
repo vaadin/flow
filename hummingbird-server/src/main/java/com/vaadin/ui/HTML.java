@@ -34,7 +34,11 @@ public class HTML extends AbstractComponent {
 
         Attributes attrs = e.attributes();
         for (Attribute a : attrs.asList()) {
-            getElement().setAttribute(a.getKey(), a.getValue());
+            if (a.getKey().equals("class")) {
+                getElement().addClass(a.getValue());
+            } else {
+                getElement().setAttribute(a.getKey(), a.getValue());
+            }
         }
 
         getElement().setAttribute("innerHTML", e.html());

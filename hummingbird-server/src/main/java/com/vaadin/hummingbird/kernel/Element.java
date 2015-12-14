@@ -578,9 +578,12 @@ public class Element implements Serializable {
     /**
      * Adds the given class to the element.
      * <p>
-     * Modifies the "classList" property.
+     * Modifies the "classList" property. Multiple class names can be by
+     * separating the class names with whitespace.
      * <p>
      * Has no effect if the element already has the given class name.
+     * <p>
+     * Empty string has not effect.
      *
      * @param className
      *            the class name to add
@@ -588,6 +591,9 @@ public class Element implements Serializable {
      */
     public Element addClass(String className) {
         assert className != null;
+        if (className.isEmpty()) {
+            return this;
+        }
         if (className.contains(" ")) {
             // Split space separated style names and add them one by one.
             StringTokenizer tokenizer = new StringTokenizer(className, " ");
