@@ -40,7 +40,6 @@ import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.Upload.FailedEvent;
 
 /**
  * Handles a file upload request submitted via an Upload component.
@@ -206,8 +205,8 @@ public class FileUploadHandler implements RequestHandler {
      * {@link StreamVariable#isInterrupted()} returns <code>true</code>.
      *
      * By checking the exception of an {@link StreamingErrorEvent} or
-     * {@link FailedEvent} against this class, it is possible to determine if an
-     * upload was interrupted by code or aborted due to any other exception.
+     * FailedEvent against this class, it is possible to determine if an upload
+     * was interrupted by code or aborted due to any other exception.
      */
     public static class UploadInterruptedException extends Exception {
 

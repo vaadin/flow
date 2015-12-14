@@ -1,17 +1,17 @@
 package com.vaadin.hummingbird.component;
 
-import com.vaadin.ui.Button;
+import com.vaadin.tests.server.TestComponent;
+import com.vaadin.tests.server.TestLayout;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
-import com.vaadin.ui.VerticalLayout;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class CompositeInsideCompositeTest {
-    VerticalLayout layout;
-    Button compositionRoot;
+    TestLayout layout;
+    TestComponentWithTracking compositionRoot;
     Composite compositeOuter;
     Composite compositeInner;
 
@@ -23,10 +23,10 @@ public class CompositeInsideCompositeTest {
 
     }
 
-    public static class TestButton extends Button {
+    public static class TestComponentWithTracking extends TestComponent {
 
-        public TestButton(String string) {
-            super(string);
+        public TestComponentWithTracking(String string) {
+            super();
         }
 
         public AttachDetachTracker tracker = new AttachDetachTracker();
@@ -56,7 +56,7 @@ public class CompositeInsideCompositeTest {
         }
     }
 
-    public static class TestVerticalLayout extends VerticalLayout {
+    public static class TestLayoutWithTracking extends TestLayout {
 
         public AttachDetachTracker tracker = new AttachDetachTracker();
 
@@ -85,10 +85,10 @@ public class CompositeInsideCompositeTest {
         }
     }
 
-    public static class TestComposite extends Composite {
+    public static class TestCompositeWithTracking extends Composite {
         private Component root;
 
-        public TestComposite(Component root) {
+        public TestCompositeWithTracking(Component root) {
             this.root = root;
         }
 
@@ -127,10 +127,10 @@ public class CompositeInsideCompositeTest {
 
     @Before
     public void setup() {
-        layout = new TestVerticalLayout();
-        compositionRoot = new TestButton("Inside composite");
-        compositeInner = new TestComposite(compositionRoot);
-        compositeOuter = new TestComposite(compositeInner);
+        layout = new TestLayoutWithTracking();
+        compositionRoot = new TestComponentWithTracking("Inside composite");
+        compositeInner = new TestCompositeWithTracking(compositionRoot);
+        compositeOuter = new TestCompositeWithTracking(compositeInner);
         layout.addComponent(compositeOuter);
     }
 

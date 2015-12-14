@@ -20,10 +20,10 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-
 import com.vaadin.data.fieldgroup.FieldGroup;
-import com.vaadin.ui.TextField;
+import com.vaadin.tests.server.TestField;
+
+import org.junit.Test;
 
 /**
  * Test verifying that TransactionalPropertyWrapper removes it's listener from
@@ -63,9 +63,9 @@ public class TransactionalPropertyWrapperTest {
         }
     }
 
-    private final TextField nameField = new TextField("Name");
-    private final TextField ageField = new TextField("Age");
-    private final TextField unboundField = new TextField("No FieldGroup");
+    private final TestField nameField = new TestField();
+    private final TestField ageField = new TestField();
+    private final TestField unboundField = new TestField();
     private final TestingProperty<String> unboundProp = new TestingProperty<String>(
             "Hello World");
     private final PropertysetItem item = new PropertysetItem();

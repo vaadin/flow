@@ -27,6 +27,7 @@
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 
+
 		<!-- API DEPENDENCIES -->
 
 		<dependency>
@@ -102,6 +103,13 @@
 
 		<!-- TESTING DEPENDENCIES -->
 		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-test-util</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
 			<version>2.2.6</version>
@@ -132,6 +140,20 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+
+				<executions>
+					<execution>
+						<id></id>
+						<goals>
+							<!-- Output -tests.jar so other modules can depend on the test classes -->
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 

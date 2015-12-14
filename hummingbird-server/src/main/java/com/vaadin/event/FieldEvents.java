@@ -16,6 +16,7 @@
 
 package com.vaadin.event;
 
+import java.awt.TextField;
 import java.io.Serializable;
 
 import com.vaadin.annotations.EventType;
@@ -25,7 +26,6 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Component.Event;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.HasElement;
-import com.vaadin.ui.TextField;
 
 /**
  * Interface that serves as a wrapper for {@link Field} related events.
@@ -178,13 +178,10 @@ public interface FieldEvents {
      * <p>
      * The {@link TextChangeNotifier}s implementation may decide when exactly
      * TextChangeEvents are fired. TextChangeEvents are not necessary fire for
-     * example on each key press, but buffered with a small delay. The
-     * {@link TextField} component supports different modes for triggering
-     * TextChangeEvents.
+     * example on each key press, but buffered with a small delay.
      *
      * @see TextChangeListener
      * @see TextChangeNotifier
-     * @see TextField#setTextChangeEventMode(com.vaadin.ui.TextField.TextChangeEventMode)
      * @since 6.5
      */
     public static class TextChangeEvent extends Component.Event {

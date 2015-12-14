@@ -1,11 +1,10 @@
 package com.vaadin.hummingbird.template;
 
 import com.vaadin.annotations.Id;
-import com.vaadin.ui.Button;
+import com.vaadin.tests.server.TestButton;
+import com.vaadin.tests.server.TestField;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.Slider;
 import com.vaadin.ui.Template;
 
 import org.junit.Assert;
@@ -14,13 +13,12 @@ import org.junit.Test;
 public class TemplateComponentBindingTest {
 
     public static class TemplateWithFields extends Template {
-        public Button button;
+        public TestButton button;
 
         @Id("button")
-        public Button anotherButton;
+        public TestButton anotherButton;
 
-        protected Grid grid;
-        private Slider slider;
+        private TestField field;
         private CssLayout cssLayout;
 
     }
@@ -30,8 +28,7 @@ public class TemplateComponentBindingTest {
         TemplateWithFields template = new TemplateWithFields();
         Assert.assertNotNull(template.button);
         Assert.assertNotNull(template.anotherButton);
-        Assert.assertNotNull(template.grid);
-        Assert.assertNotNull(template.slider);
+        Assert.assertNotNull(template.field);
         Assert.assertNotNull(template.cssLayout);
     }
 
@@ -45,22 +42,20 @@ public class TemplateComponentBindingTest {
     public void parentCorrectForMappedComponents() {
         TemplateWithFields template = new TemplateWithFields();
         Assert.assertEquals(template.button.getParent(), template.cssLayout);
-        Assert.assertEquals(template.grid.getParent(), template);
-        Assert.assertEquals(template.slider.getParent(), template);
+        Assert.assertEquals(template.field.getParent(), template);
         Assert.assertEquals(template.cssLayout.getParent(), template);
     }
 
     @Test
     public void childrenCorrectForMappedComponents() {
         TemplateWithFields template = new TemplateWithFields();
-        // <div id="cssLayout">
+        // <div id="css-layout">
         // <button id="button" />
         // </div>
-        // <vaadin-grid id="grid" />
-        // <paper-slider id="slider" />
+        // <div id="testcomponent" />
+        // <input id="field" />
         Assert.assertArrayEquals(
-                new Component[] { template.cssLayout, template.grid,
-                        template.slider },
+                new Component[] { template.cssLayout, template.field },
                 template.getChildComponents().toArray());
         Assert.assertArrayEquals(new Component[] { template.button },
                 template.cssLayout.getChildComponents().toArray());

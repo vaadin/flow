@@ -9,7 +9,7 @@ import com.vaadin.hummingbird.kernel.TransactionLogBuilderTest;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.communication.TransactionLogJsonProducer;
-import com.vaadin.ui.Button;
+import com.vaadin.tests.server.TestButton;
 import com.vaadin.ui.UI;
 
 import org.junit.Assert;
@@ -39,7 +39,7 @@ public class InitialJsonSize {
     public void initialJsonTwoButtons() {
         for (int i = 0; i < 2; i++) {
             final int j = i;
-            Button b = new Button("Button " + i);
+            TestButton b = new TestButton("Button " + i);
             b.addClickListener(e -> {
                 System.out.println("Click on button " + j);
             });

@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.vaadin.annotations.EventParameter;
 import com.vaadin.annotations.EventType;
 import com.vaadin.event.ElementEvents;
-import com.vaadin.ui.Label;
+import com.vaadin.tests.server.TestField;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -72,7 +72,7 @@ public class ElementEventsTest {
     @Test
     public void sensibleErrorFromInnerClass() {
         try {
-            Label component = new Label();
+            TestField component = new TestField();
             Element e = component.getElement();
 
             ElementEvents.addElementListener(component,
@@ -91,7 +91,7 @@ public class ElementEventsTest {
 
     @Test
     public void sendEventToListener() {
-        Label c = new Label();
+        TestField c = new TestField();
         Element e = c.getElement();
         AtomicInteger events = new AtomicInteger(0);
         TestEventListener l = new TestEventListener() {
@@ -110,7 +110,7 @@ public class ElementEventsTest {
 
     @Test
     public void sameListenerTwice() {
-        Label c = new Label();
+        TestField c = new TestField();
         Element e = c.getElement();
         AtomicInteger events = new AtomicInteger(0);
         TestEventListener l = new TestEventListener() {
@@ -131,7 +131,7 @@ public class ElementEventsTest {
 
     @Test
     public void twoListeners() {
-        Label c = new Label();
+        TestField c = new TestField();
         Element e = c.getElement();
 
         AtomicInteger events = new AtomicInteger(0);
@@ -156,7 +156,7 @@ public class ElementEventsTest {
 
     @Test
     public void addListener() {
-        Label c = new Label();
+        TestField c = new TestField();
         Element e = c.getElement();
 
         AtomicInteger events = new AtomicInteger(0);
@@ -174,7 +174,7 @@ public class ElementEventsTest {
 
     @Test
     public void removeListener() {
-        Label c = new Label();
+        TestField c = new TestField();
         Element e = c.getElement();
 
         AtomicInteger events = new AtomicInteger(0);
@@ -193,7 +193,7 @@ public class ElementEventsTest {
 
     @Test
     public void sameListenerTwiceRemoveOne() {
-        Label c = new Label();
+        TestField c = new TestField();
         Element e = c.getElement();
 
         AtomicInteger events = new AtomicInteger(0);
@@ -214,7 +214,7 @@ public class ElementEventsTest {
 
     @Test
     public void addEventData() {
-        Label c = new Label();
+        TestField c = new TestField();
         Element e = c.getElement();
 
         Assert.assertArrayEquals(new String[0],
@@ -226,7 +226,7 @@ public class ElementEventsTest {
 
     @Test
     public void eventDataFromEventClass() {
-        Label c = new Label();
+        TestField c = new TestField();
         Element e = c.getElement();
 
         ElementEvents.addElementListener(c, TestEventWithParameters.class,
