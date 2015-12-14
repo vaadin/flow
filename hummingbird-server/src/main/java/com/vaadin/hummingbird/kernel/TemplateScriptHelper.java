@@ -4,10 +4,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -44,7 +47,8 @@ public class TemplateScriptHelper {
 
         @Override
         public Object put(String name, Object value) {
-            return values.put(name, value);
+            throw new IllegalStateException(
+                    "Inline expression may not modify the global scope");
         }
 
         @Override
@@ -54,11 +58,18 @@ public class TemplateScriptHelper {
 
         @Override
         public Object get(Object key) {
+            if ("nashorn.global".equals(key)) {
+                return nashornGlobal;
+            }
             if (!values.containsKey(key)) {
                 Supplier<Object> supplier = bindingFactory.apply((String) key);
+                Object value;
                 if (supplier != null) {
-                    values.put((String) key, supplier.get());
+                    value = supplier.get();
+                } else {
+                    value = null;
                 }
+                values.put((String) key, value);
             }
 
             return values.get(key);
@@ -117,12 +128,25 @@ public class TemplateScriptHelper {
                 resultType);
     }
 
+    private static final ScriptEngine engine = new ScriptEngineManager()
+            .getEngineByName("nashorn");
+    private static final Bindings nashornGlobal = engine.createBindings();
+
+    private static final ConcurrentHashMap<String, CompiledScript> compileCache = new ConcurrentHashMap<>();
+
     public static Object evaluateScript(Bindings bindings, String script,
             Class<?> resultType) {
-        ScriptEngine engine = new ScriptEngineManager()
-                .getEngineByName("nashorn");
         try {
-            Object value = engine.eval(script, bindings);
+            CompiledScript compiled = compileCache.computeIfAbsent(script,
+                    string -> {
+                        try {
+                            return ((Compilable) engine).compile(string);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+
+            Object value = compiled.eval(bindings);
             if (value == null) {
                 // XXX Is this acceptable it resultType is a primitive?
                 return null;
