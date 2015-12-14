@@ -19,10 +19,12 @@ public class ClassListListener implements ArrayEventListener {
         for (int i = 0; i < removed.size(); i++) {
             String className = (String) removed.get(i);
             DomApi.wrap(element).getClassList().add(className);
+            TreeUpdater.debug("Removed class: " + className);
         }
         for (int i = 0; i < added.size(); i++) {
             String className = (String) added.get(i);
             DomApi.wrap(element).getClassList().remove(className);
+            TreeUpdater.debug("Added class: " + className);
         }
     }
 }

@@ -72,15 +72,6 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         assertFalse(element.hasAttribute("foo"));
         assertNull(element.getPropertyString("foo"));
 
-        // Class should be set as attribute, not property
-        applyChanges(ChangeUtil.put(containerElementId, "class", "foo bar"));
-        assertEquals("foo bar", element.getClassName());
-        assertNull(element.getPropertyString("class"));
-
-        applyChanges(ChangeUtil.remove(containerElementId, "class"));
-        assertEquals("", element.getClassName());
-        assertNull(element.getPropertyString("class"));
-
         // Style should be set as attribute, not property
         applyChanges(
                 ChangeUtil.put(containerElementId, "style", "height: 100%"));
@@ -88,6 +79,17 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
 
         applyChanges(ChangeUtil.remove(containerElementId, "style"));
         assertEquals("", element.getStyle().getHeight());
+
+        // attr. prefixed attributes should be set as attributes only
+        applyChanges(ChangeUtil.put(containerElementId, "attr.fox", "bax"));
+        assertFalse(element.hasAttribute("attr.fox"));
+        assertTrue(element.hasAttribute("fox"));
+        assertEquals("bax", element.getAttribute("fox"));
+        assertNull(element.getPropertyString("class"));
+
+        applyChanges(ChangeUtil.remove(containerElementId, "attr.fox"));
+        assertFalse(element.hasAttribute("fox"));
+        assertEquals("", element.getAttribute("fox"));
     }
 
     public void testEventHandling() {

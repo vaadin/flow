@@ -173,7 +173,7 @@ public class AbstractOrderedLayoutTest
     @Test
     public void setExpandWhenChildHasClass() {
         Button button = new Button();
-        button.getElement().setAttribute("class", "buttonclass");
+        button.addStyleName("buttonclass");
         getLayout().addComponent(button);
         getLayout().setExpandRatio(button, 1);
 

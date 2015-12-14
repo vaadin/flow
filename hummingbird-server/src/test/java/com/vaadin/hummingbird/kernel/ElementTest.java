@@ -17,7 +17,7 @@ public class ElementTest {
     @Test
     public void elementOuterHTML() {
         Element element = new Element("span");
-        element.setAttribute("class", "foobar");
+        element.addClass("foobar");
         element.setAttribute("nullValued", null);
         element.insertChild(0, new Element("strong"));
 
@@ -214,7 +214,7 @@ public class ElementTest {
     @Test
     public void removeFirstClass() {
         Element e = new Element("div");
-        e.setAttribute("class", "foo bar baz");
+        e.addClass("foo bar baz");
         e.removeClass("foo");
         assertElementEquals(parse("<div class='bar baz'>"), e);
     }
@@ -222,7 +222,7 @@ public class ElementTest {
     @Test
     public void removeMiddleClass() {
         Element e = new Element("div");
-        e.setAttribute("class", "foo bar baz");
+        e.addClass("foo bar baz");
         e.removeClass("bar");
         assertElementEquals(parse("<div class='foo baz'>"), e);
     }
@@ -230,7 +230,7 @@ public class ElementTest {
     @Test
     public void removeLastClass() {
         Element e = new Element("div");
-        e.setAttribute("class", "foo bar baz");
+        e.addClass("foo bar baz");
         e.removeClass("baz");
         assertElementEquals(parse("<div class='foo bar'>"), e);
     }
@@ -238,7 +238,7 @@ public class ElementTest {
     @Test
     public void removeAllClasses() {
         Element e = new Element("div");
-        e.setAttribute("class", "foo bar baz");
+        e.addClass("foo bar baz");
         e.removeClass("baz");
         e.removeClass("bar");
         e.removeClass("foo");
@@ -279,7 +279,11 @@ public class ElementTest {
         Element e = new Element(model.tagName());
         Attributes attrs = model.attributes();
         attrs.forEach(c -> {
-            e.setAttribute(c.getKey(), c.getValue());
+            if (c.getKey().equals("class")) {
+                e.addClass(c.getValue());
+            } else {
+                e.setAttribute(c.getKey(), c.getValue());
+            }
         });
         for (org.jsoup.nodes.Element childModel : model.children()) {
             Element childElement = jsoupToElement(childModel);

@@ -158,15 +158,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
         if (style == null || "".equals(style)) {
             return;
         }
-        if (style.contains(" ")) {
-            // Split space separated style names and add them one by one.
-            StringTokenizer tokenizer = new StringTokenizer(style, " ");
-            while (tokenizer.hasMoreTokens()) {
-                addStyleName(tokenizer.nextToken());
-            }
-            return;
-        }
-
         getElement().addClass(style);
     }
 

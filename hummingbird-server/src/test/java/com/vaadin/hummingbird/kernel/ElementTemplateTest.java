@@ -15,7 +15,7 @@ public class ElementTemplateTest {
 
         Assert.assertEquals("span", element.getTag());
 
-        element.setAttribute("class", "important");
+        element.addClass("important");
 
         Assert.assertEquals("important", mirror.getAttribute("class"));
     }

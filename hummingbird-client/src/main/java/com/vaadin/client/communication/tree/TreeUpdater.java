@@ -134,11 +134,23 @@ public class TreeUpdater {
                 // value, or removing attribute if it has been set already
                 if (element.hasAttribute(attrKey)) {
                     DomApi.wrap(element).removeAttribute(attrKey);
+                    if (debug) {
+                        debug("Removed attribute " + key + " from "
+                                + debugHtml(element));
+                    }
                 } else {
                     DomApi.wrap(element).setAttribute(attrKey, "");
+                    if (debug) {
+                        debug("Set attribute " + key + "=\"\" for "
+                                + debugHtml(element));
+                    }
                 }
             } else {
                 DomApi.wrap(element).setAttribute(attrKey, value.asString());
+                if (debug) {
+                    debug("Set attribute " + key + "=\"" + value + "\" for "
+                            + debugHtml(element));
+                }
             }
         } else if (value == null || value.getType() == JsonType.NULL) {
             // Null property and/or remove attribute
