@@ -66,6 +66,10 @@ public class TemplateScriptHelper {
                 Object value;
                 if (supplier != null) {
                     value = supplier.get();
+                    if (value instanceof StateNode) {
+                        StateNode node = (StateNode) value;
+                        value = TemplateScriptHelper.wrapNode(node);
+                    }
                 } else {
                     value = null;
                 }
@@ -150,6 +154,10 @@ public class TemplateScriptHelper {
             if (value == null) {
                 // XXX Is this acceptable it resultType is a primitive?
                 return null;
+            }
+            if (value instanceof StateNodeWrapper) {
+                StateNodeWrapper wrapper = (StateNodeWrapper) value;
+                value = wrapper.node;
             }
             if (!resultType.isInstance(value)) {
                 if (value instanceof Number) {

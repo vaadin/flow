@@ -54,13 +54,7 @@ public class TemplateParser {
                 return name -> {
                     if (node.containsKey(name)) {
                         return () -> {
-                            Object value = node.get(name);
-                            if (value instanceof StateNode) {
-                                StateNode stateNode = (StateNode) value;
-                                return TemplateScriptHelper.wrapNode(stateNode);
-                            } else {
-                                return value;
-                            }
+                            return node.get(name);
                         };
                     } else {
                         return null;
@@ -149,8 +143,7 @@ public class TemplateParser {
                             return name -> {
                                 if (innerVarName.equals(name)) {
                                     return () -> {
-                                        return TemplateScriptHelper
-                                                .wrapNode(node);
+                                        return node;
                                     };
                                 } else {
                                     return baseFactory.apply(name);
