@@ -116,7 +116,7 @@ public class BasicElementListener {
 
     private static void insertNodeAtIndex(Element parent, Node child,
             int index) {
-        if (DomApi.wrap(parent).getChildNodes().size() == index) {
+        if (DomApi.wrap(parent).getChildNodes().getLength() == index) {
             DomApi.wrap(parent).appendChild(child);
             if (TreeUpdater.debug) {
                 TreeUpdater
@@ -124,7 +124,7 @@ public class BasicElementListener {
                                 + " into " + TreeUpdater.debugHtml(parent));
             }
         } else {
-            Node reference = DomApi.wrap(parent).getChildNodes().get(index);
+            Node reference = DomApi.wrap(parent).getChildNodes().getItem(index);
             DomApi.wrap(parent).insertBefore(child, reference);
             if (TreeUpdater.debug) {
                 TreeUpdater.debug("Inserted node "

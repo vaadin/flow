@@ -1,0 +1,23 @@
+<style>
+  .user-image.user-image {
+    width: auto;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+  }
+
+  .user-image img,
+  img.user-image {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: auto;
+    max-width: 33%;
+    max-height: 33%;
+  }
+
+  .demo-wrapper > * {
+    position: relative;
+  }
+</style>

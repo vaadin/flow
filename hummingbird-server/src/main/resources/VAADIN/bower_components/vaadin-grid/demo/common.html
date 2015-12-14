@@ -1,12 +1,15 @@
-<link rel="stylesheet" href="../../components-demo-resources/demo.css">
-<script src="xhrpatch.js"></script>
+<link rel="stylesheet" href="../../elements-demo-resources/demo.css">
+<link rel="stylesheet" href="common.css">
+<script src="../../elements-demo-resources/ga.js"></script>
+
 <script>
-  var randomUserUrl = 'https://randomuser.me/api/';
+  window.randomUserUrl = 'https://randomuser.me/api/';
+  window.localUserUrl = 'users.json';
   var bowerComponents = '../../';
 
   window.xCodeExampleSourceHead =
-  "  <script src='https://cdn.vaadin.com/vaadin-components/latest/webcomponentsjs/webcomponents-lite.js'><\/script>\n"+
-  "  <link href='https://cdn.vaadin.com/vaadin-components/latest/vaadin-grid/vaadin-grid.html' rel='import'>\n"+
+  "  <script src='https://cdn.vaadin.com/vaadin-elements/latest/webcomponentsjs/webcomponents-lite.js'><\/script>\n"+
+  "  <link href='https://cdn.vaadin.com/vaadin-elements/latest/vaadin-grid/vaadin-grid.html' rel='import'>\n"+
   "  <script>var randomUserUrl = '" + randomUserUrl + "';<\/script>\n";
 
   function createButton(text, fnc) {
@@ -25,7 +28,8 @@
     var _whenReady = HTMLImports.whenReady;
     HTMLImports.whenReady = function(done) {
       var id = setInterval(function() {
-        if (window.Polymer && window.vaadin && window.vaadin.GridComponent) {
+        if (window.Polymer && window.vaadin && vaadin.elements
+            && vaadin.elements.grid && vaadin.elements.grid.GridElement) {
           clearInterval(id);
           // Restore whenReady
           HTMLImports.whenReady = _whenReady
@@ -44,7 +48,7 @@
     pol.href = base + 'polymer/polymer.html';
     pol.onload = function() {
       // Set base url for xhrpatch
-      window.randomUserUrl = baseCommon + 'users.json';
+      window.localUserUrl = baseCommon + 'users.json';
       Polymer.Base.importHref(base + 'code-example/code-example.html');
       Polymer.Base.importHref(base + 'table-of-contents/table-of-contents.html');
       Polymer.Base.importHref(base + 'vaadin-grid/vaadin-grid.html');
@@ -53,26 +57,5 @@
   }
 </script>
 
-<style>
-  .user-image.user-image {
-    width: auto;
-    height: auto;
-    margin: 0;
-    border-radius: 0;
-    border: none;
-  }
-
-  .user-image img,
-  img.user-image {
-    position: absolute;
-    bottom: 0px;
-    right: 0px;
-    width: auto;
-    max-width: 33%;
-    max-height: 33%;
-  }
-
-  .demo-wrapper > * {
-    position: relative;
-  }
-</style>
+<!-- load xhr hack after random and user urls have been defined -->
+<script src="xhrpatch.js"></script>

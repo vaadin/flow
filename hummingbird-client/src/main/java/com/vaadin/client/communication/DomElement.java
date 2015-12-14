@@ -3,6 +3,7 @@ package com.vaadin.client.communication;
 import com.google.gwt.core.client.js.JsProperty;
 import com.google.gwt.core.client.js.JsType;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.NodeList;
 import com.vaadin.client.JsArrayObject;
 
 // See https://www.polymer-project.org/1.0/docs/devguide/local-dom.html
@@ -38,7 +39,7 @@ public interface DomElement {
     // Polymer returns an array for childNodes even though element.childNodes
     // and element.children both are NodeLists
     @JsProperty
-    public JsArrayObject<Node> getChildNodes();
+    public NodeList<Node> getChildNodes();
 
     @JsProperty
     public Node getParentNode();

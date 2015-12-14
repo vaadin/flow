@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.NodeList;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.DomElement;
@@ -46,15 +47,15 @@ public class ForElementTemplate extends Template {
                                 .wrap(DomApi.wrap(commentNode).getParentNode());
 
                         if (commentNodeIndex == -1 || forNode.getChildNodes()
-                                .get(commentNodeIndex) != commentNode) {
+                                .getItem(commentNodeIndex) != commentNode) {
                             // Uses indexOf in order to avoid nextSibling
                             // because of
                             // https://github.com/Polymer/polymer/issues/2645
 
                             // Find commentNode again as it has moved
-                            commentNodeIndex = forNode.getChildNodes()
-                                    .indexOf(commentNode);
 
+                            commentNodeIndex = nodeListIndexOf(
+                                    forNode.getChildNodes(), commentNode);
                         }
 
                         // Node to remove is "startIndex" positions forward from
@@ -67,7 +68,7 @@ public class ForElementTemplate extends Template {
                             // Does not use nextSibling because of
                             // https://github.com/Polymer/polymer/issues/2645
                             Node removeNode = forNode.getChildNodes()
-                                    .get(nodeIndex);
+                                    .getItem(nodeIndex);
                             forNode.removeChild(removeNode);
                         }
 
@@ -136,9 +137,9 @@ public class ForElementTemplate extends Template {
                             Node sibling = null;
                             int nodeAfterIndex = insertIndex + 1;
                             if (nodeAfterIndex < forNode.getChildNodes()
-                                    .size()) {
+                                    .getLength()) {
                                 sibling = forNode.getChildNodes()
-                                        .get(nodeAfterIndex);
+                                        .getItem(nodeAfterIndex);
                             }
 
                             forNode.insertBefore(child, sibling);
@@ -148,6 +149,12 @@ public class ForElementTemplate extends Template {
 
         return commentNode;
     }
+
+    protected native int nodeListIndexOf(NodeList<Node> childNodes,
+            Node childNode)
+            /*-{
+                return Array.prototype.indexOf.call(childNodes, childNode);
+            }-*/;
 
     private static Node findNodeBefore(Node anchorNode, int index) {
         Node refChild = anchorNode;

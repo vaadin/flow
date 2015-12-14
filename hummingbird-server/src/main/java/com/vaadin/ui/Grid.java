@@ -2651,7 +2651,10 @@ public class Grid extends AbstractFocusable implements SelectionNotifier,
                 throws IllegalStateException {
             checkColumnIsAttached();
 
-            state.put("headerContent", caption);
+            // FIXME This is not how it should really be done
+            // The functionality should be implemented in
+            // HeaderRow/HeaderCell.setText and other methods
+            state.put("name", caption);
 
             HeaderRow row = grid.getHeader().getDefaultRow();
             if (row != null) {

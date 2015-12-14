@@ -35,11 +35,19 @@ layout: page
       <vaadin-grid demo hidden>
         <table>
           <colgroup>
-            <col header-text="#">
-            <col header-text="Name">
-            <col header-text="Surname">
-            <col header-text="Activity">
+            <col>
+            <col>
+            <col>
+            <col>
           </colgroup>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Surname</th>
+              <th>Activity</th>
+            </tr>
+          </thead>
         </table>
       </vaadin-grid>
       <button class="demo-button" id="scrollToStart">scrollToStart</button>

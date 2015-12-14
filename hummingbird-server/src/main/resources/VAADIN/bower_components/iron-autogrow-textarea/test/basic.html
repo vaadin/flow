@@ -20,10 +20,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../test-fixture/test-fixture-mocha.js"></script>
     <script src="../../iron-test-helpers/mock-interactions.js"></script>
-
-    <link rel="import" href="../../test-fixture/test-fixture.html">
     <link rel="import" href="../iron-autogrow-textarea.html">
 
   </head>
@@ -86,6 +83,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           autogrow.bindValue = 'batman';
           var finalHeight = autogrow.offsetHeight
           assert.isTrue(finalHeight < initialHeight);
+        });
+
+        test('an undefined bindValue is the empty string', function() {
+          var autogrow = fixture('basic');
+          var initialHeight = autogrow.offsetHeight;
+
+          autogrow.bindValue = 'batman\nand\nrobin';
+          var finalHeight = autogrow.offsetHeight;
+          assert.isTrue(finalHeight > initialHeight);
+
+          autogrow.bindValue = undefined;
+          assert.equal(autogrow.offsetHeight, initialHeight);
+          assert.equal(autogrow.textarea.value, '');
+        });
+
+        test('textarea selection works', function() {
+          var autogrow = fixture('basic');
+          var textarea = autogrow.textarea;
+          autogrow.bindValue = 'batman\nand\nrobin';
+
+          autogrow.selectionStart = 3;
+          autogrow.selectionEnd = 5;
+
+          assert.equal(textarea.selectionStart, 3);
+          assert.equal(textarea.selectionEnd, 5);
         });
       });
 

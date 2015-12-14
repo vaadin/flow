@@ -8,16 +8,14 @@
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="../../polymer/polymer.html">
-  <link rel="import" href="../vaadin-grid.html">
   <script src="xhrpatch.js"></script>
   <script>
     var randomUserUrl = 'https://randomuser.me/api/';
   </script>
-  <script src="js_dependencies/traceur-runtime.js"></script>
-  <script src="js_dependencies/system@0.16.js"></script>
+  <script src="js_dependencies/system.js"></script>
+  <script src="js_dependencies/typescript.js"></script>
   <script src="js_dependencies/angular2.dev.js"></script>
-
-
+  <script src="js_dependencies/http.dev.js"></script>
 </head>
 
 <body unresolved style="padding: 0; margin: 0;">
@@ -39,7 +37,19 @@
     var tagName = window.location.hash.substr(1);
     document.body.appendChild(document.createElement(tagName));
     HTMLImports.whenReady(function(){
-      System.import(tagName);
+
+      System.config({
+       transpiler: 'typescript',
+       typescriptOptions: { emitDecoratorMetadata: true }
+      });
+      System.import(tagName + '.ts');
+
+      // Angular2 (alpha44) builds template views in phases, so that it will
+      // first append an empty <vaadin-grid> element to the DOM and after that
+      // modify it to match the template. Current implementation of <vaadin-grid>
+      // doesn't pick modifications to the light DOM, so we need to import/upgrade
+      // the component after Angular has done its importing.
+      Polymer.Base.importHref('../vaadin-grid.html');
     });
   </script>
 

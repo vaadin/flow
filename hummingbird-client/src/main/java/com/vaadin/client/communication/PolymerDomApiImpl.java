@@ -15,4 +15,9 @@ public class PolymerDomApiImpl implements DomApiImpl {
     /*-{
      $wnd.Polymer.dom.flush();
     }-*/;
+
+    public native static boolean isAvailable()
+    /*-{
+         return $wnd.Polymer && $wnd.Polymer.dom;
+     }-*/;
 }
