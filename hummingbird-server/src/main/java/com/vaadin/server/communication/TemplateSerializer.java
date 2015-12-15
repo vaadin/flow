@@ -54,27 +54,28 @@ public class TemplateSerializer {
         serialized.put("content", template.getContent());
     }
 
+    private String serializeBinding(Binding binding) {
+        if (binding instanceof ModelBinding) {
+            ModelBinding mb = (ModelBinding) binding;
+
+            assert mb.getBinding() != null;
+            return mb.getBinding();
+        } else {
+            throw new RuntimeException(
+                    "Only " + ModelBinding.class.getName() + " is supported");
+        }
+    }
+
     private void serializeDynamicTextTemplate(JsonObject serialized,
             DynamicTextTemplate template, UI ui) {
         Binding binding = template.getBinding();
-        if (binding instanceof ModelBinding) {
-            ModelBinding mb = (ModelBinding) binding;
-            serialized.put("binding", mb.getBinding());
-        } else {
-            throw new RuntimeException(binding.toString());
-        }
+        serialized.put("binding", serializeBinding(binding));
     }
 
     private void serializeForTemplate(JsonObject serialized,
             ForElementTemplate template, UI ui) {
         Binding binding = template.getListBinding();
-        if (binding instanceof ModelBinding) {
-            ModelBinding mb = (ModelBinding) binding;
-            serialized.put("modelKey", mb.getBinding());
-        } else {
-            throw new RuntimeException(
-                    "Only " + ModelBinding.class.getName() + " is supported");
-        }
+        serialized.put("modelKey", serializeBinding(binding));
         serialized.put("innerScope", template.getInnerScope());
 
         serializeBoundElementTemplate(serialized, template);
@@ -87,13 +88,8 @@ public class TemplateSerializer {
                 .entrySet()) {
             String attributeName = entry.getKey();
             Binding attributeBinding = entry.getValue();
-            if (attributeBinding instanceof ModelBinding) {
-                ModelBinding mb = (ModelBinding) attributeBinding;
-                attributeBindings.put(mb.getBinding(), attributeName);
-            } else {
-                // Not yet supported
-                throw new RuntimeException(attributeBinding.toString());
-            }
+            attributeBindings.put(attributeName,
+                    serializeBinding(attributeBinding));
         }
 
         List<BoundElementTemplate> childTemplates = bet.getChildTemplates();
@@ -110,13 +106,7 @@ public class TemplateSerializer {
 
         JsonObject classPartBindings = Json.createObject();
         bet.getClassPartBindings().forEach((key, binding) -> {
-            if (binding instanceof ModelBinding) {
-                ModelBinding mb = (ModelBinding) binding;
-                classPartBindings.put(mb.getBinding(), key);
-            } else {
-                // Not yet supported
-                throw new RuntimeException(binding.toString());
-            }
+            classPartBindings.put(key, serializeBinding(binding));
         });
 
         if (classPartBindings.keys().length != 0) {

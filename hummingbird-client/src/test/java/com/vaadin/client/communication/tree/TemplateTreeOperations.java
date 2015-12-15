@@ -18,8 +18,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
     public void testBoundProperties() {
         String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
                 + "'defaultAttributes': {'foo': 'bar'},"
-                + "'attributeBindings': {'value': 'bound'},"
-                + "'classPartBindings': {'conditional': 'part'},"
+                + "'attributeBindings': {'bound': 'value'},"
+                + "'classPartBindings': {'part': 'conditional'},"
                 + "'modelStructure': ['value', 'conditional']}";
         JsonObject template = Json.parse(json.replace('\'', '"'));
 
@@ -167,7 +167,7 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
                 + "'modelKey': 'items', 'innerScope':'item',"
                 + "'defaultAttributes': {'type': 'checkbox'},"
                 + "'events': {'click': ['model.foo = 1; item.foo = 2;']},"
-                + "'attributeBindings': {'item.checked': 'checked'}" + "}";
+                + "'attributeBindings': {'checked': 'item.checked'}" + "}";
         applyTemplate(1, Json.parse(forJson.replace('\'', '"')));
 
         String parentJson = "{'type': 'BoundElementTemplate', 'tag':'div',"
@@ -258,7 +258,7 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
     public void testMoveNode() {
         String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
-                + "'attributeBindings': {'child1.value': 'value1', 'child2.value': 'value2'},"
+                + "'attributeBindings': {'value1': 'child1.value', 'value2': 'child2.value'},"
                 + "'events': {'click': ['model.child2 = model.child1; model.child1 = null;']},"
                 + "'modelStructure': [{'child1': ['value'], 'child2': ['value']}]}";
         JsonObject template = Json.parse(json.replace('\'', '"'));
