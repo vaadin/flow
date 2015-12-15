@@ -13,7 +13,7 @@ public class ElementTemplateTest {
 
         Assert.assertEquals("span", element.getTag());
 
-        element.setAttribute("class", "important");
+        element.addClass("important");
 
         Assert.assertEquals("important", mirror.getAttribute("class"));
     }
@@ -256,6 +256,59 @@ public class ElementTemplateTest {
                 element.getAttribute("class"));
 
         node.remove("done");
+
+        Assert.assertEquals("baseClass", element.getAttribute("class"));
+    }
+
+    @Test
+    public void boundClassWithExternalClass() {
+        BoundElementTemplate template = TemplateBuilder.withTag("div")
+                .bindAttribute("class.completed", "done")
+                .setAttribute("class", "baseClass").build();
+        StateNode node = StateNode.create();
+
+        Element element = Element.getElement(template, node);
+        Assert.assertEquals("baseClass", element.getAttribute("class"));
+
+        element.addClass("test");
+
+        Assert.assertEquals("test baseClass", element.getAttribute("class"));
+
+        node.put("done", Boolean.TRUE);
+
+        Assert.assertEquals("test baseClass completed",
+                element.getAttribute("class"));
+
+        node.remove("done");
+
+        element.removeClass("baseClass");
+
+        Assert.assertEquals("test baseClass", element.getAttribute("class"));
+
+        element.removeClass("test");
+
+        Assert.assertEquals("baseClass", element.getAttribute("class"));
+    }
+
+    @Test
+    public void staticTemplateClassWithSameExternalClass() {
+        BoundElementTemplate template = TemplateBuilder.withTag("div")
+                .setAttribute("class", "baseClass").build();
+        StateNode node = StateNode.create();
+
+        Element element = Element.getElement(template, node);
+        Assert.assertEquals("baseClass", element.getAttribute("class"));
+
+        element.addClass("baseClass");
+
+        Assert.assertEquals("baseClass baseClass",
+                element.getAttribute("class"));
+
+        element.removeClass("baseClass");
+
+        Assert.assertEquals("baseClass", element.getAttribute("class"));
+
+        element.removeClass("baseClass");
 
         Assert.assertEquals("baseClass", element.getAttribute("class"));
     }

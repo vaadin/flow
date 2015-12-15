@@ -5,7 +5,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
@@ -15,7 +18,7 @@ import com.vaadin.ui.UI.Root;
 public abstract class AbstractElementTemplate implements ElementTemplate {
 
     public enum Keys {
-        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY, EVENT_DATA, OVERRIDE_TEMPLATE;
+        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY, EVENT_DATA, OVERRIDE_TEMPLATE, CLASS_LIST;
     }
 
     private static final AtomicInteger nextId = new AtomicInteger(1);
@@ -325,7 +328,21 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         if (dataNode == null) {
             return Collections.emptySet();
         } else {
-            return dataNode.getStringKeys();
+            Set<String> stringKeys = dataNode.getStringKeys();
+            // since class-attribute is not stored as an attribute with a
+            // "class"
+            // key of type string, it might be filtered from the list depending
+            // on
+            // the Element Template for this element. Thus we need to add
+            // "class"
+            // manually here so that pre-rendering works.
+            if (!stringKeys.contains("class")
+                    && !getClassList(node, false).isEmpty()) {
+                stringKeys = Stream
+                        .concat(stringKeys.stream(), Stream.of("class"))
+                        .collect(Collectors.toSet());
+            }
+            return stringKeys;
         }
     }
 
@@ -346,6 +363,22 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     public void runBeforeNextClientResponse(Runnable runnable, StateNode node) {
         StateNode dataNode = getElementDataNode(node, true);
         dataNode.runBeforeNextClientResponse(runnable);
+    }
+
+    @Override
+    public List<String> getAllClasses(StateNode node) {
+        return Collections.unmodifiableList(getClassList(node, false));
+    }
+
+    @Override
+    public List<String> getClassList(StateNode node, boolean createIfNeeded) {
+        StateNode dataNode = getElementDataNode(node, createIfNeeded);
+        if (dataNode == null
+                || !dataNode.containsKey(Keys.CLASS_LIST) && !createIfNeeded) {
+            return Collections.emptyList();
+        }
+
+        return (List) dataNode.getMultiValued(Keys.CLASS_LIST);
     }
 
 }

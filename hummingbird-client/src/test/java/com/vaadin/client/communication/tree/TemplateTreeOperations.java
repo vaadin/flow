@@ -58,6 +58,50 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals("", templateElement.getClassName());
     }
 
+    public void testClasses() {
+        String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
+                + "'defaultAttributes': {'class': 'baseClass'},"
+                + "'classPartBindings': {'conditional': 'part'},"
+                + "'modelStructure': ['conditional']}";
+        JsonObject template = Json.parse(json.replace('\'', '"'));
+
+        applyTemplate(1, template);
+
+        int childId = 3;
+        int childrenId = 4;
+        int classListId = 5;
+
+        applyChanges(
+                ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.listInsertNode(childrenId, 0, childId),
+                ChangeUtil.put(childId, "TEMPLATE", Json.create(1)),
+                ChangeUtil.put(childId, "conditional", Json.create(true)));
+
+        Element rootElement = updater.getRootElement();
+        assertEquals(1, rootElement.getChildCount());
+
+        Element templateElement = rootElement.getFirstChildElement();
+        assertEquals("SPAN", templateElement.getTagName());
+        assertEquals("baseClass part", templateElement.getClassName());
+
+        JsonArray array = Json.createArray();
+        array.set(0, "foo");
+        array.set(1, "bar");
+        applyChanges(ChangeUtil.putList(childId, "CLASS_LIST", classListId),
+                ChangeUtil.listInsert(classListId, 0, array));
+        assertEquals("baseClass part foo bar", templateElement.getClassName());
+
+        applyChanges(
+                ChangeUtil.put(childId, "conditional", Json.create(false)));
+        assertEquals("baseClass foo bar", templateElement.getClassName());
+
+        applyChanges(ChangeUtil.listRemove(classListId, 0));
+        assertEquals("baseClass bar", templateElement.getClassName());
+
+        applyChanges(ChangeUtil.put(childId, "conditional", Json.create(true)));
+        assertEquals("baseClass bar part", templateElement.getClassName());
+    }
+
     public void testTemplateEvents() {
         String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
                 + "'events': {'click': ['element.something=10','server.doSomething(element.something)', 'model.value=1']},"

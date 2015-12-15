@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -17,7 +18,6 @@ public class Element implements Serializable {
 
     public static final String TEXT_NODE_TEXT_ATTRIBUTE = "content";
     private static final String STYLE_SEPARATOR = ";";
-    private static final String CLASS_ATTRIBUTE = "class";
     private static final String STYLE_ATTRIBUTE = "style";
     private static final String TEXT_NODE_TAG = "#text";
     private ElementTemplate template;
@@ -57,6 +57,11 @@ public class Element implements Serializable {
 
     public Element setAttribute(String name, String value) {
         assert validAttribute(name);
+
+        if (name.equals("class")) {
+            throw new UnsupportedOperationException(
+                    "Can't set element class with setAttribute, use setClass or addClass.");
+        }
 
         template.setAttribute(name, value, node);
         debug("Set attribute " + name + " for " + this);
@@ -110,6 +115,10 @@ public class Element implements Serializable {
 
     public String getAttribute(String name) {
         assert validAttribute(name);
+
+        if (name.equals("class")) {
+            return getClassNames();
+        }
 
         Object value = template.getAttribute(name, node);
         // Integer-ish floating point values are shown as integers in
@@ -338,13 +347,22 @@ public class Element implements Serializable {
                 if (attribute.equals("innerHTML")) {
                     continue;
                 }
-                String value = getAttribute(attribute);
-                if (value != null && !value.equals("false")) {
-                    b.append(' ');
-                    b.append(attribute);
-                    b.append("=\"");
-                    b.append(value);
-                    b.append('\"');
+                if (attribute.equals("class")) {
+                    String classNames = getClassNames();
+                    if (!classNames.isEmpty()) {
+                        b.append(" class=\"");
+                        b.append(classNames);
+                        b.append("\"");
+                    }
+                } else {
+                    String value = getAttribute(attribute);
+                    if (value != null && !value.equals("false")) {
+                        b.append(' ');
+                        b.append(attribute);
+                        b.append("=\"");
+                        b.append(value);
+                        b.append('\"');
+                    }
                 }
             }
             b.append('>');
@@ -540,9 +558,11 @@ public class Element implements Serializable {
     /**
      * Removes the given class from the element.
      * <p>
-     * Modifies the "class" attribute.
+     * Modifies the "classList" attribute.
      * <p>
-     * Has no effect if the element does not have the given class attribute
+     * Has no effect if the element does not have the given class attribute.
+     * <p>
+     * Does not remove classes bound by the element template.
      *
      * @param className
      *            the class to remove
@@ -551,15 +571,19 @@ public class Element implements Serializable {
     public Element removeClass(String className) {
         assert className != null;
 
-        return removeAttributeValue(CLASS_ATTRIBUTE, className, " ");
+        template.getClassList(node, false).remove(className);
+        return this;
     }
 
     /**
      * Adds the given class to the element.
      * <p>
-     * Modifies the "class" attribute.
+     * Modifies the "classList" property. Multiple class names can be by
+     * separating the class names with whitespace.
      * <p>
-     * Has no effect if the element already has the given class name
+     * Has no effect if the element already has the given class name.
+     * <p>
+     * Empty string has not effect.
      *
      * @param className
      *            the class name to add
@@ -567,17 +591,29 @@ public class Element implements Serializable {
      */
     public Element addClass(String className) {
         assert className != null;
-
-        if (!hasAttribute(CLASS_ATTRIBUTE)) {
-            setAttribute(CLASS_ATTRIBUTE, className);
-        } else {
-            addAttributeValue(CLASS_ATTRIBUTE, className, " ");
+        if (className.isEmpty()) {
+            return this;
         }
+        if (className.contains(" ")) {
+            // Split space separated style names and add them one by one.
+            StringTokenizer tokenizer = new StringTokenizer(className, " ");
+            while (tokenizer.hasMoreTokens()) {
+                addClass(tokenizer.nextToken());
+            }
+
+        } else {
+            List<String> classList = template.getClassList(node, true);
+
+            if (!classList.contains(className)) {
+                classList.add(className);
+            }
+        }
+
         return this;
     }
 
     /**
-     * Checks if the element has the given class
+     * Checks if the element has the given class.
      *
      * @param className
      *            the class name to check for
@@ -586,7 +622,39 @@ public class Element implements Serializable {
     public boolean hasClass(String className) {
         assert className != null;
 
-        return hasAttributeValue(CLASS_ATTRIBUTE, className, " ");
+        return getClasses().contains(className);
+    }
+
+    /**
+     * Returns a list of the current classes for this element, if any.
+     *
+     * @return the class list
+     */
+    public List<String> getClasses() {
+        return template.getAllClasses(node);
+    }
+
+    /**
+     * Return the current classes for this element, or empty string if none
+     * exist.
+     *
+     * @return all the set classes for this element
+     */
+    public String getClassNames() {
+        final StringBuilder sb = new StringBuilder();
+        getClasses().forEach(str -> {
+            sb.append(str);
+            sb.append(" ");
+        });
+        return sb.toString().trim();
+    }
+
+    /**
+     * Removes all classes for this element, if any.
+     */
+    public Element removeAllClasses() {
+        template.getClassList(node, false).clear();
+        return this;
     }
 
     /**

@@ -137,9 +137,13 @@ public class ChangeUtil {
     }
 
     public static SpliceChange listInsert(int id, int index, JsonValue value) {
+        return listInsert(id, index, createArray(value));
+    }
+
+    public static SpliceChange listInsert(int id, int index, JsonArray array) {
         JsonObject change = createChange(id, "splice", null);
         change.put("index", index);
-        change.put("value", createArray(value));
+        change.put("value", array);
         return (SpliceChange) change;
     }
 

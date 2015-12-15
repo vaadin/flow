@@ -1,6 +1,8 @@
 package com.vaadin.hummingbird.component;
 
 import org.jsoup.nodes.Document;
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
@@ -8,9 +10,6 @@ import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.TemplateBuilder;
 import com.vaadin.ui.HTML;
 import com.vaadin.ui.PreRenderer;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class PreRenderTest {
     @Test
@@ -59,13 +58,15 @@ public class PreRenderTest {
     public void testConvertToJsoup() {
         Element element = new Element("div");
         element.setTextContent("Hello world");
+        element.addClass("test");
 
         Element prerendered = PreRenderer.preRenderElementTree(element);
         Document document = new Document("");
         org.jsoup.nodes.Element jsoup = (org.jsoup.nodes.Element) PreRenderer
                 .toJSoup(document, prerendered);
 
-        Assert.assertEquals("<div>\n Hello world\n</div>", jsoup.outerHtml());
+        Assert.assertEquals("<div class=\"test\">\n Hello world\n</div>",
+                jsoup.outerHtml());
     }
 
     @Test
@@ -79,5 +80,18 @@ public class PreRenderTest {
                 .toJSoup(document, prerendered);
 
         Assert.assertEquals("<p>Hello</p>", jsoup.outerHtml());
+    }
+
+    @Test
+    public void testPreRenderHTMLClasses() {
+        HTML html = new HTML("<p class=\"test\">Hello</p>");
+
+        Element prerendered = PreRenderer
+                .preRenderElementTree(html.getElement());
+        Document document = new Document("");
+        org.jsoup.nodes.Element jsoup = (org.jsoup.nodes.Element) PreRenderer
+                .toJSoup(document, prerendered);
+
+        Assert.assertEquals("<p class=\"test\">Hello</p>", jsoup.outerHtml());
     }
 }

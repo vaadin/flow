@@ -127,7 +127,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     @Override
     public String getStyleName() {
-        return getElement().getAttribute("class");
+        return getElement().getClassNames();
     }
 
     /*
@@ -136,7 +136,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      */
     @Override
     public void setStyleName(String style) {
-        getElement().removeAttribute("class");
+        getElement().removeAllClasses();
         if (style == null || "".equals(style)) {
             return;
         }
@@ -158,15 +158,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
         if (style == null || "".equals(style)) {
             return;
         }
-        if (style.contains(" ")) {
-            // Split space separated style names and add them one by one.
-            StringTokenizer tokenizer = new StringTokenizer(style, " ");
-            while (tokenizer.hasMoreTokens()) {
-                addStyleName(tokenizer.nextToken());
-            }
-            return;
-        }
-
         getElement().addClass(style);
     }
 
@@ -1080,7 +1071,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
                 div.setAttribute("style", getElement().getAttribute("style"));
             }
             if (getElement().hasAttribute("class")) {
-                div.setAttribute("class", getElement().getAttribute("class"));
+                div.addClass(getElement().getAttribute("class"));
             }
 
             return div;

@@ -8,7 +8,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.communication.DomApi;
-import com.vaadin.client.communication.tree.ListTreeNode.ArrayEventListener;
 import com.vaadin.client.communication.tree.TreeNode.TreeNodeChangeListener;
 
 import elemental.js.json.JsJsonArray;
@@ -57,40 +56,34 @@ public class BasicElementListener {
                     JsArrayObject<Object> targetArray = ((JsJsonArray) target
                             .getArray(name)).cast();
 
-                    child.addArrayEventListener(new ArrayEventListener() {
-                        @Override
-                        public void splice(ListTreeNode listTreeNode,
-                                int startIndex, JsArrayObject<Object> removed,
-                                JsArrayObject<Object> added) {
-                            JsArrayObject<Object> newValues = added;
-                            if (added != null && added.size() != 0) {
-                                Object firstAdded = added.get(0);
-                                if (firstAdded instanceof TreeNode) {
-                                    newValues = JavaScriptObject.createArray()
-                                            .cast();
-                                    for (int i = 0; i < added.size(); i++) {
-                                        newValues.add(JavaScriptObject
-                                                .createObject());
-                                    }
+                    child.addArrayEventListener(
+                            (listTreeNode, startIndex, removed, added) -> {
+                        JsArrayObject<Object> newValues = added;
+                        if (added != null && added.size() != 0) {
+                            Object firstAdded = added.get(0);
+                            if (firstAdded instanceof TreeNode) {
+                                newValues = JavaScriptObject.createArray()
+                                        .cast();
+                                for (int i1 = 0; i1 < added.size(); i1++) {
+                                    newValues.add(
+                                            JavaScriptObject.createObject());
                                 }
                             }
-                            ListTreeNode.doSplice(targetArray, startIndex,
-                                    removed.size(), newValues);
-                            if (newValues != added) {
-                                for (int i = 0; i < added.size(); i++) {
-                                    JsonValue childObject = TreeUpdater
-                                            .asJsonValue(targetArray
-                                                    .get(startIndex + i));
-                                    TreeNode childNode = (TreeNode) added
-                                            .get(i);
-                                    childNode.addTreeNodeChangeListener(
-                                            new PropertyPropagator(
-                                                    (JsonObject) childObject));
-                                    TreeUpdater.debug("Add listener for child "
-                                            + (startIndex + i) + " in property "
-                                            + name + " for element " + target);
+                        }
+                        ListTreeNode.doSplice(targetArray, startIndex,
+                                removed.size(), newValues);
+                        if (newValues != added) {
+                            for (int i2 = 0; i2 < added.size(); i2++) {
+                                JsonValue childObject = TreeUpdater.asJsonValue(
+                                        targetArray.get(startIndex + i2));
+                                TreeNode childNode = (TreeNode) added.get(i2);
+                                childNode.addTreeNodeChangeListener(
+                                        new PropertyPropagator(
+                                                (JsonObject) childObject));
+                                TreeUpdater.debug("Add listener for child "
+                                        + (startIndex + i2) + " in property "
+                                        + name + " for element " + target);
 
-                                }
                             }
                         }
                     });
@@ -149,32 +142,29 @@ public class BasicElementListener {
             TreeNode elementNode, Element element) {
         TreeUpdater.debug("Add listener for " + type + " node "
                 + TreeUpdater.debugHtml(element));
-        DomListener listener = new DomListener() {
-            @Override
-            public void handleEvent(JavaScriptObject event) {
-                JsonObject eventData = null;
+        DomListener listener = event -> {
+            JsonObject eventData = null;
 
-                TreeUpdater.debug("Handling " + type + " for "
-                        + TreeUpdater.debugHtml(element) + ". Event: "
-                        + ((JsonObject) event.cast()).toJson());
-                TreeNode eventTypesToData = (TreeNode) elementNode
-                        .getProperty("EVENT_DATA").getValue();
-                if (eventTypesToData != null) {
-                    ListTreeNode eventDataKeys = (ListTreeNode) eventTypesToData
-                            .getProperty(type).getValue();
-                    if (eventDataKeys != null) {
-                        eventData = extractEventDetails(event, element,
-                                eventDataKeys);
-                    }
+            TreeUpdater.debug("Handling " + type + " for "
+                    + TreeUpdater.debugHtml(element) + ". Event: "
+                    + ((JsonObject) event.cast()).toJson());
+            TreeNode eventTypesToData = (TreeNode) elementNode
+                    .getProperty("EVENT_DATA").getValue();
+            if (eventTypesToData != null) {
+                ListTreeNode eventDataKeys = (ListTreeNode) eventTypesToData
+                        .getProperty(type).getValue();
+                if (eventDataKeys != null) {
+                    eventData = extractEventDetails(event, element,
+                            eventDataKeys);
                 }
-
-                if (eventData == null) {
-                    eventData = Json.createObject();
-                }
-
-                sendEventToServer(elementNode.getId(), type, eventData,
-                        treeUpdater);
             }
+
+            if (eventData == null) {
+                eventData = Json.createObject();
+            }
+
+            sendEventToServer(elementNode.getId(), type, eventData,
+                    treeUpdater);
         };
 
         JavaScriptObject wrappedListener = TreeUpdater.addDomListener(element,
@@ -246,86 +236,81 @@ public class BasicElementListener {
             TreeUpdater treeUpdater) {
         node.addTreeNodeChangeListener(new PropertyPropagator(element));
 
-        node.addTreeNodeChangeListener(new TreeNodeChangeListener() {
-
-            @Override
-            public void addProperty(String name, TreeNodeProperty property) {
-                if (!name.equals("CHILDREN")) {
-                    return;
-                }
-
-                ListTreeNode childrenListNode = (ListTreeNode) node
-                        .getProperty("CHILDREN").getValue();
-                addChildrenListener(node, childrenListNode, element,
-                        treeUpdater);
+        node.addTreeNodeChangeListener((name, property) -> {
+            if (!name.equals("CHILDREN")) {
+                return;
             }
+
+            ListTreeNode childrenListNode = (ListTreeNode) node
+                    .getProperty("CHILDREN").getValue();
+            addChildrenListener(node, childrenListNode, element, treeUpdater);
         });
 
-        node.addTreeNodeChangeListener(new TreeNodeChangeListener() {
-            @Override
-            public void addProperty(String name, TreeNodeProperty property) {
-                if (!name.equals("LISTENERS")) {
-                    return;
-                }
-
-                ListTreeNode listenersListNode = (ListTreeNode) node
-                        .getProperty("LISTENERS").getValue();
-                addListenersListener(node, listenersListNode, element,
-                        treeUpdater);
+        node.addTreeNodeChangeListener((name, property) -> {
+            if (!name.equals("LISTENERS")) {
+                return;
             }
+
+            ListTreeNode listenersListNode = (ListTreeNode) node
+                    .getProperty("LISTENERS").getValue();
+            addListenersListener(node, listenersListNode, element, treeUpdater);
         });
+        node.addTreeNodeChangeListener((name, property) -> {
+            if (!name.equals("CLASS_LIST")) {
+                return;
+            }
+
+            ListTreeNode classListListNode = (ListTreeNode) node
+                    .getProperty("CLASS_LIST").getValue();
+            classListListNode
+                    .addArrayEventListener(new ClassListListener(element));
+        });
+
     }
 
     private static void addChildrenListener(TreeNode elementNode,
             ListTreeNode childrenListNode, Element element,
             TreeUpdater treeUpdater) {
-        childrenListNode.addArrayEventListener(new ArrayEventListener() {
-            @Override
-            public void splice(ListTreeNode listTreeNode, int startIndex,
-                    JsArrayObject<Object> removed,
-                    JsArrayObject<Object> added) {
-                for (int i = 0; i < removed.size(); i++) {
-                    TreeNode removedNode = (TreeNode) removed.get(i);
-                    Node removedElement = treeUpdater
-                            .getOrCreateElement(removedNode);
-                    if (DomApi.wrap(removedElement)
-                            .getParentNode() == element) {
-                        DomApi.wrap(element).removeChild(removedElement);
+        childrenListNode.addArrayEventListener(
+                (listTreeNode, startIndex, removed, added) -> {
+                    for (int i1 = 0; i1 < removed.size(); i1++) {
+                        TreeNode removedNode = (TreeNode) removed.get(i1);
+                        Node removedElement = treeUpdater
+                                .getOrCreateElement(removedNode);
+                        if (DomApi.wrap(removedElement)
+                                .getParentNode() == element) {
+                            DomApi.wrap(element).removeChild(removedElement);
+                        }
                     }
-                }
-                for (int i = 0; i < added.size(); i++) {
-                    TreeNode addedNode = (TreeNode) added.get(i);
-                    Node node = treeUpdater.getOrCreateElement(addedNode);
-                    insertNodeAtIndex(element, node, startIndex + i);
-                }
-            }
-        });
+                    for (int i2 = 0; i2 < added.size(); i2++) {
+                        TreeNode addedNode = (TreeNode) added.get(i2);
+                        Node node = treeUpdater.getOrCreateElement(addedNode);
+                        insertNodeAtIndex(element, node, startIndex + i2);
+                    }
+                });
     }
 
     private static void addListenersListener(TreeNode elementNode,
             ListTreeNode listenersListNode, Element element,
             TreeUpdater treeUpdater) {
-        listenersListNode.addArrayEventListener(new ArrayEventListener() {
-            @Override
-            public void splice(ListTreeNode listTreeNode, int startIndex,
-                    JsArrayObject<Object> removed,
-                    JsArrayObject<Object> added) {
-                for (int i = 0; i < removed.size(); i++) {
-                    String type = (String) removed.get(i);
-                    Integer id = Integer.valueOf(elementNode.getId());
+        listenersListNode.addArrayEventListener(
+                (listTreeNode, startIndex, removed, added) -> {
+                    for (int i1 = 0; i1 < removed.size(); i1++) {
+                        String type1 = (String) removed.get(i1);
+                        Integer id = Integer.valueOf(elementNode.getId());
 
-                    JavaScriptObject listener = treeUpdater
-                            .removeSavedDomListener(type, id);
-                    assert listener != null;
+                        JavaScriptObject listener = treeUpdater
+                                .removeSavedDomListener(type1, id);
+                        assert listener != null;
 
-                    TreeUpdater.removeDomListener(element, type, listener);
-                }
+                        TreeUpdater.removeDomListener(element, type1, listener);
+                    }
 
-                for (int i = 0; i < added.size(); i++) {
-                    String type = (String) added.get(i);
-                    addListener(type, treeUpdater, elementNode, element);
-                }
-            }
-        });
+                    for (int i2 = 0; i2 < added.size(); i2++) {
+                        String type2 = (String) added.get(i2);
+                        addListener(type2, treeUpdater, elementNode, element);
+                    }
+                });
     }
+
 }

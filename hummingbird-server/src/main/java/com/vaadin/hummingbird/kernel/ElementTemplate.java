@@ -59,4 +59,28 @@ public interface ElementTemplate extends Serializable {
 
     public StateNode getElementDataNode(StateNode node, boolean createIfNeeded);
 
+    /**
+     * Returns the manually added classes. Can be used for adding & removing new
+     * classes. For {@link BoundElementTemplate}, this will not contain the
+     * classes coming from the template.
+     *
+     * @param node
+     * @param createIfNeeded
+     *            <code>true</code> for creating the necessary state node (when
+     *            writing)
+     * @return list of the manually added classes for this template
+     */
+    public List<String> getClassList(StateNode node, boolean createIfNeeded);
+
+    /**
+     * Returns a <b>READ-ONLY</b> list with the classes for the state node. The
+     * list will include the manually added classes (with server side API), and
+     * the classes coming from the template (in case of
+     * {@link BoundElementTemplate}).
+     *
+     * @param node
+     * @return an unmodifiable list of classes for the node
+     */
+    public List<String> getAllClasses(StateNode node);
+
 }

@@ -72,15 +72,6 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         assertFalse(element.hasAttribute("foo"));
         assertNull(element.getPropertyString("foo"));
 
-        // Class should be set as attribute, not property
-        applyChanges(ChangeUtil.put(containerElementId, "class", "foo bar"));
-        assertEquals("foo bar", element.getClassName());
-        assertNull(element.getPropertyString("class"));
-
-        applyChanges(ChangeUtil.remove(containerElementId, "class"));
-        assertEquals("", element.getClassName());
-        assertNull(element.getPropertyString("class"));
-
         // Style should be set as attribute, not property
         applyChanges(
                 ChangeUtil.put(containerElementId, "style", "height: 100%"));
@@ -88,6 +79,62 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
 
         applyChanges(ChangeUtil.remove(containerElementId, "style"));
         assertEquals("", element.getStyle().getHeight());
+
+        // attr. prefixed attributes should be set as attributes only
+        applyChanges(ChangeUtil.put(containerElementId, "attr.fox", "bax"));
+        assertFalse(element.hasAttribute("attr.fox"));
+        assertTrue(element.hasAttribute("fox"));
+        assertEquals("bax", element.getAttribute("fox"));
+        assertNull(element.getPropertyString("class"));
+
+        applyChanges(ChangeUtil.remove(containerElementId, "attr.fox"));
+        assertFalse(element.hasAttribute("fox"));
+        assertEquals("", element.getAttribute("fox"));
+    }
+
+    public void testClassList() {
+        Element element = updater.getRootElement();
+        JsonArray array = Json.createArray();
+        array.set(0, "foo");
+        array.set(1, "bar");
+        final int classListNodeId = 500;
+        applyChanges(
+                ChangeUtil.putList(containerElementId, "CLASS_LIST",
+                        classListNodeId),
+                ChangeUtil.listInsert(classListNodeId, 0, array));
+
+        assertTrue(element.hasAttribute("class"));
+        assertEquals("foo bar", element.getAttribute("class"));
+
+        // add baz
+        array = Json.createArray();
+        array.set(0, "baz");
+        applyChanges(
+                ChangeUtil.putList(containerElementId, "CLASS_LIST",
+                        classListNodeId),
+                ChangeUtil.listInsert(classListNodeId, 2, array));
+
+        assertTrue(element.hasAttribute("class"));
+        assertEquals("foo bar baz", element.getAttribute("class"));
+
+        // remove bar
+        applyChanges(ChangeUtil.listRemove(classListNodeId, 1));
+
+        assertTrue(element.hasAttribute("class"));
+        assertEquals("foo baz", element.getAttribute("class"));
+
+        // remove foo
+        applyChanges(ChangeUtil.listRemove(classListNodeId, 0));
+
+        assertTrue(element.hasAttribute("class"));
+        assertEquals("baz", element.getAttribute("class"));
+
+        // remove baz, class is not removed completely but will be an empty
+        // string
+        applyChanges(ChangeUtil.listRemove(classListNodeId, 0));
+
+        assertTrue(element.hasAttribute("class"));
+        assertEquals("", element.getAttribute("class"));
     }
 
     public void testEventHandling() {
