@@ -12,19 +12,11 @@ public class TreeListenerHelper {
         int firstDot = path.indexOf('.');
         if (firstDot == -1) {
             // No hierarchy
-            if (!node.hasProperty(path)) {
-                return null;
-            } else {
-                return node.getProperty(path);
-            }
+            return node.getProperty(path);
         } else {
             // Hierarchy
             String firstPart = path.substring(0, firstDot);
             String rest = path.substring(firstDot + 1);
-
-            if (!node.hasProperty(firstPart)) {
-                return null;
-            }
 
             TreeNodeProperty firstProperty = node.getProperty(firstPart);
             if (firstProperty == null) {

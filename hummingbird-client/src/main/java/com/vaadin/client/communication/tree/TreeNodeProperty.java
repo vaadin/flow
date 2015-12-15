@@ -31,7 +31,8 @@ public class TreeNodeProperty {
         @Override
         public void dispatch() {
             if (listeners != null) {
-                for (TreeNodePropertyValueChangeListener listener : listeners) {
+                for (TreeNodePropertyValueChangeListener listener : new ArrayList<>(
+                        listeners)) {
                     listener.changeValue(oldValue, newValue);
                 }
             }

@@ -110,37 +110,38 @@ public class BoundElementTemplate extends Template {
 
             TreeUpdater.debug("Binding " + property + " to " + attribute);
 
-            context.listenToProperty(property,
-                    new TreeNodePropertyValueChangeListener() {
-                        @Override
-                        public void changeValue(Object oldValue, Object value) {
-                            TreeUpdater.debug("Binding (" + property + " to "
-                                    + attribute + ") changed to " + value);
-
-                            TreeUpdater.setAttributeOrProperty(element,
-                                    attribute, value);
-                        }
-                    });
+            Reactive.keepUpToDate(() -> {
+                TreeNodeProperty p = context.getProperty(property);
+                Object value;
+                if (p == null) {
+                    value = null;
+                } else {
+                    value = p.getValue();
+                }
+                TreeUpdater.setAttributeOrProperty(element, attribute, value);
+                TreeUpdater.debug("Binding (" + property + " to " + attribute
+                        + ") changed to " + value);
+            });
         }
 
         if (classPartBindings != null) {
             for (Entry<String, String> entry : classPartBindings.entrySet()) {
                 String property = entry.getValue();
                 String classPart = entry.getKey();
-                context.listenToProperty(property,
-                        new TreeNodePropertyValueChangeListener() {
-                            @Override
-                            public void changeValue(Object oldValue,
-                                    Object value) {
-                                if (isTrueIsh(TreeUpdater.asJsonValue(value))) {
-                                    DomApi.wrap(element).getClassList()
-                                            .add(classPart);
-                                } else {
-                                    DomApi.wrap(element).getClassList()
-                                            .remove(classPart);
-                                }
-                            }
-                        });
+                Reactive.keepUpToDate(() -> {
+                    Object value;
+                    TreeNodeProperty p = context.getProperty(property);
+                    if (p == null) {
+                        value = null;
+                    } else {
+                        value = p.getValue();
+                    }
+                    if (isTrueIsh(TreeUpdater.asJsonValue(value))) {
+                        DomApi.wrap(element).getClassList().add(classPart);
+                    } else {
+                        DomApi.wrap(element).getClassList().remove(classPart);
+                    }
+                });
             }
         }
 
@@ -177,13 +178,15 @@ public class BoundElementTemplate extends Template {
     }
 
     private static boolean isTrueIsh(JsonValue value) {
+        if (value == null) {
+            // JsonValue.getType() doens't work for undefined
+            return false;
+        }
         switch (value.getType()) {
         case BOOLEAN:
             return value.asBoolean();
         case STRING:
             return !"false".equalsIgnoreCase(value.asString());
-        case NULL:
-            return false;
         default:
             throw new RuntimeException(value.getType().name());
         }

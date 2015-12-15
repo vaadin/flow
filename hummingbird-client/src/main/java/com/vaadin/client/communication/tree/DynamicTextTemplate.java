@@ -18,13 +18,14 @@ public class DynamicTextTemplate extends Template {
     public Node createElement(TreeNode node, NodeContext context) {
         Text textNode = Document.get().createTextNode("");
 
-        context.listenToProperty(binding, (oldValue, value) -> {
-            updateValue(textNode, value);
+        Reactive.keepUpToDate(() -> {
+            TreeNodeProperty p = context.getProperty(binding);
+            if (p == null) {
+                updateValue(textNode, null);
+            } else {
+                updateValue(textNode, p.getValue());
+            }
         });
-        TreeNodeProperty property = context.getProperty(binding);
-        if (property != null) {
-            updateValue(textNode, property.getValue());
-        }
 
         return textNode;
     }

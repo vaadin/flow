@@ -33,6 +33,7 @@ public class CallbackQueue {
                     }
                 }
             }
+            Reactive.flush();
         }
     }
 }

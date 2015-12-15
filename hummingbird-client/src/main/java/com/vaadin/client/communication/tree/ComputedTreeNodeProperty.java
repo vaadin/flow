@@ -83,6 +83,7 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
         Map<String, JavaScriptObject> context = new HashMap<>();
         context.put("model", getOwner().getProxy());
 
+        // Should maybe be refactored to use Reactive.keepUpToDate
         Collection<TreeNodeProperty> accessedProperies = Reactive
                 .collectAccessedProperies(() -> {
                     JavaScriptObject newValue = TreeUpdater
