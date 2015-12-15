@@ -1,0 +1,25 @@
+{
+  "name": "hummingbird-uitest",
+  "version": "1.0.0-SNAPSHOT",
+  "authors": [
+    "Artur Signell <artur@vaadin.com>"
+  ],
+  "license": "Apache2",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#1.0.3",
+    "paper-button": "PolymerElements/paper-button#1.0.3",
+    "paper-slider": "PolymerElements/paper-slider#1.0.4",
+    "polymer": "Polymer/polymer#1.2.3",
+    "vaadin-notification": "Artur-/vaadin-notification#0.9.1",
+    "vaadin-grid": "1.0.0-rc1",
+    "paper-menu": "PolymerElements/paper-menu#1.1.1",
+    "promise-polyfill": "2.1.0"
+  }
+}

@@ -228,7 +228,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
             // Define current servlet and service, but no request and response
             getService().setCurrentInstances(null, null);
             try {
-                serveStaticResources(vaadinRequest, vaadinResponse);
+                serveStaticResource(vaadinRequest, vaadinResponse);
                 return;
             } finally {
                 CurrentInstance.clearAll();
@@ -551,33 +551,38 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * @throws IOException
      * @throws ServletException
      */
-    private boolean serveStaticResources(HttpServletRequest request,
+    private boolean serveStaticResource(HttpServletRequest request,
             HttpServletResponse response) throws IOException, ServletException {
-
         String pathInfo = request.getPathInfo();
         if (pathInfo == null) {
             return false;
         }
 
+        String filename;
         if ((request.getContextPath() != null)
                 && (request.getRequestURI().startsWith("/VAADIN/"))) {
-            serveStaticResourcesInVAADIN(request.getRequestURI(), request,
-                    response);
-            return true;
+            filename = request.getRequestURI();
         } else if (request.getRequestURI()
                 .startsWith(request.getContextPath() + "/VAADIN/")) {
-            serveStaticResourcesInVAADIN(
-                    request.getRequestURI()
-                            .substring(request.getContextPath().length()),
-                    request, response);
-            return true;
+            filename = request.getRequestURI()
+                    .substring(request.getContextPath().length());
+        } else if ((request.getContextPath() != null)
+                && (request.getRequestURI().startsWith("/bower_components/"))) {
+            filename = request.getRequestURI();
+        } else if (request.getRequestURI()
+                .startsWith(request.getContextPath() + "/bower_components/")) {
+            filename = request.getRequestURI()
+                    .substring(request.getContextPath().length());
+        } else {
+            return false;
         }
 
-        return false;
+        serveStaticResource(filename, request, response);
+        return true;
     }
 
     /**
-     * Serve resources from VAADIN directory.
+     * Serve static resources from /VAADIN/ or /bower_components/
      *
      * @param filename
      *            The filename to serve. Should always start with /VAADIN/.
@@ -586,7 +591,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * @throws IOException
      * @throws ServletException
      */
-    private void serveStaticResourcesInVAADIN(String filename,
+    private void serveStaticResource(String filename,
             HttpServletRequest request, HttpServletResponse response)
                     throws IOException, ServletException {
 
@@ -596,8 +601,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
         if (resourceUrl == null) {
             // cannot serve requested file
             getLogger().log(Level.INFO,
-                    "Requested resource [{0}] not found from filesystem or through class loader."
-                            + " Add widgetset and/or theme JAR to your classpath or add files to WebContent/VAADIN folder.",
+                    "Requested resource [{0}] not found from filesystem or through class loader.",
                     filename);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -605,9 +609,9 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
         // security check: do not permit navigation out of the VAADIN
         // directory
-        if (!isAllowedVAADINResourceUrl(request, resourceUrl)) {
+        if (!isAllowedResourceUrl(request, resourceUrl)) {
             getLogger().log(Level.INFO,
-                    "Requested resource [{0}] not accessible in the VAADIN directory or access to it is forbidden.",
+                    "Requested resource [{0}] not accessible in the VAADIN or bower_components directory or access to it is forbidden.",
                     filename);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
@@ -845,7 +849,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      *             version
      */
     @Deprecated
-    protected boolean isAllowedVAADINResourceUrl(HttpServletRequest request,
+    protected boolean isAllowedResourceUrl(HttpServletRequest request,
             URL resourceUrl) {
         if ("jar".equals(resourceUrl.getProtocol())) {
             // This branch is used for accessing resources directly from the
@@ -857,9 +861,10 @@ public class VaadinServlet extends HttpServlet implements Constants {
             // try to normalize the path by collapsing ".." before the class
             // loader sees it.
 
-            if (!resourceUrl.getPath().contains("!/VAADIN/")) {
+            if (!resourceUrl.getPath().contains("!/VAADIN/")
+                    && !resourceUrl.getPath().contains("!/bower_components/")) {
                 getLogger().log(Level.INFO,
-                        "Blocked attempt to access a JAR entry not starting with /VAADIN/: {0}",
+                        "Blocked attempt to access a JAR entry not starting with /VAADIN/ or /bower_components/: {0}",
                         resourceUrl);
                 return false;
             }
@@ -873,7 +878,8 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
             // Check that the URL is in a VAADIN directory and does not contain
             // "/../"
-            if (!resourceUrl.getPath().contains("/VAADIN/")
+            if ((!resourceUrl.getPath().contains("/VAADIN/")
+                    && !resourceUrl.getPath().contains("/bower_components/"))
                     || resourceUrl.getPath().contains("/../")) {
                 getLogger().log(Level.INFO,
                         "Blocked attempt to access file: {0}", resourceUrl);
@@ -973,7 +979,9 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     protected boolean isStaticResourceRequest(HttpServletRequest request) {
         return request.getRequestURI()
-                .startsWith(request.getContextPath() + "/VAADIN/");
+                .startsWith(request.getContextPath() + "/VAADIN/")
+                || request.getRequestURI().startsWith(
+                        request.getContextPath() + "/bower_components/");
     }
 
     /**

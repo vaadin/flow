@@ -105,21 +105,29 @@ public abstract class VaadinUriResolver implements Serializable {
             }
         }
         if (vaadinUri.startsWith(ApplicationConstants.VAADIN_PROTOCOL_PREFIX)) {
-            final String vaadinDirUri = getVaadinDirUrl();
+            vaadinUri = vaadinUri.replace(
+                    ApplicationConstants.VAADIN_PROTOCOL_PREFIX,
+                    ApplicationConstants.WEB_CONTEXT_PROTOCOL_PREFIX
+                            + "VAADIN/");
+        }
+
+        if (vaadinUri
+                .startsWith(ApplicationConstants.WEB_CONTEXT_PROTOCOL_PREFIX)) {
+            final String contextUrl = getWebContextUrl();
             String relativeUrl = vaadinUri.substring(
-                    ApplicationConstants.VAADIN_PROTOCOL_PREFIX.length());
-            vaadinUri = vaadinDirUri + relativeUrl;
+                    ApplicationConstants.WEB_CONTEXT_PROTOCOL_PREFIX.length());
+            vaadinUri = contextUrl + relativeUrl;
         }
 
         return vaadinUri;
     }
 
     /**
-     * Gets the URL pointing to the VAADIN directory.
+     * Gets the URL pointing to the web context directory.
      *
-     * @return the VAADIN directory URL
+     * @return the web context URL
      */
-    protected abstract String getVaadinDirUrl();
+    protected abstract String getWebContextUrl();
 
     /**
      * Gets the name of the request parameter that should be used for sending

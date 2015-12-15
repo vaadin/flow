@@ -27,8 +27,8 @@ import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.Sizeable;
 
 @SuppressWarnings("serial")
-@HTML({ "vaadin://bower_components/iron-flex-layout/classes/iron-flex-layout.html",
-        "vaadin://bower_components/iron-flex-layout/classes/iron-shadow-flex-layout.html" })
+@HTML({ "context://bower_components/iron-flex-layout/classes/iron-flex-layout.html",
+        "context://bower_components/iron-flex-layout/classes/iron-shadow-flex-layout.html" })
 @Tag("div")
 public abstract class AbstractOrderedLayout
         extends AbstractSimpleDOMComponentContainer implements

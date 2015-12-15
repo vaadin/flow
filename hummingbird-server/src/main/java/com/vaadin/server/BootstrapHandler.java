@@ -184,14 +184,16 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         @Override
-        protected String getVaadinDirUrl() {
+        protected String getWebContextUrl() {
+            // FIXME
             return context.getApplicationParameters()
-                    .getString(ApplicationConstants.VAADIN_DIR_URL);
+                    .getString(ApplicationConstants.VAADIN_DIR_URL) + "../";
         }
 
         @Override
         protected String getThemeUri() {
-            return getVaadinDirUrl() + "themes/" + context.getThemeName();
+            return getWebContextUrl() + "VAADIN/themes/"
+                    + context.getThemeName();
         }
 
         @Override
@@ -313,7 +315,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         VaadinRequest request = context.getRequest();
 
         deps.add(new Dependency(Type.SCRIPT,
-                "vaadin://bower_components/webcomponentsjs/webcomponents-lite.min.js"));
+                "context://bower_components/webcomponentsjs/webcomponents-lite.min.js"));
 
         VaadinService vaadinService = request.getService();
         String staticFileLocation = vaadinService
@@ -642,7 +644,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         result = result.replace("{{promisePolyfill}}",
                 context.getUriResolver().resolveVaadinUri(
-                        "vaadin://bower_components/promise-polyfill/Promise.min.js"));
+                        "context://bower_components/promise-polyfill/Promise.min.js"));
 
         JsonObject appConfig = context.getApplicationParameters();
         boolean isDebug = !context.getSession().getConfiguration()

@@ -39,6 +39,7 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
+import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.CommunicationProblemHandler;
@@ -274,8 +275,9 @@ public class ApplicationConnection implements HasHandlers {
 
     private final VaadinUriResolver uriResolver = new VaadinUriResolver() {
         @Override
-        protected String getVaadinDirUrl() {
-            return getConfiguration().getVaadinDirUrl();
+        protected String getWebContextUrl() {
+            // FIXME
+            return getConfiguration().getVaadinDirUrl() + "../";
         }
 
         @Override
@@ -458,7 +460,7 @@ public class ApplicationConnection implements HasHandlers {
             return vi;
             }
             }
-            
+
             client.modules = {};
             client.modules.publish = function(namespace,moduleCode) {
                 var module = {};
@@ -468,7 +470,7 @@ public class ApplicationConnection implements HasHandlers {
                 }
                 client.modules[namespace] = module;
             }
-            
+
             client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::getServerMessageHandler();
             var pd = [
@@ -479,7 +481,7 @@ public class ApplicationConnection implements HasHandlers {
             pd[pd.length] = smh.@com.vaadin.client.communication.ServerMessageHandler::bootstrapTime;
             return pd;
             });
-            
+
             client.getElementByPath = $entry(function(id) {
             return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getElementByPath(Ljava/lang/String;)(id);
             });
@@ -496,9 +498,9 @@ public class ApplicationConnection implements HasHandlers {
             return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getPathForElement(Lcom/google/gwt/dom/client/Element;)(element);
             });
             client.initializing = false;
-            
+
             $wnd.vaadin.framework.clients[TTAppId] = client;
-            
+
             return client;
             }-*/;
 

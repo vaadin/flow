@@ -95,7 +95,6 @@ import com.vaadin.shared.ui.grid.ScrollDestination;
 import com.vaadin.shared.ui.grid.selection.MultiSelectionModelState;
 import com.vaadin.shared.ui.grid.selection.SingleSelectionModelState;
 import com.vaadin.shared.util.SharedUtil;
-import com.vaadin.ui.Grid.SelectionModel;
 import com.vaadin.ui.renderers.Renderer;
 import com.vaadin.ui.renderers.TextRenderer;
 import com.vaadin.util.ReflectTools;
@@ -170,8 +169,8 @@ import elemental.json.JsonValue;
 @Tag("vaadin-grid")
 @Bower("vaadin-grid")
 // Optimizations to load dependencies quicker
-@JavaScript("vaadin://bower_components/vaadin-grid/vaadin-grid.min.js")
-@com.vaadin.annotations.HTML("vaadin://bower_components/polymer/polymer.html")
+@JavaScript("context://bower_components/vaadin-grid/vaadin-grid.min.js")
+@com.vaadin.annotations.HTML("context://bower_components/polymer/polymer.html")
 @Implemented("Still missing support for most features")
 public class Grid extends AbstractFocusable implements SelectionNotifier,
         SortNotifier, SelectiveRenderer, ItemClickNotifier {

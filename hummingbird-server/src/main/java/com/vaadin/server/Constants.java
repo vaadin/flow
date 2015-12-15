@@ -15,6 +15,7 @@
  */
 package com.vaadin.server;
 
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.communication.PushMode;
 
 /**
@@ -156,5 +157,6 @@ public interface Constants {
 
     static final String PORTLET_CONTEXT = "PORTLET_CONTEXT";
 
-    static final String BOWER_RESOURCE = "vaadin://bower_components/{0}/{0}.html";
+    static final String BOWER_RESOURCE = ApplicationConstants.WEB_CONTEXT_PROTOCOL_PREFIX
+            + "bower_components/{0}/{0}.html";
 }

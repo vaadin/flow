@@ -108,6 +108,10 @@ public class ServletPortletHelper implements Serializable {
                 ApplicationConstants.PUBLISHED_FILE_PATH + "/");
     }
 
+    public static boolean isBowerComponentRequest(VaadinRequest request) {
+        return hasPathPrefix(request, "bower_components/");
+    }
+
     public static boolean isUIDLRequest(VaadinRequest request) {
         return hasPathPrefix(request, ApplicationConstants.UIDL_PATH + '/');
     }
@@ -228,4 +232,5 @@ public class ServletPortletHelper implements Serializable {
 
         return Locale.getDefault();
     }
+
 }
