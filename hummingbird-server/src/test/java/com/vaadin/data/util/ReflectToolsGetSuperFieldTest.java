@@ -2,11 +2,11 @@ package com.vaadin.data.util;
 
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
-
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.fieldgroup.PropertyId;
-import com.vaadin.ui.TextField;
+import com.vaadin.tests.server.TestField;
+
+import org.junit.Test;
 
 public class ReflectToolsGetSuperFieldTest {
 
@@ -14,7 +14,7 @@ public class ReflectToolsGetSuperFieldTest {
     public void getFieldFromSuperClass() {
         class MyClass {
             @PropertyId("testProperty")
-            TextField test = new TextField("This is a test");
+            TestField test = new TestField();
         }
         class MySubClass extends MyClass {
             // no fields here

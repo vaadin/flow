@@ -7,12 +7,11 @@ package com.vaadin.tests.server.clientconnector;
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
 import org.easymock.IMocksControl;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.tests.server.TestField;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Component.AttachEvent;
@@ -21,8 +20,10 @@ import com.vaadin.ui.Component.DetachEvent;
 import com.vaadin.ui.Component.DetachListener;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
+
+import org.junit.Before;
+import org.junit.Test;
 
 public class AttachDetachListenersTest {
 
@@ -49,7 +50,7 @@ public class AttachDetachListenersTest {
             }
         };
         content = new CssLayout();
-        component = new Label();
+        component = new TestField();
 
         attachListener = control.createMock(AttachListener.class);
         detachListener = control.createMock(DetachListener.class);

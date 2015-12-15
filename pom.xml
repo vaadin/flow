@@ -15,6 +15,11 @@
 		<module>hummingbird-push</module>
 		<module>hummingbird-client</module>
 		<module>hummingbird-uitest</module>
+		
+		<module>hummingbird-test-util</module>
+		
+		<module>hummingbird-core-elements</module>
+		
 		<!-- FIXME: Remove -->
 		<module>hummingbird-themes</module>
 		<module>hummingbird-shared</module>

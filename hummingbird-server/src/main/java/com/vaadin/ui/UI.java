@@ -16,7 +16,6 @@
 
 package com.vaadin.ui;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,6 +40,7 @@ import com.vaadin.hummingbird.kernel.BasicElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
+import com.vaadin.hummingbird.kernel.ModelDescriptor;
 import com.vaadin.hummingbird.kernel.RootNode;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
@@ -68,7 +68,6 @@ import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
 import com.vaadin.ui.Component.Focusable;
 import com.vaadin.ui.PushConfiguration.PushConfigurationImpl;
-import com.vaadin.ui.Template.Model;
 import com.vaadin.util.ConnectorHelper;
 import com.vaadin.util.CurrentInstance;
 
@@ -369,14 +368,14 @@ public abstract class UI extends CssLayout
                 // Find model interface type and get type from there
                 Type valueType;
 
-                Object modelType = node.get(Model.class);
-                if (modelType != null) {
-                    Class<?> modelClass = (Class<?>) modelType;
-                    valueType = findPropertyType(modelClass, key);
+                ModelDescriptor modelDescriptor = node
+                        .get(ModelDescriptor.class, ModelDescriptor.class);
+                if (modelDescriptor != null) {
+                    valueType = modelDescriptor.getPropertyType(key);
                     if (valueType == null) {
                         throw new RuntimeException(
                                 "Could not find any type for " + key + " in "
-                                        + modelClass
+                                        + modelDescriptor.getModelType()
                                         + " when processing value change for node "
                                         + nodeId);
                     }
@@ -402,27 +401,6 @@ public abstract class UI extends CssLayout
                         "Change type not yet? supported: " + change.toJson());
             }
         }
-    }
-
-    // XXX this belongs somewhere else, and the result should be cached
-    private static Type findPropertyType(Class<?> modelClass,
-            String propertyName) {
-        String methodBase = Character.toUpperCase(propertyName.charAt(0))
-                + propertyName.substring(1);
-
-        Method method;
-
-        try {
-            method = modelClass.getMethod("get" + methodBase);
-        } catch (NoSuchMethodException e) {
-            try {
-                method = modelClass.getMethod("is" + methodBase);
-            } catch (NoSuchMethodException e1) {
-                return null;
-            }
-        }
-
-        return method.getGenericReturnType();
     }
 
     private void handleTemplateEvent(JsonArray json) {

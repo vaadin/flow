@@ -19,8 +19,8 @@ public class BoundElementTemplate extends AbstractElementTemplate {
 
     private final String tag;
 
-    private final Map<String, AttributeBinding> attributeBindings;
-    private final Map<String, AttributeBinding> classPartBindings;
+    private final Map<String, Binding> attributeBindings;
+    private final Map<String, Binding> classPartBindings;
     private final Map<String, String> defaultAttributeValues;
     private final Map<String, List<EventBinding>> events;
     private final Set<String> eventHandlerMethods;
@@ -32,8 +32,11 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     public BoundElementTemplate(BoundTemplateBuilder builder) {
         attributeBindings = new HashMap<>();
         classPartBindings = new LinkedHashMap<>();
-        for (AttributeBinding b : builder.getAttributeBindings()) {
-            String attributeName = b.getAttributeName();
+        for (Entry<String, Binding> entry : builder.getAttributeBindings()
+                .entrySet()) {
+            String attributeName = entry.getKey();
+            Binding b = entry.getValue();
+
             if (attributeName.startsWith("class.")) {
                 classPartBindings
                         .put(attributeName.substring("class.".length()), b);
@@ -124,7 +127,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
 
     @Override
     public Object getAttribute(String name, StateNode node) {
-        AttributeBinding binding = attributeBindings.get(name);
+        Binding binding = attributeBindings.get(name);
         Object value;
         if (binding == null) {
             value = super.getAttribute(name, node);
@@ -147,8 +150,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
             assert value instanceof String;
             StringBuilder builder = new StringBuilder(
                     value == null ? null : (String) value);
-            for (Entry<String, AttributeBinding> entry : classPartBindings
-                    .entrySet()) {
+            for (Entry<String, Binding> entry : classPartBindings.entrySet()) {
                 Object classBindingValue = entry.getValue().getValue(node);
                 if (Boolean.TRUE.equals(classBindingValue)
                         || (classBindingValue instanceof String
@@ -167,7 +169,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
 
     @Override
     public void setAttribute(String name, Object value, StateNode node) {
-        AttributeBinding binding = attributeBindings.get(name);
+        Binding binding = attributeBindings.get(name);
         if (binding != null) {
             throw new IllegalStateException(
                     "Attribute " + name + " is bound through a template");
@@ -232,7 +234,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
                 .collect(Collectors.toSet()));
     }
 
-    public Map<String, AttributeBinding> getAttributeBindings() {
+    public Map<String, Binding> getAttributeBindings() {
         return Collections.unmodifiableMap(attributeBindings);
     }
 
@@ -240,7 +242,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
         return Collections.unmodifiableMap(defaultAttributeValues);
     }
 
-    public Map<String, AttributeBinding> getClassPartBindings() {
+    public Map<String, Binding> getClassPartBindings() {
         return Collections.unmodifiableMap(classPartBindings);
     }
 

@@ -5,13 +5,13 @@ import java.util.List;
 
 public class ForElementTemplate extends BoundElementTemplate {
 
-    private final ModelPath listPath;
+    private final Binding listBinding;
     private final String innerScope;
 
-    public ForElementTemplate(BoundTemplateBuilder builder, ModelPath listPath,
+    public ForElementTemplate(BoundTemplateBuilder builder, Binding listBinding,
             String innerScope) {
         super(builder);
-        this.listPath = listPath;
+        this.listBinding = listBinding;
         this.innerScope = innerScope;
     }
 
@@ -20,14 +20,14 @@ public class ForElementTemplate extends BoundElementTemplate {
         return getChildNodes(node).size();
     }
 
-    private List<Object> getChildNodes(StateNode node) {
-        // Don't create a list if it does not exist.
-        // Inefficient and can be of wrong type
-        if (listPath.getNode(node).containsKey(listPath.getNodeProperty())) {
-            return listPath.getNode(node)
-                    .getMultiValued(listPath.getNodeProperty());
+    private List<?> getChildNodes(StateNode node) {
+        Object value = listBinding.getValue(node);
+        if (value instanceof ListNode) {
+            ListNode listNode = (ListNode) value;
+            return new ListNodeAsList(listNode);
+        } else {
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
     }
 
     @Override
@@ -50,8 +50,8 @@ public class ForElementTemplate extends BoundElementTemplate {
         return super.getParent(parentNode);
     }
 
-    public ModelPath getModelProperty() {
-        return listPath;
+    public Binding getListBinding() {
+        return listBinding;
     }
 
     public String getInnerScope() {

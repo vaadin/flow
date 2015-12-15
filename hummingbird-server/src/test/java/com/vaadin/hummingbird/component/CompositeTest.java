@@ -2,9 +2,9 @@ package com.vaadin.hummingbird.component;
 
 import java.util.Iterator;
 
-import com.vaadin.hummingbird.component.CompositeInsideCompositeTest.TestButton;
-import com.vaadin.hummingbird.component.CompositeInsideCompositeTest.TestComposite;
-import com.vaadin.hummingbird.component.CompositeInsideCompositeTest.TestVerticalLayout;
+import com.vaadin.hummingbird.component.CompositeInsideCompositeTest.TestComponentWithTracking;
+import com.vaadin.hummingbird.component.CompositeInsideCompositeTest.TestCompositeWithTracking;
+import com.vaadin.hummingbird.component.CompositeInsideCompositeTest.TestLayoutWithTracking;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Component;
@@ -16,15 +16,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class CompositeTest {
-    TestVerticalLayout layout;
-    TestButton compositionRoot;
-    TestComposite composite;
+    TestLayoutWithTracking layout;
+    TestComponentWithTracking compositionRoot;
+    TestCompositeWithTracking composite;
 
     @Before
     public void setup() {
-        layout = new TestVerticalLayout();
-        compositionRoot = new TestButton("Inside composite");
-        composite = new TestComposite(compositionRoot);
+        layout = new TestLayoutWithTracking();
+        compositionRoot = new TestComponentWithTracking("Inside composite");
+        composite = new TestCompositeWithTracking(compositionRoot);
         layout.addComponent(composite);
     }
 

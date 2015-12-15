@@ -23,7 +23,7 @@ public class BoundElementTemplate extends Template {
     private final TreeUpdater treeUpdater;
     private final String tag;
     private final Map<String, String> defaultAttributeValues;
-    private final Map<String, String> propertyToAttribute;
+    private final Map<String, String> attributeToProperty;
     private final Map<String, String> classPartBindings;
     private final Map<String, String[]> events;
 
@@ -40,7 +40,7 @@ public class BoundElementTemplate extends Template {
         defaultAttributeValues = readStringMap(
                 templateDescription.getObject("defaultAttributes"));
 
-        propertyToAttribute = readStringMap(
+        attributeToProperty = readStringMap(
                 templateDescription.getObject("attributeBindings"));
 
         classPartBindings = readStringMap(
@@ -104,9 +104,9 @@ public class BoundElementTemplate extends Template {
 
         initElement(node, element, context);
 
-        for (Entry<String, String> entry : propertyToAttribute.entrySet()) {
-            String property = entry.getKey();
-            String attribute = entry.getValue();
+        for (Entry<String, String> entry : attributeToProperty.entrySet()) {
+            String property = entry.getValue();
+            String attribute = entry.getKey();
 
             TreeUpdater.debug("Binding " + property + " to " + attribute);
 
@@ -125,8 +125,8 @@ public class BoundElementTemplate extends Template {
 
         if (classPartBindings != null) {
             for (Entry<String, String> entry : classPartBindings.entrySet()) {
-                String property = entry.getKey();
-                String classPart = entry.getValue();
+                String property = entry.getValue();
+                String classPart = entry.getKey();
                 context.listenToProperty(property,
                         new TreeNodePropertyValueChangeListener() {
                             @Override

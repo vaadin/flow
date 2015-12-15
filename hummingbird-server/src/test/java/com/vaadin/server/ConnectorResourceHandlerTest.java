@@ -19,12 +19,13 @@ import java.io.IOException;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
+
+import com.vaadin.tests.server.TestComponent;
+import com.vaadin.ui.UI;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.vaadin.ui.Button;
-import com.vaadin.ui.UI;
 
 public class ConnectorResourceHandlerTest {
 
@@ -73,7 +74,7 @@ public class ConnectorResourceHandlerTest {
         errorHandler.error(EasyMock.anyObject(ErrorEvent.class));
         EasyMock.replay(errorHandler);
 
-        Button button = new Button() {
+        TestComponent button = new TestComponent() {
             @Override
             public boolean handleConnectorRequest(VaadinRequest request,
                     VaadinResponse response, String path) {

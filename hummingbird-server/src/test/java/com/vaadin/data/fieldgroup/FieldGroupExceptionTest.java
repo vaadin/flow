@@ -15,17 +15,17 @@
  */
 package com.vaadin.data.fieldgroup;
 
-import org.junit.Test;
-
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
-import com.vaadin.ui.PopupDateField;
+import com.vaadin.tests.server.TestDateField;
+
+import org.junit.Test;
 
 public class FieldGroupExceptionTest {
 
     @Test(expected = CommitException.class)
     public void testUnboundCommitException() throws CommitException {
         FieldGroup fieldGroup = new FieldGroup();
-        PopupDateField dateField = new PopupDateField();
+        TestDateField dateField = new TestDateField();
         fieldGroup.bind(dateField, "date");
         fieldGroup.commit();
     }

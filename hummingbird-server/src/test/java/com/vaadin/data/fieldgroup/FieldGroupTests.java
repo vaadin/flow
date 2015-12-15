@@ -5,16 +5,16 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.Mockito.mock;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.Transactional;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.TransactionalPropertyWrapper;
+import com.vaadin.tests.server.TestField;
 import com.vaadin.ui.Field;
-import com.vaadin.ui.TextField;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class FieldGroupTests {
 
@@ -63,7 +63,7 @@ public class FieldGroupTests {
             }
         };
         group.setItemDataSource(new BeanItem<Bean>(bean));
-        TextField field = new TextField();
+        TestField field = new TestField();
         group.bind(field, "name");
 
         Property propertyDataSource = field.getPropertyDataSource();

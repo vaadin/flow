@@ -14,6 +14,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.kernel.AbstractElementTemplate.Keys;
+import com.vaadin.hummingbird.kernel.TemplateModelTest.MyTestModel;
+import com.vaadin.hummingbird.kernel.TemplateModelTest.SubModelType;
+import com.vaadin.ui.Template.Model;
 
 public class ComputedPropertyTest {
     private static Map<String, ComputedProperty> createComputedPropertyMap(
@@ -179,5 +182,26 @@ public class ComputedPropertyTest {
         StateNode node = StateNode.create();
 
         node.setComputedProperties(new HashMap<>());
+    }
+
+    @Test
+    public void testJsComptedProperty() {
+        StateNode node = StateNode.create();
+        MyTestModel model = Model.wrap(node, MyTestModel.class);
+        model.setInt(5);
+
+        SubModelType subValue = Model.wrap(StateNode.create(),
+                SubModelType.class);
+        subValue.setValue("Foo");
+        model.setSubValue(subValue);
+
+        Object value = new JsComputedProperty("foo", "model.int + 1",
+                Integer.class).compute(node);
+
+        Assert.assertEquals(Integer.valueOf(6), value);
+
+        value = new JsComputedProperty("foo", "model.subValue.value",
+                String.class).compute(node);
+        Assert.assertEquals("Foo", value);
     }
 }

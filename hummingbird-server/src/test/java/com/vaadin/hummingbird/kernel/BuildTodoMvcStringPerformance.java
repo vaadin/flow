@@ -54,7 +54,7 @@ public class BuildTodoMvcStringPerformance {
                 .addChild(headerInput);
 
         BoundTemplateBuilder toggleAll = TemplateBuilder.withTag("input")
-                .bindAttribute(new AttributeBinding("checked") {
+                .bindAttribute("checked", new Binding() {
                     @Override
                     public String getValue(StateNode node) {
                         if (node.containsKey("allCompleted")) {
@@ -72,7 +72,7 @@ public class BuildTodoMvcStringPerformance {
                 .addChild(TemplateBuilder.staticText("Mark all as completed"));
 
         BoundTemplateBuilder toggle = TemplateBuilder.withTag("input")
-                .bindAttribute(new AttributeBinding("checked") {
+                .bindAttribute("checked", new Binding() {
                     @Override
                     public String getValue(StateNode node) {
                         if (Boolean.TRUE.equals(node.get("completed"))) {
@@ -91,7 +91,7 @@ public class BuildTodoMvcStringPerformance {
                 .setAttribute("class", "destory");
 
         BoundTemplateBuilder view = TemplateBuilder.withTag("div")
-                .bindAttribute(new AttributeBinding("class") {
+                .bindAttribute("class", new Binding() {
                     @Override
                     public String getValue(StateNode node) {
                         if (node.get("id")
@@ -105,7 +105,7 @@ public class BuildTodoMvcStringPerformance {
 
         BoundTemplateBuilder edit = TemplateBuilder.withTag("input")
                 .bindAttribute("value", "title")
-                .bindAttribute(new AttributeBinding("class") {
+                .bindAttribute("class", new Binding() {
                     @Override
                     public String getValue(StateNode node) {
                         if (node.get("id")
@@ -118,7 +118,7 @@ public class BuildTodoMvcStringPerformance {
                 });
 
         BoundTemplateBuilder todoLi = TemplateBuilder.withTag("li")
-                .bindAttribute(new AttributeBinding("class") {
+                .bindAttribute("class", new Binding() {
                     @Override
                     public String getValue(StateNode node) {
                         ArrayList<String> classes = new ArrayList<>();
@@ -136,8 +136,8 @@ public class BuildTodoMvcStringPerformance {
                                     .collect(Collectors.joining(" "));
                         }
                     }
-                }).setForDefinition(new ModelPath("todos"), null).addChild(view)
-                .addChild(edit);
+                }).setForDefinition(new StateNodeBinding("todos"), null)
+                .addChild(view).addChild(edit);
 
         BoundTemplateBuilder todoList = TemplateBuilder.withTag("ul")
                 .setAttribute("class", "todo-list").addChild(todoLi);
@@ -157,7 +157,7 @@ public class BuildTodoMvcStringPerformance {
                 .addChild(TemplateBuilder.staticText(" items left"));
 
         BoundTemplateBuilder clearCompleted = TemplateBuilder.withTag("button")
-                .bindAttribute(new AttributeBinding("class") {
+                .bindAttribute("class", new Binding() {
                     @Override
                     public String getValue(StateNode n) {
                         List<Object> list = n.getMultiValued("todos");
@@ -172,7 +172,7 @@ public class BuildTodoMvcStringPerformance {
                     }
                 }).setAttribute("id", "clear-completed");
         BoundTemplateBuilder footer = TemplateBuilder.withTag("footer")
-                .bindAttribute(new AttributeBinding("class") {
+                .bindAttribute("class", new Binding() {
                     @Override
                     public String getValue(StateNode node) {
                         if (node.getMultiValued("todos").isEmpty()) {
@@ -184,7 +184,7 @@ public class BuildTodoMvcStringPerformance {
                 }).addChild(todoCount).addChild(clearCompleted);
 
         BoundTemplateBuilder main = TemplateBuilder.withTag("section")
-                .bindAttribute(new AttributeBinding("class") {
+                .bindAttribute("class", new Binding() {
                     @Override
                     public String getValue(StateNode node) {
                         if (node.getMultiValued("todos").isEmpty()) {
