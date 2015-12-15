@@ -97,28 +97,41 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         JsonArray array = Json.createArray();
         array.set(0, "foo");
         array.set(1, "bar");
-        array.set(2, "baz");
-        applyChanges(ChangeUtil.putList(containerElementId, "CLASS_LIST", 500),
-                ChangeUtil.listInsert(500, 0, array));
+        final int classListNodeId = 500;
+        applyChanges(
+                ChangeUtil.putList(containerElementId, "CLASS_LIST",
+                        classListNodeId),
+                ChangeUtil.listInsert(classListNodeId, 0, array));
+
+        assertTrue(element.hasAttribute("class"));
+        assertEquals("foo bar", element.getAttribute("class"));
+
+        // add baz
+        array = Json.createArray();
+        array.set(0, "baz");
+        applyChanges(
+                ChangeUtil.putList(containerElementId, "CLASS_LIST",
+                        classListNodeId),
+                ChangeUtil.listInsert(classListNodeId, 2, array));
 
         assertTrue(element.hasAttribute("class"));
         assertEquals("foo bar baz", element.getAttribute("class"));
 
         // remove bar
-        applyChanges(ChangeUtil.listRemove(500, 1));
+        applyChanges(ChangeUtil.listRemove(classListNodeId, 1));
 
         assertTrue(element.hasAttribute("class"));
         assertEquals("foo baz", element.getAttribute("class"));
 
         // remove foo
-        applyChanges(ChangeUtil.listRemove(500, 0));
+        applyChanges(ChangeUtil.listRemove(classListNodeId, 0));
 
         assertTrue(element.hasAttribute("class"));
         assertEquals("baz", element.getAttribute("class"));
 
         // remove baz, class is not removed completely but will be an empty
         // string
-        applyChanges(ChangeUtil.listRemove(500, 0));
+        applyChanges(ChangeUtil.listRemove(classListNodeId, 0));
 
         assertTrue(element.hasAttribute("class"));
         assertEquals("", element.getAttribute("class"));

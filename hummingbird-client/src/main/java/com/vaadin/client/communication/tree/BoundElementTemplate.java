@@ -159,6 +159,17 @@ public class BoundElementTemplate extends Template {
                     }
                 });
 
+        node.addTreeNodeChangeListener((name, property) -> {
+            if (!name.equals("CLASS_LIST")) {
+                return;
+            }
+
+            ListTreeNode classListListNode = (ListTreeNode) node
+                    .getProperty("CLASS_LIST").getValue();
+            classListListNode
+                    .addArrayEventListener(new ClassListListener(element));
+        });
+
         return element;
     }
 
@@ -180,7 +191,12 @@ public class BoundElementTemplate extends Template {
         assert element != null;
 
         for (Entry<String, String> entry : defaultAttributeValues.entrySet()) {
-            DomApi.wrap(element).setAttribute(entry.getKey(), entry.getValue());
+            if (entry.getKey().equals("class")) {
+                DomApi.wrap(element).getClassList().add(entry.getValue());
+            } else {
+                DomApi.wrap(element).setAttribute(entry.getKey(),
+                        entry.getValue());
+            }
         }
 
         if (events != null) {
