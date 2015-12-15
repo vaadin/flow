@@ -61,7 +61,7 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
     public void testClasses() {
         String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
                 + "'defaultAttributes': {'class': 'baseClass'},"
-                + "'classPartBindings': {'conditional': 'part'},"
+                + "'classPartBindings': {'part':'conditional'},"
                 + "'modelStructure': ['conditional']}";
         JsonObject template = Json.parse(json.replace('\'', '"'));
 
