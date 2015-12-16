@@ -225,6 +225,8 @@ public class BoundElementTemplate extends Template {
                             treeUpdater.addPendingNodeChange(
                                     modelChanges.getObject(i));
                         }
+
+                        treeUpdater.afterNodeChanges();
                     }
                 });
             }

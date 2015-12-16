@@ -395,9 +395,6 @@ public class TreeUpdater {
         getLogger().info("Handling tree node changes");
         applyNodeChanges(elementChanges, rpc);
 
-        getLogger().info("Triggering updateStyles");
-        ClassListUpdater.updateStyles();
-
         getLogger().info("Sending created events");
         sendCreatedEvents();
 
@@ -405,6 +402,11 @@ public class TreeUpdater {
             getLogger().info("Running rpcs");
             runRpc(rpc);
         }
+    }
+
+    protected void afterNodeChanges() {
+        getLogger().info("Triggering updateStyles");
+        ClassListUpdater.updateStyles();
     }
 
     private void extractComputedProperties(JsonArray rpc) {
@@ -450,6 +452,8 @@ public class TreeUpdater {
         }
 
         callbackQueue.flush(null);
+
+        afterNodeChanges();
     }
 
     private void runRpc(JsonArray rpcInvocations) {

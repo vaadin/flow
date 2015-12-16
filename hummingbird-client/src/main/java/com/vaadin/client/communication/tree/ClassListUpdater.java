@@ -8,9 +8,8 @@ import com.vaadin.client.communication.PolymerDomApiImpl;
 
 public class ClassListUpdater {
 
-    @SuppressWarnings("unchecked")
-    private static JsArray<Element> updatedElements = (JsArray<Element>) JsArray
-            .createArray();
+    private static JsArray<Element> updatedElements = JsArray.createArray()
+            .cast();
 
     public static void splice(Element element, ListTreeNode listTreeNode,
             int startIndex, JsArrayObject<Object> removed,
