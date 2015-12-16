@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.communication.DomApi;
+import com.vaadin.client.communication.PolymerDomApiImpl;
 
 public class ClassListUpdater {
 
@@ -30,9 +31,13 @@ public class ClassListUpdater {
     }
 
     public static void updateStyles() {
-        while (updatedElements.length() > 0) {
-            Element e = updatedElements.shift();
-            updateStyles(e);
+        if (PolymerDomApiImpl.isAvailable()) {
+            while (updatedElements.length() > 0) {
+                Element e = updatedElements.shift();
+                updateStyles(e);
+            }
+        } else {
+            updatedElements.setLength(0);
         }
     }
 
