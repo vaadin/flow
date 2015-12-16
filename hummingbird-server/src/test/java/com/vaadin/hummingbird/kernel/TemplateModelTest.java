@@ -92,14 +92,14 @@ public class TemplateModelTest {
     }
 
     @Test
-    public void testBooleanFalseRemovesProperty() {
+    public void testBooleanFalseKeepsProperty() {
         Assert.assertFalse(model.isBoolean());
 
         model.setBoolean(true);
         Assert.assertEquals(Boolean.TRUE, node.get("boolean"));
 
         model.setBoolean(false);
-        Assert.assertFalse(node.containsKey("boolean"));
+        Assert.assertTrue(node.containsKey("boolean"));
     }
 
     @Test
@@ -316,5 +316,16 @@ public class TemplateModelTest {
                 .applyInvocation(invocation);
 
         Assert.assertEquals(42, model.getInt());
+    }
+
+    @Test
+    public void testNodeContainsProperties() {
+        StateNode node = StateNode.create();
+        Assert.assertFalse(node.containsKey("int"));
+        Assert.assertFalse(node.containsKey("int2"));
+
+        Model.wrap(node, MyTestModel.class);
+        Assert.assertTrue(node.containsKey("int"));
+        Assert.assertFalse(node.containsKey("int2"));
     }
 }

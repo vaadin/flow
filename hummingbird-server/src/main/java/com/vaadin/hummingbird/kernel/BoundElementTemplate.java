@@ -152,10 +152,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
                     value == null ? null : (String) value);
             for (Entry<String, Binding> entry : classPartBindings.entrySet()) {
                 Object classBindingValue = entry.getValue().getValue(node);
-                if (Boolean.TRUE.equals(classBindingValue)
-                        || (classBindingValue instanceof String
-                                && !((String) classBindingValue)
-                                        .equalsIgnoreCase("false"))) {
+                if (isTrueish(classBindingValue)) {
                     if (builder.length() != 0) {
                         builder.append(' ');
                     }
@@ -165,6 +162,16 @@ public class BoundElementTemplate extends AbstractElementTemplate {
             value = builder.toString();
         }
         return value;
+    }
+
+    public static boolean isTrueish(Object value) {
+        if (Boolean.TRUE.equals(value)) {
+            return true;
+        } else if (value instanceof String) {
+            return !((String) value).equalsIgnoreCase("false");
+        } else {
+            return false;
+        }
     }
 
     @Override

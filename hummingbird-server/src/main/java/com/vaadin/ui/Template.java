@@ -39,6 +39,7 @@ import com.vaadin.annotations.JS;
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.annotations.TemplateHTML;
 import com.vaadin.data.util.BeanUtil;
+import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.ComputedProperty;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
@@ -103,17 +104,6 @@ public abstract class Template extends AbstractComponent
 
         private void set(StateNode node, String propertyName, Type type,
                 Object value) {
-            if (type == boolean.class && Boolean.FALSE.equals(value)) {
-                value = null;
-            }
-
-            if (value == null) {
-                if (node.containsKey(propertyName)) {
-                    node.remove(propertyName);
-                }
-                return;
-            }
-
             if (type instanceof Class<?>) {
                 Class<?> clazz = (Class<?>) type;
 
@@ -186,36 +176,38 @@ public abstract class Template extends AbstractComponent
         }
 
         private Object get(StateNode node, String propertyName, Type type) {
+            Object value = node.get(propertyName);
             if (type == boolean.class) {
-                return Boolean.valueOf(node.containsKey(propertyName));
+                return Boolean.valueOf(BoundElementTemplate.isTrueish(value));
             }
 
             if (type instanceof Class<?> && ((Class<?>) type).isPrimitive()) {
-                if (!node.containsKey(propertyName)) {
+                if (value == null) {
                     // Find the default value, somehow
                     return primitiveDefaults.get(type);
                 } else {
                     // Can't get by type int if value is Integer
-                    return node.get(propertyName);
+                    return value;
                 }
             }
 
-            if (!node.containsKey(propertyName)) {
+            if (value == null) {
                 return null;
             }
 
             if (type instanceof Class<?>) {
                 Class<?> clazz = (Class<?>) type;
                 if (LazyList.class.isAssignableFrom(clazz)) {
-                    return node.get(propertyName, LazyList.class);
+                    assert value instanceof LazyList;
+                    return value;
                 }
                 if (clazz.isInterface()) {
-                    StateNode childNode = node.get(propertyName,
-                            StateNode.class);
+                    StateNode childNode = (StateNode) value;
                     return Model.wrap(childNode, clazz);
                 }
 
-                return node.get(propertyName, clazz);
+                assert clazz.isInstance(value);
+                return value;
             } else if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) type;
                 if (pt.getRawType() instanceof Class<?>) {
@@ -361,6 +353,9 @@ public abstract class Template extends AbstractComponent
             if (modelDescriptor == null) {
                 modelDescriptor = ModelDescriptor.get(type);
                 node.put(ModelDescriptor.class, modelDescriptor);
+
+                ensurePropertiesInNode(node, type);
+
             } else if (modelDescriptor.getModelType() != type) {
                 throw new RuntimeException(
                         "Trying to use state node " + node.getId() + " as "
@@ -369,6 +364,27 @@ public abstract class Template extends AbstractComponent
             }
             return type.cast(Proxy.newProxyInstance(type.getClassLoader(),
                     new Class[] { type }, new ProxyHandler(node)));
+        }
+
+        public static void ensurePropertiesInNode(StateNode node,
+                Class<?> beanType) {
+            try {
+                List<PropertyDescriptor> propertyDescriptors = BeanUtil
+                        .getBeanPropertyDescriptor(beanType);
+
+                for (PropertyDescriptor pd : propertyDescriptors) {
+                    String name = pd.getName();
+                    if (!node.containsKey(name)) {
+                        System.out.println("Adding property " + name);
+                        node.put(name, null);
+                    }
+                }
+            } catch (IntrospectionException e1) {
+                getLogger().log(Level.SEVERE,
+                        "Unable to populate state node for bean " + beanType,
+                        e1);
+            }
+
         }
     }
 

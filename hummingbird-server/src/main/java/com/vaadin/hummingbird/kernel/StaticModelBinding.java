@@ -22,9 +22,10 @@ public class StaticModelBinding extends ModelBinding {
     @Override
     protected Object getValue(
             Function<String, Supplier<Object>> bindingFactory) {
-        Supplier<Object> supplier = bindingFactory.apply(parts[0]);
+        String rootName = parts[0];
+        Supplier<Object> supplier = bindingFactory.apply(rootName);
         if (supplier == null) {
-            return null;
+            throw new RuntimeException("Can't find model property " + rootName);
         }
 
         Object value = supplier.get();
@@ -39,7 +40,8 @@ public class StaticModelBinding extends ModelBinding {
                 StateNode stateNode = (StateNode) value;
                 value = stateNode.get(part);
             } else {
-                return null;
+                throw new RuntimeException(
+                        part + " not found for expression " + getBinding());
             }
         }
 
