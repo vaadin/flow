@@ -375,7 +375,6 @@ public abstract class Template extends AbstractComponent
                 for (PropertyDescriptor pd : propertyDescriptors) {
                     String name = pd.getName();
                     if (!node.containsKey(name)) {
-                        System.out.println("Adding property " + name);
                         node.put(name, null);
                     }
                 }
