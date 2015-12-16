@@ -142,14 +142,13 @@ public class BoundElementTemplate extends AbstractElementTemplate {
                 value = bindingValue;
             }
         }
-        if (value == null) {
-            return null;
-        }
 
         if ("class".equals(name)) {
-            assert value instanceof String;
-            StringBuilder builder = new StringBuilder(
-                    value == null ? null : (String) value);
+            assert value instanceof String || value == null;
+            StringBuilder builder = new StringBuilder();
+            if (value != null) {
+                builder.append((String) value);
+            }
             for (Entry<String, Binding> entry : classPartBindings.entrySet()) {
                 Object classBindingValue = entry.getValue().getValue(node);
                 if (isTrueish(classBindingValue)) {
@@ -228,17 +227,28 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     @Override
     public Collection<String> getAttributeNames(StateNode node) {
         Collection<String> superAttributes = super.getAttributeNames(node);
-        if (attributeBindings.isEmpty() && defaultAttributeValues.isEmpty()) {
+        if (attributeBindings.isEmpty() && defaultAttributeValues.isEmpty()
+                && classPartBindings.isEmpty()) {
             return superAttributes;
         }
 
         // TODO Ignore defaultAttributes that have been explicitly cleared and
         // bindings that resolve to null
-        return Collections.unmodifiableCollection(Stream
-                .concat(Stream.concat(superAttributes.stream(),
-                        attributeBindings.keySet().stream()),
-                defaultAttributeValues.keySet().stream())
-                .collect(Collectors.toSet()));
+        HashSet<String> attributeNames = new HashSet<>(superAttributes);
+        if (!attributeBindings.isEmpty()) {
+            attributeNames.addAll(attributeBindings.keySet());
+        }
+
+        if (!defaultAttributeValues.isEmpty()) {
+            attributeNames.addAll(defaultAttributeValues.keySet());
+        }
+
+        if (!classPartBindings.isEmpty() && !attributeNames.contains("class")
+                && !getAllClasses(node).isEmpty()) {
+            attributeNames.add("class");
+        }
+
+        return Collections.unmodifiableCollection(attributeNames);
     }
 
     public Map<String, Binding> getAttributeBindings() {

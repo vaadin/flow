@@ -313,6 +313,24 @@ public class ElementTemplateTest {
         Assert.assertEquals("baseClass", element.getAttribute("class"));
     }
 
+    @Test
+    public void boundClassInGetAttributes() {
+        BoundElementTemplate template = TemplateBuilder.withTag("div")
+                .bindAttribute("class.foo", "enabled").build();
+        StateNode node = StateNode.create();
+
+        Element element = Element.getElement(template, node);
+
+        Assert.assertEquals("", element.getAttribute("class"));
+        Assert.assertEquals(0, element.getAttributeNames().size());
+
+        node.put("enabled", Boolean.TRUE);
+
+        Assert.assertEquals("foo", element.getAttribute("class"));
+        Assert.assertEquals(1, element.getAttributeNames().size());
+        Assert.assertTrue(element.getAttributeNames().contains("class"));
+    }
+
     private static Element createMirror(Element element) {
         return Element.getElement(element.getTemplate(), element.getNode());
     }
