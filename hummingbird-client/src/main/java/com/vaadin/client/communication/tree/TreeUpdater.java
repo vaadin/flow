@@ -404,6 +404,11 @@ public class TreeUpdater {
         }
     }
 
+    protected void afterNodeChanges() {
+        getLogger().info("Triggering updateStyles");
+        ClassListUpdater.updateStyles();
+    }
+
     private void extractComputedProperties(JsonArray rpc) {
         for (int i = 0; i < rpc.length(); i++) {
             JsonArray invocation = rpc.getArray(i);
@@ -447,6 +452,8 @@ public class TreeUpdater {
         }
 
         callbackQueue.flush(null);
+
+        afterNodeChanges();
     }
 
     private void runRpc(JsonArray rpcInvocations) {

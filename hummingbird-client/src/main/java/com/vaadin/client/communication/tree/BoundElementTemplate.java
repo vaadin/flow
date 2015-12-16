@@ -166,8 +166,11 @@ public class BoundElementTemplate extends Template {
 
             ListTreeNode classListListNode = (ListTreeNode) node
                     .getProperty("CLASS_LIST").getValue();
-            classListListNode
-                    .addArrayEventListener(new ClassListListener(element));
+            classListListNode.addArrayEventListener(
+                    (listTreeNode, startIndex, removed, added) -> {
+                ClassListUpdater.splice(element, listTreeNode, startIndex,
+                        removed, added);
+            });
         });
 
         return element;
@@ -222,6 +225,8 @@ public class BoundElementTemplate extends Template {
                             treeUpdater.addPendingNodeChange(
                                     modelChanges.getObject(i));
                         }
+
+                        treeUpdater.afterNodeChanges();
                     }
                 });
             }
