@@ -303,36 +303,43 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
     public void testMoveNode() {
         String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
                 + "'attributeBindings': {'value1': 'child1.value', 'value2': 'child2.value'},"
-                + "'events': {'click': ['model.child2 = model.child1; model.child1 = null;']},"
+                + "'events': {'click': ['var temp = model.child2; model.child2 = model.child1; model.child1 = temp;']},"
                 + "'modelStructure': [{'child1': ['value'], 'child2': ['value']}]}";
         JsonObject template = Json.parse(json.replace('\'', '"'));
 
         int templateId = 1;
         int templateNodeId = 3;
-        int childNodeId = 4;
+        int child1NodeId = 4;
+        int child2NodeId = 6;
         int childrenId = 5;
 
         applyTemplate(templateId, template);
 
-        applyChanges(ChangeUtil.put(childNodeId, "value", "childValue"),
+        applyChanges(ChangeUtil.put(child1NodeId, "value", "childValue1"),
+                ChangeUtil.put(child2NodeId, "value", "childValue2"),
                 ChangeUtil.put(templateNodeId, "TEMPLATE",
                         Json.create(templateId)),
-                ChangeUtil.putMap(templateNodeId, "child1", childNodeId),
+                ChangeUtil.putMap(templateNodeId, "child1", child1NodeId),
+                ChangeUtil.putMap(templateNodeId, "child2", child2NodeId),
                 ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
                 ChangeUtil.listInsertNode(childrenId, 0, templateNodeId));
 
         Element templateElement = updater.getRootElement()
                 .getFirstChildElement();
         assertEquals("SPAN", templateElement.getTagName());
-        assertEquals("childValue", templateElement.getPropertyString("value1"));
-        assertNull(templateElement.getPropertyObject("value2"));
+        assertEquals("childValue1",
+                templateElement.getPropertyString("value1"));
+        assertEquals("childValue2",
+                templateElement.getPropertyString("value2"));
 
         NativeEvent event = Document.get().createClickEvent(0, 1, 2, 3, 4,
                 false, false, false, false);
         templateElement.dispatchEvent(event);
 
-        assertNull(templateElement.getPropertyString("value1"));
-        assertEquals("childValue", templateElement.getPropertyString("value2"));
+        assertEquals("childValue2",
+                templateElement.getPropertyString("value1"));
+        assertEquals("childValue1",
+                templateElement.getPropertyString("value2"));
     }
 
     public void testScriptTag() {

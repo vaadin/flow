@@ -20,11 +20,8 @@ public class DynamicTextTemplate extends Template {
 
         Reactive.keepUpToDate(() -> {
             TreeNodeProperty p = context.getProperty(binding);
-            if (p == null) {
-                updateValue(textNode, null);
-            } else {
-                updateValue(textNode, p.getValue());
-            }
+            Object value = p.getValue();
+            updateValue(textNode, value);
         });
 
         return textNode;

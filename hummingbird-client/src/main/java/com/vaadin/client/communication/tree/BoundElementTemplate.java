@@ -112,12 +112,7 @@ public class BoundElementTemplate extends Template {
 
             Reactive.keepUpToDate(() -> {
                 TreeNodeProperty p = context.getProperty(property);
-                Object value;
-                if (p == null) {
-                    value = null;
-                } else {
-                    value = p.getValue();
-                }
+                Object value = p.getValue();
                 TreeUpdater.setAttributeOrProperty(element, attribute, value);
                 TreeUpdater.debug("Binding (" + property + " to " + attribute
                         + ") changed to " + value);
@@ -129,13 +124,9 @@ public class BoundElementTemplate extends Template {
                 String property = entry.getValue();
                 String classPart = entry.getKey();
                 Reactive.keepUpToDate(() -> {
-                    Object value;
                     TreeNodeProperty p = context.getProperty(property);
-                    if (p == null) {
-                        value = null;
-                    } else {
-                        value = p.getValue();
-                    }
+                    Object value = p.getValue();
+
                     if (isTrueIsh(TreeUpdater.asJsonValue(value))) {
                         DomApi.wrap(element).getClassList().add(classPart);
                     } else {
