@@ -262,8 +262,11 @@ public class BasicElementListener {
 
             ListTreeNode classListListNode = (ListTreeNode) node
                     .getProperty("CLASS_LIST").getValue();
-            classListListNode
-                    .addArrayEventListener(new ClassListListener(element));
+            classListListNode.addArrayEventListener(
+                    (listTreeNode, startIndex, removed, added) -> {
+                ClassListUpdater.splice(element, listTreeNode, startIndex,
+                        removed, added);
+            });
         });
 
     }

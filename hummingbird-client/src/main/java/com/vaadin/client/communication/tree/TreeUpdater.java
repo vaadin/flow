@@ -395,6 +395,9 @@ public class TreeUpdater {
         getLogger().info("Handling tree node changes");
         applyNodeChanges(elementChanges, rpc);
 
+        getLogger().info("Triggering updateStyles");
+        ClassListUpdater.updateStyles();
+
         getLogger().info("Sending created events");
         sendCreatedEvents();
 

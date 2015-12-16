@@ -1,0 +1,107 @@
+<!-- JAVASCRIPT PERFORMANCE TESTING http://www.jsperf.com/polymer-updatestyles -->
+<script src="http://vaadin.github.io/gwt-polymer-elements/demo/gwtPolymerDemo/bower_components/webcomponentsjs/webcomponents.js"></script>
+<link rel="import" href="http://vaadin.github.io/gwt-polymer-elements/demo/gwtPolymerDemo/bower_components/polymer/polymer.html">
+<link rel="import" href="http://vaadin.github.io/gwt-polymer-elements/demo/gwtPolymerDemo/bower_components/paper-checkbox/paper-checkbox.html">
+
+<div class="checkbox-sample">
+        <style is="custom-style">
+            .checkbox-sample paper-checkbox {
+                display: block;
+                margin-bottom: 40px;
+            }
+
+            .checkbox-sample paper-checkbox.blue {
+                --paper-checkbox-checked-color: var(--paper-light-blue-500);
+                --paper-checkbox-checked-ink-color: var(--paper-light-blue-500);
+                --paper-checkbox-unchecked-color: var(--paper-light-blue-900);
+                --paper-checkbox-unchecked-ink-color: var(--paper-light-blue-900);
+            }
+
+            .checkbox-sample paper-checkbox.red {
+                --paper-checkbox-checked-color: var(--paper-red-500);
+                --paper-checkbox-checked-ink-color: var(--paper-red-500);
+                --paper-checkbox-unchecked-color: var(--paper-red-900);
+                --paper-checkbox-unchecked-ink-color: var(--paper-red-900);
+            }
+
+            .checkbox-sample paper-checkbox.green {
+                --paper-checkbox-checked-color: var(--paper-green-500);
+                --paper-checkbox-checked-ink-color: var(--paper-green-500);
+                --paper-checkbox-unchecked-color: var(--paper-green-900);
+                --paper-checkbox-unchecked-ink-color: var(--paper-green-900);
+            }
+
+            .checkbox-sample paper-checkbox.orange {
+                --paper-checkbox-checked-color: var(--paper-orange-500);
+                --paper-checkbox-checked-ink-color: var(--paper-orange-500);
+                --paper-checkbox-unchecked-color: var(--paper-orange-900);
+                --paper-checkbox-unchecked-ink-color: var(--paper-orange-900);
+            }
+        </style>
+
+<div class="horizontal-section-container center-justified layout">
+<div> <h4>Color</h4>
+<div id="parent" class="horizontal-section">
+  <paper-checkbox class="blue">Oxygen</paper-checkbox>
+  </div> </div> </div></div>
+<script>
+  Benchmark.prototype.setup = function() {
+    var parent = document.getElementById('parent');
+    var blue = document.createElement('paper-checkbox');
+    blue.setAttribute('id', 'blue');
+    var red = document.createElement('paper-checkbox');
+    red.setAttribute('id', 'red');
+    var green = document.createElement('paper-checkbox');
+    green.setAttribute('id', 'green');
+    var orange = document.createElement('paper-checkbox');
+    orange.setAttribute('id', 'orange');
+    Polymer.updateStyles();
+  };
+
+  Benchmark.prototype.teardown = function() {
+    var parent = document.getElementById('parent');
+    var blue = document.getElementById('blue');
+    parent.removeChild(blue);
+    var red = document.getElementById('red');
+    parent.removeChild(red);
+    var green = document.getElementById('green');
+    parent.removeChild(green);
+    var orange = document.getElementById('orange');
+    parent.removeChild(orange);
+  };
+</script>
+
+case 1 :
+blue.classList.add('blue');
+Polymer.dom(parent).appendChild(blue);
+red.classList.add('red');
+Polymer.dom(parent).appendChild(red);
+green.classList.add('green');
+Polymer.dom(parent).appendChild(green);
+orange.classList.add('orange');
+Polymer.dom(parent).appendChild(orange);
+
+case 2: 
+Polymer.dom(parent).appendChild(blue);
+blue.classList.add('blue');
+blue.updateStyles();
+Polymer.dom(parent).appendChild(red);
+red.classList.add('red');
+red.updateStyles();
+Polymer.dom(parent).appendChild(green);
+green.classList.add('green');
+green.updateStyles();
+Polymer.dom(parent).appendChild(orange);
+orange.classList.add('orange');
+orange.updateStyles();
+
+case 3:
+Polymer.dom(parent).appendChild(blue);
+blue.classList.add('blue');
+Polymer.dom(parent).appendChild(red);
+red.classList.add('red');
+Polymer.dom(parent).appendChild(green);
+green.classList.add('green');
+Polymer.dom(parent).appendChild(orange);
+orange.classList.add('orange');
+Polymer.updateStyles();
