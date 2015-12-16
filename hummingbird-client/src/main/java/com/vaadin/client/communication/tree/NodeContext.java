@@ -14,4 +14,6 @@ public interface NodeContext {
     public ListTreeNode resolveListTreeNode(String name);
 
     public Map<String, JavaScriptObject> buildEventHandlerContext();
+
+    public Map<String, JavaScriptObject> buildExpressionContext();
 }

@@ -112,15 +112,17 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         applyTemplate(1, template);
 
+        int childId = 3;
         applyChanges(ChangeUtil.putList(containerElementId, "CHILDREN", 4),
-                ChangeUtil.listInsertNode(4, 0, 3),
-                ChangeUtil.put(3, "TEMPLATE", Json.create(1)));
+                ChangeUtil.put(childId, "value", Json.createNull()),
+                ChangeUtil.listInsertNode(4, 0, childId),
+                ChangeUtil.put(childId, "TEMPLATE", Json.create(1)));
 
         Element templateElement = updater.getRootElement()
                 .getFirstChildElement();
         assertNull(templateElement.getPropertyObject("value"));
 
-        NativeEvent event = Document.get().createClickEvent(0, 1, 2, 3, 4,
+        NativeEvent event = Document.get().createClickEvent(0, 1, 2, childId, 4,
                 false, false, false, false);
         templateElement.dispatchEvent(event);
 
@@ -132,7 +134,7 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals(1, enqueuedNodeChanges.size());
 
         JsonObject enquedNodeChange = enqueuedNodeChanges.get(0);
-        assertEquals(3, (int) enquedNodeChange.getNumber("id"));
+        assertEquals(childId, (int) enquedNodeChange.getNumber("id"));
         assertEquals("put", enquedNodeChange.getString("type"));
         assertEquals("value", enquedNodeChange.getString("key"));
         assertEquals(1, (int) enquedNodeChange.getNumber("value"));
@@ -148,12 +150,12 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         JsonArray parameters = methodInvocation.getParameters();
         assertEquals(5, parameters.length());
         // Node id
-        assertEquals(3, (int) parameters.getNumber(0));
+        assertEquals(childId, (int) parameters.getNumber(0));
         // Template id
         assertEquals(1, (int) parameters.getNumber(1));
         assertEquals("doSomething", parameters.getString(2));
         // Parameter (element.something)
-        assertEquals(10, (int) parameters.getNumber(3));
+        assertEquals(10, (int) parameters.getNumber(childId));
         // Promise id
         assertEquals(0, (int) parameters.getNumber(4));
     }
@@ -363,6 +365,45 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
                 ChangeUtil.listInsertNode(4, 0, 3));
 
         assertTrue(isScriptLoaded());
+    }
+
+    public void testBoundExpressions() {
+        int parentTemplateId = 1;
+        int childTemplateId = 2;
+
+        int childId = 3;
+        int childrenId = 4;
+
+        String childTemplate = "{'type': 'DynamicTextTemplate', 'binding':'value * 2'}";
+        applyTemplate(childTemplateId,
+                Json.parse(childTemplate.replace('\'', '"')));
+
+        String parentTemplate = "{'type': 'BoundElementTemplate', 'tag':'span',"
+                + "'attributeBindings': {'foo': 'value + 1'},"
+                + "'classPartBindings': {'foo': 'value  % 2 == 0'},"
+                + "'children': [" + childTemplateId + "]}";
+        applyTemplate(parentTemplateId,
+                Json.parse(parentTemplate.replace('\'', '"')));
+
+        applyChanges(
+                ChangeUtil.put(childId, "TEMPLATE",
+                        Json.create(parentTemplateId)),
+                ChangeUtil.put(childId, "value", Json.create(4)),
+                ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.listInsertNode(childrenId, 0, childId));
+
+        Element templateElement = updater.getRootElement()
+                .getFirstChildElement();
+
+        assertEquals(5, templateElement.getPropertyInt("foo"));
+        assertTrue(templateElement.hasClassName("foo"));
+        assertEquals("8", templateElement.getInnerText());
+
+        applyChanges(ChangeUtil.put(childId, "value", Json.create(5)));
+
+        assertEquals(6, templateElement.getPropertyInt("foo"));
+        assertFalse(templateElement.hasClassName("foo"));
+        assertEquals("10", templateElement.getInnerText());
     }
 
     private static native boolean isScriptLoaded()

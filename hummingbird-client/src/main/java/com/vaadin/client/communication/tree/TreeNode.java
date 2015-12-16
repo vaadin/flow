@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.vaadin.client.FastStringMap;
@@ -168,6 +169,10 @@ public class TreeNode {
 
     public TreeUpdater getTreeUpdater() {
         return treeUpdater;
+    }
+
+    public JsArrayString getPropertyNames() {
+        return properties.getKeys();
     }
 
 }

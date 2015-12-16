@@ -19,8 +19,8 @@ public class DynamicTextTemplate extends Template {
         Text textNode = Document.get().createTextNode("");
 
         Reactive.keepUpToDate(() -> {
-            TreeNodeProperty p = context.getProperty(binding);
-            Object value = p.getValue();
+            Object value = BoundElementTemplate.evaluateExpression(binding,
+                    context);
             updateValue(textNode, value);
         });
 

@@ -126,6 +126,15 @@ public class ForElementTemplate extends Template {
                                         return outerContext.getProperty(name);
                                     }
                                 }
+
+                                @Override
+                                public Map<String, JavaScriptObject> buildExpressionContext() {
+                                    Map<String, JavaScriptObject> context = outerContext
+                                            .buildExpressionContext();
+                                    context.put(getInnerScope(),
+                                            childNode.getProxy());
+                                    return context;
+                                }
                             };
 
                             Node child = treeUpdater.createElement(

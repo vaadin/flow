@@ -23,7 +23,7 @@ public class BoundElementTemplate extends Template {
     private final TreeUpdater treeUpdater;
     private final String tag;
     private final Map<String, String> defaultAttributeValues;
-    private final Map<String, String> attributeToProperty;
+    private final Map<String, String> attributeToExpression;
     private final Map<String, String> classPartBindings;
     private final Map<String, String[]> events;
 
@@ -40,7 +40,7 @@ public class BoundElementTemplate extends Template {
         defaultAttributeValues = readStringMap(
                 templateDescription.getObject("defaultAttributes"));
 
-        attributeToProperty = readStringMap(
+        attributeToExpression = readStringMap(
                 templateDescription.getObject("attributeBindings"));
 
         classPartBindings = readStringMap(
@@ -104,28 +104,26 @@ public class BoundElementTemplate extends Template {
 
         initElement(node, element, context);
 
-        for (Entry<String, String> entry : attributeToProperty.entrySet()) {
-            String property = entry.getValue();
+        for (Entry<String, String> entry : attributeToExpression.entrySet()) {
+            String expression = entry.getValue();
             String attribute = entry.getKey();
 
-            TreeUpdater.debug("Binding " + property + " to " + attribute);
+            TreeUpdater.debug("Binding " + expression + " to " + attribute);
 
             Reactive.keepUpToDate(() -> {
-                TreeNodeProperty p = context.getProperty(property);
-                Object value = p.getValue();
+                Object value = evaluateExpression(expression, context);
                 TreeUpdater.setAttributeOrProperty(element, attribute, value);
-                TreeUpdater.debug("Binding (" + property + " to " + attribute
+                TreeUpdater.debug("Binding (" + expression + " to " + attribute
                         + ") changed to " + value);
             });
         }
 
         if (classPartBindings != null) {
             for (Entry<String, String> entry : classPartBindings.entrySet()) {
-                String property = entry.getValue();
+                String expression = entry.getValue();
                 String classPart = entry.getKey();
                 Reactive.keepUpToDate(() -> {
-                    TreeNodeProperty p = context.getProperty(property);
-                    Object value = p.getValue();
+                    Object value = evaluateExpression(expression, context);
 
                     if (isTrueIsh(TreeUpdater.asJsonValue(value))) {
                         DomApi.wrap(element).getClassList().add(classPart);
@@ -166,6 +164,14 @@ public class BoundElementTemplate extends Template {
         });
 
         return element;
+    }
+
+    public static Object evaluateExpression(String expression,
+            NodeContext nodeContext) {
+        Map<String, JavaScriptObject> context = nodeContext
+                .buildExpressionContext();
+
+        return TreeUpdater.evalWithContext(context, "return " + expression);
     }
 
     private static boolean isTrueIsh(JsonValue value) {
