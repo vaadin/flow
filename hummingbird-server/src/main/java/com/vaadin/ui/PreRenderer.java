@@ -44,17 +44,12 @@ public class PreRenderer {
             if (key.equals("class")) {
                 target.addClass(source.getAttribute(key));
             } else {
-                target.setAttribute(key,
-                        escapeAttribute(source.getAttribute(key)));
+                target.getTemplate().setAttribute(key,
+                        source.getRawAttribute(key), target.getNode());
             }
         }
 
         return target;
-    }
-
-    private static String escapeAttribute(String attribute) {
-        // FIXME
-        return attribute;
     }
 
     /**
@@ -78,7 +73,13 @@ public class PreRenderer {
                 if (name.equals("innerHTML")) {
                     target.html(preRenderTree.getAttribute(name));
                 } else {
-                    target.attr(name, preRenderTree.getAttribute(name));
+                    Object rawAttribute = preRenderTree.getRawAttribute(name);
+                    if (rawAttribute instanceof Boolean) {
+                        target.attr(name,
+                                ((Boolean) rawAttribute).booleanValue());
+                    } else {
+                        target.attr(name, preRenderTree.getAttribute(name));
+                    }
                 }
             });
             int childCount = preRenderTree.getChildCount();

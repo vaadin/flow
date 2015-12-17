@@ -232,19 +232,21 @@ public class BoundElementTemplate extends AbstractElementTemplate {
             return superAttributes;
         }
 
-        // TODO Ignore defaultAttributes that have been explicitly cleared and
-        // bindings that resolve to null
-        HashSet<String> attributeNames = new HashSet<>(superAttributes);
-        if (!attributeBindings.isEmpty()) {
-            attributeNames.addAll(attributeBindings.keySet());
-        }
+        // Collect all candidate names
+        HashSet<String> attributeNames = new HashSet<>(
+                attributeBindings.keySet());
+        attributeNames.addAll(defaultAttributeValues.keySet());
+        attributeNames.addAll(superAttributes);
+        // Remove "class" since we will handled it separately
+        attributeNames.remove("class");
 
-        if (!defaultAttributeValues.isEmpty()) {
-            attributeNames.addAll(defaultAttributeValues.keySet());
-        }
+        // Remove anything that isn't actually there
+        attributeNames.removeIf(name -> {
+            Object value = getAttribute(name, node);
+            return value == null || Boolean.FALSE.equals(value);
+        });
 
-        if (!classPartBindings.isEmpty() && !attributeNames.contains("class")
-                && !getAllClasses(node).isEmpty()) {
+        if (!getAllClasses(node).isEmpty()) {
             attributeNames.add("class");
         }
 

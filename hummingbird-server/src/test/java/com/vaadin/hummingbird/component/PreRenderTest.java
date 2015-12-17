@@ -70,6 +70,19 @@ public class PreRenderTest {
     }
 
     @Test
+    public void testConvertBooleanAttributeToJsoup() {
+        Element element = new Element("div");
+        element.setAttribute("foo", true);
+
+        Element prerendered = PreRenderer.preRenderElementTree(element);
+        Document document = new Document("");
+        org.jsoup.nodes.Element jsoup = (org.jsoup.nodes.Element) PreRenderer
+                .toJSoup(document, prerendered);
+
+        Assert.assertEquals("<div foo></div>", jsoup.outerHtml());
+    }
+
+    @Test
     public void testPreRenderHTML() {
         HTML html = new HTML("<p>Hello</p>");
 

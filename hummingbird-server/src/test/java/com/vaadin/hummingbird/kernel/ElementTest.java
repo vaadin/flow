@@ -366,4 +366,40 @@ public class ElementTest {
         Assert.assertEquals("foobar123", e.getChild(0).getTextContent());
     }
 
+    @Test
+    public void booleanAttributeSemantics() {
+        Element element = new Element("div");
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+        Assert.assertEquals(null, element.getAttribute("foo"));
+        Assert.assertEquals(0, element.getAttributeNames().size());
+        Assert.assertFalse(element.getAttributeNames().contains("foo"));
+        Assert.assertEquals("<div></div>", element.getOuterHTML());
+
+        element.setAttribute("foo", "value");
+
+        Assert.assertTrue(element.hasAttribute("foo"));
+        Assert.assertEquals("value", element.getAttribute("foo"));
+        Assert.assertEquals(1, element.getAttributeNames().size());
+        Assert.assertTrue(element.getAttributeNames().contains("foo"));
+        Assert.assertEquals("<div foo=\"value\"></div>",
+                element.getOuterHTML());
+
+        element.setAttribute("foo", true);
+
+        Assert.assertTrue(element.hasAttribute("foo"));
+        Assert.assertEquals("", element.getAttribute("foo"));
+        Assert.assertEquals(1, element.getAttributeNames().size());
+        Assert.assertTrue(element.getAttributeNames().contains("foo"));
+        Assert.assertEquals("<div foo></div>", element.getOuterHTML());
+
+        element.setAttribute("foo", false);
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+        Assert.assertEquals(null, element.getAttribute("foo"));
+        Assert.assertEquals(0, element.getAttributeNames().size());
+        Assert.assertFalse(element.getAttributeNames().contains("foo"));
+        Assert.assertEquals("<div></div>", element.getOuterHTML());
+    }
+
 }

@@ -331,6 +331,46 @@ public class ElementTemplateTest {
         Assert.assertTrue(element.getAttributeNames().contains("class"));
     }
 
+    @Test
+    public void boundBooleanAttributeTest() {
+        BoundElementTemplate template = TemplateBuilder.withTag("div")
+                .bindAttribute("foo", "value").build();
+        StateNode node = StateNode.create();
+
+        Element element = Element.getElement(template, node);
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+        Assert.assertEquals(null, element.getAttribute("foo"));
+        Assert.assertEquals(0, element.getAttributeNames().size());
+        Assert.assertFalse(element.getAttributeNames().contains("foo"));
+        Assert.assertEquals("<div></div>", element.getOuterHTML());
+
+        node.put("value", "value");
+
+        Assert.assertTrue(element.hasAttribute("foo"));
+        Assert.assertEquals("value", element.getAttribute("foo"));
+        Assert.assertEquals(1, element.getAttributeNames().size());
+        Assert.assertTrue(element.getAttributeNames().contains("foo"));
+        Assert.assertEquals("<div foo=\"value\"></div>",
+                element.getOuterHTML());
+
+        node.put("value", Boolean.TRUE);
+
+        Assert.assertTrue(element.hasAttribute("foo"));
+        Assert.assertEquals("", element.getAttribute("foo"));
+        Assert.assertEquals(1, element.getAttributeNames().size());
+        Assert.assertTrue(element.getAttributeNames().contains("foo"));
+        Assert.assertEquals("<div foo></div>", element.getOuterHTML());
+
+        node.put("value", Boolean.FALSE);
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+        Assert.assertEquals(null, element.getAttribute("foo"));
+        Assert.assertEquals(0, element.getAttributeNames().size());
+        Assert.assertFalse(element.getAttributeNames().contains("foo"));
+        Assert.assertEquals("<div></div>", element.getOuterHTML());
+    }
+
     private static Element createMirror(Element element) {
         return Element.getElement(element.getTemplate(), element.getNode());
     }

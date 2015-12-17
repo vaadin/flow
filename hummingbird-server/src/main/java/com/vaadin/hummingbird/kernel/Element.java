@@ -109,18 +109,25 @@ public class Element implements Serializable {
     public Element setAttribute(String name, boolean value) {
         assert validAttribute(name);
 
-        template.setAttribute(name, value, node);
+        if (value) {
+            template.setAttribute(name, Boolean.TRUE, node);
+        } else {
+            template.setAttribute(name, null, node);
+        }
         return this;
     }
 
-    public String getAttribute(String name) {
+    public Object getRawAttribute(String name) {
         assert validAttribute(name);
 
         if (name.equals("class")) {
             return getClassNames();
         }
 
-        Object value = template.getAttribute(name, node);
+        return template.getAttribute(name, node);
+    }
+
+    private static String formatAttributeValue(Object value) {
         // Integer-ish floating point values are shown as integers in
         // JS, but as e.g. 1.0 in Java.
         if (value instanceof Double || value instanceof Float) {
@@ -129,8 +136,18 @@ public class Element implements Serializable {
             if (longValue == number.doubleValue()) {
                 return Long.toString(longValue);
             }
+        } else if (value instanceof Boolean) {
+            if (Boolean.TRUE.equals(value)) {
+                return "";
+            } else {
+                return null;
+            }
         }
         return value == null ? null : value.toString();
+    }
+
+    public String getAttribute(String name) {
+        return formatAttributeValue(getRawAttribute(name));
     }
 
     public String getAttribute(String name, String defaultValue) {
@@ -355,13 +372,16 @@ public class Element implements Serializable {
                         b.append("\"");
                     }
                 } else {
-                    String value = getAttribute(attribute);
-                    if (value != null && !value.equals("false")) {
+                    Object rawValue = getRawAttribute(attribute);
+                    if (rawValue != null && !Boolean.FALSE.equals(rawValue)) {
                         b.append(' ');
                         b.append(attribute);
-                        b.append("=\"");
-                        b.append(value);
-                        b.append('\"');
+                        if (!rawValue.equals(Boolean.TRUE)) {
+                            String value = formatAttributeValue(rawValue);
+                            b.append("=\"");
+                            b.append(value);
+                            b.append('\"');
+                        }
                     }
                 }
             }
