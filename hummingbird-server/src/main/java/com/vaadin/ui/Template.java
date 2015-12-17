@@ -375,7 +375,8 @@ public abstract class Template extends AbstractComponent
                 for (PropertyDescriptor pd : propertyDescriptors) {
                     String name = pd.getName();
                     if (!node.containsKey(name)) {
-                        node.put(name, null);
+                        node.put(name, getDefaultValue(
+                                pd.getReadMethod().getGenericReturnType()));
                     }
                 }
             } catch (IntrospectionException e1) {
@@ -384,6 +385,17 @@ public abstract class Template extends AbstractComponent
                         e1);
             }
 
+        }
+
+        public static Object getDefaultValue(Type type) {
+            if (type instanceof Class<?>) {
+                Class<?> clazz = (Class<?>) type;
+                if (clazz.isPrimitive()) {
+                    return primitiveDefaults.get(clazz);
+                }
+            }
+
+            return null;
         }
     }
 

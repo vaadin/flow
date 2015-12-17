@@ -327,5 +327,8 @@ public class TemplateModelTest {
         Model.wrap(node, MyTestModel.class);
         Assert.assertTrue(node.containsKey("int"));
         Assert.assertFalse(node.containsKey("int2"));
+
+        Assert.assertEquals("Should be initialized to default primitive value",
+                Integer.valueOf(0), node.get("int"));
     }
 }
