@@ -60,7 +60,7 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
     public void testClasses() {
         String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
-                + "'defaultAttributes': {'class': 'baseClass'},"
+                + "'defaultAttributes': {'class': 'baseClass second'},"
                 + "'classPartBindings': {'part':'conditional'},"
                 + "'modelStructure': ['conditional']}";
         JsonObject template = Json.parse(json.replace('\'', '"'));
@@ -82,24 +82,27 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         Element templateElement = rootElement.getFirstChildElement();
         assertEquals("SPAN", templateElement.getTagName());
-        assertEquals("baseClass part", templateElement.getClassName());
+        assertEquals("baseClass second part", templateElement.getClassName());
 
         JsonArray array = Json.createArray();
         array.set(0, "foo");
         array.set(1, "bar");
         applyChanges(ChangeUtil.putList(childId, "CLASS_LIST", classListId),
                 ChangeUtil.listInsert(classListId, 0, array));
-        assertEquals("baseClass part foo bar", templateElement.getClassName());
+        assertEquals("baseClass second part foo bar",
+                templateElement.getClassName());
 
         applyChanges(
                 ChangeUtil.put(childId, "conditional", Json.create(false)));
-        assertEquals("baseClass foo bar", templateElement.getClassName());
+        assertEquals("baseClass second foo bar",
+                templateElement.getClassName());
 
         applyChanges(ChangeUtil.listRemove(classListId, 0));
-        assertEquals("baseClass bar", templateElement.getClassName());
+        assertEquals("baseClass second bar", templateElement.getClassName());
 
         applyChanges(ChangeUtil.put(childId, "conditional", Json.create(true)));
-        assertEquals("baseClass bar part", templateElement.getClassName());
+        assertEquals("baseClass second bar part",
+                templateElement.getClassName());
     }
 
     public void testTemplateEvents() {

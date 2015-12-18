@@ -195,7 +195,7 @@ public class BoundElementTemplate extends Template {
 
         for (Entry<String, String> entry : defaultAttributeValues.entrySet()) {
             if (entry.getKey().equals("class")) {
-                DomApi.wrap(element).getClassList().add(entry.getValue());
+                addClassFromTemplate(element, entry.getValue());
             } else {
                 DomApi.wrap(element).setAttribute(entry.getKey(),
                         entry.getValue());
@@ -244,6 +244,18 @@ public class BoundElementTemplate extends Template {
 
                 DomApi.wrap(element).appendChild(newChildElement);
             }
+        }
+    }
+
+    private void addClassFromTemplate(Element element, String className) {
+        if (className.contains(" ")) {
+            // Split space separated style names and add them one by one.
+            String[] split = className.split(" ");
+            for (String str : split) {
+                DomApi.wrap(element).getClassList().add(str);
+            }
+        } else {
+            DomApi.wrap(element).getClassList().add(className);
         }
     }
 
