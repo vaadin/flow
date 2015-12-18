@@ -33,6 +33,7 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Text;
 import com.google.gwt.user.client.Window.Location;
 import com.vaadin.client.ApplicationConnection.Client;
+import com.vaadin.client.FastStringMap;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.Util;
 import com.vaadin.client.communication.DomApi;
@@ -538,6 +539,9 @@ public class TreeUpdater {
         }
     }
 
+    private static FastStringMap<JavaScriptObject> functionCache = FastStringMap
+            .create();
+
     public static JavaScriptObject evalWithContext(
             Map<String, JavaScriptObject> context, String script) {
 
@@ -560,15 +564,27 @@ public class TreeUpdater {
 
         newFunctionParams.push(script);
 
-        return createAndRunFunction(newFunctionParams, params);
+        String functionSignature = asJsonValue(newFunctionParams).toJson();
+        JavaScriptObject function = functionCache.get(functionSignature);
+        if (function == null) {
+            function = createFunction(newFunctionParams);
+            functionCache.put(functionSignature, function);
+        }
+
+        return runFunction(function, params);
     }
 
-    private static native JavaScriptObject createAndRunFunction(
-            JsArrayString newFunctionParams, JsArray<JavaScriptObject> params)
+    private static native JavaScriptObject createFunction(
+            JsArrayString newFunctionParams)
             /*-{
                 // Using Function.apply to call Function constructor with variable number of parameters
-                // Then use apply on the created function to run the actual code
-                return $wnd.Function.apply($wnd.Function, newFunctionParams).apply(null, params);
+                return $wnd.Function.apply($wnd.Function, newFunctionParams);
+            }-*/;
+
+    private static native JavaScriptObject runFunction(JavaScriptObject f,
+            JsArray<JavaScriptObject> params)
+            /*-{
+                return f.apply(null, params);
             }-*/;
 
     private Node findDomNode(int nodeId, int templateId) {
