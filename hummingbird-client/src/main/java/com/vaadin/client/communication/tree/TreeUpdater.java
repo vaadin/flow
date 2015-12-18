@@ -286,9 +286,10 @@ public class TreeUpdater {
             NodeContext context) {
         Node element = template.createElement(node, context);
         if (Element.is(element)) {
-            getLogger().info("Created element of type "
-                    + Element.as(element).getTagName() + " for node "
-                    + node.getId());
+            // Logging this has a huge performance impact
+            // getLogger().info("Created element of type "
+            // + Element.as(element).getTagName() + " for node "
+            // + node.getId());
             createdElements.add((Element) element);
         }
         int nodeId = node.getId();
