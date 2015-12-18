@@ -10,6 +10,7 @@ import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.DomElement;
 import com.vaadin.client.communication.tree.ListTreeNode.ArrayEventListener;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
+import com.vaadin.client.communication.tree.TreeUpdater.ContextFactorySupplier;
 
 import elemental.json.JsonObject;
 
@@ -128,11 +129,12 @@ public class ForElementTemplate extends Template {
                                 }
 
                                 @Override
-                                public Map<String, JavaScriptObject> buildExpressionContext() {
-                                    Map<String, JavaScriptObject> context = outerContext
+                                public Map<String, ContextFactorySupplier> buildExpressionContext() {
+                                    Map<String, ContextFactorySupplier> context = outerContext
                                             .buildExpressionContext();
-                                    context.put(getInnerScope(),
-                                            childNode.getProxy());
+                                    context.put(getInnerScope(), () -> {
+                                        return childNode.getProxy();
+                                    });
                                     return context;
                                 }
                             };

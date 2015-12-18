@@ -75,8 +75,10 @@ public class Reactive {
     }
 
     public static void setAccessed(TreeNodeProperty treeNodeProperty) {
-        if (collector != null
-                && !(treeNodeProperty instanceof ComputedTreeNodeProperty)) {
+        if (collector != null) {
+            // XXX Should kind of ignore property here if it's computed, except
+            // that we would then have to find its original dependencies and add
+            // those to the collector instead
             collector.add(treeNodeProperty);
         }
     }

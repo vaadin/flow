@@ -363,24 +363,8 @@ public class TreeUpdater {
                 }
 
                 @Override
-                public Map<String, JavaScriptObject> buildExpressionContext() {
-                    Map<String, JavaScriptObject> map = new HashMap<>();
-
-                    JsArrayString propertyNames = node.getPropertyNames();
-                    for (int i = 0; i < propertyNames.length(); i++) {
-                        String name = propertyNames.get(i);
-                        if (name.matches("[^0-9].*")) {
-                            TreeNodeProperty property = node.getProperty(name);
-                            Object value = property.getValue();
-                            if (value instanceof TreeNode) {
-                                TreeNode node = (TreeNode) value;
-                                value = node.getProxy();
-                            }
-                            map.put(name, asJso(value));
-                        }
-                    }
-
-                    return map;
+                public Map<String, ContextFactorySupplier> buildExpressionContext() {
+                    return TreeUpdater.createNodeContextFactory(node);
                 }
             });
         } else {

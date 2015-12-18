@@ -12,6 +12,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
+import com.vaadin.client.communication.tree.TreeUpdater.ContextFactorySupplier;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -168,10 +169,11 @@ public class BoundElementTemplate extends Template {
 
     public static Object evaluateExpression(String expression,
             NodeContext nodeContext) {
-        Map<String, JavaScriptObject> context = nodeContext
+        Map<String, ContextFactorySupplier> context = nodeContext
                 .buildExpressionContext();
 
-        return TreeUpdater.evalWithContext(context, "return " + expression);
+        return TreeUpdater.evalWithContextFactory(context,
+                "return " + expression);
     }
 
     private static boolean isTrueIsh(JsonValue value) {

@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
+import com.vaadin.client.communication.tree.TreeUpdater.ContextFactorySupplier;
 
 public interface NodeContext {
     public TreeNodeProperty getProperty(String name);
@@ -15,5 +16,5 @@ public interface NodeContext {
 
     public Map<String, JavaScriptObject> buildEventHandlerContext();
 
-    public Map<String, JavaScriptObject> buildExpressionContext();
+    public Map<String, ContextFactorySupplier> buildExpressionContext();
 }
