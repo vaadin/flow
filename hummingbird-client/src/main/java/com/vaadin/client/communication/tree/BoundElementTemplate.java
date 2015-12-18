@@ -250,11 +250,11 @@ public class BoundElementTemplate extends Template {
     }
 
     private void addClassFromTemplate(Element element, String className) {
+        className = className.trim();
         if (className.isEmpty()) {
             return;
         } else if (className.contains(" ")) {
-            // Split space separated style names and add them one by one.
-            String[] split = className.trim().split("\\s+");
+            String[] split = className.split("\\s+");
             for (String str : split) {
                 DomApi.wrap(element).getClassList().add(str);
             }
