@@ -27,7 +27,8 @@ public class HTML extends AbstractComponent {
             d = Jsoup.parse("<span>" + outerHtml + "</span>");
         } else if (nrChildren > 1) {
             throw new IllegalArgumentException(
-                    "Html cannot have more than one root element");
+                    "Html cannot have more than one root element, outerHtml: "
+                            + outerHtml);
         }
         Element e = d.body().child(0);
         setElement(new com.vaadin.hummingbird.kernel.Element(e.tagName()));
