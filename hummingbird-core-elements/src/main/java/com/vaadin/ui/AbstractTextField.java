@@ -39,12 +39,18 @@ public abstract class AbstractTextField extends AbstractField<String>
 
     protected AbstractTextField() {
         super();
+    }
+
+    @Override
+    protected void init() {
+        super.init();
 
         // Always immediate
         getElement().addEventData("change", "element.value");
         getElement().addEventListener("change", e -> {
             setValue(e.getString("element.value"));
         });
+
     }
 
     @Override
