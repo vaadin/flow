@@ -275,12 +275,15 @@ public class ConnectorTracker implements Serializable {
         }
 
         // Do this expensive check only with assertions enabled
-        if (!isHierarchyComplete()) {
-            getLogger().severe("The connector hierarchy is corrupted. "
-                    + "Check for missing calls to super.setParent(), super.attach() and super.detach() "
-                    + "and that all custom component containers call child.setParent(this) when a child "
-                    + "is added and child.setParent(null) when the child is no longer used.");
-        }
+        // if (!isHierarchyComplete()) {
+        // getLogger().severe("The connector hierarchy is corrupted. "
+        // + "Check for missing calls to super.setParent(), super.attach() and
+        // super.detach() "
+        // + "and that all custom component containers call
+        // child.setParent(this) when a child "
+        // + "is added and child.setParent(null) when the child is no longer
+        // used.");
+        // }
 
         // remove detached components from paintableIdMap so they
         // can be GC'ed
