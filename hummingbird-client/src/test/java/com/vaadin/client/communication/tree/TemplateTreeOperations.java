@@ -114,7 +114,6 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         int childId = 3;
         int childrenId = 4;
-        int classListId = 5;
 
         applyChanges(
                 ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
@@ -128,6 +127,29 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals("SPAN", templateElement.getTagName());
         assertEquals("baseClass white-spacing cannottype a",
                 templateElement.getClassName());
+    }
+
+    public void testEmptyClassParsingInTemplate() {
+        String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
+                + "'defaultAttributes': {'class': ''}}";
+        JsonObject template = Json.parse(json.replace('\'', '"'));
+
+        applyTemplate(1, template);
+
+        int childId = 3;
+        int childrenId = 4;
+
+        applyChanges(
+                ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.listInsertNode(childrenId, 0, childId),
+                ChangeUtil.put(childId, "TEMPLATE", Json.create(1)));
+
+        Element rootElement = updater.getRootElement();
+        assertEquals(1, rootElement.getChildCount());
+
+        Element templateElement = rootElement.getFirstChildElement();
+        assertEquals("SPAN", templateElement.getTagName());
+        assertEquals("", templateElement.getClassName());
     }
 
     public void testTemplateEvents() {

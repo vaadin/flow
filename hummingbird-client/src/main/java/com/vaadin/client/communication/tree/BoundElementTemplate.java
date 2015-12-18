@@ -248,7 +248,9 @@ public class BoundElementTemplate extends Template {
     }
 
     private void addClassFromTemplate(Element element, String className) {
-        if (className.contains(" ")) {
+        if (className.isEmpty()) {
+            return;
+        } else if (className.contains(" ")) {
             // Split space separated style names and add them one by one.
             String[] split = className.trim().split("\\s+");
             for (String str : split) {
