@@ -34,6 +34,7 @@ import com.vaadin.hummingbird.kernel.ScriptModelBinding;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.StaticModelBinding;
 import com.vaadin.hummingbird.kernel.TemplateBuilder;
+import com.vaadin.hummingbird.kernel.TemplateScriptHelper;
 import com.vaadin.ui.Template;
 
 public class TemplateParser {
@@ -52,15 +53,7 @@ public class TemplateParser {
             @Override
             public Function<String, Supplier<Object>> getBindingFactory(
                     StateNode node) {
-                return name -> {
-                    if (node.containsKey(name)) {
-                        return () -> {
-                            return node.get(name);
-                        };
-                    } else {
-                        return null;
-                    }
-                };
+                return new TemplateScriptHelper.NodeBindingFactory(node);
             }
         };
 

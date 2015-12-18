@@ -1,6 +1,6 @@
 package com.vaadin.hummingbird.kernel;
 
-import javax.script.SimpleBindings;
+import com.vaadin.hummingbird.kernel.TemplateScriptHelper.NodeBindingFactory;
 
 public class JsComputedProperty extends ComputedProperty {
     private Class<?> type;
@@ -12,10 +12,10 @@ public class JsComputedProperty extends ComputedProperty {
 
     @Override
     public Object compute(StateNode context) {
-        SimpleBindings bindings = new SimpleBindings();
-        bindings.put("model", TemplateScriptHelper.wrapNode(context));
+        NodeBindingFactory bindingFactory = new TemplateScriptHelper.NodeBindingFactory(
+                context);
 
-        return TemplateScriptHelper.evaluateScript(bindings, getClientCode(),
-                type);
+        return TemplateScriptHelper.evaluateScript(bindingFactory,
+                getClientCode(), type);
     }
 }

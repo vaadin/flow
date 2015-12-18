@@ -6,6 +6,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.annotations.JS;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
@@ -59,6 +60,13 @@ public class TemplateModelTest {
         public List<SubModelType> getComplexList();
 
         public void setComplexList(List<SubModelType> complexList);
+
+        public default int getServerComptued() {
+            return getInt() + (isBoolean() ? 1 : 2);
+        }
+
+        @JS("int  - (boolean ? 1 : 2)")
+        public int getJsComputed();
     }
 
     public class MyTestTemplate extends Template {
@@ -330,5 +338,16 @@ public class TemplateModelTest {
 
         Assert.assertEquals("Should be initialized to default primitive value",
                 Integer.valueOf(0), node.get("int"));
+    }
+
+    @Test
+    public void tetComputedProperties() {
+        Assert.assertEquals(2, model.getServerComptued());
+        Assert.assertEquals(-2, model.getJsComputed());
+
+        model.setInt(5);
+        model.setBoolean(true);
+        Assert.assertEquals(6, model.getServerComptued());
+        Assert.assertEquals(4, model.getJsComputed());
     }
 }

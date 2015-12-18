@@ -195,13 +195,13 @@ public class ComputedPropertyTest {
         subValue.setValue("Foo");
         model.setSubValue(subValue);
 
-        Object value = new JsComputedProperty("foo", "model.int + 1",
-                Integer.class).compute(node);
+        Object value = new JsComputedProperty("foo", "int + 1", Integer.class)
+                .compute(node);
 
         Assert.assertEquals(Integer.valueOf(6), value);
 
-        value = new JsComputedProperty("foo", "model.subValue.value",
-                String.class).compute(node);
+        value = new JsComputedProperty("foo", "subValue.value", String.class)
+                .compute(node);
         Assert.assertEquals("Foo", value);
     }
 }

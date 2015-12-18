@@ -413,6 +413,34 @@ public class TreeUpdater {
         }
     }
 
+    @FunctionalInterface
+    public interface ContextFactorySupplier {
+        public JavaScriptObject get();
+    }
+
+    public static Map<String, ContextFactorySupplier> createNodeContextFactory(
+            TreeNode node) {
+        Map<String, ContextFactorySupplier> map = new HashMap<>();
+
+        JsArrayString propertyNames = node.getPropertyNames();
+        for (int i = 0; i < propertyNames.length(); i++) {
+            String name = propertyNames.get(i);
+            if (name.matches("[^0-9].*")) {
+                TreeNodeProperty property = node.getProperty(name);
+                map.put(name, () -> {
+                    Object value = property.getValue();
+                    if (value instanceof TreeNode) {
+                        TreeNode child = (TreeNode) value;
+                        value = child.getProxy();
+                    }
+                    return asJso(value);
+                });
+            }
+        }
+
+        return map;
+    }
+
     public void update(JsonObject elementTemplates, JsonArray elementChanges,
             JsonArray rpc) {
         getLogger().info("Handling template updates");
@@ -542,6 +570,39 @@ public class TreeUpdater {
     private static FastStringMap<JavaScriptObject> functionCache = FastStringMap
             .create();
 
+    public static JavaScriptObject evalWithContextFactory(
+            Map<String, ContextFactorySupplier> contextFactories,
+            String script) {
+        JavaScriptObject context = JavaScriptObject.createObject();
+        for (Entry<String, ContextFactorySupplier> entry : contextFactories
+                .entrySet()) {
+            String name = entry.getKey();
+            ContextFactorySupplier supplier = entry.getValue();
+            addContextProperty(context, name, supplier);
+        }
+
+        JsArrayString newFunctionParams = JavaScriptObject.createArray().cast();
+        newFunctionParams.push("context");
+        newFunctionParams.push("with(context) {" + script + " }");
+
+        JavaScriptObject function = getOrCreateFunction(newFunctionParams);
+
+        JsArray<JavaScriptObject> params = JavaScriptObject.createArray()
+                .cast();
+        params.push(context);
+        return runFunction(function, params);
+    }
+
+    private static native void addContextProperty(JavaScriptObject context,
+            String name, ContextFactorySupplier supplier)
+            /*-{
+                Object.defineProperty(context, name, {
+                  get: function() {
+                    return supplier.@ContextFactorySupplier::get()();
+                  }
+                });
+            }-*/;
+
     public static JavaScriptObject evalWithContext(
             Map<String, JavaScriptObject> context, String script) {
 
@@ -564,14 +625,20 @@ public class TreeUpdater {
 
         newFunctionParams.push(script);
 
+        JavaScriptObject function = getOrCreateFunction(newFunctionParams);
+
+        return runFunction(function, params);
+    }
+
+    private static JavaScriptObject getOrCreateFunction(
+            JsArrayString newFunctionParams) {
         String functionSignature = asJsonValue(newFunctionParams).toJson();
         JavaScriptObject function = functionCache.get(functionSignature);
         if (function == null) {
             function = createFunction(newFunctionParams);
             functionCache.put(functionSignature, function);
         }
-
-        return runFunction(function, params);
+        return function;
     }
 
     private static native JavaScriptObject createFunction(

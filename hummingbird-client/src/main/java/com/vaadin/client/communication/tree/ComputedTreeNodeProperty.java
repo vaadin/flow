@@ -1,7 +1,6 @@
 package com.vaadin.client.communication.tree;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +8,7 @@ import java.util.Map;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
+import com.vaadin.client.communication.tree.TreeUpdater.ContextFactorySupplier;
 
 import elemental.json.JsonObject;
 
@@ -80,14 +80,14 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
     private void compute() {
         clearAllDependencies();
 
-        Map<String, JavaScriptObject> context = new HashMap<>();
-        context.put("model", getOwner().getProxy());
+        Map<String, ContextFactorySupplier> context = TreeUpdater
+                .createNodeContextFactory(getOwner());
 
         // Should maybe be refactored to use Reactive.keepUpToDate
         Collection<TreeNodeProperty> accessedProperies = Reactive
                 .collectAccessedProperies(() -> {
                     JavaScriptObject newValue = TreeUpdater
-                            .evalWithContext(context, "return " + code);
+                            .evalWithContextFactory(context, "return " + code);
 
                     dirty = false;
                     // Bypass own setValue since it always throws

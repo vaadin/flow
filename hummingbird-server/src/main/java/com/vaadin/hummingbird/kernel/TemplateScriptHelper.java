@@ -125,6 +125,26 @@ public class TemplateScriptHelper {
         }
     }
 
+    public static class NodeBindingFactory
+            implements Function<String, Supplier<Object>> {
+        private StateNode node;
+
+        public NodeBindingFactory(StateNode node) {
+            this.node = node;
+        }
+
+        @Override
+        public Supplier<Object> apply(String name) {
+            if (node.containsKey(name)) {
+                return () -> {
+                    return node.get(name);
+                };
+            } else {
+                return null;
+            }
+        }
+    }
+
     public static Object evaluateScript(
             Function<String, Supplier<Object>> bindingFactory, String script,
             Class<?> resultType) {
