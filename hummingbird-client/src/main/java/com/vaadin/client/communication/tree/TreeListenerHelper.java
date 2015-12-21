@@ -3,6 +3,7 @@ package com.vaadin.client.communication.tree;
 import java.util.Objects;
 
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.tree.TreeNode.TreeNodeChangeListener;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
@@ -55,6 +56,9 @@ public class TreeListenerHelper {
                             @Override
                             public void addProperty(String name,
                                     TreeNodeProperty property) {
+                                Profiler.enter(
+                                        "TreeListenerHelper.addProperty");
+
                                 if (path.equals(name)) {
                                     TreeUpdater.debug(path
                                             + " created, adding real listener");
@@ -62,6 +66,9 @@ public class TreeListenerHelper {
                                     subRegistration = addListener(node, path,
                                             createIfNecessary, listener);
                                 }
+
+                                Profiler.leave(
+                                        "TreeListenerHelper.addProperty");
                             }
 
                         });
@@ -87,6 +94,9 @@ public class TreeListenerHelper {
 
                     @Override
                     public void changeValue(Object oldValue, Object newValue) {
+                        Profiler.enter(
+                                "TreeListenerHelper.childListener.changeValue");
+
                         if (innerRegistration != null) {
                             innerRegistration.removeHandler();
                             innerRegistration = null;
@@ -116,6 +126,9 @@ public class TreeListenerHelper {
                             listener.changeValue(oldPropertyValue,
                                     newPropertyValue);
                         }
+
+                        Profiler.leave(
+                                "TreeListenerHelper.childListener.changeValue");
                     }
 
                     private Object findValue(TreeNode node, String path) {

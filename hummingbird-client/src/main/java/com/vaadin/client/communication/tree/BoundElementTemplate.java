@@ -10,6 +10,7 @@ import com.google.gwt.core.client.js.JsFunction;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
+import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 import com.vaadin.client.communication.tree.TreeUpdater.ContextFactorySupplier;
@@ -99,12 +100,15 @@ public class BoundElementTemplate extends Template {
     @Override
     public Node createElement(final TreeNode node, NodeContext context) {
         assert tag != null;
+        Profiler.enter("BoundElementTemplate.createElement");
+
         TreeUpdater.debug("Create element with tag " + tag);
 
         Element element = Document.get().createElement(tag);
 
         initElement(node, element, context);
 
+        Profiler.enter("BoundElementTemplate.createElement bind attributes");
         for (Entry<String, String> entry : attributeToExpression.entrySet()) {
             String expression = entry.getValue();
             String attribute = entry.getKey();
@@ -118,7 +122,9 @@ public class BoundElementTemplate extends Template {
                         + ") changed to " + value);
             });
         }
+        Profiler.leave("BoundElementTemplate.createElement bind attributes");
 
+        Profiler.enter("BoundElementTemplate.createElement bind classes");
         if (classPartBindings != null) {
             for (Entry<String, String> entry : classPartBindings.entrySet()) {
                 String expression = entry.getValue();
@@ -134,6 +140,7 @@ public class BoundElementTemplate extends Template {
                 });
             }
         }
+        Profiler.leave("BoundElementTemplate.createElement bind classes");
 
         node.getProperty(Integer.toString(getId())).addPropertyChangeListener(
                 new TreeNodePropertyValueChangeListener() {
@@ -143,10 +150,15 @@ public class BoundElementTemplate extends Template {
                             throw new RuntimeException("Not yet supported");
                         }
 
+                        Profiler.enter(
+                                "BoundElementTemplate override node changeValue");
+
                         TreeNode overrideNode = (TreeNode) newValue;
 
                         BasicElementListener.bind(overrideNode, element,
                                 treeUpdater);
+                        Profiler.leave(
+                                "BoundElementTemplate override node changeValue");
                     }
                 });
 
@@ -155,6 +167,7 @@ public class BoundElementTemplate extends Template {
                 return;
             }
 
+            Profiler.enter("BoundElementListener CLASS_LIST addProperty");
             ListTreeNode classListListNode = (ListTreeNode) node
                     .getProperty("CLASS_LIST").getValue();
             classListListNode.addArrayEventListener(
@@ -162,18 +175,24 @@ public class BoundElementTemplate extends Template {
                 ClassListUpdater.splice(element, listTreeNode, startIndex,
                         removed, added);
             });
+            Profiler.leave("BoundElementListener CLASS_LIST addProperty");
         });
 
+        Profiler.leave("BoundElementTemplate.createElement");
         return element;
     }
 
     public static Object evaluateExpression(String expression,
             NodeContext nodeContext) {
+        Profiler.enter("BoundElementTemplate.evaluateExpression");
+
         Map<String, ContextFactorySupplier> context = nodeContext
                 .buildExpressionContext();
 
-        return TreeUpdater.evalWithContextFactory(context,
+        JavaScriptObject value = TreeUpdater.evalWithContextFactory(context,
                 "return " + expression);
+        Profiler.leave("BoundElementTemplate.evaluateExpression");
+        return value;
     }
 
     private static boolean isTrueIsh(JsonValue value) {
@@ -194,7 +213,9 @@ public class BoundElementTemplate extends Template {
     protected void initElement(TreeNode node, Element element,
             NodeContext context) {
         assert element != null;
+        Profiler.enter("BoundElementTemplate.initElement");
 
+        Profiler.enter("BoundElementTemplate.initElement default attributes");
         for (Entry<String, String> entry : defaultAttributeValues.entrySet()) {
             if (entry.getKey().equals("class")) {
                 addClassFromTemplate(element, entry.getValue());
@@ -203,7 +224,9 @@ public class BoundElementTemplate extends Template {
                         entry.getValue());
             }
         }
+        Profiler.leave("BoundElementTemplate.initElement default attributes");
 
+        Profiler.enter("BoundElementTemplate.initElement event listeners");
         if (events != null) {
             for (Entry<String, String[]> entry : events.entrySet()) {
                 String type = entry.getKey();
@@ -233,20 +256,38 @@ public class BoundElementTemplate extends Template {
                 });
             }
         }
+        Profiler.leave("BoundElementTemplate.initElement event listeners");
 
+        Profiler.enter("BoundElementTemplate.initElement children");
         if (childElementTemplates != null) {
             for (int templateId : childElementTemplates) {
+                Profiler.enter(
+                        "BoundElementTemplate.initElement children create");
                 Node newChildElement = treeUpdater.createElement(
                         treeUpdater.getTemplate(templateId), node, context);
+                Profiler.leave(
+                        "BoundElementTemplate.initElement children create");
+
                 if (TreeUpdater.debug) {
+                    Profiler.enter(
+                            "BoundElementTemplate.initElement children log");
                     TreeUpdater.debug("Appended node "
                             + TreeUpdater.debugHtml(newChildElement) + " into "
                             + TreeUpdater.debugHtml(element));
+                    Profiler.leave(
+                            "BoundElementTemplate.initElement children log");
                 }
 
+                Profiler.enter(
+                        "BoundElementTemplate.initElement children append");
                 DomApi.wrap(element).appendChild(newChildElement);
+                Profiler.leave(
+                        "BoundElementTemplate.initElement children append");
             }
         }
+        Profiler.leave("BoundElementTemplate.initElement children");
+
+        Profiler.leave("BoundElementTemplate.initElement");
     }
 
     private void addClassFromTemplate(Element element, String className) {
@@ -265,6 +306,8 @@ public class BoundElementTemplate extends Template {
 
     @Override
     public JavaScriptObject createServerProxy(int nodeId) {
+        Profiler.enter("BoundElementTemplate.createServerProxy");
+
         JavaScriptObject proxy = JavaScriptObject.createObject();
 
         if (eventHandlerMethods != null) {
@@ -274,6 +317,7 @@ public class BoundElementTemplate extends Template {
             }
         }
 
+        Profiler.leave("BoundElementTemplate.createServerProxy");
         return proxy;
     }
 

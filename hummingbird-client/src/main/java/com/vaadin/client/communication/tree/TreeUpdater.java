@@ -35,6 +35,7 @@ import com.google.gwt.user.client.Window.Location;
 import com.vaadin.client.ApplicationConnection.Client;
 import com.vaadin.client.FastStringMap;
 import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.Profiler;
 import com.vaadin.client.Util;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
@@ -286,10 +287,14 @@ public class TreeUpdater {
             NodeContext context) {
         Node element = template.createElement(node, context);
         if (Element.is(element)) {
-            // Logging this has a huge performance impact
-            // getLogger().info("Created element of type "
-            // + Element.as(element).getTagName() + " for node "
-            // + node.getId());
+            if (debug) {
+                Profiler.enter("TreeUpdater.createElement log");
+                getLogger().info("Created element of type "
+                        + Element.as(element).getTagName() + " for node "
+                        + node.getId());
+                Profiler.leave("TreeUpdater.createElement log");
+            }
+
             createdElements.add((Element) element);
         }
         int nodeId = node.getId();
@@ -325,6 +330,8 @@ public class TreeUpdater {
     }
 
     public Node getOrCreateElement(TreeNode node) {
+        Profiler.enter("TreeUpdater.getOrCreateElement");
+
         int nodeId = node.getId();
         if (node.hasProperty("TEMPLATE")) {
             int templateId = node.getProperty("TEMPLATE").getIntValue();
@@ -333,11 +340,14 @@ public class TreeUpdater {
 
             Node existingNode = findDomNode(nodeId, templateId);
             if (existingNode != null) {
+                Profiler.leave("TreeUpdater.getOrCreateElement");
                 return existingNode;
             }
 
+            Profiler.enter("TreeUpdater.getOrCreateElement template");
+
             JavaScriptObject serverProxy = template.createServerProxy(nodeId);
-            return createElement(template, node, new NodeContext() {
+            Node element = createElement(template, node, new NodeContext() {
 
                 @Override
                 public TreeNodeProperty getProperty(String name) {
@@ -368,24 +378,36 @@ public class TreeUpdater {
                     return TreeUpdater.createNodeContextFactory(node);
                 }
             });
+            Profiler.leave("TreeUpdater.getOrCreateElement template");
+
+            Profiler.leave("TreeUpdater.getOrCreateElement");
+            return element;
         } else {
             int templateId = 0;
             Node existingElement = node.getElement(templateId);
             if (existingElement != null) {
+
+                Profiler.leave("TreeUpdater.getOrCreateElement");
                 return existingElement;
             }
 
             String tag = (String) node.getProperty("TAG").getValue();
             assert tag != null;
             if ("#text".equals(tag)) {
+                Profiler.enter("TreeUpdater.getOrCreateElement text");
+
                 Text textNode = Document.get().createTextNode("");
                 TextElementListener.bind(node, textNode);
                 node.setElement(templateId, textNode);
                 if (debug) {
                     debug("Created text node for nodeId=" + nodeId);
                 }
+
+                Profiler.leave("TreeUpdater.getOrCreateElement text");
+                Profiler.leave("TreeUpdater.getOrCreateElement");
                 return textNode;
             } else {
+                Profiler.enter("TreeUpdater.getOrCreateElement basic");
                 Element element = Document.get().createElement(tag);
                 BasicElementListener.bind(node, element, this);
                 node.setElement(templateId, element);
@@ -393,6 +415,9 @@ public class TreeUpdater {
                     debug("Created element: " + debugHtml(element)
                             + " for nodeId=" + nodeId);
                 }
+
+                Profiler.leave("TreeUpdater.getOrCreateElement basic");
+                Profiler.leave("TreeUpdater.getOrCreateElement");
                 return element;
             }
         }
@@ -428,18 +453,24 @@ public class TreeUpdater {
 
     public void update(JsonObject elementTemplates, JsonArray elementChanges,
             JsonArray rpc) {
+        Profiler.enter("TreeUpdater.extractTemplates");
         getLogger().info("Handling template updates");
         extractTemplates(elementTemplates);
+        Profiler.leave("TreeUpdater.extractTemplates");
 
         getLogger().info("Handling tree node changes");
         applyNodeChanges(elementChanges, rpc);
 
+        Profiler.enter("TreeUpdater.sendCreatedEvents");
         getLogger().info("Sending created events");
         sendCreatedEvents();
+        Profiler.leave("TreeUpdater.sendCreatedEvents");
 
         if (rpc != null) {
+            Profiler.enter("TreeUpdater.runRpc");
             getLogger().info("Running rpcs");
             runRpc(rpc);
+            Profiler.leave("TreeUpdater.runRpc");
         }
     }
 
@@ -474,25 +505,39 @@ public class TreeUpdater {
     }
 
     private void applyNodeChanges(JsonArray nodeChanges, JsonArray rpc) {
-        updateTree(nodeChanges);
+        Profiler.enter("TreeUpdater.applyNodeChanges");
 
+        Profiler.enter("TreeUpdater.updateTree");
+        updateTree(nodeChanges);
+        Profiler.leave("TreeUpdater.updateTree");
+
+        Profiler.enter("TreeUpdater.logTree");
         logTree("After changes",
                 (JsonObject) idToNode.get(Integer.valueOf(1)).getProxy());
+        Profiler.leave("TreeUpdater.logTree");
 
         if (!rootInitialized) {
+            Profiler.enter("TreeUpdater.initRoot");
             initRoot();
+            Profiler.leave("TreeUpdater.initRoot");
             rootInitialized = true;
         }
 
         // Apply any computed properties added sent as rcp before delivering
         // events
         if (rpc != null) {
+            Profiler.enter("TreeUpdater.extractComputedProperties");
             extractComputedProperties(rpc);
+            Profiler.leave("TreeUpdater.extractComputedProperties");
         }
 
         callbackQueue.flush(null);
 
+        Profiler.enter("TreeUpdater.afterNodeChanges");
         afterNodeChanges();
+        Profiler.leave("TreeUpdater.afterNodeChanges");
+
+        Profiler.leave("TreeUpdater.applyNodeChanges");
     }
 
     private void runRpc(JsonArray rpcInvocations) {
@@ -558,6 +603,8 @@ public class TreeUpdater {
     public static JavaScriptObject evalWithContextFactory(
             Map<String, ContextFactorySupplier> contextFactories,
             String script) {
+        Profiler.enter("TreeUpdater.evalWithContextFactory");
+
         JavaScriptObject context = JavaScriptObject.createObject();
         for (Entry<String, ContextFactorySupplier> entry : contextFactories
                 .entrySet()) {
@@ -570,12 +617,22 @@ public class TreeUpdater {
         newFunctionParams.push("context");
         newFunctionParams.push("with(context) {" + script + " }");
 
+        Profiler.enter(
+                "TreeUpdater.evalWithContextFactory getOrCreateFunction");
         JavaScriptObject function = getOrCreateFunction(newFunctionParams);
+        Profiler.leave(
+                "TreeUpdater.evalWithContextFactory getOrCreateFunction");
 
         JsArray<JavaScriptObject> params = JavaScriptObject.createArray()
                 .cast();
         params.push(context);
-        return runFunction(function, params);
+
+        Profiler.enter("TreeUpdater.evalWithContextFactory runFunction");
+        JavaScriptObject value = runFunction(function, params);
+        Profiler.leave("TreeUpdater.evalWithContextFactory runFunction");
+
+        Profiler.leave("TreeUpdater.evalWithContextFactory");
+        return value;
     }
 
     private static native void addContextProperty(JavaScriptObject context,

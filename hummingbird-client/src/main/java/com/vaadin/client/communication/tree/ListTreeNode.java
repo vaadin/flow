@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 
 import elemental.json.JsonObject;
@@ -36,12 +37,14 @@ public class ListTreeNode extends TreeNode {
 
         @Override
         public void dispatch() {
+            Profiler.enter("ListTreeNodeSpliceEvent.dispatch");
             if (listeners != null) {
                 for (ArrayEventListener arrayEventListener : listeners) {
                     arrayEventListener.splice(ListTreeNode.this, startIndex,
                             removed, added);
                 }
             }
+            Profiler.leave("ListTreeNodeSpliceEvent.dispatch");
         }
 
         @Override

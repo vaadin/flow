@@ -6,6 +6,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
 import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.DomElement;
 import com.vaadin.client.communication.tree.ListTreeNode.ArrayEventListener;
@@ -34,6 +35,7 @@ public class ForElementTemplate extends Template {
 
     @Override
     public Node createElement(TreeNode node, NodeContext outerContext) {
+        Profiler.enter("ForElementTemplate.createElement");
         // Creates anchor element
         Node commentNode = createCommentNode("for " + modelKey);
 
@@ -44,9 +46,13 @@ public class ForElementTemplate extends Template {
                     public void splice(ListTreeNode listTreeNode,
                             int startIndex, JsArrayObject<Object> removed,
                             JsArrayObject<Object> added) {
+                        Profiler.enter("ForElementTemplate splice");
+
                         DomElement forNode = DomApi
                                 .wrap(DomApi.wrap(commentNode).getParentNode());
 
+                        Profiler.enter(
+                                "ForElementTemplate splice commentNodeIndex");
                         if (commentNodeIndex == -1 || forNode.getChildNodes()
                                 .getItem(commentNodeIndex) != commentNode) {
                             // Uses indexOf in order to avoid nextSibling
@@ -58,10 +64,13 @@ public class ForElementTemplate extends Template {
                             commentNodeIndex = nodeListIndexOf(
                                     forNode.getChildNodes(), commentNode);
                         }
+                        Profiler.leave(
+                                "ForElementTemplate splice commentNodeIndex");
 
                         // Node to remove is "startIndex" positions forward from
                         // comment node
 
+                        Profiler.enter("ForElementTemplate splice remove");
                         for (int i = 0; i < removed.size(); i++) {
                             int nodeIndex = commentNodeIndex + 1 + startIndex
                                     + i;
@@ -72,7 +81,9 @@ public class ForElementTemplate extends Template {
                                     .getItem(nodeIndex);
                             forNode.removeChild(removeNode);
                         }
+                        Profiler.leave("ForElementTemplate splice remove");
 
+                        Profiler.enter("ForElementTemplate splice add");
                         for (int i = 0; i < added.size(); i++) {
                             TreeNode childNode = (TreeNode) added.get(i);
                             int insertIndex = commentNodeIndex + startIndex + i;
@@ -143,6 +154,7 @@ public class ForElementTemplate extends Template {
                                     getChildTemplate(), childNode,
                                     innerContext);
 
+                            Profiler.enter("ForElementTemplate splice insert");
                             // Does not use nextSibling because of
                             // https://github.com/Polymer/polymer/issues/2645
                             Node sibling = null;
@@ -154,10 +166,15 @@ public class ForElementTemplate extends Template {
                             }
 
                             forNode.insertBefore(child, sibling);
+                            Profiler.leave("ForElementTemplate splice insert");
                         }
+                        Profiler.leave("ForElementTemplate splice add");
+
+                        Profiler.leave("ForElementTemplate splice");
                     }
                 });
 
+        Profiler.leave("ForElementTemplate.createElement");
         return commentNode;
     }
 

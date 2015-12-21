@@ -3,6 +3,7 @@ package com.vaadin.client.communication.tree;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Text;
+import com.vaadin.client.Profiler;
 
 import elemental.json.JsonObject;
 
@@ -16,6 +17,7 @@ public class DynamicTextTemplate extends Template {
 
     @Override
     public Node createElement(TreeNode node, NodeContext context) {
+        Profiler.enter("DynamicTextTemplate.createElement");
         Text textNode = Document.get().createTextNode("");
 
         Reactive.keepUpToDate(() -> {
@@ -24,6 +26,7 @@ public class DynamicTextTemplate extends Template {
             updateValue(textNode, value);
         });
 
+        Profiler.leave("DynamicTextTemplate.createElement");
         return textNode;
     }
 

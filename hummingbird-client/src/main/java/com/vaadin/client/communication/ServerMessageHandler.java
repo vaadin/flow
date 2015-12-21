@@ -204,6 +204,8 @@ public class ServerMessageHandler {
                 new TreeNodePropertyValueChangeListener() {
                     @Override
                     public void changeValue(Object oldValue, Object newValue) {
+                        Profiler.enter(
+                                "ServerMessageHandler.pushConfiguration.changeValue");
                         String value = (String) newValue;
                         PushMode mode;
                         if (value == null || value.isEmpty()) {
@@ -217,6 +219,8 @@ public class ServerMessageHandler {
                                 .getProxyValue();
                         connection.getServerCommunicationHandler()
                                 .setPushEnabled(mode.isEnabled(), pushConfig);
+                        Profiler.enter(
+                                "ServerMessageHandler.pushConfiguration.changeValue");
                     }
                 });
     }

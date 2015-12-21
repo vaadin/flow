@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 import com.vaadin.client.communication.tree.TreeUpdater.ContextFactorySupplier;
 
@@ -23,6 +24,9 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
     private final TreeNodePropertyValueChangeListener dependencyListener = new TreeNodePropertyValueChangeListener() {
         @Override
         public void changeValue(Object oldValue, Object newValue) {
+            Profiler.enter(
+                    "ComputedTreeNodeProperty.dependencyListener.changeValue");
+
             Object oldOwnValue = getValue();
             dirty = true;
             clearAllDependencies();
@@ -35,6 +39,9 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
 
                 @Override
                 public void dispatch() {
+                    Profiler.enter(
+                            "ComputedTreeNodeProperty.dependencyListener.dispatch");
+
                     List<TreeNodePropertyValueChangeListener> listeners = getListeners();
                     if (listeners != null) {
                         Object newOwnValue = getValue();
@@ -42,8 +49,14 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
                             listener.changeValue(oldOwnValue, newOwnValue);
                         }
                     }
+
+                    Profiler.leave(
+                            "ComputedTreeNodeProperty.dependencyListener.dispatch");
                 }
             });
+
+            Profiler.leave(
+                    "ComputedTreeNodeProperty.dependencyListener.changeValue");
         }
     };
 

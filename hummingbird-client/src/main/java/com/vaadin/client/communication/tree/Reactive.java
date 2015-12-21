@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
 public class Reactive {
@@ -31,6 +32,8 @@ public class Reactive {
         }
 
         private void refreshValue() {
+            Profiler.enter("KeepUpToDateListener.refreshValue");
+
             Collection<TreeNodeProperty> accessedProperties = collectAccessedProperies(
                     runnable);
 
@@ -39,12 +42,17 @@ public class Reactive {
                         .addPropertyChangeListener(this);
                 registrations.add(registration);
             }
+            Profiler.leave("KeepUpToDateListener.refreshValue");
         }
 
         @Override
         public void changeValue(Object oldValue, Object newValue) {
+            Profiler.enter("KeepUpToDateListener.changeValue");
+
             unregister();
             pendingFlushes.add(flushListener);
+
+            Profiler.leave("KeepUpToDateListener.changeValue");
         }
 
         private void unregister() {
@@ -84,18 +92,25 @@ public class Reactive {
     }
 
     public static HandlerRegistration keepUpToDate(Runnable runnable) {
+        Profiler.enter("Reactive.keepUpToDate");
+
         KeepUpToDateListener listener = new KeepUpToDateListener(runnable);
-        return new HandlerRegistration() {
+        HandlerRegistration handlerRegistration = new HandlerRegistration() {
             @Override
             public void removeHandler() {
                 listener.unregister();
             }
         };
+
+        Profiler.leave("Reactive.keepUpToDate");
+        return handlerRegistration;
     }
 
     private static final HashSet<FlushListener> pendingFlushes = new HashSet<>();
 
     public static void flush() {
+        Profiler.enter("Reactive.flush");
+
         while (!pendingFlushes.isEmpty()) {
             HashSet<FlushListener> currentFlushes = new HashSet<>(
                     pendingFlushes);
@@ -104,5 +119,7 @@ public class Reactive {
                 flushListener.onFlush();
             }
         }
+
+        Profiler.leave("Reactive.flush");
     }
 }

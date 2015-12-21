@@ -3,6 +3,7 @@ package com.vaadin.client.communication.tree;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.PolymerDomApiImpl;
 
@@ -14,6 +15,8 @@ public class ClassListUpdater {
     public static void splice(Element element, ListTreeNode listTreeNode,
             int startIndex, JsArrayObject<Object> removed,
             JsArrayObject<Object> added) {
+        Profiler.enter("ClassListUpdater.splice");
+
         for (int i = 0; i < removed.size(); i++) {
             String className = (String) removed.get(i);
             DomApi.wrap(element).getClassList().remove(className);
@@ -27,14 +30,18 @@ public class ClassListUpdater {
                     + TreeUpdater.debugHtml(element));
         }
         updatedElements.push(element);
+
+        Profiler.leave("ClassListUpdater.splice");
     }
 
     public static void updateStyles() {
         if (PolymerDomApiImpl.isAvailable()) {
+            Profiler.enter("ClassListUpdater.updateStyles");
             while (updatedElements.length() > 0) {
                 Element e = updatedElements.shift();
                 updateStyles(e);
             }
+            Profiler.leave("ClassListUpdater.updateStyles");
         } else {
             updatedElements.setLength(0);
         }

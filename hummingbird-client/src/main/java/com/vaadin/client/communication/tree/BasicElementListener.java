@@ -7,6 +7,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.tree.TreeNode.TreeNodeChangeListener;
 
@@ -41,8 +42,11 @@ public class BasicElementListener {
             if (isMetadata(name)) {
                 return;
             }
+            Profiler.enter("PropertyPropagator.addProperty");
 
             property.addPropertyChangeListener((old, value) -> {
+                Profiler.enter("PropertyPropagator.changeValue");
+
                 if (value instanceof ListTreeNode) {
                     ListTreeNode child = (ListTreeNode) value;
 
@@ -58,6 +62,7 @@ public class BasicElementListener {
 
                     child.addArrayEventListener(
                             (listTreeNode, startIndex, removed, added) -> {
+                        Profiler.enter("PropertyPropagator.splice");
                         JsArrayObject<Object> newValues = added;
                         if (added != null && added.size() != 0) {
                             Object firstAdded = added.get(0);
@@ -86,6 +91,7 @@ public class BasicElementListener {
 
                             }
                         }
+                        Profiler.leave("PropertyPropagator.splice");
                     });
 
                 } else if (value instanceof TreeNode) {
@@ -109,13 +115,19 @@ public class BasicElementListener {
                     TreeUpdater.setAttributeOrProperty(
                             Element.as((JavaScriptObject) target), name, value);
                 }
+
+                Profiler.leave("PropertyPropagator.changeValue");
             });
+
+            Profiler.leave("PropertyPropagator.addProperty");
         }
 
     }
 
     private static void insertNodeAtIndex(Element parent, Node child,
             int index) {
+        Profiler.enter("TreeUpdater.insertNodeAtIndex");
+
         if (DomApi.wrap(parent).getChildNodes().getLength() == index) {
             DomApi.wrap(parent).appendChild(child);
             if (TreeUpdater.debug) {
@@ -132,6 +144,8 @@ public class BasicElementListener {
                         + TreeUpdater.debugHtml(parent) + " at index " + index);
             }
         }
+
+        Profiler.leave("TreeUpdater.insertNodeAtIndex");
     }
 
     private static boolean isMetadata(String name) {
@@ -241,9 +255,11 @@ public class BasicElementListener {
                 return;
             }
 
+            Profiler.enter("BasicElementListener CHILDREN addProperty");
             ListTreeNode childrenListNode = (ListTreeNode) node
                     .getProperty("CHILDREN").getValue();
             addChildrenListener(node, childrenListNode, element, treeUpdater);
+            Profiler.leave("BasicElementListener CHILDREN addProperty");
         });
 
         node.addTreeNodeChangeListener((name, property) -> {
@@ -251,15 +267,18 @@ public class BasicElementListener {
                 return;
             }
 
+            Profiler.enter("BasicElementListener LISTENERS addProperty");
             ListTreeNode listenersListNode = (ListTreeNode) node
                     .getProperty("LISTENERS").getValue();
             addListenersListener(node, listenersListNode, element, treeUpdater);
+            Profiler.leave("BasicElementListener LISTENERS addProperty");
         });
         node.addTreeNodeChangeListener((name, property) -> {
             if (!name.equals("CLASS_LIST")) {
                 return;
             }
 
+            Profiler.enter("BasicElementListener CLASS_LIST addProperty");
             ListTreeNode classListListNode = (ListTreeNode) node
                     .getProperty("CLASS_LIST").getValue();
             classListListNode.addArrayEventListener(
@@ -267,6 +286,7 @@ public class BasicElementListener {
                 ClassListUpdater.splice(element, listTreeNode, startIndex,
                         removed, added);
             });
+            Profiler.leave("BasicElementListener CLASS_LIST addProperty");
         });
 
     }
@@ -276,6 +296,10 @@ public class BasicElementListener {
             TreeUpdater treeUpdater) {
         childrenListNode.addArrayEventListener(
                 (listTreeNode, startIndex, removed, added) -> {
+                    Profiler.enter("BasicElementListener CHILDREN splice");
+
+                    Profiler.enter(
+                            "BasicElementListener CHILDREN splice remove");
                     for (int i1 = 0; i1 < removed.size(); i1++) {
                         TreeNode removedNode = (TreeNode) removed.get(i1);
                         Node removedElement = treeUpdater
@@ -285,11 +309,20 @@ public class BasicElementListener {
                             DomApi.wrap(element).removeChild(removedElement);
                         }
                     }
+                    Profiler.leave(
+                            "BasicElementListener CHILDREN splice remove");
+
+                    Profiler.enter(
+                            "BasicElementListener CHILDREN splice insert");
                     for (int i2 = 0; i2 < added.size(); i2++) {
                         TreeNode addedNode = (TreeNode) added.get(i2);
                         Node node = treeUpdater.getOrCreateElement(addedNode);
                         insertNodeAtIndex(element, node, startIndex + i2);
                     }
+                    Profiler.leave(
+                            "BasicElementListener CHILDREN splice insert");
+
+                    Profiler.leave("BasicElementListener CHILDREN splice");
                 });
     }
 
@@ -298,6 +331,7 @@ public class BasicElementListener {
             TreeUpdater treeUpdater) {
         listenersListNode.addArrayEventListener(
                 (listTreeNode, startIndex, removed, added) -> {
+                    Profiler.enter("BasicElementListener LISTENERS splice");
                     for (int i1 = 0; i1 < removed.size(); i1++) {
                         String type1 = (String) removed.get(i1);
                         Integer id = Integer.valueOf(elementNode.getId());
@@ -313,6 +347,7 @@ public class BasicElementListener {
                         String type2 = (String) added.get(i2);
                         addListener(type2, treeUpdater, elementNode, element);
                     }
+                    Profiler.leave("BasicElementListener LISTENERS splice");
                 });
     }
 
