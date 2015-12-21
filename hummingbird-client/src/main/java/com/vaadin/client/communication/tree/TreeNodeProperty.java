@@ -1,10 +1,8 @@
 package com.vaadin.client.communication.tree;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.vaadin.client.JsSet;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 
 import elemental.json.Json;
@@ -31,10 +29,8 @@ public class TreeNodeProperty {
         @Override
         public void dispatch() {
             if (listeners != null) {
-                for (TreeNodePropertyValueChangeListener listener : new ArrayList<>(
-                        listeners)) {
-                    listener.changeValue(oldValue, newValue);
-                }
+                JsSet.forEach(listeners,
+                        listener -> listener.changeValue(oldValue, newValue));
             }
         }
 
@@ -62,7 +58,7 @@ public class TreeNodeProperty {
     private String name;
     private Object value;
 
-    private List<TreeNodePropertyValueChangeListener> listeners;
+    private JsSet<TreeNodePropertyValueChangeListener> listeners;
 
     public TreeNodeProperty(TreeNode owner, String name) {
         this.owner = owner;
@@ -87,7 +83,7 @@ public class TreeNodeProperty {
     public HandlerRegistration addPropertyChangeListener(
             TreeNodePropertyValueChangeListener listener) {
         if (listeners == null) {
-            listeners = new ArrayList<>();
+            listeners = JsSet.create();
         }
         listeners.add(listener);
 
@@ -95,10 +91,7 @@ public class TreeNodeProperty {
             @Override
             public void removeHandler() {
                 if (listeners != null) {
-                    listeners.remove(listener);
-                    if (listeners.isEmpty()) {
-                        listeners = null;
-                    }
+                    listeners.delete(listener);
                 }
             }
         };
@@ -153,7 +146,7 @@ public class TreeNodeProperty {
         return owner;
     }
 
-    protected List<TreeNodePropertyValueChangeListener> getListeners() {
+    protected JsSet<TreeNodePropertyValueChangeListener> getListeners() {
         return listeners;
     }
 }

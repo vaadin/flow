@@ -646,6 +646,10 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 context.getUriResolver().resolveVaadinUri(
                         "context://bower_components/promise-polyfill/Promise.min.js"));
 
+        result = result.replace("{{collectionsPolyfill}}",
+                context.getUriResolver().resolveVaadinUri(
+                        "context://bower_components/es6-collections/es6-collections.js"));
+
         JsonObject appConfig = context.getApplicationParameters();
         boolean isDebug = !context.getSession().getConfiguration()
                 .isProductionMode();

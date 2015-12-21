@@ -44,4 +44,12 @@ public final class JsArrayObject<T> extends JavaScriptObject {
         return this.indexOf(value);
     }-*/;
 
+    public native void clear()
+    /*-{
+        this.length == 0;
+    }-*/;
+
+    public static <T> JsArrayObject<T> create() {
+        return JavaScriptObject.createArray().cast();
+    }
 }

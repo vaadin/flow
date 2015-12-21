@@ -1,11 +1,9 @@
 package com.vaadin.client.communication.tree;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.JsSet;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 
@@ -17,7 +15,8 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
 
     private boolean dirty = true;
 
-    private final Collection<HandlerRegistration> dependencies = new HashSet<>();
+    private final JsArrayObject<HandlerRegistration> dependencies = JsArrayObject
+            .create();
 
     private final TreeNodePropertyValueChangeListener dependencyListener = new TreeNodePropertyValueChangeListener() {
         @Override
@@ -40,12 +39,11 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
                     Profiler.enter(
                             "ComputedTreeNodeProperty.dependencyListener.dispatch");
 
-                    List<TreeNodePropertyValueChangeListener> listeners = getListeners();
+                    JsSet<TreeNodePropertyValueChangeListener> listeners = getListeners();
                     if (listeners != null) {
                         Object newOwnValue = getValue();
-                        for (TreeNodePropertyValueChangeListener listener : listeners) {
-                            listener.changeValue(oldOwnValue, newOwnValue);
-                        }
+                        JsSet.forEach(listeners, listener -> listener
+                                .changeValue(oldOwnValue, newOwnValue));
                     }
 
                     Profiler.leave(
@@ -82,7 +80,8 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
     }
 
     private void clearAllDependencies() {
-        for (HandlerRegistration dependency : dependencies) {
+        for (int i = 0; i < dependencies.size(); i++) {
+            HandlerRegistration dependency = dependencies.get(i);
             dependency.removeHandler();
         }
         dependencies.clear();
@@ -94,7 +93,7 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
         JavaScriptObject context = TreeUpdater.createNodeContext(getOwner());
 
         // Should maybe be refactored to use Reactive.keepUpToDate
-        Collection<TreeNodeProperty> accessedProperies = Reactive
+        JsSet<TreeNodeProperty> accessedProperies = Reactive
                 .collectAccessedProperies(() -> {
                     JavaScriptObject newValue = TreeUpdater
                             .evalWithContextFactory(context, "return " + code);
@@ -104,10 +103,9 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
                     super.setValue(newValue);
                 });
 
-        for (TreeNodeProperty treeNodeProperty : accessedProperies) {
-            dependencies.add(treeNodeProperty
-                    .addPropertyChangeListener(dependencyListener));
-        }
+        JsSet.forEach(accessedProperies,
+                treeNodeProperty -> dependencies.add(treeNodeProperty
+                        .addPropertyChangeListener(dependencyListener)));
     }
 
     @Override

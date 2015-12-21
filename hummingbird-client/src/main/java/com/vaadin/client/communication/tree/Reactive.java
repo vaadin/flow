@@ -1,10 +1,10 @@
 package com.vaadin.client.communication.tree;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.JsSet;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
@@ -24,7 +24,8 @@ public class Reactive {
             }
         };
 
-        private final ArrayList<HandlerRegistration> registrations = new ArrayList<>();
+        private final JsArrayObject<HandlerRegistration> registrations = JsArrayObject
+                .create();
 
         public KeepUpToDateListener(Runnable runnable) {
             this.runnable = runnable;
@@ -34,14 +35,14 @@ public class Reactive {
         private void refreshValue() {
             Profiler.enter("KeepUpToDateListener.refreshValue");
 
-            Collection<TreeNodeProperty> accessedProperties = collectAccessedProperies(
+            JsSet<TreeNodeProperty> accessedProperties = collectAccessedProperies(
                     runnable);
 
-            for (TreeNodeProperty treeNodeProperty : accessedProperties) {
+            JsSet.forEach(accessedProperties, treeNodeProperty -> {
                 HandlerRegistration registration = treeNodeProperty
                         .addPropertyChangeListener(this);
                 registrations.add(registration);
-            }
+            });
             Profiler.leave("KeepUpToDateListener.refreshValue");
         }
 
@@ -56,26 +57,27 @@ public class Reactive {
         }
 
         private void unregister() {
-            for (HandlerRegistration handlerRegistration : registrations) {
+            for (int i = 0; i < registrations.size(); i++) {
+                HandlerRegistration handlerRegistration = registrations.get(i);
                 handlerRegistration.removeHandler();
             }
             registrations.clear();
         }
     }
 
-    private static Collection<TreeNodeProperty> collector;
+    private static JsSet<TreeNodeProperty> collector;
 
-    public static Collection<TreeNodeProperty> collectAccessedProperies(
+    public static JsSet<TreeNodeProperty> collectAccessedProperies(
             Runnable runnable) {
-        Collection<TreeNodeProperty> previousCollector = collector;
-        Collection<TreeNodeProperty> ownCollector = new HashSet<>();
+        JsSet<TreeNodeProperty> previousCollector = collector;
+        JsSet<TreeNodeProperty> ownCollector = JsSet.create();
         collector = ownCollector;
 
         try {
             runnable.run();
         } finally {
             if (previousCollector != null) {
-                previousCollector.addAll(ownCollector);
+                JsSet.forEach(ownCollector, previousCollector::add);
             }
             collector = previousCollector;
         }

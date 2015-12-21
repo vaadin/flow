@@ -14,6 +14,7 @@
   ],
   "dependencies": {
     "promise-polyfill": "2.1.0",
+    "es6-collections": "0.5.5",
     "webcomponentsjs": "~0.7.19"
   }
 }

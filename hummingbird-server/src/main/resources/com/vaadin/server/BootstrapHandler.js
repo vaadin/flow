@@ -1,11 +1,19 @@
-if (!window.Promise) {
+var injectScript = function(src) {
 	var ps = document.createElement("script");
 	ps.setAttribute("type", "text/javascript");
-	ps.setAttribute("src", "{{promisePolyfill}}");
+	ps.setAttribute("src", src);
 	ps.setAttribute("defer", "true");
 	ps.setAttribute("pending", "1");
 	ps.addEventListener("load", ps.removeAttribute("pending"));
 	document.head.appendChild(ps);
+}
+
+if (!window.Promise) {
+	injectScript("{{promisePolyfill}}");
+}
+
+if (!window.Set) {
+	injectScript("{{collectionsPolyfill}}");
 }
 
 /* Pre-rendering timing */
