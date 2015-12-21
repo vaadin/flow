@@ -138,14 +138,33 @@ public class ForElementTemplate extends Template {
                                     }
                                 }
 
+                                JavaScriptObject referenceOuterContext = null;
+                                JavaScriptObject expressionContext = null;
+
                                 @Override
                                 public JavaScriptObject getExpressionContext() {
-                                    JavaScriptObject context = outerContext
+                                    JavaScriptObject currentOuterContext = outerContext
                                             .getExpressionContext();
+                                    if (currentOuterContext != referenceOuterContext
+                                            || expressionContext == null) {
+                                        referenceOuterContext = currentOuterContext;
+                                        expressionContext = createExpressionContext();
+                                    }
+                                    return expressionContext;
+                                }
+
+                                @Override
+                                public JavaScriptObject createExpressionContext() {
+                                    Profiler.enter(
+                                            "ForElementTemplate.createExpressionContext");
+                                    JavaScriptObject context = outerContext
+                                            .createExpressionContext();
                                     TreeUpdater.addContextProperty(context,
                                             getInnerScope(), () -> {
                                         return childNode.getProxy();
                                     });
+                                    Profiler.leave(
+                                            "ForElementTemplate.createExpressionContext");
                                     return context;
                                 }
                             };

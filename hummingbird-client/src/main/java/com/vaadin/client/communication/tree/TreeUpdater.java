@@ -39,6 +39,7 @@ import com.vaadin.client.Profiler;
 import com.vaadin.client.Util;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
+import com.vaadin.client.communication.tree.TreeNode.TreeNodeChangeListener;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 import com.vaadin.shared.communication.MethodInvocation;
 
@@ -348,6 +349,20 @@ public class TreeUpdater {
 
             JavaScriptObject serverProxy = template.createServerProxy(nodeId);
             Node element = createElement(template, node, new NodeContext() {
+                private JavaScriptObject expressionContext = null;
+
+                {
+                    // Invalidate cached expressionContext instance if new
+                    // properties are added to the node
+                    node.addTreeNodeChangeListener(
+                            new TreeNodeChangeListener() {
+                        @Override
+                        public void addProperty(String name,
+                                TreeNodeProperty property) {
+                            expressionContext = null;
+                        }
+                    });
+                }
 
                 @Override
                 public TreeNodeProperty getProperty(String name) {
@@ -375,7 +390,15 @@ public class TreeUpdater {
 
                 @Override
                 public JavaScriptObject getExpressionContext() {
-                    return TreeUpdater.createNodeContext(node);
+                    if (expressionContext == null) {
+                        expressionContext = createExpressionContext();
+                    }
+                    return expressionContext;
+                }
+
+                @Override
+                public JavaScriptObject createExpressionContext() {
+                    return createNodeContext(node);
                 }
             });
             Profiler.leave("TreeUpdater.getOrCreateElement template");
@@ -429,6 +452,7 @@ public class TreeUpdater {
     }
 
     public static JavaScriptObject createNodeContext(TreeNode node) {
+        Profiler.enter("TreeUpater.createNodeContext");
         JavaScriptObject context = JavaScriptObject.createObject();
 
         JsArrayString propertyNames = node.getPropertyNames();
@@ -446,6 +470,7 @@ public class TreeUpdater {
                 });
             }
         }
+        Profiler.leave("TreeUpater.createNodeContext");
 
         return context;
     }
