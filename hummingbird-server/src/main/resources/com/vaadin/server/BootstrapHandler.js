@@ -44,9 +44,9 @@ loadPoller = function (){
 	}
 	
 	if (typeof window.__gwtStatsEvent != 'function') {
-		vaadin.gwtStatsEvents = [];
+		vaadin.framework.gwtStatsEvents = [];
 		window.__gwtStatsEvent = function(event) {
-			vaadin.gwtStatsEvents.push(event); 
+			vaadin.framework.gwtStatsEvents.push(event); 
 			return true;
 		};
 	}
