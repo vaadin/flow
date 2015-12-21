@@ -630,31 +630,39 @@ public class TreeUpdater {
     private static FastStringMap<JavaScriptObject> functionCache = FastStringMap
             .create();
 
+    private static FastStringMap<JavaScriptObject> withFunctionCache = FastStringMap
+            .create();
+
     public static JavaScriptObject evalWithContextFactory(
             JavaScriptObject context, String script) {
         Profiler.enter("TreeUpdater.evalWithContextFactory");
 
-        JsArrayString newFunctionParams = JavaScriptObject.createArray().cast();
-        newFunctionParams.push("context");
-        newFunctionParams.push("with(context) {" + script + " }");
-
-        Profiler.enter(
-                "TreeUpdater.evalWithContextFactory getOrCreateFunction");
-        JavaScriptObject function = getOrCreateFunction(newFunctionParams);
-        Profiler.leave(
-                "TreeUpdater.evalWithContextFactory getOrCreateFunction");
-
-        JsArray<JavaScriptObject> params = JavaScriptObject.createArray()
-                .cast();
-        params.push(context);
+        JavaScriptObject function = withFunctionCache.get(script);
+        if (function == null) {
+            Profiler.enter("TreeUpdater.evalWithContextFactory create");
+            function = createWithFunction("with(context){" + script + "}");
+            withFunctionCache.put(script, function);
+            Profiler.leave("TreeUpdater.evalWithContextFactory create");
+        }
 
         Profiler.enter("TreeUpdater.evalWithContextFactory runFunction");
-        JavaScriptObject value = runFunction(function, params);
+        JavaScriptObject value = runWithFunction(function, context);
         Profiler.leave("TreeUpdater.evalWithContextFactory runFunction");
 
         Profiler.leave("TreeUpdater.evalWithContextFactory");
         return value;
     }
+
+    private static native JavaScriptObject runWithFunction(JavaScriptObject f,
+            JavaScriptObject context)
+            /*-{
+                return f(context);
+            }-*/;
+
+    private static native JavaScriptObject createWithFunction(String code)
+    /*-{
+        return new Function("context", code);
+    }-*/;
 
     public static native void addContextProperty(JavaScriptObject context,
             String name, ContextFactorySupplier supplier)
