@@ -31,6 +31,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Text;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Window.Location;
 import com.vaadin.client.ApplicationConnection.Client;
 import com.vaadin.client.FastStringMap;
@@ -451,6 +452,9 @@ public class TreeUpdater {
         public JavaScriptObject get();
     }
 
+    private static final RegExp contextPropertyRegexp = RegExp
+            .compile("[^0-9].*");
+
     public static JavaScriptObject createNodeContext(TreeNode node) {
         Profiler.enter("TreeUpater.createNodeContext");
         JavaScriptObject context = JavaScriptObject.createObject();
@@ -458,8 +462,9 @@ public class TreeUpdater {
         JsArrayString propertyNames = node.getPropertyNames();
         for (int i = 0; i < propertyNames.length(); i++) {
             String name = propertyNames.get(i);
-            if (name.matches("[^0-9].*")) {
+            if (contextPropertyRegexp.test(name)) {
                 TreeNodeProperty property = node.getProperty(name);
+                Profiler.enter("TreeUpater.createNodeContext add property");
                 addContextProperty(context, name, () -> {
                     Object value = property.getValue();
                     if (value instanceof TreeNode) {
@@ -468,6 +473,7 @@ public class TreeUpdater {
                     }
                     return asJso(value);
                 });
+                Profiler.leave("TreeUpater.createNodeContext add property");
             }
         }
         Profiler.leave("TreeUpater.createNodeContext");
