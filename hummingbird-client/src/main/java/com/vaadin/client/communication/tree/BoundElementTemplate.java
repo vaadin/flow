@@ -13,7 +13,6 @@ import com.google.gwt.dom.client.Node;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
-import com.vaadin.client.communication.tree.TreeUpdater.ContextFactorySupplier;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -186,8 +185,7 @@ public class BoundElementTemplate extends Template {
             NodeContext nodeContext) {
         Profiler.enter("BoundElementTemplate.evaluateExpression");
 
-        Map<String, ContextFactorySupplier> context = nodeContext
-                .buildExpressionContext();
+        JavaScriptObject context = nodeContext.getExpressionContext();
 
         JavaScriptObject value = TreeUpdater.evalWithContextFactory(context,
                 "return " + expression);

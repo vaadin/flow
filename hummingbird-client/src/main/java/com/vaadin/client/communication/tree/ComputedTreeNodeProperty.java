@@ -3,13 +3,11 @@ package com.vaadin.client.communication.tree;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
-import com.vaadin.client.communication.tree.TreeUpdater.ContextFactorySupplier;
 
 import elemental.json.JsonObject;
 
@@ -93,8 +91,7 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
     private void compute() {
         clearAllDependencies();
 
-        Map<String, ContextFactorySupplier> context = TreeUpdater
-                .createNodeContextFactory(getOwner());
+        JavaScriptObject context = TreeUpdater.createNodeContext(getOwner());
 
         // Should maybe be refactored to use Reactive.keepUpToDate
         Collection<TreeNodeProperty> accessedProperies = Reactive

@@ -374,8 +374,8 @@ public class TreeUpdater {
                 }
 
                 @Override
-                public Map<String, ContextFactorySupplier> buildExpressionContext() {
-                    return TreeUpdater.createNodeContextFactory(node);
+                public JavaScriptObject getExpressionContext() {
+                    return TreeUpdater.createNodeContext(node);
                 }
             });
             Profiler.leave("TreeUpdater.getOrCreateElement template");
@@ -428,16 +428,15 @@ public class TreeUpdater {
         public JavaScriptObject get();
     }
 
-    public static Map<String, ContextFactorySupplier> createNodeContextFactory(
-            TreeNode node) {
-        Map<String, ContextFactorySupplier> map = new HashMap<>();
+    public static JavaScriptObject createNodeContext(TreeNode node) {
+        JavaScriptObject context = JavaScriptObject.createObject();
 
         JsArrayString propertyNames = node.getPropertyNames();
         for (int i = 0; i < propertyNames.length(); i++) {
             String name = propertyNames.get(i);
             if (name.matches("[^0-9].*")) {
                 TreeNodeProperty property = node.getProperty(name);
-                map.put(name, () -> {
+                addContextProperty(context, name, () -> {
                     Object value = property.getValue();
                     if (value instanceof TreeNode) {
                         TreeNode child = (TreeNode) value;
@@ -448,7 +447,7 @@ public class TreeUpdater {
             }
         }
 
-        return map;
+        return context;
     }
 
     public void update(JsonObject elementTemplates, JsonArray elementChanges,
@@ -601,17 +600,8 @@ public class TreeUpdater {
             .create();
 
     public static JavaScriptObject evalWithContextFactory(
-            Map<String, ContextFactorySupplier> contextFactories,
-            String script) {
+            JavaScriptObject context, String script) {
         Profiler.enter("TreeUpdater.evalWithContextFactory");
-
-        JavaScriptObject context = JavaScriptObject.createObject();
-        for (Entry<String, ContextFactorySupplier> entry : contextFactories
-                .entrySet()) {
-            String name = entry.getKey();
-            ContextFactorySupplier supplier = entry.getValue();
-            addContextProperty(context, name, supplier);
-        }
 
         JsArrayString newFunctionParams = JavaScriptObject.createArray().cast();
         newFunctionParams.push("context");
@@ -635,7 +625,7 @@ public class TreeUpdater {
         return value;
     }
 
-    private static native void addContextProperty(JavaScriptObject context,
+    public static native void addContextProperty(JavaScriptObject context,
             String name, ContextFactorySupplier supplier)
             /*-{
                 Object.defineProperty(context, name, {
