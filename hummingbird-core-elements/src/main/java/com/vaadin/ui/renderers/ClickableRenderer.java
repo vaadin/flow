@@ -15,12 +15,12 @@
  */
 package com.vaadin.ui.renderers;
 
+import com.vaadin.elements.core.grid.Grid;
+import com.vaadin.elements.core.grid.Grid.AbstractRenderer;
+import com.vaadin.elements.core.grid.Grid.Column;
 import com.vaadin.event.EventListener;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.shared.MouseEventDetails;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.Grid.AbstractRenderer;
-import com.vaadin.ui.Grid.Column;
 
 /**
  * An abstract superclass for Renderers that render clickable items. Click

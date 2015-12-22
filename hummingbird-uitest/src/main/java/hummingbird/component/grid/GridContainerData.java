@@ -3,10 +3,10 @@ package hummingbird.component.grid;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.elements.core.grid.Grid;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUIWithLog;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Grid;
 
 public class GridContainerData extends AbstractTestUIWithLog {
 

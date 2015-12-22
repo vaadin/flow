@@ -41,12 +41,13 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.Property.ValueChangeNotifier;
 import com.vaadin.data.sort.SortOrder;
+import com.vaadin.elements.core.grid.Grid;
+import com.vaadin.elements.core.grid.Grid.Column;
 import com.vaadin.hummingbird.kernel.DomEventListener;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.KeyMapper;
 import com.vaadin.shared.data.sort.SortDirection;
 import com.vaadin.shared.ui.grid.GridState;
-import com.vaadin.ui.Grid.Column;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

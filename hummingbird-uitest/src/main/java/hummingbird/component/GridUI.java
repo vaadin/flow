@@ -1,9 +1,9 @@
 package hummingbird.component;
 
+import com.vaadin.elements.core.grid.Grid;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUIWithLog;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Grid;
 import com.vaadin.ui.HTML;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Slider;

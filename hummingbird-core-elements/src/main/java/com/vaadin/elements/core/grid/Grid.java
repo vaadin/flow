@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.ui;
+package com.vaadin.elements.core.grid;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -95,6 +95,15 @@ import com.vaadin.shared.ui.grid.ScrollDestination;
 import com.vaadin.shared.ui.grid.selection.MultiSelectionModelState;
 import com.vaadin.shared.ui.grid.selection.SingleSelectionModelState;
 import com.vaadin.shared.util.SharedUtil;
+import com.vaadin.ui.AbstractClientConnector;
+import com.vaadin.ui.AbstractFocusable;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ConnectorTracker;
+import com.vaadin.ui.Field;
+import com.vaadin.ui.GridJSDataProvider;
+import com.vaadin.ui.SelectiveRenderer;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.Component.Event;
 import com.vaadin.ui.renderers.Renderer;
 import com.vaadin.ui.renderers.TextRenderer;
 import com.vaadin.util.ReflectTools;

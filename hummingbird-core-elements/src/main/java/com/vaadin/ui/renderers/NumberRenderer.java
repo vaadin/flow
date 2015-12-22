@@ -18,7 +18,7 @@ package com.vaadin.ui.renderers;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import com.vaadin.ui.Grid.AbstractRenderer;
+import com.vaadin.elements.core.grid.Grid.AbstractRenderer;
 
 import elemental.json.JsonValue;
 

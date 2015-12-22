@@ -4,10 +4,10 @@ import java.util.List;
 
 import com.vaadin.annotations.Implemented;
 import com.vaadin.annotations.NotYetImplemented;
+import com.vaadin.elements.core.grid.Grid;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.VaadinClasses;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Grid;
 import com.vaadin.ui.UI;
 
 public class ComponentStatus extends UI {

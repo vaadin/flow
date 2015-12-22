@@ -1,8 +1,8 @@
 package hummingbird.component.grid;
 
+import com.vaadin.elements.core.grid.Grid;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Grid;
 import com.vaadin.ui.UI;
 
 public class AddGridAfterInit extends UI {
