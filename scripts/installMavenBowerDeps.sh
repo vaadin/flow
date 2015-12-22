@@ -52,7 +52,9 @@ cat > bower.json << EOF
 }
 EOF
 
+# Must remove cache as Bower fetches versions from there also and generates conflicts for the fun of it
+rm -rf bower_components
 bower install --save $toinstall
 popd
-bower install --save ./src/main/generated-bower
+bower install --force --save ./src/main/generated-bower
 
