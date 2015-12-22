@@ -138,34 +138,13 @@ public class ForElementTemplate extends Template {
                                     }
                                 }
 
-                                JavaScriptObject referenceOuterContext = null;
-                                JavaScriptObject expressionContext = null;
+                                private final JavaScriptObject expressionContext = createExpressionContext(
+                                        outerContext.getExpressionContext(),
+                                        getInnerScope(), childNode.getProxy());
 
                                 @Override
                                 public JavaScriptObject getExpressionContext() {
-                                    JavaScriptObject currentOuterContext = outerContext
-                                            .getExpressionContext();
-                                    if (currentOuterContext != referenceOuterContext
-                                            || expressionContext == null) {
-                                        referenceOuterContext = currentOuterContext;
-                                        expressionContext = createExpressionContext();
-                                    }
                                     return expressionContext;
-                                }
-
-                                @Override
-                                public JavaScriptObject createExpressionContext() {
-                                    Profiler.enter(
-                                            "ForElementTemplate.createExpressionContext");
-                                    JavaScriptObject context = outerContext
-                                            .createExpressionContext();
-                                    TreeUpdater.addContextProperty(context,
-                                            getInnerScope(), () -> {
-                                        return childNode.getProxy();
-                                    });
-                                    Profiler.leave(
-                                            "ForElementTemplate.createExpressionContext");
-                                    return context;
                                 }
                             };
 
@@ -196,6 +175,15 @@ public class ForElementTemplate extends Template {
         Profiler.leave("ForElementTemplate.createElement");
         return commentNode;
     }
+
+    private static native JavaScriptObject createExpressionContext(
+            JavaScriptObject parentContext, String innerScopeName,
+            JavaScriptObject innerScopeProxy)
+            /*-{
+              var context = Object.create(parentContext);
+              context[innerScopeName] = innerScopeProxy;
+              return context;
+            }-*/;
 
     protected native int nodeListIndexOf(NodeList<Node> childNodes,
             Node childNode)

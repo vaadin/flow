@@ -90,7 +90,7 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
     private void compute() {
         clearAllDependencies();
 
-        JavaScriptObject context = TreeUpdater.createNodeContext(getOwner());
+        JavaScriptObject context = getOwner().getProxy();
 
         // Should maybe be refactored to use Reactive.keepUpToDate
         JsSet<TreeNodeProperty> accessedProperies = Reactive

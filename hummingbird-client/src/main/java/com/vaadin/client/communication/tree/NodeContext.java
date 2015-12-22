@@ -16,6 +16,4 @@ public interface NodeContext {
     public Map<String, JavaScriptObject> buildEventHandlerContext();
 
     public JavaScriptObject getExpressionContext();
-
-    public JavaScriptObject createExpressionContext();
 }

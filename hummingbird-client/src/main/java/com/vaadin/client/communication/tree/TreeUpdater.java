@@ -31,7 +31,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Text;
-import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Window.Location;
 import com.vaadin.client.ApplicationConnection.Client;
 import com.vaadin.client.FastStringMap;
@@ -40,7 +39,6 @@ import com.vaadin.client.Profiler;
 import com.vaadin.client.Util;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
-import com.vaadin.client.communication.tree.TreeNode.TreeNodeChangeListener;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 import com.vaadin.shared.communication.MethodInvocation;
 
@@ -350,21 +348,6 @@ public class TreeUpdater {
 
             JavaScriptObject serverProxy = template.createServerProxy(nodeId);
             Node element = createElement(template, node, new NodeContext() {
-                private JavaScriptObject expressionContext = null;
-
-                {
-                    // Invalidate cached expressionContext instance if new
-                    // properties are added to the node
-                    node.addTreeNodeChangeListener(
-                            new TreeNodeChangeListener() {
-                        @Override
-                        public void addProperty(String name,
-                                TreeNodeProperty property) {
-                            expressionContext = null;
-                        }
-                    });
-                }
-
                 @Override
                 public TreeNodeProperty getProperty(String name) {
                     return TreeListenerHelper.getProperty(node, name);
@@ -391,15 +374,7 @@ public class TreeUpdater {
 
                 @Override
                 public JavaScriptObject getExpressionContext() {
-                    if (expressionContext == null) {
-                        expressionContext = createExpressionContext();
-                    }
-                    return expressionContext;
-                }
-
-                @Override
-                public JavaScriptObject createExpressionContext() {
-                    return createNodeContext(node);
+                    return node.getProxy();
                 }
             });
             Profiler.leave("TreeUpdater.getOrCreateElement template");
@@ -450,35 +425,6 @@ public class TreeUpdater {
     @FunctionalInterface
     public interface ContextFactorySupplier {
         public JavaScriptObject get();
-    }
-
-    private static final RegExp contextPropertyRegexp = RegExp
-            .compile("[^0-9].*");
-
-    public static JavaScriptObject createNodeContext(TreeNode node) {
-        Profiler.enter("TreeUpater.createNodeContext");
-        JavaScriptObject context = JavaScriptObject.createObject();
-
-        JsArrayString propertyNames = node.getPropertyNames();
-        for (int i = 0; i < propertyNames.length(); i++) {
-            String name = propertyNames.get(i);
-            if (contextPropertyRegexp.test(name)) {
-                TreeNodeProperty property = node.getProperty(name);
-                Profiler.enter("TreeUpater.createNodeContext add property");
-                addContextProperty(context, name, () -> {
-                    Object value = property.getValue();
-                    if (value instanceof TreeNode) {
-                        TreeNode child = (TreeNode) value;
-                        value = child.getProxy();
-                    }
-                    return asJso(value);
-                });
-                Profiler.leave("TreeUpater.createNodeContext add property");
-            }
-        }
-        Profiler.leave("TreeUpater.createNodeContext");
-
-        return context;
     }
 
     public void update(JsonObject elementTemplates, JsonArray elementChanges,
