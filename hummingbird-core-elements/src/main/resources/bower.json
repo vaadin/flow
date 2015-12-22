@@ -15,7 +15,7 @@
   "dependencies": {
     "iron-flex-layout": "PolymerElements/iron-flex-layout#1.0.3",
     "paper-button": "PolymerElements/paper-button#1.0.3",
-    "paper-slider": "PolymerElements/paper-slider#1.0.4",
+    "paper-slider": "PolymerElements/paper-slider#1.0.8",
     "polymer": "Polymer/polymer#1.2.3",
     "vaadin-notification": "Artur-/vaadin-notification#0.9.1",
     "vaadin-grid": "1.0.0-rc1",
