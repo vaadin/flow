@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.renderers;
 
-import com.vaadin.elements.core.grid.Grid.AbstractRenderer;
+import com.vaadin.elements.core.grid.AbstractRenderer;
 
 import elemental.json.JsonValue;
 
