@@ -3,6 +3,8 @@ package com.vaadin.client.communication.tree;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
@@ -232,6 +234,7 @@ public class BoundElementTemplate extends Template {
                 TreeUpdater.addDomListener(element, type, new DomListener() {
                     @Override
                     public void handleEvent(JavaScriptObject event) {
+                        long start = System.currentTimeMillis();
                         for (String handler : handlers) {
                             Map<String, JavaScriptObject> contextMap = context
                                     .buildEventHandlerContext();
@@ -250,6 +253,9 @@ public class BoundElementTemplate extends Template {
                         }
 
                         treeUpdater.afterNodeChanges();
+                        long end = System.currentTimeMillis();
+                        getLogger().log(Level.INFO, "Handled " + type
+                                + " event in " + (end - start) + " ms");
                     }
                 });
             }
@@ -365,5 +371,9 @@ public class BoundElementTemplate extends Template {
     @FunctionalInterface
     private interface Setter {
         public void set(JsonValue value);
+    }
+
+    private static Logger getLogger() {
+        return Logger.getLogger(BoundElementTemplate.class.getName());
     }
 }
