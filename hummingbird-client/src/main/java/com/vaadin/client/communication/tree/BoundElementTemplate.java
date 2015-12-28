@@ -328,13 +328,13 @@ public class BoundElementTemplate extends Template {
     private static native void attachServerProxyMethod(TreeUpdater treeUpdater,
             JavaScriptObject proxy, int nodeId, int templateId, String name)
             /*-{
-                proxy[name] = $entry(function() {
+                proxy[name] = function() {
                     // Convert to proper Array
                     var args = Array.prototype.slice.call(arguments);
-                    return new $wnd.Promise(function(resolve, reject) {
+                    return new $wnd.Promise($entry(function(resolve, reject) {
                         @BoundElementTemplate::sendTemplateEventToServer(*)(treeUpdater, nodeId, templateId, name, args, resolve, reject);
-                    });
-                });
+                    }));
+                };
             }-*/;
 
     private static void sendTemplateEventToServer(TreeUpdater treeUpdater,
@@ -350,7 +350,13 @@ public class BoundElementTemplate extends Template {
                 Node node = Node.as(value);
                 jsonValue = TreeUpdater.getElementIdentifier(node);
             } else {
-                jsonValue = value.cast();
+                int proxyId = TreeNode.getProxyId(value);
+                if (proxyId != -1) {
+                    // Send id for tree nodes
+                    jsonValue = Json.create(proxyId);
+                } else {
+                    jsonValue = value.cast();
+                }
             }
             eventData.set(i, jsonValue);
         }

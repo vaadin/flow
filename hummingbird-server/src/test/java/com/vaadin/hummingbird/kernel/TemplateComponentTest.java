@@ -8,6 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.annotations.TemplateEventHandler;
+import com.vaadin.hummingbird.kernel.TemplateModelTest.SubModelType;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Template;
 import com.vaadin.ui.UI;
@@ -76,6 +77,34 @@ public class TemplateComponentTest {
         template.onBrowserEvent("withElement", elementDescriptor);
 
         Assert.assertEquals(Arrays.asList(template.getElement()),
+                template.receivedValues);
+    }
+
+    @Test
+    public void testHandlerWithNodeParameter() {
+        TestTemplateComponent template = new TestTemplateComponent() {
+            @TemplateEventHandler
+            private void withNode(SubModelType node) {
+                receivedValues.add(node);
+            }
+        };
+
+        UI ui = new UI() {
+            @Override
+            protected void init(VaadinRequest request) {
+                // Nothing here, never run
+            }
+        };
+        ui.setContent(template);
+        ui.registerTemplate(template.getElement().getTemplate());
+
+        StateNode node = StateNode.create();
+        ui.getRoot().getRootNode().put("node", node);
+
+        template.onBrowserEvent("withNode", Json.create(node.getId()));
+
+        Assert.assertEquals(
+                Arrays.asList(Template.Model.wrap(node, SubModelType.class)),
                 template.receivedValues);
     }
 

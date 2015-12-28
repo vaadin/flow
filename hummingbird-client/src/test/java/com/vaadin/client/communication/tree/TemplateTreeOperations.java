@@ -13,6 +13,7 @@ import elemental.js.json.JsJsonObject;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 
 public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
     public void testBoundProperties() {
@@ -172,7 +173,7 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
                 .getFirstChildElement();
         assertNull(templateElement.getPropertyObject("value"));
 
-        NativeEvent event = Document.get().createClickEvent(0, 1, 2, childId, 4,
+        NativeEvent event = Document.get().createClickEvent(0, 1, 2, 3, 4,
                 false, false, false, false);
         templateElement.dispatchEvent(event);
 
@@ -204,8 +205,77 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         // Template id
         assertEquals(1, (int) parameters.getNumber(1));
         assertEquals("doSomething", parameters.getString(2));
+
         // Parameter (element.something)
-        assertEquals(10, (int) parameters.getNumber(childId));
+        JsonArray arguments = parameters.getArray(3);
+        assertEquals(JsonType.ARRAY, arguments.getType());
+        assertEquals(1, arguments.length());
+        assertEquals(10, (int) arguments.getNumber(0));
+
+        // Promise id
+        assertEquals(0, (int) parameters.getNumber(4));
+    }
+
+    public void testTemplateEventParameters() {
+        int templateId = 1;
+
+        String json = "{'type': 'BoundElementTemplate', 'tag':'span',"
+                + "'events': {'click': ['server.doSomething(element, model, model.child)']},"
+                + "'eventHandlerMethods': ['doSomething']}";
+        JsonObject template = Json.parse(json.replace('\'', '"'));
+
+        applyTemplate(templateId, template);
+
+        int childId = 3;
+        int childrenId = 4;
+        int modelChildId = 5;
+        applyChanges(
+                ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.putMap(childId, "child", modelChildId),
+                ChangeUtil.listInsertNode(childrenId, 0, childId),
+                ChangeUtil.put(childId, "TEMPLATE", Json.create(1)));
+
+        Element templateElement = updater.getRootElement()
+                .getFirstChildElement();
+
+        NativeEvent event = Document.get().createClickEvent(0, 1, 2, 3, 4,
+                false, false, false, false);
+        templateElement.dispatchEvent(event);
+
+        List<MethodInvocation> enqueuedInvocations = updater
+                .getEnqueuedInvocations();
+
+        assertEquals(1, enqueuedInvocations.size());
+
+        MethodInvocation methodInvocation = enqueuedInvocations.get(0);
+        assertEquals("vTemplateEvent",
+                methodInvocation.getJavaScriptCallbackRpcName());
+
+        JsonArray parameters = methodInvocation.getParameters();
+        assertEquals(5, parameters.length());
+        // Node id
+        assertEquals(childId, (int) parameters.getNumber(0));
+        // Template id
+        assertEquals(templateId, (int) parameters.getNumber(1));
+        assertEquals("doSomething", parameters.getString(2));
+
+        // Arguments
+        JsonArray arguments = parameters.getArray(3);
+        assertEquals(JsonType.ARRAY, arguments.getType());
+        assertEquals(3, arguments.length());
+
+        // Parameter element
+        JsonArray elementParam = arguments.getArray(0);
+        assertEquals(JsonType.ARRAY, elementParam.getType());
+        assertEquals(2, elementParam.length());
+        assertEquals(childId, (int) elementParam.getNumber(0));
+        assertEquals(templateId, (int) elementParam.getNumber(1));
+
+        // Parameter model
+        assertEquals(childId, (int) arguments.getNumber(1));
+        // Parameter model.child
+        assertEquals(modelChildId, (int) arguments.getNumber(2));
+
         // Promise id
         assertEquals(0, (int) parameters.getNumber(4));
     }

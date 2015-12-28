@@ -564,6 +564,11 @@ public abstract class Template extends AbstractComponent
                 StateNode elementNode = node.getRoot().getById(nodeId);
                 ElementTemplate template = getUI().getTemplate(templateId);
                 methodParams[i] = Element.getElement(template, elementNode);
+            } else if (type.isInterface()
+                    && param.getType() == JsonType.NUMBER) {
+                int nodeId = (int) param.asNumber();
+                StateNode paramNode = node.getRoot().getById(nodeId);
+                methodParams[i] = Model.wrap(paramNode, type);
             } else {
                 methodParams[i] = JsonConverter.fromJson(type, param);
             }

@@ -14,6 +14,7 @@ import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 
 import elemental.js.json.JsJsonObject;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 
 public class TreeNode {
     private static final String ID_PROPERTY = "$hid";
@@ -70,7 +71,7 @@ public class TreeNode {
 
     public static int getProxyId(JavaScriptObject proxy) {
         JsonObject json = (JsJsonObject) proxy.cast();
-        if (!json.hasKey(ID_PROPERTY)) {
+        if (json.getType() != JsonType.OBJECT || !json.hasKey(ID_PROPERTY)) {
             return -1;
         }
         return (int) json.getNumber(ID_PROPERTY);
