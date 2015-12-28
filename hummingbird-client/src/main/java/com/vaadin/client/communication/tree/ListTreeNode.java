@@ -3,6 +3,7 @@ package com.vaadin.client.communication.tree;
 import java.util.ArrayList;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
@@ -66,8 +67,10 @@ public class ListTreeNode extends TreeNode {
         return a;
     }-*/;
 
-    public void addArrayEventListener(ArrayEventListener listener) {
+    public HandlerRegistration addArrayEventListener(
+            ArrayEventListener listener) {
         listeners.add(listener);
+        return () -> listeners.remove(listener);
     }
 
     @Override

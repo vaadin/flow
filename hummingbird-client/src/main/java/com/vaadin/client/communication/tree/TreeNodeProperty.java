@@ -59,6 +59,7 @@ public class TreeNodeProperty {
     private Object value;
 
     private JsSet<TreeNodePropertyValueChangeListener> listeners;
+    private HandlerRegistration listSizeListener;
 
     public TreeNodeProperty(TreeNode owner, String name) {
         this.owner = owner;
@@ -109,6 +110,23 @@ public class TreeNodeProperty {
                 value = owner.getTreeUpdater()
                         .getNode(Integer.valueOf(proxyId));
             }
+        }
+
+        if (listSizeListener != null) {
+            listSizeListener.removeHandler();
+            listSizeListener = null;
+        }
+
+        if (value instanceof ListTreeNode) {
+            ListTreeNode list = (ListTreeNode) value;
+            listSizeListener = list.addArrayEventListener(
+                    (listTreeNode, startIndex, removed, added) -> {
+                        if (removed.size() != added.size()) {
+                            owner.getCallbackQueue()
+                                    .enqueue(new ValueChangeEvent(getValue(),
+                                            getValue()));
+                        }
+                    });
         }
 
         this.value = value;

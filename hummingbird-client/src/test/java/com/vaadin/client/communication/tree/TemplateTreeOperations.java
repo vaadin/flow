@@ -456,6 +456,34 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals("10", templateElement.getInnerText());
     }
 
+    public void testArrayLengthBinding() {
+        int templateId = 1;
+
+        String template = "{'type': 'BoundElementTemplate', 'tag':'span',"
+                + "'attributeBindings': {'foo': 'list.length'}}";
+
+        applyTemplate(templateId, Json.parse(template.replace('\'', '"')));
+
+        int childId = 3;
+        int listId = 4;
+        int childrenId = 5;
+
+        applyChanges(
+                ChangeUtil.put(childId, "TEMPLATE", Json.create(templateId)),
+                ChangeUtil.putList(childId, "list", listId),
+                ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.listInsertNode(childrenId, 0, childId));
+
+        Element templateElement = updater.getRootElement()
+                .getFirstChildElement();
+
+        assertEquals(0, templateElement.getPropertyInt("foo"));
+
+        applyChanges(ChangeUtil.listInsert(listId, 0, "asdf"));
+
+        assertEquals(1, templateElement.getPropertyInt("foo"));
+    }
+
     private static native boolean isScriptLoaded()
     /*-{
         return $wnd.scriptLoaded === 5;
