@@ -76,6 +76,9 @@ public class TemplateModelTest {
             }
             return list.size();
         }
+
+        @JS("simpleList?simpleList.length:0")
+        public int getJsListLength();
     }
 
     public class MyTestTemplate extends Template {
@@ -361,13 +364,17 @@ public class TemplateModelTest {
     }
 
     @Test
-    public void testServerListLength() {
+    public void testComputedListLength() {
+        model.setSimpleList(new ArrayList<>());
         Assert.assertEquals(0, model.getServerListLength());
+        Assert.assertEquals(0, model.getJsListLength());
 
         model.setSimpleList(new ArrayList<>(Arrays.asList("asdf")));
         Assert.assertEquals(1, model.getServerListLength());
+        Assert.assertEquals(1, model.getJsListLength());
 
         model.getSimpleList().add("foo");
         Assert.assertEquals(2, model.getServerListLength());
+        Assert.assertEquals(2, model.getJsListLength());
     }
 }

@@ -27,6 +27,10 @@ public class TemplateScriptHelper {
 
         @Override
         public Object getMember(String name) {
+            if (isArray() && "length".equals(name)) {
+                return Integer.valueOf(((ListNode) node).size());
+            }
+
             Object value = node.get(name);
             if (value instanceof StateNode) {
                 StateNode childNode = (StateNode) value;
@@ -34,6 +38,12 @@ public class TemplateScriptHelper {
             }
             return value;
         }
+
+        @Override
+        public boolean isArray() {
+            return node instanceof ListNode;
+        }
+
     }
 
     private static class DynamicBindings implements Bindings {
@@ -172,7 +182,7 @@ public class TemplateScriptHelper {
 
             Object value = compiled.eval(bindings);
             if (value == null) {
-                // XXX Is this acceptable it resultType is a primitive?
+                // XXX Is this acceptable if resultType is a primitive?
                 return null;
             }
             if (value instanceof StateNodeWrapper) {
