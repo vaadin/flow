@@ -204,4 +204,22 @@ public class ComputedPropertyTest {
                 .compute(node);
         Assert.assertEquals("Foo", value);
     }
+
+    @Test
+    public void testJsComptedPropertyArray() {
+        StateNode node = StateNode.create();
+        MyTestModel model = Model.wrap(node, MyTestModel.class);
+        model.setSimpleList(Arrays.asList("foo", "bar"));
+        model.setInt(0);
+
+        Object value = new JsComputedProperty("foo", "simpleList[int]",
+                String.class).compute(node);
+
+        Assert.assertEquals("foo", value);
+        model.setInt(1);
+
+        value = new JsComputedProperty("foo", "simpleList[int]", String.class)
+                .compute(node);
+        Assert.assertEquals("bar", value);
+    }
 }

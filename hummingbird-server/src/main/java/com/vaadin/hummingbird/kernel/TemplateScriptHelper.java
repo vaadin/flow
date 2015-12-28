@@ -32,11 +32,7 @@ public class TemplateScriptHelper {
             }
 
             Object value = node.get(name);
-            if (value instanceof StateNode) {
-                StateNode childNode = (StateNode) value;
-                return wrapNode(childNode);
-            }
-            return value;
+            return wrapIfNode(value);
         }
 
         @Override
@@ -44,6 +40,15 @@ public class TemplateScriptHelper {
             return node instanceof ListNode;
         }
 
+        @Override
+        public Object getSlot(int index) {
+            if (node instanceof ListNode) {
+                Object value = ((ListNode) node).get(index);
+                return wrapIfNode(value);
+            } else {
+                return super.getSlot(index);
+            }
+        }
     }
 
     private static class DynamicBindings implements Bindings {
@@ -75,11 +80,7 @@ public class TemplateScriptHelper {
                 Supplier<Object> supplier = bindingFactory.apply((String) key);
                 Object value;
                 if (supplier != null) {
-                    value = supplier.get();
-                    if (value instanceof StateNode) {
-                        StateNode node = (StateNode) value;
-                        value = TemplateScriptHelper.wrapNode(node);
-                    }
+                    value = wrapIfNode(supplier.get());
                 } else {
                     value = null;
                 }
@@ -207,8 +208,12 @@ public class TemplateScriptHelper {
         }
     }
 
-    public static Object wrapNode(StateNode node) {
-        return new StateNodeWrapper(node);
+    private static Object wrapIfNode(Object value) {
+        if (value instanceof StateNode) {
+            return new StateNodeWrapper((StateNode) value);
+        } else {
+            return value;
+        }
     }
 
 }
