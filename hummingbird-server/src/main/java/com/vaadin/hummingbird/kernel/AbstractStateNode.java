@@ -205,7 +205,7 @@ public abstract class AbstractStateNode implements StateNode {
         return pendingFlush;
     }
 
-    private void updateDependents(Object key,
+    protected void updateDependents(Object key,
             Function<HashSet<Runnable>, HashSet<Runnable>> updater) {
         StateNode map = getOrCreateInternalMap(Keys.DEPENDENTS, false);
 
@@ -412,11 +412,15 @@ public abstract class AbstractStateNode implements StateNode {
         attachChild(value);
 
         if ((!contained || !Objects.equals(previous, value))
-                && doesContainKey(Keys.DEPENDENTS)) {
+                && hasDependents()) {
             updateDependents(key, Reactive::registerWrite);
         }
 
         return previous;
+    }
+
+    protected boolean hasDependents() {
+        return doesContainKey(Keys.DEPENDENTS);
     }
 
     public <T> void put(Class<T> type, T value) {

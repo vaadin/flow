@@ -11,6 +11,8 @@ import com.vaadin.hummingbird.kernel.change.ListReplaceChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 
 public class ListNode extends MapStateNode implements Serializable {
+    private static final Object lengthDependencyKey = new Object();
+
     private ArrayList<Object> backing = new ArrayList<>();
 
     public ListNode() {
@@ -28,12 +30,20 @@ public class ListNode extends MapStateNode implements Serializable {
         backing.add(index, element);
         logChange(new ListInsertChange(index, element));
         attachChild(element);
+
+        if (hasDependents()) {
+            updateDependents(lengthDependencyKey, Reactive::registerWrite);
+        }
     }
 
     public Object remove(int index) {
         Object removed = backing.remove(index);
         logChange(new ListRemoveChange(index, removed));
         detachChild(removed);
+
+        if (hasDependents()) {
+            updateDependents(lengthDependencyKey, Reactive::registerWrite);
+        }
 
         return removed;
     }
@@ -43,6 +53,10 @@ public class ListNode extends MapStateNode implements Serializable {
     }
 
     public int size() {
+        if (Reactive.inComputation()) {
+            updateDependents(lengthDependencyKey, Reactive::registerRead);
+        }
+
         if (backing == null) {
             return 0;
         }

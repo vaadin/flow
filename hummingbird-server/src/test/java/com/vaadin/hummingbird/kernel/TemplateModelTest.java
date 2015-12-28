@@ -1,5 +1,6 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -67,6 +68,14 @@ public class TemplateModelTest {
 
         @JS("int  - (boolean ? 1 : 2)")
         public int getJsComputed();
+
+        public default int getServerListLength() {
+            List<String> list = getSimpleList();
+            if (list == null) {
+                return 0;
+            }
+            return list.size();
+        }
     }
 
     public class MyTestTemplate extends Template {
@@ -341,7 +350,7 @@ public class TemplateModelTest {
     }
 
     @Test
-    public void tetComputedProperties() {
+    public void testComputedProperties() {
         Assert.assertEquals(2, model.getServerComptued());
         Assert.assertEquals(-2, model.getJsComputed());
 
@@ -349,5 +358,16 @@ public class TemplateModelTest {
         model.setBoolean(true);
         Assert.assertEquals(6, model.getServerComptued());
         Assert.assertEquals(4, model.getJsComputed());
+    }
+
+    @Test
+    public void testServerListLength() {
+        Assert.assertEquals(0, model.getServerListLength());
+
+        model.setSimpleList(new ArrayList<>(Arrays.asList("asdf")));
+        Assert.assertEquals(1, model.getServerListLength());
+
+        model.getSimpleList().add("foo");
+        Assert.assertEquals(2, model.getServerListLength());
     }
 }
