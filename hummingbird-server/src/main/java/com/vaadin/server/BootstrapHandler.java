@@ -552,6 +552,9 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                         .attr("type", "text/css").attr("href", resolvedUrl)
                         .attr("pending", "1").attr("onload",
                                 "this.removeAttribute('pending');this.removeAttribute('onload');");
+            } else if (d.getType() == Type.POLYMER_STYLE) {
+                head.appendElement("style").attr("is", "custom-style")
+                        .attr("include", d.getUrl());
             } else {
                 throw new IllegalStateException("Unknown type " + d.getType());
             }
