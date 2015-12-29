@@ -331,16 +331,19 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
     public void testForTemplate() {
         String forJson = "{'type': 'ForElementTemplate', 'tag':'input',"
                 + "'modelKey': 'items', 'innerScope':'item',"
-                + "'defaultAttributes': {'type': 'checkbox'},"
-                + "'events': {'click': ['model.foo = 1; item.foo = 2;']},"
+                + "'defaultAttributes': {'type': 'checkbox', 'LOCAL_ID': 'inner'},"
+                + "'events': {'click': ['model.foo = 1; item.foo = 2; inner.foo = 3; outer.foo = 4;']},"
                 + "'attributeBindings': {'checked': 'item.checked'}" + "}";
         applyTemplate(1, Json.parse(forJson.replace('\'', '"')));
 
         String parentJson = "{'type': 'BoundElementTemplate', 'tag':'div',"
                 + "'children': [1],"
+                + "'defaultAttributes': {'LOCAL_ID': 'outer'},"
                 + "'modelStructure': [{'items': ['checked']}]}";
         applyTemplate(2, Json.parse(parentJson.replace('\'', '"')));
 
+        int child1ItemId = 4;
+        int child2ItemId = 5;
         int childrenId = 6;
         int itemsId = 7;
         int templateRootNode = 3;
@@ -352,12 +355,15 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
                 ChangeUtil.put(templateRootNode, "TEMPLATE", Json.create(2)));
 
         Element parent = updater.getRootElement().getFirstChildElement();
+
+        assertFalse(parent.hasAttribute("local_id"));
+
         assertEquals(1, parent.getChildCount());
         // 8 = comment node
         assertEquals(8, parent.getChild(0).getNodeType());
 
-        applyChanges(ChangeUtil.listInsertNode(itemsId, 0, 4),
-                ChangeUtil.put(4, "checked", Json.create(true)));
+        applyChanges(ChangeUtil.listInsertNode(itemsId, 0, child1ItemId),
+                ChangeUtil.put(child1ItemId, "checked", Json.create(true)));
 
         assertEquals(2, parent.getChildCount());
 
@@ -366,7 +372,7 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals("checkbox", firstChild.getAttribute("type"));
         assertTrue(firstChild.getPropertyBoolean("checked"));
 
-        applyChanges(ChangeUtil.listInsertNode(itemsId, 1, 5));
+        applyChanges(ChangeUtil.listInsertNode(itemsId, 1, child2ItemId));
         assertEquals(3, parent.getChildCount());
         Element secondChild = firstChild.getNextSiblingElement();
         assertTrue(secondChild == parent.getChild(2));
@@ -383,11 +389,16 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         secondChild.dispatchEvent(event);
 
         // Use as JsonObject for convenient property access
-        JsJsonObject model = updater.getNode(3).getProxy().cast();
+        JsJsonObject model = updater.getNode(templateRootNode).getProxy()
+                .cast();
         assertEquals(1, (int) model.getNumber("foo"));
 
-        JsJsonObject item = updater.getNode(5).getProxy().cast();
+        JsJsonObject item = updater.getNode(child2ItemId).getProxy().cast();
         assertEquals(2, (int) item.getNumber("foo"));
+
+        assertEquals(3, secondChild.getPropertyInt("foo"));
+
+        assertEquals(4, parent.getPropertyInt("foo"));
     }
 
     public void testOverrideNode() {

@@ -10,7 +10,6 @@ import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.DomElement;
 import com.vaadin.client.communication.tree.ListTreeNode.ArrayEventListener;
-import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
 import elemental.json.JsonObject;
 
@@ -86,7 +85,8 @@ public class ForElementTemplate extends Template {
                         for (int i = 0; i < added.size(); i++) {
                             TreeNode childNode = (TreeNode) added.get(i);
                             int insertIndex = commentNodeIndex + startIndex + i;
-                            NodeContext innerContext = new NodeContext() {
+                            NodeContext innerContext = new NodeContext(
+                                    outerContext) {
                                 @Override
                                 public ListTreeNode resolveListTreeNode(
                                         String name) {
@@ -103,39 +103,14 @@ public class ForElementTemplate extends Template {
                                 }
 
                                 @Override
-                                public void listenToProperty(String name,
-                                        TreeNodePropertyValueChangeListener listener) {
-                                    if (isInnerScope(name)) {
-
-                                        String innerProperty = getInnerProperty(
-                                                name);
-                                        TreeListenerHelper.addListener(
-                                                childNode, innerProperty, true,
-                                                listener);
-                                    } else {
-                                        outerContext.listenToProperty(name,
-                                                listener);
-                                    }
-                                }
-
-                                @Override
-                                public Map<String, JavaScriptObject> buildEventHandlerContext() {
-                                    Map<String, JavaScriptObject> contextMap = outerContext
-                                            .buildEventHandlerContext();
+                                public void populateEventHandlerContext(
+                                        Map<String, JavaScriptObject> contextMap) {
+                                    outerContext.populateEventHandlerContext(
+                                            contextMap);
+                                    super.populateEventHandlerContext(
+                                            contextMap);
                                     contextMap.put(getInnerScope(),
                                             childNode.getProxy());
-                                    return contextMap;
-                                }
-
-                                @Override
-                                public TreeNodeProperty getProperty(
-                                        String name) {
-                                    if (isInnerScope(name)) {
-                                        return childNode.getProperty(
-                                                getInnerProperty(name));
-                                    } else {
-                                        return outerContext.getProperty(name);
-                                    }
                                 }
 
                                 private final JavaScriptObject expressionContext = createExpressionContext(

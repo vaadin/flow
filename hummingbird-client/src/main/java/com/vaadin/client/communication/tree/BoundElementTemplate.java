@@ -217,11 +217,15 @@ public class BoundElementTemplate extends Template {
 
         Profiler.enter("BoundElementTemplate.initElement default attributes");
         for (Entry<String, String> entry : defaultAttributeValues.entrySet()) {
-            if (entry.getKey().equals("class")) {
-                addClassFromTemplate(element, entry.getValue());
+            String name = entry.getKey();
+            String value = entry.getValue();
+
+            if (name.equals("class")) {
+                addClassFromTemplate(element, value);
+            } else if (name.equals("LOCAL_ID")) {
+                context.registerLocalId(value, element);
             } else {
-                DomApi.wrap(element).setAttribute(entry.getKey(),
-                        entry.getValue());
+                DomApi.wrap(element).setAttribute(name, value);
             }
         }
         Profiler.leave("BoundElementTemplate.initElement default attributes");
@@ -236,10 +240,14 @@ public class BoundElementTemplate extends Template {
                     public void handleEvent(JavaScriptObject event) {
                         long start = System.currentTimeMillis();
                         for (String handler : handlers) {
-                            Map<String, JavaScriptObject> contextMap = context
-                                    .buildEventHandlerContext();
+                            Map<String, JavaScriptObject> contextMap = new HashMap<>();
+                            context.populateEventHandlerContext(contextMap);
+
+                            contextMap.put("server", context.getServerProxy());
+                            contextMap.put("model", context.getModelProxy());
                             contextMap.put("event", event);
                             contextMap.put("element", element);
+
                             TreeUpdater.evalWithContext(contextMap, handler);
                         }
 

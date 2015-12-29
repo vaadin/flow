@@ -9,30 +9,6 @@ import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyVal
 
 public class TreeListenerHelper {
 
-    public static TreeNodeProperty getProperty(TreeNode node, String path) {
-        int firstDot = path.indexOf('.');
-        if (firstDot == -1) {
-            // No hierarchy
-            return node.getProperty(path);
-        } else {
-            // Hierarchy
-            String firstPart = path.substring(0, firstDot);
-            String rest = path.substring(firstDot + 1);
-
-            TreeNodeProperty firstProperty = node.getProperty(firstPart);
-            if (firstProperty == null) {
-                return null;
-            }
-
-            if (firstProperty.getValue() instanceof TreeNode) {
-                return getProperty((TreeNode) firstProperty.getValue(), rest);
-            } else {
-                return null;
-            }
-
-        }
-    }
-
     public static HandlerRegistration addListener(TreeNode node, String path,
             boolean createIfNecessary,
             TreeNodePropertyValueChangeListener listener) {

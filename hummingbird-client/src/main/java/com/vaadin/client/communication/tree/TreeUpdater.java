@@ -39,7 +39,6 @@ import com.vaadin.client.Profiler;
 import com.vaadin.client.Util;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
-import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.js.json.JsJsonValue;
@@ -347,36 +346,19 @@ public class TreeUpdater {
             Profiler.enter("TreeUpdater.getOrCreateElement template");
 
             JavaScriptObject serverProxy = template.createServerProxy(nodeId);
-            Node element = createElement(template, node, new NodeContext() {
-                @Override
-                public TreeNodeProperty getProperty(String name) {
-                    return TreeListenerHelper.getProperty(node, name);
-                }
+            Node element = createElement(template, node,
+                    new NodeContext(node.getProxy(), serverProxy) {
+                        @Override
+                        public ListTreeNode resolveListTreeNode(String name) {
+                            return (ListTreeNode) node.getProperty(name)
+                                    .getValue();
+                        }
 
-                @Override
-                public void listenToProperty(String name,
-                        TreeNodePropertyValueChangeListener listener) {
-                    TreeListenerHelper.addListener(node, name, true, listener);
-                }
-
-                @Override
-                public ListTreeNode resolveListTreeNode(String name) {
-                    return (ListTreeNode) node.getProperty(name).getValue();
-                }
-
-                @Override
-                public Map<String, JavaScriptObject> buildEventHandlerContext() {
-                    Map<String, JavaScriptObject> contextMap = new HashMap<>();
-                    contextMap.put("server", serverProxy);
-                    contextMap.put("model", node.getProxy());
-                    return contextMap;
-                }
-
-                @Override
-                public JavaScriptObject getExpressionContext() {
-                    return node.getProxy();
-                }
-            });
+                        @Override
+                        public JavaScriptObject getExpressionContext() {
+                            return node.getProxy();
+                        }
+                    });
             Profiler.leave("TreeUpdater.getOrCreateElement template");
 
             Profiler.leave("TreeUpdater.getOrCreateElement");
