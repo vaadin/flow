@@ -60,7 +60,7 @@ public class TemplateParser {
         int childNodeSize = children.size();
         if (childNodeSize != 1) {
             if (childNodeSize == 0) {
-                throw new TemplateException("Tempalte is empty");
+                throw new TemplateException("Template is empty");
             } else {
                 throw new TemplateException(
                         "Template has multiple root elements");
@@ -82,7 +82,8 @@ public class TemplateParser {
         } else if (node instanceof Comment) {
             return null;
         } else {
-            throw new RuntimeException(node.getClass().getName());
+            throw new RuntimeException(
+                    "Unknown node type: " + node.getClass().getName());
         }
     }
 
@@ -130,7 +131,9 @@ public class TemplateParser {
                 if ("*ng-for".equals(name)) {
                     Matcher matcher = forDefinitionPattern.matcher(value);
                     if (!matcher.matches()) {
-                        throw new RuntimeException();
+                        throw new RuntimeException(
+                                "Unable to parse ng-for statement: '" + value
+                                        + "'");
                     }
 
                     String innerVarName = matcher.group(1);
