@@ -51,8 +51,20 @@ public class ModelDescriptor {
     }
 
     public Type getPropertyType(String propertyName) {
-        return getDescriptorOrThrow(propertyName).getReadMethod()
-                .getGenericReturnType();
+        PropertyDescriptor descriptor = getDescriptorOrThrow(propertyName);
+
+        Method readMethod = descriptor.getReadMethod();
+        if (readMethod != null) {
+            return readMethod.getGenericReturnType();
+        }
+
+        Method writeMethod = descriptor.getWriteMethod();
+        if (writeMethod != null) {
+            return writeMethod.getGenericParameterTypes()[0];
+        }
+
+        // Fall back to Class<?> without generic type information
+        return descriptor.getPropertyType();
     }
 
     public boolean isReadonly(String propertyName) {

@@ -354,7 +354,7 @@ public abstract class Template extends AbstractComponent
                 modelDescriptor = ModelDescriptor.get(type);
                 node.put(ModelDescriptor.class, modelDescriptor);
 
-                ensurePropertiesInNode(node, type);
+                ensurePropertiesInNode(node, modelDescriptor);
 
             } else if (modelDescriptor.getModelType() != type) {
                 throw new RuntimeException(
@@ -367,24 +367,13 @@ public abstract class Template extends AbstractComponent
         }
 
         public static void ensurePropertiesInNode(StateNode node,
-                Class<?> beanType) {
-            try {
-                List<PropertyDescriptor> propertyDescriptors = BeanUtil
-                        .getBeanPropertyDescriptor(beanType);
-
-                for (PropertyDescriptor pd : propertyDescriptors) {
-                    String name = pd.getName();
-                    if (!node.containsKey(name)) {
-                        Class<?> propertyType = pd.getPropertyType();
-                        node.put(name, getDefaultValue(propertyType));
-                    }
+                ModelDescriptor modelDescriptor) {
+            for (String name : modelDescriptor.getPropertyNames()) {
+                if (!node.containsKey(name)) {
+                    Type propertyType = modelDescriptor.getPropertyType(name);
+                    node.put(name, getDefaultValue(propertyType));
                 }
-            } catch (IntrospectionException e1) {
-                getLogger().log(Level.SEVERE,
-                        "Unable to populate state node for bean " + beanType,
-                        e1);
             }
-
         }
 
         public static Object getDefaultValue(Type type) {
