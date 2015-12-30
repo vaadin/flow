@@ -122,7 +122,7 @@ public abstract class Template extends AbstractComponent
                     }
                 }
 
-                if (!Objects.equals(value, get(node, propertyName, type))) {
+                if (!Objects.equals(value, node.get(propertyName))) {
                     node.put(propertyName, value);
                 }
 
