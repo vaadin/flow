@@ -543,9 +543,10 @@ public abstract class Template extends AbstractComponent
         Class<?>[] parameterTypes = method.getParameterTypes();
         Object[] methodParams = new Object[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
-            Class<?> type = parameterTypes[i];
+            Class<?> javaType = parameterTypes[i];
             JsonValue param = params.get(paramIndex++);
-            if (type == Element.class && param.getType() == JsonType.ARRAY) {
+            JsonType jsonType = param.getType();
+            if (javaType == Element.class && jsonType == JsonType.ARRAY) {
                 JsonArray elementArray = (JsonArray) param;
                 int nodeId = (int) elementArray.getNumber(0);
                 int templateId = (int) elementArray.getNumber(1);
@@ -553,13 +554,16 @@ public abstract class Template extends AbstractComponent
                 StateNode elementNode = node.getRoot().getById(nodeId);
                 ElementTemplate template = getUI().getTemplate(templateId);
                 methodParams[i] = Element.getElement(template, elementNode);
-            } else if (type.isInterface()
-                    && param.getType() == JsonType.NUMBER) {
+            } else if (JsonConverter.isSupportedType(javaType)) {
+                methodParams[i] = JsonConverter.fromJson(javaType, param);
+            } else if (jsonType == JsonType.NUMBER) {
+                // Assume an interface or a bean as part of a model
                 int nodeId = (int) param.asNumber();
                 StateNode paramNode = node.getRoot().getById(nodeId);
-                methodParams[i] = Model.wrap(paramNode, type);
+                methodParams[i] = Model.wrap(paramNode, javaType);
             } else {
-                methodParams[i] = JsonConverter.fromJson(type, param);
+                throw new RuntimeException("Unknown JSON type " + jsonType
+                        + " for parameter type " + javaType.getName());
             }
         }
 
