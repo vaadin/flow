@@ -4,16 +4,7 @@ import com.google.gwt.dom.client.Node;
 
 public class PolymerDomApiImpl implements DomApiImpl {
 
-    public PolymerDomApiImpl() {
-        updateStyles();
-    }
-
-    /*
-     * In case the initial loading page has contained Polymer style modules,
-     * need to trigger update styles for those. Since Polymer.updateStyles can
-     * be costly, it should not be triggered (and currently isn't) otherwise.
-     */
-    protected native void updateStyles()
+    public native static void updateStyles()
     /*-{
         $wnd.Polymer.updateStyles();
     }-*/;
@@ -30,8 +21,13 @@ public class PolymerDomApiImpl implements DomApiImpl {
      $wnd.Polymer.dom.flush();
     }-*/;
 
-    public native static boolean isAvailable()
+    public native static boolean isPolymerMicroLoaded()
     /*-{
          return $wnd.Polymer && $wnd.Polymer.dom;
+     }-*/;
+
+    public native static boolean isPolymerFullLoaded()
+    /*-{
+         return $wnd.Polymer && $wnd.Polymer.updateStyles;
      }-*/;
 }

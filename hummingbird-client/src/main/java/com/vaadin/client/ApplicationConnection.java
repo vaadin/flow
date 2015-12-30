@@ -388,9 +388,13 @@ public class ApplicationConnection implements HasHandlers {
 
         heartbeat.init(this);
 
-        // Check if polymer was loaded in the bootstrap or previously by
-        // somebody else on the page
-        DomApi.polymerMaybeLoaded();
+        executeWhenDependenciesLoaded(() -> {
+            // Check if polymer was loaded in the bootstrap or previously by
+            // somebody else on the page. We do this after all dependencies have
+            // been loaded so we know if Polymer micro, Polymer full or neither
+            // have been loaded.
+            DomApi.polymerMaybeLoaded();
+        });
     }
 
     public Element getContainerElement() {

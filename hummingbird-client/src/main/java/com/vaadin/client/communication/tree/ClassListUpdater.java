@@ -35,7 +35,7 @@ public class ClassListUpdater {
     }
 
     public static void updateStyles() {
-        if (PolymerDomApiImpl.isAvailable()) {
+        if (PolymerDomApiImpl.isPolymerFullLoaded()) {
             Profiler.enter("ClassListUpdater.updateStyles");
             while (updatedElements.length() > 0) {
                 Element e = updatedElements.shift();
