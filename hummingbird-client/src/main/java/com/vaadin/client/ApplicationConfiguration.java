@@ -26,7 +26,6 @@ import java.util.logging.Logger;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.Scheduler;
@@ -648,26 +647,7 @@ public class ApplicationConfiguration implements EntryPoint {
             Logger.getLogger("").addHandler(errorNotificationHandler);
         }
 
-        if (LogConfiguration.loggingIsEnabled()) {
-            GWT.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-
-                @Override
-                public void onUncaughtException(Throwable e) {
-                    /*
-                     * If the debug window is not enabled (?debug), this will
-                     * not show anything to normal users. "a1 is not an object"
-                     * style errors helps nobody, especially end user. It does
-                     * not work tells just as much.
-                     */
-                    getLogger().log(Level.SEVERE, e.getMessage(), e);
-                }
-            });
-
-            if (isProductionMode()) {
-                // Disable all logging if in production mode
-                Logger.getLogger("").setLevel(Level.OFF);
-            }
-        }
+        GWT.setUncaughtExceptionHandler(null);
         Profiler.leave("ApplicationConfiguration.onModuleLoad");
 
         if (SuperDevMode.enableBasedOnParameter()) {
