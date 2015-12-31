@@ -72,13 +72,20 @@ public class PreRenderer {
             preRenderTree.getAttributeNames().forEach(name -> {
                 if (name.equals("innerHTML")) {
                     target.html(preRenderTree.getAttribute(name));
+
                 } else {
                     Object rawAttribute = preRenderTree.getRawAttribute(name);
+                    String attributeKey = name;
+                    if (attributeKey.startsWith("attr.")) {
+                        attributeKey = attributeKey.substring("attr.".length());
+                    }
+
                     if (rawAttribute instanceof Boolean) {
-                        target.attr(name,
+                        target.attr(attributeKey,
                                 ((Boolean) rawAttribute).booleanValue());
                     } else {
-                        target.attr(name, preRenderTree.getAttribute(name));
+                        target.attr(attributeKey,
+                                preRenderTree.getAttribute(name));
                     }
                 }
             });
