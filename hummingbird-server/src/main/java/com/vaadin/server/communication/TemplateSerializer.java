@@ -77,7 +77,22 @@ public class TemplateSerializer {
         Binding binding = template.getListBinding();
         serialized.put("modelKey", serializeBinding(binding));
         serialized.put("innerScope", template.getInnerScope());
-
+        String indexVariable = template.getIndexVariable();
+        if (indexVariable != null) {
+            serialized.put("indexVar", indexVariable);
+        }
+        String evenVariable = template.getEvenVariable();
+        if (evenVariable != null) {
+            serialized.put("evenVar", evenVariable);
+        }
+        String oddVariable = template.getOddVariable();
+        if (oddVariable != null) {
+            serialized.put("oddVar", oddVariable);
+        }
+        String lastVariable = template.getLastVariable();
+        if (lastVariable != null) {
+            serialized.put("lastVar", lastVariable);
+        }
         serializeBoundElementTemplate(serialized, template);
     }
 

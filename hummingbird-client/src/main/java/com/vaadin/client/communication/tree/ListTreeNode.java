@@ -1,18 +1,18 @@
 package com.vaadin.client.communication.tree;
 
-import java.util.ArrayList;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.vaadin.client.JsArrayObject;
+import com.vaadin.client.JsSet;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
+import com.vaadin.client.communication.tree.Reactive.ReactiveValue;
 
 import elemental.json.JsonObject;
 
-public class ListTreeNode extends TreeNode {
+public class ListTreeNode extends TreeNode implements ReactiveValue {
 
-    private final ArrayList<ArrayEventListener> listeners = new ArrayList<>();
+    private final JsSet<ArrayEventListener> listeners = JsSet.create();
 
     // Used for storing Java node instances if this is a node array
     private JsArrayObject<Object> nodes;
@@ -40,10 +40,8 @@ public class ListTreeNode extends TreeNode {
         public void dispatch() {
             Profiler.enter("ListTreeNodeSpliceEvent.dispatch");
             if (listeners != null) {
-                for (ArrayEventListener arrayEventListener : listeners) {
-                    arrayEventListener.splice(ListTreeNode.this, startIndex,
-                            removed, added);
-                }
+                JsSet.forEach(JsSet.create(listeners), listener -> listener
+                        .splice(ListTreeNode.this, startIndex, removed, added));
             }
             Profiler.leave("ListTreeNodeSpliceEvent.dispatch");
         }
@@ -52,25 +50,43 @@ public class ListTreeNode extends TreeNode {
         public JsonObject serialize() {
             throw new RuntimeException("Not yet supported");
         }
+
     }
 
     public ListTreeNode(int id, TreeUpdater treeUpdater) {
-        super(id, treeUpdater, createProxy());
+        super(id, treeUpdater, JavaScriptObject.createArray());
+        populateProxy(getProxy());
     }
 
-    private static native JsArrayObject<Object> createProxy()
+    private native void populateProxy(JsArrayObject<Object> a)
     /*-{
-        var a = [];
         a.splice = function(arguments) {
             throw "splice from JS is not yet implemented";
         }
-        return a;
+        var self = this;
+        a.indexOf = $entry(function(item) {
+            return self.@ListTreeNode::indexOf(*)(item);
+        });
     }-*/;
+
+    private native int doIndexOf(JavaScriptObject list, Object item)
+    /*-{
+        // Avoid the proxy implementation
+        return Array.prototype.indexOf.call(list, item);
+    }-*/;
+
+    public int indexOf(Object item) {
+        Reactive.setAccessed(this);
+        if (item instanceof TreeNode) {
+            item = ((TreeNode) item).getProxy();
+        }
+        return doIndexOf(getProxy(), item);
+    }
 
     public HandlerRegistration addArrayEventListener(
             ArrayEventListener listener) {
         listeners.add(listener);
-        return () -> listeners.remove(listener);
+        return () -> listeners.delete(listener);
     }
 
     @Override
@@ -159,5 +175,21 @@ public class ListTreeNode extends TreeNode {
                 // Avoid the proxy implementation
                 return Array.prototype.splice.apply(a, args);
             }-*/;
+
+    @Override
+    public HandlerRegistration addReactiveListener(Runnable listener) {
+        TreeUpdater.debug("addReactiveListener");
+        return addArrayEventListener(new ArrayEventListener() {
+
+            @Override
+            public void splice(ListTreeNode listTreeNode, int startIndex,
+                    JsArrayObject<Object> removed,
+                    JsArrayObject<Object> added) {
+                TreeUpdater.debug("addReactiveListener.splice");
+                listener.run();
+
+            }
+        });
+    }
 
 }

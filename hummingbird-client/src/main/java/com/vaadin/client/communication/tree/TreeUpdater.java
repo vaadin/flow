@@ -222,6 +222,11 @@ public class TreeUpdater {
         }
     }
 
+    public static void debug(Element element) {
+        debug(debugHtml(element));
+
+    }
+
     public static native String debugHtml(Element element)
     /*-{
        var str = "<"+element.tagName.toLowerCase();
@@ -335,7 +340,8 @@ public class TreeUpdater {
         if (node.hasProperty("TEMPLATE")) {
             int templateId = node.getProperty("TEMPLATE").getIntValue();
             Template template = templates.get(Integer.valueOf(templateId));
-            assert template != null;
+            assert template != null : "Template with id " + templateId
+                    + " not found";
 
             Node existingNode = findDomNode(nodeId, templateId);
             if (existingNode != null) {
@@ -930,4 +936,5 @@ public class TreeUpdater {
             /*-{
                 f(result);
             }-*/;
+
 }

@@ -136,7 +136,8 @@ public class BuildTodoMvcStringPerformance {
                                     .collect(Collectors.joining(" "));
                         }
                     }
-                }).setForDefinition(new StateNodeBinding("todos"), null)
+                }).setForDefinition(new StateNodeBinding("todos"), null, null,
+                        null, null, null)
                 .addChild(view).addChild(edit);
 
         BoundTemplateBuilder todoList = TemplateBuilder.withTag("ul")

@@ -1,7 +1,5 @@
 package com.vaadin.client.communication.tree;
 
-import java.util.Map;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
@@ -19,6 +17,10 @@ public class ForElementTemplate extends Template {
     private final String modelKey;
     private final String innerScope;
     int commentNodeIndex = -1;
+    private String indexVariable;
+    private String oddVariable;
+    private String evenVariable;
+    private String lastVariable;
 
     public ForElementTemplate(TreeUpdater treeUpdater,
             JsonObject templateDescription, int templateId) {
@@ -26,6 +28,10 @@ public class ForElementTemplate extends Template {
         this.treeUpdater = treeUpdater;
         modelKey = templateDescription.getString("modelKey");
         innerScope = templateDescription.getString("innerScope");
+        indexVariable = templateDescription.getString("indexVar");
+        evenVariable = templateDescription.getString("evenVar");
+        oddVariable = templateDescription.getString("oddVar");
+        lastVariable = templateDescription.getString("lastVar");
 
         childTemplate = new BoundElementTemplate(treeUpdater,
                 templateDescription, templateId);
@@ -37,127 +43,155 @@ public class ForElementTemplate extends Template {
         // Creates anchor element
         Node commentNode = createCommentNode("for " + modelKey);
 
-        outerContext.resolveListTreeNode(getModelKey())
-                .addArrayEventListener(new ArrayEventListener() {
+        ListTreeNode listNode = outerContext.resolveListTreeNode(getModelKey());
+        if (listNode == null) {
+            throw new RuntimeException(
+                    "Unable to find model variable " + getModelKey());
+        }
+        listNode.addArrayEventListener(new ArrayEventListener() {
 
-                    @Override
-                    public void splice(ListTreeNode listTreeNode,
-                            int startIndex, JsArrayObject<Object> removed,
-                            JsArrayObject<Object> added) {
-                        Profiler.enter("ForElementTemplate splice");
+            @Override
+            public void splice(ListTreeNode listTreeNode, int startIndex,
+                    JsArrayObject<Object> removed,
+                    JsArrayObject<Object> added) {
+                Profiler.enter("ForElementTemplate splice");
 
-                        DomElement forNode = DomApi
-                                .wrap(DomApi.wrap(commentNode).getParentNode());
+                DomElement forNode = DomApi
+                        .wrap(DomApi.wrap(commentNode).getParentNode());
 
-                        Profiler.enter(
-                                "ForElementTemplate splice commentNodeIndex");
-                        if (commentNodeIndex == -1 || forNode.getChildNodes()
-                                .getItem(commentNodeIndex) != commentNode) {
-                            // Uses indexOf in order to avoid nextSibling
-                            // because of
-                            // https://github.com/Polymer/polymer/issues/2645
+                Profiler.enter("ForElementTemplate splice commentNodeIndex");
+                if (commentNodeIndex == -1 || forNode.getChildNodes()
+                        .getItem(commentNodeIndex) != commentNode) {
+                    // Uses indexOf in order to avoid nextSibling
+                    // because of
+                    // https://github.com/Polymer/polymer/issues/2645
 
-                            // Find commentNode again as it has moved
+                    // Find commentNode again as it has moved
 
-                            commentNodeIndex = nodeListIndexOf(
-                                    forNode.getChildNodes(), commentNode);
-                        }
-                        Profiler.leave(
-                                "ForElementTemplate splice commentNodeIndex");
+                    commentNodeIndex = nodeListIndexOf(forNode.getChildNodes(),
+                            commentNode);
+                }
+                Profiler.leave("ForElementTemplate splice commentNodeIndex");
 
-                        // Node to remove is "startIndex" positions forward from
-                        // comment node
+                // Node to remove is "startIndex" positions forward from
+                // comment node
 
-                        Profiler.enter("ForElementTemplate splice remove");
-                        for (int i = 0; i < removed.size(); i++) {
-                            int nodeIndex = commentNodeIndex + 1 + startIndex
-                                    + i;
+                Profiler.enter("ForElementTemplate splice remove");
+                for (int i = 0; i < removed.size(); i++) {
+                    int nodeIndex = commentNodeIndex + 1 + startIndex + i;
 
-                            // Does not use nextSibling because of
-                            // https://github.com/Polymer/polymer/issues/2645
-                            Node removeNode = forNode.getChildNodes()
-                                    .getItem(nodeIndex);
-                            forNode.removeChild(removeNode);
-                        }
-                        Profiler.leave("ForElementTemplate splice remove");
+                    // Does not use nextSibling because of
+                    // https://github.com/Polymer/polymer/issues/2645
+                    Node removeNode = forNode.getChildNodes()
+                            .getItem(nodeIndex);
+                    forNode.removeChild(removeNode);
+                }
+                Profiler.leave("ForElementTemplate splice remove");
 
-                        Profiler.enter("ForElementTemplate splice add");
-                        for (int i = 0; i < added.size(); i++) {
-                            TreeNode childNode = (TreeNode) added.get(i);
-                            int insertIndex = commentNodeIndex + startIndex + i;
-                            NodeContext innerContext = new NodeContext(
-                                    outerContext) {
-                                @Override
-                                public ListTreeNode resolveListTreeNode(
-                                        String name) {
-                                    if (isInnerScope(name)) {
-                                        ListTreeNode listTreeNode = (ListTreeNode) childNode
-                                                .getProperty(
-                                                        getInnerProperty(name))
-                                                .getValue();
-                                        return listTreeNode;
-                                    } else {
-                                        return outerContext
-                                                .resolveListTreeNode(name);
-                                    }
-                                }
-
-                                @Override
-                                public void populateEventHandlerContext(
-                                        Map<String, JavaScriptObject> contextMap) {
-                                    outerContext.populateEventHandlerContext(
-                                            contextMap);
-                                    super.populateEventHandlerContext(
-                                            contextMap);
-                                    contextMap.put(getInnerScope(),
-                                            childNode.getProxy());
-                                }
-
-                                private final JavaScriptObject expressionContext = createExpressionContext(
-                                        outerContext.getExpressionContext(),
-                                        getInnerScope(), childNode.getProxy());
-
-                                @Override
-                                public JavaScriptObject getExpressionContext() {
-                                    return expressionContext;
-                                }
-                            };
-
-                            Node child = treeUpdater.createElement(
-                                    getChildTemplate(), childNode,
-                                    innerContext);
-
-                            Profiler.enter("ForElementTemplate splice insert");
-                            // Does not use nextSibling because of
-                            // https://github.com/Polymer/polymer/issues/2645
-                            Node sibling = null;
-                            int nodeAfterIndex = insertIndex + 1;
-                            if (nodeAfterIndex < forNode.getChildNodes()
-                                    .getLength()) {
-                                sibling = forNode.getChildNodes()
-                                        .getItem(nodeAfterIndex);
+                Profiler.enter("ForElementTemplate splice add");
+                for (int i = 0; i < added.size(); i++) {
+                    TreeNode childNode = (TreeNode) added.get(i);
+                    int insertIndex = commentNodeIndex + startIndex + i;
+                    NodeContext innerContext = new NodeContext(outerContext) {
+                        @Override
+                        public ListTreeNode resolveListTreeNode(String name) {
+                            if (isInnerScope(name)) {
+                                ListTreeNode listTreeNode = (ListTreeNode) childNode
+                                        .getProperty(getInnerProperty(name))
+                                        .getValue();
+                                return listTreeNode;
+                            } else {
+                                return outerContext.resolveListTreeNode(name);
                             }
-
-                            forNode.insertBefore(child, sibling);
-                            Profiler.leave("ForElementTemplate splice insert");
                         }
-                        Profiler.leave("ForElementTemplate splice add");
 
-                        Profiler.leave("ForElementTemplate splice");
+                        @Override
+                        public void populateEventHandlerContext(
+                                JavaScriptObjectWithUsefulMethods context) {
+                            outerContext.populateEventHandlerContext(context);
+                            super.populateEventHandlerContext(context);
+                            context.put(getInnerScope(), childNode.getProxy());
+                            addIndexBasedVariables(context, listNode.getProxy(),
+                                    childNode.getProxy(), indexVariable,
+                                    evenVariable, oddVariable, lastVariable);
+                        }
+
+                        private final JavaScriptObjectWithUsefulMethods expressionContext = createExpressionContext(
+                                outerContext.getExpressionContext());
+
+                        {
+                            expressionContext.put(getInnerScope(),
+                                    childNode.getProxy());
+                            addIndexBasedVariables(expressionContext,
+                                    listNode.getProxy(), childNode.getProxy(),
+                                    indexVariable, oddVariable, evenVariable,
+                                    lastVariable);
+
+                        }
+
+                        @Override
+                        public JavaScriptObject getExpressionContext() {
+                            return expressionContext;
+                        }
+                    };
+
+                    Node child = treeUpdater.createElement(getChildTemplate(),
+                            childNode, innerContext);
+
+                    Profiler.enter("ForElementTemplate splice insert");
+                    // Does not use nextSibling because of
+                    // https://github.com/Polymer/polymer/issues/2645
+                    Node sibling = null;
+                    int nodeAfterIndex = insertIndex + 1;
+                    if (nodeAfterIndex < forNode.getChildNodes().getLength()) {
+                        sibling = forNode.getChildNodes()
+                                .getItem(nodeAfterIndex);
                     }
-                });
+
+                    forNode.insertBefore(child, sibling);
+                    Profiler.leave("ForElementTemplate splice insert");
+                }
+                Profiler.leave("ForElementTemplate splice add");
+
+                Profiler.leave("ForElementTemplate splice");
+            }
+        });
 
         Profiler.leave("ForElementTemplate.createElement");
         return commentNode;
     }
 
-    private static native JavaScriptObject createExpressionContext(
-            JavaScriptObject parentContext, String innerScopeName,
-            JavaScriptObject innerScopeProxy)
+    private static native JavaScriptObjectWithUsefulMethods createExpressionContext(
+            JavaScriptObject parentContext)
             /*-{
-              var context = Object.create(parentContext);
-              context[innerScopeName] = innerScopeProxy;
-              return context;
+              return Object.create(parentContext);
+            }-*/;
+
+    private static native void addIndexBasedVariables(JavaScriptObject context,
+            JsArrayObject<Object> outerScopeListProxy,
+            JavaScriptObject innerScopeProxy, String indexVariable,
+            String oddVariable, String evenVariable, String lastVariable)
+            /*-{
+                if (indexVariable != null) {
+                    Object.defineProperty(context, indexVariable, {get: function(){
+                        return outerScopeListProxy.indexOf(innerScopeProxy);
+                    }});
+                }
+                if (evenVariable != null) {
+                    Object.defineProperty(context, evenVariable, {get: function(){
+                        return outerScopeListProxy.indexOf(innerScopeProxy) % 2 == 0;
+                    }});
+                }
+                if (oddVariable != null) {
+                    Object.defineProperty(context, oddVariable, {get: function(){
+                        return outerScopeListProxy.indexOf(innerScopeProxy) % 2 != 0;
+                    }});
+                }
+                if (lastVariable != null) {
+                    Object.defineProperty(context, lastVariable, {get: function(){
+                        return outerScopeListProxy.indexOf(innerScopeProxy)  == (outerScopeListProxy.length-1);
+                    }});
+                }
             }-*/;
 
     protected native int nodeListIndexOf(NodeList<Node> childNodes,

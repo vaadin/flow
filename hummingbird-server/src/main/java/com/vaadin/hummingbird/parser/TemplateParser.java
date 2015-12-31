@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -28,6 +29,7 @@ import org.jsoup.select.Elements;
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.hummingbird.kernel.BoundTemplateBuilder;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
+import com.vaadin.hummingbird.kernel.ListNode;
 import com.vaadin.hummingbird.kernel.ModelBinding;
 import com.vaadin.hummingbird.kernel.ModelContext;
 import com.vaadin.hummingbird.kernel.ScriptModelBinding;
@@ -40,6 +42,12 @@ import com.vaadin.ui.Template;
 public class TemplateParser {
     private static final Pattern forDefinitionPattern = Pattern
             .compile("#([^\\s]+)\\s+of\\s+([^\\s]+)");
+
+    /**
+     * #variable = (index|odd|even|last)
+     */
+    private static final Pattern forLoopVariablesMappingPattern = Pattern
+            .compile("#([^\\s]+)\\s*=\\s*(index|last|even|odd)\\s*");
 
     public static ElementTemplate parse(String templateString) {
         return parseBuilder(templateString).build();
@@ -129,13 +137,58 @@ public class TemplateParser {
             if (name.startsWith("*")) {
                 String value = a.getValue();
                 if ("*ng-for".equals(name)) {
-                    Matcher matcher = forDefinitionPattern.matcher(value);
+                    String[] parts = value.split(";");
+
+                    // First part must be the loop definition
+                    String loopDefinition = parts[0].trim();
+                    Matcher matcher = forDefinitionPattern
+                            .matcher(loopDefinition);
                     if (!matcher.matches()) {
                         throw new RuntimeException(
-                                "Unable to parse ng-for statement: '" + value
-                                        + "'");
+                                "Unable to parse the loop part of the ng-for statement: '"
+                                        + loopDefinition + "'");
                     }
 
+                    String indexV = null;
+                    String lastV = null;
+                    String evenV = null;
+                    String oddV = null;
+
+                    for (int i = 1; i < parts.length; i++) {
+                        String part = parts[i].trim();
+                        if (part.isEmpty()) {
+                            continue;
+                        }
+
+                        Matcher indexMatcher = forLoopVariablesMappingPattern
+                                .matcher(part);
+                        if (indexMatcher.matches()) {
+                            String variable = indexMatcher.group(1);
+                            String type = indexMatcher.group(2); // index,even,odd,last
+                            if (type.equals("index")) {
+                                indexV = variable;
+                            } else if (type.equals("odd")) {
+                                oddV = variable;
+                            } else if (type.equals("even")) {
+                                evenV = variable;
+                            } else if (type.equals("last")) {
+                                lastV = variable;
+                            } else {
+                                throw new RuntimeException(
+                                        type + " not yet implemented");
+                            }
+                        } else {
+                            throw new RuntimeException(
+                                    "Unable to parse the additional part of the ng-for statement: '"
+                                            + part + "'");
+
+                        }
+                    }
+
+                    final String indexVariable = indexV;
+                    final String lastVariable = lastV;
+                    final String oddVariable = oddV;
+                    final String evenVariable = evenV;
                     String innerVarName = matcher.group(1);
                     String outerBinding = matcher.group(2);
 
@@ -152,6 +205,32 @@ public class TemplateParser {
                                     return () -> {
                                         return node;
                                     };
+                                } else if (Objects.equals(name,
+                                        indexVariable)) {
+                                    ListNode listNode = ((ListNode) node
+                                            .getParent());
+                                    return () -> {
+                                        return listNode.indexOf(node);
+                                    };
+                                } else if (Objects.equals(name, evenVariable)) {
+                                    ListNode listNode = ((ListNode) node
+                                            .getParent());
+                                    return () -> {
+                                        return listNode.indexOf(node) % 2 == 0;
+                                    };
+                                } else if (Objects.equals(name, oddVariable)) {
+                                    ListNode listNode = ((ListNode) node
+                                            .getParent());
+                                    return () -> {
+                                        return listNode.indexOf(node) % 2 != 0;
+                                    };
+                                } else if (Objects.equals(name, lastVariable)) {
+                                    return () -> {
+                                        ListNode listNode = ((ListNode) node
+                                                .getParent());
+                                        return listNode.indexOf(
+                                                node) == (listNode.size() - 1);
+                                    };
                                 } else {
                                     return baseFactory.apply(name);
                                 }
@@ -161,7 +240,8 @@ public class TemplateParser {
 
                     builder.setForDefinition(
                             createBinding(outerBinding, outerContext),
-                            innerVarName);
+                            innerVarName, indexVariable, evenVariable,
+                            oddVariable, lastVariable);
                 } else {
                     throw new RuntimeException(
                             "Unsupported * attribute: " + name);

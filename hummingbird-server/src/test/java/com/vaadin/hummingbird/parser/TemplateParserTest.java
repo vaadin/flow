@@ -1,5 +1,8 @@
 package com.vaadin.hummingbird.parser;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -7,9 +10,6 @@ import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class TemplateParserTest {
     @Test
@@ -188,6 +188,89 @@ public class TemplateParserTest {
                 Assert.assertEquals(expectedHTML, innerHTML);
             }
         }
+    }
+
+    @Test
+    public void forLoopWithEmptyParts() {
+        String templateString = "<ul>" //
+                + "<li *ng-for='#todo of todos; ;'>" //
+                + "{{todo.title}}" //
+                + "</li>" //
+                + "</ul>";
+        TemplateParser.parse(templateString);
+    }
+
+    @Test
+    public void forLoopWithIndexOddEvenLast() {
+        String templateString = "<ul>" //
+                + "<li *ng-for='#todo of todos; #todoIndex = index; #odd=odd;#even=even;#last=last'>" //
+                + "<span [class.odd]='odd' [class.even]='even' [class.last]='last'>{{todoIndex}}</span>. <span>{{todo.title}}</span>" //
+                + "</li>" //
+                + "</ul>";
+
+        StateNode node = StateNode.create();
+        List<Object> todos = node.getMultiValued("todos");
+        IntStream.range(0, 3).forEach(i -> {
+            StateNode child = StateNode.create();
+            child.put("title", "Todo " + i);
+            todos.add(child);
+        });
+
+        ElementTemplate template = TemplateParser.parse(templateString);
+        Element element = Element.getElement(template, node);
+
+        Assert.assertEquals("ul", element.getTag());
+        Assert.assertEquals(3, element.getChildCount());
+        for (int i = 0; i < 3; i++) {
+            Element li = element.getChild(i);
+            Assert.assertEquals(3, li.getChildCount()); // Span + text + span
+            Element indexSpan = li.getChild(0);
+            Element titleSpan = li.getChild(2);
+
+            Assert.assertEquals(i + "", indexSpan.getTextContent());
+
+            boolean even = (i % 2 == 0);
+            boolean odd = !even;
+            boolean last = (i == element.getChildCount() - 1);
+            Assert.assertEquals(even, indexSpan.hasClass("even"));
+            Assert.assertEquals(odd, indexSpan.hasClass("odd"));
+            Assert.assertEquals(last, indexSpan.hasClass("last"));
+
+            Assert.assertEquals("Todo " + i, titleSpan.getTextContent());
+        }
+
+        Element li0 = element.getChild(0);
+        Assert.assertEquals("0", li0.getChild(0).getTextContent());
+        StateNode child = StateNode.create();
+        child.put("title", "Todo inserted");
+        todos.add(0, child);
+        Assert.assertEquals("1", li0.getChild(0).getTextContent());
+
+        for (int i = 0; i < 4; i++) {
+            Element li = element.getChild(i);
+            Assert.assertEquals(3, li.getChildCount()); // Span + text + span
+            Element indexSpan = li.getChild(0);
+            Element titleSpan = li.getChild(2);
+
+            Assert.assertEquals(i + "", indexSpan.getTextContent());
+
+            boolean even = (i % 2 == 0);
+            boolean odd = !even;
+            boolean last = (i == element.getChildCount() - 1);
+            Assert.assertEquals(even, indexSpan.hasClass("even"));
+            Assert.assertEquals(odd, indexSpan.hasClass("odd"));
+            Assert.assertEquals(last, indexSpan.hasClass("last"));
+
+            String expected;
+            if (i == 0) {
+                expected = "Todo inserted";
+            } else {
+                expected = "Todo " + (i - 1);
+            }
+
+            Assert.assertEquals(expected, titleSpan.getTextContent());
+        }
+
     }
 
     @Test

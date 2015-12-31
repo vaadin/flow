@@ -7,12 +7,21 @@ public class ForElementTemplate extends BoundElementTemplate {
 
     private final Binding listBinding;
     private final String innerScope;
+    private String indexVariable;
+    private String evenVariable;
+    private String oddVariable;
+    private String lastVariable;
 
     public ForElementTemplate(BoundTemplateBuilder builder, Binding listBinding,
-            String innerScope) {
+            String innerScope, String indexVariable, String evenVariable,
+            String oddVariable, String lastVariable) {
         super(builder);
         this.listBinding = listBinding;
         this.innerScope = innerScope;
+        this.indexVariable = indexVariable;
+        this.evenVariable = evenVariable;
+        this.oddVariable = oddVariable;
+        this.lastVariable = lastVariable;
     }
 
     @Override
@@ -57,4 +66,21 @@ public class ForElementTemplate extends BoundElementTemplate {
     public String getInnerScope() {
         return innerScope;
     }
+
+    public String getIndexVariable() {
+        return indexVariable;
+    }
+
+    public String getEvenVariable() {
+        return evenVariable;
+    }
+
+    public String getOddVariable() {
+        return oddVariable;
+    }
+
+    public String getLastVariable() {
+        return lastVariable;
+    }
+
 }

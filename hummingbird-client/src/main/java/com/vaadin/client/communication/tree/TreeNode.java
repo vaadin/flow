@@ -1,8 +1,6 @@
 package com.vaadin.client.communication.tree;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -10,6 +8,7 @@ import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.vaadin.client.FastStringMap;
+import com.vaadin.client.JsSet;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 
 import elemental.js.json.JsJsonObject;
@@ -35,9 +34,8 @@ public class TreeNode {
         @Override
         public void dispatch() {
             if (listeners != null) {
-                for (TreeNodeChangeListener treeNodeChangeListener : listeners) {
-                    treeNodeChangeListener.addProperty(name, property);
-                }
+                JsSet.forEach(JsSet.create(listeners),
+                        listener -> listener.addProperty(name, property));
             }
         }
 
@@ -54,7 +52,7 @@ public class TreeNode {
     private final TreeUpdater treeUpdater;
     private final int id;
 
-    private List<TreeNodeChangeListener> listeners;
+    private JsSet<TreeNodeChangeListener> listeners;
     private Map<Integer, Node> elements;
 
     public TreeNode(int id, TreeUpdater treeUpdater) {
@@ -84,7 +82,7 @@ public class TreeNode {
     public HandlerRegistration addTreeNodeChangeListener(
             TreeNodeChangeListener listener) {
         if (listeners == null) {
-            listeners = new ArrayList<>();
+            listeners = JsSet.create();
         }
         listeners.add(listener);
 
@@ -94,10 +92,7 @@ public class TreeNode {
                 if (listeners == null) {
                     return;
                 }
-                listeners.remove(listener);
-                if (listeners.isEmpty()) {
-                    listeners = null;
-                }
+                listeners.delete(listener);
             }
         };
     }

@@ -32,8 +32,10 @@ public abstract class NodeContext {
     public abstract ListTreeNode resolveListTreeNode(String name);
 
     public void populateEventHandlerContext(
-            Map<String, JavaScriptObject> context) {
-        context.putAll(localIds);
+            JavaScriptObjectWithUsefulMethods evalContext) {
+        for (String localId : localIds.keySet()) {
+            evalContext.put(localId, localIds.get(localId));
+        }
     }
 
     public abstract JavaScriptObject getExpressionContext();

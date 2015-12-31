@@ -27,6 +27,11 @@ public interface JsSet<T> {
     public static <T> JsSet<T> create() {
         return StaticHelper.create();
     }
+
+    public static <T> JsSet<T> create(JsSet<T> values) {
+        return StaticHelper.create(values);
+    }
+
 }
 
 // Hack since static interface method can't be native
@@ -34,6 +39,11 @@ class StaticHelper {
     static native <T> JsSet<T> create()
     /*-{
       return new $wnd.Set();
+    }-*/;
+
+    static native <T> JsSet<T> create(JsSet<T> values)
+    /*-{
+      return new $wnd.Set(values);
     }-*/;
 
     // There must be an easier way

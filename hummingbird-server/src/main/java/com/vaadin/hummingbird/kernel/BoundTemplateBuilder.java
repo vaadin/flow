@@ -47,14 +47,16 @@ public class BoundTemplateBuilder implements TemplateBuilder {
     }
 
     public BoundTemplateBuilder setForDefinition(Binding binding,
-            String innerScope) {
+            String innerScope, String indexVariable, String evenVariable,
+            String oddVariable, String lastVariable) {
         if (templateCreator != null) {
             throw new IllegalStateException(
                     "Only one for definition allowed per builder");
         }
 
         templateCreator = () -> new ForElementTemplate(this, binding,
-                innerScope);
+                innerScope, indexVariable, evenVariable, oddVariable,
+                lastVariable);
         return this;
     }
 

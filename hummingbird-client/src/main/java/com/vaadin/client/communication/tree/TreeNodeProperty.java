@@ -4,13 +4,14 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.vaadin.client.JsSet;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
+import com.vaadin.client.communication.tree.Reactive.ReactiveValue;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
-public class TreeNodeProperty {
+public class TreeNodeProperty implements ReactiveValue {
 
     public interface TreeNodePropertyValueChangeListener {
         void changeValue(Object oldValue, Object newValue);
@@ -29,7 +30,7 @@ public class TreeNodeProperty {
         @Override
         public void dispatch() {
             if (listeners != null) {
-                JsSet.forEach(listeners,
+                JsSet.forEach(JsSet.create(listeners),
                         listener -> listener.changeValue(oldValue, newValue));
             }
         }
@@ -167,4 +168,17 @@ public class TreeNodeProperty {
     protected JsSet<TreeNodePropertyValueChangeListener> getListeners() {
         return listeners;
     }
+
+    @Override
+    public HandlerRegistration addReactiveListener(Runnable listener) {
+        return addPropertyChangeListener(
+                new TreeNodePropertyValueChangeListener() {
+
+                    @Override
+                    public void changeValue(Object oldValue, Object newValue) {
+                        listener.run();
+                    }
+                });
+    }
+
 }

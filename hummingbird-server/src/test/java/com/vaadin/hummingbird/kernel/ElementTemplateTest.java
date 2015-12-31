@@ -95,7 +95,8 @@ public class ElementTemplateTest {
                     public String getValue(StateNode node) {
                         return node.get("class", String.class);
                     }
-                }).setForDefinition(new StateNodeBinding("todos"), null);
+                }).setForDefinition(new StateNodeBinding("todos"), null, null,
+                        null, null, null);
 
         BoundElementTemplate parentTemplate = TemplateBuilder.withTag("div")
                 .addChild(childTemplate).build();

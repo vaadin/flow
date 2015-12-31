@@ -6,6 +6,7 @@ import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.JsSet;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
+import com.vaadin.client.communication.tree.Reactive.ReactiveValue;
 
 import elemental.json.JsonObject;
 
@@ -18,9 +19,9 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
     private final JsArrayObject<HandlerRegistration> dependencies = JsArrayObject
             .create();
 
-    private final TreeNodePropertyValueChangeListener dependencyListener = new TreeNodePropertyValueChangeListener() {
+    private final Runnable dependencyListener = new Runnable() {
         @Override
-        public void changeValue(Object oldValue, Object newValue) {
+        public void run() {
             Profiler.enter(
                     "ComputedTreeNodeProperty.dependencyListener.changeValue");
 
@@ -40,10 +41,12 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
                             "ComputedTreeNodeProperty.dependencyListener.dispatch");
 
                     JsSet<TreeNodePropertyValueChangeListener> listeners = getListeners();
+
                     if (listeners != null) {
                         Object newOwnValue = getValue();
-                        JsSet.forEach(listeners, listener -> listener
-                                .changeValue(oldOwnValue, newOwnValue));
+                        JsSet.forEach(JsSet.create(listeners),
+                                listener -> listener.changeValue(oldOwnValue,
+                                        newOwnValue));
                     }
 
                     Profiler.leave(
@@ -93,7 +96,7 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
         JavaScriptObject context = getOwner().getProxy();
 
         // Should maybe be refactored to use Reactive.keepUpToDate
-        JsSet<TreeNodeProperty> accessedProperies = Reactive
+        JsSet<ReactiveValue> accessedProperies = Reactive
                 .collectAccessedProperies(() -> {
                     JavaScriptObject newValue = TreeUpdater
                             .evalWithContextFactory(context, "return " + code);
@@ -103,9 +106,8 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
                     super.setValue(newValue);
                 });
 
-        JsSet.forEach(accessedProperies,
-                treeNodeProperty -> dependencies.add(treeNodeProperty
-                        .addPropertyChangeListener(dependencyListener)));
+        JsSet.forEach(accessedProperies, treeNodeProperty -> dependencies
+                .add(treeNodeProperty.addReactiveListener(dependencyListener)));
     }
 
     @Override

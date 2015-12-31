@@ -240,15 +240,17 @@ public class BoundElementTemplate extends Template {
                     public void handleEvent(JavaScriptObject event) {
                         long start = System.currentTimeMillis();
                         for (String handler : handlers) {
-                            Map<String, JavaScriptObject> contextMap = new HashMap<>();
-                            context.populateEventHandlerContext(contextMap);
+                            JavaScriptObjectWithUsefulMethods evalContext = JavaScriptObject
+                                    .createObject().cast();
+                            context.populateEventHandlerContext(evalContext);
 
-                            contextMap.put("server", context.getServerProxy());
-                            contextMap.put("model", context.getModelProxy());
-                            contextMap.put("event", event);
-                            contextMap.put("element", element);
+                            evalContext.put("server", context.getServerProxy());
+                            evalContext.put("model", context.getModelProxy());
+                            evalContext.put("event", event);
+                            evalContext.put("element", element);
 
-                            TreeUpdater.evalWithContext(contextMap, handler);
+                            TreeUpdater.evalWithContextFactory(evalContext,
+                                    handler);
                         }
 
                         JsonArray modelChanges = Json.createArray();

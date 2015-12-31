@@ -6,7 +6,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.JsSet;
 import com.vaadin.client.Profiler;
-import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
 public class Reactive {
 
@@ -14,8 +13,7 @@ public class Reactive {
         public void onFlush();
     }
 
-    private static class KeepUpToDateListener
-            implements TreeNodePropertyValueChangeListener {
+    private static class KeepUpToDateListener implements Runnable {
         private final Runnable runnable;
         private final FlushListener flushListener = new FlushListener() {
             @Override
@@ -35,19 +33,20 @@ public class Reactive {
         private void refreshValue() {
             Profiler.enter("KeepUpToDateListener.refreshValue");
 
-            JsSet<TreeNodeProperty> accessedProperties = collectAccessedProperies(
+            JsSet<ReactiveValue> accessedProperties = collectAccessedProperies(
                     runnable);
 
             JsSet.forEach(accessedProperties, treeNodeProperty -> {
                 HandlerRegistration registration = treeNodeProperty
-                        .addPropertyChangeListener(this);
+                        .addReactiveListener(this);
+
                 registrations.add(registration);
             });
             Profiler.leave("KeepUpToDateListener.refreshValue");
         }
 
         @Override
-        public void changeValue(Object oldValue, Object newValue) {
+        public void run() {
             Profiler.enter("KeepUpToDateListener.changeValue");
 
             unregister();
@@ -65,12 +64,18 @@ public class Reactive {
         }
     }
 
-    private static JsSet<TreeNodeProperty> collector;
+    public interface ReactiveValue {
 
-    public static JsSet<TreeNodeProperty> collectAccessedProperies(
+        HandlerRegistration addReactiveListener(Runnable listener);
+
+    }
+
+    private static JsSet<ReactiveValue> collector;
+
+    public static JsSet<ReactiveValue> collectAccessedProperies(
             Runnable runnable) {
-        JsSet<TreeNodeProperty> previousCollector = collector;
-        JsSet<TreeNodeProperty> ownCollector = JsSet.create();
+        JsSet<ReactiveValue> previousCollector = collector;
+        JsSet<ReactiveValue> ownCollector = JsSet.create();
         collector = ownCollector;
 
         try {
@@ -84,12 +89,12 @@ public class Reactive {
         return ownCollector;
     }
 
-    public static void setAccessed(TreeNodeProperty treeNodeProperty) {
+    public static void setAccessed(ReactiveValue reactiveValue) {
         if (collector != null) {
             // XXX Should kind of ignore property here if it's computed, except
             // that we would then have to find its original dependencies and add
             // those to the collector instead
-            collector.add(treeNodeProperty);
+            collector.add(reactiveValue);
         }
     }
 
@@ -124,4 +129,5 @@ public class Reactive {
 
         Profiler.leave("Reactive.flush");
     }
+
 }

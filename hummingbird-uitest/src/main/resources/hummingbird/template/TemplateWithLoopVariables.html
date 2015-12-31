@@ -1,0 +1,62 @@
+<div>
+	<div>Click on an cell edge to add a row/column</div>
+	<div>Click on an cell center to remove the row and column</div>
+	<span class="example roweven">Even row</span>
+	<span class="example rowodd">Odd row</span>
+	<span class="example rowlast">Last row</span>
+	<span class="example even">Even column</span>
+	<span class="example odd" style="background: black">Odd column</span>
+	<span class="example last">Last column</span>
+	<p>
+	<table>
+		<tr *ng-for="#row of rows; #rowIndex = index; #rowLast=last;#rowOdd=odd;#rowEven=even" [class.rowodd]="rowOdd" [class.roweven]="rowEven" [class.last]="rowLast" [clazz]="'row'+rowIndex">
+			<td *ng-for="#column of row.cells; #colIndex=index; #colLast=last;#colOdd=odd;#colEven=even" [class.even]="colEven" [class.odd]="colOdd" [class.roweven]="rowEven" [class.rowodd]="rowOdd" [class.last]="colLast" [class.rowlast]="rowLast" [clazz]="'row-'+rowIndex+' col-'+colIndex" (click)="server.insert(rowIndex,colIndex,event.offsetX/element.offsetWidth,event.offsetY/element.offsetHeight)">{{column.content+" ("+rowIndex+","+colIndex+")"}}</td>
+		</tr>
+		<style>
+		
+		.example {
+			border: 1px solid black;
+			display: inline-block;
+			padding: 2px;
+			margin-top: 2px;
+		}
+		@keyframes reveal-row {
+    		from {
+    			opacity: 0.0;
+   			}
+ 		   	to {
+ 		   		opacity: 1.0;
+	   		}
+		}
+		
+		td {
+		    animation-name: reveal-row;
+    		animation-duration: 1s;
+		
+			padding: 0.5em;
+			border: 1px solid black;
+			font-size: 12px;
+			font-family: arial; 
+		}
+		
+		.roweven {
+			background: #ccf;
+		 }
+		.rowodd {
+			background: #aaf;
+		 }
+		 .odd {
+		 	color: #fff;
+		 }
+		 .even {
+		 	color: #000;
+		 }
+		 .last {
+			 border-left: 5px solid black;
+		 }
+		 .rowlast {
+			 border-top: 5px solid black;
+		 }
+		</style>
+	</table>
+</div>

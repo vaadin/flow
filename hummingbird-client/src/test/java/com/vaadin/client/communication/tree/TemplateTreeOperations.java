@@ -558,6 +558,289 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals(1, templateElement.getPropertyInt("foo"));
     }
 
+    public void testTemplateIndexVariable() {
+        // Generated using TemplateSerializerTest.testTemplateIndexVariable
+        String templates = "[\n"
+                + "{'type':'BoundElementTemplate','id':2,'children':[3],'attributeBindings':{},'defaultAttributes':{},'tag':'ul'},\n"
+                + "{'type':'ForElementTemplate','id':3,'modelKey':'items','innerScope':'item','indexVar':'i','attributeBindings':{'value':'i'},'defaultAttributes':{},'tag':'li'}]\n"
+                + "\n" + "";
+        applyTemplates(templates);
+        int nextId = 3;
+
+        int childrenListNodeId = nextId++;
+        int ulNodeId = nextId++;
+        int items = nextId++;
+        int item0 = nextId++;
+        int item1 = nextId++;
+
+        applyChanges(ChangeUtil.putList(containerElementId, "CHILDREN",
+                childrenListNodeId),
+
+                ChangeUtil.put(ulNodeId, "TEMPLATE", Json.create(2)),
+                ChangeUtil.listInsertNode(childrenListNodeId, 0, ulNodeId),
+
+                ChangeUtil.putList(ulNodeId, "items", items),
+                ChangeUtil.listInsertNode(items, 0, item0),
+                ChangeUtil.listInsertNode(items, 1, item1)
+
+        );
+
+        Element ul = updater.getRootElement().getFirstChildElement();
+
+        Element li0 = ul.getFirstChildElement();
+        Element li1 = li0.getNextSiblingElement();
+
+        assertEquals(0, li0.getPropertyInt("value"));
+        assertEquals(1, li1.getPropertyInt("value"));
+
+        int newItem0 = nextId++;
+
+        applyChanges(ChangeUtil.listInsertNode(items, 0, newItem0));
+        Element newLi0 = ul.getFirstChildElement();
+        newLi0.setAttribute("info", "newli0");
+        assertEquals(0, newLi0.getPropertyInt("value"));
+        assertEquals(1, li0.getPropertyInt("value"));
+        assertEquals(2, li1.getPropertyInt("value"));
+    }
+
+    public void testTemplateLastVariable() {
+        // Generated using TemplateSerializerTest.testTemplateLastVariable
+        String templates = "[\n"
+                + "{'type':'BoundElementTemplate','id':2,'children':[3],'attributeBindings':{},'defaultAttributes':{},'tag':'ul'},\n"
+                + "{'type':'ForElementTemplate','id':3,'modelKey':'items','innerScope':'item','lastVar':'i','attributeBindings':{'value':'i'},'defaultAttributes':{},'tag':'li'}]\n"
+                + "\n" + "";
+        applyTemplates(templates);
+        int nextId = 3;
+
+        int childrenListNodeId = nextId++;
+        int ulNodeId = nextId++;
+        int items = nextId++;
+        int item0 = nextId++;
+        int item1 = nextId++;
+
+        applyChanges(ChangeUtil.putList(containerElementId, "CHILDREN",
+                childrenListNodeId),
+
+                ChangeUtil.put(ulNodeId, "TEMPLATE", Json.create(2)),
+                ChangeUtil.listInsertNode(childrenListNodeId, 0, ulNodeId),
+
+                ChangeUtil.putList(ulNodeId, "items", items),
+                ChangeUtil.listInsertNode(items, 0, item0),
+                ChangeUtil.listInsertNode(items, 1, item1)
+
+        );
+
+        Element ul = updater.getRootElement().getFirstChildElement();
+
+        Element li0 = ul.getFirstChildElement();
+        Element li1 = li0.getNextSiblingElement();
+
+        assertFalse(li0.getPropertyBoolean("value"));
+        assertTrue(li1.getPropertyBoolean("value"));
+
+        int newItem0 = nextId++;
+
+        applyChanges(ChangeUtil.listInsertNode(items, 0, newItem0));
+        Element newLi0 = ul.getFirstChildElement();
+        newLi0.setAttribute("info", "newli0");
+
+        assertFalse(newLi0.getPropertyBoolean("value"));
+        assertFalse(li0.getPropertyBoolean("value"));
+        assertTrue(li1.getPropertyBoolean("value"));
+
+    }
+
+    public void testTemplateEvenVariable() {
+        // Generated using TemplateSerializerTest.testTemplateEvenVariable
+        String templates = "[\n"
+                + "{'type':'BoundElementTemplate','id':2,'children':[3],'attributeBindings':{},'defaultAttributes':{},'tag':'ul'},\n"
+                + "{'type':'ForElementTemplate','id':3,'modelKey':'items','innerScope':'item','evenVar':'i','attributeBindings':{'value':'i'},'defaultAttributes':{},'tag':'li'}]\n"
+                + "";
+
+        internalTestEvenOdd(templates, true);
+    }
+
+    public void testTemplateOddVariable() {
+        // Generated using TemplateSerializerTest.testTemplateEvenVariable
+        String templates = "[\n"
+                + "{'type':'BoundElementTemplate','id':2,'children':[3],'attributeBindings':{},'defaultAttributes':{},'tag':'ul'},\n"
+                + "{'type':'ForElementTemplate','id':3,'modelKey':'items','innerScope':'item','oddVar':'i','attributeBindings':{'value':'i'},'defaultAttributes':{},'tag':'li'}]\n"
+                + "";
+
+        internalTestEvenOdd(templates, false);
+    }
+
+    private void internalTestEvenOdd(String templates, boolean even) {
+        applyTemplates(templates);
+        int nextId = 3;
+
+        int childrenListNodeId = nextId++;
+        int ulNodeId = nextId++;
+        int items = nextId++;
+        int item0 = nextId++;
+        int item1 = nextId++;
+
+        applyChanges(ChangeUtil.putList(containerElementId, "CHILDREN",
+                childrenListNodeId),
+
+                ChangeUtil.put(ulNodeId, "TEMPLATE", Json.create(2)),
+                ChangeUtil.listInsertNode(childrenListNodeId, 0, ulNodeId),
+
+                ChangeUtil.putList(ulNodeId, "items", items),
+                ChangeUtil.listInsertNode(items, 0, item0),
+                ChangeUtil.listInsertNode(items, 1, item1)
+
+        );
+
+        Element ul = updater.getRootElement().getFirstChildElement();
+
+        Element li0 = ul.getFirstChildElement();
+        Element li1 = li0.getNextSiblingElement();
+
+        assertEquals(even, li0.getPropertyBoolean("value"));
+        assertEquals(!even, li1.getPropertyBoolean("value"));
+
+        int newItem0 = nextId++;
+
+        applyChanges(ChangeUtil.listInsertNode(items, 0, newItem0));
+        Element newLi0 = ul.getFirstChildElement();
+        newLi0.setAttribute("info", "newli0");
+        assertEquals(even, newLi0.getPropertyBoolean("value"));
+        assertEquals(!even, li0.getPropertyBoolean("value"));
+        assertEquals(even, li1.getPropertyBoolean("value"));
+    }
+
+    private void applyTemplates(String templates) {
+        JsonArray array = Json.instance()
+                .parse(templates.replace("\"", "\\\"").replace("'", "\""));
+
+        for (int i = array.length() - 1; i >= 0; i--) {
+            JsonObject template = array.getObject(i);
+            int templateId = (int) template.getNumber("id");
+            applyTemplate(templateId, template);
+        }
+
+    }
+
+    public void testNestedTemplateIndexVariable() {
+        // Generated using
+        // TemplateSerializerTest.testNestedTemplateIndexVariable
+        String templates = "[\n"
+                + "{'type':'BoundElementTemplate','id':2,'children':[3],'attributeBindings':{},'defaultAttributes':{},'tag':'table'},\n"
+                + "{'type':'BoundElementTemplate','id':3,'children':[4],'attributeBindings':{},'defaultAttributes':{},'tag':'tbody'},\n"
+                + "{'type':'ForElementTemplate','id':4,'modelKey':'rows','innerScope':'row','indexVar':'rowIndex','children':[5],'attributeBindings':{'attr.clazz':'\"row-\"+rowIndex'},'defaultAttributes':{},'tag':'tr'},\n"
+                + "{'type':'ForElementTemplate','id':5,'modelKey':'row.columns','innerScope':'cell','indexVar':'colIndex','children':[6],'attributeBindings':{'attr.clazz':'\"row-\"+rowIndex+\"-col-\"+colIndex'},'defaultAttributes':{},'tag':'td'},\n"
+                + "{'type':'DynamicTextTemplate','id':6,'binding':'cell.content'}]\n"
+                + "";
+
+        applyTemplates(templates);
+
+        int nextId = 3;
+
+        int childrenListNodeId = nextId++;
+        int tableNodeId = nextId++;
+        int rows = nextId++;
+        int row0 = nextId++;
+        int row1 = nextId++;
+        int row0columns = nextId++;
+        int row1columns = nextId++;
+        int row0column0data = nextId++;
+        int row0column1data = nextId++;
+        int row1column0data = nextId++;
+        int row1column1data = nextId++;
+
+        // rows: [
+        // {columns:
+        // [
+        // {content: "foo"}
+        // ]
+        // }
+        // ];
+
+        applyChanges(ChangeUtil.putList(containerElementId, "CHILDREN",
+                childrenListNodeId),
+
+                ChangeUtil.put(tableNodeId, "TEMPLATE", Json.create(2)), // table
+                ChangeUtil.listInsertNode(childrenListNodeId, 0, tableNodeId),
+
+                ChangeUtil.putList(tableNodeId, "rows", rows),
+                ChangeUtil.listInsertNode(rows, 0, row0),
+                ChangeUtil.listInsertNode(rows, 1, row1),
+
+                ChangeUtil.putList(row0, "columns", row0columns),
+                ChangeUtil.putList(row1, "columns", row1columns),
+
+                ChangeUtil.listInsertNode(row0columns, 0, row0column0data),
+                ChangeUtil.listInsertNode(row0columns, 0, row0column1data),
+                ChangeUtil.put(row0column0data, "content", "r0c0"),
+                ChangeUtil.put(row0column1data, "content", "r0c1"),
+
+                ChangeUtil.listInsertNode(row1columns, 0, row1column0data),
+                ChangeUtil.listInsertNode(row1columns, 0, row1column1data),
+                ChangeUtil.put(row1column0data, "content", "r1c0"),
+                ChangeUtil.put(row1column1data, "content", "r1c1")
+
+        );
+
+        Element tableElement = updater.getRootElement().getFirstChildElement();
+        TreeUpdater.debug(tableElement);
+
+        Element tr = tableElement.getFirstChildElement().getFirstChildElement();
+        for (int row = 0; row < 2; row++) {
+            TreeUpdater.debug(tr);
+            assertEquals("row-" + row, tr.getAttribute("clazz"));
+            Element td = tr.getFirstChildElement();
+            for (int col = 0; col < 2; col++) {
+                TreeUpdater.debug(td);
+                assertEquals("row-" + row + "-col-" + col,
+                        td.getAttribute("clazz"));
+                td = td.getNextSiblingElement();
+            }
+            tr = tr.getNextSiblingElement();
+        }
+
+        // NativeEvent event = Document.get().createClickEvent(0, 1, 2, 3, 4,
+        // false, false, false, false);
+        // templateElement.dispatchEvent(event);
+        //
+        // List<MethodInvocation> enqueuedInvocations = updater
+        // .getEnqueuedInvocations();
+        //
+        // assertEquals(1, enqueuedInvocations.size());
+        //
+        // MethodInvocation methodInvocation = enqueuedInvocations.get(0);
+        // assertEquals("vTemplateEvent",
+        // methodInvocation.getJavaScriptCallbackRpcName());
+        //
+        // JsonArray parameters = methodInvocation.getParameters();
+        // assertEquals(5, parameters.length());
+        // // Node id
+        // assertEquals(childId, (int) parameters.getNumber(0));
+        // // Template id
+        // assertEquals(templateId, (int) parameters.getNumber(1));
+        // assertEquals("doSomething", parameters.getString(2));
+        //
+        // // Arguments
+        // JsonArray arguments = parameters.getArray(3);
+        // assertEquals(JsonType.ARRAY, arguments.getType());
+        // assertEquals(3, arguments.length());
+        //
+        // // Parameter element
+        // JsonArray elementParam = arguments.getArray(0);
+        // assertEquals(JsonType.ARRAY, elementParam.getType());
+        // assertEquals(2, elementParam.length());
+        // assertEquals(childId, (int) elementParam.getNumber(0));
+        // assertEquals(templateId, (int) elementParam.getNumber(1));
+        //
+        // // Parameter model
+        // assertEquals(childId, (int) arguments.getNumber(1));
+        // // Parameter model.child
+        // assertEquals(modelChildId, (int) arguments.getNumber(2));
+        //
+        // // Promise id
+        // assertEquals(0, (int) parameters.getNumber(4));
+    }
+
     private static native boolean isScriptLoaded()
     /*-{
         return $wnd.scriptLoaded === 5;

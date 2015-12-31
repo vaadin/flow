@@ -52,6 +52,14 @@ public class ListNode extends MapStateNode implements Serializable {
         return backing.get(index);
     }
 
+    public int indexOf(Object o) {
+        if (Reactive.inComputation()) {
+            updateDependents(lengthDependencyKey, Reactive::registerRead);
+        }
+
+        return backing.indexOf(o);
+    }
+
     public int size() {
         if (Reactive.inComputation()) {
             updateDependents(lengthDependencyKey, Reactive::registerRead);
