@@ -1,19 +1,24 @@
 package com.vaadin.hummingbird.kernel;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.vaadin.annotations.EventParameter;
 import com.vaadin.annotations.EventType;
 import com.vaadin.event.ElementEvents;
 import com.vaadin.tests.server.TestField;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import elemental.json.Json;
+import elemental.json.JsonObject;
 
 public class ElementEventsTest {
 
@@ -28,6 +33,20 @@ public class ElementEventsTest {
     public static class TestEvent extends EventObject {
         public TestEvent(Object source) {
             super(source);
+        }
+    }
+
+    @EventType("jsonEventDataEvent")
+    public static class JsonEventDataEvent extends EventObject {
+
+        private JsonObject eventData;
+
+        public JsonEventDataEvent(Object source) {
+            super(source);
+        }
+
+        public JsonObject getEventData() {
+            return eventData;
         }
     }
 
@@ -237,6 +256,28 @@ public class ElementEventsTest {
                         "sub.parameter" },
                 e.getEventData("testEventWithParameters").toArray());
 
+    }
+
+    @Test
+    public void jsonEventData() {
+        TestField c = new TestField();
+        Element e = c.getElement();
+
+        List<JsonEventDataEvent> events = new ArrayList<>();
+
+        ElementEvents.addElementListener(c, JsonEventDataEvent.class,
+                (com.vaadin.event.EventListener<JsonEventDataEvent>) event -> {
+                    events.add(event);
+                });
+
+        JsonObject eventData = Json.createObject();
+        eventData.put("value", "foobar");
+
+        e.dispatchEvent("jsonEventDataEvent", eventData);
+
+        assertEquals("only one event should be fired", 1, events.size());
+        assertEquals("event data should equal", eventData,
+                events.get(0).getEventData());
     }
 
     private void assertArrayEqualsIgnoreOrder(Object[] array1,

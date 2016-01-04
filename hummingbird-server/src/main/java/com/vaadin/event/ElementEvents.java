@@ -86,6 +86,21 @@ public class ElementEvents {
                             e);
                 }
             }
+            Class<?> currentType = eventType;
+            while (currentType != Object.class) {
+                try {
+                    Field f = currentType.getDeclaredField("eventData");
+                    if (f.getType().equals(JsonObject.class)) {
+                        f.setAccessible(true);
+                        f.set(eventObject, eventData);
+                        return;
+                    }
+                } catch (IllegalAccessException | NoSuchFieldException
+                        | SecurityException e) {
+                    // NOOP
+                }
+                currentType = currentType.getSuperclass();
+            }
         }
 
         @Override
