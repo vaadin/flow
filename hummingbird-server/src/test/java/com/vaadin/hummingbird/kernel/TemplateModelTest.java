@@ -390,16 +390,22 @@ public class TemplateModelTest {
     }
 
     @Test
-    public void testComputedListIndexOf() {
+    public void testJSComputedListIndexOf() {
         model.setSimpleList(new ArrayList<>());
         Assert.assertEquals(-1, model.getJsSimpleListIndexOfA());
-        Assert.assertEquals(-1, model.getServerSimpleListIndexOfA());
-
         model.setSimpleList(new ArrayList<>(Arrays.asList("a", "b", "c")));
         Assert.assertEquals(0, model.getJsSimpleListIndexOfA());
-        Assert.assertEquals(0, model.getServerSimpleListIndexOfA());
         model.getSimpleList().add(0, "foo");
         Assert.assertEquals(1, model.getJsSimpleListIndexOfA());
+    }
+
+    @Test
+    public void testJavaComputedListIndexOf() {
+        model.setSimpleList(new ArrayList<>());
+        Assert.assertEquals(-1, model.getServerSimpleListIndexOfA());
+        model.setSimpleList(new ArrayList<>(Arrays.asList("a", "b", "c")));
+        Assert.assertEquals(0, model.getServerSimpleListIndexOfA());
+        model.getSimpleList().add(0, "foo");
         Assert.assertEquals(1, model.getServerSimpleListIndexOfA());
     }
 }

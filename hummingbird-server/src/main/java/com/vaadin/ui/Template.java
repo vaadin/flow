@@ -145,7 +145,8 @@ public abstract class Template extends AbstractComponent
                         List<Object> nodeValues = node
                                 .getMultiValued(propertyName);
                         if (!Objects.equals(values, nodeValues)) {
-                            nodeValues.clear();
+                            node.remove(propertyName);
+                            nodeValues = node.getMultiValued(propertyName);
                             nodeValues.addAll(values);
                         }
                         return;
