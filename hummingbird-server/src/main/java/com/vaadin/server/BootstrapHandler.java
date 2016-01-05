@@ -332,6 +332,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         deps.add(new Dependency(Type.SCRIPT,
                 vaadinServerLocation + "bootstrap.js" + versionQueryParam));
+        deps.add(new Dependency(Type.STYLESHEET,
+                vaadinServerLocation + "server.css" + versionQueryParam));
 
         return deps;
     }

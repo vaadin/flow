@@ -19,6 +19,7 @@ package com.vaadin.ui;
 import java.util.logging.Logger;
 
 import com.vaadin.annotations.HTML;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
@@ -29,6 +30,8 @@ import com.vaadin.server.Sizeable;
 @SuppressWarnings("serial")
 @HTML({ "context://bower_components/iron-flex-layout/classes/iron-flex-layout.html",
         "context://bower_components/iron-flex-layout/classes/iron-shadow-flex-layout.html" })
+// FIXME, should be part of a web component
+@StyleSheet("vaadin://core-elements/orderedlayout.css")
 @Tag("div")
 public abstract class AbstractOrderedLayout
         extends AbstractSimpleDOMComponentContainer implements

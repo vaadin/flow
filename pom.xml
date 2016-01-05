@@ -21,7 +21,6 @@
 		<module>hummingbird-core-elements</module>
 		
 		<!-- FIXME: Remove -->
-		<module>hummingbird-themes</module>
 		<module>hummingbird-shared</module>
 	</modules>
 

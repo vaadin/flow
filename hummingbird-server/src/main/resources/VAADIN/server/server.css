@@ -1,0 +1,243 @@
+@keyframes valo-animate-in-fade {
+  0% {
+    opacity: 0;
+  }
+}
+@keyframes valo-animate-out-fade {
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes valo-animate-in-slide-down {
+  0% {
+    transform: translateY(-100%);
+  }
+}
+@keyframes valo-animate-in-slide-up {
+  0% {
+    transform: translateY(100%);
+  }
+}
+@keyframes valo-animate-in-slide-left {
+  0% {
+    transform: translateX(100%);
+  }
+}
+@keyframes valo-animate-in-slide-right {
+  0% {
+    transform: translateX(-100%);
+  }
+}
+@keyframes valo-animate-out-slide-down {
+  100% {
+    transform: translateY(100%);
+  }
+}
+@keyframes valo-animate-out-slide-up {
+  100% {
+    transform: translateY(-100%);
+  }
+}
+@keyframes valo-animate-out-slide-left {
+  100% {
+    transform: translateX(-100%);
+  }
+}
+@keyframes valo-animate-out-slide-right {
+  100% {
+    transform: translateX(100%);
+  }
+}
+@keyframes valo-overlay-animate-in {
+  0% {
+    transform: translatey(-4px);
+    opacity: 0;
+  }
+}
+@keyframes valo-animate-out-slide-down-fade {
+  100% {
+    opacity: 0;
+    transform: translatey(30%);
+  }
+}
+
+
+@keyframes v-rotate-360 {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes v-progress-start {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 50%;
+  }
+}
+@keyframes v-progress-delay {
+  0% {
+    width: 50%;
+  }
+  100% {
+    width: 90%;
+  }
+}
+@keyframes v-progress-wait {
+  0% {
+    width: 90%;
+    height: 4px;
+  }
+  3% {
+    width: 91%;
+    height: 7px;
+  }
+  100% {
+    width: 96%;
+    height: 7px;
+  }
+}
+
+@keyframes v-progress-wait-pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+
+.v-generated-body {
+  padding: 0;
+  border: 0;
+}
+
+.v-ui:focus {
+  outline: none;
+}
+
+/*
+ * Loading indicator
+ */
+.v-loading-indicator {
+  position: fixed !important;
+  z-index: 99999;
+  left: 0;
+  right: auto;
+  top: 0;
+  width: 50%;
+  opacity: 1;
+  height: 4px;
+  background-color: #197de1;
+  pointer-events: none;
+  transition: none;
+  animation: v-progress-start 1000ms 200ms both;
+}
+.v-loading-indicator[style*="none"] {
+  display: block !important;
+  width: 100% !important;
+  opacity: 0;
+  animation: none;
+  transition: opacity 500ms 300ms, width 300ms;
+}
+.v-loading-indicator-delay {
+  width: 90%;
+  animation: v-progress-delay 3.8s forwards;
+}
+.v-ff .v-loading-indicator-delay {
+  width: 50%;
+}
+.v-loading-indicator-wait {
+  width: 96%;
+  animation: v-progress-wait 5s forwards, v-progress-wait-pulse 1s 4s infinite backwards;
+}
+.v-ff .v-loading-indicator-wait {
+  width: 90%;
+}
+
+/*
+ * Reconnect dialog
+ */
+.v-reconnect-dialog {
+  color: white;
+  left: 0 !important;
+  right: 0;
+  max-width: 100%;
+  margin: 0 !important;
+  border-radius: 0;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.25);
+  padding: 12px 15px;
+  background-color: #444;
+  background-color: rgba(68, 68, 68, 0.9);
+  font-weight: 400;
+  line-height: 22px;
+  text-align: center;
+}
+.v-reconnect-dialog .v-reconnect-dialog-description, .v-reconnect-dialog .v-reconnect-dialog-details {
+  max-width: 50em;
+}
+.v-reconnect-dialog.v-position-top {
+  top: 0;
+}
+.v-reconnect-dialog.v-position-top[class*="animate-in"] {
+  animation: valo-animate-in-slide-down 300ms 10ms backwards;
+}
+.v-reconnect-dialog.v-position-top[class*="animate-out"] {
+  animation: valo-animate-out-slide-up 200ms;
+}
+.v-reconnect-dialog.v-position-bottom {
+  bottom: 0;
+}
+.v-reconnect-dialog.v-position-bottom[class*="animate-in"] {
+  animation: valo-animate-in-slide-up 300ms 10ms backwards;
+}
+.v-reconnect-dialog.v-position-bottom[class*="animate-out"] {
+  animation: valo-animate-out-slide-down 200ms;
+}
+.v-reconnect-dialog .v-reconnect-dialog-caption {
+  color: #fff;
+  vertical-align: middle;
+}
+.v-reconnect-dialog .v-reconnect-dialog-description, .v-reconnect-dialog .v-reconnect-dialog-details {
+  color: #e6e6e6;
+}
+.v-reconnect-dialog u {
+  text-decoration: none;
+}
+.v-reconnect-dialog .spinner {
+  height: 24px !important;
+  width: 24px !important;
+  box-sizing: border-box;
+  border: 2px solid rgba(25, 125, 225, 0.2);
+  border-top-color: #197de1;
+  border-right-color: #197de1;
+  border-radius: 100%;
+  animation: v-rotate-360 500ms infinite linear;
+  pointer-events: none;
+  display: inline-block;
+  margin-top: 10px;
+  visibility: hidden;
+}
+.v-reconnect-dialog.active .spinner {
+  visibility: visible;
+
+}
+
+/* 
+ * Questionable layer feature
+ */
+.layer {
+  position: absolute;
+  width: 0;
+  height: 0;
+  top: 0;
+  left: 0;
+}
+.layer.ui {
+  position: static;
+}

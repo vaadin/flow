@@ -1,0 +1,26 @@
+.layout {
+  box-sizing: border-box;
+}
+.layout.vertical.spacing > * {
+  margin-top: 12px;
+}
+.layout.vertical.spacing > *:first-child {
+  margin-top: 0;
+}
+.layout.horizontal.spacing > * {
+  margin-left: 12px;
+}
+.layout.horizontal.spacing > *:first-child {
+  margin-left: 0;
+}
+.layout.margin {
+  padding-top: 37px;
+  padding-bottom: 37px;
+  padding-right: 37px;
+  padding-left: 37px;
+}
+.layout.flex-children > * {
+  -ms-flex: 1;
+  -webkit-flex: 1;
+  flex: 1;
+}
