@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.tree;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Tree;
 
@@ -18,19 +18,19 @@ public class TreeNodeCaptionWrapping extends TestBase {
 
     @Override
     protected void setup() {
-        setTheme("runo");
         Tree tree = new Tree();
         tree.setWidth("100px");
 
         tree.addItem("1");
-        tree.setItemIcon("1", new ThemeResource("../runo/icons/16/ok.png"));
+        tree.setItemIcon("1",
+                new ExternalResource("vaadin://themes/runo/icons/16/ok.png"));
 
         String mainItem = "A very long item that should not wrap";
         String subItem = "Subitem - also long";
 
         tree.addItem(mainItem);
-        tree.setItemIcon(mainItem,
-                new ThemeResource("../runo/icons/16/error.png"));
+        tree.setItemIcon(mainItem, new ExternalResource(
+                "vaadin://themes/runo/icons/16/error.png"));
 
         tree.addItem(subItem);
         tree.setParent(subItem, mainItem);

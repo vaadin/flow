@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.image;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -11,7 +11,7 @@ public class ImageAltText extends TestBase {
     @Override
     protected void setup() {
         final Image image = new Image("Caption",
-                new ThemeResource("../runo/icons/64/ok.png"));
+                new ExternalResource("vaadin://themes/runo/icons/64/ok.png"));
         image.setId("image");
         image.setAlternateText("Original alt text");
         add(image);

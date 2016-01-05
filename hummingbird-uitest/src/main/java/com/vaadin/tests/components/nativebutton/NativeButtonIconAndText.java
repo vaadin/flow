@@ -15,7 +15,7 @@
  */
 package com.vaadin.tests.components.nativebutton;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
@@ -40,11 +40,11 @@ public class NativeButtonIconAndText extends AbstractTestUI
         Button buttonText = new Button("Only text");
 
         Button buttonTextIcon = new Button("Text icon");
-        buttonTextIcon.setIcon(new ThemeResource("../runo/icons/64/ok.png"));
+        buttonTextIcon.setIcon(new ExternalResource("vaadin://themes/runo/icons/64/ok.png"));
 
         Button buttonTextIconAlt = new Button("Text icon alt");
         buttonTextIconAlt
-                .setIcon(new ThemeResource("../runo/icons/64/cancel.png"));
+                .setIcon(new ExternalResource("vaadin://themes/runo/icons/64/cancel.png"));
         buttonTextIconAlt.setIconAlternateText(INITIAL_ALTERNATE_TEXT);
 
         buttonText.addClickListener(this);
@@ -63,12 +63,12 @@ public class NativeButtonIconAndText extends AbstractTestUI
 
         NativeButton nativeButtonTextIcon = new NativeButton("Text icon");
         nativeButtonTextIcon
-                .setIcon(new ThemeResource("../runo/icons/64/ok.png"));
+                .setIcon(new ExternalResource("vaadin://themes/runo/icons/64/ok.png"));
 
         NativeButton nativeButtonTextIconAlt = new NativeButton(
                 "Text icon alt");
         nativeButtonTextIconAlt
-                .setIcon(new ThemeResource("../runo/icons/64/cancel.png"));
+                .setIcon(new ExternalResource("vaadin://themes/runo/icons/64/cancel.png"));
         nativeButtonTextIconAlt.setIconAlternateText(INITIAL_ALTERNATE_TEXT);
 
         nativeButtonText.addClickListener(this);

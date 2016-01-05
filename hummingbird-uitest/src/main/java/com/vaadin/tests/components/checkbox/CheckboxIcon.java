@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.checkbox;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.CheckBox;
 
@@ -20,7 +20,7 @@ public class CheckboxIcon extends TestBase {
     @Override
     protected void setup() {
         CheckBox checkbox = new CheckBox("A checkbox");
-        checkbox.setIcon(new ThemeResource("../runo/icons/32/calendar.png"));
+        checkbox.setIcon(new ExternalResource("vaadin://themes/runo/icons/32/calendar.png"));
 
         add(checkbox);
     }

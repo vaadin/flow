@@ -2,19 +2,20 @@ package com.vaadin.tests.components.checkbox;
 
 import java.util.Date;
 
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
 import com.vaadin.tests.components.ComponentTestCase;
 import com.vaadin.ui.CheckBox;
 
 public class CheckBoxes extends ComponentTestCase<CheckBox> {
 
-    private ThemeResource SMALL_ICON = new ThemeResource(
-            "../runo/icons/16/ok.png");
-    private ThemeResource LARGE_ICON = new ThemeResource(
-            "../runo/icons/64/document.png");
-    private ThemeResource LARGE_ICON_NOCACHE = new ThemeResource(
-            "../runo/icons/64/document.png?" + new Date().getTime());
+    private ExternalResource SMALL_ICON = new ExternalResource(
+            "vaadin://themes/runo/icons/16/ok.png");
+    private ExternalResource LARGE_ICON = new ExternalResource(
+            "vaadin://themes/runo/icons/64/document.png");
+    private ExternalResource LARGE_ICON_NOCACHE = new ExternalResource(
+            "vaadin://themes/runo/icons/64/document.png?"
+                    + new Date().getTime());
 
     @Override
     protected Class<CheckBox> getTestClass() {
@@ -24,7 +25,6 @@ public class CheckBoxes extends ComponentTestCase<CheckBox> {
     @Override
     protected void initializeComponents() {
 
-        setTheme("tests-tickets");
         CheckBox cb;
 
         cb = createCheckBox("CheckBox with normal text");

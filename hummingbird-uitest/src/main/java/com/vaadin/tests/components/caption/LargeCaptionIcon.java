@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.caption;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
@@ -24,7 +24,7 @@ public class LargeCaptionIcon extends TestBase {
 
         Label l = new Label("This is a label");
         l.setCaption("This is its caption, it also has a large icon");
-        l.setIcon(new ThemeResource("../runo/icons/64/ok.png"));
+        l.setIcon(new ExternalResource("vaadin://themes/runo/icons/64/ok.png"));
         gl.addComponent(l);
         add(gl);
     }

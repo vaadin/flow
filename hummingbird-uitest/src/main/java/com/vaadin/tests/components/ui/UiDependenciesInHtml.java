@@ -17,14 +17,13 @@ package com.vaadin.tests.components.ui;
 
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
-import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Label;
 
 @JavaScript("uiDependency.js")
-@StyleSheet("theme://uiDependency.css")
-@Theme("tests-valo")
+@StyleSheet({ "vaadin://theme/uiDependency.css",
+        "vaadin://themes/tests-valo/styles.css" })
 public class UiDependenciesInHtml extends AbstractTestUI {
 
     @Override

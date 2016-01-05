@@ -1,13 +1,13 @@
 package com.vaadin.tests.minitutorials.v7b9;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
-@Theme("sassy")
+@StyleSheet("vaadin://themes/sassy/styles.css")
 public class SassyUI extends UI {
     @Override
     public void init(VaadinRequest request) {

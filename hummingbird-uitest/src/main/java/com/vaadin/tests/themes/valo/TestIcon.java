@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 
 /**
  *
@@ -51,8 +51,8 @@ public class TestIcon {
             }
             return ICONS.get(iconCount);
         }
-        return new ThemeResource(
-                "../runo/icons/" + imageSize + "/document.png");
+        return new ExternalResource(
+                "vaadin://themes/runo/icons/" + imageSize + "/document.png");
     }
 
     static List<FontAwesome> ICONS = Collections

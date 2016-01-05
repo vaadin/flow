@@ -17,7 +17,6 @@ package com.vaadin.client.ui.ui;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Scheduler;
@@ -43,22 +42,16 @@ import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.ComponentConnector;
 import com.vaadin.client.ConnectorHierarchyChangeEvent;
-import com.vaadin.client.ResourceLoader;
-import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
-import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.ServerConnector;
 import com.vaadin.client.UIDL;
 import com.vaadin.client.VConsole;
 import com.vaadin.client.ValueMap;
-import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.annotations.OnStateChange;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.ui.AbstractConnector;
 import com.vaadin.client.ui.AbstractHasComponentsConnector;
 import com.vaadin.client.ui.JavaScriptManager;
 import com.vaadin.client.ui.VUI;
-import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.SharedState;
 import com.vaadin.shared.ui.ui.DebugWindowClientRpc;
 import com.vaadin.shared.ui.ui.DebugWindowServerRpc;
@@ -69,8 +62,6 @@ import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
 
 public class UIConnector extends AbstractHasComponentsConnector {
-
-    private String activeTheme = null;
 
     @Override
     protected Widget createWidget() {
@@ -419,98 +410,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
         getRpcProxy(DebugWindowServerRpc.class).showServerDesign(connector);
     }
 
-    @OnStateChange("theme")
-    void onThemeChange() {
-        final String oldTheme = activeTheme;
-        final String newTheme = getState().theme;
-        final String oldThemeUrl = getThemeUrl(oldTheme);
-        final String newThemeUrl = getThemeUrl(newTheme);
-
-        if (Objects.equals(oldTheme, newTheme)) {
-            // This should only happen on the initial load when activeTheme has
-            // been updated in init.
-
-            if (newTheme == null) {
-                return;
-            }
-
-            // For the embedded case we cannot be 100% sure that the theme has
-            // been loaded and that the style names have been set.
-
-            if (findStylesheetTag(oldThemeUrl) == null) {
-                // If there is no style tag, load it the normal way (the class
-                // name will be added when theme has been loaded)
-                replaceTheme(null, newTheme, null, newThemeUrl);
-            } else if (!getWidget().getParent().getElement()
-                    .hasClassName(newTheme)) {
-                // If only the class name is missing, add that
-                activateTheme(newTheme);
-            }
-            return;
-        }
-
-        getLogger().info("Changing theme from " + oldTheme + " to " + newTheme);
-        replaceTheme(oldTheme, newTheme, oldThemeUrl, newThemeUrl);
-    }
-
-    /**
-     * Loads the new theme and removes references to the old theme
-     *
-     * @since 7.4.3
-     * @param oldTheme
-     *            The name of the old theme
-     * @param newTheme
-     *            The name of the new theme
-     * @param oldThemeUrl
-     *            The url of the old theme
-     * @param newThemeUrl
-     *            The url of the new theme
-     */
-    protected void replaceTheme(final String oldTheme, final String newTheme,
-            String oldThemeUrl, final String newThemeUrl) {
-
-        LinkElement tagToReplace = null;
-
-        if (oldTheme != null) {
-            tagToReplace = findStylesheetTag(oldThemeUrl);
-
-            if (tagToReplace == null) {
-                getLogger()
-                        .warning("Did not find the link tag for the old theme ("
-                                + oldThemeUrl
-                                + "), adding a new stylesheet for the new theme ("
-                                + newThemeUrl + ")");
-            }
-        }
-
-        if (newTheme != null) {
-            loadTheme(newTheme, newThemeUrl, tagToReplace);
-        } else {
-            if (tagToReplace != null) {
-                tagToReplace.getParentElement().removeChild(tagToReplace);
-            }
-
-            activateTheme(null);
-        }
-
-    }
-
-    private void updateVaadinFavicon(String newTheme) {
-        NodeList<Element> iconElements = WidgetUtil
-                .querySelectorAll("link[rel~=\"icon\"]");
-        for (int i = 0; i < iconElements.getLength(); i++) {
-            Element iconElement = iconElements.getItem(i);
-
-            String href = iconElement.getAttribute("href");
-            if (href != null && href.contains("VAADIN/themes")
-                    && href.endsWith("/favicon.ico")) {
-                href = href.replaceFirst("VAADIN/themes/.+?/favicon.ico",
-                        "VAADIN/themes/" + newTheme + "/favicon.ico");
-                iconElement.setAttribute("href", href);
-            }
-        }
-    }
-
     /**
      * Finds a link tag for a style sheet with the given URL
      *
@@ -534,126 +433,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
     }
 
     /**
-     * Loads the given theme and replaces the given link element with the new
-     * theme link element.
-     *
-     * @param newTheme
-     *            The name of the new theme
-     * @param newThemeUrl
-     *            The url of the new theme
-     * @param tagToReplace
-     *            The link element to replace. If null, then the new link
-     *            element is added at the end.
-     */
-    private void loadTheme(final String newTheme, final String newThemeUrl,
-            final LinkElement tagToReplace) {
-        LinkElement newThemeLinkElement = Document.get().createLinkElement();
-        newThemeLinkElement.setRel("stylesheet");
-        newThemeLinkElement.setType("text/css");
-        newThemeLinkElement.setHref(newThemeUrl);
-        ResourceLoader.addOnloadHandler(newThemeLinkElement,
-                new ResourceLoadListener() {
-
-                    @Override
-                    public void onLoad(ResourceLoadEvent event) {
-                        getLogger().info("Loading of " + newTheme + " from "
-                                + newThemeUrl + " completed");
-
-                        if (tagToReplace != null) {
-                            tagToReplace.getParentElement()
-                                    .removeChild(tagToReplace);
-                        }
-                        activateTheme(newTheme);
-                    }
-
-                    @Override
-                    public void onError(ResourceLoadEvent event) {
-                        getLogger().warning("Could not load theme from "
-                                + getThemeUrl(newTheme));
-                    }
-                }, null);
-
-        if (tagToReplace != null) {
-            getHead().insertBefore(newThemeLinkElement, tagToReplace);
-        } else {
-            getHead().appendChild(newThemeLinkElement);
-        }
-    }
-
-    /**
-     * Activates the new theme. Assumes the theme has been loaded and taken into
-     * use in the browser.
-     *
-     * @since 7.4.3
-     * @param newTheme
-     *            The name of the new theme
-     */
-    protected void activateTheme(String newTheme) {
-        if (activeTheme != null) {
-            getWidget().getParent().removeStyleName(activeTheme);
-        }
-
-        String oldThemeBase = getConnection().translateVaadinUri("theme://");
-
-        activeTheme = newTheme;
-
-        if (newTheme != null) {
-            getWidget().getParent().addStyleName(newTheme);
-
-            updateVaadinFavicon(newTheme);
-
-        }
-
-        forceStateChangeRecursively(UIConnector.this);
-        // UIDL has no stored URL which we can repaint so we do some find and
-        // replace magic...
-        String newThemeBase = getConnection().translateVaadinUri("theme://");
-        replaceThemeAttribute(oldThemeBase, newThemeBase);
-
-    }
-
-    /**
-     * Finds all attributes where theme:// urls have possibly been used and
-     * replaces any old theme url with a new one
-     *
-     * @param oldPrefix
-     *            The start of the old theme URL
-     * @param newPrefix
-     *            The start of the new theme URL
-     */
-    private void replaceThemeAttribute(String oldPrefix, String newPrefix) {
-        // Images
-        replaceThemeAttribute("src", oldPrefix, newPrefix);
-        // Embedded flash
-        replaceThemeAttribute("value", oldPrefix, newPrefix);
-        replaceThemeAttribute("movie", oldPrefix, newPrefix);
-    }
-
-    /**
-     * Finds any attribute of the given type where theme:// urls have possibly
-     * been used and replaces any old theme url with a new one
-     *
-     * @param attributeName
-     *            The name of the attribute, e.g. "src"
-     * @param oldPrefix
-     *            The start of the old theme URL
-     * @param newPrefix
-     *            The start of the new theme URL
-     */
-    private void replaceThemeAttribute(String attributeName, String oldPrefix,
-            String newPrefix) {
-        // Find all "attributeName=" which start with "oldPrefix" using e.g.
-        // [^src='http://oldpath']
-        NodeList<Element> elements = WidgetUtil.querySelectorAll(
-                "[" + attributeName + "^='" + oldPrefix + "']");
-        for (int i = 0; i < elements.getLength(); i++) {
-            Element element = elements.getItem(i);
-            element.setAttribute(attributeName, element
-                    .getAttribute(attributeName).replace(oldPrefix, newPrefix));
-        }
-    }
-
-    /**
      * Force a full recursive recheck of every connector's state variables.
      *
      * @see #forceStateChange()
@@ -674,34 +453,6 @@ public class UIConnector extends AbstractHasComponentsConnector {
             }
         }
 
-    }
-
-    /**
-     * Internal helper to get the theme URL for a given theme
-     *
-     * @since 7.3
-     * @param theme
-     *            the name of the theme
-     * @return The URL the theme can be loaded from
-     */
-    private String getThemeUrl(String theme) {
-        String themeUrl = getConnection()
-                .translateVaadinUri(ApplicationConstants.VAADIN_PROTOCOL_PREFIX
-                        + "themes/" + theme + "/styles" + ".css");
-        // Parameter appended to bypass caches after version upgrade.
-        themeUrl += "?v=" + Version.getFullVersion();
-        return themeUrl;
-
-    }
-
-    /**
-     * Returns the name of the theme currently in used by the UI
-     *
-     * @since 7.3
-     * @return the theme name used by this UI
-     */
-    public String getActiveTheme() {
-        return activeTheme;
     }
 
     private static Logger getLogger() {

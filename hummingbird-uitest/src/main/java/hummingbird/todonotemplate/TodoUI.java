@@ -1,13 +1,11 @@
 package hummingbird.todonotemplate;
 
 import com.vaadin.annotations.StyleSheet;
-import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.UI;
 
 @SuppressWarnings("serial")
-@Theme("none")
 @StyleSheet("TodoList.css")
 public class TodoUI extends UI {
 

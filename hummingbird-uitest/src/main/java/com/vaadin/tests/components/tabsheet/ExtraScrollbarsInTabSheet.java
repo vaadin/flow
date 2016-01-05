@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.tabsheet;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.Panel;
@@ -8,7 +8,7 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
-@Theme("runo")
+@StyleSheet("vaadin://themes/runo/styles.css")
 public class ExtraScrollbarsInTabSheet extends UI {
 
     @Override

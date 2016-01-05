@@ -291,11 +291,6 @@ public class ApplicationConnection implements HasHandlers {
         }
 
         @Override
-        protected String getThemeUri() {
-            return ApplicationConnection.this.getThemeUri();
-        }
-
-        @Override
         protected String encodeQueryStringParameterValue(String queryString) {
             return URL.encodeQueryString(queryString);
         }
@@ -354,8 +349,6 @@ public class ApplicationConnection implements HasHandlers {
         }
         getLogger().info("Starting application" + timingInfo);
 
-        getLogger().info("Using theme: " + cnf.getThemeName());
-
         getLogger().info("Vaadin application servlet version: "
                 + cnf.getServletVersion());
 
@@ -376,11 +369,6 @@ public class ApplicationConnection implements HasHandlers {
         currentClient = initializeTestbenchHooks(componentLocator, appId);
 
         initializeClientHooks();
-
-        // Activate the initial theme by only adding the class name. Not calling
-        // activateTheme here as it will also cause a full layout and updates to
-        // the overlay container which has not yet been created at this point
-        getContainerElement().addClassName(cnf.getThemeName());
 
         getLoadingIndicator().show();
 
@@ -969,7 +957,8 @@ public class ApplicationConnection implements HasHandlers {
     /**
      * Translates custom protocols in UIDL URI's to be recognizable by browser.
      * All uri's from UIDL should be routed via this method before giving them
-     * to browser due URI's in UIDL may contain custom protocols like theme://.
+     * to browser due URI's in UIDL may contain custom protocols like
+     * vadadin://.
      *
      * @param uidlUri
      *            Vaadin URI from uidl
@@ -977,17 +966,6 @@ public class ApplicationConnection implements HasHandlers {
      */
     public String translateVaadinUri(String uidlUri) {
         return uriResolver.resolveVaadinUri(uidlUri);
-    }
-
-    /**
-     * Gets the URI for the current theme. Can be used to reference theme
-     * resources.
-     *
-     * @return URI to the current theme
-     */
-    public String getThemeUri() {
-        return configuration.getVaadinDirUrl() + "themes/"
-                + getUIConnector().getActiveTheme();
     }
 
     private ConnectorMap connectorMap = GWT.create(ConnectorMap.class);

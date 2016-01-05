@@ -26,7 +26,6 @@ import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
 import com.vaadin.server.Resource;
 import com.vaadin.server.ResourceReference;
-import com.vaadin.server.ThemeResource;
 
 /**
  * Extension that starts a download when the extended component is clicked. This
@@ -46,8 +45,8 @@ import com.vaadin.server.ThemeResource;
  * will automatically be served using a
  * <code>Content-Type: application/octet-stream</code> header unless
  * {@link #setOverrideContentType(boolean)} has been set to <code>false</code>
- * while files served in other ways, (e.g. {@link ExternalResource} or
- * {@link ThemeResource}) will not automatically get this treatment.
+ * while files served in other ways, (e.g. {@link ExternalResource}) will not
+ * automatically get this treatment.
  * </p>
  *
  * @author Vaadin Ltd
@@ -104,7 +103,7 @@ public class FileDownloader {
      * <p>
      * Please note that this only affects Connector resources (e.g.
      * {@link FileResource} and {@link ClassResource}) but not other resource
-     * types (e.g. {@link ExternalResource} or {@link ThemeResource}).
+     * types (e.g. {@link ExternalResource}).
      * </p>
      *
      * @param overrideContentType

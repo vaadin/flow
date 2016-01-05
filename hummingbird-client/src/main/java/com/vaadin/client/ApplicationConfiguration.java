@@ -45,7 +45,6 @@ import com.vaadin.client.debug.internal.Section;
 import com.vaadin.client.debug.internal.TestBenchSection;
 import com.vaadin.client.debug.internal.VDebugWindow;
 import com.vaadin.client.debug.internal.theme.DebugWindowStyles;
-import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.ui.ui.UIConstants;
 
@@ -302,16 +301,6 @@ public class ApplicationConfiguration implements EntryPoint {
      */
     public String getServiceUrl() {
         return serviceUrl;
-    }
-
-    /**
-     * @return the theme name used when initializing the application
-     * @deprecated as of 7.3. Use {@link UIConnector#getActiveTheme()} to get
-     *             the theme currently in use
-     */
-    @Deprecated
-    public String getThemeName() {
-        return getJsoConfiguration(id).getConfigString("theme");
     }
 
     /**

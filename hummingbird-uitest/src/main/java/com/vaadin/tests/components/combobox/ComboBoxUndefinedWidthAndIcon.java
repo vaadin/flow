@@ -2,7 +2,7 @@ package com.vaadin.tests.components.combobox;
 
 import com.vaadin.data.Item;
 import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.ComboBox;
 
@@ -16,7 +16,7 @@ public class ComboBoxUndefinedWidthAndIcon extends TestBase {
             Item item = cb.addItem(i);
             item.getItemProperty("caption").setValue("Item " + i);
             item.getItemProperty("icon")
-                    .setValue(new ThemeResource("../runo/icons/16/users.png"));
+                    .setValue(new ExternalResource("vaadin://themes/runo/icons/16/users.png"));
         }
         cb.setItemIconPropertyId("icon");
         cb.setItemCaptionPropertyId("caption");

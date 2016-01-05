@@ -9,7 +9,6 @@ public class TwinColSelectCaptionStyles extends TestBase {
 
     @Override
     protected void setup() {
-        setTheme("tests-tickets");
         final TwinColSelect sel = new TwinColSelect("Component caption");
         sel.setLeftColumnCaption("Left caption");
         sel.setRightColumnCaption("Right caption");

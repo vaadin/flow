@@ -3,12 +3,12 @@ package com.vaadin.tests.components.orderedlayout;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.UserError;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -27,7 +27,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.VerticalLayout;
 
-@Theme("tests-components")
+@StyleSheet("vaadin://themes/tests-components/styles.css")
 public class BoxLayoutTest extends AbstractTestUI {
 
     protected AbstractOrderedLayout view;
@@ -67,8 +67,8 @@ public class BoxLayoutTest extends AbstractTestUI {
 
         Label exp;
 
-        // l.addComponent(new Embedded(null, new ThemeResource(
-        // "../runo/icons/32/document.png")));
+        // l.addComponent(new Embedded(null, new ExternalResource(
+        // "vaadin://themes/runo/icons/32/document.png")));
         l.addComponent(exp = new Label(
                 "Mauris iaculis porttitor posuere. Praesent id metus massa, ut blandit odio. Proin quis tortor orci. Etiam at risus et justo dignissim congue. Donec."));
         // exp.setWidth("300px");
@@ -312,14 +312,14 @@ public class BoxLayoutTest extends AbstractTestUI {
         component.addComponent(componentCaption);
 
         componentIcon = new NativeSelect("Icon",
-                Arrays.asList("../runo/icons/16/folder.png",
-                        "../runo/icons/32/document.png"));
+                Arrays.asList("vaadin://themes/runo/icons/16/folder.png",
+                        "vaadin://themes/runo/icons/32/document.png"));
         componentIcon.setEnabled(false);
         componentIcon.addValueChangeListener(new ValueChangeListener() {
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (componentIcon.getValue() != null) {
-                    target.setIcon(new ThemeResource(
+                    target.setIcon(new ExternalResource(
                             componentIcon.getValue().toString()));
                 } else {
                     target.setIcon(null);
@@ -417,8 +417,8 @@ public class BoxLayoutTest extends AbstractTestUI {
 
                     componentCaption.select(target.getCaption());
                     if (target.getIcon() != null) {
-                        componentIcon.select(((ThemeResource) target.getIcon())
-                                .getResourceId());
+                        componentIcon.select(
+                                ((ExternalResource) target.getIcon()).getURL());
                     } else {
                         componentIcon.select(null);
                     }

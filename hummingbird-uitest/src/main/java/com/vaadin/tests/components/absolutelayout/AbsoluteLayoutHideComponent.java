@@ -15,7 +15,7 @@
  */
 package com.vaadin.tests.components.absolutelayout;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.AbsoluteLayout;
@@ -88,7 +88,7 @@ public class AbsoluteLayoutHideComponent extends AbstractTestUI {
         // WITHOUT THIS CODE works fine
 
         Embedded e = new Embedded("",
-                new ThemeResource("../runo/icons/64/ok.png"));
+                new ExternalResource("vaadin://themes/runo/icons/64/ok.png"));
         // e.setMimeType("image/jpg");
         e.setWidth("100%");
         e.setHeight("100%");

@@ -15,7 +15,7 @@
  */
 package com.vaadin.tests.themes.valo;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.tests.components.colorpicker.DefaultCaptionWidth;
 
 /**
@@ -23,7 +23,7 @@ import com.vaadin.tests.components.colorpicker.DefaultCaptionWidth;
  *
  * @author Vaadin Ltd
  */
-@Theme("valo")
+@StyleSheet("vaadin://themes/valo/styles.css")
 public class ValoDefaultCaptionWidth extends DefaultCaptionWidth {
 
 }

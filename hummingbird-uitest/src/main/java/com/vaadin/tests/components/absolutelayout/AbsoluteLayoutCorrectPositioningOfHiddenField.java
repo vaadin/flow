@@ -12,7 +12,6 @@ public class AbsoluteLayoutCorrectPositioningOfHiddenField extends TestBase {
 
     @Override
     protected void setup() {
-        setTheme("tests-tickets");
         final AbsoluteLayout abs = new AbsoluteLayout();
         abs.setStyleName("borders");
         abs.setWidth("250px");

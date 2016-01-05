@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.uitest.components;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.UserError;
 import com.vaadin.tests.components.uitest.TestSampler;
 import com.vaadin.ui.Accordion;
@@ -38,9 +38,9 @@ public class AccordionsCssTest {
         Label l2 = new Label("There are no saved notes.");
         Label l3 = new Label("There are currently no issues.");
 
-        acc.addTab(l1, "Actions", new ThemeResource(parent.ICON_URL));
-        acc.addTab(l2, "Notes", new ThemeResource(parent.ICON_URL));
-        acc.addTab(l3, "Issues", new ThemeResource(parent.ICON_URL));
+        acc.addTab(l1, "Actions", new ExternalResource(parent.ICON_URL));
+        acc.addTab(l2, "Notes", new ExternalResource(parent.ICON_URL));
+        acc.addTab(l3, "Issues", new ExternalResource(parent.ICON_URL));
 
         acc.getTab(l2).setEnabled(false);
 

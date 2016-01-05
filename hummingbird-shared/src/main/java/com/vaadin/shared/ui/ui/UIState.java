@@ -63,12 +63,6 @@ public class UIState extends JavaScriptComponentState {
      * State related to the LocaleService class.
      */
     public LocaleServiceState localeServiceState = new LocaleServiceState();
-    /**
-     * Currently used theme.
-     *
-     * @since 7.3
-     */
-    public String theme;
     public ReconnectDialogConfigurationState reconnectDialog = new ReconnectDialogConfigurationState();
     public JavaScriptManagerState javascriptManager = new JavaScriptManagerState();
     public int tabIndex;

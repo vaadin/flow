@@ -15,8 +15,8 @@
  */
 package com.vaadin.tests.themes.valo;
 
-import com.vaadin.annotations.Theme;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.annotations.StyleSheet;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
@@ -26,13 +26,14 @@ import com.vaadin.ui.Button;
  *
  * @author Vaadin Ltd
  */
-@Theme("valo")
+@StyleSheet("vaadin://themes/valo/styles.css")
 public class AlignTopIconInButton extends AbstractTestUI {
 
     @Override
     protected void setup(VaadinRequest request) {
         Button button = new Button();
-        button.setIcon(new ThemeResource("../runo/icons/16/document.png"));
+        button.setIcon(new ExternalResource(
+                "vaadin://themes/runo/icons/16/document.png"));
         add(button);
         button.addStyleName("icon-align-top");
         button.setCaption("caption");

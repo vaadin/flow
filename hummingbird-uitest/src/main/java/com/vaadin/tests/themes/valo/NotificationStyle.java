@@ -15,7 +15,7 @@
  */
 package com.vaadin.tests.themes.valo;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
@@ -27,7 +27,7 @@ import com.vaadin.ui.Notification;
  *
  * @author Vaadin Ltd
  */
-@Theme("valo")
+@StyleSheet("vaadin://themes/valo/styles.css")
 public class NotificationStyle extends AbstractTestUI {
 
     @Override

@@ -8,7 +8,6 @@ public class AbsoluteLayoutClipping extends TestBase {
 
     @Override
     protected void setup() {
-        setTheme("tests-tickets");
         AbsoluteLayout abs = new AbsoluteLayout();
         abs.setStyleName("borders");
         abs.setWidth("100px");

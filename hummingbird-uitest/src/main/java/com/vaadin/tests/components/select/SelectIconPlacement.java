@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.select;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.ComboBox;
 
@@ -21,7 +21,7 @@ public class SelectIconPlacement extends TestBase {
             String bar = "Only item";
             mySelect.addItem(bar);
             mySelect.setItemIcon(bar,
-                    new ThemeResource("common/icons/" + icon + "?w=" + width));
+                    new ExternalResource("common/icons/" + icon + "?w=" + width));
             mySelect.select(bar);
             mySelect.setWidth(width);
             add(mySelect);

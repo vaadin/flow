@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.ComponentTestCase;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
@@ -126,9 +126,9 @@ public class Comboboxes extends ComponentTestCase<ComboBox> {
 
         LinkedHashMap<String, String> options = new LinkedHashMap<String, String>();
         options.put("<None>", null);
-        options.put("16x16", "../runo/icons/16/user.png");
-        options.put("32x32", "../runo/icons/32/attention.png");
-        options.put("64x64", "../runo/icons/64/email-reply.png");
+        options.put("16x16", "vaadin://themes/runo/icons/16/user.png");
+        options.put("32x32", "vaadin://themes/runo/icons/32/attention.png");
+        options.put("64x64", "vaadin://themes/runo/icons/64/email-reply.png");
 
         return createSelectAction("Icon", options, "<None>",
                 new Command<ComboBox, String>() {
@@ -139,7 +139,7 @@ public class Comboboxes extends ComponentTestCase<ComboBox> {
                             if (value == null) {
                                 c.setItemIcon(id, null);
                             } else {
-                                c.setItemIcon(id, new ThemeResource(
+                                c.setItemIcon(id, new ExternalResource(
                                         value + "?" + new Date().getTime()));
                             }
                         }

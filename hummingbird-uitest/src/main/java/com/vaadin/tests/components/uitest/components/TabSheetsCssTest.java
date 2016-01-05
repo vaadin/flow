@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.uitest.components;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.UserError;
 import com.vaadin.tests.components.uitest.TestSampler;
 import com.vaadin.ui.Label;
@@ -42,7 +42,7 @@ public class TabSheetsCssTest {
         ts.getTab(content2).setClosable(true);
 
         Label content3 = new Label("Third Component");
-        ts.addTab(content3, "Third", new ThemeResource(parent.ICON_URL));
+        ts.addTab(content3, "Third", new ExternalResource(parent.ICON_URL));
         ts.getTab(content3).setEnabled(false);
 
         if (styleName != null) {

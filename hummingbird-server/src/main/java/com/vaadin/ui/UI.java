@@ -747,9 +747,6 @@ public abstract class UI extends CssLayout
         this.uiId = uiId;
         this.embedId = embedId;
 
-        // Actual theme - used for finding CustomLayout templates
-        setTheme(request.getParameter("theme"));
-
         getPage().init(request);
 
         // Call the init overridden by the application developer
@@ -976,38 +973,6 @@ public abstract class UI extends CssLayout
      */
     public void setLastHeartbeatTimestamp(long lastHeartbeat) {
         lastHeartbeatTimestamp = lastHeartbeat;
-    }
-
-    /**
-     * Gets the theme currently in use by this UI
-     *
-     * @return the theme name
-     */
-    public String getTheme() {
-        return getState(false).theme;
-    }
-
-    /**
-     * Sets the theme currently in use by this UI
-     * <p>
-     * Calling this method will remove the old theme (CSS file) from the
-     * application and add the new theme.
-     * <p>
-     * Note that this method is NOT SAFE to call in a portal environment or
-     * other environment where there are multiple UIs on the same page. The old
-     * CSS file will be removed even if there are other UIs on the page which
-     * are still using it.
-     *
-     * @since 7.3
-     * @param theme
-     *            The new theme name
-     */
-    public void setTheme(String theme) {
-        if (theme == null) {
-            getState().theme = null;
-        } else {
-            getState().theme = VaadinServlet.stripSpecialChars(theme);
-        }
     }
 
     /**

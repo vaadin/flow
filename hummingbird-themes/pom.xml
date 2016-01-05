@@ -15,30 +15,7 @@
 	</dependencies>
 
 	<build>
-		<resources>
-			<resource>
-				<directory>src/main/sass</directory>
-			</resource>
-			<resource>
-				<directory>src/main/generated-resources</directory>
-			</resource>
-		</resources>
 		<plugins>
-			<plugin>
-				<groupId>nl.geodienstencentrum.maven</groupId>
-				<artifactId>sass-maven-plugin</artifactId>
-				<version>2.10</version>
-				<configuration>
-					<destination>src/main/generated-resources</destination>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>update-stylesheets</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 

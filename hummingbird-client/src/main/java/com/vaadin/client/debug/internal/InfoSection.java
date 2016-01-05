@@ -25,7 +25,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
@@ -40,7 +39,6 @@ import com.vaadin.shared.Version;
  */
 public class InfoSection implements Section {
 
-    private static final String THEME_VERSION_CLASSNAME = "v-vaadin-version";
     private static final String PRIMARY_STYLE_NAME = VDebugWindow.STYLENAME
             + "-info";
     private static final String ERROR_STYLE = Level.SEVERE.getName();
@@ -163,7 +161,6 @@ public class InfoSection implements Section {
 
         addVersionInfo(configuration);
         addRow("Widget set", GWT.getModuleName());
-        addRow("Theme", connection.getUIConnector().getActiveTheme());
 
         String communicationMethodInfo = connection
                 .getServerCommunicationHandler().getCommunicationMethodName();
@@ -184,7 +181,7 @@ public class InfoSection implements Section {
     }
 
     /**
-     * Logs version information for client/server/theme.
+     * Logs version information for client/server.
      *
      * @param applicationConfiguration
      * @since 7.1
@@ -197,25 +194,12 @@ public class InfoSection implements Section {
                 .getAtmosphereVersion();
         String jsVersion = applicationConfiguration.getAtmosphereJSVersion();
 
-        String themeVersion;
-        boolean themeOk;
-        if (com.vaadin.client.BrowserInfo.get().isIE8()) {
-            themeVersion = "<IE8 can't detect this>";
-            themeOk = true;
-        } else {
-            themeVersion = getThemeVersion();
-            themeOk = equalsEither(themeVersion, clientVersion, servletVersion);
-        }
-
-        boolean clientOk = equalsEither(clientVersion, servletVersion,
-                themeVersion);
-        boolean servletOk = equalsEither(servletVersion, clientVersion,
-                themeVersion);
+        boolean clientOk = Objects.equals(clientVersion, servletVersion);
+        boolean servletOk = Objects.equals(servletVersion, clientVersion);
         addRow("Client engine version", clientVersion,
                 clientOk ? null : ERROR_STYLE);
         addRow("Server engine version", servletVersion,
                 servletOk ? null : ERROR_STYLE);
-        addRow("Theme version", themeVersion, themeOk ? null : ERROR_STYLE);
         if (jsVersion != null) {
             addRow("Push server version", atmosphereVersion);
             addRow("Push client version", jsVersion
@@ -244,27 +228,6 @@ public class InfoSection implements Section {
         }
 
         return false;
-    }
-
-    /**
-     * Finds out the version of the current theme (i.e. the version of Vaadin
-     * used to compile it)
-     *
-     * @since 7.1
-     * @return The full version as a string
-     */
-    private String getThemeVersion() {
-        Element div = DOM.createDiv();
-        div.setClassName(THEME_VERSION_CLASSNAME);
-        RootPanel.get().getElement().appendChild(div);
-        String version = getComputedStyle(div, ":after", "content");
-        div.removeFromParent();
-        if (version != null) {
-            // String version = new ComputedStyle(div).getProperty("content");
-            version = version.replace("'", "");
-            version = version.replace("\"", "");
-        }
-        return version;
     }
 
     private native String getComputedStyle(Element elem, String pseudoElement,

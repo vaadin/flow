@@ -11,7 +11,6 @@ import com.vaadin.ui.DateField;
 public class WidthRecalculationOnEnableStateChange extends TestBase {
     @Override
     public void setup() {
-        setTheme("reindeer-tests");
 
         final DateField df = new DateField();
         df.setValue(new Date(1203910239L));

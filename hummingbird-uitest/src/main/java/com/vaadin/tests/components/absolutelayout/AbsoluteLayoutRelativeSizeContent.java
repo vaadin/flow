@@ -15,7 +15,7 @@
  */
 package com.vaadin.tests.components.absolutelayout;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.AbsoluteLayout;
@@ -28,7 +28,7 @@ import com.vaadin.ui.NativeButton;
  *
  * @author Vaadin Ltd
  */
-@Theme("tests-tickets")
+@StyleSheet("vaadin://themes/tests-tickets/styles.css")
 public class AbsoluteLayoutRelativeSizeContent extends AbstractTestUI {
 
     @Override

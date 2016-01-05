@@ -15,8 +15,8 @@
  */
 package com.vaadin.tests.layouts.layouttester;
 
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
 import com.vaadin.server.UserError;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -41,10 +41,10 @@ import com.vaadin.ui.VerticalLayout;
  * Base class for Layout tests.
  */
 public abstract class BaseLayoutTestUI extends AbstractTestUI {
-    protected static final String FOLDER_16_PNG = "../icons/runo/16/folder.png";
-    protected static final String CALENDAR_32_PNG = "../runo/icons/16/calendar.png";
-    protected static final String LOCK_16_PNG = "../runo/icons/16/lock.png";
-    protected static final String GLOBE_16_PNG = "../runo/icons/16/globe.png";
+    protected static final String FOLDER_16_PNG = "vaadin://themes/icons/runo/16/folder.png";
+    protected static final String CALENDAR_32_PNG = "vaadin://themes/runo/icons/16/calendar.png";
+    protected static final String LOCK_16_PNG = "vaadin://themes/runo/icons/16/lock.png";
+    protected static final String GLOBE_16_PNG = "vaadin://themes/runo/icons/16/globe.png";
     public Alignment[] alignments = new Alignment[] { Alignment.TOP_CENTER,
             Alignment.TOP_LEFT, Alignment.TOP_RIGHT, Alignment.BOTTOM_CENTER,
             Alignment.BOTTOM_LEFT, Alignment.BOTTOM_RIGHT,
@@ -54,8 +54,9 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
     public final String[] CAPTIONS = new String[] { "",
             "VeryLongOneWordCaption",
             "Very long caption of 50 approximately symbols aaaaaaaaaaaa aaaaaa aaa " };
-    Resource[] ICONS = new Resource[] { new ThemeResource(CALENDAR_32_PNG),
-            new ThemeResource(LOCK_16_PNG), new ThemeResource(GLOBE_16_PNG) };
+    Resource[] ICONS = new Resource[] { new ExternalResource(CALENDAR_32_PNG),
+            new ExternalResource(LOCK_16_PNG),
+            new ExternalResource(GLOBE_16_PNG) };
     public AbstractComponent[] components = new AbstractComponent[alignments.length];
 
     protected AbstractOrderedLayout l1;
@@ -71,6 +72,7 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
 
     }
 
+    @Override
     protected void init() {
         try {
             l1 = (AbstractOrderedLayout) layoutClass.newInstance();
@@ -217,7 +219,7 @@ public abstract class BaseLayoutTestUI extends AbstractTestUI {
                 comp.setSizeUndefined();
                 TabSheet tab = (TabSheet) comp;
                 tab.addTab(new UndefWideLabel("TAB1"), "TAB1",
-                        new ThemeResource(GLOBE_16_PNG));
+                        new ExternalResource(GLOBE_16_PNG));
                 tab.addTab(new UndefWideLabel("TAB2"), "TAB2", null);
             }
             curLayout.addComponent(comp);

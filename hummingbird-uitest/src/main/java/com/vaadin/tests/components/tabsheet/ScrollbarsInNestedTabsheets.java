@@ -13,7 +13,6 @@ public class ScrollbarsInNestedTabsheets extends TestBase {
 
     @Override
     public void setup() {
-        setTheme("chameleon");
         final Label l = new Label("Select Sub Tab 2");
         final TabSheet t = new TabSheet();
         final TabSheet t2 = getTabSheet();

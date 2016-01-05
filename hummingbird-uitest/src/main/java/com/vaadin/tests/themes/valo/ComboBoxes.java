@@ -17,7 +17,7 @@ package com.vaadin.tests.themes.valo;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.UserError;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
@@ -47,7 +47,7 @@ public class ComboBoxes extends VerticalLayout implements View {
         combo.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
         combo.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
         combo.setItemIcon(combo.getItemIds().iterator().next(),
-                new ThemeResource("../runo/icons/16/document.png"));
+                new ExternalResource("vaadin://themes/runo/icons/16/document.png"));
         row.addComponent(combo);
 
         CssLayout group = new CssLayout();

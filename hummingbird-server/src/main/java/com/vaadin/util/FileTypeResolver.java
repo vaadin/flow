@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
 
 /**
  * Utility class that can figure out mime-types and icons related to files.
@@ -226,10 +225,6 @@ public class FileTypeResolver implements Serializable {
             }
         }
 
-        // Initialize Icons
-        ThemeResource folder = new ThemeResource("../runo/icons/16/folder.png");
-        addIcon("inode/drive", folder);
-        addIcon("inode/directory", folder);
     }
 
     /**

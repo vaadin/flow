@@ -17,7 +17,7 @@ package com.vaadin.tests.components.menubar;
 
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Label;
@@ -44,14 +44,14 @@ public class MenuBarsWithNesting extends AbstractTestUI {
     public final static String[] itemNames = { "Icon item", "Arrow down",
             "Arrow up", "Warning" };
     private final static Resource[] itemIcons = {
-            new ThemeResource("window/img/restore.png"), FontAwesome.ARROW_DOWN,
+            new ExternalResource("window/img/restore.png"), FontAwesome.ARROW_DOWN,
             FontAwesome.ARROW_UP, FontAwesome.WARNING };
 
     // The last menu item is nested with the following submenu items.
     public final static String[] nestedItemnames = { "No icon", "Font icon",
             "Image icon" };
     private final static Resource[] nestedItemIcons = { null, FontAwesome.LINK,
-            new ThemeResource("window/img/restore.png") };
+            new ExternalResource("window/img/restore.png") };
 
     private MenuBar.Command selectionCommand;
 

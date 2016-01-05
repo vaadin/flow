@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.window;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Alignment;
@@ -32,7 +32,7 @@ public class ExtraWindowShown extends AbstractTestUI {
                 }));
                 Button iconButton = new Button("A button with icon");
                 iconButton
-                        .setIcon(new ThemeResource("../runo/icons/16/ok.png"));
+                        .setIcon(new ExternalResource("vaadin://themes/runo/icons/16/ok.png"));
                 layout.addComponent(iconButton);
                 event.getButton().getUI().addWindow(w);
             }

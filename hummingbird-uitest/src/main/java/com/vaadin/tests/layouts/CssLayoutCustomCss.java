@@ -18,7 +18,6 @@ public class CssLayoutCustomCss extends TestBase implements ClickListener {
 
     @Override
     protected void setup() {
-        setTheme("tests-tickets");
         layout = new CssLayout();
         layout.setSizeFull();
         add(layout);

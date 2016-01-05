@@ -1,7 +1,7 @@
 package com.vaadin.tests.components.embedded;
 
 import com.vaadin.server.ExternalResource;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -21,7 +21,7 @@ public class EmbeddedAltText extends TestBase {
     @Override
     protected void setup() {
         final Embedded e = new Embedded("Caption",
-                new ThemeResource("../runo/icons/64/ok.png"));
+                new ExternalResource("vaadin://themes/runo/icons/64/ok.png"));
         e.setAlternateText("Alt text of the image");
         add(e);
         final Embedded player = new Embedded();

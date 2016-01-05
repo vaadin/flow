@@ -1,6 +1,5 @@
 (function() {
 	var apps = {};
-	var themesLoaded = {};
 	var widgetsets = {};
 	
 	

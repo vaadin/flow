@@ -2,7 +2,7 @@ package com.vaadin.tests.components.combobox;
 
 import com.vaadin.data.Item;
 import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.ComboBox;
 
@@ -27,10 +27,10 @@ public class ComboBoxItemIcon extends TestBase {
 
             Item item = cb.addItem("FI");
             item.getItemProperty("icon").setValue(
-                    new ThemeResource("../tests-tickets/icons/fi.gif"));
+                    new ExternalResource("vaadin://themes/tests-tickets/icons/fi.gif"));
             item = cb.addItem("SE");
             item.getItemProperty("icon").setValue(
-                    new ThemeResource("../tests-tickets/icons/se.gif"));
+                    new ExternalResource("vaadin://themes/tests-tickets/icons/se.gif"));
 
             add(cb);
         }
@@ -41,13 +41,13 @@ public class ComboBoxItemIcon extends TestBase {
 
             Item item = cb.addItem("Finland");
             item.getItemProperty("icon").setValue(
-                    new ThemeResource("../tests-tickets/icons/fi.gif"));
+                    new ExternalResource("vaadin://themes/tests-tickets/icons/fi.gif"));
             item = cb.addItem("Australia");
             item.getItemProperty("icon").setValue(
-                    new ThemeResource("../tests-tickets/icons/au.gif"));
+                    new ExternalResource("vaadin://themes/tests-tickets/icons/au.gif"));
             item = cb.addItem("Hungary");
             item.getItemProperty("icon").setValue(
-                    new ThemeResource("../tests-tickets/icons/hu.gif"));
+                    new ExternalResource("vaadin://themes/tests-tickets/icons/hu.gif"));
 
             cb.setValue("Hungary");
             add(cb);

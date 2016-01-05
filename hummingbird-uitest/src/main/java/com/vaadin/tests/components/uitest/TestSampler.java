@@ -29,7 +29,7 @@ import com.vaadin.ui.Window;
  * can be used to test themes and components in general.
  */
 public class TestSampler extends TabSheet {
-    public static final String ICON_URL = "../runo/icons/16/help.png";
+    public static final String ICON_URL = "vaadin://themes/runo/icons/16/help.png";
 
     private List<Component> components = new ArrayList<Component>();
 

@@ -3,7 +3,7 @@ package com.vaadin.tests.components.optiongroup;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.select.AbstractSelectTestCase;
 import com.vaadin.ui.OptionGroup;
 
@@ -31,7 +31,7 @@ public class OptionGroups extends AbstractSelectTestCase<OptionGroup> {
     }
 
     private void createIconToggle(String string) {
-        LinkedHashMap<String, ThemeResource> options = new LinkedHashMap<String, ThemeResource>();
+        LinkedHashMap<String, ExternalResource> options = new LinkedHashMap<String, ExternalResource>();
         options.put("-", null);
         options.put("16x16", ICON_16_USER_PNG_CACHEABLE);
         options.put("32x32", ICON_32_ATTENTION_PNG_CACHEABLE);
@@ -39,9 +39,9 @@ public class OptionGroups extends AbstractSelectTestCase<OptionGroup> {
 
         createSelectAction(string, CATEGORY_DECORATIONS, options,
                 options.keySet().iterator().next(),
-                new Command<OptionGroup, ThemeResource>() {
+                new Command<OptionGroup, ExternalResource>() {
                     @Override
-                    public void execute(OptionGroup c, ThemeResource icon,
+                    public void execute(OptionGroup c, ExternalResource icon,
                             Object data) {
                         Collection<?> itemIds = c.getItemIds();
                         for (Object itemId : itemIds) {

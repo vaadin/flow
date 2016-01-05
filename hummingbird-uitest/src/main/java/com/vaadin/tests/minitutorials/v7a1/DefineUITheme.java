@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2000-2014 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -16,7 +16,7 @@
 
 package com.vaadin.tests.minitutorials.v7a1;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
@@ -29,7 +29,7 @@ import com.vaadin.ui.VerticalLayout;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-@Theme("hello-theme")
+@StyleSheet("vaadin://themes/valo/styles.css")
 public class DefineUITheme extends UI {
 
     @Override

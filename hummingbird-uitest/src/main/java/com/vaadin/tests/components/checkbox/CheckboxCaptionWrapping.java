@@ -19,7 +19,6 @@ public class CheckboxCaptionWrapping extends TestBase {
 
     @Override
     protected void setup() {
-        setTheme("tests-tickets");
         VerticalLayout mainLayout = new VerticalLayout();
         CheckBox cb = new CheckBox(
                 "Checkbox with some Incididunt ut labore et dolore magna aliqua.");

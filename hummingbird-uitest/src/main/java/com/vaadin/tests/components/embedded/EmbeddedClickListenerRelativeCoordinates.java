@@ -2,7 +2,7 @@ package com.vaadin.tests.components.embedded;
 
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.Label;
@@ -12,7 +12,7 @@ public class EmbeddedClickListenerRelativeCoordinates extends TestBase {
     @Override
     protected void setup() {
         Embedded e = new Embedded("Embedded caption",
-                new ThemeResource("../runo/icons/64/ok.png"));
+                new ExternalResource("vaadin://themes/runo/icons/64/ok.png"));
         final Label xLabel = new Label();
         xLabel.setId("x");
         final Label yLabel = new Label();

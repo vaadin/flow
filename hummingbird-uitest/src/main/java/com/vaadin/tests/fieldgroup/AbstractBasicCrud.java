@@ -18,7 +18,7 @@ package com.vaadin.tests.fieldgroup;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.Validator.InvalidValueException;
@@ -48,7 +48,7 @@ import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.themes.ValoTheme;
 
-@Theme("valo")
+@StyleSheet("vaadin://themes/valo/styles.css")
 public abstract class AbstractBasicCrud extends AbstractTestUIWithLog {
 
     protected AbstractForm form;

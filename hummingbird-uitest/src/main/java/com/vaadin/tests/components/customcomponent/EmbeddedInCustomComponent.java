@@ -2,7 +2,7 @@ package com.vaadin.tests.components.customcomponent;
 
 import java.util.Date;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Embedded;
@@ -22,7 +22,7 @@ public class EmbeddedInCustomComponent extends TestBase {
 
     private CustomComponent wrap(String caption, String themeImage) {
         Embedded image = new Embedded(caption,
-                new ThemeResource("../runo/icons/64/" + themeImage));
+                new ExternalResource("vaadin://themes/runo/icons/64/" + themeImage));
         CustomComponent cc = new CustomComponent(image);
         return cc;
     }

@@ -1,7 +1,6 @@
 package com.vaadin.tests.components.uitest.components;
 
 import com.vaadin.server.ExternalResource;
-import com.vaadin.server.ThemeResource;
 import com.vaadin.tests.components.uitest.TestSampler;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
@@ -26,7 +25,7 @@ public class ButtonsCssTest extends GridLayout {
         addComponent(b);
 
         b = new Button("Button with icon");
-        b.setIcon(new ThemeResource(parent.ICON_URL));
+        b.setIcon(new ExternalResource(parent.ICON_URL));
         b.setId("button" + debugIdCounter++);
         addComponent(b);
 
@@ -49,7 +48,7 @@ public class ButtonsCssTest extends GridLayout {
         addComponent(cb);
 
         cb = new CheckBox("Checkbox with icon");
-        cb.setIcon(new ThemeResource(parent.ICON_URL));
+        cb.setIcon(new ExternalResource(parent.ICON_URL));
         cb.setId("button" + debugIdCounter++);
         addComponent(cb);
 
@@ -82,7 +81,7 @@ public class ButtonsCssTest extends GridLayout {
         }
 
         if (iconUrl != null) {
-            b.setIcon(new ThemeResource(iconUrl));
+            b.setIcon(new ExternalResource(iconUrl));
         }
 
         addComponent(b);

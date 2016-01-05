@@ -19,20 +19,18 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Title;
 import com.vaadin.data.Container;
 import com.vaadin.data.Container.Hierarchical;
 import com.vaadin.data.Item;
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.ViewChangeListener;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
@@ -46,12 +44,11 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.MenuItem;
-import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
 
-@Theme("tests-valo")
+@StyleSheet("vaadin://themes/tests-valo/styles.css")
 @Title("Valo Theme Test")
 public class ValoThemeUI extends UI {
 
@@ -238,7 +235,6 @@ public class ValoThemeUI extends UI {
         top.setDefaultComponentAlignment(Alignment.MIDDLE_LEFT);
         top.addStyleName("valo-menu-title");
         menu.addComponent(top);
-        menu.addComponent(createThemeSelect());
 
         Button showMenu = new Button("Menu", new ClickListener() {
             @Override
@@ -268,7 +264,8 @@ public class ValoThemeUI extends UI {
         MenuItem settingsItem = settings.addItem(
                 sg.nextString(true) + " " + sg.nextString(true)
                         + sg.nextString(false),
-                new ThemeResource("../tests-valo/img/profile-pic-300px.jpg"),
+                new ExternalResource(
+                        "vaadin://themes/tests-valo/img/profile-pic-300px.jpg"),
                 null);
         settingsItem.addItem("Edit Profile", null);
         settingsItem.addItem("Preferences", null);
@@ -331,27 +328,6 @@ public class ValoThemeUI extends UI {
                 + count + "</span>");
 
         return menu;
-    }
-
-    private Component createThemeSelect() {
-        final NativeSelect ns = new NativeSelect();
-        ns.setNullSelectionAllowed(false);
-        ns.setId("themeSelect");
-        ns.addContainerProperty("caption", String.class, "");
-        ns.setItemCaptionPropertyId("caption");
-        for (String identifier : themeVariants.keySet()) {
-            ns.addItem(identifier).getItemProperty("caption")
-                    .setValue(themeVariants.get(identifier));
-        }
-
-        ns.setValue("tests-valo");
-        ns.addValueChangeListener(new ValueChangeListener() {
-            @Override
-            public void valueChange(ValueChangeEvent event) {
-                setTheme((String) ns.getValue());
-            }
-        });
-        return ns;
     }
 
     static final String CAPTION_PROPERTY = "caption";

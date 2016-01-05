@@ -2,7 +2,7 @@ package com.vaadin.tests.components.tree;
 
 import java.util.Date;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.tests.util.LoremIpsum;
 import com.vaadin.ui.HorizontalLayout;
@@ -13,12 +13,12 @@ public class TreeWithIcons extends TestBase {
 
     @Override
     protected void setup() {
-        ThemeResource notCachedFolderIconHuge = new ThemeResource(
-                "../runo/icons/64/folder.png?" + new Date().getTime());
-        ThemeResource notCachedFolderIconLarge = new ThemeResource(
-                "../runo/icons/32/folder.png?" + new Date().getTime());
-        ThemeResource notCachedFolderIconLargeOther = new ThemeResource(
-                "../runo/icons/32/ok.png?" + new Date().getTime());
+        ExternalResource notCachedFolderIconHuge = new ExternalResource(
+                "vaadin://themes/runo/icons/64/folder.png?" + new Date().getTime());
+        ExternalResource notCachedFolderIconLarge = new ExternalResource(
+                "vaadin://themes/runo/icons/32/folder.png?" + new Date().getTime());
+        ExternalResource notCachedFolderIconLargeOther = new ExternalResource(
+                "vaadin://themes/runo/icons/32/ok.png?" + new Date().getTime());
         Tree t = new Tree();
 
         t.addItem("Root 1");

@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.button;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -17,8 +17,8 @@ public class ButtonToggleIcons extends UI {
         final VerticalLayout layout = new VerticalLayout();
         setContent(layout);
 
-        final ThemeResource iconResource = new ThemeResource(
-                "../runo/icons/16/arrow-left.png");
+        final ExternalResource iconResource = new ExternalResource(
+                "vaadin://themes/runo/icons/16/arrow-left.png");
 
         final ClickListener iconToggleListener = new ClickListener() {
             @Override

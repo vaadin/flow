@@ -83,7 +83,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         private final VaadinResponse response;
         private final BootstrapFragmentResponse bootstrapResponse;
 
-        private String themeName;
         private String appId;
         private PushMode pushMode;
         private JsonObject applicationParameters;
@@ -113,13 +112,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         public Class<? extends UI> getUIClass() {
             return bootstrapResponse.getUI().getClass();
-        }
-
-        public String getThemeName() {
-            if (themeName == null) {
-                themeName = findAndEscapeThemeName(this);
-            }
-            return themeName;
         }
 
         public PushMode getPushMode() {
@@ -188,12 +180,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             // FIXME
             return context.getApplicationParameters()
                     .getString(ApplicationConstants.VAADIN_DIR_URL) + "../";
-        }
-
-        @Override
-        protected String getThemeUri() {
-            return getWebContextUrl() + "VAADIN/themes/"
-                    + context.getThemeName();
         }
 
         @Override
@@ -421,7 +407,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         com.vaadin.hummingbird.kernel.Element preRenderedUI = context.getUI()
                 .preRender();
         preRenderedUI.setAttribute("pre-render", true);
-        preRenderedUI.addClass(context.getThemeName());
         document.body()
                 .appendChild(PreRenderer.toJSoup(document, preRenderedUI));
     }
@@ -510,20 +495,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         head.appendElement("style").attr("type", "text/css")
                 .appendText("html, body {height:100%;margin:0;}");
 
-        // Add favicon links
-        String themeName = context.getThemeName();
-        if (themeName != null) {
-            String themeUri = getThemeUri(context, themeName);
-            head.appendElement("link").attr("rel", "stylesheet").attr("href",
-                    themeUri + "/styles.css");
-            head.appendElement("link").attr("rel", "shortcut icon")
-                    .attr("type", "image/vnd.microsoft.icon")
-                    .attr("href", themeUri + "/favicon.ico");
-            head.appendElement("link").attr("rel", "icon")
-                    .attr("type", "image/vnd.microsoft.icon")
-                    .attr("href", themeUri + "/favicon.ico");
-        }
-
         writeUsedScriptsImportsStylesheets(context.getUriResolver(), deps,
                 head);
 
@@ -607,8 +578,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         /*- Add classnames;
          *      .v-app
          *      .v-app-loading
-         *- Additionally added from javascript:
-         *      <themeName, remove non-alphanum>
          */
 
         List<Node> fragmentNodes = context.getBootstrapResponse()
@@ -691,10 +660,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         appConfig.put(UIConstants.UI_ID_PARAMETER, context.getUI().getUIId());
 
-        String themeName = context.getThemeName();
-        if (themeName != null) {
-            appConfig.put("theme", themeName);
-        }
         appConfig.put("client-engine", Constants.CLIENT_ENGINE_MODULE);
 
         JsonObject versionInfo = Json.createObject();
@@ -778,57 +743,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     protected abstract String getServiceUrl(BootstrapContext context);
-
-    /**
-     * Get the URI for the application theme.
-     *
-     * A portal-wide default theme is fetched from the portal shared resource
-     * directory (if any), other themes from the portlet.
-     *
-     * @param context
-     * @param themeName
-     *
-     * @return
-     */
-    public String getThemeUri(BootstrapContext context, String themeName) {
-        VaadinRequest request = context.getRequest();
-        final String staticFilePath = request.getService()
-                .getStaticFileLocation(request);
-        return staticFilePath + "/" + VaadinServlet.THEME_DIR_PATH + '/'
-                + themeName;
-    }
-
-    /**
-     * Override if required
-     *
-     * @param context
-     * @return
-     */
-    public String getThemeName(BootstrapContext context) {
-        UICreateEvent event = new UICreateEvent(context.getRequest(),
-                context.getUIClass());
-        return context.getBootstrapResponse().getUIProvider().getTheme(event);
-    }
-
-    /**
-     * Do not override.
-     *
-     * @param context
-     * @return
-     */
-    public String findAndEscapeThemeName(BootstrapContext context) {
-        String themeName = getThemeName(context);
-        if (themeName == null) {
-            VaadinRequest request = context.getRequest();
-            themeName = request.getService().getConfiguredTheme(request);
-        }
-
-        // XSS preventation, theme names shouldn't contain special chars anyway.
-        // The servlet denies them via url parameter.
-        themeName = VaadinServlet.stripSpecialChars(themeName);
-
-        return themeName;
-    }
 
     protected void writeError(VaadinResponse response, Throwable e)
             throws IOException {

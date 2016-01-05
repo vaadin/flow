@@ -15,7 +15,7 @@
  */
 package com.vaadin.tests.application;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.server.VaadinRequest;
@@ -39,7 +39,7 @@ import com.vaadin.ui.VerticalLayout;
  * @since
  * @author Vaadin Ltd
  */
-@Theme("valo")
+@StyleSheet("vaadin://themes/valo/styles.css")
 public class CommErrorEmulatorUI extends AbstractTestUIWithLog {
 
     private static class Response {

@@ -17,7 +17,6 @@ package com.vaadin.ui.renderers;
 
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -26,8 +25,7 @@ import elemental.json.JsonValue;
  * A renderer for presenting images.
  * <p>
  * The image for each rendered cell is read from a Resource-typed property in
- * the data source. Only {@link ExternalResource}s and {@link ThemeResource}s
- * are currently supported.
+ * the data source. Only {@link ExternalResource}s are currently supported.
  *
  * @since 7.4
  * @author Vaadin Ltd
@@ -54,10 +52,9 @@ public class ImageRenderer extends ClickableRenderer<Resource> {
 
     @Override
     public JsonValue encode(Resource resource) {
-        if (!(resource == null || resource instanceof ExternalResource
-                || resource instanceof ThemeResource)) {
+        if (!(resource == null || resource instanceof ExternalResource)) {
             throw new IllegalArgumentException(
-                    "ImageRenderer only supports ExternalResource and ThemeResource ("
+                    "ImageRenderer only supports ExternalResource  ("
                             + resource.getClass().getSimpleName() + " given)");
         }
 

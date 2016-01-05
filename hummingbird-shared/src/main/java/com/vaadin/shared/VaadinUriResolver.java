@@ -58,10 +58,6 @@ public abstract class VaadinUriResolver implements Serializable {
         if (vaadinUri == null) {
             return null;
         }
-        if (vaadinUri.startsWith(ApplicationConstants.THEME_PROTOCOL_PREFIX)) {
-            final String themeUri = getThemeUri();
-            vaadinUri = themeUri + vaadinUri.substring(7);
-        }
 
         if (vaadinUri
                 .startsWith(ApplicationConstants.PUBLISHED_PROTOCOL_PREFIX)) {
@@ -147,13 +143,6 @@ public abstract class VaadinUriResolver implements Serializable {
      * @return the service URL
      */
     protected abstract String getServiceUrl();
-
-    /**
-     * Gets the URI of the directory of the current theme.
-     *
-     * @return the URI of the current theme directory
-     */
-    protected abstract String getThemeUri();
 
     /**
      * Encodes a value for safe inclusion as a parameter in the query string.

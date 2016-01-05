@@ -4,7 +4,7 @@ import java.util.Date;
 
 import com.vaadin.data.Item;
 import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.ComboBox;
 
@@ -35,7 +35,7 @@ public class ComboBoxLargeIcons extends TestBase {
         for (String icon : icons) {
             Item item = cb.addItem(icon);
             item.getItemProperty("icon")
-                    .setValue(new ThemeResource("../runo/icons/32/" + icon
+                    .setValue(new ExternalResource("vaadin://themes/runo/icons/32/" + icon
                             + ".png?" + new Date().getTime()));
         }
 

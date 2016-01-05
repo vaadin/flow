@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.window;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.window.WindowRole;
 import com.vaadin.tests.components.AbstractTestUI;
@@ -76,7 +76,7 @@ public class ExtraWindowShownWaiAria extends AbstractTestUI {
                         layout.addComponent(close);
                         Button iconButton = new Button("A button with icon");
                         iconButton.setIcon(
-                                new ThemeResource("../runo/icons/16/ok.png"));
+                                new ExternalResource("vaadin://themes/runo/icons/16/ok.png"));
                         layout.addComponent(iconButton);
 
                         event.getButton().getUI().addWindow(w);

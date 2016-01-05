@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.button;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
@@ -9,8 +9,8 @@ import com.vaadin.ui.VerticalLayout;
 
 public class DisabledButtons extends TestBase {
 
-    private static final ThemeResource ICON = new ThemeResource(
-            "../runo/icons/16/ok.png");
+    private static final ExternalResource ICON = new ExternalResource(
+            "vaadin://themes/runo/icons/16/ok.png");
     private String CAPTION = "Caption";
 
     @Override

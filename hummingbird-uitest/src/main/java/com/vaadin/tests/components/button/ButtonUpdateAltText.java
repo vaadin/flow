@@ -21,7 +21,7 @@ package com.vaadin.tests.components.button;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
@@ -34,8 +34,8 @@ import com.vaadin.ui.CheckBox;
  */
 public class ButtonUpdateAltText extends AbstractTestUI {
 
-    private final ThemeResource ICON = new ThemeResource(
-            "../runo/icons/16/folder.png");
+    private final ExternalResource ICON = new ExternalResource(
+            "vaadin://themes/runo/icons/16/folder.png");
 
     /*
      * (non-Javadoc)

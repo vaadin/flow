@@ -15,7 +15,7 @@
  */
 package com.vaadin.tests.layouts;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.HorizontalLayout;
@@ -37,7 +37,7 @@ import com.vaadin.ui.TextField;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-@Theme("valo")
+@StyleSheet("vaadin://themes/valo/styles.css")
 public class HorizontalLayoutAndCaretPosition extends AbstractTestUI {
     @Override
     protected void setup(VaadinRequest request) {

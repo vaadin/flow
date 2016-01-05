@@ -15,7 +15,7 @@
  */
 package com.vaadin.tests.themes.valo;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.TextField;
@@ -25,7 +25,7 @@ import com.vaadin.ui.TextField;
  *
  * @author Vaadin Ltd
  */
-@Theme("tests-valo-contrast")
+@StyleSheet("vaadin://themes/valo/styles.css")
 public class ContrastFontColor extends AbstractTestUI {
 
     @Override

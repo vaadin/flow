@@ -10,7 +10,6 @@ public class FormLayoutCaptionStyles extends TestBase {
 
     @Override
     protected void setup() {
-        setTheme("reindeer-tests");
         FormLayout fl = new FormLayout();
 
         TextField f1 = createTextField("Text field 1", "");

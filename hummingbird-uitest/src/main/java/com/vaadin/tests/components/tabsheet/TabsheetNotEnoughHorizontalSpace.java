@@ -15,7 +15,7 @@
  */
 package com.vaadin.tests.components.tabsheet;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Panel;
@@ -26,7 +26,7 @@ import com.vaadin.ui.TabSheet;
  *
  * @author Vaadin Ltd
  */
-@Theme("chameleon")
+@StyleSheet("vaadin://themes/chameleon/styles.css")
 public class TabsheetNotEnoughHorizontalSpace extends AbstractTestUI {
 
     private TabSheet tabsheet = new TabSheet();

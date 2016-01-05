@@ -44,7 +44,6 @@ import com.vaadin.client.Profiler;
 import com.vaadin.client.VConsole;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.ui.TouchScrollDelegate.TouchScrollHandler;
-import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.ApplicationConstants;
 
 /**
@@ -292,16 +291,6 @@ public class VUI extends SimplePanel
             sendClientResized();
 
         }
-    }
-
-    /**
-     * @return the name of the theme in use by this UI.
-     * @deprecated as of 7.3. Use {@link UIConnector#getActiveTheme()} instead.
-     */
-    @Deprecated
-    public String getTheme() {
-        return ((UIConnector) ConnectorMap.get(connection).getConnector(this))
-                .getActiveTheme();
     }
 
     /**

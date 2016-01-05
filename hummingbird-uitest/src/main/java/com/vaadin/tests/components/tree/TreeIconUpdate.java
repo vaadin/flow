@@ -3,7 +3,7 @@ package com.vaadin.tests.components.tree;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.HierarchicalContainer;
 import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -12,10 +12,10 @@ import com.vaadin.ui.Tree;
 
 public class TreeIconUpdate extends TestBase {
 
-    private static final Resource ICON1 = new ThemeResource(
-            "../runo/icons/16/folder.png");
-    private static final Resource ICON2 = new ThemeResource(
-            "../runo/icons/16/ok.png");
+    private static final Resource ICON1 = new ExternalResource(
+            "vaadin://themes/runo/icons/16/folder.png");
+    private static final Resource ICON2 = new ExternalResource(
+            "vaadin://themes/runo/icons/16/ok.png");
 
     @Override
     protected void setup() {

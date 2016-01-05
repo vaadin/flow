@@ -15,8 +15,8 @@ import com.vaadin.event.FieldEvents.FocusEvent;
 import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.event.FieldEvents.FocusNotifier;
 import com.vaadin.server.DefaultErrorHandler;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.Resource;
-import com.vaadin.server.ThemeResource;
 import com.vaadin.tests.util.Log;
 import com.vaadin.tests.util.LoremIpsum;
 import com.vaadin.ui.AbstractComponent;
@@ -33,8 +33,8 @@ public abstract class AbstractComponentTest<T extends AbstractComponent>
     protected static final String TEXT_VERY_LONG = "This is a very, very long text. "
             + LoremIpsum.get(5000);
 
-    private static final Resource SELECTED_ICON = new ThemeResource(
-            "../runo/icons/16/ok.png");
+    private static final Resource SELECTED_ICON = new ExternalResource(
+            "vaadin://themes/runo/icons/16/ok.png");
 
     private static final LinkedHashMap<String, String> sizeOptions = new LinkedHashMap<String, String>();
 
@@ -80,7 +80,6 @@ public abstract class AbstractComponentTest<T extends AbstractComponent>
 
     @Override
     protected final void setup() {
-        setTheme("tests-components");
 
         // Create menu here so it appears before the components
         add(createMainMenu());

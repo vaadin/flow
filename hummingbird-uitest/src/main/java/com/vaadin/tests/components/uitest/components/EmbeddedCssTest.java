@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.uitest.components;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.uitest.TestSampler;
 import com.vaadin.ui.BrowserFrame;
 import com.vaadin.ui.Embedded;
@@ -11,11 +11,11 @@ public class EmbeddedCssTest {
 
     public EmbeddedCssTest(TestSampler parent) {
         Embedded e = new Embedded("Embedded with a caption",
-                new ThemeResource(parent.ICON_URL));
+                new ExternalResource(parent.ICON_URL));
         e.setId("embedded" + debugIdCounter);
         parent.addComponent(e);
 
-        e = new Embedded(null, new ThemeResource(parent.ICON_URL));
+        e = new Embedded(null, new ExternalResource(parent.ICON_URL));
         e.setId("embedded" + debugIdCounter);
         parent.addComponent(e);
 

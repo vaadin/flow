@@ -15,7 +15,7 @@
  */
 package com.vaadin.tests.themes.valo;
 
-import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.TextField;
@@ -25,7 +25,7 @@ import com.vaadin.ui.TextField;
  *
  * @author Vaadin Ltd
  */
-@Theme("tests-valo-textfield-bevel")
+@StyleSheet("vaadin://themes/tests-valo-textfield-bevel/styles.css")
 public class TextFieldBevel extends AbstractTestUI {
 
     @Override
@@ -44,7 +44,7 @@ public class TextFieldBevel extends AbstractTestUI {
         return "Set v-bevel to 'false' should unset 'v-textfield-bevel' value.";
     }
 
-    @Theme("valo")
+    @StyleSheet("vaadin://themes/valo/styles.css")
     public static class ValoDefaultTextFieldBevel extends TextFieldBevel {
 
     }

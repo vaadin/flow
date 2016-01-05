@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.combobox;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -35,7 +35,7 @@ public class RemovalOfSelectedIcon extends TestBase {
         ComboBox cb = new ComboBox(caption);
         cb.addItem(1);
         cb.setItemCaption(1, "icon test");
-        cb.setItemIcon(1, new ThemeResource("menubar/img/checked.png"));
+        cb.setItemIcon(1, new ExternalResource("menubar/img/checked.png"));
         return cb;
     }
 

@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.util.HierarchicalContainer;
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Tree;
@@ -60,8 +60,8 @@ public class TreeHorizontalResize extends TestBase {
         // Create containerproperty for name
         hwContainer.addContainerProperty(hw_PROPERTY_NAME, String.class, null);
         // Create containerproperty for icon
-        hwContainer.addContainerProperty(hw_PROPERTY_ICON, ThemeResource.class,
-                new ThemeResource("../runo/icons/16/document.png"));
+        hwContainer.addContainerProperty(hw_PROPERTY_ICON, ExternalResource.class,
+                new ExternalResource("vaadin://themes/runo/icons/16/document.png"));
         for (int i = 0; i < hardware.length; i++) {
             // Add new item
             item = hwContainer.addItem(itemId);
@@ -73,7 +73,7 @@ public class TreeHorizontalResize extends TestBase {
             for (int j = 1; j < hardware[i].length; j++) {
                 if (j == 1) {
                     item.getItemProperty(hw_PROPERTY_ICON).setValue(
-                            new ThemeResource("../runo/icons/16/folder.png"));
+                            new ExternalResource("vaadin://themes/runo/icons/16/folder.png"));
                 }
                 // Add child items
                 item = hwContainer.addItem(itemId);

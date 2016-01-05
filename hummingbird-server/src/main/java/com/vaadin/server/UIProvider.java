@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 
 import com.vaadin.annotations.Push;
-import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.Transport;
@@ -73,29 +72,6 @@ public abstract class UIProvider implements Serializable {
         }
 
         return null;
-    }
-
-    /**
-     * Finds the theme to use for a specific UI. If no specific theme is
-     * required, <code>null</code> is returned.
-     * <p>
-     * The default implementation checks for a @{@link Theme} annotation on the
-     * UI class.
-     *
-     * @param event
-     *            the UI create event with information about the UI and the
-     *            current request.
-     * @return the name of the theme, or <code>null</code> if the default theme
-     *         should be used
-     *
-     */
-    public String getTheme(UICreateEvent event) {
-        Theme uiTheme = getAnnotationFor(event.getUIClass(), Theme.class);
-        if (uiTheme != null) {
-            return uiTheme.value();
-        } else {
-            return null;
-        }
     }
 
     public String getPageTitle(UICreateEvent event) {

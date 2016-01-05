@@ -1,6 +1,6 @@
 package com.vaadin.tests.components.uitest.components;
 
-import com.vaadin.server.ThemeResource;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.tests.components.uitest.TestSampler;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
@@ -62,7 +62,7 @@ public class LabelsCssTest extends GridLayout {
         }
 
         if (iconUrl != null) {
-            l.setIcon(new ThemeResource(iconUrl));
+            l.setIcon(new ExternalResource(iconUrl));
         }
 
         addComponent(l);

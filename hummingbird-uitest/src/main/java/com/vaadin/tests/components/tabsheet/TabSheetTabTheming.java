@@ -14,7 +14,6 @@ public class TabSheetTabTheming extends TestBase {
         tabsheet.addTab(new Label(), "Something about using all the keys",
                 null);
         add(tabsheet);
-        setTheme("tests-tickets");
     }
 
     @Override
