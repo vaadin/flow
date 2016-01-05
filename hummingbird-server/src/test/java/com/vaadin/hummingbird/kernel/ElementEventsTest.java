@@ -232,7 +232,7 @@ public class ElementEventsTest {
     }
 
     @Test
-    public void addEventData() {
+    public void addRemoveEventData() {
         TestField c = new TestField();
         Element e = c.getElement();
 
@@ -240,6 +240,22 @@ public class ElementEventsTest {
                 e.getEventData("foo").toArray());
         e.addEventData("foo", "bar");
         Assert.assertArrayEquals(new String[] { "bar" },
+                e.getEventData("foo").toArray());
+
+        e.addEventData("foo", "baz");
+        Assert.assertArrayEquals(new String[] { "bar", "baz" },
+                e.getEventData("foo").toArray());
+
+        e.removeEventData("foo", "bar");
+        Assert.assertArrayEquals(new String[] { "baz" },
+                e.getEventData("foo").toArray());
+
+        e.removeEventData("foo", "bar");
+        Assert.assertArrayEquals(new String[] { "baz" },
+                e.getEventData("foo").toArray());
+
+        e.removeEventData("foo", "baz");
+        Assert.assertArrayEquals(new String[0],
                 e.getEventData("foo").toArray());
     }
 

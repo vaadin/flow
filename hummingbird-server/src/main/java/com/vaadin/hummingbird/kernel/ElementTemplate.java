@@ -53,6 +53,8 @@ public interface ElementTemplate extends Serializable {
 
     public void addEventData(String type, StateNode node, String[] data);
 
+    public void removeEventData(String type, StateNode node, String[] data);
+
     public Collection<String> getEventData(String eventType, StateNode node);
 
     public void runBeforeNextClientResponse(Runnable runnable, StateNode node);

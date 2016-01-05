@@ -208,6 +208,16 @@ public class Element implements Serializable {
         return this;
     }
 
+    public Element removeEventData(String eventType, String... data) {
+        assert eventType != null;
+
+        for (String d : data) {
+            debug("Removing event data for " + eventType + ": " + d);
+        }
+        template.removeEventData(eventType, node, data);
+        return this;
+    }
+
     Collection<String> getEventData(String eventType) {
         assert eventType != null;
 

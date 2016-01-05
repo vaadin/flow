@@ -1,5 +1,6 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -91,6 +92,17 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
             if (!eventData.contains(d)) {
                 eventData.add(d);
             }
+        }
+    }
+
+    @Override
+    public void removeEventData(String type, StateNode node, String[] data) {
+        StateNode elementData = getElementDataNode(node, true);
+        StateNode eventDataNode = elementData.get(Keys.EVENT_DATA,
+                StateNode.class);
+        if (eventDataNode != null) {
+            List<Object> eventData = eventDataNode.getMultiValued(type);
+            eventData.removeAll(Arrays.asList(data));
         }
     }
 
