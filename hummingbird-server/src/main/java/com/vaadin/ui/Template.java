@@ -122,7 +122,8 @@ public abstract class Template extends AbstractComponent
                     }
                 }
 
-                if (!Objects.equals(value, node.get(propertyName))) {
+                Object nodeValue = node.get(propertyName);
+                if (!Objects.equals(value, nodeValue)) {
                     node.put(propertyName, value);
                 }
 
@@ -640,6 +641,7 @@ public abstract class Template extends AbstractComponent
         primitiveDefaults.put(long.class, Long.valueOf(0));
         primitiveDefaults.put(float.class, Float.valueOf(0f));
         primitiveDefaults.put(double.class, Double.valueOf(0));
+        primitiveDefaults.put(boolean.class, false);
     }
 
     private Model createModel() {
