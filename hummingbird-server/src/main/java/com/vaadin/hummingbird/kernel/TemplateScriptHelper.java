@@ -27,11 +27,27 @@ public class TemplateScriptHelper {
 
         @Override
         public Object getMember(String name) {
-            if (isArray() && "length".equals(name)) {
-                return Integer.valueOf(((ListNode) node).size());
-            }
+            if (isArray()) {
+                if ("length".equals(name)) {
+                    return Integer.valueOf(((ListNode) node).size());
+                } else if ("indexOf".equals(name)) {
+                    return new jdk.nashorn.api.scripting.AbstractJSObject() {
+                        @Override
+                        public Object call(Object thiz, Object... args) {
+                            return ((ListNode) node)
+                                    .indexOf(wrapIfNode(args[0]));
+                        }
 
+                        @Override
+                        public boolean isFunction() {
+                            return true;
+                        }
+                    };
+                }
+
+            }
             Object value = node.get(name);
+
             return wrapIfNode(value);
         }
 

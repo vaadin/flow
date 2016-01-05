@@ -1,11 +1,11 @@
 package com.vaadin.hummingbird.kernel;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 import com.vaadin.annotations.JS;
 import com.vaadin.hummingbird.kernel.change.IdChange;
@@ -79,6 +79,17 @@ public class TemplateModelTest {
 
         @JS("simpleList?simpleList.length:0")
         public int getJsListLength();
+
+        @JS("simpleList?simpleList.indexOf('a'):-1")
+        public int getJsSimpleListIndexOfA();
+
+        public default int getServerSimpleListIndexOfA() {
+            if (getSimpleList() == null) {
+                return -1;
+            } else {
+                return getSimpleList().indexOf("a");
+            }
+        }
     }
 
     public class MyTestTemplate extends Template {
@@ -376,5 +387,19 @@ public class TemplateModelTest {
         model.getSimpleList().add("foo");
         Assert.assertEquals(2, model.getServerListLength());
         Assert.assertEquals(2, model.getJsListLength());
+    }
+
+    @Test
+    public void testComputedListIndexOf() {
+        model.setSimpleList(new ArrayList<>());
+        Assert.assertEquals(-1, model.getJsSimpleListIndexOfA());
+        Assert.assertEquals(-1, model.getServerSimpleListIndexOfA());
+
+        model.setSimpleList(new ArrayList<>(Arrays.asList("a", "b", "c")));
+        Assert.assertEquals(0, model.getJsSimpleListIndexOfA());
+        Assert.assertEquals(0, model.getServerSimpleListIndexOfA());
+        model.getSimpleList().add(0, "foo");
+        Assert.assertEquals(1, model.getJsSimpleListIndexOfA());
+        Assert.assertEquals(1, model.getServerSimpleListIndexOfA());
     }
 }
