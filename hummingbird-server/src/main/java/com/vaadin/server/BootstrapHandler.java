@@ -518,7 +518,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                         .attr("onload",
                                 "this.removeAttribute('pending');this.removeAttribute('onload');")
                         .attr("defer", "true");
-            } else if (d.getType() == Type.STYLSHEET) {
+            } else if (d.getType() == Type.STYLESHEET) {
                 head.appendElement("link").attr("rel", "stylesheet")
                         .attr("type", "text/css").attr("href", resolvedUrl)
                         .attr("pending", "1").attr("onload",

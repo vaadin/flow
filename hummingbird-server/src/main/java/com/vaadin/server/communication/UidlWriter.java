@@ -228,7 +228,7 @@ public class UidlWriter implements Serializable {
                     response.put(DEPENDENCY_HTML, Json.createArray());
                 }
                 json = response.getArray(DEPENDENCY_HTML);
-            } else if (d.getType() == Dependency.Type.STYLSHEET) {
+            } else if (d.getType() == Dependency.Type.STYLESHEET) {
                 if (!response.hasKey(DEPENDENCY_STYLESHEET)) {
                     response.put(DEPENDENCY_STYLESHEET, Json.createArray());
                 }
@@ -325,7 +325,7 @@ public class UidlWriter implements Serializable {
         if (styleAnnotation != null) {
             for (String uri : styleAnnotation.value()) {
                 Dependency dependency = new Dependency(
-                        Dependency.Type.STYLSHEET,
+                        Dependency.Type.STYLESHEET,
                         manager.registerDependency(uri, cls));
                 dependencies.add(dependency);
                 getLogger().fine("Dependency found: " + dependency);
@@ -363,7 +363,7 @@ public class UidlWriter implements Serializable {
 
     public static class Dependency {
         public enum Type {
-            SCRIPT, HTML, STYLSHEET, POLYMER_STYLE
+            SCRIPT, HTML, STYLESHEET, POLYMER_STYLE
         };
 
         private Type type;
