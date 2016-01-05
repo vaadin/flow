@@ -90,7 +90,7 @@ public class PushHandler {
                 // Other browsers might also try to re-use the same
                 // connection for fetching static files after refreshing, which
                 // will cause a failure in loading vaadinPush.js or
-                // vaadinBootstrap.js
+                // bootstrap.js
                 resource.getResponse().addHeader("Connection", "close");
             }
 
@@ -109,7 +109,7 @@ public class PushHandler {
             resource.suspend();
 
             AtmospherePushConnection connection = getConnectionForUI(ui);
-            assert(connection != null);
+            assert (connection != null);
             connection.connect(resource);
         }
     };

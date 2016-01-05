@@ -1,0 +1,9 @@
+<module rename-to="client">
+	<!-- This GWT module defines the Vaadin client side engine. -->
+
+	<inherits name="com.vaadin.ClientEngineXSI" />
+
+	<!-- Custom linker for emitting only one, uniquely named and cachable artifact -->
+	<define-linker name="hum" class="com.vaadin.gwt.ClientEngineLinker" />
+	<add-linker name="hum" />
+</module>

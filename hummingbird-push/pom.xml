@@ -60,7 +60,7 @@
 							<target>
 								<property name="jquery.unpack" location="${project.build.directory}/temp" />
 								<property name="vaadinPush.js"
-									location="${project.build.outputDirectory}/VAADIN/vaadinPush.js" />
+									location="${project.build.outputDirectory}/VAADIN/push/vaadinPush.js" />
 								<property name="templates.dir"
 									location="${project.build.sourceDirectory}/../templates" />
 
@@ -109,11 +109,11 @@
 					</execution>
 				</executions>
 				<configuration>
-					<sourceDirectory>${project.build.outputDirectory}/VAADIN</sourceDirectory>
+					<sourceDirectory>${project.build.outputDirectory}/VAADIN/push</sourceDirectory>
 					<includes>
 						<include>vaadinPush.js</include>
 					</includes>
-					<outputDirectory>${project.build.outputDirectory}/VAADIN</outputDirectory>
+					<outputDirectory>${project.build.outputDirectory}/VAADIN/push</outputDirectory>
 				</configuration>
 			</plugin>
 
@@ -130,9 +130,9 @@
 						<configuration>
 							<target>
 								<property name="vaadinPush.js"
-									location="${project.build.outputDirectory}/VAADIN/vaadinPush.js" />
+									location="${project.build.outputDirectory}/VAADIN/push/vaadinPush.js" />
 								<property name="vaadinPush-min.js"
-									location="${project.build.outputDirectory}/VAADIN/vaadinPush-min.js" />
+									location="${project.build.outputDirectory}/VAADIN/push/vaadinPush-min.js" />
 
 								<!-- Gzipped versions -->
 								<gzip src="${vaadinPush.js}" destfile="${vaadinPush.js}.gz" />

@@ -136,26 +136,6 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<groupId>nl.geodienstencentrum.maven</groupId>
-				<artifactId>sass-maven-plugin</artifactId>
-				<version>2.10</version>
-				<configuration>
-					<destination>src/main/generated-resources</destination>
-					<sassOptions>
-						<!-- Hack to be able to import Valo as ../valo/valo -->
-						<load_paths>['${project.build.directory}/../../hummingbird-themes/src/main/sass/VAADIN/themes/valo']</load_paths>
-					</sassOptions>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>update-stylesheets</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
 			<!-- The Jetty plugin allows us to easily test the development build by 
 				running jetty:run -->
 			<plugin>

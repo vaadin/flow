@@ -307,6 +307,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         String staticFileLocation = vaadinService
                 .getStaticFileLocation(request);
         String vaadinLocation = staticFileLocation + "/VAADIN/";
+        String vaadinServerLocation = vaadinLocation + "server/";
 
         deps.add(new Dependency(Type.SCRIPT,
                 getClientEngineUrl(staticFileLocation)));
@@ -317,7 +318,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         // Push
         if (context.getPushMode().isEnabled()) {
             // Load client-side dependencies for push support
-            String pushJS = vaadinLocation;
+            String pushJS = vaadinLocation + "push/";
             if (context.getRequest().getService().getDeploymentConfiguration()
                     .isProductionMode()) {
                 pushJS += ApplicationConstants.VAADIN_PUSH_JS;
@@ -329,16 +330,15 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             deps.add(new Dependency(Type.SCRIPT, pushJS));
         }
 
-        String bootstrapLocation = vaadinLocation
-                + ApplicationConstants.VAADIN_BOOTSTRAP_JS + versionQueryParam;
-        deps.add(new Dependency(Type.SCRIPT, bootstrapLocation));
+        deps.add(new Dependency(Type.SCRIPT,
+                vaadinServerLocation + "bootstrap.js" + versionQueryParam));
 
         return deps;
     }
 
     private String getClientEngineUrl(String staticFileLocation) {
 
-        String gwtModuleDir = "/VAADIN/hummingbird.client";
+        String gwtModuleDir = "/VAADIN/client";
         String jsFile;
 
         try {
@@ -348,7 +348,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             p.load(prop);
             jsFile = p.getProperty("jsFile");
         } catch (Exception e) {
-            jsFile = "hummingbird.client.nocache.js";
+            jsFile = "client.nocache.js";
             getLogger().severe(
                     "No compile.properties file found for ClientEngine");
         }
@@ -858,7 +858,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
      * @see UI#getEmbedId()
      */
     protected String getEmbedId(VaadinRequest request) {
-        // Parameters sent by vaadinBootstrap.js
+        // Parameters sent by bootstrap.js
         String windowName = request.getParameter("v-wn");
         String appId = request.getParameter("v-appId");
 

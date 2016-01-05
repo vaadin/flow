@@ -359,7 +359,7 @@ public class Page implements Serializable, EventSource {
         // method.
         // It should be kept in sync if this method is changed.
 
-        // Extract special parameter sent by vaadinBootstrap.js
+        // Extract special parameter sent by bootstrap.js
         String location = request.getParameter("v-loc");
         String clientWidth = request.getParameter("v-cw");
         String clientHeight = request.getParameter("v-ch");
