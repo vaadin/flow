@@ -36,6 +36,8 @@ public class ValueTypeTest {
 
     @Test
     public void testObjectTypeIdentity() {
+        Assert.assertNotEquals(-1, simpleObjectType.getId());
+
         Assert.assertSame(simpleObjectType,
                 ValueType.get(Collections.singletonMap("a", ValueType.STRING)));
 
@@ -65,6 +67,8 @@ public class ValueTypeTest {
 
     @Test
     public void testArrayTypeIdentity() {
+        Assert.assertNotEquals(-1, simpleArrayType.getId());
+
         Assert.assertSame(simpleArrayType, ValueType
                 .get(simpleObjectType.getPropertyTypes(), simpleObjectType));
 

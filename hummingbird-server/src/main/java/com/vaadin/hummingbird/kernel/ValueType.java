@@ -17,10 +17,16 @@ import java.util.stream.Collectors;
 import com.vaadin.data.util.BeanUtil;
 
 public class ValueType {
-    private int id;
+    private static final AtomicInteger nextId = new AtomicInteger(-1);
 
-    private ValueType(int id) {
-        this.id = id;
+    private final int id;
+
+    private ValueType(boolean generateId) {
+        if (generateId) {
+            id = nextId.incrementAndGet();
+        } else {
+            id = -1;
+        }
     }
 
     public static class ObjectType extends ValueType {
@@ -29,8 +35,9 @@ public class ValueType {
         // Cached hashCode
         private final int hashCode;
 
-        public ObjectType(int id, Map<Object, ValueType> propertyTypes) {
-            super(id);
+        public ObjectType(boolean generateId,
+                Map<Object, ValueType> propertyTypes) {
+            super(generateId);
             this.propertyTypes = propertyTypes;
 
             hashCode = propertyTypes.hashCode();
@@ -61,9 +68,9 @@ public class ValueType {
         private final ValueType memberType;
         private final int hashCode;
 
-        private ArrayType(int id, Map<Object, ValueType> propertyTypes,
-                ValueType memberType) {
-            super(id, propertyTypes);
+        private ArrayType(boolean generateId,
+                Map<Object, ValueType> propertyTypes, ValueType memberType) {
+            super(generateId, propertyTypes);
             this.memberType = memberType;
 
             hashCode = Objects.hash(propertyTypes, memberType);
@@ -97,13 +104,11 @@ public class ValueType {
     }
 
     // Singleton instances
-    public static final ValueType STRING = new ValueType(0);
-    public static final ValueType BOOLEAN = new ValueType(1);
-    public static final ValueType INTEGER = new ValueType(2);
-    public static final ValueType NUMBER = new ValueType(3);
-    public static final ValueType UNDEFINED = new ValueType(4);
-
-    private static final AtomicInteger nextId = new AtomicInteger(5);
+    public static final ValueType STRING = new ValueType(true);
+    public static final ValueType BOOLEAN = new ValueType(true);
+    public static final ValueType INTEGER = new ValueType(true);
+    public static final ValueType NUMBER = new ValueType(true);
+    public static final ValueType UNDEFINED = new ValueType(true);
 
     private static final Map<Type, ValueType> primitiveTypes = new HashMap<>();
 
@@ -126,7 +131,7 @@ public class ValueType {
                     propertyTypes);
 
             value = objectTypes.computeIfAbsent(defensiveCopy,
-                    k -> new ObjectType(nextId.incrementAndGet(),
+                    k -> new ObjectType(true,
                             Collections.unmodifiableMap(defensiveCopy)));
         }
         return value;
@@ -139,13 +144,13 @@ public class ValueType {
 
         // Quickly created instance just for the map lookup
         @SuppressWarnings("unchecked")
-        ArrayType lookupKey = new ArrayType(-1,
+        ArrayType lookupKey = new ArrayType(false,
                 (Map<Object, ValueType>) propertyTypes, memberType);
 
         ArrayType value = arrayTypes.get(lookupKey);
         if (value == null) {
             // Create proper instance with real id and defensive copy of the map
-            ArrayType referenceValue = new ArrayType(nextId.incrementAndGet(),
+            ArrayType referenceValue = new ArrayType(true,
                     Collections.unmodifiableMap(new HashMap<>(propertyTypes)),
                     memberType);
 
