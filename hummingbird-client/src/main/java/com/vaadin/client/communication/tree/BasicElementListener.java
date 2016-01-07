@@ -161,7 +161,7 @@ public class BasicElementListener {
 
             TreeUpdater.debug("Handling " + type + " for "
                     + TreeUpdater.debugHtml(element) + ". Event: "
-                    + ((JsonObject) event.cast()).toJson());
+                    + TreeUpdater.debugEvent(event));
             TreeNode eventTypesToData = (TreeNode) elementNode
                     .getProperty("EVENT_DATA").getValue();
             if (eventTypesToData != null) {
@@ -191,7 +191,8 @@ public class BasicElementListener {
     private static void sendEventToServer(int nodeId, String eventType,
             JsonObject eventData, TreeUpdater treeUpdater) {
         TreeUpdater.debug("Sending event " + eventType + " for node " + nodeId
-                + " to server (data: " + eventData.toJson() + ")");
+                + " to server (data: " + TreeUpdater.debugObject(eventData)
+                + ")");
         JsonArray arguments = Json.createArray();
         arguments.set(0, nodeId);
         arguments.set(1, eventType);

@@ -255,6 +255,62 @@ public class TreeUpdater {
 
     }
 
+    public static String debugEvent(JavaScriptObject event) {
+        if (debug) {
+            return debugEvent((JsonObject) event.cast());
+        }
+        return "";
+    }
+
+    public static native String debugObject(JsonObject obj)
+    /*-{
+        var cache = [];
+        var str = "";
+        var parser = function(val, idx, array) {
+            if (idx > 0) {
+                str += ", ";
+            }
+            if (typeof val === 'object' && val !== null) {
+                if (cache.indexOf(val) !== -1) {
+                    cache.push(val);
+                    str += val;
+                    str += ": [";
+                    Object.getOwnPropertyNames(val).forEach(parser);
+                    str += "]";
+                }
+            }  else {
+                str += val;
+                str += ": ";
+                str += obj[val];
+            }
+        };
+        if (Object.getOwnPropertyNames) {
+            Object.getOwnPropertyNames(obj).forEach(parser);
+        }
+        cache = null;
+        return str;
+    }-*/;
+
+    public static native String debugEvent(JsonObject obj)
+    /*-{
+        var str = "[type: ";
+        str += obj.type;
+        str += ", bubbles: ";
+        str += obj.bubbles;
+        str += ", cancelable: ";
+        str += obj.cancelable;
+        str += ", defaultPrevented: ";
+        str += obj.defaultPrevented;
+        str += ", isTrusted: ";
+        str += obj.isTrusted;
+        if (Object.getOwnPropertyNames) {
+            str += ", ownPropertyNames:[";
+            str += @com.vaadin.client.communication.tree.TreeUpdater::debugObject(Lelemental/json/JsonObject;)(obj.getOwnPropertyNames(obj));
+        }
+        str += "]]";
+        return str;
+     }-*/;
+
     private static Logger getLogger() {
         return Logger.getLogger(TreeUpdater.class.getName());
     }
