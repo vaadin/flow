@@ -16,7 +16,6 @@
 
 package com.vaadin.ui;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,9 +38,10 @@ import com.vaadin.hummingbird.kernel.BasicElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
-import com.vaadin.hummingbird.kernel.ModelDescriptor;
 import com.vaadin.hummingbird.kernel.RootNode;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.ValueType;
+import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
@@ -284,23 +284,23 @@ public abstract class UI extends CssLayout implements PollNotifier, Focusable {
                 JsonValue value = change.get("value");
 
                 // Find model interface type and get type from there
-                Type valueType;
+                ValueType valueType;
 
-                ModelDescriptor modelDescriptor = node
-                        .get(ModelDescriptor.class, ModelDescriptor.class);
-                if (modelDescriptor != null) {
-                    valueType = modelDescriptor.getPropertyType(key);
+                ObjectType modelType = node.get(ObjectType.class,
+                        ObjectType.class);
+                if (modelType != null) {
+                    valueType = modelType.getPropertyTypes().get(key);
                     if (valueType == null) {
                         throw new RuntimeException(
                                 "Could not find any type for " + key + " in "
-                                        + modelDescriptor.getModelType()
+                                        + modelType
                                         + " when processing value change for node "
                                         + nodeId);
                     }
                 } else {
                     // Fall back to deducting type from the json type if there's
                     // no model to worry about
-                    valueType = JsonConverter.findType(value);
+                    valueType = JsonConverter.findValueType(value);
                 }
                 Object decodedValue = JsonConverter.fromJson(valueType, value);
                 Object oldValue = node.put(key, decodedValue);

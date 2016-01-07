@@ -76,6 +76,11 @@ public class ValueType {
                 return false;
             }
         }
+
+        @Override
+        public String toString() {
+            return "ObjectType {" + propertyTypes + "}";
+        }
     }
 
     public static class ArrayType extends ObjectType {
@@ -110,6 +115,16 @@ public class ValueType {
             } else {
                 return false;
             }
+        }
+
+        @Override
+        public String toString() {
+            return "ArrayType {" + memberType + ", " + getPropertyTypes() + "}";
+        }
+
+        @Override
+        public Object getDefaultValue() {
+            return new ListNode();
         }
     }
 
@@ -264,7 +279,7 @@ public class ValueType {
         } else if (this == UNDEFINED) {
             return "undefined";
         } else {
-            throw new RuntimeException("Unkown instance " + this);
+            throw new RuntimeException("Unkown instance");
         }
     }
 }

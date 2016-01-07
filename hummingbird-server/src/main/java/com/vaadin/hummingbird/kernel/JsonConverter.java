@@ -3,8 +3,6 @@ package com.vaadin.hummingbird.kernel;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -15,36 +13,33 @@ import elemental.json.JsonString;
 import elemental.json.JsonValue;
 
 public class JsonConverter {
-    private static Map<Class<?>, Object> defaultPrimitiveValues = new HashMap<>();
-
-    static {
-        defaultPrimitiveValues.put(boolean.class, Boolean.FALSE);
-        defaultPrimitiveValues.put(int.class, Integer.valueOf(0));
-        defaultPrimitiveValues.put(double.class, Double.valueOf(0));
+    public static Object fromJson(Type targetType, JsonValue value) {
+        return fromJson(ValueType.get(targetType), value);
     }
 
-    public static Object fromJson(Type targetType, JsonValue value) {
+    public static Object fromJson(ValueType targetType, JsonValue value) {
         if (value == null || value instanceof JsonNull) {
-            return defaultPrimitiveValues.getOrDefault(targetType, null);
+            return targetType.getDefaultValue();
         } else {
-            if (targetType == String.class && value instanceof JsonString) {
+            if (targetType == ValueType.STRING && value instanceof JsonString) {
                 return value.asString();
             } else if (value instanceof JsonNumber) {
-                if (targetType == int.class || targetType == Integer.class) {
+                if (targetType == ValueType.INTEGER
+                        || targetType == ValueType.INTEGER_PRIMITIVE) {
                     return Integer.valueOf((int) value.asNumber());
-                } else if (targetType == double.class
-                        || targetType == Double.class) {
+                } else if (targetType == ValueType.NUMBER
+                        || targetType == ValueType.NUMBER_PRIMITIVE) {
                     return Double.valueOf(value.asNumber());
                 }
-            } else if ((targetType == boolean.class
-                    || targetType == Boolean.class)
+            } else if ((targetType == ValueType.BOOLEAN
+                    || targetType == ValueType.BOOLEAN_PRIMITIVE)
                     && value instanceof JsonBoolean) {
                 return Boolean.valueOf(value.asBoolean());
             }
         }
 
-        throw new RuntimeException("Can't convert " + value.getType() + " to "
-                + targetType.getTypeName());
+        throw new RuntimeException(
+                "Can't convert " + value.getType() + " to " + targetType);
     }
 
     public static JsonValue toJson(Object value) {
@@ -79,6 +74,10 @@ public class JsonConverter {
                     "Can't encode value of type " + value.getClass().getName());
         }
 
+    }
+
+    public static ValueType findValueType(JsonValue value) {
+        return ValueType.get(findType(value));
     }
 
     public static Type findType(JsonValue value) {

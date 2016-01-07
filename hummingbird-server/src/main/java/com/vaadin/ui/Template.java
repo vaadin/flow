@@ -46,9 +46,9 @@ import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsComputedProperty;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.LazyList;
-import com.vaadin.hummingbird.kernel.ListNode;
-import com.vaadin.hummingbird.kernel.ModelDescriptor;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.ValueType;
+import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
 import com.vaadin.hummingbird.parser.TemplateParser;
 
 import elemental.json.JsonArray;
@@ -357,52 +357,29 @@ public abstract class Template extends AbstractComponent
         }
 
         public static <T> T wrap(StateNode node, Class<T> type) {
-            ModelDescriptor modelDescriptor = node.get(ModelDescriptor.class,
-                    ModelDescriptor.class);
-            if (modelDescriptor == null) {
-                modelDescriptor = ModelDescriptor.get(type);
-                node.put(ModelDescriptor.class, modelDescriptor);
+            ObjectType valueType = node.get(ObjectType.class, ObjectType.class);
+            if (valueType == null) {
+                valueType = (ObjectType) ValueType.get(type);
+                node.put(ObjectType.class, valueType);
 
-                ensurePropertiesInNode(node, modelDescriptor);
+                ensurePropertiesInNode(node, valueType);
 
-            } else if (modelDescriptor.getModelType() != type) {
-                throw new RuntimeException(
-                        "Trying to use state node " + node.getId() + " as "
-                                + type + ", but it has already been used as "
-                                + modelDescriptor.getModelType());
+            } else if (valueType != ValueType.get(type)) {
+                throw new RuntimeException("Trying to use state node "
+                        + node.getId() + " as " + type
+                        + ", but it has already been used with " + valueType);
             }
             return type.cast(Proxy.newProxyInstance(type.getClassLoader(),
                     new Class[] { type }, new ProxyHandler(node)));
         }
 
         public static void ensurePropertiesInNode(StateNode node,
-                ModelDescriptor modelDescriptor) {
-            for (String name : modelDescriptor.getPropertyNames()) {
+                ObjectType objectType) {
+            objectType.getPropertyTypes().forEach((name, propertyType) -> {
                 if (!node.containsKey(name)) {
-                    Type propertyType = modelDescriptor.getPropertyType(name);
-                    node.put(name, getDefaultValue(propertyType));
+                    node.put(name, propertyType.getDefaultValue());
                 }
-            }
-        }
-
-        public static Object getDefaultValue(Type type) {
-            if (type instanceof Class<?>) {
-                Class<?> clazz = (Class<?>) type;
-                if (clazz.isPrimitive()) {
-                    return primitiveDefaults.get(clazz);
-                }
-            } else if (type instanceof ParameterizedType) {
-                ParameterizedType pt = (ParameterizedType) type;
-                if (pt.getRawType() instanceof Class<?>) {
-                    Class<?> rawType = (Class<?>) pt.getRawType();
-                    if (List.class.isAssignableFrom(rawType)) {
-                        // List<?>
-                        return new ListNode();
-                    }
-                }
-            }
-
-            return null;
+            });
         }
     }
 
