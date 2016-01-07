@@ -31,7 +31,8 @@ public class ValueTypeTest {
         expectedIds.put(ValueType.INTEGER_PRIMITIVE, 4);
         expectedIds.put(ValueType.NUMBER, 5);
         expectedIds.put(ValueType.NUMBER_PRIMITIVE, 6);
-        expectedIds.put(ValueType.UNDEFINED, 7);
+        expectedIds.put(ValueType.EMPTY_OBJECT, 7);
+        expectedIds.put(ValueType.UNDEFINED, 8);
 
         expectedIds.forEach((valueType, expectedId) -> {
             Assert.assertEquals(

@@ -46,6 +46,7 @@ public class TransactionLogBuilderTest {
         private String name;
 
         private DebugStateNode(String name) {
+            super(ValueType.EMPTY_OBJECT);
             this.name = name;
         }
 

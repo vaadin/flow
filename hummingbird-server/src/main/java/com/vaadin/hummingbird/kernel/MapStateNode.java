@@ -4,8 +4,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
+
 public class MapStateNode extends AbstractStateNode {
     private final Map<Object, Object> values = new HashMap<>();
+    private final ObjectType type;
+
+    public MapStateNode(ObjectType type) {
+        this.type = type;
+
+        // Init default values from the type
+        type.getPropertyTypes().forEach((name, propertyType) -> {
+            put(name, propertyType.getDefaultValue());
+        });
+    }
 
     @Override
     protected Object doGet(Object key) {
@@ -41,6 +53,11 @@ public class MapStateNode extends AbstractStateNode {
     public String toString() {
         return getClass().getSimpleName() + " [id=" + getId() + ", values="
                 + values + "]";
+    }
+
+    @Override
+    public ObjectType getType() {
+        return type;
     }
 
 }

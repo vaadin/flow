@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 
 public interface StateNode extends Serializable {
@@ -296,7 +297,11 @@ public interface StateNode extends Serializable {
      * @return a new StateNode
      */
     public static StateNode create() {
-        return new MapStateNode();
+        return create(ValueType.EMPTY_OBJECT);
+    }
+
+    public static StateNode create(ObjectType type) {
+        return new MapStateNode(type);
     }
 
     /**
@@ -383,5 +388,7 @@ public interface StateNode extends Serializable {
      * @return a map of computed properties
      */
     public Map<String, ComputedProperty> getComputedProperties();
+
+    public ObjectType getType();
 
 }

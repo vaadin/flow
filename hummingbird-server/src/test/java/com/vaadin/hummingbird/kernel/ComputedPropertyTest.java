@@ -186,11 +186,11 @@ public class ComputedPropertyTest {
 
     @Test
     public void testJsComptedProperty() {
-        StateNode node = StateNode.create();
+        StateNode node = StateNode.create(MyTestModel.TYPE);
         MyTestModel model = Model.wrap(node, MyTestModel.class);
         model.setInt(5);
 
-        SubModelType subValue = Model.wrap(StateNode.create(),
+        SubModelType subValue = Model.wrap(StateNode.create(SubModelType.TYPE),
                 SubModelType.class);
         subValue.setValue("Foo");
         model.setSubValue(subValue);
@@ -207,7 +207,7 @@ public class ComputedPropertyTest {
 
     @Test
     public void testJsComptedPropertyArray() {
-        StateNode node = StateNode.create();
+        StateNode node = StateNode.create(MyTestModel.TYPE);
         MyTestModel model = Model.wrap(node, MyTestModel.class);
         model.setSimpleList(Arrays.asList("foo", "bar"));
         model.setInt(0);

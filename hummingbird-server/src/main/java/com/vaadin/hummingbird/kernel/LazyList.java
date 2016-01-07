@@ -3,6 +3,7 @@ package com.vaadin.hummingbird.kernel;
 import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -168,6 +169,7 @@ class LazyListImpl extends MapStateNode
     private Class<Object> type;
 
     public LazyListImpl(DataProvider<Object> dataProvider) {
+        super(ValueType.get(Collections.emptyMap(), ValueType.UNDEFINED));
         type = dataProvider.getType();
         this.dataProvider = dataProvider;
         cache = new SingleRangeCache<>(addedObject -> {

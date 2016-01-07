@@ -286,9 +286,8 @@ public abstract class UI extends CssLayout implements PollNotifier, Focusable {
                 // Find model interface type and get type from there
                 ValueType valueType;
 
-                ObjectType modelType = node.get(ObjectType.class,
-                        ObjectType.class);
-                if (modelType != null) {
+                ObjectType modelType = node.getType();
+                if (modelType != ValueType.EMPTY_OBJECT) {
                     valueType = modelType.getPropertyTypes().get(key);
                     if (valueType == null) {
                         throw new RuntimeException(

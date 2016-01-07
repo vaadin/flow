@@ -98,7 +98,7 @@ public class TemplateComponentTest {
         ui.setContent(template);
         ui.registerTemplate(template.getElement().getTemplate());
 
-        StateNode node = StateNode.create();
+        StateNode node = StateNode.create(SubModelType.TYPE);
         ui.getRootNode().put("node", node);
 
         template.onBrowserEvent("withNode", Json.create(node.getId()));

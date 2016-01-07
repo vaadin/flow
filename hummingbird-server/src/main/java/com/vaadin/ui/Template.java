@@ -48,7 +48,6 @@ import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.LazyList;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.ValueType;
-import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
 import com.vaadin.hummingbird.parser.TemplateParser;
 
 import elemental.json.JsonArray;
@@ -301,7 +300,7 @@ public abstract class Template extends AbstractComponent
 
     public interface Model {
         public static <T> T create(Class<T> type) {
-            return wrap(StateNode.create(), type);
+            return wrap(StateNode.create(ValueType.getBeanType(type)), type);
         }
 
         /**
@@ -357,35 +356,23 @@ public abstract class Template extends AbstractComponent
         }
 
         public static <T> T wrap(StateNode node, Class<T> type) {
-            ObjectType valueType = node.get(ObjectType.class, ObjectType.class);
-            if (valueType == null) {
-                valueType = (ObjectType) ValueType.get(type);
-                node.put(ObjectType.class, valueType);
-
-                ensurePropertiesInNode(node, valueType);
-
-            } else if (valueType != ValueType.get(type)) {
-                throw new RuntimeException("Trying to use state node "
-                        + node.getId() + " as " + type
-                        + ", but it has already been used with " + valueType);
+            ValueType valueType = ValueType.get(type);
+            if (!valueType.equals(node.getType())) {
+                // TODO Might support if node type is a superset of the request
+                // type
+                throw new RuntimeException("Can't wrap as " + type
+                        + " when node type is " + node.getType());
             }
+
             return type.cast(Proxy.newProxyInstance(type.getClassLoader(),
                     new Class[] { type }, new ProxyHandler(node)));
         }
 
-        public static void ensurePropertiesInNode(StateNode node,
-                ObjectType objectType) {
-            objectType.getPropertyTypes().forEach((name, propertyType) -> {
-                if (!node.containsKey(name)) {
-                    node.put(name, propertyType.getDefaultValue());
-                }
-            });
-        }
     }
 
     private final Model model;
 
-    private final StateNode node = StateNode.create();
+    private final StateNode node;
 
     public Template() {
         this(null);
@@ -396,6 +383,8 @@ public abstract class Template extends AbstractComponent
             String htmlFileName = getTemplateFilename();
             elementTemplate = TemplateParser.parse(getClass(), htmlFileName);
         }
+        node = StateNode.create(ValueType.getBeanType(getModelType()));
+
         setElement(Element.getElement(elementTemplate, node));
 
         Map<String, ComputedProperty> computedProperties = findComputedProperties();

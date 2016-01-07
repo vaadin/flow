@@ -59,6 +59,7 @@ public class RootNode extends MapStateNode {
     private Set<StateNode> preCommitChanges = new HashSet<>();
 
     public RootNode() {
+        super(ValueType.EMPTY_OBJECT);
         rootNode = this;
         setId(register(this));
     }

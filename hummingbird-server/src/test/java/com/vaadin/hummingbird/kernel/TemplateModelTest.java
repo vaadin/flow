@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.annotations.JS;
+import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
@@ -32,12 +33,18 @@ import elemental.json.JsonObject;
 
 public class TemplateModelTest {
     public interface SubModelType {
+        public static final ObjectType TYPE = ValueType
+                .getBeanType(SubModelType.class);
+
         public String getValue();
 
         public void setValue(String value);
     }
 
     public interface MyTestModel extends Model {
+        public static final ObjectType TYPE = ValueType
+                .getBeanType(MyTestModel.class);
+
         public String getValue();
 
         public void setValue(String value);
@@ -195,7 +202,7 @@ public class TemplateModelTest {
         Assert.assertEquals(0, modelList.size());
 
         // Add through node
-        StateNode child = StateNode.create();
+        StateNode child = StateNode.create(SubModelType.TYPE);
         child.put("value", "foo");
         nodeList.add(child);
 
@@ -221,7 +228,7 @@ public class TemplateModelTest {
 
     @Test
     public void testWrapNode() {
-        StateNode node = StateNode.create();
+        StateNode node = StateNode.create(SubModelType.TYPE);
 
         SubModelType modelValue = Model.wrap(node, SubModelType.class);
         modelValue.setValue("foo");
@@ -350,11 +357,12 @@ public class TemplateModelTest {
 
     @Test
     public void testNodeContainsProperties() {
+        // Verify that default node doesn't have the properties
         StateNode node = StateNode.create();
         Assert.assertFalse(node.containsKey("int"));
         Assert.assertFalse(node.containsKey("int2"));
 
-        Model.wrap(node, MyTestModel.class);
+        node = StateNode.create(MyTestModel.TYPE);
         Assert.assertTrue(node.containsKey("int"));
         Assert.assertFalse(node.containsKey("int2"));
 

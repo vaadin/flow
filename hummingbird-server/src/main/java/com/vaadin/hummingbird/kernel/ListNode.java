@@ -2,6 +2,7 @@ package com.vaadin.hummingbird.kernel;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.kernel.change.ListChange;
@@ -15,7 +16,8 @@ public class ListNode extends MapStateNode implements Serializable {
 
     private ArrayList<Object> backing = new ArrayList<>();
 
-    public ListNode() {
+    public ListNode(ValueType memberType) {
+        super(ValueType.get(Collections.emptyMap(), memberType));
     }
 
     public Object set(int index, Object element) {

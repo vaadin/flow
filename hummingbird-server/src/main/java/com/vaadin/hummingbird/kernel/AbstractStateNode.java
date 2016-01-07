@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.kernel.RootNode.TransactionHandler;
+import com.vaadin.hummingbird.kernel.ValueType.ArrayType;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.ParentChange;
@@ -389,8 +390,18 @@ public abstract class AbstractStateNode implements StateNode {
             return (List) new LazyListActiveRangeView<StateNode>(
                     (LazyList<StateNode>) value);
         } else {
+            ValueType propertyType = getType().getPropertyTypes().get(key);
+            if (propertyType == null) {
+                propertyType = ValueType.UNDEFINED;
+            } else if (propertyType instanceof ArrayType) {
+                propertyType = ((ArrayType) propertyType).getMemberType();
+            } else {
+                throw new RuntimeException("Can't get multi-valued for " + key
+                        + " which is typed as " + propertyType);
+            }
+
             // FIXME Why should these be auto-created?
-            ListNode nodeList = new ListNode();
+            ListNode nodeList = new ListNode(propertyType);
             put(key, nodeList);
             if (isServerOnlyKey(key)) {
                 nodeList.put(AbstractElementTemplate.Keys.SERVER_ONLY,

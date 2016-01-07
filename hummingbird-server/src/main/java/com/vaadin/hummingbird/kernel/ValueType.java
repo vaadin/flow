@@ -124,7 +124,7 @@ public class ValueType {
 
         @Override
         public Object getDefaultValue() {
-            return new ListNode();
+            return new ListNode(memberType);
         }
     }
 
@@ -146,6 +146,9 @@ public class ValueType {
     public static final ValueType NUMBER = new ValueType(true);
     public static final ValueType NUMBER_PRIMITIVE = new PrimitiveType(
             Double.valueOf(0));
+
+    public static final ObjectType EMPTY_OBJECT = new ObjectType(true,
+            Collections.emptyMap());
 
     public static final ValueType UNDEFINED = new ValueType(true);
 
@@ -228,7 +231,7 @@ public class ValueType {
         throw new RuntimeException("No ValueType found for " + type);
     }
 
-    private static ValueType getBeanType(Class<?> clazz) {
+    public static ObjectType getBeanType(Class<?> clazz) {
         try {
             Map<String, ValueType> properties = BeanUtil
                     .getBeanPropertyDescriptor(clazz).stream()
@@ -241,7 +244,7 @@ public class ValueType {
         }
     }
 
-    public static Type getPropertyType(PropertyDescriptor pd) {
+    private static Type getPropertyType(PropertyDescriptor pd) {
         Method readMethod = pd.getReadMethod();
         if (readMethod != null) {
             return readMethod.getGenericReturnType();
