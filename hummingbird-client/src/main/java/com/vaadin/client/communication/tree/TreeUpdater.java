@@ -595,7 +595,7 @@ public class TreeUpdater {
 
     private static native JavaScriptObject createWithFunction(String code)
     /*-{
-        return new Function("context", code);
+        return new $wnd.Function("context", code);
     }-*/;
 
     public static native void addContextProperty(JavaScriptObject context,
