@@ -105,7 +105,7 @@
 						<module>${gwt.module}</module>
 					</modules>
 					<webMode>true</webMode>
-					<style>DETAILED</style>
+					<style>OBF</style>
 				</configuration>
 			</plugin>
 		</plugins>
