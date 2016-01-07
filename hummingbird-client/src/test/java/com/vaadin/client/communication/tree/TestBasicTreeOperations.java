@@ -21,9 +21,10 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         int spanId = 4;
         int imgId = 5;
 
-        applyChanges(
+        applyChanges(ChangeUtil.createList(containerChildrenId),
                 ChangeUtil.putList(containerElementId, "CHILDREN",
                         containerChildrenId),
+                ChangeUtil.createMap(divId),
                 ChangeUtil.listInsertNode(containerChildrenId, 0, divId),
                 ChangeUtil.put(divId, "TAG", "div"));
 
@@ -34,14 +35,16 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals("DIV", divChild.getTagName());
         assertFalse(divChild.hasAttribute("tag"));
 
-        applyChanges(ChangeUtil.listInsertNode(containerChildrenId, 1, spanId),
+        applyChanges(ChangeUtil.createMap(spanId),
+                ChangeUtil.listInsertNode(containerChildrenId, 1, spanId),
                 ChangeUtil.put(spanId, "TAG", "span"));
         assertEquals(2, root.getChildCount());
 
         Element spanChild = divChild.getNextSiblingElement();
         assertEquals("SPAN", spanChild.getTagName());
 
-        applyChanges(ChangeUtil.listInsertNode(containerChildrenId, 2, imgId),
+        applyChanges(ChangeUtil.createMap(imgId),
+                ChangeUtil.listInsertNode(containerChildrenId, 2, imgId),
                 ChangeUtil.put(imgId, "TAG", "img"));
         assertEquals(divId, root.getChildCount());
 
@@ -98,7 +101,7 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         array.set(0, "foo");
         array.set(1, "bar");
         final int classListNodeId = 500;
-        applyChanges(
+        applyChanges(ChangeUtil.createList(classListNodeId),
                 ChangeUtil.putList(containerElementId, "CLASS_LIST",
                         classListNodeId),
                 ChangeUtil.listInsert(classListNodeId, 0, array));
@@ -142,12 +145,14 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         int listenersId = 4;
         int clickDataId = 5;
 
-        applyChanges(
+        applyChanges(ChangeUtil.createList(listenersId),
                 ChangeUtil.putList(containerElementId, "LISTENERS",
                         listenersId),
                 ChangeUtil.listInsert(listenersId, 0, "click"),
+                ChangeUtil.createMap(eventDataId),
                 ChangeUtil.putMap(containerElementId, "EVENT_DATA",
                         eventDataId),
+                ChangeUtil.createList(clickDataId),
                 ChangeUtil.putList(eventDataId, "click", clickDataId),
                 ChangeUtil.listInsert(clickDataId, 0, "clientX"));
 
@@ -238,17 +243,22 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         int existingArrayId = 7;
         int newArrayId = 8;
 
-        applyChanges(
+        applyChanges(ChangeUtil.createMap(existingObjectId),
                 ChangeUtil.putMap(containerElementId, "existingobject",
                         existingObjectId),
                 ChangeUtil.put(existingObjectId, "baz", "asdf"),
+                ChangeUtil.createMap(newObjectId),
                 ChangeUtil.putMap(containerElementId, "newobject", newObjectId),
                 ChangeUtil.put(newObjectId, "new", "value"),
+                ChangeUtil.createList(existingArrayId),
                 ChangeUtil.putList(containerElementId, "existingarray",
                         existingArrayId),
+                ChangeUtil.createMap(existingMemberId),
                 ChangeUtil.listInsertNode(existingArrayId, 0, existingMemberId),
                 ChangeUtil.put(existingMemberId, "value", "yes"),
+                ChangeUtil.createList(newArrayId),
                 ChangeUtil.putList(containerElementId, "newarray", newArrayId),
+                ChangeUtil.createMap(newMemberId),
                 ChangeUtil.listInsertNode(newArrayId, 0, newMemberId),
                 ChangeUtil.put(newMemberId, "checked", Json.create(true)));
 
@@ -270,7 +280,8 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
 
     public void testStructuredProperties_basicArray() {
         int arrayId = 3;
-        applyChanges(ChangeUtil.putList(containerElementId, "array", arrayId),
+        applyChanges(ChangeUtil.createList(arrayId),
+                ChangeUtil.putList(containerElementId, "array", arrayId),
                 ChangeUtil.listInsert(arrayId, 0, "Hello"));
 
         Element element = updater.getRootElement();
@@ -285,12 +296,14 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         int clickDataId = 5;
         int listenersId = 4;
 
-        applyChanges(
+        applyChanges(ChangeUtil.createList(listenersId),
                 ChangeUtil.putList(containerElementId, "LISTENERS",
                         listenersId),
                 ChangeUtil.listInsert(listenersId, 0, "click"),
+                ChangeUtil.createMap(eventDataId),
                 ChangeUtil.putMap(containerElementId, "EVENT_DATA",
                         eventDataId),
+                ChangeUtil.createList(clickDataId),
                 ChangeUtil.putList(eventDataId, "click", clickDataId),
                 ChangeUtil.listInsert(clickDataId, 0,
                         "[typeof event, element.tagName]"));

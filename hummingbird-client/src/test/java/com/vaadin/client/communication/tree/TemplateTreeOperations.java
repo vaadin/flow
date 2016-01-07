@@ -28,8 +28,9 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         int childId = 3;
         int childrenId = 4;
 
-        applyChanges(
+        applyChanges(ChangeUtil.createList(childrenId),
                 ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.createMap(childId),
                 ChangeUtil.listInsertNode(childrenId, 0, childId),
                 ChangeUtil.put(childId, "TEMPLATE", Json.create(1)),
                 ChangeUtil.put(childId, "value", "Hello"),
@@ -70,8 +71,9 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         int childrenId = 4;
         int classListId = 5;
 
-        applyChanges(
+        applyChanges(ChangeUtil.createList(childrenId),
                 ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.createMap(childId),
                 ChangeUtil.listInsertNode(childrenId, 0, childId),
                 ChangeUtil.put(childId, "TEMPLATE", Json.create(1)),
                 ChangeUtil.put(childId, "conditional", Json.create(true)));
@@ -86,7 +88,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         JsonArray array = Json.createArray();
         array.set(0, "foo");
         array.set(1, "bar");
-        applyChanges(ChangeUtil.putList(childId, "CLASS_LIST", classListId),
+        applyChanges(ChangeUtil.createList(classListId),
+                ChangeUtil.putList(childId, "CLASS_LIST", classListId),
                 ChangeUtil.listInsert(classListId, 0, array));
         assertEquals("baseClass second part foo bar",
                 templateElement.getClassName());
@@ -114,8 +117,9 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         int childId = 3;
         int childrenId = 4;
 
-        applyChanges(
+        applyChanges(ChangeUtil.createList(childrenId),
                 ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.createMap(childId),
                 ChangeUtil.listInsertNode(childrenId, 0, childId),
                 ChangeUtil.put(childId, "TEMPLATE", Json.create(1)));
 
@@ -138,8 +142,9 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         int childId = 3;
         int childrenId = 4;
 
-        applyChanges(
+        applyChanges(ChangeUtil.createList(childrenId),
                 ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.createMap(childId),
                 ChangeUtil.listInsertNode(childrenId, 0, childId),
                 ChangeUtil.put(childId, "TEMPLATE", Json.create(1)));
 
@@ -161,9 +166,13 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         applyTemplate(1, template);
 
         int childId = 3;
-        applyChanges(ChangeUtil.putList(containerElementId, "CHILDREN", 4),
+        int childrenId = 4;
+
+        applyChanges(ChangeUtil.createMap(childId),
+                ChangeUtil.createList(childrenId),
+                ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
                 ChangeUtil.put(childId, "value", Json.createNull()),
-                ChangeUtil.listInsertNode(4, 0, childId),
+                ChangeUtil.listInsertNode(childrenId, 0, childId),
                 ChangeUtil.put(childId, "TEMPLATE", Json.create(1)));
 
         Element templateElement = updater.getRootElement()
@@ -226,9 +235,11 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         int childId = 3;
         int childrenId = 4;
         int modelChildId = 5;
-        applyChanges(
+        applyChanges(ChangeUtil.createList(childrenId),
                 ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.createMap(modelChildId),
                 ChangeUtil.putMap(childId, "child", modelChildId),
+                ChangeUtil.createMap(childId),
                 ChangeUtil.listInsertNode(childrenId, 0, childId),
                 ChangeUtil.put(childId, "TEMPLATE", Json.create(1)));
 
@@ -297,7 +308,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         int childId = 3;
         int childrenId = 4;
 
-        applyChanges(
+        applyChanges(ChangeUtil.createMap(childId),
+                ChangeUtil.createList(childrenId),
                 ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
                 ChangeUtil.listInsertNode(childrenId, 0, childId),
                 ChangeUtil.put(childId, "TEMPLATE", Json.create(4)),
@@ -343,9 +355,11 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         int itemsId = 7;
         int templateRootNode = 3;
 
-        applyChanges(
+        applyChanges(ChangeUtil.createList(childrenId),
                 ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.createMap(templateRootNode),
                 ChangeUtil.listInsertNode(childrenId, 0, templateRootNode),
+                ChangeUtil.createList(itemsId),
                 ChangeUtil.putList(templateRootNode, "items", itemsId),
                 ChangeUtil.put(templateRootNode, "TEMPLATE", Json.create(2)));
 
@@ -357,7 +371,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         // 8 = comment node
         assertEquals(8, parent.getChild(0).getNodeType());
 
-        applyChanges(ChangeUtil.listInsertNode(itemsId, 0, child1ItemId),
+        applyChanges(ChangeUtil.createMap(child1ItemId),
+                ChangeUtil.listInsertNode(itemsId, 0, child1ItemId),
                 ChangeUtil.put(child1ItemId, "checked", Json.create(true)));
 
         assertEquals(2, parent.getChildCount());
@@ -367,7 +382,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals("checkbox", firstChild.getAttribute("type"));
         assertTrue(firstChild.getPropertyBoolean("checked"));
 
-        applyChanges(ChangeUtil.listInsertNode(itemsId, 1, child2ItemId));
+        applyChanges(ChangeUtil.createMap(child2ItemId),
+                ChangeUtil.listInsertNode(itemsId, 1, child2ItemId));
         assertEquals(3, parent.getChildCount());
         Element secondChild = firstChild.getNextSiblingElement();
         assertTrue(secondChild == parent.getChild(2));
@@ -408,7 +424,9 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         applyTemplate(templateId, template);
 
-        applyChanges(
+        applyChanges(ChangeUtil.createMap(templateNodeId),
+                ChangeUtil.createMap(overrideNodeId),
+                ChangeUtil.createList(childrenId),
                 ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
                 ChangeUtil.listInsertNode(childrenId, 0, templateNodeId),
                 ChangeUtil.put(templateNodeId, "TEMPLATE",
@@ -441,12 +459,16 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         applyTemplate(templateId, template);
 
-        applyChanges(ChangeUtil.put(child1NodeId, "value", "childValue1"),
+        applyChanges(ChangeUtil.createMap(child1NodeId),
+                ChangeUtil.put(child1NodeId, "value", "childValue1"),
+                ChangeUtil.createMap(child2NodeId),
                 ChangeUtil.put(child2NodeId, "value", "childValue2"),
+                ChangeUtil.createMap(templateNodeId),
                 ChangeUtil.put(templateNodeId, "TEMPLATE",
                         Json.create(templateId)),
                 ChangeUtil.putMap(templateNodeId, "child1", child1NodeId),
                 ChangeUtil.putMap(templateNodeId, "child2", child2NodeId),
+                ChangeUtil.createList(childrenId),
                 ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
                 ChangeUtil.listInsertNode(childrenId, 0, templateNodeId));
 
@@ -484,9 +506,14 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         assertFalse(isScriptLoaded());
 
-        applyChanges(ChangeUtil.put(3, "TEMPLATE", Json.create(3)),
-                ChangeUtil.putList(containerElementId, "CHILDREN", 4),
-                ChangeUtil.listInsertNode(4, 0, 3));
+        int childId = 3;
+        int childrenId = 4;
+
+        applyChanges(ChangeUtil.createMap(childId),
+                ChangeUtil.createList(childrenId),
+                ChangeUtil.put(childId, "TEMPLATE", Json.create(3)),
+                ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
+                ChangeUtil.listInsertNode(childrenId, 0, childId));
 
         assertTrue(isScriptLoaded());
     }
@@ -509,7 +536,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         applyTemplate(parentTemplateId,
                 Json.parse(parentTemplate.replace('\'', '"')));
 
-        applyChanges(
+        applyChanges(ChangeUtil.createMap(childId),
+                ChangeUtil.createList(childrenId),
                 ChangeUtil.put(childId, "TEMPLATE",
                         Json.create(parentTemplateId)),
                 ChangeUtil.put(childId, "value", Json.create(4)),
@@ -542,9 +570,11 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         int listId = 4;
         int childrenId = 5;
 
-        applyChanges(
+        applyChanges(ChangeUtil.createMap(childId),
                 ChangeUtil.put(childId, "TEMPLATE", Json.create(templateId)),
+                ChangeUtil.createList(listId),
                 ChangeUtil.putList(childId, "list", listId),
+                ChangeUtil.createList(childrenId),
                 ChangeUtil.putList(containerElementId, "CHILDREN", childrenId),
                 ChangeUtil.listInsertNode(childrenId, 0, childId));
 
@@ -581,7 +611,11 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
                 ChangeUtil.putList(ulNodeId, "items", items),
                 ChangeUtil.listInsertNode(items, 0, item0),
-                ChangeUtil.listInsertNode(items, 1, item1)
+                ChangeUtil.listInsertNode(items, 1, item1),
+
+                ChangeUtil.createList(childrenListNodeId),
+                ChangeUtil.createMap(ulNodeId), ChangeUtil.createList(items),
+                ChangeUtil.createMap(item0), ChangeUtil.createMap(item1)
 
         );
 
@@ -595,7 +629,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         int newItem0 = nextId++;
 
-        applyChanges(ChangeUtil.listInsertNode(items, 0, newItem0));
+        applyChanges(ChangeUtil.createMap(newItem0),
+                ChangeUtil.listInsertNode(items, 0, newItem0));
         Element newLi0 = ul.getFirstChildElement();
         newLi0.setAttribute("info", "newli0");
         assertEquals(0, newLi0.getPropertyInt("value"));
@@ -626,9 +661,11 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
                 ChangeUtil.putList(ulNodeId, "items", items),
                 ChangeUtil.listInsertNode(items, 0, item0),
-                ChangeUtil.listInsertNode(items, 1, item1)
+                ChangeUtil.listInsertNode(items, 1, item1),
 
-        );
+                ChangeUtil.createList(childrenListNodeId),
+                ChangeUtil.createMap(ulNodeId), ChangeUtil.createList(items),
+                ChangeUtil.createMap(item0), ChangeUtil.createMap(item1));
 
         Element ul = updater.getRootElement().getFirstChildElement();
 
@@ -640,7 +677,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         int newItem0 = nextId++;
 
-        applyChanges(ChangeUtil.listInsertNode(items, 0, newItem0));
+        applyChanges(ChangeUtil.createMap(newItem0),
+                ChangeUtil.listInsertNode(items, 0, newItem0));
         Element newLi0 = ul.getFirstChildElement();
         newLi0.setAttribute("info", "newli0");
 
@@ -688,9 +726,11 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
                 ChangeUtil.putList(ulNodeId, "items", items),
                 ChangeUtil.listInsertNode(items, 0, item0),
-                ChangeUtil.listInsertNode(items, 1, item1)
+                ChangeUtil.listInsertNode(items, 1, item1),
 
-        );
+                ChangeUtil.createList(childrenListNodeId),
+                ChangeUtil.createMap(ulNodeId), ChangeUtil.createList(items),
+                ChangeUtil.createMap(item0), ChangeUtil.createMap(item1));
 
         Element ul = updater.getRootElement().getFirstChildElement();
 
@@ -702,7 +742,8 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
 
         int newItem0 = nextId++;
 
-        applyChanges(ChangeUtil.listInsertNode(items, 0, newItem0));
+        applyChanges(ChangeUtil.createMap(newItem0),
+                ChangeUtil.listInsertNode(items, 0, newItem0));
         Element newLi0 = ul.getFirstChildElement();
         newLi0.setAttribute("info", "newli0");
         assertEquals(even, newLi0.getPropertyBoolean("value"));
@@ -757,8 +798,18 @@ public class TemplateTreeOperations extends AbstractTreeUpdaterTest {
         // }
         // ];
 
-        applyChanges(ChangeUtil.putList(containerElementId, "CHILDREN",
-                childrenListNodeId),
+        applyChanges(ChangeUtil.createList(childrenListNodeId),
+                ChangeUtil.createMap(tableNodeId), ChangeUtil.createList(rows),
+                ChangeUtil.createMap(row0), ChangeUtil.createMap(row1),
+                ChangeUtil.createList(row0columns),
+                ChangeUtil.createList(row1columns),
+                ChangeUtil.createMap(row0column0data),
+                ChangeUtil.createMap(row0column1data),
+                ChangeUtil.createMap(row1column0data),
+                ChangeUtil.createMap(row1column1data),
+
+                ChangeUtil.putList(containerElementId, "CHILDREN",
+                        childrenListNodeId),
 
                 ChangeUtil.put(tableNodeId, "TEMPLATE", Json.create(2)), // table
                 ChangeUtil.listInsertNode(childrenListNodeId, 0, tableNodeId),

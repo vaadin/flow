@@ -95,13 +95,16 @@ public class UidlWriterTest {
 
         JsonArray changes = encodeElementChanges();
 
-        Assert.assertEquals(3, changes.length());
+        Assert.assertEquals(4, changes.length());
         int idx = 0;
 
         JsonObject putOverride = changes.getObject(idx++);
         Assert.assertEquals("putOverride", putOverride.getString("type"));
         Assert.assertEquals(templateElementNode.getId(),
                 (int) putOverride.getNumber("id"));
+
+        JsonObject createOverride = changes.getObject(idx++);
+        Assert.assertEquals("create", createOverride.getString("type"));
 
         JsonObject putOverrideTemplate = changes.getObject(idx++);
         Assert.assertEquals("put", putOverrideTemplate.getString("type"));
@@ -125,7 +128,7 @@ public class UidlWriterTest {
         element.addEventListener("bar", listener);
 
         JsonArray changes = encodeElementChanges();
-        Assert.assertEquals(2, changes.length());
+        Assert.assertEquals(3, changes.length());
 
         int idx = 0;
 
@@ -133,6 +136,11 @@ public class UidlWriterTest {
         Assert.assertEquals("put", addListenerListNode.getString("type"));
         Assert.assertEquals("LISTENERS", addListenerListNode.getString("key"));
         int listNodeId = (int) addListenerListNode.getNumber("listValue");
+
+        JsonObject createListenerListNode = changes.getObject(idx++);
+        Assert.assertEquals("create", createListenerListNode.getString("type"));
+        Assert.assertEquals(listNodeId,
+                (int) createListenerListNode.getNumber("id"));
 
         JsonObject change = changes.getObject(idx++);
         Assert.assertEquals("splice", change.getString("type"));
@@ -163,11 +171,15 @@ public class UidlWriterTest {
 
         JsonArray changes = encodeElementChanges();
 
-        Assert.assertEquals(1, changes.length());
+        Assert.assertEquals(2, changes.length());
         JsonObject change = changes.get(0);
         Assert.assertEquals("put", change.getString("type"));
         Assert.assertEquals("list", change.getString("key"));
         Assert.assertTrue(change.hasKey("listValue"));
+
+        change = changes.get(1);
+        Assert.assertEquals("create", change.getString("type"));
+        Assert.assertEquals("list", change.getString("nodeType"));
     }
 
     @Test
@@ -193,14 +205,19 @@ public class UidlWriterTest {
         JsonArray changes = encodeElementChanges();
         System.out.println(JsonUtil.stringify(changes, 2));
 
-        // create list + RangeEnd + listInsert + 10 data nodes
-        Assert.assertEquals(1 + 1 + 1 + 10, changes.length());
-        // Ramge end + data through list insert for 0
+        // put list + create list + RangeEnd + listInsert + 10 data nodes
+        // (create + list insert)
+        Assert.assertEquals(1 + 1 + 1 + 1 + 10 * 2, changes.length());
+        // Range end + data through list insert for 0
         int idx = 0;
         JsonObject putList = changes.getObject(idx++);
         Assert.assertEquals("put", putList.getString("type"));
         Assert.assertEquals("list", putList.getString("key"));
         int listId = (int) putList.getNumber("listValue");
+
+        JsonObject create = changes.getObject(idx++);
+        Assert.assertEquals("create", create.getString("type"));
+        Assert.assertEquals(listId, (int) create.getNumber("id"));
 
         JsonObject rangeEnd = changes.getObject(idx++);
         Assert.assertEquals("rangeEnd", rangeEnd.getString("type"));
@@ -216,15 +233,32 @@ public class UidlWriterTest {
             nodeIds.add((int) data.getArray("mapValue").getNumber(i));
         }
 
-        for (int i = 0; i < 10; i++) {
-            JsonObject nodePut = changes.getObject(idx++);
-            Assert.assertEquals(nodeIds.get(i), (int) nodePut.getNumber("id"),
-                    0);
-            Assert.assertEquals("put", nodePut.getString("type"));
-            Assert.assertEquals("value", nodePut.getString("key"));
-            Assert.assertEquals("Value " + i, nodePut.getString("value"));
-        }
+        Set<Integer> seenPut = new HashSet<>();
+        Set<Integer> seenCreate = new HashSet<>();
 
+        for (int i = 0; i < 10 * 2; i++) {
+            JsonObject change = changes.getObject(idx++);
+            int id = (int) change.getNumber("id");
+            String type = change.getString("type");
+
+            Set<Integer> seenSet;
+            if ("put".equals(type)) {
+                seenSet = seenPut;
+
+                Assert.assertEquals("value", change.getString("key"));
+            } else if ("create".equals(type)) {
+                seenSet = seenCreate;
+
+                Assert.assertEquals("map", change.getString("nodeType"));
+            } else {
+                throw new RuntimeException(
+                        "Unexpected change type: " + change.toJson());
+            }
+
+            boolean newChange = seenSet.add(id);
+            Assert.assertTrue("Change already seen: " + change.toJson(),
+                    newChange);
+        }
     }
 
     // @Test

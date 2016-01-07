@@ -141,7 +141,7 @@ public class TransactionLogBuilder {
 
         @Override
         public void visitIdChange(StateNode node, IdChange idChange) {
-            // Ignore
+            logBuilder.addChange(node, idChange);
         }
 
         @Override

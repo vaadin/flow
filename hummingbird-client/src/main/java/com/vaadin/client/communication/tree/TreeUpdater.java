@@ -73,6 +73,11 @@ public class TreeUpdater {
 
     private Map<Integer, JavaScriptObject[]> promises = new HashMap<>();
 
+    public TreeUpdater() {
+        // Register root node
+        registerNode(new TreeNode(1, this));
+    }
+
     public void init(Element rootElement, ServerRpcQueue rpcQueue,
             Client client) {
         assert this.rootElement == null : "Can only init once";
@@ -760,15 +765,50 @@ public class TreeUpdater {
     }
 
     public TreeNode getRootNode() {
-        return ensureNodeExists(1);
+        TreeNode rootNode = getNode(Integer.valueOf(1));
+        assert rootNode != null;
+        return rootNode;
     }
 
     private void updateTree(JsonArray elementChanges) {
+        // First pass, create nodes
+        for (int i = 0; i < elementChanges.length(); i++) {
+            JsonObject change = elementChanges.get(i);
+            String type = change.getString("type");
+            if ("create".equals(type)) {
+                int nodeId = (int) change.getNumber("id");
+                TreeNode node = getNode(Integer.valueOf(nodeId));
+
+                String nodeType = change.getString("nodeType");
+
+                switch (nodeType) {
+                case "map":
+                    node = new TreeNode(nodeId, this);
+                    break;
+                case "list":
+                    node = new ListTreeNode(nodeId, this);
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            "Unsupported node type: " + change.toJson());
+                }
+
+                registerNode(node);
+            }
+        }
+
+        // Second pass, update everything else
         for (int i = 0; i < elementChanges.length(); i++) {
             JsonObject change = elementChanges.get(i);
 
             int nodeId = (int) change.getNumber("id");
-            TreeNode node = ensureNodeExists(nodeId);
+            TreeNode node = getNode(Integer.valueOf(nodeId));
+
+            if (node == null) {
+                throw new IllegalStateException(
+                        "Got update for non-existent node " + change.toJson());
+            }
+
             String type = change.getString("type");
             JsonValue key = change.get("key");
 
@@ -813,7 +853,14 @@ public class TreeUpdater {
                 int templateId = (int) key.asNumber();
                 int overrideNodeId = (int) change.getNumber("mapValue");
 
-                TreeNode overrideNode = ensureNodeExists(overrideNodeId);
+                TreeNode overrideNode = getNode(
+                        Integer.valueOf(overrideNodeId));
+                if (overrideNode == null) {
+                    throw new IllegalStateException(
+                            "Override node not registered for change "
+                                    + change.toJson());
+                }
+
                 node.getProperty(String.valueOf(templateId))
                         .setValue(overrideNode);
                 break;
@@ -825,6 +872,9 @@ public class TreeUpdater {
                 node.getProperty("rangeEnd").setValue(change.get("value"));
                 break;
             }
+            case "create":
+                // Ignore, already handled
+                break;
             default:
                 throw new RuntimeException("Unsupported change type: " + type);
             }
@@ -839,7 +889,12 @@ public class TreeUpdater {
             JsArrayObject<Object> newValues = JavaScriptObject.createArray()
                     .cast();
             for (int j = 0; j < mapValues.length(); j++) {
-                TreeNode node = ensureNodeExists((int) mapValues.getNumber(j));
+                Integer key = Integer.valueOf((int) mapValues.getNumber(j));
+                TreeNode node = getNode(key);
+                if (node == null) {
+                    throw new IllegalStateException("Node " + key
+                            + " not found for change " + change.toJson());
+                }
                 newValues.add(node);
             }
             return newValues;
@@ -848,8 +903,17 @@ public class TreeUpdater {
             JsArrayObject<Object> newValues = JavaScriptObject.createArray()
                     .cast();
             for (int j = 0; j < listValues.length(); j++) {
-                ListTreeNode node = ensureListNodeExists(
-                        (int) listValues.getNumber(j));
+                Integer key = Integer.valueOf((int) listValues.getNumber(j));
+                TreeNode node = getNode(key);
+                if (node == null) {
+                    throw new IllegalStateException("Node " + key
+                            + " not found for change " + change.toJson());
+                } else if (!(node instanceof ListTreeNode)) {
+                    throw new IllegalStateException(
+                            "Node " + key + " is not a list node for change "
+                                    + change.toJson());
+                }
+
                 newValues.add(node);
             }
             return newValues;
@@ -860,9 +924,24 @@ public class TreeUpdater {
 
     private Object getConvertedValue(JsonObject change) {
         if (change.hasKey("mapValue")) {
-            return ensureNodeExists((int) change.getNumber("mapValue"));
+            Integer key = Integer.valueOf((int) change.getNumber("mapValue"));
+            TreeNode node = getNode(key);
+            if (node == null) {
+                throw new IllegalStateException("Node " + key
+                        + " not found for change " + change.toJson());
+            }
+            return node;
         } else if (change.hasKey("listValue")) {
-            return ensureListNodeExists((int) change.getNumber("listValue"));
+            Integer key = Integer.valueOf((int) change.getNumber("listValue"));
+            TreeNode node = getNode(key);
+            if (node == null) {
+                throw new IllegalStateException("Node " + key
+                        + " not found for change " + change.toJson());
+            } else if (!(node instanceof ListTreeNode)) {
+                throw new IllegalStateException("Node " + key
+                        + " is not a list node for change " + change.toJson());
+            }
+            return node;
         } else {
             return change.get("value");
         }
@@ -879,24 +958,15 @@ public class TreeUpdater {
         return [value];
     }-*/;
 
-    private TreeNode ensureNodeExists(int id) {
-        Integer key = Integer.valueOf(id);
-        TreeNode node = idToNode.get(key);
-        if (node == null) {
-            node = new TreeNode(id, this);
-            idToNode.put(key, node);
-        }
-        return node;
-    }
+    private void registerNode(TreeNode node) {
+        Integer key = Integer.valueOf(node.getId());
 
-    private ListTreeNode ensureListNodeExists(int id) {
-        Integer key = Integer.valueOf(id);
-        ListTreeNode node = (ListTreeNode) idToNode.get(key);
-        if (node == null) {
-            node = new ListTreeNode(id, this);
-            idToNode.put(key, node);
+        if (idToNode.containsKey(key)) {
+            throw new IllegalStateException(
+                    "A node with id " + key + " is already registered");
         }
-        return node;
+
+        idToNode.put(key, node);
     }
 
     private void extractTemplates(JsonObject elementTemplates) {

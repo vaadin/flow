@@ -525,6 +525,11 @@ public class TransactionLogBuilderTest {
 
     private void commit() {
         transactionLog = getTransactionLog(root);
+
+        // Filter IdChanges since they're only noise here
+        transactionLog.forEach((node, changes) -> changes
+                .removeIf(c -> c instanceof IdChange));
+
         transactionLogSize = flatten(transactionLog).size();
 
         // Make a copy so the original transactionLog is available for testing

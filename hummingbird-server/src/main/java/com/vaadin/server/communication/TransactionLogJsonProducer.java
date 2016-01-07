@@ -13,6 +13,7 @@ import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.LazyList;
 import com.vaadin.hummingbird.kernel.ListNode;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
@@ -42,11 +43,14 @@ public class TransactionLogJsonProducer {
     private static final String VALUE_LIST = "listValue";
     private static final String TYPE_PUT = "put";
     private static final String LIST_INDEX = "index";
+    private static final String NODE_TYPE = "nodeType";
+
     private static final String TYPE_REMOVE = "remove";
     private static final String TYPE_PUT_OVERRIDE = "putOverride";
     private static final String TYPE_SPLICE = "splice";
     private static final String TYPE_RANGE_START = "rangeStart";
     private static final String TYPE_RANGE_END = "rangeEnd";
+    private static final String TYPE_CREATE = "create";
 
     private JsonArray changesJson = Json.createArray();
     private JsonObject templatesJson = Json.createObject();
@@ -159,6 +163,12 @@ public class TransactionLogJsonProducer {
             changeJson.put(VALUE, ((RangeEndChange) change).getRangeEnd());
         } else if (change instanceof RangeStartChange) {
             changeJson.put(VALUE, ((RangeStartChange) change).getRangeStart());
+        } else if (change instanceof IdChange) {
+            if (node instanceof ListNode || node instanceof LazyList<?>) {
+                changeJson.put(NODE_TYPE, "list");
+            } else {
+                changeJson.put(NODE_TYPE, "map");
+            }
         }
 
         return changeJson;
@@ -202,6 +212,8 @@ public class TransactionLogJsonProducer {
             } else {
                 return TYPE_PUT;
             }
+        } else if (change instanceof IdChange) {
+            return TYPE_CREATE;
         } else if (change instanceof ListChange) {
             return TYPE_SPLICE;
         } else if (change instanceof RangeStartChange) {

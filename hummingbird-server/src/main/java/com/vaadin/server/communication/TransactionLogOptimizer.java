@@ -6,9 +6,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
@@ -66,6 +69,7 @@ public class TransactionLogOptimizer {
             removeDuplicatePuts(node, nodeChanges);
             joinListInserts(node, nodeChanges);
             keepOnlyLastRangeChange(node, nodeChanges);
+            removeDuplicateIdChanges(node, nodeChanges);
         }
 
     }
@@ -239,6 +243,24 @@ public class TransactionLogOptimizer {
 
             }
 
+        }
+    }
+
+    private static void removeDuplicateIdChanges(StateNode node,
+            List<NodeChange> nodeChanges) {
+        Predicate<? super NodeChange> isIdChange = c -> c instanceof IdChange;
+
+        // Don't explicitly create root node
+        if (node.getId() == 1) {
+            nodeChanges.removeIf(isIdChange);
+        }
+
+        List<NodeChange> idChanges = nodeChanges.stream().filter(isIdChange)
+                .collect(Collectors.toList());
+        if (idChanges.size() > 1) {
+            NodeChange lastChange = idChanges.get(idChanges.size() - 1);
+
+            nodeChanges.removeIf(isIdChange.and(c -> c != lastChange));
         }
     }
 

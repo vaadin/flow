@@ -85,6 +85,12 @@ public class ChangeUtil {
         String getKey();
     }
 
+    @JsType
+    public interface CreateChange extends Change {
+        @JsProperty
+        String getNodeType();
+    }
+
     private static JsonObject createChange(int id, String type, String key) {
         JsonObject change = Json.createObject();
         change.put("id", id);
@@ -157,6 +163,18 @@ public class ChangeUtil {
                 String.valueOf(templateId));
         change.put("mapValue", overrideId);
         return (PutOverrideChange) change;
+    }
+
+    public static CreateChange createMap(int id) {
+        JsonObject change = createChange(id, "create", null);
+        change.put("nodeType", "map");
+        return (CreateChange) change;
+    }
+
+    public static CreateChange createList(int id) {
+        JsonObject change = createChange(id, "create", null);
+        change.put("nodeType", "list");
+        return (CreateChange) change;
     }
 
     private static JsonArray createArray(JsonValue... values) {
