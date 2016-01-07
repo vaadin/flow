@@ -391,6 +391,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
             sendBootstrapHeaders(response, headers);
 
+            document.outputSettings().prettyPrint(false);
             return document.outerHtml();
         } else {
             StringBuilder sb = new StringBuilder();
