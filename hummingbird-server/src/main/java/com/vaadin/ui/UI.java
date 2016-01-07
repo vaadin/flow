@@ -17,11 +17,8 @@
 package com.vaadin.ui;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -108,8 +105,7 @@ import elemental.json.JsonValue;
  */
 @Tag("div")
 @Implemented("Many features missing. Push + more...")
-public abstract class UI extends CssLayout
-        implements PollNotifier, Focusable, Layer {
+public abstract class UI extends CssLayout implements PollNotifier, Focusable {
 
     /**
      * The application to which this UI belongs
@@ -200,13 +196,13 @@ public abstract class UI extends CssLayout
      */
     private int lastProcessedClientToServerId = -1;
 
-    private Root root;
-
     /**
      * Changes that should be ignored the next time something is sent to the
      * client, mapped by state node id.
      */
     private final Map<Integer, Set<NodeChange>> ignoreChanges = new HashMap<>();
+
+    private RootNode rootNode;
 
     /**
      * Creates a new empty UI without a caption. The content of the UI must be
@@ -214,79 +210,6 @@ public abstract class UI extends CssLayout
      */
     public UI() {
         this(null);
-    }
-
-    public static class Root extends AbstractComponent {
-        private RootNode rootNode;
-
-        public Root() {
-            rootNode = new RootNode();
-            rootNode.put("containerElement", getElement().getNode());
-        }
-
-        public void addLayer(Layer layer) {
-            getElement().appendChild(layer.getElement());
-            layer.getElement().addClass("layer");
-            layer.getElement().setStyle("z-index", layer.getLayerIndex() + "");
-
-        }
-
-        public List<Layer> getLayers() {
-            return (List) getChildComponents();
-        }
-
-        public RootNode getRootNode() {
-            return rootNode;
-        }
-
-        public Layer getLayer(int layerIndex) {
-            for (Layer layer : getLayers()) {
-                if (layer.getLayerIndex() == layerIndex) {
-                    return layer;
-                }
-            }
-            return null;
-        }
-
-        public Layer createLayer(int layerIndex) {
-            assert getLayer(layerIndex) == null;
-
-            Layer layer = new LayerImpl(layerIndex);
-            addLayer(layer);
-            return layer;
-        }
-
-        @Override
-        protected VaadinSession getSession() {
-            return getUI().getSession();
-        }
-
-        @Override
-        public UI getUI() {
-            return (UI) getLayer(1);
-        }
-
-        public Layer ensureLayer(int layerIndex) {
-            Layer layer = getLayer(layerIndex);
-            if (layer == null) {
-                layer = createLayer(layerIndex);
-            }
-            return layer;
-
-        }
-    }
-
-    public static class LayerImpl extends CssLayout implements Layer {
-        private int layerIndex;
-
-        public LayerImpl(int layerIndex) {
-            this.layerIndex = layerIndex;
-        }
-
-        @Override
-        public int getLayerIndex() {
-            return layerIndex;
-        }
     }
 
     /**
@@ -299,12 +222,10 @@ public abstract class UI extends CssLayout
      * @see #setContent(Component)
      */
     public UI(Component content) {
-        root = new Root();
-        root.addLayer(this);
-        getElement().addClass("ui").addClass("v-scrollable");
+        rootNode = new RootNode();
+        rootNode.put("containerElement", getElement().getNode());
         registerRpc(rpc);
         registerRpc(debugRpc);
-        setSizeFull();
 
         if (content != null) {
             addComponent(content);
@@ -316,7 +237,7 @@ public abstract class UI extends CssLayout
             String eventType = json.getString(1);
             JsonObject eventData = json.getObject(2);
 
-            StateNode elementStateNode = getRoot().rootNode.getById(nodeId);
+            StateNode elementStateNode = rootNode.getById(nodeId);
 
             ElementTemplate template = null;
             if (elementStateNode.containsKey(Keys.TAG)) {
@@ -338,13 +259,7 @@ public abstract class UI extends CssLayout
         js.addFunction("vTemplateEvent", this::handleTemplateEvent);
     }
 
-    @Override
-    public int getLayerIndex() {
-        return Layer.UI_LAYER_INDEX;
-    }
-
     private void handleModelChange(JsonArray json) {
-        RootNode rootNode = root.getRootNode();
         if (rootNode.isDirty()) {
             throw new RuntimeException(
                     "Applying model changes from the client while the tree is dirty is not yet supported.");
@@ -409,7 +324,7 @@ public abstract class UI extends CssLayout
         JsonArray parameters = json.getArray(3);
         int promiseId = (int) json.getNumber(4);
 
-        StateNode node = root.getRootNode().getById(nodeId);
+        StateNode node = rootNode.getById(nodeId);
         if (node == null) {
             getLogger().warning(
                     "Got template event for non-existing node id " + nodeId);
@@ -574,80 +489,6 @@ public abstract class UI extends CssLayout
      */
     public int getUIId() {
         return uiId;
-    }
-
-    /**
-     * Adds a window as a subwindow inside this UI. To open a new browser window
-     * or tab, you should instead use a {@link UIProvider}.
-     *
-     * @param window
-     * @throws IllegalArgumentException
-     *             if the window is already added to an application
-     * @throws NullPointerException
-     *             if the given <code>Window</code> is <code>null</code>.
-     */
-    public void addWindow(Window window)
-            throws IllegalArgumentException, NullPointerException {
-
-        if (window == null) {
-            throw new NullPointerException("Argument must not be null");
-        }
-
-        if (window.isAttached()) {
-            throw new IllegalArgumentException(
-                    "Window is already attached to an application.");
-        }
-
-        attachWindow(window);
-    }
-
-    /**
-     * Helper method to attach a window.
-     *
-     * @param w
-     *            the window to add
-     */
-    private void attachWindow(Window w) {
-        getWindowLayer().getElement().appendChild(w.getElement());
-        // windows.add(w);
-        markAsDirty();
-    }
-
-    /**
-     * Remove the given subwindow from this UI.
-     *
-     * Since Vaadin 6.5, {@link Window.CloseListener}s are called also when
-     * explicitly removing a window by calling this method.
-     *
-     * Since Vaadin 6.5, returns a boolean indicating if the window was removed
-     * or not.
-     *
-     * @param window
-     *            Window to be removed.
-     * @return true if the subwindow was removed, false otherwise
-     */
-    public boolean removeWindow(Window window) {
-        getWindowLayer().removeComponent(window);
-
-        // TODO Move to window
-        window.fireClose();
-
-        return true;
-    }
-
-    /**
-     * Gets all the windows added to this UI.
-     *
-     * @return an unmodifiable collection of windows
-     */
-    public Collection<Window> getWindows() {
-        List<Window> windows = new ArrayList<>();
-        for (Component c : getWindowLayer().getChildComponents()) {
-            if (c instanceof Window) {
-                windows.add((Window) c);
-            }
-        }
-        return windows;
     }
 
     @Override
@@ -1490,21 +1331,12 @@ public abstract class UI extends CssLayout
         return sentTemplates.get(Integer.valueOf(templateId));
     }
 
-    private Layer getWindowLayer() {
-        Layer layer = root.getLayer(Layer.WINDOW_LAYER_INDEX);
-        if (layer == null) {
-            layer = root.createLayer(Layer.WINDOW_LAYER_INDEX);
-            layer.getElement().addClass("window");
-        }
-        return layer;
-    }
-
-    public Root getRoot() {
-        return root;
-    }
-
     public Map<Integer, Set<NodeChange>> getIgnoreChanges() {
         return ignoreChanges;
+    }
+
+    public RootNode getRootNode() {
+        return rootNode;
     }
 
 }

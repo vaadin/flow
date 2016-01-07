@@ -1,11 +1,11 @@
 package com.vaadin.hummingbird.kernel;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.hummingbird.kernel.TemplateModelTest.SubModelType;
@@ -99,7 +99,7 @@ public class TemplateComponentTest {
         ui.registerTemplate(template.getElement().getTemplate());
 
         StateNode node = StateNode.create();
-        ui.getRoot().getRootNode().put("node", node);
+        ui.getRootNode().put("node", node);
 
         template.onBrowserEvent("withNode", Json.create(node.getId()));
 

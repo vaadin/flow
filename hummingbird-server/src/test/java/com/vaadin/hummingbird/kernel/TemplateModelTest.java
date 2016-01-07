@@ -326,7 +326,7 @@ public class TemplateModelTest {
     public void testModelChangeType() throws RpcInvocationException {
         MockUI ui = new MockUI();
         ui.addComponent(template);
-        ui.getRoot().getRootNode().commit();
+        ui.getRootNode().commit();
 
         Assert.assertEquals(0, model.getInt());
 

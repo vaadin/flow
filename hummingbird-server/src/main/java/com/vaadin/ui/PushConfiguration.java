@@ -277,7 +277,7 @@ public interface PushConfiguration extends Serializable {
 
         private StateNode getConfigurationNode() {
             if (node == null) {
-                RootNode rootNode = ui.getRoot().getRootNode();
+                RootNode rootNode = ui.getRootNode();
                 node = rootNode.get("pushConfiguration", StateNode.class);
                 if (node == null) {
                     node = StateNode.create();

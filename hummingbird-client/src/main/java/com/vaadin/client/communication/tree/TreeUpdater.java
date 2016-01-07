@@ -698,6 +698,8 @@ public class TreeUpdater {
             childElement = next;
         }
         BasicElementListener.bind(bodyNode, rootElement, this);
+
+        rootElement.removeAttribute("pre-render");
     }
 
     public TreeNode getRootNode() {

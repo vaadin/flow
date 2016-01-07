@@ -196,7 +196,7 @@ public class ServerMessageHandler {
      */
     public void setConnection(ApplicationConnection connection) {
         this.connection = connection;
-        treeUpdater.init(connection.getContainerElement(),
+        treeUpdater.init(connection.getBodyOrContainerElement(),
                 connection.getServerRpcQueue(), connection.getCurrentClient());
 
         TreeListenerHelper.addListener(treeUpdater.getRootNode(),

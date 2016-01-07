@@ -385,14 +385,14 @@ public class ApplicationConnection implements HasHandlers {
         });
     }
 
-    public Element getContainerElement() {
+    public Element getBodyOrContainerElement() {
         // TODO Embedded case
         return Document.get().getBody();
     }
 
     public Element getInternalsElement() {
-        for (int i = 0; i < getContainerElement().getChildCount(); i++) {
-            Node child = getContainerElement().getChild(i);
+        for (int i = 0; i < getBodyOrContainerElement().getChildCount(); i++) {
+            Node child = getBodyOrContainerElement().getChild(i);
             if (Element.is(child)) {
                 Element childElement = Element.as(child);
                 if (childElement.hasTagName("vaadin-internals")) {

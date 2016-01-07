@@ -33,7 +33,6 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ConnectorTracker;
 import com.vaadin.ui.SelectiveRenderer;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.UI.Root;
 
 /**
  * This is a common base class for the server-side implementations of the
@@ -202,13 +201,13 @@ public class LegacyCommunicationManager implements Serializable {
         if (parent != null) {
             return isComponentVisibleToClient(parent);
         } else {
-            if (child instanceof Root) {
-                // Root has no parent and visibility was checked above
+            if (child instanceof UI) {
+                // UI has no parent and visibility was checked above
                 return true;
-            } else {
-                // Component which is not attached to any UI
-                return false;
             }
+
+            // Component which is not attached to any UI
+            return false;
         }
     }
 

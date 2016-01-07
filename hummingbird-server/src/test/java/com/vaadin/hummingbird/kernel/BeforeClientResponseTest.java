@@ -1,5 +1,8 @@
 package com.vaadin.hummingbird.kernel;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -7,9 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.UI;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class BeforeClientResponseTest {
     private static class TestComponent extends AbstractComponent {
@@ -34,7 +34,7 @@ public class BeforeClientResponseTest {
     private AtomicInteger count = new AtomicInteger();
 
     private int commitAndGetCount() {
-        ui.getRoot().getRootNode().commit();
+        ui.getRootNode().commit();
         return count.get();
     }
 
@@ -87,7 +87,7 @@ public class BeforeClientResponseTest {
             result.add(3);
         });
 
-        ui.getRoot().getRootNode().commit();
+        ui.getRootNode().commit();
         Assert.assertArrayEquals(new Integer[] { 1, 2, 3 }, result.toArray());
     }
 }

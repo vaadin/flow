@@ -43,7 +43,6 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.communication.ClientRpc;
 import com.vaadin.shared.communication.ServerRpc;
 import com.vaadin.shared.communication.SharedState;
-import com.vaadin.ui.UI.Root;
 
 /**
  * An abstract base class for ClientConnector implementations. This class
@@ -428,9 +427,6 @@ public abstract class AbstractClientConnector extends AbstractHasElement
         while (connector != null) {
             if (connector instanceof UI) {
                 return (UI) connector;
-            }
-            if (connector instanceof Root) {
-                return ((Root) connector).getUI();
             }
             connector = connector.getParent();
         }

@@ -22,31 +22,21 @@ import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.Position;
 import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.CheckBox;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.GridLayout;
-import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.MenuBar;
-import com.vaadin.ui.Page;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.Panel;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
-import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
-import com.vaadin.ui.Window.CloseEvent;
-import com.vaadin.ui.Window.CloseListener;
 
 public class CommonParts extends VerticalLayout implements View {
     public CommonParts() {
@@ -390,7 +380,6 @@ public class CommonParts extends VerticalLayout implements View {
     Panel windows() {
         Panel p = new Panel("Dialogs");
         VerticalLayout content = new VerticalLayout() {
-            final Window win = new Window("Window Caption");
             String prevHeight = "300px";
             boolean footerVisible = true;
             boolean autoHeight = false;
@@ -400,143 +389,15 @@ public class CommonParts extends VerticalLayout implements View {
             boolean toolbarLayout = false;
             String toolbarStyle = null;
 
-            VerticalLayout windowContent() {
-                VerticalLayout root = new VerticalLayout();
-
-                if (toolbarVisible) {
-                    MenuBar menuBar = MenuBars.getToolBar();
-                    menuBar.setSizeUndefined();
-                    menuBar.setStyleName(toolbarStyle);
-                    Component toolbar = menuBar;
-                    if (toolbarLayout) {
-                        menuBar.setWidth(null);
-                        HorizontalLayout toolbarLayout = new HorizontalLayout();
-                        toolbarLayout.setWidth("100%");
-                        toolbarLayout.setSpacing(true);
-                        Label label = new Label("Tools");
-                        label.setSizeUndefined();
-                        toolbarLayout.addComponents(label, menuBar);
-                        toolbarLayout.setExpandRatio(menuBar, 1);
-                        toolbarLayout.setComponentAlignment(menuBar,
-                                Alignment.TOP_RIGHT);
-                        toolbar = toolbarLayout;
-                    }
-                    toolbar.addStyleName("v-window-top-toolbar");
-                    root.addComponent(toolbar);
-                }
-
-                Component content = null;
-
-                if (tabsVisible) {
-                    TabSheet tabs = new TabSheet();
-                    tabs.setSizeFull();
-                    VerticalLayout l = new VerticalLayout();
-                    l.addComponent(new Label(
-                            "<h2>Subtitle</h2><p>Normal type for plain text. Etiam at risus et justo dignissim congue. Phasellus laoreet lorem vel dolor tempus vehicula.</p><p>Quisque ut dolor gravida, placerat libero vel, euismod. Etiam habebis sem dicantur magna mollis euismod. Nihil hic munitissimus habendi senatus locus, nihil horum? Curabitur est gravida et libero vitae dictum. Ullamco laboris nisi ut aliquid ex ea commodi consequat. Morbi odio eros, volutpat ut pharetra vitae, lobortis sed nibh.</p>",
-                            ContentMode.HTML));
-                    l.setMargin(true);
-                    tabs.addTab(l, "Selected");
-                    tabs.addTab(new Label("&nbsp;", ContentMode.HTML),
-                            "Another");
-                    tabs.addTab(new Label("&nbsp;", ContentMode.HTML),
-                            "One more");
-                    tabs.addStyleName("padded-tabbar");
-                    tabs.addSelectedTabChangeListener(
-                            new SelectedTabChangeListener() {
-                        @Override
-                        public void selectedTabChange(
-                                SelectedTabChangeEvent event) {
-                            try {
-                                Thread.sleep(600);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                    content = tabs;
-                } else if (!autoHeight) {
-                    Panel p = new Panel();
-                    p.setSizeFull();
-                    p.addStyleName("borderless");
-                    if (!toolbarVisible || !toolbarLayout) {
-                        p.addStyleName("scroll-divider");
-                    }
-                    VerticalLayout l = new VerticalLayout();
-                    l.addComponent(new Label(
-                            "<h2>Subtitle</h2><p>Normal type for plain text. Etiam at risus et justo dignissim congue. Phasellus laoreet lorem vel dolor tempus vehicula.</p><p>Quisque ut dolor gravida, placerat libero vel, euismod. Etiam habebis sem dicantur magna mollis euismod. Nihil hic munitissimus habendi senatus locus, nihil horum? Curabitur est gravida et libero vitae dictum. Ullamco laboris nisi ut aliquid ex ea commodi consequat. Morbi odio eros, volutpat ut pharetra vitae, lobortis sed nibh.</p>",
-                            ContentMode.HTML));
-                    l.setMargin(true);
-                    p.setContent(l);
-                    content = p;
-                } else {
-                    content = new Label(
-                            "<h2>Subtitle</h2><p>Normal type for plain text. Etiam at risus et justo dignissim congue. Phasellus laoreet lorem vel dolor tempus vehicula.</p><p>Quisque ut dolor gravida, placerat libero vel, euismod. Etiam habebis sem dicantur magna mollis euismod. Nihil hic munitissimus habendi senatus locus, nihil horum? Curabitur est gravida et libero vitae dictum. Ullamco laboris nisi ut aliquid ex ea commodi consequat. Morbi odio eros, volutpat ut pharetra vitae, lobortis sed nibh.</p>",
-                            ContentMode.HTML);
-                    root.setMargin(true);
-                }
-
-                root.addComponent(content);
-
-                if (footerVisible) {
-                    HorizontalLayout footer = new HorizontalLayout();
-                    footer.setWidth("100%");
-                    footer.setSpacing(true);
-                    footer.addStyleName("v-window-bottom-toolbar");
-
-                    Label footerText = new Label("Footer text");
-                    footerText.setSizeUndefined();
-
-                    Button ok = new Button("OK");
-                    ok.addStyleName("primary");
-
-                    Button cancel = new Button("Cancel");
-
-                    footer.addComponents(footerText, ok, cancel);
-                    footer.setExpandRatio(footerText, 1);
-
-                    if (footerToolbar) {
-                        MenuBar menuBar = MenuBars.getToolBar();
-                        menuBar.setStyleName(toolbarStyle);
-                        menuBar.setWidth(null);
-                        footer.removeAllComponents();
-                        footer.addComponent(menuBar);
-                    }
-
-                    root.addComponent(footer);
-                }
-
-                if (!autoHeight) {
-                    root.setSizeFull();
-                    root.setExpandRatio(content, 1);
-                }
-
-                return root;
-            }
-
             {
                 setSpacing(true);
                 setMargin(true);
-                win.setWidth("380px");
-                win.setHeight(prevHeight);
-                win.setClosable(false);
-                win.setResizable(false);
-                win.setContent(windowContent());
 
                 Command optionsCommand = new Command() {
                     @Override
                     public void menuSelected(MenuItem selectedItem) {
                         if (selectedItem.getText().equals("Footer")) {
                             footerVisible = selectedItem.isChecked();
-                        }
-                        if (selectedItem.getText().equals("Auto Height")) {
-                            autoHeight = selectedItem.isChecked();
-                            if (!autoHeight) {
-                                win.setHeight(prevHeight);
-                            } else {
-                                prevHeight = win.getHeight()
-                                        + win.getHeightUnits().toString();
-                                win.setHeight(null);
-                            }
                         }
                         if (selectedItem.getText().equals("Tabs")) {
                             tabsVisible = selectedItem.isChecked();
@@ -561,14 +422,11 @@ public class CommonParts extends VerticalLayout implements View {
                                     ? "borderless" : null;
                         }
 
-                        win.setContent(windowContent());
                     }
                 };
 
                 MenuBar options = new MenuBar();
                 options.setCaption("Content");
-                options.addItem("Auto Height", optionsCommand)
-                        .setCheckable(true);
                 options.addItem("Tabs", optionsCommand).setCheckable(true);
                 MenuItem option = options.addItem("Footer", optionsCommand);
                 option.setCheckable(true);
@@ -589,62 +447,6 @@ public class CommonParts extends VerticalLayout implements View {
                 options.addStyleName("small");
                 addComponent(options);
 
-                Command optionsCommand2 = new Command() {
-                    @Override
-                    public void menuSelected(MenuItem selectedItem) {
-                        if (selectedItem.getText().equals("Caption")) {
-                            win.setCaption(selectedItem.isChecked()
-                                    ? "Window Caption" : null);
-                        } else if (selectedItem.getText().equals("Closable")) {
-                            win.setClosable(selectedItem.isChecked());
-                        } else if (selectedItem.getText().equals("Resizable")) {
-                            win.setResizable(selectedItem.isChecked());
-                        } else if (selectedItem.getText().equals("Modal")) {
-                            win.setModal(selectedItem.isChecked());
-                        }
-                    }
-                };
-
-                options = new MenuBar();
-                options.setCaption("Options");
-                MenuItem caption = options.addItem("Caption", optionsCommand2);
-                caption.setCheckable(true);
-                caption.setChecked(true);
-                options.addItem("Closable", optionsCommand2).setCheckable(true);
-                options.addItem("Resizable", optionsCommand2)
-                        .setCheckable(true);
-                options.addItem("Modal", optionsCommand2).setCheckable(true);
-                options.addStyleName("small");
-                addComponent(options);
-
-                final Button show = new Button("Open Window",
-                        new ClickListener() {
-                    @Override
-                    public void buttonClick(ClickEvent event) {
-                        getUI().addWindow(win);
-                        win.center();
-                        win.focus();
-                        event.getButton().setEnabled(false);
-                    }
-                });
-                show.addStyleName("primary");
-                addComponent(show);
-
-                final CheckBox hidden = new CheckBox("Hidden");
-                hidden.addValueChangeListener(new ValueChangeListener() {
-                    @Override
-                    public void valueChange(ValueChangeEvent event) {
-                        win.setVisible(!hidden.getValue());
-                    }
-                });
-                addComponent(hidden);
-
-                win.addCloseListener(new CloseListener() {
-                    @Override
-                    public void windowClose(CloseEvent e) {
-                        show.setEnabled(true);
-                    }
-                });
             }
         };
         p.setContent(content);

@@ -696,6 +696,20 @@ public class Element implements Serializable {
      * @param value
      *            The value to set for the property
      */
+    public Element setStyle(String property, int value) {
+        return setStyle(property, value + "");
+
+    }
+
+    /**
+     * Sets the given inline style ({@code property}: {@code value}) on the
+     * element. Replaces any existing value with the same property.
+     *
+     * @param property
+     *            The style property to set
+     * @param value
+     *            The value to set for the property
+     */
     public Element setStyle(String property, String value) {
         assert property != null;
         assert value != null;

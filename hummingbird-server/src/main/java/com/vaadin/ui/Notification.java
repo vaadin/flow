@@ -71,10 +71,10 @@ import com.vaadin.shared.Position;
 public class Notification extends AbstractComponent implements Serializable {
     public enum Type {
         HUMANIZED_MESSAGE("humanized"), WARNING_MESSAGE(
-                "warning"), ERROR_MESSAGE("error"), TRAY_NOTIFICATION(
-                        "tray"), /**
-                                  * @since 7.2
-                                  */
+                "warning"), ERROR_MESSAGE("error"), TRAY_NOTIFICATION("tray"),
+        /**
+         * @since 7.2
+         */
         ASSISTIVE_NOTIFICATION("assistive");
 
         private String style;
@@ -356,12 +356,12 @@ public class Notification extends AbstractComponent implements Serializable {
         // Workaround for hierarchy issue when client side removes the element
         // from the DOM
         getElement().setAttribute("keepOnClose", true);
-
+        getElement().setStyle("z-index", 20000);
         getElement().addEventListener("iron-overlay-closed", e -> {
-            ui.getRoot().getLayer(20000).removeComponent(this);
+            ui.removeComponent(this);
         });
 
-        ui.getRoot().ensureLayer(20000).addComponent(this);
+        ui.addComponent(this);
     }
 
     /**
