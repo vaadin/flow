@@ -15,8 +15,8 @@ public class RpcExamples extends AbstractTestUI {
             {
                 setTextContent("Focus input");
                 addEventListener("click", e -> {
-                    getRoot().getRootNode().enqueueRpc(input.getNode(),
-                            "$0.focus()", input);
+                    getRootNode().enqueueRpc(input.getNode(), "$0.focus()",
+                            input);
                 });
             }
         });
@@ -25,8 +25,8 @@ public class RpcExamples extends AbstractTestUI {
             {
                 setTextContent("Show alert");
                 addEventListener("click", e -> {
-                    getRoot().getRootNode().enqueueRpc(getRoot().getRootNode(),
-                            "window.alert($0)", "Hello");
+                    getRootNode().enqueueRpc(getRootNode(), "window.alert($0)",
+                            "Hello");
                 });
             }
         });
@@ -35,7 +35,7 @@ public class RpcExamples extends AbstractTestUI {
             {
                 setTextContent("Log stuff");
                 addEventListener("click", e -> {
-                    getRoot().getRootNode().enqueueRpc(getRoot().getRootNode(),
+                    getRootNode().enqueueRpc(getRootNode(),
                             "console.log($0, $1)", "Foobar", input);
                 });
             }
@@ -45,7 +45,7 @@ public class RpcExamples extends AbstractTestUI {
             {
                 setTextContent("Log window.vaadin.framework property names");
                 addEventListener("click", e -> {
-                    getRoot().getRootNode().enqueueRpc(getRoot().getRootNode(),
+                    getRootNode().enqueueRpc(getRootNode(),
                             "console.log(Object.getOwnPropertyNames(window.vaadin.framework))");
                 });
             }
@@ -56,7 +56,7 @@ public class RpcExamples extends AbstractTestUI {
                 setTextContent("Send arrays");
                 addEventListener("click", e -> {
                     // Define as object to avoid interpreting as varargs
-                    getRoot().getRootNode().enqueueRpc(getRoot().getRootNode(),
+                    getRootNode().enqueueRpc(getRootNode(),
                             "console.log($0, $1)",
                             new String[] { "Lorem", "Ipsum" },
                             new int[] { 1, 2 });

@@ -15,7 +15,7 @@ public class RemoveRemovedElement extends UI {
         getElement().appendChild(label);
         getElement().appendChild(removeButton);
 
-        getRoot().getRootNode().enqueueRpc(removeButton.getNode(),
+        getRootNode().enqueueRpc(removeButton.getNode(),
                 "$0.addEventListener('click', function() { $1.remove(); })",
                 removeButton, label);
     }

@@ -391,6 +391,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
             sendBootstrapHeaders(response, headers);
 
+            document.outputSettings().prettyPrint(false);
             return document.outerHtml();
         } else {
             StringBuilder sb = new StringBuilder();
@@ -409,8 +410,21 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         com.vaadin.hummingbird.kernel.Element preRenderedUI = context.getUI()
                 .preRender();
         preRenderedUI.setAttribute("pre-render", true);
-        document.body()
-                .appendChild(PreRenderer.toJSoup(document, preRenderedUI));
+
+        // UI maps to the body element, copy attributes
+        for (String attrKey : preRenderedUI.getAttributeNames()) {
+            document.body().attr(attrKey, preRenderedUI.getAttribute(attrKey));
+        }
+
+        // Render UI children inside body
+        for (int i = 0; i < preRenderedUI.getChildCount(); i++) {
+            Node jsoupNode = PreRenderer.toJSoup(document,
+                    preRenderedUI.getChild(i));
+            // Add a pre-render attribute so we easily detect pre-rendered
+            // elements when starting the client side engine
+            jsoupNode.attr("pre-render", "");
+            document.body().appendChild(jsoupNode);
+        }
     }
 
     private void sendBootstrapHeaders(VaadinResponse response,

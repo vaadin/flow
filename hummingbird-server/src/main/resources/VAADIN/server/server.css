@@ -227,17 +227,3 @@
   visibility: visible;
 
 }
-
-/* 
- * Questionable layer feature
- */
-.layer {
-  position: absolute;
-  width: 0;
-  height: 0;
-  top: 0;
-  left: 0;
-}
-.layer.ui {
-  position: static;
-}

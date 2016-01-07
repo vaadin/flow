@@ -1,5 +1,9 @@
 package com.vaadin.hummingbird.kernel;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -7,10 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.vaadin.hummingbird.json.JsonStream;
 import com.vaadin.hummingbird.kernel.LazyList.DataProvider;
@@ -47,7 +47,7 @@ public class UidlWriterTest {
                 // Do nothing
             }
         };
-        ui.getRoot().getRootNode().commit();
+        ui.getRootNode().commit();
 
         element = ui.getElement();
     }

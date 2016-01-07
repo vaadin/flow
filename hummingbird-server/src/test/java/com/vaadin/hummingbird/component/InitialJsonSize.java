@@ -1,5 +1,9 @@
 package com.vaadin.hummingbird.component;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,10 +15,6 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.communication.TransactionLogJsonProducer;
 import com.vaadin.tests.server.TestButton;
 import com.vaadin.ui.UI;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import elemental.json.JsonArray;
 
@@ -183,7 +183,7 @@ public class InitialJsonSize {
 
     private static JsonArray getJson(TestUI ui) {
         LinkedHashMap<StateNode, List<NodeChange>> log = TransactionLogBuilderTest
-                .getTransactionLog(ui.getRoot().getRootNode());
+                .getTransactionLog(ui.getRootNode());
         LinkedHashMap<StateNode, List<NodeChange>> optimized = TransactionLogBuilderTest
                 .getOptimizedTransactionLog(log);
         return new TransactionLogJsonProducer(ui, optimized, new HashSet<>())

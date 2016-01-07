@@ -115,7 +115,6 @@ public class ValoThemeUI extends UI {
         navigator.addView("splitpanels", SplitPanels.class);
         navigator.addView("tabs", Tabsheets.class);
         navigator.addView("accordions", Accordions.class);
-        navigator.addView("colorpickers", ColorPickers.class);
         navigator.addView("selects", NativeSelects.class);
         navigator.addView("forms", Forms.class);
         navigator.addView("popupviews", PopupViews.class);

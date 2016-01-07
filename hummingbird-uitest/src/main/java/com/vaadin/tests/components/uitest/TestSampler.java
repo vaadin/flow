@@ -15,14 +15,11 @@ import com.vaadin.tests.components.uitest.components.SlidersCssTest;
 import com.vaadin.tests.components.uitest.components.TabSheetsCssTest;
 import com.vaadin.tests.components.uitest.components.TextFieldsCssTest;
 import com.vaadin.tests.components.uitest.components.UploadCssTest;
-import com.vaadin.tests.components.uitest.components.WindowsCssTest;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.Window;
 
 /**
  * Test sampler that creates a tabsheet of "all" the Vaadin UI components. This
@@ -51,7 +48,6 @@ public class TestSampler extends TabSheet {
         createTabSheets();
         createAccordions();
 
-        createWindows();
         createNotifications();
 
     }
@@ -59,11 +55,6 @@ public class TestSampler extends TabSheet {
     private void createNotifications() {
         NotificationsCssTest notificationsTest = new NotificationsCssTest(this);
         createComponentLayout("Notifications", notificationsTest);
-    }
-
-    private void createWindows() {
-        WindowsCssTest windows = new WindowsCssTest(this);
-        createComponentLayout("Windows", windows);
     }
 
     private void createAccordions() {
@@ -155,10 +146,6 @@ public class TestSampler extends TabSheet {
      */
     public void registerComponent(Component component) {
         components.add(component);
-    }
-
-    public void addWindow(Window window) {
-        UI.getCurrent().addWindow(window);
     }
 
     public void setCustomStyleNameToComponents(String oldStyleName,

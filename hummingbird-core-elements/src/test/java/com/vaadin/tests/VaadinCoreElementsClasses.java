@@ -1,5 +1,7 @@
 package com.vaadin.tests;
 
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -25,10 +27,7 @@ import com.vaadin.ui.LoginForm;
 import com.vaadin.ui.PopupView;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalSplitPanel;
-import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
-
-import org.junit.Test;
 
 @SuppressWarnings("deprecation")
 public class VaadinCoreElementsClasses {
@@ -114,7 +113,6 @@ public class VaadinCoreElementsClasses {
         List<Class<? extends ComponentContainer>> classes = getComponentContainersSupportingAddRemoveComponent();
         classes.remove(VerticalSplitPanel.class);
         classes.remove(HorizontalSplitPanel.class);
-        classes.remove(Window.class);
 
         return classes;
     }

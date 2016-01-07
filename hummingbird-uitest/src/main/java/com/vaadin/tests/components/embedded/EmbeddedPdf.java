@@ -5,7 +5,6 @@ import com.vaadin.tests.components.TestBase;
 import com.vaadin.ui.BrowserFrame;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Window;
 
 public class EmbeddedPdf extends TestBase {
 
@@ -34,7 +33,6 @@ public class EmbeddedPdf extends TestBase {
             }
         }));
 
-        player.getUI().addWindow(new Window("Testwindow"));
     }
 
 }

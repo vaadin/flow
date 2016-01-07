@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.UI.Root;
+import com.vaadin.ui.UI;
 
 public abstract class AbstractElementTemplate implements ElementTemplate {
 
@@ -319,9 +319,9 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         }
         StateNode bodyNode = root.get("containerElement", StateNode.class);
 
-        Root r = (Root) getComponents(bodyNode, false).get(0);
-        if (r != null) {
-            VaadinSession parentSession = r.getUI().getSession();
+        UI ui = (UI) getComponents(bodyNode, false).get(0);
+        if (ui != null) {
+            VaadinSession parentSession = ui.getSession();
             if (parentSession != null && !parentSession.hasLock()) {
                 String message = "Cannot remove from parent when the session is not locked.";
                 if (VaadinService.isOtherSessionLocked(parentSession)) {

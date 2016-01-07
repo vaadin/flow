@@ -390,7 +390,7 @@ public class UidlWriter implements Serializable {
     }
 
     public static void encodeRpc(UI ui, JsonObject response) {
-        List<PendingRpc> rpcQueue = ui.getRoot().getRootNode().flushRpcQueue();
+        List<PendingRpc> rpcQueue = ui.getRootNode().flushRpcQueue();
         if (!rpcQueue.isEmpty()) {
             response.put("rpc", encodeRpcQueue(rpcQueue));
         }
@@ -398,7 +398,7 @@ public class UidlWriter implements Serializable {
 
     public static void encodeChanges(UI ui, JsonObject response) {
         TransactionLogBuilder logBuilder = new TransactionLogBuilder();
-        ui.getRoot().getRootNode().commit(logBuilder.getVisitor());
+        ui.getRootNode().commit(logBuilder.getVisitor());
 
         LinkedHashMap<StateNode, List<NodeChange>> changes = Processor
                 .processChain(logBuilder.getChanges(), changeProcessors, ui);

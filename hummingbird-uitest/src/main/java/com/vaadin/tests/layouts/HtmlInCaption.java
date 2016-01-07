@@ -21,8 +21,6 @@ import com.vaadin.ui.AbsoluteLayout;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
-import com.vaadin.ui.ColorPicker;
-import com.vaadin.ui.ColorPickerArea;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.GridLayout;
@@ -32,7 +30,6 @@ import com.vaadin.ui.NativeButton;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
 
 /**
  *
@@ -55,17 +52,6 @@ public class HtmlInCaption extends AbstractTestUI {
         createComponents(components);
         createLayouts(layouts);
 
-        Window w = new Window();
-        w.setCaption(getTextCaption("Window"));
-        w.setPositionX(600);
-        addWindow(w);
-
-        w = new Window();
-        w.setCaptionAsHtml(true);
-        w.setCaption(getHtmlCaption("Window"));
-        w.setPositionX(600);
-        w.setPositionY(100);
-        addWindow(w);
     }
 
     private void createLayouts(VerticalLayout layouts) {
@@ -103,8 +89,6 @@ public class HtmlInCaption extends AbstractTestUI {
         createComponent(components, Link.class);
 
         createComponent(components, Panel.class);
-        createComponent(components, ColorPicker.class);
-        createComponent(components, ColorPickerArea.class);
 
     }
 
