@@ -191,8 +191,8 @@ public class BasicElementListener {
     private static void sendEventToServer(int nodeId, String eventType,
             JsonObject eventData, TreeUpdater treeUpdater) {
         TreeUpdater.debug("Sending event " + eventType + " for node " + nodeId
-                + " to server (data: " + TreeUpdater.debugObject(eventData)
-                + ")");
+                + " to server, eventData: ["
+                + TreeUpdater.debugObject(eventData) + "]");
         JsonArray arguments = Json.createArray();
         arguments.set(0, nodeId);
         arguments.set(1, eventType);

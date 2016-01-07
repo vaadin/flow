@@ -266,22 +266,23 @@ public class TreeUpdater {
     /*-{
         var cache = [];
         var str = "";
-        var parser = function(val, idx, array) {
+        var parser = function(prop, idx, array) {
             if (idx > 0) {
                 str += ", ";
             }
+            var val = obj[prop];
             if (typeof val === 'object' && val !== null) {
-                if (cache.indexOf(val) !== -1) {
+                if (cache.indexOf(val) === -1) {
                     cache.push(val);
-                    str += val;
+                    str += prop;
                     str += ": [";
                     Object.getOwnPropertyNames(val).forEach(parser);
                     str += "]";
                 }
             }  else {
-                str += val;
+                str += prop;
                 str += ": ";
-                str += obj[val];
+                str += val;
             }
         };
         if (Object.getOwnPropertyNames) {
@@ -305,7 +306,7 @@ public class TreeUpdater {
         str += obj.isTrusted;
         if (Object.getOwnPropertyNames) {
             str += ", ownPropertyNames:[";
-            str += @com.vaadin.client.communication.tree.TreeUpdater::debugObject(Lelemental/json/JsonObject;)(obj.getOwnPropertyNames(obj));
+            str += @com.vaadin.client.communication.tree.TreeUpdater::debugObject(Lelemental/json/JsonObject;)(obj);
         }
         str += "]]";
         return str;
