@@ -29,6 +29,20 @@ public class ValueType {
         }
     }
 
+    private static class PrimitiveType extends ValueType {
+        private final Object defaultValue;
+
+        public PrimitiveType(Object defaultValue) {
+            super(true);
+            this.defaultValue = defaultValue;
+        }
+
+        @Override
+        public Object getDefaultValue() {
+            return defaultValue;
+        }
+    }
+
     public static class ObjectType extends ValueType {
         private final Map<Object, ValueType> propertyTypes;
 
@@ -105,21 +119,31 @@ public class ValueType {
 
     // Singleton instances
     public static final ValueType STRING = new ValueType(true);
+
     public static final ValueType BOOLEAN = new ValueType(true);
+    public static final ValueType BOOLEAN_PRIMITIVE = new PrimitiveType(
+            Boolean.FALSE);
+
     public static final ValueType INTEGER = new ValueType(true);
+    public static final ValueType INTEGER_PRIMITIVE = new PrimitiveType(
+            Integer.valueOf(0));
+
     public static final ValueType NUMBER = new ValueType(true);
+    public static final ValueType NUMBER_PRIMITIVE = new PrimitiveType(
+            Double.valueOf(0));
+
     public static final ValueType UNDEFINED = new ValueType(true);
 
-    private static final Map<Type, ValueType> primitiveTypes = new HashMap<>();
+    private static final Map<Type, ValueType> builtInTypes = new HashMap<>();
 
     static {
-        primitiveTypes.put(String.class, STRING);
-        primitiveTypes.put(boolean.class, BOOLEAN);
-        primitiveTypes.put(Boolean.class, BOOLEAN);
-        primitiveTypes.put(int.class, INTEGER);
-        primitiveTypes.put(Integer.class, INTEGER);
-        primitiveTypes.put(double.class, NUMBER);
-        primitiveTypes.put(Double.class, NUMBER);
+        builtInTypes.put(String.class, STRING);
+        builtInTypes.put(boolean.class, BOOLEAN_PRIMITIVE);
+        builtInTypes.put(Boolean.class, BOOLEAN);
+        builtInTypes.put(int.class, INTEGER_PRIMITIVE);
+        builtInTypes.put(Integer.class, INTEGER);
+        builtInTypes.put(double.class, NUMBER_PRIMITIVE);
+        builtInTypes.put(Double.class, NUMBER);
     }
 
     private static final ConcurrentHashMap<Map<Object, ValueType>, ObjectType> objectTypes = new ConcurrentHashMap<>();
@@ -164,7 +188,7 @@ public class ValueType {
     }
 
     public static ValueType get(Type type) {
-        ValueType valueType = primitiveTypes.get(type);
+        ValueType valueType = builtInTypes.get(type);
         if (valueType != null) {
             return valueType;
         }
@@ -215,5 +239,32 @@ public class ValueType {
 
         // Fall back to non-generic type
         return pd.getPropertyType();
+    }
+
+    public Object getDefaultValue() {
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        if (this == STRING) {
+            return "String";
+        } else if (this == BOOLEAN) {
+            return "Boolean";
+        } else if (this == BOOLEAN_PRIMITIVE) {
+            return "boolean";
+        } else if (this == INTEGER) {
+            return "Integer";
+        } else if (this == INTEGER_PRIMITIVE) {
+            return "int";
+        } else if (this == NUMBER) {
+            return "Double";
+        } else if (this == NUMBER_PRIMITIVE) {
+            return "double";
+        } else if (this == UNDEFINED) {
+            return "undefined";
+        } else {
+            throw new RuntimeException("Unkown instance " + this);
+        }
     }
 }

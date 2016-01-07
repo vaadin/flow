@@ -1,5 +1,6 @@
 package com.vaadin.hummingbird.kernel;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -22,16 +23,21 @@ public class ValueTypeTest {
 
     @Test
     public void testPredefinedIds() {
-        Assert.assertEquals("Id is not sync with client code", 0,
-                ValueType.STRING.getId());
-        Assert.assertEquals("Id is not sync with client code", 1,
-                ValueType.BOOLEAN.getId());
-        Assert.assertEquals("Id is not sync with client code", 2,
-                ValueType.INTEGER.getId());
-        Assert.assertEquals("Id is not sync with client code", 3,
-                ValueType.NUMBER.getId());
-        Assert.assertEquals("Id is not sync with client code", 4,
-                ValueType.UNDEFINED.getId());
+        HashMap<ValueType, Integer> expectedIds = new HashMap<>();
+        expectedIds.put(ValueType.STRING, 0);
+        expectedIds.put(ValueType.BOOLEAN, 1);
+        expectedIds.put(ValueType.BOOLEAN_PRIMITIVE, 2);
+        expectedIds.put(ValueType.INTEGER, 3);
+        expectedIds.put(ValueType.INTEGER_PRIMITIVE, 4);
+        expectedIds.put(ValueType.NUMBER, 5);
+        expectedIds.put(ValueType.NUMBER_PRIMITIVE, 6);
+        expectedIds.put(ValueType.UNDEFINED, 7);
+
+        expectedIds.forEach((valueType, expectedId) -> {
+            Assert.assertEquals(
+                    "Id is not sync with client code for " + valueType + ".",
+                    expectedId.intValue(), valueType.getId());
+        });
     }
 
     @Test
@@ -102,17 +108,40 @@ public class ValueTypeTest {
     }
 
     @Test
-    public void testPrimitiveTypesFromClass() {
+    public void testBuiltInTypesFromClass() {
         Assert.assertSame(ValueType.STRING, ValueType.get(String.class));
 
-        Assert.assertSame(ValueType.BOOLEAN, ValueType.get(boolean.class));
         Assert.assertSame(ValueType.BOOLEAN, ValueType.get(Boolean.class));
+        Assert.assertSame(ValueType.BOOLEAN_PRIMITIVE,
+                ValueType.get(boolean.class));
 
-        Assert.assertSame(ValueType.INTEGER, ValueType.get(int.class));
         Assert.assertSame(ValueType.INTEGER, ValueType.get(Integer.class));
+        Assert.assertSame(ValueType.INTEGER_PRIMITIVE,
+                ValueType.get(int.class));
 
-        Assert.assertSame(ValueType.NUMBER, ValueType.get(double.class));
         Assert.assertSame(ValueType.NUMBER, ValueType.get(Double.class));
+        Assert.assertSame(ValueType.NUMBER_PRIMITIVE,
+                ValueType.get(double.class));
+    }
+
+    @Test
+    public void builtInTypeDefaultValues() {
+        List<ValueType> referenceTypes = Arrays.asList(ValueType.STRING,
+                ValueType.BOOLEAN, ValueType.INTEGER, ValueType.NUMBER,
+                ValueType.UNDEFINED);
+        for (ValueType type : referenceTypes) {
+            Assert.assertNull(
+                    "Reference type " + type
+                            + " should have null as its default value.",
+                    type.getDefaultValue());
+        }
+
+        Assert.assertEquals(Boolean.FALSE,
+                ValueType.BOOLEAN_PRIMITIVE.getDefaultValue());
+        Assert.assertEquals(Integer.valueOf(0),
+                ValueType.INTEGER_PRIMITIVE.getDefaultValue());
+        Assert.assertEquals(Double.valueOf(0),
+                ValueType.NUMBER_PRIMITIVE.getDefaultValue());
     }
 
     @Test
