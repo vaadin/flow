@@ -206,11 +206,7 @@ public class TransactionLogJsonProducer {
         } else if (change instanceof RangeStartChange) {
             changeJson.put(VALUE, ((RangeStartChange) change).getRangeStart());
         } else if (change instanceof IdChange) {
-            if (node instanceof ListNode || node instanceof LazyList<?>) {
-                changeJson.put(NODE_TYPE, "list");
-            } else {
-                changeJson.put(NODE_TYPE, "map");
-            }
+            changeJson.put(NODE_TYPE, node.getType().getId());
         }
 
         return changeJson;

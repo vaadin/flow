@@ -179,7 +179,8 @@ public class UidlWriterTest {
 
         change = changes.get(1);
         Assert.assertEquals("create", change.getString("type"));
-        Assert.assertEquals("list", change.getString("nodeType"));
+        Assert.assertEquals(ValueType.UNDEFINED_ARRAY.getId(),
+                (int) change.getNumber("nodeType"));
     }
 
     @Test
@@ -249,7 +250,8 @@ public class UidlWriterTest {
             } else if ("create".equals(type)) {
                 seenSet = seenCreate;
 
-                Assert.assertEquals("map", change.getString("nodeType"));
+                Assert.assertEquals(ValueType.EMPTY_OBJECT.getId(),
+                        (int) change.getNumber("nodeType"));
             } else {
                 throw new RuntimeException(
                         "Unexpected change type: " + change.toJson());

@@ -2,6 +2,7 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.js.JsProperty;
 import com.google.gwt.core.client.js.JsType;
+import com.vaadin.client.communication.tree.ValueTypeMap;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -166,14 +167,16 @@ public class ChangeUtil {
     }
 
     public static CreateChange createMap(int id) {
-        JsonObject change = createChange(id, "create", null);
-        change.put("nodeType", "map");
-        return (CreateChange) change;
+        return create(id, ValueTypeMap.EMPTY_OBJECT);
     }
 
     public static CreateChange createList(int id) {
+        return create(id, ValueTypeMap.UNDEFINED_ARRAY);
+    }
+
+    private static CreateChange create(int id, int valueTypeId) {
         JsonObject change = createChange(id, "create", null);
-        change.put("nodeType", "list");
+        change.put("nodeType", valueTypeId);
         return (CreateChange) change;
     }
 

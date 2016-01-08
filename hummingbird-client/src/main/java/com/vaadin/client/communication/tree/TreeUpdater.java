@@ -796,18 +796,15 @@ public class TreeUpdater {
                 int nodeId = (int) change.getNumber("id");
                 TreeNode node = getNode(Integer.valueOf(nodeId));
 
-                String nodeType = change.getString("nodeType");
-
-                switch (nodeType) {
-                case "map":
-                    node = new TreeNode(nodeId, this);
-                    break;
-                case "list":
+                int nodeTypeId = (int) change.getNumber("nodeType");
+                ValueType nodeType = typeMap.get(nodeTypeId);
+                if (nodeType.isArrayType()) {
                     node = new ListTreeNode(nodeId, this);
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                            "Unsupported node type: " + change.toJson());
+                } else if (nodeType.isObjectType()) {
+                    node = new TreeNode(nodeId, this);
+                } else {
+                    throw new RuntimeException("Unsupported value type "
+                            + nodeType + " for " + change.toJson());
                 }
 
                 registerNode(node);
