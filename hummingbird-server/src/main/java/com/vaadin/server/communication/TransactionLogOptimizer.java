@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.ValueType;
+import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
@@ -46,6 +48,23 @@ public class TransactionLogOptimizer {
             }
         }
         return newTemplates;
+    }
+
+    public static Set<ObjectType> optimizeValueTypes(Set<ObjectType> valueTypes,
+            UI ui) {
+        Set<ObjectType> unknownTypes = new HashSet<>();
+        for (ObjectType type : valueTypes) {
+            if (type == ValueType.EMPTY_OBJECT) {
+                continue;
+            }
+
+            if (!ui.knowsType(type)) {
+                ui.registerType(type);
+                unknownTypes.add(type);
+            }
+        }
+
+        return unknownTypes;
     }
 
     public static LinkedHashMap<StateNode, List<NodeChange>> optimizeChanges(

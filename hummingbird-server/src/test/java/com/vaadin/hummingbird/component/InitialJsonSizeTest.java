@@ -186,7 +186,7 @@ public class InitialJsonSizeTest {
                 .getTransactionLog(ui.getRootNode());
         LinkedHashMap<StateNode, List<NodeChange>> optimized = TransactionLogBuilderTest
                 .getOptimizedTransactionLog(log);
-        return new TransactionLogJsonProducer(ui, optimized, new HashSet<>())
-                .getChangesJson();
+        return new TransactionLogJsonProducer(ui, optimized, new HashSet<>(),
+                new HashSet<>()).getChangesJson();
     }
 }

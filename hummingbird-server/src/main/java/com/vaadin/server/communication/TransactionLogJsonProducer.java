@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -13,6 +14,9 @@ import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.LazyList;
 import com.vaadin.hummingbird.kernel.ListNode;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.ValueType;
+import com.vaadin.hummingbird.kernel.ValueType.ArrayType;
+import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
@@ -54,14 +58,52 @@ public class TransactionLogJsonProducer {
 
     private JsonArray changesJson = Json.createArray();
     private JsonObject templatesJson = Json.createObject();
+    private JsonObject valueTypesJson = null;
+
     private UI ui;
 
     public TransactionLogJsonProducer(UI ui,
             LinkedHashMap<StateNode, List<NodeChange>> changes,
-            Set<ElementTemplate> set) {
+            Set<ElementTemplate> set, Set<ObjectType> valueTypes) {
         this.ui = ui;
         changesToJson(changes);
         templatesToJson(set);
+        valueTypesToJson(valueTypes);
+    }
+
+    private void valueTypesToJson(Set<ObjectType> valueTypes) {
+        if (valueTypes.isEmpty()) {
+            return;
+        }
+
+        valueTypesJson = Json.createObject();
+        for (ObjectType type : valueTypes) {
+            JsonObject typeJson = Json.createObject();
+
+            JsonObject properties = Json.createObject();
+            boolean hasProperties = false;
+
+            for (Entry<Object, ValueType> entry : type.getPropertyTypes()
+                    .entrySet()) {
+                Object nameObj = entry.getKey();
+                if (nameObj instanceof String) {
+                    hasProperties = true;
+                    String name = (String) nameObj;
+                    properties.put(name, entry.getValue().getId());
+                }
+            }
+            if (hasProperties) {
+                typeJson.put("properties", properties);
+            }
+
+            if (type instanceof ArrayType) {
+                ArrayType arrayType = (ArrayType) type;
+
+                typeJson.put("member", arrayType.getMemberType().getId());
+            }
+
+            valueTypesJson.put(Integer.toString(type.getId()), typeJson);
+        }
     }
 
     public JsonArray getChangesJson() {
@@ -224,6 +266,10 @@ public class TransactionLogJsonProducer {
             throw new IllegalArgumentException(
                     "Unknown change type: " + change.getClass().getName());
         }
+    }
+
+    public JsonObject getValueTypesJson() {
+        return valueTypesJson;
     }
 
 }

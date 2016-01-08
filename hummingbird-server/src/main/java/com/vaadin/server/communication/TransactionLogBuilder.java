@@ -9,6 +9,9 @@ import java.util.Set;
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.ValueType;
+import com.vaadin.hummingbird.kernel.ValueType.ArrayType;
+import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
@@ -34,6 +37,7 @@ public class TransactionLogBuilder {
      */
     private LinkedHashMap<StateNode, List<NodeChange>> changes = new LinkedHashMap<>();
     private Set<ElementTemplate> templates = new HashSet<>();
+    private Set<ObjectType> valueTypes = new HashSet<>();
     private NodeVisitor visitor;
 
     public TransactionLogBuilder() {
@@ -79,8 +83,25 @@ public class TransactionLogBuilder {
             handleTemplate(value);
         }
 
+        handleValueType(node.getType());
+
         changes.putIfAbsent(node, new ArrayList<>());
         changes.get(node).add(change);
+    }
+
+    private void handleValueType(ValueType type) {
+        if (type instanceof ObjectType) {
+            ObjectType objectType = (ObjectType) type;
+
+            if (valueTypes.add(objectType)) {
+                objectType.getPropertyTypes().values()
+                        .forEach(this::handleValueType);
+
+                if (objectType instanceof ArrayType) {
+                    handleValueType(((ArrayType) objectType).getMemberType());
+                }
+            }
+        }
     }
 
     private void handleTemplate(Object value) {
@@ -185,6 +206,10 @@ public class TransactionLogBuilder {
             logBuilder.addChange(node, rangeEndChange);
         }
 
+    }
+
+    public Set<ObjectType> getValueTypes() {
+        return valueTypes;
     }
 
 }

@@ -517,6 +517,8 @@ public abstract class UI extends CssLayout implements PollNotifier, Focusable {
 
     private Map<Integer, ElementTemplate> sentTemplates = new HashMap<>();
 
+    private Set<ValueType> sentTypes = new HashSet<>();
+
     private Set<Class<? extends ClientConnector>> resourcesHandled = new HashSet<>();
 
     private List<Dependency> dynamicDependencies;
@@ -1333,6 +1335,15 @@ public abstract class UI extends CssLayout implements PollNotifier, Focusable {
 
     public ElementTemplate getTemplate(int templateId) {
         return sentTemplates.get(Integer.valueOf(templateId));
+    }
+
+    public boolean knowsType(ValueType type) {
+        return sentTypes.contains(type);
+    }
+
+    public void registerType(ValueType type) {
+        assert !knowsType(type);
+        sentTypes.add(type);
     }
 
     public Map<Integer, Set<NodeChange>> getIgnoreChanges() {

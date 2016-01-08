@@ -41,6 +41,7 @@ import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.RootNode.PendingRpc;
 import com.vaadin.hummingbird.kernel.StateNode;
+import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.Constants;
@@ -93,6 +94,9 @@ public class UidlWriter implements Serializable {
                     TransactionLogPruner::removeClientComputed);
     private static final List<Processor<Set<ElementTemplate>>> templateProcessors = Arrays
             .asList(TransactionLogOptimizer::optimizeTemplates);
+
+    private static final List<Processor<Set<ObjectType>>> valueTypeProcessors = Arrays
+            .asList(TransactionLogOptimizer::optimizeValueTypes);
 
     /**
      * Writes a JSON object containing all pending changes to the given UI.
@@ -413,8 +417,16 @@ public class UidlWriter implements Serializable {
         Set<ElementTemplate> templates = Processor.processChain(
                 logBuilder.getTemplates(), templateProcessors, ui);
 
+        Set<ObjectType> valueTypes = Processor.processChain(
+                logBuilder.getValueTypes(), valueTypeProcessors, ui);
+
         TransactionLogJsonProducer jsonProducer = new TransactionLogJsonProducer(
-                ui, changes, templates);
+                ui, changes, templates, valueTypes);
+
+        JsonObject valueTypesJson = jsonProducer.getValueTypesJson();
+        if (valueTypesJson != null) {
+            response.put("valueTypes", valueTypesJson);
+        }
 
         response.put("elementTemplates", jsonProducer.getTemplatesJson());
         response.put("elementChanges", jsonProducer.getChangesJson());
