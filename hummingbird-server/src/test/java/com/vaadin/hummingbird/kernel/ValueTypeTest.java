@@ -33,6 +33,7 @@ public class ValueTypeTest {
         expectedIds.put(ValueType.NUMBER_PRIMITIVE, 6);
         expectedIds.put(ValueType.EMPTY_OBJECT, 7);
         expectedIds.put(ValueType.UNDEFINED, 8);
+        expectedIds.put(ValueType.UNDEFINED_ARRAY, 9);
 
         expectedIds.forEach((valueType, expectedId) -> {
             Assert.assertEquals(
@@ -109,7 +110,7 @@ public class ValueTypeTest {
     }
 
     @Test
-    public void testBuiltInTypesFromClass() {
+    public void testBuiltInTypeIdentities() {
         Assert.assertSame(ValueType.STRING, ValueType.get(String.class));
 
         Assert.assertSame(ValueType.BOOLEAN, ValueType.get(Boolean.class));
@@ -123,6 +124,11 @@ public class ValueTypeTest {
         Assert.assertSame(ValueType.NUMBER, ValueType.get(Double.class));
         Assert.assertSame(ValueType.NUMBER_PRIMITIVE,
                 ValueType.get(double.class));
+
+        Assert.assertSame(ValueType.EMPTY_OBJECT,
+                ValueType.get(Collections.emptyMap()));
+        Assert.assertSame(ValueType.UNDEFINED_ARRAY,
+                ValueType.get(Collections.emptyMap(), ValueType.UNDEFINED));
     }
 
     @Test

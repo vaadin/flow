@@ -132,6 +132,9 @@ public class ValueType {
         return id;
     }
 
+    private static final ConcurrentHashMap<ArrayType, ArrayType> arrayTypes = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Map<Object, ValueType>, ObjectType> objectTypes = new ConcurrentHashMap<>();
+
     // Singleton instances
     public static final ValueType STRING = new ValueType(true);
 
@@ -147,10 +150,11 @@ public class ValueType {
     public static final ValueType NUMBER_PRIMITIVE = new PrimitiveType(
             Double.valueOf(0));
 
-    public static final ObjectType EMPTY_OBJECT = new ObjectType(true,
-            Collections.emptyMap());
+    public static final ObjectType EMPTY_OBJECT = get(Collections.emptyMap());
 
     public static final ValueType UNDEFINED = new ValueType(true);
+    public static final ArrayType UNDEFINED_ARRAY = get(Collections.emptyMap(),
+            UNDEFINED);
 
     private static final Map<Type, ValueType> builtInTypes = new HashMap<>();
 
@@ -164,8 +168,6 @@ public class ValueType {
         builtInTypes.put(Double.class, NUMBER);
     }
 
-    private static final ConcurrentHashMap<Map<Object, ValueType>, ObjectType> objectTypes = new ConcurrentHashMap<>();
-
     public static ObjectType get(Map<?, ValueType> propertyTypes) {
         ObjectType value = objectTypes.get(propertyTypes);
         if (value == null) {
@@ -178,8 +180,6 @@ public class ValueType {
         }
         return value;
     }
-
-    private static final ConcurrentHashMap<ArrayType, ArrayType> arrayTypes = new ConcurrentHashMap<>();
 
     public static ArrayType get(Map<?, ValueType> propertyTypes,
             ValueType memberType) {

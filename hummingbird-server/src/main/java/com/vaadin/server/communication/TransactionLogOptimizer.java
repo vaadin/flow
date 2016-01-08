@@ -54,7 +54,8 @@ public class TransactionLogOptimizer {
             UI ui) {
         Set<ObjectType> unknownTypes = new HashSet<>();
         for (ObjectType type : valueTypes) {
-            if (type == ValueType.EMPTY_OBJECT) {
+            if (type == ValueType.EMPTY_OBJECT
+                    || type == ValueType.UNDEFINED_ARRAY) {
                 continue;
             }
 
