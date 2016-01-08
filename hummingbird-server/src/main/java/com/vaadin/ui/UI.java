@@ -17,8 +17,10 @@
 package com.vaadin.ui;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -56,6 +58,7 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.VaadinSession.State;
 import com.vaadin.server.communication.PushConnection;
+import com.vaadin.server.communication.UidlWriter.Dependency;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.communication.PushMode;
@@ -516,6 +519,8 @@ public abstract class UI extends CssLayout implements PollNotifier, Focusable {
     private Map<Integer, ElementTemplate> sentTemplates = new HashMap<>();
 
     private Set<Class<? extends ClientConnector>> resourcesHandled = new HashSet<>();
+
+    private List<Dependency> dynamicDependencies;
 
     /**
      * This method is used by Component.Focusable objects to request focus to
@@ -1337,6 +1342,19 @@ public abstract class UI extends CssLayout implements PollNotifier, Focusable {
 
     public RootNode getRootNode() {
         return rootNode;
+    }
+
+    public UI addDynamicDependency(Dependency dependency) {
+        if (dynamicDependencies == null) {
+            dynamicDependencies = new ArrayList<>();
+        }
+        dynamicDependencies.add(dependency);
+        markAsDirty();
+        return this;
+    }
+
+    public List<Dependency> getDynamicDependencies() {
+        return dynamicDependencies;
     }
 
 }

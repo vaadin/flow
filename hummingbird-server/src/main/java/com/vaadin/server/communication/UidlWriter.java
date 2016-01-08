@@ -266,8 +266,12 @@ public class UidlWriter implements Serializable {
             }
         }
 
+        // get added dynamic dependencies from UI
+        List<Dependency> dynamicDependencies = ui.getDynamicDependencies();
+
         if (unhandledClasses.isEmpty()) {
-            return Collections.emptyList();
+            return dynamicDependencies == null ? Collections.emptyList()
+                    : dynamicDependencies;
         }
 
         /*
@@ -291,13 +295,16 @@ public class UidlWriter implements Serializable {
             return 0;
         });
 
-        List<Dependency> dependencies = new ArrayList<>();
+        List<Dependency> collectedDependencies = new ArrayList<>();
         LegacyCommunicationManager manager = ui.getSession()
                 .getCommunicationManager();
         for (Class<? extends ClientConnector> cls : unhandledClasses) {
-            collectDependencies(ui, cls, dependencies, manager);
+            collectDependencies(ui, cls, collectedDependencies, manager);
         }
-        return dependencies;
+        if (dynamicDependencies != null) {
+            collectedDependencies.addAll(dynamicDependencies);
+        }
+        return collectedDependencies;
     }
 
     private static void collectDependencies(UI ui,
