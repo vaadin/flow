@@ -57,7 +57,7 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
             init(rootElement, rpcQueue, client);
 
             // initialize the containerElement node
-            update(Json.createObject(),
+            update(null, Json.createObject(),
                     buildChanges(ChangeUtil.createMap(containerElementId),
                             ChangeUtil.putMap(1, "containerElement",
                                     containerElementId)),
@@ -110,11 +110,11 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
 
     protected void applyChanges(Change... changes) {
         JsonArray changesJson = buildChanges(changes);
-        updater.update(Json.createObject(), changesJson, null);
+        updater.update(null, Json.createObject(), changesJson, null);
     }
 
     protected void applyRpc(JsonArray rpcData) {
-        updater.update(Json.createObject(), Json.createArray(), rpcData);
+        updater.update(null, Json.createObject(), Json.createArray(), rpcData);
     }
 
     protected void applyTemplate(int id, JsonObject template) {
@@ -135,7 +135,7 @@ public class AbstractTreeUpdaterTest extends HummingbirdClientTest {
             }
         }
 
-        updater.update(templateMap, Json.createArray(), null);
+        updater.update(null, templateMap, Json.createArray(), null);
     }
 
 }

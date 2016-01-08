@@ -73,6 +73,8 @@ public class TreeUpdater {
 
     private Map<Integer, JavaScriptObject[]> promises = new HashMap<>();
 
+    private ValueTypeMap typeMap = new ValueTypeMap();
+
     public TreeUpdater() {
         // Register root node
         registerNode(new TreeNode(1, this));
@@ -477,8 +479,15 @@ public class TreeUpdater {
         public JavaScriptObject get();
     }
 
-    public void update(JsonObject elementTemplates, JsonArray elementChanges,
-            JsonArray rpc) {
+    public void update(JsonObject valueTypes, JsonObject elementTemplates,
+            JsonArray elementChanges, JsonArray rpc) {
+        if (valueTypes != null) {
+            Profiler.enter("TreeUpdater.extractTypes");
+            getLogger().info("Updating value types");
+            extractTypes(valueTypes);
+            Profiler.leave("TreeUpdater.extractTypes");
+        }
+
         Profiler.enter("TreeUpdater.extractTemplates");
         getLogger().info("Handling template updates");
         extractTemplates(elementTemplates);
@@ -497,6 +506,14 @@ public class TreeUpdater {
             getLogger().info("Running rpcs");
             runRpc(rpc);
             Profiler.leave("TreeUpdater.runRpc");
+        }
+    }
+
+    private void extractTypes(JsonObject valueTypes) {
+        for (String idString : valueTypes.keys()) {
+            JsonObject typeJson = valueTypes.getObject(idString);
+            ValueType type = new ValueType(typeJson, typeMap);
+            typeMap.register(Integer.parseInt(idString), type);
         }
     }
 
@@ -1058,6 +1075,10 @@ public class TreeUpdater {
         JavaScriptObject resolver = resolvers[success ? 0 : 1];
 
         callResolveFunction(resolver, result);
+    }
+
+    public ValueTypeMap getTypeMap() {
+        return typeMap;
     }
 
     private static native void callResolveFunction(JavaScriptObject f,

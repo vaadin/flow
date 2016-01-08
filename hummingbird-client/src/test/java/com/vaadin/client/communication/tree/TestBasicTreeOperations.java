@@ -1,6 +1,7 @@
 package com.vaadin.client.communication.tree;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
@@ -327,6 +328,73 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         assertEquals(2, jsonValue.length());
         assertEquals("object", jsonValue.getString(0));
         assertEquals("DIV", jsonValue.getString(1));
+    }
+
+    public void testReceiveValueTypes() {
+        JsonObject todoPropertiesJson = Json.createObject();
+        todoPropertiesJson.put("completed", 2);
+        todoPropertiesJson.put("title", 0);
+        todoPropertiesJson.put("editing", 2);
+
+        JsonObject todoTypeJson = Json.createObject();
+        todoTypeJson.put("properties", todoPropertiesJson);
+
+        JsonObject todosTypeJson = Json.createObject();
+        todosTypeJson.put("member", 10);
+
+        JsonObject modelPropertiesJson = Json.createObject();
+        modelPropertiesJson.put("todos", 11);
+        modelPropertiesJson.put("todoCount", 4);
+        modelPropertiesJson.put("completeCount", 4);
+        modelPropertiesJson.put("remainingCount", 4);
+
+        JsonObject modelTypeJson = Json.createObject();
+        modelTypeJson.put("properties", modelPropertiesJson);
+
+        JsonObject valueTypes = Json.createObject();
+        valueTypes.put("10", todoTypeJson);
+        valueTypes.put("11", todosTypeJson);
+        valueTypes.put("12", modelTypeJson);
+
+        updater.update(valueTypes, Json.createObject(), Json.createArray(),
+                Json.createArray());
+
+        ValueTypeMap typeMap = updater.getTypeMap();
+        ValueType primitiveInt = typeMap.get(ValueTypeMap.INTEGER_PRIMITIVE);
+        ValueType stringType = typeMap.get(ValueTypeMap.STRING);
+        ValueType primitiveBoolean = typeMap
+                .get(ValueTypeMap.BOOLEAN_PRIMITIVE);
+
+        ValueType modelType = typeMap.get(12);
+
+        assertNull(modelType.getDefaultValue());
+        assertNull(modelType.getMemberType());
+
+        Map<String, ValueType> modelProperties = modelType.getProperties();
+
+        assertEquals(4, modelProperties.size());
+
+        assertSame(primitiveInt, modelProperties.get("todoCount"));
+        assertSame(primitiveInt, modelProperties.get("completeCount"));
+        assertSame(primitiveInt, modelProperties.get("remainingCount"));
+
+        ValueType todosType = modelProperties.get("todos");
+        assertSame(todosType, typeMap.get(11));
+        assertNull(todosType.getDefaultValue());
+        assertNull(todosType.getProperties());
+
+        ValueType todoType = todosType.getMemberType();
+        assertSame(todoType, typeMap.get(10));
+        assertNull(todoType.getDefaultValue());
+        assertNull(todoType.getMemberType());
+
+        Map<String, ValueType> todoProperties = todoType.getProperties();
+
+        assertEquals(3, todoProperties.size());
+        assertSame(primitiveBoolean, todoProperties.get("completed"));
+        assertSame(primitiveBoolean, todoProperties.get("editing"));
+        assertSame(stringType, todoProperties.get("title"));
+
     }
 
     private static native String typeOf(

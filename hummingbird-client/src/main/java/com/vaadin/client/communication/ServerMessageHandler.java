@@ -472,7 +472,8 @@ public class ServerMessageHandler {
                 // Get an instance of a proper JSON api
                 JsonObject jsonJson = json.cast();
 
-                treeUpdater.update(jsonJson.getObject("elementTemplates"),
+                treeUpdater.update(jsonJson.getObject("valueTypes"),
+                        jsonJson.getObject("elementTemplates"),
                         jsonJson.getArray("elementChanges"),
                         jsonJson.getArray("rpc"));
 
