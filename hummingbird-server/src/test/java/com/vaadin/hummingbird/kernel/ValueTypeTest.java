@@ -188,4 +188,37 @@ public class ValueTypeTest {
         Assert.assertSame(ValueType.UNDEFINED, arrayType.getMemberType());
     }
 
+    @Test
+    public void testWithComputedPropertyIdentity() {
+        ObjectType baseType = ValueType
+                .get(Collections.singletonMap("key", ValueType.STRING));
+
+        ObjectType withComputed = ValueType.get(baseType.getPropertyTypes(),
+                Collections.singletonMap("key",
+                        new JsComputedProperty("key", "key", String.class)));
+
+        Assert.assertNotSame(baseType, withComputed);
+        Assert.assertNotEquals(baseType.toString(), withComputed.toString());
+
+        ObjectType withComputed2 = ValueType.get(baseType.getPropertyTypes(),
+                Collections.singletonMap("key",
+                        new JsComputedProperty("key", "key", String.class)));
+
+        Assert.assertSame(withComputed, withComputed2);
+    }
+
+    @Test
+    public void testComputedPropertiesFromModel() {
+        Map<String, ComputedProperty> computedProperties = MyTestModel.TYPE
+                .getComputedProperties();
+
+        ComputedProperty serverComputed = computedProperties
+                .get("serverComptued");
+        Assert.assertTrue(
+                serverComputed instanceof DefaultMethodComputedProperty);
+
+        ComputedProperty jsComputed = computedProperties.get("jsComputed");
+        Assert.assertTrue(jsComputed instanceof JsComputedProperty);
+    }
+
 }

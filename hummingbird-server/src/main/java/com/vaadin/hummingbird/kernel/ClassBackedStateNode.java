@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
+
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Ownership;
 import net.bytebuddy.description.modifier.Visibility;
@@ -214,5 +216,11 @@ public abstract class ClassBackedStateNode extends AbstractStateNode {
             usedNames.put(baseName, Integer.valueOf(useCount.intValue() + 1));
         }
         return name;
+    }
+
+    @Override
+    public ObjectType getType() {
+        // XXX Populate
+        return ValueType.EMPTY_OBJECT;
     }
 }

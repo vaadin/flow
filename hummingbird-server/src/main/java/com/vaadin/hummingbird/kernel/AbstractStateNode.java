@@ -26,7 +26,7 @@ import com.vaadin.server.communication.ServerOnlyKey;
 
 public abstract class AbstractStateNode implements StateNode {
     private enum Keys implements ServerOnlyKey {
-        TRANSACTION_LOG, NEXT_UNPREVIEWED_LOG_INDEX, COMPUTED_PENDING_FLUSH, COMPUTED, COMPUTED_CACHE, DEPENDENTS;
+        TRANSACTION_LOG, NEXT_UNPREVIEWED_LOG_INDEX, COMPUTED_PENDING_FLUSH, COMPUTED_CACHE, DEPENDENTS;
     }
 
     private static final Object EMPTY_FLUSH_MARKER = new Object();
@@ -260,7 +260,7 @@ public abstract class AbstractStateNode implements StateNode {
 
     @Override
     public Map<String, ComputedProperty> getComputedProperties() {
-        return (Map<String, ComputedProperty>) doGet(Keys.COMPUTED);
+        return getType().getComputedProperties();
     }
 
     protected abstract boolean doesContainKey(Object key);
@@ -315,6 +315,11 @@ public abstract class AbstractStateNode implements StateNode {
                 n.setRoot(root);
             }
         });
+
+        Map<Object, Object> pendingFlush = getPendingFlush(true);
+
+        getComputedProperties().keySet().forEach(
+                key -> pendingFlush.putIfAbsent(key, EMPTY_FLUSH_MARKER));
     }
 
     protected void setId(int newId) {
@@ -503,35 +508,6 @@ public abstract class AbstractStateNode implements StateNode {
                 runOnAttach = new ArrayList<>();
             }
             runOnAttach.add(runnable);
-        }
-    }
-
-    @Override
-    public void setComputedProperties(
-            Map<String, ComputedProperty> computedProperties) {
-        assert isUnmodifiable(computedProperties);
-
-        if (containsKey(Keys.COMPUTED)) {
-            throw new IllegalStateException(
-                    "Computed properties has already been set for this node");
-        }
-
-        put(Keys.COMPUTED, computedProperties);
-
-        Map<Object, Object> pendingFlush = getPendingFlush(true);
-
-        computedProperties.keySet()
-                .forEach(key -> pendingFlush.put(key, EMPTY_FLUSH_MARKER));
-
-        markAsDirty();
-    }
-
-    private static boolean isUnmodifiable(Map<String, ?> map) {
-        try {
-            map.put("foo", null);
-            return false;
-        } catch (Exception expected) {
-            return true;
         }
     }
 

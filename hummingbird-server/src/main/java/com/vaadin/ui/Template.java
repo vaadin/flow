@@ -17,8 +17,6 @@ package com.vaadin.ui;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -26,7 +24,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.AbstractList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +32,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.annotations.Implemented;
-import com.vaadin.annotations.JS;
 import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.annotations.TemplateHTML;
 import com.vaadin.data.util.BeanUtil;
@@ -43,7 +39,6 @@ import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.ComputedProperty;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
-import com.vaadin.hummingbird.kernel.JsComputedProperty;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.LazyList;
 import com.vaadin.hummingbird.kernel.StateNode;
@@ -387,10 +382,9 @@ public abstract class Template extends AbstractComponent
 
         setElement(Element.getElement(elementTemplate, node));
 
-        Map<String, ComputedProperty> computedProperties = findComputedProperties();
+        Map<String, ComputedProperty> computedProperties = node.getType()
+                .getComputedProperties();
         if (!computedProperties.isEmpty()) {
-            node.setComputedProperties(computedProperties);
-
             computedProperties.values().stream()
                     .filter(ComputedProperty::hasClientCode).forEach(p -> {
                         node.enqueueRpc("}computed", node, p.getName(),
@@ -413,77 +407,6 @@ public abstract class Template extends AbstractComponent
 
         // Always trigger so that model type is stored in the state node
         model = createModel();
-    }
-
-    private Map<String, ComputedProperty> findComputedProperties() {
-        // Should be made static so that the result can be cached
-        Map<String, ComputedProperty> properites = new HashMap<>();
-
-        Class<? extends Model> modelType = getModelType();
-        Method[] methods = modelType.getMethods();
-        for (Method method : methods) {
-            ComputedProperty computedProperty = findComputedProperty(modelType,
-                    method);
-
-            if (computedProperty != null) {
-                properites.put(computedProperty.getName(), computedProperty);
-            }
-        }
-
-        return Collections.unmodifiableMap(properites);
-    }
-
-    private ComputedProperty findComputedProperty(
-            Class<? extends Model> modelType, Method method) {
-        String methodName = method.getName();
-        String name = getPropertyName(methodName);
-
-        if (!methodName.startsWith("get") && !methodName.startsWith("is")) {
-            return null;
-        }
-
-        if (method.isDefault()) {
-            if (method.getReturnType() == void.class) {
-                throw new IllegalStateException("Computed property "
-                        + method.toString() + " has no return type");
-            } else if (method.getParameterCount() != 0) {
-                throw new IllegalStateException(
-                        "Computed property " + method.toString()
-                                + " should require zero parameters");
-            }
-
-            return new ComputedProperty(name, null) {
-                @Override
-                public Object compute(StateNode context) {
-                    try {
-                        // Invoke the default method implementation instead
-                        // of triggering the proxy handler
-                        // http://zeroturnaround.com/rebellabs/recognize-and-conquer-java-proxies-default-methods-and-method-handles/
-                        Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
-                                .getDeclaredConstructor(Class.class, int.class);
-                        constructor.setAccessible(true);
-                        return constructor
-                                .newInstance(modelType,
-                                        MethodHandles.Lookup.PRIVATE)
-                                .unreflectSpecial(method, modelType)
-                                .bindTo(model).invokeWithArguments();
-
-                    } catch (Throwable e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            };
-        }
-
-        JS jsAnnotation = method.getAnnotation(JS.class);
-        if (jsAnnotation != null) {
-            String script = jsAnnotation.value();
-            Class<?> type = method.getReturnType();
-
-            return new JsComputedProperty(name, script, type);
-        }
-
-        return null;
     }
 
     private String getTemplateFilename() {

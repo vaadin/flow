@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.ComputedProperty;
+import com.vaadin.hummingbird.kernel.ComputedPropertyTest;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.TemplateBuilder;
@@ -19,14 +20,14 @@ public class SimpleComputedProperty extends AbstractTestUI {
         BoundElementTemplate template = TemplateBuilder.withTag("div")
                 .addChild(TemplateBuilder.dynamicText("foo")).build();
 
-        StateNode node = StateNode.create();
-        node.setComputedProperties(Collections.singletonMap("foo",
-                new ComputedProperty("foo", null) {
-                    @Override
-                    public Object compute(StateNode context) {
-                        return String.valueOf(context.get("count", 0));
-                    }
-                }));
+        StateNode node = ComputedPropertyTest
+                .createNodeWithComputedProperties(Collections
+                        .singletonMap("foo", new ComputedProperty("foo", null) {
+                            @Override
+                            public Object compute(StateNode context) {
+                                return String.valueOf(context.get("count", 0));
+                            }
+                        }));
 
         getLayout().getElement()
                 .appendChild(Element.getElement(template, node));

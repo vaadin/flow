@@ -371,18 +371,6 @@ public interface StateNode extends Serializable {
     public void removeChangeListener(NodeChangeListener nodeChangeListener);
 
     /**
-     * Define the computed properties to use for this node. Takes an
-     * unmodifiable map of computed properties to enable sharing the same data
-     * definition instance between multiple nodes sharing the same Model
-     * definition.
-     *
-     * @param computedProperties
-     *            the computed properties to use
-     */
-    public void setComputedProperties(
-            Map<String, ComputedProperty> computedProperties);
-
-    /**
      * Gets the currently defined computed properties.
      * 
      * @return a map of computed properties

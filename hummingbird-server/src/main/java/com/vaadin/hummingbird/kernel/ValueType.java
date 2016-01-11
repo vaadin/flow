@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
+import com.vaadin.annotations.JS;
 import com.vaadin.data.util.BeanUtil;
 
 public class ValueType {
@@ -45,16 +45,19 @@ public class ValueType {
 
     public static class ObjectType extends ValueType {
         private final Map<Object, ValueType> propertyTypes;
+        private final Map<String, ComputedProperty> computedProperties;
 
         // Cached hashCode
         private final int hashCode;
 
         public ObjectType(boolean generateId,
-                Map<Object, ValueType> propertyTypes) {
+                Map<Object, ValueType> propertyTypes,
+                Map<String, ComputedProperty> computedProperties) {
             super(generateId);
             this.propertyTypes = propertyTypes;
+            this.computedProperties = computedProperties;
 
-            hashCode = propertyTypes.hashCode();
+            hashCode = Objects.hash(propertyTypes, computedProperties);
         }
 
         @Override
@@ -66,12 +69,18 @@ public class ValueType {
             return propertyTypes;
         }
 
+        public Map<String, ComputedProperty> getComputedProperties() {
+            return computedProperties;
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
                 return true;
             } else if (obj.getClass() == ObjectType.class) {
-                return propertyTypes.equals(((ObjectType) obj).propertyTypes);
+                ObjectType that = (ObjectType) obj;
+                return propertyTypes.equals(that.propertyTypes)
+                        && computedProperties.equals(that.computedProperties);
             } else {
                 return false;
             }
@@ -79,7 +88,17 @@ public class ValueType {
 
         @Override
         public String toString() {
-            return "ObjectType {" + propertyTypes + "}";
+            StringBuilder sb = new StringBuilder("ObjectType");
+
+            if (!propertyTypes.isEmpty()) {
+                sb.append(' ').append(propertyTypes);
+            }
+
+            if (!computedProperties.isEmpty()) {
+                sb.append(' ').append(computedProperties);
+            }
+
+            return sb.toString();
         }
     }
 
@@ -89,7 +108,8 @@ public class ValueType {
 
         private ArrayType(boolean generateId,
                 Map<Object, ValueType> propertyTypes, ValueType memberType) {
-            super(generateId, propertyTypes);
+            // Not supporting computed properties for array types for now
+            super(generateId, propertyTypes, Collections.emptyMap());
             this.memberType = memberType;
 
             hashCode = Objects.hash(propertyTypes, memberType);
@@ -133,7 +153,7 @@ public class ValueType {
     }
 
     private static final ConcurrentHashMap<ArrayType, ArrayType> arrayTypes = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Map<Object, ValueType>, ObjectType> objectTypes = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<ObjectType, ObjectType> objectTypes = new ConcurrentHashMap<>();
 
     // Singleton instances
     public static final ValueType STRING = new ValueType(true);
@@ -169,14 +189,28 @@ public class ValueType {
     }
 
     public static ObjectType get(Map<?, ValueType> propertyTypes) {
-        ObjectType value = objectTypes.get(propertyTypes);
-        if (value == null) {
-            HashMap<Object, ValueType> defensiveCopy = new HashMap<>(
-                    propertyTypes);
+        return get(propertyTypes, Collections.emptyMap());
+    }
 
-            value = objectTypes.computeIfAbsent(defensiveCopy,
-                    k -> new ObjectType(true,
-                            Collections.unmodifiableMap(defensiveCopy)));
+    public static ObjectType get(Map<?, ValueType> propertyTypes,
+            Map<String, ComputedProperty> computedProperties) {
+        // Quickly created instance just for the map lookup
+        @SuppressWarnings("unchecked")
+        ObjectType lookupKey = new ObjectType(false,
+                (Map<Object, ValueType>) propertyTypes, computedProperties);
+
+        ObjectType value = objectTypes.get(lookupKey);
+        if (value == null) {
+            ObjectType referenceValue = new ObjectType(true,
+                    Collections.unmodifiableMap(new HashMap<>(propertyTypes)),
+                    Collections.unmodifiableMap(
+                            new HashMap<>(computedProperties)));
+
+            // Try to put it into the map
+            objectTypes.putIfAbsent(referenceValue, referenceValue);
+
+            // Use the value that actually ended up in the map
+            value = objectTypes.get(referenceValue);
         }
         return value;
     }
@@ -233,12 +267,25 @@ public class ValueType {
 
     public static ObjectType getBeanType(Class<?> clazz) {
         try {
-            Map<String, ValueType> properties = BeanUtil
-                    .getBeanPropertyDescriptor(clazz).stream()
-                    .filter(pd -> !pd.getName().equals("class"))
-                    .collect(Collectors.toMap(PropertyDescriptor::getName,
-                            pd -> ValueType.get(getPropertyType(pd))));
-            return get(properties);
+
+            Map<String, ValueType> properties = new HashMap<>();
+            Map<String, ComputedProperty> computed = new HashMap<>();
+
+            for (PropertyDescriptor pd : BeanUtil
+                    .getBeanPropertyDescriptor(clazz)) {
+                if (!pd.getName().equals("class")) {
+                    String name = pd.getName();
+
+                    properties.put(name, ValueType.get(getPropertyType(pd)));
+
+                    ComputedProperty cp = findComputedProperty(clazz, pd);
+                    if (cp != null) {
+                        computed.put(name, cp);
+                    }
+                }
+            }
+
+            return get(properties, computed);
         } catch (IntrospectionException e) {
             throw new RuntimeException();
         }
@@ -257,6 +304,39 @@ public class ValueType {
 
         // Fall back to non-generic type
         return pd.getPropertyType();
+    }
+
+    private static ComputedProperty findComputedProperty(Class<?> beanType,
+            PropertyDescriptor pd) {
+        Method method = pd.getReadMethod();
+        if (method == null) {
+            return null;
+        }
+
+        String name = pd.getName();
+
+        if (method.isDefault()) {
+            if (method.getReturnType() == void.class) {
+                throw new IllegalStateException("Computed property "
+                        + method.toString() + " has no return type");
+            } else if (method.getParameterCount() != 0) {
+                throw new IllegalStateException(
+                        "Computed property " + method.toString()
+                                + " should require zero parameters");
+            }
+
+            return new DefaultMethodComputedProperty(name, beanType, method);
+        }
+
+        JS jsAnnotation = method.getAnnotation(JS.class);
+        if (jsAnnotation != null) {
+            String script = jsAnnotation.value();
+            Class<?> type = method.getReturnType();
+
+            return new JsComputedProperty(name, script, type);
+        }
+
+        return null;
     }
 
     public Object getDefaultValue() {
