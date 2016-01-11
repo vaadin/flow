@@ -77,10 +77,10 @@ public class TemplateModelTest {
             return list.size();
         }
 
-        @JS("simpleList?simpleList.length:0")
+        @JS("simpleList.length")
         public int getJsListLength();
 
-        @JS("simpleList?simpleList.indexOf('a'):-1")
+        @JS("simpleList.indexOf('a')")
         public int getJsSimpleListIndexOfA();
 
         public default int getServerSimpleListIndexOfA() {
@@ -165,7 +165,7 @@ public class TemplateModelTest {
 
     @Test
     public void testModelSimpleList() {
-        Assert.assertNull(model.getSimpleList());
+        Assert.assertNotNull(model.getSimpleList());
 
         List<String> initialList = Arrays.asList("Foo");
         model.setSimpleList(initialList);
@@ -188,8 +188,7 @@ public class TemplateModelTest {
 
     @Test
     public void testComplexList() {
-        Assert.assertNull(model.getComplexList());
-
+        Assert.assertNotNull(model.getComplexList());
         List<Object> nodeList = node.getMultiValued("complexList");
 
         List<SubModelType> modelList = model.getComplexList();
@@ -411,8 +410,6 @@ public class TemplateModelTest {
 
     @Test
     public void testModelListInitialization() {
-        Assert.assertNull(model.getComplexList());
-
         model.setComplexList(new ArrayList<>());
         Assert.assertNotNull(model.getComplexList());
         Assert.assertEquals(0, model.getComplexList().size());
@@ -423,7 +420,6 @@ public class TemplateModelTest {
 
     @Test
     public void testModelListInitializationWithPrePopulatedListOfProxies() {
-        Assert.assertNull(model.getComplexList());
         ArrayList<SubModelType> l = new ArrayList<>();
         l.add(Model.create(SubModelType.class));
         model.setComplexList(l);

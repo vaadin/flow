@@ -46,6 +46,7 @@ import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsComputedProperty;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.LazyList;
+import com.vaadin.hummingbird.kernel.ListNode;
 import com.vaadin.hummingbird.kernel.ModelDescriptor;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.parser.TemplateParser;
@@ -389,6 +390,15 @@ public abstract class Template extends AbstractComponent
                 Class<?> clazz = (Class<?>) type;
                 if (clazz.isPrimitive()) {
                     return primitiveDefaults.get(clazz);
+                }
+            } else if (type instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType) type;
+                if (pt.getRawType() instanceof Class<?>) {
+                    Class<?> rawType = (Class<?>) pt.getRawType();
+                    if (List.class.isAssignableFrom(rawType)) {
+                        // List<?>
+                        return new ListNode();
+                    }
                 }
             }
 
