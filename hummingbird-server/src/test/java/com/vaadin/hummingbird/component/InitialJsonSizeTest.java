@@ -1,12 +1,12 @@
 package com.vaadin.hummingbird.component;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.TransactionLogBuilderTest;
@@ -18,7 +18,7 @@ import com.vaadin.ui.UI;
 
 import elemental.json.JsonArray;
 
-public class InitialJsonSize {
+public class InitialJsonSizeTest {
 
     public static class TestUI extends UI {
 
@@ -163,7 +163,7 @@ public class InitialJsonSize {
         // JsonValue expectedJson = Json.instance().parse(expectedJsonString);
         // int expectedSize = expectedJson.toJson().length();
 
-        int expectedSize = 2000;
+        int expectedSize = 2198;
         //
         // if (!JsonUtil.stringify(expectedJson, 4)
         // .equals(JsonUtil.stringify(json, 4))) {
