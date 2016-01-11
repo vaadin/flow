@@ -53,8 +53,10 @@ public class ListTreeNode extends TreeNode implements ReactiveValue {
 
     }
 
-    public ListTreeNode(int id, TreeUpdater treeUpdater) {
-        super(id, treeUpdater, JavaScriptObject.createArray());
+    public ListTreeNode(int id, TreeUpdater treeUpdater, ValueType valueType) {
+        super(id, treeUpdater, JavaScriptObject.createArray(), valueType);
+        assert valueType.isArrayType();
+
         populateProxy(getProxy());
     }
 

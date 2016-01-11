@@ -60,7 +60,8 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
     };
 
     public ComputedTreeNodeProperty(TreeNode owner, String name, String code) {
-        super(owner, name);
+        super(owner, name, owner.getTreeUpdater().getTypeMap()
+                .get(ValueTypeMap.UNDEFINED));
         this.code = code;
 
         // Compute initial value

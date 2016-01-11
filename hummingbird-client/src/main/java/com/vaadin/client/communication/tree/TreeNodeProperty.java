@@ -61,10 +61,13 @@ public class TreeNodeProperty implements ReactiveValue {
 
     private JsSet<TreeNodePropertyValueChangeListener> listeners;
     private HandlerRegistration listSizeListener;
+    private ValueType propertyType;
 
-    public TreeNodeProperty(TreeNode owner, String name) {
+    public TreeNodeProperty(TreeNode owner, String name,
+            ValueType propertyType) {
         this.owner = owner;
         this.name = name;
+        this.propertyType = propertyType;
     }
 
     public Object getValue() {

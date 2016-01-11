@@ -55,15 +55,20 @@ public class TreeNode {
     private JsSet<TreeNodeChangeListener> listeners;
     private Map<Integer, Node> elements;
 
-    public TreeNode(int id, TreeUpdater treeUpdater) {
-        this(id, treeUpdater, JavaScriptObject.createObject());
+    private final ValueType valueType;
+
+    public TreeNode(int id, TreeUpdater treeUpdater, ValueType valueType) {
+        this(id, treeUpdater, JavaScriptObject.createObject(), valueType);
     }
 
-    protected TreeNode(int id, TreeUpdater treeUpdater,
-            JavaScriptObject proxy) {
+    protected TreeNode(int id, TreeUpdater treeUpdater, JavaScriptObject proxy,
+            ValueType valueType) {
+        assert valueType.isObjectType();
+
         this.id = id;
         this.treeUpdater = treeUpdater;
         this.proxy = proxy;
+        this.valueType = valueType;
         ((JsJsonObject) proxy.cast()).put(ID_PROPERTY, id);
     }
 
@@ -109,7 +114,8 @@ public class TreeNode {
         TreeNodeProperty property = properties.get(name);
         // TODO check for existing array property
         if (property == null) {
-            property = new TreeNodeProperty(this, name);
+            ValueType propertyType = valueType.getProperties().get(name);
+            property = new TreeNodeProperty(this, name, propertyType);
             addProperty(property);
         }
         return property;
@@ -171,4 +177,7 @@ public class TreeNode {
         return properties.getKeys();
     }
 
+    public ValueType getValueType() {
+        return valueType;
+    }
 }

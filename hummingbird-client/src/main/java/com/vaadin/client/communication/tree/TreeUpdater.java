@@ -77,7 +77,8 @@ public class TreeUpdater {
 
     public TreeUpdater() {
         // Register root node
-        registerNode(new TreeNode(1, this));
+        registerNode(
+                new TreeNode(1, this, typeMap.get(ValueTypeMap.EMPTY_OBJECT)));
     }
 
     public void init(Element rootElement, ServerRpcQueue rpcQueue,
@@ -799,9 +800,9 @@ public class TreeUpdater {
                 int nodeTypeId = (int) change.getNumber("nodeType");
                 ValueType nodeType = typeMap.get(nodeTypeId);
                 if (nodeType.isArrayType()) {
-                    node = new ListTreeNode(nodeId, this);
+                    node = new ListTreeNode(nodeId, this, nodeType);
                 } else if (nodeType.isObjectType()) {
-                    node = new TreeNode(nodeId, this);
+                    node = new TreeNode(nodeId, this, nodeType);
                 } else {
                     throw new RuntimeException("Unsupported value type "
                             + nodeType + " for " + change.toJson());
