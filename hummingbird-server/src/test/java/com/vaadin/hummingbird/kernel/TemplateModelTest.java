@@ -408,4 +408,31 @@ public class TemplateModelTest {
         model.getSimpleList().add(0, "foo");
         Assert.assertEquals(1, model.getServerSimpleListIndexOfA());
     }
+
+    @Test
+    public void testModelListInitialization() {
+        Assert.assertNull(model.getComplexList());
+
+        model.setComplexList(new ArrayList<>());
+        Assert.assertNotNull(model.getComplexList());
+        Assert.assertEquals(0, model.getComplexList().size());
+
+        model.getComplexList().add(Model.create(SubModelType.class));
+        Assert.assertEquals(1, model.getComplexList().size());
+    }
+
+    @Test
+    public void testModelListInitializationWithPrePopulatedListOfProxies() {
+        Assert.assertNull(model.getComplexList());
+        ArrayList<SubModelType> l = new ArrayList<>();
+        l.add(Model.create(SubModelType.class));
+        model.setComplexList(l);
+        Assert.assertNotNull(model.getComplexList());
+        Assert.assertEquals(1, model.getComplexList().size());
+
+        l.clear();
+        // The list is no longer connected to the model
+        Assert.assertEquals(1, model.getComplexList().size());
+    }
+
 }

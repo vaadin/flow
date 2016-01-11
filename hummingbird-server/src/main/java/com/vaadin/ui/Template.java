@@ -137,16 +137,19 @@ public abstract class Template extends AbstractComponent
                                 .getActualTypeArguments()[0] instanceof Class<?>) : "Multi-level generics not supported for now";
                         Class<?> childType = (Class<?>) pt
                                 .getActualTypeArguments()[0];
-                        if (childType.isInterface()) {
-                            throw new RuntimeException("This is complicated");
-                        }
 
                         List<?> values = (List<?>) value;
-                        List<Object> nodeValues = node
-                                .getMultiValued(propertyName);
+
+                        // Fetch list through "getter" so we get a proxied
+                        // version
+                        List<Object> nodeValues = getList(node, propertyName,
+                                pt);
+
                         if (!Objects.equals(values, nodeValues)) {
                             node.remove(propertyName);
-                            nodeValues = node.getMultiValued(propertyName);
+                            // Fetch list through "getter" so we get a proxied
+                            // version
+                            nodeValues = getList(node, propertyName, pt);
                             nodeValues.addAll(values);
                         }
                         return;
@@ -199,6 +202,7 @@ public abstract class Template extends AbstractComponent
 
             if (type instanceof Class<?>) {
                 Class<?> clazz = (Class<?>) type;
+
                 if (LazyList.class.isAssignableFrom(clazz)) {
                     assert value instanceof LazyList;
                     return value;
@@ -215,54 +219,56 @@ public abstract class Template extends AbstractComponent
                 if (pt.getRawType() instanceof Class<?>) {
                     Class<?> rawType = (Class<?>) pt.getRawType();
                     if (List.class.isAssignableFrom(rawType)) {
-                        assert (pt
-                                .getActualTypeArguments()[0] instanceof Class<?>) : "Multi-level generics not supported for now";
-                        Class<?> childType = (Class<?>) pt
-                                .getActualTypeArguments()[0];
-                        List<Object> backingList = node
-                                .getMultiValued(propertyName);
-                        if (childType.isInterface()) {
-                            return new AbstractList<Object>() {
-                                @Override
-                                public Object get(int index) {
-                                    StateNode childNode = (StateNode) backingList
-                                            .get(index);
-                                    if (childNode == null) {
-                                        return null;
-                                    }
-                                    return Model.wrap(childNode, childType);
-                                }
-
-                                @Override
-                                public void add(int index, Object element) {
-                                    if (element == null) {
-                                        backingList.add(index, null);
-                                    } else {
-                                        backingList.add(index,
-                                                unwrapProxy(element));
-                                    }
-                                }
-
-                                @Override
-                                public Object remove(int index) {
-                                    Object oldValue = get(index);
-                                    backingList.remove(index);
-                                    return oldValue;
-                                }
-
-                                @Override
-                                public int size() {
-                                    return backingList.size();
-                                }
-                            };
-                        } else {
-                            return backingList;
-                        }
+                        return getList(node, propertyName, pt);
                     }
                 }
             }
             throw new RuntimeException(
                     type.getClass().toString() + ": " + type.toString());
+        }
+
+        private List<Object> getList(StateNode node, String propertyName,
+                ParameterizedType pt) {
+            assert (pt
+                    .getActualTypeArguments()[0] instanceof Class<?>) : "Multi-level generics not supported for now";
+            Class<?> childType = (Class<?>) pt.getActualTypeArguments()[0];
+            List<Object> backingList = node.getMultiValued(propertyName);
+            if (childType.isInterface()) {
+                return new AbstractList<Object>() {
+                    @Override
+                    public Object get(int index) {
+                        StateNode childNode = (StateNode) backingList
+                                .get(index);
+                        if (childNode == null) {
+                            return null;
+                        }
+                        return Model.wrap(childNode, childType);
+                    }
+
+                    @Override
+                    public void add(int index, Object element) {
+                        if (element == null) {
+                            backingList.add(index, null);
+                        } else {
+                            backingList.add(index, unwrapProxy(element));
+                        }
+                    }
+
+                    @Override
+                    public Object remove(int index) {
+                        Object oldValue = get(index);
+                        backingList.remove(index);
+                        return oldValue;
+                    }
+
+                    @Override
+                    public int size() {
+                        return backingList.size();
+                    }
+                };
+            } else {
+                return backingList;
+            }
         }
 
         private Object handleObjectMethod(Object proxy, Method method,
