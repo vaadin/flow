@@ -39,6 +39,11 @@ public class ValueTypeTest {
             Assert.assertEquals(
                     "Id is not sync with client code for " + valueType + ".",
                     expectedId.intValue(), valueType.getId());
+
+            Assert.assertSame(
+                    "Id " + expectedId + " is not sync with client code for "
+                            + valueType + ".",
+                    valueType, ValueType.get(expectedId.intValue()));
         });
     }
 
@@ -48,6 +53,9 @@ public class ValueTypeTest {
 
         Assert.assertSame(simpleObjectType,
                 ValueType.get(Collections.singletonMap("a", ValueType.STRING)));
+
+        Assert.assertSame(simpleObjectType,
+                ValueType.get(simpleObjectType.getId()));
 
         Assert.assertNotSame(simpleObjectType,
                 ValueType.get(Collections.singletonMap("b", ValueType.STRING)));
@@ -76,6 +84,9 @@ public class ValueTypeTest {
     @Test
     public void testArrayTypeIdentity() {
         Assert.assertNotEquals(-1, simpleArrayType.getId());
+
+        Assert.assertSame(simpleArrayType,
+                ValueType.get(simpleArrayType.getId()));
 
         Assert.assertSame(simpleArrayType, ValueType
                 .get(simpleObjectType.getPropertyTypes(), simpleObjectType));

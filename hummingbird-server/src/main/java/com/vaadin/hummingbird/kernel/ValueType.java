@@ -18,6 +18,7 @@ import com.vaadin.data.util.BeanUtil;
 
 public class ValueType {
     private static final AtomicInteger nextId = new AtomicInteger(-1);
+    private static final ConcurrentHashMap<Integer, ValueType> idToType = new ConcurrentHashMap<>();
 
     private final int id;
 
@@ -186,6 +187,9 @@ public class ValueType {
         builtInTypes.put(Integer.class, INTEGER);
         builtInTypes.put(double.class, NUMBER_PRIMITIVE);
         builtInTypes.put(Double.class, NUMBER);
+
+        builtInTypes.values().forEach(ValueType::register);
+        ValueType.register(UNDEFINED);
     }
 
     public static ObjectType get(Map<?, ValueType> propertyTypes) {
@@ -211,6 +215,8 @@ public class ValueType {
 
             // Use the value that actually ended up in the map
             value = objectTypes.get(referenceValue);
+
+            register(value);
         }
         return value;
     }
@@ -235,6 +241,8 @@ public class ValueType {
 
             // Use the value that actually ended up in the map
             value = arrayTypes.get(referenceValue);
+
+            register(value);
         }
         return value;
     }
@@ -364,5 +372,19 @@ public class ValueType {
         } else {
             throw new RuntimeException("Unkown instance");
         }
+    }
+
+    public static ValueType get(int id) {
+        return idToType.get(Integer.valueOf(id));
+    }
+
+    private static void register(ValueType type) {
+        int id = type.getId();
+        assert id >= 0;
+
+        Integer key = Integer.valueOf(id);
+        assert !idToType.containsKey(key);
+
+        idToType.put(key, type);
     }
 }
