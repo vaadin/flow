@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.NodeChangeVisitor;
 
@@ -78,15 +79,42 @@ public class RootNode extends MapStateNode {
         assert id <= 0;
 
         if (id == 0) {
-            id = nextId++;
+            if (adoptedNode == node) {
+                // Negative id since the node starts out as detached
+                id = -adoptedNodeId;
+            } else {
+                // Odd id when created by server, even when created by client
+                id = nextId;
+                nextId += 2;
+            }
         } else {
             id = -id;
         }
 
         assert getById(id) == null;
 
-        transactionIdToNode.put(Integer.valueOf(id), node);
+        transactionIdToNode.put(Integer.valueOf(Math.abs(id)), node);
         return id;
+    }
+
+    private StateNode adoptedNode = null;
+    private int adoptedNodeId = -1;
+
+    public StateNode adoptNode(int id, ObjectType objectType) {
+        StateNode node = StateNode.create(objectType);
+
+        assert adoptedNode == null;
+        assert id % 2 == 0;
+
+        adoptedNodeId = id;
+        adoptedNode = node;
+
+        node.setRoot(this);
+
+        adoptedNode = null;
+        adoptedNodeId = -1;
+
+        return node;
     }
 
     public int unregister(StateNode node) {

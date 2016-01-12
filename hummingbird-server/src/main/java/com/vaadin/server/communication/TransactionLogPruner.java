@@ -15,6 +15,8 @@ public class TransactionLogPruner {
 
     public static LinkedHashMap<StateNode, List<NodeChange>> removeChangesFromClient(
             LinkedHashMap<StateNode, List<NodeChange>> changes, UI ui) {
+        // XXX How does this work for list inserts and removes if the indices
+        // have been rewritten?
         Map<Integer, Set<NodeChange>> ignoreChanges = ui.getIgnoreChanges();
 
         changes.forEach((node, nodeChanges) -> {

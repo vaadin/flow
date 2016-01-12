@@ -39,8 +39,10 @@ import com.vaadin.client.Profiler;
 import com.vaadin.client.Util;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
+import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 import com.vaadin.shared.communication.MethodInvocation;
 
+import elemental.js.json.JsJsonObject;
 import elemental.js.json.JsJsonValue;
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -71,14 +73,16 @@ public class TreeUpdater {
 
     private int nextPromiseId = 0;
 
+    // Only use even values
+    private int nextNodeId = 0;
+
     private Map<Integer, JavaScriptObject[]> promises = new HashMap<>();
 
     private ValueTypeMap typeMap = new ValueTypeMap();
 
     public TreeUpdater() {
         // Register root node
-        registerNode(
-                new TreeNode(1, this, typeMap.get(ValueTypeMap.EMPTY_OBJECT)));
+        createAndRegisterNode(1, typeMap.get(ValueTypeMap.EMPTY_OBJECT));
     }
 
     public void init(Element rootElement, ServerRpcQueue rpcQueue,
@@ -513,8 +517,8 @@ public class TreeUpdater {
     private void extractTypes(JsonObject valueTypes) {
         for (String idString : valueTypes.keys()) {
             JsonObject typeJson = valueTypes.getObject(idString);
-            ValueType type = new ValueType(typeJson, typeMap);
-            typeMap.register(Integer.parseInt(idString), type);
+            ValueType type = new ValueType(Integer.parseInt(idString), typeJson, typeMap);
+            typeMap.register(type);
         }
     }
 
@@ -772,20 +776,11 @@ public class TreeUpdater {
             String type = change.getString("type");
             if ("create".equals(type)) {
                 int nodeId = (int) change.getNumber("id");
-                TreeNode node = getNode(Integer.valueOf(nodeId));
-
                 int nodeTypeId = (int) change.getNumber("nodeType");
-                ValueType nodeType = typeMap.get(nodeTypeId);
-                if (nodeType.isArrayType()) {
-                    node = new ListTreeNode(nodeId, this, nodeType);
-                } else if (nodeType.isObjectType()) {
-                    node = new TreeNode(nodeId, this, nodeType);
-                } else {
-                    throw new RuntimeException("Unsupported value type "
-                            + nodeType + " for " + change.toJson());
-                }
 
-                registerNode(node);
+                ValueType nodeType = typeMap.get(nodeTypeId);
+
+                createAndRegisterNode(nodeId, nodeType);
             }
         }
 
@@ -950,15 +945,65 @@ public class TreeUpdater {
         return [value];
     }-*/;
 
-    private void registerNode(TreeNode node) {
-        Integer key = Integer.valueOf(node.getId());
+    private TreeNode createAndRegisterNode(int nodeId, ValueType nodeType) {
+        Integer key = Integer.valueOf(nodeId);
 
         if (idToNode.containsKey(key)) {
             throw new IllegalStateException(
                     "A node with id " + key + " is already registered");
         }
 
+        TreeNode node;
+        if (nodeType.isArrayType()) {
+            node = new ListTreeNode(nodeId, this, nodeType);
+        } else if (nodeType.isObjectType()) {
+            node = new TreeNode(nodeId, this, nodeType);
+
+        } else {
+            throw new RuntimeException(
+                    "Can't create node for basic type " + nodeType);
+        }
+
         idToNode.put(key, node);
+
+        return node;
+    }
+
+    public TreeNode adoptNode(JavaScriptObject jsObject, ValueType nodeType) {
+        // Increment by two to keep client ids even
+        int id = nextNodeId += 2;
+
+        TreeNode node = createAndRegisterNode(id, nodeType);
+
+        // Enqueue create event before value changes for the new node
+        getCallbackQueue().enqueue(new NodeChangeEvent() {
+            @Override
+            public void dispatch() {
+                // nop
+            }
+
+            @Override
+            public JsonObject serialize() {
+                JsonObject json = Json.createObject();
+                json.put("id", id);
+
+                json.put("type", "create");
+                json.put("nodeType", nodeType.getId());
+
+                return json;
+            }
+        });
+
+        // Migrate all values
+        JsJsonObject jsonObject = jsObject.cast();
+        String[] keys = jsonObject.keys();
+
+        for (String propertyName : keys) {
+            JsonValue value = jsonObject.get(propertyName);
+            node.getProperty(propertyName).setValue(value);
+        }
+
+        return node;
     }
 
     private void extractTemplates(JsonObject elementTemplates) {

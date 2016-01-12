@@ -8,6 +8,8 @@ import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 import com.vaadin.client.communication.tree.Reactive.ReactiveValue;
 
+import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 public class ListTreeNode extends TreeNode implements ReactiveValue {
@@ -48,7 +50,37 @@ public class ListTreeNode extends TreeNode implements ReactiveValue {
 
         @Override
         public JsonObject serialize() {
-            throw new RuntimeException("Not yet supported");
+            JsonObject json = Json.createObject();
+            json.put("id", getId());
+            json.put("type", "splice");
+            json.put("index", startIndex);
+
+            int removedCount = removed.size();
+            if (removedCount != 0) {
+                json.put("remove", removedCount);
+            }
+
+            int addedCount = added.size();
+            if (addedCount != 0) {
+                JsonArray addedJson = Json.createArray();
+                String valueKey = "value";
+
+                for (int i = 0; i < addedCount; i++) {
+                    Object addedValue = added.get(i);
+                    if (addedValue instanceof TreeNode) {
+                        valueKey = "nodeValue";
+
+                        addedJson.set(addedJson.length(), ((TreeNode) addedValue).getId());
+                    } else {
+                        addedJson.set(addedJson.length(),
+                                TreeUpdater.asJsonValue(addedValue));
+                    }
+                }
+
+                json.put(valueKey, addedJson);
+            }
+
+            return json;
         }
 
     }
@@ -69,6 +101,10 @@ public class ListTreeNode extends TreeNode implements ReactiveValue {
         a.indexOf = $entry(function(item) {
             return self.@ListTreeNode::indexOf(*)(item);
         });
+        a.push = $entry(function() {
+            self.@ListTreeNode::handleJsSplice(*)(a.length, 0, arguments);
+            return a.length;
+        });
     }-*/;
 
     private native int doIndexOf(JavaScriptObject list, Object item)
@@ -83,6 +119,41 @@ public class ListTreeNode extends TreeNode implements ReactiveValue {
             item = ((TreeNode) item).getProxy();
         }
         return doIndexOf(getProxy(), item);
+    }
+
+    private void handleJsSplice(int start, int deleteCount,
+            JsArrayObject<Object> added) {
+        if (added != null && added.size() != 0) {
+            ValueType memberType = getValueType().getMemberType();
+            if (memberType == getTreeUpdater().getTypeMap()
+                    .get(ValueTypeMap.UNDEFINED)) {
+                throw new RuntimeException(
+                        "Can't add values if there's no defined member value type");
+            }
+
+            if (memberType.isObjectType()) {
+                TreeUpdater treeUpdater = getTreeUpdater();
+
+                // Unwrap or adopt all added nodes
+                for (int i = 0; i < added.size(); i++) {
+                    JavaScriptObject jsValue = (JavaScriptObject) added.get(i);
+                    int proxyId = TreeNode.getProxyId(jsValue);
+                    if (proxyId != -1) {
+                        TreeNode node = treeUpdater.getNode(proxyId);
+                        assert node != null;
+                        assert node.getValueType() == memberType;
+
+                        added.set(i, node);
+                    } else {
+                        TreeNode adoptedNode = treeUpdater.adoptNode(jsValue,
+                                memberType);
+                        added.set(i, adoptedNode);
+                    }
+                }
+            }
+        }
+
+        splice(start, deleteCount, added);
     }
 
     public HandlerRegistration addArrayEventListener(

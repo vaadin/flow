@@ -38,10 +38,13 @@ import com.vaadin.hummingbird.kernel.BasicElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
+import com.vaadin.hummingbird.kernel.ListNode;
 import com.vaadin.hummingbird.kernel.RootNode;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.ValueType;
 import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
+import com.vaadin.hummingbird.kernel.change.IdChange;
+import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.NodeChange;
 import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
@@ -271,14 +274,80 @@ public abstract class UI extends CssLayout implements PollNotifier, Focusable {
         for (int i = 0; i < json.length(); i++) {
             JsonObject change = json.getObject(i);
             int nodeId = (int) change.getNumber("id");
+            String type = change.getString("type");
+
             StateNode node = rootNode.getById(nodeId);
-            if (node == null) {
+            if (node == null && !"create".equals(type)) {
                 throw new RuntimeException(
                         "Got change for missing node: " + change.toJson());
             }
 
-            String type = change.getString("type");
+            // Keep track of changes that should not be sent back to the
+            // client
+            Set<NodeChange> nodeIgnores = ignoreChanges.computeIfAbsent(nodeId,
+                    k -> new HashSet<>());
+
             switch (type) {
+            case "create": {
+                if (node != null) {
+                    throw new RuntimeException(
+                            "Node already exists for " + change.toJson());
+                }
+
+                int nodeTypeId = (int) change.getNumber("nodeType");
+                ValueType typeId = ValueType.get(nodeTypeId);
+                if (typeId instanceof ObjectType) {
+                    ObjectType objectType = (ObjectType) typeId;
+
+                    node = rootNode.adoptNode(nodeId, objectType);
+
+                    nodeIgnores.add(new IdChange(0, -nodeId));
+                    nodeIgnores.add(new IdChange(-nodeId, nodeId));
+                } else {
+                    throw new RuntimeException(
+                            "Invalid nodeType for " + change.toJson());
+                }
+
+                break;
+            }
+            case "splice": {
+                if (node instanceof ListNode) {
+                    ListNode listNode = (ListNode) node;
+
+                    int index = (int) change.getNumber("index");
+
+                    if (change.hasKey("remove")) {
+                        throw new RuntimeException(
+                                "Splice remove not yet supported");
+                    }
+
+                    if (change.hasKey("nodeValue")) {
+                        JsonArray newIds = change.getArray("nodeValue");
+                        for (int j = 0; j < newIds.length(); j++) {
+                            int childId = (int) newIds.getNumber(j);
+                            StateNode childNode = rootNode.getById(childId);
+
+                            if (childNode == null) {
+                                throw new RuntimeException("Node " + childId
+                                        + " not found for " + change.toJson());
+                            }
+
+                            listNode.add(index + j, childNode);
+
+                            nodeIgnores.add(
+                                    new ListInsertChange(index + j, childNode));
+                        }
+                    } else if (change.hasKey("value")) {
+                        throw new RuntimeException(
+                                "Value splice not yet supported");
+                    }
+                } else {
+                    throw new RuntimeException(
+                            "Splice target is not a list: " + change.toJson());
+                }
+
+                break;
+            }
             case "put": {
                 String key = change.getString("key");
                 JsonValue value = change.get("value");
@@ -304,10 +373,6 @@ public abstract class UI extends CssLayout implements PollNotifier, Focusable {
                 Object decodedValue = JsonConverter.fromJson(valueType, value);
                 Object oldValue = node.put(key, decodedValue);
 
-                // Keep track of changes that should not be sent back to the
-                // client
-                Set<NodeChange> nodeIgnores = ignoreChanges
-                        .computeIfAbsent(nodeId, k -> new HashSet<>());
                 nodeIgnores.add(new RemoveChange(key, oldValue));
                 nodeIgnores.add(new PutChange(key, decodedValue));
 

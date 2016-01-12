@@ -19,28 +19,25 @@ public class ValueTypeMap {
     public static final int UNDEFINED_ARRAY = 9;
 
     public ValueTypeMap() {
-        valueTypes.put(Integer.valueOf(STRING), new ValueType(null));
-        valueTypes.put(Integer.valueOf(BOOLEAN), new ValueType(null));
-        valueTypes.put(Integer.valueOf(BOOLEAN_PRIMITIVE),
-                new ValueType(Boolean.FALSE));
-        valueTypes.put(Integer.valueOf(INTEGER), new ValueType(null));
-        valueTypes.put(Integer.valueOf(INTEGER_PRIMITIVE),
-                new ValueType(Integer.valueOf(0)));
-        valueTypes.put(Integer.valueOf(NUMBER), new ValueType(null));
-        valueTypes.put(Integer.valueOf(NUMBER_PRIMITIVE),
-                new ValueType(Double.valueOf(0)));
+        register(new ValueType(STRING, null));
+        register(new ValueType(BOOLEAN, null));
+        register(new ValueType(BOOLEAN_PRIMITIVE, Boolean.FALSE));
+        register(new ValueType(INTEGER, null));
+        register(new ValueType(INTEGER_PRIMITIVE, Integer.valueOf(0)));
+        register(new ValueType(NUMBER, null));
+        register(new ValueType(NUMBER_PRIMITIVE, Double.valueOf(0)));
 
-        valueTypes.put(Integer.valueOf(EMPTY_OBJECT),
-                new ValueType(Collections.emptyMap(), null, null));
+        register(new ValueType(EMPTY_OBJECT, Collections.emptyMap(), null,
+                null));
 
-        ValueType undefined = new ValueType(null);
-        valueTypes.put(Integer.valueOf(UNDEFINED), undefined);
-        valueTypes.put(Integer.valueOf(UNDEFINED_ARRAY),
-                new ValueType(Collections.emptyMap(), null, undefined));
+        ValueType undefined = new ValueType(UNDEFINED, null);
+        register(undefined);
+        register(new ValueType(UNDEFINED_ARRAY, Collections.emptyMap(), null,
+                undefined));
     }
 
-    public void register(int id, ValueType type) {
-        Integer key = Integer.valueOf(id);
+    public void register(ValueType type) {
+        Integer key = Integer.valueOf(type.getId());
 
         assert !valueTypes.containsKey(key);
 

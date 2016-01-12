@@ -6,12 +6,15 @@ import java.util.Map;
 import elemental.json.JsonObject;
 
 public class ValueType {
+    private final int id;
     private final Object defaultValue;
     private final Map<String, ValueType> properties;
     private final Map<String, String> computedProperties;
     private final ValueType memberType;
 
-    public ValueType(JsonObject json, ValueTypeMap typeMap) {
+    public ValueType(int id, JsonObject json, ValueTypeMap typeMap) {
+        this.id = id;
+
         JsonObject propertiesJson = json.getObject("properties");
         if (propertiesJson != null) {
             properties = new HashMap<>();
@@ -46,7 +49,8 @@ public class ValueType {
         defaultValue = null;
     }
 
-    public ValueType(Object defaultValue) {
+    public ValueType(int id, Object defaultValue) {
+        this.id = id;
         this.defaultValue = defaultValue;
 
         properties = null;
@@ -54,8 +58,9 @@ public class ValueType {
         computedProperties = null;
     }
 
-    public ValueType(Map<String, ValueType> properties,
+    public ValueType(int id, Map<String, ValueType> properties,
             Map<String, String> computedProperties, ValueType memberType) {
+        this.id = id;
         this.properties = properties;
         this.memberType = memberType;
         this.computedProperties = computedProperties;
@@ -89,5 +94,9 @@ public class ValueType {
 
     public boolean isObjectType() {
         return properties != null || isArrayType();
+    }
+
+    public int getId() {
+        return id;
     }
 }

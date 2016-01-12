@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertChange;
 import com.vaadin.hummingbird.kernel.change.ListInsertManyChange;
@@ -21,9 +24,6 @@ import com.vaadin.hummingbird.kernel.change.PutChange;
 import com.vaadin.hummingbird.kernel.change.RangeEndChange;
 import com.vaadin.hummingbird.kernel.change.RangeStartChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class StateNodeTest {
 
@@ -149,14 +149,17 @@ public class StateNodeTest {
         Assert.assertSame(rootNode, rootNode.getRoot());
         Assert.assertNull(childNode.getRoot());
 
-        Assert.assertEquals(1, rootNode.getId());
-        Assert.assertEquals(0, childNode.getId());
+        Assert.assertEquals("RootNode should have id 1", 1, rootNode.getId());
+        Assert.assertEquals("Node without root should have id 0", 0,
+                childNode.getId());
 
         rootNode.put("child", childNode);
 
         Assert.assertSame(rootNode, childNode.getRoot());
-        Assert.assertEquals(2, childNode.getId());
-        Assert.assertSame(childNode, rootNode.getById(2));
+        Assert.assertEquals(
+                "Next attached node should have id 3 (the next odd number in the sequence)",
+                3, childNode.getId());
+        Assert.assertSame(childNode, rootNode.getById(childNode.getId()));
     }
 
     @Test

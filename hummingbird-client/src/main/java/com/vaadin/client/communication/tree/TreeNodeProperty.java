@@ -40,6 +40,12 @@ public class TreeNodeProperty implements ReactiveValue {
             if (TreeNodeProperty.this instanceof ComputedTreeNodeProperty) {
                 return null;
             }
+
+            // Filter out synthetic events
+            if (oldValue == newValue) {
+                return null;
+            }
+
             JsonObject json = Json.createObject();
             json.put("id", owner.getId());
             json.put("key", name);
