@@ -63,9 +63,6 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
         super(owner, name, owner.getTreeUpdater().getTypeMap()
                 .get(ValueTypeMap.UNDEFINED));
         this.code = code;
-
-        // Compute initial value
-        compute();
     }
 
     @Override
@@ -91,7 +88,7 @@ public class ComputedTreeNodeProperty extends TreeNodeProperty {
         dependencies.clear();
     }
 
-    private void compute() {
+    public void compute() {
         clearAllDependencies();
 
         JavaScriptObject context = getOwner().getProxy();

@@ -1,7 +1,10 @@
 package com.vaadin.client.communication.tree;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
@@ -70,6 +73,33 @@ public class TreeNode {
         this.proxy = proxy;
         this.valueType = valueType;
         ((JsJsonObject) proxy.cast()).put(ID_PROPERTY, id);
+
+        List<ComputedTreeNodeProperty> computedProperties = new ArrayList<>();
+
+        Map<String, ValueType> typeProperties = valueType.getProperties();
+        if (typeProperties != null) {
+            Map<String, String> computed = valueType.getComputedProperties();
+
+            for (Entry<String, ValueType> entry : typeProperties.entrySet()) {
+                String name = entry.getKey();
+
+                if (computed != null && computed.containsKey(name)) {
+                    ComputedTreeNodeProperty property = addComputedProperty(
+                            name, computed.get(name));
+                    computedProperties.add(property);
+                } else {
+                    addProperty(
+                            new TreeNodeProperty(this, name, entry.getValue()));
+                }
+            }
+        }
+
+        // Schedule flush of initial value to ensure bindings are set up
+        Reactive.addFlushListener(() -> {
+            for (ComputedTreeNodeProperty computedProperty : computedProperties) {
+                computedProperty.compute();
+            }
+        });
     }
 
     public static int getProxyId(JavaScriptObject proxy) {
@@ -128,11 +158,15 @@ public class TreeNode {
         getCallbackQueue().enqueue(new PropertyAddEvent(name, property));
     }
 
-    public void addComputedProperty(String name, String code) {
+    private ComputedTreeNodeProperty addComputedProperty(String name,
+            String code) {
         assert !properties.containsKey(name) : name
                 + " is already registered as a property";
 
-        addProperty(new ComputedTreeNodeProperty(this, name, code));
+        ComputedTreeNodeProperty property = new ComputedTreeNodeProperty(this,
+                name, code);
+        addProperty(property);
+        return property;
     }
 
     private static native void addPropertyDescriptor(JavaScriptObject proxy,

@@ -348,8 +348,12 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         modelPropertiesJson.put("completeCount", 4);
         modelPropertiesJson.put("remainingCount", 4);
 
+        JsonObject modelComputedJson = Json.createObject();
+        modelComputedJson.put("todoCount", "todos.length");
+
         JsonObject modelTypeJson = Json.createObject();
         modelTypeJson.put("properties", modelPropertiesJson);
+        modelTypeJson.put("computed", modelComputedJson);
 
         JsonObject valueTypes = Json.createObject();
         valueTypes.put("10", todoTypeJson);
@@ -378,6 +382,11 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         assertSame(primitiveInt, modelProperties.get("completeCount"));
         assertSame(primitiveInt, modelProperties.get("remainingCount"));
 
+        Map<String, String> modelComputed = modelType.getComputedProperties();
+
+        assertEquals(1, modelComputed.size());
+        assertEquals("todos.length", modelComputed.get("todoCount"));
+
         ValueType todosType = modelProperties.get("todos");
         assertSame(todosType, typeMap.get(11));
         assertNull(todosType.getDefaultValue());
@@ -395,6 +404,7 @@ public class TestBasicTreeOperations extends AbstractTreeUpdaterTest {
         assertSame(primitiveBoolean, todoProperties.get("editing"));
         assertSame(stringType, todoProperties.get("title"));
 
+        assertNull(todoType.getComputedProperties());
     }
 
     private static native String typeOf(

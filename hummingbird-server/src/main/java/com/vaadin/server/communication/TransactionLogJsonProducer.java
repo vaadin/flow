@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.kernel.ComputedProperty;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
 import com.vaadin.hummingbird.kernel.LazyList;
@@ -94,6 +95,23 @@ public class TransactionLogJsonProducer {
             }
             if (hasProperties) {
                 typeJson.put("properties", properties);
+            }
+
+            JsonObject computed = Json.createObject();
+            boolean hasComputed = false;
+
+            for (ComputedProperty computedProperty : type
+                    .getComputedProperties().values()) {
+                if (computedProperty.hasClientCode()) {
+                    hasComputed = true;
+
+                    computed.put(computedProperty.getName(),
+                            computedProperty.getClientCode());
+                }
+            }
+
+            if (hasComputed) {
+                typeJson.put("computed", computed);
             }
 
             if (type instanceof ArrayType) {

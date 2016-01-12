@@ -31,12 +31,12 @@ public class ValueTypeMap {
                 new ValueType(Double.valueOf(0)));
 
         valueTypes.put(Integer.valueOf(EMPTY_OBJECT),
-                new ValueType(Collections.emptyMap(), null));
+                new ValueType(Collections.emptyMap(), null, null));
 
         ValueType undefined = new ValueType(null);
         valueTypes.put(Integer.valueOf(UNDEFINED), undefined);
         valueTypes.put(Integer.valueOf(UNDEFINED_ARRAY),
-                new ValueType(Collections.emptyMap(), undefined));
+                new ValueType(Collections.emptyMap(), null, undefined));
     }
 
     public void register(int id, ValueType type) {

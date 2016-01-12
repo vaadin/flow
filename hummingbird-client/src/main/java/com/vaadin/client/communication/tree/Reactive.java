@@ -9,7 +9,7 @@ import com.vaadin.client.Profiler;
 
 public class Reactive {
 
-    private static interface FlushListener {
+    public static interface FlushListener {
         public void onFlush();
     }
 
@@ -114,6 +114,10 @@ public class Reactive {
     }
 
     private static final HashSet<FlushListener> pendingFlushes = new HashSet<>();
+
+    public static void addFlushListener(FlushListener flushListener) {
+        pendingFlushes.add(flushListener);
+    }
 
     public static void flush() {
         Profiler.enter("Reactive.flush");

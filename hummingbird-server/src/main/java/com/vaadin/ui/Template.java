@@ -36,7 +36,6 @@ import com.vaadin.annotations.TemplateEventHandler;
 import com.vaadin.annotations.TemplateHTML;
 import com.vaadin.data.util.BeanUtil;
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
-import com.vaadin.hummingbird.kernel.ComputedProperty;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTemplate;
 import com.vaadin.hummingbird.kernel.JsonConverter;
@@ -381,16 +380,6 @@ public abstract class Template extends AbstractComponent
         node = StateNode.create(ValueType.getBeanType(getModelType()));
 
         setElement(Element.getElement(elementTemplate, node));
-
-        Map<String, ComputedProperty> computedProperties = node.getType()
-                .getComputedProperties();
-        if (!computedProperties.isEmpty()) {
-            computedProperties.values().stream()
-                    .filter(ComputedProperty::hasClientCode).forEach(p -> {
-                        node.enqueueRpc("}computed", node, p.getName(),
-                                p.getClientCode());
-                    });
-        }
 
         getNode().put(TemplateCallbackHandler.class,
                 new TemplateCallbackHandler() {

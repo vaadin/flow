@@ -495,7 +495,7 @@ public class TreeUpdater {
         Profiler.leave("TreeUpdater.extractTemplates");
 
         getLogger().info("Handling tree node changes");
-        applyNodeChanges(elementChanges, rpc);
+        applyNodeChanges(elementChanges);
 
         Profiler.enter("TreeUpdater.sendCreatedEvents");
         getLogger().info("Sending created events");
@@ -523,21 +523,6 @@ public class TreeUpdater {
         ClassListUpdater.updateStyles();
     }
 
-    private void extractComputedProperties(JsonArray rpc) {
-        for (int i = 0; i < rpc.length(); i++) {
-            JsonArray invocation = rpc.getArray(i);
-            String script = invocation.getString(0);
-            if ("}computed".equals(script)) {
-                int nodeId = (int) invocation.getNumber(1);
-                String name = invocation.getString(2);
-                String code = invocation.getString(3);
-
-                TreeNode node = getNode(nodeId);
-                node.addComputedProperty(name, code);
-            }
-        }
-    }
-
     private void sendCreatedEvents() {
         for (Element e : createdElements) {
             NativeEvent event = Document.get().createHtmlEvent("created", false,
@@ -548,7 +533,7 @@ public class TreeUpdater {
 
     }
 
-    private void applyNodeChanges(JsonArray nodeChanges, JsonArray rpc) {
+    private void applyNodeChanges(JsonArray nodeChanges) {
         Profiler.enter("TreeUpdater.applyNodeChanges");
 
         Profiler.enter("TreeUpdater.updateTree");
@@ -565,14 +550,6 @@ public class TreeUpdater {
             initRoot();
             Profiler.leave("TreeUpdater.initRoot");
             rootInitialized = true;
-        }
-
-        // Apply any computed properties added sent as rcp before delivering
-        // events
-        if (rpc != null) {
-            Profiler.enter("TreeUpdater.extractComputedProperties");
-            extractComputedProperties(rpc);
-            Profiler.leave("TreeUpdater.extractComputedProperties");
         }
 
         callbackQueue.flush(null);
