@@ -8,6 +8,10 @@ public interface TemplateBuilder {
         return new BoundTemplateBuilder(tag);
     }
 
+    public static BoundTemplateBuilder withTag(String tag, String is) {
+        return new BoundTemplateBuilder(tag, is);
+    }
+
     public static TemplateBuilder staticText(String text) {
         return () -> new StaticTextTemplate(text);
     }

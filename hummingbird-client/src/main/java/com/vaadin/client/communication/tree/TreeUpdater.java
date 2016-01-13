@@ -39,6 +39,7 @@ import com.vaadin.client.Profiler;
 import com.vaadin.client.Util;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
+import com.vaadin.client.communication.WebComponents;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 import com.vaadin.shared.communication.MethodInvocation;
 
@@ -464,7 +465,13 @@ public class TreeUpdater {
                 return textNode;
             } else {
                 Profiler.enter("TreeUpdater.getOrCreateElement basic");
-                Element element = Document.get().createElement(tag);
+                String is = (String) node.getProperty("IS").getValue();
+                Element element;
+                if (is != null) {
+                    element = WebComponents.createElement(tag, is);
+                } else {
+                    element = Document.get().createElement(tag);
+                }
                 BasicElementListener.bind(node, element, this);
                 node.setElement(templateId, element);
                 if (debug) {
@@ -517,7 +524,8 @@ public class TreeUpdater {
     private void extractTypes(JsonObject valueTypes) {
         for (String idString : valueTypes.keys()) {
             JsonObject typeJson = valueTypes.getObject(idString);
-            ValueType type = new ValueType(Integer.parseInt(idString), typeJson, typeMap);
+            ValueType type = new ValueType(Integer.parseInt(idString), typeJson,
+                    typeMap);
             typeMap.register(type);
         }
     }

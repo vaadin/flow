@@ -17,10 +17,22 @@ public class BasicElementTemplate extends AbstractElementTemplate {
         return node.get(Keys.TAG, String.class);
     }
 
+    @Override
+    public String getIs(StateNode node) {
+        return (String) node.get(Keys.IS);
+    }
+
     public static StateNode createBasicElementModel(String tag) {
         assert validTagName(tag) : "Invalid tag name " + tag;
         StateNode node = StateNode.create();
         node.put(Keys.TAG, tag);
+        return node;
+    }
+
+    public static StateNode createBasicElementModel(String tag, String is) {
+        StateNode node = createBasicElementModel(tag);
+        assert is != null && !is.isEmpty() : "is cannot be null or empty";
+        node.put(Keys.IS, is);
         return node;
     }
 

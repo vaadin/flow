@@ -152,6 +152,11 @@ public class TemplateSerializer {
         serialized.put("attributeBindings", attributeBindings);
         serialized.put("defaultAttributes", defaultAttributes);
         serialized.put("tag", bet.getTag());
+
+        String is = bet.getIs();
+        if (is != null) {
+            serialized.put("is", is);
+        }
     }
 
 }

@@ -31,4 +31,6 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface Tag {
     String value();
+
+    String is() default "";
 }

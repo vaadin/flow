@@ -19,7 +19,7 @@ import com.vaadin.ui.UI;
 public abstract class AbstractElementTemplate implements ElementTemplate {
 
     public enum Keys {
-        TEMPLATE, TAG, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY, EVENT_DATA, OVERRIDE_TEMPLATE, CLASS_LIST;
+        TEMPLATE, TAG, IS, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY, EVENT_DATA, OVERRIDE_TEMPLATE, CLASS_LIST;
     }
 
     private static final AtomicInteger nextId = new AtomicInteger(1);
