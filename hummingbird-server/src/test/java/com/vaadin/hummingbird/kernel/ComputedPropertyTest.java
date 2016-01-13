@@ -195,7 +195,7 @@ public class ComputedPropertyTest {
         Assert.assertEquals("bar", value);
     }
 
-    public static StateNode createNodeWithComputedProperties(
+    private static StateNode createNodeWithComputedProperties(
             Map<String, ComputedProperty> computedProperties) {
         return StateNode.create(
                 ValueType.get(Collections.emptyMap(), computedProperties));
