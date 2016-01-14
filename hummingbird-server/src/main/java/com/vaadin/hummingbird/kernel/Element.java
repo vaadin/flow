@@ -74,7 +74,8 @@ public class Element implements Serializable {
 
         if (name.equals("is")) {
             throw new UnsupportedOperationException(
-                    "Can't set element's is-attribute with setAttribute, is must be set with @Is(\"\"");
+                    "Can't set element's is-attribute with setAttribute, is must be set on"
+                            + " construction of element or with @Tag(is=\"\"");
         }
 
         template.setAttribute(name, value, node);

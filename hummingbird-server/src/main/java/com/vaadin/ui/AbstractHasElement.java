@@ -18,10 +18,11 @@ public class AbstractHasElement implements HasElement, HasEventRouter {
             throw new IllegalStateException(
                     "No @Tag defined for " + getClass().getName());
         }
-        if (!tag.is().isEmpty()) {
+        if (tag.is().isEmpty()) {
+            createElement(tag.value());
+        } else {
             createElement(tag.value(), tag.is());
         }
-        createElement(tag.value());
     }
 
     protected AbstractHasElement(String tagName) {
