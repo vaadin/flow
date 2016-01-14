@@ -33,8 +33,8 @@ import com.vaadin.client.ApplicationConnection.ResponseHandlingEndedEvent;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingStartedEvent;
 import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.Profiler;
-import com.vaadin.client.Util;
 import com.vaadin.client.ValueMap;
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.ui.ui.UIConstants;
@@ -146,10 +146,9 @@ public class XhrConnection {
                 return;
             }
 
-            getLogger().info(
-                    "Server visit took "
-                            + Util.round(Profiler.getRelativeTimeMillis()
-                                    - requestStartTime, 3) + "ms");
+            getLogger().info("Server visit took " + WidgetUtil.round(
+                    Profiler.getRelativeTimeMillis() - requestStartTime, 3)
+                    + "ms");
 
             // for(;;);["+ realJson +"]"
             String responseText = response.getText();
@@ -221,8 +220,8 @@ public class XhrConnection {
                 }.schedule(retryTimeout);
             }
         } catch (RequestException e) {
-            getConnectionStateHandler().xhrException(
-                    new XhrConnectionError(null, payload, e));
+            getConnectionStateHandler()
+                    .xhrException(new XhrConnectionError(null, payload, e));
         }
     }
 
@@ -236,8 +235,8 @@ public class XhrConnection {
                 .translateVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX
                         + ApplicationConstants.UIDL_PATH + '/');
 
-        uri = SharedUtil.addGetParameters(uri, UIConstants.UI_ID_PARAMETER
-                + "=" + connection.getConfiguration().getUIId());
+        uri = SharedUtil.addGetParameters(uri, UIConstants.UI_ID_PARAMETER + "="
+                + connection.getConfiguration().getUIId());
 
         return uri;
 

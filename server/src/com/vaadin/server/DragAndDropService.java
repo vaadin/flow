@@ -34,6 +34,7 @@ import com.vaadin.event.dd.TargetDetails;
 import com.vaadin.event.dd.TargetDetailsImpl;
 import com.vaadin.event.dd.acceptcriteria.AcceptCriterion;
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.shared.communication.MethodInvocation;
 import com.vaadin.shared.communication.SharedState;
 import com.vaadin.shared.ui.dd.DragEventType;
 import com.vaadin.ui.Component;
@@ -67,17 +68,15 @@ public class DragAndDropService implements VariableOwner, ClientConnector {
                 .get("component");
         if (sourceComponent != null && !sourceComponent.isConnectorEnabled()) {
             // source component not supposed to be enabled
-            getLogger().warning(
-                    "Client dropped from " + sourceComponent
-                            + " even though it's disabled");
+            getLogger().warning("Client dropped from " + sourceComponent
+                    + " even though it's disabled");
             return;
         }
 
         // Validate drop handler owner
         if (!(owner instanceof DropTarget)) {
-            getLogger()
-                    .severe("DropHandler owner " + owner
-                            + " must implement DropTarget");
+            getLogger().severe("DropHandler owner " + owner
+                    + " must implement DropTarget");
             return;
         }
         // owner cannot be null here
@@ -85,10 +84,8 @@ public class DragAndDropService implements VariableOwner, ClientConnector {
         DropTarget dropTarget = (DropTarget) owner;
 
         if (!dropTarget.isConnectorEnabled()) {
-            getLogger()
-                    .warning(
-                            "Client dropped on " + owner
-                                    + " even though it's disabled");
+            getLogger().warning("Client dropped on " + owner
+                    + " even though it's disabled");
             return;
         }
 
@@ -127,8 +124,10 @@ public class DragAndDropService implements VariableOwner, ClientConnector {
          * operation based on the info passed from the client widgets (drag
          * source for Transferable, drop target for DragDropDetails).
          */
-        Transferable transferable = constructTransferable(dropTarget, variables);
-        TargetDetails dropData = constructDragDropDetails(dropTarget, variables);
+        Transferable transferable = constructTransferable(dropTarget,
+                variables);
+        TargetDetails dropData = constructDragDropDetails(dropTarget,
+                variables);
         DragAndDropEvent dropEvent = new DragAndDropEvent(transferable,
                 dropData);
         if (dropHandler.getAcceptCriterion().accept(dropEvent)) {
@@ -153,7 +152,8 @@ public class DragAndDropService implements VariableOwner, ClientConnector {
          * operation based on the info passed from the client widgets (drag
          * source for Transferable, current target for DragDropDetails).
          */
-        Transferable transferable = constructTransferable(dropTarget, variables);
+        Transferable transferable = constructTransferable(dropTarget,
+                variables);
         TargetDetails dragDropDetails = constructDragDropDetails(dropTarget,
                 variables);
 
@@ -273,12 +273,6 @@ public class DragAndDropService implements VariableOwner, ClientConnector {
     }
 
     @Override
-    public ServerRpcManager<?> getRpcManager(String interfaceName) {
-        // TODO Use rpc for drag'n'drop
-        return null;
-    }
-
-    @Override
     public Class<? extends SharedState> getStateType() {
         return SharedState.class;
     }
@@ -384,5 +378,17 @@ public class DragAndDropService implements VariableOwner, ClientConnector {
     @Override
     public boolean isAttached() {
         return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.vaadin.server.ClientConnector#handleRpc(com.vaadin.shared.
+     * communication.MethodInvocation)
+     */
+    @Override
+    public void handleRpc(MethodInvocation invocation) {
+        // TODO Auto-generated method stub
+
     }
 }

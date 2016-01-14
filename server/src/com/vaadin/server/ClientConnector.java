@@ -23,6 +23,7 @@ import java.util.List;
 import com.vaadin.event.ConnectorEvent;
 import com.vaadin.event.ConnectorEventListener;
 import com.vaadin.shared.Connector;
+import com.vaadin.shared.communication.MethodInvocation;
 import com.vaadin.shared.communication.SharedState;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
@@ -55,8 +56,8 @@ public interface ClientConnector extends Connector {
      * 
      */
     public static interface AttachListener extends ConnectorEventListener {
-        public static final Method attachMethod = ReflectTools.findMethod(
-                AttachListener.class, "attach", AttachEvent.class);
+        public static final Method attachMethod = ReflectTools
+                .findMethod(AttachListener.class, "attach", AttachEvent.class);
 
         /**
          * Called when a AttachListener is notified of a AttachEvent.
@@ -83,8 +84,8 @@ public interface ClientConnector extends Connector {
      * 
      */
     public static interface DetachListener extends ConnectorEventListener {
-        public static final Method detachMethod = ReflectTools.findMethod(
-                DetachListener.class, "detach", DetachEvent.class);
+        public static final Method detachMethod = ReflectTools
+                .findMethod(DetachListener.class, "detach", DetachEvent.class);
 
         /**
          * Called when a DetachListener is notified of a DetachEvent.
@@ -108,8 +109,8 @@ public interface ClientConnector extends Connector {
      * to find the connector where the error occurred or {@link #getComponent()}
      * to find the nearest parent component.
      */
-    public static class ConnectorErrorEvent extends
-            com.vaadin.server.ErrorEvent {
+    public static class ConnectorErrorEvent
+            extends com.vaadin.server.ErrorEvent {
 
         private Connector connector;
 
@@ -308,16 +309,6 @@ public interface ClientConnector extends Connector {
             VaadinResponse response, String path) throws IOException;
 
     /**
-     * Returns the RPC manager instance to use when receiving calls for an RPC
-     * interface.
-     * 
-     * @param rpcInterfaceName
-     *            name of the interface for which the call was made
-     * @return ServerRpcManager or null if none found for the interface
-     */
-    public ServerRpcManager<?> getRpcManager(String rpcInterfaceName);
-
-    /**
      * Gets the error handler for the connector.
      * 
      * The error handler is dispatched whenever there is an error processing the
@@ -337,4 +328,11 @@ public interface ClientConnector extends Connector {
      *            The error handler for this connector
      */
     public void setErrorHandler(ErrorHandler errorHandler);
+
+    /**
+     * Temporary way to handle RPC calls
+     * 
+     * @param invocation
+     */
+    public void handleRpc(MethodInvocation invocation);
 }

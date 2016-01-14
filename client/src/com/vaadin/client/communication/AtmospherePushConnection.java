@@ -209,8 +209,8 @@ public class AtmospherePushConnection implements PushConnection {
 
         String csrfToken = connection.getMessageHandler().getCsrfToken();
         if (!csrfToken.equals(ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE)) {
-            extraParams += "&" + ApplicationConstants.CSRF_TOKEN_PARAMETER
-                    + "=" + csrfToken;
+            extraParams += "&" + ApplicationConstants.CSRF_TOKEN_PARAMETER + "="
+                    + csrfToken;
         }
 
         // uri is needed to identify the right connection when closing
@@ -241,7 +241,7 @@ public class AtmospherePushConnection implements PushConnection {
             // If we are not using websockets, we want to send XHRs
             return false;
         }
-        if (getPushConfigurationState().alwaysUseXhrForServerRequests) {
+        if (connection.getPushConfiguration().alwaysUseXhrForServerRequests) {
             // If user has forced us to use XHR, let's abide
             return false;
         }
@@ -255,10 +255,6 @@ public class AtmospherePushConnection implements PushConnection {
 
     };
 
-    private PushConfigurationState getPushConfigurationState() {
-        return connection.getUIConnector().getState().pushConfiguration;
-    }
-
     @Override
     public void push(JsonObject message) {
         if (!isBidirectional()) {
@@ -266,9 +262,8 @@ public class AtmospherePushConnection implements PushConnection {
                     "This server to client push connection should not be used to send client to server messages");
         }
         if (state == State.CONNECTED) {
-            getLogger().info(
-                    "Sending push (" + transport + ") message to server: "
-                            + message.toJson());
+            getLogger().info("Sending push (" + transport
+                    + ") message to server: " + message.toJson());
 
             if (transport.equals("websocket")) {
                 FragmentedMessage fragmented = new FragmentedMessage(
@@ -295,9 +290,8 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     protected void onReopen(AtmosphereResponse response) {
-        getLogger().info(
-                "Push connection re-established using "
-                        + response.getTransport());
+        getLogger().info("Push connection re-established using "
+                + response.getTransport());
         onConnect(response);
     }
 
@@ -362,7 +356,8 @@ public class AtmospherePushConnection implements PushConnection {
             break;
         case DISCONNECT_PENDING:
         case DISCONNECTED:
-            throw new IllegalStateException("Can not disconnect more than once");
+            throw new IllegalStateException(
+                    "Can not disconnect more than once");
         }
     }
 
@@ -374,9 +369,8 @@ public class AtmospherePushConnection implements PushConnection {
             getConnectionStateHandler().pushInvalidContent(this, message);
             return;
         } else {
-            getLogger().info(
-                    "Received push (" + getTransportType() + ") message: "
-                            + message);
+            getLogger().info("Received push (" + getTransportType()
+                    + ") message: " + message);
             connection.getMessageHandler().handleMessage(json);
         }
     }
@@ -386,10 +380,9 @@ public class AtmospherePushConnection implements PushConnection {
      * tried
      */
     protected void onTransportFailure() {
-        getLogger().warning(
-                "Push connection using primary method ("
-                        + getConfig().getTransport() + ") failed. Trying with "
-                        + getConfig().getFallbackTransport());
+        getLogger().warning("Push connection using primary method ("
+                + getConfig().getTransport() + ") failed. Trying with "
+                + getConfig().getFallbackTransport());
     }
 
     /**
@@ -527,37 +520,37 @@ public class AtmospherePushConnection implements PushConnection {
 
     private native JavaScriptObject doConnect(String uri,
             JavaScriptObject config)
-    /*-{
-        var self = this;
-
-        config.url = uri;
-        config.onOpen = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
-        });
-        config.onReopen = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onReopen(*)(response);
-        });
-        config.onMessage = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onMessage(*)(response);
-        });
-        config.onError = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onError(*)(response);
-        });
-        config.onTransportFailure = $entry(function(reason,request) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onTransportFailure(*)(reason);
-        });
-        config.onClose = $entry(function(response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onClose(*)(response);
-        });
-        config.onReconnect = $entry(function(request, response) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onReconnect(*)(request, response);
-        });
-        config.onClientTimeout = $entry(function(request) {
-            self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
-        });
-
-        return $wnd.jQueryVaadin.atmosphere.subscribe(config);
-    }-*/;
+            /*-{
+                var self = this;
+            
+                config.url = uri;
+                config.onOpen = $entry(function(response) {
+                    self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
+                });
+                config.onReopen = $entry(function(response) {
+                    self.@com.vaadin.client.communication.AtmospherePushConnection::onReopen(*)(response);
+                });
+                config.onMessage = $entry(function(response) {
+                    self.@com.vaadin.client.communication.AtmospherePushConnection::onMessage(*)(response);
+                });
+                config.onError = $entry(function(response) {
+                    self.@com.vaadin.client.communication.AtmospherePushConnection::onError(*)(response);
+                });
+                config.onTransportFailure = $entry(function(reason,request) {
+                    self.@com.vaadin.client.communication.AtmospherePushConnection::onTransportFailure(*)(reason);
+                });
+                config.onClose = $entry(function(response) {
+                    self.@com.vaadin.client.communication.AtmospherePushConnection::onClose(*)(response);
+                });
+                config.onReconnect = $entry(function(request, response) {
+                    self.@com.vaadin.client.communication.AtmospherePushConnection::onReconnect(*)(request, response);
+                });
+                config.onClientTimeout = $entry(function(request) {
+                    self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
+                });
+            
+                return $wnd.jQueryVaadin.atmosphere.subscribe(config);
+            }-*/;
 
     private native void doPush(JavaScriptObject socket, String message)
     /*-{

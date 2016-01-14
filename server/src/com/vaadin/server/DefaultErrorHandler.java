@@ -16,14 +16,12 @@
 
 package com.vaadin.server;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.event.ListenerMethod.MethodException;
 import com.vaadin.server.ClientConnector.ConnectorErrorEvent;
-import com.vaadin.server.ServerRpcManager.RpcInvocationException;
 import com.vaadin.shared.Connector;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Component;
@@ -38,9 +36,8 @@ public class DefaultErrorHandler implements ErrorHandler {
         Throwable t = event.getThrowable();
         if (t instanceof SocketException) {
             // Most likely client browser closed socket
-            getLogger().info(
-                    "SocketException in CommunicationManager."
-                            + " Most likely client (browser) closed socket.");
+            getLogger().info("SocketException in CommunicationManager."
+                    + " Most likely client (browser) closed socket.");
             return;
         }
 
@@ -72,15 +69,7 @@ public class DefaultErrorHandler implements ErrorHandler {
      */
     public static Throwable findRelevantThrowable(Throwable t) {
         try {
-            if ((t instanceof RpcInvocationException)
-                    && (t.getCause() instanceof InvocationTargetException)) {
-                /*
-                 * RpcInvocationException (that always wraps irrelevant
-                 * java.lang.reflect.InvocationTargetException) might only be
-                 * relevant for core Vaadin developers.
-                 */
-                return findRelevantThrowable(t.getCause().getCause());
-            } else if (t instanceof MethodException) {
+            if (t instanceof MethodException) {
                 /*
                  * Method exception might only be relevant for core Vaadin
                  * developers.
@@ -110,8 +99,8 @@ public class DefaultErrorHandler implements ErrorHandler {
     public static AbstractComponent findAbstractComponent(
             com.vaadin.server.ErrorEvent event) {
         if (event instanceof ConnectorErrorEvent) {
-            Component c = findComponent(((ConnectorErrorEvent) event)
-                    .getConnector());
+            Component c = findComponent(
+                    ((ConnectorErrorEvent) event).getConnector());
             if (c instanceof AbstractComponent) {
                 return (AbstractComponent) c;
             }

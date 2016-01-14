@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,8 +26,6 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.client.ScriptInjector;
@@ -37,23 +33,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.logging.client.LogConfiguration;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
-import com.vaadin.client.debug.internal.ErrorNotificationHandler;
-import com.vaadin.client.debug.internal.HierarchySection;
-import com.vaadin.client.debug.internal.InfoSection;
-import com.vaadin.client.debug.internal.LogSection;
-import com.vaadin.client.debug.internal.NetworkSection;
-import com.vaadin.client.debug.internal.ProfilerSection;
-import com.vaadin.client.debug.internal.Section;
-import com.vaadin.client.debug.internal.TestBenchSection;
-import com.vaadin.client.debug.internal.VDebugWindow;
-import com.vaadin.client.debug.internal.theme.DebugWindowStyles;
-import com.vaadin.client.event.PointerEventSupport;
-import com.vaadin.client.metadata.BundleLoadCallback;
-import com.vaadin.client.metadata.ConnectorBundleLoader;
-import com.vaadin.client.metadata.NoDataException;
-import com.vaadin.client.metadata.TypeData;
-import com.vaadin.client.ui.UnknownComponentConnector;
-import com.vaadin.client.ui.ui.UIConnector;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.ui.ui.UIConstants;
 
@@ -232,8 +211,6 @@ public class ApplicationConfiguration implements EntryPoint {
         }-*/;
     }
 
-    private static WidgetSet widgetSet = GWT.create(WidgetSet.class);
-
     private String id;
     /**
      * The URL to the VAADIN directory containing themes and widgetsets. Should
@@ -250,8 +227,6 @@ public class ApplicationConfiguration implements EntryPoint {
 
     private HashMap<Integer, String> unknownComponents;
 
-    private Map<Integer, Class<? extends ServerConnector>> classes = new HashMap<Integer, Class<? extends ServerConnector>>();
-
     private boolean widgetsetVersionSent = false;
     private static boolean moduleLoaded = false;
 
@@ -261,9 +236,6 @@ public class ApplicationConfiguration implements EntryPoint {
     private static int dependenciesLoading;
 
     private static ArrayList<ApplicationConnection> runningApplications = new ArrayList<ApplicationConnection>();
-
-    private Map<Integer, Integer> componentInheritanceMap = new HashMap<Integer, Integer>();
-    private Map<Integer, String> tagToServerSideClassName = new HashMap<Integer, String>();
 
     /**
      * Checks whether path info in requests to the server-side service should be
@@ -419,7 +391,8 @@ public class ApplicationConfiguration implements EntryPoint {
                 .intValue();
 
         // null -> false
-        standalone = jsoConfiguration.getConfigBoolean("standalone") == Boolean.TRUE;
+        standalone = jsoConfiguration
+                .getConfigBoolean("standalone") == Boolean.TRUE;
 
         heartbeatInterval = jsoConfiguration
                 .getConfigInteger("heartbeatInterval");
@@ -443,10 +416,11 @@ public class ApplicationConfiguration implements EntryPoint {
             @Override
             public void execute() {
                 Profiler.enter("ApplicationConfiguration.startApplication");
-                ApplicationConfiguration appConf = getConfigFromDOM(applicationId);
+                ApplicationConfiguration appConf = getConfigFromDOM(
+                        applicationId);
                 ApplicationConnection a = GWT
                         .create(ApplicationConnection.class);
-                a.init(widgetSet, appConf);
+                a.init(appConf);
                 runningApplications.add(a);
                 Profiler.leave("ApplicationConfiguration.startApplication");
 
@@ -505,103 +479,6 @@ public class ApplicationConfiguration implements EntryPoint {
         return getJsoConfiguration(id).getAtmosphereJSVersion();
     }
 
-    public Class<? extends ServerConnector> getConnectorClassByEncodedTag(
-            int tag) {
-        Class<? extends ServerConnector> type = classes.get(tag);
-        if (type == null && !classes.containsKey(tag)) {
-            // Initialize if not already loaded
-            Integer currentTag = Integer.valueOf(tag);
-            while (type == null && currentTag != null) {
-                String serverSideClassNameForTag = getServerSideClassNameForTag(currentTag);
-                if (TypeData.hasIdentifier(serverSideClassNameForTag)) {
-                    try {
-                        type = (Class<? extends ServerConnector>) TypeData
-                                .getClass(serverSideClassNameForTag);
-                    } catch (NoDataException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                currentTag = getParentTag(currentTag.intValue());
-            }
-            if (type == null) {
-                type = UnknownComponentConnector.class;
-                if (unknownComponents == null) {
-                    unknownComponents = new HashMap<Integer, String>();
-                }
-                unknownComponents.put(tag, getServerSideClassNameForTag(tag));
-            }
-            classes.put(tag, type);
-        }
-        return type;
-    }
-
-    public void addComponentInheritanceInfo(ValueMap valueMap) {
-        JsArrayString keyArray = valueMap.getKeyArray();
-        for (int i = 0; i < keyArray.length(); i++) {
-            String key = keyArray.get(i);
-            int value = valueMap.getInt(key);
-            componentInheritanceMap.put(Integer.parseInt(key), value);
-        }
-    }
-
-    public void addComponentMappings(ValueMap valueMap, WidgetSet widgetSet) {
-        JsArrayString keyArray = valueMap.getKeyArray();
-        for (int i = 0; i < keyArray.length(); i++) {
-            String key = keyArray.get(i).intern();
-            int value = valueMap.getInt(key);
-            tagToServerSideClassName.put(value, key);
-        }
-
-        for (int i = 0; i < keyArray.length(); i++) {
-            String key = keyArray.get(i).intern();
-            int value = valueMap.getInt(key);
-            widgetSet.ensureConnectorLoaded(value, this);
-        }
-    }
-
-    /**
-     * Returns all tags for given class. Tags are used in
-     * {@link ApplicationConfiguration} to keep track of different classes and
-     * their hierarchy
-     * 
-     * @since 7.2
-     * @param classname
-     *            name of class which tags we want
-     * @return Integer array of tags pointing to this classname
-     */
-    public Integer[] getTagsForServerSideClassName(String classname) {
-        List<Integer> tags = new ArrayList<Integer>();
-
-        for (Map.Entry<Integer, String> entry : tagToServerSideClassName
-                .entrySet()) {
-            if (classname.equals(entry.getValue())) {
-                tags.add(entry.getKey());
-            }
-        }
-
-        Integer[] out = new Integer[tags.size()];
-        return tags.toArray(out);
-    }
-
-    public Integer getParentTag(int tag) {
-        return componentInheritanceMap.get(tag);
-    }
-
-    public String getServerSideClassNameForTag(Integer tag) {
-        return tagToServerSideClassName.get(tag);
-    }
-
-    String getUnknownServerClassNameByTag(int tag) {
-        if (unknownComponents != null) {
-            String className = unknownComponents.get(tag);
-            if (className == null) {
-                className = "unknown class with id " + tag;
-            }
-            return className;
-        }
-        return null;
-    }
-
     /**
      * @since 7.6
      * @param c
@@ -625,23 +502,6 @@ public class ApplicationConfiguration implements EntryPoint {
                 cmd.execute();
             }
             callbacks.clear();
-        } else if (dependenciesLoading == 0
-                && !ConnectorBundleLoader.get().isBundleLoaded(
-                        ConnectorBundleLoader.DEFERRED_BUNDLE_NAME)) {
-            ConnectorBundleLoader.get().loadBundle(
-                    ConnectorBundleLoader.DEFERRED_BUNDLE_NAME,
-                    new BundleLoadCallback() {
-                        @Override
-                        public void loaded() {
-                            // Nothing to do
-                        }
-
-                        @Override
-                        public void failed(Throwable reason) {
-                            getLogger().log(Level.SEVERE,
-                                    "Error loading deferred bundle", reason);
-                        }
-                    });
         }
     }
 
@@ -656,9 +516,8 @@ public class ApplicationConfiguration implements EntryPoint {
         // Don't run twice if the module has been inherited several times,
         // and don't continue if vaadinBootstrap was not executed.
         if (moduleLoaded || !vaadinBootstrapLoaded()) {
-            getLogger()
-                    .log(Level.WARNING,
-                            "vaadinBootstrap.js was not loaded, skipping vaadin application configuration.");
+            getLogger().log(Level.WARNING,
+                    "vaadinBootstrap.js was not loaded, skipping vaadin application configuration.");
             return;
         }
         moduleLoaded = true;
@@ -676,58 +535,6 @@ public class ApplicationConfiguration implements EntryPoint {
         // Enable IE prompt fix (#13367)
         if (browserInfo.isIE() && browserInfo.getBrowserMajorVersion() >= 10) {
             enableIEPromptFix();
-        }
-
-        // Register pointer events (must be done before any events are used)
-        PointerEventSupport.init();
-
-        // Prepare the debugging window
-        if (isDebugMode()) {
-            /*
-             * XXX Lots of implementation details here right now. This should be
-             * cleared up when an API for extending the debug window is
-             * implemented.
-             */
-            VDebugWindow window = VDebugWindow.get();
-
-            if (LogConfiguration.loggingIsEnabled()) {
-                window.addSection((Section) GWT.create(LogSection.class));
-            }
-            window.addSection((Section) GWT.create(InfoSection.class));
-            window.addSection((Section) GWT.create(HierarchySection.class));
-            window.addSection((Section) GWT.create(NetworkSection.class));
-            window.addSection((Section) GWT.create(TestBenchSection.class));
-            if (Profiler.isEnabled()) {
-                window.addSection((Section) GWT.create(ProfilerSection.class));
-            }
-
-            if (isQuietDebugMode()) {
-                window.close();
-            } else {
-                // Load debug window styles asynchronously
-                GWT.runAsync(new RunAsyncCallback() {
-                    @Override
-                    public void onSuccess() {
-                        DebugWindowStyles dws = GWT
-                                .create(DebugWindowStyles.class);
-                        dws.css().ensureInjected();
-                    }
-
-                    @Override
-                    public void onFailure(Throwable reason) {
-                        Window.alert("Failed to load Vaadin debug window styles");
-                    }
-                });
-
-                window.init();
-            }
-
-            // Connect to the legacy API
-            VConsole.setImplementation(window);
-
-            Handler errorNotificationHandler = GWT
-                    .create(ErrorNotificationHandler.class);
-            Logger.getLogger("").addHandler(errorNotificationHandler);
         }
 
         if (LogConfiguration.loggingIsEnabled()) {

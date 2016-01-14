@@ -229,8 +229,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         }
 
         reconnectAttempt++;
-        getLogger().info(
-                "Reconnect attempt " + reconnectAttempt + " for " + type);
+        getLogger()
+                .info("Reconnect attempt " + reconnectAttempt + " for " + type);
 
         if (reconnectAttempt >= getConfiguration().reconnectAttempts) {
             // Max attempts reached, stop trying
@@ -283,9 +283,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         if (!connection.isApplicationRunning()) {
             // This should not happen as nobody should call this if the
             // application has been stopped
-            getLogger()
-                    .warning(
-                            "Trying to reconnect after application has been stopped. Giving up");
+            getLogger().warning(
+                    "Trying to reconnect after application has been stopped. Giving up");
             return;
         }
         if (payload != null) {
@@ -390,8 +389,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      * @return The text to show in the reconnect dialog
      */
     protected String getDialogText(int reconnectAttempt) {
-        return getConfiguration().dialogText.replace("{0}", reconnectAttempt
-                + "");
+        return getConfiguration().dialogText.replace("{0}",
+                reconnectAttempt + "");
     }
 
     @Override
@@ -401,7 +400,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     private ReconnectDialogConfigurationState getConfiguration() {
-        return connection.getUIConnector().getState().reconnectDialogConfiguration;
+        return connection.getReconnectDialogConfiguration();
     }
 
     @Override
@@ -416,9 +415,10 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
          * has expired.) If the response contains a magic substring, do a
          * synchronous refresh. See #8241.
          */
-        MatchResult refreshToken = RegExp.compile(
-                ApplicationConnection.UIDL_REFRESH_TOKEN
-                        + "(:\\s*(.*?))?(\\s|$)").exec(responseText);
+        MatchResult refreshToken = RegExp
+                .compile(ApplicationConnection.UIDL_REFRESH_TOKEN
+                        + "(:\\s*(.*?))?(\\s|$)")
+                .exec(responseText);
         if (refreshToken != null) {
             WidgetUtil.redirect(refreshToken.getGroup(2));
         } else {
@@ -430,7 +430,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     @Override
-    public void pushInvalidContent(PushConnection pushConnection, String message) {
+    public void pushInvalidContent(PushConnection pushConnection,
+            String message) {
         debug("pushInvalidContent");
         if (pushConnection.isBidirectional()) {
             // We can't be sure that what was pushed was actually a response but
@@ -441,8 +442,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
         // Do nothing special for now. Should likely do the same as
         // xhrInvalidContent
-        handleUnrecoverableCommunicationError("Invalid JSON from server: "
-                + message, null);
+        handleUnrecoverableCommunicationError(
+                "Invalid JSON from server: " + message, null);
 
     }
 
@@ -496,9 +497,21 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
                 statusCode = response.getStatusCode();
             }
         }
-        connection.handleCommunicationError(details, statusCode);
+        handleCommunicationError(details, statusCode);
 
         stopApplication();
+
+    }
+
+    /**
+     * Called when a communication error occurs and we cannot recover from it
+     * 
+     * @since
+     * @param details
+     * @param statusCode
+     */
+    protected void handleCommunicationError(String details, int statusCode) {
+        connection.showError("", details, "", null);
 
     }
 
@@ -538,8 +551,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     @Override
     public void pushScriptLoadError(String resourceUrl) {
-        connection.handleCommunicationError(resourceUrl
-                + " could not be loaded. Push will not work.", 0);
+        handleCommunicationError(
+                resourceUrl + " could not be loaded. Push will not work.", 0);
     }
 
     @Override
@@ -550,7 +563,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     @Override
     public void pushReconnectPending(PushConnection pushConnection) {
-        debug("pushReconnectPending(" + pushConnection.getTransportType() + ")");
+        debug("pushReconnectPending(" + pushConnection.getTransportType()
+                + ")");
         getLogger().info("Reopening push connection");
         if (pushConnection.isBidirectional()) {
             // Lost connection for a connection which will tell us when the
@@ -568,7 +582,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     public void pushError(PushConnection pushConnection,
             JavaScriptObject response) {
         debug("pushError()");
-        connection.handleCommunicationError("Push connection using "
+        handleCommunicationError("Push connection using "
                 + ((AtmosphereResponse) response).getTransport() + " failed!",
                 -1);
     }
@@ -579,10 +593,9 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         debug("pushClientTimeout()");
         // TODO Reconnect, allowing client timeout to be set
         // https://dev.vaadin.com/ticket/18429
-        connection
-                .handleCommunicationError(
-                        "Client unexpectedly disconnected. Ensure client timeout is disabled.",
-                        -1);
+        handleCommunicationError(
+                "Client unexpectedly disconnected. Ensure client timeout is disabled.",
+                -1);
     }
 
     @Override

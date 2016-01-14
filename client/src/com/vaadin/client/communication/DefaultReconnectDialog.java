@@ -27,9 +27,9 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.ui.VOverlay;
 
 /**
  * The default implementation of the reconnect dialog
@@ -37,7 +37,8 @@ import com.vaadin.client.ui.VOverlay;
  * @since 7.6
  * @author Vaadin Ltd
  */
-public class DefaultReconnectDialog extends VOverlay implements ReconnectDialog {
+public class DefaultReconnectDialog extends PopupPanel
+        implements ReconnectDialog {
 
     private static final String STYLE_RECONNECTING = "active";
     private static final String STYLE_BODY_RECONNECTING = "v-reconnecting";
@@ -96,7 +97,6 @@ public class DefaultReconnectDialog extends VOverlay implements ReconnectDialog 
 
     @Override
     public void show(ApplicationConnection connection) {
-        ac = connection;
         show();
     }
 
