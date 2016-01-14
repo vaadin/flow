@@ -1,13 +1,14 @@
 package hummingbird;
 
 import java.util.Collections;
+import java.util.Map;
 
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.ComputedProperty;
-import com.vaadin.hummingbird.kernel.ComputedPropertyTest;
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.hummingbird.kernel.TemplateBuilder;
+import com.vaadin.hummingbird.kernel.ValueType;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.tests.components.AbstractTestUI;
 import com.vaadin.ui.Button;
@@ -20,14 +21,13 @@ public class SimpleComputedProperty extends AbstractTestUI {
         BoundElementTemplate template = TemplateBuilder.withTag("div")
                 .addChild(TemplateBuilder.dynamicText("foo")).build();
 
-        StateNode node = ComputedPropertyTest
-                .createNodeWithComputedProperties(Collections
-                        .singletonMap("foo", new ComputedProperty("foo", null) {
-                            @Override
-                            public Object compute(StateNode context) {
-                                return String.valueOf(context.get("count", 0));
-                            }
-                        }));
+        StateNode node = createNodeWithComputedProperties(Collections
+                .singletonMap("foo", new ComputedProperty("foo", null) {
+                    @Override
+                    public Object compute(StateNode context) {
+                        return String.valueOf(context.get("count", 0));
+                    }
+                }));
 
         getLayout().getElement()
                 .appendChild(Element.getElement(template, node));
@@ -39,6 +39,12 @@ public class SimpleComputedProperty extends AbstractTestUI {
                 node.put("count", newCount);
             }
         }));
+    }
+
+    private static StateNode createNodeWithComputedProperties(
+            Map<String, ComputedProperty> computedProperties) {
+        return StateNode.create(
+                ValueType.get(Collections.emptyMap(), computedProperties));
     }
 
 }
