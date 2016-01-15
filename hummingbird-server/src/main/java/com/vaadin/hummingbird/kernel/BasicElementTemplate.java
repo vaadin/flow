@@ -31,9 +31,14 @@ public class BasicElementTemplate extends AbstractElementTemplate {
 
     public static StateNode createBasicElementModel(String tag, String is) {
         StateNode node = createBasicElementModel(tag);
-        assert is != null && !is.isEmpty() : "is cannot be null or empty";
+        assert validCustomElementTypeExtension(
+                is) : "Custom element type (is-attribute) cannot be null and must always contain a dash (-), e.g. x-foo.";
         node.put(Keys.IS, is);
         return node;
+    }
+
+    private static boolean validCustomElementTypeExtension(String is) {
+        return is != null && is.length() > 2 && is.contains("-");
     }
 
     private static boolean validTagName(String tag) {

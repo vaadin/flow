@@ -106,12 +106,13 @@ public class BoundElementTemplate extends Template {
         assert tag != null;
         Profiler.enter("BoundElementTemplate.createElement");
 
-        TreeUpdater.debug("Create element with tag " + tag);
-
         Element element;
         if (is != null) {
+            TreeUpdater.debug(
+                    "Create custom element with tag " + tag + " that is " + is);
             element = WebComponents.createElement(tag, is);
         } else {
+            TreeUpdater.debug("Create element with tag " + tag);
             element = Document.get().createElement(tag);
         }
 
