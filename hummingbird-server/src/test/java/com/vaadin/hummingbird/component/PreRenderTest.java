@@ -15,6 +15,7 @@ import com.vaadin.ui.PreRenderer;
 import com.vaadin.ui.Template;
 
 public class PreRenderTest {
+
     @Test
     public void testPreRenderBoundTextTemplate() {
         BoundElementTemplate template = TemplateBuilder.withTag("div")
@@ -113,7 +114,7 @@ public class PreRenderTest {
 
     @Test
     public void testPreRenderIsElement() {
-        HTML html = new HTML("<p is=\"test\">Hello</p>");
+        HTML html = new HTML("<p is=\"x-test\">Hello</p>");
 
         Element prerendered = PreRenderer
                 .preRenderElementTree(html.getElement());
@@ -121,7 +122,7 @@ public class PreRenderTest {
         org.jsoup.nodes.Element jsoup = (org.jsoup.nodes.Element) PreRenderer
                 .toJSoup(document, prerendered);
 
-        Assert.assertEquals("<p is=\"test\">Hello</p>", jsoup.outerHtml());
+        Assert.assertEquals("<p is=\"x-test\">Hello</p>", jsoup.outerHtml());
     }
 
     @Test

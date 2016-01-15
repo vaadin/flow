@@ -1,21 +1,9 @@
 package com.vaadin.hummingbird.kernel;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 public class ElementTemplateTest {
-
-    @Before
-    public void before() {
-        ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
-    }
-
-    @After
-    public void after() {
-        ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(false);
-    }
 
     @Test
     public void simpleElementTemplate_attributesMirrored() {
