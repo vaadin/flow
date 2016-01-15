@@ -28,8 +28,6 @@ import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.core.client.ScriptInjector;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.logging.client.LogConfiguration;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
@@ -505,10 +503,10 @@ public class ApplicationConfiguration implements EntryPoint {
         }
     }
 
-    private boolean vaadinBootstrapLoaded() {
-        Element window = ScriptInjector.TOP_WINDOW.cast();
-        return window.getPropertyJSO("vaadin") != null;
-    }
+    private native boolean vaadinBootstrapLoaded()
+    /*-{
+         return $wnd.vaadin != null;
+     }-*/;
 
     @Override
     public void onModuleLoad() {
@@ -550,6 +548,7 @@ public class ApplicationConfiguration implements EntryPoint {
                      */
                     getLogger().log(Level.SEVERE, e.getMessage(), e);
                 }
+
             });
 
             if (isProductionMode()) {
@@ -559,11 +558,6 @@ public class ApplicationConfiguration implements EntryPoint {
         }
         Profiler.leave("ApplicationConfiguration.onModuleLoad");
 
-        if (SuperDevMode.enableBasedOnParameter()) {
-            // Do not start any application as super dev mode will refresh the
-            // page once done compiling
-            return;
-        }
         registerCallback(GWT.getModuleName());
     }
 

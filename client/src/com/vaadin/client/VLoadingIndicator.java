@@ -16,12 +16,12 @@
 
 package com.vaadin.client;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Display;
-import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
+
+import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration.Display;
+import elemental.css.CSSStyleDeclaration.Position;
+import elemental.dom.Element;
 
 /**
  * Class representing the loading indicator for Vaadin applications. The loading
@@ -53,18 +53,14 @@ public class VLoadingIndicator {
         @Override
         public void run() {
             getElement().setClassName(PRIMARY_STYLE_NAME);
-            getElement().addClassName("second");
-            // For backwards compatibility only
-            getElement().addClassName(PRIMARY_STYLE_NAME + "-delay");
+            getElement().getClassList().add("second");
         }
     };
     private Timer thirdTimer = new Timer() {
         @Override
         public void run() {
             getElement().setClassName(PRIMARY_STYLE_NAME);
-            getElement().addClassName("third");
-            // For backwards compatibility only
-            getElement().addClassName(PRIMARY_STYLE_NAME + "-wait");
+            getElement().getClassList().add("third");
         }
     };
 
@@ -173,7 +169,7 @@ public class VLoadingIndicator {
     public void show() {
         // Reset possible style name and display mode
         getElement().setClassName(PRIMARY_STYLE_NAME);
-        getElement().addClassName("first");
+        getElement().getClassList().add("first");
         getElement().getStyle().setDisplay(Display.BLOCK);
 
         // Schedule the "second" loading indicator
@@ -228,8 +224,7 @@ public class VLoadingIndicator {
      * @return true if the loading indicator is visible, false otherwise
      */
     public boolean isVisible() {
-        if (getElement().getStyle().getDisplay()
-                .equals(Display.NONE.getCssName())) {
+        if (getElement().getStyle().getDisplay().equals(Display.NONE)) {
             return false;
         }
 
@@ -241,13 +236,13 @@ public class VLoadingIndicator {
      * 
      * @return The loading indicator DOM element
      */
-    public com.google.gwt.user.client.Element getElement() {
+    public Element getElement() {
         if (element == null) {
-            element = DOM.createDiv();
+            element = Browser.getDocument().createElement("div");
             element.getStyle().setPosition(Position.ABSOLUTE);
-            Document.get().getBody().appendChild(element);
+            Browser.getDocument().getBody().appendChild(element);
         }
-        return DOM.asOld(element);
+        return element;
     }
 
 }

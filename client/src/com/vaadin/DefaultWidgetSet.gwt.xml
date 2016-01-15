@@ -6,12 +6,14 @@
 	<!-- Hint for WidgetSetBuilder not to automatically update the file -->
 	<!-- WS Compiler: manually edited -->
 
-	<inherits name="com.vaadin.Vaadin" />
-
-	<!-- Elemental is used for handling Json only -->
-	<inherits name="elemental.Json" />
-
+	<inherits name="elemental.Elemental" />
+	<inherits name="com.google.gwt.event.Event" />
+	<inherits name="com.google.gwt.logging.Logging" />
+	<inherits name="com.google.gwt.user.UserAgent" />
 	<inherits name="com.google.gwt.precompress.Precompress" />
+
+	<source path="client" />
+	<source path="shared" />
 
 	<entry-point class="com.vaadin.client.ApplicationConfiguration" />
 
@@ -20,5 +22,39 @@
 	</replace-with>
 
 	<collapse-all-properties />
+
+	<!-- Use own Scheduler implementation to be able to track if commands are 
+		running -->
+	<replace-with class="com.vaadin.client.VSchedulerImpl">
+		<when-type-is class="com.google.gwt.core.client.impl.SchedulerImpl" />
+	</replace-with>
+
+	<replace-with
+		class="com.vaadin.client.communication.AtmospherePushConnection">
+		<when-type-is class="com.vaadin.client.communication.PushConnection" />
+	</replace-with>
+
+	<!-- Set vaadin.profiler to true to include profiling support in the module -->
+	<define-property name="vaadin.profiler" values="true,false" />
+	<set-property name="vaadin.profiler" value="false" />
+
+	<replace-with class="com.vaadin.client.Profiler.EnabledProfiler">
+		<when-type-is class="com.vaadin.client.Profiler" />
+		<when-property-is name="vaadin.profiler" value="true" />
+	</replace-with>
+
+	<!-- Use the new cross site linker to get a nocache.js without document.write -->
+	<add-linker name="xsiframe" />
+
+	<!-- IE 11 should use gecko -->
+	<set-property name="user.agent" value="gecko1_8,safari" />
+
+	<replace-with
+		class="com.vaadin.client.communication.DefaultConnectionStateHandler">
+		<when-type-is class="com.vaadin.client.communication.ConnectionStateHandler" />
+	</replace-with>
+
+	<!-- Make Sass linking available -->
+	<define-linker name="sass" class="com.vaadin.sass.linker.SassLinker" />
 
 </module>
