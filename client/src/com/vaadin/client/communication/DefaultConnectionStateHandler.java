@@ -15,8 +15,6 @@
  */
 package com.vaadin.client.communication;
 
-import java.util.logging.Logger;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.http.client.Request;
@@ -27,6 +25,7 @@ import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedHandler;
+import com.vaadin.client.Console;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.AtmospherePushConnection.AtmosphereResponse;
 import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
@@ -124,10 +123,6 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         return reconnectionCause != null;
     }
 
-    private static Logger getLogger() {
-        return Logger.getLogger(DefaultConnectionStateHandler.class.getName());
-    }
-
     /**
      * Returns the connection this handler is connected to
      * 
@@ -145,14 +140,14 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     @Override
     public void heartbeatException(Request request, Throwable exception) {
-        getLogger().severe("Heartbeat exception: " + exception.getMessage());
+        Console.error("Heartbeat exception: " + exception.getMessage());
         handleRecoverableError(Type.HEARTBEAT, null);
     }
 
     @Override
     public void heartbeatInvalidStatusCode(Request request, Response response) {
         int statusCode = response.getStatusCode();
-        getLogger().warning("Heartbeat request returned " + statusCode);
+        Console.warn("Heartbeat request returned " + statusCode);
 
         if (response.getStatusCode() == Response.SC_GONE) {
             // Session expired
@@ -177,7 +172,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     private void debug(String msg) {
         if (false) {
-            getLogger().warning(msg);
+            Console.warn(msg);
         }
     }
 
@@ -201,7 +196,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         if (!isReconnecting()) {
             // First problem encounter
             reconnectionCause = type;
-            getLogger().warning("Reconnecting because of " + type + " failure");
+            Console.warn("Reconnecting because of " + type + " failure");
             // Precaution only as there should never be a dialog at this point
             // and no timer running
             stopDialogTimer();
@@ -218,7 +213,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             // If a higher priority issues is resolved, we can assume the lower
             // one will be also
             if (type.isHigherPriorityThan(reconnectionCause)) {
-                getLogger().warning(
+                Console.warn(
                         "Now reconnecting because of " + type + " failure");
                 reconnectionCause = type;
             }
@@ -229,8 +224,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         }
 
         reconnectAttempt++;
-        getLogger()
-                .info("Reconnect attempt " + reconnectAttempt + " for " + type);
+        Console.log("Reconnect attempt " + reconnectAttempt + " for " + type);
 
         if (reconnectAttempt >= getConfiguration().reconnectAttempts) {
             // Max attempts reached, stop trying
@@ -283,16 +277,16 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         if (!connection.isApplicationRunning()) {
             // This should not happen as nobody should call this if the
             // application has been stopped
-            getLogger().warning(
+            Console.warn(
                     "Trying to reconnect after application has been stopped. Giving up");
             return;
         }
         if (payload != null) {
-            getLogger().info("Re-sending last message to the server...");
+            Console.log("Re-sending last message to the server...");
             getConnection().getMessageSender().send(payload);
         } else {
             // Use heartbeat
-            getLogger().info("Trying to re-establish server connection...");
+            Console.log("Trying to re-establish server connection...");
             getConnection().getHeartbeat().send();
         }
     }
@@ -453,7 +447,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
         Response response = xhrConnectionError.getResponse();
         int statusCode = response.getStatusCode();
-        getLogger().warning("Server returned " + statusCode + " for xhr");
+        Console.warn("Server returned " + statusCode + " for xhr");
 
         if (statusCode == 401) {
             // Authentication/authorization failed, no need to re-try
@@ -538,7 +532,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         stopDialogTimer();
         hideDialog();
 
-        getLogger().info("Re-established connection to server");
+        Console.log("Re-established connection to server");
     }
 
     @Override
@@ -565,7 +559,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     public void pushReconnectPending(PushConnection pushConnection) {
         debug("pushReconnectPending(" + pushConnection.getTransportType()
                 + ")");
-        getLogger().info("Reopening push connection");
+        Console.log("Reopening push connection");
         if (pushConnection.isBidirectional()) {
             // Lost connection for a connection which will tell us when the
             // connection is available again
@@ -602,7 +596,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     public void pushClosed(PushConnection pushConnection,
             JavaScriptObject response) {
         debug("pushClosed()");
-        getLogger().info("Push connection closed");
+        Console.log("Push connection closed");
     }
 
 }

@@ -21,18 +21,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationState;
 import com.vaadin.client.ApplicationConnection.MultiStepDuration;
+import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
@@ -149,10 +147,6 @@ public class MessageHandler {
         this.connection = connection;
     }
 
-    private static Logger getLogger() {
-        return Logger.getLogger(MessageHandler.class.getName());
-    }
-
     /**
      * Handles a received UIDL JSON text, parsing it, and passing it on to the
      * appropriate handlers, while logging timing information.
@@ -166,7 +160,7 @@ public class MessageHandler {
                     "The json to handle cannot be null");
         }
         if (getServerId(json) == -1) {
-            getLogger().severe("Response didn't contain a server id. "
+            Console.error("Response didn't contain a server id. "
                     + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
         }
 
@@ -176,14 +170,14 @@ public class MessageHandler {
                 .getApplicationState() == ApplicationState.INITIALIZING) {
             // Application is starting up for the first time
             connection.setApplicationRunning(true);
-            connection.executeWhenCSSLoaded(new Command() {
+            connection.executeWhenCSSLoaded(new Runnable() {
                 @Override
-                public void execute() {
+                public void run() {
                     handleJSON(json);
                 }
             });
         } else {
-            getLogger().warning(
+            Console.warn(
                     "Ignored received message because application has already been stopped");
             return;
         }
@@ -197,7 +191,7 @@ public class MessageHandler {
             // messages and ensure this is handled next. Otherwise we
             // would keep waiting for an older message forever (if this
             // is triggered by forceHandleMessage)
-            getLogger().info("Received resync message with id " + serverId
+            Console.log("Received resync message with id " + serverId
                     + " while waiting for " + getExpectedServerId());
             lastSeenServerSyncId = serverId - 1;
             removeOldPendingMessages();
@@ -213,20 +207,20 @@ public class MessageHandler {
                 // Some component is doing something that can't be interrupted
                 // (e.g. animation that should be smooth). Enqueue the UIDL
                 // message for later processing.
-                getLogger().info("Postponing UIDL handling due to lock...");
+                Console.log("Postponing UIDL handling due to lock...");
             } else {
                 // Unexpected server id
                 if (serverId <= lastSeenServerSyncId) {
                     // Why is the server re-sending an old package? Ignore it
-                    getLogger().warning("Received message with server id "
-                            + serverId + " but have already seen "
-                            + lastSeenServerSyncId + ". Ignoring it");
+                    Console.warn("Received message with server id " + serverId
+                            + " but have already seen " + lastSeenServerSyncId
+                            + ". Ignoring it");
                     endRequestIfResponse(json);
                     return;
                 }
 
                 // We are waiting for an earlier message...
-                getLogger().info("Received message with server id " + serverId
+                Console.log("Received message with server id " + serverId
                         + " but expected " + getExpectedServerId()
                         + ". Postponing handling until the missing message(s) have been received");
             }
@@ -246,7 +240,7 @@ public class MessageHandler {
         final Object lock = new Object();
         suspendReponseHandling(lock);
 
-        getLogger().info("Handling message from server");
+        Console.log("Handling message from server");
 
         // Client id must be updated before server id, as server id update can
         // cause a resync (which must use the updated id)
@@ -268,7 +262,7 @@ public class MessageHandler {
         // Handle redirect
         if (json.containsKey("redirect")) {
             String url = json.getValueMap("redirect").getString("url");
-            getLogger().info("redirecting to " + url);
+            Console.log("redirecting to " + url);
             WidgetUtil.redirect(url);
             return;
         }
@@ -281,7 +275,7 @@ public class MessageHandler {
                     .getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
         }
 
-        getLogger().info("Handling resource dependencies");
+        Console.log("Handling resource dependencies");
         if (json.containsKey("scriptDependencies")) {
             connection.loadScriptDependencies(
                     json.getJSStringArray("scriptDependencies"));
@@ -300,9 +294,9 @@ public class MessageHandler {
             serverTimingInfo = json.getValueMap("timings");
         }
 
-        Command c = new Command() {
+        Runnable c = new Runnable() {
             @Override
-            public void execute() {
+            public void run() {
                 assert serverId == -1 || serverId == lastSeenServerSyncId;
 
                 handleUIDLDuration.logDuration(" * Loading widgets completed",
@@ -310,7 +304,7 @@ public class MessageHandler {
 
                 double processUidlStart = Duration.currentTimeMillis();
 
-                getLogger().info("handleUIDLMessage: "
+                Console.log("handleUIDLMessage: "
                         + (Duration.currentTimeMillis() - processUidlStart)
                         + " ms");
 
@@ -342,8 +336,8 @@ public class MessageHandler {
                     if (fetchStart != 0) {
                         int time = (int) (Duration.currentTimeMillis()
                                 - fetchStart);
-                        getLogger().log(Level.INFO, "First response processed "
-                                + time + " ms after fetchStart");
+                        Console.log("First response processed " + time
+                                + " ms after fetchStart");
                     }
 
                     bootstrapTime = calculateBootstrapTime();
@@ -352,7 +346,7 @@ public class MessageHandler {
                     }
                 }
 
-                getLogger().info(" Processing time was "
+                Console.log(" Processing time was "
                         + String.valueOf(lastProcessingTime) + "ms");
 
                 endRequestIfResponse(json);
@@ -434,7 +428,7 @@ public class MessageHandler {
             if (!responseHandlingLocks.isEmpty()) {
                 // Lock which was never release -> bug in locker or things just
                 // too slow
-                getLogger().warning(
+                Console.warn(
                         "WARNING: reponse handling was never resumed, forcibly removing locks...");
                 responseHandlingLocks.clear();
             } else {
@@ -442,7 +436,7 @@ public class MessageHandler {
                 // Do one final check and resynchronize if the message is not
                 // there. The final check is only a precaution as this timer
                 // should have been cancelled if the message has arrived
-                getLogger().warning("Gave up waiting for message "
+                Console.warn("Gave up waiting for message "
                         + getExpectedServerId() + " from the server");
 
             }
@@ -478,7 +472,7 @@ public class MessageHandler {
             forceHandleMessage.cancel();
 
             if (!pendingUIDLMessages.isEmpty()) {
-                getLogger().info(
+                Console.log(
                         "No more response handling locks, handling pending requests.");
                 handlePendingMessages();
             }
@@ -533,7 +527,7 @@ public class MessageHandler {
             PendingUIDLMessage m = i.next();
             int serverId = getServerId(m.json);
             if (serverId != -1 && serverId < getExpectedServerId()) {
-                getLogger().info("Removing old message with id " + serverId);
+                Console.log("Removing old message with id " + serverId);
                 i.remove();
             }
         }
@@ -621,14 +615,14 @@ public class MessageHandler {
         final double start = Profiler.getRelativeTimeMillis();
         try {
             ValueMap json = parseJSONResponse(jsonText);
-            getLogger()
-                    .info("JSON parsing took "
+            Console.log(
+                    "JSON parsing took "
                             + WidgetUtil.round(
                                     Profiler.getRelativeTimeMillis() - start, 3)
                             + "ms");
             return json;
         } catch (final Exception e) {
-            getLogger().severe("Unable to parse JSON: " + jsonText);
+            Console.error("Unable to parse JSON: " + jsonText);
             return null;
         }
     }

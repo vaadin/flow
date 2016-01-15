@@ -16,8 +16,9 @@
 
 package com.vaadin.client;
 
-import com.google.gwt.user.client.ui.RootPanel;
 import com.vaadin.shared.VBrowserDetails;
+
+import elemental.client.Browser;
 
 /**
  * Class used to query information about web browser.
@@ -55,7 +56,9 @@ public class BrowserInfo {
     static {
         // Add browser dependent v-* classnames to body to help css hacks
         String browserClassnames = get().getCSSClass();
-        RootPanel.get().addStyleName(browserClassnames);
+        for (String className : browserClassnames.split(" ")) {
+            Browser.getDocument().getBody().getClassList().add(className);
+        }
     }
 
     /**

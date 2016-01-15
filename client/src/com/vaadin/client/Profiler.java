@@ -27,7 +27,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
@@ -197,7 +196,8 @@ public class Profiler {
             return Collections.unmodifiableCollection(children.values());
         }
 
-        private void buildRecursiveString(StringBuilder builder, String prefix) {
+        private void buildRecursiveString(StringBuilder builder,
+                String prefix) {
             if (getName() != null) {
                 String msg = getStringRepresentation(prefix);
                 builder.append(msg + '\n');
@@ -220,9 +220,7 @@ public class Profiler {
             String msg = prefix + " " + getName() + " in "
                     + roundToSignificantFigures(getTimeSpent()) + " ms.";
             if (getCount() > 1) {
-                msg += " Invoked "
-                        + getCount()
-                        + " times ("
+                msg += " Invoked " + getCount() + " times ("
                         + roundToSignificantFigures(getTimeSpent() / getCount())
                         + " ms per time, min "
                         + roundToSignificantFigures(getMinTimeSpent())
@@ -270,10 +268,10 @@ public class Profiler {
 
                 totalNode.time += getOwnTime();
                 totalNode.count += getCount();
-                totalNode.minTime = roundToSignificantFigures(Math.min(
-                        totalNode.minTime, getMinTimeSpent()));
-                totalNode.maxTime = roundToSignificantFigures(Math.max(
-                        totalNode.maxTime, getMaxTimeSpent()));
+                totalNode.minTime = roundToSignificantFigures(
+                        Math.min(totalNode.minTime, getMinTimeSpent()));
+                totalNode.maxTime = roundToSignificantFigures(
+                        Math.max(totalNode.maxTime, getMaxTimeSpent()));
             }
             for (Node node : children.values()) {
                 node.sumUpTotals(totals);
@@ -458,7 +456,7 @@ public class Profiler {
      */
     public static void logTimings() {
         if (!isEnabled()) {
-            getLogger().warning(
+            Console.warn(
                     "Profiler is not enabled, no data has been collected.");
             return;
         }
@@ -468,9 +466,8 @@ public class Profiler {
         stack.add(rootNode);
         JsArray<GwtStatsEvent> gwtStatsEvents = getGwtStatsEvents();
         if (gwtStatsEvents.length() == 0) {
-            getLogger()
-                    .warning(
-                            "No profiling events recorded, this might happen if another __gwtStatsEvent handler is installed.");
+            Console.warn(
+                    "No profiling events recorded, this might happen if another __gwtStatsEvent handler is installed.");
             return;
         }
 
@@ -503,10 +500,8 @@ public class Profiler {
 
             if (type.equals("end")) {
                 if (!inEvent) {
-                    getLogger().severe(
-                            "Got end event for " + eventName
-                                    + " but is currently in "
-                                    + stackTop.getName());
+                    Console.error("Got end event for " + eventName
+                            + " but is currently in " + stackTop.getName());
                     return;
                 }
                 Node previousStackTop = stack.removeLast();
@@ -516,8 +511,9 @@ public class Profiler {
                     previousStackTop.leave(gwtStatsEvent.getMillis());
                 }
             } else {
-                double millis = isExtendedEvent ? gwtStatsEvent
-                        .getRelativeMillis() : gwtStatsEvent.getMillis();
+                double millis = isExtendedEvent
+                        ? gwtStatsEvent.getRelativeMillis()
+                        : gwtStatsEvent.getMillis();
                 if (!inEvent) {
                     stackTop = stackTop.enterChild(eventName, millis);
                     stack.add(stackTop);
@@ -538,9 +534,8 @@ public class Profiler {
         }
 
         if (stack.size() != 1) {
-            getLogger().warning(
-                    "Not all nodes are left, the last node is "
-                            + stack.getLast().getName());
+            Console.warn("Not all nodes are left, the last node is "
+                    + stack.getLast().getName());
             return;
         }
 
@@ -600,8 +595,8 @@ public class Profiler {
             }
 
             if (timings.isEmpty()) {
-                getLogger()
-                        .info("Bootstrap timings not supported, please ensure your browser supports performance.timing");
+                Console.log(
+                        "Bootstrap timings not supported, please ensure your browser supports performance.timing");
                 return;
             }
 
@@ -675,17 +670,14 @@ public class Profiler {
     public static void setProfilerResultConsumer(
             ProfilerResultConsumer profilerResultConsumer) {
         if (consumer != null) {
-            throw new IllegalStateException("The consumer has already been set");
+            throw new IllegalStateException(
+                    "The consumer has already been set");
         }
         consumer = profilerResultConsumer;
     }
 
     private static ProfilerResultConsumer getConsumer() {
         return consumer;
-    }
-
-    private static Logger getLogger() {
-        return Logger.getLogger(Profiler.class.getName());
     }
 
     private static native boolean hasHighPrecisionTime()
@@ -697,8 +689,8 @@ public class Profiler {
         double getRelativeTime();
     }
 
-    private static class DefaultRelativeTimeSupplier implements
-            RelativeTimeSupplier {
+    private static class DefaultRelativeTimeSupplier
+            implements RelativeTimeSupplier {
 
         @Override
         public native double getRelativeTime()
@@ -707,8 +699,8 @@ public class Profiler {
         }-*/;
     }
 
-    private static class HighResolutionTimeSupplier implements
-            RelativeTimeSupplier {
+    private static class HighResolutionTimeSupplier
+            implements RelativeTimeSupplier {
 
         @Override
         public native double getRelativeTime()

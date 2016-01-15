@@ -8,8 +8,10 @@
 
 	<inherits name="elemental.Elemental" />
 	<inherits name="com.google.gwt.event.Event" />
-	<inherits name="com.google.gwt.logging.Logging" />
-	<inherits name="com.google.gwt.user.UserAgent" />
+
+	<inherits name="com.google.gwt.http.HTTP" />
+
+	<inherits name="com.google.gwt.useragent.UserAgent" />
 	<inherits name="com.google.gwt.precompress.Precompress" />
 
 	<source path="client" />

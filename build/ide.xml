@@ -163,8 +163,6 @@
             <arg line="${extraParams}" />
             <arg value="${module}" />
 
-            <sysproperty key="vFailIfNotSerializable" value="true" />
-
             <jvmarg value="-Xss8M" />
             <jvmarg value="-Xmx1G" />
             <jvmarg value="-Djava.awt.headless=true" />

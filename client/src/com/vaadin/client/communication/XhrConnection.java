@@ -15,23 +15,19 @@
  */
 package com.vaadin.client.communication;
 
-import java.util.logging.Logger;
-
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.Window.ClosingEvent;
-import com.google.gwt.user.client.Window.ClosingHandler;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.CommunicationHandler;
 import com.vaadin.client.ApplicationConnection.RequestStartingEvent;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingEndedEvent;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingStartedEvent;
 import com.vaadin.client.BrowserInfo;
+import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
@@ -40,6 +36,9 @@ import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.shared.util.SharedUtil;
 
+import elemental.client.Browser;
+import elemental.events.Event;
+import elemental.events.EventListener;
 import elemental.json.JsonObject;
 
 /**
@@ -63,12 +62,13 @@ public class XhrConnection {
     private boolean webkitMaybeIgnoringRequests = false;
 
     public XhrConnection() {
-        Window.addWindowClosingHandler(new ClosingHandler() {
-            @Override
-            public void onWindowClosing(ClosingEvent event) {
-                webkitMaybeIgnoringRequests = true;
-            }
-        });
+        Browser.getWindow().addEventListener("beforeunload",
+                new EventListener() {
+                    @Override
+                    public void handleEvent(Event evt) {
+                        webkitMaybeIgnoringRequests = true;
+                    }
+                }, false);
     }
 
     /**
@@ -99,10 +99,6 @@ public class XhrConnection {
                     }
                 });
 
-    }
-
-    private static Logger getLogger() {
-        return Logger.getLogger(XhrConnection.class.getName());
     }
 
     protected XhrResponseHandler createResponseHandler() {
@@ -146,7 +142,7 @@ public class XhrConnection {
                 return;
             }
 
-            getLogger().info("Server visit took " + WidgetUtil.round(
+            Console.log("Server visit took " + WidgetUtil.round(
                     Profiler.getRelativeTimeMillis() - requestStartTime, 3)
                     + "ms");
 
@@ -162,7 +158,7 @@ public class XhrConnection {
             }
 
             getConnectionStateHandler().xhrOk();
-            getLogger().info("Received xhr message: " + responseText);
+            Console.log("Received xhr message: " + responseText);
             getMessageHandler().handleMessage(json);
         }
 
@@ -201,7 +197,7 @@ public class XhrConnection {
 
         rb.setCallback(responseHandler);
 
-        getLogger().info("Sending xhr message to server: " + payload.toJson());
+        Console.log("Sending xhr message to server: " + payload.toJson());
         try {
             final Request request = rb.send();
 

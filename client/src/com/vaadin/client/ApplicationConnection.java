@@ -16,8 +16,6 @@
 
 package com.vaadin.client;
 
-import java.util.logging.Logger;
-
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -30,11 +28,8 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.URL;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.ConnectionStateHandler;
@@ -46,6 +41,8 @@ import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
+
+import elemental.client.Browser;
 
 /**
  * This is the client side communication "engine", managing client-server
@@ -276,7 +273,7 @@ public class ApplicationConnection implements HasHandlers {
             int currentTime = elapsedMillis();
             int stepDuration = currentTime - previousStep;
             if (stepDuration >= minDuration) {
-                getLogger().info(message + ": " + stepDuration + " ms");
+                Console.log(message + ": " + stepDuration + " ms");
             }
             previousStep = currentTime;
         }
@@ -291,15 +288,15 @@ public class ApplicationConnection implements HasHandlers {
     }
 
     public void init(ApplicationConfiguration cnf) {
-        getLogger().info("Starting application " + cnf.getRootPanelId());
-        getLogger().info("Using theme: " + cnf.getThemeName());
+        Console.log("Starting application " + cnf.getRootPanelId());
+        Console.log("Using theme: " + cnf.getThemeName());
 
-        getLogger().info("Vaadin application servlet version: "
+        Console.log("Vaadin application servlet version: "
                 + cnf.getServletVersion());
 
         if (!cnf.getServletVersion().equals(Version.getFullVersion())) {
-            getLogger()
-                    .severe("Warning: your widget set seems to be built with a different "
+            Console.error(
+                    "Warning: your widget set seems to be built with a different "
                             + "version than the one used on server. Unexpected "
                             + "behavior may occur.");
         }
@@ -405,7 +402,7 @@ public class ApplicationConnection implements HasHandlers {
 
     static final int MAX_CSS_WAITS = 100;
 
-    public void executeWhenCSSLoaded(final Command c) {
+    public void executeWhenCSSLoaded(final Runnable c) {
         if (!isCSSLoaded() && cssWaits < MAX_CSS_WAITS) {
             (new Timer() {
                 @Override
@@ -416,17 +413,17 @@ public class ApplicationConnection implements HasHandlers {
 
             // Show this message just once
             if (cssWaits++ == 0) {
-                getLogger().warning("Assuming CSS loading is not complete, "
+                Console.warn("Assuming CSS loading is not complete, "
                         + "postponing render phase. "
                         + "(.v-loading-indicator height == 0)");
             }
         } else {
             cssLoaded = true;
             if (cssWaits >= MAX_CSS_WAITS) {
-                getLogger().severe("CSS files may have not loaded properly.");
+                Console.error("CSS files may have not loaded properly.");
             }
 
-            c.execute();
+            c.run();
         }
     }
 
@@ -451,7 +448,7 @@ public class ApplicationConnection implements HasHandlers {
      * 
      */
     public void showCommunicationError(String details, int statusCode) {
-        getLogger().severe("Communication error: " + details);
+        Console.error("Communication error: " + details);
         showError(details, configuration.getCommunicationError());
     }
 
@@ -462,7 +459,7 @@ public class ApplicationConnection implements HasHandlers {
      *            Optional details.
      */
     public void showAuthenticationError(String details) {
-        getLogger().severe("Authentication error: " + details);
+        Console.error("Authentication error: " + details);
         showError(details, configuration.getAuthorizationError());
     }
 
@@ -473,7 +470,7 @@ public class ApplicationConnection implements HasHandlers {
      *            Optional details.
      */
     public void showSessionExpiredError(String details) {
-        getLogger().severe("Session expired: " + details);
+        Console.error("Session expired: " + details);
         showError(details, configuration.getSessionExpiredError());
     }
 
@@ -530,7 +527,7 @@ public class ApplicationConnection implements HasHandlers {
 
             @Override
             public void onError(ResourceLoadEvent event) {
-                getLogger().severe(event.getResourceUrl()
+                Console.error(event.getResourceUrl()
                         + " could not be loaded, or the load detection failed because the stylesheet is empty.");
                 // The show must go on
                 onLoad(event);
@@ -565,8 +562,7 @@ public class ApplicationConnection implements HasHandlers {
 
             @Override
             public void onError(ResourceLoadEvent event) {
-                getLogger().severe(
-                        event.getResourceUrl() + " could not be loaded.");
+                Console.error(event.getResourceUrl() + " could not be loaded.");
                 // The show must go on
                 onLoad(event);
             }
@@ -619,10 +615,10 @@ public class ApplicationConnection implements HasHandlers {
     public void setApplicationRunning(boolean applicationRunning) {
         if (getApplicationState() == ApplicationState.TERMINATED) {
             if (applicationRunning) {
-                getLogger().severe(
+                Console.error(
                         "Tried to restart a terminated application. This is not supported");
             } else {
-                getLogger().warning(
+                Console.warn(
                         "Tried to stop a terminated application. This should not be done");
             }
             return;
@@ -630,7 +626,7 @@ public class ApplicationConnection implements HasHandlers {
             if (applicationRunning) {
                 applicationState = ApplicationState.RUNNING;
             } else {
-                getLogger().warning(
+                Console.warn(
                         "Tried to stop the application before it has started. This should not be done");
             }
         } else if (getApplicationState() == ApplicationState.RUNNING) {
@@ -638,7 +634,7 @@ public class ApplicationConnection implements HasHandlers {
                 applicationState = ApplicationState.TERMINATED;
                 eventBus.fireEvent(new ApplicationStoppedEvent());
             } else {
-                getLogger().warning(
+                Console.warn(
                         "Tried to start an already running application. This should not be done");
             }
         }
@@ -663,10 +659,6 @@ public class ApplicationConnection implements HasHandlers {
     @Override
     public void fireEvent(GwtEvent<?> event) {
         eventBus.fireEvent(event);
-    }
-
-    private static Logger getLogger() {
-        return Logger.getLogger(ApplicationConnection.class.getName());
     }
 
     /**
@@ -742,7 +734,7 @@ public class ApplicationConnection implements HasHandlers {
     public void showError(String caption, String message, String details,
             String url) {
         // FIXME Not like this
-        Window.alert(caption + "\n" + message + "\n" + details);
+        Browser.getWindow().alert(caption + "\n" + message + "\n" + details);
         if (url != null) {
             WidgetUtil.redirect(url);
         }

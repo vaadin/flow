@@ -17,11 +17,11 @@ package com.vaadin.client.communication;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.ApplicationConnection;
+import com.vaadin.client.Console;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.json.Json;
@@ -69,10 +69,6 @@ public class ServerRpcQueue {
         this.connection = connection;
     }
 
-    private static Logger getLogger() {
-        return Logger.getLogger(ServerRpcQueue.class.getName());
-    }
-
     /**
      * Adds an explicit RPC method invocation to the send queue.
      * 
@@ -93,7 +89,7 @@ public class ServerRpcQueue {
      */
     public void add(MethodInvocation invocation, boolean lastOnly) {
         if (!connection.isApplicationRunning()) {
-            getLogger().warning(
+            Console.warn(
                     "Trying to invoke method on not yet started or stopped application");
             return;
         }

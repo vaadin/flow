@@ -19,20 +19,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.logging.client.LogConfiguration;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.ui.ui.UIConstants;
+
+import elemental.client.Browser;
 
 public class ApplicationConfiguration implements EntryPoint {
 
@@ -229,7 +225,7 @@ public class ApplicationConfiguration implements EntryPoint {
     private static boolean moduleLoaded = false;
 
     static// TODO consider to make this hashmap per application
-    LinkedList<Command> callbacks = new LinkedList<Command>();
+    LinkedList<Runnable> callbacks = new LinkedList<Runnable>();
 
     private static int dependenciesLoading;
 
@@ -369,7 +365,8 @@ public class ApplicationConfiguration implements EntryPoint {
              * Use the current url without query parameters and fragment as the
              * default value.
              */
-            serviceUrl = Window.Location.getHref().replaceFirst("[?#].*", "");
+            serviceUrl = Browser.getWindow().getLocation().getHref()
+                    .replaceFirst("[?#].*", "");
         } else {
             /*
              * Resolve potentially relative URLs to ensure they point to the
@@ -481,9 +478,9 @@ public class ApplicationConfiguration implements EntryPoint {
      * @since 7.6
      * @param c
      */
-    public static void runWhenDependenciesLoaded(Command c) {
+    public static void runWhenDependenciesLoaded(Runnable c) {
         if (dependenciesLoading == 0) {
-            c.execute();
+            c.run();
         } else {
             callbacks.add(c);
         }
@@ -496,8 +493,8 @@ public class ApplicationConfiguration implements EntryPoint {
     static void endDependencyLoading() {
         dependenciesLoading--;
         if (dependenciesLoading == 0 && !callbacks.isEmpty()) {
-            for (Command cmd : callbacks) {
-                cmd.execute();
+            for (Runnable cmd : callbacks) {
+                cmd.run();
             }
             callbacks.clear();
         }
@@ -514,7 +511,7 @@ public class ApplicationConfiguration implements EntryPoint {
         // Don't run twice if the module has been inherited several times,
         // and don't continue if vaadinBootstrap was not executed.
         if (moduleLoaded || !vaadinBootstrapLoaded()) {
-            getLogger().log(Level.WARNING,
+            Browser.getWindow().getConsole().warn(
                     "vaadinBootstrap.js was not loaded, skipping vaadin application configuration.");
             return;
         }
@@ -535,27 +532,6 @@ public class ApplicationConfiguration implements EntryPoint {
             enableIEPromptFix();
         }
 
-        if (LogConfiguration.loggingIsEnabled()) {
-            GWT.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-
-                @Override
-                public void onUncaughtException(Throwable e) {
-                    /*
-                     * If the debug window is not enabled (?debug), this will
-                     * not show anything to normal users. "a1 is not an object"
-                     * style errors helps nobody, especially end user. It does
-                     * not work tells just as much.
-                     */
-                    getLogger().log(Level.SEVERE, e.getMessage(), e);
-                }
-
-            });
-
-            if (isProductionMode()) {
-                // Disable all logging if in production mode
-                Logger.getLogger("").setLevel(Level.OFF);
-            }
-        }
         Profiler.leave("ApplicationConfiguration.onModuleLoad");
 
         registerCallback(GWT.getModuleName());
@@ -607,21 +583,6 @@ public class ApplicationConfiguration implements EntryPoint {
     }-*/;
 
     /**
-     * Checks if client side is in debug mode. Practically this is invoked by
-     * adding ?debug parameter to URI. Please note that debug mode is always
-     * disabled if production mode is enabled, but disabling production mode
-     * does not automatically enable debug mode.
-     * 
-     * @see #isProductionMode()
-     * 
-     * @return true if client side is currently been debugged
-     */
-    public static boolean isDebugMode() {
-        return isDebugAvailable()
-                && Window.Location.getParameter("debug") != null;
-    }
-
-    /**
      * Checks if production mode is enabled. When production mode is enabled,
      * client-side logging is disabled. There may also be other performance
      * optimizations.
@@ -644,17 +605,6 @@ public class ApplicationConfiguration implements EntryPoint {
     }-*/;
 
     /**
-     * Checks whether debug logging should be quiet
-     * 
-     * @return <code>true</code> if debug logging should be quiet
-     */
-    public static boolean isQuietDebugMode() {
-        String debugParameter = Window.Location.getParameter("debug");
-        return isDebugAvailable() && debugParameter != null
-                && debugParameter.startsWith("q");
-    }
-
-    /**
      * Checks whether the widget set version has been sent to the server. It is
      * sent in the first UIDL request.
      * 
@@ -669,9 +619,5 @@ public class ApplicationConfiguration implements EntryPoint {
      */
     public void setWidgetsetVersionSent() {
         widgetsetVersionSent = true;
-    }
-
-    private static final Logger getLogger() {
-        return Logger.getLogger(ApplicationConfiguration.class.getName());
     }
 }

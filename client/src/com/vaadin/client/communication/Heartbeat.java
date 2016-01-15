@@ -15,8 +15,6 @@
  */
 package com.vaadin.client.communication;
 
-import java.util.logging.Logger;
-
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
@@ -25,6 +23,7 @@ import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
+import com.vaadin.client.Console;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.shared.util.SharedUtil;
@@ -48,10 +47,6 @@ public class Heartbeat {
     private String uri;
     private int interval = -1;
 
-    private static Logger getLogger() {
-        return Logger.getLogger(Heartbeat.class.getName());
-    }
-
     /**
      * Initializes the heartbeat for the given application connection
      * 
@@ -63,9 +58,10 @@ public class Heartbeat {
 
         setInterval(connection.getConfiguration().getHeartbeatInterval());
 
-        uri = SharedUtil.addGetParameters(connection
-                .translateVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX
-                        + ApplicationConstants.HEARTBEAT_PATH + '/'),
+        uri = SharedUtil.addGetParameters(
+                connection.translateVaadinUri(
+                        ApplicationConstants.APP_PROTOCOL_PREFIX
+                                + ApplicationConstants.HEARTBEAT_PATH + '/'),
                 UIConstants.UI_ID_PARAMETER + "="
                         + connection.getConfiguration().getUIId());
 
@@ -111,8 +107,8 @@ public class Heartbeat {
             public void onError(Request request, Throwable exception) {
                 // Handler should stop the application if heartbeat should no
                 // longer be sent
-                connection.getConnectionStateHandler().heartbeatException(
-                        request, exception);
+                connection.getConnectionStateHandler()
+                        .heartbeatException(request, exception);
                 schedule();
             }
         };
@@ -120,7 +116,7 @@ public class Heartbeat {
         rb.setCallback(callback);
 
         try {
-            getLogger().fine("Sending heartbeat request...");
+            Console.debug("Sending heartbeat request...");
             rb.send();
         } catch (RequestException re) {
             callback.onError(null, re);
@@ -141,11 +137,10 @@ public class Heartbeat {
      */
     public void schedule() {
         if (interval > 0) {
-            getLogger()
-                    .fine("Scheduling heartbeat in " + interval + " seconds");
+            Console.debug("Scheduling heartbeat in " + interval + " seconds");
             timer.schedule(interval * 1000);
         } else {
-            getLogger().fine("Disabling heartbeat");
+            Console.debug("Disabling heartbeat");
             timer.cancel();
         }
     }
@@ -165,7 +160,7 @@ public class Heartbeat {
      *            new interval in seconds.
      */
     public void setInterval(int heartbeatInterval) {
-        getLogger().info(
+        Console.log(
                 "Setting hearbeat interval to " + heartbeatInterval + "sec.");
         interval = heartbeatInterval;
         schedule();

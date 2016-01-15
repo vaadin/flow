@@ -16,16 +16,14 @@
 
 package com.vaadin.client.communication;
 
-import java.util.logging.Logger;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window.Location;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedHandler;
+import com.vaadin.client.Console;
 import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
@@ -128,7 +126,7 @@ public class AtmospherePushConnection implements PushConnection {
      * Keeps track of the disconnect confirmation command for cases where
      * pending messages should be pushed before actually disconnecting.
      */
-    private Command pendingDisconnectCommand;
+    private Runnable pendingDisconnectCommand;
 
     /**
      * The url to use for push requests
@@ -161,19 +159,17 @@ public class AtmospherePushConnection implements PushConnection {
                             return;
                         }
 
-                        disconnect(new Command() {
+                        disconnect(new Runnable() {
                             @Override
-                            public void execute() {
+                            public void run() {
                             }
                         });
 
                     }
                 });
         config = createConfig();
-        String debugParameter = Location.getParameter("debug");
-        if ("push".equals(debugParameter)) {
-            config.setStringValue("logLevel", "debug");
-        }
+        // Always debug for now
+        config.setStringValue("logLevel", "debug");
         for (String param : pushConfiguration.parameters.keySet()) {
             String value = pushConfiguration.parameters.get(param);
             if (value.equalsIgnoreCase("true")
@@ -189,10 +185,10 @@ public class AtmospherePushConnection implements PushConnection {
             url = ApplicationConstants.APP_PROTOCOL_PREFIX
                     + ApplicationConstants.PUSH_PATH;
         }
-        runWhenAtmosphereLoaded(new Command() {
+        runWhenAtmosphereLoaded(new Runnable() {
             @Override
-            public void execute() {
-                Scheduler.get().scheduleDeferred(new Command() {
+            public void run() {
+                Scheduler.get().scheduleDeferred(new ScheduledCommand() {
                     @Override
                     public void execute() {
                         connect();
@@ -216,7 +212,7 @@ public class AtmospherePushConnection implements PushConnection {
         // uri is needed to identify the right connection when closing
         uri = SharedUtil.addGetParameters(baseUrl, extraParams);
 
-        getLogger().info("Establishing push connection");
+        Console.log("Establishing push connection");
         socket = doConnect(uri, getConfig());
     }
 
@@ -262,8 +258,8 @@ public class AtmospherePushConnection implements PushConnection {
                     "This server to client push connection should not be used to send client to server messages");
         }
         if (state == State.CONNECTED) {
-            getLogger().info("Sending push (" + transport
-                    + ") message to server: " + message.toJson());
+            Console.log("Sending push (" + transport + ") message to server: "
+                    + message.toJson());
 
             if (transport.equals("websocket")) {
                 FragmentedMessage fragmented = new FragmentedMessage(
@@ -290,13 +286,13 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     protected void onReopen(AtmosphereResponse response) {
-        getLogger().info("Push connection re-established using "
+        Console.log("Push connection re-established using "
                 + response.getTransport());
         onConnect(response);
     }
 
     protected void onOpen(AtmosphereResponse response) {
-        getLogger().info(
+        Console.log(
                 "Push connection established using " + response.getTransport());
         onConnect(response);
     }
@@ -338,21 +334,21 @@ public class AtmospherePushConnection implements PushConnection {
      * @see com.vaadin.client.communication.PushConenction#disconnect()
      */
     @Override
-    public void disconnect(Command command) {
-        assert command != null;
+    public void disconnect(Runnable runnable) {
+        assert runnable != null;
 
         switch (state) {
         case CONNECT_PENDING:
             // Make the connection callback initiate the disconnection again
             state = State.DISCONNECT_PENDING;
-            pendingDisconnectCommand = command;
+            pendingDisconnectCommand = runnable;
             break;
         case CONNECTED:
             // Normal disconnect
-            getLogger().info("Closing push connection");
+            Console.log("Closing push connection");
             doDisconnect(uri);
             state = State.DISCONNECTED;
-            command.execute();
+            runnable.run();
             break;
         case DISCONNECT_PENDING:
         case DISCONNECTED:
@@ -369,8 +365,8 @@ public class AtmospherePushConnection implements PushConnection {
             getConnectionStateHandler().pushInvalidContent(this, message);
             return;
         } else {
-            getLogger().info("Received push (" + getTransportType()
-                    + ") message: " + message);
+            Console.log("Received push (" + getTransportType() + ") message: "
+                    + message);
             connection.getMessageHandler().handleMessage(json);
         }
     }
@@ -380,7 +376,7 @@ public class AtmospherePushConnection implements PushConnection {
      * tried
      */
     protected void onTransportFailure() {
-        getLogger().warning("Push connection using primary method ("
+        Console.warn("Push connection using primary method ("
                 + getConfig().getTransport() + ") failed. Trying with "
                 + getConfig().getFallbackTransport());
     }
@@ -567,21 +563,21 @@ public class AtmospherePushConnection implements PushConnection {
         return $wnd.jQueryVaadin != undefined;
     }-*/;
 
-    private void runWhenAtmosphereLoaded(final Command command) {
+    private void runWhenAtmosphereLoaded(final Runnable command) {
         if (isAtmosphereLoaded()) {
-            command.execute();
+            command.run();
         } else {
             final String pushJs = getVersionedPushJs();
 
-            getLogger().info("Loading " + pushJs);
+            Console.log("Loading " + pushJs);
             ResourceLoader.get().loadScript(
                     connection.getConfiguration().getVaadinDirUrl() + pushJs,
                     new ResourceLoadListener() {
                         @Override
                         public void onLoad(ResourceLoadEvent event) {
                             if (isAtmosphereLoaded()) {
-                                getLogger().info(pushJs + " loaded");
-                                command.execute();
+                                Console.log(pushJs + " loaded");
+                                command.run();
                             } else {
                                 // If bootstrap tried to load vaadinPush.js,
                                 // ResourceLoader assumes it succeeded even if
@@ -614,10 +610,6 @@ public class AtmospherePushConnection implements PushConnection {
     @Override
     public String getTransportType() {
         return transport;
-    }
-
-    private static Logger getLogger() {
-        return Logger.getLogger(AtmospherePushConnection.class.getName());
     }
 
     private ConnectionStateHandler getConnectionStateHandler() {
