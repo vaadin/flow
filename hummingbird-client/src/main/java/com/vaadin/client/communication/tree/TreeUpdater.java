@@ -39,7 +39,7 @@ import com.vaadin.client.Profiler;
 import com.vaadin.client.Util;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
-import com.vaadin.client.communication.WebComponents;
+import com.vaadin.client.communication.CustomElement;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 import com.vaadin.shared.communication.MethodInvocation;
 
@@ -468,7 +468,7 @@ public class TreeUpdater {
                 String is = (String) node.getProperty("IS").getValue();
                 Element element;
                 if (is != null) {
-                    element = WebComponents.createElement(tag, is);
+                    element = CustomElement.createElement(tag, is);
                 } else {
                     element = Document.get().createElement(tag);
                 }

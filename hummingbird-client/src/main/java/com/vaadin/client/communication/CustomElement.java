@@ -3,7 +3,7 @@ package com.vaadin.client.communication;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 
-public class WebComponents {
+public class CustomElement {
 
     public static Element createPolymerStyleModule(String styleModuleName) {
         Element element = createElement("style", "custom-style");

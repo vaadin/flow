@@ -14,7 +14,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.DomApi;
-import com.vaadin.client.communication.WebComponents;
+import com.vaadin.client.communication.CustomElement;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
 import elemental.json.Json;
@@ -110,7 +110,7 @@ public class BoundElementTemplate extends Template {
         if (is != null) {
             TreeUpdater.debug(
                     "Create custom element with tag " + tag + " that is " + is);
-            element = WebComponents.createElement(tag, is);
+            element = CustomElement.createElement(tag, is);
         } else {
             TreeUpdater.debug("Create element with tag " + tag);
             element = Document.get().createElement(tag);

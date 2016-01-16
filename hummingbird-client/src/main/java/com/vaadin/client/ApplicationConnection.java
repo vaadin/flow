@@ -49,7 +49,7 @@ import com.vaadin.client.communication.ReconnectingCommunicationProblemHandler;
 import com.vaadin.client.communication.ServerCommunicationHandler;
 import com.vaadin.client.communication.ServerMessageHandler;
 import com.vaadin.client.communication.ServerRpcQueue;
-import com.vaadin.client.communication.WebComponents;
+import com.vaadin.client.communication.CustomElement;
 import com.vaadin.client.componentlocator.ComponentLocator;
 import com.vaadin.client.ui.FontIcon;
 import com.vaadin.client.ui.Icon;
@@ -776,7 +776,7 @@ public class ApplicationConnection implements HasHandlers {
         for (int i = 0; i < dependencies.length(); i++) {
             final String moduleName = dependencies.get(i);
             getLogger().info("Adding Polymer custom style tag " + moduleName);
-            Element styleElement = WebComponents
+            Element styleElement = CustomElement
                     .createPolymerStyleModule(moduleName);
             Document.get().getHead().appendChild(styleElement);
         }
