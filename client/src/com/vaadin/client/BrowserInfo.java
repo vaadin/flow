@@ -78,14 +78,6 @@ public class BrowserInfo {
 
     private BrowserInfo() {
         browserDetails = new VBrowserDetails(getBrowserString());
-        if (browserDetails.isIE()) {
-            // Use document mode instead user agent to accurately detect how we
-            // are rendering
-            int documentMode = getIEDocumentMode();
-            if (documentMode != -1) {
-                browserDetails.setIEMode(documentMode);
-            }
-        }
 
         if (browserDetails.isChrome()) {
             touchDevice = detectChromeTouchDevice();
@@ -111,14 +103,6 @@ public class BrowserInfo {
     private native boolean detectIETouchDevice()
     /*-{
         return !!navigator.msMaxTouchPoints;
-    }-*/;
-
-    private native int getIEDocumentMode()
-    /*-{
-    	var mode = $wnd.document.documentMode;
-    	if (!mode)
-    		 return -1;
-    	return mode;
     }-*/;
 
     /**
@@ -246,18 +230,6 @@ public class BrowserInfo {
 
     public boolean isSafari() {
         return browserDetails.isSafari();
-    }
-
-    public boolean isIE8() {
-        return isIE() && getBrowserMajorVersion() == 8;
-    }
-
-    public boolean isIE9() {
-        return isIE() && getBrowserMajorVersion() == 9;
-    }
-
-    public boolean isIE10() {
-        return isIE() && getBrowserMajorVersion() == 10;
     }
 
     public boolean isIE11() {

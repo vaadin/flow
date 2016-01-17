@@ -146,14 +146,6 @@ public class Heartbeat {
     }
 
     /**
-     * @return the application connection
-     */
-    @Deprecated
-    protected ApplicationConnection getConnection() {
-        return connection;
-    }
-
-    /**
      * Changes the heartbeatInterval in runtime and applies it.
      * 
      * @param heartbeatInterval

@@ -277,16 +277,6 @@ public class ApplicationConfiguration implements EntryPoint {
     }
 
     /**
-     * @return the theme name used when initializing the application
-     * @deprecated as of 7.3. Use {@link UIConnector#getActiveTheme()} to get
-     *             the theme currently in use
-     */
-    @Deprecated
-    public String getThemeName() {
-        return getJsoConfiguration(id).getConfigString("theme");
-    }
-
-    /**
      * Gets the URL of the VAADIN directory on the server.
      * 
      * @return the URL of the VAADIN directory
@@ -528,7 +518,7 @@ public class ApplicationConfiguration implements EntryPoint {
         }
 
         // Enable IE prompt fix (#13367)
-        if (browserInfo.isIE() && browserInfo.getBrowserMajorVersion() >= 10) {
+        if (browserInfo.isIE()) {
             enableIEPromptFix();
         }
 

@@ -352,14 +352,8 @@ public class ResourceLoader {
          -*/
         if (BrowserInfo.get().isIE()) {
             // If ie11+ for some reason gets a preload request
-            if (BrowserInfo.get().getBrowserMajorVersion() >= 11) {
-                throw new RuntimeException(
+            throw new RuntimeException(
                         "Browser doesn't support preloading with text/cache");
-            }
-            ScriptElement element = Document.get().createScriptElement();
-            element.setSrc(url);
-            element.setType("text/cache");
-            return element;
         } else {
             ObjectElement element = Document.get().createObjectElement();
             element.setData(url);

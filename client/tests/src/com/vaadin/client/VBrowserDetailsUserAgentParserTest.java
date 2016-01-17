@@ -1,10 +1,10 @@
 package com.vaadin.client;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
 
 import com.vaadin.shared.VBrowserDetails;
+
+import junit.framework.TestCase;
 
 public class VBrowserDetailsUserAgentParserTest extends TestCase {
 
@@ -342,19 +342,6 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertWindows(bd);
     }
 
-    public void testIE8CompatibilityMode() {
-        VBrowserDetails bd = new VBrowserDetails(IE8_IN_IE7_MODE_WINDOWS);
-        bd.setIEMode(7);
-
-        assertTrident(bd);
-        assertEngineVersion(bd, 4);
-        assertIE(bd);
-        assertBrowserMajorVersion(bd, 7);
-        assertBrowserMinorVersion(bd, 0);
-
-        assertWindows(bd);
-    }
-
     public void testIE9() {
         VBrowserDetails bd = new VBrowserDetails(IE9_BETA_WINDOWS_7);
         assertTrident(bd);
@@ -379,8 +366,9 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
     }
 
     public void testIE9InIE8CompatibilityMode() {
-        VBrowserDetails bd = new VBrowserDetails(IE9_BETA_IN_IE8_MODE_WINDOWS_7);
-        // bd.setIE8InCompatibilityMode();
+        VBrowserDetails bd = new VBrowserDetails(
+                IE9_BETA_IN_IE8_MODE_WINDOWS_7);
+                // bd.setIE8InCompatibilityMode();
 
         /*
          * Trident/4.0 in example user agent string based on beta even though it
@@ -554,8 +542,8 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertFalse(browserDetails.isAndroid());
     }
 
-    private void assertAndroid(VBrowserDetails browserDetails,
-            int majorVersion, int minorVersion) {
+    private void assertAndroid(VBrowserDetails browserDetails, int majorVersion,
+            int minorVersion) {
         assertFalse(browserDetails.isLinux());
         assertFalse(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());

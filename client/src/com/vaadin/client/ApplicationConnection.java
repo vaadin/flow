@@ -30,6 +30,7 @@ import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
+import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.ConnectionStateHandler;
@@ -289,7 +290,6 @@ public class ApplicationConnection implements HasHandlers {
 
     public void init(ApplicationConfiguration cnf) {
         Console.log("Starting application " + cnf.getRootPanelId());
-        Console.log("Using theme: " + cnf.getThemeName());
 
         Console.log("Vaadin application servlet version: "
                 + cnf.getServletVersion());
