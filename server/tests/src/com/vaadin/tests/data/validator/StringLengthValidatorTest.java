@@ -6,7 +6,8 @@ import com.vaadin.data.validator.StringLengthValidator;
 
 public class StringLengthValidatorTest extends TestCase {
 
-    private StringLengthValidator validator = new StringLengthValidator("Error");
+    private StringLengthValidator validator = new StringLengthValidator(
+            "Error");
     private StringLengthValidator validatorNoNull = new StringLengthValidator(
             "Error", 1, 5, false);
     private StringLengthValidator validatorMinValue = new StringLengthValidator(
@@ -40,15 +41,15 @@ public class StringLengthValidatorTest extends TestCase {
     }
 
     public void testNoUpperBound() {
-        assertTrue(
-                "String not accepted even though no upper bound",
-                validatorMinValue
-                        .isValid("This is a really long string to test that no upper bound exists"));
+        assertTrue("String not accepted even though no upper bound",
+                validatorMinValue.isValid(
+                        "This is a really long string to test that no upper bound exists"));
     }
 
     public void testNoLowerBound() {
         assertTrue("Didn't accept short string", validatorMaxValue.isValid(""));
-        assertTrue("Didn't accept short string", validatorMaxValue.isValid("1"));
+        assertTrue("Didn't accept short string",
+                validatorMaxValue.isValid("1"));
     }
 
     public void testStringLengthValidatorWithOkStringLength() {

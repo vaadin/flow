@@ -55,7 +55,8 @@ import com.vaadin.util.ReflectTools;
 /**
  * A component that represents a floating popup window that can be added to a
  * {@link UI}. A window is added to a {@code UI} using
- * {@link UI#addWindow(Window)}. </p>
+ * {@link UI#addWindow(Window)}.
+ * </p>
  * <p>
  * The contents of a window is set using {@link #setContent(Component)} or by
  * using the {@link #Window(String, Component)} constructor.
@@ -76,8 +77,8 @@ import com.vaadin.util.ReflectTools;
  * @since 3.0
  */
 @SuppressWarnings({ "serial", "deprecation" })
-public class Window extends Panel implements FocusNotifier, BlurNotifier,
-        LegacyComponent {
+public class Window extends Panel
+        implements FocusNotifier, BlurNotifier, LegacyComponent {
 
     private WindowServerRpc rpc = new WindowServerRpc() {
 
@@ -105,7 +106,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
     /**
      * Holds registered CloseShortcut instances for query and later removal
      */
-    private List<CloseShortcut> closeShortcuts = new ArrayList<CloseShortcut>(4);
+    private List<CloseShortcut> closeShortcuts = new ArrayList<CloseShortcut>(
+            4);
 
     /**
      * Creates a new, empty window
@@ -162,9 +164,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * com.vaadin.ui.AbstractComponent#setParent(com.vaadin.server.ClientConnector
-     * )
+     * @see com.vaadin.ui.AbstractComponent#setParent(com.vaadin.server.
+     * ClientConnector )
      */
     @Override
     public void setParent(HasComponents parent) {
@@ -189,14 +190,12 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
         boolean sizeHasChanged = false;
         // size is handled in super class, but resize events only in windows ->
         // so detect if size change occurs before super.changeVariables()
-        if (variables.containsKey("height")
-                && (getHeightUnits() != Unit.PIXELS || (Integer) variables
-                        .get("height") != getHeight())) {
+        if (variables.containsKey("height") && (getHeightUnits() != Unit.PIXELS
+                || (Integer) variables.get("height") != getHeight())) {
             sizeHasChanged = true;
         }
-        if (variables.containsKey("width")
-                && (getWidthUnits() != Unit.PIXELS || (Integer) variables
-                        .get("width") != getWidth())) {
+        if (variables.containsKey("width") && (getWidthUnits() != Unit.PIXELS
+                || (Integer) variables.get("width") != getWidth())) {
             sizeHasChanged = true;
         }
 
@@ -335,6 +334,7 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
     }
 
     private static final Method WINDOW_CLOSE_METHOD;
+
     static {
         try {
             WINDOW_CLOSE_METHOD = CloseListener.class.getDeclaredMethod(
@@ -498,8 +498,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
     public interface WindowModeChangeListener extends Serializable {
 
         public static final Method windowModeChangeMethod = ReflectTools
-                .findMethod(WindowModeChangeListener.class,
-                        "windowModeChanged", WindowModeChangeEvent.class);
+                .findMethod(WindowModeChangeListener.class, "windowModeChanged",
+                        WindowModeChangeEvent.class);
 
         /**
          * Called when the user maximizes / restores a window. Use
@@ -535,19 +535,22 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
      * @param listener
      *            the WindowModeChangeListener to remove.
      */
-    public void removeWindowModeChangeListener(WindowModeChangeListener listener) {
+    public void removeWindowModeChangeListener(
+            WindowModeChangeListener listener) {
         removeListener(WindowModeChangeEvent.class, listener,
                 WindowModeChangeListener.windowModeChangeMethod);
     }
 
     protected void fireWindowWindowModeChange() {
-        fireEvent(new Window.WindowModeChangeEvent(this, getState().windowMode));
+        fireEvent(
+                new Window.WindowModeChangeEvent(this, getState().windowMode));
     }
 
     /**
      * Method for the resize event.
      */
     private static final Method WINDOW_RESIZE_METHOD;
+
     static {
         try {
             WINDOW_RESIZE_METHOD = ResizeListener.class.getDeclaredMethod(
@@ -1267,8 +1270,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
      * Sets the WAI-ARIA role the window.
      * 
      * This role defines how an assistive device handles a window. Available
-     * roles are alertdialog and dialog (@see <a
-     * href="http://www.w3.org/TR/2011/CR-wai-aria-20110118/roles">Roles
+     * roles are alertdialog and dialog (@see
+     * <a href="http://www.w3.org/TR/2011/CR-wai-aria-20110118/roles">Roles
      * Model</a>).
      * 
      * The default role is dialog.
@@ -1284,8 +1287,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
      * Gets the WAI-ARIA role the window.
      * 
      * This role defines how an assistive device handles a window. Available
-     * roles are alertdialog and dialog (@see <a
-     * href="http://www.w3.org/TR/2011/CR-wai-aria-20110118/roles">Roles
+     * roles are alertdialog and dialog (@see
+     * <a href="http://www.w3.org/TR/2011/CR-wai-aria-20110118/roles">Roles
      * Model</a>).
      * 
      * @return WAI-ARIA role set for the window
@@ -1391,17 +1394,18 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
         if (design.hasAttr("close-shortcut")) {
 
             // Parse shortcuts
-            String[] shortcutStrings = DesignAttributeHandler.readAttribute(
-                    "close-shortcut", design.attributes(), String.class).split(
-                    "\\s+");
+            String[] shortcutStrings = DesignAttributeHandler
+                    .readAttribute("close-shortcut", design.attributes(),
+                            String.class)
+                    .split("\\s+");
 
             removeAllCloseShortcuts();
 
             for (String part : shortcutStrings) {
                 if (!part.isEmpty()) {
                     ShortcutAction shortcut = DesignAttributeHandler
-                            .getFormatter().parse(part.trim(),
-                                    ShortcutAction.class);
+                            .getFormatter()
+                            .parse(part.trim(), ShortcutAction.class);
                     addCloseShortcut(shortcut.getKeyCode(),
                             shortcut.getModifiers());
                 }
@@ -1431,7 +1435,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
      * @see #setAssistiveDescription(Component...)
      */
     @Override
-    protected void readDesignChildren(Elements children, DesignContext context) {
+    protected void readDesignChildren(Elements children,
+            DesignContext context) {
         List<Component> descriptions = new ArrayList<Component>();
         Elements content = new Elements();
 
@@ -1480,8 +1485,8 @@ public class Window extends Panel implements FocusNotifier, BlurNotifier,
         }
 
         for (Component c : getAssistiveDescription()) {
-            Element child = context.createElement(c).attr(
-                    ":assistive-description", true);
+            Element child = context.createElement(c)
+                    .attr(":assistive-description", true);
             design.appendChild(child);
         }
     }

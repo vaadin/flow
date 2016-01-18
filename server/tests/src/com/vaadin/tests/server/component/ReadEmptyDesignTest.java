@@ -52,7 +52,8 @@ public class ReadEmptyDesignTest extends TestCase {
     public void testReadContext() {
         DesignContext ctx = Design.read(is, null);
         assertNotNull("The design context should not be null.", ctx);
-        assertNull("The root component should be null.", ctx.getRootComponent());
+        assertNull("The root component should be null.",
+                ctx.getRootComponent());
     }
 
     public void testReadContextWithRootParameter() {

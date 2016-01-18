@@ -77,8 +77,8 @@ import com.vaadin.ui.themes.Runo;
  * @author Vaadin Ltd.
  * @since 3.0
  */
-public class TabSheet extends AbstractComponentContainer implements Focusable,
-        FocusNotifier, BlurNotifier, SelectiveRenderer {
+public class TabSheet extends AbstractComponentContainer
+        implements Focusable, FocusNotifier, BlurNotifier, SelectiveRenderer {
 
     /**
      * Client to server RPC implementation for TabSheet.
@@ -216,7 +216,8 @@ public class TabSheet extends AbstractComponentContainer implements Focusable,
                     setSelected(null);
                 } else {
 
-                    int newSelectedIndex = selectedTabIndexAfterTabRemove(componentIndex);
+                    int newSelectedIndex = selectedTabIndexAfterTabRemove(
+                            componentIndex);
 
                     // Make sure the component actually exists, in case someone
                     // override it and provide a non existing component.
@@ -631,7 +632,8 @@ public class TabSheet extends AbstractComponentContainer implements Focusable,
      */
     private boolean updateSelection() {
         Component originalSelection = selected;
-        for (final Iterator<Component> i = getComponentIterator(); i.hasNext();) {
+        for (final Iterator<Component> i = getComponentIterator(); i
+                .hasNext();) {
             final Component component = i.next();
 
             Tab tab = tabs.get(component);
@@ -705,7 +707,8 @@ public class TabSheet extends AbstractComponentContainer implements Focusable,
      */
 
     @Override
-    public void replaceComponent(Component oldComponent, Component newComponent) {
+    public void replaceComponent(Component oldComponent,
+            Component newComponent) {
         boolean selectAfterInserting = false;
 
         if (selected == oldComponent) {
@@ -720,7 +723,8 @@ public class TabSheet extends AbstractComponentContainer implements Focusable,
         int newLocation = -1;
         int location = 0;
 
-        for (final Iterator<Component> i = components.iterator(); i.hasNext();) {
+        for (final Iterator<Component> i = components.iterator(); i
+                .hasNext();) {
             final Component component = i.next();
 
             if (component == oldComponent) {
@@ -755,8 +759,10 @@ public class TabSheet extends AbstractComponentContainer implements Focusable,
 
             if (selectAfterInserting) {
                 setSelected(newComponent);
-                //SelectedTabChangeEvent should be fired here as selected Tab is changed.
-                //Other cases are handled implicitly by removeComponent() and addComponent()addTab()
+                // SelectedTabChangeEvent should be fired here as selected Tab
+                // is changed.
+                // Other cases are handled implicitly by removeComponent() and
+                // addComponent()addTab()
                 fireSelectedTabChange();
             }
 
@@ -775,6 +781,7 @@ public class TabSheet extends AbstractComponentContainer implements Focusable,
     /* Click event */
 
     private static final Method SELECTED_TAB_CHANGE_METHOD;
+
     static {
         try {
             SELECTED_TAB_CHANGE_METHOD = SelectedTabChangeListener.class
@@ -842,7 +849,8 @@ public class TabSheet extends AbstractComponentContainer implements Focusable,
      * @param listener
      *            the Listener to be added.
      */
-    public void addSelectedTabChangeListener(SelectedTabChangeListener listener) {
+    public void addSelectedTabChangeListener(
+            SelectedTabChangeListener listener) {
         addListener(SelectedTabChangeEvent.class, listener,
                 SELECTED_TAB_CHANGE_METHOD);
     }
@@ -1257,8 +1265,8 @@ public class TabSheet extends AbstractComponentContainer implements Focusable,
         public void setComponentError(ErrorMessage componentError) {
             this.componentError = componentError;
 
-            String formattedHtmlMessage = componentError != null ? componentError
-                    .getFormattedHtmlMessage() : null;
+            String formattedHtmlMessage = componentError != null
+                    ? componentError.getFormattedHtmlMessage() : null;
             tabState.componentError = formattedHtmlMessage;
 
             markAsDirty();
@@ -1498,8 +1506,8 @@ public class TabSheet extends AbstractComponentContainer implements Focusable,
         // create new tabs
         for (Element tab : design.children()) {
             if (!tab.tagName().equals("tab")) {
-                throw new DesignException("Invalid tag name for tabsheet tab "
-                        + tab.tagName());
+                throw new DesignException(
+                        "Invalid tag name for tabsheet tab " + tab.tagName());
             }
             readTabFromDesign(tab, designContext);
         }
@@ -1527,32 +1535,32 @@ public class TabSheet extends AbstractComponentContainer implements Focusable,
         Component child = designContext.readDesign(content);
         Tab tab = this.addTab(child);
         if (attr.hasKey("visible")) {
-            tab.setVisible(DesignAttributeHandler.readAttribute("visible",
-                    attr, Boolean.class));
+            tab.setVisible(DesignAttributeHandler.readAttribute("visible", attr,
+                    Boolean.class));
         }
         if (attr.hasKey("closable")) {
             tab.setClosable(DesignAttributeHandler.readAttribute("closable",
                     attr, Boolean.class));
         }
         if (attr.hasKey("caption")) {
-            tab.setCaption(DesignAttributeHandler.readAttribute("caption",
-                    attr, String.class));
+            tab.setCaption(DesignAttributeHandler.readAttribute("caption", attr,
+                    String.class));
         }
         if (attr.hasKey("enabled")) {
-            tab.setEnabled(DesignAttributeHandler.readAttribute("enabled",
-                    attr, Boolean.class));
+            tab.setEnabled(DesignAttributeHandler.readAttribute("enabled", attr,
+                    Boolean.class));
         }
         if (attr.hasKey("icon")) {
             tab.setIcon(DesignAttributeHandler.readAttribute("icon", attr,
                     Resource.class));
         }
         if (attr.hasKey("icon-alt")) {
-            tab.setIconAlternateText(DesignAttributeHandler.readAttribute(
-                    "icon-alt", attr, String.class));
+            tab.setIconAlternateText(DesignAttributeHandler
+                    .readAttribute("icon-alt", attr, String.class));
         }
         if (attr.hasKey("description")) {
-            tab.setDescription(DesignAttributeHandler.readAttribute(
-                    "description", attr, String.class));
+            tab.setDescription(DesignAttributeHandler
+                    .readAttribute("description", attr, String.class));
         }
         if (attr.hasKey("style-name")) {
             tab.setStyleName(DesignAttributeHandler.readAttribute("style-name",
@@ -1596,8 +1604,8 @@ public class TabSheet extends AbstractComponentContainer implements Focusable,
                 def.isVisible(), Boolean.class);
         DesignAttributeHandler.writeAttribute("closable", attr,
                 tab.isClosable(), def.isClosable(), Boolean.class);
-        DesignAttributeHandler.writeAttribute("caption", attr,
-                tab.getCaption(), def.getCaption(), String.class);
+        DesignAttributeHandler.writeAttribute("caption", attr, tab.getCaption(),
+                def.getCaption(), String.class);
         DesignAttributeHandler.writeAttribute("enabled", attr, tab.isEnabled(),
                 def.isEnabled(), Boolean.class);
         DesignAttributeHandler.writeAttribute("icon", attr, tab.getIcon(),
@@ -1614,8 +1622,8 @@ public class TabSheet extends AbstractComponentContainer implements Focusable,
         if (getSelectedTab() != null
                 && getSelectedTab().equals(tab.getComponent())) {
             // use write attribute to get consistent handling for boolean
-            DesignAttributeHandler.writeAttribute("selected", attr, true,
-                    false, boolean.class);
+            DesignAttributeHandler.writeAttribute("selected", attr, true, false,
+                    boolean.class);
         }
     }
 

@@ -28,7 +28,8 @@ package com.vaadin.data.validator;
  * @since 5.4
  */
 @SuppressWarnings("serial")
-public abstract class AbstractStringValidator extends AbstractValidator<String> {
+public abstract class AbstractStringValidator
+        extends AbstractValidator<String> {
 
     /**
      * Constructs a validator for strings.
@@ -41,7 +42,7 @@ public abstract class AbstractStringValidator extends AbstractValidator<String> 
      * @param errorMessage
      *            the message to be included in an {@link InvalidValueException}
      *            (with "{0}" replaced by the value that failed validation).
-     * */
+     */
     public AbstractStringValidator(String errorMessage) {
         super(errorMessage);
     }

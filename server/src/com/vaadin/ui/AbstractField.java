@@ -75,8 +75,8 @@ import com.vaadin.ui.declarative.DesignContext;
  * @since 3.0
  */
 @SuppressWarnings("serial")
-public abstract class AbstractField<T> extends AbstractComponent implements
-        Field<T>, Property.ReadOnlyStatusChangeListener,
+public abstract class AbstractField<T> extends AbstractComponent
+        implements Field<T>, Property.ReadOnlyStatusChangeListener,
         Property.ReadOnlyStatusChangeNotifier, Action.ShortcutNotifier {
 
     /* Private members */
@@ -242,7 +242,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
      * here, we use the default documentation from the implemented interface.
      */
     @Override
-    public void commit() throws Buffered.SourceException, InvalidValueException {
+    public void commit()
+            throws Buffered.SourceException, InvalidValueException {
         if (dataSource != null && !dataSource.isReadOnly()) {
             if ((isInvalidCommitted() || isValid())) {
                 try {
@@ -448,8 +449,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
      * @throws Property.ReadOnlyException
      */
     @Override
-    public void setValue(T newFieldValue) throws Property.ReadOnlyException,
-            Converter.ConversionException {
+    public void setValue(T newFieldValue)
+            throws Property.ReadOnlyException, Converter.ConversionException {
         setValue(newFieldValue, false);
     }
 
@@ -484,7 +485,7 @@ public abstract class AbstractField<T> extends AbstractComponent implements
      */
     protected void setValue(T newFieldValue, boolean repaintIsNotNeeded,
             boolean ignoreReadOnly) throws Property.ReadOnlyException,
-            Converter.ConversionException, InvalidValueException {
+                    Converter.ConversionException, InvalidValueException {
 
         if (!SharedUtil.equals(newFieldValue, getInternalValue())) {
 
@@ -493,9 +494,10 @@ public abstract class AbstractField<T> extends AbstractComponent implements
                 throw new Property.ReadOnlyException();
             }
             try {
-                T doubleConvertedFieldValue = convertFromModel(convertToModel(newFieldValue));
-                if (!SharedUtil
-                        .equals(newFieldValue, doubleConvertedFieldValue)) {
+                T doubleConvertedFieldValue = convertFromModel(
+                        convertToModel(newFieldValue));
+                if (!SharedUtil.equals(newFieldValue,
+                        doubleConvertedFieldValue)) {
                     newFieldValue = doubleConvertedFieldValue;
                     repaintIsNotNeeded = false;
                 }
@@ -506,8 +508,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
 
             // Repaint is needed even when the client thinks that it knows the
             // new state if validity of the component may change
-            if (repaintIsNotNeeded
-                    && (isRequired() || getValidators() != null || getConverter() != null)) {
+            if (repaintIsNotNeeded && (isRequired() || getValidators() != null
+                    || getConverter() != null)) {
                 repaintIsNotNeeded = false;
             }
 
@@ -533,8 +535,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
 
                     // Commits the value to datasource
                     committingValueToDataSource = true;
-                    getPropertyDataSource().setValue(
-                            convertToModel(newFieldValue));
+                    getPropertyDataSource()
+                            .setValue(convertToModel(newFieldValue));
 
                     // The buffer is now unmodified
                     setModified(false);
@@ -639,8 +641,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
 
         // Sets the new data source
         dataSource = newDataSource;
-        getState().propertyReadOnly = dataSource == null ? false : dataSource
-                .isReadOnly();
+        getState().propertyReadOnly = dataSource == null ? false
+                : dataSource.isReadOnly();
 
         // Check if the current converter is compatible.
         if (newDataSource != null
@@ -662,8 +664,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
                 setCurrentBufferedSourceException(null);
             }
         } catch (final Throwable e) {
-            setCurrentBufferedSourceException(new Buffered.SourceException(
-                    this, e));
+            setCurrentBufferedSourceException(
+                    new Buffered.SourceException(this, e));
             setModified(true);
             throw getCurrentBufferedSourceException();
         }
@@ -685,8 +687,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
 
         // Fires value change if the value has changed
         T value = getInternalValue();
-        if ((value != oldValue)
-                && ((value != null && !value.equals(oldValue)) || value == null)) {
+        if ((value != oldValue) && ((value != null && !value.equals(oldValue))
+                || value == null)) {
             fireValueChange(false);
         }
     }
@@ -701,8 +703,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
      *            from
      */
     public void setConverter(Class<?> datamodelType) {
-        Converter<T, ?> c = (Converter<T, ?>) ConverterUtil.getConverter(
-                getType(), datamodelType, getSession());
+        Converter<T, ?> c = (Converter<T, ?>) ConverterUtil
+                .getConverter(getType(), datamodelType, getSession());
         setConverter(c);
     }
 
@@ -978,8 +980,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
                 valueToValidate = getConverter().convertToModel(fieldValue,
                         getModelType(), getLocale());
             } catch (ConversionException e) {
-                throw new InvalidValueException(getConversionError(
-                        getConverter().getModelType(), e));
+                throw new InvalidValueException(
+                        getConversionError(getConverter().getModelType(), e));
             }
         }
 
@@ -1005,8 +1007,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
             throw validationExceptions.get(0);
         }
 
-        InvalidValueException[] exceptionArray = validationExceptions
-                .toArray(new InvalidValueException[validationExceptions.size()]);
+        InvalidValueException[] exceptionArray = validationExceptions.toArray(
+                new InvalidValueException[validationExceptions.size()]);
 
         // Create a composite validator and include all exceptions
         throw new Validator.InvalidValueException(null, exceptionArray);
@@ -1080,13 +1082,11 @@ public abstract class AbstractField<T> extends AbstractComponent implements
         }
 
         // Throw combination of the error types
-        return new CompositeErrorMessage(
-                new ErrorMessage[] {
-                        superError,
-                        AbstractErrorMessage
-                                .getErrorMessageForException(validationError),
-                        AbstractErrorMessage
-                                .getErrorMessageForException(getCurrentBufferedSourceException()) });
+        return new CompositeErrorMessage(new ErrorMessage[] { superError,
+                AbstractErrorMessage
+                        .getErrorMessageForException(validationError),
+                AbstractErrorMessage.getErrorMessageForException(
+                        getCurrentBufferedSourceException()) });
 
     }
 
@@ -1134,7 +1134,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
      * interface.
      */
     @Override
-    public void removeValueChangeListener(Property.ValueChangeListener listener) {
+    public void removeValueChangeListener(
+            Property.ValueChangeListener listener) {
         removeListener(AbstractField.ValueChangeEvent.class, listener,
                 VALUE_CHANGE_METHOD);
         // ensure "automatic immediate handling" works
@@ -1169,9 +1170,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
     static {
         try {
             READ_ONLY_STATUS_CHANGE_METHOD = Property.ReadOnlyStatusChangeListener.class
-                    .getDeclaredMethod(
-                            "readOnlyStatusChange",
-                            new Class[] { Property.ReadOnlyStatusChangeEvent.class });
+                    .getDeclaredMethod("readOnlyStatusChange", new Class[] {
+                            Property.ReadOnlyStatusChangeEvent.class });
         } catch (final java.lang.NoSuchMethodException e) {
             // This should never happen
             throw new java.lang.RuntimeException(
@@ -1411,8 +1411,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
             if (dataSource != null && !isModified()) {
                 // When we have a data source and the internal value is directly
                 // read from that we want to update the value
-                T newInternalValue = convertFromModel(getPropertyDataSource()
-                        .getValue());
+                T newInternalValue = convertFromModel(
+                        getPropertyDataSource().getValue());
                 if (!SharedUtil.equals(newInternalValue, getInternalValue())) {
                     setInternalValue(newInternalValue);
                     fireValueChange(false);
@@ -1627,7 +1627,8 @@ public abstract class AbstractField<T> extends AbstractComponent implements
          * @param modifiers
          *            modifiers required to invoke the shortcut
          */
-        public FocusShortcut(Focusable focusable, int keyCode, int... modifiers) {
+        public FocusShortcut(Focusable focusable, int keyCode,
+                int... modifiers) {
             super(null, keyCode, modifiers);
             this.focusable = focusable;
         }

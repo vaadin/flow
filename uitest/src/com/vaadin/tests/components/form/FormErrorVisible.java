@@ -35,7 +35,8 @@ public class FormErrorVisible extends AbstractTestUI {
         addComponent(new Label("The end to see where the last form ends"));
     }
 
-    private Form buildForm(String caption, boolean withError, boolean withFooter) {
+    private Form buildForm(String caption, boolean withError,
+            boolean withFooter) {
         Form form = new Form();
         form.setCaption(caption);
         form.addField("value", new TextField("MyField"));

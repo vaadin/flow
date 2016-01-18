@@ -42,8 +42,8 @@ import com.vaadin.ui.declarative.DesignContext;
 import com.vaadin.ui.declarative.ShouldWriteDataDelegate;
 
 public abstract class DeclarativeTestBaseBase<T extends Component> {
-    private static final class AlwaysWriteDelegate implements
-            ShouldWriteDataDelegate {
+    private static final class AlwaysWriteDelegate
+            implements ShouldWriteDataDelegate {
         private static final long serialVersionUID = -6345914431997793599L;
 
         @Override
@@ -60,8 +60,8 @@ public abstract class DeclarativeTestBaseBase<T extends Component> {
 
     protected T read(String design) {
         try {
-            return (T) Design.read(new ByteArrayInputStream(design
-                    .getBytes("UTF-8")));
+            return (T) Design
+                    .read(new ByteArrayInputStream(design.getBytes("UTF-8")));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
@@ -73,7 +73,8 @@ public abstract class DeclarativeTestBaseBase<T extends Component> {
 
             DesignContext dc = new DesignContext();
             if (writeData) {
-                dc.setShouldWriteDataDelegate(DeclarativeTestBaseBase.ALWAYS_WRITE_DATA);
+                dc.setShouldWriteDataDelegate(
+                        DeclarativeTestBaseBase.ALWAYS_WRITE_DATA);
             }
             dc.setRootComponent(object);
             Design.write(dc, outputStream);
@@ -128,11 +129,13 @@ public abstract class DeclarativeTestBaseBase<T extends Component> {
         return result;
     }
 
-    private void getComparators(Class<?> c, List<EqualsAsserter<Object>> result) {
+    private void getComparators(Class<?> c,
+            List<EqualsAsserter<Object>> result) {
         if (c == null || !isVaadin(c)) {
             return;
         }
-        EqualsAsserter<Object> comparator = (EqualsAsserter<Object>) getComparator(c);
+        EqualsAsserter<Object> comparator = (EqualsAsserter<Object>) getComparator(
+                c);
         if (c.getSuperclass() != Object.class) {
             getComparators(c.getSuperclass(), result);
         }

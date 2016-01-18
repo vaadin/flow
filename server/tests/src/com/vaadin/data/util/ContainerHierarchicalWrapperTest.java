@@ -1,22 +1,21 @@
 package com.vaadin.data.util;
 
-
-public class ContainerHierarchicalWrapperTest extends
-        AbstractHierarchicalContainerTestBase {
+public class ContainerHierarchicalWrapperTest
+        extends AbstractHierarchicalContainerTestBase {
 
     public void testBasicOperations() {
-        testBasicContainerOperations(new ContainerHierarchicalWrapper(
-                new IndexedContainer()));
+        testBasicContainerOperations(
+                new ContainerHierarchicalWrapper(new IndexedContainer()));
     }
 
     public void testHierarchicalContainer() {
-        testHierarchicalContainer(new ContainerHierarchicalWrapper(
-                new IndexedContainer()));
+        testHierarchicalContainer(
+                new ContainerHierarchicalWrapper(new IndexedContainer()));
     }
 
     public void testRemoveSubtree() {
-        testRemoveHierarchicalWrapperSubtree(new ContainerHierarchicalWrapper(
-                new IndexedContainer()));
+        testRemoveHierarchicalWrapperSubtree(
+                new ContainerHierarchicalWrapper(new IndexedContainer()));
     }
 
 }

@@ -60,8 +60,8 @@ import com.vaadin.shared.data.sort.SortDirection;
  * @since 7.4
  * @author Vaadin Ltd
  */
-public class GeneratedPropertyContainer extends AbstractContainer implements
-        Container.Indexed, Container.Sortable, Container.Filterable,
+public class GeneratedPropertyContainer extends AbstractContainer
+        implements Container.Indexed, Container.Sortable, Container.Filterable,
         Container.PropertySetChangeNotifier, Container.ItemSetChangeNotifier {
 
     private final Container.Indexed wrappedContainer;
@@ -205,8 +205,8 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
      * event is fired from wrapped container and needs to be reconstructed to
      * act like it actually came from this container.
      */
-    protected abstract class GeneratedItemAddOrRemoveEvent implements
-            Serializable {
+    protected abstract class GeneratedItemAddOrRemoveEvent
+            implements Serializable {
 
         private Object firstItemId;
         private int firstIndex;
@@ -236,12 +236,12 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
         }
     };
 
-    protected class GeneratedItemRemoveEvent extends
-            GeneratedItemAddOrRemoveEvent implements ItemRemoveEvent {
+    protected class GeneratedItemRemoveEvent
+            extends GeneratedItemAddOrRemoveEvent implements ItemRemoveEvent {
 
         protected GeneratedItemRemoveEvent(ItemRemoveEvent event) {
-            super(event.getFirstItemId(), event.getFirstIndex(), event
-                    .getRemovedItemsCount());
+            super(event.getFirstItemId(), event.getFirstIndex(),
+                    event.getRemovedItemsCount());
         }
 
         @Override
@@ -254,8 +254,8 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
             implements ItemAddEvent {
 
         protected GeneratedItemAddEvent(ItemAddEvent event) {
-            super(event.getFirstItemId(), event.getFirstIndex(), event
-                    .getAddedItemsCount());
+            super(event.getFirstItemId(), event.getFirstIndex(),
+                    event.getAddedItemsCount());
         }
 
         @Override
@@ -296,8 +296,8 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
                                 ItemSetChangeEvent event) {
                             if (event instanceof ItemAddEvent) {
                                 final ItemAddEvent addEvent = (ItemAddEvent) event;
-                                fireItemSetChange(new GeneratedItemAddEvent(
-                                        addEvent));
+                                fireItemSetChange(
+                                        new GeneratedItemAddEvent(addEvent));
                             } else if (event instanceof ItemRemoveEvent) {
                                 final ItemRemoveEvent removeEvent = (ItemRemoveEvent) event;
                                 fireItemSetChange(new GeneratedItemRemoveEvent(
@@ -312,14 +312,15 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
         // PropertySetChangeEvents
         if (wrappedContainer instanceof PropertySetChangeNotifier) {
             ((PropertySetChangeNotifier) wrappedContainer)
-                    .addPropertySetChangeListener(new PropertySetChangeListener() {
+                    .addPropertySetChangeListener(
+                            new PropertySetChangeListener() {
 
-                        @Override
-                        public void containerPropertySetChange(
-                                PropertySetChangeEvent event) {
-                            fireContainerPropertySetChange();
-                        }
-                    });
+                                @Override
+                                public void containerPropertySetChange(
+                                        PropertySetChangeEvent event) {
+                                    fireContainerPropertySetChange();
+                                }
+                            });
         }
     }
 
@@ -397,7 +398,8 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
     }
 
     @Override
-    public void addPropertySetChangeListener(PropertySetChangeListener listener) {
+    public void addPropertySetChangeListener(
+            PropertySetChangeListener listener) {
         super.addPropertySetChangeListener(listener);
     }
 
@@ -516,7 +518,8 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
                 // modify sort orders to work with original properties in the
                 // container.
                 for (SortOrder s : propertyGenerators.get(property)
-                        .getSortProperties(new SortOrder(property, direction))) {
+                        .getSortProperties(
+                                new SortOrder(property, direction))) {
                     actualSortProperties.add(s.getPropertyId());
                     actualSortDirections
                             .add(s.getDirection() == SortDirection.ASCENDING);
@@ -619,10 +622,9 @@ public class GeneratedPropertyContainer extends AbstractContainer implements
      */
     @Override
     public Collection<?> getContainerPropertyIds() {
-        Set<?> wrappedProperties = asSet(wrappedContainer
-                .getContainerPropertyIds());
-        return Sets.union(
-                Sets.difference(wrappedProperties, removedProperties),
+        Set<?> wrappedProperties = asSet(
+                wrappedContainer.getContainerPropertyIds());
+        return Sets.union(Sets.difference(wrappedProperties, removedProperties),
                 propertyGenerators.keySet());
     }
 

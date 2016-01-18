@@ -50,7 +50,7 @@ public class DesignDateConverter implements Converter<String, Date> {
     @Override
     public String convertToPresentation(Date value,
             Class<? extends String> targetType, Locale locale)
-            throws Converter.ConversionException {
+                    throws Converter.ConversionException {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ").format(value);
     }
 

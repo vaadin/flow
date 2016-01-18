@@ -37,11 +37,11 @@ public class DateToSqlDateConverter implements Converter<Date, java.sql.Date> {
     @Override
     public java.sql.Date convertToModel(Date value,
             Class<? extends java.sql.Date> targetType, Locale locale)
-            throws ConversionException {
+                    throws ConversionException {
         if (targetType != getModelType()) {
-            throw new ConversionException("Converter only supports "
-                    + getModelType().getName() + " (targetType was "
-                    + targetType.getName() + ")");
+            throw new ConversionException(
+                    "Converter only supports " + getModelType().getName()
+                            + " (targetType was " + targetType.getName() + ")");
         }
 
         if (value == null) {
@@ -54,11 +54,11 @@ public class DateToSqlDateConverter implements Converter<Date, java.sql.Date> {
     @Override
     public Date convertToPresentation(java.sql.Date value,
             Class<? extends Date> targetType, Locale locale)
-            throws ConversionException {
+                    throws ConversionException {
         if (targetType != getPresentationType()) {
-            throw new ConversionException("Converter only supports "
-                    + getPresentationType().getName() + " (targetType was "
-                    + targetType.getName() + ")");
+            throw new ConversionException(
+                    "Converter only supports " + getPresentationType().getName()
+                            + " (targetType was " + targetType.getName() + ")");
         }
 
         if (value == null) {

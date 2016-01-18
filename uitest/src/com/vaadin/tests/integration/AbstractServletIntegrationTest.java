@@ -33,8 +33,8 @@ import com.vaadin.testbench.elements.TableElement;
  * @author Vaadin Ltd
  */
 @RunWith(ParameterizedTB3Runner.class)
-public abstract class AbstractServletIntegrationTest extends
-        AbstractIntegrationTest {
+public abstract class AbstractServletIntegrationTest
+        extends AbstractIntegrationTest {
 
     private String contextPath = "/demo";
 

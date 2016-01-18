@@ -94,8 +94,8 @@ public class InvalidTagNames {
 
     private Component readDesign(String string) {
         try {
-            return Design.read(new ByteArrayInputStream(string
-                    .getBytes("UTF-8")));
+            return Design
+                    .read(new ByteArrayInputStream(string.getBytes("UTF-8")));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }

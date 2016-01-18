@@ -36,8 +36,10 @@ public class FieldDefaultValues {
 
             Object clearedValue = field.getValue();
 
-            Assert.assertEquals("Expected to get default value after clearing "
-                    + field.getClass().getName(), originalValue, clearedValue);
+            Assert.assertEquals(
+                    "Expected to get default value after clearing "
+                            + field.getClass().getName(),
+                    originalValue, clearedValue);
         }
     }
 
@@ -52,16 +54,17 @@ public class FieldDefaultValues {
                         field.isEmpty());
 
             } else {
-                Assert.assertTrue(field.getClass().getName()
-                        + " should be empty after being cleared",
+                Assert.assertTrue(
+                        field.getClass().getName()
+                                + " should be empty after being cleared",
                         field.isEmpty());
             }
         }
     }
 
     @SuppressWarnings("rawtypes")
-    private static List<Field<?>> createFields() throws InstantiationException,
-            IllegalAccessException {
+    private static List<Field<?>> createFields()
+            throws InstantiationException, IllegalAccessException {
         List<Field<?>> fieldInstances = new ArrayList<Field<?>>();
 
         for (Class<? extends Field> fieldType : VaadinClasses.getFields()) {

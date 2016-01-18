@@ -146,7 +146,8 @@ public class NavigatorTest extends TestCase {
             if (!stringEquals(reference.getViewName(), event.getViewName())) {
                 return false;
             }
-            if (!stringEquals(reference.getParameters(), event.getParameters())) {
+            if (!stringEquals(reference.getParameters(),
+                    event.getParameters())) {
                 return false;
             }
             return true;
@@ -253,9 +254,8 @@ public class NavigatorTest extends TestCase {
 
             @Override
             public boolean matches(Object actual) {
-                return actual instanceof ViewChangeEvent
-                        && expected.equals(((ViewChangeEvent) actual)
-                                .getParameters());
+                return actual instanceof ViewChangeEvent && expected
+                        .equals(((ViewChangeEvent) actual).getParameters());
             }
         });
         return null;
@@ -293,11 +293,12 @@ public class NavigatorTest extends TestCase {
         UriFragmentManager manager = (UriFragmentManager) navigator
                 .getStateManager();
         try {
-            manager.uriFragmentChanged(EasyMock
-                    .createMock(UriFragmentChangedEvent.class));
+            manager.uriFragmentChanged(
+                    EasyMock.createMock(UriFragmentChangedEvent.class));
             Assert.assertTrue(
                     "Expected null pointer exception after call uriFragmentChanged "
-                            + "for destroyed navigator", false);
+                            + "for destroyed navigator",
+                    false);
         } catch (NullPointerException e) {
         }
     }
@@ -564,8 +565,8 @@ public class NavigatorTest extends TestCase {
 
         navigator.addView("test", view);
 
-        assertEquals("Registered view instance not returned by navigator",
-                view, navigator.getView("test"));
+        assertEquals("Registered view instance not returned by navigator", view,
+                navigator.getView("test"));
     }
 
     public void testAddViewInstanceSameName() throws Exception {
@@ -714,8 +715,8 @@ public class NavigatorTest extends TestCase {
                 TestView2.class, navigator.getView("test/subview/").getClass());
         assertEquals(
                 "Incorrect view name found for subview string with parameters",
-                TestView2.class, navigator.getView("test/subview/parameters")
-                        .getClass());
+                TestView2.class,
+                navigator.getView("test/subview/parameters").getClass());
         assertEquals("Incorrect view name found for top level view string",
                 TestView.class, navigator.getView("test").getClass());
         assertEquals(
@@ -723,8 +724,8 @@ public class NavigatorTest extends TestCase {
                 TestView.class, navigator.getView("test/").getClass());
         assertEquals(
                 "Incorrect view name found for top level view string with parameters starting like subview name",
-                TestView.class, navigator.getView("test/subviewnothere")
-                        .getClass());
+                TestView.class,
+                navigator.getView("test/subviewnothere").getClass());
     }
 
     public void testGetViewLongestPrefixOrder() throws Exception {
@@ -733,8 +734,8 @@ public class NavigatorTest extends TestCase {
         navigator.addView("test/subview", TestView2.class);
         navigator.addView("test", TestView.class);
 
-        assertEquals("Incorrect view name found", TestView.class, navigator
-                .getView("test").getClass());
+        assertEquals("Incorrect view name found", TestView.class,
+                navigator.getView("test").getClass());
 
         // other order
 
@@ -743,8 +744,8 @@ public class NavigatorTest extends TestCase {
         navigator2.addView("test", TestView.class);
         navigator2.addView("test/subview", TestView2.class);
 
-        assertEquals("Incorrect view name found", TestView.class, navigator2
-                .getView("test").getClass());
+        assertEquals("Incorrect view name found", TestView.class,
+                navigator2.getView("test").getClass());
     }
 
     public void testNavigateToUnknownView() {
@@ -775,10 +776,10 @@ public class NavigatorTest extends TestCase {
         EasyMock.replay(errorView2);
 
         ViewProvider errorProvider = EasyMock.createMock(ViewProvider.class);
-        EasyMock.expect(errorProvider.getView("doesnotexist2")).andReturn(
-                errorView2);
-        EasyMock.expect(errorProvider.getViewName("doesnotexist2")).andReturn(
-                "doesnotexist2");
+        EasyMock.expect(errorProvider.getView("doesnotexist2"))
+                .andReturn(errorView2);
+        EasyMock.expect(errorProvider.getViewName("doesnotexist2"))
+                .andReturn("doesnotexist2");
         EasyMock.replay(errorProvider);
 
         navigator.setErrorProvider(errorProvider);

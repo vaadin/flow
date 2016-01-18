@@ -46,8 +46,8 @@ public class DefaultFieldGroupFieldFactoryTest {
         Class<DefaultFieldGroupFieldFactory> clazz = DefaultFieldGroupFieldFactory.class;
         Constructor<?>[] constructors = clazz.getConstructors();
         Assert.assertEquals(
-                "DefaultFieldGroupFieldFactory contains public constructors",
-                0, constructors.length);
+                "DefaultFieldGroupFieldFactory contains public constructors", 0,
+                constructors.length);
     }
 
     @Test
@@ -105,8 +105,8 @@ public class DefaultFieldGroupFieldFactoryTest {
 
     @Test
     public void testEnumAnySelect() {
-        Field f = fieldFactory
-                .createField(SomeEnum.class, AbstractSelect.class);
+        Field f = fieldFactory.createField(SomeEnum.class,
+                AbstractSelect.class);
         Assert.assertNotNull(f);
         Assert.assertEquals(ListSelect.class, f.getClass());
     }

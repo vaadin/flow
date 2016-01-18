@@ -61,16 +61,15 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
     @Override
     protected void validateContainer(Container container,
             Object expectedFirstItemId, Object expectedLastItemId,
-            Object itemIdInSet, Object itemIdNotInSet,
-            boolean checkGetItemNull, int expectedSize) {
+            Object itemIdInSet, Object itemIdNotInSet, boolean checkGetItemNull,
+            int expectedSize) {
         Object notInSet = nameToBean.get(itemIdNotInSet);
         if (notInSet == null && itemIdNotInSet != null) {
             notInSet = new ClassName(String.valueOf(itemIdNotInSet), 9999);
         }
         super.validateContainer(container, nameToBean.get(expectedFirstItemId),
-                nameToBean.get(expectedLastItemId),
-                nameToBean.get(itemIdInSet), notInSet, checkGetItemNull,
-                expectedSize);
+                nameToBean.get(expectedLastItemId), nameToBean.get(itemIdInSet),
+                notInSet, checkGetItemNull, expectedSize);
     }
 
     @Override
@@ -218,13 +217,15 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
     public void testEmptyCollectionConstructor() {
         try {
             new BeanItemContainer<ClassName>((Collection<ClassName>) null);
-            Assert.fail("Initializing BeanItemContainer from a null collection should not work!");
+            Assert.fail(
+                    "Initializing BeanItemContainer from a null collection should not work!");
         } catch (IllegalArgumentException e) {
             // success
         }
         try {
             new BeanItemContainer<ClassName>(new ArrayList<ClassName>());
-            Assert.fail("Initializing BeanItemContainer from an empty collection should not work!");
+            Assert.fail(
+                    "Initializing BeanItemContainer from an empty collection should not work!");
         } catch (IllegalArgumentException e) {
             // success
         }
@@ -257,8 +258,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         counter.reset();
         container.addItemAfter(null, cn1);
         counter.assertOnce();
-        Assert.assertEquals(
-                "com.example.Test",
+        Assert.assertEquals("com.example.Test",
                 container.getContainerProperty(container.firstItemId(),
                         FULLY_QUALIFIED_NAME).getValue());
 
@@ -266,8 +266,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         counter.reset();
         container.addItemAfter(container.firstItemId(), cn1);
         counter.assertOnce();
-        Assert.assertEquals(
-                "com.example.Test",
+        Assert.assertEquals("com.example.Test",
                 container.getContainerProperty(container.getIdByIndex(1),
                         FULLY_QUALIFIED_NAME).getValue());
 
@@ -275,8 +274,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         counter.reset();
         container.addItemAfter(container.lastItemId(), cn1);
         counter.assertOnce();
-        Assert.assertEquals(
-                "com.example.Test",
+        Assert.assertEquals("com.example.Test",
                 container.getContainerProperty(container.lastItemId(),
                         FULLY_QUALIFIED_NAME).getValue());
 
@@ -284,8 +282,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         counter.reset();
         container.addItemAt(0, cn1);
         counter.assertOnce();
-        Assert.assertEquals(
-                "com.example.Test",
+        Assert.assertEquals("com.example.Test",
                 container.getContainerProperty(container.firstItemId(),
                         FULLY_QUALIFIED_NAME).getValue());
 
@@ -293,8 +290,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         counter.reset();
         container.addItemAt(1, cn1);
         counter.assertOnce();
-        Assert.assertEquals(
-                "com.example.Test",
+        Assert.assertEquals("com.example.Test",
                 container.getContainerProperty(container.getIdByIndex(1),
                         FULLY_QUALIFIED_NAME).getValue());
 
@@ -302,8 +298,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         counter.reset();
         container.addItemAt(container.size(), cn1);
         counter.assertOnce();
-        Assert.assertEquals(
-                "com.example.Test",
+        Assert.assertEquals("com.example.Test",
                 container.getContainerProperty(container.lastItemId(),
                         FULLY_QUALIFIED_NAME).getValue());
 
@@ -388,8 +383,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         counter.reset();
         container.addItemAfter(null, cn1);
         counter.assertOnce();
-        Assert.assertEquals(
-                "com.example.Test",
+        Assert.assertEquals("com.example.Test",
                 container.getContainerProperty(container.firstItemId(),
                         FULLY_QUALIFIED_NAME).getValue());
 
@@ -397,8 +391,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         counter.reset();
         container.addItemAfter(container.firstItemId(), cn1);
         counter.assertOnce();
-        Assert.assertEquals(
-                "com.example.Test",
+        Assert.assertEquals("com.example.Test",
                 container.getContainerProperty(container.getIdByIndex(1),
                         FULLY_QUALIFIED_NAME).getValue());
 
@@ -406,8 +399,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         counter.reset();
         container.addItemAfter(container.lastItemId(), cn1);
         counter.assertOnce();
-        Assert.assertEquals(
-                "com.example.Test",
+        Assert.assertEquals("com.example.Test",
                 container.getContainerProperty(container.lastItemId(),
                         FULLY_QUALIFIED_NAME).getValue());
 
@@ -415,8 +407,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         counter.reset();
         container.addItemAt(0, cn1);
         counter.assertOnce();
-        Assert.assertEquals(
-                "com.example.Test",
+        Assert.assertEquals("com.example.Test",
                 container.getContainerProperty(container.firstItemId(),
                         FULLY_QUALIFIED_NAME).getValue());
 
@@ -424,8 +415,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         counter.reset();
         container.addItemAt(1, cn1);
         counter.assertOnce();
-        Assert.assertEquals(
-                "com.example.Test",
+        Assert.assertEquals("com.example.Test",
                 container.getContainerProperty(container.getIdByIndex(1),
                         FULLY_QUALIFIED_NAME).getValue());
 
@@ -433,8 +423,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         counter.reset();
         container.addItemAt(container.size(), cn1);
         counter.assertOnce();
-        Assert.assertEquals(
-                "com.example.Test",
+        Assert.assertEquals("com.example.Test",
                 container.getContainerProperty(container.lastItemId(),
                         FULLY_QUALIFIED_NAME).getValue());
 
@@ -679,8 +668,8 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         Person john = new Person("John");
         container.addBean(john);
 
-        Assert.assertEquals("John", container
-                .getContainerProperty(john, "name").getValue());
+        Assert.assertEquals("John",
+                container.getContainerProperty(john, "name").getValue());
         Assert.assertTrue(container.removeContainerProperty("name"));
         Assert.assertNull(container.getContainerProperty(john, "name"));
 
@@ -724,14 +713,13 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
                 NestedMethodPropertyTest.Person.class);
 
         NestedMethodPropertyTest.Person john = new NestedMethodPropertyTest.Person(
-                "John", new NestedMethodPropertyTest.Address("Ruukinkatu 2-4",
-                        20540));
+                "John",
+                new NestedMethodPropertyTest.Address("Ruukinkatu 2-4", 20540));
         container.addBean(john);
 
         assertTrue(container.addNestedContainerProperty("address.street"));
-        assertEquals("Ruukinkatu 2-4",
-                container.getContainerProperty(john, "address.street")
-                        .getValue());
+        assertEquals("Ruukinkatu 2-4", container
+                .getContainerProperty(john, "address.street").getValue());
     }
 
     public void testNestedContainerPropertyWithNullBean() {
@@ -808,8 +796,8 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         ItemSetChangeListener addListener = createListenerMockFor(container);
         Capture<ItemAddEvent> capturedEvent = captureAddEvent(addListener);
         EasyMock.replay(addListener);
-        List<Person> beans = Arrays.asList(new Person("Jack"), new Person(
-                "John"));
+        List<Person> beans = Arrays.asList(new Person("Jack"),
+                new Person("John"));
 
         container.addAll(beans);
 
@@ -822,8 +810,8 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         ItemSetChangeListener addListener = createListenerMockFor(container);
         Capture<ItemAddEvent> capturedEvent = captureAddEvent(addListener);
         EasyMock.replay(addListener);
-        List<Person> beans = Arrays.asList(new Person("Jack"), new Person(
-                "John"));
+        List<Person> beans = Arrays.asList(new Person("Jack"),
+                new Person("John"));
         container.addFilter(new Compare.Equal("name", "John"));
 
         container.addAll(beans);
@@ -852,8 +840,8 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         Person bean = new Person("John");
         container.addItem(bean);
         ItemSetChangeListener removeListener = createListenerMockFor(container);
-        removeListener.containerItemSetChange(EasyMock
-                .isA(ItemRemoveEvent.class));
+        removeListener
+                .containerItemSetChange(EasyMock.isA(ItemRemoveEvent.class));
         EasyMock.replay(removeListener);
 
         container.removeItem(bean);
@@ -867,7 +855,8 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         Person bean = new Person("John");
         container.addItem(bean);
         ItemSetChangeListener removeListener = createListenerMockFor(container);
-        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(removeListener);
+        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(
+                removeListener);
         EasyMock.replay(removeListener);
 
         container.removeItem(bean);
@@ -882,7 +871,8 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         Person secondBean = new Person("John");
         container.addItem(secondBean);
         ItemSetChangeListener removeListener = createListenerMockFor(container);
-        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(removeListener);
+        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(
+                removeListener);
         EasyMock.replay(removeListener);
 
         container.removeItem(secondBean);
@@ -896,7 +886,8 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
         container.addItem(new Person("Jack"));
         container.addItem(new Person("John"));
         ItemSetChangeListener removeListener = createListenerMockFor(container);
-        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(removeListener);
+        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(
+                removeListener);
         EasyMock.replay(removeListener);
 
         container.removeAllItems();
@@ -932,8 +923,8 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
 
         container.addNestedContainerBean("address");
 
-        assertTrue(container.getContainerPropertyIds().contains(
-                "address.street"));
+        assertTrue(
+                container.getContainerPropertyIds().contains("address.street"));
 
         NestedMethodPropertyTest.Person john = new NestedMethodPropertyTest.Person(
                 "John", new Address("streetname", 12345));
@@ -941,9 +932,8 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
 
         assertTrue(container.getItem(john).getItemPropertyIds()
                 .contains("address.street"));
-        assertEquals("streetname",
-                container.getItem(john).getItemProperty("address.street")
-                        .getValue());
+        assertEquals("streetname", container.getItem(john)
+                .getItemProperty("address.street").getValue());
 
     }
 
@@ -957,13 +947,12 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
 
         container.addNestedContainerBean("address");
 
-        assertTrue(container.getContainerPropertyIds().contains(
-                "address.street"));
+        assertTrue(
+                container.getContainerPropertyIds().contains("address.street"));
         assertTrue(container.getItem(john).getItemPropertyIds()
                 .contains("address.street"));
-        assertEquals("streetname",
-                container.getItem(john).getItemProperty("address.street")
-                        .getValue());
+        assertEquals("streetname", container.getItem(john)
+                .getItemProperty("address.street").getValue());
 
     }
 }

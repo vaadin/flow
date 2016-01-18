@@ -80,8 +80,7 @@ public class AbstractDeploymentConfigurationTest {
     public void getClassLoader_returnsClassloaderPropertyValue() {
         String classLoader = UUID.randomUUID().toString();
         DeploymentConfiguration config = getConfig("ClassLoader", classLoader);
-        Assert.assertEquals(
-                "Unexpected classLoader configuration option value",
+        Assert.assertEquals("Unexpected classLoader configuration option value",
                 classLoader, config.getClassLoaderName());
     }
 
@@ -93,8 +92,8 @@ public class AbstractDeploymentConfigurationTest {
         return new DeploymentConfigImpl(props);
     }
 
-    private static class DeploymentConfigImpl extends
-            AbstractDeploymentConfiguration {
+    private static class DeploymentConfigImpl
+            extends AbstractDeploymentConfiguration {
 
         private Properties properties;
 

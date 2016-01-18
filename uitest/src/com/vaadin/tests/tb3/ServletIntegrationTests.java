@@ -34,6 +34,7 @@ public class ServletIntegrationTests {
 
     public static Set<String> notJSR356Compatible = new HashSet<String>();
     public static Set<String> notWebsocketCompatible = new HashSet<String>();
+
     static {
 
         notJSR356Compatible.add("jetty7");
@@ -76,7 +77,7 @@ public class ServletIntegrationTests {
         @Override
         protected <T> List<Class<? extends T>> findClasses(Class<T> baseClass,
                 String basePackage, String[] ignoredPackages)
-                throws IOException {
+                        throws IOException {
             List<Class<? extends T>> allClasses = super.findClasses(baseClass,
                     basePackage, ignoredPackages);
             String serverName = System.getProperty("server-name");

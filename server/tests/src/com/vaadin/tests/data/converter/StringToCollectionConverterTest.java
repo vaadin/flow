@@ -82,8 +82,8 @@ public class StringToCollectionConverterTest {
     public void convertToModel_setAsCollection() {
         StringToCollectionConverter converter = new StringToCollectionConverter(
                 " ", new StringToEnumConverter(), TestEnum.class);
-        Collection<?> model = converter
-                .convertToModel("Z X Y", Set.class, null);
+        Collection<?> model = converter.convertToModel("Z X Y", Set.class,
+                null);
         Assert.assertTrue("Unexpected model class", model instanceof HashSet);
         EnumSet<TestEnum> set = EnumSet.allOf(TestEnum.class);
         set.removeAll(model);

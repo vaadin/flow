@@ -215,6 +215,7 @@ public class JsonCodec implements Serializable {
     private static Map<String, Class<?>> transportTypeToType = new HashMap<String, Class<?>>();
 
     private static Map<Class<?>, JSONSerializer<?>> customSerializers = new HashMap<Class<?>, JSONSerializer<?>>();
+
     static {
         customSerializers.put(Date.class, new DateSerializer());
     }
@@ -417,7 +418,8 @@ public class JsonCodec implements Serializable {
                     connectorTracker);
 
         } else if (JsonConstants.VTYPE_STRINGARRAY.equals(transportType)) {
-            return decodeArray(String.class, (JsonArray) encodedJsonValue, null);
+            return decodeArray(String.class, (JsonArray) encodedJsonValue,
+                    null);
         }
 
         // Special Vaadin types
@@ -467,7 +469,8 @@ public class JsonCodec implements Serializable {
             }
         }
 
-        if (!restrictToInternalTypes && targetType instanceof ParameterizedType) {
+        if (!restrictToInternalTypes
+                && targetType instanceof ParameterizedType) {
             Type keyType = ((ParameterizedType) targetType)
                     .getActualTypeArguments()[0];
             Type valueType = ((ParameterizedType) targetType)
@@ -489,14 +492,16 @@ public class JsonCodec implements Serializable {
     }
 
     private static Map<Object, Object> decodeObjectMap(Type keyType,
-            Type valueType, JsonArray jsonMap, ConnectorTracker connectorTracker) {
+            Type valueType, JsonArray jsonMap,
+            ConnectorTracker connectorTracker) {
 
         JsonArray keys = jsonMap.getArray(0);
         JsonArray values = jsonMap.getArray(1);
 
         assert (keys.length() == values.length());
 
-        Map<Object, Object> map = new HashMap<Object, Object>(keys.length() * 2);
+        Map<Object, Object> map = new HashMap<Object, Object>(
+                keys.length() * 2);
         for (int i = 0; i < keys.length(); i++) {
             Object key = decodeInternalOrCustomType(keyType, keys.get(i),
                     connectorTracker);
@@ -554,7 +559,8 @@ public class JsonCodec implements Serializable {
     private static Object decodeParametrizedType(Type targetType,
             boolean restrictToInternalTypes, int typeIndex, JsonValue value,
             ConnectorTracker connectorTracker) {
-        if (!restrictToInternalTypes && targetType instanceof ParameterizedType) {
+        if (!restrictToInternalTypes
+                && targetType instanceof ParameterizedType) {
             Type childType = ((ParameterizedType) targetType)
                     .getActualTypeArguments()[typeIndex];
             // Only decode the given type
@@ -569,7 +575,8 @@ public class JsonCodec implements Serializable {
         }
     }
 
-    private static Object decodeEnum(Class<? extends Enum> cls, JsonString value) {
+    private static Object decodeEnum(Class<? extends Enum> cls,
+            JsonString value) {
         return Enum.valueOf(cls, value.getString());
     }
 
@@ -616,8 +623,8 @@ public class JsonCodec implements Serializable {
                 String fieldName = property.getName();
                 JsonValue encodedFieldValue = serializedObject.get(fieldName);
                 Type fieldType = property.getType();
-                Object decodedFieldValue = decodeInternalOrCustomType(
-                        fieldType, encodedFieldValue, connectorTracker);
+                Object decodedFieldValue = decodeInternalOrCustomType(fieldType,
+                        encodedFieldValue, connectorTracker);
 
                 property.setValue(decodedObject, decodedFieldValue);
             }
@@ -654,11 +661,11 @@ public class JsonCodec implements Serializable {
             toReturn = encodeCollection(valueType, (Collection<?>) value,
                     connectorTracker);
         } else if (value instanceof Map) {
-            toReturn = encodeMap(valueType, (Map<?, ?>) value, connectorTracker);
+            toReturn = encodeMap(valueType, (Map<?, ?>) value,
+                    connectorTracker);
         } else if (value instanceof Connector) {
-            if (value instanceof Component
-                    && !(LegacyCommunicationManager
-                            .isComponentVisibleToClient((Component) value))) {
+            if (value instanceof Component && !(LegacyCommunicationManager
+                    .isComponentVisibleToClient((Component) value))) {
                 // an encoded null is cached, return it directly.
                 return ENCODE_RESULT_NULL;
             }
@@ -724,12 +731,11 @@ public class JsonCodec implements Serializable {
                 Object fieldValue = property.getValue(value);
 
                 if (encoded.hasKey(fieldName)) {
-                    throw new RuntimeException(
-                            "Can't encode "
-                                    + valueType.getName()
-                                    + " as it has multiple properties with the name "
-                                    + fieldName.toLowerCase()
-                                    + ". This can happen if there are getters and setters for a public field (the framework can't know which to ignore) or if there are properties with only casing distinguishing between the names (e.g. getFoo() and getFOO())");
+                    throw new RuntimeException("Can't encode "
+                            + valueType.getName()
+                            + " as it has multiple properties with the name "
+                            + fieldName.toLowerCase()
+                            + ". This can happen if there are getters and setters for a public field (the framework can't know which to ignore) or if there are properties with only casing distinguishing between the names (e.g. getFoo() and getFOO())");
                 }
 
                 JsonValue fieldReference;
@@ -746,7 +752,8 @@ public class JsonCodec implements Serializable {
                         fieldType, connectorTracker);
                 encoded.put(fieldName, encodeResult.getEncodedValue());
 
-                if (valueChanged(encodeResult.getEncodedValue(), fieldReference)) {
+                if (valueChanged(encodeResult.getEncodedValue(),
+                        fieldReference)) {
                     diff.put(fieldName, encodeResult.getDiffOrValue());
                 }
             }
@@ -896,7 +903,8 @@ public class JsonCodec implements Serializable {
 
         if (mapType instanceof ParameterizedType) {
             keyType = ((ParameterizedType) mapType).getActualTypeArguments()[0];
-            valueType = ((ParameterizedType) mapType).getActualTypeArguments()[1];
+            valueType = ((ParameterizedType) mapType)
+                    .getActualTypeArguments()[1];
         } else {
             throw new JsonException("Map is missing generics");
         }

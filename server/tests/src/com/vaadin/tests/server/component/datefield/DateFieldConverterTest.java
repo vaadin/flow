@@ -42,14 +42,14 @@ public class DateFieldConverterTest extends TestCase {
             @Override
             public Long convertToModel(Date value,
                     Class<? extends Long> targetType, Locale locale)
-                    throws ConversionException {
+                            throws ConversionException {
                 return value.getTime();
             }
 
             @Override
             public Date convertToPresentation(Long value,
                     Class<? extends Date> targetType, Locale locale)
-                    throws ConversionException {
+                            throws ConversionException {
                 return new Date(value);
             }
 

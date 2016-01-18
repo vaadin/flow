@@ -32,7 +32,8 @@ public class StringToBigDecimalConverterTest extends TestCase {
     }
 
     public void testEmptyStringConversion() {
-        assertEquals(null, converter.convertToModel("", BigDecimal.class, null));
+        assertEquals(null,
+                converter.convertToModel("", BigDecimal.class, null));
     }
 
     public void testValueParsing() {

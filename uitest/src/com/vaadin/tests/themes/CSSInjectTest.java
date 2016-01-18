@@ -63,20 +63,19 @@ public class CSSInjectTest extends TestBase {
                         stylesheet.add(new StreamResource(
                                 new StreamResource.StreamSource() {
 
-                                    @Override
-                                    public InputStream getStream() {
-                                        return new ByteArrayInputStream(css
-                                                .getBytes());
-                                    }
-                                }, UUID.randomUUID().toString() + ".css"));
+                            @Override
+                            public InputStream getStream() {
+                                return new ByteArrayInputStream(css.getBytes());
+                            }
+                        }, UUID.randomUUID().toString() + ".css"));
 
                         cssToInject.setValue("");
                     }
                 });
         addComponent(injectRandom);
 
-        addComponent(new Button("Inject initial again!",
-                new Button.ClickListener() {
+        addComponent(
+                new Button("Inject initial again!", new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
                         stylesheet.add(initialResource);

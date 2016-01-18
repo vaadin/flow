@@ -24,8 +24,8 @@ import com.vaadin.testbench.elements.DateFieldElement;
 import com.vaadin.testbench.elements.PopupDateFieldElement;
 import com.vaadin.tests.tb3.SingleBrowserTest;
 
-public class DateFieldWhenChangingValueAndEnablingParentTest extends
-        SingleBrowserTest {
+public class DateFieldWhenChangingValueAndEnablingParentTest
+        extends SingleBrowserTest {
 
     @Test
     public void ensureCorrectStateAfterEnabling() {
@@ -48,9 +48,8 @@ public class DateFieldWhenChangingValueAndEnablingParentTest extends
         assertState(
                 $(PopupDateFieldElement.class).id("DATEFIELD_DISABLED_ENABLED"),
                 false, false);
-        assertState(
-                $(PopupDateFieldElement.class)
-                        .id("DATEFIELD_DISABLED_DISABLED"), false, false);
+        assertState($(PopupDateFieldElement.class)
+                .id("DATEFIELD_DISABLED_DISABLED"), false, false);
 
     }
 
@@ -72,26 +71,32 @@ public class DateFieldWhenChangingValueAndEnablingParentTest extends
         boolean hasClass = hasCssClass(id, "v-disabled");
         boolean fieldEnabled = !hasClass;
         if (assertEnabled) {
-            Assert.assertTrue("Field " + id.getAttribute("id")
-                    + " should be enabled", fieldEnabled);
+            Assert.assertTrue(
+                    "Field " + id.getAttribute("id") + " should be enabled",
+                    fieldEnabled);
         } else {
-            Assert.assertFalse("Field " + id.getAttribute("id")
-                    + " should be disabled", fieldEnabled);
+            Assert.assertFalse(
+                    "Field " + id.getAttribute("id") + " should be disabled",
+                    fieldEnabled);
         }
 
     }
 
     private void assertTextInputEnabled(DateFieldElement id, boolean enabled) {
-        String disabledAttr = id.findElement(By.xpath("./input")).getAttribute(
-                "disabled");
+        String disabledAttr = id.findElement(By.xpath("./input"))
+                .getAttribute("disabled");
         boolean textinputEnabled = (disabledAttr == null);
 
         if (enabled) {
-            Assert.assertTrue("Field " + id.getAttribute("id")
-                    + " text field should be enabled", textinputEnabled);
+            Assert.assertTrue(
+                    "Field " + id.getAttribute("id")
+                            + " text field should be enabled",
+                    textinputEnabled);
         } else {
-            Assert.assertFalse("Field " + id.getAttribute("id")
-                    + " text field should be disabled", textinputEnabled);
+            Assert.assertFalse(
+                    "Field " + id.getAttribute("id")
+                            + " text field should be disabled",
+                    textinputEnabled);
         }
 
     }

@@ -22,6 +22,7 @@ public class FormState extends AbstractFieldState {
     {
         primaryStyleName = "v-form";
     }
+
     public Connector layout;
     public Connector footer;
 }

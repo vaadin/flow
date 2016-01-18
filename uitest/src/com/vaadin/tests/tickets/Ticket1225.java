@@ -47,8 +47,8 @@ public class Ticket1225 extends LegacyApplication {
         Label red = new Label(
                 "<div style='background:red;width:100%;height:100%;'>??</div>",
                 ContentMode.HTML);
-        // red.setCaption("cap");
-        // red.setSizeFull();
+                // red.setCaption("cap");
+                // red.setSizeFull();
 
         // el.addComponent(testTable);
         // el.setExpandRatio(testTable,1);

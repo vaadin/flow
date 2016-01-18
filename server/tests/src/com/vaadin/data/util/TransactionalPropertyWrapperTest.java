@@ -35,8 +35,8 @@ import com.vaadin.ui.TextField;
 public class TransactionalPropertyWrapperTest {
 
     @SuppressWarnings("serial")
-    public class TestingProperty<T extends Object> extends
-            ObjectProperty<Object> {
+    public class TestingProperty<T extends Object>
+            extends ObjectProperty<Object> {
 
         private List<ValueChangeListener> listeners = new ArrayList<ValueChangeListener>();
 
@@ -72,8 +72,8 @@ public class TransactionalPropertyWrapperTest {
 
     @Test
     public void fieldGroupBindAndUnbind() {
-        item.addItemProperty("name", new TestingProperty<String>(
-                "Just some text"));
+        item.addItemProperty("name",
+                new TestingProperty<String>("Just some text"));
         item.addItemProperty("age", new TestingProperty<String>("42"));
 
         final FieldGroup binder = new FieldGroup(item);

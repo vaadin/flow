@@ -59,8 +59,8 @@ public class GridLayoutScrollPosition extends AbstractTestUI {
                 .addValueChangeListener(new ValueChangeListener() {
                     @Override
                     public void valueChange(ValueChangeEvent event) {
-                        toggleableLabel.setVisible(visibilityToggleCheckBox
-                                .getValue());
+                        toggleableLabel.setVisible(
+                                visibilityToggleCheckBox.getValue());
                     }
                 });
 

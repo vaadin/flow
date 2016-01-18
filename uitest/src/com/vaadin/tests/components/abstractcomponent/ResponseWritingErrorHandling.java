@@ -34,6 +34,7 @@ public class ResponseWritingErrorHandling extends AbstractTestUIWithLog {
 
         Button button = new Button("Throw in beforeClientResponse") {
             private boolean throwInBeforeClientResponse = false;
+
             {
                 addClickListener(new ClickListener() {
                     @Override

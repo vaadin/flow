@@ -54,15 +54,15 @@ public class BeanFieldGroup<T> extends FieldGroup {
                         propertyId.toString());
                 if (type == null) {
                     throw new BindException(
-                            "Cannot determine type of propertyId '"
-                                    + propertyId
+                            "Cannot determine type of propertyId '" + propertyId
                                     + "'. The propertyId was not found in "
                                     + beanType.getName());
                 }
                 return type;
             } catch (IntrospectionException e) {
                 throw new BindException("Cannot determine type of propertyId '"
-                        + propertyId + "'. Unable to introspect " + beanType, e);
+                        + propertyId + "'. Unable to introspect " + beanType,
+                        e);
             }
         }
     }
@@ -71,7 +71,8 @@ public class BeanFieldGroup<T> extends FieldGroup {
     protected Object findPropertyId(java.lang.reflect.Field memberField) {
         String fieldName = memberField.getName();
         Item dataSource = getItemDataSource();
-        if (dataSource != null && dataSource.getItemProperty(fieldName) != null) {
+        if (dataSource != null
+                && dataSource.getItemProperty(fieldName) != null) {
             return fieldName;
         } else {
             String minifiedFieldName = minifyFieldName(fieldName);

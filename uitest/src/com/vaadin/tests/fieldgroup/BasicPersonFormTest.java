@@ -164,8 +164,8 @@ public abstract class BasicPersonFormTest extends MultiBrowserTest {
 
     protected void assertLogText(String expected) {
         ++logCounter;
-        Assert.assertEquals("Unexpected log contents,", logCounter + ". "
-                + expected, getLogRow(0));
+        Assert.assertEquals("Unexpected log contents,",
+                logCounter + ". " + expected, getLogRow(0));
     }
 
     protected void assertDefaults() {

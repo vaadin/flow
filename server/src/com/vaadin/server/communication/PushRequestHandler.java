@@ -58,8 +58,8 @@ import com.vaadin.shared.communication.PushConstants;
  * @author Vaadin Ltd
  * @since 7.1
  */
-public class PushRequestHandler implements RequestHandler,
-        SessionExpiredHandler {
+public class PushRequestHandler
+        implements RequestHandler, SessionExpiredHandler {
 
     private AtmosphereFramework atmosphere;
     private PushHandler pushHandler;
@@ -82,30 +82,26 @@ public class PushRequestHandler implements RequestHandler,
         atmosphere = getPreInitializedAtmosphere(vaadinServletConfig);
         if (atmosphere == null) {
             // Not initialized by JSR356WebsocketInitializer
-            getLogger().fine(
-                    "Initializing Atmosphere for servlet "
-                            + vaadinServletConfig.getServletName());
+            getLogger().fine("Initializing Atmosphere for servlet "
+                    + vaadinServletConfig.getServletName());
             try {
                 atmosphere = initAtmosphere(vaadinServletConfig);
             } catch (Exception e) {
-                getLogger().log(
-                        Level.WARNING,
+                getLogger().log(Level.WARNING,
                         "Failed to initialize Atmosphere for "
                                 + service.getServlet().getServletName()
-                                + ". Push will not work.", e);
+                                + ". Push will not work.",
+                        e);
                 return;
             }
         } else {
-            getLogger().fine(
-                    "Using pre-initialized Atmosphere for servlet "
-                            + vaadinServletConfig.getServletName());
+            getLogger().fine("Using pre-initialized Atmosphere for servlet "
+                    + vaadinServletConfig.getServletName());
         }
-        pushHandler
-                .setLongPollingSuspendTimeout(atmosphere
-                        .getAtmosphereConfig()
-                        .getInitParameter(
-                                com.vaadin.server.Constants.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
-                                -1));
+        pushHandler.setLongPollingSuspendTimeout(
+                atmosphere.getAtmosphereConfig().getInitParameter(
+                        com.vaadin.server.Constants.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
+                        -1));
         for (AtmosphereHandlerWrapper handlerWrapper : atmosphere
                 .getAtmosphereHandlers().values()) {
             AtmosphereHandler handler = handlerWrapper.atmosphereHandler;
@@ -244,8 +240,8 @@ public class PushRequestHandler implements RequestHandler,
                 return true;
             }
             try {
-                atmosphere.doCometSupport(AtmosphereRequest
-                        .wrap((VaadinServletRequest) request),
+                atmosphere.doCometSupport(
+                        AtmosphereRequest.wrap((VaadinServletRequest) request),
                         AtmosphereResponse
                                 .wrap((VaadinServletResponse) response));
             } catch (ServletException e) {

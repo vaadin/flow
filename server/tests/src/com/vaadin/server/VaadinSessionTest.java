@@ -65,6 +65,7 @@ public class VaadinSessionTest {
         mockHttpSession = EasyMock.createMock(HttpSession.class);
         mockWrappedSession = new WrappedHttpSession(mockHttpSession) {
             final ReentrantLock lock = new ReentrantLock();
+
             {
                 lock.lock();
             }
@@ -110,7 +111,8 @@ public class VaadinSessionTest {
                         || "ignoreRestart".equals(name)
                         || "closeApplication".equals(name)) {
                     return null;
-                } else if (UIInitHandler.BROWSER_DETAILS_PARAMETER.equals(name)) {
+                } else if (UIInitHandler.BROWSER_DETAILS_PARAMETER
+                        .equals(name)) {
                     return "1";
                 }
                 return super.getParameter(name);
@@ -122,7 +124,8 @@ public class VaadinSessionTest {
             }
 
             @Override
-            public WrappedSession getWrappedSession(boolean allowSessionCreation) {
+            public WrappedSession getWrappedSession(
+                    boolean allowSessionCreation) {
                 return mockWrappedSession;
             }
 
@@ -186,7 +189,8 @@ public class VaadinSessionTest {
             }
         });
 
-        session.valueUnbound(EasyMock.createMock(HttpSessionBindingEvent.class));
+        session.valueUnbound(
+                EasyMock.createMock(HttpSessionBindingEvent.class));
         mockService.runPendingAccessTasks(session); // as soon as we changed
                                                     // session.accessSynchronously
                                                     // to session.access in
@@ -226,19 +230,19 @@ public class VaadinSessionTest {
     public void testValueUnbound() {
         MockVaadinSession vaadinSession = new MockVaadinSession(mockService);
 
-        vaadinSession.valueUnbound(EasyMock
-                .createMock(HttpSessionBindingEvent.class));
+        vaadinSession.valueUnbound(
+                EasyMock.createMock(HttpSessionBindingEvent.class));
         org.junit.Assert.assertEquals(
-                "'valueUnbound' method doesn't call 'close' for the session",
-                1, vaadinSession.getCloseCount());
+                "'valueUnbound' method doesn't call 'close' for the session", 1,
+                vaadinSession.getCloseCount());
 
-        vaadinSession.valueUnbound(EasyMock
-                .createMock(HttpSessionBindingEvent.class));
+        vaadinSession.valueUnbound(
+                EasyMock.createMock(HttpSessionBindingEvent.class));
 
         org.junit.Assert.assertEquals(
                 "'valueUnbound' method may not call 'close' "
-                        + "method for closing session", 1,
-                vaadinSession.getCloseCount());
+                        + "method for closing session",
+                1, vaadinSession.getCloseCount());
     }
 
     // Can't define as an anonymous class since it would have a reference to
@@ -263,8 +267,8 @@ public class VaadinSessionTest {
     private static class SerializationTestLabel extends Label {
         private transient VaadinSession session = VaadinSession.getCurrent();
 
-        private void readObject(ObjectInputStream in) throws IOException,
-                ClassNotFoundException {
+        private void readObject(ObjectInputStream in)
+                throws IOException, ClassNotFoundException {
             in.defaultReadObject();
             session = VaadinSession.getCurrent();
         }
@@ -290,13 +294,12 @@ public class VaadinSessionTest {
 
         CurrentInstance.clearAll();
 
-        ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(
-                bos.toByteArray()));
+        ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(bos.toByteArray()));
 
         VaadinSession deserializedSession = (VaadinSession) in.readObject();
 
-        Assert.assertNull(
-                "Current session shouldn't leak from deserialisation",
+        Assert.assertNull("Current session shouldn't leak from deserialisation",
                 VaadinSession.getCurrent());
 
         Assert.assertNotSame("Should get a new session", session,

@@ -25,13 +25,13 @@ import com.vaadin.ui.Table;
 
 public class TableWithCustomConverterFactory extends AbstractTestUI {
 
-    public static class MyIntegerConverter implements
-            Converter<String, Integer> {
+    public static class MyIntegerConverter
+            implements Converter<String, Integer> {
 
         @Override
         public Integer convertToModel(String value,
                 Class<? extends Integer> targetType, Locale locale)
-                throws com.vaadin.data.util.converter.Converter.ConversionException {
+                        throws com.vaadin.data.util.converter.Converter.ConversionException {
             // TODO Auto-generated method stub
             return null;
         }
@@ -39,7 +39,7 @@ public class TableWithCustomConverterFactory extends AbstractTestUI {
         @Override
         public String convertToPresentation(Integer value,
                 Class<? extends String> targetType, Locale locale)
-                throws com.vaadin.data.util.converter.Converter.ConversionException {
+                        throws com.vaadin.data.util.converter.Converter.ConversionException {
             return "Integer: " + value;
         }
 
@@ -57,7 +57,8 @@ public class TableWithCustomConverterFactory extends AbstractTestUI {
 
     public static class MyConverterFactory extends DefaultConverterFactory {
         @Override
-        protected Converter<String, ?> createStringConverter(Class<?> sourceType) {
+        protected Converter<String, ?> createStringConverter(
+                Class<?> sourceType) {
             if (Integer.class.isAssignableFrom(sourceType)) {
                 return new MyIntegerConverter();
             } else {

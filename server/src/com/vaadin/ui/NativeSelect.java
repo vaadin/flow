@@ -35,13 +35,14 @@ import com.vaadin.server.PaintTarget;
  * better choice.
  */
 @SuppressWarnings("serial")
-public class NativeSelect extends AbstractSelect implements
-        FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
+public class NativeSelect extends AbstractSelect
+        implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 
     // width in characters, mimics TextField
     private int columns = 0;
 
-    FocusAndBlurServerRpcImpl focusBlurRpc = new FocusAndBlurServerRpcImpl(this) {
+    FocusAndBlurServerRpcImpl focusBlurRpc = new FocusAndBlurServerRpcImpl(
+            this) {
 
         @Override
         protected void fireEvent(Event event) {
@@ -124,7 +125,8 @@ public class NativeSelect extends AbstractSelect implements
     public void setMultiSelect(boolean multiSelect)
             throws UnsupportedOperationException {
         if (multiSelect == true) {
-            throw new UnsupportedOperationException("Multiselect not supported");
+            throw new UnsupportedOperationException(
+                    "Multiselect not supported");
         }
     }
 

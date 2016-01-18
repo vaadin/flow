@@ -173,7 +173,7 @@ public class StatementHelper implements Serializable {
      */
     protected boolean handleUnrecognizedTypeNullValue(int i,
             PreparedStatement pstmt, Map<Integer, Class<?>> dataTypes)
-            throws SQLException {
+                    throws SQLException {
         return false;
     }
 }

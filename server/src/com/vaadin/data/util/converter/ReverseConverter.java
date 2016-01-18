@@ -30,8 +30,8 @@ import java.util.Locale;
  * @author Vaadin Ltd
  * @since 7.0
  */
-public class ReverseConverter<PRESENTATION, MODEL> implements
-        Converter<PRESENTATION, MODEL> {
+public class ReverseConverter<PRESENTATION, MODEL>
+        implements Converter<PRESENTATION, MODEL> {
 
     private Converter<MODEL, PRESENTATION> realConverter;
 
@@ -55,7 +55,7 @@ public class ReverseConverter<PRESENTATION, MODEL> implements
     @Override
     public MODEL convertToModel(PRESENTATION value,
             Class<? extends MODEL> targetType, Locale locale)
-            throws com.vaadin.data.util.converter.Converter.ConversionException {
+                    throws com.vaadin.data.util.converter.Converter.ConversionException {
         return realConverter.convertToPresentation(value, targetType, locale);
     }
 
@@ -69,7 +69,7 @@ public class ReverseConverter<PRESENTATION, MODEL> implements
     @Override
     public PRESENTATION convertToPresentation(MODEL value,
             Class<? extends PRESENTATION> targetType, Locale locale)
-            throws com.vaadin.data.util.converter.Converter.ConversionException {
+                    throws com.vaadin.data.util.converter.Converter.ConversionException {
         return realConverter.convertToModel(value, targetType, locale);
     }
 

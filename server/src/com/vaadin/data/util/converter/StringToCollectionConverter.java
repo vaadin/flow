@@ -38,8 +38,8 @@ import java.util.Locale;
  * 
  * @author Vaadin Ltd
  */
-public class StringToCollectionConverter implements
-        Converter<String, Collection> {
+public class StringToCollectionConverter
+        implements Converter<String, Collection> {
 
     private final String delimiter;
     private final Converter<String, ?> tokenConverter;
@@ -144,7 +144,7 @@ public class StringToCollectionConverter implements
     @Override
     public Collection convertToModel(String value,
             Class<? extends Collection> targetType, Locale locale)
-            throws Converter.ConversionException {
+                    throws Converter.ConversionException {
         int index = value.indexOf(delimiter);
         int previous = 0;
         Collection result = factory.createCollection(targetType);
@@ -162,7 +162,7 @@ public class StringToCollectionConverter implements
     @Override
     public String convertToPresentation(Collection value,
             Class<? extends String> targetType, Locale locale)
-            throws Converter.ConversionException {
+                    throws Converter.ConversionException {
         StringBuilder builder = new StringBuilder();
         Converter converter = tokenConverter;
         for (Iterator<?> iterator = value.iterator(); iterator.hasNext();) {
@@ -198,7 +198,8 @@ public class StringToCollectionConverter implements
     public static class DefaultCollectionFactory implements CollectionFactory {
 
         @Override
-        public Collection<?> createCollection(Class<? extends Collection> type) {
+        public Collection<?> createCollection(
+                Class<? extends Collection> type) {
             if (type.isAssignableFrom(ArrayList.class)) {
                 return new ArrayList();
             } else if (type.isAssignableFrom(HashSet.class)) {

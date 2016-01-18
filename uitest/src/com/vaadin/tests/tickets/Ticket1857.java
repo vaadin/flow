@@ -61,14 +61,15 @@ public class Ticket1857 extends LegacyApplication implements Handler {
                         @Override
                         public String getStyle(Table source, Object itemId,
                                 Object propertyId) {
-                            Object cell = t.getContainerProperty(itemId,
-                                    propertyId).getValue();
+                            Object cell = t
+                                    .getContainerProperty(itemId, propertyId)
+                                    .getValue();
                             if (!(cell instanceof Integer)) {
                                 return null;
                             }
                             int age = ((Integer) cell).intValue();
-                            return age > 65 ? "old" : (age < 18 ? "young"
-                                    : null);
+                            return age > 65 ? "old"
+                                    : (age < 18 ? "young" : null);
                         }
                     });
                 } else {
@@ -92,9 +93,12 @@ public class Ticket1857 extends LegacyApplication implements Handler {
                 "Smith", "Lindström" };
 
         for (int i = 0; i < 1000; i++) {
-            t.addItem(new Object[] {
-                    firstNames[((int) (Math.random() * firstNames.length))],
-                    lastNames[((int) (Math.random() * lastNames.length))],
+            t.addItem(
+                    new Object[] {
+                            firstNames[((int) (Math.random()
+                                    * firstNames.length))],
+                            lastNames[((int) (Math.random()
+                                    * lastNames.length))],
                     new Integer((int) (Math.random() * 100) + 10) },
                     new Integer(i));
         }

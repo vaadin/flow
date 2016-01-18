@@ -47,8 +47,8 @@ public class StateGetDoesNotMarkDirtyTest extends TestCase {
                             // we still wouldnt know what to put into
                             continue;
                         }
-                        if (excludedMethods.contains(c.getName()
-                                + method.getName())) {
+                        if (excludedMethods
+                                .contains(c.getName() + method.getName())) {
                             // blacklisted method for specific classes
                             continue;
                         }

@@ -42,8 +42,8 @@ public class VaadinServletConfigurationTest {
 
         Class<? extends UI> uiClass = new DefaultUIProvider()
                 .getUIClass(new UIClassSelectionEvent(new VaadinServletRequest(
-                        EasyMock.createMock(HttpServletRequest.class), servlet
-                                .getService())));
+                        EasyMock.createMock(HttpServletRequest.class),
+                        servlet.getService())));
         Assert.assertEquals(MockUIContainingServlet.class, uiClass);
     }
 
@@ -63,8 +63,8 @@ public class VaadinServletConfigurationTest {
 
         Class<? extends UI> uiClass = new DefaultUIProvider()
                 .getUIClass(new UIClassSelectionEvent(new VaadinServletRequest(
-                        EasyMock.createMock(HttpServletRequest.class), servlet
-                                .getService())));
+                        EasyMock.createMock(HttpServletRequest.class),
+                        servlet.getService())));
         Assert.assertEquals(MockUIContainingServlet.class, uiClass);
     }
 
@@ -113,8 +113,8 @@ public class VaadinServletConfigurationTest {
 
         Class<? extends UI> uiClass = new DefaultUIProvider()
                 .getUIClass(new UIClassSelectionEvent(new VaadinServletRequest(
-                        EasyMock.createMock(HttpServletRequest.class), servlet
-                                .getService())));
+                        EasyMock.createMock(HttpServletRequest.class),
+                        servlet.getService())));
         Assert.assertEquals(MockUIContainingServlet.class, uiClass);
     }
 }

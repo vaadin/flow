@@ -64,18 +64,18 @@ public class PopupDateFieldValueChangeEventsTest extends MultiBrowserTest {
     }
 
     public WebElement getHoursSelect() {
-        return findElement(By
-                .xpath("//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[3]/td/div/select"));
+        return findElement(By.xpath(
+                "//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[3]/td/div/select"));
     }
 
     public WebElement getMinutesSelect() {
-        return findElement(By
-                .xpath("//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[3]/td/div/select[2]"));
+        return findElement(By.xpath(
+                "//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[3]/td/div/select[2]"));
     }
 
     public WebElement getSecondsSelect() {
-        return findElement(By
-                .xpath("//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[3]/td/div/select[3]"));
+        return findElement(By.xpath(
+                "//table[@id='PID_VAADIN_POPUPCAL']/tbody/tr[3]/td/div/select[3]"));
     }
 
     public NativeSelectElement getResolutionSelect() {

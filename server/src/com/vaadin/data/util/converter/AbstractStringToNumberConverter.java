@@ -32,8 +32,8 @@ import java.util.Locale;
  * @author Vaadin Ltd
  * @since 7.1
  */
-public abstract class AbstractStringToNumberConverter<T> implements
-        Converter<String, T> {
+public abstract class AbstractStringToNumberConverter<T>
+        implements Converter<String, T> {
 
     /**
      * Returns the format used by {@link #convertToPresentation(Object, Locale)}
@@ -67,7 +67,7 @@ public abstract class AbstractStringToNumberConverter<T> implements
      */
     protected Number convertToNumber(String value,
             Class<? extends Number> targetType, Locale locale)
-            throws ConversionException {
+                    throws ConversionException {
         if (value == null) {
             return null;
         }
@@ -102,7 +102,7 @@ public abstract class AbstractStringToNumberConverter<T> implements
     @Override
     public String convertToPresentation(T value,
             Class<? extends String> targetType, Locale locale)
-            throws ConversionException {
+                    throws ConversionException {
         if (value == null) {
             return null;
         }

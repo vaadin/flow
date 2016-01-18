@@ -38,10 +38,10 @@ public class ParseAllSupportedComponentsTest {
 
     @Test
     public void allComponentsAreParsed() throws FileNotFoundException {
-        DesignContext ctx = Design
-                .read(new FileInputStream(
+        DesignContext ctx = Design.read(
+                new FileInputStream(
                         "server/tests/src/com/vaadin/tests/design/all-components.html"),
-                        null);
+                null);
 
         assertThat(ctx, is(not(nullValue())));
         assertThat(ctx.getRootComponent(), is(not(nullValue())));

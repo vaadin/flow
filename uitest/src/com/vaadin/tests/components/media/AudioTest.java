@@ -56,12 +56,12 @@ public class AudioTest extends TestBase {
                 new MethodProperty<Boolean>(audio, "htmlContentAllowed"));
         checkBox.setImmediate(true);
         addComponent(checkBox);
-        checkBox = new CheckBox("muted", new MethodProperty<Boolean>(audio,
-                "muted"));
+        checkBox = new CheckBox("muted",
+                new MethodProperty<Boolean>(audio, "muted"));
         checkBox.setImmediate(true);
         addComponent(checkBox);
-        checkBox = new CheckBox("autoplay", new MethodProperty<Boolean>(audio,
-                "autoplay"));
+        checkBox = new CheckBox("autoplay",
+                new MethodProperty<Boolean>(audio, "autoplay"));
         checkBox.setImmediate(true);
         addComponent(checkBox);
 

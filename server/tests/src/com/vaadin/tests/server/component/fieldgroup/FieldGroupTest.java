@@ -81,8 +81,8 @@ public class FieldGroupTest {
         field2.setRequired(true);
         fieldGroup.bind(field2, "prop2");
 
-        Set<TextField> set = new HashSet<TextField>(Arrays.asList(field1,
-                field2));
+        Set<TextField> set = new HashSet<TextField>(
+                Arrays.asList(field1, field2));
 
         try {
             fieldGroup.commit();
@@ -137,7 +137,8 @@ public class FieldGroupTest {
         }
 
         @Override
-        public void setValue(String newValue) throws Property.ReadOnlyException {
+        public void setValue(String newValue)
+                throws Property.ReadOnlyException {
         }
 
         @Override

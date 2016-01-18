@@ -41,16 +41,16 @@ public class DesignTest {
 
     @Test
     public void readStream() throws FileNotFoundException {
-        Component root = Design
-                .read(new FileInputStream(
-                        "server/tests/src/com/vaadin/tests/design/verticallayout-two-children.html"));
+        Component root = Design.read(new FileInputStream(
+                "server/tests/src/com/vaadin/tests/design/verticallayout-two-children.html"));
         VerticalLayout rootLayout = (VerticalLayout) root;
         Assert.assertEquals(VerticalLayout.class, root.getClass());
 
         Assert.assertEquals(2, rootLayout.getComponentCount());
-        Assert.assertEquals(TextField.class, rootLayout.getComponent(0)
-                .getClass());
-        Assert.assertEquals(Button.class, rootLayout.getComponent(1).getClass());
+        Assert.assertEquals(TextField.class,
+                rootLayout.getComponent(0).getClass());
+        Assert.assertEquals(Button.class,
+                rootLayout.getComponent(1).getClass());
     }
 
     @Test(expected = DesignException.class)
@@ -80,23 +80,23 @@ public class DesignTest {
                 new Button("Cancel"));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Design.write(root, baos);
-        Component newRoot = Design.read(new ByteArrayInputStream(baos
-                .toByteArray()));
+        Component newRoot = Design
+                .read(new ByteArrayInputStream(baos.toByteArray()));
 
         assertHierarchyEquals(root, newRoot);
     }
 
     @Test
     public void writeDesignContextToStream() throws IOException {
-        DesignContext dc = Design
-                .read(new FileInputStream(
+        DesignContext dc = Design.read(
+                new FileInputStream(
                         "server/tests/src/com/vaadin/tests/design/verticallayout-two-children.html"),
-                        null);
+                null);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Design.write(dc, baos);
-        Component newRoot = Design.read(new ByteArrayInputStream(baos
-                .toByteArray()));
+        Component newRoot = Design
+                .read(new ByteArrayInputStream(baos.toByteArray()));
 
         assertHierarchyEquals(dc.getRootComponent(), newRoot);
     }

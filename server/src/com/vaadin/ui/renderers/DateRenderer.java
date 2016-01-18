@@ -87,9 +87,9 @@ public class DateRenderer extends AbstractRenderer<Date> {
      *            the format string with which to format the date
      * @throws IllegalArgumentException
      *             if {@code formatString} is {@code null}
-     * @see <a
-     *      href="http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax">Format
-     *      String Syntax</a>
+     * @see <a href=
+     *      "http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax">
+     *      Format String Syntax</a>
      */
     public DateRenderer(String formatString) throws IllegalArgumentException {
         this(formatString, "");
@@ -107,9 +107,9 @@ public class DateRenderer extends AbstractRenderer<Date> {
      *            the textual representation of {@code null} value
      * @throws IllegalArgumentException
      *             if {@code formatString} is {@code null}
-     * @see <a
-     *      href="http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax">Format
-     *      String Syntax</a>
+     * @see <a href=
+     *      "http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax">
+     *      Format String Syntax</a>
      */
     public DateRenderer(String formatString, String nullRepresentation)
             throws IllegalArgumentException {
@@ -128,9 +128,9 @@ public class DateRenderer extends AbstractRenderer<Date> {
      *            the locale to use
      * @throws IllegalArgumentException
      *             if either argument is {@code null}
-     * @see <a
-     *      href="http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax">Format
-     *      String Syntax</a>
+     * @see <a href=
+     *      "http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax">
+     *      Format String Syntax</a>
      */
     public DateRenderer(String formatString, Locale locale)
             throws IllegalArgumentException {
@@ -151,9 +151,9 @@ public class DateRenderer extends AbstractRenderer<Date> {
      *            the textual representation of {@code null} value
      * @throws IllegalArgumentException
      *             if either argument is {@code null}
-     * @see <a
-     *      href="http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax">Format
-     *      String Syntax</a>
+     * @see <a href=
+     *      "http://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html#syntax">
+     *      Format String Syntax</a>
      */
     public DateRenderer(String formatString, Locale locale,
             String nullRepresentation) throws IllegalArgumentException {

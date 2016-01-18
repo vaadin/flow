@@ -46,8 +46,8 @@ import com.vaadin.ui.declarative.DesignException;
 
 /**
  * A test for checking that parsing a layout preserves the IDs and the mapping
- * from prefixes to package names (for example <meta name=”package-mapping”
- * content=”my:com.addon.mypackage” />)
+ * from prefixes to package names (for example
+ * <meta name=”package-mapping” content=”my:com.addon.mypackage” />)
  * 
  * @since
  * @author Vaadin Ltd
@@ -58,10 +58,10 @@ public class ParseLayoutTest {
 
     @Before
     public void setUp() throws Exception {
-        ctx = Design
-                .read(new FileInputStream(
+        ctx = Design.read(
+                new FileInputStream(
                         "server/tests/src/com/vaadin/tests/design/testFile.html"),
-                        null);
+                null);
     }
 
     @Test

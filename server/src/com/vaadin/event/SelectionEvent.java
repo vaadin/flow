@@ -91,8 +91,8 @@ public class SelectionEvent extends EventObject {
     }
 
     /**
-     * The interface for adding and removing listeners for
-     * {@link SelectionEvent SelectionEvents}.
+     * The interface for adding and removing listeners for {@link SelectionEvent
+     * SelectionEvents}.
      */
     public interface SelectionNotifier extends Serializable {
         /**

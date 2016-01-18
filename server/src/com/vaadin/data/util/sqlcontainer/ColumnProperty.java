@@ -147,8 +147,8 @@ final public class ColumnProperty implements Property {
     }
 
     @Override
-    public void setValue(Object newValue) throws ReadOnlyException,
-            ConversionException {
+    public void setValue(Object newValue)
+            throws ReadOnlyException, ConversionException {
         if (newValue == null && !nullable) {
             throw new NotNullableException(
                     "Null values are not allowed for this property.");

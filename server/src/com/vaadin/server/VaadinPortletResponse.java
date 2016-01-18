@@ -44,6 +44,7 @@ import com.google.gwt.thirdparty.guava.common.html.HtmlEscapers;
 public class VaadinPortletResponse implements VaadinResponse {
     static final DateFormat HTTP_DATE_FORMAT = new SimpleDateFormat(
             "EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+
     static {
         HTTP_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
@@ -127,7 +128,8 @@ public class VaadinPortletResponse implements VaadinResponse {
 
     @Override
     public void setDateHeader(String name, long timestamp) {
-        response.setProperty(name, HTTP_DATE_FORMAT.format(new Date(timestamp)));
+        response.setProperty(name,
+                HTTP_DATE_FORMAT.format(new Date(timestamp)));
     }
 
     @Override

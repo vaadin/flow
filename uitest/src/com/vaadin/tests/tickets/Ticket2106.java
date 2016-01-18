@@ -13,6 +13,7 @@ import com.vaadin.ui.LegacyWindow;
 public class Ticket2106 extends LegacyApplication {
 
     private static CustomizedSystemMessages msgs = new CustomizedSystemMessages();
+
     static {
         // We will forward the user to www.vaadin.com when the session expires
         msgs.setSessionExpiredURL("http://www.vaadin.com");
@@ -31,9 +32,8 @@ public class Ticket2106 extends LegacyApplication {
                 new Button("Do nothing", new Button.ClickListener() {
                     @Override
                     public void buttonClick(ClickEvent event) {
-                        getMainWindow().addComponent(
-                                new Label("Last time did nothing: "
-                                        + new Date()));
+                        getMainWindow().addComponent(new Label(
+                                "Last time did nothing: " + new Date()));
                     }
                 }));
     }

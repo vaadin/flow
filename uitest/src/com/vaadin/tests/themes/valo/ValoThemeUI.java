@@ -64,6 +64,7 @@ public class ValoThemeUI extends UI {
     private boolean testMode = false;
 
     private static LinkedHashMap<String, String> themeVariants = new LinkedHashMap<String, String>();
+
     static {
         themeVariants.put("tests-valo", "Default");
         themeVariants.put("tests-valo-blueprint", "Blueprint");
@@ -74,15 +75,18 @@ public class ValoThemeUI extends UI {
         themeVariants.put("tests-valo-light", "Light");
         themeVariants.put("tests-valo-metro", "Metro");
     }
+
     private TestIcon testIcon = new TestIcon(100);
 
     ValoMenuLayout root = new ValoMenuLayout();
     ComponentContainer viewDisplay = root.getContentContainer();
     CssLayout menu = new CssLayout();
     CssLayout menuItemsLayout = new CssLayout();
+
     {
         menu.setId("testMenu");
     }
+
     private Navigator navigator;
     private LinkedHashMap<String, String> menuItems = new LinkedHashMap<String, String>();
 
@@ -92,8 +96,8 @@ public class ValoThemeUI extends UI {
             testMode = true;
 
             if (browserCantRenderFontsConsistently()) {
-                getPage().getStyles().add(
-                        ".v-app.v-app.v-app {font-family: Sans-Serif;}");
+                getPage().getStyles()
+                        .add(".v-app.v-app.v-app {font-family: Sans-Serif;}");
             }
         }
 
@@ -159,9 +163,8 @@ public class ValoThemeUI extends UI {
                         for (Iterator<Component> it = menuItemsLayout
                                 .iterator(); it.hasNext();) {
                             Component c = it.next();
-                            if (c.getCaption() != null
-                                    && c.getCaption().startsWith(
-                                            item.getValue())) {
+                            if (c.getCaption() != null && c.getCaption()
+                                    .startsWith(item.getValue())) {
                                 c.addStyleName("selected");
                                 break;
                             }
@@ -281,8 +284,9 @@ public class ValoThemeUI extends UI {
         StringGenerator sg = new StringGenerator();
         MenuItem settingsItem = settings.addItem(
                 sg.nextString(true) + " " + sg.nextString(true)
-                        + sg.nextString(false), new ThemeResource(
-                        "../tests-valo/img/profile-pic-300px.jpg"), null);
+                        + sg.nextString(false),
+                new ThemeResource("../tests-valo/img/profile-pic-300px.jpg"),
+                null);
         settingsItem.addItem("Edit Profile", null);
         settingsItem.addItem("Preferences", null);
         settingsItem.addSeparator();
@@ -303,9 +307,9 @@ public class ValoThemeUI extends UI {
                 menuItemsLayout.addComponent(label);
             }
             if (item.getKey().equals("panels")) {
-                label.setValue(label.getValue()
-                        + " <span class=\"valo-menu-badge\">" + count
-                        + "</span>");
+                label.setValue(
+                        label.getValue() + " <span class=\"valo-menu-badge\">"
+                                + count + "</span>");
                 count = 0;
                 label = new Label("Containers", ContentMode.HTML);
                 label.setPrimaryStyleName(ValoTheme.MENU_SUBTITLE);
@@ -314,9 +318,9 @@ public class ValoThemeUI extends UI {
                 menuItemsLayout.addComponent(label);
             }
             if (item.getKey().equals("calendar")) {
-                label.setValue(label.getValue()
-                        + " <span class=\"valo-menu-badge\">" + count
-                        + "</span>");
+                label.setValue(
+                        label.getValue() + " <span class=\"valo-menu-badge\">"
+                                + count + "</span>");
                 count = 0;
                 label = new Label("Other", ContentMode.HTML);
                 label.setPrimaryStyleName(ValoTheme.MENU_SUBTITLE);
@@ -404,16 +408,16 @@ public class ValoThemeUI extends UI {
         container.addContainerProperty(CAPTION_PROPERTY, String.class, null);
         container.addContainerProperty(ICON_PROPERTY, Resource.class, null);
         container.addContainerProperty(INDEX_PROPERTY, Integer.class, null);
-        container
-                .addContainerProperty(DESCRIPTION_PROPERTY, String.class, null);
+        container.addContainerProperty(DESCRIPTION_PROPERTY, String.class,
+                null);
         for (int i = 1; i < size + 1; i++) {
             Item item = container.addItem(i);
-            item.getItemProperty(CAPTION_PROPERTY).setValue(
-                    sg.nextString(true) + " " + sg.nextString(false));
+            item.getItemProperty(CAPTION_PROPERTY)
+                    .setValue(sg.nextString(true) + " " + sg.nextString(false));
             item.getItemProperty(INDEX_PROPERTY).setValue(i);
-            item.getItemProperty(DESCRIPTION_PROPERTY).setValue(
-                    sg.nextString(true) + " " + sg.nextString(false) + " "
-                            + sg.nextString(false));
+            item.getItemProperty(DESCRIPTION_PROPERTY)
+                    .setValue(sg.nextString(true) + " " + sg.nextString(false)
+                            + " " + sg.nextString(false));
             item.getItemProperty(ICON_PROPERTY).setValue(testIcon.get());
         }
         container.getItem(container.getIdByIndex(0))
@@ -426,28 +430,28 @@ public class ValoThemeUI extends UI {
                     Item child = container.addItem(id);
                     child.getItemProperty(CAPTION_PROPERTY).setValue(
                             sg.nextString(true) + " " + sg.nextString(false));
-                    child.getItemProperty(ICON_PROPERTY).setValue(
-                            testIcon.get());
+                    child.getItemProperty(ICON_PROPERTY)
+                            .setValue(testIcon.get());
                     ((Hierarchical) container).setParent(id, i);
 
                     for (int k = 1; k < 6; k++) {
                         String id2 = id + " -> " + k;
                         child = container.addItem(id2);
-                        child.getItemProperty(CAPTION_PROPERTY).setValue(
-                                sg.nextString(true) + " "
+                        child.getItemProperty(CAPTION_PROPERTY)
+                                .setValue(sg.nextString(true) + " "
                                         + sg.nextString(false));
-                        child.getItemProperty(ICON_PROPERTY).setValue(
-                                testIcon.get());
+                        child.getItemProperty(ICON_PROPERTY)
+                                .setValue(testIcon.get());
                         ((Hierarchical) container).setParent(id2, id);
 
                         for (int l = 1; l < 5; l++) {
                             String id3 = id2 + " -> " + l;
                             child = container.addItem(id3);
-                            child.getItemProperty(CAPTION_PROPERTY).setValue(
-                                    sg.nextString(true) + " "
+                            child.getItemProperty(CAPTION_PROPERTY)
+                                    .setValue(sg.nextString(true) + " "
                                             + sg.nextString(false));
-                            child.getItemProperty(ICON_PROPERTY).setValue(
-                                    testIcon.get());
+                            child.getItemProperty(ICON_PROPERTY)
+                                    .setValue(testIcon.get());
                             ((Hierarchical) container).setParent(id3, id2);
                         }
                     }

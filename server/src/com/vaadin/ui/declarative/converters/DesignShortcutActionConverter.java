@@ -32,8 +32,8 @@ import com.vaadin.event.ShortcutAction.ModifierKey;
  * @since 7.4
  * @author Vaadin Ltd
  */
-public class DesignShortcutActionConverter implements
-        Converter<String, ShortcutAction> {
+public class DesignShortcutActionConverter
+        implements Converter<String, ShortcutAction> {
 
     private final Map<Integer, String> keyCodeMap;
     private final Map<String, Integer> presentationMap;
@@ -122,7 +122,7 @@ public class DesignShortcutActionConverter implements
     @Override
     public ShortcutAction convertToModel(String value,
             Class<? extends ShortcutAction> targetType, Locale locale)
-            throws Converter.ConversionException {
+                    throws Converter.ConversionException {
         if (value.length() == 0) {
             return null;
         }
@@ -135,8 +135,8 @@ public class DesignShortcutActionConverter implements
             String keyCodePart = parts[parts.length - 1];
             int keyCode = getKeycodeForString(keyCodePart);
             if (keyCode < 0) {
-                throw new IllegalArgumentException("Invalid key '"
-                        + keyCodePart + "'");
+                throw new IllegalArgumentException(
+                        "Invalid key '" + keyCodePart + "'");
             }
             // handle modifiers
             int[] modifiers = null;
@@ -148,21 +148,22 @@ public class DesignShortcutActionConverter implements
                 if (modifier > 0) {
                     modifiers[i] = modifier;
                 } else {
-                    throw new IllegalArgumentException("Invalid modifier '"
-                            + parts[i] + "'");
+                    throw new IllegalArgumentException(
+                            "Invalid modifier '" + parts[i] + "'");
                 }
             }
             return new ShortcutAction(data.length == 2 ? data[1] : null,
                     keyCode, modifiers);
         } catch (Exception e) {
-            throw new ConversionException("Invalid shortcut '" + value + "'", e);
+            throw new ConversionException("Invalid shortcut '" + value + "'",
+                    e);
         }
     }
 
     @Override
     public String convertToPresentation(ShortcutAction value,
             Class<? extends String> targetType, Locale locale)
-            throws Converter.ConversionException {
+                    throws Converter.ConversionException {
         StringBuilder sb = new StringBuilder();
         // handle modifiers
         if (value.getModifiers() != null) {

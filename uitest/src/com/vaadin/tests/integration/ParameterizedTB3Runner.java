@@ -61,17 +61,13 @@ public class ParameterizedTB3Runner extends TB3Runner {
             }
 
             if (!m.getName().startsWith("get") || !m.getName().endsWith("s")) {
-                throw new IllegalStateException(
-                        "Method "
-                                + m.getName()
-                                + " is annotated with @Parameter but is not named getSomeThings() as it should");
+                throw new IllegalStateException("Method " + m.getName()
+                        + " is annotated with @Parameter but is not named getSomeThings() as it should");
             }
 
             if (m.getParameterTypes().length != 0) {
-                throw new IllegalStateException(
-                        "Method "
-                                + m.getName()
-                                + " annotated with @Parameter should not have any arguments");
+                throw new IllegalStateException("Method " + m.getName()
+                        + " annotated with @Parameter should not have any arguments");
             }
 
             if (!Modifier.isStatic(m.getModifiers())) {
@@ -90,9 +86,10 @@ public class ParameterizedTB3Runner extends TB3Runner {
                 setterMethod = getTestClass().getJavaClass().getMethod(setter,
                         String.class);
             } catch (Exception e) {
-                throw new IllegalStateException("No setter " + setter
-                        + " found in "
-                        + getTestClass().getJavaClass().getName(), e);
+                throw new IllegalStateException(
+                        "No setter " + setter + " found in "
+                                + getTestClass().getJavaClass().getName(),
+                        e);
             }
 
             Collection<String> values;
@@ -105,8 +102,9 @@ public class ParameterizedTB3Runner extends TB3Runner {
                     parameters.put(setterMethod, values);
                 }
             } catch (Exception e) {
-                throw new IllegalStateException("The setter " + m.getName()
-                        + " could not be invoked", e);
+                throw new IllegalStateException(
+                        "The setter " + m.getName() + " could not be invoked",
+                        e);
             }
         }
 
@@ -116,8 +114,8 @@ public class ParameterizedTB3Runner extends TB3Runner {
             for (FrameworkMethod m : methods) {
 
                 if (!(m instanceof TBMethod)) {
-                    System.err.println("Unknown method type: "
-                            + m.getClass().getName());
+                    System.err.println(
+                            "Unknown method type: " + m.getClass().getName());
                     newMethods.add(m);
                     continue;
                 }

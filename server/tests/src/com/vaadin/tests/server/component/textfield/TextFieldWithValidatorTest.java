@@ -145,8 +145,8 @@ public class TextFieldWithValidatorTest extends TestCase {
     }
 
     public void testRegexpValidator() {
-        field.addValidator(new RegexpValidator("pattern", true,
-                "Validation failed"));
+        field.addValidator(
+                new RegexpValidator("pattern", true, "Validation failed"));
         field.setRequired(false);
 
         // succeeds

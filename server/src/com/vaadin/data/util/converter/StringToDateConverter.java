@@ -66,11 +66,11 @@ public class StringToDateConverter implements Converter<String, Date> {
     @Override
     public Date convertToModel(String value, Class<? extends Date> targetType,
             Locale locale)
-            throws com.vaadin.data.util.converter.Converter.ConversionException {
+                    throws com.vaadin.data.util.converter.Converter.ConversionException {
         if (targetType != getModelType()) {
-            throw new ConversionException("Converter only supports "
-                    + getModelType().getName() + " (targetType was "
-                    + targetType.getName() + ")");
+            throw new ConversionException(
+                    "Converter only supports " + getModelType().getName()
+                            + " (targetType was " + targetType.getName() + ")");
         }
 
         if (value == null) {
@@ -100,7 +100,7 @@ public class StringToDateConverter implements Converter<String, Date> {
     @Override
     public String convertToPresentation(Date value,
             Class<? extends String> targetType, Locale locale)
-            throws com.vaadin.data.util.converter.Converter.ConversionException {
+                    throws com.vaadin.data.util.converter.Converter.ConversionException {
         if (value == null) {
             return null;
         }

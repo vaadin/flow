@@ -346,8 +346,8 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
         IndexedContainer container = new IndexedContainer();
         Object itemId = container.addItem();
         ItemSetChangeListener removeListener = createListenerMockFor(container);
-        removeListener.containerItemSetChange(EasyMock
-                .isA(ItemRemoveEvent.class));
+        removeListener
+                .containerItemSetChange(EasyMock.isA(ItemRemoveEvent.class));
         EasyMock.replay(removeListener);
 
         container.removeItem(itemId);
@@ -359,7 +359,8 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
         IndexedContainer container = new IndexedContainer();
         Object itemId = container.addItem();
         ItemSetChangeListener removeListener = createListenerMockFor(container);
-        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(removeListener);
+        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(
+                removeListener);
         EasyMock.replay(removeListener);
 
         container.removeItem(itemId);
@@ -372,7 +373,8 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
         container.addItem();
         Object secondItemId = container.addItem();
         ItemSetChangeListener removeListener = createListenerMockFor(container);
-        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(removeListener);
+        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(
+                removeListener);
         EasyMock.replay(removeListener);
 
         container.removeItem(secondItemId);
@@ -385,7 +387,8 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
         container.addItem();
         container.addItem();
         ItemSetChangeListener removeListener = createListenerMockFor(container);
-        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(removeListener);
+        Capture<ItemRemoveEvent> capturedEvent = captureRemoveEvent(
+                removeListener);
         EasyMock.replay(removeListener);
 
         container.removeAllItems();

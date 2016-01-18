@@ -32,14 +32,14 @@ public class ConverterFactoryTest extends TestCase {
         @Override
         public Integer convertToModel(String value,
                 Class<? extends Integer> targetType, Locale locale)
-                throws com.vaadin.data.util.converter.Converter.ConversionException {
+                        throws com.vaadin.data.util.converter.Converter.ConversionException {
             return 42;
         }
 
         @Override
         public String convertToPresentation(Integer value,
                 Class<? extends String> targetType, Locale locale)
-                throws com.vaadin.data.util.converter.Converter.ConversionException {
+                        throws com.vaadin.data.util.converter.Converter.ConversionException {
             return "42";
         }
 

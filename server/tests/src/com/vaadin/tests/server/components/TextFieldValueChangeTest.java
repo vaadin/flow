@@ -17,8 +17,8 @@ import com.vaadin.ui.TextField;
  * 
  * See <a href="http://dev.vaadin.com/ticket/4394">Ticket 4394</a>.
  */
-public class TextFieldValueChangeTest extends
-        AbstractFieldValueChangeTestBase<String> {
+public class TextFieldValueChangeTest
+        extends AbstractFieldValueChangeTestBase<String> {
 
     @Override
     protected void setUp() throws Exception {

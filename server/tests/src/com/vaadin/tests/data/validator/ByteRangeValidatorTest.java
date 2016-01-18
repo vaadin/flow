@@ -25,14 +25,16 @@ public class ByteRangeValidatorTest extends TestCase {
     public void testMinValue() {
         assertTrue("Validator without ranges didn't accept value",
                 cleanValidator.isValid((byte) -15));
-        assertTrue("Didn't accept valid value", minValidator.isValid((byte) 15));
+        assertTrue("Didn't accept valid value",
+                minValidator.isValid((byte) 15));
         assertFalse("Accepted too small value", minValidator.isValid((byte) 9));
     }
 
     public void testMaxValue() {
         assertTrue("Validator without ranges didn't accept value",
                 cleanValidator.isValid((byte) 112));
-        assertTrue("Didn't accept valid value", maxValidator.isValid((byte) 15));
+        assertTrue("Didn't accept valid value",
+                maxValidator.isValid((byte) 15));
         assertFalse("Accepted too large value",
                 maxValidator.isValid((byte) 120));
     }

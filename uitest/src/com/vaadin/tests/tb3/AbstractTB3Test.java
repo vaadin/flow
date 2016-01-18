@@ -89,7 +89,8 @@ import elemental.json.impl.JsonUtil;
  * <li>Hub connection setup and teardown</li>
  * <li>Automatic generation of URL for a given test on the development server
  * using {@link #getUIClass()} or by automatically finding an enclosing UI class
- * and based on requested features, e.g. {@link #isDebug()}, {@link #isPush()}</li>
+ * and based on requested features, e.g. {@link #isDebug()}, {@link #isPush()}
+ * </li>
  * <li>Generic helpers for creating TB3+ tests</li>
  * </ul>
  * 
@@ -120,11 +121,11 @@ public abstract class AbstractTB3Test extends ParallelTest {
     private static final int BROWSER_TIMEOUT_IN_MS = 30 * 1000;
 
     protected static DesiredCapabilities PHANTOMJS2() {
-        DesiredCapabilities phantomjs2 = new VaadinBrowserFactory().create(
-                Browser.PHANTOMJS, "2");
+        DesiredCapabilities phantomjs2 = new VaadinBrowserFactory()
+                .create(Browser.PHANTOMJS, "2");
         // Hack for the test cluster
-        phantomjs2
-                .setCapability("phantomjs.binary.path", "/usr/bin/phantomjs2");
+        phantomjs2.setCapability("phantomjs.binary.path",
+                "/usr/bin/phantomjs2");
         return phantomjs2;
     }
 
@@ -176,8 +177,8 @@ public abstract class AbstractTB3Test extends ParallelTest {
     }
 
     protected WebElement getTooltipErrorElement() {
-        WebElement tooltip = getDriver().findElement(
-                com.vaadin.testbench.By.className("v-tooltip"));
+        WebElement tooltip = getDriver()
+                .findElement(com.vaadin.testbench.By.className("v-tooltip"));
         return tooltip.findElement(By.className("v-errormessage"));
     }
 
@@ -204,7 +205,8 @@ public abstract class AbstractTB3Test extends ParallelTest {
         waitForDebugMessage(expectedMessage, 30);
     }
 
-    protected void waitForDebugMessage(final String expectedMessage, int timeout) {
+    protected void waitForDebugMessage(final String expectedMessage,
+            int timeout) {
         waitUntil(new ExpectedCondition<Boolean>() {
 
             @Override
@@ -215,12 +217,13 @@ public abstract class AbstractTB3Test extends ParallelTest {
     }
 
     protected void clearDebugMessages() {
-        driver.findElement(
-                By.xpath("//button[@class='v-debugwindow-button' and @title='Clear log']"))
+        driver.findElement(By
+                .xpath("//button[@class='v-debugwindow-button' and @title='Clear log']"))
                 .click();
     }
 
-    protected void waitUntilRowIsVisible(final TableElement table, final int row) {
+    protected void waitUntilRowIsVisible(final TableElement table,
+            final int row) {
         waitUntil(new ExpectedCondition<Object>() {
             @Override
             public Object apply(WebDriver input) {
@@ -333,8 +336,8 @@ public abstract class AbstractTB3Test extends ParallelTest {
      */
     @BrowserConfiguration
     public List<DesiredCapabilities> getBrowsersToTest() {
-        return Collections.singletonList(Browser.FIREFOX
-                .getDesiredCapabilities());
+        return Collections
+                .singletonList(Browser.FIREFOX.getDesiredCapabilities());
     }
 
     /**
@@ -429,8 +432,8 @@ public abstract class AbstractTB3Test extends ParallelTest {
 
     /**
      * Waits the given number of seconds for the given condition to become true.
-     * Use e.g. as {@link
-     * #waitUntil(ExpectedConditions.textToBePresentInElement(by, text))}
+     * Use e.g. as
+     * {@link #waitUntil(ExpectedConditions.textToBePresentInElement(by, text))}
      * 
      * @param condition
      *            the condition to wait for to become true
@@ -454,8 +457,9 @@ public abstract class AbstractTB3Test extends ParallelTest {
 
     /**
      * Waits the given number of seconds for the given condition to become
-     * false. Use e.g. as {@link
-     * #waitUntilNot(ExpectedConditions.textToBePresentInElement(by, text))}
+     * false. Use e.g. as
+     * {@link #waitUntilNot(ExpectedConditions.textToBePresentInElement(by,
+     * text))}
      * 
      * @param condition
      *            the condition to wait for to become false
@@ -597,8 +601,8 @@ public abstract class AbstractTB3Test extends ParallelTest {
      * @throws AssertionError
      *             If comparison fails
      */
-    public static final <T> void assertLessThan(String message,
-            Comparable<T> a, T b) throws AssertionError {
+    public static final <T> void assertLessThan(String message, Comparable<T> a,
+            T b) throws AssertionError {
         if (a.compareTo(b) < 0) {
             return;
         }
@@ -773,8 +777,8 @@ public abstract class AbstractTB3Test extends ParallelTest {
      */
     private String getApplicationId(String pathWithQueryParameters) {
         // Remove any possible URL parameters
-        String pathWithoutQueryParameters = pathWithQueryParameters.replaceAll(
-                "\\?.*", "");
+        String pathWithoutQueryParameters = pathWithQueryParameters
+                .replaceAll("\\?.*", "");
         if ("".equals(pathWithoutQueryParameters)) {
             return "ROOT";
         }
@@ -861,10 +865,9 @@ public abstract class AbstractTB3Test extends ParallelTest {
 
     protected void assertNoDebugMessage(Level level) {
         // class="v-debugwindow-row Level.getName()"
-        List<WebElement> logElements = driver
-                .findElements(By.xpath(String
-                        .format("//div[@class='v-debugwindow-row %s']/span[@class='v-debugwindow-message']",
-                                level.getName())));
+        List<WebElement> logElements = driver.findElements(By.xpath(String
+                .format("//div[@class='v-debugwindow-row %s']/span[@class='v-debugwindow-message']",
+                        level.getName())));
         if (!logElements.isEmpty()) {
             String logRows = "";
             for (WebElement e : logElements) {
@@ -1010,8 +1013,8 @@ public abstract class AbstractTB3Test extends ParallelTest {
     }
 
     protected boolean isLoadingIndicatorVisible() {
-        WebElement loadingIndicator = findElement(By
-                .className("v-loading-indicator"));
+        WebElement loadingIndicator = findElement(
+                By.className("v-loading-indicator"));
 
         return loadingIndicator.isDisplayed();
     }
@@ -1021,8 +1024,8 @@ public abstract class AbstractTB3Test extends ParallelTest {
 
             @Override
             public Boolean apply(WebDriver input) {
-                WebElement loadingIndicator = input.findElement(By
-                        .className("v-loading-indicator"));
+                WebElement loadingIndicator = input
+                        .findElement(By.className("v-loading-indicator"));
 
                 return !loadingIndicator.isDisplayed();
             }
@@ -1051,8 +1054,9 @@ public abstract class AbstractTB3Test extends ParallelTest {
     protected void selectMenu(String menuCaption, boolean click) {
         WebElement menuElement = getMenuElement(menuCaption);
         Dimension size = menuElement.getSize();
-        new Actions(getDriver()).moveToElement(menuElement, size.width - 10,
-                size.height / 2).perform();
+        new Actions(getDriver())
+                .moveToElement(menuElement, size.width - 10, size.height / 2)
+                .perform();
         if (click) {
             new Actions(getDriver()).click().perform();
         }
@@ -1084,8 +1088,9 @@ public abstract class AbstractTB3Test extends ParallelTest {
         selectMenu(menuCaptions[0], true);
 
         // Move to the menu item opened below the menu bar.
-        new Actions(getDriver()).moveByOffset(0,
-                getMenuElement(menuCaptions[0]).getSize().getHeight())
+        new Actions(getDriver())
+                .moveByOffset(0,
+                        getMenuElement(menuCaptions[0]).getSize().getHeight())
                 .perform();
 
         for (int i = 1; i < menuCaptions.length - 1; i++) {
@@ -1168,7 +1173,8 @@ public abstract class AbstractTB3Test extends ParallelTest {
         Assert.assertFalse(
                 "The element should not have a horizontal scrollbar (scrollWidth: "
                         + scrollWidth + ", clientWidth: " + clientWidth + "): "
-                        + errorMessage, hasScrollbar);
+                        + errorMessage,
+                hasScrollbar);
     }
 
     protected void assertNoVerticalScrollbar(WebElement element,
@@ -1183,7 +1189,8 @@ public abstract class AbstractTB3Test extends ParallelTest {
         Assert.assertFalse(
                 "The element should not have a vertical scrollbar (scrollHeight: "
                         + scrollHeight + ", clientHeight: " + clientHeight
-                        + "): " + errorMessage, hasScrollbar);
+                        + "): " + errorMessage,
+                hasScrollbar);
     }
 
     protected int getScrollHeight(WebElement element) {
@@ -1248,8 +1255,8 @@ public abstract class AbstractTB3Test extends ParallelTest {
 
     protected void waitForThemeToChange(final String theme) {
 
-        final WebElement rootDiv = findElement(By
-                .xpath("//div[contains(@class,'v-app')]"));
+        final WebElement rootDiv = findElement(
+                By.xpath("//div[contains(@class,'v-app')]"));
         waitUntil(new ExpectedCondition<Boolean>() {
 
             @Override

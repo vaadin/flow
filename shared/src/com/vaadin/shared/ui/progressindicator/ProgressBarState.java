@@ -32,6 +32,7 @@ public class ProgressBarState extends AbstractFieldState {
     {
         primaryStyleName = PRIMARY_STYLE_NAME;
     }
+
     public boolean indeterminate = false;
     @NoLayout
     public Float state = 0.0f;

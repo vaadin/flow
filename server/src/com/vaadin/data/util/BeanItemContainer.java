@@ -52,8 +52,8 @@ import java.util.Collection;
  * @since 5.4
  */
 @SuppressWarnings("serial")
-public class BeanItemContainer<BEANTYPE> extends
-        AbstractBeanContainer<BEANTYPE, BEANTYPE> {
+public class BeanItemContainer<BEANTYPE>
+        extends AbstractBeanContainer<BEANTYPE, BEANTYPE> {
 
     /**
      * Bean identity resolver that returns the bean itself as its item
@@ -67,8 +67,8 @@ public class BeanItemContainer<BEANTYPE> extends
      * 
      * @since 6.5
      */
-    private static class IdentityBeanIdResolver<BT> implements
-            BeanIdResolver<BT, BT> {
+    private static class IdentityBeanIdResolver<BT>
+            implements BeanIdResolver<BT, BT> {
 
         @Override
         public BT getIdForBean(BT bean) {
@@ -135,7 +135,7 @@ public class BeanItemContainer<BEANTYPE> extends
     @Deprecated
     private static <BT> Class<? extends BT> getBeanClassForCollection(
             Collection<? extends BT> collection)
-            throws IllegalArgumentException {
+                    throws IllegalArgumentException {
         if (collection == null || collection.isEmpty()) {
             throw new IllegalArgumentException(
                     "The collection passed to BeanItemContainer constructor must not be null or empty. Use the other BeanItemContainer constructor.");
@@ -155,7 +155,7 @@ public class BeanItemContainer<BEANTYPE> extends
      */
     public BeanItemContainer(Class<? super BEANTYPE> type,
             Collection<? extends BEANTYPE> collection)
-            throws IllegalArgumentException {
+                    throws IllegalArgumentException {
         super(type);
         super.setBeanIdResolver(new IdentityBeanIdResolver<BEANTYPE>());
 
@@ -245,7 +245,7 @@ public class BeanItemContainer<BEANTYPE> extends
     @Override
     protected void setBeanIdResolver(
             AbstractBeanContainer.BeanIdResolver<BEANTYPE, BEANTYPE> beanIdResolver)
-            throws UnsupportedOperationException {
+                    throws UnsupportedOperationException {
         throw new UnsupportedOperationException(
                 "BeanItemContainer always uses an IdentityBeanIdResolver");
     }

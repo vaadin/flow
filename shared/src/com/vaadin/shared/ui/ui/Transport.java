@@ -38,8 +38,7 @@ public enum Transport {
      * 
      * @deprecated Use the more reliable {@link Transport#LONG_POLLING} instead.
      */
-    @Deprecated
-    STREAMING("streaming"),
+    @Deprecated STREAMING("streaming"),
     /**
      * HTTP long polling
      */

@@ -40,8 +40,8 @@ import com.vaadin.ui.declarative.DesignFormatter;
  * Configures select to be used as an option group.
  */
 @SuppressWarnings("serial")
-public class OptionGroup extends AbstractSelect implements
-        FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
+public class OptionGroup extends AbstractSelect
+        implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 
     private Set<Object> disabledItemIds = new HashSet<Object>();
     private boolean htmlContentAllowed = false;
@@ -66,7 +66,8 @@ public class OptionGroup extends AbstractSelect implements
     public void paintContent(PaintTarget target) throws PaintException {
         target.addAttribute("type", "optiongroup");
         if (isHtmlContentAllowed()) {
-            target.addAttribute(OptionGroupConstants.HTML_CONTENT_ALLOWED, true);
+            target.addAttribute(OptionGroupConstants.HTML_CONTENT_ALLOWED,
+                    true);
         }
         super.paintContent(target);
     }
@@ -168,7 +169,8 @@ public class OptionGroup extends AbstractSelect implements
                 Set<?> currentValueSet = (Set<?>) getValue();
                 Set<?> newValueSet = (Set<?>) newValue;
                 for (Object itemId : currentValueSet) {
-                    if (!isItemEnabled(itemId) && !newValueSet.contains(itemId)) {
+                    if (!isItemEnabled(itemId)
+                            && !newValueSet.contains(itemId)) {
                         markAsDirty();
                         return;
                     }
