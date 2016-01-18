@@ -508,55 +508,9 @@ public class ApplicationConfiguration implements EntryPoint {
         moduleLoaded = true;
 
         Profiler.initialize();
-        Profiler.enter("ApplicationConfiguration.onModuleLoad");
-
-        BrowserInfo browserInfo = BrowserInfo.get();
-
-        // Enable iOS6 cast fix (see #10460)
-        if (browserInfo.isIOS6() && browserInfo.isWebkit()) {
-            enableIOS6castFix();
-        }
-
-        // Enable IE prompt fix (#13367)
-        if (browserInfo.isIE()) {
-            enableIEPromptFix();
-        }
-
-        Profiler.leave("ApplicationConfiguration.onModuleLoad");
 
         registerCallback(GWT.getModuleName());
     }
-
-    /**
-     * Fix to iOS6 failing when comparing with 0 directly after the kind of
-     * comparison done by GWT when a double or float is cast to an int. Forcing
-     * another trivial operation (other than a compare to 0) after the dangerous
-     * comparison makes the issue go away. See #10460.
-     */
-    private static native void enableIOS6castFix()
-    /*-{
-          Math.max = function(a,b) {return (a > b === 1 < 2)? a : b}
-          Math.min = function(a,b) {return (a < b === 1 < 2)? a : b}
-    }-*/;
-
-    /**
-     * Make Metro versions of IE suggest switching to the desktop when
-     * window.prompt is called.
-     */
-    private static native void enableIEPromptFix()
-    /*-{
-        var prompt = $wnd.prompt;
-        $wnd.prompt = function () {
-            var result = prompt.apply($wnd, Array.prototype.slice.call(arguments));
-            if (result === undefined) {
-                // force the browser to suggest desktop mode
-                showModalDialog();
-                return null;
-            } else {
-                return result;
-            }
-        };
-    }-*/;
 
     /**
      * Registers that callback that the bootstrap javascript uses to start
