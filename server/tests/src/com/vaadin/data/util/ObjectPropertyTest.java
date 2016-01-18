@@ -1,8 +1,8 @@
 package com.vaadin.data.util;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
+
+import junit.framework.TestCase;
 
 public class ObjectPropertyTest extends TestCase {
 

@@ -2,13 +2,13 @@ package com.vaadin.tests.server.component.orderedlayout;
 
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
 import com.vaadin.ui.AbstractOrderedLayout;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
+
+import junit.framework.TestCase;
 
 public class OrderedLayoutTest extends TestCase {
 

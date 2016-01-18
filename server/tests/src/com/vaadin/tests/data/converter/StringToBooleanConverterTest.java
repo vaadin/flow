@@ -1,12 +1,12 @@
 package com.vaadin.tests.data.converter;
 
-import junit.framework.TestCase;
-
-import com.vaadin.data.util.converter.StringToBooleanConverter;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import com.vaadin.data.util.converter.StringToBooleanConverter;
+
+import junit.framework.TestCase;
 
 public class StringToBooleanConverterTest extends TestCase {
 

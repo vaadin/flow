@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.mockito.Mockito;
 
 import com.vaadin.tests.VaadinClasses;
@@ -16,6 +14,8 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ConnectorTracker;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
+
+import junit.framework.TestCase;
 
 public class StateGetDoesNotMarkDirtyTest extends TestCase {
 

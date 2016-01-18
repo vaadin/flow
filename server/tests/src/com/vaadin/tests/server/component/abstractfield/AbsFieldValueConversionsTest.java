@@ -2,8 +2,6 @@ package com.vaadin.tests.server.component.abstractfield;
 
 import java.util.Locale;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -20,6 +18,8 @@ import com.vaadin.tests.data.bean.Sex;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.TextField;
+
+import junit.framework.TestCase;
 
 public class AbsFieldValueConversionsTest extends TestCase {
 

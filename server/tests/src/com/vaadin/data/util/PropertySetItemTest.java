@@ -2,13 +2,13 @@ package com.vaadin.data.util;
 
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.junit.Assert;
 
 import com.vaadin.data.Item.PropertySetChangeEvent;
 import com.vaadin.data.Item.PropertySetChangeListener;
+
+import junit.framework.TestCase;
 
 public class PropertySetItemTest extends TestCase {
 

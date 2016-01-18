@@ -1,11 +1,11 @@
 package com.vaadin.tests.server.component.table;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.ui.Table;
+
+import junit.framework.TestCase;
 
 /**
  * Test case for testing the footer API

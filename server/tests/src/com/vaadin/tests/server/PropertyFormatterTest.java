@@ -2,12 +2,12 @@ package com.vaadin.tests.server;
 
 import java.util.Date;
 
-import junit.framework.TestCase;
-
 import org.junit.Test;
 
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.PropertyFormatter;
+
+import junit.framework.TestCase;
 
 @SuppressWarnings("unchecked")
 public class PropertyFormatterTest extends TestCase {

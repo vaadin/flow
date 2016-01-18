@@ -1,8 +1,8 @@
 package com.vaadin.tests.server.component.treetable;
 
-import junit.framework.TestCase;
-
 import com.vaadin.ui.TreeTable;
+
+import junit.framework.TestCase;
 
 public class TreeTableSetContainerNullTest extends TestCase {
 

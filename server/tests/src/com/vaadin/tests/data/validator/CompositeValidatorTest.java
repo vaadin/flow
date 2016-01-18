@@ -1,12 +1,12 @@
 package com.vaadin.tests.data.validator;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.Validator;
 import com.vaadin.data.validator.CompositeValidator;
 import com.vaadin.data.validator.CompositeValidator.CombinationMode;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.RegexpValidator;
+
+import junit.framework.TestCase;
 
 public class CompositeValidatorTest extends TestCase {
 

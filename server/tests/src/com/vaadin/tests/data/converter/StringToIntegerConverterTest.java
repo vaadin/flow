@@ -1,9 +1,9 @@
 package com.vaadin.tests.data.converter;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.data.util.converter.StringToIntegerConverter;
+
+import junit.framework.TestCase;
 
 public class StringToIntegerConverterTest extends TestCase {
 

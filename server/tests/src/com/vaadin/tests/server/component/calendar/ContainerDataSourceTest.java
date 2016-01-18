@@ -18,8 +18,6 @@ package com.vaadin.tests.server.component.calendar;
 import java.util.Date;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.junit.Test;
 
 import com.vaadin.data.Container.Indexed;
@@ -32,6 +30,8 @@ import com.vaadin.ui.Calendar;
 import com.vaadin.ui.components.calendar.ContainerEventProvider;
 import com.vaadin.ui.components.calendar.event.BasicEvent;
 import com.vaadin.ui.components.calendar.event.CalendarEvent;
+
+import junit.framework.TestCase;
 
 public class ContainerDataSourceTest extends TestCase {
 

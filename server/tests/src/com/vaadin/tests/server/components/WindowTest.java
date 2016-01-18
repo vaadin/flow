@@ -3,8 +3,6 @@ package com.vaadin.tests.server.components;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 
 import com.vaadin.ui.LegacyWindow;
@@ -13,6 +11,8 @@ import com.vaadin.ui.Window.CloseEvent;
 import com.vaadin.ui.Window.CloseListener;
 import com.vaadin.ui.Window.ResizeEvent;
 import com.vaadin.ui.Window.ResizeListener;
+
+import junit.framework.TestCase;
 
 public class WindowTest extends TestCase {
 

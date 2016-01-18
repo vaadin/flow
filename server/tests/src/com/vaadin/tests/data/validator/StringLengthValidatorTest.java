@@ -1,8 +1,8 @@
 package com.vaadin.tests.data.validator;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.validator.StringLengthValidator;
+
+import junit.framework.TestCase;
 
 public class StringLengthValidatorTest extends TestCase {
 

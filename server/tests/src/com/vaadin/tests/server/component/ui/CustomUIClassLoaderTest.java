@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 
 import com.vaadin.server.DefaultDeploymentConfiguration;
@@ -17,6 +15,8 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.ui.UI;
+
+import junit.framework.TestCase;
 
 public class CustomUIClassLoaderTest extends TestCase {
 

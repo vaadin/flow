@@ -1,11 +1,11 @@
 package com.vaadin.tests.server.component.textfield;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.validator.RangeValidator;
 import com.vaadin.tests.data.converter.ConverterFactoryTest.ConvertTo42;
 import com.vaadin.ui.TextField;
+
+import junit.framework.TestCase;
 
 public class TextFieldWithConverterAndValidatorTest extends TestCase {
 

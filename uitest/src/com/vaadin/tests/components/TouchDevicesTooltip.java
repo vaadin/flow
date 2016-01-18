@@ -1,14 +1,14 @@
 package com.vaadin.tests.components;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 import com.vaadin.annotations.Viewport;
 import com.vaadin.data.util.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.IntegerRangeValidator;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 @Viewport(value = "width=device-width,height=device-height")
 public class TouchDevicesTooltip extends AbstractTestUI {

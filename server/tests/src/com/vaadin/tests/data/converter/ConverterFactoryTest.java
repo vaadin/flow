@@ -17,13 +17,13 @@ package com.vaadin.tests.data.converter;
 
 import java.util.Locale;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.DefaultConverterFactory;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.ui.TextField;
+
+import junit.framework.TestCase;
 
 public class ConverterFactoryTest extends TestCase {
 

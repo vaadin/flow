@@ -19,12 +19,11 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.ui.AbstractComponent;
-import com.vaadin.ui.TextField;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.declarative.Design;

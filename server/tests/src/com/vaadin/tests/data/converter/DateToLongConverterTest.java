@@ -2,9 +2,9 @@ package com.vaadin.tests.data.converter;
 
 import java.util.Date;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.util.converter.DateToLongConverter;
+
+import junit.framework.TestCase;
 
 public class DateToLongConverterTest extends TestCase {
 

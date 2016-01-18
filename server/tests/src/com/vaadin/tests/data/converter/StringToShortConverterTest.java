@@ -1,13 +1,13 @@
 package com.vaadin.tests.data.converter;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
 
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.data.util.converter.ReverseConverter;
 import com.vaadin.data.util.converter.StringToShortConverter;
+
+import junit.framework.TestCase;
 
 public class StringToShortConverterTest extends TestCase {
 

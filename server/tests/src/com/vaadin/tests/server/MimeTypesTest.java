@@ -1,9 +1,9 @@
 package com.vaadin.tests.server;
 
-import junit.framework.TestCase;
-
 import com.vaadin.server.ClassResource;
 import com.vaadin.ui.Embedded;
+
+import junit.framework.TestCase;
 
 public class MimeTypesTest extends TestCase {
 

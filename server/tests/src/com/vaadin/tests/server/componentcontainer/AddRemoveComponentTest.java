@@ -2,14 +2,14 @@ package com.vaadin.tests.server.componentcontainer;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import com.vaadin.tests.VaadinClasses;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CustomLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.components.colorpicker.ColorPickerPreview;
+
+import junit.framework.TestCase;
 
 public class AddRemoveComponentTest extends TestCase {
 

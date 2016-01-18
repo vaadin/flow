@@ -22,8 +22,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import junit.framework.TestCase;
-
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.ClientMethodInvocation;
 import com.vaadin.server.JavaScriptCallbackHelper;
@@ -35,6 +33,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+import junit.framework.TestCase;
 
 public class ClientMethodSerializationTest extends TestCase {
 

@@ -1,7 +1,5 @@
 package com.vaadin.tests.server.component.abstractfield;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
 
 import com.vaadin.data.Validator.InvalidValueException;
@@ -13,6 +11,8 @@ import com.vaadin.tests.data.bean.Country;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
 import com.vaadin.ui.TextField;
+
+import junit.framework.TestCase;
 
 public class AbsFieldValueConversionErrorTest extends TestCase {
 

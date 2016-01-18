@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.tests.util.TestUtil;
+
+import junit.framework.TestCase;
 
 public class ContainerSortingTest extends TestCase {
 

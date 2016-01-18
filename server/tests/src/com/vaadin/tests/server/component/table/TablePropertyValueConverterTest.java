@@ -23,8 +23,6 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.junit.Test;
 
 import com.vaadin.data.Container;
@@ -33,6 +31,8 @@ import com.vaadin.data.Property;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.ui.Table;
+
+import junit.framework.TestCase;
 
 /**
  * 

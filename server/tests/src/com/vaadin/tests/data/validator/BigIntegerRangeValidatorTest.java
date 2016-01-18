@@ -2,9 +2,9 @@ package com.vaadin.tests.data.validator;
 
 import java.math.BigInteger;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.validator.BigIntegerRangeValidator;
+
+import junit.framework.TestCase;
 
 public class BigIntegerRangeValidatorTest extends TestCase {
 

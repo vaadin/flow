@@ -7,8 +7,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.IndexedContainer;
@@ -16,6 +14,8 @@ import com.vaadin.data.util.MethodProperty;
 import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Form;
+
+import junit.framework.TestCase;
 
 public class SerializationTest extends TestCase {
 

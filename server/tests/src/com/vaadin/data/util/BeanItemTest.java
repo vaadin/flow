@@ -9,11 +9,11 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
 
 import com.vaadin.data.Property;
+
+import junit.framework.TestCase;
 
 /**
  * Test BeanItem specific features.

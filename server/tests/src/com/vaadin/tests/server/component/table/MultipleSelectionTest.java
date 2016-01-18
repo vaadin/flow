@@ -3,12 +3,12 @@ package com.vaadin.tests.server.component.table;
 import java.util.Arrays;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.Container;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.shared.ui.MultiSelectMode;
 import com.vaadin.ui.Table;
+
+import junit.framework.TestCase;
 
 public class MultipleSelectionTest extends TestCase {
 

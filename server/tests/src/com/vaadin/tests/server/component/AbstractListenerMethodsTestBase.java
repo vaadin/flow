@@ -6,13 +6,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.junit.Assert;
 
 import com.vaadin.tests.VaadinClasses;
 import com.vaadin.ui.Component;
+
+import junit.framework.TestCase;
 
 public abstract class AbstractListenerMethodsTestBase extends TestCase {
 

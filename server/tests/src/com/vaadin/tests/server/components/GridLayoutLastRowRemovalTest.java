@@ -1,9 +1,9 @@
 package com.vaadin.tests.server.components;
 
-import junit.framework.TestCase;
-
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
+
+import junit.framework.TestCase;
 
 public class GridLayoutLastRowRemovalTest extends TestCase {
 

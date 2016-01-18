@@ -1,14 +1,14 @@
 package com.vaadin.tests.components.datefield;
 
-import com.vaadin.testbench.By;
-import com.vaadin.testbench.elements.ButtonElement;
-import com.vaadin.testbench.elements.DateFieldElement;
-import com.vaadin.tests.tb3.AbstractTB3Test;
-import com.vaadin.tests.tb3.MultiBrowserTest;
+import java.io.IOException;
+
 import org.junit.Test;
 import org.openqa.selenium.Keys;
 
-import java.io.IOException;
+import com.vaadin.testbench.By;
+import com.vaadin.testbench.elements.ButtonElement;
+import com.vaadin.testbench.elements.DateFieldElement;
+import com.vaadin.tests.tb3.MultiBrowserTest;
 
 public class DateFieldReadOnlyTest extends MultiBrowserTest {
 

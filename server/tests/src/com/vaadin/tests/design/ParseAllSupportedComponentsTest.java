@@ -15,19 +15,18 @@
  */
 package com.vaadin.tests.design;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import com.vaadin.ui.declarative.Design;
 import com.vaadin.ui.declarative.DesignContext;
-import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 /**
  * Just top level test case that contains all synchronizable components
