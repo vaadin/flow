@@ -33,9 +33,6 @@ public class VBrowserDetails implements Serializable {
     private boolean isPresto = false;
     private boolean isTrident = false;
 
-    private boolean isChromeFrameCapable = false;
-    private boolean isChromeFrame = false;
-
     private boolean isSafari = false;
     private boolean isChrome = false;
     private boolean isFirefox = false;
@@ -100,10 +97,6 @@ public class VBrowserDetails implements Serializable {
             isGecko = false;
         }
 
-        // chromeframe
-        isChromeFrameCapable = userAgent.indexOf("chromeframe") != -1;
-        isChromeFrame = isChromeFrameCapable && !isChrome;
-
         // Rendering engine version
         try {
             if (isGecko) {
@@ -121,8 +114,8 @@ public class VBrowserDetails implements Serializable {
             } else if (isIE) {
                 int tridentPos = userAgent.indexOf("trident/");
                 if (tridentPos >= 0) {
-                    String tmp = userAgent.substring(tridentPos
-                            + "Trident/".length());
+                    String tmp = userAgent
+                            .substring(tridentPos + "Trident/".length());
                     tmp = tmp.replaceFirst("([0-9]+\\.[0-9]+).*", "$1");
                     browserEngineVersion = Float.parseFloat(tmp);
                 }
@@ -131,8 +124,8 @@ public class VBrowserDetails implements Serializable {
             }
         } catch (Exception e) {
             // Browser engine version parsing failed
-            System.err.println("Browser engine version parsing failed for: "
-                    + userAgent);
+            System.err.println(
+                    "Browser engine version parsing failed for: " + userAgent);
         }
 
         // Browser version
@@ -147,8 +140,8 @@ public class VBrowserDetails implements Serializable {
                         parseVersionString(tmp);
                     }
                 } else {
-                    String ieVersionString = userAgent.substring(userAgent
-                            .indexOf("msie ") + 5);
+                    String ieVersionString = userAgent
+                            .substring(userAgent.indexOf("msie ") + 5);
                     ieVersionString = safeSubstring(ieVersionString, 0,
                             ieVersionString.indexOf(";"));
                     parseVersionString(ieVersionString);
@@ -177,8 +170,8 @@ public class VBrowserDetails implements Serializable {
             }
         } catch (Exception e) {
             // Browser version parsing failed
-            System.err.println("Browser version parsing failed for: "
-                    + userAgent);
+            System.err.println(
+                    "Browser version parsing failed for: " + userAgent);
         }
 
         // Operating system
@@ -249,8 +242,8 @@ public class VBrowserDetails implements Serializable {
             // Some Androids report version numbers as "2.1-update1"
             if (osMinorVersion == -1 && parts[1].contains("-")) {
                 try {
-                    osMinorVersion = Integer.parseInt(parts[1].substring(0,
-                            parts[1].indexOf('-')));
+                    osMinorVersion = Integer.parseInt(
+                            parts[1].substring(0, parts[1].indexOf('-')));
                 } catch (Exception ee) {
                 }
             }
@@ -263,16 +256,17 @@ public class VBrowserDetails implements Serializable {
         if (idx < 0) {
             idx = versionString.length();
         }
-        browserMajorVersion = Integer.parseInt(safeSubstring(versionString, 0,
-                idx));
+        browserMajorVersion = Integer
+                .parseInt(safeSubstring(versionString, 0, idx));
 
         int idx2 = versionString.indexOf('.', idx + 1);
         if (idx2 < 0) {
             idx2 = versionString.length();
         }
         try {
-            browserMinorVersion = Integer.parseInt(safeSubstring(versionString,
-                    idx + 1, idx2).replaceAll("[^0-9].*", ""));
+            browserMinorVersion = Integer
+                    .parseInt(safeSubstring(versionString, idx + 1, idx2)
+                            .replaceAll("[^0-9].*", ""));
         } catch (NumberFormatException e) {
             // leave the minor version unmodified (-1 = unknown)
         }
@@ -353,24 +347,6 @@ public class VBrowserDetails implements Serializable {
     }
 
     /**
-     * Tests if the browser is capable of running ChromeFrame.
-     * 
-     * @return true if it has ChromeFrame, false otherwise
-     */
-    public boolean isChromeFrameCapable() {
-        return isChromeFrameCapable;
-    }
-
-    /**
-     * Tests if the browser is running ChromeFrame.
-     * 
-     * @return true if it is ChromeFrame, false otherwise
-     */
-    public boolean isChromeFrame() {
-        return isChromeFrame;
-    }
-
-    /**
      * Tests if the browser is Opera.
      * 
      * @return true if it is Opera, false otherwise
@@ -440,19 +416,6 @@ public class VBrowserDetails implements Serializable {
      */
     public final int getBrowserMinorVersion() {
         return browserMinorVersion;
-    }
-
-    /**
-     * Sets the version for IE based on the documentMode. This is used to return
-     * the correct the correct IE version when the version from the user agent
-     * string and the value of the documentMode property do not match.
-     * 
-     * @param documentMode
-     *            The current document mode
-     */
-    public void setIEMode(int documentMode) {
-        browserMajorVersion = documentMode;
-        browserMinorVersion = 0;
     }
 
     /**
@@ -561,18 +524,23 @@ public class VBrowserDetails implements Serializable {
      */
     public boolean isTooOldToFunctionProperly() {
         // Check Trident version to detect compatibility mode
-        if (isIE() && getBrowserMajorVersion() < 8
-                && getBrowserEngineVersion() < 4) {
+        if (isIE() && getBrowserMajorVersion() < 11) {
             return true;
         }
-        // Webkit 533 in Safari 4.1+, Android 2.2+, iOS 4+
-        if (isSafari() && getBrowserEngineVersion() < 533) {
+        // Safari 9+
+        if (isSafari() && getBrowserMajorVersion() < 9) {
             return true;
         }
-        if (isFirefox() && getBrowserMajorVersion() < 4) {
+        // Firefox 43+ for now
+        if (isFirefox() && getBrowserMajorVersion() < 43) {
             return true;
         }
-        if (isOpera() && getBrowserMajorVersion() < 11) {
+        // Opera 34+ for now
+        if (isOpera() && getBrowserMajorVersion() < 34) {
+            return true;
+        }
+        // Chrome 47+ for now
+        if (isChrome() && getBrowserMajorVersion() < 47) {
             return true;
         }
 

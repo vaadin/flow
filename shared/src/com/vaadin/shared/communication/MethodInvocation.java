@@ -17,9 +17,10 @@
 package com.vaadin.shared.communication;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 import com.vaadin.shared.util.SharedUtil;
+
+import elemental.json.JsonArray;
 
 /**
  * Information needed by the framework to send an RPC method invocation from the
@@ -32,7 +33,7 @@ public class MethodInvocation implements Serializable {
     private final String connectorId;
     private final String interfaceName;
     private final String methodName;
-    private Object[] parameters;
+    private JsonArray parameters;
 
     public MethodInvocation(String connectorId, String interfaceName,
             String methodName) {
@@ -42,9 +43,9 @@ public class MethodInvocation implements Serializable {
     }
 
     public MethodInvocation(String connectorId, String interfaceName,
-            String methodName, Object[] parameters) {
+            String methodName, JsonArray parameters) {
         this(connectorId, interfaceName, methodName);
-        setParameters(parameters);
+        this.parameters = parameters;
     }
 
     public String getConnectorId() {
@@ -59,18 +60,17 @@ public class MethodInvocation implements Serializable {
         return methodName;
     }
 
-    public Object[] getParameters() {
+    public JsonArray getParameters() {
         return parameters;
     }
 
-    public void setParameters(Object[] parameters) {
+    public void setParameters(JsonArray parameters) {
         this.parameters = parameters;
     }
 
     @Override
     public String toString() {
-        return connectorId + ":" + interfaceName + "." + methodName + "("
-                + Arrays.toString(parameters) + ")";
+        return interfaceName + "." + methodName + "(" + parameters + ")";
     }
 
     /**

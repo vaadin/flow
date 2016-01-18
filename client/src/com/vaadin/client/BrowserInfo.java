@@ -16,8 +16,9 @@
 
 package com.vaadin.client;
 
-import com.google.gwt.user.client.ui.RootPanel;
 import com.vaadin.shared.VBrowserDetails;
+
+import elemental.client.Browser;
 
 /**
  * Class used to query information about web browser.
@@ -55,7 +56,9 @@ public class BrowserInfo {
     static {
         // Add browser dependent v-* classnames to body to help css hacks
         String browserClassnames = get().getCSSClass();
-        RootPanel.get().addStyleName(browserClassnames);
+        for (String className : browserClassnames.split(" ")) {
+            Browser.getDocument().getBody().getClassList().add(className);
+        }
     }
 
     /**
@@ -75,14 +78,6 @@ public class BrowserInfo {
 
     private BrowserInfo() {
         browserDetails = new VBrowserDetails(getBrowserString());
-        if (browserDetails.isIE()) {
-            // Use document mode instead user agent to accurately detect how we
-            // are rendering
-            int documentMode = getIEDocumentMode();
-            if (documentMode != -1) {
-                browserDetails.setIEMode(documentMode);
-            }
-        }
 
         if (browserDetails.isChrome()) {
             touchDevice = detectChromeTouchDevice();
@@ -108,14 +103,6 @@ public class BrowserInfo {
     private native boolean detectIETouchDevice()
     /*-{
         return !!navigator.msMaxTouchPoints;
-    }-*/;
-
-    private native int getIEDocumentMode()
-    /*-{
-    	var mode = $wnd.document.documentMode;
-    	if (!mode)
-    		 return -1;
-    	return mode;
     }-*/;
 
     /**
@@ -245,18 +232,6 @@ public class BrowserInfo {
         return browserDetails.isSafari();
     }
 
-    public boolean isIE8() {
-        return isIE() && getBrowserMajorVersion() == 8;
-    }
-
-    public boolean isIE9() {
-        return isIE() && getBrowserMajorVersion() == 9;
-    }
-
-    public boolean isIE10() {
-        return isIE() && getBrowserMajorVersion() == 10;
-    }
-
     public boolean isIE11() {
         return isIE() && getBrowserMajorVersion() == 11;
     }
@@ -352,36 +327,6 @@ public class BrowserInfo {
     }
 
     /**
-     * Indicates whether the browser might require juggling to properly update
-     * sizes inside elements with overflow: auto.
-     * 
-     * @return <code>true</code> if the browser requires the workaround,
-     *         otherwise <code>false</code>
-     */
-    public boolean requiresOverflowAutoFix() {
-        return (getWebkitVersion() > 0 || getOperaVersion() >= 11
-                || getIEVersion() >= 10 || isFirefox())
-                && WidgetUtil.getNativeScrollbarSize() > 0;
-    }
-
-    /**
-     * Indicates whether the browser might require juggling to properly update
-     * sizes inside elements with overflow: auto when adjusting absolutely
-     * positioned elements.
-     * <p>
-     * See https://bugs.webkit.org/show_bug.cgi?id=123958 and
-     * http://code.google.com/p/chromium/issues/detail?id=316549
-     * 
-     * @since 7.1.8
-     * @return <code>true</code> if the browser requires the workaround,
-     *         otherwise <code>false</code>
-     */
-    public boolean requiresPositionAbsoluteOverflowAutoFix() {
-        return (getWebkitVersion() > 0)
-                && WidgetUtil.getNativeScrollbarSize() > 0;
-    }
-
-    /**
      * Checks if the browser is run on iOS
      * 
      * @return true if the browser is run on iOS, false otherwise
@@ -445,8 +390,8 @@ public class BrowserInfo {
      *         otherwise
      */
     public boolean isAndroidWithBrokenScrollTop() {
-        return isAndroid()
-                && (getOperatingSystemMajorVersion() == 3 || getOperatingSystemMajorVersion() == 4);
+        return isAndroid() && (getOperatingSystemMajorVersion() == 3
+                || getOperatingSystemMajorVersion() == 4);
     }
 
     public boolean isAndroid23() {

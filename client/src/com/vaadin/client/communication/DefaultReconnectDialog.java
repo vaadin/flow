@@ -17,19 +17,15 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.core.shared.GWT;
-import com.google.gwt.dom.client.BodyElement;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Style.Visibility;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Label;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.ui.VOverlay;
+
+import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration.Visibility;
+import elemental.dom.Element;
+import elemental.events.Event;
+import elemental.events.EventListener;
+import elemental.events.EventRemover;
 
 /**
  * The default implementation of the reconnect dialog
@@ -37,90 +33,120 @@ import com.vaadin.client.ui.VOverlay;
  * @since 7.6
  * @author Vaadin Ltd
  */
-public class DefaultReconnectDialog extends VOverlay implements ReconnectDialog {
+public class DefaultReconnectDialog implements ReconnectDialog {
 
     private static final String STYLE_RECONNECTING = "active";
+    private static final String STYLE_MODAL = "modal";
     private static final String STYLE_BODY_RECONNECTING = "v-reconnecting";
 
-    public Label label;
+    public Element label;
 
-    private HandlerRegistration clickHandler = null;
+    private EventRemover clickHandler = null;
+    private Element root;
 
     public DefaultReconnectDialog() {
-        super(false, true);
-        addStyleName("v-reconnect-dialog");
+        // super(false, true);
 
-        FlowPanel root = new FlowPanel("div");
-        HTML spinner = new HTML();
-        spinner.addStyleName("spinner");
+        root = Browser.getDocument().createElement("div");
+        root.setClassName("v-reconnect-dialog");
+        Element spinner = Browser.getDocument().createElement("div");
+        spinner.setClassName("spinner");
 
-        label = GWT.create(Label.class);
-        label.addStyleName("text");
+        label = Browser.getDocument().createElement("span");
+        label.setClassName("text");
 
-        root.add(spinner);
-        root.add(label);
+        root.appendChild(spinner);
+        root.appendChild(label);
 
-        setWidget(root);
     }
 
     @Override
     public void setText(String text) {
-        label.setText(text);
+        label.setTextContent(text);
     }
 
     @Override
     public void setReconnecting(boolean reconnecting) {
-        setStyleName(STYLE_RECONNECTING, reconnecting);
-        BodyElement body = Document.get().getBody();
         if (reconnecting) {
-            body.addClassName(STYLE_BODY_RECONNECTING);
+            root.getClassList().add(STYLE_RECONNECTING);
         } else {
-            body.removeClassName(STYLE_BODY_RECONNECTING);
+            root.getClassList().remove(STYLE_RECONNECTING);
+        }
+
+        Element body = Browser.getDocument().getBody();
+        if (reconnecting) {
+            body.getClassList().add(STYLE_BODY_RECONNECTING);
+        } else {
+            body.getClassList().remove(STYLE_BODY_RECONNECTING);
         }
 
         // Click to refresh after giving up
         if (!reconnecting) {
-            clickHandler = addDomHandler(new ClickHandler() {
+            clickHandler = root.addEventListener("click", new EventListener() {
+
                 @Override
-                public void onClick(ClickEvent event) {
+                public void handleEvent(Event evt) {
                     // refresh
                     WidgetUtil.redirect(null);
+
                 }
-            }, ClickEvent.getType());
+            }, false);
         } else {
             if (clickHandler != null) {
-                clickHandler.removeHandler();
+                clickHandler.remove();
+                clickHandler = null;
             }
         }
     }
 
     @Override
     public void show(ApplicationConnection connection) {
-        ac = connection;
-        show();
-    }
-
-    @Override
-    public void setPopupPosition(int left, int top) {
-        // Don't set inline styles for position, handle it in the theme
+        // FIXME Do something else
+        if (root.getParentElement() == null) {
+            Browser.getDocument().getBody().appendChild(root);
+        }
     }
 
     @Override
     public void preload(ApplicationConnection connection) {
         setModal(false); // Don't interfere with application use
         show(connection);
-        getElement().getStyle().setVisibility(Visibility.HIDDEN);
-        setStyleName(STYLE_RECONNECTING, true);
+        root.getStyle().setVisibility(Visibility.HIDDEN);
+        root.getClassList().add(STYLE_RECONNECTING);
 
         Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 
             @Override
             public void execute() {
-                getElement().getStyle().setVisibility(Visibility.VISIBLE);
-                setStyleName(STYLE_RECONNECTING, false);
+                root.getStyle().setVisibility(Visibility.VISIBLE);
+                root.getClassList().remove(STYLE_RECONNECTING);
                 hide();
-
             }
         });
+    }
+
+    @Override
+    public boolean isVisible() {
+        return root.getParentElement() != null;
+    }
+
+    @Override
+    public void hide() {
+        root.getParentElement().removeChild(root);
+
+    }
+
+    @Override
+    public void setModal(boolean modal) {
+        if (modal) {
+            root.getClassList().add(STYLE_MODAL);
+        } else {
+            root.getClassList().remove(STYLE_MODAL);
+        }
+    }
+
+    @Override
+    public boolean isModal() {
+        return root.getClassList().contains(STYLE_MODAL);
     }
 }

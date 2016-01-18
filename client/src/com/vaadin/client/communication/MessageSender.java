@@ -15,16 +15,13 @@
  */
 package com.vaadin.client.communication;
 
-import java.util.logging.Logger;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.Command;
-import com.vaadin.client.ApplicationConfiguration;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.RequestStartingEvent;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingEndedEvent;
-import com.vaadin.client.Util;
+import com.vaadin.client.Console;
 import com.vaadin.client.VLoadingIndicator;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
@@ -71,15 +68,10 @@ public class MessageSender {
         xhrConnection.setConnection(connection);
     }
 
-    private static Logger getLogger() {
-        return Logger.getLogger(MessageSender.class.getName());
-    }
-
     public void sendInvocationsToServer() {
         if (!connection.isApplicationRunning()) {
-            getLogger()
-                    .warning(
-                            "Trying to send RPC from not yet started or stopped application");
+            Console.warn(
+                    "Trying to send RPC from not yet started or stopped application");
             return;
         }
 
@@ -103,10 +95,6 @@ public class MessageSender {
             return;
         }
 
-        if (ApplicationConfiguration.isDebugMode()) {
-            Util.logMethodInvocations(connection, serverRpcQueue.getAll());
-        }
-
         boolean showLoadingIndicator = serverRpcQueue.showLoadingIndicator();
         JsonArray reqJson = serverRpcQueue.toJson();
         serverRpcQueue.clear();
@@ -114,9 +102,8 @@ public class MessageSender {
         if (reqJson.length() == 0) {
             // Nothing to send, all invocations were filtered out (for
             // non-existing connectors)
-            getLogger()
-                    .warning(
-                            "All RPCs filtered out, not sending anything to the server");
+            Console.warn(
+                    "All RPCs filtered out, not sending anything to the server");
             return;
         }
 
@@ -154,8 +141,8 @@ public class MessageSender {
             payload.put(ApplicationConstants.CSRF_TOKEN, csrfToken);
         }
         payload.put(ApplicationConstants.RPC_INVOCATIONS, reqInvocations);
-        payload.put(ApplicationConstants.SERVER_SYNC_ID, getMessageHandler()
-                .getLastSeenServerSyncId());
+        payload.put(ApplicationConstants.SERVER_SYNC_ID,
+                getMessageHandler().getLastSeenServerSyncId());
         payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
                 clientToServerMessageId++);
 
@@ -194,16 +181,16 @@ public class MessageSender {
      *            <code>false</code> to disable the push connection.
      */
     public void setPushEnabled(boolean enabled) {
-        final PushConfigurationState pushState = connection.getUIConnector()
-                .getState().pushConfiguration;
+        final PushConfigurationState pushState = connection
+                .getPushConfiguration();
 
         if (enabled && push == null) {
             push = GWT.create(PushConnection.class);
             push.init(connection, pushState);
         } else if (!enabled && push != null && push.isActive()) {
-            push.disconnect(new Command() {
+            push.disconnect(new Runnable() {
                 @Override
-                public void execute() {
+                public void run() {
                     push = null;
                     /*
                      * If push has been enabled again while we were waiting for
@@ -228,7 +215,7 @@ public class MessageSender {
 
     public void startRequest() {
         if (hasActiveRequest) {
-            getLogger().severe(
+            Console.error(
                     "Trying to start a new request while another is active");
         }
         hasActiveRequest = true;
@@ -237,7 +224,7 @@ public class MessageSender {
 
     public void endRequest() {
         if (!hasActiveRequest) {
-            getLogger().severe("No active request");
+            Console.error("No active request");
         }
         // After sendInvocationsToServer() there may be a new active
         // request, so we must set hasActiveRequest to false before, not after,
@@ -252,12 +239,12 @@ public class MessageSender {
         }
 
         // deferring to avoid flickering
-        Scheduler.get().scheduleDeferred(new Command() {
+        Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+
             @Override
             public void execute() {
-                if (!connection.isApplicationRunning()
-                        || !(hasActiveRequest() || getServerRpcQueue()
-                                .isFlushPending())) {
+                if (!connection.isApplicationRunning() || !(hasActiveRequest()
+                        || getServerRpcQueue().isFlushPending())) {
                     getLoadingIndicator().hide();
 
                     // If on Liferay and session expiration management is in
@@ -359,7 +346,7 @@ public class MessageSender {
      * state from the server
      */
     public void resynchronize() {
-        getLogger().info("Resynchronizing from server");
+        Console.log("Resynchronizing from server");
         JsonObject resyncParam = Json.createObject();
         resyncParam.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
         send(Json.createArray(), resyncParam);
@@ -379,7 +366,7 @@ public class MessageSender {
             return;
         }
         if (force) {
-            getLogger().info(
+            Console.log(
                     "Forced update of clientId to " + clientToServerMessageId);
             clientToServerMessageId = nextExpectedId;
             return;
@@ -390,15 +377,13 @@ public class MessageSender {
                 // We have never sent a message to the server, so likely the
                 // server knows better (typical case is that we refreshed a
                 // @PreserveOnRefresh UI)
-                getLogger().info(
-                        "Updating client-to-server id to " + nextExpectedId
-                                + " based on server");
+                Console.log("Updating client-to-server id to " + nextExpectedId
+                        + " based on server");
             } else {
-                getLogger().warning(
-                        "Server expects next client-to-server id to be "
-                                + nextExpectedId + " but we were going to use "
-                                + clientToServerMessageId + ". Will use "
-                                + nextExpectedId + ".");
+                Console.warn("Server expects next client-to-server id to be "
+                        + nextExpectedId + " but we were going to use "
+                        + clientToServerMessageId + ". Will use "
+                        + nextExpectedId + ".");
             }
             clientToServerMessageId = nextExpectedId;
         } else {

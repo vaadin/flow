@@ -204,8 +204,7 @@ public class ResourceLoader {
      */
     public void loadScript(final String scriptUrl,
             final ResourceLoadListener resourceLoadListener) {
-        loadScript(scriptUrl, resourceLoadListener,
-                !supportsInOrderScriptExecution());
+        loadScript(scriptUrl, resourceLoadListener, false);
     }
 
     /**
@@ -276,17 +275,6 @@ public class ResourceLoader {
     }
 
     /**
-     * The current browser supports script.async='false' for maintaining
-     * execution order for dynamically-added scripts.
-     * 
-     * @return Browser supports script.async='false'
-     * @since 7.2.4
-     */
-    public static boolean supportsInOrderScriptExecution() {
-        return BrowserInfo.get().isIE11() || BrowserInfo.get().isEdge();
-    }
-
-    /**
      * Download a resource and notify a listener when the resource is loaded
      * without attempting to interpret the resource. When a resource has been
      * preloaded, it will be present in the browser's cache (provided the HTTP
@@ -350,28 +338,16 @@ public class ResourceLoader {
          * <script type="text/cache"> does not fire events
          *  XHR not tested - should work, probably causes other issues
          -*/
-        if (BrowserInfo.get().isIE()) {
-            // If ie11+ for some reason gets a preload request
-            if (BrowserInfo.get().getBrowserMajorVersion() >= 11) {
-                throw new RuntimeException(
-                        "Browser doesn't support preloading with text/cache");
-            }
-            ScriptElement element = Document.get().createScriptElement();
-            element.setSrc(url);
+        ObjectElement element = Document.get().createObjectElement();
+        element.setData(url);
+        if (BrowserInfo.get().isChrome()) {
             element.setType("text/cache");
-            return element;
         } else {
-            ObjectElement element = Document.get().createObjectElement();
-            element.setData(url);
-            if (BrowserInfo.get().isChrome()) {
-                element.setType("text/cache");
-            } else {
-                element.setType("text/plain");
-            }
-            element.setHeight("0px");
-            element.setWidth("0px");
-            return element;
+            element.setType("text/plain");
         }
+        element.setHeight("0px");
+        element.setWidth("0px");
+        return element;
     }
 
     /**
@@ -389,25 +365,25 @@ public class ResourceLoader {
      */
     public static native void addOnloadHandler(Element element,
             ResourceLoadListener listener, ResourceLoadEvent event)
-    /*-{
-        element.onload = $entry(function() {
-            element.onload = null;
-            element.onerror = null;
-            element.onreadystatechange = null;
-            listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onLoad(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
-        });
-        element.onerror = $entry(function() {
-            element.onload = null;
-            element.onerror = null;
-            element.onreadystatechange = null;
-            listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onError(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
-        });
-        element.onreadystatechange = function() {
-            if ("loaded" === element.readyState || "complete" === element.readyState ) {
-                element.onload(arguments[0]);
-            }
-        };
-    }-*/;
+            /*-{
+                element.onload = $entry(function() {
+                    element.onload = null;
+                    element.onerror = null;
+                    element.onreadystatechange = null;
+                    listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onLoad(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
+                });
+                element.onerror = $entry(function() {
+                    element.onload = null;
+                    element.onerror = null;
+                    element.onreadystatechange = null;
+                    listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onError(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
+                });
+                element.onreadystatechange = function() {
+                    if ("loaded" === element.readyState || "complete" === element.readyState ) {
+                        element.onload(arguments[0]);
+                    }
+                };
+            }-*/;
 
     /**
      * Load a stylesheet and notify a listener when the stylesheet is loaded.
@@ -533,12 +509,12 @@ public class ResourceLoader {
                     if (rules === undefined) {
                         rules = sheet.rules;
                     }
-
+    
                     if (rules === null) {
                         // Style sheet loaded, but can't access length because of XSS -> assume there's something there
                         return 1;
                     }
-
+    
                     // Return length so we can distinguish 0 (probably 404 error) from normal case.
                     return rules.length;
                 } catch (err) {

@@ -34,9 +34,6 @@ import org.jsoup.nodes.Element;
 
 import com.vaadin.event.ActionManager;
 import com.vaadin.event.ConnectorActionManager;
-import com.vaadin.event.ContextClickEvent;
-import com.vaadin.event.ContextClickEvent.ContextClickListener;
-import com.vaadin.event.ContextClickEvent.ContextClickNotifier;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.AbstractClientConnector;
 import com.vaadin.server.AbstractErrorMessage.ContentMode;
@@ -52,9 +49,6 @@ import com.vaadin.server.UserError;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.AbstractComponentState;
 import com.vaadin.shared.ComponentConstants;
-import com.vaadin.shared.ContextClickRpc;
-import com.vaadin.shared.EventId;
-import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.ComponentStateUtil;
 import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.ui.Field.ValueChangeEvent;
@@ -73,7 +67,7 @@ import com.vaadin.util.ReflectTools;
  */
 @SuppressWarnings("serial")
 public abstract class AbstractComponent extends AbstractClientConnector
-        implements Component, ContextClickNotifier {
+        implements Component {
 
     /* Private members */
 
@@ -174,8 +168,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
     public String getStyleName() {
         String s = "";
         if (ComponentStateUtil.hasStyles(getState(false))) {
-            for (final Iterator<String> it = getState(false).styles.iterator(); it
-                    .hasNext();) {
+            for (final Iterator<String> it = getState(false).styles
+                    .iterator(); it.hasNext();) {
                 s += it.next();
                 if (it.hasNext()) {
                     s += " ";
@@ -565,8 +559,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
 
         if (parent != null && this.parent != null) {
-            throw new IllegalStateException(getClass().getName()
-                    + " already has a parent.");
+            throw new IllegalStateException(
+                    getClass().getName() + " already has a parent.");
         }
 
         // Send a detach event if the component is currently attached
@@ -756,17 +750,15 @@ public abstract class AbstractComponent extends AbstractClientConnector
         super.beforeClientResponse(initial);
         // TODO This logic should be on the client side and the state should
         // simply be a data object with "width" and "height".
-        if (getHeight() >= 0
-                && (getHeightUnits() != Unit.PERCENTAGE || ComponentSizeValidator
-                        .parentCanDefineHeight(this))) {
+        if (getHeight() >= 0 && (getHeightUnits() != Unit.PERCENTAGE
+                || ComponentSizeValidator.parentCanDefineHeight(this))) {
             getState().height = "" + getCSSHeight();
         } else {
             getState().height = "";
         }
 
-        if (getWidth() >= 0
-                && (getWidthUnits() != Unit.PERCENTAGE || ComponentSizeValidator
-                        .parentCanDefineWidth(this))) {
+        if (getWidth() >= 0 && (getWidthUnits() != Unit.PERCENTAGE
+                || ComponentSizeValidator.parentCanDefineWidth(this))) {
             getState().width = "" + getCSSWidth();
         } else {
             getState().width = "";
@@ -1013,8 +1005,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
         // handle immediate
         if (attr.hasKey("immediate")) {
-            setImmediate(DesignAttributeHandler.getFormatter().parse(
-                    attr.get("immediate"), Boolean.class));
+            setImmediate(DesignAttributeHandler.getFormatter()
+                    .parse(attr.get("immediate"), Boolean.class));
         }
 
         // handle locale
@@ -1025,15 +1017,14 @@ public abstract class AbstractComponent extends AbstractClientConnector
         readSize(attr);
         // handle component error
         if (attr.hasKey("error")) {
-            UserError error = new UserError(attr.get("error"),
-                    ContentMode.HTML, ErrorLevel.ERROR);
+            UserError error = new UserError(attr.get("error"), ContentMode.HTML,
+                    ErrorLevel.ERROR);
             setComponentError(error);
         }
         // Tab index when applicable
         if (design.hasAttr("tabindex") && this instanceof Focusable) {
-            ((Focusable) this).setTabIndex(DesignAttributeHandler
-                    .readAttribute("tabindex", design.attributes(),
-                            Integer.class));
+            ((Focusable) this).setTabIndex(DesignAttributeHandler.readAttribute(
+                    "tabindex", design.attributes(), Integer.class));
         }
 
         // check for unsupported attributes
@@ -1041,9 +1032,10 @@ public abstract class AbstractComponent extends AbstractClientConnector
         supported.addAll(getDefaultAttributes());
         supported.addAll(getCustomAttributes());
         for (Attribute a : attr) {
-            if (!a.getKey().startsWith(":") && !supported.contains(a.getKey())) {
-                getLogger().info(
-                        "Unsupported attribute found when reading from design : "
+            if (!a.getKey().startsWith(":")
+                    && !supported.contains(a.getKey())) {
+                getLogger()
+                        .info("Unsupported attribute found when reading from design : "
                                 + a.getKey());
             }
         }
@@ -1065,8 +1057,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
         String[] parts = localeString.split("_");
         if (parts.length > 3) {
-            throw new RuntimeException("Cannot parse the locale string: "
-                    + localeString);
+            throw new RuntimeException(
+                    "Cannot parse the locale string: " + localeString);
         }
         switch (parts.length) {
         case 1:
@@ -1140,7 +1132,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
         }
 
         // read height
-        if (attributes.hasKey("height-auto") || attributes.hasKey("size-auto")) {
+        if (attributes.hasKey("height-auto")
+                || attributes.hasKey("size-auto")) {
             this.setHeight(null);
         } else if (attributes.hasKey("height-full")
                 || attributes.hasKey("size-full")) {
@@ -1305,18 +1298,17 @@ public abstract class AbstractComponent extends AbstractClientConnector
                     explicitImmediateValue, def.isImmediate(), Boolean.class);
         }
         // handle locale
-        if (getLocale() != null
-                && (getParent() == null || !getLocale().equals(
-                        getParent().getLocale()))) {
+        if (getLocale() != null && (getParent() == null
+                || !getLocale().equals(getParent().getLocale()))) {
             design.attr("locale", getLocale().toString());
         }
         // handle size
         writeSize(attr, def);
         // handle component error
-        String errorMsg = getComponentError() != null ? getComponentError()
-                .getFormattedHtmlMessage() : null;
-        String defErrorMsg = def.getComponentError() != null ? def
-                .getComponentError().getFormattedHtmlMessage() : null;
+        String errorMsg = getComponentError() != null
+                ? getComponentError().getFormattedHtmlMessage() : null;
+        String defErrorMsg = def.getComponentError() != null
+                ? def.getComponentError().getFormattedHtmlMessage() : null;
         if (!SharedUtil.equals(errorMsg, defErrorMsg)) {
             attr.put("error", errorMsg);
         }
@@ -1395,30 +1387,6 @@ public abstract class AbstractComponent extends AbstractClientConnector
             }
         }
         return false;
-    }
-
-    @Override
-    public void addContextClickListener(ContextClickListener listener) {
-        // Register default Context Click RPC if needed. This RPC won't be
-        // called if there are no listeners on the server-side. A client-side
-        // connector can override this and use a different RPC channel.
-        if (getRpcManager(ContextClickRpc.class.getName()) == null) {
-            registerRpc(new ContextClickRpc() {
-                @Override
-                public void contextClick(MouseEventDetails details) {
-                    fireEvent(new ContextClickEvent(AbstractComponent.this,
-                            details));
-                }
-            });
-        }
-
-        addListener(EventId.CONTEXT_CLICK, ContextClickEvent.class, listener,
-                ContextClickEvent.CONTEXT_CLICK_METHOD);
-    }
-
-    @Override
-    public void removeContextClickListener(ContextClickListener listener) {
-        removeListener(EventId.CONTEXT_CLICK, ContextClickEvent.class, listener);
     }
 
     private static final Logger getLogger() {

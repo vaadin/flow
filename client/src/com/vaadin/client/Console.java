@@ -15,17 +15,30 @@
  */
 package com.vaadin.client;
 
+import elemental.client.Browser;
+
 /**
- * GWT's HasFocus is way too overkill for just receiving focus in simple
- * components. Vaadin uses this interface in addition to GWT's HasFocus to pass
- * focus requests from server to actual ui widgets in browsers.
+ * Helper class for using window.console
  * 
- * So in to make your server side focusable component receive focus on client
- * side it must either implement this or HasFocus interface.
+ * @since
+ * @author Vaadin Ltd
  */
-public interface Focusable {
-    /**
-     * Sets focus to this widget.
-     */
-    public void focus();
+public class Console {
+
+    public static void debug(Object message) {
+        Browser.getWindow().getConsole().debug(message);
+    }
+
+    public static void log(Object message) {
+        Browser.getWindow().getConsole().log(message);
+    }
+
+    public static void warn(Object message) {
+        Browser.getWindow().getConsole().warn(message);
+    }
+
+    public static void error(Object message) {
+        Browser.getWindow().getConsole().error(message);
+    }
+
 }

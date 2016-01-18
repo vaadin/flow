@@ -16,24 +16,16 @@
 package com.vaadin.client.communication;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.logging.Logger;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.ConnectorMap;
-import com.vaadin.client.metadata.Method;
-import com.vaadin.client.metadata.NoDataException;
-import com.vaadin.client.metadata.Type;
-import com.vaadin.client.metadata.TypeDataStore;
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.client.Console;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
-import elemental.json.JsonValue;
 
 /**
  * Manages the queue of server invocations (RPC) which are waiting to be sent to
@@ -77,27 +69,6 @@ public class ServerRpcQueue {
         this.connection = connection;
     }
 
-    private static Logger getLogger() {
-        return Logger.getLogger(ServerRpcQueue.class.getName());
-    }
-
-    /**
-     * Removes any pending invocation of the given method from the queue
-     * 
-     * @param invocation
-     *            The invocation to remove
-     */
-    public void removeMatching(MethodInvocation invocation) {
-        Iterator<MethodInvocation> iter = pendingInvocations.values()
-                .iterator();
-        while (iter.hasNext()) {
-            MethodInvocation mi = iter.next();
-            if (mi.equals(invocation)) {
-                iter.remove();
-            }
-        }
-    }
-
     /**
      * Adds an explicit RPC method invocation to the send queue.
      * 
@@ -118,15 +89,15 @@ public class ServerRpcQueue {
      */
     public void add(MethodInvocation invocation, boolean lastOnly) {
         if (!connection.isApplicationRunning()) {
-            getLogger()
-                    .warning(
-                            "Trying to invoke method on not yet started or stopped application");
+            Console.warn(
+                    "Trying to invoke method on not yet started or stopped application");
             return;
         }
         String tag;
         if (lastOnly) {
             tag = invocation.getLastOnlyTag();
-            assert !tag.matches("\\d+") : "getLastOnlyTag value must have at least one non-digit character";
+            assert !tag.matches(
+                    "\\d+") : "getLastOnlyTag value must have at least one non-digit character";
             pendingInvocations.remove(tag);
         } else {
             tag = Integer.toString(lastInvocationTag++);
@@ -224,19 +195,7 @@ public class ServerRpcQueue {
      * @return true if a loading indicator should be shown, false otherwise
      */
     public boolean showLoadingIndicator() {
-        for (MethodInvocation invocation : getAll()) {
-            if (isLegacyVariableChange(invocation)) {
-                // Always show loading indicator for legacy requests
-                return true;
-            } else if (!isJavascriptRpc(invocation)) {
-                Type type = new Type(invocation.getInterfaceName(), null);
-                Method method = type.getMethod(invocation.getMethodName());
-                if (!TypeDataStore.isNoLoadingIndicator(method)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return true;
     }
 
     /**
@@ -253,90 +212,14 @@ public class ServerRpcQueue {
 
         for (MethodInvocation invocation : getAll()) {
             String connectorId = invocation.getConnectorId();
-            if (!connectorExists(connectorId)) {
-                getLogger().info(
-                        "Ignoring RPC for removed connector: " + connectorId
-                                + ": " + invocation.toString());
-                continue;
-            }
-
             JsonArray invocationJson = Json.createArray();
             invocationJson.set(0, connectorId);
             invocationJson.set(1, invocation.getInterfaceName());
             invocationJson.set(2, invocation.getMethodName());
-            JsonArray paramJson = Json.createArray();
-
-            Type[] parameterTypes = null;
-            if (!isLegacyVariableChange(invocation)
-                    && !isJavascriptRpc(invocation)) {
-                try {
-                    Type type = new Type(invocation.getInterfaceName(), null);
-                    Method method = type.getMethod(invocation.getMethodName());
-                    parameterTypes = method.getParameterTypes();
-                } catch (NoDataException e) {
-                    throw new RuntimeException("No type data for "
-                            + invocation.toString(), e);
-                }
-            }
-
-            for (int i = 0; i < invocation.getParameters().length; ++i) {
-                // TODO non-static encoder?
-                Type type = null;
-                if (parameterTypes != null) {
-                    type = parameterTypes[i];
-                }
-                Object value = invocation.getParameters()[i];
-                JsonValue jsonValue = JsonEncoder.encode(value, type,
-                        connection);
-                paramJson.set(i, jsonValue);
-            }
-            invocationJson.set(3, paramJson);
-            json.set(json.length(), invocationJson);
+            invocationJson.set(3, invocation.getParameters());
         }
 
         return json;
-    }
-
-    /**
-     * Checks if the connector with the given id is still ok to use (has not
-     * been removed)
-     * 
-     * @param connectorId
-     *            the connector id to check
-     * @return true if the connector exists, false otherwise
-     */
-    private boolean connectorExists(String connectorId) {
-        ConnectorMap connectorMap = ConnectorMap.get(connection);
-        return connectorMap.hasConnector(connectorId)
-                || connectorMap.isDragAndDropPaintable(connectorId);
-    }
-
-    /**
-     * Checks if the given method invocation originates from Javascript
-     * 
-     * @param invocation
-     *            the invocation to check
-     * @return true if the method invocation originates from javascript, false
-     *         otherwise
-     */
-    public static boolean isJavascriptRpc(MethodInvocation invocation) {
-        return invocation instanceof JavaScriptMethodInvocation;
-    }
-
-    /**
-     * Checks if the given method invocation represents a Vaadin 6 variable
-     * change
-     * 
-     * @param invocation
-     *            the invocation to check
-     * @return true if the method invocation is a legacy variable change, false
-     *         otherwise
-     */
-    public static boolean isLegacyVariableChange(MethodInvocation invocation) {
-        return ApplicationConstants.UPDATE_VARIABLE_METHOD.equals(invocation
-                .getInterfaceName())
-                && ApplicationConstants.UPDATE_VARIABLE_METHOD
-                        .equals(invocation.getMethodName());
     }
 
 }

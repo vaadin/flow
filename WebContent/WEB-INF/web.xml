@@ -36,11 +36,6 @@
         <async-supported>true</async-supported>
     </servlet>
     <servlet>
-        <servlet-name>GwtRpcTest</servlet-name>
-        <servlet-class>com.vaadin.tests.widgetset.server.gwtrpc.GwtRpcServletTest</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>UI provider app</servlet-name>
         <servlet-class>com.vaadin.server.VaadinServlet</servlet-class>
         <init-param>
@@ -156,10 +151,6 @@
     <servlet-mapping>
         <servlet-name>Embed App 2</servlet-name>
         <url-pattern>/embed2/*</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>GwtRpcTest</servlet-name>
-        <url-pattern>/VAADIN/widgetsets/com.vaadin.tests.widgetset.TestingWidgetSet/GwtRpcTest/*</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

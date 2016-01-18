@@ -125,22 +125,16 @@
         </antcall>
     </target>
 
-    <target name="testing-widgetset">
-        <antcall target="compile-widgetset" inheritRefs="true">
-            <param name="widgetset" value="com.vaadin.tests.widgetset.TestingWidgetSet" />
-        </antcall>
-    </target>
-
     <target name="compile-widgetset" depends="resolve">
         <property name="module" value="${widgetset}" />
         <property name="module.output.dir" location="WebContent/VAADIN/widgetsets" />
         <property name="logLevel" value="TRACE" />
-        <property name="style" value="PRETTY" />
+        <property name="style" value="OBF" />
         <property name="localWorkers" value="2" />
         <!-- Whether assertions should be compiled into the widgetset. 
              Either "-ea" to enable or "" to disable. -->
         <property name="assertions" value="-ea" />
-        <property name="extraParams" value="" />
+        <property name="extraParams" value="-compileReport" />
         
         <property name="gwt.usearchives" value="true" />
         <property name="gwt.persistentunitcache" value="false" />
@@ -169,11 +163,8 @@
             <arg line="${extraParams}" />
             <arg value="${module}" />
 
-            <sysproperty key="vFailIfNotSerializable" value="true" />
-
             <jvmarg value="-Xss8M" />
             <jvmarg value="-Xmx1G" />
-            <jvmarg value="-XX:MaxPermSize=256M" />
             <jvmarg value="-Djava.awt.headless=true" />
             <jvmarg value="-Dgwt.usearchives=${gwt.usearchives}" />
             <jvmarg value="-Dgwt.persistentunitcache=${gwt.persistentunitcache}" />
