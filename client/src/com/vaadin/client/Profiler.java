@@ -708,4 +708,28 @@ public class Profiler {
              return $wnd.performance.now();
         }-*/;
     }
+
+    /**
+     * Returns a string, suitable for output to the user, containing the number
+     * of milliseconds which have elapsed since the given reference time.
+     * 
+     * @since
+     * @param reference
+     *            the reference time, as returned by
+     *            {@link #getRelativeTimeMillis()}
+     * @return a string containing the number of ms elapsed since the reference
+     *         time
+     */
+    public static String getRelativeTimeString(double reference) {
+        return "" + round(Profiler.getRelativeTimeMillis() - reference, 3);
+    }
+
+    /**
+     * Round {@code num} up to {@code exp} decimal positions.
+     */
+    private static native double round(double num, int exp)
+    /*-{
+        return +(Math.round(num + "e+" + exp)  + "e-" + exp);
+    }-*/;
+
 }

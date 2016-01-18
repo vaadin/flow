@@ -55,14 +55,4 @@ public class WidgetUtil {
         return a.getHref();
     }
 
-    /**
-     * Round {@code num} up to {@code exp} decimal positions.
-     * 
-     * @since 7.6
-     */
-    public static native double round(double num, int exp)
-    /*-{
-        return +(Math.round(num + "e+" + exp)  + "e-" + exp);
-    }-*/;
-
 }

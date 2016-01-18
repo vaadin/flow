@@ -30,7 +30,6 @@ import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
-import com.vaadin.client.WidgetUtil;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.ui.ui.UIConstants;
@@ -142,9 +141,8 @@ public class XhrConnection {
                 return;
             }
 
-            Console.log("Server visit took " + WidgetUtil.round(
-                    Profiler.getRelativeTimeMillis() - requestStartTime, 3)
-                    + "ms");
+            Console.log("Server visit took "
+                    + Profiler.getRelativeTimeString(requestStartTime) + "ms");
 
             // for(;;);["+ realJson +"]"
             String responseText = response.getText();

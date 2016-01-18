@@ -615,11 +615,8 @@ public class MessageHandler {
         final double start = Profiler.getRelativeTimeMillis();
         try {
             ValueMap json = parseJSONResponse(jsonText);
-            Console.log(
-                    "JSON parsing took "
-                            + WidgetUtil.round(
-                                    Profiler.getRelativeTimeMillis() - start, 3)
-                            + "ms");
+            Console.log("JSON parsing took "
+                    + Profiler.getRelativeTimeString(start) + "ms");
             return json;
         } catch (final Exception e) {
             Console.error("Unable to parse JSON: " + jsonText);
