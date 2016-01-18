@@ -25,7 +25,8 @@ import com.vaadin.server.VaadinSession;
 
 /**
  * Default implementation of {@link ConverterFactory}. Provides converters for
- * standard types like {@link String}, {@link Double} and {@link Date}. </p>
+ * standard types like {@link String}, {@link Double} and {@link Date}.
+ * </p>
  * <p>
  * Custom converters can be provided by extending this class and using
  * {@link VaadinSession#setConverterFactory(ConverterFactory)}.
@@ -70,13 +71,15 @@ public class DefaultConverterFactory implements ConverterFactory {
             Class<PRESENTATION> presentationType, Class<MODEL> modelType) {
         if (presentationType == String.class) {
             // TextField converters and more
-            Converter<PRESENTATION, MODEL> converter = (Converter<PRESENTATION, MODEL>) createStringConverter(modelType);
+            Converter<PRESENTATION, MODEL> converter = (Converter<PRESENTATION, MODEL>) createStringConverter(
+                    modelType);
             if (converter != null) {
                 return converter;
             }
         } else if (presentationType == Date.class) {
             // DateField converters and more
-            Converter<PRESENTATION, MODEL> converter = (Converter<PRESENTATION, MODEL>) createDateConverter(modelType);
+            Converter<PRESENTATION, MODEL> converter = (Converter<PRESENTATION, MODEL>) createDateConverter(
+                    modelType);
             if (converter != null) {
                 return converter;
             }

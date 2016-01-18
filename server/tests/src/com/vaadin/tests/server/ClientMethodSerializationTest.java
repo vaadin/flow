@@ -46,9 +46,8 @@ public class ClientMethodSerializationTest extends TestCase {
             .findMethod(ClientMethodSerializationTest.class,
                     "basicParamsMethodForTesting", String.class, Integer.class);
 
-    private static final Method NO_PARAMS_CALL_METHOD = ReflectTools
-            .findMethod(ClientMethodSerializationTest.class,
-                    "noParamsMethodForTesting");
+    private static final Method NO_PARAMS_CALL_METHOD = ReflectTools.findMethod(
+            ClientMethodSerializationTest.class, "noParamsMethodForTesting");
 
     public void basicParamsMethodForTesting(String stringParam,
             Integer integerParam) {
@@ -69,10 +68,11 @@ public class ClientMethodSerializationTest extends TestCase {
         originalArray.set(1, "callBackParameter2");
         originalArray.set(2, "12345");
         ClientMethodInvocation original = new ClientMethodInvocation(null,
-                "interfaceName", JAVASCRIPT_CALLBACK_METHOD, new Object[] {
-                        "callBackMethodName", originalArray });
+                "interfaceName", JAVASCRIPT_CALLBACK_METHOD,
+                new Object[] { "callBackMethodName", originalArray });
 
-        ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(original);
+        ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(
+                original);
         JsonArray copyArray = (JsonArray) copy.getParameters()[1];
         assertEquals(JsonUtil.stringify(originalArray),
                 JsonUtil.stringify(copyArray));
@@ -83,9 +83,10 @@ public class ClientMethodSerializationTest extends TestCase {
         String stringParam = "a string 123";
         Integer integerParam = 1234567890;
         ClientMethodInvocation original = new ClientMethodInvocation(null,
-                "interfaceName", BASIC_PARAMS_CALL_METHOD, new Serializable[] {
-                        stringParam, integerParam });
-        ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(original);
+                "interfaceName", BASIC_PARAMS_CALL_METHOD,
+                new Serializable[] { stringParam, integerParam });
+        ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(
+                original);
         String copyString = (String) copy.getParameters()[0];
         Integer copyInteger = (Integer) copy.getParameters()[1];
         assertEquals(copyString, stringParam);
@@ -95,7 +96,8 @@ public class ClientMethodSerializationTest extends TestCase {
     public void testClientMethodSerialization_NoParams_NoExceptions() {
         ClientMethodInvocation original = new ClientMethodInvocation(null,
                 "interfaceName", NO_PARAMS_CALL_METHOD, null);
-        ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(original);
+        ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(
+                original);
     }
 
     private static Serializable serializeAndDeserialize(Serializable input) {
@@ -118,15 +120,17 @@ public class ClientMethodSerializationTest extends TestCase {
     public void testSerializeTwice() {
         String name = "javascriptFunctionName";
         String[] arguments = { "1", "2", "3" };
-        JsonArray args = (JsonArray) JsonCodec.encode(arguments, null,
-                Object[].class, null).getEncodedValue();
+        JsonArray args = (JsonArray) JsonCodec
+                .encode(arguments, null, Object[].class, null)
+                .getEncodedValue();
         ClientConnector connector = null;
 
         ClientMethodInvocation original = new ClientMethodInvocation(connector,
-                "interfaceName", JAVASCRIPT_CALLBACK_METHOD, new Object[] {
-                        name, args });
+                "interfaceName", JAVASCRIPT_CALLBACK_METHOD,
+                new Object[] { name, args });
 
-        ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(original);
+        ClientMethodInvocation copy = (ClientMethodInvocation) serializeAndDeserialize(
+                original);
         assertEquals(copy.getMethodName(), original.getMethodName());
         assertEquals(copy.getParameters().length,
                 original.getParameters().length);

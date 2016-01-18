@@ -549,7 +549,8 @@ public class ContainerOrderedWrapper implements Container.Ordered,
             Container.ItemSetChangeListener listener) {
         if (container instanceof Container.ItemSetChangeNotifier) {
             ((Container.ItemSetChangeNotifier) container)
-                    .removeItemSetChangeListener(new PiggybackListener(listener));
+                    .removeItemSetChangeListener(
+                            new PiggybackListener(listener));
         }
     }
 
@@ -573,8 +574,8 @@ public class ContainerOrderedWrapper implements Container.Ordered,
             Container.PropertySetChangeListener listener) {
         if (container instanceof Container.PropertySetChangeNotifier) {
             ((Container.PropertySetChangeNotifier) container)
-                    .addPropertySetChangeListener(new PiggybackListener(
-                            listener));
+                    .addPropertySetChangeListener(
+                            new PiggybackListener(listener));
         }
     }
 
@@ -598,8 +599,8 @@ public class ContainerOrderedWrapper implements Container.Ordered,
             Container.PropertySetChangeListener listener) {
         if (container instanceof Container.PropertySetChangeNotifier) {
             ((Container.PropertySetChangeNotifier) container)
-                    .removePropertySetChangeListener(new PiggybackListener(
-                            listener));
+                    .removePropertySetChangeListener(
+                            new PiggybackListener(listener));
         }
     }
 
@@ -670,8 +671,8 @@ public class ContainerOrderedWrapper implements Container.Ordered,
      * listener so that the correct listener gets removed.
      * 
      */
-    private class PiggybackListener implements
-            Container.PropertySetChangeListener,
+    private class PiggybackListener
+            implements Container.PropertySetChangeListener,
             Container.ItemSetChangeListener {
 
         Object listener;

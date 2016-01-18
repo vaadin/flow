@@ -102,15 +102,15 @@ public class IconsInCaption extends TestBase {
 
     private static ComponentContainer createContainer(
             Class<? extends ComponentContainer> containerClass, Object iconType)
-            throws InstantiationException, IllegalAccessException {
+                    throws InstantiationException, IllegalAccessException {
         ComponentContainer container = containerClass.newInstance();
         for (String size : sizes) {
             Label title = new Label("<h3>" + size + "x" + size + "</h3>",
                     ContentMode.HTML);
             container.addComponent(title);
             for (String icon : icons) {
-                ThemeResource res = new ThemeResource("../runo/icons/" + size
-                        + "/" + icon);
+                ThemeResource res = new ThemeResource(
+                        "../runo/icons/" + size + "/" + icon);
                 if (TYPE_CAPTION.equals(iconType)) {
                     Label name = new Label();
                     name.setCaption(icon);

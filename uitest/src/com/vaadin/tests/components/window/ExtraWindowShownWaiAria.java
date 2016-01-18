@@ -61,22 +61,22 @@ public class ExtraWindowShownWaiAria extends AbstractTestUI {
                         }
 
                         w.setTabStopEnabled(tabStop.getValue());
-                        w.setTabStopTopAssistiveText(topTabStopMessage
-                                .getValue());
-                        w.setTabStopBottomAssistiveText(bottomTabStopMessage
-                                .getValue());
+                        w.setTabStopTopAssistiveText(
+                                topTabStopMessage.getValue());
+                        w.setTabStopBottomAssistiveText(
+                                bottomTabStopMessage.getValue());
 
                         Button close = new Button("Close",
                                 new Button.ClickListener() {
-                                    @Override
-                                    public void buttonClick(ClickEvent event) {
-                                        w.close();
-                                    }
-                                });
+                            @Override
+                            public void buttonClick(ClickEvent event) {
+                                w.close();
+                            }
+                        });
                         layout.addComponent(close);
                         Button iconButton = new Button("A button with icon");
-                        iconButton.setIcon(new ThemeResource(
-                                "../runo/icons/16/ok.png"));
+                        iconButton.setIcon(
+                                new ThemeResource("../runo/icons/16/ok.png"));
                         layout.addComponent(iconButton);
 
                         event.getButton().getUI().addWindow(w);
@@ -118,10 +118,10 @@ public class ExtraWindowShownWaiAria extends AbstractTestUI {
                         }
 
                         w.setTabStopEnabled(tabStop.getValue());
-                        w.setTabStopTopAssistiveText(topTabStopMessage
-                                .getValue());
-                        w.setTabStopBottomAssistiveText(bottomTabStopMessage
-                                .getValue());
+                        w.setTabStopTopAssistiveText(
+                                topTabStopMessage.getValue());
+                        w.setTabStopBottomAssistiveText(
+                                bottomTabStopMessage.getValue());
 
                         TextField name = new TextField("Name:");
                         form.addComponent(name);
@@ -130,11 +130,11 @@ public class ExtraWindowShownWaiAria extends AbstractTestUI {
 
                         Button saveButton = new Button("Save",
                                 new Button.ClickListener() {
-                                    @Override
-                                    public void buttonClick(ClickEvent event) {
-                                        w.close();
-                                    }
-                                });
+                            @Override
+                            public void buttonClick(ClickEvent event) {
+                                w.close();
+                            }
+                        });
                         form.addComponent(saveButton);
 
                         event.getButton().getUI().addWindow(w);

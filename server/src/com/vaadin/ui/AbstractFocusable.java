@@ -32,8 +32,8 @@ import com.vaadin.ui.Component.Focusable;
  * @since 7.6
  * @author Vaadin Ltd
  */
-public abstract class AbstractFocusable extends AbstractComponent implements
-        Focusable, FocusNotifier, BlurNotifier {
+public abstract class AbstractFocusable extends AbstractComponent
+        implements Focusable, FocusNotifier, BlurNotifier {
 
     protected AbstractFocusable() {
         registerRpc(new FocusAndBlurServerRpcImpl(this) {

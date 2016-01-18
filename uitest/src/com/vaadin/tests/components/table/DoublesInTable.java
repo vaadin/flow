@@ -152,7 +152,7 @@ public class DoublesInTable extends TestBase {
             @Override
             public Sex convertToModel(String value,
                     Class<? extends Sex> targetType, Locale locale)
-                    throws com.vaadin.data.util.converter.Converter.ConversionException {
+                            throws com.vaadin.data.util.converter.Converter.ConversionException {
                 // not used in this test - Table only converts to presentation
                 return null;
             }
@@ -160,7 +160,7 @@ public class DoublesInTable extends TestBase {
             @Override
             public String convertToPresentation(Sex value,
                     Class<? extends String> targetType, Locale locale)
-                    throws com.vaadin.data.util.converter.Converter.ConversionException {
+                            throws com.vaadin.data.util.converter.Converter.ConversionException {
                 if (value == null) {
                     value = Sex.UNKNOWN;
                 }
@@ -212,7 +212,7 @@ public class DoublesInTable extends TestBase {
             @Override
             public Integer convertToModel(String value,
                     Class<? extends Integer> targetType, Locale locale)
-                    throws com.vaadin.data.util.converter.Converter.ConversionException {
+                            throws com.vaadin.data.util.converter.Converter.ConversionException {
                 // not used in this test - Table only converts from source to
                 // target
                 return null;
@@ -221,7 +221,7 @@ public class DoublesInTable extends TestBase {
             @Override
             public String convertToPresentation(Integer value,
                     Class<? extends String> targetType, Locale locale)
-                    throws com.vaadin.data.util.converter.Converter.ConversionException {
+                            throws com.vaadin.data.util.converter.Converter.ConversionException {
                 if (value == null) {
                     return null;
                 }
@@ -251,7 +251,7 @@ public class DoublesInTable extends TestBase {
             @Override
             public Address convertToModel(String value,
                     Class<? extends Address> targetType, Locale locale)
-                    throws ConversionException {
+                            throws ConversionException {
                 // not used in this test - Table only converts to presentation
                 return null;
             }
@@ -259,7 +259,7 @@ public class DoublesInTable extends TestBase {
             @Override
             public String convertToPresentation(Address value,
                     Class<? extends String> targetType, Locale locale)
-                    throws ConversionException {
+                            throws ConversionException {
                 return value.getStreetAddress() + ", " + value.getCity() + " ("
                         + value.getCountry() + ")";
             }

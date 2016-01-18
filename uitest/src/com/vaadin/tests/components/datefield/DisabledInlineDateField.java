@@ -26,6 +26,7 @@ import com.vaadin.ui.InlineDateField;
 public class DisabledInlineDateField extends AbstractTestUI {
 
     private static final Date testDate;
+
     static {
         Calendar cal = Calendar.getInstance();
         cal.set(2014, 5, 5);

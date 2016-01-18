@@ -22,6 +22,7 @@ public class PanelState extends AbstractComponentState {
     {
         primaryStyleName = "v-panel";
     }
+
     @NoLayout
     public int tabIndex;
     @NoLayout

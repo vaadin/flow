@@ -33,6 +33,7 @@ public class UIState extends TabIndexState {
     // is announced automatically and does not need to be navigated into
     public String overlayContainerLabel = "This content is announced automatically and does not need to be navigated into.";
     public Map<String, NotificationTypeConfiguration> notificationConfigurations = new HashMap<String, NotificationTypeConfiguration>();
+
     {
         notificationConfigurations.put("error",
                 new NotificationTypeConfiguration("Error: ",
@@ -54,6 +55,7 @@ public class UIState extends TabIndexState {
                 new NotificationTypeConfiguration("Note: ", null,
                         NotificationRole.ALERT));
     }
+
     /**
      * State related to the Page class.
      */
@@ -73,14 +75,15 @@ public class UIState extends TabIndexState {
      */
     public String theme;
     public ReconnectDialogConfigurationState reconnectDialogConfiguration = new ReconnectDialogConfigurationState();
+
     {
         primaryStyleName = "v-ui";
         // Default is 1 for legacy reasons
         tabIndex = 1;
     }
 
-    public static class LoadingIndicatorConfigurationState implements
-            Serializable {
+    public static class LoadingIndicatorConfigurationState
+            implements Serializable {
         public int firstDelay = 300;
         public int secondDelay = 1500;
         public int thirdDelay = 5000;
@@ -118,16 +121,17 @@ public class UIState extends TabIndexState {
         public PushMode mode = PushMode.DISABLED;
         public String pushUrl = null;
         public Map<String, String> parameters = new HashMap<String, String>();
+
         {
-            parameters
-                    .put(TRANSPORT_PARAM, Transport.WEBSOCKET.getIdentifier());
+            parameters.put(TRANSPORT_PARAM,
+                    Transport.WEBSOCKET.getIdentifier());
             parameters.put(FALLBACK_TRANSPORT_PARAM,
                     Transport.LONG_POLLING.getIdentifier());
         }
     }
 
-    public static class ReconnectDialogConfigurationState implements
-            Serializable {
+    public static class ReconnectDialogConfigurationState
+            implements Serializable {
         public String dialogText = "Server connection lost, trying to reconnect...";
         public String dialogTextGaveUp = "Server connection lost.";
         public int reconnectAttempts = 10000;

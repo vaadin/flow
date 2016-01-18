@@ -105,8 +105,9 @@ public abstract class AbstractProperty<T> implements Property<T>,
      * An <code>Event</code> object specifying the Property whose read-only
      * status has been changed.
      */
-    protected static class ReadOnlyStatusChangeEvent extends
-            java.util.EventObject implements Property.ReadOnlyStatusChangeEvent {
+    protected static class ReadOnlyStatusChangeEvent
+            extends java.util.EventObject
+            implements Property.ReadOnlyStatusChangeEvent {
 
         /**
          * Constructs a new read-only status change event for this object.

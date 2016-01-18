@@ -57,8 +57,9 @@ public class JSONSerializerTest extends TestCase {
         stringToStateMap.put("string - state 1", s);
         stringToStateMap.put("String - state 2", s2);
 
-        JsonValue encodedMap = JsonCodec.encode(stringToStateMap, null,
-                mapType, null).getEncodedValue();
+        JsonValue encodedMap = JsonCodec
+                .encode(stringToStateMap, null, mapType, null)
+                .getEncodedValue();
 
         ensureDecodedCorrectly(stringToStateMap, encodedMap, mapType);
     }
@@ -74,8 +75,9 @@ public class JSONSerializerTest extends TestCase {
         stateToStringMap.put(s, "string - state 1");
         stateToStringMap.put(s2, "String - state 2");
 
-        JsonValue encodedMap = JsonCodec.encode(stateToStringMap, null,
-                mapType, null).getEncodedValue();
+        JsonValue encodedMap = JsonCodec
+                .encode(stateToStringMap, null, mapType, null)
+                .getEncodedValue();
 
         ensureDecodedCorrectly(stateToStringMap, encodedMap, mapType);
     }
@@ -84,8 +86,8 @@ public class JSONSerializerTest extends TestCase {
         JsonArray inputArray = Json.createArray();
         inputArray.set(0, "n");
         inputArray.set(1, Json.createNull());
-        UidlValue decodedObject = (UidlValue) JsonCodec.decodeInternalType(
-                UidlValue.class, true, inputArray, null);
+        UidlValue decodedObject = (UidlValue) JsonCodec
+                .decodeInternalType(UidlValue.class, true, inputArray, null);
         assertNull(decodedObject.getValue());
     }
 

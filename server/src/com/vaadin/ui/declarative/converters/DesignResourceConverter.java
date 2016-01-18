@@ -45,7 +45,7 @@ public class DesignResourceConverter implements Converter<String, Resource> {
     @Override
     public Resource convertToModel(String value,
             Class<? extends Resource> targetType, Locale locale)
-            throws Converter.ConversionException {
+                    throws Converter.ConversionException {
         if (!value.contains("://")) {
             // assume it'is "file://" protocol, one that is used to access a
             // file on a given path on the server, this will later be striped
@@ -67,14 +67,14 @@ public class DesignResourceConverter implements Converter<String, Resource> {
     @Override
     public String convertToPresentation(Resource value,
             Class<? extends String> targetType, Locale locale)
-            throws Converter.ConversionException {
+                    throws Converter.ConversionException {
         ResourceConverterByProtocol byType = ResourceConverterByProtocol
                 .byType(value.getClass());
         if (byType != null) {
             return byType.format(value);
         } else {
-            throw new Converter.ConversionException("unknown Resource type - "
-                    + value.getClass().getName());
+            throw new Converter.ConversionException(
+                    "unknown Resource type - " + value.getClass().getName());
         }
     }
 
@@ -94,8 +94,8 @@ public class DesignResourceConverter implements Converter<String, Resource> {
         public Resource parse(String value);
     }
 
-    private static enum ResourceConverterByProtocol implements
-            ProtocolResourceConverter {
+    private static enum ResourceConverterByProtocol
+        implements ProtocolResourceConverter {
 
         HTTP, HTTPS, FTP, FTPS, THEME {
 
@@ -125,7 +125,8 @@ public class DesignResourceConverter implements Converter<String, Resource> {
                     } catch (IllegalArgumentException iae) {
                         throw new ConversionException(
                                 "Unknown codepoint in FontAwesome: "
-                                        + codepoint, iae);
+                                        + codepoint,
+                                iae);
                     }
                 }
 
@@ -143,8 +144,7 @@ public class DesignResourceConverter implements Converter<String, Resource> {
 
             }
         },
-        @Deprecated
-        FONT {
+        @Deprecated FONT {
             @Override
             public Resource parse(String value) {
                 // Deprecated, 7.4 syntax is
@@ -154,17 +154,17 @@ public class DesignResourceConverter implements Converter<String, Resource> {
                 try {
                     return FontAwesome.valueOf(iconName);
                 } catch (IllegalArgumentException iae) {
-                    throw new ConversionException("Unknown FontIcon constant: "
-                            + iconName, iae);
+                    throw new ConversionException(
+                            "Unknown FontIcon constant: " + iconName, iae);
                 }
             }
 
             @Override
             public String format(Resource value)
                     throws Converter.ConversionException {
-                throw new UnsupportedOperationException("Use "
-                        + ResourceConverterByProtocol.FONTICON.toString()
-                        + " instead");
+                throw new UnsupportedOperationException(
+                        "Use " + ResourceConverterByProtocol.FONTICON.toString()
+                                + " instead");
             }
         },
         FILE {
@@ -201,6 +201,7 @@ public class DesignResourceConverter implements Converter<String, Resource> {
         }
 
         private static Map<Class<? extends Resource>, ResourceConverterByProtocol> typeToConverter = new HashMap<Class<? extends Resource>, ResourceConverterByProtocol>();
+
         static {
             typeToConverter.put(ExternalResource.class, HTTP);
             // ^ any of non-specialized would actually work

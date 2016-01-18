@@ -99,7 +99,8 @@ public class LoginForm extends CustomComponent {
 
         HashMap<String, String> params = new HashMap<String, String>();
         // expecting single params
-        for (Iterator<String> it = parameters.keySet().iterator(); it.hasNext();) {
+        for (Iterator<String> it = parameters.keySet().iterator(); it
+                .hasNext();) {
             String key = it.next();
             String value = (parameters.get(key))[0];
             params.put(key, value);
@@ -123,11 +124,12 @@ public class LoginForm extends CustomComponent {
     @Override
     public void beforeClientResponse(boolean initial) {
         // Generate magic URL now when UI id and connectorId are known
-        iframe.setSource(new ExternalResource(
-                ApplicationConstants.APP_PROTOCOL_PREFIX
+        iframe.setSource(
+                new ExternalResource(ApplicationConstants.APP_PROTOCOL_PREFIX
                         + ApplicationConstants.APP_PATH + '/'
                         + ConnectorResource.CONNECTOR_PATH + '/'
-                        + getUI().getUIId() + '/' + getConnectorId() + "/login"));
+                        + getUI().getUIId() + '/' + getConnectorId()
+                        + "/login"));
         super.beforeClientResponse(initial);
     }
 
@@ -139,15 +141,12 @@ public class LoginForm extends CustomComponent {
      * @return byte array containing login page html
      */
     protected String getLoginHTML() {
-        return "<!DOCTYPE html>\n"
-                + "<html>"
+        return "<!DOCTYPE html>\n" + "<html>"
                 + "<head><script type='text/javascript'>"
-                + "var setTarget = function() {"
-                + "var uri = window.location;"
+                + "var setTarget = function() {" + "var uri = window.location;"
                 + "var f = document.getElementById('loginf');"
                 + "document.forms[0].action = uri;document.forms[0].username.focus();};"
-                + ""
-                + "var styles = window.parent.document.styleSheets;"
+                + "" + "var styles = window.parent.document.styleSheets;"
                 + "for(var j = 0; j < styles.length; j++) {\n"
                 + "if(styles[j].href) {"
                 + "var stylesheet = document.createElement('link');\n"
@@ -155,31 +154,24 @@ public class LoginForm extends CustomComponent {
                 + "stylesheet.setAttribute('type', 'text/css');\n"
                 + "stylesheet.setAttribute('href', styles[j].href);\n"
                 + "document.getElementsByTagName('head')[0].appendChild(stylesheet);\n"
-                + "}"
-                + "}\n"
+                + "}" + "}\n"
                 + "function submitOnEnter(e) { var keycode = e.keyCode || e.which;"
                 + " if (keycode == 13) {document.forms[0].submit();}  } \n"
                 + "</script>"
                 + "</head><body onload='setTarget();' style='margin:0;padding:0; background:transparent;' class=\""
-                + ApplicationConstants.GENERATED_BODY_CLASSNAME
-                + "\">"
-                + "<div class='v-app v-app-loginpage "
-                + getUIThemeClassName()
+                + ApplicationConstants.GENERATED_BODY_CLASSNAME + "\">"
+                + "<div class='v-app v-app-loginpage " + getUIThemeClassName()
                 + "' style=\"background:transparent;\">"
                 + "<iframe name='logintarget' style='width:0;height:0;"
                 + "border:0;margin:0;padding:0;display:block'></iframe>"
                 + "<form id='loginf' target='logintarget' onkeypress=\"submitOnEnter(event)\" method=\"post\">"
-                + "<div>"
-                + usernameCaption
-                + "</div><div >"
+                + "<div>" + usernameCaption + "</div><div >"
                 + "<input class='v-textfield v-widget' style='display:block;' type='text' name='username'></div>"
-                + "<div>"
-                + passwordCaption
-                + "</div>"
+                + "<div>" + passwordCaption + "</div>"
                 + "<div><input class='v-textfield v-widget' style='display:block;' type='password' name='password'></div>"
                 + "<div><div onclick=\"document.forms[0].submit();\" tabindex=\"0\" class=\"v-button\" role=\"button\" ><span class=\"v-button-wrap\"><span class=\"v-button-caption\">"
-                + loginButtonCaption
-                + "</span></span></div></div></form></div>" + "</body></html>";
+                + loginButtonCaption + "</span></span></div></div></form></div>"
+                + "</body></html>";
     }
 
     private String getUIThemeClassName() {

@@ -54,7 +54,8 @@ public class ContainerOrderedWrapperTest extends AbstractContainerTestBase {
         }
 
         @Override
-        public Item addItem(Object itemId) throws UnsupportedOperationException {
+        public Item addItem(Object itemId)
+                throws UnsupportedOperationException {
             return container.addItem(itemId);
         }
 
@@ -90,13 +91,13 @@ public class ContainerOrderedWrapperTest extends AbstractContainerTestBase {
     }
 
     public void testBasicOperations() {
-        testBasicContainerOperations(new ContainerOrderedWrapper(
-                new NotOrderedContainer()));
+        testBasicContainerOperations(
+                new ContainerOrderedWrapper(new NotOrderedContainer()));
     }
 
     public void testOrdered() {
-        testContainerOrdered(new ContainerOrderedWrapper(
-                new NotOrderedContainer()));
+        testContainerOrdered(
+                new ContainerOrderedWrapper(new NotOrderedContainer()));
     }
 
 }

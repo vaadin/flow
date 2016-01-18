@@ -50,8 +50,8 @@ public class WriteLegacyDesignTest {
     @Before
     public void setUp() throws Exception {
         Properties properties = new Properties();
-        properties
-                .put(Constants.SERVLET_PARAMETER_LEGACY_DESIGN_PREFIX, "true");
+        properties.put(Constants.SERVLET_PARAMETER_LEGACY_DESIGN_PREFIX,
+                "true");
         final DeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
                 WriteLegacyDesignTest.class, properties);
 
@@ -59,10 +59,10 @@ public class WriteLegacyDesignTest {
 
         CurrentInstance.set(VaadinService.class, service);
 
-        ctx = Design
-                .read(new FileInputStream(
+        ctx = Design.read(
+                new FileInputStream(
                         "server/tests/src/com/vaadin/tests/design/testFile-legacy.html"),
-                        null);
+                null);
     }
 
     @After
@@ -91,8 +91,8 @@ public class WriteLegacyDesignTest {
 
     private void checkNode(Node node) {
         if (node instanceof Element) {
-            assertTrue("Wrong design element prefix", node.nodeName()
-                    .startsWith("v-"));
+            assertTrue("Wrong design element prefix",
+                    node.nodeName().startsWith("v-"));
             for (Node child : node.childNodes()) {
                 checkNode(child);
             }

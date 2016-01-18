@@ -74,8 +74,8 @@ public class TB3TestLocator {
             try {
                 File f = new File(location.toURI());
                 if (!f.exists()) {
-                    throw new IOException("Directory " + f.toString()
-                            + " does not exist");
+                    throw new IOException(
+                            "Directory " + f.toString() + " does not exist");
                 }
                 findPackages(f, basePackage, baseClass, classes,
                         ignoredPackages);
@@ -153,7 +153,7 @@ public class TB3TestLocator {
      */
     private <T> void findClassesInJar(JarURLConnection juc, String javaPackage,
             Class<T> baseClass, Collection<Class<? extends T>> result)
-            throws IOException {
+                    throws IOException {
         String javaPackageDir = javaPackage.replace('.', '/');
         Enumeration<JarEntry> ent = juc.getJarFile().entries();
         while (ent.hasMoreElements()) {
@@ -193,7 +193,8 @@ public class TB3TestLocator {
                 return;
             }
 
-            if (!Modifier.isAbstract(c.getModifiers()) && !c.isAnonymousClass()) {
+            if (!Modifier.isAbstract(c.getModifiers())
+                    && !c.isAnonymousClass()) {
                 result.add((Class<? extends T>) c);
             }
         } catch (Exception e) {
@@ -217,8 +218,8 @@ public class TB3TestLocator {
                 .getAnnotation(IncludeIfProperty.class);
         if (includeIfProperty != null) {
             String includeValue = includeIfProperty.value();
-            String systemPropertyValue = System.getProperty(includeIfProperty
-                    .property());
+            String systemPropertyValue = System
+                    .getProperty(includeIfProperty.property());
             if (!includeValue.equals(systemPropertyValue)) {
                 return false;
             }

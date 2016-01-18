@@ -42,7 +42,7 @@ public class JavaScriptRenderersTest extends MultiBrowserTest {
 
         // Verify onbrowserevent
         cell_1_1.click();
-        Assert.assertTrue(cell_1_1.getText().startsWith(
-                "Clicked 1 with key 2 at"));
+        Assert.assertTrue(
+                cell_1_1.getText().startsWith("Clicked 1 with key 2 at"));
     }
 }

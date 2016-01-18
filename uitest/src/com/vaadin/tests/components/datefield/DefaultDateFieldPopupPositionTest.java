@@ -27,8 +27,8 @@ import com.vaadin.testbench.elements.DateFieldElement;
  * 
  * @author Vaadin Ltd
  */
-public class DefaultDateFieldPopupPositionTest extends
-        DateFieldPopupPositionTest {
+public class DefaultDateFieldPopupPositionTest
+        extends DateFieldPopupPositionTest {
 
     @Override
     protected void checkPopupPosition() {
@@ -36,8 +36,10 @@ public class DefaultDateFieldPopupPositionTest extends
         int right = field.getLocation().getX() + field.getSize().getWidth();
         WebElement popup = getPopup();
 
-        Assert.assertTrue("Calendar popup has wrong X coordinate="
-                + popup.getLocation().getX() + " , right side of the field is "
-                + right, popup.getLocation().getX() >= right);
+        Assert.assertTrue(
+                "Calendar popup has wrong X coordinate="
+                        + popup.getLocation().getX()
+                        + " , right side of the field is " + right,
+                popup.getLocation().getX() >= right);
     }
 }

@@ -36,9 +36,9 @@ import com.vaadin.server.ClientConnector;
  * follows:
  * <ul>
  * <li>For absolute URLs, the URL is considered loaded if the same URL has
- * previously been loaded using {@code StyleSheet} or if a
- * {@code <link rel="stylesheet">} tag using the same URL was present in the DOM
- * when the Vaadin client-side was initialized.
+ * previously been loaded using {@code StyleSheet} or if a {@code 
+ * <link rel="stylesheet">} tag using the same URL was present in the DOM when
+ * the Vaadin client-side was initialized.
  * <li>For relative URLs, the URL is considered loaded if another file with the
  * same name has already been loaded using {@code StyleSheet}, even if that file
  * was loaded from a different folder.

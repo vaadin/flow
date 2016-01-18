@@ -37,8 +37,7 @@ public class StringToShortConverterTest extends TestCase {
     }
 
     public void testReverseValueConversion() {
-        assertEquals(
-                "Short value reversely was converted incorrectly",
+        assertEquals("Short value reversely was converted incorrectly",
                 reverseConverter.convertToModel((short) 10, String.class, null),
                 "10");
     }

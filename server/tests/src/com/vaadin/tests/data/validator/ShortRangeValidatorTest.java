@@ -27,7 +27,8 @@ public class ShortRangeValidatorTest extends TestCase {
                 cleanValidator.isValid((short) -15));
         assertTrue("Didn't accept valid value",
                 minValidator.isValid((short) 15));
-        assertFalse("Accepted too small value", minValidator.isValid((short) 9));
+        assertFalse("Accepted too small value",
+                minValidator.isValid((short) 9));
     }
 
     public void testMaxValue() {

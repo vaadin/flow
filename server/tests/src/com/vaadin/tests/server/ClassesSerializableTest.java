@@ -28,8 +28,7 @@ public class ClassesSerializableTest extends TestCase {
 
     private static String[] BASE_PACKAGES = { "com.vaadin" };
 
-    private static String[] EXCLUDED_PATTERNS = {
-            "com\\.vaadin\\.demo\\..*", //
+    private static String[] EXCLUDED_PATTERNS = { "com\\.vaadin\\.demo\\..*", //
             "com\\.vaadin\\.external\\.org\\.apache\\.commons\\.fileupload\\..*", //
             "com\\.vaadin\\.launcher\\..*", //
             "com\\.vaadin\\.client\\..*", //
@@ -272,8 +271,8 @@ public class ClassesSerializableTest extends TestCase {
         while (e.hasMoreElements()) {
             JarEntry entry = e.nextElement();
             if (entry.getName().endsWith(".class")) {
-                String nameWithoutExtension = entry.getName().replaceAll(
-                        "\\.class", "");
+                String nameWithoutExtension = entry.getName()
+                        .replaceAll("\\.class", "");
                 String className = nameWithoutExtension.replace('/', '.');
                 classes.add(className);
             }

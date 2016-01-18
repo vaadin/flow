@@ -62,8 +62,7 @@ public interface Constants {
             + "The widgetset in use does not seem to be built for the Vaadin\n"
             + "version in use. This might cause strange problems - a\n"
             + "recompile/deploy is strongly recommended.\n"
-            + " Vaadin version: %s\n"
-            + " Widgetset version: %s\n"
+            + " Vaadin version: %s\n" + " Widgetset version: %s\n"
             + "=================================================================";
 
     // Keep the version number in sync with push/build.xml and other locations
@@ -84,21 +83,15 @@ public interface Constants {
             + "to vaadin-push.\n"
             + "If managing dependencies manually, please make sure Atmosphere\n"
             + REQUIRED_ATMOSPHERE_RUNTIME_VERSION
-            + " is included on the classpath.\n"
-            + "Will fall back to using "
-            + PushMode.class.getSimpleName()
-            + "."
-            + PushMode.DISABLED.name()
+            + " is included on the classpath.\n" + "Will fall back to using "
+            + PushMode.class.getSimpleName() + "." + PushMode.DISABLED.name()
             + ".\n"
             + "=================================================================";
 
     static final String PUSH_NOT_SUPPORTED_ERROR = "\n"
             + "=================================================================\n"
-            + "Push is not supported for {0}\n"
-            + "Will fall back to using "
-            + PushMode.class.getSimpleName()
-            + "."
-            + PushMode.DISABLED.name()
+            + "Push is not supported for {0}\n" + "Will fall back to using "
+            + PushMode.class.getSimpleName() + "." + PushMode.DISABLED.name()
             + ".\n"
             + "=================================================================";
 

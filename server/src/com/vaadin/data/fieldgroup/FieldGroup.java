@@ -275,7 +275,8 @@ public class FieldGroup implements Serializable {
             return;
         }
 
-        field.setPropertyDataSource(wrapInTransactionalProperty(getItemProperty(propertyId)));
+        field.setPropertyDataSource(
+                wrapInTransactionalProperty(getItemProperty(propertyId)));
         configureField(field);
     }
 
@@ -289,14 +290,14 @@ public class FieldGroup implements Serializable {
 
     private void throwIfFieldIsNull(Field<?> field, Object propertyId) {
         if (field == null) {
-            throw new BindException(
-                    String.format(
-                            "Cannot bind property id '%s' to a null field.",
-                            propertyId));
+            throw new BindException(String.format(
+                    "Cannot bind property id '%s' to a null field.",
+                    propertyId));
         }
     }
 
-    private void throwIfPropertyIdAlreadyBound(Field<?> field, Object propertyId) {
+    private void throwIfPropertyIdAlreadyBound(Field<?> field,
+            Object propertyId) {
         if (propertyIdToField.containsKey(propertyId)
                 && propertyIdToField.get(propertyId) != field) {
             throw new BindException("Property id " + propertyId
@@ -399,17 +400,13 @@ public class FieldGroup implements Serializable {
      */
     protected Class<?> getPropertyType(Object propertyId) throws BindException {
         if (getItemDataSource() == null) {
-            throw new BindException(
-                    "Property type for '"
-                            + propertyId
-                            + "' could not be determined. No item data source has been set.");
+            throw new BindException("Property type for '" + propertyId
+                    + "' could not be determined. No item data source has been set.");
         }
         Property<?> p = getItemDataSource().getItemProperty(propertyId);
         if (p == null) {
-            throw new BindException(
-                    "Property type for '"
-                            + propertyId
-                            + "' could not be determined. No property with that id was found.");
+            throw new BindException("Property type for '" + propertyId
+                    + "' could not be determined. No property with that id was found.");
         }
 
         return p.getType();
@@ -521,8 +518,8 @@ public class FieldGroup implements Serializable {
      * 
      * @since 7.4
      */
-    public static class FieldGroupInvalidValueException extends
-            InvalidValueException {
+    public static class FieldGroupInvalidValueException
+            extends InvalidValueException {
         private Map<Field<?>, InvalidValueException> invalidValueExceptions;
 
         /**
@@ -554,9 +551,9 @@ public class FieldGroup implements Serializable {
             Property.Transactional<?> property = (Property.Transactional<?>) f
                     .getPropertyDataSource();
             if (property == null) {
-                throw new CommitException("Property \""
-                        + fieldToPropertyId.get(f)
-                        + "\" not bound to datasource.");
+                throw new CommitException(
+                        "Property \"" + fieldToPropertyId.get(f)
+                                + "\" not bound to datasource.");
             }
             property.startTransaction();
         }
@@ -818,7 +815,7 @@ public class FieldGroup implements Serializable {
      * <pre>
      * public class MyForm extends VerticalLayout {
      * private TextField firstName = new TextField("First name");
-     * @PropertyId("last")
+     * &#64;PropertyId("last")
      * private TextField lastName = new TextField("Last name"); 
      * private TextField age = new TextField("Age"); ... }
      * 
@@ -860,7 +857,7 @@ public class FieldGroup implements Serializable {
      * <pre>
      * public class MyForm extends VerticalLayout {
      * private TextField firstName = new TextField("First name");
-     * @PropertyId("last")
+     * &#64;PropertyId("last")
      * private TextField lastName = new TextField("Last name"); 
      * private TextField age;
      * 
@@ -910,7 +907,8 @@ public class FieldGroup implements Serializable {
             boolean buildFields) throws BindException {
         Class<?> objectClass = objectWithMemberFields.getClass();
 
-        for (java.lang.reflect.Field memberField : getFieldsInDeclareOrder(objectClass)) {
+        for (java.lang.reflect.Field memberField : getFieldsInDeclareOrder(
+                objectClass)) {
 
             if (!Field.class.isAssignableFrom(memberField.getType())) {
                 // Process next field
@@ -1020,10 +1018,8 @@ public class FieldGroup implements Serializable {
     protected Object findPropertyId(java.lang.reflect.Field memberField) {
         String fieldName = memberField.getName();
         if (getItemDataSource() == null) {
-            throw new SearchException(
-                    "Property id type for field '"
-                            + fieldName
-                            + "' could not be determined. No item data source has been set.");
+            throw new SearchException("Property id type for field '" + fieldName
+                    + "' could not be determined. No item data source has been set.");
         }
         Item dataSource = getItemDataSource();
         if (dataSource.getItemProperty(fieldName) != null) {
@@ -1214,9 +1210,9 @@ public class FieldGroup implements Serializable {
             Class<T> fieldType) throws BindException {
         T field = getFieldFactory().createField(dataType, fieldType);
         if (field == null) {
-            throw new BindException("Unable to build a field of type "
-                    + fieldType.getName() + " for editing "
-                    + dataType.getName());
+            throw new BindException(
+                    "Unable to build a field of type " + fieldType.getName()
+                            + " for editing " + dataType.getName());
         }
 
         field.setCaption(caption);

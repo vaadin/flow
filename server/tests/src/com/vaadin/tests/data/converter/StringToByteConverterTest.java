@@ -46,8 +46,8 @@ public class StringToByteConverterTest extends TestCase {
         byte b = converter.convertToModel("127", Byte.class, null);
         Assert.assertEquals(Byte.MAX_VALUE, b);
         b = converter.convertToModel("-128", Byte.class, null);
-        assertEquals("Min byte value was converted incorrectly",
-                Byte.MIN_VALUE, b);
+        assertEquals("Min byte value was converted incorrectly", Byte.MIN_VALUE,
+                b);
     }
 
     public void testValueOutOfRange() {

@@ -89,14 +89,14 @@ public class DesignFormatter implements Serializable {
             @Override
             public Boolean convertToModel(String value,
                     Class<? extends Boolean> targetType, Locale locale)
-                    throws Converter.ConversionException {
+                            throws Converter.ConversionException {
                 return !value.equalsIgnoreCase("false");
             }
 
             @Override
             public String convertToPresentation(Boolean value,
                     Class<? extends String> targetType, Locale locale)
-                    throws Converter.ConversionException {
+                            throws Converter.ConversionException {
                 if (value.booleanValue()) {
                     return "";
                 } else {
@@ -158,14 +158,14 @@ public class DesignFormatter implements Serializable {
             @Override
             public String convertToModel(String value,
                     Class<? extends String> targetType, Locale locale)
-                    throws Converter.ConversionException {
+                            throws Converter.ConversionException {
                 return value;
             }
 
             @Override
             public String convertToPresentation(String value,
                     Class<? extends String> targetType, Locale locale)
-                    throws Converter.ConversionException {
+                            throws Converter.ConversionException {
                 return value;
             }
 
@@ -188,7 +188,7 @@ public class DesignFormatter implements Serializable {
             @Override
             public Character convertToModel(String value,
                     Class<? extends Character> targetType, Locale locale)
-                    throws Converter.ConversionException {
+                            throws Converter.ConversionException {
                 return value.charAt(0);
             }
 
@@ -275,7 +275,8 @@ public class DesignFormatter implements Serializable {
      *         registered converter.
      */
     public String format(Object object) {
-        return format(object, object == null ? Object.class : object.getClass());
+        return format(object,
+                object == null ? Object.class : object.getClass());
     }
 
     /**
@@ -292,8 +293,8 @@ public class DesignFormatter implements Serializable {
         if (object == null) {
             return null;
         } else {
-            return findConverterFor(object.getClass()).convertToPresentation(
-                    object, String.class, null);
+            return findConverterFor(object.getClass())
+                    .convertToPresentation(object, String.class, null);
         }
     }
 
@@ -387,8 +388,8 @@ public class DesignFormatter implements Serializable {
         if (input == null) {
             return null;
         }
-        return input.replace("&", "&amp;").replace(">", "&gt;")
-                .replace("<", "&lt;");
+        return input.replace("&", "&amp;").replace(">", "&gt;").replace("<",
+                "&lt;");
     }
 
     /**

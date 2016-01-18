@@ -168,8 +168,8 @@ public class PropertySetItemTest extends TestCase {
         PropertysetItem item = createPropertySetItem();
 
         // Expectations and start test
-        propertySetListenerMock.itemPropertySetChange(EasyMock
-                .isA(PropertySetChangeEvent.class));
+        propertySetListenerMock.itemPropertySetChange(
+                EasyMock.isA(PropertySetChangeEvent.class));
         EasyMock.replay(propertySetListenerMock);
 
         // Add listener and add a property -> should end up in listener once
@@ -195,8 +195,8 @@ public class PropertySetItemTest extends TestCase {
         item.addItemProperty(ID2, prop2);
 
         // Expectations and start test
-        propertySetListenerMock.itemPropertySetChange(EasyMock
-                .isA(PropertySetChangeEvent.class));
+        propertySetListenerMock.itemPropertySetChange(
+                EasyMock.isA(PropertySetChangeEvent.class));
         EasyMock.replay(propertySetListenerMock);
 
         // Add listener and add a property -> should end up in listener once
@@ -397,9 +397,8 @@ public class PropertySetItemTest extends TestCase {
 
         item.addItemProperty(ID2, prop2);
 
-        Assert.assertEquals(
-                String.valueOf(prop1.getValue()) + " "
-                        + String.valueOf(prop2.getValue()), item.toString());
+        Assert.assertEquals(String.valueOf(prop1.getValue()) + " "
+                + String.valueOf(prop2.getValue()), item.toString());
     }
 
 }

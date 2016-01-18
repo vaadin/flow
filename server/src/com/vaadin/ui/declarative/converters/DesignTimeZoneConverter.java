@@ -33,7 +33,7 @@ public class DesignTimeZoneConverter implements Converter<String, TimeZone> {
     @Override
     public TimeZone convertToModel(String value,
             Class<? extends TimeZone> targetTimeZone, Locale locale)
-            throws Converter.ConversionException {
+                    throws Converter.ConversionException {
         if (value == null || value.isEmpty()) {
             return null;
         }
@@ -44,7 +44,7 @@ public class DesignTimeZoneConverter implements Converter<String, TimeZone> {
     @Override
     public String convertToPresentation(TimeZone value,
             Class<? extends String> targetTimeZone, Locale locale)
-            throws Converter.ConversionException {
+                    throws Converter.ConversionException {
         if (value == null) {
             return "";
         } else {

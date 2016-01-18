@@ -32,6 +32,7 @@ public class ButtonState extends TabIndexState {
     {
         primaryStyleName = "v-button";
     }
+
     @NoLayout
     public boolean disableOnClick = false;
     @NoLayout

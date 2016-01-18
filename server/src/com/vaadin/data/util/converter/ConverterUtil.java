@@ -85,7 +85,7 @@ public class ConverterUtil implements Serializable {
             MODELTYPE modelValue,
             Class<? extends PRESENTATIONTYPE> presentationType,
             Converter<PRESENTATIONTYPE, MODELTYPE> converter, Locale locale)
-            throws Converter.ConversionException {
+                    throws Converter.ConversionException {
         if (converter != null) {
             /*
              * If there is a converter, always use it. It must convert or throw
@@ -116,8 +116,7 @@ public class ConverterUtil implements Serializable {
             throw new Converter.ConversionException(
                     "Unable to convert value of type "
                             + modelValue.getClass().getName()
-                            + " to presentation type "
-                            + presentationType
+                            + " to presentation type " + presentationType
                             + ". No converter is set and the types are not compatible.");
         }
     }
@@ -147,7 +146,7 @@ public class ConverterUtil implements Serializable {
     public static <MODELTYPE, PRESENTATIONTYPE> MODELTYPE convertToModel(
             PRESENTATIONTYPE presentationValue, Class<MODELTYPE> modelType,
             Converter<PRESENTATIONTYPE, MODELTYPE> converter, Locale locale)
-            throws Converter.ConversionException {
+                    throws Converter.ConversionException {
         if (converter != null) {
             /*
              * If there is a converter, always use it. It must convert or throw
@@ -181,8 +180,7 @@ public class ConverterUtil implements Serializable {
             throw new Converter.ConversionException(
                     "Unable to convert value of type "
                             + presentationValue.getClass().getName()
-                            + " to model type "
-                            + modelType
+                            + " to model type " + modelType
                             + ". No converter is set and the types are not compatible.");
         }
 

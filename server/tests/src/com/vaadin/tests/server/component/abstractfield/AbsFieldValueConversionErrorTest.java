@@ -17,8 +17,8 @@ import com.vaadin.ui.TextField;
 public class AbsFieldValueConversionErrorTest extends TestCase {
 
     Person paulaBean = new Person("Paula", "Brilliant", "paula@brilliant.com",
-            34, Sex.FEMALE, new Address("Paula street 1", 12345, "P-town",
-                    Country.FINLAND));
+            34, Sex.FEMALE,
+            new Address("Paula street 1", 12345, "P-town", Country.FINLAND));
 
     public void testValidateConversionErrorParameters() {
         TextField tf = new TextField();

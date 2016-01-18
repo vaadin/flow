@@ -48,8 +48,8 @@ import com.vaadin.ui.declarative.DesignContext;
  * @since
  * @author Vaadin Ltd
  */
-public class AbstractComponentDeclarativeTest extends
-        DeclarativeTestBase<AbstractComponent> {
+public class AbstractComponentDeclarativeTest
+        extends DeclarativeTestBase<AbstractComponent> {
 
     private AbstractComponent component;
 
@@ -98,8 +98,8 @@ public class AbstractComponentDeclarativeTest extends
         boolean[] immediate = { false, false, true, true };
         for (int i = 0; i < design.length; i++) {
             component = (AbstractComponent) Design
-                    .read(new ByteArrayInputStream(design[i].getBytes(Charset
-                            .forName("UTF-8"))));
+                    .read(new ByteArrayInputStream(
+                            design[i].getBytes(Charset.forName("UTF-8"))));
             assertEquals(immediate[i], component.isImmediate());
             assertEquals(explicitImmediate[i], getExplicitImmediate(component));
         }
@@ -108,8 +108,8 @@ public class AbstractComponentDeclarativeTest extends
     @Test
     public void testExternalIcon() {
         String design = "<vaadin-label icon=\"http://example.com/example.gif\"/>";
-        component
-                .setIcon(new ExternalResource("http://example.com/example.gif"));
+        component.setIcon(
+                new ExternalResource("http://example.com/example.gif"));
         testRead(design, component);
         testWrite(design, component);
     }
@@ -218,8 +218,8 @@ public class AbstractComponentDeclarativeTest extends
         Responsive.makeResponsive(component);
         Element design = createDesign(true);
         component.readDesign(design, new DesignContext());
-        assertEquals("Component should have only one extension", 1, component
-                .getExtensions().size());
+        assertEquals("Component should have only one extension", 1,
+                component.getExtensions().size());
     }
 
     private Element createDesign(boolean responsive) {

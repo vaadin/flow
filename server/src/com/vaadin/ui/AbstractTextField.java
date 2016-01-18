@@ -189,7 +189,8 @@ public abstract class AbstractTextField extends AbstractField<String> implements
                 String newValue = (String) variables.get("text");
 
                 // server side check for max length
-                if (getMaxLength() != -1 && newValue.length() > getMaxLength()) {
+                if (getMaxLength() != -1
+                        && newValue.length() > getMaxLength()) {
                     newValue = newValue.substring(0, getMaxLength());
                 }
                 final String oldValue = getValue();
@@ -680,7 +681,7 @@ public abstract class AbstractTextField extends AbstractField<String> implements
      * 
      * @param pos
      *            the position for the cursor
-     * */
+     */
     public void setCursorPosition(int pos) {
         setSelectionRange(pos, 0);
         lastKnownCursorPosition = pos;
@@ -774,8 +775,8 @@ public abstract class AbstractTextField extends AbstractField<String> implements
         super.readDesign(design, designContext);
         Attributes attr = design.attributes();
         if (attr.hasKey("maxlength")) {
-            setMaxLength(DesignAttributeHandler.readAttribute("maxlength",
-                    attr, Integer.class));
+            setMaxLength(DesignAttributeHandler.readAttribute("maxlength", attr,
+                    Integer.class));
         }
     }
 
@@ -806,8 +807,8 @@ public abstract class AbstractTextField extends AbstractField<String> implements
         AbstractTextField def = (AbstractTextField) designContext
                 .getDefaultInstance(this);
         Attributes attr = design.attributes();
-        DesignAttributeHandler.writeAttribute("maxlength", attr,
-                getMaxLength(), def.getMaxLength(), Integer.class);
+        DesignAttributeHandler.writeAttribute("maxlength", attr, getMaxLength(),
+                def.getMaxLength(), Integer.class);
     }
 
 }

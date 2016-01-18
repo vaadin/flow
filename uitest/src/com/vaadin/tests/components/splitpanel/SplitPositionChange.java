@@ -49,17 +49,18 @@ public class SplitPositionChange extends AbstractTestUIWithLog {
         splitPanel.setHeight("200px");
         splitPanel.addComponent(buildPanel(firstCaption));
         splitPanel.addComponent(buildPanel(secondCaption));
-        splitPanel
-                .addSplitPositionChangeListener(new AbstractSplitPanel.SplitPositionChangeListener() {
+        splitPanel.addSplitPositionChangeListener(
+                new AbstractSplitPanel.SplitPositionChangeListener() {
 
                     @Override
                     public void onSplitPositionChanged(
                             AbstractSplitPanel.SplitPositionChangeEvent event) {
-                        log(String.format(
-                                "Split position changed: %s, position: %s %s",
-                                (horizontal ? "horizontal" : "vertical"),
-                                event.getSplitPosition(),
-                                event.getSplitPositionUnit()));
+                        log(String
+                                .format("Split position changed: %s, position: %s %s",
+                                        (horizontal ? "horizontal"
+                                                : "vertical"),
+                                        event.getSplitPosition(),
+                                        event.getSplitPositionUnit()));
                     }
                 });
         addComponent(splitPanel);

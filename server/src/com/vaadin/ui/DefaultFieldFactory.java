@@ -32,7 +32,8 @@ import com.vaadin.shared.util.SharedUtil;
  * factories.
  * 
  */
-public class DefaultFieldFactory implements FormFieldFactory, TableFieldFactory {
+public class DefaultFieldFactory
+        implements FormFieldFactory, TableFieldFactory {
 
     private static final DefaultFieldFactory instance = new DefaultFieldFactory();
 

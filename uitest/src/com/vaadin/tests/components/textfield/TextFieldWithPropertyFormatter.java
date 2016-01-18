@@ -58,6 +58,7 @@ public class TextFieldWithPropertyFormatter extends TestBase {
 
             private final DecimalFormat df = new DecimalFormat("#,##0.00",
                     new DecimalFormatSymbols(new Locale("en", "UK")));
+
             {
                 df.setParseBigDecimal(true);
                 // df.setRoundingMode(RoundingMode.HALF_UP);

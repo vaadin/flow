@@ -28,8 +28,8 @@ import com.vaadin.ui.TextField;
  * @since 7.4
  * @author Vaadin Ltd
  */
-public class AbstractFieldDeclarativeTest extends
-        DeclarativeTestBase<AbstractField<?>> {
+public class AbstractFieldDeclarativeTest
+        extends DeclarativeTestBase<AbstractField<?>> {
 
     @Test
     public void testPlainText() {

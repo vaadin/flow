@@ -40,17 +40,17 @@ public class CompileTransitionPropertyTest {
         Matcher matcher = pattern.matcher(compiled);
         assertTrue("Could not find style rules for .my-label.", matcher.find());
         String elementStyle = matcher.group();
-        elementStyle = elementStyle.replaceFirst(
-                "(.my-label)(\\s)+(\\{)(\\s)*", "");
+        elementStyle = elementStyle.replaceFirst("(.my-label)(\\s)+(\\{)(\\s)*",
+                "");
         // Check that the correct rules are present
         Pattern p1 = Pattern
                 .compile("transition-property(\\s*):(\\s*)transform(\\s*);");
-        Pattern p2 = Pattern
-                .compile("-moz-transition-property(\\s*):(\\s*)-moz-transform(\\s*);");
-        Pattern p3 = Pattern
-                .compile("-webkit-transition-property(\\s*):(\\s*)-webkit-transform(\\s*);");
-        assertTrue("The style 'transition-property: transform' is missing.", p1
-                .matcher(elementStyle).find());
+        Pattern p2 = Pattern.compile(
+                "-moz-transition-property(\\s*):(\\s*)-moz-transform(\\s*);");
+        Pattern p3 = Pattern.compile(
+                "-webkit-transition-property(\\s*):(\\s*)-webkit-transform(\\s*);");
+        assertTrue("The style 'transition-property: transform' is missing.",
+                p1.matcher(elementStyle).find());
         assertTrue(
                 "The style '-moz-transition-property: -moz-transform' is missing.",
                 p2.matcher(elementStyle).find());

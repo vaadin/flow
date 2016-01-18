@@ -43,8 +43,7 @@ public enum ContentMode {
      * 
      * @deprecated Use {@link #HTML} instead
      */
-    @Deprecated
-    XML,
+    @Deprecated XML,
 
     /**
      * Legacy content mode, where the label contains RAW output. This is handled
@@ -52,6 +51,5 @@ public enum ContentMode {
      * 
      * @deprecated Use {@link #HTML} instead
      */
-    @Deprecated
-    RAW;
+    @Deprecated RAW;
 }

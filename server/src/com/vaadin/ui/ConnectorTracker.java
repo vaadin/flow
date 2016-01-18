@@ -140,22 +140,20 @@ public class ConnectorTracker implements Serializable {
             connectorIdToConnector.put(connectorId, connector);
             uninitializedConnectors.add(connector);
             if (getLogger().isLoggable(Level.FINE)) {
-                getLogger().log(
-                        Level.FINE,
-                        "Registered {0} ({1})",
-                        new Object[] { connector.getClass().getSimpleName(),
-                                connectorId });
+                getLogger()
+                        .log(Level.FINE, "Registered {0} ({1})",
+                                new Object[] {
+                                        connector.getClass().getSimpleName(),
+                                        connectorId });
             }
         } else if (previouslyRegistered != connector) {
             throw new RuntimeException("A connector with id " + connectorId
                     + " is already registered!");
         } else if (!wasUnregistered) {
-            getLogger()
-                    .log(Level.WARNING,
-                            "An already registered connector was registered again: {0} ({1})",
-                            new Object[] {
-                                    connector.getClass().getSimpleName(),
-                                    connectorId });
+            getLogger().log(Level.WARNING,
+                    "An already registered connector was registered again: {0} ({1})",
+                    new Object[] { connector.getClass().getSimpleName(),
+                            connectorId });
         }
         dirtyConnectors.add(connector);
     }
@@ -174,8 +172,7 @@ public class ConnectorTracker implements Serializable {
     public void unregisterConnector(ClientConnector connector) {
         String connectorId = connector.getConnectorId();
         if (!connectorIdToConnector.containsKey(connectorId)) {
-            getLogger().log(
-                    Level.WARNING,
+            getLogger().log(Level.WARNING,
                     "Tried to unregister {0} ({1}) which is not registered",
                     new Object[] { connector.getClass().getSimpleName(),
                             connectorId });
@@ -199,15 +196,14 @@ public class ConnectorTracker implements Serializable {
         dirtyConnectors.remove(connector);
         if (unregisteredConnectors.add(connector)) {
             if (getLogger().isLoggable(Level.FINE)) {
-                getLogger().log(
-                        Level.FINE,
-                        "Unregistered {0} ({1})",
-                        new Object[] { connector.getClass().getSimpleName(),
-                                connectorId });
+                getLogger()
+                        .log(Level.FINE, "Unregistered {0} ({1})",
+                                new Object[] {
+                                        connector.getClass().getSimpleName(),
+                                        connectorId });
             }
         } else {
-            getLogger().log(
-                    Level.WARNING,
+            getLogger().log(Level.WARNING,
                     "Unregistered {0} ({1}) that was already unregistered.",
                     new Object[] { connector.getClass().getSimpleName(),
                             connectorId });
@@ -226,7 +222,8 @@ public class ConnectorTracker implements Serializable {
      *         already know anything about the connector.
      */
     public boolean isClientSideInitialized(ClientConnector connector) {
-        assert connectorIdToConnector.get(connector.getConnectorId()) == connector : "Connector should be registered with this ConnectorTracker";
+        assert connectorIdToConnector.get(connector
+                .getConnectorId()) == connector : "Connector should be registered with this ConnectorTracker";
         return !uninitializedConnectors.contains(connector);
     }
 
@@ -313,10 +310,9 @@ public class ConnectorTracker implements Serializable {
                 // This code should never be called as cleanup should take place
                 // in detach()
 
-                getLogger()
-                        .log(Level.WARNING,
-                                "cleanConnectorMap unregistered connector {0}. This should have been done when the connector was detached.",
-                                getConnectorAndParentInfo(connector));
+                getLogger().log(Level.WARNING,
+                        "cleanConnectorMap unregistered connector {0}. This should have been done when the connector was detached.",
+                        getConnectorAndParentInfo(connector));
 
                 if (globalResourceHandler != null) {
                     globalResourceHandler.unregisterConnector(connector);
@@ -331,16 +327,13 @@ public class ConnectorTracker implements Serializable {
                 diffStates.remove(connector);
 
                 assert isRemovalSentToClient(connector) : "Connector "
-                        + connector
-                        + " (id = "
-                        + connector.getConnectorId()
+                        + connector + " (id = " + connector.getConnectorId()
                         + ") is no longer visible to the client, but no corresponding hierarchy change is being sent.";
 
                 if (getLogger().isLoggable(Level.FINE)) {
-                    getLogger()
-                            .log(Level.FINE,
-                                    "cleanConnectorMap removed state for {0} as it is not visible",
-                                    getConnectorAndParentInfo(connector));
+                    getLogger().log(Level.FINE,
+                            "cleanConnectorMap removed state for {0} as it is not visible",
+                            getConnectorAndParentInfo(connector));
                 }
             }
         }
@@ -361,7 +354,8 @@ public class ConnectorTracker implements Serializable {
         if (hierarchyInfoObj instanceof JsonObject) {
             JsonObject hierachyInfo = (JsonObject) hierarchyInfoObj;
 
-            ClientConnector firstVisibleParent = findFirstVisibleParent(connector);
+            ClientConnector firstVisibleParent = findFirstVisibleParent(
+                    connector);
             if (firstVisibleParent == null) {
                 // Connector is detached, not our business
                 return true;
@@ -385,22 +379,20 @@ public class ConnectorTracker implements Serializable {
                         .getAttribute(attributeName);
                 if (stateUpdateConnectorsObj instanceof Set<?>) {
                     Set<?> stateUpdateConnectors = (Set<?>) stateUpdateConnectorsObj;
-                    if (!stateUpdateConnectors.contains(firstVisibleParent
-                            .getConnectorId())) {
+                    if (!stateUpdateConnectors
+                            .contains(firstVisibleParent.getConnectorId())) {
                         // Not the optimization case if the parent is not marked
                         // as dirty
                         return false;
                     }
                 } else {
-                    getLogger().warning(
-                            "Request attribute " + attributeName
-                                    + " is not a Set");
+                    getLogger().warning("Request attribute " + attributeName
+                            + " is not a Set");
                 }
             }
         } else {
-            getLogger().warning(
-                    "Request attribute " + attributeName
-                            + " is not a JsonObject");
+            getLogger().warning("Request attribute " + attributeName
+                    + " is not a JsonObject");
         }
 
         return true;
@@ -466,25 +458,21 @@ public class ConnectorTracker implements Serializable {
 
                 if (!connector.equals(child.getParent())) {
                     noErrors = false;
-                    getLogger()
-                            .log(Level.WARNING,
-                                    "{0} claims that {1} is its child, but the child claims {2} is its parent.",
-                                    new Object[] {
-                                            getConnectorString(connector),
-                                            getConnectorString(child),
-                                            getConnectorString(child
-                                                    .getParent()) });
+                    getLogger().log(Level.WARNING,
+                            "{0} claims that {1} is its child, but the child claims {2} is its parent.",
+                            new Object[] { getConnectorString(connector),
+                                    getConnectorString(child),
+                                    getConnectorString(child.getParent()) });
                 }
             }
         }
 
         for (ClientConnector dangling : danglingConnectors) {
             noErrors = false;
-            getLogger()
-                    .log(Level.WARNING,
-                            "{0} claims that {1} is its parent, but the parent does not acknowledge the parenthood.",
-                            new Object[] { getConnectorString(dangling),
-                                    getConnectorString(dangling.getParent()) });
+            getLogger().log(Level.WARNING,
+                    "{0} claims that {1} is its parent, but the parent does not acknowledge the parenthood.",
+                    new Object[] { getConnectorString(dangling),
+                            getConnectorString(dangling.getParent()) });
         }
 
         return noErrors;
@@ -717,7 +705,8 @@ public class ConnectorTracker implements Serializable {
     }
 
     /* Special serialization to JsonObjects which are not serializable */
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    private void writeObject(java.io.ObjectOutputStream out)
+            throws IOException {
         out.defaultWriteObject();
         // Convert JsonObjects in diff state to String representation as
         // JsonObject is not serializable
@@ -730,8 +719,8 @@ public class ConnectorTracker implements Serializable {
     }
 
     /* Special serialization to JsonObjects which are not serializable */
-    private void readObject(java.io.ObjectInputStream in) throws IOException,
-            ClassNotFoundException {
+    private void readObject(java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
         in.defaultReadObject();
 
         // Read String versions of JsonObjects and parse into JsonObjects as
@@ -949,7 +938,8 @@ public class ConnectorTracker implements Serializable {
      *            the sync id the client has most recently received from the
      *            server.
      */
-    public void cleanConcurrentlyRemovedConnectorIds(int lastSyncIdSeenByClient) {
+    public void cleanConcurrentlyRemovedConnectorIds(
+            int lastSyncIdSeenByClient) {
         if (lastSyncIdSeenByClient == -1) {
             // Sync id checking is not in use, so we should just clear the
             // entire map to avoid leaking memory

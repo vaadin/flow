@@ -74,7 +74,7 @@ public class ReflectTools implements Serializable {
      */
     public static Object getJavaFieldValue(Object object,
             java.lang.reflect.Field field) throws IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException {
+                    IllegalAccessException, InvocationTargetException {
         PropertyDescriptor pd;
         try {
             pd = new PropertyDescriptor(field.getName(), object.getClass());
@@ -118,8 +118,8 @@ public class ReflectTools implements Serializable {
      */
     public static Object getJavaFieldValue(Object object,
             java.lang.reflect.Field field, Class<?> propertyType)
-            throws IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException {
+                    throws IllegalArgumentException, IllegalAccessException,
+                    InvocationTargetException {
         PropertyDescriptor pd;
         try {
             pd = new PropertyDescriptor(field.getName(), object.getClass());
@@ -165,8 +165,8 @@ public class ReflectTools implements Serializable {
      */
     public static void setJavaFieldValue(Object object,
             java.lang.reflect.Field field, Object value)
-            throws IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException {
+                    throws IllegalAccessException, IllegalArgumentException,
+                    InvocationTargetException {
         PropertyDescriptor pd;
         try {
             pd = new PropertyDescriptor(field.getName(), object.getClass());

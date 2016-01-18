@@ -28,8 +28,8 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import com.vaadin.tests.integration.ParameterizedTB3Runner;
 
 @RunWith(ParameterizedTB3Runner.class)
-public abstract class MultiBrowserThemeTestWithProxy extends
-        MultiBrowserTestWithProxy {
+public abstract class MultiBrowserThemeTestWithProxy
+        extends MultiBrowserTestWithProxy {
 
     private String theme;
 

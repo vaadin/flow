@@ -48,8 +48,9 @@ public class DesignTest {
     private static Charset DEFAULT_CHARSET = Charset.defaultCharset();
 
     @AfterClass
-    public static void restoreCharset() throws NoSuchFieldException,
-            SecurityException, IllegalArgumentException, IllegalAccessException {
+    public static void restoreCharset()
+            throws NoSuchFieldException, SecurityException,
+            IllegalArgumentException, IllegalAccessException {
         setCharset(DEFAULT_CHARSET);
     }
 
@@ -61,9 +62,10 @@ public class DesignTest {
         String cp1251Html = getHtml();
         setUtf8Charset();
         String utf8Html = getHtml();
-        Assert.assertEquals("Html written with UTF-8 as default encoding "
-                + "differs from html written with cp1251 encoding", cp1251Html,
-                utf8Html);
+        Assert.assertEquals(
+                "Html written with UTF-8 as default encoding "
+                        + "differs from html written with cp1251 encoding",
+                cp1251Html, utf8Html);
     }
 
     @Test
@@ -72,9 +74,10 @@ public class DesignTest {
             IllegalArgumentException, IllegalAccessException {
         setCp1251Charset();
         String cp1251Html = getHtml();
-        Assert.assertEquals("Non ascii string parsed from serialized HTML "
-                + "differs from expected", NON_ASCII_STRING,
-                getHtmlLabelValue(cp1251Html));
+        Assert.assertEquals(
+                "Non ascii string parsed from serialized HTML "
+                        + "differs from expected",
+                NON_ASCII_STRING, getHtmlLabelValue(cp1251Html));
     }
 
     @Test
@@ -83,9 +86,10 @@ public class DesignTest {
             IllegalArgumentException, IllegalAccessException {
         setUtf8Charset();
         String utf8 = getHtml();
-        Assert.assertEquals("Non ascii string parsed from serialized HTML "
-                + "differs from expected", NON_ASCII_STRING,
-                getHtmlLabelValue(utf8));
+        Assert.assertEquals(
+                "Non ascii string parsed from serialized HTML "
+                        + "differs from expected",
+                NON_ASCII_STRING, getHtmlLabelValue(utf8));
     }
 
     private String getHtmlLabelValue(String html) {
@@ -108,13 +112,15 @@ public class DesignTest {
         return out.toString(UTF8_CHARSET.name());
     }
 
-    private void setCp1251Charset() throws NoSuchFieldException,
-            SecurityException, IllegalArgumentException, IllegalAccessException {
+    private void setCp1251Charset()
+            throws NoSuchFieldException, SecurityException,
+            IllegalArgumentException, IllegalAccessException {
         setCharset(CP1251_CHARSET);
     }
 
-    private void setUtf8Charset() throws NoSuchFieldException,
-            SecurityException, IllegalArgumentException, IllegalAccessException {
+    private void setUtf8Charset()
+            throws NoSuchFieldException, SecurityException,
+            IllegalArgumentException, IllegalAccessException {
         setCharset(UTF8_CHARSET);
     }
 

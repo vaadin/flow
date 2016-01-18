@@ -317,8 +317,8 @@ public class NestedMethodPropertyTest extends TestCase {
         Assert.assertEquals("Ruukinkatu 2-4", property2.getValue());
     }
 
-    public void testSerializationWithIntermediateNull() throws IOException,
-            ClassNotFoundException {
+    public void testSerializationWithIntermediateNull()
+            throws IOException, ClassNotFoundException {
         vaadin.setManager(null);
         NestedMethodProperty<String> streetProperty = new NestedMethodProperty<String>(
                 vaadin, "manager.address.street");

@@ -93,8 +93,7 @@ public class ClassBasedViewProviderTest extends TestCase {
 
         ClassBasedViewProvider provider2 = new ClassBasedViewProvider("test",
                 TestView.class);
-        assertNull(
-                "Found view name for empty view string when none registered",
+        assertNull("Found view name for empty view string when none registered",
                 provider2.getViewName(""));
     }
 

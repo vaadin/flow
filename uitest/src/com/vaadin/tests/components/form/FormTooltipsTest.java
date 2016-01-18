@@ -37,9 +37,8 @@ public class FormTooltipsTest extends TooltipTest {
         checkTooltipNotPresent();
 
         // first name caption tooltip
-        checkTooltip(
-                $(FormElement.class).first().findElement(
-                        By.className("v-caption")), "Fields own tooltip");
+        checkTooltip($(FormElement.class).first()
+                .findElement(By.className("v-caption")), "Fields own tooltip");
 
         clearTooltip();
         checkTooltipNotPresent();
@@ -54,9 +53,8 @@ public class FormTooltipsTest extends TooltipTest {
         checkTooltip($(TextFieldElement.class).get(1), null);
 
         // last name caption should have no tooltip
-        checkTooltip(
-                $(FormElement.class).first()
-                        .findElements(By.className("v-caption")).get(1), null);
+        checkTooltip($(FormElement.class).first()
+                .findElements(By.className("v-caption")).get(1), null);
     }
 
 }

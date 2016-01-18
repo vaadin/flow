@@ -29,8 +29,8 @@ import com.vaadin.shared.communication.PushMode;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public class DefaultDeploymentConfiguration extends
-        AbstractDeploymentConfiguration {
+public class DefaultDeploymentConfiguration
+        extends AbstractDeploymentConfiguration {
     /**
      * Default value for {@link #getResourceCacheTime()} = {@value} .
      */
@@ -112,10 +112,9 @@ public class DefaultDeploymentConfiguration extends
             }
         }
 
-        getLogger()
-                .log(Level.WARNING,
-                        Constants.WARNING_UNKNOWN_LEGACY_PROPERTY_TOSTRING_VALUE,
-                        param);
+        getLogger().log(Level.WARNING,
+                Constants.WARNING_UNKNOWN_LEGACY_PROPERTY_TOSTRING_VALUE,
+                param);
 
         legacyPropertyToStringMode = DEFAULT_LEGACY_PROPERTY_TO_STRING;
     }
@@ -289,8 +288,8 @@ public class DefaultDeploymentConfiguration extends
      */
     private void checkProductionMode() {
         productionMode = getApplicationOrSystemProperty(
-                Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false").equals(
-                "true");
+                Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false")
+                        .equals("true");
         if (!productionMode) {
             getLogger().warning(Constants.NOT_PRODUCTION_MODE_INFO);
         }
@@ -302,7 +301,7 @@ public class DefaultDeploymentConfiguration extends
     private void checkXsrfProtection() {
         xsrfProtectionEnabled = !getApplicationOrSystemProperty(
                 Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, "false")
-                .equals("true");
+                        .equals("true");
         if (!xsrfProtectionEnabled) {
             getLogger().warning(Constants.WARNING_XSRF_PROTECTION_DISABLED);
         }
@@ -313,10 +312,9 @@ public class DefaultDeploymentConfiguration extends
      */
     private void checkResourceCacheTime() {
         try {
-            resourceCacheTime = Integer
-                    .parseInt(getApplicationOrSystemProperty(
-                            Constants.SERVLET_PARAMETER_RESOURCE_CACHE_TIME,
-                            Integer.toString(DEFAULT_RESOURCE_CACHE_TIME)));
+            resourceCacheTime = Integer.parseInt(getApplicationOrSystemProperty(
+                    Constants.SERVLET_PARAMETER_RESOURCE_CACHE_TIME,
+                    Integer.toString(DEFAULT_RESOURCE_CACHE_TIME)));
         } catch (NumberFormatException e) {
             getLogger().warning(
                     Constants.WARNING_RESOURCE_CACHING_TIME_NOT_NUMERIC);
@@ -326,13 +324,12 @@ public class DefaultDeploymentConfiguration extends
 
     private void checkHeartbeatInterval() {
         try {
-            heartbeatInterval = Integer
-                    .parseInt(getApplicationOrSystemProperty(
-                            Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
-                            Integer.toString(DEFAULT_HEARTBEAT_INTERVAL)));
+            heartbeatInterval = Integer.parseInt(getApplicationOrSystemProperty(
+                    Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+                    Integer.toString(DEFAULT_HEARTBEAT_INTERVAL)));
         } catch (NumberFormatException e) {
-            getLogger().warning(
-                    Constants.WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
+            getLogger()
+                    .warning(Constants.WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
         }
     }
@@ -364,8 +361,8 @@ public class DefaultDeploymentConfiguration extends
     private void checkSendUrlsAsParameters() {
         sendUrlsAsParameters = getApplicationOrSystemProperty(
                 Constants.SERVLET_PARAMETER_SENDURLSASPARAMETERS,
-                Boolean.toString(DEFAULT_SEND_URLS_AS_PARAMETERS)).equals(
-                "true");
+                Boolean.toString(DEFAULT_SEND_URLS_AS_PARAMETERS))
+                        .equals("true");
     }
 
     private Logger getLogger() {

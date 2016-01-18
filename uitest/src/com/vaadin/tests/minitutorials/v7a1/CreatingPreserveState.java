@@ -48,7 +48,7 @@ public class CreatingPreserveState extends UI {
 
     @Override
     protected void refresh(VaadinRequest request) {
-        content.addComponent(new Label("UI was refreshed @"
-                + System.currentTimeMillis()));
+        content.addComponent(
+                new Label("UI was refreshed @" + System.currentTimeMillis()));
     }
 }

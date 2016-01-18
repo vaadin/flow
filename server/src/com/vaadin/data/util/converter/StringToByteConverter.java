@@ -30,8 +30,8 @@ import java.util.Locale;
  * @author Vaadin Ltd
  * @since 7.4
  */
-public class StringToByteConverter extends
-        AbstractStringToNumberConverter<Byte> {
+public class StringToByteConverter
+        extends AbstractStringToNumberConverter<Byte> {
 
     /**
      * Returns the format used by

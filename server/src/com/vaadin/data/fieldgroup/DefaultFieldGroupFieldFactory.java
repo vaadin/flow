@@ -74,8 +74,8 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
             return createBooleanField(fieldType);
         }
         if (AbstractTextField.class.isAssignableFrom(fieldType)) {
-            return fieldType.cast(createAbstractTextField(fieldType
-                    .asSubclass(AbstractTextField.class)));
+            return fieldType.cast(createAbstractTextField(
+                    fieldType.asSubclass(AbstractTextField.class)));
         } else if (fieldType == RichTextArea.class) {
             return fieldType.cast(createRichTextArea());
         }
@@ -104,7 +104,8 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
             populateWithEnumData(s, (Class<? extends Enum>) type);
             return (T) s;
         } else if (AbstractTextField.class.isAssignableFrom(fieldType)) {
-            return (T) createAbstractTextField((Class<? extends AbstractTextField>) fieldType);
+            return (T) createAbstractTextField(
+                    (Class<? extends AbstractTextField>) fieldType);
         }
 
         return null;
@@ -120,7 +121,8 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
                 || DateField.class.isAssignableFrom(fieldType)) {
             field = new PopupDateField();
         } else if (AbstractTextField.class.isAssignableFrom(fieldType)) {
-            field = createAbstractTextField((Class<? extends AbstractTextField>) fieldType);
+            field = createAbstractTextField(
+                    (Class<? extends AbstractTextField>) fieldType);
         } else {
             return null;
         }
@@ -179,7 +181,8 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
             cb.setImmediate(true);
             return (T) cb;
         } else if (AbstractTextField.class.isAssignableFrom(fieldType)) {
-            return (T) createAbstractTextField((Class<? extends AbstractTextField>) fieldType);
+            return (T) createAbstractTextField(
+                    (Class<? extends AbstractTextField>) fieldType);
         }
 
         return null;
@@ -195,8 +198,8 @@ public class DefaultFieldGroupFieldFactory implements FieldGroupFieldFactory {
             field.setImmediate(true);
             return field;
         } catch (Exception e) {
-            throw new BindException("Could not create a field of type "
-                    + fieldType, e);
+            throw new BindException(
+                    "Could not create a field of type " + fieldType, e);
         }
     }
 

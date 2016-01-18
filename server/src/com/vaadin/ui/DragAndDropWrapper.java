@@ -43,8 +43,8 @@ import com.vaadin.shared.ui.draganddropwrapper.DragAndDropWrapperConstants;
 import com.vaadin.ui.declarative.DesignContext;
 
 @SuppressWarnings("serial")
-public class DragAndDropWrapper extends CustomComponent implements DropTarget,
-        DragSource, LegacyComponent {
+public class DragAndDropWrapper extends CustomComponent
+        implements DropTarget, DragSource, LegacyComponent {
 
     public class WrapperTransferable extends TransferableImpl {
 
@@ -308,7 +308,8 @@ public class DragAndDropWrapper extends CustomComponent implements DropTarget,
     }
 
     @Override
-    public Transferable getTransferable(final Map<String, Object> rawVariables) {
+    public Transferable getTransferable(
+            final Map<String, Object> rawVariables) {
         return new WrapperTransferable(this, rawVariables);
     }
 
@@ -369,16 +370,16 @@ public class DragAndDropWrapper extends CustomComponent implements DropTarget,
 
         @Override
         public void onProgress(StreamingProgressEvent event) {
-            file.getStreamVariable().onProgress(
-                    new ReceivingEventWrapper(event));
+            file.getStreamVariable()
+                    .onProgress(new ReceivingEventWrapper(event));
         }
 
         @Override
         public void streamingStarted(StreamingStartEvent event) {
             listenProgressOfUploadedFile = file.getStreamVariable() != null;
             if (listenProgressOfUploadedFile) {
-                file.getStreamVariable().streamingStarted(
-                        new ReceivingEventWrapper(event));
+                file.getStreamVariable()
+                        .streamingStarted(new ReceivingEventWrapper(event));
             }
             // no need tell to the client about this receiver on next paint
             receivers.remove(id);
@@ -391,16 +392,16 @@ public class DragAndDropWrapper extends CustomComponent implements DropTarget,
         @Override
         public void streamingFinished(StreamingEndEvent event) {
             if (listenProgressOfUploadedFile) {
-                file.getStreamVariable().streamingFinished(
-                        new ReceivingEventWrapper(event));
+                file.getStreamVariable()
+                        .streamingFinished(new ReceivingEventWrapper(event));
             }
         }
 
         @Override
         public void streamingFailed(final StreamingErrorEvent event) {
             if (listenProgressOfUploadedFile) {
-                file.getStreamVariable().streamingFailed(
-                        new ReceivingEventWrapper(event));
+                file.getStreamVariable()
+                        .streamingFailed(new ReceivingEventWrapper(event));
             }
         }
 

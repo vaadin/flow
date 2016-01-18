@@ -34,8 +34,8 @@ import com.vaadin.ui.declarative.DesignContext;
  * @since 7.1
  * @author Vaadin Ltd
  */
-public class ProgressBar extends AbstractField<Float> implements
-        Property.Viewer, Property.ValueChangeListener {
+public class ProgressBar extends AbstractField<Float>
+        implements Property.Viewer, Property.ValueChangeListener {
 
     private static final float DEFAULT_VALUE = 0f;
 
@@ -159,9 +159,8 @@ public class ProgressBar extends AbstractField<Float> implements
     public void readDesign(Element design, DesignContext designContext) {
         super.readDesign(design, designContext);
         if (design.hasAttr("value") && !design.attr("value").isEmpty()) {
-            setValue(
-                    DesignAttributeHandler.readAttribute("value",
-                            design.attributes(), Float.class), false, true);
+            setValue(DesignAttributeHandler.readAttribute("value",
+                    design.attributes(), Float.class), false, true);
         }
     }
 

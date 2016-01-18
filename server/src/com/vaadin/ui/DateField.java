@@ -215,9 +215,9 @@ public class DateField extends AbstractField<Date> implements
      */
     public DateField(Property dataSource) throws IllegalArgumentException {
         if (!Date.class.isAssignableFrom(dataSource.getType())) {
-            throw new IllegalArgumentException("Can't use "
-                    + dataSource.getType().getName()
-                    + " typed property as datasource");
+            throw new IllegalArgumentException(
+                    "Can't use " + dataSource.getType().getName()
+                            + " typed property as datasource");
         }
 
         setPropertyDataSource(dataSource);
@@ -324,8 +324,8 @@ public class DateField extends AbstractField<Date> implements
 
         // Create a defensive copy against issues when using java.sql.Date (and
         // also against mutable Date).
-        getState().rangeStart = startDate != null ? new Date(
-                startDate.getTime()) : null;
+        getState().rangeStart = startDate != null
+                ? new Date(startDate.getTime()) : null;
         updateRangeValidator();
     }
 
@@ -477,15 +477,12 @@ public class DateField extends AbstractField<Date> implements
     @Override
     public void changeVariables(Object source, Map<String, Object> variables) {
 
-        if (!isReadOnly()
-                && (variables.containsKey("year")
-                        || variables.containsKey("month")
-                        || variables.containsKey("day")
-                        || variables.containsKey("hour")
-                        || variables.containsKey("min")
-                        || variables.containsKey("sec")
-                        || variables.containsKey("msec") || variables
-                            .containsKey("dateString"))) {
+        if (!isReadOnly() && (variables.containsKey("year")
+                || variables.containsKey("month")
+                || variables.containsKey("day") || variables.containsKey("hour")
+                || variables.containsKey("min") || variables.containsKey("sec")
+                || variables.containsKey("msec")
+                || variables.containsKey("dateString"))) {
 
             // Old and new dates
             final Date oldDate = getValue();
@@ -543,7 +540,8 @@ public class DateField extends AbstractField<Date> implements
                 newDate = cal.getTime();
             }
 
-            if (newDate == null && dateString != null && !"".equals(dateString)) {
+            if (newDate == null && dateString != null
+                    && !"".equals(dateString)) {
                 try {
                     Date parsedDate = handleUnparsableDateString(dateString);
                     setValue(parsedDate, true);
@@ -813,7 +811,8 @@ public class DateField extends AbstractField<Date> implements
             // Start by a zeroed calendar to avoid having values for lower
             // resolution variables e.g. time when resolution is day
             int min, field;
-            for (Resolution r : Resolution.getResolutionsLowerThan(resolution)) {
+            for (Resolution r : Resolution
+                    .getResolutionsLowerThan(resolution)) {
                 field = r.getCalendarField();
                 min = calendar.getActualMinimum(field);
                 calendar.set(field, min);
@@ -1058,8 +1057,8 @@ public class DateField extends AbstractField<Date> implements
         return timeZone;
     }
 
-    public static class UnparsableDateString extends
-            Validator.InvalidValueException {
+    public static class UnparsableDateString
+            extends Validator.InvalidValueException {
 
         public UnparsableDateString(String message) {
             super(message);
@@ -1071,8 +1070,8 @@ public class DateField extends AbstractField<Date> implements
     public void readDesign(Element design, DesignContext designContext) {
         super.readDesign(design, designContext);
         if (design.hasAttr("value") && !design.attr("value").isEmpty()) {
-            Date date = DesignAttributeHandler.getFormatter().parse(
-                    design.attr("value"), Date.class);
+            Date date = DesignAttributeHandler.getFormatter()
+                    .parse(design.attr("value"), Date.class);
             // formatting will return null if it cannot parse the string
             if (date == null) {
                 Logger.getLogger(DateField.class.getName()).info(

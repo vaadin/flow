@@ -68,8 +68,8 @@ public class CustomUIClassLoaderTest extends TestCase {
     private static DeploymentConfiguration createConfigurationMock() {
         Properties properties = new Properties();
         properties.put(VaadinSession.UI_PARAMETER, MyUI.class.getName());
-        return new DefaultDeploymentConfiguration(
-                CustomUIClassLoaderTest.class, properties);
+        return new DefaultDeploymentConfiguration(CustomUIClassLoaderTest.class,
+                properties);
     }
 
     private static VaadinRequest createRequestMock(ClassLoader classloader) {
@@ -78,8 +78,8 @@ public class CustomUIClassLoaderTest extends TestCase {
                 .createMock(VaadinService.class);
         EasyMock.expect(configurationMock.getDeploymentConfiguration())
                 .andReturn(createConfigurationMock());
-        EasyMock.expect(configurationMock.getClassLoader()).andReturn(
-                classloader);
+        EasyMock.expect(configurationMock.getClassLoader())
+                .andReturn(classloader);
 
         // Mock a VaadinRequest to give the mocked vaadin service
         VaadinRequest requestMock = EasyMock.createMock(VaadinRequest.class);

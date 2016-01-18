@@ -148,8 +148,8 @@ public class Tabsheets extends VerticalLayout implements View {
         icon.setValue(true);
     }
 
-    static TabSheet getTabSheet(boolean caption, String style,
-            boolean closable, boolean scrolling, boolean icon, boolean disable) {
+    static TabSheet getTabSheet(boolean caption, String style, boolean closable,
+            boolean scrolling, boolean icon, boolean disable) {
         TestIcon testIcon = new TestIcon(60);
 
         TabSheet ts = new TabSheet();
@@ -157,8 +157,8 @@ public class Tabsheets extends VerticalLayout implements View {
         StringGenerator sg = new StringGenerator();
 
         for (int i = 1; i <= (scrolling ? 10 : 3); i++) {
-            String tabcaption = caption ? sg.nextString(true) + " "
-                    + sg.nextString(false) : null;
+            String tabcaption = caption
+                    ? sg.nextString(true) + " " + sg.nextString(false) : null;
 
             VerticalLayout content = new VerticalLayout();
             content.setMargin(true);

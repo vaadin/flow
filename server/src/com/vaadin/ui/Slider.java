@@ -47,8 +47,8 @@ public class Slider extends AbstractField<Double> {
              * 
              * See #12133.
              */
-            getUI().getConnectorTracker().getDiffState(Slider.this)
-                    .put("value", value);
+            getUI().getConnectorTracker().getDiffState(Slider.this).put("value",
+                    value);
 
             try {
                 setValue(value, true);
@@ -371,8 +371,8 @@ public class Slider extends AbstractField<Double> {
             setOrientation(SliderOrientation.VERTICAL);
         }
         if (attr.hasKey("value")) {
-            Double newFieldValue = DesignAttributeHandler.readAttribute(
-                    "value", attr, Double.class);
+            Double newFieldValue = DesignAttributeHandler.readAttribute("value",
+                    attr, Double.class);
             setValue(newFieldValue, false, true);
         }
     }

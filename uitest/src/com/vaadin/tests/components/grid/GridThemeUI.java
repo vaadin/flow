@@ -48,9 +48,11 @@ public class GridThemeUI extends AbstractTestUIWithLog {
 
     protected BeanItemContainer<ComplexPerson> container = ComplexPerson
             .createContainer(100);;
+
     {
         container.addNestedContainerBean("address");
     }
+
     protected ComboBox formType;
 
     private Component active = null;
@@ -98,9 +100,8 @@ public class GridThemeUI extends AbstractTestUIWithLog {
             getColumn("age").getEditorField().addValidator(
                     new IntegerRangeValidator("Must be between 0 and 100", 0,
                             100));
-            getColumn("birthDate").setRenderer(
-                    new DateRenderer(DateFormat.getDateInstance(
-                            DateFormat.MEDIUM, Locale.US)));
+            getColumn("birthDate").setRenderer(new DateRenderer(
+                    DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.US)));
         }
     }
 
@@ -139,9 +140,8 @@ public class GridThemeUI extends AbstractTestUIWithLog {
             getColumn("age").getEditorField().addValidator(
                     new IntegerRangeValidator("Must be between 0 and 100", 0,
                             100));
-            getColumn("birthDate").setRenderer(
-                    new DateRenderer(DateFormat.getDateInstance(
-                            DateFormat.MEDIUM, Locale.US)));
+            getColumn("birthDate").setRenderer(new DateRenderer(
+                    DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.US)));
 
             addFooterRowAt(0);
         }

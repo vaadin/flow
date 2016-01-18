@@ -31,12 +31,13 @@ import com.vaadin.ui.CustomComponent;
  * 
  * @since 7.0.0
  */
-public class ColorPickerHistory extends CustomComponent implements
-        ColorSelector, ColorChangeListener {
+public class ColorPickerHistory extends CustomComponent
+        implements ColorSelector, ColorChangeListener {
 
     private static final String STYLENAME = "v-colorpicker-history";
 
     private static final Method COLOR_CHANGE_METHOD;
+
     static {
         try {
             COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod(
@@ -96,8 +97,8 @@ public class ColorPickerHistory extends CustomComponent implements
     @SuppressWarnings("unchecked")
     private ArrayBlockingQueue<Color> getColorHistory() {
         if (isAttached()) {
-            Object colorHistory = getSession().getAttribute(
-                    "colorPickerHistory");
+            Object colorHistory = getSession()
+                    .getAttribute("colorPickerHistory");
             if (colorHistory instanceof ArrayBlockingQueue<?>) {
                 return (ArrayBlockingQueue<Color>) colorHistory;
             }

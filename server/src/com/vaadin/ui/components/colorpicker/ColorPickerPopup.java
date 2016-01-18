@@ -48,12 +48,13 @@ import com.vaadin.ui.Window;
  * 
  * @since 7.0.0
  */
-public class ColorPickerPopup extends Window implements ClickListener,
-        ColorChangeListener, ColorSelector {
+public class ColorPickerPopup extends Window
+        implements ClickListener, ColorChangeListener, ColorSelector {
 
     private static final String STYLENAME = "v-colorpicker-popup";
 
     private static final Method COLOR_CHANGE_METHOD;
+
     static {
         try {
             COLOR_CHANGE_METHOD = ColorChangeListener.class.getDeclaredMethod(
@@ -286,8 +287,8 @@ public class ColorPickerPopup extends Window implements ClickListener,
             public void valueChange(ValueChangeEvent event) {
                 double red = (Double) event.getProperty().getValue();
                 if (!updatingColors) {
-                    Color newColor = new Color((int) red, selectedColor
-                            .getGreen(), selectedColor.getBlue());
+                    Color newColor = new Color((int) red,
+                            selectedColor.getGreen(), selectedColor.getBlue());
                     setColor(newColor);
                 }
             }
@@ -371,16 +372,18 @@ public class ColorPickerPopup extends Window implements ClickListener,
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (!updatingColors) {
-                    float hue = (Float.parseFloat(event.getProperty()
-                            .getValue().toString())) / 360f;
-                    float saturation = (Float.parseFloat(saturationSlider
-                            .getValue().toString())) / 100f;
-                    float value = (Float.parseFloat(valueSlider.getValue()
-                            .toString())) / 100f;
+                    float hue = (Float.parseFloat(
+                            event.getProperty().getValue().toString())) / 360f;
+                    float saturation = (Float
+                            .parseFloat(saturationSlider.getValue().toString()))
+                            / 100f;
+                    float value = (Float
+                            .parseFloat(valueSlider.getValue().toString()))
+                            / 100f;
 
                     // Set the color
-                    Color color = new Color(Color.HSVtoRGB(hue, saturation,
-                            value));
+                    Color color = new Color(
+                            Color.HSVtoRGB(hue, saturation, value));
                     setColor(color);
 
                     /*
@@ -402,14 +405,16 @@ public class ColorPickerPopup extends Window implements ClickListener,
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (!updatingColors) {
-                    float hue = (Float.parseFloat(hueSlider.getValue()
-                            .toString())) / 360f;
-                    float saturation = (Float.parseFloat(event.getProperty()
-                            .getValue().toString())) / 100f;
-                    float value = (Float.parseFloat(valueSlider.getValue()
-                            .toString())) / 100f;
-                    Color color = new Color(Color.HSVtoRGB(hue, saturation,
-                            value));
+                    float hue = (Float
+                            .parseFloat(hueSlider.getValue().toString()))
+                            / 360f;
+                    float saturation = (Float.parseFloat(
+                            event.getProperty().getValue().toString())) / 100f;
+                    float value = (Float
+                            .parseFloat(valueSlider.getValue().toString()))
+                            / 100f;
+                    Color color = new Color(
+                            Color.HSVtoRGB(hue, saturation, value));
                     setColor(color);
                 }
             }
@@ -423,15 +428,17 @@ public class ColorPickerPopup extends Window implements ClickListener,
             @Override
             public void valueChange(ValueChangeEvent event) {
                 if (!updatingColors) {
-                    float hue = (Float.parseFloat(hueSlider.getValue()
-                            .toString())) / 360f;
-                    float saturation = (Float.parseFloat(saturationSlider
-                            .getValue().toString())) / 100f;
-                    float value = (Float.parseFloat(event.getProperty()
-                            .getValue().toString())) / 100f;
+                    float hue = (Float
+                            .parseFloat(hueSlider.getValue().toString()))
+                            / 360f;
+                    float saturation = (Float
+                            .parseFloat(saturationSlider.getValue().toString()))
+                            / 100f;
+                    float value = (Float.parseFloat(
+                            event.getProperty().getValue().toString())) / 100f;
 
-                    Color color = new Color(Color.HSVtoRGB(hue, saturation,
-                            value));
+                    Color color = new Color(
+                            Color.HSVtoRGB(hue, saturation, value));
                     setColor(color);
                 }
             }
@@ -568,10 +575,10 @@ public class ColorPickerPopup extends Window implements ClickListener,
             blueSlider.setValue(((Integer) color.getBlue()).doubleValue());
             greenSlider.setValue(((Integer) color.getGreen()).doubleValue());
         } catch (ValueOutOfBoundsException e) {
-            getLogger().log(
-                    Level.WARNING,
+            getLogger().log(Level.WARNING,
                     "Unable to set RGB color value to " + color.getRed() + ","
-                            + color.getGreen() + "," + color.getBlue(), e);
+                            + color.getGreen() + "," + color.getBlue(),
+                    e);
         }
     }
 
@@ -581,10 +588,8 @@ public class ColorPickerPopup extends Window implements ClickListener,
             saturationSlider.setValue(((Float) (hsv[1] * 100f)).doubleValue());
             valueSlider.setValue(((Float) (hsv[2] * 100f)).doubleValue());
         } catch (ValueOutOfBoundsException e) {
-            getLogger().log(
-                    Level.WARNING,
-                    "Unable to set HSV color value to " + hsv[0] + "," + hsv[1]
-                            + "," + hsv[2], e);
+            getLogger().log(Level.WARNING, "Unable to set HSV color value to "
+                    + hsv[0] + "," + hsv[1] + "," + hsv[2], e);
         }
     }
 
@@ -765,7 +770,8 @@ public class ColorPickerPopup extends Window implements ClickListener,
         public Color calculate(int x, int y) {
             float saturation = 1f - (y / 220.0f);
             float value = (x / 220.0f);
-            float hue = Float.parseFloat(hueSlider.getValue().toString()) / 360f;
+            float hue = Float.parseFloat(hueSlider.getValue().toString())
+                    / 360f;
 
             Color color = new Color(Color.HSVtoRGB(hue, saturation, value));
             return color;

@@ -155,14 +155,10 @@ public class DevelopmentServerLauncher {
         }
 
         // Add help for System.out
-        System.out
-                .println("-------------------------------------------------\n"
-                        + "Starting Vaadin in "
-                        + mode
-                        + ".\n"
-                        + "Running in http://localhost:"
-                        + port
-                        + "\n-------------------------------------------------\n");
+        System.out.println("-------------------------------------------------\n"
+                + "Starting Vaadin in " + mode + ".\n"
+                + "Running in http://localhost:" + port
+                + "\n-------------------------------------------------\n");
 
         final Server server = new Server();
 
@@ -239,8 +235,8 @@ public class DevelopmentServerLauncher {
                 }
             }
             if (!classFolders.isEmpty()) {
-                System.out
-                        .println("Enabling context auto-reload.\n Scan interval: "
+                System.out.println(
+                        "Enabling context auto-reload.\n Scan interval: "
                                 + interval + " secs.\n Scanned folders: ");
                 for (File f : classFolders) {
                     System.out.println("  " + f.getAbsolutePath());
@@ -283,16 +279,16 @@ public class DevelopmentServerLauncher {
             server.start();
 
             if (serverArgs.containsKey("shutdownPort")) {
-                int shutdownPort = Integer.parseInt(serverArgs
-                        .get("shutdownPort"));
-                final ServerSocket serverSocket = new ServerSocket(
-                        shutdownPort, 1, InetAddress.getByName("127.0.0.1"));
+                int shutdownPort = Integer
+                        .parseInt(serverArgs.get("shutdownPort"));
+                final ServerSocket serverSocket = new ServerSocket(shutdownPort,
+                        1, InetAddress.getByName("127.0.0.1"));
                 new Thread() {
                     @Override
                     public void run() {
                         try {
-                            System.out
-                                    .println("Waiting for shutdown signal on port "
+                            System.out.println(
+                                    "Waiting for shutdown signal on port "
                                             + serverSocket.getLocalPort());
                             // Start waiting for a close signal
                             Socket accept = serverSocket.accept();
@@ -307,8 +303,8 @@ public class DevelopmentServerLauncher {
                                     try {
                                         Thread.sleep(5000);
                                         if (!server.isStopped()) {
-                                            System.out
-                                                    .println("Jetty still running. Closing JVM.");
+                                            System.out.println(
+                                                    "Jetty still running. Closing JVM.");
                                             dumpThreadStacks();
                                             System.exit(-1);
                                         }
@@ -441,8 +437,8 @@ public class DevelopmentServerLauncher {
                 FilterChain chain) throws IOException, ServletException {
 
             String path = ((HttpServletRequest) request).getPathInfo();
-            System.out.println("Caching " + path + " for " + CACHE_MINUTES
-                    + " minutes");
+            System.out.println(
+                    "Caching " + path + " for " + CACHE_MINUTES + " minutes");
 
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.MINUTE, CACHE_MINUTES);

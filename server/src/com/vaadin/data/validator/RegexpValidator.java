@@ -71,7 +71,8 @@ public class RegexpValidator extends AbstractStringValidator {
      * @param errorMessage
      *            the message to display in case the value does not validate.
      */
-    public RegexpValidator(String regexp, boolean complete, String errorMessage) {
+    public RegexpValidator(String regexp, boolean complete,
+            String errorMessage) {
         super(errorMessage);
         pattern = Pattern.compile(regexp);
         this.complete = complete;

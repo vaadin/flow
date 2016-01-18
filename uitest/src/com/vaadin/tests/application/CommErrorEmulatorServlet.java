@@ -47,7 +47,7 @@ public class CommErrorEmulatorServlet extends VaadinServlet {
         @Override
         public boolean synchronizedHandleRequest(VaadinSession session,
                 VaadinRequest request, VaadinResponse response)
-                throws IOException {
+                        throws IOException {
             UI ui = session.getService().findUI(request);
             if (ui != null && uidlResponseCode.containsKey(ui)) {
                 response.sendError(uidlResponseCode.get(ui), "Error set in UI");
@@ -62,7 +62,7 @@ public class CommErrorEmulatorServlet extends VaadinServlet {
         @Override
         public boolean synchronizedHandleRequest(VaadinSession session,
                 VaadinRequest request, VaadinResponse response)
-                throws IOException {
+                        throws IOException {
             UI ui = session.getService().findUI(request);
             if (ui != null && heartbeatResponseCode.containsKey(ui)) {
                 response.sendError(heartbeatResponseCode.get(ui),
@@ -79,7 +79,7 @@ public class CommErrorEmulatorServlet extends VaadinServlet {
 
         public CommErrorEmulatorService(VaadinServlet servlet,
                 DeploymentConfiguration deploymentConfiguration)
-                throws ServiceException {
+                        throws ServiceException {
             super(servlet, deploymentConfiguration);
         }
 
@@ -96,7 +96,7 @@ public class CommErrorEmulatorServlet extends VaadinServlet {
     @Override
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-            throws ServiceException {
+                    throws ServiceException {
         CommErrorEmulatorService s = new CommErrorEmulatorService(this,
                 deploymentConfiguration);
         s.init();
@@ -106,9 +106,9 @@ public class CommErrorEmulatorServlet extends VaadinServlet {
     public void setUIDLResponseCode(final UI ui, int responseCode,
             final int delay) {
         uidlResponseCode.put(ui, responseCode);
-        System.out.println("Responding with " + responseCode
-                + " to UIDL requests for " + ui + " for the next " + delay
-                + "s");
+        System.out.println(
+                "Responding with " + responseCode + " to UIDL requests for "
+                        + ui + " for the next " + delay + "s");
 
         new Thread(new Runnable() {
             @Override

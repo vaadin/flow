@@ -42,11 +42,11 @@ public class PopupViewResizeWhileOpen extends AbstractTestUI {
 
                 Button button = new Button("Change height!",
                         new Button.ClickListener() {
-                            @Override
-                            public void buttonClick(Button.ClickEvent event) {
-                                popupComponent.setHeight("320px");
-                            }
-                        });
+                    @Override
+                    public void buttonClick(Button.ClickEvent event) {
+                        popupComponent.setHeight("320px");
+                    }
+                });
 
                 popupComponent.addComponent(button);
                 return popupComponent;

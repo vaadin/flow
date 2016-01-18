@@ -42,8 +42,8 @@ public class DragAndDropFocusObtainTest extends MultiBrowserTest {
         actions.click(wrapper);
         actions.perform();
 
-        WebElement focusedElement = driver.findElement(By
-                .className("v-textarea-focus"));
+        WebElement focusedElement = driver
+                .findElement(By.className("v-textarea-focus"));
         Assert.assertNotNull("Text area did not obtain focus after click",
                 focusedElement);
 

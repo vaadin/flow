@@ -39,7 +39,8 @@ public class ByteRangeValidator extends RangeValidator<Byte> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public ByteRangeValidator(String errorMessage, Byte minValue, Byte maxValue) {
+    public ByteRangeValidator(String errorMessage, Byte minValue,
+            Byte maxValue) {
         super(errorMessage, Byte.class, minValue, maxValue);
     }
 

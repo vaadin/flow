@@ -67,11 +67,12 @@ public class GridContainerTest {
         grid.setContainerDataSource(new IndexedContainer());
         try {
             grid.addColumn("notInContainer");
-            Assert.fail("Adding a property id not in the container should throw an exception");
+            Assert.fail(
+                    "Adding a property id not in the container should throw an exception");
         } catch (IllegalStateException e) {
             Assert.assertTrue(e.getMessage().contains("notInContainer"));
-            Assert.assertTrue(e.getMessage().contains(
-                    "does not exist in the container"));
+            Assert.assertTrue(
+                    e.getMessage().contains("does not exist in the container"));
         }
     }
 
@@ -81,13 +82,14 @@ public class GridContainerTest {
         grid.setContainerDataSource(new IndexedContainer());
         try {
             grid.setColumns("notInContainer", "notThereEither");
-            Assert.fail("Setting columns for property ids not in the container should throw an exception");
+            Assert.fail(
+                    "Setting columns for property ids not in the container should throw an exception");
         } catch (IllegalStateException e) {
             // addColumn is run in random order..
             Assert.assertTrue(e.getMessage().contains("notInContainer")
                     || e.getMessage().contains("notThereEither"));
-            Assert.assertTrue(e.getMessage().contains(
-                    "does not exist in the container"));
+            Assert.assertTrue(
+                    e.getMessage().contains("does not exist in the container"));
         }
     }
 

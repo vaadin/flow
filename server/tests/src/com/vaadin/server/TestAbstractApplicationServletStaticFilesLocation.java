@@ -11,7 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import junit.framework.TestCase;
 
-public class TestAbstractApplicationServletStaticFilesLocation extends TestCase {
+public class TestAbstractApplicationServletStaticFilesLocation
+        extends TestCase {
 
     VaadinServlet servlet;
 
@@ -48,8 +49,8 @@ public class TestAbstractApplicationServletStaticFilesLocation extends TestCase 
 
         // http://dummy.host/contextpath/servlet/extra/stuff
         // should return ./../.. (relative url resolving to /contextpath)
-        location = testLocation("http://dummy.host", "/contextpath",
-                "/servlet", "/extra/stuff");
+        location = testLocation("http://dummy.host", "/contextpath", "/servlet",
+                "/extra/stuff");
         assertEquals("./../..", location);
 
         // http://dummy.host/context/path/servlet/extra/stuff
@@ -75,8 +76,8 @@ public class TestAbstractApplicationServletStaticFilesLocation extends TestCase 
         // Set request into replay mode
         replay(request);
 
-        String location = servlet.getService().getStaticFileLocation(
-                servlet.createVaadinRequest(request));
+        String location = servlet.getService()
+                .getStaticFileLocation(servlet.createVaadinRequest(request));
         return location;
     }
 
@@ -88,14 +89,14 @@ public class TestAbstractApplicationServletStaticFilesLocation extends TestCase 
         // Set request into replay mode
         replay(request);
 
-        String location = servlet.getService().getStaticFileLocation(
-                servlet.createVaadinRequest(request));
+        String location = servlet.getService()
+                .getStaticFileLocation(servlet.createVaadinRequest(request));
         return location;
     }
 
     private HttpServletRequest createIncludeRequest(String base,
             String realContextPath, String realServletPath, String pathInfo)
-            throws Exception {
+                    throws Exception {
         HttpServletRequest request = createRequest(base, "", "", pathInfo);
         expect(request.getAttribute("javax.servlet.include.context_path"))
                 .andReturn(realContextPath).anyTimes();
@@ -107,7 +108,7 @@ public class TestAbstractApplicationServletStaticFilesLocation extends TestCase 
 
     private HttpServletRequest createNonIncludeRequest(String base,
             String realContextPath, String realServletPath, String pathInfo)
-            throws Exception {
+                    throws Exception {
         HttpServletRequest request = createRequest(base, realContextPath,
                 realServletPath, pathInfo);
         expect(request.getAttribute("javax.servlet.include.context_path"))
@@ -138,8 +139,9 @@ public class TestAbstractApplicationServletStaticFilesLocation extends TestCase 
             String servletPath, String pathInfo) throws MalformedURLException {
         URL url = new URL(base + contextPath + pathInfo);
         HttpServletRequest request = createMock(HttpServletRequest.class);
-        expect(request.isSecure()).andReturn(
-                url.getProtocol().equalsIgnoreCase("https")).anyTimes();
+        expect(request.isSecure())
+                .andReturn(url.getProtocol().equalsIgnoreCase("https"))
+                .anyTimes();
         expect(request.getServerName()).andReturn(url.getHost()).anyTimes();
         expect(request.getServerPort()).andReturn(url.getPort()).anyTimes();
         expect(request.getRequestURI()).andReturn(url.getPath()).anyTimes();

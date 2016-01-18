@@ -74,9 +74,8 @@ public class DesignToStringConverter<TYPE> implements Converter<String, TYPE> {
     public TYPE convertToModel(String value, Class<? extends TYPE> targetType,
             Locale locale) throws Converter.ConversionException {
         try {
-            return type.cast(type
-                    .getMethod(this.staticMethodName, String.class).invoke(
-                            null, value));
+            return type.cast(type.getMethod(this.staticMethodName, String.class)
+                    .invoke(null, value));
         } catch (IllegalAccessException e) {
             throw new Converter.ConversionException(e);
         } catch (IllegalArgumentException e) {
@@ -95,7 +94,7 @@ public class DesignToStringConverter<TYPE> implements Converter<String, TYPE> {
     @Override
     public String convertToPresentation(TYPE value,
             Class<? extends String> targetType, Locale locale)
-            throws Converter.ConversionException {
+                    throws Converter.ConversionException {
         if (value == null) {
             return NULL_VALUE_REPRESENTATION;
         } else {
