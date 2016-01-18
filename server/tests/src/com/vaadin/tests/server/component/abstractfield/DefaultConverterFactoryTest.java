@@ -3,8 +3,6 @@ package com.vaadin.tests.server.component.abstractfield;
 import java.math.BigDecimal;
 import java.util.Locale;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.util.MethodProperty;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.data.bean.Address;
@@ -13,6 +11,8 @@ import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.ui.TextField;
+
+import junit.framework.TestCase;
 
 public class DefaultConverterFactoryTest extends TestCase {
 

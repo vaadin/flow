@@ -1,8 +1,8 @@
 package com.vaadin.tests.server.component.abstractcomponent;
 
-import junit.framework.TestCase;
-
 import com.vaadin.ui.AbstractComponent;
+
+import junit.framework.TestCase;
 
 public class AbstractComponentStyleNamesTest extends TestCase {
 

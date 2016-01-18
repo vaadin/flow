@@ -3,11 +3,11 @@ package com.vaadin.tests.server.component.menubar;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
+
+import junit.framework.TestCase;
 
 public class MenuBarIdsTest extends TestCase implements Command {
 

@@ -1,13 +1,13 @@
 package com.vaadin.ui;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.Date;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
+
+import java.util.Date;
+
+import org.junit.Before;
+import org.junit.Test;
 
 public class DateFieldTests {
 

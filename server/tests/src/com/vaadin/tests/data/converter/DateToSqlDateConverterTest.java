@@ -3,9 +3,9 @@ package com.vaadin.tests.data.converter;
 import java.util.Date;
 import java.util.Locale;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.util.converter.DateToSqlDateConverter;
+
+import junit.framework.TestCase;
 
 public class DateToSqlDateConverterTest extends TestCase {
 

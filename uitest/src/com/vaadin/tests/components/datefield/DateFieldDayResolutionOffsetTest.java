@@ -1,15 +1,15 @@
 package com.vaadin.tests.components.datefield;
 
-import com.vaadin.testbench.elements.DateFieldElement;
-import com.vaadin.testbench.elements.LabelElement;
-import com.vaadin.tests.tb3.AbstractTB3Test;
-import com.vaadin.tests.tb3.MultiBrowserTest;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import com.vaadin.testbench.elements.DateFieldElement;
+import com.vaadin.testbench.elements.LabelElement;
+import com.vaadin.tests.tb3.MultiBrowserTest;
 
 public class DateFieldDayResolutionOffsetTest extends MultiBrowserTest {
 

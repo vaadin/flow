@@ -1,7 +1,5 @@
 package com.vaadin.tests.server;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 
 import com.vaadin.server.LegacyCommunicationManager;
@@ -16,6 +14,8 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.ConnectorTracker;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Upload;
+
+import junit.framework.TestCase;
 
 public class StreamVariableMappingTest extends TestCase {
     private static final String variableName = "myName";

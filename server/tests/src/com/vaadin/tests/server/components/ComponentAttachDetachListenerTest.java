@@ -2,8 +2,6 @@ package com.vaadin.tests.server.components;
 
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
 import com.vaadin.ui.AbsoluteLayout;
 import com.vaadin.ui.AbsoluteLayout.ComponentPosition;
 import com.vaadin.ui.AbstractOrderedLayout;
@@ -19,6 +17,8 @@ import com.vaadin.ui.HasComponents.ComponentDetachEvent;
 import com.vaadin.ui.HasComponents.ComponentDetachListener;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+
+import junit.framework.TestCase;
 
 public class ComponentAttachDetachListenerTest extends TestCase {
 

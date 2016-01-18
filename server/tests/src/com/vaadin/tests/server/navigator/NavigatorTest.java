@@ -18,8 +18,6 @@ package com.vaadin.tests.server.navigator;
 
 import java.util.LinkedList;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
 import org.easymock.IMocksControl;
@@ -41,6 +39,8 @@ import com.vaadin.tests.server.navigator.ClassBasedViewProviderTest.TestView2;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+
+import junit.framework.TestCase;
 
 public class NavigatorTest extends TestCase {
 

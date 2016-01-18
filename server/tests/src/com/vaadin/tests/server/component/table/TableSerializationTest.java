@@ -1,10 +1,10 @@
 package com.vaadin.tests.server.component.table;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.lang.SerializationUtils;
 
 import com.vaadin.ui.Table;
+
+import junit.framework.TestCase;
 
 public class TableSerializationTest extends TestCase {
 

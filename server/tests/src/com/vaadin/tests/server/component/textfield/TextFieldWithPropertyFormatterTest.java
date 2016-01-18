@@ -2,14 +2,14 @@ package com.vaadin.tests.server.component.textfield;
 
 import java.util.Collections;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.PropertyFormatter;
 import com.vaadin.ui.TextField;
+
+import junit.framework.TestCase;
 
 public class TextFieldWithPropertyFormatterTest extends TestCase {
 

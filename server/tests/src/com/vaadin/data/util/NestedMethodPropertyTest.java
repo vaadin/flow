@@ -7,9 +7,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
+
+import junit.framework.TestCase;
 
 public class NestedMethodPropertyTest extends TestCase {
 

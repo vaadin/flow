@@ -21,9 +21,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
-
 import com.vaadin.server.JsonCodec.BeanProperty;
 import com.vaadin.shared.communication.UidlValue;
 import com.vaadin.shared.ui.splitpanel.AbstractSplitPanelState;
@@ -32,6 +29,8 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonException;
 import elemental.json.JsonValue;
+import junit.framework.AssertionFailedError;
+import junit.framework.TestCase;
 
 /**
  * Tests for {@link JsonCodec}

@@ -1,10 +1,10 @@
 package com.vaadin.tests.server;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.ui.TextField;
+
+import junit.framework.TestCase;
 
 public class EventRouterTest extends TestCase {
 

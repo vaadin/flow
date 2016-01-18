@@ -3,9 +3,9 @@ package com.vaadin.tests.server;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
-import junit.framework.TestCase;
-
 import com.vaadin.server.KeyMapper;
+
+import junit.framework.TestCase;
 
 public class KeyMapperTest extends TestCase {
 

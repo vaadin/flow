@@ -2,13 +2,13 @@ package com.vaadin.tests.data.converter;
 
 import java.util.Locale;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
 
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.ReverseConverter;
 import com.vaadin.data.util.converter.StringToLongConverter;
+
+import junit.framework.TestCase;
 
 public class StringToLongConverterTest extends TestCase {
 

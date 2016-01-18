@@ -1,10 +1,10 @@
 package com.vaadin.tests.server.componentcontainer;
 
-import junit.framework.TestCase;
-
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
+
+import junit.framework.TestCase;
 
 public abstract class AbstractIndexedLayoutTestBase extends TestCase {
 

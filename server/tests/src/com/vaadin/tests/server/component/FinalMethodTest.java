@@ -4,10 +4,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 
-import junit.framework.TestCase;
-
 import com.vaadin.tests.VaadinClasses;
 import com.vaadin.ui.Component;
+
+import junit.framework.TestCase;
 
 public class FinalMethodTest extends TestCase {
 

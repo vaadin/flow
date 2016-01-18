@@ -19,13 +19,13 @@ package com.vaadin.tests.server.component.datefield;
 import java.util.Date;
 import java.util.Locale;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.Property;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.ui.DateField;
+
+import junit.framework.TestCase;
 
 public class DateFieldConverterTest extends TestCase {
 

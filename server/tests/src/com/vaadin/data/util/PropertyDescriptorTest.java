@@ -7,12 +7,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.util.NestedMethodPropertyTest.Person;
+
+import junit.framework.TestCase;
 
 public class PropertyDescriptorTest extends TestCase {
     public void testMethodPropertyDescriptorSerialization() throws Exception {

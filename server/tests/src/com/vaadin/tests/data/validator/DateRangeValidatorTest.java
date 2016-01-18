@@ -5,10 +5,10 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.validator.DateRangeValidator;
 import com.vaadin.shared.ui.datefield.Resolution;
+
+import junit.framework.TestCase;
 
 public class DateRangeValidatorTest extends TestCase {
     Calendar startDate = new GregorianCalendar(TimeZone.getTimeZone("GMT"),
