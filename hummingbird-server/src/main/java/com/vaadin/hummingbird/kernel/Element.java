@@ -28,6 +28,11 @@ public class Element implements Serializable {
                 BasicElementTemplate.createBasicElementModel(tag));
     }
 
+    public Element(String tag, String is) {
+        this(BasicElementTemplate.get(),
+                BasicElementTemplate.createBasicElementModel(tag, is));
+    }
+
     private static Logger getLogger() {
         return Logger.getLogger(Element.class.getName());
     }
@@ -47,6 +52,10 @@ public class Element implements Serializable {
         return template.getTag(node);
     }
 
+    public String getIs() {
+        return template.getIs(node);
+    }
+
     public ElementTemplate getTemplate() {
         return template;
     }
@@ -61,6 +70,12 @@ public class Element implements Serializable {
         if (name.equals("class")) {
             throw new UnsupportedOperationException(
                     "Can't set element class with setAttribute, use setClass or addClass.");
+        }
+
+        if (name.equals("is")) {
+            throw new UnsupportedOperationException(
+                    "Can't set element's is-attribute with setAttribute, is must be set on"
+                            + " construction of element or with @Tag(is=\"\"");
         }
 
         template.setAttribute(name, value, node);
@@ -122,6 +137,10 @@ public class Element implements Serializable {
 
         if (name.equals("class")) {
             return getClassNames();
+        }
+
+        if (name.equals("is")) {
+            return getIs();
         }
 
         return template.getAttribute(name, node);
@@ -370,6 +389,9 @@ public class Element implements Serializable {
         } else {
             b.append('<');
             b.append(tag);
+            if (getIs() != null) {
+                b.append(" is=\"").append(getIs()).append("\"");
+            }
             for (String attribute : getAttributeNames()) {
                 if (attribute.equals("innerHTML")) {
                     continue;

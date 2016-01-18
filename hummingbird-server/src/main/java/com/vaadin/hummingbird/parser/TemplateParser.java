@@ -129,8 +129,13 @@ public class TemplateParser {
 
     private static BoundTemplateBuilder createElementTemplate(Element element,
             ModelContext context) {
-        BoundTemplateBuilder builder = TemplateBuilder
-                .withTag(element.tagName());
+        BoundTemplateBuilder builder;
+        String is = element.attr("is");
+        if (is.isEmpty()) {
+            builder = TemplateBuilder.withTag(element.tagName());
+        } else {
+            builder = TemplateBuilder.withTag(element.tagName(), is);
+        }
 
         for (Attribute a : element.attributes()) {
             String name = a.getKey();
@@ -252,7 +257,9 @@ public class TemplateParser {
         for (Attribute a : element.attributes()) {
             String name = a.getKey();
             String value = a.getValue();
-            if (name.startsWith("*")) {
+            if (name.equals("is")) {
+                // Handled above
+            } else if (name.startsWith("*")) {
                 // Handled above
                 continue;
             } else if (name.startsWith("[")) {

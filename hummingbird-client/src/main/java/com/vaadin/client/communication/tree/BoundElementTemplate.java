@@ -14,6 +14,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.communication.DomApi;
+import com.vaadin.client.communication.CustomElement;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
 import elemental.json.Json;
@@ -25,6 +26,7 @@ import elemental.json.JsonValue;
 public class BoundElementTemplate extends Template {
     private final TreeUpdater treeUpdater;
     private final String tag;
+    private final String is;
     private final Map<String, String> defaultAttributeValues;
     private final Map<String, String> attributeToExpression;
     private final Map<String, String> classPartBindings;
@@ -39,6 +41,7 @@ public class BoundElementTemplate extends Template {
         super(templateId);
         this.treeUpdater = treeUpdater;
         tag = templateDescription.getString("tag");
+        is = templateDescription.getString("is");
 
         defaultAttributeValues = readStringMap(
                 templateDescription.getObject("defaultAttributes"));
@@ -103,9 +106,15 @@ public class BoundElementTemplate extends Template {
         assert tag != null;
         Profiler.enter("BoundElementTemplate.createElement");
 
-        TreeUpdater.debug("Create element with tag " + tag);
-
-        Element element = Document.get().createElement(tag);
+        Element element;
+        if (is != null) {
+            TreeUpdater.debug(
+                    "Create custom element with tag " + tag + " that is " + is);
+            element = CustomElement.createElement(tag, is);
+        } else {
+            TreeUpdater.debug("Create element with tag " + tag);
+            element = Document.get().createElement(tag);
+        }
 
         initElement(node, element, context);
 

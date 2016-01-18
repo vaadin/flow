@@ -10,6 +10,8 @@ public interface ElementTemplate extends Serializable {
 
     public String getTag(StateNode node);
 
+    public String getIs(StateNode node);
+
     public void setAttribute(String name, Object value, StateNode node);
 
     public Object getAttribute(String name, StateNode node);

@@ -39,7 +39,13 @@ public class PreRenderer {
     }
 
     private static Element cloneElementForPreRendering(Element source) {
-        Element target = new Element(source.getTag());
+        String is = source.getIs();
+        Element target;
+        if (is != null) {
+            target = new Element(source.getTag(), source.getIs());
+        } else {
+            target = new Element(source.getTag());
+        }
         for (String key : source.getAttributeNames()) {
             if (key.equals("class")) {
                 target.addClass(source.getAttribute(key));
@@ -69,6 +75,10 @@ public class PreRenderer {
         } else {
             org.jsoup.nodes.Element target = document
                     .createElement(preRenderTree.getTag());
+            String is = preRenderTree.getIs();
+            if (is != null) {
+                target.attr("is", is);
+            }
             preRenderTree.getAttributeNames().forEach(name -> {
                 if (name.equals("innerHTML")) {
                     target.html(preRenderTree.getAttribute(name));

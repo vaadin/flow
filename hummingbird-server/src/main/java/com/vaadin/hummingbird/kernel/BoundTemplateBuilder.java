@@ -17,6 +17,8 @@ public class BoundTemplateBuilder implements TemplateBuilder {
 
     private final String tag;
 
+    private final String is;
+
     private final Map<String, Binding> attributeBindings = new HashMap<>();
     private final Map<String, String> defaultAttributeValues = new HashMap<>();
     private final Collection<EventBinding> events = new ArrayList<>();
@@ -27,6 +29,12 @@ public class BoundTemplateBuilder implements TemplateBuilder {
 
     public BoundTemplateBuilder(String tag) {
         this.tag = tag;
+        is = null;
+    }
+
+    public BoundTemplateBuilder(String tag, String is) {
+        this.tag = tag;
+        this.is = is;
     }
 
     @Override
@@ -89,6 +97,10 @@ public class BoundTemplateBuilder implements TemplateBuilder {
 
     public String getTag() {
         return tag;
+    }
+
+    public String getIs() {
+        return is;
     }
 
     public Map<String, Binding> getAttributeBindings() {

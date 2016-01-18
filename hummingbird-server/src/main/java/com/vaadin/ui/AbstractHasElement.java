@@ -18,7 +18,11 @@ public class AbstractHasElement implements HasElement, HasEventRouter {
             throw new IllegalStateException(
                     "No @Tag defined for " + getClass().getName());
         }
-        createElement(tag.value());
+        if (tag.is().isEmpty()) {
+            createElement(tag.value());
+        } else {
+            createElement(tag.value(), tag.is());
+        }
     }
 
     protected AbstractHasElement(String tagName) {
@@ -27,6 +31,10 @@ public class AbstractHasElement implements HasElement, HasEventRouter {
 
     private void createElement(String tagName) {
         setElement(new Element(tagName));
+    }
+
+    private void createElement(String tagName, String is) {
+        setElement(new Element(tagName, is));
     }
 
     @Override

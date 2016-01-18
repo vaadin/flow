@@ -31,12 +31,21 @@ public class HTML extends AbstractComponent {
                             + outerHtml);
         }
         Element e = d.body().child(0);
-        setElement(new com.vaadin.hummingbird.kernel.Element(e.tagName()));
-
         Attributes attrs = e.attributes();
+        String is = attrs.get("is");
+
+        if (!is.isEmpty()) {
+            setElement(
+                    new com.vaadin.hummingbird.kernel.Element(e.tagName(), is));
+        } else {
+            setElement(new com.vaadin.hummingbird.kernel.Element(e.tagName()));
+        }
+
         for (Attribute a : attrs.asList()) {
             if (a.getKey().equals("class")) {
                 getElement().addClass(a.getValue());
+            } else if (a.getKey().equals("is")) {
+                // NOOP
             } else {
                 getElement().setAttribute(a.getKey(), a.getValue());
             }

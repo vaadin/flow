@@ -18,6 +18,7 @@ import com.vaadin.hummingbird.parser.EventBinding;
 public class BoundElementTemplate extends AbstractElementTemplate {
 
     private final String tag;
+    private final String is;
 
     private final Map<String, Binding> attributeBindings;
     private final Map<String, Binding> classPartBindings;
@@ -55,6 +56,7 @@ public class BoundElementTemplate extends AbstractElementTemplate {
                 .collect(Collectors.groupingBy(EventBinding::getEventType));
 
         tag = builder.getTag();
+        is = builder.getIs();
 
         List<BoundElementTemplate> builderChildTemplates = builder
                 .getChildTemplates();
@@ -123,6 +125,11 @@ public class BoundElementTemplate extends AbstractElementTemplate {
     @Override
     public String getTag(StateNode node) {
         return tag;
+    }
+
+    @Override
+    public String getIs(StateNode node) {
+        return is;
     }
 
     @Override
@@ -267,6 +274,10 @@ public class BoundElementTemplate extends AbstractElementTemplate {
 
     public String getTag() {
         return tag;
+    }
+
+    public String getIs() {
+        return is;
     }
 
     public List<BoundElementTemplate> getChildTemplates() {

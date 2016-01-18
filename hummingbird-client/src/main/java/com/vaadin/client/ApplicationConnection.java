@@ -49,6 +49,7 @@ import com.vaadin.client.communication.ReconnectingCommunicationProblemHandler;
 import com.vaadin.client.communication.ServerCommunicationHandler;
 import com.vaadin.client.communication.ServerMessageHandler;
 import com.vaadin.client.communication.ServerRpcQueue;
+import com.vaadin.client.communication.CustomElement;
 import com.vaadin.client.componentlocator.ComponentLocator;
 import com.vaadin.client.ui.FontIcon;
 import com.vaadin.client.ui.Icon;
@@ -452,7 +453,7 @@ public class ApplicationConnection implements HasHandlers {
             return vi;
             }
             }
-
+            
             client.modules = {};
             client.modules.publish = function(namespace,moduleCode) {
                 var module = {};
@@ -462,7 +463,7 @@ public class ApplicationConnection implements HasHandlers {
                 }
                 client.modules[namespace] = module;
             }
-
+            
             client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::getServerMessageHandler();
             var pd = [
@@ -473,7 +474,7 @@ public class ApplicationConnection implements HasHandlers {
             pd[pd.length] = smh.@com.vaadin.client.communication.ServerMessageHandler::bootstrapTime;
             return pd;
             });
-
+            
             client.getElementByPath = $entry(function(id) {
             return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getElementByPath(Ljava/lang/String;)(id);
             });
@@ -490,9 +491,9 @@ public class ApplicationConnection implements HasHandlers {
             return componentLocator.@com.vaadin.client.componentlocator.ComponentLocator::getPathForElement(Lcom/google/gwt/dom/client/Element;)(element);
             });
             client.initializing = false;
-
+            
             $wnd.vaadin.framework.clients[TTAppId] = client;
-
+            
             return client;
             }-*/;
 
@@ -775,18 +776,11 @@ public class ApplicationConnection implements HasHandlers {
         for (int i = 0; i < dependencies.length(); i++) {
             final String moduleName = dependencies.get(i);
             getLogger().info("Adding Polymer custom style tag " + moduleName);
-            insertCustomStyleElement(moduleName);
+            Element styleElement = CustomElement
+                    .createPolymerStyleModule(moduleName);
+            Document.get().getHead().appendChild(styleElement);
         }
     }
-
-    // TODO should be moved to the correct place (TM)
-    private native void insertCustomStyleElement(String moduleName)
-    /*-{
-        // $wnd.document needed or won't work!
-        var x = $wnd.document.createElement('style', 'custom-style');
-        $wnd.Polymer.dom(x).setAttribute('include', moduleName);
-        $wnd.document.head.appendChild(x);
-    }-*/;
 
     public void loadHtmlDependencies(JsArrayString dependencies) {
         if (dependencies.length() == 0) {

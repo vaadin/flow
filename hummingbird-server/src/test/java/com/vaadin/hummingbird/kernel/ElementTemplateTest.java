@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ElementTemplateTest {
+
     @Test
     public void simpleElementTemplate_attributesMirrored() {
         Element element = new Element("span");
@@ -210,6 +211,44 @@ public class ElementTemplateTest {
     }
 
     @Test
+    public void elementIsCustomElement() {
+        Element element = new Element("div", "iron-form");
+
+        Assert.assertEquals("div", element.getTag());
+        Assert.assertEquals("iron-form", element.getIs());
+
+        Element mirror = createMirror(element);
+
+        Assert.assertEquals("div", mirror.getTag());
+        Assert.assertEquals("iron-form", mirror.getIs());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void tryChangeElementTypeExtensionWithSetAttribute() {
+        Element element = new Element("div");
+
+        Assert.assertEquals("div", element.getTag());
+        Assert.assertNull(element.getIs());
+
+        element.setAttribute("is", "custom-element");
+    }
+
+    @Test(expected = AssertionError.class)
+    public void tryToInitCustomElementWithInvalidNullExtension() {
+        new Element("div", null);
+    }
+
+    @Test(expected = AssertionError.class)
+    public void tryToInitCustomElementWithEmptyTypeExtension() {
+        new Element("div", "");
+    }
+
+    @Test(expected = AssertionError.class)
+    public void tryToInitCustomElementWithInvalidTypeExtension() {
+        new Element("div", "foo");
+    }
+
+    @Test
     public void staticTextTemplate() {
         TemplateBuilder textTemplate = TemplateBuilder
                 .staticText("Hello world");
@@ -370,6 +409,19 @@ public class ElementTemplateTest {
         Assert.assertEquals(0, element.getAttributeNames().size());
         Assert.assertFalse(element.getAttributeNames().contains("foo"));
         Assert.assertEquals("<div></div>", element.getOuterHTML());
+    }
+
+    @Test
+    public void customElementFromTemplate() {
+        BoundElementTemplate customElementTemplate = TemplateBuilder
+                .withTag("div", "foo-bar").build();
+
+        StateNode node = StateNode.create();
+
+        Element element = Element.getElement(customElementTemplate, node);
+
+        Assert.assertEquals("div", element.getTag());
+        Assert.assertEquals("foo-bar", element.getAttribute("is"));
     }
 
     private static Element createMirror(Element element) {
