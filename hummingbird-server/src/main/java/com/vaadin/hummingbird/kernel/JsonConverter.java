@@ -35,11 +35,14 @@ public class JsonConverter {
                     || targetType == ValueType.BOOLEAN_PRIMITIVE)
                     && value instanceof JsonBoolean) {
                 return Boolean.valueOf(value.asBoolean());
+            } else if (targetType == ValueType.JSON_TYPE) {
+                return value;
             }
         }
 
         throw new RuntimeException(
                 "Can't convert " + value.getType() + " to " + targetType);
+
     }
 
     public static JsonValue toJson(Object value) {

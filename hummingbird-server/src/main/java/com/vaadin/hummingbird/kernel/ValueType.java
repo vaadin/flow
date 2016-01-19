@@ -5,6 +5,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.annotations.JS;
 import com.vaadin.data.util.BeanUtil;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 public class ValueType {
     private static final AtomicInteger nextId = new AtomicInteger(-1);
@@ -177,6 +181,10 @@ public class ValueType {
     public static final ArrayType UNDEFINED_ARRAY = get(Collections.emptyMap(),
             UNDEFINED);
 
+    public static final ValueType JSON_TYPE = new ValueType(true);
+
+    private static final List<Type> jsonTypes = new ArrayList<>();
+
     private static final Map<Type, ValueType> builtInTypes = new HashMap<>();
 
     static {
@@ -190,6 +198,9 @@ public class ValueType {
 
         builtInTypes.values().forEach(ValueType::register);
         ValueType.register(UNDEFINED);
+
+        jsonTypes.add(JsonArray.class);
+        jsonTypes.add(JsonObject.class);
     }
 
     public static ObjectType get(Map<?, ValueType> propertyTypes) {
@@ -251,6 +262,10 @@ public class ValueType {
         ValueType valueType = builtInTypes.get(type);
         if (valueType != null) {
             return valueType;
+        }
+
+        if (jsonTypes.contains(type)) {
+            return JSON_TYPE;
         }
 
         if (type instanceof Class<?>) {

@@ -13,6 +13,9 @@ import com.vaadin.hummingbird.kernel.TemplateModelTest.MyTestModel;
 import com.vaadin.hummingbird.kernel.ValueType.ArrayType;
 import com.vaadin.hummingbird.kernel.ValueType.ObjectType;
 
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+
 public class ValueTypeTest {
 
     private ObjectType simpleObjectType = ValueType
@@ -232,4 +235,9 @@ public class ValueTypeTest {
         Assert.assertTrue(jsComputed instanceof JsComputedProperty);
     }
 
+    @Test
+    public void testJsonTypes() {
+        Assert.assertSame(ValueType.JSON_TYPE, ValueType.get(JsonArray.class));
+        Assert.assertSame(ValueType.JSON_TYPE, ValueType.get(JsonObject.class));
+    }
 }
