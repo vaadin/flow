@@ -372,11 +372,31 @@ public interface StateNode extends Serializable {
 
     /**
      * Gets the currently defined computed properties.
-     * 
+     *
      * @return a map of computed properties
      */
     public Map<String, ComputedProperty> getComputedProperties();
 
     public ObjectType getType();
 
+    /**
+     * Ignore any node changes -> do not send them to client. Doesn't effect any
+     * updated dependencies.
+     * <p>
+     * Default is <code>false</code>
+     *
+     * @param ignoreChanges
+     *            <code>true</code> to ignore
+     */
+    public void setIgnoreChanges(boolean ignoreChanges);
+
+    /**
+     * Returns whether the node changes are currently sent to client side or
+     * not.
+     * <p>
+     * Default is <code>false</code>
+     *
+     * @return <code>true</code> when changes are ignored
+     */
+    public boolean isIgnoreChanges();
 }

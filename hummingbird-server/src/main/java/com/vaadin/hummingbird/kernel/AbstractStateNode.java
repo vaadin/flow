@@ -37,6 +37,8 @@ public abstract class AbstractStateNode implements StateNode {
     protected RootNode rootNode;
     private List<Runnable> runOnAttach = null;
 
+    private boolean ignoreChanges;
+
     protected AbstractStateNode() {
         // Empty
     }
@@ -78,8 +80,10 @@ public abstract class AbstractStateNode implements StateNode {
 
     @Override
     public void logChange(NodeChange change) {
-        List<NodeChange> transactionLog = markAsDirty();
-        transactionLog.add(change);
+        if (!isIgnoreChanges()) {
+            List<NodeChange> transactionLog = markAsDirty();
+            transactionLog.add(change);
+        }
     }
 
     private List<NodeChange> markAsDirty() {
@@ -208,6 +212,9 @@ public abstract class AbstractStateNode implements StateNode {
 
     protected void updateDependents(Object key,
             Function<HashSet<Runnable>, HashSet<Runnable>> updater) {
+        boolean wasIgnoreChanges = isIgnoreChanges();
+        setIgnoreChanges(false);
+
         StateNode map = getOrCreateInternalMap(Keys.DEPENDENTS, false);
 
         HashSet<Runnable> dependents;
@@ -238,6 +245,8 @@ public abstract class AbstractStateNode implements StateNode {
         } else if (map != null) {
             map.remove(key);
         }
+
+        setIgnoreChanges(wasIgnoreChanges);
     }
 
     protected abstract Object doGet(Object key);
@@ -605,4 +614,14 @@ public abstract class AbstractStateNode implements StateNode {
                     + change.getClass().getName() + " passed to rollback");
         }
     }
+
+    @Override
+    public void setIgnoreChanges(boolean ignoreChanges) {
+        this.ignoreChanges = ignoreChanges;
+    };
+
+    @Override
+    public boolean isIgnoreChanges() {
+        return ignoreChanges;
+    };
 }
