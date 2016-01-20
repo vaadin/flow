@@ -76,7 +76,8 @@ public class DefaultConverterFactoryTest {
     @Test
     public void longToDate() {
         Date d = new Date(2014 - 1900, 10 - 1, 12);
-        assertConverter(1413061200000L + (d.getTimezoneOffset()+180)*60*1000L, d);
+        assertConverter(
+                1413061200000L + (d.getTimezoneOffset() + 180) * 60 * 1000L, d);
 
     }
 

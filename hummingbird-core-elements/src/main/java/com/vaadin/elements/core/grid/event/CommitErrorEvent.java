@@ -52,8 +52,7 @@ public class CommitErrorEvent extends Component.Event {
     }
 
     /**
-     * Marks that an error indicator should be shown for the editor of a
-     * column.
+     * Marks that an error indicator should be shown for the editor of a column.
      *
      * @param column
      *            the column to show an error for

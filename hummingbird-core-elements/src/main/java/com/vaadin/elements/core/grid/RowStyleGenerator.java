@@ -14,8 +14,8 @@ public interface RowStyleGenerator extends Serializable {
      *
      * @param row
      *            the row to generate a style for
-     * @return the style name to add to this row, or {@code null} to not set
-     *         any style
+     * @return the style name to add to this row, or {@code null} to not set any
+     *         style
      */
     public String getStyle(RowReference row);
 }

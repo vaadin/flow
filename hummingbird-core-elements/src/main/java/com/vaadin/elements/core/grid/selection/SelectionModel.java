@@ -28,9 +28,9 @@ public interface SelectionModel extends Serializable {
     Collection<Object> getSelectedRows();
 
     /**
-     * Injects the current {@link Grid} instance into the SelectionModel.
-     * This method should usually call the extend method of
-     * {@link AbstractExtension}.
+     * Injects the current {@link Grid} instance into the SelectionModel. This
+     * method should usually call the extend method of {@link AbstractExtension}
+     * .
      * <p>
      * <em>Note:</em> This method should not be called manually.
      *
@@ -45,27 +45,26 @@ public interface SelectionModel extends Serializable {
      * Resets the SelectiomModel to an initial state.
      * <p>
      * Most often this means that the selection state is cleared, but
-     * implementations are free to interpret the "initial state" as they
-     * wish. Some, for example, may want to keep the first selected item as
-     * selected.
+     * implementations are free to interpret the "initial state" as they wish.
+     * Some, for example, may want to keep the first selected item as selected.
      */
     void reset();
 
     /**
      * A SelectionModel that supports multiple selections to be made.
      * <p>
-     * This interface has a contract of having the same behavior, no matter
-     * how the selection model is interacted with. In other words, if
-     * something is forbidden to do in e.g. the user interface, it must also
-     * be forbidden to do in the server-side and client-side APIs.
+     * This interface has a contract of having the same behavior, no matter how
+     * the selection model is interacted with. In other words, if something is
+     * forbidden to do in e.g. the user interface, it must also be forbidden to
+     * do in the server-side and client-side APIs.
      */
     public interface Multi extends SelectionModel {
 
         /**
          * Marks items as selected.
          * <p>
-         * This method does not clear any previous selection state, only
-         * adds to it.
+         * This method does not clear any previous selection state, only adds to
+         * it.
          *
          * @param itemIds
          *            the itemId(s) to mark as selected
@@ -83,8 +82,8 @@ public interface SelectionModel extends Serializable {
         /**
          * Marks items as selected.
          * <p>
-         * This method does not clear any previous selection state, only
-         * adds to it.
+         * This method does not clear any previous selection state, only adds to
+         * it.
          *
          * @param itemIds
          *            the itemIds to mark as selected
@@ -96,8 +95,7 @@ public interface SelectionModel extends Serializable {
          *             itemIds don't exist in the container of Grid
          * @see #deselect(Collection)
          */
-        boolean select(Collection<?> itemIds)
-                throws IllegalArgumentException;
+        boolean select(Collection<?> itemIds) throws IllegalArgumentException;
 
         /**
          * Marks items as deselected.
@@ -105,8 +103,8 @@ public interface SelectionModel extends Serializable {
          * @param itemIds
          *            the itemId(s) to remove from being selected
          * @return <code>true</code> if the selection state changed.
-         *         <code>false</code> if none the given itemIds were
-         *         selected previously
+         *         <code>false</code> if none the given itemIds were selected
+         *         previously
          * @throws IllegalArgumentException
          *             if the <code>itemIds</code> varargs array is
          *             <code>null</code>
@@ -120,20 +118,18 @@ public interface SelectionModel extends Serializable {
          * @param itemIds
          *            the itemId(s) to remove from being selected
          * @return <code>true</code> if the selection state changed.
-         *         <code>false</code> if none the given itemIds were
-         *         selected previously
+         *         <code>false</code> if none the given itemIds were selected
+         *         previously
          * @throws IllegalArgumentException
          *             if <code>itemIds</code> is <code>null</code>
          * @see #select(Collection)
          */
-        boolean deselect(Collection<?> itemIds)
-                throws IllegalArgumentException;
+        boolean deselect(Collection<?> itemIds) throws IllegalArgumentException;
 
         /**
          * Marks all the items in the current Container as selected
          *
-         * @return <code>true</code> iff some items were previously not
-         *         selected
+         * @return <code>true</code> iff some items were previously not selected
          * @see #deselectAll()
          */
         boolean selectAll();
@@ -147,8 +143,8 @@ public interface SelectionModel extends Serializable {
         boolean deselectAll();
 
         /**
-         * Marks items as selected while deselecting all items not in the
-         * given Collection.
+         * Marks items as selected while deselecting all items not in the given
+         * Collection.
          *
          * @param itemIds
          *            the itemIds to mark as selected
@@ -176,18 +172,17 @@ public interface SelectionModel extends Serializable {
          *             <code>null</code> or given itemIds don't exist in the
          *             container of Grid
          */
-        boolean setSelected(Object... itemIds)
-                throws IllegalArgumentException;
+        boolean setSelected(Object... itemIds) throws IllegalArgumentException;
     }
 
     /**
-     * A SelectionModel that supports for only single rows to be selected at
-     * a time.
+     * A SelectionModel that supports for only single rows to be selected at a
+     * time.
      * <p>
-     * This interface has a contract of having the same behavior, no matter
-     * how the selection model is interacted with. In other words, if
-     * something is forbidden to do in e.g. the user interface, it must also
-     * be forbidden to do in the server-side and client-side APIs.
+     * This interface has a contract of having the same behavior, no matter how
+     * the selection model is interacted with. In other words, if something is
+     * forbidden to do in e.g. the user interface, it must also be forbidden to
+     * do in the server-side and client-side APIs.
      */
     public interface Single extends SelectionModel {
 
@@ -200,13 +195,12 @@ public interface SelectionModel extends Serializable {
          * @return <code>true</code> if the selection state changed.
          *         <code>false</code> if the itemId already was selected
          * @throws IllegalStateException
-         *             if the selection was illegal. One such reason might
-         *             be that the given id was null, indicating a deselect,
-         *             but implementation doesn't allow deselecting.
-         *             re-selecting something
+         *             if the selection was illegal. One such reason might be
+         *             that the given id was null, indicating a deselect, but
+         *             implementation doesn't allow deselecting. re-selecting
+         *             something
          * @throws IllegalArgumentException
-         *             if given itemId does not exist in the container of
-         *             Grid
+         *             if given itemId does not exist in the container of Grid
          */
         boolean select(Object itemId)
                 throws IllegalStateException, IllegalArgumentException;
@@ -220,19 +214,19 @@ public interface SelectionModel extends Serializable {
         Object getSelectedRow();
 
         /**
-         * Sets whether it's allowed to deselect the selected row through
-         * the UI. Deselection is allowed by default.
+         * Sets whether it's allowed to deselect the selected row through the
+         * UI. Deselection is allowed by default.
          *
          * @param deselectAllowed
-         *            <code>true</code> if the selected row can be
-         *            deselected without selecting another row instead;
-         *            otherwise <code>false</code>.
+         *            <code>true</code> if the selected row can be deselected
+         *            without selecting another row instead; otherwise
+         *            <code>false</code>.
          */
         public void setDeselectAllowed(boolean deselectAllowed);
 
         /**
-         * Sets whether it's allowed to deselect the selected row through
-         * the UI.
+         * Sets whether it's allowed to deselect the selected row through the
+         * UI.
          *
          * @return <code>true</code> if deselection is allowed; otherwise
          *         <code>false</code>
@@ -243,10 +237,10 @@ public interface SelectionModel extends Serializable {
     /**
      * A SelectionModel that does not allow for rows to be selected.
      * <p>
-     * This interface has a contract of having the same behavior, no matter
-     * how the selection model is interacted with. In other words, if the
-     * developer is unable to select something programmatically, it is not
-     * allowed for the end-user to select anything, either.
+     * This interface has a contract of having the same behavior, no matter how
+     * the selection model is interacted with. In other words, if the developer
+     * is unable to select something programmatically, it is not allowed for the
+     * end-user to select anything, either.
      */
     public interface None extends SelectionModel {
 

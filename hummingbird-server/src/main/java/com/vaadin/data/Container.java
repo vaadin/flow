@@ -71,10 +71,13 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
  * </p>
  *
  * <p>
- * <img src=doc-files/Container_full.gif> </p>
+ * <img src=doc-files/Container_full.gif>
+ * </p>
  *
- * <p> The Container interface is split to several subinterfaces so that a class
- * can implement only the ones it needs. </p>
+ * <p>
+ * The Container interface is split to several subinterfaces so that a class can
+ * implement only the ones it needs.
+ * </p>
  *
  * @author Vaadin Ltd
  * @since 3.0

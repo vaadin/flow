@@ -42,11 +42,12 @@ public class CompositeValidator implements Validator {
          * the composite implies validity of the all validators it is composed
          * of must be valid.
          */
-        AND, /**
-              * The validators are combined with <code>OR</code> clause:
-              * validity of the composite implies that some of validators it is
-              * composed of must be valid.
-              */
+        AND,
+        /**
+         * The validators are combined with <code>OR</code> clause: validity of
+         * the composite implies that some of validators it is composed of must
+         * be valid.
+         */
         OR;
     }
 

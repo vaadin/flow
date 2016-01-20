@@ -1,11 +1,11 @@
 package com.vaadin.tests.server.component.absolutelayout;
 
-import junit.framework.TestCase;
-
 import com.vaadin.server.Sizeable;
 import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.ui.AbsoluteLayout;
 import com.vaadin.ui.Button;
+
+import junit.framework.TestCase;
 
 public class ComponentPositionTest extends TestCase {
 

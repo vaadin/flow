@@ -46,5 +46,5 @@ public @interface OnStateChange {
      *
      * @return an array of property names, should contain at least one item
      */
-    public String[]value();
+    public String[] value();
 }

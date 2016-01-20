@@ -321,8 +321,8 @@ public class JsonCodec implements Serializable {
                     .getGenericComponentType();
             return decodeArray(componentType, (JsonArray) value,
                     connectorTracker);
-        } else
-            if (JsonValue.class.isAssignableFrom(getClassForType(targetType))) {
+        } else if (JsonValue.class
+                .isAssignableFrom(getClassForType(targetType))) {
             return value;
         } else if (Enum.class.isAssignableFrom(getClassForType(targetType))) {
             Class<?> classForType = getClassForType(targetType);
@@ -498,7 +498,7 @@ public class JsonCodec implements Serializable {
         JsonArray keys = jsonMap.getArray(0);
         JsonArray values = jsonMap.getArray(1);
 
-        assert(keys.length() == values.length());
+        assert (keys.length() == values.length());
 
         Map<Object, Object> map = new HashMap<Object, Object>(
                 keys.length() * 2);

@@ -2,6 +2,9 @@ package com.vaadin.hummingbird.ui;
 
 import javax.servlet.http.HttpSession;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.hummingbird.kernel.ElementTest;
 import com.vaadin.server.VaadinServletRequest;
@@ -12,9 +15,6 @@ import com.vaadin.ui.AbstractOrderedLayout;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.UI;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class AbstractOrderedLayoutTest
         extends AbstractSimpleDOMComponentContainerTest {

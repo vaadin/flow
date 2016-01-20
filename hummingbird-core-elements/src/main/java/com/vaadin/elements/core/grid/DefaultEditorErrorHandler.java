@@ -30,8 +30,8 @@ public class DefaultEditorErrorHandler implements EditorErrorHandler {
 
     @Override
     public void commitError(CommitErrorEvent event) {
-        Map<Field<?>, InvalidValueException> invalidFields = event
-                .getCause().getInvalidFields();
+        Map<Field<?>, InvalidValueException> invalidFields = event.getCause()
+                .getInvalidFields();
 
         if (!invalidFields.isEmpty()) {
             Object firstErrorPropertyId = null;

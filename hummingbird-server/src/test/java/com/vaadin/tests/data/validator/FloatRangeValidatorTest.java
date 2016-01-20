@@ -1,8 +1,8 @@
 package com.vaadin.tests.data.validator;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.validator.FloatRangeValidator;
+
+import junit.framework.TestCase;
 
 public class FloatRangeValidatorTest extends TestCase {
 

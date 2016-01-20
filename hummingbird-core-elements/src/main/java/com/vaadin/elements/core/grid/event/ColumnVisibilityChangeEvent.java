@@ -23,8 +23,8 @@ public class ColumnVisibilityChangeEvent extends Component.Event {
      * @param column
      *            the column that changed its visibility
      * @param hidden
-     *            <code>true</code> if the column was hidden,
-     *            <code>false</code> if it became visible
+     *            <code>true</code> if the column was hidden, <code>false</code>
+     *            if it became visible
      * @param isUserOriginated
      *            <code>true</code> iff the event was triggered by an UI
      *            interaction
@@ -50,8 +50,8 @@ public class ColumnVisibilityChangeEvent extends Component.Event {
     /**
      * Was the column set hidden or visible.
      *
-     * @return <code>true</code> if the column was hidden <code>false</code>
-     *         if it was set visible
+     * @return <code>true</code> if the column was hidden <code>false</code> if
+     *         it was set visible
      */
     public boolean isHidden() {
         return hidden;

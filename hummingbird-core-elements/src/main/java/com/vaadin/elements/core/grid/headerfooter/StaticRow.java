@@ -8,7 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.vaadin.elements.core.grid.headerfooter.StaticSection.StaticCell;
 import com.vaadin.shared.ui.grid.GridStaticSectionState.RowState;
 
 /**
@@ -49,8 +48,7 @@ abstract class StaticRow<CELLTYPE extends StaticSection.StaticCell>
         }
     }
 
-    private void removeCellFromGroup(CELLTYPE cell,
-            Set<CELLTYPE> cellGroup) {
+    private void removeCellFromGroup(CELLTYPE cell, Set<CELLTYPE> cellGroup) {
         String columnId = cell.getColumnId();
         for (Set<String> group : rowState.cellGroups.keySet()) {
             if (group.contains(columnId)) {
@@ -82,8 +80,8 @@ abstract class StaticRow<CELLTYPE extends StaticSection.StaticCell>
     }
 
     /**
-     * Returns the cell for the given property id on this row. If the
-     * column is merged returned cell is the cell for the whole group.
+     * Returns the cell for the given property id on this row. If the column is
+     * merged returned cell is the cell for the whole group.
      *
      * @param propertyId
      *            the property id of the column
@@ -133,8 +131,7 @@ abstract class StaticRow<CELLTYPE extends StaticSection.StaticCell>
     protected CELLTYPE join(Set<CELLTYPE> cells) {
         for (CELLTYPE cell : cells) {
             if (getCellGroupForCell(cell) != null) {
-                throw new IllegalArgumentException(
-                        "Cell already merged");
+                throw new IllegalArgumentException("Cell already merged");
             } else if (!this.cells.containsValue(cell)) {
                 throw new IllegalArgumentException(
                         "Cell does not exist on this row");
@@ -175,8 +172,7 @@ abstract class StaticRow<CELLTYPE extends StaticSection.StaticCell>
      * Sets a custom style name for this row.
      *
      * @param styleName
-     *            the style name to set or null to not use any style
-     *            name
+     *            the style name to set or null to not use any style name
      */
     public void setStyleName(String styleName) {
         getRowState().styleName = styleName;

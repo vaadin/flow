@@ -3,13 +3,13 @@ package com.vaadin.hummingbird.kernel;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.hummingbird.kernel.SingleRangeCache.AddListener;
-import com.vaadin.hummingbird.kernel.SingleRangeCache.RemoveListener;
-import com.vaadin.shared.ui.grid.Range;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.vaadin.hummingbird.kernel.SingleRangeCache.AddListener;
+import com.vaadin.hummingbird.kernel.SingleRangeCache.RemoveListener;
+import com.vaadin.shared.ui.grid.Range;
 
 public class SingleRangeCacheTest {
 

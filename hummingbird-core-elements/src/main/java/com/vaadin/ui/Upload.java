@@ -1005,8 +1005,7 @@ public class Upload extends AbstractComponent implements Component.Focusable {
                         if (exception instanceof NoInputStreamException) {
                             fireNoInputStream(event.getFileName(),
                                     event.getMimeType(), 0);
-                        } else
-                            if (exception instanceof NoOutputStreamException) {
+                        } else if (exception instanceof NoOutputStreamException) {
                             fireNoOutputStream(event.getFileName(),
                                     event.getMimeType(), 0);
                         } else {

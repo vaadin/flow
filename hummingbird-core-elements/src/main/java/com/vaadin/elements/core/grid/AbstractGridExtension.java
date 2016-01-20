@@ -8,8 +8,8 @@ import com.vaadin.ui.GridJSDataProvider;
  * An abstract base class for server-side Grid extensions.
  * <p>
  * Note: If the extension is an instance of {@link DataGenerator} it will
- * automatically register itself to {@link GridJSDataProvider} of extended
- * Grid. On remove this registration is automatically removed.
+ * automatically register itself to {@link GridJSDataProvider} of extended Grid.
+ * On remove this registration is automatically removed.
  *
  * @since 7.5
  */
@@ -74,8 +74,8 @@ public abstract class AbstractGridExtension {
      * Gets the column for a column id.
      * <p>
      * An id is used to identify a particular column on both a server and a
-     * client. This method can be used to get the column for the column id
-     * that the client has sent.
+     * client. This method can be used to get the column for the column id that
+     * the client has sent.
      *
      * @param columnId
      *            the column id for which to retrieve a column

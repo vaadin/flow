@@ -2,9 +2,9 @@ package com.vaadin.tests.data.validator;
 
 import java.math.BigDecimal;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.validator.BigDecimalRangeValidator;
+
+import junit.framework.TestCase;
 
 public class BigDecimalRangeValidatorTest extends TestCase {
 

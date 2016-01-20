@@ -18,8 +18,8 @@ import elemental.json.JsonObject;
  * A base class for SelectionModels that contains some of the logic that is
  * reusable.
  */
-public abstract class AbstractSelectionModel extends
-        AbstractGridExtension implements SelectionModel, DataGenerator {
+public abstract class AbstractSelectionModel extends AbstractGridExtension
+        implements SelectionModel, DataGenerator {
     protected final LinkedHashSet<Object> selection = new LinkedHashSet<Object>();
 
     @Override
@@ -78,9 +78,8 @@ public abstract class AbstractSelectionModel extends
      * SelectionListeners} currently added to the Grid in which this
      * SelectionModel is.
      * <p>
-     * Note that this is only a helper method, and routes the call all the
-     * way to Grid. A {@link SelectionModel} is not a
-     * {@link SelectionNotifier}
+     * Note that this is only a helper method, and routes the call all the way
+     * to Grid. A {@link SelectionModel} is not a {@link SelectionNotifier}
      *
      * @param oldSelection
      *            the complete {@link Collection} of the itemIds that were

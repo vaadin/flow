@@ -2,6 +2,9 @@ package com.vaadin.tests.server.component.fieldgroup;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.data.Item;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.DefaultFieldGroupFieldFactory;
@@ -11,9 +14,6 @@ import com.vaadin.data.util.BeanItem;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.RichTextArea;
 import com.vaadin.ui.TextField;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class BeanFieldGroupTest {
 

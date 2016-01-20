@@ -6,6 +6,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.easymock.EasyMock;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinRequest;
@@ -14,10 +17,6 @@ import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WrappedHttpSession;
 import com.vaadin.server.WrappedSession;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class AbstractSingleComponentContainerTest extends ComponentTestBase {
 

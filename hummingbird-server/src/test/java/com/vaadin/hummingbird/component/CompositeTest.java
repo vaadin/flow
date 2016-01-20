@@ -2,6 +2,10 @@ package com.vaadin.hummingbird.component;
 
 import java.util.Iterator;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.vaadin.hummingbird.component.CompositeInsideCompositeTest.TestComponentWithTracking;
 import com.vaadin.hummingbird.component.CompositeInsideCompositeTest.TestCompositeWithTracking;
 import com.vaadin.hummingbird.component.CompositeInsideCompositeTest.TestLayoutWithTracking;
@@ -10,10 +14,6 @@ import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class CompositeTest {
     TestLayoutWithTracking layout;

@@ -659,17 +659,51 @@ public class MenuBar extends AbstractComponent implements Focusable {
          * </p>
          *
          * <p>
-         * <table border=1> <tr> <td width=120><b>Tag</b></td> <td
-         * width=120><b>Description</b></td> <td width=120><b>Example</b></td>
-         * </tr> <tr> <td>&lt;b></td> <td>bold</td> <td><b>bold text</b></td>
-         * </tr> <tr> <td>&lt;i></td> <td>italic</td> <td><i>italic
-         * text</i></td> </tr> <tr> <td>&lt;u></td> <td>underlined</td>
-         * <td><u>underlined text</u></td> </tr> <tr> <td>&lt;br></td>
-         * <td>linebreak</td> <td>N/A</td> </tr> <tr> <td>&lt;ul><br>
-         * &lt;li>item1<br> &lt;li>item1<br> &lt;/ul></td> <td>item list</td>
-         * <td> <ul> <li>item1 <li>item2 </ul> </td> </tr> </table> </p>
+         * <table border=1>
+         * <tr>
+         * <td width=120><b>Tag</b></td>
+         * <td width=120><b>Description</b></td>
+         * <td width=120><b>Example</b></td>
+         * </tr>
+         * <tr>
+         * <td>&lt;b></td>
+         * <td>bold</td>
+         * <td><b>bold text</b></td>
+         * </tr>
+         * <tr>
+         * <td>&lt;i></td>
+         * <td>italic</td>
+         * <td><i>italic text</i></td>
+         * </tr>
+         * <tr>
+         * <td>&lt;u></td>
+         * <td>underlined</td>
+         * <td><u>underlined text</u></td>
+         * </tr>
+         * <tr>
+         * <td>&lt;br></td>
+         * <td>linebreak</td>
+         * <td>N/A</td>
+         * </tr>
+         * <tr>
+         * <td>&lt;ul><br>
+         * &lt;li>item1<br>
+         * &lt;li>item1<br>
+         * &lt;/ul></td>
+         * <td>item list</td>
+         * <td>
+         * <ul>
+         * <li>item1
+         * <li>item2
+         * </ul>
+         * </td>
+         * </tr>
+         * </table>
+         * </p>
          *
-         * <p> These tags may be nested. </p>
+         * <p>
+         * These tags may be nested.
+         * </p>
          *
          * @return item's description <code>String</code>
          */

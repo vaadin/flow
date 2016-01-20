@@ -1,12 +1,12 @@
 package com.vaadin.tests.data.converter;
 
-import junit.framework.TestCase;
-
-import com.vaadin.data.util.converter.StringToBooleanConverter;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import com.vaadin.data.util.converter.StringToBooleanConverter;
+
+import junit.framework.TestCase;
 
 public class StringToBooleanConverterTest extends TestCase {
 
@@ -19,7 +19,8 @@ public class StringToBooleanConverterTest extends TestCase {
             Date d = new Date(3000000000000L);
             return SimpleDateFormat
                     .getDateInstance(SimpleDateFormat.LONG, locale)
-                    .format(new Date(d.getTime()+(d.getTimezoneOffset()+120)*60*1000L));
+                    .format(new Date(d.getTime()
+                            + (d.getTimezoneOffset() + 120) * 60 * 1000L));
         }
 
         @Override
@@ -27,7 +28,8 @@ public class StringToBooleanConverterTest extends TestCase {
             Date d = new Date(2000000000000L);
             return SimpleDateFormat
                     .getDateInstance(SimpleDateFormat.LONG, locale)
-                    .format(new Date(d.getTime()+(d.getTimezoneOffset()+120)*60*1000L));
+                    .format(new Date(d.getTime()
+                            + (d.getTimezoneOffset() + 120) * 60 * 1000L));
         }
     };
 

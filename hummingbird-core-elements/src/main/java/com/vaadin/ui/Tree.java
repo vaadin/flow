@@ -101,11 +101,11 @@ public class Tree extends AbstractSelect
          * may still support selecting text/icons from Tree which can initiate
          * HTML 5 style drag and drop operation.
          */
-        NONE, /**
-               * When drag mode is NODE, users can initiate drag from Tree nodes
-               * that represent {@link Item}s in from the backed
-               * {@link Container}.
-               */
+        NONE,
+        /**
+         * When drag mode is NODE, users can initiate drag from Tree nodes that
+         * represent {@link Item}s in from the backed {@link Container}.
+         */
         NODE
         // , SUBTREE
     }

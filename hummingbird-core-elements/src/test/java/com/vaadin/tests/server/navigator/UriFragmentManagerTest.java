@@ -16,8 +16,6 @@
 
 package com.vaadin.tests.server.navigator;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
 
@@ -25,6 +23,8 @@ import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.Navigator.UriFragmentManager;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.Page.UriFragmentChangedEvent;
+
+import junit.framework.TestCase;
 
 public class UriFragmentManagerTest extends TestCase {
 

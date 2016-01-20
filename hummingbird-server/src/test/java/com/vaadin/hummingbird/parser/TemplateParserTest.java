@@ -1,10 +1,10 @@
 package com.vaadin.hummingbird.parser;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.util.List;
 import java.util.stream.IntStream;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;
 import com.vaadin.hummingbird.kernel.Element;

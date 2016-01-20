@@ -42,10 +42,10 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Page;
-import com.vaadin.ui.SingleComponentContainer;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.Page.UriFragmentChangedEvent;
 import com.vaadin.ui.Page.UriFragmentChangedListener;
+import com.vaadin.ui.SingleComponentContainer;
+import com.vaadin.ui.UI;
 
 /**
  * A navigator utility that allows switching of views in a part of an

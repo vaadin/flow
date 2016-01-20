@@ -5,8 +5,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
-import com.vaadin.hummingbird.kernel.ComputedProperty;
-import com.vaadin.hummingbird.kernel.StateNode;
 import com.vaadin.ui.Template.Model;
 
 public class DefaultMethodComputedProperty extends ComputedProperty {

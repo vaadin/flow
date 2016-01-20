@@ -9,10 +9,9 @@ import com.vaadin.data.Property;
  * A data class which contains information which identifies a cell in a
  * {@link Grid}.
  * <p>
- * Since this class follows the <code>Flyweight</code>-pattern any instance
- * of this object is subject to change without the user knowing it and so
- * should not be stored anywhere outside of the method providing these
- * instances.
+ * Since this class follows the <code>Flyweight</code>-pattern any instance of
+ * this object is subject to change without the user knowing it and so should
+ * not be stored anywhere outside of the method providing these instances.
  */
 public class CellReference implements Serializable {
     private final RowReference rowReference;

@@ -1,8 +1,8 @@
 package com.vaadin.tests.server.validation;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.validator.IntegerRangeValidator;
+
+import junit.framework.TestCase;
 
 public class RangeValidatorTest extends TestCase {
 

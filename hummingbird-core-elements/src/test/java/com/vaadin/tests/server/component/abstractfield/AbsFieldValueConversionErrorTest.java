@@ -1,5 +1,7 @@
 package com.vaadin.tests.server.component.abstractfield;
 
+import org.junit.Assert;
+
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.MethodProperty;
 import com.vaadin.data.util.converter.Converter.ConversionException;
@@ -9,8 +11,6 @@ import com.vaadin.tests.data.bean.Country;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
 import com.vaadin.ui.TextField;
-
-import org.junit.Assert;
 
 import junit.framework.TestCase;
 

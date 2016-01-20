@@ -20,8 +20,8 @@ public class ColumnReorderEvent extends Component.Event {
      * @param source
      *            the grid where the event originated from
      * @param userOriginated
-     *            <code>true</code> if event is a result of user
-     *            interaction, <code>false</code> if from API call
+     *            <code>true</code> if event is a result of user interaction,
+     *            <code>false</code> if from API call
      */
     public ColumnReorderEvent(Grid source, boolean userOriginated) {
         super(source);

@@ -1,8 +1,8 @@
 package com.vaadin.tests.data.converter;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.util.converter.StringToDoubleConverter;
+
+import junit.framework.TestCase;
 
 public class StringToDoubleConverterTest extends TestCase {
 

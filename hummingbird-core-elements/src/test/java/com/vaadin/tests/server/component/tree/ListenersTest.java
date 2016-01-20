@@ -3,13 +3,13 @@ package com.vaadin.tests.server.component.tree;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.Tree.CollapseEvent;
 import com.vaadin.ui.Tree.CollapseListener;
 import com.vaadin.ui.Tree.ExpandEvent;
 import com.vaadin.ui.Tree.ExpandListener;
+
+import junit.framework.TestCase;
 
 public class ListenersTest extends TestCase
         implements ExpandListener, CollapseListener {

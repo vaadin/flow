@@ -66,5 +66,5 @@ public @interface StyleSheet {
      *
      * @return an array of style sheet urls
      */
-    public String[]value();
+    public String[] value();
 }

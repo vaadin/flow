@@ -1,10 +1,10 @@
 package com.vaadin.tests.server;
 
-import junit.framework.TestCase;
-
 import org.atmosphere.util.Version;
 
 import com.vaadin.server.Constants;
+
+import junit.framework.TestCase;
 
 public class AtmosphereVersionTest extends TestCase {
     /**

@@ -18,12 +18,12 @@ package com.vaadin.tests.server.component;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.tests.VaadinCoreElementsClasses;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.Slider;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class FieldDefaultValues {
 

@@ -2,9 +2,9 @@ package com.vaadin.tests.data.converter;
 
 import java.util.Date;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.util.converter.DateToLongConverter;
+
+import junit.framework.TestCase;
 
 public class DateToLongConverterTest extends TestCase {
 
@@ -16,7 +16,9 @@ public class DateToLongConverterTest extends TestCase {
 
     public void testValueConversion() {
         Date d = new Date(100, 0, 1);
-        assertEquals(Long.valueOf(946677600000l + (d.getTimezoneOffset()+120)*60*1000L), 
-            converter.convertToModel(d, Long.class, null));
+        assertEquals(
+                Long.valueOf(946677600000l
+                        + (d.getTimezoneOffset() + 120) * 60 * 1000L),
+                converter.convertToModel(d, Long.class, null));
     }
 }

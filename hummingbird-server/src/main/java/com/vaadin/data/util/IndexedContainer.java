@@ -59,7 +59,7 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
 // item type is really IndexedContainerItem, but using Item not to show it in
 // public API
 public class IndexedContainer
-        extends AbstractInMemoryContainer<Object, Object, Item>implements
+        extends AbstractInMemoryContainer<Object, Object, Item> implements
         Container.PropertySetChangeNotifier, Property.ValueChangeNotifier,
         Container.Sortable, Container.Filterable, Container.SimpleFilterable {
 

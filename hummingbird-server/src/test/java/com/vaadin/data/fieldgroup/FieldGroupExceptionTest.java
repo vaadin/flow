@@ -15,10 +15,10 @@
  */
 package com.vaadin.data.fieldgroup;
 
+import org.junit.Test;
+
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.tests.server.TestDateField;
-
-import org.junit.Test;
 
 public class FieldGroupExceptionTest {
 

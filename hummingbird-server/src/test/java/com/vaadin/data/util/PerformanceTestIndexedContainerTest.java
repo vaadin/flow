@@ -6,9 +6,9 @@ import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
+
+import junit.framework.TestCase;
 
 public class PerformanceTestIndexedContainerTest extends TestCase {
 

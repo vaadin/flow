@@ -16,8 +16,8 @@
 
 package com.vaadin.shared.data;
 
-import com.vaadin.shared.annotations.NoLoadingIndicator;
 import com.vaadin.shared.annotations.Delayed;
+import com.vaadin.shared.annotations.NoLoadingIndicator;
 import com.vaadin.shared.communication.ServerRpc;
 
 /**

@@ -17,9 +17,9 @@ package com.vaadin.data.fieldgroup;
 
 import java.util.Date;
 
-import com.vaadin.data.util.BeanItem;
-
 import org.junit.Before;
+
+import com.vaadin.data.util.BeanItem;
 
 public class FieldGroupDateTest {
 

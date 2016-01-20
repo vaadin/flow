@@ -14,9 +14,8 @@ public interface EditorListener extends Serializable {
             EditorEvent.class, "editorOpened", EditorOpenEvent.class);
     public static final Method EDITOR_MOVE_METHOD = ReflectTools.findMethod(
             EditorEvent.class, "editorMoved", EditorMoveEvent.class);
-    public static final Method EDITOR_CLOSE_METHOD = ReflectTools
-            .findMethod(EditorEvent.class, "editorClosed",
-                    EditorCloseEvent.class);
+    public static final Method EDITOR_CLOSE_METHOD = ReflectTools.findMethod(
+            EditorEvent.class, "editorClosed", EditorCloseEvent.class);
 
     /**
      * Called when an editor is opened

@@ -18,9 +18,9 @@ package com.vaadin.tests.data.converter;
 import java.math.BigInteger;
 import java.util.Locale;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.util.converter.StringToBigIntegerConverter;
+
+import junit.framework.TestCase;
 
 public class StringToBigIntegerConverterTest extends TestCase {
 

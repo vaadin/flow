@@ -17,8 +17,6 @@ package com.vaadin.ui.renderers;
 
 import com.vaadin.elements.core.grid.AbstractRenderer;
 
-import elemental.json.JsonValue;
-
 /**
  * A renderer for presenting HTML content.
  *

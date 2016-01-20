@@ -70,7 +70,8 @@ public class ListTreeNode extends TreeNode implements ReactiveValue {
                     if (addedValue instanceof TreeNode) {
                         valueKey = "nodeValue";
 
-                        addedJson.set(addedJson.length(), ((TreeNode) addedValue).getId());
+                        addedJson.set(addedJson.length(),
+                                ((TreeNode) addedValue).getId());
                     } else {
                         addedJson.set(addedJson.length(),
                                 TreeUpdater.asJsonValue(addedValue));

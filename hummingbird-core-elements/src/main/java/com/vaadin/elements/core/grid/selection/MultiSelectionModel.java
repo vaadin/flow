@@ -97,8 +97,7 @@ public class MultiSelectionModel extends AbstractSelectionModel
         final boolean selectionWillChange = !selection.containsAll(itemIds)
                 && selection.size() < selectionLimit;
         if (selectionWillChange) {
-            final HashSet<Object> oldSelection = new HashSet<Object>(
-                    selection);
+            final HashSet<Object> oldSelection = new HashSet<Object>(selection);
             if (selection.size() + itemIds.size() >= selectionLimit) {
                 // Add one at a time if there's a risk of overflow
                 Iterator<?> iterator = itemIds.iterator();
@@ -124,13 +123,13 @@ public class MultiSelectionModel extends AbstractSelectionModel
     }
 
     /**
-     * Sets the maximum number of rows that can be selected at once. This is
-     * a mechanism to prevent exhausting server memory in situations where
-     * users select lots of rows. If the limit is reached, newly selected
-     * rows will not become recorded.
+     * Sets the maximum number of rows that can be selected at once. This is a
+     * mechanism to prevent exhausting server memory in situations where users
+     * select lots of rows. If the limit is reached, newly selected rows will
+     * not become recorded.
      * <p>
-     * Old selections are not discarded if the current number of selected
-     * row exceeds the new limit.
+     * Old selections are not discarded if the current number of selected row
+     * exceeds the new limit.
      * <p>
      * The default limit is {@value #DEFAULT_MAX_SELECTIONS} rows.
      *
@@ -176,8 +175,7 @@ public class MultiSelectionModel extends AbstractSelectionModel
         return deselect(itemIds, true);
     }
 
-    protected boolean deselect(final Collection<?> itemIds,
-            boolean refresh) {
+    protected boolean deselect(final Collection<?> itemIds, boolean refresh) {
         if (itemIds == null) {
             throw new IllegalArgumentException("itemIds may not be null");
         }
@@ -185,8 +183,7 @@ public class MultiSelectionModel extends AbstractSelectionModel
         final boolean hasCommonElements = !Collections.disjoint(itemIds,
                 selection);
         if (hasCommonElements) {
-            final HashSet<Object> oldSelection = new HashSet<Object>(
-                    selection);
+            final HashSet<Object> oldSelection = new HashSet<Object>(selection);
             selection.removeAll(itemIds);
             fireSelectionEvent(oldSelection, selection);
         }
@@ -216,9 +213,8 @@ public class MultiSelectionModel extends AbstractSelectionModel
             return false;
         } else {
             /*
-             * this should never happen (no container but has a selection),
-             * but I guess the only theoretically correct course of
-             * action...
+             * this should never happen (no container but has a selection), but
+             * I guess the only theoretically correct course of action...
              */
             return deselectAll(false);
         }
@@ -237,11 +233,10 @@ public class MultiSelectionModel extends AbstractSelectionModel
     /**
      * {@inheritDoc}
      * <p>
-     * The returned Collection is in <strong>order of selection</strong>
-     * &ndash; the item that was first selected will be first in the
-     * collection, and so on. Should an item have been selected twice
-     * without being deselected in between, it will have remained in its
-     * original position.
+     * The returned Collection is in <strong>order of selection</strong> &ndash;
+     * the item that was first selected will be first in the collection, and so
+     * on. Should an item have been selected twice without being deselected in
+     * between, it will have remained in its original position.
      */
     @Override
     public Collection<Object> getSelectedRows() {

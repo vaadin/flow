@@ -26,16 +26,15 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
 
 import org.easymock.EasyMock;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.vaadin.ui.Component.DetachEvent;
 import com.vaadin.ui.Component.DetachListener;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class VaadinSessionTest {
 

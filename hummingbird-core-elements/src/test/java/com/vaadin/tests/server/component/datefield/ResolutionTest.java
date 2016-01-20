@@ -2,10 +2,10 @@ package com.vaadin.tests.server.component.datefield;
 
 import java.util.ArrayList;
 
-import junit.framework.TestCase;
-
 import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.tests.util.TestUtil;
+
+import junit.framework.TestCase;
 
 public class ResolutionTest extends TestCase {
 

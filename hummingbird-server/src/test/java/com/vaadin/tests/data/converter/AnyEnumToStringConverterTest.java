@@ -18,16 +18,16 @@ package com.vaadin.tests.data.converter;
 
 import java.util.Locale;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.ReverseConverter;
 import com.vaadin.tests.data.bean.AnotherTestEnum;
 import com.vaadin.tests.data.bean.TestEnum;
 import com.vaadin.tests.server.TestField;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class AnyEnumToStringConverterTest {
 

@@ -517,7 +517,7 @@ public abstract class VaadinService implements Serializable {
         }
         Object currentSessionLock = wrappedSession
                 .getAttribute(getLockAttributeName());
-        assert(currentSessionLock == null
+        assert (currentSessionLock == null
                 || currentSessionLock == lock) : "Changing the lock for a session is not allowed";
 
         wrappedSession.setAttribute(getLockAttributeName(), lock);
@@ -612,7 +612,7 @@ public abstract class VaadinService implements Serializable {
      */
     protected void unlockSession(WrappedSession wrappedSession) {
         assert getSessionLock(wrappedSession) != null;
-        assert((ReentrantLock) getSessionLock(wrappedSession))
+        assert ((ReentrantLock) getSessionLock(wrappedSession))
                 .isHeldByCurrentThread() : "Trying to unlock the session but it has not been locked by this thread";
         getSessionLock(wrappedSession).unlock();
     }
@@ -652,7 +652,7 @@ public abstract class VaadinService implements Serializable {
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
             boolean requestCanCreateSession)
                     throws SessionExpiredException, ServiceException {
-        assert((ReentrantLock) getSessionLock(request.getWrappedSession()))
+        assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
         /* Find an existing session for this request. */
@@ -716,7 +716,7 @@ public abstract class VaadinService implements Serializable {
      */
     private VaadinSession createAndRegisterSession(VaadinRequest request)
             throws ServiceException {
-        assert((ReentrantLock) getSessionLock(request.getWrappedSession()))
+        assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
         VaadinSession session = createVaadinSession(request);

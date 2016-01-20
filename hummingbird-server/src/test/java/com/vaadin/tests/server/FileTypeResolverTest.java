@@ -2,9 +2,9 @@ package com.vaadin.tests.server;
 
 import java.io.File;
 
-import junit.framework.TestCase;
-
 import com.vaadin.util.FileTypeResolver;
+
+import junit.framework.TestCase;
 
 public class FileTypeResolverTest extends TestCase {
 

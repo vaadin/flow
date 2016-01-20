@@ -1,8 +1,8 @@
 package com.vaadin.tests.data.validator;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.validator.IntegerRangeValidator;
+
+import junit.framework.TestCase;
 
 public class IntegerRangeValidatorTest extends TestCase {
 

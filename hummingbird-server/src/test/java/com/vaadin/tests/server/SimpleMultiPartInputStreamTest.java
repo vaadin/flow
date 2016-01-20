@@ -5,9 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-import junit.framework.TestCase;
-
 import com.vaadin.server.communication.FileUploadHandler.SimpleMultiPartInputStream;
+
+import junit.framework.TestCase;
 
 public class SimpleMultiPartInputStreamTest extends TestCase {
 

@@ -21,8 +21,6 @@ import java.lang.reflect.Modifier;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.AbstractClientConnector;
-
 /**
  * We test that AbstractClientConnector has a suitable isThis method which is
  * needed to correctly perform an equals check between a proxy and it's

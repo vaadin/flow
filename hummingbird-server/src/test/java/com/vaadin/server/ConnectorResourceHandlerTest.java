@@ -19,13 +19,12 @@ import java.io.IOException;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
-
-import com.vaadin.tests.server.TestComponent;
-import com.vaadin.ui.UI;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.vaadin.tests.server.TestComponent;
+import com.vaadin.ui.UI;
 
 public class ConnectorResourceHandlerTest {
 

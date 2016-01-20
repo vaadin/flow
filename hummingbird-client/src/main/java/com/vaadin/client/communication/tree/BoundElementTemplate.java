@@ -13,8 +13,8 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.Profiler;
-import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.CustomElement;
+import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.tree.TreeNodeProperty.TreeNodePropertyValueChangeListener;
 
 import elemental.json.Json;

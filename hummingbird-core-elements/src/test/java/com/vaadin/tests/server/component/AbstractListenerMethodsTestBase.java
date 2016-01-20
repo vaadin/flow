@@ -7,6 +7,7 @@ import java.util.EventListener;
 import java.util.EventObject;
 
 import org.easymock.EasyMock;
+import org.junit.Assert;
 
 import com.vaadin.event.ElementEvents;
 import com.vaadin.event.ElementEvents.DOMEventForwarder;
@@ -14,8 +15,6 @@ import com.vaadin.event.EventSource;
 import com.vaadin.event.HasEventRouter;
 import com.vaadin.hummingbird.kernel.DomEventListener;
 import com.vaadin.ui.Component;
-
-import org.junit.Assert;
 
 import junit.framework.TestCase;
 

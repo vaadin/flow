@@ -31,35 +31,43 @@ public interface Sizeable extends Serializable {
         /**
          * Unit code representing pixels.
          */
-        PIXELS("px"), /**
-                       * Unit code representing points (1/72nd of an inch).
-                       */
-        POINTS("pt"), /**
-                       * Unit code representing picas (12 points).
-                       */
-        PICAS("pc"), /**
-                      * Unit code representing the font-size of the relevant
-                      * font.
-                      */
-        EM("em"), /**
-                   * Unit code representing the font-size of the root font.
-                   */
-        REM("rem"), /**
-                     * Unit code representing the x-height of the relevant font.
-                     */
-        EX("ex"), /**
-                   * Unit code representing millimeters.
-                   */
-        MM("mm"), /**
-                   * Unit code representing centimeters.
-                   */
-        CM("cm"), /**
-                   * Unit code representing inches.
-                   */
-        INCH("in"), /**
-                     * Unit code representing in percentage of the containing
-                     * element defined by terminal.
-                     */
+        PIXELS("px"),
+        /**
+         * Unit code representing points (1/72nd of an inch).
+         */
+        POINTS("pt"),
+        /**
+         * Unit code representing picas (12 points).
+         */
+        PICAS("pc"),
+        /**
+         * Unit code representing the font-size of the relevant font.
+         */
+        EM("em"),
+        /**
+         * Unit code representing the font-size of the root font.
+         */
+        REM("rem"),
+        /**
+         * Unit code representing the x-height of the relevant font.
+         */
+        EX("ex"),
+        /**
+         * Unit code representing millimeters.
+         */
+        MM("mm"),
+        /**
+         * Unit code representing centimeters.
+         */
+        CM("cm"),
+        /**
+         * Unit code representing inches.
+         */
+        INCH("in"),
+        /**
+         * Unit code representing in percentage of the containing element
+         * defined by terminal.
+         */
         PERCENTAGE("%");
 
         private String symbol;

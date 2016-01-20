@@ -16,10 +16,10 @@
 
 package com.vaadin.tests.server.component;
 
+import org.junit.Assert;
+
 import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.ui.Label;
-
-import org.junit.Assert;
 
 import junit.framework.TestCase;
 

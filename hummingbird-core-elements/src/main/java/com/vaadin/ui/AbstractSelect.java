@@ -56,7 +56,7 @@ import com.vaadin.shared.ui.combobox.FilteringMode;
  */
 @SuppressWarnings("serial")
 // TODO currently cannot specify type more precisely in case of multi-select
-public abstract class AbstractSelect extends AbstractField<Object>implements
+public abstract class AbstractSelect extends AbstractField<Object> implements
         Container, Container.Viewer, Container.PropertySetChangeListener,
         Container.PropertySetChangeNotifier, Container.ItemSetChangeNotifier,
         Container.ItemSetChangeListener {
@@ -66,32 +66,36 @@ public abstract class AbstractSelect extends AbstractField<Object>implements
          * Item caption mode: Item's ID's <code>String</code> representation is
          * used as caption.
          */
-        ID, /**
-             * Item caption mode: Item's <code>String</code> representation is
-             * used as caption.
-             */
-        ITEM, /**
-               * Item caption mode: Index of the item is used as caption. The
-               * index mode can only be used with the containers implementing
-               * the {@link com.vaadin.data.Container.Indexed} interface.
-               */
-        INDEX, /**
-                * Item caption mode: If an Item has a caption it's used, if not,
-                * Item's ID's <code>String</code> representation is used as
-                * caption. <b>This is the default</b>.
-                */
-        EXPLICIT_DEFAULTS_ID, /**
-                               * Item caption mode: Captions must be explicitly
-                               * specified.
-                               */
-        EXPLICIT, /**
-                   * Item caption mode: Only icons are shown, captions are
-                   * hidden.
-                   */
-        ICON_ONLY, /**
-                    * Item caption mode: Item captions are read from property
-                    * specified with <code>setItemCaptionPropertyId</code>.
-                    */
+        ID,
+        /**
+         * Item caption mode: Item's <code>String</code> representation is used
+         * as caption.
+         */
+        ITEM,
+        /**
+         * Item caption mode: Index of the item is used as caption. The index
+         * mode can only be used with the containers implementing the
+         * {@link com.vaadin.data.Container.Indexed} interface.
+         */
+        INDEX,
+        /**
+         * Item caption mode: If an Item has a caption it's used, if not, Item's
+         * ID's <code>String</code> representation is used as caption. <b>This
+         * is the default</b>.
+         */
+        EXPLICIT_DEFAULTS_ID,
+        /**
+         * Item caption mode: Captions must be explicitly specified.
+         */
+        EXPLICIT,
+        /**
+         * Item caption mode: Only icons are shown, captions are hidden.
+         */
+        ICON_ONLY,
+        /**
+         * Item caption mode: Item captions are read from property specified
+         * with <code>setItemCaptionPropertyId</code>.
+         */
         PROPERTY;
     }
 

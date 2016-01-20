@@ -9,6 +9,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.easymock.EasyMock;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.vaadin.hummingbird.kernel.Element;
 import com.vaadin.server.MockVaadinSession;
@@ -23,10 +26,6 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentTestBase;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class AbstractSimpleDOMComponentContainerTest extends ComponentTestBase {
 

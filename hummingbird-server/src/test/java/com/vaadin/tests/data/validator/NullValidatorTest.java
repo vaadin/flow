@@ -1,9 +1,9 @@
 package com.vaadin.tests.data.validator;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.Validator;
 import com.vaadin.data.validator.NullValidator;
+
+import junit.framework.TestCase;
 
 public class NullValidatorTest extends TestCase {
 

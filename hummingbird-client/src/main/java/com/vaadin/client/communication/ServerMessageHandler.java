@@ -408,7 +408,7 @@ public class ServerMessageHandler {
             connection.loadHtmlDependencies(
                     json.getJSStringArray("htmlDependencies"));
         }
-        if(json.containsKey("polymerStyleDependencies")) {
+        if (json.containsKey("polymerStyleDependencies")) {
             connection.loadPolymerStyleDependencies(
                     json.getJSStringArray("polymerStyleDependencies"));
         }

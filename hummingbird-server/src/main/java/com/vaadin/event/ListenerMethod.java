@@ -419,8 +419,8 @@ public class ListenerMethod implements EventListener, Serializable {
 
         if (params.length == 0) {
             arguments = new Object[0];
-        } else
-            if (params.length == 1 && params[0].isAssignableFrom(eventType)) {
+        } else if (params.length == 1
+                && params[0].isAssignableFrom(eventType)) {
             arguments = new Object[] { null };
             eventArgumentIndex = 0;
         } else {
@@ -480,8 +480,8 @@ public class ListenerMethod implements EventListener, Serializable {
 
         if (params.length == 0) {
             arguments = new Object[0];
-        } else
-            if (params.length == 1 && params[0].isAssignableFrom(eventType)) {
+        } else if (params.length == 1
+                && params[0].isAssignableFrom(eventType)) {
             arguments = new Object[] { null };
             eventArgumentIndex = 0;
         } else {

@@ -174,9 +174,9 @@ public class VBrowserDetails implements Serializable {
             parseAndroidVersion(userAgent);
         } else if (userAgent.contains("linux")) {
             os = OperatingSystem.LINUX;
-        } else
-            if (userAgent.contains("macintosh") || userAgent.contains("mac osx")
-                    || userAgent.contains("mac os x")) {
+        } else if (userAgent.contains("macintosh")
+                || userAgent.contains("mac osx")
+                || userAgent.contains("mac os x")) {
             isIPad = userAgent.contains("ipad");
             isIPhone = userAgent.contains("iphone");
             if (isIPad || userAgent.contains("ipod") || isIPhone) {

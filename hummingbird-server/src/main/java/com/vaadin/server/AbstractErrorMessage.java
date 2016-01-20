@@ -38,9 +38,10 @@ public abstract class AbstractErrorMessage implements ErrorMessage {
         /**
          * Content mode, where the error contains only plain text.
          */
-        TEXT, /**
-               * Content mode, where the error contains preformatted text.
-               */
+        TEXT,
+        /**
+         * Content mode, where the error contains preformatted text.
+         */
         PREFORMATTED,
 
         /**

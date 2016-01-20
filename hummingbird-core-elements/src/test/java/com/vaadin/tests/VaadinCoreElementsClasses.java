@@ -1,7 +1,5 @@
 package com.vaadin.tests;
 
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -16,6 +14,8 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
+
+import org.junit.Test;
 
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Component;

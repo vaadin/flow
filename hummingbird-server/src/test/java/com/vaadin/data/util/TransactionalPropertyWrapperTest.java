@@ -20,10 +20,10 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
+
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.tests.server.TestField;
-
-import org.junit.Test;
 
 /**
  * Test verifying that TransactionalPropertyWrapper removes it's listener from

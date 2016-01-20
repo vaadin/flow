@@ -5,6 +5,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.vaadin.hummingbird.kernel.LazyList.DataProvider;
 import com.vaadin.hummingbird.kernel.change.IdChange;
 import com.vaadin.hummingbird.kernel.change.ListChange;
@@ -22,10 +26,6 @@ import com.vaadin.hummingbird.kernel.change.RangeStartChange;
 import com.vaadin.hummingbird.kernel.change.RemoveChange;
 import com.vaadin.server.communication.TransactionLogBuilder;
 import com.vaadin.server.communication.TransactionLogOptimizer;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class TransactionLogBuilderTest {
 

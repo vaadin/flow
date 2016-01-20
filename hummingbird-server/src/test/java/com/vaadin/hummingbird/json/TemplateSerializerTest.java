@@ -1,10 +1,10 @@
 package com.vaadin.hummingbird.json;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import com.vaadin.hummingbird.kernel.AbstractElementTemplate;
 import com.vaadin.hummingbird.kernel.BoundElementTemplate;

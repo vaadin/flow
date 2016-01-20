@@ -179,7 +179,7 @@ public class AtmospherePushConnection implements PushConnection {
      *            The message to send
      */
     void sendMessage(String message) {
-        assert(isConnected());
+        assert (isConnected());
         // "Broadcast" the changes to the single client only
         outgoingMessage = getResource().getBroadcaster().broadcast(message,
                 getResource());
@@ -222,7 +222,7 @@ public class AtmospherePushConnection implements PushConnection {
     @Override
     public boolean isConnected() {
         assert state != null;
-        assert(state == State.CONNECTED) ^ (resource == null);
+        assert (state == State.CONNECTED) ^ (resource == null);
         return state == State.CONNECTED;
     }
 

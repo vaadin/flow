@@ -26,7 +26,6 @@ import org.mockito.Mockito;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.communication.FieldRpc.BlurServerRpc;
 import com.vaadin.shared.ui.ClickRpc;
-import com.vaadin.ui.AbstractClientConnector;
 
 /**
  * We test that AbstractClientConnector has a suitable isThis method which is

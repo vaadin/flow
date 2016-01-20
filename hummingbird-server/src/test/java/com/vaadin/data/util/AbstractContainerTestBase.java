@@ -3,8 +3,6 @@ package com.vaadin.data.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
 
 import com.vaadin.data.Container;
@@ -14,6 +12,8 @@ import com.vaadin.data.Container.ItemSetChangeListener;
 import com.vaadin.data.Container.Sortable;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.filter.SimpleStringFilter;
+
+import junit.framework.TestCase;
 
 public abstract class AbstractContainerTestBase extends TestCase {
 

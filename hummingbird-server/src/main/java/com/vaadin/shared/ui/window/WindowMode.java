@@ -30,9 +30,10 @@ public enum WindowMode {
      * Normal mode. The window size and position is determined by the window
      * state.
      */
-    NORMAL, /**
-             * Maximized mode. The window is positioned in the top left corner
-             * and fills the whole screen.
-             */
+    NORMAL,
+    /**
+     * Maximized mode. The window is positioned in the top left corner and fills
+     * the whole screen.
+     */
     MAXIMIZED;
 }

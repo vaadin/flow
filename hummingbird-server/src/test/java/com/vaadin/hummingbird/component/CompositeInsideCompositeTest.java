@@ -1,13 +1,13 @@
 package com.vaadin.hummingbird.component;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.vaadin.tests.server.TestComponent;
 import com.vaadin.tests.server.TestLayout;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class CompositeInsideCompositeTest {
     TestLayout layout;

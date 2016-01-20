@@ -16,7 +16,6 @@
 package com.vaadin.data.util;
 
 import com.vaadin.data.Property;
-import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeNotifier;
 
 /**

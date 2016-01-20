@@ -30,8 +30,6 @@ import com.vaadin.shared.Connector;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.ui.absolutelayout.AbsoluteLayoutServerRpc;
 import com.vaadin.shared.ui.absolutelayout.AbsoluteLayoutState;
-import com.vaadin.ui.AbsoluteLayout.ComponentPosition;
-import com.vaadin.ui.AbstractComponentContainer;
 
 /**
  * AbsoluteLayout is a layout implementation that mimics html absolute

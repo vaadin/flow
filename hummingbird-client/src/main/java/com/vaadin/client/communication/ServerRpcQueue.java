@@ -117,7 +117,7 @@ public class ServerRpcQueue {
         String tag;
         if (lastOnly) {
             tag = invocation.getLastOnlyTag();
-            assert!tag.matches(
+            assert !tag.matches(
                     "\\d+") : "getLastOnlyTag value must have at least one non-digit character";
             pendingInvocations.remove(tag);
         } else {

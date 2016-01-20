@@ -2,13 +2,13 @@ package com.vaadin.tests.server.component.orderedlayout;
 
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
 import com.vaadin.ui.AbstractOrderedLayout;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
+
+import junit.framework.TestCase;
 
 public class OrderedLayoutTest extends TestCase {
 
@@ -26,15 +26,15 @@ public class OrderedLayoutTest extends TestCase {
             aol.addComponent(c);
         }
         for (int i = 0; i < nrComponents; i++) {
-            assert(aol.getComponent(i) == components[i]);
-            assert(aol.getComponentIndex(components[i]) == i);
+            assert (aol.getComponent(i) == components[i]);
+            assert (aol.getComponentIndex(components[i]) == i);
         }
 
         // Iteration should be in indexed order
         int idx = 0;
         for (Iterator<Component> i = aol.iterator(); i.hasNext();) {
             Component c = i.next();
-            assert(aol.getComponentIndex(c) == idx++);
+            assert (aol.getComponentIndex(c) == idx++);
         }
     }
 

@@ -1,11 +1,11 @@
 package com.vaadin.hummingbird.kernel;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.AbstractComponent;

@@ -432,8 +432,8 @@ public class VaadinPortlet extends GenericPortlet
         } else if (request instanceof ResourceRequest) {
             if (ServletPortletHelper.isUIDLRequest(vaadinRequest)) {
                 return RequestType.UIDL;
-            } else
-                if (ServletPortletHelper.isFileUploadRequest(vaadinRequest)) {
+            } else if (ServletPortletHelper
+                    .isFileUploadRequest(vaadinRequest)) {
                 return RequestType.FILE_UPLOAD;
             } else if (ServletPortletHelper
                     .isPublishedFileRequest(vaadinRequest)) {
@@ -442,8 +442,8 @@ public class VaadinPortlet extends GenericPortlet
                 return RequestType.APP;
             } else if (ServletPortletHelper.isHeartbeatRequest(vaadinRequest)) {
                 return RequestType.HEARTBEAT;
-            } else
-                if (PortletDummyRequestHandler.isDummyRequest(vaadinRequest)) {
+            } else if (PortletDummyRequestHandler
+                    .isDummyRequest(vaadinRequest)) {
                 return RequestType.DUMMY;
             } else {
                 return RequestType.STATIC_FILE;

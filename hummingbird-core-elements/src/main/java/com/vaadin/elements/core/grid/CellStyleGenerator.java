@@ -14,8 +14,8 @@ public interface CellStyleGenerator extends Serializable {
      *
      * @param cell
      *            the cell to generate a style for
-     * @return the style name to add to this cell, or {@code null} to not
-     *         set any style
+     * @return the style name to add to this cell, or {@code null} to not set
+     *         any style
      */
     public String getStyle(CellReference cell);
 }

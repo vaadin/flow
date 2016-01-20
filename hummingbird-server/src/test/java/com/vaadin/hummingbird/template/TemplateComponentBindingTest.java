@@ -1,14 +1,14 @@
 package com.vaadin.hummingbird.template;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.annotations.Id;
 import com.vaadin.tests.server.TestButton;
 import com.vaadin.tests.server.TestField;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Template;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class TemplateComponentBindingTest {
 

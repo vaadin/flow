@@ -2,6 +2,9 @@ package com.vaadin.tests.server.component.abstractfield;
 
 import java.util.Locale;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.data.util.MethodProperty;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.converter.Converter;
@@ -15,9 +18,6 @@ import com.vaadin.tests.data.bean.Sex;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.TextField;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 import junit.framework.TestCase;
 

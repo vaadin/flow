@@ -1,11 +1,11 @@
 package com.vaadin.tests.data.converter;
 
-import junit.framework.TestCase;
-
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.data.util.converter.ReverseConverter;
 import com.vaadin.data.util.converter.StringToEnumConverter;
+
+import junit.framework.TestCase;
 
 public class StringToEnumConverterTest extends TestCase {
 

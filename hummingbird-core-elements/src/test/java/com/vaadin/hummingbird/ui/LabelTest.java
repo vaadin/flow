@@ -2,14 +2,14 @@ package com.vaadin.hummingbird.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Label;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class LabelTest {
 
