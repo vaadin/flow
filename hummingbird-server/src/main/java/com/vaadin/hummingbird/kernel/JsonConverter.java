@@ -4,12 +4,15 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.Date;
 
+import com.vaadin.hummingbird.kernel.ValueType.ArrayType;
+
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonBoolean;
 import elemental.json.JsonNull;
 import elemental.json.JsonNumber;
 import elemental.json.JsonString;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 public class JsonConverter {
@@ -37,6 +40,10 @@ public class JsonConverter {
                 return Boolean.valueOf(value.asBoolean());
             } else if (targetType == ValueType.JSON_TYPE) {
                 return value;
+            } else if (value instanceof JsonArray
+                    && targetType instanceof ArrayType) {
+                return convertToArray((ArrayType) targetType,
+                        (JsonArray) value);
             }
         }
 
@@ -92,10 +99,65 @@ public class JsonConverter {
         case STRING:
         case NULL:
             return String.class;
+        case ARRAY:
+            return resolveArrayType((JsonArray) value);
         default:
             throw new RuntimeException(
                     "No simple type available for " + value.toJson());
         }
+    }
+
+    private static Type resolveArrayType(JsonArray array) {
+        if (isArrayType(array, JsonType.STRING)) {
+            return String[].class;
+        } else if (isArrayType(array, JsonType.NUMBER)) {
+            // number types treated always as double
+            return Double[].class;
+        } else if (isArrayType(array, JsonType.BOOLEAN)) {
+            return Boolean[].class;
+        }
+        return Object[].class;
+    }
+
+    private static boolean isArrayType(JsonArray array, JsonType type) {
+        for (int i = 0; i < array.length(); i++) {
+            JsonType itemType = array.get(i).getType();
+            if (itemType != type && itemType != JsonType.NULL) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static Object convertToArray(ArrayType targetType, JsonArray value) {
+        Object[] array;
+        ValueType memberType = targetType.getMemberType();
+        if (memberType.equals(ValueType.STRING)) {
+            array = new String[value.length()];
+        } else if (memberType.equals(ValueType.BOOLEAN)
+                || memberType.equals(ValueType.BOOLEAN_PRIMITIVE)) {
+            array = new Boolean[value.length()];
+        } else if (memberType.equals(ValueType.NUMBER)
+                || memberType.equals(ValueType.NUMBER_PRIMITIVE)) {
+            array = new Double[value.length()];
+        } else if (memberType.equals(ValueType.INTEGER)
+                || memberType.equals(ValueType.INTEGER_PRIMITIVE)) {
+            array = new Integer[value.length()];
+        } else {
+            array = new Object[value.length()];
+            for (int i = 0; i < value.length(); i++) {
+                JsonValue item = value.get(i);
+                // figure type for each item separately
+                array[i] = fromJson(findType(item), item);
+            }
+            return array;
+        }
+
+        for (int i = 0; i < value.length(); i++) {
+            JsonValue item = value.get(i);
+            array[i] = fromJson(memberType, item);
+        }
+        return array;
     }
 
     public static boolean isSupportedType(Class<?> type) {

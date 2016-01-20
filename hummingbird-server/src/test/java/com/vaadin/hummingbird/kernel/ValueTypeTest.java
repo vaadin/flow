@@ -37,6 +37,14 @@ public class ValueTypeTest {
         expectedIds.put(ValueType.EMPTY_OBJECT, 7);
         expectedIds.put(ValueType.UNDEFINED, 8);
         expectedIds.put(ValueType.UNDEFINED_ARRAY, 9);
+        expectedIds.put(ValueType.STRING_ARRAY, 10);
+        expectedIds.put(ValueType.BOOLEAN_ARRAY, 11);
+        expectedIds.put(ValueType.BOOLEAN_PRIMITIVE_ARRAY, 12);
+        expectedIds.put(ValueType.INTEGER_ARRAY, 13);
+        expectedIds.put(ValueType.INTEGER_PRIMITIVE_ARRAY, 14);
+        expectedIds.put(ValueType.NUMBER_ARRAY, 15);
+        expectedIds.put(ValueType.NUMBER_PRIMITIVE_ARRAY, 16);
+        expectedIds.put(ValueType.JSON_TYPE, 17);
 
         expectedIds.forEach((valueType, expectedId) -> {
             Assert.assertEquals(
@@ -143,6 +151,24 @@ public class ValueTypeTest {
                 ValueType.get(Collections.emptyMap()));
         Assert.assertSame(ValueType.UNDEFINED_ARRAY,
                 ValueType.get(Collections.emptyMap(), ValueType.UNDEFINED));
+
+        Assert.assertSame(ValueType.STRING_ARRAY,
+                ValueType.get(String[].class));
+
+        Assert.assertSame(ValueType.BOOLEAN_ARRAY,
+                ValueType.get(Boolean[].class));
+        Assert.assertSame(ValueType.BOOLEAN_PRIMITIVE_ARRAY,
+                ValueType.get(boolean[].class));
+
+        Assert.assertSame(ValueType.INTEGER_ARRAY,
+                ValueType.get(Integer[].class));
+        Assert.assertSame(ValueType.INTEGER_PRIMITIVE_ARRAY,
+                ValueType.get(int[].class));
+
+        Assert.assertSame(ValueType.NUMBER_ARRAY,
+                ValueType.get(Double[].class));
+        Assert.assertSame(ValueType.NUMBER_PRIMITIVE_ARRAY,
+                ValueType.get(double[].class));
     }
 
     @Test
@@ -239,5 +265,31 @@ public class ValueTypeTest {
     public void testJsonTypes() {
         Assert.assertSame(ValueType.JSON_TYPE, ValueType.get(JsonArray.class));
         Assert.assertSame(ValueType.JSON_TYPE, ValueType.get(JsonObject.class));
+    }
+
+    @Test
+    public void testPlaingObjectArrayType() {
+        ValueType valueType = ValueType.get(Object[].class);
+        Assert.assertSame(ArrayType.class, valueType.getClass());
+
+        ArrayType arrayType = (ArrayType) valueType;
+        Assert.assertSame(ObjectType.class,
+                arrayType.getMemberType().getClass());
+        Assert.assertEquals(0, arrayType.getPropertyTypes().size());
+        Assert.assertEquals(0, arrayType.getComputedProperties().size());
+    }
+
+    @Test
+    public void testBeanArrayType() {
+        ValueType beanArrayType = ValueType.get(SimpleBean[].class);
+        Assert.assertSame(ArrayType.class, beanArrayType.getClass());
+
+        ArrayType arrayType = (ArrayType) beanArrayType;
+        Assert.assertEquals(Collections.singletonMap("value", ValueType.STRING),
+                arrayType.getPropertyTypes());
+        Assert.assertEquals(0, arrayType.getComputedProperties().size());
+
+        Assert.assertSame(arrayType.getMemberType(),
+                ValueType.get(SimpleBean.class));
     }
 }

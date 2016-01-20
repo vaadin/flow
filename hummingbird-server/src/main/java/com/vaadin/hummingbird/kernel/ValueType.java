@@ -180,6 +180,20 @@ public class ValueType {
     public static final ValueType UNDEFINED = new ValueType(true);
     public static final ArrayType UNDEFINED_ARRAY = get(Collections.emptyMap(),
             UNDEFINED);
+    public static final ArrayType STRING_ARRAY = get(Collections.emptyMap(),
+            STRING);
+    public static final ArrayType BOOLEAN_ARRAY = get(Collections.emptyMap(),
+            BOOLEAN);
+    public static final ArrayType BOOLEAN_PRIMITIVE_ARRAY = get(
+            Collections.emptyMap(), BOOLEAN_PRIMITIVE);
+    public static final ArrayType INTEGER_ARRAY = get(Collections.emptyMap(),
+            INTEGER);
+    public static final ArrayType INTEGER_PRIMITIVE_ARRAY = get(
+            Collections.emptyMap(), INTEGER_PRIMITIVE);
+    public static final ArrayType NUMBER_ARRAY = get(Collections.emptyMap(),
+            NUMBER);
+    public static final ArrayType NUMBER_PRIMITIVE_ARRAY = get(
+            Collections.emptyMap(), NUMBER_PRIMITIVE);
 
     public static final ValueType JSON_TYPE = new ValueType(true);
 
@@ -197,7 +211,18 @@ public class ValueType {
         builtInTypes.put(Double.class, NUMBER);
 
         builtInTypes.values().forEach(ValueType::register);
+
+        // these are already registered upon array type creation
+        builtInTypes.put(String[].class, STRING_ARRAY);
+        builtInTypes.put(Boolean[].class, BOOLEAN_ARRAY);
+        builtInTypes.put(boolean[].class, BOOLEAN_PRIMITIVE_ARRAY);
+        builtInTypes.put(Integer[].class, INTEGER_ARRAY);
+        builtInTypes.put(int[].class, INTEGER_PRIMITIVE_ARRAY);
+        builtInTypes.put(Double[].class, NUMBER_ARRAY);
+        builtInTypes.put(double[].class, NUMBER_PRIMITIVE_ARRAY);
+
         ValueType.register(UNDEFINED);
+        ValueType.register(JSON_TYPE);
 
         jsonTypes.add(JsonArray.class);
         jsonTypes.add(JsonObject.class);
@@ -274,6 +299,13 @@ public class ValueType {
                 // Raw list
                 return get(Collections.emptyMap(), UNDEFINED);
             }
+
+            if (clazz.isArray()) {
+                Class<?> componentType = clazz.getComponentType();
+                ObjectType arrayType = getBeanType(componentType);
+                return get(arrayType.getPropertyTypes(), arrayType);
+            }
+
             return getBeanType(clazz);
         }
 
@@ -384,6 +416,8 @@ public class ValueType {
             return "double";
         } else if (this == UNDEFINED) {
             return "undefined";
+        } else if (this == JSON_TYPE) {
+            return "jsontype";
         } else {
             throw new RuntimeException("Unkown instance");
         }
