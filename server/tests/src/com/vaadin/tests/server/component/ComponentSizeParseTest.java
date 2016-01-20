@@ -43,11 +43,5 @@ public class ComponentSizeParseTest extends TestCase {
 
         Assert.assertEquals(amout, label.getHeight(), 0);
         Assert.assertEquals(unit, label.getHeightUnits());
-
-        label = new TestComponent();
-
-        label.setHeight(10, unit);
-        label.beforeClientResponse(true);
-        Assert.assertEquals(string, label.getState().height);
     }
 }

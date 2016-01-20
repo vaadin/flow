@@ -1,7 +1,5 @@
 package com.vaadin.tests.server.component.fieldgroup;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -120,19 +118,6 @@ public class BeanFieldGroupTest {
         Assert.assertEquals("Foo", myBean.basicField);
         Assert.assertEquals("Foo", myBean.anotherField);
 
-    }
-
-    @Test
-    public void buildAndBindNestedProperty() {
-
-        MyBean bean = new MyBean();
-
-        BeanFieldGroup<MyBean> bfg = new BeanFieldGroup<MyBean>(MyBean.class);
-        bfg.setItemDataSource(bean);
-
-        com.vaadin.ui.Field<?> helloField = bfg
-                .buildAndBind("nestedBean.hello");
-        assertEquals(bean.nestedBean.hello, helloField.getValue().toString());
     }
 
     @Test
