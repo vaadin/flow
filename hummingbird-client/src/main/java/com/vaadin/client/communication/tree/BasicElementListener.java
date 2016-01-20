@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.Profiler;
+import com.vaadin.client.Util;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.tree.TreeNode.TreeNodeChangeListener;
 
@@ -162,6 +163,19 @@ public class BasicElementListener {
             TreeUpdater.debug("Handling " + type + " for "
                     + TreeUpdater.debugHtml(element) + ". Event: "
                     + TreeUpdater.debugEvent(event));
+
+            // send any attribute updates first to server
+            TreeNode eventUpdatedAttributeTypes = (TreeNode) elementNode
+                    .getProperty("EVENT_ATTRIBUTE").getValue();
+            if (eventUpdatedAttributeTypes != null) {
+                ListTreeNode eventUpdatedAttributes = (ListTreeNode) eventUpdatedAttributeTypes
+                        .getProperty(type).getValue();
+                if (eventUpdatedAttributes != null) {
+                    sendEventAttributeUpdatesToServer(elementNode, element,
+                            eventUpdatedAttributes, treeUpdater);
+                }
+            }
+
             TreeNode eventTypesToData = (TreeNode) elementNode
                     .getProperty("EVENT_DATA").getValue();
             if (eventTypesToData != null) {
@@ -199,6 +213,83 @@ public class BasicElementListener {
         arguments.set(2, eventData);
 
         treeUpdater.sendRpc("vEvent", arguments);
+    }
+
+    private static void sendEventAttributeUpdatesToServer(TreeNode elementNode,
+            Element element, ListTreeNode eventUpdatedAttributes,
+            TreeUpdater treeUpdater) {
+
+        JsonArray arguments = Json.createArray();
+        JsonArray updates = Json.createArray();
+        updates.set(0, elementNode.getId());
+
+        int arrayIndex = 1;
+        for (int i = 0; i < eventUpdatedAttributes.getLength(); i++) {
+            String attribute = (String) eventUpdatedAttributes.get(i);
+
+            TreeNodeProperty property = elementNode.getProperty(attribute);
+            Object oldValue = property.getProxyValue();
+            JsonValue oldJsonValue = TreeUpdater.asJsonValue(oldValue);
+
+            Object value = null;
+            JsonValue newJsonValue = null;
+            if (attribute.startsWith("attr.")
+                    || TreeUpdater.isAlwaysAttribute(attribute)) {
+                value = element.getAttribute(attribute.substring(5));
+                if (value != null) {
+                    newJsonValue = Json.create((String) value);
+                }
+            } else if (attribute.equals("classList")) {
+                value = element.getAttribute("class");
+                if (value != null) {
+                    newJsonValue = Json.create((String) value);
+                }
+            } else { // property
+                JavaScriptObject propertyJSO = element
+                        .getPropertyJSO(attribute);
+                if (propertyJSO != null) {
+                    newJsonValue = Util.jso2json(propertyJSO);
+                    switch (newJsonValue.getType()) {
+                    case NUMBER:
+                        value = element.getPropertyDouble(attribute);
+                        break;
+                    case STRING:
+                        value = element.getPropertyString(attribute);
+                        break;
+                    case BOOLEAN:
+                        value = element.getPropertyBoolean(attribute);
+                        break;
+                    case OBJECT:
+                        value = element.getPropertyObject(attribute);
+                        break;
+                    case ARRAY:
+                        value = propertyJSO.cast();
+                    default:
+                        break;
+                    }
+                }
+            }
+
+            // send value to server and update node if changed
+            if (oldJsonValue != null && !oldJsonValue.jsEquals(newJsonValue)
+                    || newJsonValue != null
+                            && !newJsonValue.jsEquals(oldJsonValue)) {
+                updates.set(arrayIndex++, attribute);
+                updates.set(arrayIndex++, newJsonValue);
+
+                property.setValue(value);
+            }
+
+        }
+        if (updates.length() > 1) {
+            arguments.set(0, updates);
+            TreeUpdater
+                    .debug("Sending updated attributes to server for event in node "
+                            + elementNode.getId() + " with attributes: "
+                            + updates.toJson());
+        }
+
+        treeUpdater.sendRpc("vAttributeUpdate", arguments);
     }
 
     private static JsonObject extractEventDetails(JavaScriptObject event,
@@ -351,5 +442,4 @@ public class BasicElementListener {
                     Profiler.leave("BasicElementListener LISTENERS splice");
                 });
     }
-
 }

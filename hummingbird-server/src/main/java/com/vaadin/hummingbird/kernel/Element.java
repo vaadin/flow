@@ -217,6 +217,30 @@ public class Element implements Serializable {
         return getAttribute(name) != null;
     }
 
+    public Element addEventUpdatedAttribute(String eventType,
+            String... attributes) {
+        assert eventType != null;
+
+        for (String a : attributes) {
+            debug("Add event " + eventType + " updated attribute " + a);
+        }
+
+        template.addEventUpdatedAttribute(eventType, node, attributes);
+        return this;
+    }
+
+    public Element removeEventUpdatedAttribute(String eventType,
+            String... attributes) {
+        assert eventType != null;
+
+        for (String a : attributes) {
+            debug("Removing event " + eventType + " updated attribute " + a);
+        }
+
+        template.removeEventUpdatedAttribute(eventType, node, attributes);
+        return this;
+    }
+
     public Element addEventData(String eventType, String... data) {
         assert eventType != null;
 

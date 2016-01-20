@@ -17,6 +17,7 @@
 package com.vaadin.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -76,6 +77,7 @@ import com.vaadin.util.CurrentInstance;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
@@ -240,29 +242,88 @@ public abstract class UI extends CssLayout implements PollNotifier, Focusable {
         com.vaadin.ui.JavaScript js = getPage().getJavaScript();
         js.addFunction("vEvent", json -> {
             int nodeId = (int) json.getNumber(0);
+            Element e = getElementForNodeId(nodeId);
             String eventType = json.getString(1);
             JsonObject eventData = json.getObject(2);
 
-            StateNode elementStateNode = rootNode.getById(nodeId);
-
-            ElementTemplate template = null;
-            if (elementStateNode.containsKey(Keys.TAG)) {
-                template = BasicElementTemplate.get();
-            } else if (elementStateNode.containsKey(Keys.OVERRIDE_TEMPLATE)) {
-                template = (ElementTemplate) elementStateNode
-                        .get(Keys.OVERRIDE_TEMPLATE);
-                elementStateNode = elementStateNode.getParent();
-            }
-
-            if (template == null) {
-                throw new RuntimeException("Unable to find template for node");
-            }
-            Element e = Element.getElement(template, elementStateNode);
             e.dispatchEvent(eventType, eventData);
         });
 
         js.addFunction("vModelChange", this::handleModelChange);
         js.addFunction("vTemplateEvent", this::handleTemplateEvent);
+        js.addFunction("vAttributeUpdate", this::handleAttributeUpdates);
+    }
+
+    private Element getElementForNodeId(int nodeId) {
+        StateNode elementStateNode = rootNode.getById(nodeId);
+
+        ElementTemplate template = null;
+        if (elementStateNode.containsKey(Keys.TAG)) {
+            template = BasicElementTemplate.get();
+        } else if (elementStateNode.containsKey(Keys.OVERRIDE_TEMPLATE)) {
+            template = (ElementTemplate) elementStateNode
+                    .get(Keys.OVERRIDE_TEMPLATE);
+            elementStateNode = elementStateNode.getParent();
+        }
+
+        if (template == null) {
+            throw new RuntimeException("Unable to find template for node");
+        }
+        return Element.getElement(template, elementStateNode);
+    }
+
+    private void handleAttributeUpdates(JsonArray json) {
+        for (int i = 0; i < json.length(); i++) {
+            JsonArray elementUpdates = json.getArray(i);
+            int nodeId = (int) elementUpdates.getNumber(0);
+            Element e = getElementForNodeId(nodeId);
+            for (int j = 1; j < elementUpdates.length(); j++, j++) {
+
+                String attribute = elementUpdates.getString(j);
+                if (attribute.equals("attr.is") || attribute.equals("is")) {
+                    continue; // NOOP prevented to set is attribute
+                }
+
+                Object value = null;
+                JsonValue jsonValue = elementUpdates.get(j + 1);
+                if (JsonType.NULL != jsonValue.getType()) {
+                    value = JsonConverter.fromJson(
+                            JsonConverter.findValueType(jsonValue), jsonValue);
+                }
+
+                // don't send updates back to client
+                e.getElementDataNode().setIgnoreChanges(true);
+
+                if (attribute.equals("attr.class")
+                        || attribute.equals("classList")) {
+                    e.removeAllClasses();
+                    if (value != null) {
+                        e.addClass(value.toString());
+                    }
+                } else if (attribute.startsWith("attr.")) {
+                    e.setAttribute(attribute, (String) value);
+                } else {
+                    switch (jsonValue.getType()) {
+                    case NUMBER:
+                        e.setAttribute(attribute, (Double) value);
+                        break;
+                    case BOOLEAN:
+                        e.setAttribute(attribute, (Boolean) value);
+                        break;
+                    case STRING:
+                        e.setAttribute(attribute, (String) value);
+                        break;
+                    case ARRAY:
+                        e.getTemplate().setAttribute(attribute, value,
+                                e.getNode());
+                    default:
+                        break;
+                    }
+                }
+
+                e.getElementDataNode().setIgnoreChanges(false);
+            }
+        }
     }
 
     private void handleModelChange(JsonArray json) {
@@ -907,8 +968,8 @@ public abstract class UI extends CssLayout implements PollNotifier, Focusable {
     public void close() {
         closing = true;
 
-        boolean sessionExpired = (session == null
-                || session.getState() != State.OPEN);
+        boolean sessionExpired = session == null
+                || session.getState() != State.OPEN;
         getRpcProxy(UIClientRpc.class).uiClosed(sessionExpired);
         if (getPushConnection() != null) {
             // Push the Rpc to the client. The connection will be closed when
@@ -1229,7 +1290,7 @@ public abstract class UI extends CssLayout implements PollNotifier, Focusable {
     public void setPushConnection(PushConnection pushConnection) {
         // If pushMode is disabled then there should never be a pushConnection;
         // if enabled there should always be
-        assert (pushConnection == null)
+        assert pushConnection == null
                 ^ getPushConfiguration().getPushMode().isEnabled();
 
         if (pushConnection == this.pushConnection) {
@@ -1428,8 +1489,14 @@ public abstract class UI extends CssLayout implements PollNotifier, Focusable {
         return this;
     }
 
-    public List<Dependency> getDynamicDependencies() {
-        return dynamicDependencies;
+    public List<Dependency> collectDynamicDependencies() {
+        if (dynamicDependencies == null) {
+            return Collections.emptyList();
+        } else {
+            List<Dependency> pointer = dynamicDependencies;
+            dynamicDependencies = null;
+            return pointer;
+        }
     }
 
 }

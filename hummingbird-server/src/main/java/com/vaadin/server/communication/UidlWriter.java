@@ -271,7 +271,7 @@ public class UidlWriter implements Serializable {
         }
 
         // get added dynamic dependencies from UI
-        List<Dependency> dynamicDependencies = ui.getDynamicDependencies();
+        List<Dependency> dynamicDependencies = ui.collectDynamicDependencies();
 
         if (unhandledClasses.isEmpty()) {
             return dynamicDependencies == null ? Collections.emptyList()

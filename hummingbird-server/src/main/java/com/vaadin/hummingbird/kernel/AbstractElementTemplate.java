@@ -19,7 +19,7 @@ import com.vaadin.ui.UI;
 public abstract class AbstractElementTemplate implements ElementTemplate {
 
     public enum Keys {
-        TEMPLATE, TAG, IS, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY, EVENT_DATA, OVERRIDE_TEMPLATE, CLASS_LIST;
+        TEMPLATE, TAG, IS, PARENT_TEMPLATE, CHILDREN, LISTENERS, SERVER_ONLY, EVENT_DATA, OVERRIDE_TEMPLATE, CLASS_LIST, EVENT_ATTRIBUTE;
     }
 
     private static final AtomicInteger nextId = new AtomicInteger(1);
@@ -68,13 +68,53 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
         StateNode listeners = getListenerNode(node, true);
 
         List<Object> typeListeners = listeners.getMultiValued(type);
-        if (typeListeners.isEmpty()) {
+        if (typeListeners.isEmpty() && !hasEventUpdatedAttributes(type, node)) {
             // List of listened types going to the client
             getElementDataNode(node, true).getMultiValued(Keys.LISTENERS)
                     .add(type);
         }
         // The listener instance list staying on the server
         typeListeners.add(listener);
+    }
+
+    @Override
+    public void addEventUpdatedAttribute(String type, StateNode node,
+            String[] data) {
+        StateNode elementData = getElementDataNode(node, true);
+        StateNode updatedAttributesNode = elementData.get(Keys.EVENT_ATTRIBUTE,
+                StateNode.class);
+        if (updatedAttributesNode == null) {
+            updatedAttributesNode = StateNode.create();
+            elementData.put(Keys.EVENT_ATTRIBUTE, updatedAttributesNode);
+        }
+
+        List<Object> updatedAttributes = updatedAttributesNode
+                .getMultiValued(type);
+        boolean noUpdatedAttributesPreviously = updatedAttributes.isEmpty();
+        for (String d : data) {
+            if (!updatedAttributes.contains(d)) {
+                updatedAttributes.add(d);
+            }
+        }
+
+        // make sure there is a client side dom listener is since attribute
+        // updates are triggered by the same dom listener
+        if (noUpdatedAttributesPreviously) {
+            StateNode listenerNode = getListenerNode(node, true);
+            List<Object> typeListeners = listenerNode.getMultiValued(type);
+            if (typeListeners.isEmpty()) {
+                getElementDataNode(node, true).getMultiValued(Keys.LISTENERS)
+                        .add(type);
+            }
+        }
+    }
+
+    public boolean hasEventUpdatedAttributes(String type, StateNode node) {
+        StateNode elementData = getElementDataNode(node, false);
+        StateNode updatedAttributesNode = elementData == null ? null
+                : elementData.get(Keys.EVENT_ATTRIBUTE, StateNode.class);
+        return updatedAttributesNode != null
+                && updatedAttributesNode.containsKey(type);
     }
 
     @Override
@@ -137,6 +177,30 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
     }
 
     @Override
+    public void removeEventUpdatedAttribute(String type, StateNode node,
+            String[] data) {
+        StateNode elementData = getElementDataNode(node, true);
+        StateNode updatedAttributesNode = elementData.get(Keys.EVENT_ATTRIBUTE,
+                StateNode.class);
+        boolean allRemoved = false;
+        if (updatedAttributesNode != null) {
+            List<Object> eventData = updatedAttributesNode.getMultiValued(type);
+            eventData.removeAll(Arrays.asList(data));
+            allRemoved = eventData.isEmpty();
+        }
+
+        if (allRemoved) {
+            // remove dom event listener if none has been set separately
+            StateNode listenerNode = getListenerNode(node, false);
+            if (listenerNode != null
+                    && listenerNode.getMultiValued(type).isEmpty()) {
+                getElementDataNode(node, false).getMultiValued(Keys.LISTENERS)
+                        .remove(type);
+            }
+        }
+    }
+
+    @Override
     public void removeEventListener(String type, DomEventListener listener,
             StateNode node) {
         StateNode listenerNode = getListenerNode(node, false);
@@ -153,10 +217,18 @@ public abstract class AbstractElementTemplate implements ElementTemplate {
                 listenerNode.remove(type);
                 StateNode elementDataNode = getElementDataNode(node, true);
 
-                elementDataNode.getMultiValued(Keys.LISTENERS).remove(type);
+                // don't remove client side listener if there are event updated
+                // attributes
+                boolean hasEventUpdatedAttributes = hasEventUpdatedAttributes(
+                        type, node);
+                if (!hasEventUpdatedAttributes) {
+                    elementDataNode.getMultiValued(Keys.LISTENERS).remove(type);
+                }
 
                 if (listenerNode.getStringKeys().isEmpty()) {
-                    elementDataNode.remove(Keys.LISTENERS);
+                    if (!hasEventUpdatedAttributes) {
+                        elementDataNode.remove(Keys.LISTENERS);
+                    }
                     elementDataNode.remove(DomEventListener.class);
                 }
             }

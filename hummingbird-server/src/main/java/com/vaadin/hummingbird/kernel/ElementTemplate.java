@@ -53,6 +53,12 @@ public interface ElementTemplate extends Serializable {
     public List<Component> getComponents(StateNode node,
             boolean createIfNeeded);
 
+    public void addEventUpdatedAttribute(String type, StateNode node,
+            String[] attributes);
+
+    public void removeEventUpdatedAttribute(String type, StateNode node,
+            String[] attributes);
+
     public void addEventData(String type, StateNode node, String[] data);
 
     public void removeEventData(String type, StateNode node, String[] data);

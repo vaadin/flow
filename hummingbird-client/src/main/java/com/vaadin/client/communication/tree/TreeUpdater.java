@@ -37,9 +37,9 @@ import com.vaadin.client.FastStringMap;
 import com.vaadin.client.JsArrayObject;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.Util;
+import com.vaadin.client.communication.CustomElement;
 import com.vaadin.client.communication.DomApi;
 import com.vaadin.client.communication.ServerRpcQueue;
-import com.vaadin.client.communication.CustomElement;
 import com.vaadin.client.communication.tree.CallbackQueue.NodeChangeEvent;
 import com.vaadin.shared.communication.MethodInvocation;
 
@@ -337,7 +337,7 @@ public class TreeUpdater {
         }
     }
 
-    private static boolean isAlwaysAttribute(String key) {
+    static boolean isAlwaysAttribute(String key) {
         // FIXME There should be separate API for attribute and property and
         // eitherOr (https://github.com/vaadin/hummingbird/issues/5)
         return key.equals("style") || key.equals("for");
